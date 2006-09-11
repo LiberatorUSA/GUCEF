@@ -1,0 +1,6 @@
+; gucefIMAGE_MVC.def : Declares the module parameters for the DLL.
+
+LIBRARY      "gucefIMAGE_MVC"
+
+EXPORTS
+    ; Explicit exports can go here
