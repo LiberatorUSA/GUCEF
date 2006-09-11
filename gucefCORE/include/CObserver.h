@@ -1,0 +1,158 @@
+/*
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
+ *
+ * All source code herein is the property of Dinand Vanvelzen. You may not sell
+ * or otherwise commercially exploit the source or things you created based on
+ * the source.
+ *
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
+ * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ */
+
+#ifndef GUCEF_CORE_COBSERVER_H
+#define GUCEF_CORE_COBSERVER_H
+ 
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#include <vector>
+#include "gucefCORE_macros.h"
+#include "CICloneable.h"
+#include "gucefCORE_ETypes.h"
+
+/*-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_CORE_COBSERVER_CPP
+    #pragma warning( push )
+#endif
+
+#pragma warning( disable: 4018 ) // signed/unsigned mismatch
+#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
+#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF { 
+namespace CORE {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      CLASSES                                                            //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+class CNotifier;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Implementation of the observation component in the notifier-observer 
+ *  design pattern.
+ *
+ *  Note that you should unsubscribe the decending class before deallocating it.
+ *  This can be done by calling UnsubscribeAll() from the destructor of your 
+ *  decending class. Failure to do this will not cause any problems but should be 
+ *  considdered to be dirty coding.
+ */
+class EXPORT_CPP CObserver
+{
+    public:
+
+    CObserver( void );
+    
+    CObserver( const CObserver& src );
+    
+    virtual ~CObserver();
+    
+    CObserver& operator=( const CObserver& src );
+                               
+    /**
+     *  Unsubscribes the observer from all notifiers.
+     */
+    void UnsubscribeAll( void );
+    
+    UInt32 GetSubscriptionCount( void );
+
+    UInt32 GetNotifierCount( void ) const;
+
+    protected:
+    
+    /**
+     *  Event callback member function.
+     *  Implement this in your decending class to handle
+     *  notification events.
+     *
+     *  @param notifier the notifier that sent the notification
+     *  @param eventid the unique event id for an event
+     *  @param eventdata optional notifier defined userdata
+     */
+    virtual void OnNotify( CNotifier* notifier           ,
+                           const UInt32 eventid          ,
+                           CICloneable* eventdata = NULL ) = 0;
+
+    virtual void LockData( void );
+    
+    virtual void UnlockData( void );
+
+    private:
+    friend class CNotifier;
+    
+    /*
+     *  Simply updates the observer administration, nothing more
+     */
+    void SubscribeTo( CNotifier* notifier );
+                     
+    /*
+     *  Simply updates the observer administration, nothing more
+     */    
+    void UnsubscribeFrom( CNotifier* notifier             ,
+                          const bool forAllEvents = false );    
+                           
+    private:
+    struct SNotifierRef
+    {
+        CNotifier* notifier;
+        UInt32 refCount;    
+    };
+    typedef struct SNotifierRef TNotifierRef;
+    typedef std::vector<TNotifierRef> TNotifierList;
+
+    TNotifierList m_notifiers;
+
+    UInt32 m_notifierSubscribeEvent;
+    UInt32 m_notifierUnsubscribeEvent;
+    UInt32 m_notifierModifyEvent;
+    UInt32 m_notifierDestructionEvent;
+};
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace CORE */
+}; /* namespace GUCEF */
+
+/*-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_CORE_COBSERVER_CPP
+    #pragma warning( pop )
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_CORE_COBSERVER_H ? */

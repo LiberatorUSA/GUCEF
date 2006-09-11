@@ -1,0 +1,261 @@
+/*
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
+ *
+ * All source code herein is the property of Dinand Vanvelzen. You may not sell
+ * or otherwise commercially exploit the source or things you created based on
+ * the source.
+ *
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF
+ * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#ifndef GUCEF_CORE_CDVSTRING_H
+#define GUCEF_CORE_CDVSTRING_H
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#include "gucef_new_off.h"        /* don't scare the STL with our memory manager */
+
+//#pragma warning( push )
+//#pragma warning( disable : 4530 ) /* STL exception handling complaint */ 
+#include <string>                 /* STL string class */
+//#pragma warning( pop )
+
+#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#include "gucefCORE_macros.h"    /* macros that are GUCEF specific and generic macros */
+#define GUCEF_CORE_GUCEFCORE_MACROS_H
+#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+
+#ifndef GUCEF_CORE_ETYPES_H
+#include "ETypes.h"              /* simple types used */
+#define GUCEF_CORE_ETYPES_H
+#endif /* GUCEF_CORE_ETYPES_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF {
+namespace CORE {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      CLASSES                                                            //
+//                                                                         //
+//-------------------------------------------------------------------------*/ 
+
+class CStringStorage;
+class CStringList;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *      Refrence counted string class.
+ *      This class is meant to save some effort when dealing with strings.
+ *      Note that a good number of member functions could be made redundant
+ *      because a char* parameter can be converted to a CString object which
+ *      would then be the actual parameter. However since this class allocates
+ *      memory we want to keep it as fast as possible thus a minimal of memory
+ *      management. And no, I do not want to use the STL implementation. 
+ */
+class EXPORT_CPP CString
+{
+        public:
+        
+        CString( void );
+
+        CString( const CString& src );
+        
+        CString( const std::string& src );
+
+        CString( const char *src );
+        
+        CString( const char *src ,
+                 UInt32 length   );
+
+        ~CString();
+                
+        CString& operator=( const CString &src );
+
+        /**
+         *      Copys the source string.
+         *      If the src string is NULL then the current string will be
+         *      deallocated and also set to NULL.
+         */
+        CString& operator=( const char *src );
+
+        CString& operator+=( const CString &other );
+
+        CString& operator+=( const char *other );
+        
+        CString& operator+=( char lastchar );
+        
+        CString operator+( const CString& addition );
+        
+        CString operator+( const char* addition );               
+
+        bool operator==( const CString &other ) const;        
+        
+        bool operator==( const char *other ) const;
+        
+        bool operator!=( const CString &other ) const;
+
+        bool operator!=( const char *other ) const;
+        
+        bool operator<( const CString& other ) const;
+
+        char operator[]( const UInt32 index ) const;
+        
+        operator std::string() const;
+        
+        /* operator const char*() const; */
+
+        const char* C_String( void ) const;        
+        
+        std::string STL_String( void ) const;
+
+        UInt32 Length( void ) const;
+        
+        void SetInt( Int32 value );
+        
+        Int32 GetInt( void ) const;
+
+        /**
+         *      This member functions allows you to set the string using a
+         *      non-null-terminated char array as the source. The source will
+         *      be copyed and a null terminator will be added.
+         */
+        void Set( const char *new_str ,
+                  UInt32 len          );
+            
+        /**
+         *      This member functions allows you to add to the string using a
+         *      non-null-terminated char array as the source. The source will
+         *      be copyed and a null terminator will be added.
+         */                  
+        void Append( const char *appendstr ,
+                     UInt32 len            );                  
+                  
+        CString Lowercase( void ) const;                 
+        
+        CString Uppercase( void ) const;
+                  
+        CString ReplaceChar( char oldchar ,
+                             char newchar ) const;                  
+                  
+        void ReplaceSubstr( const CString& substr      ,
+                            const CString& replacement );
+                            
+        CString SubstrToChar( char searchchar        ,
+                              bool startfront = true ) const;
+                              
+        CString SubstrToSubstr( const CString& searchstr ,
+                                bool startfront = true   ) const;
+                                
+        Int32 HasChar( char searchchar        ,
+                       bool startfront = true ) const;                                
+                                
+        Int32 HasSubstr( const CString& substr  ,
+                         bool startfront = true ) const;
+                              
+        CString CutChars( UInt32 charcount        ,
+                          bool startfront = false ) const;
+                          
+        CStringList ParseElements( char seperator ) const;                          
+                            
+        void Clear( void );                            
+                            
+        UInt32 GetID( void ) const;
+        
+        /**
+         *      Utility member function for easy access to string caching
+         */
+        UInt32 Cache( void ) const;                                                                              
+
+        private:
+        CStringStorage* _store; /**< singleton central string storage, pointer here for efficiency */
+        const char* _string;    /**< our actual null-terminated string */
+        UInt32 _length;         /**< length of the string */
+        UInt32 _stringid;       /**< id for refrence counting */  
+};
+
+/*-------------------------------------------------------------------------*/
+
+EXPORT_CPP bool operator!=( const char* lhs, const CString& rhs );
+EXPORT_CPP bool operator==( const char* lhs, const CString& rhs );
+EXPORT_CPP CString operator+( const CString& lhs, const CString& rhs );
+EXPORT_CPP CString operator+( const CString& lhs, const char* rhs );        
+EXPORT_CPP CString operator+( const char* lhs, const CString& rhs ); 
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace CORE */
+}; /* namespace GUCEF */
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 05-05-2005 :
+        - Fixed a bug in operator+=( const CString &other ): the old string was 
+          unregistered before the combo was made causing data loss.
+- 24-04-2005 :
+        - Added Lowercase()
+        - Added Uppercase()
+        - Added SubstrToSubstr()
+- 23-04-2005 :
+        - Fixed a length setting bug in the constructor that accepts a C-string
+          with a given length.
+- 18-04-2005 :
+        - Added lots of safety code in the mutation operators (=, +=, ect.)
+          NULL pointers can now safely be added or assigned. They will be treated
+          as an string with length 0.
+- 11-04-2005 :
+        - Added include that disabled the memory manager defines before including
+          the STL header. The STL can't handle our manager and would freak out.
+          The subsequent inclusion of the macro file will reenable the defines
+          if needed.
+- 10-04-2005 :
+        - Fixed: String length wasn't set when using Set()
+- 05-04-2005 :
+        - Empty strings (ie length 0) will no longer contact the central depot
+- 04-04-2005 :
+        - Added Clear()
+        - Added SubstrToChar()
+        - Fixed: self assign protection for assignment operator
+        - Fixed: you can now safely assign an NULL pointer
+        - Added pointer to the central string storage depot. 
+          This reduces the number of mutex locks at the depot by about half so it's worth the 4
+          extra bytes of memory.
+- 03-04-2005 :
+        - Fixed several string length bugs. The length data member simply wasnt
+          updated in the = operator ect.
+- 13-11-2004 :
+        - Converted class to use refrence counting. 
+- 19-04-2004 :
+        - Designed and implemented this class.
+
+-----------------------------------------------------------------------------*/
+ 
