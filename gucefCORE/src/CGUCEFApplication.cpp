@@ -1,0 +1,538 @@
+/*
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
+ *
+ * All source code herein is the property of Dinand Vanvelzen. You may not sell
+ * or otherwise commercially exploit the source or things you created based on
+ * the source.
+ *
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
+ * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "dvoswrap.h"           /* needed for GUCEFPrecisionTimerInit() ect. */
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H ? */
+
+#ifndef GUCEF_CORE_CEVENTTYPEREGISTRY_H
+#include "CEventTypeRegistry.h"
+#define GUCEF_CORE_CEVENTTYPEREGISTRY_H
+#endif /* GUCEF_CORE_CEVENTTYPEREGISTRY_H ? */
+
+#ifndef GUCEF_CORE_CEVENTPUMP_H
+#include "CEventPump.h"
+#define GUCEF_CORE_CEVENTPUMP_H
+#endif /* GUCEF_CORE_CEVENTPUMP_H ? */
+
+#ifndef GUCEF_CORE_CEVENT
+#include "CEvent.h"
+#define GUCEF_CORE_CEVENT_H
+#endif /* GUCEF_CORE_CEVENT_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"   /* Additional utilities for manipulating string class objects */ 
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_TSPRINTING_H
+#include "tsprinting.h"         /* centralized console output */
+#define GUCEF_CORE_TSPRINTING_H
+#endif /* GUCEF_CORE_TSPRINTING_H ? */
+
+#ifndef GUCEF_CORE_CPLUGINCONTROL_H
+#include "CPluginControl.h"     /* centralized plugin control */
+#define GUCEF_CORE_CPLUGINCONTROL_H
+#endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
+
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"          /* node for data storage */
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
+#ifndef GUCEF_CORE_CSYSCONSOLE_H
+#include "CSysConsole.h"
+#define GUCEF_CORE_CSYSCONSOLE_H
+#endif /* GUCEF_CORE_CSYSCONSOLE_H ? */
+
+#include "CGUCEFApplication.h"
+
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF {
+namespace CORE {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const std::string CGUCEFApplication::AppInitEvent = "GUCEF::CORE::CGUCEFApplication::AppInitEvent";
+const std::string CGUCEFApplication::AppShutdownEvent = "GUCEF::CORE::CGUCEFApplication::AppShutdownEvent";
+CGUCEFApplication* CGUCEFApplication::_instance = NULL;
+MT::CMutex CGUCEFApplication::m_mutex;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CGUCEFApplication*
+CGUCEFApplication::Instance( void )
+{
+        GUCEF_BEGIN;
+        m_mutex.Lock();
+        if ( !_instance )
+        {                
+                 /*
+                  *     Instantiate the GUCEF application class
+                  */
+                _instance = new CGUCEFApplication();
+                CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
+        }
+        m_mutex.Unlock();
+        GUCEF_END;
+        return _instance;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CGUCEFApplication::Deinstance( void )
+{
+        GUCEF_BEGIN;
+        m_mutex.Lock();
+        CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
+        delete _instance;
+        _instance = NULL;
+        m_mutex.Unlock();
+        GUCEF_END;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGUCEFApplication::CGUCEFApplication( void )
+        : CIConfigurable( true )       ,
+          _active( false )             ,
+          _initialized( false )        ,
+          _appinitevent( 0 )           ,
+          m_maxdeltaticksfordelay( 0 ) ,
+          m_delaytime( 10 )
+{        
+        GUCEF_BEGIN;
+
+        /*
+         *      Initialize high-resolution timing
+         */
+        GUCEFPrecisionTimerInit(); 
+        
+        /*
+         *      This class can generate an application initialize and an shutdown event
+         *      We will register those event here.
+         */
+        CEventTypeRegistry *ereg = CEventTypeRegistry::Instance();
+        _appinitevent = ereg->RegisterType( "GUCEF::CORE::CGUCEFApplication::INIT" ,
+                                            sizeof(TAppInitEvent)                  );
+        _appstopevent = ereg->RegisterType( "GUCEF::CORE::CGUCEFApplication::STOP" ,
+                                            0                                      );
+                                            
+        /*
+         *      Set an initial app dir just in case we have trouble getting one 
+         *      at a later stage
+         */
+        _appdir = RelativePath( "$MODULEDIR$" );                                                    
+                                            
+        /*
+         *      Initialize our plugin control center
+         */                                      
+        CPluginControl::Instance();
+        
+        /*
+         *      Register some functionality at the system console
+         */
+        CSysConsole* sysconsole = CSysConsole::Instance();
+        CStringList args;
+        sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
+                                 "Stop"                           ,
+                                 args                             ,
+                                 this                             );
+        sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
+                                 "GetApplicationDir"              ,
+                                 args                             ,
+                                 this                             );                                                                  
+        GUCEF_END;                                                   
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGUCEFApplication::~CGUCEFApplication()
+{
+        GUCEF_BEGIN;
+        GUCEFPrecisionTimerShutdown();
+        GUCEF_END;
+}
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef MSWIN_BUILD
+int
+CGUCEFApplication::Main( HINSTANCE hinstance     ,
+                         HINSTANCE hprevinstance ,
+                         LPSTR lpcmdline         ,
+                         int ncmdshow            ,
+                         bool run                )
+{
+        GUCEF_BEGIN;
+        
+        /*
+         *      ensure that we have an instance of this class
+         */
+        m_mutex.Lock(); 
+        if ( !_instance )
+        {
+                int retval = Instance()->Main( hinstance     ,
+                                               hprevinstance ,
+                                               lpcmdline     ,
+                                               ncmdshow      ,
+                                               run           );
+                m_mutex.Unlock();
+                return retval;
+        }        
+        
+        /*
+         *      Set the application dir
+         *      This is pure WIN32 code and is not portable !!!
+         */
+        {
+                /*
+                 *      Set the given values as enviornment vars
+                 */
+                #pragma warning( disable: 4311 ) 
+                char intstr[ 10 ];
+                sprintf( intstr, "%d", (INTPTR)hinstance );  
+                GUCEFSetEnv( "HINSTANCE", intstr );                 
+                
+                char apppath[ MAX_PATH ]; 
+                if ( GetModuleFileName( hinstance, apppath, MAX_PATH ) )
+                {
+                        CString tmp( apppath );                        
+                        if ( tmp.Length() )
+                        {                
+                                for ( UInt32 i=tmp.Length()-1; i>=0; --i ) 
+                                {
+                                        if ( tmp[ i ] == '\\' )
+                                        {
+                                                if ( i > 0 )
+                                                {
+                                                        _appdir.Set( tmp.C_String(), i );
+                                                }
+                                                break;                                                        
+                                        }
+                                }
+                        }                        
+                }                        
+        }                
+
+        /*
+         *      Get our own eventpump pointer. This makes sure an event pump
+         *      exists and allows for more efficient access in the furture.
+         */
+        _pump = _pump->Instance();
+
+        /*
+         *      We now know we have an instance of this singleton and can begin
+         *      our main() code. We will send the application initialization
+         *      event to all event clients. The following code segment is a
+         *      special case since it may be followed by the main application
+         *      loop which would keep anything staticly allocated here in memory
+         *      Thus we turn the following into a compound statement.
+         */
+        {
+                CEvent event( _appinitevent );
+                TAppInitEvent data;
+                
+                data.hinstance = hinstance;
+                data.hprevinstance = hprevinstance;
+                data.lpcmdline = lpcmdline;
+                data.ncmdshow = ncmdshow;
+                
+                event.SetData( &data, sizeof(TAppInitEvent) );
+                SendEvent( event );
+        }
+
+        _initialized = true;
+        m_mutex.Unlock();
+        if ( run )
+        {
+                Run();
+        }
+        return 0;      
+}
+#else
+
+int 
+CGUCEFApplication::main( int argc    ,
+                         char** argv )
+{TRACE;
+        
+        /*
+         *      ensure that we have an instance of this class
+         */
+        m_mutex.Lock(); 
+        if ( !_instance )
+        {
+                int retval = Instance()->main( argc ,
+                                               argv );                                               
+                return retval;
+        }
+        
+        {
+                /*
+                 *      Set the given values as enviornment vars
+                 */
+                char intstr[ 10 ];
+                sprintf( intstr, "%d", argc );  
+                GUCEFSetEnv( "argc", intstr );
+                sprintf( intstr, "%d", argv );  
+                GUCEFSetEnv( "argv", intstr );                 
+        }                                
+
+        /*
+         *      Get our own eventpump pointer. This makes sure an event pump
+         *      exists and allows for more efficient access in the furture.
+         */
+        _pump = _pump->Instance();
+
+        /*
+         *      We now know we have an instance of this singleton and can begin
+         *      our main() code. We will send the application initialization
+         *      event to all event clients. The following code segment is a
+         *      special case since it may be followed by the main application
+         *      loop which would keep anything staticly allocated here in memory
+         *      Thus we turn the following into a compound statement.
+         */
+        {
+                CEvent event( _appinitevent );
+                TAppInitEvent data;
+                
+                data.argc = argc;
+                data.argv = argv;
+                
+                event.SetData( &data, sizeof(TAppInitEvent) );
+                SendEvent( event );
+        }
+
+        _initialized = true;
+        m_mutex.Unlock();
+        if ( run )
+        {
+                Run();
+        }
+        return 0;      
+}        
+}                         
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUCEFApplication::Update( void )
+{TRACE;
+        _pump->Update();
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CGUCEFApplication::GetLastUpdateTickCount( void ) const
+{TRACE;
+    return CEventPump::Instance()->GetLastUpdateTickCount();    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUCEFApplication::Run( void )
+{TRACE;
+        _active = true;
+        while ( _active )
+        {
+                _pump->Update();                                
+        }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUCEFApplication::Stop( void )
+{TRACE;
+        _active = false;
+ 
+        SendEventAndLockMailbox( _appstopevent );
+        _pump->SetPerformClientUpdates( false );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CGUCEFApplication::SetPluginDir( const CString& plugindir )
+{TRACE;
+        CPluginControl* pc = CPluginControl::Instance();
+        pc->SetPluginDir( plugindir );
+        pc->LoadAll();
+}
+
+/*-------------------------------------------------------------------------*/
+                       
+CString 
+CGUCEFApplication::GetPluginDir( void ) const
+{TRACE;
+        return CPluginControl::Instance()->GetPluginDir();
+}
+
+/*-------------------------------------------------------------------------*/
+        
+CString 
+CGUCEFApplication::GetApplicationDir( void ) const
+{TRACE;
+        return _appdir;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CGUCEFApplication::SaveConfig( CDataNode& tree )
+{TRACE;
+        CDataNode* n = tree.Structure( "GUCEF%CORE%CGUCEFApplication" ,
+                                       '%'                            );                     
+        n->SetAttribute( "appdir" ,
+                         _appdir  );                        
+        return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CGUCEFApplication::LoadConfig( const CDataNode& tree )
+{TRACE;
+        return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CGUCEFApplication::OnSysConsoleCommand( const CString& path     ,
+                                        const CString& command  ,
+                                        const CStringList& args ,
+                                        CStringList& resultdata )
+{TRACE;
+        if ( command == "Stop" )
+        {
+                Stop();
+                return true;        
+        }
+        else
+        if ( command == "GetApplicationDir" )
+        {
+                resultdata.Append( GetApplicationDir() );
+                return true;
+        }
+        return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CGUCEFApplication::OnUpdate( UInt32 tickcount  ,
+                             UInt32 deltaticks )
+{TRACE;
+        
+        #ifdef MSWIN_BUILD
+    	MSG  msg;
+        while( PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
+        {                
+                TranslateMessage( &msg );
+                DispatchMessage( &msg );
+        }
+        #endif /* WIN32_BUILD ? */        
+        
+        if ( deltaticks <= m_maxdeltaticksfordelay )
+        {
+                /*
+                 *      Not much action atm, so we should
+                 *      avoid hogging the CPU 
+                 */
+                GUCEFPrecisionDelay( m_delaytime );                
+        }
+}
+
+/*-------------------------------------------------------------------------*/                             
+
+void 
+CGUCEFApplication::SetCycleDelay( UInt32 maxdeltaticks ,
+                                  UInt32 delay         )
+{TRACE;
+    m_maxdeltaticksfordelay = maxdeltaticks;
+    m_delaytime = delay;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CGUCEFApplication::GetCycleDelay( UInt32& maxdeltaticks ,
+                                  UInt32& delay         ) const
+{TRACE;
+    maxdeltaticks = m_maxdeltaticksfordelay;
+    delay = m_delaytime;
+}                                  
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUCEFApplication::LockData( void )
+{TRACE;
+
+    m_mutex.Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+        
+void
+CGUCEFApplication::UnlockData( void )
+{TRACE;
+
+    m_mutex.Unlock();
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace CORE */
+}; /* namespace GUCEF */
+
+/*-------------------------------------------------------------------------*/
