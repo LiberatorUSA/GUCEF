@@ -1,0 +1,11 @@
+<PatchSet>
+	<SourceList>
+		<Source Tag="0" URL="" Codec="" CodecParams="" />
+		<Source Tag="1" Alternative="0" URL="" Codec="" CodecParams="" />
+	</SourceList>
+	<Local RootPath="" >
+		<Dir Name="data" />
+			<File Name="Example.zip" SourceTag="1" SourcePath="" Size="" Hash="" />
+		<Dir/>
+	</Local>
+</PatchSet>
