@@ -12,16 +12,16 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="../../Debug_MVC7.1"
+			IntermediateDirectory="../../Debug_MVC7.1"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../SDL/include;include;..\gucefCORE\include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;BUILD_GUCEFMT_DLL;GUCEF_MT_SUPPORT"
+				AdditionalIncludeDirectories="../../include;../../../gucefCORE\include"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;GUCEFMT_DLL_BUILD;GUCEF_MT_SUPPORT"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -30,19 +30,18 @@
 				WarningLevel="4"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="4"
-				DisableSpecificWarnings="4055;4100"/>
+				DisableSpecificWarnings="4055;4100;4251"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDL.lib"
-				OutputFile="$(OutDir)/gucefMT_MVC.dll"
+				OutputFile="$(OutDir)/gucefMT_MVC7.1_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="../../SDL/lib"
-				ModuleDefinitionFile="gucefMT_MVC.def"
+				AdditionalLibraryDirectories=""
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)/gucefMT_MVC.lib"
+				ImportLibrary="$(OutDir)/gucefMT_MVC7.1_d.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -50,8 +49,7 @@
 				MkTypLibCompatible="FALSE"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(OutDir)\$(TargetFileName) ..\..\common\$(ConfigurationName)
-copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)
+				CommandLine="copy $(OutDir)\$(TargetFileName) ..\..\..\common\Debug_MVC7.1
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -136,34 +134,40 @@ copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\src\CActiveObject.cpp">
+				RelativePath="..\..\src\gucefMT_CActiveObject.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CCondition.cpp">
+				RelativePath="..\..\src\gucefMT_CCondition.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CCriticalSection.cpp">
+				RelativePath="..\..\src\gucefMT_CCriticalSection.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CMutex.cpp">
+				RelativePath="..\..\src\gucefMT_CICloneable.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CReadWriteLock.cpp">
+				RelativePath="..\..\src\gucefMT_CMailBox.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CScopeMutex.cpp">
+				RelativePath="..\..\src\gucefMT_CMutex.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CSemaphore.cpp">
+				RelativePath="..\..\src\gucefMT_CReadWriteLock.cpp">
 			</File>
 			<File
-				RelativePath=".\src\dvmtoswrap.c">
+				RelativePath="..\..\src\gucefMT_CScopeMutex.cpp">
 			</File>
 			<File
-				RelativePath=".\src\dvrwlock.c">
+				RelativePath="..\..\src\gucefMT_CSemaphore.cpp">
 			</File>
 			<File
-				RelativePath=".\src\mutex.c">
+				RelativePath="..\..\src\gucefMT_dvmtoswrap.c">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_DVRWLOCK.C">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_MUTEX.C">
 			</File>
 		</Filter>
 		<Filter
@@ -171,49 +175,55 @@ copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
-				RelativePath=".\include\CActiveObject.h">
+				RelativePath="..\..\include\gucefMT.h">
 			</File>
 			<File
-				RelativePath=".\include\CCondition.h">
+				RelativePath="..\..\include\gucefMT_basicMacros.h">
 			</File>
 			<File
-				RelativePath=".\include\CCriticalSection.h">
+				RelativePath="..\..\include\gucefMT_CActiveObject.h">
 			</File>
 			<File
-				RelativePath=".\include\CMutex.h">
+				RelativePath="..\..\include\gucefMT_CCondition.h">
 			</File>
 			<File
-				RelativePath=".\include\CReadWriteLock.h">
+				RelativePath="..\..\include\gucefMT_CCriticalSection.h">
 			</File>
 			<File
-				RelativePath=".\include\CScopeMutex.h">
+				RelativePath="..\..\include\gucefMT_CICloneable.h">
 			</File>
 			<File
-				RelativePath=".\include\CSemaphore.h">
+				RelativePath="..\..\include\gucefMT_CMailBox.h">
 			</File>
 			<File
-				RelativePath=".\include\dvmtoswrap.h">
+				RelativePath="..\..\include\gucefMT_CMutex.h">
 			</File>
 			<File
-				RelativePath=".\include\dvrwlock.h">
+				RelativePath="..\..\include\gucefMT_config.h">
 			</File>
 			<File
-				RelativePath=".\include\ETypes.h">
+				RelativePath="..\..\include\gucefMT_CReadWriteLock.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefMT.h">
+				RelativePath="..\..\include\gucefMT_CScopeMutex.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefMT_config.h">
+				RelativePath="..\..\include\gucefMT_CSemaphore.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefMT_macros.h">
+				RelativePath="..\..\include\gucefMT_dvmtoswrap.h">
 			</File>
 			<File
-				RelativePath=".\include\macros.h">
+				RelativePath="..\..\include\gucefMT_DVRWLOCK.H">
 			</File>
 			<File
-				RelativePath=".\include\mutex.h">
+				RelativePath="..\..\include\gucefMT_ETypes.h">
+			</File>
+			<File
+				RelativePath="..\..\include\gucefMT_macros.h">
+			</File>
+			<File
+				RelativePath="..\..\include\gucefMT_mutex.h">
 			</File>
 		</Filter>
 	</Files>
