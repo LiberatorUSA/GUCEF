@@ -39,7 +39,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefMT_MVC7.1_d.lib Winmm.lib"
+				AdditionalDependencies="gucefMT_MVC7.1_d.lib Winmm.lib user32.lib"
 				OutputFile="$(OutDir)/gucefCORE_MVC7.1_d.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\gucefMT\$(ConfigurationName)"
