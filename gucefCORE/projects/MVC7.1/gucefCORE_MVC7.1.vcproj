@@ -220,6 +220,9 @@
 				RelativePath="..\..\src\CGUCEFApplication.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\CGUCEFAppSubSystem.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\CGUCEFCOREModule.cpp">
 			</File>
 			<File
@@ -320,9 +323,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\CStateMachineComponent.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CStateTransition.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\CSTDOStreamAdapter.cpp">
@@ -547,6 +547,9 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CIConfigurable.h">
+			</File>
+			<File
+				RelativePath="..\..\include\CIGUCEFApplicationDriver.h">
 			</File>
 			<File
 				RelativePath="..\..\include\CINamedInstance.h">

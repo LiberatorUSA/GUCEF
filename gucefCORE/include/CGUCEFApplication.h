@@ -24,6 +24,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <set>
+
 #ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
 #include "gucefCORE_macros.h"
 #define GUCEF_CORE_GUCEFCORE_MACROS_H
@@ -73,6 +75,11 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CGUCEFAppSubSystem;
+class CIGUCEFApplicationDriver;
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *      
  *      Dispatches the following events:
@@ -100,12 +107,12 @@ class EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
                 HINSTANCE hprevinstance;
                 LPSTR lpcmdline;
                 int ncmdshow;
-                #else
+                #endif 
+                
                 int argc;
-                char** argv;
-                #endif                
+                char** argv;                
         };
-        typedef struct SAppInitEvent TAppInitEventData;
+        typedef struct SAppInitEventData TAppInitEventData;
         typedef CTCloneableObj< TAppInitEventData > CAppInitEventData;
 
         static CGUCEFApplication* Instance( void );
@@ -116,10 +123,12 @@ class EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
                   LPSTR lpcmdline         ,
                   int ncmdshow            ,
                   bool run                );
-        #else
-        int main( int argc    ,
-                  char** argv );
         #endif
+        
+        int main( int argc    ,
+                  char** argv ,
+                  bool run    );
+        
 
         void Update( void );
 
@@ -189,13 +198,36 @@ class EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
         friend class CGUCEFCOREModule;
         
         static void Deinstance( void );
+        
+        private:
+        friend class CGUCEFAppSubSystem;
+        
+        void RegisterSubSystem( CGUCEFAppSubSystem* subSystem );
+        
+        void UnregisterSubSystem( CGUCEFAppSubSystem* subSystem );
+        
+        void RefreshMinimalSubSysInterval( void );
+        
+        void RefreshPeriodicUpdateRequirement( void );
+        
+        void DoRequestSubSysUpdate( void );
 
         private:
 
         void Run( void );
         CGUCEFApplication( void );
         CGUCEFApplication( const CGUCEFApplication& src );
-
+        
+        private:
+        typedef std::set< CGUCEFAppSubSystem* > TSubSystemList;
+        
+        TSubSystemList m_subSysList;
+        bool m_requiresPeriodicUpdates;
+        bool m_inNeedOfAnUpdate;
+        UInt32 m_minimalUpdateDelta;
+        UInt32 m_appTickCount;
+        CIGUCEFApplicationDriver* m_appDriver;
+        
         bool _initialized;
         bool _active;
         UInt32 _appinitevent;

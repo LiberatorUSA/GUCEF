@@ -66,6 +66,21 @@
 #define GUCEF_CORE_CSYSCONSOLE_H
 #endif /* GUCEF_CORE_CSYSCONSOLE_H ? */
 
+#ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
+#include "CGUCEFAppSubSystem.h"
+#define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
+#endif /* GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H ? */
+
+#ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#include "CNotificationIDRegistry.h"
+#define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
+
+#ifndef GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H
+#include "CIGUCEFApplicationDriver.h"
+#define GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H
+#endif /* GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H ? */
+
 #include "CGUCEFApplication.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -139,7 +154,10 @@ CGUCEFApplication::CGUCEFApplication( void )
           _initialized( false )        ,
           _appinitevent( 0 )           ,
           m_maxdeltaticksfordelay( 0 ) ,
-          m_delaytime( 10 )
+          m_delaytime( 10 )            ,
+          m_minimalUpdateDelta( GUCEFCORE_UINT32MAX ) ,
+          m_requiresPeriodicUpdates( false )          ,
+          m_inNeedOfAnUpdate( false )
 {        
         GUCEF_BEGIN;
 
@@ -152,11 +170,9 @@ CGUCEFApplication::CGUCEFApplication( void )
          *      This class can generate an application initialize and an shutdown event
          *      We will register those event here.
          */
-        CEventTypeRegistry *ereg = CEventTypeRegistry::Instance();
-        _appinitevent = ereg->RegisterType( "GUCEF::CORE::CGUCEFApplication::INIT" ,
-                                            sizeof(TAppInitEvent)                  );
-        _appstopevent = ereg->RegisterType( "GUCEF::CORE::CGUCEFApplication::STOP" ,
-                                            0                                      );
+        CNotificationIDRegistry *ereg = CNotificationIDRegistry::Instance();
+        _appinitevent = ereg->Register( AppInitEvent );
+        _appstopevent = ereg->Register( AppShutdownEvent );
                                             
         /*
          *      Set an initial app dir just in case we have trouble getting one 
@@ -256,12 +272,6 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         }                
 
         /*
-         *      Get our own eventpump pointer. This makes sure an event pump
-         *      exists and allows for more efficient access in the furture.
-         */
-        _pump = _pump->Instance();
-
-        /*
          *      We now know we have an instance of this singleton and can begin
          *      our main() code. We will send the application initialization
          *      event to all event clients. The following code segment is a
@@ -270,16 +280,18 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
          *      Thus we turn the following into a compound statement.
          */
         {
-                CEvent event( _appinitevent );
-                TAppInitEvent data;
+                TAppInitEventData data;
                 
                 data.hinstance = hinstance;
                 data.hprevinstance = hprevinstance;
                 data.lpcmdline = lpcmdline;
                 data.ncmdshow = ncmdshow;
+
+                data.argc = 0;
+                data.argv = NULL;
                 
-                event.SetData( &data, sizeof(TAppInitEvent) );
-                SendEvent( event );
+                CAppInitEventData cloneableData( data );                
+                NotifyObservers( _appinitevent, &cloneableData );
         }
 
         _initialized = true;
@@ -290,11 +302,14 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         }
         return 0;      
 }
-#else
+#endif
+
+/*-------------------------------------------------------------------------*/
 
 int 
 CGUCEFApplication::main( int argc    ,
-                         char** argv )
+                         char** argv ,
+                         bool run    )
 {TRACE;
         
         /*
@@ -304,7 +319,8 @@ CGUCEFApplication::main( int argc    ,
         if ( !_instance )
         {
                 int retval = Instance()->main( argc ,
-                                               argv );                                               
+                                               argv ,
+                                               run  );                                               
                 return retval;
         }
         
@@ -315,15 +331,8 @@ CGUCEFApplication::main( int argc    ,
                 char intstr[ 10 ];
                 sprintf( intstr, "%d", argc );  
                 GUCEFSetEnv( "argc", intstr );
-                sprintf( intstr, "%d", argv );  
-                GUCEFSetEnv( "argv", intstr );                 
-        }                                
-
-        /*
-         *      Get our own eventpump pointer. This makes sure an event pump
-         *      exists and allows for more efficient access in the furture.
-         */
-        _pump = _pump->Instance();
+                GUCEFSetEnv( "argv", (char*)argv );                 
+        }
 
         /*
          *      We now know we have an instance of this singleton and can begin
@@ -334,14 +343,13 @@ CGUCEFApplication::main( int argc    ,
          *      Thus we turn the following into a compound statement.
          */
         {
-                CEvent event( _appinitevent );
-                TAppInitEvent data;
+                TAppInitEventData data;
                 
                 data.argc = argc;
                 data.argv = argv;
                 
-                event.SetData( &data, sizeof(TAppInitEvent) );
-                SendEvent( event );
+                CAppInitEventData cloneableData( data );
+                NotifyObservers( _appinitevent, &cloneableData );
         }
 
         _initialized = true;
@@ -351,16 +359,33 @@ CGUCEFApplication::main( int argc    ,
                 Run();
         }
         return 0;      
-}        
-}                         
-#endif
+}                        
 
 /*-------------------------------------------------------------------------*/
 
 void
 CGUCEFApplication::Update( void )
 {TRACE;
-        _pump->Update();
+
+    LockData();
+    
+    UInt32 tickCount( GUCEFGetTickCount() );
+    UInt32 deltaTicks( tickCount - m_appTickCount );
+    
+    TSubSystemList::iterator i = m_subSysList.begin();
+    while ( i != m_subSysList.end() )
+    {
+        (*i)->OnUpdate( tickCount  ,
+                        deltaTicks );
+        ++i;
+    }
+
+    // request new update minimum from driver    
+    if ( NULL != m_appDriver )
+    {
+        m_appDriver->OnRequestNewMinimalUpdateFreq( m_minimalUpdateDelta );
+    }
+    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -379,7 +404,7 @@ CGUCEFApplication::Run( void )
         _active = true;
         while ( _active )
         {
-                _pump->Update();                                
+                Update();                                
         }
 }
 
@@ -388,10 +413,11 @@ CGUCEFApplication::Run( void )
 void
 CGUCEFApplication::Stop( void )
 {TRACE;
+    if ( _active )
+    {
         _active = false;
- 
-        SendEventAndLockMailbox( _appstopevent );
-        _pump->SetPerformClientUpdates( false );
+        NotifyObservers( _appstopevent );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -524,6 +550,119 @@ CGUCEFApplication::UnlockData( void )
 {TRACE;
 
     m_mutex.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUCEFApplication::RegisterSubSystem( CGUCEFAppSubSystem* subSystem )
+{TRACE;
+    m_subSysList.insert( subSystem );
+}
+
+/*-------------------------------------------------------------------------*/
+        
+void
+CGUCEFApplication::UnregisterSubSystem( CGUCEFAppSubSystem* subSystem )
+{TRACE;
+    m_subSysList.erase( subSystem );
+}
+
+/*-------------------------------------------------------------------------*/
+        
+void
+CGUCEFApplication::RefreshMinimalSubSysInterval( void )
+{TRACE;
+    
+    LockData();
+    
+    UInt32 temp( 0 );
+    
+    TSubSystemList::iterator i = m_subSysList.begin();
+    while ( i != m_subSysList.end() )
+    {
+        temp = (*i)->GetDesiredUpdateInterval();
+        if ( temp < m_minimalUpdateDelta )
+        {
+            m_minimalUpdateDelta = temp;
+        }
+        ++i;
+    }
+
+    // request new update minimum from driver    
+    if ( NULL != m_appDriver )
+    {
+        m_appDriver->OnRequestNewMinimalUpdateFreq( m_minimalUpdateDelta );
+    }
+    UnlockData();    
+}
+
+/*-------------------------------------------------------------------------*/
+        
+void
+CGUCEFApplication::RefreshPeriodicUpdateRequirement( void )
+{TRACE;
+    
+    LockData();
+    
+    TSubSystemList::iterator i = m_subSysList.begin();
+    while ( i != m_subSysList.end() )
+    {
+        if ( (*i)->ArePeriodicUpdatesRequired() )
+        {
+            if ( !m_requiresPeriodicUpdates )
+            {
+                m_requiresPeriodicUpdates = true;
+                                    
+                // notify driver of change                
+                if ( NULL != m_appDriver )
+                {
+                    m_appDriver->OnSwitchUpdateMethod( true );
+                }
+            }
+            UnlockData();
+            return;
+        }
+        ++i;
+    }
+    
+    if ( m_requiresPeriodicUpdates )
+    {
+        // This is not true anymore
+        m_requiresPeriodicUpdates = false;
+        
+        // notify driver of change                
+        if ( NULL != m_appDriver )
+        {
+            m_appDriver->OnSwitchUpdateMethod( false );
+        }        
+    }
+
+    UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+        
+void
+CGUCEFApplication::DoRequestSubSysUpdate( void )
+{TRACE;
+    
+    LockData();
+    
+    if ( !m_inNeedOfAnUpdate )
+    {
+        m_inNeedOfAnUpdate = true;
+        UnlockData();
+        
+        // ask driver for update
+        if ( NULL != m_appDriver )
+        {
+            m_appDriver->OnRequestNewUpdateCycle();
+        }        
+        return;
+    }
+    
+    UnlockData();
 }
 
 /*-------------------------------------------------------------------------//

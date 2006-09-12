@@ -168,9 +168,9 @@ CPumpedObserver::OnNotify( CNotifier* notifier                 ,
 void 
 CPumpedObserver::OnUpdate( void )
 {
-    UInt32 eventid;
-    CICloneable* dataptr;
-    CMailElement* maildata;
+    UInt32 eventid( 0 );
+    CICloneable* dataptr( NULL );
+    CMailElement* maildata( NULL );
     while ( m_mailbox.GetMail( eventid  ,
                                &dataptr ) )
     {        

@@ -15,22 +15,24 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
-#define GUCEF_CORE_CTCLONEABLEOBJ_H
- 
+#ifndef GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H
+#define GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CICloneable.h"
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTCLONEABLEOBJ_CPP
-    #pragma warning( push )
-#endif
+#ifndef GUCEF_CORE_ETYPES_H
+#include "gucefCORE_ETypes.h"
+#define GUCEF_CORE_ETYPES_H
+#endif /* GUCEF_CORE_ETYPES_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,93 +45,40 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      TEMPLATES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-template< typename T > 
-class CTCloneableObj : public CICloneable
+class CGUCEFApplication;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Interface class for an application driver.
+ *
+ *  An application driver basicly implements the application update cycle in
+ *  an O/S dependant fashion in such a way that updates are performed uppon 
+ *  request instead of the alternate busy-wait-poll scenario.
+ */
+class EXPORT_CPP CIGUCEFApplicationDriver
 {
-    public:
-
-    explicit CTCloneableObj( const T& data );
-
-    CTCloneableObj( const CTCloneableObj& src );
-        
-    virtual ~CTCloneableObj();
+    public:      
     
-    CTCloneableObj& operator=( const CTCloneableObj& src );
+    /**
+     *  Destructor is only implemented to ensure that a virtual 
+     *  destructor is provided.
+     */
+    virtual ~CIGUCEFApplicationDriver();
     
-    virtual CICloneable* Clone( void ) const;    
+    protected:
+    friend class CGUCEFApplication;
     
-    const T& GetData( void ) const;
+    virtual void OnSwitchUpdateMethod( const bool periodic ) = 0;
+    
+    virtual void OnRequestNewMinimalUpdateFreq( const UInt32 frequenty ) = 0;
 
-    private:
-
-    CTCloneableObj( void );
-
-    private:
-    T m_data;
+    virtual void OnRequestNewUpdateCycle( void ) = 0;
 };
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      UTILITIES                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-template< typename T >
-CTCloneableObj< T >::CTCloneableObj( const T& data )
-        : m_data( data )
-{
-}
-
-
-/*-------------------------------------------------------------------------*/
-
-template< typename T >
-CTCloneableObj< T >::CTCloneableObj( const CTCloneableObj< T >& src )
-        : m_data( src.m_data )
-{
-}
-
-/*-------------------------------------------------------------------------*/
-    
-template< typename T >
-CTCloneableObj< T >::~CTCloneableObj()
-{
-}
-
-/*-------------------------------------------------------------------------*/
-    
-template< typename T >
-CTCloneableObj< T >& 
-CTCloneableObj< T >::operator=( const CTCloneableObj< T >& src )
-{
-    if ( this != &src )
-    {
-        m_data = src.m_data;
-    }
-    return *this;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-template< typename T >
-CICloneable* 
-CTCloneableObj< T >::Clone( void ) const
-{
-    return new CTCloneableObj< T >( *this );
-}
-
-/*-------------------------------------------------------------------------*/
-
-template< typename T >
-const T& 
-CTCloneableObj< T >::GetData( void ) const
-{
-    return m_data;
-}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -142,10 +91,16 @@ CTCloneableObj< T >::GetData( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTCLONEABLEOBJ_CPP
-    #pragma warning( pop )
-#endif
+#endif /* GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H  ? */
 
-/*-------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
 
-#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+- 12-11-2004 :
+        - Designed and implemented this class.
+
+-----------------------------------------------------------------------------*/
+

@@ -12,14 +12,14 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="../../Debug_MVC7.1"
+			IntermediateDirectory="../../Debug_MVC7.1"
 			ConfigurationType="1"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\gucefCORE\include;..\gucefMT\include"
+				AdditionalIncludeDirectories="..\..\..\gucefCORE\include;..\..\..\gucefMT\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -27,15 +27,16 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="4"/>
+				DebugInformationFormat="4"
+				DisableSpecificWarnings="4251"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCORE_MVC.lib gucefMT_MVC.lib"
+				AdditionalDependencies="gucefCORE_MVC7.1_d.lib gucefMT_MVC7.1_d.lib"
 				OutputFile="$(OutDir)/gucefCORE_TestApp.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\gucefCORE\$(ConfigurationName);..\gucefMT\$(ConfigurationName)"
+				AdditionalLibraryDirectories="..\..\..\gucefCORE\Debug_MVC7.1;..\..\..\gucefMT\Debug_MVC7.1"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/gucefCORE_TestApp.pdb"
 				SubSystem="2"
@@ -117,7 +118,7 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\gucefCORE_TestApp_main.cpp">
+				RelativePath="..\..\src\gucefCORE_TestApp_main.cpp">
 			</File>
 		</Filter>
 		<Filter
