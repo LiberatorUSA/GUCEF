@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="gucefCOMCORE"
-	ProjectGUID="{9A84E805-2E4D-4C05-A0DF-493DBBA8BE12}"
-	Keyword="MFCDLLProj">
+	Name="gucefCOMCORE_MVC7.1"
+	ProjectGUID="{C0CED680-B323-4A0B-A46D-21FAF1331DA9}"
+	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -12,54 +12,47 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="../../Debug_MVC7.1"
+			IntermediateDirectory="../../Debug_MVC7.1"
 			ConfigurationType="2"
-			UseOfMFC="0"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;../gucefCORE/include;../gucefMT/include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;BUILD_GUCEFCOMCORE_DLL"
+				AdditionalIncludeDirectories="../../include;../../../gucefCORE/include;../../../gucefMT/include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GUCEFCOMCORE_MVC71_EXPORTS;BUILD_GUCEFCOMCORE_DLL"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
-				TreatWChar_tAsBuiltInType="TRUE"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="4"
+				DisableSpecificWarnings="4251"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Ws2_32.lib gucefMT_MVC.lib gucefCORE_MVC.lib"
-				OutputFile="$(OutDir)/gucefCOMCORE_MVC.dll"
+				AdditionalDependencies="gucefMT_MVC7.1_d.lib gucefCORE_MVC7.1_d.lib wsock32.lib"
+				OutputFile="$(OutDir)/gucefCOMCORE_MVC7.1_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;..\gucefCORE\$(ConfigurationName)&quot;;&quot;..\gucefMT\$(ConfigurationName)&quot;"
-				ModuleDefinitionFile=".\gucefCOMCORE_MVC.def"
+				AdditionalLibraryDirectories="../../../gucefMT/Debug_MVC7.1;../../../gucefCORE/Debug_MVC7.1"
 				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)/gucefCOMCORE_MVC7.1.pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)/gucefCOMCORE_MVC.lib"
+				ImportLibrary="$(OutDir)/gucefCOMCORE_MVC7.1_d.lib"
 				TargetMachine="1"/>
 			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="FALSE"/>
+				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(OutDir)\$(TargetFileName) ..\..\common\$(ConfigurationName)
-copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)"/>
+				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC7.1"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1043"
-				AdditionalIncludeDirectories="$(IntDir)"/>
+				Name="VCResourceCompilerTool"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -76,14 +69,12 @@ copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)"/>
 			OutputDirectory="Release"
 			IntermediateDirectory="Release"
 			ConfigurationType="2"
-			UseOfMFC="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
-				RuntimeLibrary="2"
-				TreatWChar_tAsBuiltInType="TRUE"
-				UsePrecompiledHeader="3"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GUCEFCOMCORE_MVC71_EXPORTS"
+				RuntimeLibrary="0"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
@@ -91,19 +82,16 @@ copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)"/>
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/gucefCOMCORE.dll"
+				OutputFile="$(OutDir)/gucefCOMCORE_MVC7.1.dll"
 				LinkIncremental="1"
-				ModuleDefinitionFile=".\gucefCOMCORE.def"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)/gucefCOMCORE.lib"
+				ImportLibrary="$(OutDir)/gucefCOMCORE_MVC7.1.lib"
 				TargetMachine="1"/>
 			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="FALSE"/>
+				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -111,10 +99,7 @@ copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1043"
-				AdditionalIncludeDirectories="$(IntDir)"/>
+				Name="VCResourceCompilerTool"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -135,37 +120,37 @@ copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)"/>
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\src\CActiveComPump.cpp">
+				RelativePath="..\..\src\CActiveComPump.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CCom.cpp">
+				RelativePath="..\..\src\CCom.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CGUCEFCOMCOREModule.cpp">
+				RelativePath="..\..\src\CGUCEFCOMCOREModule.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CIUDPSocketEventHandler.cpp">
+				RelativePath="..\..\src\CIUDPSocketEventHandler.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CSocket.cpp">
+				RelativePath="..\..\src\CSocket.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CTCPClientSocket.cpp">
+				RelativePath="..\..\src\CTCPClientSocket.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CTCPServerConnection.cpp">
+				RelativePath="..\..\src\CTCPServerConnection.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CTCPServerSocket.cpp">
+				RelativePath="..\..\src\CTCPServerSocket.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CUDPSocket.cpp">
+				RelativePath="..\..\src\CUDPSocket.cpp">
 			</File>
 			<File
-				RelativePath=".\src\dvwinsock.c">
+				RelativePath="..\..\src\dvwinsock.c">
 			</File>
 			<File
-				RelativePath=".\src\gucefCOMCORE.cpp">
+				RelativePath="..\..\src\gucefCOMCORE.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -173,61 +158,67 @@ copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)"/>
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
-				RelativePath=".\include\CActiveComPump.h">
+				RelativePath="..\..\include\CActiveComPump.h">
 			</File>
 			<File
-				RelativePath=".\include\CCom.h">
+				RelativePath="..\..\include\CCom.h">
 			</File>
 			<File
-				RelativePath=".\include\CGUCEFCOMCOREModule.h">
+				RelativePath="..\..\include\CGUCEFCOMCOREModule.h">
 			</File>
 			<File
-				RelativePath=".\include\CIUDPSocketEventHandler.h">
+				RelativePath="..\..\include\CIUDPSocketEventHandler.h">
 			</File>
 			<File
-				RelativePath=".\include\CSocket.h">
+				RelativePath="..\..\include\CSocket.h">
 			</File>
 			<File
-				RelativePath=".\include\CTCPClientSocket.h">
+				RelativePath="..\..\include\CTCPClientSocket.h">
 			</File>
 			<File
-				RelativePath=".\include\CTCPClientSocketInterface.h">
+				RelativePath="..\..\include\CTCPClientSocketInterface.h">
 			</File>
 			<File
-				RelativePath=".\include\CTCPServerConnection.h">
+				RelativePath="..\..\include\CTCPServerConnection.h">
 			</File>
 			<File
-				RelativePath=".\include\CTCPServerSocket.h">
+				RelativePath="..\..\include\CTCPServerSocket.h">
 			</File>
 			<File
-				RelativePath=".\include\CTCPServerSocketInterface.h">
+				RelativePath="..\..\include\CTCPServerSocketInterface.cpp">
 			</File>
 			<File
-				RelativePath=".\include\CUDPSocket.h">
+				RelativePath="..\..\include\CTCPServerSocketInterface.h">
 			</File>
 			<File
-				RelativePath=".\include\dvwinsock.h">
+				RelativePath="..\..\include\CUDPSocket.h">
 			</File>
 			<File
-				RelativePath=".\include\ETypes.h">
+				RelativePath="..\..\include\CUDPSocketEventHandler.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefCOMCORE.h">
+				RelativePath="..\..\include\dvwinsock.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefCOMCORE_config.h">
+				RelativePath="..\..\include\gucefCOMCORE.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefCOMCORE_macros.h">
+				RelativePath="..\..\include\gucefCOMCORE_config.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefCOMCOREDLLInit.h">
+				RelativePath="..\..\include\gucefCOMCORE_ETypes.h">
 			</File>
 			<File
-				RelativePath=".\include\macros.h">
+				RelativePath="..\..\include\gucefCOMCORE_macros.h">
 			</File>
 			<File
-				RelativePath=".\include\socketerrors.h">
+				RelativePath="..\..\include\gucefCOMCOREDLLInit.h">
+			</File>
+			<File
+				RelativePath="..\..\include\Macros.h">
+			</File>
+			<File
+				RelativePath="..\..\include\socketerrors.h">
 			</File>
 		</Filter>
 	</Files>
