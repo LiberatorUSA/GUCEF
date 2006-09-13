@@ -665,6 +665,16 @@ CGUCEFApplication::DoRequestSubSysUpdate( void )
     UnlockData();
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CGUCEFApplication::OnPumpedNotify( CNotifier* notifier                 ,
+                                   const UInt32 eventid                ,
+                                   CICloneable* eventdata /* = NULL */ )
+{TRACE;
+    // nothing to do here atm
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

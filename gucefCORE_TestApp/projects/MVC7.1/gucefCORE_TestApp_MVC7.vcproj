@@ -45,7 +45,7 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) ..\common\$(ConfigurationName)"/>
+				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC7.1"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

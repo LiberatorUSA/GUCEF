@@ -42,7 +42,7 @@
 				AdditionalDependencies="gucefMT_MVC7.1_d.lib Winmm.lib user32.lib"
 				OutputFile="$(OutDir)/gucefCORE_MVC7.1_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\gucefMT\$(ConfigurationName)"
+				AdditionalLibraryDirectories="..\..\..\gucefMT\Debug_MVC7.1"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
@@ -54,7 +54,7 @@
 				MkTypLibCompatible="FALSE"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(OutDir)\$(TargetFileName) ..\..\..\common\Debug_MVC7.1
+				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC7.1
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -233,6 +233,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\CIConfigurable.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CIGUCEFApplicationDriver.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\CINamedInstance.cpp">
