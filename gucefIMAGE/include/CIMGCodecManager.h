@@ -229,7 +229,7 @@ class EXPORT_CPP CIMGCodecManager : public CORE::CIPluginManager
 
         CIMGCodecManager( void );
         CIMGCodecManager( const CIMGCodecManager& src );
-        ~CIMGCodecManager();
+        virtual ~CIMGCodecManager();
         CIMGCodecManager& operator=( const CIMGCodecManager& src );
 
         CORE::CDynamicArray _codecs;
