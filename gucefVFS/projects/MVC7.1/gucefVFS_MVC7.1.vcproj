@@ -27,7 +27,8 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="4"/>
+				DebugInformationFormat="4"
+				DisableSpecificWarnings="4251"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
@@ -45,7 +46,7 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) ../../../common/Debug_MVC7.1"/>
+				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC7.1"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -143,9 +144,6 @@
 				RelativePath="..\..\src\CVFSURLHandler.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\CVFSURLResource.cpp">
-			</File>
-			<File
 				RelativePath="..\..\src\gucefVFS.cpp">
 			</File>
 		</Filter>
@@ -182,9 +180,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CVFSURLHandler.h">
-			</File>
-			<File
-				RelativePath="..\..\include\CVFSURLResource.h">
 			</File>
 			<File
 				RelativePath="..\..\include\gucefVFS.h">
