@@ -540,6 +540,9 @@
 				RelativePath="..\..\include\CGUCEFApplication.h">
 			</File>
 			<File
+				RelativePath="..\..\include\CGUCEFAppSubSystem.h">
+			</File>
+			<File
 				RelativePath="..\..\include\CGUCEFCOREModule.h">
 			</File>
 			<File

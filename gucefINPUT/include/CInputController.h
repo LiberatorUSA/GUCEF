@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef CEVENTPUMPCLIENT_H
-#include "CEventPumpClient.h"
-#define CEVENTPUMPCLIENT_H
-#endif /* CEVENTPUMPCLIENT_H ? */
+#ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
+#include "CGUCEFAppSubSystem.h"
+#define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
+#endif /* GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H ? */
 
 #ifndef CDYNAMICARRAY_H
 #include "CDynamicArray.h"
@@ -65,59 +65,70 @@ class CIInputHandler;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CInputController : public CORE::CEventPumpClient
+class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
 {
-        public:                
+    public:                
 
-        static CInputController* Instance( void );                
-        
-        CInputContext* CreateContext( const GUCEF::CORE::CValueList& params ,
-                                      CIInputHandler* handler = NULL        );
-        
-        void DestroyContext( CInputContext* context );
-        
-        UInt32 GetContextCount( void ) const;
-        
-        bool SetDriver( CIInputDriver* driver );
-        
-        const CIInputDriver* GetDriver( void ) const;
-                
-        bool LoadDriverModule( const GUCEF::CORE::CString& filename ,
-                               const CORE::CValueList& params       );
+    static CInputController* Instance( void );                
+    
+    CInputContext* CreateContext( const GUCEF::CORE::CValueList& params ,
+                                  CIInputHandler* handler = NULL        );
+    
+    void DestroyContext( CInputContext* context );
+    
+    UInt32 GetContextCount( void ) const;
+    
+    bool SetDriver( CIInputDriver* driver );
+    
+    const CIInputDriver* GetDriver( void ) const;
+            
+    bool LoadDriverModule( const GUCEF::CORE::CString& filename ,
+                           const CORE::CValueList& params       );
 
-        protected:
+    protected:
         
-        virtual void OnProcessEvent( const CORE::CEvent& event );
+    /**
+     *  Event callback member function.
+     *  Implement this in your decending class to handle
+     *  notification events.
+     *
+     *  @param notifier the notifier that sent the notification
+     *  @param eventid the unique event id for an event
+     *  @param eventdata optional notifier defined userdata
+     */
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const UInt32 eventid                ,
+                           CORE::CICloneable* eventdata = NULL );
         
-        virtual void OnUpdate( const UInt32 tickcount  ,
-                               const UInt32 deltaticks );        
+    virtual void OnUpdate( const UInt32 applicationTicks ,
+                           const UInt32 deltaTicks       );        
 
-        private:
-        friend class CGUCEFINPUTModule;
-        
-        static void Deinstance( void );        
-        
-        private:
-        
-        CInputController( void );
-        CInputController( const CInputController& src );
-        virtual ~CInputController();
-        CInputController& operator=( const CInputController& src );
-        
-        void UnloadDriverModule( void );
-        
-        private:
-        
-        CIInputDriver* m_driver;
-        bool m_driverisplugin;        
-        CORE::CDynamicArray m_contextlist;
-        UInt32 m_appinitevent;
-        
-        #ifdef MSWIN_BUILD
-        UInt32 m_hinstance;
-        #endif
-        
-        static CInputController* m_instance;
+    private:
+    friend class CGUCEFINPUTModule;
+    
+    static void Deinstance( void );        
+    
+    private:
+    
+    CInputController( void );
+    CInputController( const CInputController& src );
+    virtual ~CInputController();
+    CInputController& operator=( const CInputController& src );
+    
+    void UnloadDriverModule( void );
+    
+    private:
+    
+    CIInputDriver* m_driver;
+    bool m_driverisplugin;        
+    CORE::CDynamicArray m_contextlist;
+    UInt32 m_appinitevent;
+    
+    #ifdef MSWIN_BUILD
+    UInt32 m_hinstance;
+    #endif
+    
+    static CInputController* m_instance;
 };
 
 /*-------------------------------------------------------------------------//

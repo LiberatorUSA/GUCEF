@@ -278,18 +278,19 @@ CInputController::OnUpdate( UInt32 tickcount  ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CInputController::OnProcessEvent( const CORE::CEvent& event )
+void
+CInputController::OnNotify( CORE::CNotifier* notifier                 ,
+                            const UInt32 eventid                      ,
+                            CORE::CICloneable* eventdata /* = NULL */ )
 {TRACE;
-        if ( event.GetEventType() == m_appinitevent )
+        #ifdef MSWIN_BUILD
+        if ( eventid == m_appinitevent )
         {
-                CORE::CGUCEFApplication::TAppInitEvent initdata;
-                event.GetData( &initdata        ,
-                               sizeof(initdata) );
-                               
+                CORE::CGUCEFApplication::CAppInitEventData* initData = static_cast< CORE::CGUCEFApplication::CAppInitEventData* >( eventdata );
                 #pragma warning( disable: 4311 ) // pointer truncation warning
-                m_hinstance = reinterpret_cast<UInt32>( initdata.hinstance );
+                m_hinstance = reinterpret_cast<UInt32>( initData->GetData().hinstance );
         }
+        #endif /* MSWIN_BUILD ? */
 }
 
 /*-------------------------------------------------------------------------//

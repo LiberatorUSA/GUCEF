@@ -24,6 +24,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"
 #define GUCEF_CORE_MACROS_H
@@ -58,7 +63,7 @@ class CGUCEFApplication;
  *  pulses from the main application 'engine'.
  *  This class automaticly registers at the CGUCEFApplication singleton.
  */
-class EXPORT_CPP CGUCEFAppSubSystem
+class EXPORT_CPP CGUCEFAppSubSystem : public CObservingNotifier
 {
     public:
     
@@ -83,6 +88,19 @@ class EXPORT_CPP CGUCEFAppSubSystem
     
     virtual void OnUpdate( const UInt32 applicationTicks ,
                            const UInt32 deltaTicks       );
+
+    /**
+     *  Event callback member function.
+     *  Implement this in your decending class to handle
+     *  notification events.
+     *
+     *  @param notifier the notifier that sent the notification
+     *  @param eventid the unique event id for an event
+     *  @param eventdata optional notifier defined userdata
+     */
+    virtual void OnNotify( CNotifier* notifier           ,
+                           const UInt32 eventid          ,
+                           CICloneable* eventdata = NULL );
    
     private:
     

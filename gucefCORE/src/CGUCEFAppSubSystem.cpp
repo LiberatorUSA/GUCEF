@@ -116,6 +116,18 @@ void
 CGUCEFAppSubSystem::OnUpdate( const UInt32 applicationTicks ,
                               const UInt32 deltaTicks       )
 {TRACE;
+
+    /* dummy to avoid manditory implementation by decending classes */
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CGUCEFAppSubSystem::OnNotify( CNotifier* notifier                 ,
+                              const UInt32 eventid                ,
+                              CICloneable* eventdata /* = NULL */ )
+{TRACE;
+
     /* dummy to avoid manditory implementation by decending classes */
 }
 

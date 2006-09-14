@@ -12,14 +12,14 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="../../Debug_MVC7.1"
+			IntermediateDirectory="../../Debug_MVC7.1"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\gucefCORE\include;..\gucefMT\include"
+				AdditionalIncludeDirectories="../../include;../../..\gucefCORE\include;../../..\gucefMT\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GUCEFINPUT_EXPORTS;BUILD_GUCEFINPUT_DLL"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -27,27 +27,26 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4251"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCORE_MVC.lib gucefMT_MVC.lib"
-				OutputFile="$(OutDir)/gucefINPUT_MVC.dll"
+				AdditionalDependencies="gucefCORE_MVC7.1_d.lib gucefMT_MVC7.1_d.lib"
+				OutputFile="$(OutDir)/gucefINPUT_MVC7.1_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;..\gucefCORE\$(ConfigurationName)&quot;;&quot;..\gucefMT\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="..\..\..\gucefCORE\Debug_MVC7.1;..\..\..\gucefMT\Debug_MVC7.1"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/gucefINPUT_MVC.pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)/gucefINPUT_MVC.lib"
+				ImportLibrary="$(OutDir)/gucefINPUT_MVC7.1_d.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(OutDir)\$(TargetFileName) ..\..\common\$(ConfigurationName)
-copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)
-"/>
+				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC7.1"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -121,43 +120,46 @@ copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\src\CGUCEFINPUTModule.cpp">
+				RelativePath="..\..\src\CGUCEFINPUTModule.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CIInputActionHandler.cpp">
+				RelativePath="..\..\src\CIInputActionHandler.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CIInputDriver.cpp">
+				RelativePath="..\..\src\CIInputDriver.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CInputActionMap.cpp">
+				RelativePath="..\..\src\CInputActionHandler.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CInputActionMultiMapHandler.cpp">
+				RelativePath="..\..\src\CInputActionMap.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CInputBasedManipulator.cpp">
+				RelativePath="..\..\src\CInputActionMultiMapHandler.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CInputContext.cpp">
+				RelativePath="..\..\src\CInputBasedManipulator.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CInputController.cpp">
+				RelativePath="..\..\src\CInputContext.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CInputDriverPlugin.cpp">
+				RelativePath="..\..\src\CInputController.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CInputHandlerMultiMap.cpp">
+				RelativePath="..\..\src\CInputDriverPlugin.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CInputProfile.cpp">
+				RelativePath="..\..\src\CInputHandlerMultiMap.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CInputProfileManager.cpp">
+				RelativePath="..\..\src\CInputProfile.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CInputToActionHandler.cpp">
+				RelativePath="..\..\src\CInputProfileManager.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CInputToActionHandler.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -165,64 +167,70 @@ copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
-				RelativePath=".\include\CGUCEFINPUTModule.h">
+				RelativePath="..\..\include\CGUCEFINPUTModule.h">
 			</File>
 			<File
-				RelativePath=".\include\CIInputActionHandler.h">
+				RelativePath="..\..\include\CIInputActionHandler.h">
 			</File>
 			<File
-				RelativePath=".\include\CIInputDriver.h">
+				RelativePath="..\..\include\CIInputDriver.h">
 			</File>
 			<File
-				RelativePath=".\include\CIInputHandler.h">
+				RelativePath="..\..\include\CIInputHandler.h">
 			</File>
 			<File
-				RelativePath=".\include\CInputActionMap.h">
+				RelativePath="..\..\include\CInputActionHandler.h">
 			</File>
 			<File
-				RelativePath=".\include\CInputActionMultiMapHandler.h">
+				RelativePath="..\..\include\CInputActionMap.h">
 			</File>
 			<File
-				RelativePath=".\include\CInputBasedManipulator.h">
+				RelativePath="..\..\include\CInputActionMultiMapHandler.h">
 			</File>
 			<File
-				RelativePath=".\include\CInputContext.h">
+				RelativePath="..\..\include\CInputBasedManipulator.h">
 			</File>
 			<File
-				RelativePath=".\include\CInputController.h">
+				RelativePath="..\..\include\CInputContext.h">
 			</File>
 			<File
-				RelativePath=".\include\CInputDriverPlugin.h">
+				RelativePath="..\..\include\CInputController.h">
 			</File>
 			<File
-				RelativePath=".\include\CInputHandlerMultiMap.h">
+				RelativePath="..\..\include\CInputDriverPlugin.h">
 			</File>
 			<File
-				RelativePath=".\include\CInputProfile.h">
+				RelativePath="..\..\include\CInputHandlerMapper.h">
 			</File>
 			<File
-				RelativePath=".\include\CInputProfileManager.h">
+				RelativePath="..\..\include\CInputHandlerMultiMap.h">
 			</File>
 			<File
-				RelativePath=".\include\CInputToActionHandler.h">
+				RelativePath="..\..\include\CInputProfile.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefINPUT.h">
+				RelativePath="..\..\include\CInputProfileManager.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefINPUT_config.h">
+				RelativePath="..\..\include\CInputToActionHandler.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefINPUT_macros.h">
+				RelativePath="..\..\include\gucefINPUT.h">
 			</File>
 			<File
-				RelativePath=".\gucefINPUT_namespace_import.h">
+				RelativePath="..\..\include\gucefINPUT_config.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefINPUTDLLInit.h">
+				RelativePath="..\..\include\gucefINPUT_ETypes.h">
 			</File>
 			<File
-				RelativePath=".\include\inputdriverpluginstructs.h">
+				RelativePath="..\..\include\gucefINPUT_macros.h">
+			</File>
+			<File
+				RelativePath="..\..\include\gucefINPUTDLLInit.h">
+			</File>
+			<File
+				RelativePath="..\..\include\inputdriverpluginstructs.h">
 			</File>
 		</Filter>
 	</Files>
