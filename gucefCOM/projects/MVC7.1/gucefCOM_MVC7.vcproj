@@ -12,15 +12,15 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="../../Debug_MVC7.1"
+			IntermediateDirectory="../../Debug_MVC7.1"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\gucefCOMCORE\include;..\gucefCORE\include;..\gucefMT\include"
+				AdditionalIncludeDirectories="../../include;../../..\gucefCOMCORE\include;../../..\gucefCORE\include;../../..\gucefMT\include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;BUILD_GUCEFCOM_DLL"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -29,19 +29,20 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4251"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCOMCORE_MVC.lib gucefCORE_MVC.lib gucefMT_MVC.lib"
-				OutputFile="$(OutDir)/gucefCOM_MVC.dll"
+				AdditionalDependencies="gucefCOMCORE_MVC7.1_d.lib gucefCORE_MVC7.1_d.lib gucefMT_MVC7.1_d.lib"
+				OutputFile="$(OutDir)/gucefCOM_MVC7.1_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;..\gucefCOMCORE\$(ConfigurationName)&quot;;&quot;..\gucefCORE\$(ConfigurationName)&quot;;&quot;..\gucefMT\$(ConfigurationName)&quot;"
-				ModuleDefinitionFile=".\gucefCOM_MVC.def"
+				AdditionalLibraryDirectories="..\..\..\gucefCOMCORE\Debug_MVC7.1;..\..\..\gucefCORE\Debug_MVC7.1;..\..\..\gucefMT\Debug_MVC7.1"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)/gucefCOM_MVC.lib"
+				ImportLibrary="$(OutDir)/gucefCOM_MVC7.1_d.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -49,9 +50,7 @@
 				MkTypLibCompatible="FALSE"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(OutDir)\$(TargetFileName) ..\..\common\$(ConfigurationName)
-copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)
-"/>
+				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC7.1"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -136,64 +135,64 @@ copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\src\CBPTCPClientSocket.cpp">
+				RelativePath="..\..\src\CBPTCPClientSocket.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CBPTCPServerConnection.cpp">
+				RelativePath="..\..\src\CBPTCPServerConnection.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CBPTCPServerSocket.cpp">
+				RelativePath="..\..\src\CBPTCPServerSocket.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CDBQuery.cpp">
+				RelativePath="..\..\src\CDBQuery.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CDRNClient.cpp">
+				RelativePath="..\..\src\CDRNClient.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CDRNClientInterface.cpp">
+				RelativePath="..\..\src\CDRNClientInterface.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CDRNController.cpp">
+				RelativePath="..\..\src\CDRNController.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CDRNControllerMainComHandler.cpp">
+				RelativePath="..\..\src\CDRNControllerMainComHandler.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CDRNControllerPHUDPPeerComHandler.cpp">
+				RelativePath="..\..\src\CDRNControllerPHUDPPeerComHandler.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CDRNControllerTCPPeerComHandler.cpp">
+				RelativePath="..\..\src\CDRNControllerTCPPeerComHandler.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CDRNDataItem.cpp">
+				RelativePath="..\..\src\CDRNDataItem.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CDRNLocalDataItem.cpp">
+				RelativePath="..\..\src\CDRNLocalDataItem.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CDRNPeerDataItem.cpp">
+				RelativePath="..\..\src\CDRNPeerDataItem.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CGUCEFCOMModule.cpp">
+				RelativePath="..\..\src\CGUCEFCOMModule.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CHTTPClient.cpp">
+				RelativePath="..\..\src\CHTTPClient.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CHTTPClientInterface.cpp">
+				RelativePath="..\..\src\CHTTPClientInterface.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CIPHUDPSocketEventHandler.cpp">
+				RelativePath="..\..\src\CIPHUDPSocketEventHandler.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CMySQLClient.cpp">
+				RelativePath="..\..\src\CMySQLClient.cpp">
 			</File>
 			<File
-				RelativePath=".\src\CPHUDPSocket.cpp">
+				RelativePath="..\..\src\CPHUDPSocket.cpp">
 			</File>
 			<File
-				RelativePath=".\src\gucefCOM.cpp">
+				RelativePath="..\..\src\gucefCOM.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -201,100 +200,106 @@ copy $(OutDir)\$(TargetFileName) ..\common\$(ConfigurationName)
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
-				RelativePath=".\include\CBPTCPClientSocket.h">
+				RelativePath="..\..\include\CBPTCPClientSocket.h">
 			</File>
 			<File
-				RelativePath=".\include\CBPTCPClientSocketInterface.h">
+				RelativePath="..\..\include\CBPTCPClientSocketInterface.h">
 			</File>
 			<File
-				RelativePath=".\include\CBPTCPServerConnection.h">
+				RelativePath="..\..\include\CBPTCPServerConnection.h">
 			</File>
 			<File
-				RelativePath=".\include\CBPTCPServerSocket.h">
+				RelativePath="..\..\include\CBPTCPServerSocket.h">
 			</File>
 			<File
-				RelativePath=".\include\CBPTCPServerSocketInterface.h">
+				RelativePath="..\..\include\CBPTCPServerSocketInterface.h">
 			</File>
 			<File
-				RelativePath=".\include\CDBColumn.h">
+				RelativePath="..\..\include\CDBColumn.h">
 			</File>
 			<File
-				RelativePath=".\include\CDBField.h">
+				RelativePath="..\..\include\CDBField.h">
 			</File>
 			<File
-				RelativePath=".\include\CDBQuery.h">
+				RelativePath="..\..\include\CDBQuery.h">
 			</File>
 			<File
-				RelativePath=".\include\CDRNBroadcaster.h">
+				RelativePath="..\..\include\CDRNBroadcaster.h">
 			</File>
 			<File
-				RelativePath=".\include\CDRNClient.h">
+				RelativePath="..\..\include\CDRNClient.h">
 			</File>
 			<File
-				RelativePath=".\include\CDRNClientInterface.h">
+				RelativePath="..\..\include\CDRNClientInterface.h">
 			</File>
 			<File
-				RelativePath=".\include\CDRNController.h">
+				RelativePath="..\..\include\CDRNController.h">
 			</File>
 			<File
-				RelativePath=".\include\CDRNControllerInterface.h">
+				RelativePath="..\..\include\CDRNControllerInterface.h">
 			</File>
 			<File
-				RelativePath=".\include\CDRNControllerMainComHandler.h">
+				RelativePath="..\..\include\CDRNControllerMainComHandler.h">
 			</File>
 			<File
-				RelativePath=".\include\CDRNControllerPHUDPPeerComHandler.h">
+				RelativePath="..\..\include\CDRNControllerPHUDPPeerComHandler.h">
 			</File>
 			<File
-				RelativePath=".\include\CDRNControllerTCPPeerComHandler.h">
+				RelativePath="..\..\include\CDRNControllerTCPPeerComHandler.h">
 			</File>
 			<File
-				RelativePath=".\include\CDRNDataItem.h">
+				RelativePath="..\..\include\CDRNControllerToClientHandler.h">
 			</File>
 			<File
-				RelativePath=".\include\CDRNLocalDataItem.h">
+				RelativePath="..\..\include\CDRNDataItem.h">
 			</File>
 			<File
-				RelativePath=".\include\CDRNPeerDataItem.h">
+				RelativePath="..\..\include\CDRNLocalDataItem.h">
 			</File>
 			<File
-				RelativePath=".\include\CGUCEFCOMModule.h">
+				RelativePath="..\..\include\CDRNPeerDataItem.h">
 			</File>
 			<File
-				RelativePath=".\include\CHTTPClient.h">
+				RelativePath="..\..\include\CGUCEFCOMModule.h">
 			</File>
 			<File
-				RelativePath=".\include\CHTTPClientInterface.h">
+				RelativePath="..\..\include\CHTTPClient.h">
 			</File>
 			<File
-				RelativePath=".\include\CIPHUDPSocketEventHandler.h">
+				RelativePath="..\..\include\CHTTPClientInterface.h">
 			</File>
 			<File
-				RelativePath=".\include\CMySQLClient.h">
+				RelativePath="..\..\include\CIPHUDPSocketEventHandler.h">
 			</File>
 			<File
-				RelativePath=".\include\CMySQLClientInterface.h">
+				RelativePath="..\..\include\CMySQLClient.h">
 			</File>
 			<File
-				RelativePath=".\include\CPHUDPSocket.h">
+				RelativePath="..\..\include\CMySQLClientInterface.h">
 			</File>
 			<File
-				RelativePath=".\include\DRNProtocol.h">
+				RelativePath="..\..\include\CPHUDPSocket.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefCOM.h">
+				RelativePath="..\..\include\DRNProtocol.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefCOM_config.h">
+				RelativePath="..\..\include\gucefCOM.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefCOM_macros.h">
+				RelativePath="..\..\include\gucefCOM_config.h">
 			</File>
 			<File
-				RelativePath=".\include\gucefCOMDLLInit.h">
+				RelativePath="..\..\include\gucefCOM_ETypes.h">
 			</File>
 			<File
-				RelativePath=".\include\tcp_basicprotocol.h">
+				RelativePath="..\..\include\gucefCOM_macros.h">
+			</File>
+			<File
+				RelativePath="..\..\include\gucefCOMDLLInit.h">
+			</File>
+			<File
+				RelativePath="..\..\include\tcp_basicprotocol.h">
 			</File>
 		</Filter>
 	</Files>
