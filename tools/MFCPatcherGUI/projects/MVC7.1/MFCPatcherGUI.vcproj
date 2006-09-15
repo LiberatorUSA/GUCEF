@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="gucefPATCHER"
-	ProjectGUID="{9E366264-2A1E-4418-A386-6DEC95A7B573}"
-	Keyword="MFCDLLProj">
+	Name="MFCPatcherGUI"
+	ProjectGUID="{C1ADC3F6-8DB9-4133-870D-6D9EFCBE9EFB}"
+	Keyword="MFCProj">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -12,21 +12,20 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../Debug_MVC7.1"
-			IntermediateDirectory="../../Debug_MVC7.1"
-			ConfigurationType="2"
+			OutputDirectory="Debug"
+			IntermediateDirectory="Debug"
+			ConfigurationType="1"
 			UseOfMFC="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../include;../../../gucefCORE/include;../../../gucefMT/include;../../../gucefVFS/include;../../../gucefCOMCORE/include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				TreatWChar_tAsBuiltInType="TRUE"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="3"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="4"/>
@@ -34,22 +33,16 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefMT_MVC7.1_d.lib gucefCORE_MVC7.1_d.lib gucefVFS_MVC7.1_d.lib gucefCOMCORE_MVC7.1_d.lib"
-				OutputFile="$(OutDir)/gucefPATCHER_MVC7.1_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="../../../gucefMT/Debug_MVC7.1;../../../gucefCORE/Debug_MVC7.1;../../../gucefVFS/Debug_MVC7.1;../../../gucefCOMCORE/Debug_MVC7.1"
-				ModuleDefinitionFile=""
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)/gucefPATCHER.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="FALSE"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC7.1"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -57,7 +50,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1043"
+				Culture="1033"
 				AdditionalIncludeDirectories="$(IntDir)"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -74,12 +67,13 @@
 			Name="Release|Win32"
 			OutputDirectory="Release"
 			IntermediateDirectory="Release"
-			ConfigurationType="2"
+			ConfigurationType="1"
 			UseOfMFC="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG"
+				MinimalRebuild="FALSE"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="TRUE"
 				UsePrecompiledHeader="3"
@@ -90,14 +84,11 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/gucefPATCHER.dll"
 				LinkIncremental="1"
-				ModuleDefinitionFile=".\gucefPATCHER.def"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)/gucefPATCHER.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -112,7 +103,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
-				Culture="1043"
+				Culture="1033"
 				AdditionalIncludeDirectories="$(IntDir)"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -134,13 +125,16 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath="..\..\src\gucefPATCHER_CPatchSetParser.cpp">
+				RelativePath="..\..\src\CPatcherApplication.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\gucefPATCHER_CPatchSetParserEventHandler.cpp">
+				RelativePath="..\..\src\PatcherGUI.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\gucefPATCHER_CStandardPSPEventHandler.cpp">
+				RelativePath="..\..\src\PatcherGUIDlg.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\stdafx.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -148,24 +142,41 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
-				RelativePath="..\..\include\gucefPATCHER_config.h">
+				RelativePath="..\..\include\CPatchControl.h">
 			</File>
 			<File
-				RelativePath="..\..\include\gucefPATCHER_CPatchSetParser.h">
+				RelativePath="..\..\include\CPatcherApplication.h">
 			</File>
 			<File
-				RelativePath="..\..\include\gucefPATCHER_CPatchSetParserEventHandler.h">
+				RelativePath="..\..\include\PatcherGUI.h">
 			</File>
 			<File
-				RelativePath="..\..\include\gucefPATCHER_CStandardPSPEventHandler.h">
+				RelativePath="..\..\include\PatcherGUIDlg.h">
 			</File>
 			<File
-				RelativePath="..\..\include\gucefPATCHER_ETypes.h">
-			</File>
-			<File
-				RelativePath="..\..\include\gucefPATCHER_macros.h">
+				RelativePath="..\..\include\stdafx.h">
 			</File>
 		</Filter>
+		<Filter
+			Name="Resource Files"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			<File
+				RelativePath=".\res\MFCPatcherGUI.ico">
+			</File>
+			<File
+				RelativePath=".\MFCPatcherGUI.rc">
+			</File>
+			<File
+				RelativePath=".\res\MFCPatcherGUI.rc2">
+			</File>
+		</Filter>
+		<File
+			RelativePath=".\res\MFCPatcherGUI.manifest">
+		</File>
+		<File
+			RelativePath=".\ReadMe.txt">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
