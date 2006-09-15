@@ -66,7 +66,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/gucefMT_MVC8_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="../../../../SDL/lib"
+				AdditionalLibraryDirectories=""
 				GenerateManifest="true"
 				ModuleDefinitionFile="gucefMT_MVC8_d.def"
 				GenerateDebugInformation="true"
@@ -98,7 +98,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy ..\..\Debug_MVC8\gucefMT_MVC8_d.dll  ..\..\..\common\Debug_MVC8&#x0D;&#x0A;copy ..\..\Debug_MVC8\gucefMT_MVC8_d.dll  ..\..\..\..\common\Debug_MVC8&#x0D;&#x0A;"
+				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC8"
 			/>
 		</Configuration>
 		<Configuration

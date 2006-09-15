@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\Debug_MVC8"
-			IntermediateDirectory="..\Debug_MVC8"
+			OutputDirectory="..\..\Debug_MVC8"
+			IntermediateDirectory="..\..\Debug_MVC8"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			CharacterSet="2"
@@ -43,7 +43,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\include;..\..\gucefMT\include;..\dependancy;..\dependancy\md5"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefMT\include;..\..\dependancy;..\..\dependancy\md5"
 				PreprocessorDefinitions="BUILD_GUCEFCORE_DLL;WIN32;_WINDOWS;_DEBUG"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -75,7 +75,7 @@
 				AdditionalDependencies="gucefMT_MVC8_d.lib Winmm.lib"
 				OutputFile="$(OutDir)/gucefCORE_MVC8_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\gucefMT\Debug_MVC8"
+				AdditionalLibraryDirectories="..\..\..\gucefMT\Debug_MVC8"
 				GenerateManifest="true"
 				ModuleDefinitionFile="gucefCORE_MVC8_d.def"
 				GenerateDebugInformation="true"
@@ -106,7 +106,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy ..\Debug_MVC8\gucefCORE_MVC8_d.dll  ..\..\common\Debug_MVC8&#x0D;&#x0A;copy ..\Debug_MVC8\gucefCORE_MVC8_d.dll  ..\..\..\common\Debug_MVC8&#x0D;&#x0A;"
+				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC8"
 			/>
 		</Configuration>
 		<Configuration
@@ -204,411 +204,419 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\src\callstack.c"
+				RelativePath="..\..\src\callstack.c"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CBlockStack.cpp"
+				RelativePath="..\..\src\CBlockStack.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CCodecChain.cpp"
+				RelativePath="..\..\src\CCodecChain.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CConfigStore.cpp"
+				RelativePath="..\..\src\CConfigStore.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CCPPWrapFileAccess.cpp"
+				RelativePath="..\..\src\CCPPWrapFileAccess.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CDataNode.cpp"
+				RelativePath="..\..\src\CDataNode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CDataQueue.cpp"
+				RelativePath="..\..\src\CDataQueue.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CDStoreCodec.cpp"
+				RelativePath="..\..\src\CDStoreCodec.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CDStoreCodecPlugin.cpp"
+				RelativePath="..\..\src\CDStoreCodecPlugin.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CDStoreCodecPluginManager.cpp"
+				RelativePath="..\..\src\CDStoreCodecPluginManager.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CDStoreCodecPluginRef.cpp"
+				RelativePath="..\..\src\CDStoreCodecPluginRef.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CDStoreCodecRegistry.cpp"
+				RelativePath="..\..\src\CDStoreCodecRegistry.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CDVString.cpp"
+				RelativePath="..\..\src\CDVString.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CDynamicArray.cpp"
+				RelativePath="..\..\src\CDynamicArray.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CDynamicBuffer.cpp"
+				RelativePath="..\..\src\CDynamicBuffer.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CEvent.cpp"
+				RelativePath="..\..\src\CEvent.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CEventDataMemoryPool.cpp"
+				RelativePath="..\..\src\CEventDataMemoryPool.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CEventPump.cpp"
+				RelativePath="..\..\src\CEventPump.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CEventPumpClient.cpp"
+				RelativePath="..\..\src\CEventPumpClient.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CEventStack.cpp"
+				RelativePath="..\..\src\CEventStack.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CEventTypeRegistry.cpp"
+				RelativePath="..\..\src\CEventTypeRegistry.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CException.cpp"
+				RelativePath="..\..\src\CException.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CExclusiveActivationManager.cpp"
+				RelativePath="..\..\src\CExclusiveActivationManager.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CExclusiveActiveObj.cpp"
+				RelativePath="..\..\src\CExclusiveActiveObj.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CFileAccess.cpp"
+				RelativePath="..\..\src\CFileAccess.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CFileURLHandler.cpp"
+				RelativePath="..\..\src\CFileURLHandler.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CGUCEFApplication.cpp"
+				RelativePath="..\..\src\CGUCEFApplication.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CGUCEFCOREModule.cpp"
+				RelativePath="..\..\src\CGUCEFAppSubSystem.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CICloneable.cpp"
+				RelativePath="..\..\src\CGUCEFCOREModule.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CICodec.cpp"
+				RelativePath="..\..\src\CICloneable.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CIConfigurable.cpp"
+				RelativePath="..\..\src\CICodec.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CINamedInstance.cpp"
+				RelativePath="..\..\src\CIConfigurable.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CIntMap.cpp"
+				RelativePath="..\..\src\CIGUCEFApplicationDriver.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CIOAccess.cpp"
+				RelativePath="..\..\src\CINamedInstance.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CIPluginManager.cpp"
+				RelativePath="..\..\src\CIntMap.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CITimerClient.cpp"
+				RelativePath="..\..\src\CIOAccess.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CITypeNamed.cpp"
+				RelativePath="..\..\src\CIPluginManager.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CIURLDataHandler.cpp"
+				RelativePath="..\..\src\CITimerClient.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CLLNode.cpp"
+				RelativePath="..\..\src\CITypeNamed.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\cloneables.cpp"
+				RelativePath="..\..\src\CIURLDataHandler.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CMachineState.cpp"
+				RelativePath="..\..\src\CLLNode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CMemoryBlockPool.cpp"
+				RelativePath="..\..\src\cloneables.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CMFileAccess.cpp"
+				RelativePath="..\..\src\CMachineState.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CMsgException.cpp"
+				RelativePath="..\..\src\CMemoryBlockPool.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CNode.cpp"
+				RelativePath="..\..\src\CMFileAccess.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CNotificationIDRegistry.cpp"
+				RelativePath="..\..\src\CMsgException.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CNotifier.cpp"
+				RelativePath="..\..\src\CNode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CNotifierObservingComponent.cpp"
+				RelativePath="..\..\src\CNotificationIDRegistry.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CObserver.cpp"
+				RelativePath="..\..\src\CNotifier.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CObserverPump.cpp"
+				RelativePath="..\..\src\CNotifierObservingComponent.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CObservingNotifier.cpp"
+				RelativePath="..\..\src\CObserver.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CPFileAccess.cpp"
+				RelativePath="..\..\src\CObserverPump.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CPFileChunkAccess.cpp"
+				RelativePath="..\..\src\CObservingNotifier.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CPluginControl.cpp"
+				RelativePath="..\..\src\CPFileAccess.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CPropertyList.cpp"
+				RelativePath="..\..\src\CPFileChunkAccess.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CPumpedObserver.cpp"
+				RelativePath="..\..\src\CPluginControl.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CROIOAccess.cpp"
+				RelativePath="..\..\src\CPropertyList.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CStack.cpp"
+				RelativePath="..\..\src\CPumpedObserver.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CStateHandler.cpp"
+				RelativePath="..\..\src\CROIOAccess.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CStateMachine.cpp"
+				RelativePath="..\..\src\CStack.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CStateMachineComponent.cpp"
+				RelativePath="..\..\src\CStateHandler.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CSTDOStreamAdapter.cpp"
+				RelativePath="..\..\src\CStateMachine.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CStringList.cpp"
+				RelativePath="..\..\src\CStateMachineComponent.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CStringMap.cpp"
+				RelativePath="..\..\src\CSTDOStreamAdapter.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CStringStorage.cpp"
+				RelativePath="..\..\src\CStringList.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CSysConsole.cpp"
+				RelativePath="..\..\src\CStringMap.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CSysConsoleClient.cpp"
+				RelativePath="..\..\src\CStringStorage.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTAbstractFactory.cpp"
+				RelativePath="..\..\src\CSysConsole.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTAbstractFactoryWithParam.cpp"
+				RelativePath="..\..\src\CSysConsoleClient.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTCloneableObj.cpp"
+				RelativePath="..\..\src\CTAbstractFactory.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTFactory.cpp"
+				RelativePath="..\..\src\CTAbstractFactoryWithParam.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTFactoryBase.cpp"
+				RelativePath="..\..\src\CTCloneableObj.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTFactoryBaseWithParam.cpp"
+				RelativePath="..\..\src\CTFactory.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTFactoryWithParam.cpp"
+				RelativePath="..\..\src\CTFactoryBase.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTimer.cpp"
+				RelativePath="..\..\src\CTFactoryBaseWithParam.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTimerPump.cpp"
+				RelativePath="..\..\src\CTFactoryWithParam.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTObservingNotifierComponent.cpp"
+				RelativePath="..\..\src\CTimer.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTObservingNotifierExpansion.cpp"
+				RelativePath="..\..\src\CTimerPump.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTracer.cpp"
+				RelativePath="..\..\src\CTObservingNotifierComponent.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTRegistry.cpp"
+				RelativePath="..\..\src\CTObservingNotifierExpansion.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTSGNotifier.cpp"
+				RelativePath="..\..\src\CTracer.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTSGObserver.cpp"
+				RelativePath="..\..\src\CTRegistry.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTSharedObjectDestructor.cpp"
+				RelativePath="..\..\src\CTSGNotifier.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CTSharedPtr.cpp"
+				RelativePath="..\..\src\CTSGObserver.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CURL.CPP"
+				RelativePath="..\..\src\CTSharedObjectDestructor.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CURLHandler.cpp"
+				RelativePath="..\..\src\CTSharedPtr.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CURLHandlerRegistry.cpp"
+				RelativePath="..\..\src\CURL.CPP"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CValueList.cpp"
+				RelativePath="..\..\src\CURLHandler.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\dvcppstringutils.cpp"
+				RelativePath="..\..\src\CURLHandlerRegistry.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\dvfileutils.c"
+				RelativePath="..\..\src\CValueList.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\dvmd5utils.c"
+				RelativePath="..\..\src\dvcppstringutils.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\DVOSWRAP.C"
+				RelativePath="..\..\src\dvfileutils.c"
 				>
 			</File>
 			<File
-				RelativePath="..\src\dvstrutils.c"
+				RelativePath="..\..\src\dvmd5utils.c"
 				>
 			</File>
 			<File
-				RelativePath="..\src\ExceptionMacros.cpp"
+				RelativePath="..\..\src\DVOSWRAP.C"
 				>
 			</File>
 			<File
-				RelativePath="..\src\gucefCORE.cpp"
+				RelativePath="..\..\src\dvstrutils.c"
 				>
 			</File>
 			<File
-				RelativePath="..\src\IOACCESS.C"
+				RelativePath="..\..\src\ExceptionMacros.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\MemoryManager.cpp"
+				RelativePath="..\..\src\gucefCORE.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\MemoryPool.cpp"
+				RelativePath="..\..\src\IOACCESS.C"
 				>
 			</File>
 			<File
-				RelativePath="..\src\MemorySegment.cpp"
+				RelativePath="..\..\src\MemoryManager.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\MFILE.C"
+				RelativePath="..\..\src\MemoryPool.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\PAFILE.C"
+				RelativePath="..\..\src\MemorySegment.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\tsprinting.c"
+				RelativePath="..\..\src\MFILE.C"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\PAFILE.C"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\tsprinting.c"
 				>
 			</File>
 		</Filter>
@@ -618,483 +626,487 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\include\callstack.h"
+				RelativePath="..\..\include\callstack.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CBlockStack.h"
+				RelativePath="..\..\include\CBlockStack.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CCodecChain.h"
+				RelativePath="..\..\include\CCodecChain.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CCodecStoreRegistry.h"
+				RelativePath="..\..\include\CCodecStoreRegistry.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CConfigStore.h"
+				RelativePath="..\..\include\CConfigStore.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CCPPWrapFileAccess.h"
+				RelativePath="..\..\include\CCPPWrapFileAccess.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CDataNode.h"
+				RelativePath="..\..\include\CDataNode.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CDataQueue.h"
+				RelativePath="..\..\include\CDataQueue.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CDStoreCodec.h"
+				RelativePath="..\..\include\CDStoreCodec.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CDStoreCodecPlugin.h"
+				RelativePath="..\..\include\CDStoreCodecPlugin.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CDStoreCodecPluginManager.h"
+				RelativePath="..\..\include\CDStoreCodecPluginManager.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CDStoreCodecPluginRef.h"
+				RelativePath="..\..\include\CDStoreCodecPluginRef.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CDStoreCodecRegistry.h"
+				RelativePath="..\..\include\CDStoreCodecRegistry.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CDVString.h"
+				RelativePath="..\..\include\CDVString.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CDynamicArray.h"
+				RelativePath="..\..\include\CDynamicArray.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CDynamicBuffer.h"
+				RelativePath="..\..\include\CDynamicBuffer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CEvent.h"
+				RelativePath="..\..\include\CEvent.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CEventDataMemoryPool.h"
+				RelativePath="..\..\include\CEventDataMemoryPool.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CEventPump.h"
+				RelativePath="..\..\include\CEventPump.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CEventPumpClient.h"
+				RelativePath="..\..\include\CEventPumpClient.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CEventStack.h"
+				RelativePath="..\..\include\CEventStack.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CEventTypeRegistry.h"
+				RelativePath="..\..\include\CEventTypeRegistry.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CException.h"
+				RelativePath="..\..\include\CException.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CExclusiveActivationManager.h"
+				RelativePath="..\..\include\CExclusiveActivationManager.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CExclusiveActiveObj.h"
+				RelativePath="..\..\include\CExclusiveActiveObj.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CFileAccess.h"
+				RelativePath="..\..\include\CFileAccess.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CFileURLHandler.h"
+				RelativePath="..\..\include\CFileURLHandler.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CGUCEFApplication.h"
+				RelativePath="..\..\include\CGUCEFApplication.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CGUCEFAppSubSystem.h"
+				RelativePath="..\..\include\CGUCEFAppSubSystem.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CGUCEFCOREModule.h"
+				RelativePath="..\..\include\CGUCEFCOREModule.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CICloneable.h"
+				RelativePath="..\..\include\CICloneable.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CICodec.h"
+				RelativePath="..\..\include\CICodec.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CIConfigurable.h"
+				RelativePath="..\..\include\CIConfigurable.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CINamedInstance.h"
+				RelativePath="..\..\include\CIGUCEFApplicationDriver.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CIntMap.h"
+				RelativePath="..\..\include\CINamedInstance.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CIOAccess.h"
+				RelativePath="..\..\include\CIntMap.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CIPluginManager.h"
+				RelativePath="..\..\include\CIOAccess.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CISysConsoleCmdHandler.h"
+				RelativePath="..\..\include\CIPluginManager.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CITimerClient.h"
+				RelativePath="..\..\include\CISysConsoleCmdHandler.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CITypeNamed.h"
+				RelativePath="..\..\include\CITimerClient.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CIURLDataHandler.h"
+				RelativePath="..\..\include\CITypeNamed.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CLLNode.h"
+				RelativePath="..\..\include\CIURLDataHandler.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\cloneables.h"
+				RelativePath="..\..\include\CLLNode.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CMachineState.h"
+				RelativePath="..\..\include\cloneables.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CMemoryBlockPool.h"
+				RelativePath="..\..\include\CMachineState.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CMFileAccess.h"
+				RelativePath="..\..\include\CMemoryBlockPool.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CMsgException.h"
+				RelativePath="..\..\include\CMFileAccess.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CNode.h"
+				RelativePath="..\..\include\CMsgException.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CNotificationIDRegistry.h"
+				RelativePath="..\..\include\CNode.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CNotifier.h"
+				RelativePath="..\..\include\CNotificationIDRegistry.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CNotifierObservingComponent.h"
+				RelativePath="..\..\include\CNotifier.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CObserver.h"
+				RelativePath="..\..\include\CNotifierObservingComponent.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CObserverPump.h"
+				RelativePath="..\..\include\CObserver.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CObservingNotifier.h"
+				RelativePath="..\..\include\CObserverPump.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\ConfigStoreCodec.h"
+				RelativePath="..\..\include\CObservingNotifier.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CPFileAccess.h"
+				RelativePath="..\..\include\ConfigStoreCodec.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CPFileChunkAccess.h"
+				RelativePath="..\..\include\CPFileAccess.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CPluginControl.h"
+				RelativePath="..\..\include\CPFileChunkAccess.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CPPWrapFileAccess.h"
+				RelativePath="..\..\include\CPluginControl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CPropertyList.h"
+				RelativePath="..\..\include\CPPWrapFileAccess.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CPumpedObserver.h"
+				RelativePath="..\..\include\CPropertyList.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CROIOAccess.h"
+				RelativePath="..\..\include\CPumpedObserver.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CStack.h"
+				RelativePath="..\..\include\CROIOAccess.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CStateHandler.h"
+				RelativePath="..\..\include\CStack.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CStateMachine.h"
+				RelativePath="..\..\include\CStateHandler.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CStateMachineComponent.h"
+				RelativePath="..\..\include\CStateMachine.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CSTDOStreamAdapter.h"
+				RelativePath="..\..\include\CStateMachineComponent.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CSTDStreamAdapter.h"
+				RelativePath="..\..\include\CSTDOStreamAdapter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CStringList.h"
+				RelativePath="..\..\include\CSTDStreamAdapter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CStringMap.h"
+				RelativePath="..\..\include\CStringList.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CStringStorage.h"
+				RelativePath="..\..\include\CStringMap.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CSysConsole.h"
+				RelativePath="..\..\include\CStringStorage.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CSysConsoleClient.h"
+				RelativePath="..\..\include\CSysConsole.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTAbstractFactory.h"
+				RelativePath="..\..\include\CSysConsoleClient.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTAbstractFactoryWithParam.h"
+				RelativePath="..\..\include\CTAbstractFactory.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTCloneableObj.h"
+				RelativePath="..\..\include\CTAbstractFactoryWithParam.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTDynamicArray.h"
+				RelativePath="..\..\include\CTCloneableObj.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTFactory.h"
+				RelativePath="..\..\include\CTDynamicArray.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTFactoryBase.h"
+				RelativePath="..\..\include\CTFactory.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTFactoryBaseWithParam.h"
+				RelativePath="..\..\include\CTFactoryBase.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTFactoryWithParam.h"
+				RelativePath="..\..\include\CTFactoryBaseWithParam.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTimer.h"
+				RelativePath="..\..\include\CTFactoryWithParam.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTimerPump.h"
+				RelativePath="..\..\include\CTimer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTObservingNotifierComponent.h"
+				RelativePath="..\..\include\CTimerPump.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTObservingNotifierExpansion.h"
+				RelativePath="..\..\include\CTObservingNotifierComponent.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTracer.h"
+				RelativePath="..\..\include\CTObservingNotifierExpansion.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTRegistry.h"
+				RelativePath="..\..\include\CTracer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTSGNotifier.h"
+				RelativePath="..\..\include\CTRegistry.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTSGObserver.h"
+				RelativePath="..\..\include\CTSGNotifier.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTSharedObjectDestructor.h"
+				RelativePath="..\..\include\CTSGObserver.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CTSharedPtr.h"
+				RelativePath="..\..\include\CTSharedObjectDestructor.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CURL.H"
+				RelativePath="..\..\include\CTSharedPtr.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CURLHandler.h"
+				RelativePath="..\..\include\CURL.H"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CURLHandlerRegistry.h"
+				RelativePath="..\..\include\CURLHandler.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\CValueList.h"
+				RelativePath="..\..\include\CURLHandlerRegistry.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\DStoreCodecPluginStructs.h"
+				RelativePath="..\..\include\CValueList.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\dvcppstringutils.h"
+				RelativePath="..\..\include\DStoreCodecPluginStructs.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\dvfileutils.h"
+				RelativePath="..\..\include\dvcppstringutils.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\dvmd5utils.h"
+				RelativePath="..\..\include\dvfileutils.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\DVOSWRAP.H"
+				RelativePath="..\..\include\dvmd5utils.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\dvstrutils.h"
+				RelativePath="..\..\include\DVOSWRAP.H"
 				>
 			</File>
 			<File
-				RelativePath="..\include\EEnum.h"
+				RelativePath="..\..\include\dvstrutils.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\EStructs.h"
+				RelativePath="..\..\include\EEnum.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\ExceptionMacros.h"
+				RelativePath="..\..\include\EStructs.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\gucef_essentials.h"
+				RelativePath="..\..\include\ExceptionMacros.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\gucef_new_off.h"
+				RelativePath="..\..\include\gucef_essentials.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\gucef_new_on.h"
+				RelativePath="..\..\include\gucef_new_off.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\gucefCORE.h"
+				RelativePath="..\..\include\gucef_new_on.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\gucefCORE_config.h"
+				RelativePath="..\..\include\gucefCORE.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\gucefCORE_ETypes.h"
+				RelativePath="..\..\include\gucefCORE_config.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\gucefCORE_macros.h"
+				RelativePath="..\..\include\gucefCORE_ETypes.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\gucefCOREDLLInit.h"
+				RelativePath="..\..\include\gucefCORE_macros.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\ioaccess.h"
+				RelativePath="..\..\include\gucefCOREDLLInit.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\macros.h"
+				RelativePath="..\..\include\ioaccess.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\MemoryManager.h"
+				RelativePath="..\..\include\macros.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\MemoryPool.h"
+				RelativePath="..\..\include\MemoryManager.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\MemorySegment.h"
+				RelativePath="..\..\include\MemoryPool.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\MFILE.H"
+				RelativePath="..\..\include\MemorySegment.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\PAFILE.H"
+				RelativePath="..\..\include\MFILE.H"
 				>
 			</File>
 			<File
-				RelativePath="..\include\tsprinting.h"
+				RelativePath="..\..\include\PAFILE.H"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\tsprinting.h"
 				>
 			</File>
 		</Filter>
@@ -1105,7 +1117,7 @@
 				Name="Source Files"
 				>
 				<File
-					RelativePath="..\dependancy\MD5\md5.c"
+					RelativePath="..\..\dependancy\MD5\md5.c"
 					>
 				</File>
 			</Filter>
@@ -1113,7 +1125,7 @@
 				Name="Header Files"
 				>
 				<File
-					RelativePath="..\dependancy\MD5\md5.h"
+					RelativePath="..\..\dependancy\MD5\md5.h"
 					>
 				</File>
 			</Filter>
