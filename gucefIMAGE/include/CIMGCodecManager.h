@@ -29,15 +29,15 @@
 #define GUCEFCORE_H
 #endif /* GUCEFCORE_H ? */
 
-#ifndef GUCEFIMAGE_MACROS_H
-#include "gucefIMAGE_macros.h"     /* IMAGE Library macros */
-#define GUCEFIMAGE_MACROS_H
-#endif /* GUCEFIMAGE_MACROS_H ? */
-
 #ifndef IMAGEDATA_H
 #include "imagedata.h"             /* image data storage */
 #define IMAGEDATA_H
 #endif /* IMAGEDATA_H ? */
+
+#ifndef GUCEFIMAGE_MACROS_H
+#include "gucefIMAGE_macros.h"     /* IMAGE Library macros */
+#define GUCEFIMAGE_MACROS_H
+#endif /* GUCEFIMAGE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

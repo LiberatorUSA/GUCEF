@@ -71,7 +71,7 @@ typedef const char* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Name )          ( void
 typedef const char** ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Loadable_Ext_List ) ( void ) GUCEF_CALLSPEC_SUFFIX;
 typedef const char** ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Saveable_Ext_List ) ( void ) GUCEF_CALLSPEC_SUFFIX;
 typedef const char* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Copyright )  ( void ) GUCEF_CALLSPEC_SUFFIX;
-typedef const TVersion* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Version )  ( void ) GUCEF_CALLSPEC_SUFFIX;
+typedef const CORE::TVersion* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Version )  ( void ) GUCEF_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -105,9 +105,9 @@ CIMGCodec::CIMGCodec( const CORE::CString& filename )
         _fptable[ IMGPLUG_CHECK_LOADABLE_FORMAT ] = CORE::GetFunctionAddress( _sohandle                          ,
                                                                              "IMGPLUG_Check_If_Format_Loadable" ,
                                                                              PTRSIZE+4                          );
-        _fptable[ IMGPLUG_CHECK_SAVEABLE_FORMAT ] = GetFunctionAddress( _sohandle                          ,
-                                                                        "IMGPLUG_Check_If_Format_Saveable" ,
-                                                                        PTRSIZE+4                          );
+        _fptable[ IMGPLUG_CHECK_SAVEABLE_FORMAT ] = CORE::GetFunctionAddress( _sohandle                          ,
+                                                                              "IMGPLUG_Check_If_Format_Saveable" ,
+                                                                              PTRSIZE+4                          );
         _fptable[ IMGPLUG_LOAD ] = CORE::GetFunctionAddress( _sohandle                 ,
                                                              "IMGPLUG_Load_Image_Data" ,
                                                              4+PTRSIZE*3               );
@@ -175,7 +175,7 @@ CIMGCodec::~CIMGCodec()
 {
         DEBUGOUTPUT( "CIMGCodec::~CIMGCodec()" );
         
-        UnloadModuleDynamicly( _sohandle );
+        CORE::UnloadModuleDynamicly( _sohandle );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -222,8 +222,8 @@ CIMGCodec::CheckIfSaveable( const CORE::CString& filename ,
 {
         DEBUGOUTPUT( "CIMGCodec::CheckIfSaveable( const CORE::CString& filename, UInt32 *hidx )" );
         
-        return ((TIMGPLUGFPRT_Check_Ext_Saveable) _fptable[ IMGPLUG_CHECK_SAVEABLE_EXT ])( Extract_File_Ext( filename.C_String() ) ,
-                                                                                           hidx                                    ) > 0;
+        return ((TIMGPLUGFPRT_Check_Ext_Saveable) _fptable[ IMGPLUG_CHECK_SAVEABLE_EXT ])( CORE::Extract_File_Ext( filename.C_String() ) ,
+                                                                                           hidx                                          ) > 0;
 }                            
 
 /*-------------------------------------------------------------------------*/
@@ -316,7 +316,7 @@ CIMGCodec::GetCopyrightEULA( void )
 
 /*-------------------------------------------------------------------------*/
 
-const TVersion*
+const CORE::TVersion*
 CIMGCodec::GetVersion( void )
 {
         return ((TIMGPLUGFPTR_Version) _fptable[ IMGPLUG_VERSION ])();

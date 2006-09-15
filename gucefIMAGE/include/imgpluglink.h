@@ -55,22 +55,28 @@
 #define ESTRUCTS_H
 #endif /* ESTRUCTS_H ? */  
 
-/*--------------------------------------------------------------------------*/
-
-/*
- *  When using C++ we should use namespacing
- */
-#ifdef __cplusplus
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
 namespace GUCEF {
 namespace IMAGE {
-
 #endif /* __cplusplus ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      MACROS                                                             //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+#define TIOAccess CORE::TIOAccess
+#define TVersion CORE::TVersion 
+#endif /* __cplusplus ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      TYPES                                                              //
@@ -78,12 +84,12 @@ namespace IMAGE {
 //-------------------------------------------------------------------------*/
 
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Check_Ext_Loadable ) ( const char *filename, UInt32 *hidx ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Check_Loadable )     ( CORE::TIOAccess *access, UInt32 *hidx ) GUCEF_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Check_Loadable )     ( TIOAccess *access, UInt32 *hidx ) GUCEF_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Check_FLoadable )    ( Int32 format, UInt32 *hidx ) GUCEF_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Check_Ext_Saveable ) ( const char *filename, UInt32 *hidx ) GUCEF_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Check_Saveable )     ( const TImageData* imgdata, UInt32 *hidx ) GUCEF_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Check_FSaveable )    ( Int32 format, UInt32 *hidx ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Load )               ( UInt32 hidx, CORE::TIOAccess *access, TImageData *imgdata, void **plugdata ) GUCEF_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Load )               ( UInt32 hidx, TIOAccess *access, TImageData *imgdata, void **plugdata ) GUCEF_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Save )               ( UInt32 hidx, const char *filename, UInt32 format, UInt32 compression, TImageData *imgdata ) GUCEF_CALLSPEC_SUFFIX;
 typedef void   ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Unload )             ( UInt32 hidx, TImageData *imgdata, void *plugdata ) GUCEF_CALLSPEC_SUFFIX;
 typedef const char* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Name )          ( void ) GUCEF_CALLSPEC_SUFFIX;
@@ -91,7 +97,7 @@ typedef const char* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Description )   ( void
 typedef const char* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Copyright )     ( void ) GUCEF_CALLSPEC_SUFFIX;
 typedef const char** ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Loadable_Ext_List ) ( void ) GUCEF_CALLSPEC_SUFFIX;
 typedef const char** ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Saveable_Ext_List ) ( void ) GUCEF_CALLSPEC_SUFFIX;
-typedef const CORE::TVersion* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Version )  ( void ) GUCEF_CALLSPEC_SUFFIX;
+typedef const TVersion* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Version )  ( void ) GUCEF_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
@@ -121,6 +127,17 @@ struct SImgLoaderPlugin
 };
 
 typedef struct SImgLoaderPlugin TImgLoaderPlugin;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      MACROS                                                             //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+#undef TIOAccess
+#undef TVersion 
+#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -27,7 +27,7 @@
 #endif /* IMAGEDATA_H ? */
 
 #ifndef IMGPLUGLINK_H
-#include "imgpluglink.h"           /* linkage for the hardcodec codec */
+#include "imgpluglink.h"           /* linkage for the hardcoded codec */
 #define IMGPLUGLINK_H
 #endif /* IMGPLUGLINK_H ? */
 

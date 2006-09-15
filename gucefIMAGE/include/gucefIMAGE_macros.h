@@ -85,7 +85,7 @@
 /*-------------------------------------------------------------------------*/
 
 /*
- *      Applications using the GUCEF library should define USING_GUCEF_DLL
+ *      When compiling the gucefIMAGE library you should define BUILD_GUCEFIMAGE_DLL
  *      before including this macro file.
  */
 #ifndef MANUAL_EXPORT_DEFINE
@@ -96,23 +96,6 @@
   #else
     #define USE_DLL
   #endif  
-#endif /* MANUAL_EXPORT_DEFINE ? */
-
-/*-------------------------------------------------------------------------*/
-
-
-/*
- *      When compiling the gucefCORE library you should define BUILD_GUCEFCORE_DLL
- *      before including this macro file.
- */
-#ifndef MANUAL_EXPORT_DEFINE
-  #undef USE_DLL
-  #undef BUILD_DLL
-  #ifdef BUILD_GUCEFCORE_DLL
-    #define BUILD_DLL
-  #else
-    #define USE_DLL 
-  #endif
 #endif /* MANUAL_EXPORT_DEFINE ? */
 
 /*-------------------------------------------------------------------------*/
