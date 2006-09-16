@@ -164,7 +164,7 @@ DVP_Extract_Index_File( FILE *dfile         ,
         fseek( dfile , index_offset , SEEK_SET );
         for ( i=0; i < num_entrys; i++ )
         {
-                total += fread( tmp_data , 1 , DVP_INDEX_ENTRY_SIZE, dfile );
+                total += (UInt32)fread( tmp_data , 1 , DVP_INDEX_ENTRY_SIZE, dfile );
                 fwrite( tmp_data , 1 , DVP_INDEX_ENTRY_SIZE, out_file );
         }
         fclose( out_file );
@@ -291,7 +291,7 @@ DVP_Strip_Index( const char *archive, const char *new_archive )
          */
         data = malloc( index_offset );
         if ( !data ) return 1;
-        nbytes = fread( data, 1, index_offset, fptr );
+        nbytes = (UInt32)fread( data, 1, index_offset, fptr );
         fwrite( data, 1, index_offset, nfptr );
         fclose( fptr );
         fclose( nfptr );
@@ -462,9 +462,7 @@ DVP_Write_Header( FILE *fp_out 	        ,
 	          UInt32 num_of_files   ,
                   UInt32 num_of_dirs    )
 {
-	UInt32  offset 	                ;
         UInt32  tmp, pos                        ;
-        char *fill                      ;
         char id[ DVP_ID_LENGTH+1 ]        ;
 
 /*	#if defined( DEBUG_MODE )
@@ -1044,7 +1042,7 @@ DVP_Extract_File( FILE *fpt              ,
          */
         do
         {
-                nbytes = fread( tmp_data, 1, blocksize, fpt );
+                nbytes = (UInt32)fread( tmp_data, 1, blocksize, fpt );
 
                 /*
                  *      Check then use actually read data to file
@@ -1401,7 +1399,6 @@ DVP_Append_Index( FILE *datafile , const char *indexfile , UInt32 num_entrys )
         FILE *idx                                                       ;
         char store[ DVP_INDEX_ENTRY_SIZE ];
         UInt32 entry_size;
-        UInt32 idx_fsize;
         UInt32 pos = ftell( datafile );
 
 	/*#if defined( DEBUG_MODE )
@@ -1443,7 +1440,7 @@ DVP_Append_Index( FILE *datafile , const char *indexfile , UInt32 num_entrys )
 		/*
 		 *	Read then write 1 index entry
 		 */
-		entry_size = fread( store, 1, DVP_INDEX_ENTRY_SIZE, idx );
+		entry_size = (UInt32)fread( store, 1, DVP_INDEX_ENTRY_SIZE, idx );
                 if ( entry_size != (UInt32)(DVP_INDEX_ENTRY_SIZE) )
                 {
                         /*
@@ -1584,7 +1581,7 @@ DVP_Pack_File( FILE *dfpt       ,
 	 */
 	do
         {
-		nbytes = fread( tmp_data, 1, DVP_BLOCK_SIZE, fp );
+		nbytes = (UInt32)fread( tmp_data, 1, DVP_BLOCK_SIZE, fp );
                 total += nbytes;
                 fwrite( tmp_data, 1, nbytes, dfpt );
 	}

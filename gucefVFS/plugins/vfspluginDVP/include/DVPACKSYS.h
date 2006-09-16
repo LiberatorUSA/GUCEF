@@ -60,7 +60,7 @@
  *      of pack files. If disabled only code for reading existing pack files 
  *      will be left.
  */
-#define DVP_READ_ONLY_BUILD 1
+#define DVP_READ_ONLY_BUILD 0
 
 /*---------------------------------------------------------------------------*/
 
@@ -71,7 +71,7 @@
 
 #define DVP_BLOCK_SIZE          (1024*1024) /* 1 MB */          /* default block size when reading/writing files */
 #define DVP_PACK_EXT            "dvp"                           /* file extension of pack files */
-#define DVP_IDX_EXT	        "idx"                           /* file extension of index files */
+#define DVP_IDX_EXT             "idx"                           /* file extension of index files */
 #define DVP_CHECKSUM            843432536                       /* checksum, used to check for corrupt files */
 #define DVP_MAX_INAME_LENGTH    32                              /* max allowed length of filename in the index */
 #define DVP_ID_LENGTH           4                               /* max allowed size of the packfile ID */
