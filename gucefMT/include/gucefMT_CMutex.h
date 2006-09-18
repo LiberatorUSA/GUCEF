@@ -61,7 +61,7 @@ class GUCEFMT_EXPORT_CPP CMutex
         /**
          *      Unlocks the mutex after a call to Lock_Mutex(). Other processes
          *      will have the ability to get a mutex lock after this call.
-         *      The return value indicates wheter the unlock failed or succeeded.         
+         *      The return value indicates wheter the unlock failed or succeeded.
          */
         bool Unlock( void );
 
@@ -87,7 +87,7 @@ class GUCEFMT_EXPORT_CPP CMutex
         bool _locked;               /* is the mutex currently locked ? */
 
         CMutex( const CMutex& src );      /* Copying doesnt make sense */
-        CMutex& operator=( const CMutex& src );   /* Copying doesnt make sense */               
+        CMutex& operator=( const CMutex& src );   /* Copying doesnt make sense */
 };
 
 /*-------------------------------------------------------------------------//
@@ -133,4 +133,3 @@ class GUCEFMT_EXPORT_CPP CMutex
        - Designed and implemented this class.
 
 -----------------------------------------------------------------------------*/
- 

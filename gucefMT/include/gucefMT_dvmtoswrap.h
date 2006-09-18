@@ -6,13 +6,13 @@
  * the source.
  *
  * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
  * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF
+ * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 #ifndef GUCEF_MT_DVMTOSWRAP_H
@@ -66,7 +66,7 @@ struct TThreadData;
    extern "C" {
 #endif   /* __cplusplus */
 
-/*--------------------------------------------------------------------------*/ 
+/*--------------------------------------------------------------------------*/
 
 /**
  *      Delays the caller thread for a minimum of 'delay' number of milliseconds
@@ -81,7 +81,7 @@ ThreadDelay( UInt32 delay );
 /**
  *      Creates a thread that uses the given function with the given data
  *      parameter. The SThreadData structure is deallocated automaticaly
- *      when the thread ends of when you call ThreadKill().  
+ *      when the thread ends of when you call ThreadKill().
  *
  *      @param func pointer to the function that is to serve as the main thread routine
  *      @param data data argument for the thread function
@@ -89,20 +89,20 @@ ThreadDelay( UInt32 delay );
  */
 GUCEFMT_EXPORT_C struct SThreadData*
 ThreadCreate( void* func ,
-              void* data ); 
-              
-/*--------------------------------------------------------------------------*/              
+              void* data );
 
-/** 
- *      
+/*--------------------------------------------------------------------------*/
+
+/**
+ *
  */
-GUCEFMT_EXPORT_C UInt32 
-ThreadSuspend( struct SThreadData* td );  
+GUCEFMT_EXPORT_C UInt32
+ThreadSuspend( struct SThreadData* td );
 
 /*--------------------------------------------------------------------------*/
 
 GUCEFMT_EXPORT_C UInt32
-ThreadResume( struct SThreadData* td );            
+ThreadResume( struct SThreadData* td );
 
 /*--------------------------------------------------------------------------*/
 

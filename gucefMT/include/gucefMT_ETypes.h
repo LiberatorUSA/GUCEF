@@ -6,13 +6,13 @@
  * the source.
  *
  * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
  * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF
+ * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 #ifndef GUCEF_MT_ETYPES_H
@@ -66,7 +66,7 @@ namespace MT {
 #ifndef Byte
 typedef signed char     Byte;     /* 1 byte, signed */
 #endif
- 
+
 typedef unsigned char   Ubyte;    /* 1 byte, unsigned */
 
 #undef UByte
@@ -86,8 +86,13 @@ typedef unsigned long   UInt32;   /* 4 bytes, unsigned */
 typedef signed long     Int32;    /* 4 bytes, signed */
 #endif
 
+#if defined(__MINGW__)
+typedef signed long long   Int64;   /* 8 bytes, signed */
+typedef unsigned long long UInt64;  /* 8 bytes, unsigned */
+#else
 typedef signed __int64   Int64;   /* 8 bytes, signed */
 typedef unsigned __int64 UInt64;  /* 8 bytes, unsigned */
+#endif
 
 typedef float           Float32;  /* 4 bytes, signed, decimal */
 typedef double          Float64;  /* 8 bytes, signed, decimal */

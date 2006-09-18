@@ -29,7 +29,7 @@
 #endif /* GUCEF_MT_GUCEFMT_MACROS_H ? */
 
 #ifndef GUCEF_MT_ETYPES_H
-#include "gucefMT_ETypes.h"             /* simple types used */     
+#include "gucefMT_ETypes.h"             /* simple types used */
 #endif /* GUCEF_MT_ETYPES_H ? */
 
 /*-------------------------------------------------------------------------//
@@ -92,7 +92,7 @@ class GUCEFMT_EXPORT_CPP CCondition
          *      Wait on the condition variable, unlocking the provided mutex.
          *      The mutex must be locked before entering this function!
          *      returns false on error.
-         */  
+         */
         bool WaitAndUnlock( CMutex& mutex );
 
         /**
@@ -134,4 +134,3 @@ class GUCEFMT_EXPORT_CPP CCondition
        - Designed and implemented this class.
 
 -----------------------------------------------------------------------------*/
- 

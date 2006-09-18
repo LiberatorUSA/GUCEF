@@ -76,7 +76,7 @@ GUCEFMT_EXPORT_C struct SMutex* MutexCreate( void );
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Deallocates/destroys a mutex created with MutexCreate() 
+ *      Deallocates/destroys a mutex created with MutexCreate()
  */
 GUCEFMT_EXPORT_C void MutexDestroy( struct SMutex* mutex );
 
@@ -137,4 +137,3 @@ GUCEFMT_EXPORT_C UInt32 MutexUnlock( struct SMutex* mutex );
          mutex wrapper.
 
 -----------------------------------------------------------------------------*/
- 

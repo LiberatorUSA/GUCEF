@@ -72,7 +72,7 @@ class GUCEFMT_EXPORT_CPP CScopeMutex
         CMutex* m_mutex;
 
         CScopeMutex( const CScopeMutex& src );      /* Copying doesnt make sense */
-        CScopeMutex& operator=( const CScopeMutex& src );   /* Copying doesnt make sense */               
+        CScopeMutex& operator=( const CScopeMutex& src );   /* Copying doesnt make sense */
 };
 
 /*-------------------------------------------------------------------------//
