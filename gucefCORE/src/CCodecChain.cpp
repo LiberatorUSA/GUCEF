@@ -230,25 +230,28 @@ CCodecChain::SetCodecOrder( const CStringList& codecOrder )
 bool
 CCodecChain::Encode( const void* sourceBuffer      ,
                      const UInt32 sourceBufferSize ,
-                     CDynamicBuffer& dest          )
+                     TDynamicBufferList& dest      ,
+                     UInt32& destBuffersUsed       )
 {TRACE;
         if ( 0 != m_codecList.size() )
         {
                 // initialize our swapping vars
-                CDynamicBuffer* destBuffer = &m_bufferA;
+                TDynamicBufferList* destBuffer = &m_bufferA;
                 const void* srcBuffer( sourceBuffer );
                 UInt32 srcBufferSize( sourceBufferSize );
+                UInt32 destBuffsUsed( 0 );
                                 
                 TCodecList::const_iterator i = m_codecList.begin();
                 do
-                {
+                {           
                         // Perform a logical clear of the buffer, resetting the data carat
                         destBuffer->Clear( true );
                         
                         // Try to encode the given data
                         if ( !(*i)->Encode( srcBuffer     ,
                                             srcBufferSize ,
-                                            *destBuffer   ) )
+                                            *destBuffer   ,
+                                            destBuffsUsed ) )
                         {
                                 // One of the encoding steps failed
                                 destBuffer->CopyTo( dest );
@@ -273,6 +276,11 @@ CCodecChain::Encode( const void* sourceBuffer      ,
                 }
                 while ( i != m_codecList.end() );
                 
+                if ( destBuffsUsed > 1 )
+                {
+                    
+                }
+                
                 // Finished encoding, copy the result into the destination buffer
                 destBuffer->CopyTo( dest );
                 return true;
@@ -290,7 +298,8 @@ CCodecChain::Encode( const void* sourceBuffer      ,
 bool
 CCodecChain::Decode( const void* sourceBuffer      ,
                      const UInt32 sourceBufferSize ,
-                     CDynamicBuffer& dest          )
+                     TDynamicBufferList& dest      ,
+                     UInt32& destBuffersUsed       )
 {TRACE;
         if ( 0 != m_codecList.size() )
         {

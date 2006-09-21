@@ -24,6 +24,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
+#include <vector>
+
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"        /* dynamic buffer implementation */
 #define GUCEF_CORE_CDYNAMICBUFFER_H
@@ -59,6 +61,8 @@ class EXPORT_CPP CICodec : public CICloneable ,
 {
         public:
         
+        typedef std::vector< CDynamicBuffer >  TDynamicBufferList;
+        
         CICodec( void );
         
         CICodec( const CICodec& src );
@@ -69,11 +73,13 @@ class EXPORT_CPP CICodec : public CICloneable ,
         
         virtual bool Encode( const void* sourceBuffer      ,
                              const UInt32 sourceBufferSize ,
-                             CDynamicBuffer& dest          ) = 0;
+                             TDynamicBufferList& dest      ,
+                             UInt32& destBuffersUsed       ) = 0;
 
         virtual bool Decode( const void* sourceBuffer      ,
                              const UInt32 sourceBufferSize ,
-                             CDynamicBuffer& dest          ) = 0;                             
+                             TDynamicBufferList& dest      ,
+                             UInt32& destBuffersUsed       ) = 0;                             
 };
 
 /*-------------------------------------------------------------------------//

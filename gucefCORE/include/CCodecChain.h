@@ -60,6 +60,8 @@ class EXPORT_CPP CCodecChain
 {
         public:
         
+        typedef CICodec::TDynamicBufferList TDynamicBufferList;
+        
         CCodecChain( void );
         
         CCodecChain( const CCodecChain& src );
@@ -85,19 +87,21 @@ class EXPORT_CPP CCodecChain
         
         bool Encode( const void* sourceBuffer      ,
                      const UInt32 sourceBufferSize ,
-                     CDynamicBuffer& dest          );
+                     TDynamicBufferList& dest      ,
+                     UInt32& destBuffersUsed       );
 
         bool Decode( const void* sourceBuffer      ,
                      const UInt32 sourceBufferSize ,
-                     CDynamicBuffer& dest          );
+                     TDynamicBufferList& dest      ,
+                     UInt32& destBuffersUsed       );
                      
         void Clear( void );
         
         private:
         typedef std::vector< CICodec* > TCodecList;
         
-        CDynamicBuffer m_bufferA;
-        CDynamicBuffer m_bufferB;
+        TDynamicBufferList m_bufferA;
+        TDynamicBufferList m_bufferB;
         TCodecList m_codecList;
 };
 
