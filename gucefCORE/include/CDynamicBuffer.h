@@ -150,7 +150,8 @@ class EXPORT_CPP CDynamicBuffer
         void SetDataSize( const UInt32 newSize );       
         
         /**
-         *      Returns the current buffer size.
+         *      Returns the current used buffer space
+         *      This is assumed to be usefull data and the remainder simply extra buffer space
          */
         UInt32 GetDataSize( void ) const;
 

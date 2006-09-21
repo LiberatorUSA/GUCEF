@@ -85,23 +85,33 @@ class EXPORT_CPP CCodecChain
         
         void SetCodecOrder( const CStringList& codecOrder );
         
-        bool Encode( const void* sourceBuffer      ,
-                     const UInt32 sourceBufferSize ,
-                     TDynamicBufferList& dest      ,
-                     UInt32& destBuffersUsed       );
+        bool Encode( const TDynamicBufferList& src  ,
+                     const UInt32 sourceBuffersUsed ,
+                     TDynamicBufferList& dest       ,
+                     UInt32& destBuffersUsed        );
 
-        bool Decode( const void* sourceBuffer      ,
-                     const UInt32 sourceBufferSize ,
-                     TDynamicBufferList& dest      ,
-                     UInt32& destBuffersUsed       );
+        bool Decode( const TDynamicBufferList& src  ,
+                     const UInt32 sourceBuffersUsed ,
+                     TDynamicBufferList& dest       ,
+                     UInt32& destBuffersUsed        );
                      
         void Clear( void );
+        
+        private:
+        
+        bool EncodeBuffers( const TDynamicBufferList& src   ,
+                            const UInt32 sourceBuffersUsed  ,
+                            TDynamicBufferList& dest        ,
+                            UInt32& destBuffsUsed           ,
+                            TDynamicBufferList& swapBuffers ,
+                            CICodec* codec                  ) const;
         
         private:
         typedef std::vector< CICodec* > TCodecList;
         
         TDynamicBufferList m_bufferA;
         TDynamicBufferList m_bufferB;
+        TDynamicBufferList m_bufferC;
         TCodecList m_codecList;
 };
 

@@ -58,7 +58,8 @@ namespace CORE {
 CCodecChain::CCodecChain( void )
         : m_codecList() ,
           m_bufferA()   ,
-          m_bufferB()
+          m_bufferB()   ,
+          m_bufferC()
 {TRACE;
 
 }
@@ -68,7 +69,8 @@ CCodecChain::CCodecChain( void )
 CCodecChain::CCodecChain( const CCodecChain& src )
         : m_codecList()              ,
           m_bufferA( src.m_bufferA ) ,
-          m_bufferB( src.m_bufferB )
+          m_bufferB( src.m_bufferB ) ,
+          m_bufferC( src.m_bufferC )
 {TRACE;
         TCodecList::const_iterator i = src.m_codecList.begin();
         while ( i != src.m_codecList.end() )
@@ -110,8 +112,9 @@ CCodecChain::Clear( void )
                 ++i;
         }
         m_codecList.clear();
-        m_bufferA.Clear( false );
-        m_bufferB.Clear( false );
+        m_bufferA.clear();
+        m_bufferB.clear();
+        m_bufferC.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -226,81 +229,121 @@ CCodecChain::SetCodecOrder( const CStringList& codecOrder )
 }
 
 /*-------------------------------------------------------------------------*/
+
+bool
+CCodecChain::EncodeBuffers( const TDynamicBufferList& src   ,
+                            const UInt32 sourceBuffersUsed  ,
+                            TDynamicBufferList& dest        ,
+                            UInt32& destBuffsUsed           ,
+                            TDynamicBufferList& swapBuffers ,
+                            CICodec* codec                  ) const
+{TRACE;
+
+    assert( NULL != codec );
+    
+    UInt32 swapBuffsUsed( 0 );
+    TDynamicBufferList::const_iterator i( src.begin() );
+    while ( i != src.end() ) 
+    {                                     
+        // Try to encode the given data   @TODO @FIXME
+     /*   if ( !codec->Encode( (*i).GetBufferPtr() ,
+                             (*i).GetDataSize()  ,
+                             swapBuffers         ,
+                             swapBuffsUsed       ) )
+        {
+                // the encoding failed
+                return false;
+        }*/
+        
+        // Merge this encoding step into our current destination buffer list
+        TDynamicBufferList::iterator n( swapBuffers.begin() );
+        while ( n != swapBuffers.end() )
+        {        
+            // try to reuse destination buffers
+            if ( destBuffsUsed < dest.size() )
+            {
+                // Copy the buffer contents
+                dest[ destBuffsUsed ] = (*n);
+            }
+            else
+            {
+                // we need more destination buffers then are curently available
+                dest.push_back( (*n) );
+            }
+            ++destBuffsUsed;
+            ++n;
+        }
+                
+        ++i;
+    }
+    
+    // batch encode was successfull
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
         
 bool
-CCodecChain::Encode( const void* sourceBuffer      ,
-                     const UInt32 sourceBufferSize ,
-                     TDynamicBufferList& dest      ,
-                     UInt32& destBuffersUsed       )
-{TRACE;
-        if ( 0 != m_codecList.size() )
-        {
-                // initialize our swapping vars
-                TDynamicBufferList* destBuffer = &m_bufferA;
-                const void* srcBuffer( sourceBuffer );
-                UInt32 srcBufferSize( sourceBufferSize );
-                UInt32 destBuffsUsed( 0 );
-                                
-                TCodecList::const_iterator i = m_codecList.begin();
-                do
-                {           
-                        // Perform a logical clear of the buffer, resetting the data carat
-                        destBuffer->Clear( true );
-                        
-                        // Try to encode the given data
-                        if ( !(*i)->Encode( srcBuffer     ,
-                                            srcBufferSize ,
-                                            *destBuffer   ,
-                                            destBuffsUsed ) )
-                        {
-                                // One of the encoding steps failed
-                                destBuffer->CopyTo( dest );
-                                return false;
-                        }
-                        
-                        // Swap the buffers
-                        if ( destBuffer == &m_bufferA )
-                        {
-                                destBuffer = &m_bufferB;
-                                srcBuffer = m_bufferA.GetBufferPtr();
-                                srcBufferSize = m_bufferA.GetDataSize();
-                        }
-                        else
-                        {
-                                destBuffer = &m_bufferA;
-                                srcBuffer = m_bufferB.GetBufferPtr();
-                                srcBufferSize = m_bufferB.GetDataSize();                                
-                        }
-                        
-                        ++i;
-                }
-                while ( i != m_codecList.end() );
-                
-                if ( destBuffsUsed > 1 )
-                {
-                    
-                }
-                
-                // Finished encoding, copy the result into the destination buffer
-                destBuffer->CopyTo( dest );
-                return true;
+CCodecChain::Encode( const TDynamicBufferList& src  ,
+                     const UInt32 sourceBuffersUsed ,
+                     TDynamicBufferList& dest       ,
+                     UInt32& destBuffersUsed        )
+{TRACE;       
+
+    if ( 0 != m_codecList.size() )
+    {
+        UInt32 destBuffsUsed( 0 );
+        UInt32 srcBuffsUsed( sourceBuffersUsed );
+        TDynamicBufferList* srcBuffer = &m_bufferA;
+        TDynamicBufferList* destBuffer = &m_bufferB;
+        TCodecList::const_iterator i = m_codecList.begin();
+        do
+        {            
+            // Encode all buffers
+            if ( !EncodeBuffers( *srcBuffer    ,
+                                 srcBuffsUsed  ,
+                                 *destBuffer   ,
+                                 destBuffsUsed ,
+                                 m_bufferC     ,
+                                 (*i)          ) )
+            {
+                return false;
+            }
+
+            // Swap the buffers
+            if ( destBuffer == &m_bufferA )
+            {
+                srcBuffer = &m_bufferA;
+                destBuffer = &m_bufferB;
+            }
+            else
+            {
+                srcBuffer = &m_bufferB;
+                destBuffer = &m_bufferA;                               
+            }
+            srcBuffsUsed = destBuffsUsed;
+            destBuffsUsed = 0;
+            
+            ++i;
+           
         }
-        else
-        {
-                // No encoding required, simply copy the data
-                dest.CopyFrom( sourceBufferSize, sourceBuffer );
-                return true;
-        }        
+        while ( i != m_codecList.end() );
+                        
+        // Assign the output
+        destBuffersUsed = srcBuffsUsed;
+        dest = *destBuffer;
+    }
+    return true;
 }                     
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CCodecChain::Decode( const void* sourceBuffer      ,
+CCodecChain::Decode( const TDynamicBufferList& src ,
                      const UInt32 sourceBufferSize ,
                      TDynamicBufferList& dest      ,
                      UInt32& destBuffersUsed       )
-{TRACE;
+{TRACE;        /*
         if ( 0 != m_codecList.size() )
         {
                 // initialize our swapping vars
@@ -351,7 +394,8 @@ CCodecChain::Decode( const void* sourceBuffer      ,
                 // No encoding required, simply copy the data
                 dest.CopyFrom( sourceBufferSize, sourceBuffer );
                 return true;
-        }
+        }   */
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

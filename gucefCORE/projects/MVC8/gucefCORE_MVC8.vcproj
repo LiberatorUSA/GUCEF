@@ -898,10 +898,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CSTDStreamAdapter.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\CStringList.h"
 				>
 			</File>
