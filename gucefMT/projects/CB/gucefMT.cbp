@@ -9,23 +9,20 @@
 		<Option virtualFolders="" />
 		<Build>
 			<Target title="Debug">
-				<Option output="Debug\gucefMT.dll" />
-				<Option object_output="Debug\" />
+				<Option output="..\..\bin\Debug_MGW\gucefMT.dll" />
+				<Option object_output="..\..\Bin\Debug_MGW\" />
 				<Option type="3" />
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
 					<Add option="-g" />
-					<Add option="-DWIN32" />
-					<Add option="-DGUCEFMT_DLL_BUILD" />
-					<Add option="-D__MINGW__" />
 					<Add directory="..\..\include" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
-				<Option output="Release\gucefMT.dll" />
-				<Option object_output="Release\" />
+				<Option output="..\..\bin\Release_MGW\gucefMT.dll" />
+				<Option object_output="..\..\bin\Release_MGW\" />
 				<Option type="3" />
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
@@ -40,7 +37,13 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-D_DEBUG" />
+			<Add option="-DGUCEF_DLL_BUILD" />
 		</Compiler>
+		<ExtraCommands>
+			<Add after="CMD /C COPY /Y $($(TARGET_NAME)_OUTPUT_FILE) ..\..\..\common\$(TARGET_NAME)_MGW" />
+			<Mode after="always" />
+		</ExtraCommands>
 		<Unit filename="..\..\src\gucefMT_CActiveObject.cpp">
 			<Option compilerVar="CPP" />
 			<Option target="Debug" />
