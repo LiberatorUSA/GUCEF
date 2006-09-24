@@ -65,7 +65,7 @@ class CMutex;
  *      The usage of this class allows you to forgo having to type the same
  *      tests and allocation/de-allocation code all the time.
  */
-class GUCEFMT_EXPORT_CPP CCondition
+class GUCEF_EXPORT_CPP CCondition
 {
         private:
 

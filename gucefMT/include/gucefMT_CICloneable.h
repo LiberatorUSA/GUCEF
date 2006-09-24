@@ -17,7 +17,7 @@
 
 #ifndef GUCEF_MT_CICLONEABLE_H
 #define GUCEF_MT_CICLONEABLE_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -54,20 +54,20 @@ namespace MT {
  *  Clone() should be implemented as:
  *      return new CMyClass( *this );
  */
-class GUCEFMT_EXPORT_CPP CICloneable
+class GUCEF_EXPORT_CPP CICloneable
 {
     public:
-    
-    CICloneable( void );        
-    
-    CICloneable( const CICloneable& src );
-    
-    virtual ~CICloneable();    
 
-    CICloneable& operator=( const CICloneable& src );    
-    
+    CICloneable( void );
+
+    CICloneable( const CICloneable& src );
+
+    virtual ~CICloneable();
+
+    CICloneable& operator=( const CICloneable& src );
+
     virtual CICloneable* Clone( void ) const = 0;
-    
+
 };
 
 /*-------------------------------------------------------------------------//

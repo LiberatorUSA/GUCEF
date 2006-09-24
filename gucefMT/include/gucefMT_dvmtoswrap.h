@@ -73,7 +73,7 @@ struct TThreadData;
  *
  *      @param delay the minimum delay in miliseconds
  */
-GUCEFMT_EXPORT_C void
+GUCEF_EXPORT_C void
 ThreadDelay( UInt32 delay );
 
 /*--------------------------------------------------------------------------*/
@@ -87,7 +87,7 @@ ThreadDelay( UInt32 delay );
  *      @param data data argument for the thread function
  *      @return structure containing O/S specific thread data.
  */
-GUCEFMT_EXPORT_C struct SThreadData*
+GUCEF_EXPORT_C struct SThreadData*
 ThreadCreate( void* func ,
               void* data );
 
@@ -96,22 +96,22 @@ ThreadCreate( void* func ,
 /**
  *
  */
-GUCEFMT_EXPORT_C UInt32
+GUCEF_EXPORT_C UInt32
 ThreadSuspend( struct SThreadData* td );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFMT_EXPORT_C UInt32
+GUCEF_EXPORT_C UInt32
 ThreadResume( struct SThreadData* td );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFMT_EXPORT_C UInt32
+GUCEF_EXPORT_C UInt32
 ThreadKill( struct SThreadData* td );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFMT_EXPORT_C UInt32
+GUCEF_EXPORT_C UInt32
 ThreadWait( struct SThreadData* td ,
             Int32 timeout          );
 

@@ -6,13 +6,13 @@
  * the source.
  *
  * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
  * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF
+ * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 #ifndef GUCEF_MT_BASICMACROS_H
@@ -46,7 +46,7 @@
  *      using a DLL the sym value. Thus this macro helps eleviate the problem.
  *      Event though this problem should not exist in the first place :|
  */
-#define SDLKEYCODE( keyevent ) ( (keyevent).keysym.mod ? (keyevent).keysym.mod : (keyevent).keysym.sym )
+//#define SDLKEYCODE( keyevent ) ( (keyevent).keysym.mod ? (keyevent).keysym.mod : (keyevent).keysym.sym )
 
 /*-------------------------------------------------------------------------*/
 
@@ -105,7 +105,7 @@
 /*
  *      Some macros for copying integers into a char buffer per byte. Note that
  *      for use in network communication you should set a endianess to be used
- *      for the protocol. 
+ *      for the protocol.
  */
 #define INT32INTOCHAR( dest_char_prt, src_int32 ) \
  { \
@@ -137,6 +137,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 24-09-2006 :
+        - Commented out SDL ... we dont use this anymore? - Logan
 - 24-03-2004 :
         - Removed all build specific macros. These are macros that relyed on
           specific build switches to define there meaning. This required the

@@ -6,13 +6,13 @@
  * the source.
  *
  * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
  * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF
+ * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 /*
@@ -92,7 +92,7 @@ namespace MT {
  *      a higher priority then readers. If 0 then readers will have priority
  *      over writers.
  */
-GUCEFMT_EXPORT_C TRWLock*
+GUCEF_EXPORT_C TRWLock*
 rwl_create( UInt32 writer_overrules );
 
 /*-------------------------------------------------------------------------*/
@@ -102,7 +102,7 @@ rwl_create( UInt32 writer_overrules );
  *      This function should only be called when all threads using the lock have
  *      finished using it. There are some safeguards but they are not fullproof.
  */
-GUCEFMT_EXPORT_C void
+GUCEF_EXPORT_C void
 rwl_destroy( TRWLock *rwlock );
 
 /*-------------------------------------------------------------------------*/
@@ -111,7 +111,7 @@ rwl_destroy( TRWLock *rwlock );
  *      Returns a boolean value. 1 if writers have priority and 0 if readers
  *      have priority.
  */
-GUCEFMT_EXPORT_C UInt32
+GUCEF_EXPORT_C UInt32
 rwl_writer_overrules( const TRWLock *rwlock );
 
 /*-------------------------------------------------------------------------*/
@@ -121,7 +121,7 @@ rwl_writer_overrules( const TRWLock *rwlock );
  *      is meant for output to humans. It has no use in relation with
  *      the other rwl_ functions.
  */
-GUCEFMT_EXPORT_C UInt32
+GUCEF_EXPORT_C UInt32
 rwl_writers( const TRWLock *rwlock );
 
 /*-------------------------------------------------------------------------*/
@@ -131,7 +131,7 @@ rwl_writers( const TRWLock *rwlock );
  *      is meant for output to humans. It has no use in relation with
  *      the other rwl_ functions.
  */
-GUCEFMT_EXPORT_C UInt32
+GUCEF_EXPORT_C UInt32
 rwl_readers( const TRWLock *rwlock );
 
 /*--------------------------------------------------------------------------*/
@@ -142,7 +142,7 @@ rwl_readers( const TRWLock *rwlock );
  *      the given rwlock. If it fails you should no longer access the given
  *      rwlock.
  */
-GUCEFMT_EXPORT_C UInt32
+GUCEF_EXPORT_C UInt32
 rwl_reader_start( TRWLock *rwlock );
 
 /*--------------------------------------------------------------------------*/
@@ -151,7 +151,7 @@ rwl_reader_start( TRWLock *rwlock );
  *      Call this function when a reader task finished using data that is
  *      protected by the given rwlock.
  */
-GUCEFMT_EXPORT_C void
+GUCEF_EXPORT_C void
 rwl_reader_stop( TRWLock *rwlock );
 
 /*--------------------------------------------------------------------------*/
@@ -162,7 +162,7 @@ rwl_reader_stop( TRWLock *rwlock );
  *      the given rwlock. If it fails you should no longer access the given
  *      rwlock. A return value of 1 indicates success and 0 failure.
  */
-GUCEFMT_EXPORT_C UInt32
+GUCEF_EXPORT_C UInt32
 rwl_writer_start( TRWLock *rwlock );
 
 /*--------------------------------------------------------------------------*/
@@ -171,7 +171,7 @@ rwl_writer_start( TRWLock *rwlock );
  *      Call this function when a writer task finished using data that is
  *      protected by the given rwlock.
  */
-GUCEFMT_EXPORT_C void
+GUCEF_EXPORT_C void
 rwl_writer_stop( TRWLock *rwlock );
 
 /*--------------------------------------------------------------------------*/

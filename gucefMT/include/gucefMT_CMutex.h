@@ -47,7 +47,7 @@ namespace MT {
 /**
  *      Mutex class implementation that currently supports mswindows and linux
  */
-class GUCEFMT_EXPORT_CPP CMutex
+class GUCEF_EXPORT_CPP CMutex
 {
         public:
 

@@ -16,7 +16,7 @@
  */
 
 #ifndef GUCEF_MT_CCRITICALSECTION_H
-#define GUCEF_MT_CCRITICALSECTION_H 
+#define GUCEF_MT_CCRITICALSECTION_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,7 +66,7 @@ namespace MT {
  *      is no way to tell whether a critical section has been abandoned.
  *
  */
-class GUCEFMT_EXPORT_CPP CCriticalSection
+class GUCEF_EXPORT_CPP CCriticalSection
 {
         private:
         void* _data;

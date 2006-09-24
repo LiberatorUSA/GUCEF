@@ -17,7 +17,7 @@
 
 #ifndef GUCEF_MT_CMAILBOX_H
 #define GUCEF_MT_CMAILBOX_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -49,14 +49,14 @@ namespace MT {
  *  Basicly a tread-safe stack for passing data event data between
  *  multiple threads
  */
-class GUCEFMT_EXPORT_CPP CMailBox
+class GUCEF_EXPORT_CPP CMailBox
 {
     public:
-    
-    CMailBox( void );        
-    
+
+    CMailBox( void );
+
     virtual ~CMailBox();
-    
+
     /**
      *  Adds the given eventid and data to the FILO stack.
      *  if data is non-NULL then it will be cloned.
@@ -66,31 +66,31 @@ class GUCEFMT_EXPORT_CPP CMailBox
      */
     void AddMail( const UInt32 eventid           ,
                   const CICloneable* data = NULL );
-    
+
     /**
      *  Attempts to retrieve mail from the mailbox.
      *
-     *  Note that if data is non-NULL then you should delete the 
+     *  Note that if data is non-NULL then you should delete the
      *  object after handling the mail message or you will create
      *  a memory-leak.
-     *  
+     *
      *  @param eventid the ID of the event
-     *  @param data cloneable data container for optional event data. 
+     *  @param data cloneable data container for optional event data.
      *  @return whether mail was successfully retrieved from the mailbox.
      */
     bool GetMail( UInt32& eventid    ,
                   CICloneable** data );
-                  
+
     void Clear( void );
-    
+
     void ClearAllExcept( const UInt32 eventid );
-    
+
     void Delete( const UInt32 eventid );
 
     bool HasMail( void ) const;
 
     private:
-    
+
     CMailBox( const CMailBox& src );
 
     CMailBox& operator=( const CMailBox& src );
@@ -103,7 +103,7 @@ class GUCEFMT_EXPORT_CPP CMailBox
     };
     typedef struct SMailElement TMailElement;
     typedef std::vector<TMailElement> TMailStack;
-    
+
     TMailStack m_mailStack;
     CMutex m_datalock;
 };

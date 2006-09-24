@@ -65,7 +65,7 @@ namespace MT {
  *      The usage of this class allows you to forgo having to type the same
  *      tests and allocation/de-allocation code all the time.
  */
-class GUCEFMT_EXPORT_CPP CSemaphore
+class GUCEF_EXPORT_CPP CSemaphore
 {
         public:
 
@@ -111,14 +111,14 @@ class GUCEFMT_EXPORT_CPP CSemaphore
          *      Destructor, de-allocates storage for a semaphore.
          */
         ~CSemaphore();
-        
+
         private:
-        
+
         struct SDL_semaphore *sem;    /* SDL semaphore structure which we wrap */
 
         CSemaphore( void );                   /* we want an initial value  */
         CSemaphore( const CSemaphore& src );  /* Copying doesnt make sense */
-        CSemaphore& operator=( const CSemaphore& src );   /* Copying doesnt make sense */                  
+        CSemaphore& operator=( const CSemaphore& src );   /* Copying doesnt make sense */
 };
 
 /*-------------------------------------------------------------------------//

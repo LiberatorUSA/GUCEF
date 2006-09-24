@@ -71,14 +71,14 @@ struct SMutex;
 /**
  *      Creates the initial unlocked mutex.
  */
-GUCEFMT_EXPORT_C struct SMutex* MutexCreate( void );
+GUCEF_EXPORT_C struct SMutex* MutexCreate( void );
 
 /*-------------------------------------------------------------------------*/
 
 /**
  *      Deallocates/destroys a mutex created with MutexCreate()
  */
-GUCEFMT_EXPORT_C void MutexDestroy( struct SMutex* mutex );
+GUCEF_EXPORT_C void MutexDestroy( struct SMutex* mutex );
 
 /*-------------------------------------------------------------------------*/
 
@@ -87,14 +87,14 @@ GUCEFMT_EXPORT_C void MutexDestroy( struct SMutex* mutex );
  *      process will have to wait for the mutex to allow a lock.
  *      The boolean return value indicates wheter the lock failed or succeeded.
  */
-GUCEFMT_EXPORT_C UInt32 MutexLock( struct SMutex* mutex );
+GUCEF_EXPORT_C UInt32 MutexLock( struct SMutex* mutex );
 
 /*-------------------------------------------------------------------------*/
 
 /**
  *      Returns wheter or not the mutex is currently locked.
  */
-GUCEFMT_EXPORT_C UInt32 MutexLocked( struct SMutex* mutex );
+GUCEF_EXPORT_C UInt32 MutexLocked( struct SMutex* mutex );
 
 /*-------------------------------------------------------------------------*/
 
@@ -103,7 +103,7 @@ GUCEFMT_EXPORT_C UInt32 MutexLocked( struct SMutex* mutex );
  *      will have the ability to get a mutex lock after this call.
  *      The boolean return value indicates wheter the unlock failed or succeeded.
  */
-GUCEFMT_EXPORT_C UInt32 MutexUnlock( struct SMutex* mutex );
+GUCEF_EXPORT_C UInt32 MutexUnlock( struct SMutex* mutex );
 
 /*--------------------------------------------------------------------------*/
 

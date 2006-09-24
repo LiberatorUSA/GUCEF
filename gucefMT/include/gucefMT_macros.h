@@ -6,13 +6,13 @@
  * the source.
  *
  * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
  * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF
+ * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 #ifndef GUCEF_MT_MACROS_H
@@ -45,17 +45,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      O/S Detection macro.
- *      If you don't want to use the auto detection macro then set
- *      the MANUAL_OS_DEFINE define in the config file.
- */
-#ifndef GUCEFMT_MANUAL_OS_DEFINE
+#ifndef GUCEF_MANUAL_OS_DEFINE
   #if defined( WIN32 ) || defined( _WIN32 )
-    #define GUCEFMT_MSWIN_BUILD
+    #define GUCEF_MSWIN_BUILD
   #else
-    #define GUCEFMT_LINUX_BUILD
-  #endif 
+    #define GUCEF_LINUX_BUILD
+  #endif
 #endif /* GUCEFMT_MANUAL_OS_DEFINE ? */
 
 /*-------------------------------------------------------------------------*/
@@ -63,16 +58,16 @@
 /*
  *      Auto detection of debug mode
  */
-#ifndef GUCEFMT_MANUAL_DEBUG_MODE_DEFINE
-  #undef GUCEFMT_DEBUG_MODE
-  #if defined( _DEBUG ) || !defined( NDEBUG ) 
-    #define GUCEFMT_DEBUG_MODE
+#ifndef GUCEF_MANUAL_DEBUG_MODE_DEFINE
+  #undef GUCEF_DEBUG_MODE
+  #if defined( _DEBUG ) || !defined( NDEBUG )
+    #define GUCEF_DEBUG_MODE
   #endif /* compiler DEBUG switches */
 #endif /* GUCEFMT_MANUAL_DEBUG_MODE_DEFINE ? */
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef GUCEFMT_MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 #define WIN32_LEAN_AND_MEAN     /* don't change this line: trim fat from windoze */
 #define WIN32_EXTRA_LEAN        /* don't change this line: trim additional tub of lard from windoze */
 #endif
@@ -83,13 +78,13 @@
  *      When compiling the gucefMT library you should define GUCEFMT_DLL_BUILD
  *      before including this macro file.
  */
-#ifndef GUCEFMT_MANUAL_EXPORT_DEFINE
-  #undef GUCEFMT_USE_DLL
-  #undef GUCEFMT_BUILD_DLL
-  #ifdef GUCEFMT_DLL_BUILD
-    #define GUCEFMT_BUILD_DLL
+#ifndef GUCEF_MANUAL_EXPORT_DEFINE
+  #undef GUCEF_USE_DLL
+  #undef GUCEF_BUILD_DLL
+  #ifdef GUCEF_DLL_BUILD
+    #define GUCEF_BUILD_DLL
   #else
-    #define GUCEFMT_USE_DLL 
+    #define GUCEF_USE_DLL
   #endif
 #endif /* GUCEFMT_MANUAL_EXPORT_DEFINE ? */
 
@@ -102,40 +97,40 @@
 #undef GUCEFMT_EXPORT
 #ifdef GUCEFMT_MSWIN_BUILD
   #ifdef GUCEFMT_BUILD_DLL
-    #define GUCEFMT_EXPORT __declspec( dllexport )
+    #define GUCEF_EXPORT __declspec( dllexport )
   #else
     #ifdef GUCEFMT_USE_DLL
-      #define GUCEFMT_EXPORT __declspec( dllimport )
+      #define GUCEF_EXPORT __declspec( dllimport )
     #else
-      #define GUCEFMT_EXPORT
+      #define GUCEF_EXPORT
     #endif /* GUCEFMT_USE_DLL */
   #endif /* GUCEFMT_BUILD_DLL */
 #else
-  #define GUCEFMT_EXPORT   /* Linux does not need an additional directive */
-#endif /* GUCEFMT_MSWIN_BUILD ? */
+  #define GUCEF_EXPORT   /* Linux does not need an additional directive */
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 /*-------------------------------------------------------------------------*/
 
 /*
  *  Seperate switch for C++ exports
  */
-#undef GUCEFMT_EXPORT_CPP
-#ifdef GUCEFMT_EXPORT_CPP_CODE
-  #define GUCEFMT_EXPORT_CPP GUCEFMT_EXPORT
+#undef GUCEF_EXPORT_CPP
+#ifdef GUCEF_EXPORT_CPP_CODE
+  #define GUCEF_EXPORT_CPP GUCEFMT_EXPORT
 #else
-  #define GUCEFMT_EXPORT_CPP
-#endif /* GUCEFMT_EXPORT_CPP_CODE */
+  #define GUCEF_EXPORT_CPP
+#endif /* GUCEF_EXPORT_CPP_CODE */
 
 /*-------------------------------------------------------------------------*/
 
 /*
  *  Seperate switch for C exports
  */
-#undef GUCEFMT_EXPORT_C 
-#ifdef GUCEFMT_EXPORT_C_CODE
-  #define GUCEFMT_EXPORT_C GUCEFMT_EXPORT
+#undef GUCEF_EXPORT_C
+#ifdef GUCEF_EXPORT_C_CODE
+  #define GUCEF_EXPORT_C GUCEF_EXPORT
 #else
-  #define GUCEFMT_EXPORT_C
+  #define GUCEF_EXPORT_C
 #endif /* GUCEFMT_EXPORT_C_CODE */
 
 /*-------------------------------------------------------------------------*/
@@ -143,14 +138,14 @@
 /*
  *      Calling convention macro's
  */
-#undef GUCEFMT_CALLSPEC_PREFIX
-#undef GUCEFMT_CALLSPEC_SUFFIX  
+#undef GUCEF_CALLSPEC_PREFIX
+#undef GUCEF_CALLSPEC_SUFFIX
 #if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
-  #define GUCEFMT_CALLSPEC_PREFIX __cdecl
-  #define GUCEFMT_CALLSPEC_SUFFIX
+  #define GUCEF_CALLSPEC_PREFIX __cdecl
+  #define GUCEF_CALLSPEC_SUFFIX
 #else
-  #define GUCEFMT_CALLSPEC_PREFIX
-  #define GUCEFMT_CALLSPEC_SUFFIX  __attribute__((cdecl))
+  #define GUCEF_CALLSPEC_PREFIX
+  #define GUCEF_CALLSPEC_SUFFIX  __attribute__((cdecl))
 #endif
 
 /*-------------------------------------------------------------------------*/
@@ -158,4 +153,4 @@
 #endif /* GUCEF_MT_MACROS_H ? */
 
 
- 
+

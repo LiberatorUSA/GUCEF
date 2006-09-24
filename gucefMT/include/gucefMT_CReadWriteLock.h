@@ -16,7 +16,7 @@
  */
 
 #ifndef GUCEF_MT_CREADWRITELOCK_H
-#define GUCEF_MT_CREADWRITELOCK_H 
+#define GUCEF_MT_CREADWRITELOCK_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,7 +62,7 @@ namespace MT {
 /**
  *      Wrapper class for my C implementation of a readers/writers lock
  */
-class GUCEFMT_EXPORT_CPP CReadWriteLock
+class GUCEF_EXPORT_CPP CReadWriteLock
 {
         public:
 
@@ -129,13 +129,13 @@ class GUCEFMT_EXPORT_CPP CReadWriteLock
          *      have priority.
          */
         bool DoWritersOverrule( void );
-        
+
         private:
         struct SRWLock *_rwlock;                  /* encapsulated rwlock struct */
 
-        CReadWriteLock( void );                   /* can't use this: need data */ 
+        CReadWriteLock( void );                   /* can't use this: need data */
         CReadWriteLock( const CReadWriteLock& );  /* copy's arent allowed */
-        CReadWriteLock& operator=( const CReadWriteLock& );  /* copy's arent allowed */        
+        CReadWriteLock& operator=( const CReadWriteLock& );  /* copy's arent allowed */
 };
 
 /*------------------------------------------------------------------------//
@@ -160,4 +160,4 @@ class GUCEFMT_EXPORT_CPP CReadWriteLock
 - 16-10-2004 :
        - Designed and implemented this class.
 
------------------------------------------------------------------------------*/ 
+-----------------------------------------------------------------------------*/

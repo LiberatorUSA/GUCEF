@@ -86,7 +86,7 @@ typedef unsigned long   UInt32;   /* 4 bytes, unsigned */
 typedef signed long     Int32;    /* 4 bytes, signed */
 #endif
 
-#if defined(__MINGW__)
+#ifdef __GNUC__
 typedef signed long long   Int64;   /* 8 bytes, signed */
 typedef unsigned long long UInt64;  /* 8 bytes, unsigned */
 #else
