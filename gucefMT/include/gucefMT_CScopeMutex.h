@@ -53,7 +53,7 @@ class CMutex;
  *      Simply create an object of this class to lock the scope with a mutex.
  *      Perfect if you don't want to make Unlock() calls all over the place.
  */
-class GUCEF_EXPORT_CPP CScopeMutex
+class GUCEFMT_EXPORT_CPP CScopeMutex
 {
         public:
 

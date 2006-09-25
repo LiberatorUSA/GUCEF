@@ -62,7 +62,7 @@ namespace MT {
 /**
  *      Wrapper class for my C implementation of a readers/writers lock
  */
-class GUCEF_EXPORT_CPP CReadWriteLock
+class GUCEFMT_EXPORT_CPP CReadWriteLock
 {
         public:
 

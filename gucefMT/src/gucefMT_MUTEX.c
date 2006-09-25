@@ -28,15 +28,15 @@
 
 #include <malloc.h>
 
-#ifdef GUCEFMT_MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>
 #endif
 
-#ifdef GUCEFMT_LINUX_BUILD
+#ifdef GUCEF_LINUX_BUILD
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
-#endif 
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,9 +47,9 @@
 struct SMutex
 {
         UInt8 locked;
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         HANDLE id;
-        #elif GUCEFMT_LINUX_BUILD
+        #elif GUCEF_LINUX_BUILD
         pthread_mutex_t id;
         #else
         #error Unsuported target platform
@@ -70,9 +70,9 @@ typedef struct SMutex TMutex;
 struct SMutex*
 MutexCreate( void )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         TMutex* mutex = malloc( sizeof( TMutex ) );
-        mutex->locked = 0;        
+        mutex->locked = 0;
         mutex->id = CreateMutex( NULL, FALSE, NULL );
         if ( !mutex->id )
         {
@@ -80,13 +80,13 @@ MutexCreate( void )
                 return NULL;
         }
         return mutex;
-        #elif GUCEFMT_LINUX_BUILD
+        #elif GUCEF_LINUX_BUILD
         pthread_mutexattr_t attr;
         pthread_mutexattr_init( &attr );
         pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
 
         TMutex* mutex = malloc( sizeof( TMutex ) );
-        mutex->locked = 0;        
+        mutex->locked = 0;
 
         if ( pthread_mutex_init( &mutex->id, &attr ) != 0 )
         {
@@ -94,7 +94,7 @@ MutexCreate( void )
                 return NULL;
         }
         return mutex;
-        #endif        
+        #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -102,13 +102,13 @@ MutexCreate( void )
 /**
  *      de-allocates storage for a mutex.
  */
-void 
+void
 MutexDestroy( struct SMutex* mutex )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         CloseHandle( mutex->id );
         free( mutex );
-        #elif GUCEFMT_LINUX_BUILD
+        #elif GUCEF_LINUX_BUILD
         pthread_mutex_destroy( &mutex->id );
         free( mutex );
         #endif
@@ -124,12 +124,12 @@ MutexDestroy( struct SMutex* mutex )
 UInt32
 MutexLock( struct SMutex* mutex )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         if ( WaitForSingleObject( mutex->id ,
                                   INFINITE  ) == WAIT_FAILED ) return 0;
         mutex->locked = 1;
         return 1;
-        #elif GUCEFMT_LINUX_BUILD
+        #elif GUCEF_LINUX_BUILD
         if ( pthread_mutex_lock( &mutex->id ) < 0 ) return 0;
         mutex->locked = 1;
         return 1;
@@ -146,15 +146,15 @@ MutexLock( struct SMutex* mutex )
 UInt32
 MutexUnlock( struct SMutex* mutex )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         if ( ReleaseMutex( mutex->id ) == FALSE ) return 0;
         mutex->locked = 0;
         return 1;
-        #elif GUCEFMT_LINUX_BUILD
+        #elif GUCEF_LINUX_BUILD
         if ( pthread_mutex_unlock( &mutex->id ) < 0 ) return 0;
         mutex->locked = 0;
         return 1;
-        #endif        
+        #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -169,4 +169,4 @@ MutexLocked( struct SMutex* mutex )
 }
 
 
-/*--------------------------------------------------------------------------*/ 
+/*--------------------------------------------------------------------------*/

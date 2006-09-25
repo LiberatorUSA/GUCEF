@@ -25,72 +25,45 @@
 //-------------------------------------------------------------------------*/
 
 /*
- *      Compile for platform...
- *      The O/S can be autodetected if you wish instead of defining it here.
+ *      Target platform selection.
+ *      Defines:
+ *      GUCEF_LINUX_BUILD
+ *      GUCEF_MSWIN_BUILD
  */
-#undef GUCEFMT_MANUAL_OS_DEFINE         /* do not change this line */
-/* #define GUCEFMT_MANUAL_OS_DEFINE */       /* Do you wish to specify the O/S yourself ? */
+#if !(defined(GUCEF_LINUX_BUILD) | defined(GUCEF_MSWIN_BUILD))
+    #error You need to define a build/target OS
+
+#elif defined(GUCEF_LINUX_BUILD) & defined(GUCEF_MSWIN_BUILD)
+    #error You have defined more than 1 build/target OS's
+#endif
 
 /*
- *      Target platform selection switches.
- *      Only has an effect if MANUAL_OS_DEFINE is defined.
+ *      Building or using the library?
+ *      Defines:
+ *      GUCEF_BUILD_DLL
+ *      GUCEF_USE_DLL
  */
-#undef GUCEFMT_LINUX_BUILD     /* do not change this line */ 
-#undef GUCEFMT_MSWIN_BUILD     /* do not change this line */
-//#define GUCEFMT_LINUX_BUILD           /* are we building for Linux ? */
-#ifndef GUCEFMT_LINUX_BUILD     /* don't change this line: can't compile for 2 platforms at once */
-#define GUCEFMT_MSWIN_BUILD     /* are we building for 32 bit Windows ? */
-#define WIN32_LEAN_AND_MEAN     /* don't change this line: trim fat from windoze */
-#define WIN32_EXTRA_LEAN        /* don't change this line: trim additional tub of lard from windoze */
-#endif /* GUCEFMT_LINUX_BUILD ? */      /* don't change this line */
+#if !(defined(GUCEFMT_BUILD_DLL) | defined(GUCEFMT_USE_DLL))
+    #error You need to define whether we are building or using the library
 
-/*
- *      Do you wish to manually define wheter you are building or using a
- *      dynamicly linked library ?
- *      Manual is not recommended unless the macros do not fully support your
- *      compiler.
- */
-#undef GUCEFMT_MANUAL_EXPORT_DEFINE     /* do not change this line */ 
-/* #define GUCEFMT_MANUAL_EXPORT_DEFINE */
-
-/*
- *      Dynamic or static linking ?
- *      and build the dynamic linked library or use it ?
- */
-#ifdef GUCEFMT_MANUAL_EXPORT_DEFINE          /* don't change this line */
-#undef GUCEFMT_BUILD_DLL                     /* don't change this line */
-#undef GUCEFMT_USE_DLL                       /* don't change this line */
-
-/*#define GUCEFMT_BUILD_DLL */           /* are we staticly linking ? */
-//#define GUCEFMT_USE_DLL            /* use instead of build ?    */
-
-#endif /* GUCEFMT_MANUAL_EXPORT_DEFINE ? */  /* don't change this line */
+#elif defined(GUCEFMT_BUILD_DLL) & defined(GUCEFMT_USE_DLL)
+    #error You have defined more than 1 build/target OS's
+#endif /* GUCEFMT_LINUX_BUILD ? */  /* don't change this line */
 
 /*
  *      If we are building or using a DLL then it is sometimes desireable to
  *      export only C code or perhaps only C++ code. You can do this with the
- *      following defines
+ *      following defines:
+ *      GUCEF_EXPORT_C_CODE
+ *      GUCEF_EXPORT_CPP_CODE
  */
-#undef GUCEFMT_EXPORT_CPP_CODE     /* do not change this line */ 
-#undef GUCEFMT_EXPORT_C_CODE       /* do not change this line */ 
-#define GUCEFMT_EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
-#define GUCEFMT_EXPORT_C_CODE   /* do you want to enable the C exports ? */
-
-/*
- *      Wheter or not to determine if we are building in debug mode automaticly.
- *      If you enable this manual setting of debug mode then the next setting
- *      is the one that determines wheter we are in debug mode or not.
- */
-#undef GUCEFMT_MANUAL_DEBUG_MODE_DEFINE     /* do not change this line */  
-/* #define GUCEFMT_MANUAL_DEBUG_MODE_DEFINE */
-
-/*
- *      Wheter to build in debug mode, meaning additional debug info will be
- *      generated run-time. This will howerver slow down program excecution and
- *      use more memory.
- */
-#undef GUCEFMT_MANUAL_DEBUG_MODE_DEFINE     /* do not change this line */   
-/* #define GUCEFMT_MANUAL_DEBUG_MODE_DEFINE */
+#ifdef GUCEF_BUILD_DLL
+#if !(defined(GUCEF_EXPORT_C_CODE) | defined(GUCEF_EXPORT_CPP_CODE))
+    #warning It would be best to define these when building a dll, but as a default we will define both
+    #define GUCEF_EXPORT_C_CODE
+    #define GUCEF_EXPORT_CPP_CODE
+#endif
+#endif /* GUCEF_BUILD_DLL */
 
 /*-------------------------------------------------------------------------*/
 
@@ -108,4 +81,4 @@
        - Initial version of this file.
 
 -----------------------------------------------------------------------------*/
- 
+

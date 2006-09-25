@@ -17,6 +17,7 @@
 				<Option createStaticLib="1" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-D_DEBUG" />
 					<Add directory="..\..\include" />
 				</Compiler>
 			</Target>
@@ -37,8 +38,8 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add option="-D_DEBUG" />
-			<Add option="-DGUCEF_DLL_BUILD" />
+			<Add option="-DGUCEFMT_BUILD_DLL" />
+			<Add option="-DGUCEF_MSWIN_BUILD" />
 		</Compiler>
 		<ExtraCommands>
 			<Add after="CMD /C COPY /Y $($(TARGET_NAME)_OUTPUT_FILE) ..\..\..\common\$(TARGET_NAME)_MGW" />

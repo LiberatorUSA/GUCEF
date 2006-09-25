@@ -6,13 +6,13 @@
  * the source.
  *
  * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
  * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF
+ * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 /*-------------------------------------------------------------------------//
@@ -33,13 +33,13 @@
 
 struct SThreadData
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         DWORD threadid;
         HANDLE threadhandle;
         LPTHREAD_START_ROUTINE func;
         void *data;
-        #elif GUCEFMT_LINUX_BUILD
-        
+        #elif GUCEF_LINUX_BUILD
+
         #endif
 };
 typedef struct SThreadData TThreadData;
@@ -58,11 +58,11 @@ typedef struct SThreadData TThreadData;
 void
 ThreadDelay( UInt32 delay )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
-        Sleep( delay );    
-        #elif GUCEFMT_LINUX_BUILD
-        
-        #endif     
+        #ifdef GUCEF_MSWIN_BUILD
+        Sleep( delay );
+        #elif GUCEF_LINUX_BUILD
+
+        #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -89,8 +89,8 @@ ThreadMain( void* tdvptr )
 TThreadData*
 ThreadCreate( void* func ,
               void* data )
-{               
-        #ifdef GUCEFMT_MSWIN_BUILD
+{
+        #ifdef GUCEF_MSWIN_BUILD
         TThreadData* td = malloc( sizeof( TThreadData ) );
         td->func = (LPTHREAD_START_ROUTINE)func;
         td->data = data;
@@ -104,22 +104,22 @@ ThreadCreate( void* func ,
         {
                 free( td );
                 return NULL;
-        }                                          
+        }
         return td;
-        #elif GUCEFMT_LINUX_BUILD
-        
+        #elif GUCEF_LINUX_BUILD
+
         #endif
 };
 
 /*--------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 ThreadSuspend( struct SThreadData* td )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return ( -1 != SuspendThread( td->threadhandle ) );
-        #elif GUCEFMT_LINUX_BUILD
-        
+        #elif GUCEF_LINUX_BUILD
+
         #endif
 }
 
@@ -128,10 +128,10 @@ ThreadSuspend( struct SThreadData* td )
 UInt32
 ThreadResume( struct SThreadData* td )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return ( -1 != ResumeThread( td->threadhandle ) );
-        #elif GUCEFMT_LINUX_BUILD
-        
+        #elif GUCEF_LINUX_BUILD
+
         #endif
 }
 
@@ -140,13 +140,13 @@ ThreadResume( struct SThreadData* td )
 UInt32
 ThreadKill( struct SThreadData* td )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
-        UInt32 retval = TerminateThread( td->threadhandle , 
+        #ifdef GUCEF_MSWIN_BUILD
+        UInt32 retval = TerminateThread( td->threadhandle ,
                                          1                );
         free( td );
-        return retval;                                        
-        #elif GUCEFMT_LINUX_BUILD
-        
+        return retval;
+        #elif GUCEF_LINUX_BUILD
+
         #endif
 }
 
@@ -156,18 +156,18 @@ UInt32
 ThreadWait( struct SThreadData* td ,
             Int32 timeout          )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         if ( timeout >= 0 )
         {
-                return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle , 
+                return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
                                                                timeout          ) );
         }
-        return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle , 
+        return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
                                                        INFINITE         ) );
-        #elif GUCEFMT_LINUX_BUILD
-        
-        #endif        
-                
-}            
-            
-/*--------------------------------------------------------------------------*/            
+        #elif GUCEF_LINUX_BUILD
+
+        #endif
+
+}
+
+/*--------------------------------------------------------------------------*/

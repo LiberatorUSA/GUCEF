@@ -25,7 +25,7 @@
 #include "gucefMT_CCriticalSection.h"
 #endif /* GUCEF_MT_CCRITICALSECTION_H ? */
 
-#ifdef GUCEFMT_MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>
 #else
 #ifndef GUCEF_MT_CMUTEX_H
@@ -50,7 +50,7 @@ namespace MT {
 
 CCriticalSection::CCriticalSection( void )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         _data = new CRITICAL_SECTION;
         InitializeCriticalSection( (CRITICAL_SECTION*) _data );
         #else
@@ -62,7 +62,7 @@ CCriticalSection::CCriticalSection( void )
 
 CCriticalSection::~CCriticalSection()
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         DeleteCriticalSection( (CRITICAL_SECTION*) _data );
         delete (CRITICAL_SECTION*) _data;
         #else
@@ -75,7 +75,7 @@ CCriticalSection::~CCriticalSection()
 void
 CCriticalSection::Enter( void )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         EnterCriticalSection( (CRITICAL_SECTION*) _data );
         #else
         ((CMutex*) _data)->Lock();
@@ -87,7 +87,7 @@ CCriticalSection::Enter( void )
 void
 CCriticalSection::Leave( void )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         LeaveCriticalSection( (CRITICAL_SECTION*) _data );
         #else
         ((CMutex*) _data)->Unlock();

@@ -49,7 +49,7 @@ namespace MT {
  *  Basicly a tread-safe stack for passing data event data between
  *  multiple threads
  */
-class GUCEF_EXPORT_CPP CMailBox
+class GUCEFMT_EXPORT_CPP CMailBox
 {
     public:
 

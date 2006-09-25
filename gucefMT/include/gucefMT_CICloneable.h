@@ -54,7 +54,7 @@ namespace MT {
  *  Clone() should be implemented as:
  *      return new CMyClass( *this );
  */
-class GUCEF_EXPORT_CPP CICloneable
+class GUCEFMT_EXPORT_CPP CICloneable
 {
     public:
 

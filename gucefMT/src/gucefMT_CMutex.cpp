@@ -23,15 +23,15 @@
 
 #include "gucefMT_CMutex.h"     /* Our mutex class definition */
 
-#ifdef GUCEFMT_MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>
 #endif
 
-#ifdef GUCEFMT_LINUX_BUILD
+#ifdef GUCEF_LINUX_BUILD
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
-#endif 
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,13 +41,13 @@
 
 struct SMutexData
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         HANDLE id;
-        #elif GUCEFMT_LINUX_BUILD
+        #elif GUCEF_LINUX_BUILD
         pthread_mutex_t id;
         #else
         #error Unsuported target platform
-        #endif 
+        #endif
 };
 
 typedef struct SMutexData TMutexData;
@@ -74,7 +74,7 @@ CMutex::CMutex( void )
         : _mutexdata( NULL ) ,
           _locked( false )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         TMutexData* md = new TMutexData;
         md->id = CreateMutex( NULL, FALSE, NULL );
         if ( !md->id )
@@ -83,7 +83,7 @@ CMutex::CMutex( void )
                 return;
         }
         _mutexdata = md;
-        #elif GUCEFMT_LINUX_BUILD
+        #elif GUCEF_LINUX_BUILD
         TMutexData* md = new TMutexData;
         pthread_mutexattr_t attr;
 
@@ -96,7 +96,7 @@ CMutex::CMutex( void )
                 return;
         }
         _mutexdata = md;
-        #endif        
+        #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -106,10 +106,10 @@ CMutex::CMutex( void )
  */
 CMutex::~CMutex()
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         CloseHandle( ((TMutexData*)_mutexdata)->id );
         delete (TMutexData*)_mutexdata;
-        #elif GUCEFMT_LINUX_BUILD
+        #elif GUCEF_LINUX_BUILD
         pthread_mutex_destroy( &((TMutexData*)_mutexdata)->id );
         delete (TMutexData*)_mutexdata;
         #endif
@@ -125,12 +125,12 @@ CMutex::~CMutex()
 bool
 CMutex::Lock( void )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id ,
                                   INFINITE                      ) == WAIT_FAILED ) return false;
         _locked = true;
         return true;
-        #elif GUCEFMT_LINUX_BUILD
+        #elif GUCEF_LINUX_BUILD
         if ( pthread_mutex_lock( &((TMutexData*)_mutexdata)->id ) < 0 ) return false;
         _locked = true;
         return true;
@@ -147,15 +147,15 @@ CMutex::Lock( void )
 bool
 CMutex::Unlock( void )
 {
-        #ifdef GUCEFMT_MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE ) return false;
         _locked = false;
         return true;
-        #elif GUCEFMT_LINUX_BUILD
+        #elif GUCEF_LINUX_BUILD
         if ( pthread_mutex_unlock( &mutex->id ) < 0 ) return false;
         _locked = false;
         return true;
-        #endif        
+        #endif
 }
 
 /*--------------------------------------------------------------------------*/

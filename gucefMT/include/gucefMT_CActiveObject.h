@@ -57,7 +57,7 @@ struct TThreadData;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_EXPORT_CPP CActiveObject
+class GUCEFMT_EXPORT_CPP CActiveObject
 {
         public:
 
