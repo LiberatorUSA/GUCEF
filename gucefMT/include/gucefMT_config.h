@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -20,50 +20,40 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_CONFIG_H
+#include "gucef_config.h"       /* GUCEF platform config */
+#define GUCEF_CONFIG_H
+#endif /* GUCEF_CONFIG_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      BUILD DEFINES                                                      //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 /*
- *      Target platform selection.
- *      Defines:
- *      GUCEF_LINUX_BUILD
- *      GUCEF_MSWIN_BUILD
+ *      Do you wish to manually define wheter you are building or using a
+ *      dynamicly linked library ?
+ *      Manual is not recommended unless the macros do not fully support your
+ *      compiler.
  */
-#if !(defined(GUCEF_LINUX_BUILD) | defined(GUCEF_MSWIN_BUILD))
-    #error You need to define a build/target OS
-
-#elif defined(GUCEF_LINUX_BUILD) & defined(GUCEF_MSWIN_BUILD)
-    #error You have defined more than 1 build/target OS's
-#endif
+#undef GUCEFMT_MANUAL_EXPORT_DEFINE      /* do not change this line */  
+/* #define GUCEFMT_MANUAL_EXPORT_DEFINE */
 
 /*
- *      Building or using the library?
- *      Defines:
- *      GUCEF_BUILD_DLL
- *      GUCEF_USE_DLL
+ *      Dynamic or static linking ?
+ *      and build the dynamic linked library or use it ?
  */
-#if !(defined(GUCEFMT_BUILD_DLL) | defined(GUCEFMT_USE_DLL))
-    #error You need to define whether we are building or using the library
-
-#elif defined(GUCEFMT_BUILD_DLL) & defined(GUCEFMT_USE_DLL)
-    #error You have defined more than 1 build/target OS's
-#endif /* GUCEFMT_LINUX_BUILD ? */  /* don't change this line */
-
-/*
- *      If we are building or using a DLL then it is sometimes desireable to
- *      export only C code or perhaps only C++ code. You can do this with the
- *      following defines:
- *      GUCEF_EXPORT_C_CODE
- *      GUCEF_EXPORT_CPP_CODE
- */
-#ifdef GUCEF_BUILD_DLL
-#if !(defined(GUCEF_EXPORT_C_CODE) | defined(GUCEF_EXPORT_CPP_CODE))
-    #warning It would be best to define these when building a dll, but as a default we will define both
-    #define GUCEF_EXPORT_C_CODE
-    #define GUCEF_EXPORT_CPP_CODE
-#endif
-#endif /* GUCEF_BUILD_DLL */
+#ifdef GUCEFMT_MANUAL_EXPORT_DEFINE         /* do not change this line */ 
+#undef GUCEFMT_BUILD_DLL                    /* do not change this line */  
+#undef GUCEFMT_USE_DLL                      /* do not change this line */   
+#endif /* GUCEFMT_MANUAL_EXPORT_DEFINE ? */ /* do not change this line */ 
+/* #define GUCEFMT_BUILD_DLL */
+/* #define GUCEFMT_USE_DLL */
 
 /*-------------------------------------------------------------------------*/
 
@@ -75,10 +65,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 26-09-2006 :
+       - Dinand: moved platform wide build switches to the GUCEF platform config file
 - 25-02-2006 :
-       - Added GUCEFMT_ prefix to all defines
+       - Dinand: Added GUCEFMT_ prefix to all defines
 - 16-10-2004 :
-       - Initial version of this file.
+       - Dinand: Initial version of this file.
 
 -----------------------------------------------------------------------------*/
 

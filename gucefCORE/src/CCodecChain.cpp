@@ -241,19 +241,19 @@ CCodecChain::EncodeBuffers( const TDynamicBufferList& src   ,
 
     assert( NULL != codec );
     
-    UInt32 swapBuffsUsed( 0 );
+    UInt32 n( 0 ), swapBuffsUsed( 0 );
     TDynamicBufferList::const_iterator i( src.begin() );
-    while ( i != src.end() ) 
+    while ( ( i != src.end() ) && ( n < sourceBuffersUsed ) )
     {                                     
         // Try to encode the given data   @TODO @FIXME
-     /*   if ( !codec->Encode( (*i).GetBufferPtr() ,
+        if ( !codec->Encode( (*i).GetBufferPtr() ,
                              (*i).GetDataSize()  ,
                              swapBuffers         ,
                              swapBuffsUsed       ) )
         {
                 // the encoding failed
                 return false;
-        }*/
+        }
         
         // Merge this encoding step into our current destination buffer list
         TDynamicBufferList::iterator n( swapBuffers.begin() );
@@ -273,7 +273,7 @@ CCodecChain::EncodeBuffers( const TDynamicBufferList& src   ,
             ++destBuffsUsed;
             ++n;
         }
-                
+        ++n;        
         ++i;
     }
     
@@ -294,7 +294,7 @@ CCodecChain::Encode( const TDynamicBufferList& src  ,
     {
         UInt32 destBuffsUsed( 0 );
         UInt32 srcBuffsUsed( sourceBuffersUsed );
-        TDynamicBufferList* srcBuffer = &m_bufferA;
+        const TDynamicBufferList* srcBuffer = &src;
         TDynamicBufferList* destBuffer = &m_bufferB;
         TCodecList::const_iterator i = m_codecList.begin();
         do

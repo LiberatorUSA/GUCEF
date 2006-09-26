@@ -29,15 +29,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_BASICMACROS_H
-#include "gucefMT_basicMacros.h"             /* generic often used macros */
-#define GUCEF_MT_BASICMACROS_H
-#endif /* GUCEF_MT_BASICMACROS_H ? */
-
 #ifndef GUCEF_MT_CONFIG_H
-#include "gucefMT_config.h"      /* Module build configuration */
+#include "gucefMT_config.h"        /* Module build configuration */
 #define GUCEF_MT_CONFIG_H
 #endif /* GUCEF_MT_CONFIG_H ? */
+
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"          /* GUCEF platform wide macros */
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
+
+#ifndef GUCEF_MT_BASICMACROS_H
+#include "gucefMT_basicMacros.h"   /* generic often used macros */
+#define GUCEF_MT_BASICMACROS_H
+#endif /* GUCEF_MT_BASICMACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,10 +50,35 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MSWIN_BUILD
-    #define WIN32_LEAN_AND_MEAN     /* trim fat from windoze */
-    #define WIN32_EXTRA_LEAN        /* trim additional tub of lard from windoze */
-#endif /* GUCEF_MSWIN_BUILD ? */
+/*
+ *      Building or using the library?
+ *      Defines:
+ *      GUCEF_BUILD_DLL
+ *      GUCEF_USE_DLL
+ */
+#ifdef GUCEFMT_MANUAL_EXPORT_DEFINE
+    #if !( defined( GUCEFMT_BUILD_DLL ) | defined( GUCEFMT_USE_DLL ) )
+        #error You need to define whether we are building or using the library
+    #elif defined( GUCEFMT_BUILD_DLL ) & defined( GUCEFMT_USE_DLL )
+        #error You have defined more than 1 build/target OS's
+    #endif /* GUCEFMT_LINUX_BUILD ? */  /* don't change this line */
+#endif /* GUCEFMT_MANUAL_EXPORT_DEFINE ? */
+
+/*-------------------------------------------------------------------------*/
+
+/*
+ *      If we are building or using a DLL then it is sometimes desireable to
+ *      export only C code or perhaps only C++ code. You can do this with the
+ *      following defines:
+ *      GUCEF_EXPORT_C_CODE
+ *      GUCEF_EXPORT_CPP_CODE
+ */
+#ifdef GUCEFMT_BUILD_DLL
+#if !(defined(GUCEFMT_EXPORT_C_CODE) | defined(GUCEFMT_EXPORT_CPP_CODE))
+    #define GUCEFMT_EXPORT_C_CODE
+    #define GUCEFMT_EXPORT_CPP_CODE
+#endif
+#endif /* GUCEF_BUILD_DLL */
 
 /*-------------------------------------------------------------------------*/
 
@@ -71,20 +101,20 @@
 /*
  *  Seperate switch for C++ exports
  */
-#undef GUCEF_EXPORT_CPP
-#ifdef GUCEF_EXPORT_CPP_CODE
+#undef GUCEFMT_EXPORT_CPP
+#ifdef GUCEFMT_EXPORT_CPP_CODE
   #define GUCEFMT_EXPORT_CPP GUCEFMT_EXPORT
 #else
   #define GUCEFMT_EXPORT_CPP
-#endif /* GUCEF_EXPORT_CPP_CODE */
+#endif /* GUCEFMT_EXPORT_CPP_CODE */
 
 /*-------------------------------------------------------------------------*/
 
 /*
  *  Seperate switch for C exports
  */
-#undef GUCEF_EXPORT_C
-#ifdef GUCEF_EXPORT_C_CODE
+#undef GUCEFMT_EXPORT_C
+#ifdef GUCEFMT_EXPORT_C_CODE
   #define GUCEFMT_EXPORT_C GUCEFMT_EXPORT
 #else
   #define GUCEFMT_EXPORT_C
@@ -92,22 +122,15 @@
 
 /*-------------------------------------------------------------------------*/
 
-/*
- *      Calling convention macro's
- */
-#undef GUCEF_CALLSPEC_PREFIX
-#undef GUCEF_CALLSPEC_SUFFIX
-#if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
-  #define GUCEF_CALLSPEC_PREFIX __cdecl
-  #define GUCEF_CALLSPEC_SUFFIX
-#else
-  #define GUCEF_CALLSPEC_PREFIX
-  #define GUCEF_CALLSPEC_SUFFIX  __attribute__((cdecl))
-#endif
-
-/*-------------------------------------------------------------------------*/
-
 #endif /* GUCEF_MT_MACROS_H ? */
 
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
 
+- 29-09-2006 :
+       - Dinand: reduced macros in this file.
 
+-----------------------------------------------------------------------------*/
