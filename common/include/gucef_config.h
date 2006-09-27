@@ -29,101 +29,45 @@
 //-------------------------------------------------------------------------*/
 
 /*
- *      Compile for platform...
- *      The O/S can be autodetected if you wish instead of defining it here.
+ *      Target platform selection switches
+ *      By default autodetects
  */
-#undef GUCEF_MANUAL_OS_DEFINE         /* do not change this line */ 
-/* #define GUCEF_MANUAL_OS_DEFINE */
-
-/*
- *      Target platform selection switches.
- *      Only has an effect if MANUAL_OS_DEFINE is defined.
- */
-#undef GUCEF_LINUX_BUILD         /* do not change this line */ 
-#undef GUCEF_MSWIN_BUILD         /* do not change this line */  
-/* #define GUCEF_LINUX_BUILD */
-#define GUCEF_MSWIN_BUILD 
+// #define GUCEF_LINUX_BUILD
+// #define GUCEF_MSWIN_BUILD
 
 /*-------------------------------------------------------------------------*/
 
 /*
- *      Do you wish to manually define wheter you are building or using a
- *      dynamicly linked library ?
- *      Manual is not recommended unless the macros do not fully support your
- *      compiler.
+ *      Switches for setting of the calling convention used
+ *      Defaults to CALLSPEC_C
  */
-#undef GUCEF_MANUAL_EXPORT_DEFINE      /* do not change this line */  
-/* #define GUCEF_MANUAL_EXPORT_DEFINE */
+// #define GUCEF_USE_CALLSPEC_C
+// #define GUCEF_USE_CALLSPEC_STD
+// #define GUCEF_USE_CALLSPEC_PASCAL
+// #define GUCEF_USE_CALLSPEC_FAST
 
-/*
- *      Dynamic or static linking ?
- *      and build the dynamic linked library or use it ?
- */
-#undef GUCEF_BUILD_DLL      /* do not change this line */  
-#undef GUCEF_USE_DLL        /* do not change this line */   
-/* #define GUCEF_BUILD_DLL */
-/* #define GUCEF_USE_DLL */
+// #define GUCEF_USE_PLUGIN_CALLSPEC_C
+// #define GUCEF_USE_PLUGIN_CALLSPEC_STD
+// #define GUCEF_USE_PLUGIN_CALLSPEC_PASCAL
+// #define GUCEF_USE_PLUGIN_CALLSPEC_FAST
 
 /*-------------------------------------------------------------------------*/
 
 /*
- *      Switches for setting the calling convention used by the gucefCORE
- *      module. Please enable only 1, no more, no less.
+ *      Switches for manually setting the bit target
+ *      Default is 32bit, may be able to autodetect
  */
-#undef GUCEF_USE_CALLSPEC_C                /* do not change this line */
-#undef GUCEF_USE_CALLSPEC_STD              /* do not change this line */ 
-#undef GUCEF_USE_CALLSPEC_PASCAL           /* do not change this line */ 
-#undef GUCEF_USE_CALLSPEC_FAST             /* do not change this line */
-#undef GUCEF_USE_PLUGIN_CALLSPEC_C         /* do not change this line */
-#undef GUCEF_USE_PLUGIN_CALLSPEC_STD       /* do not change this line */ 
-#undef GUCEF_USE_PLUGIN_CALLSPEC_PASCAL    /* do not change this line */ 
-#undef GUCEF_USE_PLUGIN_CALLSPEC_FAST      /* do not change this line */
-  
-#define GUCEF_USE_CALLSPEC_C 
-/* #define GUCEF_USE_CALLSPEC_STD */
-/* #define GUCEF_USE_CALLSPEC_PASCAL */
-/* #define GUCEF_USE_CALLSPEC_FAST */
-
-#define GUCEF_USE_PLUGIN_CALLSPEC_C 
-/* #define GUCEF_USE_PLUGIN_CALLSPEC_STD */
-/* #define GUCEF_USE_PLUGIN_CALLSPEC_PASCAL */
-/* #define GUCEF_USE_PLUGIN_CALLSPEC_FAST */
+// #define GUCEF_32BIT
+// #define GUCEF_64BIT
 
 /*-------------------------------------------------------------------------*/
 
 /*
- *      Wheter or not to use the build swiches here to specify manually what
- *      the bit target is.
+ *      Debug mode
+ *      Autodetects from the _DEBUG define
  */
-#undef GUCEF_MANUAL_BITTARGET_DEFINE      /* do not change this line */  
-#define GUCEF_MANUAL_BITTARGET_DEFINE
-
-/*
- *      Switches for manually setting the bit target to either 32 or 64 bit
- *      These switches have no effect if MANUAL_BITTARGET_DEFINE is not defined.
- */
-#undef GUCEF_32BIT      /* do not change this line */
-#undef GUCEF_64BIT      /* do not change this line */ 
-#define GUCEF_32BIT
-/* #define GUCEF_64BIT */
-
-/*-------------------------------------------------------------------------*/
-
-/*
- *      Wheter or not to determine if we are building in debug mode automaticly.
- *      If you enable this manual setting of debug mode then the next setting
- *      is the one that determines wheter we are in debug mode or not.
- */
-#undef GUCEF_MANUAL_DEBUG_MODE_DEFINE      /* do not change this line */  
-/* #define GUCEF_MANUAL_DEBUG_MODE_DEFINE */
-
-/*
- *      Wheter to build in debug mode, meaning additional debug info will be
- *      generated run-time. This will howerver slow down program excecution and
- *      use more memory.
- */
-#undef GUCEF_DEBUG_MODE      /* do not change this line */ 
-/* #define GUCEF_DEBUG_MODE */
+// #define GUCEF_DEBUG_MODE
+// #define GUCEF_DEBUG_VERBOSE
 
 /*-------------------------------------------------------------------------*/
 
@@ -135,8 +79,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 30-09-2006 :
+       - Logan: Modified to remove GUCEF_MANUAL_* defines, cleaned up
+                Lets keep this simple :)
 - 29-09-2006 :
        - Dinand: Initial version of this file.
 
 -----------------------------------------------------------------------------*/
-

@@ -28,20 +28,20 @@
  *      Maximum and minimal values for the simple types which we are about to
  *      define.
  */
-#define GUCEFMT_INT8MAX     127
-#define GUCEFMT_INT8MIN     (-128)
-#define GUCEFMT_UINT8MAX    256
-#define GUCEFMT_UINT8MIN    0
-#define GUCEFMT_INT16MAX    32767
-#define GUCEFMT_INT16MIN    (-32767-1)
-#define GUCEFMT_UINT16MAX   65535
-#define GUCEFMT_UINT16MIN   0
-#define GUCEFMT_INT32MAX    2147483647
-#define GUCEFMT_INT32MIN    (-2147483647-1)
-#define GUCEFMT_UINT32MAX   4294967295
-#define GUCEFMT_UINT32MIN   0
-#define GUCEFMT_FLOAT32MAX  (3.40282347E+38F)
-#define GUCEFMT_FLOAT32MIN  (-3.40282347E+38F-1)
+#define GUCEF_INT8MAX     127
+#define GUCEF_INT8MIN     (-128)
+#define GUCEF_UINT8MAX    256
+#define GUCEF_UINT8MIN    0
+#define GUCEF_INT16MAX    32767
+#define GUCEF_INT16MIN    (-32767-1)
+#define GUCEF_UINT16MAX   65535
+#define GUCEF_UINT16MIN   0
+#define GUCEF_INT32MAX    2147483647
+#define GUCEF_INT32MIN    (-2147483647-1)
+#define GUCEF_UINT32MAX   4294967295
+#define GUCEF_UINT32MIN   0
+#define GUCEF_FLOAT32MAX  (3.40282347E+38F)
+#define GUCEF_FLOAT32MIN  (-3.40282347E+38F-1)
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

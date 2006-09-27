@@ -50,20 +50,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Building or using the library?
- *      Defines:
- *      GUCEF_BUILD_DLL
- *      GUCEF_USE_DLL
- */
-#ifdef GUCEFMT_MANUAL_EXPORT_DEFINE
-    #if !( defined( GUCEFMT_BUILD_DLL ) | defined( GUCEFMT_USE_DLL ) )
-        #error You need to define whether we are building or using the library
-    #elif defined( GUCEFMT_BUILD_DLL ) & defined( GUCEFMT_USE_DLL )
-        #error You have defined more than 1 build/target OS's
-    #endif /* GUCEFMT_LINUX_BUILD ? */  /* don't change this line */
-#endif /* GUCEFMT_MANUAL_EXPORT_DEFINE ? */
-
 /*-------------------------------------------------------------------------*/
 
 /*
@@ -73,28 +59,26 @@
  *      GUCEF_EXPORT_C_CODE
  *      GUCEF_EXPORT_CPP_CODE
  */
-#ifdef GUCEFMT_BUILD_DLL
-#if !(defined(GUCEFMT_EXPORT_C_CODE) | defined(GUCEFMT_EXPORT_CPP_CODE))
-    #define GUCEFMT_EXPORT_C_CODE
-    #define GUCEFMT_EXPORT_CPP_CODE
-#endif
+#ifdef GUCEFMT_BUILD_MODULE
+    #if !(defined(GUCEFMT_EXPORT_C_CODE) | defined(GUCEFMT_EXPORT_CPP_CODE))
+        #define GUCEFMT_EXPORT_C_CODE
+        #define GUCEFMT_EXPORT_CPP_CODE
+    #endif
+
+    #define GUCEFMT_EXPORT GUCEF_EXPORT
+#else
+    #define GUCEFMT_EXPORT GUCEF_IMPORT
 #endif /* GUCEF_BUILD_DLL */
 
 /*-------------------------------------------------------------------------*/
 
 /*
- *      Macros for dynamic linking or static linking. Use the switches in the
  *      config file to control the export type.
  */
-#ifdef GUCEF_MSWIN_BUILD
-  #ifdef GUCEFMT_BUILD_DLL
-    #define GUCEFMT_EXPORT __declspec( dllexport )
-  #else
-    #define GUCEFMT_EXPORT __declspec( dllimport )
-  #endif /* GUCEFMT_BUILD_DLL */
+#ifdef GUCEFMT_BUILD_MODULE
+
 #else
-  #define GUCEFMT_EXPORT   /* Linux does not need an additional directive */
-#endif /* GUCEF_MSWIN_BUILD ? */
+#endif /* GUCEFMT_BUILD_DLL */
 
 /*-------------------------------------------------------------------------*/
 

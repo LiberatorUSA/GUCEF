@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_workspace_file>
-	<Workspace title="Workspace">
-		<Project filename="..\..\gucefMT\projects\CB\gucefMT.cbp" active="1" />
+	<Workspace title="GUCEF">
+		<Project filename="..\..\gucefMT\projects\CB\gucefMT.cbp" />
+		<Project filename="..\..\gucefCORE\projects\CB\gucefCORE.cbp" active="1" />
 	</Workspace>
 </CodeBlocks_workspace_file>

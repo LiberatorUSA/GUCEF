@@ -36,24 +36,12 @@
 //-------------------------------------------------------------------------*/
 
 /*
- *      Do you wish to manually define wheter you are building or using a
- *      dynamicly linked library ?
- *      Manual is not recommended unless the macros do not fully support your
- *      compiler.
+ *      GUCEFMT_BUILD_DLL
+ *
+ *      It is best to set this in your project/make file, you can however
+ *      set this here if your environment does not allow
  */
-#undef GUCEFMT_MANUAL_EXPORT_DEFINE      /* do not change this line */  
-/* #define GUCEFMT_MANUAL_EXPORT_DEFINE */
-
-/*
- *      Dynamic or static linking ?
- *      and build the dynamic linked library or use it ?
- */
-#ifdef GUCEFMT_MANUAL_EXPORT_DEFINE         /* do not change this line */ 
-#undef GUCEFMT_BUILD_DLL                    /* do not change this line */  
-#undef GUCEFMT_USE_DLL                      /* do not change this line */   
-#endif /* GUCEFMT_MANUAL_EXPORT_DEFINE ? */ /* do not change this line */ 
-/* #define GUCEFMT_BUILD_DLL */
-/* #define GUCEFMT_USE_DLL */
+// #define GUCEFMT_BUILD_DLL
 
 /*-------------------------------------------------------------------------*/
 
