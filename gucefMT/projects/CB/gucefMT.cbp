@@ -37,9 +37,9 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add option="-DGUCEF_MSWIN_BUILD" />
-			<Add option="-DGUCEFMT_BUILD_DLL" />
+			<Add option="-DGUCEFMT_BUILD_MODULE" />
 			<Add directory="..\..\include" />
+			<Add directory="..\..\..\common\include" />
 		</Compiler>
 		<ExtraCommands>
 			<Add after="CMD /C COPY /Y $($(TARGET_NAME)_OUTPUT_FILE) ..\..\..\common\$(TARGET_NAME)_MGW\" />
