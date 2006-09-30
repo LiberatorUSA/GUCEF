@@ -156,26 +156,26 @@ GUCEF_NAMESPACE_END
 //-------------------------------------------------------------------------//
 
 - 24-08-2005 :
-        - implemented GetNewFile()
-        - reworked the AddRoot() and root administration mechanisms. This allows
+        - Dinand: implemented GetNewFile()
+        - Dinand: reworked the AddRoot() and root administration mechanisms. This allows
           support for writeable roots and storage of the relative paths without
           data duplication.
-        - Added support for new writeable files (exclusive access only)
-        - Added support for read & write files (exclusive access only)
+        - Dinand: Added support for new writeable files (exclusive access only)
+        - Dinand: Added support for read & write files (exclusive access only)
 - 18-05-2005 :
-        - Fixed a bug in FileExists(): If the recource didn't exist the code would get
+        - Dinand: Fixed a bug in FileExists(): If the recource didn't exist the code would get
           stuck in a loop.
 - 01-05-2005 :
-        - Fixed array bounds write violation in LoadFromDiskCache()
-        - Fixed a bug in Unload(): The last cached item's access object was
+        - Dinand: Fixed array bounds write violation in LoadFromDiskCache()
+        - Dinand: Fixed a bug in Unload(): The last cached item's access object was
           deleted twice.
-        - Unload() no longer has to search for the handle entry saving us some time           
+        - Dinand: Unload() no longer has to search for the handle entry saving us some time           
 - 26-04-2005 :
-        - Fixed a bug in LoadFromDisk(): file information storage accessed an
+        - Dinand: Fixed a bug in LoadFromDisk(): file information storage accessed an
           invalid heap entry if no storage space was available.
-        - Fixed a bug in Unload(): The last cached item's access object was
+        - Dinand: Fixed a bug in Unload(): The last cached item's access object was
           deleted twice.  
 - 12-02-2005 :
-        - Initial implementation
+        - Dinand: Initial implementation
 
 -----------------------------------------------------------------------------*/
