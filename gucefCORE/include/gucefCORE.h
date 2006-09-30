@@ -437,6 +437,7 @@
        - Dinand: re-Added CIPlugin
        - Dinand: Removed CEventPump
        - Dinand: Removed CEventPumpClient
+       - Dinand: Removed CStringStorage
 - 21-09-2005 :
        - Dinand: Added CValueList
 - 15-05-2005 :

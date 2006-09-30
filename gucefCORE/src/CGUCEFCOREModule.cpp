@@ -36,11 +36,6 @@
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
-#ifndef GUCEF_CORE_CSTRINGSTORAGE_H
-#include "CStringStorage.h"             /* central string repository */
-#define GUCEF_CORE_CSTRINGSTORAGE_H
-#endif /* GUCEF_CORE_CSTRINGSTORAGE_H ? */
-
 #ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
 #include "CDStoreCodecRegistry.h"       /* registry for data storage codecs */
 #define GUCEF_CORE_CDSTORECODECREGISTRY_H
@@ -160,8 +155,7 @@ CGUCEFCOREModule::Load( void )
         /*
          *      Instantiate all the singletons
          */
-        CNotificationIDRegistry::Instance();
-        CStringStorage::Instance();
+        CNotificationIDRegistry::Instance();        
         CPluginControl::Instance();         
         CDStoreCodecRegistry::Instance();
         CDStoreCodecPluginManager::Instance();
@@ -204,7 +198,6 @@ CGUCEFCOREModule::Unload( void )
         CDStoreCodecPluginManager::Deinstance();
         CDStoreCodecRegistry::Deinstance();
         CPluginControl::Deinstance();
-        CStringStorage::Deinstance();
         CNotificationIDRegistry::Deinstance();
         
         /*

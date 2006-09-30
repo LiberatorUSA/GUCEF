@@ -37,11 +37,11 @@
 /*
  *      Application entry point
  */
-int __stdcall
+int APIENTRY 
 WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
+           HINSTANCE hprevinstance ,
+           LPSTR lpcmdline         ,
+           int ncmdshow            )
 {TRACE;
         using namespace GUCEF::CORE;
                 

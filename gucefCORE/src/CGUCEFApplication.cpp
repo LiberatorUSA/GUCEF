@@ -66,6 +66,11 @@
 #define GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H
 #endif /* GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H ? */
 
+#ifndef GUCEF_CORE_COBSERVERPUMP_H
+#include "CObserverPump.h"
+#define GUCEF_CORE_COBSERVERPUMP_H
+#endif /* GUCEF_CORE_COBSERVERPUMP_H ? */
+
 #include "CGUCEFApplication.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -101,8 +106,7 @@ MT::CMutex CGUCEFApplication::m_mutex;
 
 CGUCEFApplication*
 CGUCEFApplication::Instance( void )
-{
-        GUCEF_BEGIN;
+{TRACE;
         m_mutex.Lock();
         if ( !_instance )
         {                
@@ -111,9 +115,17 @@ CGUCEFApplication::Instance( void )
                   */
                 _instance = new CGUCEFApplication();
                 CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
+                
+                /*
+                 *  We now register some sub-systems on purpose here.
+                 *  These are normally always registered but cannot auto-register
+                 *  because they are part of the construction of classes used in the
+                 *  CGUCEFApplication as well. This would cause a endless recursive loop.
+                 *  This is solved by doing it manually here
+                 */
+                CObserverPump::Instance()->RegisterSubSystem();                 
         }
         m_mutex.Unlock();
-        GUCEF_END;
         return _instance;
 }
 
@@ -121,14 +133,12 @@ CGUCEFApplication::Instance( void )
 
 void 
 CGUCEFApplication::Deinstance( void )
-{
-        GUCEF_BEGIN;
+{TRACE;
         m_mutex.Lock();
         CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
         delete _instance;
         _instance = NULL;
         m_mutex.Unlock();
-        GUCEF_END;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -143,8 +153,7 @@ CGUCEFApplication::CGUCEFApplication( void )
           m_minimalUpdateDelta( GUCEFCORE_UINT32MAX ) ,
           m_requiresPeriodicUpdates( false )          ,
           m_inNeedOfAnUpdate( false )
-{        
-        GUCEF_BEGIN;
+{TRACE;
 
         /*
          *      Initialize high-resolution timing
@@ -182,17 +191,14 @@ CGUCEFApplication::CGUCEFApplication( void )
         sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
                                  "GetApplicationDir"              ,
                                  args                             ,
-                                 this                             );                                                                  
-        GUCEF_END;                                                   
+                                 this                             );                                                  
 }
 
 /*-------------------------------------------------------------------------*/
 
 CGUCEFApplication::~CGUCEFApplication()
-{
-        GUCEF_BEGIN;
+{TRACE;
         GUCEFPrecisionTimerShutdown();
-        GUCEF_END;
 }
 
 /*-------------------------------------------------------------------------*/

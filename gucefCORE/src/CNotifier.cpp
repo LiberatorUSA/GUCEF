@@ -43,10 +43,10 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const std::string CNotifier::SubscribeEvent = "GUCEF::CORE::CNotifier::SubscribeEvent";
-const std::string CNotifier::UnsubscribeEvent = "GUCEF::CORE::CNotifier::UnsubscribeEvent";
-const std::string CNotifier::ModifyEvent = "GUCEF::CORE::CNotifier::ModifyEvent";
-const std::string CNotifier::DestructionEvent = "GUCEF::CORE::CNotifier::DestructionEvent";
+const CString CNotifier::SubscribeEvent = "GUCEF::CORE::CNotifier::SubscribeEvent";
+const CString CNotifier::UnsubscribeEvent = "GUCEF::CORE::CNotifier::UnsubscribeEvent";
+const CString CNotifier::ModifyEvent = "GUCEF::CORE::CNotifier::ModifyEvent";
+const CString CNotifier::DestructionEvent = "GUCEF::CORE::CNotifier::DestructionEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -496,7 +496,7 @@ CNotifier::GetDestructionEventID( void ) const
 std::string 
 CNotifier::GetTypeName( void ) const
 {
-    return "XtraBase::CNotifier";
+    return "GUCEF::CORE::CNotifier";
 }
 
 /*-------------------------------------------------------------------------*/
@@ -511,6 +511,16 @@ CNotifier::LockData( void )
 void 
 CNotifier::UnlockData( void )
 {
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CNotifier::NotifyObservers( const CString& eventName            ,
+                            CICloneable* eventData /* = NULL */ )
+{
+    NotifyObservers( CNotificationIDRegistry::Instance()->Lookup( eventName ) ,
+                     eventData                                                );
 }
 
 /*-------------------------------------------------------------------------//

@@ -456,10 +456,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CStringStorage.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\CSysConsole.cpp"
 				>
 			</File>
@@ -875,10 +871,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CStringMap.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CStringStorage.h"
 				>
 			</File>
 			<File

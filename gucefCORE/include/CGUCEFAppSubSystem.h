@@ -67,7 +67,7 @@ class EXPORT_CPP CGUCEFAppSubSystem : public CObservingNotifier
 {
     public:
     
-    CGUCEFAppSubSystem( void );
+    CGUCEFAppSubSystem( const bool registerSubSystem = false );
     
     virtual ~CGUCEFAppSubSystem();
         
@@ -76,6 +76,12 @@ class EXPORT_CPP CGUCEFAppSubSystem : public CObservingNotifier
     bool ArePeriodicUpdatesRequired( void ) const;
     
     UInt32 GetDesiredUpdateInterval( void ) const;
+    
+    void RegisterSubSystem( void );
+    
+    void UnregisterSubSystem( void );
+    
+    bool IsSubSystemRegistered( void ) const;
     
     protected:
     
@@ -112,6 +118,7 @@ class EXPORT_CPP CGUCEFAppSubSystem : public CObservingNotifier
     UInt32 m_updateInterval;
     bool m_inNeedOfAnUpdate;
     bool m_requiresPeriodicUpdates;
+    bool m_isRegistered;
 };
 
 /*-------------------------------------------------------------------------//

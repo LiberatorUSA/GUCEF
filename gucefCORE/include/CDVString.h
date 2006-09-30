@@ -26,10 +26,7 @@
 
 #include "gucef_new_off.h"        /* don't scare the STL with our memory manager */
 
-//#pragma warning( push )
-//#pragma warning( disable : 4530 ) /* STL exception handling complaint */ 
 #include <string>                 /* STL string class */
-//#pragma warning( pop )
 
 #ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
 #include "gucefCORE_macros.h"    /* macros that are GUCEF specific and generic macros */
@@ -175,9 +172,7 @@ class EXPORT_CPP CString
                           
         CStringList ParseElements( char seperator ) const;                          
                             
-        void Clear( void );                            
-                            
-        UInt32 GetID( void ) const;
+        void Clear( void );
         
         /**
          *      Utility member function for easy access to string caching
@@ -185,10 +180,8 @@ class EXPORT_CPP CString
         UInt32 Cache( void ) const;                                                                              
 
         private:
-        CStringStorage* _store; /**< singleton central string storage, pointer here for efficiency */
-        const char* _string;    /**< our actual null-terminated string */
-        UInt32 _length;         /**< length of the string */
-        UInt32 _stringid;       /**< id for refrence counting */  
+        char* m_string;    /**< our actual null-terminated string */
+        UInt32 m_length;   /**< length of the string */  
 };
 
 /*-------------------------------------------------------------------------*/
@@ -218,44 +211,52 @@ EXPORT_CPP CString operator+( const char* lhs, const CString& rhs );
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 01-10-2006 :
+        - Dinand: This string implementation is no longer refrence counted.
+          There is no way to make it both refrence counted and threadsafe at the same time
+          without using some gobal mechanism which in turn causes problems when using strings
+          as global variables.
+          Since most people already assume strings dont have stellar performance I decided to
+          rewrite the code to get rid of the refrence counting and simply allocate memory 
+          when needed
 - 05-05-2005 :
-        - Fixed a bug in operator+=( const CString &other ): the old string was 
+        - Dinand: Fixed a bug in operator+=( const CString &other ): the old string was 
           unregistered before the combo was made causing data loss.
 - 24-04-2005 :
-        - Added Lowercase()
-        - Added Uppercase()
-        - Added SubstrToSubstr()
+        - Dinand: Added Lowercase()
+        - Dinand: Added Uppercase()
+        - Dinand: Added SubstrToSubstr()
 - 23-04-2005 :
-        - Fixed a length setting bug in the constructor that accepts a C-string
+        - Dinand: Fixed a length setting bug in the constructor that accepts a C-string
           with a given length.
 - 18-04-2005 :
-        - Added lots of safety code in the mutation operators (=, +=, ect.)
+        - Dinand: Added lots of safety code in the mutation operators (=, +=, ect.)
           NULL pointers can now safely be added or assigned. They will be treated
           as an string with length 0.
 - 11-04-2005 :
-        - Added include that disabled the memory manager defines before including
+        - Dinand: Added include that disabled the memory manager defines before including
           the STL header. The STL can't handle our manager and would freak out.
           The subsequent inclusion of the macro file will reenable the defines
           if needed.
 - 10-04-2005 :
-        - Fixed: String length wasn't set when using Set()
+        - Dinand: Fixed: String length wasn't set when using Set()
 - 05-04-2005 :
-        - Empty strings (ie length 0) will no longer contact the central depot
+        - Dinand: Empty strings (ie length 0) will no longer contact the central depot
 - 04-04-2005 :
-        - Added Clear()
-        - Added SubstrToChar()
-        - Fixed: self assign protection for assignment operator
-        - Fixed: you can now safely assign an NULL pointer
-        - Added pointer to the central string storage depot. 
+        - Dinand: Added Clear()
+        - Dinand: Added SubstrToChar()
+        - Dinand: Fixed: self assign protection for assignment operator
+        - Dinand: Fixed: you can now safely assign an NULL pointer
+        - Dinand: Added pointer to the central string storage depot. 
           This reduces the number of mutex locks at the depot by about half so it's worth the 4
           extra bytes of memory.
 - 03-04-2005 :
-        - Fixed several string length bugs. The length data member simply wasnt
+        - Dinand: Fixed several string length bugs. The length data member simply wasnt
           updated in the = operator ect.
 - 13-11-2004 :
-        - Converted class to use refrence counting. 
+        - Dinand: Converted class to use refrence counting. 
 - 19-04-2004 :
-        - Designed and implemented this class.
+        - Dinand: Designed and implemented this class.
 
 -----------------------------------------------------------------------------*/
  

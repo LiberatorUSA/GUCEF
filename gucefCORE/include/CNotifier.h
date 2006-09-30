@@ -30,14 +30,10 @@
 #include "gucefCORE_ETypes.h"
 #include "CICloneable.h"
 
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CNOTIFIER_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -85,10 +81,10 @@ class EXPORT_CPP CNotifier
 {
     public:
 
-    static const std::string SubscribeEvent;
-    static const std::string UnsubscribeEvent;
-    static const std::string ModifyEvent;
-    static const std::string DestructionEvent;
+    static const CString SubscribeEvent;
+    static const CString UnsubscribeEvent;
+    static const CString ModifyEvent;
+    static const CString DestructionEvent;
 
     CNotifier( void );
 
@@ -202,6 +198,21 @@ class EXPORT_CPP CNotifier
     void NotifyObservers( const UInt32 eventid          ,
                           CICloneable* eventData = NULL );
 
+    /**
+     *  Dispatches the given eventid and eventData to all observers
+     *  that are subscribed to all events and the observers that are subscribed
+     *  to this specific eventid.
+     *
+     *  Note that the calling thread is the one in which the observer OnNotify 
+     *  event handlers will be processed. Keep this in mind when notification
+     *  occures across thread boundries.
+     *
+     *  Note that eventData is not copied. So when passing data across threads
+     *  considder allocating a copy and passing that in as the data argument.
+     */
+    void NotifyObservers( const CString& eventName      ,
+                          CICloneable* eventData = NULL );
+
     virtual void LockData( void );
     
     virtual void UnlockData( void );
@@ -249,12 +260,6 @@ class EXPORT_CPP CNotifier
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CNOTIFIER_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

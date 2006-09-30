@@ -48,16 +48,63 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUCEFAppSubSystem::CGUCEFAppSubSystem( void )
+CGUCEFAppSubSystem::CGUCEFAppSubSystem( const bool registerSubSystem /* = false */ )
+    : m_isRegistered( false )             ,
+      m_updateInterval( 0 )               ,
+      m_inNeedOfAnUpdate( false )         ,
+      m_requiresPeriodicUpdates( false )
 {TRACE;
-    CGUCEFApplication::Instance()->RegisterSubSystem( this );
+    
+    if ( registerSubSystem )
+    {
+        RegisterSubSystem();
+    }
 }
 
 /*--------------------------------------------------------------------------*/
 
 CGUCEFAppSubSystem::~CGUCEFAppSubSystem()
 {TRACE;
-    CGUCEFApplication::Instance()->UnregisterSubSystem( this );
+    
+    UnregisterSubSystem();
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CGUCEFAppSubSystem::RegisterSubSystem( void )
+{TRACE;
+    
+    if ( !m_isRegistered )
+    {
+        CGUCEFApplication::Instance()->RegisterSubSystem( this );
+        
+        if ( m_inNeedOfAnUpdate )
+        {
+            CGUCEFApplication::Instance()->DoRequestSubSysUpdate();
+        }        
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+    
+void
+CGUCEFAppSubSystem::UnregisterSubSystem( void )
+{TRACE;
+    
+    if ( m_isRegistered )
+    {
+        CGUCEFApplication::Instance()->UnregisterSubSystem( this );
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CGUCEFAppSubSystem::IsSubSystemRegistered( void ) const
+{TRACE;
+    
+    return m_isRegistered;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -84,7 +131,11 @@ CGUCEFAppSubSystem::RequestUpdate( void )
     if ( !m_inNeedOfAnUpdate )
     {
         m_inNeedOfAnUpdate = true;
-        CGUCEFApplication::Instance()->DoRequestSubSysUpdate();
+        
+        if ( m_isRegistered )
+        {
+            CGUCEFApplication::Instance()->DoRequestSubSysUpdate();
+        }
         return;
     }
     

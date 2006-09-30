@@ -23,6 +23,11 @@
 
 #include <assert.h>
 
+#ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#include "CNotificationIDRegistry.h"
+#define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
+
 #ifndef DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"           /* C++ string utils */ 
 #define DVCPPSTRINGUTILS_H
@@ -65,6 +70,8 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+const CORE::CString CInputController::InputDriverLoadedEvent = "GUCEF::INPUT::InputDriverLoadedEvent";
+const CORE::CString CInputController::InputDriverUnloadedEvent = "GUCEF::INPUT::InputDriverUnloadedEvent";
 CInputController* CInputController::m_instance = NULL;
 
 /*-------------------------------------------------------------------------//
@@ -84,9 +91,8 @@ CInputController::CInputController( void )
           #endif
 {TRACE;
 
-        GUCEF::CORE::CEventTypeRegistry* etreg = GUCEF::CORE::CEventTypeRegistry::Instance();
         CORE::CGUCEFApplication::Instance();
-        m_appinitevent = etreg->GetType( "GUCEF::CORE::CGUCEFApplication::INIT" );       
+        m_appinitevent = CORE::CNotificationIDRegistry::Instance()->Lookup( CORE::CGUCEFApplication::AppInitEvent );       
 }
 
 /*-------------------------------------------------------------------------*/
@@ -200,6 +206,7 @@ CInputController::SetDriver( CIInputDriver* driver )
                 
                 m_driver = driver;
                 m_driverisplugin = false;
+                NotifyObservers( InputDriverLoadedEvent );
                 return true;
         }
         return false;
@@ -227,6 +234,7 @@ CInputController::LoadDriverModule( const CORE::CString& filename  ,
                 if ( SetDriver( plugin ) )
                 {
                         m_driverisplugin = true;
+                        NotifyObservers( InputDriverLoadedEvent );
                         return true;
                 }
         }
@@ -246,6 +254,8 @@ CInputController::UnloadDriverModule( void )
                 
                 m_driver = NULL;
                 delete plugin;
+                
+                NotifyObservers( InputDriverUnloadedEvent );
         }
 }
 

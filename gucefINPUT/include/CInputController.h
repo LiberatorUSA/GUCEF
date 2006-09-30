@@ -69,10 +69,13 @@ class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
 {
     public:                
 
+    static const CORE::CString InputDriverLoadedEvent;
+    static const CORE::CString InputDriverUnloadedEvent;
+    
     static CInputController* Instance( void );                
     
-    CInputContext* CreateContext( const GUCEF::CORE::CValueList& params ,
-                                  CIInputHandler* handler = NULL        );
+    CInputContext* CreateContext( const CORE::CValueList& params ,
+                                  CIInputHandler* handler = NULL );
     
     void DestroyContext( CInputContext* context );
     
@@ -82,8 +85,8 @@ class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     
     const CIInputDriver* GetDriver( void ) const;
             
-    bool LoadDriverModule( const GUCEF::CORE::CString& filename ,
-                           const CORE::CValueList& params       );
+    bool LoadDriverModule( const CORE::CString& filename  ,
+                           const CORE::CValueList& params );
 
     protected:
         

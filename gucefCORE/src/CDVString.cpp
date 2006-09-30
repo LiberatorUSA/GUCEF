@@ -22,11 +22,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <string.h>
-
-#ifndef GUCEF_CORE_CSTRINGSTORAGE_H
-#include "CStringStorage.h"
-#define GUCEF_CORE_CSTRINGSTORAGE_H
-#endif /* GUCEF_CORE_CSTRINGSTORAGE_H ? */
+#include <assert.h>
 
 #ifndef GUCEF_CORE_CSTRINGLIST_H
 #include "CStringList.h"
@@ -61,164 +57,124 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CString::CString( void )
-        : _string( NULL )                      ,
-          _length( 0 )                         ,
-          _stringid( 0 )                       ,
-          _store( CStringStorage::Instance() )   
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+        : m_string( NULL ) ,
+          m_length( 0 )
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CString::CString( const CString &src )
-        : _string( NULL )     ,
-          _length( 0 )        ,
-          _stringid( 0 )      ,
-          _store( src._store )
-{
-        GUCEF_BEGIN;        
+        : m_string( NULL ) ,
+          m_length( 0 )
+{TRACE;        
         *this = src;
-        GUCEF_END;
 }
 
 /*-------------------------------------------------------------------------*/
  
 CString::CString( const std::string& src )
-        : _string( NULL )                      ,
-          _length( 0 )                         ,
-          _stringid( 0 )                       ,
-          _store( CStringStorage::Instance() )
-{
-        GUCEF_BEGIN;
-        CHECKMEM( _store, sizeof(CStringStorage) );
-        if ( src.size() )
-        {
-                _stringid = _store->RegisterString( src.c_str()         ,
-                                                    (UInt32)src.size()  ,
-                                                    &_string            );
-                _length = (UInt32)src.size();                                                                
-        }
-        GUCEF_END;                
+        : m_string( NULL ) ,
+          m_length( 0 )
+{TRACE;
+    
+    if ( src.size() )
+    {
+        m_length = (UInt32)src.size();
+        m_string = new char[ m_length+1 ];
+        assert( m_string );                                                                                
+        memcpy( m_string, src.c_str(), m_length+1 );
+    }                
 }
 
 /*-------------------------------------------------------------------------*/
 
 CString::CString( const char *src )
-        : _string( NULL )                      ,
-          _length( 0 )                         ,
-          _stringid( 0 )                       ,
-          _store( CStringStorage::Instance() )
+        : m_string( NULL ) ,
+          m_length( 0 )
 {TRACE;
-        //CHECKMEM( _store, sizeof(CStringStorage) );
-        if ( src )
-        {
-                _length = (UInt32)strlen( src );
-                _stringid = _store->RegisterString( src      ,
-                                                    _length  ,
-                                                    &_string );
-        }                                           
+    
+    if ( src )
+    {
+        m_length = (UInt32)strlen( src );
+        m_string = new char[ m_length+1 ];
+        assert( m_string );
+        memcpy( m_string, src, m_length+1 );
+    }                                           
 }
 
 /*-------------------------------------------------------------------------*/
 
 CString::CString( const char *src ,
                   UInt32 length   )
-        : _string( NULL )                      ,
-          _length( 0 )                         ,
-          _stringid( 0 )                       ,
-          _store( CStringStorage::Instance() )              
-{
-        GUCEF_BEGIN;
-        CHECKMEM( _store, sizeof(CStringStorage) );
-        if ( src && length )
-        {
-                _stringid = _store->RegisterString( src      ,
-                                                    length  ,
-                                                    &_string );
-                _length = length;                                                    
-        }
-        GUCEF_END;                                               
+        : m_string( NULL ) ,
+          m_length( 0 )           
+{TRACE;
+    
+    if ( src && length )
+    {
+        m_length = length;
+        m_string = new char[ m_length+1 ];
+        assert( m_string );                                                                                
+        memcpy( m_string, src, m_length+1 );                                 
+    }                                              
 }                  
 
 /*-------------------------------------------------------------------------*/
 
 CString::~CString()
-{
-        GUCEF_BEGIN;
-        if ( _stringid ) _store->UnregisterString( _stringid );
-        GUCEF_END;
+{TRACE;
+    
+    delete []m_string;
+    m_string = NULL;
+    m_length = 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CString&
 CString::operator=( const CString &src )
-{
-        GUCEF_BEGIN;
-        if ( this != &src )
+{TRACE;
+    
+    if ( &src != this )
+    {
+        delete []m_string;
+        m_string = NULL;
+        m_length = src.m_length;
+        
+        if ( m_length )
         {
-                if ( _stringid ) 
-                {
-                        CHECKMEM( _store, sizeof(CStringStorage) );
-                        _store->UnregisterString( _stringid );        
-                } 
-                if ( src._stringid )
-                {                       
-                        _store->RegisterStringCopy( src._stringid );
-                        _stringid = src._stringid;
-                        _string = src._string;
-                        _length = src._length;
-                        GUCEF_END;
-                        return *this;
-                }
-                _stringid = 0;
-                _length = 0;
-                _string = NULL;
-                GUCEF_END;
-                return *this;                 
+            m_string = new char[ m_length+1 ];
+            assert( m_string );                                                                                
+            memcpy( m_string, src.m_string, m_length+1 );        
         }
-        GUCEF_END;                
-        return *this;
+        
+        return *this;                 
+    }              
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CString&
 CString::operator=( const char *src )
-{
-        GUCEF_BEGIN;
-        if ( _stringid ) 
-        {
-                CHECKMEM( _store, sizeof(CStringStorage) );
-                int a = _stringid;
-                a = _stringid;
-                a = _stringid;
-                a = _stringid;
-                _store->UnregisterString( a );
-        }                
-        if ( src )
-        {                        
-                _length = (UInt32)strlen( src );
-                if ( _length )
-                {
-                        _stringid = _store->RegisterString( src      ,
-                                                            _length  ,
-                                                            &_string );
-                        GUCEF_END;                                                            
-                        return *this;                                                            
-                }
-                _string = NULL;
-                _stringid = 0;
-                GUCEF_END;
-                return *this;                                                    
-        }
-        _stringid = 0;
-        _length = 0;
-        _string = NULL;
-        GUCEF_END;                                                    
-        return *this;
+{TRACE;
+    
+    delete []m_string;
+    m_string = NULL;
+    m_length = 0;
+    
+    if ( src )
+    {
+        m_length = (UInt32)strlen( src );
+        m_string = new char[ m_length+1 ];
+        assert( m_string );
+        memcpy( m_string, src, m_length+1 );       
+        
+        return *this;                 
+    } 
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -226,11 +182,11 @@ CString::operator=( const char *src )
 bool
 CString::operator==( const char *other ) const
 {TRACE;
-        if ( !_string || !other )
+        if ( !m_string || !other )
         {
                 return false;        
         } 
-        return strcmp( _string ,
+        return strcmp( m_string ,
                        other   ) == 0;
 }
 
@@ -239,12 +195,12 @@ CString::operator==( const char *other ) const
 bool
 CString::operator==( const CString &other ) const
 {TRACE;
-        if ( !_string || !other._string )
+        if ( !m_string || !other.m_string )
         {
                 return false;        
         }         
-        return strcmp( _string       ,
-                       other._string ) == 0;
+        return strcmp( m_string       ,
+                       other.m_string ) == 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -252,12 +208,13 @@ CString::operator==( const CString &other ) const
 bool
 CString::operator!=( const CString &other ) const
 {TRACE;
-        if ( !_string || !other._string )
-        {
-                return false;        
-        }         
-        return strcmp( _string       ,
-                       other._string ) != 0;
+
+    if ( !m_string || !other.m_string )
+    {
+            return false;        
+    }         
+    return strcmp( m_string       ,
+                   other.m_string ) != 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -265,12 +222,13 @@ CString::operator!=( const CString &other ) const
 bool
 CString::operator!=( const char *other ) const
 {TRACE;
-        if ( !_string || !other )
-        {
-                return false;        
-        } 
-        return strcmp( _string ,
-                       other   ) != 0;
+
+    if ( !m_string || !other )
+    {
+            return false;        
+    } 
+    return strcmp( m_string ,
+                   other   ) != 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -278,7 +236,9 @@ CString::operator!=( const char *other ) const
 char
 CString::operator[]( const UInt32 index ) const
 {TRACE;
-        return _string[ index ];
+
+    assert( index < m_length );
+    return m_string[ index ];
 }
 
 /*-------------------------------------------------------------------------*/
@@ -286,9 +246,10 @@ CString::operator[]( const UInt32 index ) const
 bool 
 CString::operator<( const CString& other ) const
 {TRACE;
-    if ( _string && other._string )
+    
+    if ( m_string && other.m_string )
     {
-        return strcmp( _string, other._string ) < 0;
+        return strcmp( m_string, other.m_string ) < 0;
     }
     return false;        
 }
@@ -297,194 +258,107 @@ CString::operator<( const CString& other ) const
 
 CString::operator std::string() const
 {TRACE;
-    return std::string( _string );
+    
+    return std::string( m_string );
 }
 
 /*-------------------------------------------------------------------------*/
 /*
 CString::operator const char*() const
 {TRACE;
-        return _string;
+        return m_string;
 }
 */
 /*-------------------------------------------------------------------------*/
 
-/**
- *      This member functions allows you to set the string using a
- *      non null-terminated char array as the source. The source will
- *      be copyed and a null terminator will be added.
- */
 void
 CString::Set( const char *new_str ,
               UInt32 len          )
-{
-        GUCEF_BEGIN;
-        if ( _stringid )
-        { 
-                _store->UnregisterString( _stringid );
-        }                
-        
-        if ( new_str && len )
-        {        
-                _stringid = _store->RegisterString( new_str ,
-                                                    len     ,
-                                                    &_string );
-                _length = len;
-                GUCEF_END;
-                return;
-        }
-        
-        _string = NULL;
-        _length = 0;                
-        _stringid = 0;
-        GUCEF_END;
+{TRACE;
+    
+    if ( new_str && len )
+    {
+        m_length = len;
+        m_string = new char[ m_length+1 ];
+        assert( m_string );                                                                                
+        memcpy( m_string, new_str, m_length+1 );                                 
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
-
-/**
- *      This member functions allows you to add to the string using a
- *      non-null-terminated char array as the source. The source will
- *      be copyed and a null terminator will be added.
- */                  
+              
 void 
 CString::Append( const char *appendstr ,
                  UInt32 len            )
-{
-        GUCEF_BEGIN;
-        if ( appendstr && len )
-        {         
-                if ( _stringid ) 
-                {                  
-                        UInt32 oldstrid = _stringid;                              
-                        _stringid = _store->RegisterStringCombo( _string   ,
-                                                                 _length   ,
-                                                                 appendstr ,
-                                                                 len       ,
-                                                                 &_string  );
-                        _length += len;
-                        _store->UnregisterString( oldstrid );                                                                                      
-                }                                                                               
+{TRACE;
+    
+    if ( appendstr && len )
+    {
+        if ( m_length )
+        {
+            char* newString = new char[ m_length+len+1 ];       
+            assert( newString );                                                                                
+            memcpy( newString, m_string, m_length );
+            memcpy( newString+m_length, appendstr, len );            
+            m_length = m_length+len+1;
+            newString[ m_length ] = 0;            
+            delete []m_string;
+            m_string = newString;
         }
-        GUCEF_END;                                                                    
+        else
+        {
+            m_length = len;
+            m_string = new char[ m_length+1 ];
+            assert( m_string );                                                                                
+            memcpy( m_string, appendstr, m_length+1 );            
+        } 
+    }                                                                     
 }                 
 
 /*-------------------------------------------------------------------------*/
 
 CString&
 CString::operator+=( const CString &other )
-{
-        GUCEF_BEGIN;
-        if ( other._stringid )
-        {         
-                if ( _stringid ) 
-                {                  
-                        UInt32 oldstrid = _stringid;                              
-                        _stringid = _store->RegisterStringCombo( _string       ,
-                                                                 _length       ,
-                                                                 other._string ,
-                                                                 other._length ,
-                                                                 &_string      );
-                        _length += other._length;
-                        _store->UnregisterString( oldstrid );                        
-                        GUCEF_END;
-                        return *this;                                                                                        
-                }             
-                _store->RegisterStringCopy( _stringid );
-                _stringid = other._stringid;
-                _string = other._string;
-                _length = other._length;
-                GUCEF_END;
-                return *this;                                                                    
-        }
-        GUCEF_END;                                                                  
-        return *this;
+{TRACE;
+    
+    Append( other.m_string, other.m_length );                                                          
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CString&
 CString::operator+=( const char *other )
-{
-        GUCEF_BEGIN;
-        if ( other )
-        {           
-                if ( _stringid )
-                {    
-                        UInt32 oldstrid( _stringid ), length2 = (UInt32)strlen( other ); 
-                        _stringid = _store->RegisterStringCombo( _string   ,
-                                                                 _length   ,
-                                                                 other     ,
-                                                                 length2   ,
-                                                                 &_string  );
-                        _length += length2;                                          
-                        if ( oldstrid ) 
-                        {
-                                _store->UnregisterString( oldstrid );
-                        }
-                        GUCEF_END;
-                        return *this;                                
-                }
-                UInt32 len( (UInt32)strlen( other ) );    
-                _stringid = _store->RegisterString( other    ,
-                                                    len      ,
-                                                    &_string );
-                _length = len;
-                GUCEF_END;
-                return *this;                                        
-        }
-        GUCEF_END;                                                                  
-        return *this;
+{TRACE;
+
+    Append( other, UInt32( strlen( other ) ) );
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CString&
 CString::operator+=( char lastchar )
-{
-        GUCEF_BEGIN;
-        char tmpstr[ 2 ] = { 0, 0 };
-        *tmpstr = lastchar;
-        
-        if ( _stringid )
-        {      
-                UInt32 oldstrid( _stringid );
-                _stringid = _store->RegisterStringCombo( _string   ,
-                                                         _length   ,
-                                                         tmpstr    ,
-                                                         1         ,
-                                                         &_string  );
-                ++_length;                                                  
-                if ( oldstrid ) _store->UnregisterString( oldstrid );
-                GUCEF_END;
-                return *this;
-        }         
-        _stringid = _store->RegisterString( tmpstr   ,
-                                            1        ,
-                                            &_string );
-        _length = 1;
-        GUCEF_END;                                                     
-        return *this;        
+{TRACE;
+    
+    Append( &lastchar, 1 );                                                     
+    return *this;        
 }
 
 /*-------------------------------------------------------------------------*/
 
 const char*
 CString::C_String( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return _string;
+{TRACE;
+        return m_string;
 }
 
 /*-------------------------------------------------------------------------*/
 
 std::string 
 CString::STL_String( void ) const
-{
-        GUCEF_BEGIN;
-        std::string stlstr( _string );
-        GUCEF_END;
+{TRACE;
+        std::string stlstr( m_string );
         return stlstr;
 }
 
@@ -492,20 +366,8 @@ CString::STL_String( void ) const
 
 UInt32
 CString::Length( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return _length;
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt32 
-CString::GetID( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return _stringid;
+{TRACE;
+        return m_length;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -513,13 +375,12 @@ CString::GetID( void ) const
 CString 
 CString::ReplaceChar( char oldchar ,
                       char newchar ) const
-{
-        GUCEF_BEGIN;
-        if ( _length )
+{TRACE;
+        if ( m_length )
         {
-                char* str = new char[ _length+1 ];
-                memcpy( str, _string, _length+1 );
-                for ( UInt32 i=0; i<_length; ++i )
+                char* str = new char[ m_length+1 ];
+                memcpy( str, m_string, m_length+1 );
+                for ( UInt32 i=0; i<m_length; ++i )
                 {
                         if ( str[ i ] == oldchar )
                         {
@@ -528,11 +389,9 @@ CString::ReplaceChar( char oldchar ,
                 }
                 CString newstr( str );
                 delete []str;
-                GUCEF_END; 
                 return newstr;
         }
-        CString emptystr;                        
-        GUCEF_END;       
+        CString emptystr;       
         return emptystr;  
 }                             
 
@@ -541,25 +400,21 @@ CString::ReplaceChar( char oldchar ,
 void 
 CString::ReplaceSubstr( const CString& substr      ,
                         const CString& replacement )
-{
-        GUCEF_BEGIN;
-        GUCEF_END;        
+{TRACE;
+    
+    //@TODO @MAKEME
+    assert( 0 );      
 }
 
 /*-------------------------------------------------------------------------*/
 
 void 
 CString::Clear( void )
-{
-        GUCEF_BEGIN;
-        if ( _stringid ) 
-        {
-                _store->UnregisterString( _stringid );
-                _stringid = 0;
-        }                        
-        _length = 0;
-        _string = NULL;
-        GUCEF_END;        
+{TRACE;            
+
+    m_length = 0;
+    delete []m_string;
+    m_string = NULL;       
 }
 
 /*-------------------------------------------------------------------------*/
@@ -567,39 +422,35 @@ CString::Clear( void )
 CString 
 CString::SubstrToChar( char searchchar ,
                        bool startfront ) const
-{
-        GUCEF_BEGIN;
+{TRACE;
+
         if ( startfront )
         {
-                for ( UInt32 i=0; i<_length; ++i )
+                for ( UInt32 i=0; i<m_length; ++i )
                 {
-                        if ( _string[ i ] == searchchar )
+                        if ( m_string[ i ] == searchchar )
                         {
                                 CString substr;
-                                substr.Set( _string ,
-                                            i       );
-                                GUCEF_END;            
+                                substr.Set( m_string ,
+                                            i       );            
                                 return substr;
                         }
                 }
                 CString substr( *this );
-                GUCEF_END;
                 return substr;
         }
         
-        for ( Int32 i=_length-1; i>=0; --i )
+        for ( Int32 i=m_length-1; i>=0; --i )
         {
-                if ( _string[ i ] == searchchar )
+                if ( m_string[ i ] == searchchar )
                 {
                         CString substr;
-                        substr.Set( _string+(_length-i) ,
-                                    i                   );
-                        GUCEF_END;                                    
+                        substr.Set( m_string+(m_length-i) ,
+                                    i                   );                                   
                         return substr;
                 }
         }
         CString substr( *this );
-        GUCEF_END;
         return substr;        
 }
 
@@ -608,50 +459,45 @@ CString::SubstrToChar( char searchchar ,
 CString
 CString::SubstrToSubstr( const CString& searchstr ,
                          bool startfront          ) const
-{
-        GUCEF_BEGIN;
+{TRACE;
+
         UInt32 slen = searchstr.Length();
         
-        if ( slen > _length )
+        if ( slen > m_length )
         {
                 CString substr( *this );
-                GUCEF_END;
                 return substr;
         }
         
         if ( startfront )
         {
-                UInt32 max = _length - slen;
+                UInt32 max = m_length - slen;
                 for ( UInt32 i=0; i<max; ++i )
                 {
-                        if ( memcmp( _string+i, searchstr._string, slen ) == 0 )
+                        if ( memcmp( m_string+i, searchstr.m_string, slen ) == 0 )
                         {
                                 CString substr;
-                                substr.Set( _string ,
+                                substr.Set( m_string ,
                                             i       );
-                                GUCEF_END;            
                                 return substr;
                         }
                 }
                 CString substr( *this );
-                GUCEF_END;
                 return substr;
         }
         
-        UInt32 max = _length - slen;        
+        UInt32 max = m_length - slen;        
         for ( Int32 i=max-1; i>=0; --i )
         {
-                if ( memcmp( _string+i, searchstr._string, slen ) == 0 )
+                if ( memcmp( m_string+i, searchstr.m_string, slen ) == 0 )
                 {
                         CString substr;
-                        substr.Set( _string+(max-i) ,
+                        substr.Set( m_string+(max-i) ,
                                     i               );
-                        GUCEF_END;                                    
                         return substr;
                 }
         }
         CString substr( *this );
-        GUCEF_END;
         return substr; 
 }                         
 
@@ -660,34 +506,29 @@ CString::SubstrToSubstr( const CString& searchstr ,
 CString 
 CString::CutChars( UInt32 charcount ,
                    bool startfront  ) const
-{
-        GUCEF_BEGIN;
+{TRACE;
         if ( startfront )
         {
-                if ( charcount < _length )                
+                if ( charcount < m_length )                
                 {
-                        CString substr( _string+charcount ,
-                                        _length-charcount );
-                        GUCEF_END;
+                        CString substr( m_string+charcount ,
+                                        m_length-charcount );
                         return substr;                                        
                 }
                 
                 CString emptystr;
-                GUCEF_END;
                 return emptystr;
         }
         
-        if ( charcount < _length )        
+        if ( charcount < m_length )        
         {
                 CString substr;
-                substr.Set( _string+_length-charcount ,
-                            charcount                 );
-                GUCEF_END;                            
+                substr.Set( m_string+m_length-charcount ,
+                            charcount                 );                            
                 return substr;                                    
         }
         
         CString emptystr;
-        GUCEF_END;
         return emptystr;        
 }
 
@@ -695,71 +536,67 @@ CString::CutChars( UInt32 charcount ,
 
 void 
 CString::SetInt( Int32 value )                   
-{
-        GUCEF_BEGIN;
-        char intval[ 10 ];
-        sprintf( intval, "%d", value );        
-        *this = intval;
-        GUCEF_END;
+{TRACE;
+    
+    char intval[ 10 ];
+    sprintf( intval, "%d", value );        
+    *this = intval;
 }
 
 /*-------------------------------------------------------------------------*/
 
 Int32 
 CString::GetInt( void ) const
-{
-        GUCEF_BEGIN;
-        if ( _string )
-        {
-                GUCEF_END_RET( Int32, Str_To_Int( _string ) );
-                
-        }                        
-        GUCEF_END;
-        return 0;
+{TRACE;
+
+    if ( m_string )
+    {
+        return Str_To_Int( m_string );
+            
+    }                        
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CString 
 CString::Lowercase( void ) const
-{
-        GUCEF_BEGIN;
-        char* lcstr = new char[ _length+1 ];
-        memcpy( lcstr, _string, _length+1 );
-        for ( UInt32 i=0; i<_length; ++i )
-        {
-                if ( ( lcstr[ i ] > 64 ) &&
-                     ( lcstr[ i ] < 91 ) )
-                {
-                        lcstr[ i ] += 32;
-                }        
-        }
-        CString lower( lcstr, _length );
-        delete []lcstr;
-        GUCEF_END;
-        return lower;        
+{TRACE;
+        
+    char* lcstr = new char[ m_length+1 ];
+    memcpy( lcstr, m_string, m_length+1 );
+    for ( UInt32 i=0; i<m_length; ++i )
+    {
+            if ( ( lcstr[ i ] > 64 ) &&
+                 ( lcstr[ i ] < 91 ) )
+            {
+                    lcstr[ i ] += 32;
+            }        
+    }
+    CString lower( lcstr, m_length );
+    delete []lcstr;
+    return lower;        
 }
 
 /*-------------------------------------------------------------------------*/
         
 CString 
 CString::Uppercase( void ) const
-{
-        GUCEF_BEGIN;
-        char* ucstr = new char[ _length+1 ];
-        memcpy( ucstr, _string, _length+1 );
-        for ( UInt32 i=0; i<_length; ++i )
-        {
-                if ( ( ucstr[ i ] > 96 ) &&
-                     ( ucstr[ i ] < 123 ) )
-                {
-                        ucstr[ i ] -= 32;
-                }        
-        }
-        CString upper( ucstr, _length );
-        delete []ucstr;
-        GUCEF_END;
-        return upper;
+{TRACE;
+
+    char* ucstr = new char[ m_length+1 ];
+    memcpy( ucstr, m_string, m_length+1 );
+    for ( UInt32 i=0; i<m_length; ++i )
+    {
+            if ( ( ucstr[ i ] > 96 ) &&
+                 ( ucstr[ i ] < 123 ) )
+            {
+                    ucstr[ i ] -= 32;
+            }        
+    }
+    CString upper( ucstr, m_length );
+    delete []ucstr;
+    return upper;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -767,12 +604,12 @@ CString::Uppercase( void ) const
 Int32 
 CString::HasChar( char searchchar  ,
                   bool startfront  ) const
-{
+{TRACE;
         if ( startfront )
         {
-                for ( UInt32 i=0; i<_length; ++i )
+                for ( UInt32 i=0; i<m_length; ++i )
                 {
-                        if ( _string[ i ] == searchchar )
+                        if ( m_string[ i ] == searchchar )
                         {
                                 return i;
                         }                
@@ -780,11 +617,11 @@ CString::HasChar( char searchchar  ,
                 return -1;
         }
         
-        for ( Int32 i=_length-1; i>=0; --i )
+        for ( Int32 i=m_length-1; i>=0; --i )
         {
-                if ( _string[ i ] == searchchar )
+                if ( m_string[ i ] == searchchar )
                 {
-                        return _length-i;
+                        return m_length-i;
                 }                
         }
         return -1;        
@@ -794,26 +631,25 @@ CString::HasChar( char searchchar  ,
 
 CStringList 
 CString::ParseElements( char seperator ) const
-{
-        GUCEF_BEGIN;
+{TRACE;
+
         CStringList list;
         CString entry;
         UInt32 last = 0;
-        for ( UInt32 i=0; i<_length; ++i )
+        for ( UInt32 i=0; i<m_length; ++i )
         {
-                if ( _string[ i ] == seperator )
+                if ( m_string[ i ] == seperator )
                 {
-                        entry.Set( _string+last ,
+                        entry.Set( m_string+last ,
                                    i-last       );
                         list.Append( entry );
                         last = i;                    
                 }  
         }
         /* add last item */
-        entry.Set( _string+last ,
-                   _length-last );        
+        entry.Set( m_string+last ,
+                   m_length-last );        
         list.Append( entry ); 
-        GUCEF_END;
         return list;        
 }
 
@@ -822,19 +658,17 @@ CString::ParseElements( char seperator ) const
 Int32 
 CString::HasSubstr( const CString& substr ,
                     bool startfront       ) const
-{
-        GUCEF_BEGIN;
+{TRACE;
         UInt32 slen = substr.Length();
         
-        if ( slen > _length )
+        if ( slen > m_length )
         {
-                GUCEF_END;
                 return -1;
         }
         
-        if ( substr._length == _length )
+        if ( substr.m_length == m_length )
         {
-                if ( memcmp( _string, substr._string, _length ) == 0 )
+                if ( memcmp( m_string, substr.m_string, m_length ) == 0 )
                 {
                         return 0;
                 }
@@ -843,29 +677,25 @@ CString::HasSubstr( const CString& substr ,
         
         if ( startfront )
         {
-                UInt32 max = _length - slen;
+                UInt32 max = m_length - slen;
                 for ( UInt32 i=0; i<=max; ++i )
                 {
-                        if ( memcmp( _string+i, substr._string, slen ) == 0 )
-                        {
-                                GUCEF_END;            
+                        if ( memcmp( m_string+i, substr.m_string, slen ) == 0 )
+                        {           
                                 return i;
                         }
                 }
-                GUCEF_END;
                 return -1;
         }
         
-        UInt32 max = _length - slen;        
+        UInt32 max = m_length - slen;        
         for ( Int32 i=max; i>=0; --i )
         {
-                if ( memcmp( _string+i, substr._string, slen ) == 0 )
-                {
-                        GUCEF_END;                                    
+                if ( memcmp( m_string+i, substr.m_string, slen ) == 0 )
+                {                                    
                         return max-i;
                 }
         }
-        GUCEF_END;
         return -1;
 }
 
@@ -895,10 +725,8 @@ CString
 operator+( const CString& lhs ,
            const CString& rhs )
 {TRACE;
-        GUCEF_BEGIN;
         CString tmp( lhs );
         tmp += rhs;
-        GUCEF_END;
         return tmp;
 }
 
@@ -908,10 +736,8 @@ CString
 operator+( const CString& lhs ,
            const char* rhs    )
 {TRACE;
-        GUCEF_BEGIN;
         CString tmp( lhs );
         tmp += rhs;
-        GUCEF_END;
         return tmp;
 }
 
@@ -921,10 +747,8 @@ CString
 operator+( const char* lhs    ,  
            const CString& rhs )
 {TRACE;
-        GUCEF_BEGIN;
         CString tmp( lhs );
         tmp += rhs;
-        GUCEF_END;
         return tmp;        
 }
 

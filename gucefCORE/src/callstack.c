@@ -52,7 +52,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define STACK_RESIZE_AMOUNT     10
+#define STACK_RESIZE_AMOUNT     256
 
 #ifdef MSWIN_BUILD
   #define EOL                   "\r\n"
