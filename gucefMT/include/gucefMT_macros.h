@@ -39,6 +39,11 @@
 #define GUCEF_MACROS_H
 #endif /* GUCEF_MACROS_H ? */
 
+#ifndef GUCEF_MT_ETYPES_H
+#include "gucefMT_ETypes.h"        /* type definitions of simple types */
+#define GUCEF_MT_ETYPES_H
+#endif /* GUCEF_MT_ETYPES_H ? */
+
 #ifndef GUCEF_MT_BASICMACROS_H
 #include "gucefMT_basicMacros.h"   /* generic often used macros */
 #define GUCEF_MT_BASICMACROS_H
@@ -49,8 +54,6 @@
 //      GENERAL MACROS                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-/*-------------------------------------------------------------------------*/
 
 /*
  *      If we are building or using a DLL then it is sometimes desireable to
@@ -64,21 +67,10 @@
         #define GUCEFMT_EXPORT_C_CODE
         #define GUCEFMT_EXPORT_CPP_CODE
     #endif
-
     #define GUCEFMT_EXPORT GUCEF_EXPORT
 #else
     #define GUCEFMT_EXPORT GUCEF_IMPORT
 #endif /* GUCEF_BUILD_DLL */
-
-/*-------------------------------------------------------------------------*/
-
-/*
- *      config file to control the export type.
- */
-#ifdef GUCEFMT_BUILD_MODULE
-
-#else
-#endif /* GUCEFMT_BUILD_DLL */
 
 /*-------------------------------------------------------------------------*/
 

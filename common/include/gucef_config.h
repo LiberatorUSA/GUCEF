@@ -33,7 +33,7 @@
  *      By default autodetects
  */
 // #define GUCEF_LINUX_BUILD
-// #define GUCEF_MSWIN_BUILD
+#define GUCEF_MSWIN_BUILD
 
 /*-------------------------------------------------------------------------*/
 
@@ -41,7 +41,7 @@
  *      Switches for setting of the calling convention used
  *      Defaults to CALLSPEC_C
  */
-// #define GUCEF_USE_CALLSPEC_C
+#define GUCEF_USE_CALLSPEC_C
 // #define GUCEF_USE_CALLSPEC_STD
 // #define GUCEF_USE_CALLSPEC_PASCAL
 // #define GUCEF_USE_CALLSPEC_FAST
@@ -57,7 +57,7 @@
  *      Switches for manually setting the bit target
  *      Default is 32bit, may be able to autodetect
  */
-// #define GUCEF_32BIT
+#define GUCEF_32BIT
 // #define GUCEF_64BIT
 
 /*-------------------------------------------------------------------------*/

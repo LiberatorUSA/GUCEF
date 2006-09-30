@@ -71,13 +71,13 @@ class EXPORT_CPP CICodec : public CICloneable ,
         
         virtual ~CICodec();
         
-        virtual bool Encode( const TDynamicBufferList& src  ,
-                             const UInt32 sourceBuffersUsed ,
+        virtual bool Encode( const void* sourceData         ,
+                             const UInt32 sourceBuffersSize ,
                              TDynamicBufferList& dest       ,
                              UInt32& destBuffersUsed        ) = 0;
 
-        virtual bool Decode( const TDynamicBufferList& src  ,
-                             const UInt32 sourceBuffersUsed ,
+        virtual bool Decode( const void* sourceData         ,
+                             const UInt32 sourceBuffersSize ,
                              TDynamicBufferList& dest       ,
                              UInt32& destBuffersUsed        ) = 0;                             
 };

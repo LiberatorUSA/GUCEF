@@ -36,12 +36,15 @@
 //-------------------------------------------------------------------------*/
 
 /*
- *      GUCEFMT_BUILD_DLL
+ *      GUCEFMT_BUILD_MODULE
  *
  *      It is best to set this in your project/make file, you can however
  *      set this here if your environment does not allow
  */
-// #define GUCEFMT_BUILD_DLL
+// #define GUCEFMT_BUILD_MODULE
+
+#define GUCEFMT_EXPORT_C_CODE
+#define GUCEFMT_EXPORT_CPP_CODE
 
 /*-------------------------------------------------------------------------*/
 

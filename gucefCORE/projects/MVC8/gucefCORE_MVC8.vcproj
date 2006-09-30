@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\Debug_MVC8"
-			IntermediateDirectory="..\..\Debug_MVC8"
+			OutputDirectory="..\..\bin\Debug_MVC8"
+			IntermediateDirectory="..\..\bin\Debug_MVC8"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			CharacterSet="2"
@@ -43,8 +43,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefMT\include;..\..\dependancy;..\..\dependancy\md5"
-				PreprocessorDefinitions="BUILD_GUCEFCORE_DLL;WIN32;_WINDOWS;_DEBUG"
+				AdditionalIncludeDirectories="..\..\..\common\include;..\..\include;..\..\..\gucefMT\include;..\..\dependancy;..\..\dependancy\md5"
+				PreprocessorDefinitions="BUILD_GUCEFCORE_DLL;WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
@@ -75,7 +75,7 @@
 				AdditionalDependencies="gucefMT_MVC8_d.lib Winmm.lib"
 				OutputFile="$(OutDir)/gucefCORE_MVC8_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\gucefMT\Debug_MVC8"
+				AdditionalLibraryDirectories="..\..\..\gucefMT\bin\Debug_MVC8"
 				GenerateManifest="true"
 				ModuleDefinitionFile="gucefCORE_MVC8_d.def"
 				GenerateDebugInformation="true"
@@ -106,7 +106,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC8"
+				CommandLine="copy $(TargetPath) ..\..\..\common\bin\Debug_MVC8"
 			/>
 		</Configuration>
 		<Configuration
@@ -137,7 +137,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_AFXEXT"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"
 				WarningLevel="3"

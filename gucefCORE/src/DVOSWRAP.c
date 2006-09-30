@@ -412,7 +412,7 @@ GUCEFSetEnv( const char* key   ,
         UInt32 retval;        
         char* envstr = malloc( strlen( key ) + strlen( value )+2 );
         sprintf( envstr, "%s=%s", key, value );
-        retval = putenv( envstr );
+        retval = _putenv( envstr );
         free( envstr );
         return retval == 0;
         

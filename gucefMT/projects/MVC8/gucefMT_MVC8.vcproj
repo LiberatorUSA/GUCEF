@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../Debug_MVC8"
-			IntermediateDirectory="../../Debug_MVC8"
+			OutputDirectory="../../bin/Debug_MVC8"
+			IntermediateDirectory="../../bin/Debug_MVC8"
 			ConfigurationType="2"
 			CharacterSet="1"
 			BuildLogFile="$(IntDir)\BuildLog.htm"
@@ -98,7 +98,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC8"
+				CommandLine="copy $(TargetPath) ..\..\..\common\bin\Debug_MVC8"
 			/>
 		</Configuration>
 		<Configuration

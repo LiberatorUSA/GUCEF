@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\Debug_MVC8"
-			IntermediateDirectory="..\..\Debug_MVC8"
+			OutputDirectory="..\..\bin\Debug_MVC8"
+			IntermediateDirectory="..\..\bin\Debug_MVC8"
 			ConfigurationType="1"
 			UseOfMFC="2"
 			CharacterSet="2"
@@ -70,7 +70,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="gucefCORE_MVC8_d.lib gucefMT_MVC8_d.lib gucefPATCHER_MVC8_d.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\gucefCORE\Debug_MVC8;..\..\..\gucefMT\Debug_MVC8;..\..\..\gucefPATCHER\Debug_MVC8"
+				AdditionalLibraryDirectories="..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\gucefMT\bin\Debug_MVC8;..\..\..\gucefPATCHER\bin\Debug_MVC8"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -98,7 +98,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC8"
+				CommandLine="copy $(TargetPath) ..\..\..\common\bin\Debug_MVC8"
 			/>
 		</Configuration>
 		<Configuration

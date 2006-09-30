@@ -16,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\Debug_MVC8"
-			IntermediateDirectory="..\..\Debug_MVC8"
+			OutputDirectory="..\..\bin\Debug_MVC8"
+			IntermediateDirectory="..\..\bin\Debug_MVC8"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\gucefCORE\include;..\..\..\gucefMT\include"
+				AdditionalIncludeDirectories="..\..\..\gucefCORE\include;..\..\..\gucefMT\include;..\..\..\common\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -65,7 +65,7 @@
 				AdditionalDependencies="gucefCORE_MVC8_d.lib gucefMT_MVC8_d.lib"
 				OutputFile="$(OutDir)/gucefCORE_TestApp_MVC8_d.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\gucefCORE\Debug_MVC8;..\..\..\gucefMT\Debug_MVC8"
+				AdditionalLibraryDirectories="..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\gucefMT\bin\Debug_MVC8"
 				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/gucefCORE_TestApp.pdb"
@@ -95,7 +95,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC8"
+				CommandLine="copy $(TargetPath) ..\..\..\common\bin\Debug_MVC8"
 			/>
 		</Configuration>
 		<Configuration

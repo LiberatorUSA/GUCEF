@@ -42,7 +42,7 @@
 /*
  *      O/S Detection macro.
  */
-#if !(defined(GUCEF_LINUX_BUILD) | defined(GUCEF_MSWIN_BUILD))
+#if !( defined(GUCEF_LINUX_BUILD) || defined(GUCEF_MSWIN_BUILD) )
   #if defined( WIN32 ) || defined( _WIN32 )
     #define GUCEF_MSWIN_BUILD
   #elif defined( linux )
@@ -73,7 +73,7 @@
 /*
  *      Bit target
  */
-#if !(defined(GUCEF_32BIT) | defined(GUCEF_64BIT))
+#if !( defined(GUCEF_32BIT) || defined(GUCEF_64BIT) )
     #define GUCEF_32BIT
 #endif
 
@@ -181,7 +181,6 @@
 
 - 30-09-2006 :
        - Logan:  Trimmed tub of lard
-
 - 29-09-2006 :
        - Dinand: Initial version of this file.
 
