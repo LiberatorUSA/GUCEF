@@ -29,8 +29,13 @@
 #define GUCEFMT_H
 #endif /* GUCEFMT_H ? */
 
-#include "CIPluginManager.h"
+#include "CPluginManager.h"
 #include "CIConfigurable.h"
+
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
+#include "CTCloneableObj.h"
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
 
 #ifndef GUCEFVFS_MACROS_H
 #include "gucefVFS_macros.h"     /* gucefVFS Library macros */
@@ -57,14 +62,14 @@ VFS_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CFPCodecPluginManager : public CORE::CIPluginManager ,
+class EXPORT_CPP CFPCodecPluginManager : public CORE::CPluginManager ,
                                          public CORE::CIConfigurable
 {
-        public:      
-        
+        public:
+
         /**
          *      Structure that holds event data for the
-         *      "GUCEF::VFS::CFPCODECMANAGER::FPCODECADD" event
+         *      PluginLoadedEvent event
          */
         struct SFPCodedAdded
         {                
@@ -73,17 +78,19 @@ class EXPORT_CPP CFPCodecPluginManager : public CORE::CIPluginManager ,
                 UInt32 index;        /**< Manager index for the codec */    
         };
         typedef struct SFPCodedAdded TFPCodedAdded;  
+        typedef CORE::CTCloneableObj< TFPCodedAdded > TPluginLoadedEventData;
         
         /**
          *      Structure that holds event data for the
-         *      "GUCEF::VFS::CFPCODECMANAGER::FPCODECDEL" event
+         *      PluginUnloadedEvent event
          */
         struct SFPCodedDeleted
         {
                 UInt32 namestr; /**< string cacheid: the name of the codec */
                 UInt32 index;   /**< Manager index for the codec */          
         };
-        typedef struct SFPCodedDeleted TFPCodedDeleted;          
+        typedef struct SFPCodedDeleted TFPCodedDeleted;
+        typedef CORE::CTCloneableObj< TFPCodedDeleted > TPluginUnloadedEventData;          
 
         static CFPCodecPluginManager* Instance( void );
 
@@ -92,9 +99,9 @@ class EXPORT_CPP CFPCodecPluginManager : public CORE::CIPluginManager ,
          *      library.
          *
          *      Dispatches the following events:
-         *              - "GUCEF::VFS::CFPCODECMANAGER::FPCODECADD"
+         *              - PluginLoadedEvent
          *                      This event has the following data:
-         *                              - TIMGCodedAdded        
+         *                              - TPluginLoadedEventData        
          */
         CFPCodecPlugin* AddCodec( const CORE::CString& filename );
 
@@ -106,9 +113,9 @@ class EXPORT_CPP CFPCodecPluginManager : public CORE::CIPluginManager ,
          *      UnloadImageData() as often as LoadImageData().
          *
          *      Dispatches the following events:
-         *              - "GUCEF::VFS::CFPCODECMANAGER::FPCODECDEL"
+         *              - PluginUnloadedEvent
          *                      This event has the following data:
-         *                              - TFPCodedDeleted     
+         *                              - TPluginUnloadedEventData    
          */
         bool DeleteCodec( CFPCodecPlugin* fpcodec );
         

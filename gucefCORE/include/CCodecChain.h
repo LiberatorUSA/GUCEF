@@ -106,6 +106,13 @@ class EXPORT_CPP CCodecChain
                             TDynamicBufferList& swapBuffers ,
                             CICodec* codec                  ) const;
         
+        bool DecodeBuffers( const TDynamicBufferList& src   ,
+                            const UInt32 sourceBuffersUsed  ,
+                            TDynamicBufferList& dest        ,
+                            UInt32& destBuffsUsed           ,
+                            TDynamicBufferList& swapBuffers ,
+                            CICodec* codec                  ) const;
+
         private:
         typedef std::vector< CICodec* > TCodecList;
         

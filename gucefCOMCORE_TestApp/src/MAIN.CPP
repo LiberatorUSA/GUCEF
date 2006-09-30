@@ -294,7 +294,7 @@ class CUDPTestobj : public CIUDPSocketEventHandler
 
 /*-------------------------------------------------------------------------*/
 
-class CTestTCPClientServer : public CEventPumpClient
+class CTestTCPClientServer : public CGUCEFAppSubSystem
 {
         public:
         
@@ -304,11 +304,11 @@ class CTestTCPClientServer : public CEventPumpClient
                   _udpsock1( block ) ,
                   _udpsock2( block )
         {
-                _appinitevent = CEventTypeRegistry::Instance()->GetType( "GUCEF::CORE::CGUCEFApplication::INIT" );
+                _appinitevent = GUCEF::CORE::CNotificationIDRegistry::Instance()->Lookup( CGUCEFApplication::AppInitEvent );
         }
         
         protected:
-        
+                   /*
         virtual void OnProcessEvent( const CEvent& event )
         {
                 if ( event.GetEventType() == _appinitevent )
@@ -324,7 +324,7 @@ class CTestTCPClientServer : public CEventPumpClient
                         _udpsock2.socket.Open( 11001 );
                         _udpsock2.socket.SendPacketTo( "127.0.0.1", 11000, "TESTPACKET", 10 );                                                       
                 }
-        }  
+        }  */
         
         /**
          *      Called each event pump update cycle after the events for 

@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CEVENTPUMP_H
-#define GUCEF_CORE_CEVENTPUMP_H
+#ifndef GUCEF_CORE_CGENERICPLUGIN_H
+#define GUCEF_CORE_CGENERICPLUGIN_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,15 +24,22 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CEVENTSTACK_H
-#include "CEventStack.h"
-#define GUCEF_CORE_CEVENTSTACK_H
-#endif /* GUCEF_CORE_CEVENTSTACK_H ? */
+#include <vector>
 
-#ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"
-#define GUCEF_CORE_CDYNAMICARRAY_H
-#endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
+#ifndef GUCEF_CORE_CPLUGINMANAGER_H
+#include "CPluginManager.h"
+#define GUCEF_CORE_CPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
+
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_CORE_CIPLUGIN_H
+#include "CIPlugin.h"
+#define GUCEF_CORE_CIPLUGIN_H
+#endif /* GUCEF_CORE_CIPLUGIN_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,60 +54,56 @@ namespace CORE {
 //                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
-class CEventPumpClient;
-class CEvent;
+class CGenericPluginManager;
 
-class EXPORT_CPP CEventPump
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Class wrapping the generic plugin interface into an object
+ *
+ *  About Generic plugins:
+ *  These are typicly C++ modules that link back to the GUCEF modules and
+ *  uppon load integrate themselves in the framework. This allows a generic plugin
+ *  to be/do just about anything but with the drawback that it has to link to the GUCEF
+ *  modules and as such has a more limited lifespan as a binary plugin.
+ */
+class EXPORT_CPP CGenericPlugin : public CIPlugin
 {
-        public:
+    public:
+    
+    CGenericPlugin( void );
+    
+    virtual ~CGenericPlugin();
+    
+    virtual CString GetDescription( void ) const;
 
-        static CEventPump* Instance( void );
+    virtual CString GetCopyright( void ) const;
+    
+    virtual TVersion GetVersion( void ) const;
+    
+    virtual CString GetModulePath( void ) const;
+    
+    virtual bool IsLoaded( void ) const;
+    
+    virtual bool Load( const CString& pluginPath );
+    
+    virtual void Unload( void );
+        
+    private:
+    
+    static void Deinstance( void );
+    
+    private:    
+    CGenericPlugin( const CGenericPlugin& src );        
+    CGenericPlugin& operator=( const CGenericPlugin& src );
+    
+    private:    
 
-        ~CEventPump();
-        
-        void Update( void );
-
-        bool SendEvent( const CEvent& event );
-
-        UInt32 RegisterClient( CEventPumpClient* newclient );
-
-        void UnregisterClient( UInt32 clientid );
-
-        UInt32 GetPumpClientCount( void );
-        
-        void SetIsEnabled( const bool enabled );
-        
-        bool GetIsEnabled( void ) const;
-        
-        bool SendEventAndLockMailbox( const CEvent& event );
-        
-        void SetMailboxIsLocked( const bool locked );
-        
-        bool GetMailboxIsLocked( void ) const;
-        
-        void SetPerformClientUpdates( const bool updateClients );
-        
-        bool GetPerformClientUpdates( void ) const;
-        
-        UInt32 GetLastUpdateTickCount( void ) const;
-
-        private:
-
-        CEventPump( void );
-        CEventPump( const CEventPump& src );
-        CEventPump& operator=( CEventPump& src );
-
-        CEventStack _eventstack;
-        CDynamicArray _clients;
-        UInt32 _lastupdate; 
-        bool m_enabled;
-        bool m_mailLocked;
-        bool m_updateClients;
-        
-        static MT::CMutex _mutex;
-        static CEventPump* _instance;
+    void* m_moduleHandle;
+    void* m_funcPointers[ 5 ];
+    CString m_modulePath;
 };
 
 /*-------------------------------------------------------------------------//
@@ -114,7 +117,7 @@ class EXPORT_CPP CEventPump
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CEVENTPUMP_H ? */
+#endif /* GUCEF_CORE_CGENERICPLUGIN_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -122,9 +125,7 @@ class EXPORT_CPP CEventPump
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 12-11-2004 :
-        - Designed and implemented this class.
+- 27-11-2004 :
+        - Dinand: Initial implementation
 
 -----------------------------------------------------------------------------*/
-
-

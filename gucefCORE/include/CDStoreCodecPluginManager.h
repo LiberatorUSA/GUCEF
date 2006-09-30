@@ -34,10 +34,10 @@
 #define GUCEF_CORE_GUCEFCORE_MACROS_H
 #endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */ 
  
-#ifndef GUCEF_CORE_CIPLUGINMANAGER_H 
-#include "CIPluginManager.h"    /* base class for plugin managers */
-#define GUCEF_CORE_CIPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CIPLUGINMANAGER_H ? */
+#ifndef GUCEF_CORE_CPLUGINMANAGER_H 
+#include "CPluginManager.h"    /* base class for plugin managers */
+#define GUCEF_CORE_CPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
 
 #ifndef GUCEF_CORE_CDYNAMICARRAY_H
 #include "CDynamicArray.h"      /* dynamic array implementation */
@@ -69,7 +69,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/  
  
-class EXPORT_CPP CDStoreCodecPluginManager : public CIPluginManager ,
+class EXPORT_CPP CDStoreCodecPluginManager : public CPluginManager ,
                                              public CIConfigurable
 {
         public:

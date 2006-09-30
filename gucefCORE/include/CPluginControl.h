@@ -62,14 +62,14 @@ namespace CORE {
 /*
  *      Forward declarations of framework classes used here
  */
-class CIPluginManager;
+class CPluginManager;
 class CString;
 
 /*-------------------------------------------------------------------------*/
 
 /**
  *      Global framework plugin control center
- *      All plugin managers derived from CIPluginManager automaticly register here.
+ *      All plugin managers derived from CPluginManager automaticly register here.
  *      
  */
 class EXPORT_CPP CPluginControl
@@ -87,11 +87,11 @@ class EXPORT_CPP CPluginControl
         CString GetPluginDir( void ) const;   
         
         private:
-        friend class CIPluginManager;
+        friend class CPluginManager;
         
-        void Register( CIPluginManager* pman );
+        void Register( CPluginManager* pman );
         
-        void Unregister( CIPluginManager* pman );
+        void Unregister( CPluginManager* pman );
         
         private:
         friend class CGUCEFCOREModule;

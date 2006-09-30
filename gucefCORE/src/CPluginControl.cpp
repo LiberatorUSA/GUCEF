@@ -38,10 +38,10 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
-#ifndef GUCEF_CORE_CIPLUGINMANAGER_H
-#include "CIPluginManager.h"    /* interface base class for all framework plugin managers */
-#define GUCEF_CORE_CIPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CIPLUGINMANAGER_H ? */
+#ifndef GUCEF_CORE_CPLUGINMANAGER_H
+#include "CPluginManager.h"    /* base class for all framework plugin managers */
+#define GUCEF_CORE_CPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
 
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"  /* main application class for GUCEF based applications */
@@ -165,10 +165,10 @@ CPluginControl::SetPluginDir( const CString& path )
         /*
          *      Notify all plugin managers
          */
-        CIPluginManager* pman;
+        CPluginManager* pman;
         for ( Int32 i=0; i<=_managers.GetLast(); ++i )
         {
-                pman = static_cast<CIPluginManager*> (_managers[ i ]);
+                pman = static_cast<CPluginManager*> (_managers[ i ]);
                 if ( pman )
                 {       
                         pman->OnSetPluginDir( abspath );
@@ -195,10 +195,10 @@ CPluginControl::LoadAll( void )
 {
         GUCEF_BEGIN;
         _mutex.Lock();        
-        CIPluginManager* pman;
+        CPluginManager* pman;
         for ( Int32 i=0; i<=_managers.GetLast(); ++i )
         {
-                pman = static_cast<CIPluginManager*> (_managers[ i ]);
+                pman = static_cast<CPluginManager*> (_managers[ i ]);
                 if ( pman )
                 {       
                         pman->LoadAll();
@@ -215,10 +215,10 @@ CPluginControl::UnloadAll( void )
 {
         GUCEF_BEGIN;
         _mutex.Lock();        
-        CIPluginManager* pman;
+        CPluginManager* pman;
         for ( Int32 i=0; i<=_managers.GetLast(); ++i )
         {
-                pman = static_cast<CIPluginManager*> (_managers[ i ]);
+                pman = static_cast<CPluginManager*> (_managers[ i ]);
                 if ( pman )
                 {       
                         pman->UnloadAll();
@@ -231,7 +231,7 @@ CPluginControl::UnloadAll( void )
 /*-------------------------------------------------------------------------*/
 
 void 
-CPluginControl::Register( CIPluginManager* pman )
+CPluginControl::Register( CPluginManager* pman )
 {
         GUCEF_BEGIN;
         _mutex.Lock();        
@@ -243,7 +243,7 @@ CPluginControl::Register( CIPluginManager* pman )
 /*-------------------------------------------------------------------------*/
         
 void 
-CPluginControl::Unregister( CIPluginManager* pman )
+CPluginControl::Unregister( CPluginManager* pman )
 {
         GUCEF_BEGIN;
         _mutex.Lock();        

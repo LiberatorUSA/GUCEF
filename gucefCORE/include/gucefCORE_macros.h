@@ -44,6 +44,11 @@
 #define GUCEF_CORE_CONFIG_H
 #endif /* GUCEF_CORE_CONFIG_H ? */
 
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"           /* include the GUCEF common macros */
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      GENERAL MACROS                                                     //

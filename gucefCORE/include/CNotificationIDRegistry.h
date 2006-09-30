@@ -24,20 +24,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <string>
+#include <map>
 #include "gucefMT_CMutex.h"
 #include "gucefCORE_macros.h"
 #include "ExceptionMacros.h"
-
-#ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 ) // return type for operator -> is 'const *' (ie; not a UDT or reference to a UDT).
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
-
-#include <string>
-#include <map>
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -164,11 +155,6 @@ class EXPORT_CPP CNotificationIDRegistry
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-#ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"         /* often used gucefCORE macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -9,8 +9,8 @@
 			Name="Debug|Win32"
 			>
 			<DebugSettings
-				Command="..\..\common\Debug_MVC8\$(TargetFileName)"
-				WorkingDirectory=""
+				Command="$(TargetPath)"
+				WorkingDirectory="..\..\..\common\bin\Debug_MVC8"
 				CommandArguments=""
 				Attach="false"
 				DebuggerType="3"

@@ -510,15 +510,6 @@ CString::GetID( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
-CString::Cache( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( UInt32, _store->Cache( *this ) );
-}
-
-/*-------------------------------------------------------------------------*/
-
 CString 
 CString::ReplaceChar( char oldchar ,
                       char newchar ) const

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -14,26 +14,26 @@
  * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
-
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CEVENTPUMP_H
-#include "CEventPump.h"
-#define GUCEF_CORE_CEVENTPUMP_H
-#endif /* GUCEF_CORE_CEVENTPUMP_H ? */
+#ifndef GUCEF_CORE_CPLUGINCONTROL_H
+#include "CPluginControl.h"     /* global plugin manager control center */
+#define GUCEF_CORE_CPLUGINCONTROL_H
+#endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
 
-#include "CEventPumpClient.h"
+#include "CNotificationIDRegistry.h"
+
+#include "CPluginManager.h"    /* definition of the class implemented here */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
-
-#pragma warning( disable : 4100 ) /* unreferenced formal parameter */
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */  
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,110 +46,102 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CEventPumpClient::CEventPumpClient( void )
+const CString CPluginManager::PluginLoadedEvent = "GUCEF::CORE::CPluginManager::PluginLoadedEvent";
+const CString CPluginManager::PluginUnloadedEvent = "GUCEF::CORE::CPluginManager::PluginUnloadedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      CLASSES                                                            //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+/**
+ *      Generic interface for plugin managers
+ */
+CPluginManager::CPluginManager( void )
+    : CObservingNotifier()
 {TRACE;
-        _pump = _pump->Instance();
-        _clientid = _pump->RegisterClient( this );
+
+        CORE::CNotificationIDRegistry* registry = CNotificationIDRegistry::Instance();
+        m_pluginLoadedEventID = registry->Register( PluginLoadedEvent, true );
+        m_pluginUnloadedEventID = registry->Register( PluginUnloadedEvent, true ); 
+
+        CPluginControl::Instance()->Register( this );       
 }
 
 /*-------------------------------------------------------------------------*/
 
-CEventPumpClient::CEventPumpClient( const CEventPumpClient& other )
+CPluginManager::CPluginManager( const CPluginManager& src )
+    : CObservingNotifier( src )
 {TRACE;
-        _pump = _pump->Instance();
-        _clientid = _pump->RegisterClient( this );
+
+}
+
+/*-------------------------------------------------------------------------*/
+        
+CPluginManager::~CPluginManager()
+{TRACE;
+        CPluginControl::Instance()->Unregister( this );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CEventPumpClient::~CEventPumpClient()
+CString
+CPluginManager::GetPluginDir( void ) const
 {TRACE;
-        _pump->UnregisterClient( _clientid );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CEventPumpClient&
-CEventPumpClient::operator=( const CEventPumpClient& other )
-{TRACE;
-        return *this;
+        return CPluginControl::Instance()->GetPluginDir();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void 
-CEventPumpClient::OnProcessEvent( const CEvent& event )
+CPluginManager::OnSetPluginDir( const CString& path )
 {TRACE;
-        /* dummy to avoid making implementation manditory */
+      
 }
+/*-------------------------------------------------------------------------*/
 
-/*-------------------------------------------------------------------------*/  
-
-void 
-CEventPumpClient::OnUpdate( UInt32 tickcount  ,
-                            UInt32 deltaticks )
+UInt32
+CPluginManager::GetPluginLoadedEventID( void ) const
 {TRACE;
-        /* dummy to avoid making implementation manditory */
-}   
 
-/*-------------------------------------------------------------------------*/                     
-
-bool
-CEventPumpClient::SendEvent( CEvent& event )
-{TRACE;
-        event.SetPumpClientID( _clientid );
-        return _pump->SendEvent( event );
+    return m_pluginLoadedEventID;
 }
 
 /*-------------------------------------------------------------------------*/
-
-bool 
-CEventPumpClient::SendEvent( UInt32 eventid )
+        
+UInt32
+CPluginManager::GetPluginUnloadedEventID( void ) const
 {TRACE;
-        CEvent event( eventid );
-        event.SetPumpClientID( _clientid );
-        return _pump->SendEvent( event );               
+
+    return m_pluginUnloadedEventID;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CEventPumpClient::SetPumpClientID( UInt32 clientid )
+CPluginManager::RegisterEvents( void )
 {TRACE;
-        _clientid = clientid;
+        CORE::CNotificationIDRegistry* registry = CNotificationIDRegistry::Instance();
+        registry->Register( PluginLoadedEvent, true );
+        registry->Register( PluginUnloadedEvent, true );
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
-CEventPumpClient::GetPumpClientID( void ) const
+void
+CPluginManager::OnNotify( CNotifier* notifier                 ,
+                          const UInt32 eventid                ,
+                          CICloneable* eventdata /* = NULL */ )
 {TRACE;
-        return _clientid;                
+
+    /* dummy to avoid manditory implementation in the decending class */
 }
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CEventPumpClient::SendEventAndLockMailbox( CEvent& event )
-{TRACE;
-        event.SetPumpClientID( _clientid );
-        return _pump->SendEventAndLockMailbox( event );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CEventPumpClient::SendEventAndLockMailbox( const UInt32 eventid )
-{TRACE;
-        CEvent event( eventid );
-        event.SetPumpClientID( _clientid );
-        return _pump->SendEventAndLockMailbox( event );
-}
-
+        
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

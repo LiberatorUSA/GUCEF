@@ -21,11 +21,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CEventPump.h"
-#include "CEvent.h"
-#include "CEventTypeRegistry.h"
 #include "CDataNode.h"
 #include "dvoswrap.h"
+
+#include "CNotificationIDRegistry.h"
 
 #ifndef DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"           /* C++ string utils */ 
@@ -78,11 +77,7 @@ CFPCodecPluginManager::CFPCodecPluginManager( void )
         /*
          *      Register event types
          */
-        CORE::CEventTypeRegistry* etr = CORE::CEventTypeRegistry::Instance();
-        _codecaddevent = etr->RegisterType( "GUCEF::VFS::CFPCODECMANAGER::FPCODECADD" ,
-                                            sizeof(TFPCodedAdded)                     );
-        _codecdelevent = etr->RegisterType( "GUCEF::VFS::CFPCODECMANAGER::FPCODECDEL" ,
-                                            sizeof(TFPCodedDeleted)                   ); 
+ 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -183,7 +178,7 @@ CFPCodecPluginManager::AddCodec( const CORE::CString& filename )
                         /*
                         *      Send an event notifying the rest of the system 
                         *      that a new pack codec is available
-                        */
+                        *
                         CORE::CEvent codecaddevent( _codecaddevent );                
                         TFPCodedAdded data;
                         data.filenamestr = filename.Cache();
@@ -192,6 +187,10 @@ CFPCodecPluginManager::AddCodec( const CORE::CString& filename )
                         codecaddevent.SetData( &data                  ,
                                         sizeof(TFPCodedAdded) ); 
                         CORE::CEventPump::Instance()->SendEvent( codecaddevent );
+                          @TODO: update
+                        */
+                        
+                        NotifyObservers( GetPluginLoadedEventID() ); 
                         
                         _mutex.Unlock();
                         return codec;

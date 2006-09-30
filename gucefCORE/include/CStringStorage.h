@@ -39,11 +39,6 @@
 #define GUCEF_CORE_CDYNAMICARRAY_H
 #endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
 
-#ifndef GUCEF_CORE_CEVENTPUMPCLIENT_H
-#include "CEventPumpClient.h"
-#define GUCEF_CORE_CEVENTPUMPCLIENT_H
-#endif /* GUCEF_CORE_CEVENTPUMPCLIENT_H ? */
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -59,27 +54,14 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CStringStorage : public CEventPumpClient
+/**
+ *  Internally used class for string memory management 
+ */
+class CStringStorage
 {
         public:
         
-        static CStringStorage* Instance( void );
-        
-        Int32 Cache( const CString& str );
-        
-        CString DeCache( Int32 stringid );
-        
-        protected:
-        
-        /**
-         *      Called each event pump update cycle after the events for 
-         *      the current cycle have been pumped to all clients.
-         *
-         *      @param tickcount the tick count when the Update process commenced.
-         *      @param deltaticks ticks since the last Update process commenced.
-         */        
-        virtual void Update( UInt32 tickcount  ,
-                             UInt32 deltaticks );                
+        static CStringStorage* Instance( void );                
         
         private:
         friend class CString;

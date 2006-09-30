@@ -232,6 +232,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\CTCPServerSocketInterface.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CUDPSocket.cpp"
 				>
 			</File>
@@ -283,10 +287,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CTCPServerSocket.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CTCPServerSocketInterface.cpp"
 				>
 			</File>
 			<File

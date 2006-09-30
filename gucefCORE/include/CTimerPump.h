@@ -25,17 +25,11 @@
 //-------------------------------------------------------------------------*/
 
 #include <set>
-#include "CEventPumpClient.h"
 
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTIMERPUMP_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 ) // return type for operator -> is 'const *' (ie; not a UDT or reference to a UDT).
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
+#ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
+#include "CGUCEFAppSubSystem.h"
+#define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
+#endif /* GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,7 +51,7 @@ class CGUCEFCOREModule;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CTimerPump : public CEventPumpClient
+class EXPORT_CPP CTimerPump : public CGUCEFAppSubSystem
 {
     public:
     
@@ -107,12 +101,6 @@ class EXPORT_CPP CTimerPump : public CEventPumpClient
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTIMERPUMP_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

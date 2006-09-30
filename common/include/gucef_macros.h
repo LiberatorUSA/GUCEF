@@ -40,6 +40,14 @@
 //-------------------------------------------------------------------------*/
 
 /*
+ *  Dummy define that can be used as a dummy param in macros
+ */
+#undef GUCEF_VOIDDEF
+#define GUCEF_VOIDDEF
+
+/*-------------------------------------------------------------------------*/
+
+/*
  *      O/S Detection macro.
  */
 #if !( defined(GUCEF_LINUX_BUILD) || defined(GUCEF_MSWIN_BUILD) )
@@ -171,6 +179,74 @@
 
 /*-------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
+#undef GUCEF_DECLARE_SINGLETON_INTERFACE
+#define GUCEF_DECLARE_SINGLETON_INTERFACE( identifier )          \
+(                                                                \
+        private:                                                 \
+                identifier( void );                              \
+                identifier( const identifier& src );             \
+                identifier& operator=( const identifier& src );  \
+                static identifier *_instance;                    \
+        public:                                                  \
+                identifier* Instance( void );                    \
+)
+#endif /* __cplusplus ? */
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+#undef GUCEF_DECLARE_SINGLETON
+#define GUCEF_DECLARE_SINGLETON( apiCall, identifier, baseClass ) \
+(                                                                 \
+        class apiCall identifier baseClass                        \
+        {                                                         \
+            GUCEF_DECLARE_SINGLETON_INTERFACE( identifier )       \
+        }                                                         \
+)
+#endif /* __cplusplus ? */
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+#undef GUCEF_DEFINE_SINGLETON_INTERFACE
+#define GUCEF_DEFINE_SINGLETON_INTERFACE( identifier, baseClass )  \
+(                                                                  \
+                                                                   \
+        identifier::identifier( void )                             \
+            baseClass                                              \
+        {                                                          \
+        }                                                          \
+                                                                   \
+        identifier*                                                \
+        identifier::Instance( void )                               \
+        {                                                          \
+                if ( !m_instance )                                 \
+                {                                                  \
+                        m_instance = new identifier();             \
+                }                                                  \
+                return m_instance;                                 \
+        }                                                          \
+                                                                   \
+        identifier::identifier( const identifier& src )            \
+            baseClass                                              \
+        {                                                          \
+        }                                                          \
+                                                                   \
+        identifier&                                                \
+        identifier::operator=( const identifier& src )             \
+        {                                                          \
+                return *this;                                      \
+        }                                                          \
+)
+
+#undef GUCEF_DEFINE_SINGLETON
+#define GUCEF_DEFINE_SINGLETON GUCEF_DEFINE_SINGLETON_INTERFACE
+
+#endif /* __cplusplus ? */
+
+/*-------------------------------------------------------------------------*/
+
 #endif /* GUCEF_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
@@ -180,6 +256,8 @@
 //-------------------------------------------------------------------------//
 
 - 30-09-2006 :
+       - Dinand: Moved the singleton macro's here from another macro file.
+- 29-09-2006 :
        - Logan:  Trimmed tub of lard
 - 29-09-2006 :
        - Dinand: Initial version of this file.

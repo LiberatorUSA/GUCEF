@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CEVENTSTACK_H
-#define GUCEF_CORE_CEVENTSTACK_H
+#ifndef GUCEF_CORE_CGENERICPLUGINMANAGER_H
+#define GUCEF_CORE_CGENERICPLUGINMANAGER_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,25 +24,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
+#include <vector>
 
-#ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"
-#define GUCEF_CORE_CDYNAMICARRAY_H
-#endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
-
-#ifndef GUCEF_CORE_CBLOCKSTACK_H
-#include "CBlockStack.h"
-#define GUCEF_CORE_CBLOCKSTACK_H
-#endif /* GUCEF_CORE_CBLOCKSTACK_H ? */
-
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h.h"
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CPLUGINMANAGER_H
+#include "CPluginManager.h"
+#define GUCEF_CORE_CPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,29 +46,55 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CEvent;
+class CGenericPlugin;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CEventStack
+/**
+ *  Plugin manager for generic plugins
+ *
+ *  About Generic plugins:
+ *  These are typicly C++ modules that link back to the GUCEF modules and
+ *  uppon load integrate themselves in the framework. This allows a generic plugin
+ *  to be/do just about anything but with the drawback that it has to link to the GUCEF
+ *  modules and as such has a more limited lifespan as a binary plugin.
+ */
+class EXPORT_CPP CGenericPluginManager : public CPluginManager
 {
-        public:
-
-        CEventStack( void );
-
-        ~CEventStack();
-        
-        bool GetTop( CEvent& event );
-
-        void PushEvent( const CEvent& event );
-
-        private:
-
-        CEventStack& operator=( const CEventStack& ) { return *this; }
-
-        CBlockStack _estack;
-        MT::CMutex _mutex;
+    public:    
+    
+    static CGenericPluginManager* Instance( void );
+    
+    virtual void LoadAll( void );
+    
+    virtual void UnloadAll( void );
+    
+    virtual bool IsLoaded( const CString& pluginPath );
+    
+    virtual bool Load( const CString& pluginPath );
+    
+    virtual bool Unload( const CString& pluginPath );
+    
+    virtual ~CGenericPluginManager();
+    
+    private:
+    friend class CGUCEFCOREModule;
+    
+    static void Deinstance( void );
+    
+    private:
+    CGenericPluginManager( void );
+    CGenericPluginManager( const CGenericPluginManager& src );        
+    CGenericPluginManager& operator=( const CGenericPluginManager& src );
+    
+    private:    
+    typedef std::vector< CGenericPlugin* > TPluginList;
+    
+    TPluginList m_pluginList;
+    
+    static CGenericPluginManager* m_instance;
 };
+
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -94,7 +107,7 @@ class EXPORT_CPP CEventStack
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CEVENTSTACK_H ? */
+#endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -102,7 +115,7 @@ class EXPORT_CPP CEventStack
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 12-11-2004 :
-        - Designed and implemented this class.
+- 27-11-2004 :
+        - Dinand: Initial implementation
 
 -----------------------------------------------------------------------------*/

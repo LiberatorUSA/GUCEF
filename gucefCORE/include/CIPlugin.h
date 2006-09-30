@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CEVENT_H
-#define GUCEF_CORE_CEVENT_H
+#ifndef GUCEF_CORE_CIPLUGIN_H
+#define GUCEF_CORE_CIPLUGIN_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,20 +24,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
-#include "gucefCORE_macros.h" /* macros that are gucefCORE specific and generic macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
-
-#ifndef GUCEF_CORE_ETYPES_H
-#include "ETypes.h"           /* simple types used */
-#define GUCEF_CORE_ETYPES_H
-#endif /* GUCEF_CORE_ETYPES_H ? */
+#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
+#include "ExceptionMacros.h"
+#define GUCEF_CORE_EXCEPTIONMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
 
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_CORE_ESTRUCTS_H
+#include "EStructs.h"         /* often used gucef data structs */
+#define GUCEF_CORE_ESTRUCTS_H
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -54,49 +54,36 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CEvent
+/**
+ *  Interface class for plugins
+ */
+class EXPORT_CPP CIPlugin
 {
-        public:
-        
-        CEvent( UInt32 eventtype );
+    public:
+    
+    CIPlugin( void );
+    
+    CIPlugin( const CIPlugin& src );
+    
+    virtual ~CIPlugin();
+    
+    CIPlugin& operator=( const CIPlugin& src );
+    
+    virtual CString GetDescription( void ) const = 0;
 
-        CEvent( const CEvent& src );
+    virtual CString GetCopyright( void ) const = 0;
+    
+    virtual TVersion GetVersion( void ) const = 0;
+    
+    virtual CString GetModulePath( void ) const = 0;
+    
+    virtual bool IsLoaded( void ) const = 0;
+    
+    virtual bool Load( const CString& pluginPath ) = 0;
+    
+    virtual void Unload( void ) = 0;
 
-        ~CEvent();
-
-        CEvent& operator=( const CEvent& src );
-
-        UInt32 GetEventType( void ) const;
-
-        void SetData( const void* src, UInt32 size );
-
-        void GetData( void* dest, UInt32 size ) const;
-
-        bool GetIsDataLocked( void );
-
-        UInt32 GetPumpClientID( void ) const;
-
-        CString GetTypeName( void );
-
-        UInt32 GetMaxDataSize( void );
-
-        private:
-        friend class CEventPumpClient;
-
-        void SetPumpClientID( UInt32 clientid );
-
-        private:
-        friend class CEventPump;
-
-        CEvent( void );
-
-        private:
-        friend class CEventStack;
-
-        UInt32 _eventtype;
-        UInt32 _pumpclientid;
-        UInt32 _eventdataid;
-        bool _storagelocked;
+    GUCEF_DEFINE_MSGEXCEPTION( EXPORT_CPP, ENotLoaded );
 };
 
 /*-------------------------------------------------------------------------//
@@ -110,7 +97,7 @@ class EXPORT_CPP CEvent
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CEVENT_H ? */
+#endif /* GUCEF_CORE_CIPLUGIN_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -118,8 +105,7 @@ class EXPORT_CPP CEvent
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 12-11-2004 :
-        - Designed and implemented this class.
+- 27-11-2004 :
+        - Dinand: Initial implementation
 
 -----------------------------------------------------------------------------*/
- 

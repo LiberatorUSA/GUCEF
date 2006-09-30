@@ -153,50 +153,12 @@
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
 /*
- *      Singleton event pump class.
- *      Basiscly the engine behind any GUCEF based application and the starting
- *      point for the life of an event trough the system.
+ *      Base class for GUCEF application sub-systems
  */
-#ifndef GUCEF_CORE_CEVENTPUMP_H
-#include "CEventPump.h"
-#define GUCEF_CORE_CEVENTPUMP_H
-#endif /* GUCEF_CORE_CEVENTPUMP_H ? */
-
-/*
- *      Event class used to provide a generic event data structure that can be
- *      used for all systems without knowing what those systems are in advance.
- */
-#ifndef GUCEF_CORE_CEVENT_H
-#include "CEvent.h"
-#define GUCEF_CORE_CEVENT_H
-#endif /* GUCEF_CORE_CEVENT_H ? */
-
-/*
- *      Central registry for events. Assigns an unique integer value
- *      to each event registered as a string.
- */
-#ifndef GUCEF_CORE_CEVENTTYPEREGISTRY_H
-#include "CEventTypeRegistry.h"
-#define GUCEF_CORE_CEVENTTYPEREGISTRY_H
-#endif /* GUCEF_CORE_CEVENTTYPEREGISTRY_H ? */
-
-/*
- *      Specialized stack for event objects.
- */
-#ifndef GUCEF_CORE_CEVENTSTACK_H
-#include "CEventStack.h"
-#define GUCEF_CORE_CEVENTSTACK_H
-#endif /* GUCEF_CORE_CEVENTSTACK_H ? */
-
-/*
- *      Abstract base class for classes that need a subscription to eventpump
- *      events. Eventpump clients will recieve an unfiltered stream of events
- *      and can be considdered to be sub-systems.
- */
-#ifndef GUCEF_CORE_CEVENTPUMPCLIENT_H
-#include "CEventPumpClient.h"
-#define GUCEF_CORE_CEVENTPUMPCLIENT_H
-#endif /* GUCEF_CORE_CEVENTPUMPCLIENT_H ? */
+#ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
+#include "CGUCEFAppSubSystem.h"
+#define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
+#endif /* GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H ? */
 
 /*
  *      My verry own string class.
@@ -236,6 +198,16 @@
 #define GUCEF_CORE_CNOTIFIER_H
 #endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
+#ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#include "CNotificationIDRegistry.h"
+#define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
+
+#ifndef GUCEF_CORE_CGENERICPLUGINMANAGER_H
+#include "CGenericPluginManager.h"
+#define GUCEF_CORE_CGENERICPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
+
 /*
  *      Stack implementation that simply uses pointers to the given data.
  *      This implementation has to (de)allocate memory when the stack is
@@ -259,7 +231,7 @@
 #endif /* GUCEF_CORE_CDATAQUEUE_H ? */
 
 /*
- *      Stack implementation that uses a memory pool into which data is copyed
+ *      Stack implementation that uses a memory pool into which data is copied
  *      and from which data is retrieved. When used properly stack manipulations
  *      will overall not require a memory (de)allocation.
  */
@@ -332,10 +304,10 @@
 #define GUCEF_CORE_CPLUGINCONTROL_H
 #endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
 
-#ifndef GUCEF_CORE_CIPLUGINMANAGER_H
-#include "CIPluginManager.h"
-#define GUCEF_CORE_CIPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CIPLUGINMANAGER_H ? */
+#ifndef GUCEF_CORE_CPLUGINMANAGER_H
+#include "CPluginManager.h"
+#define GUCEF_CORE_CPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
 
 #ifndef GUCEF_CORE_CDYNAMICARRAY_H
 #include "CDynamicArray.h"
@@ -444,6 +416,11 @@
 #define GUCEF_CORE_CSTDOSTREAMADAPTER_H
 #endif /* GUCEF_CORE_CSTDOSTREAMADAPTER_H ? */
 
+#ifndef GUCEF_CORE_CIPLUGIN_H
+#include "CIPlugin.h"
+#define GUCEF_CORE_CIPLUGIN_H
+#endif /* GUCEF_CORE_CIPLUGIN_H ? */
+
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
 
@@ -455,32 +432,37 @@
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 30-09-2006 :
+       - Dinand: re-Added CGenericPluginManager
+       - Dinand: re-Added CIPlugin
+       - Dinand: Removed CEventPump
+       - Dinand: Removed CEventPumpClient
 - 21-09-2005 :
-       - Added CValueList
+       - Dinand: Added CValueList
 - 15-05-2005 :
-       - Added CStateMachine
-       - Added CStateHandler
+       - Dinand: Added CStateMachine
+       - Dinand: Added CStateHandler
 - 24-04-2005 :
-       - Added CTRegistryMT
-       - Added CTRegistry
-       - Added CURL
-       - Added CURLHandler
-       - Added CURLHandlerRegistry
+       - Dinand: Added CTRegistryMT
+       - Dinand: Added CTRegistry
+       - Dinand: Added CURL
+       - Dinand: Added CURLHandler
+       - Dinand: Added CURLHandlerRegistry
 - 08-04-2005 :
-       - Added CConfigStore
-       - Added CDStoreCodec
-       - Added CDStoreCodecPlugin
-       - Added CDStoreCodecPluginRef
-       - Added CDStoreCodecRegistry
-       - Added CDStoreCodecPluginManager
+       - Dinand: Added CConfigStore
+       - Dinand: Added CDStoreCodec
+       - Dinand: Added CDStoreCodecPlugin
+       - Dinand: Added CDStoreCodecPluginRef
+       - Dinand: Added CDStoreCodecRegistry
+       - Dinand: Added CDStoreCodecPluginManager
 - 05-04-2005 :
-       - Added CDataNode
-       - Removed CXMLSegment
-       - Removed CXMLParser
-       - Removed CXMLComment
-       - Removed CXMLNode
+       - Dinand: Added CDataNode
+       - Dinand: Removed CXMLSegment
+       - Dinand: Removed CXMLParser
+       - Dinand: Removed CXMLComment
+       - Dinand: Removed CXMLNode
 - 11-03-2004 :
-       - Made the initial version of the library header. The classes here
+       - Dinand: Made the initial version of the library header. The classes here
          where originally part of one large GUCEF codebase without segmentation.
 
 -----------------------------------------------------------------------------*/

@@ -41,21 +41,6 @@
 #define CIMGCODEC_H
 #endif /* CIMGCODEC_H ? */
 
-#ifndef CEVENTPUMP_H
-#include "CEventPump.h"            /* event pump, point for dispatching events */
-#define CEVENTPUMP_H
-#endif /* CEVENTPUMP_H ? */
-
-#ifndef CEVENT_H
-#include "CEvent.h"                /* event class */
-#define CEVENT_H
-#endif /* CEVENT_H ? */ 
-
-#ifndef CEVENTTYPEREGISTRY_H    
-#include "CEventTypeRegistry.h"    /* Registry for event types */
-#define CEVENTTYPEREGISTRY_H
-#endif /* CEVENTTYPEREGISTRY_H ? */
-
 #ifndef CSTRINGLIST_H
 #include "CStringList.h"           /* List of strings */
 #define CSTRINGLIST_H
@@ -104,16 +89,6 @@ CIMGCodecManager::CIMGCodecManager( void )
         TImgLoaderPlugin* hcc = new TImgLoaderPlugin;
         GUCEF_IMGPLUG_Link_Functions( hcc ); 
         _codecs.AddEntry( hcc ); 
-        
-        /*
-         *      Register event types
-         */
-        CORE::CEventTypeRegistry* etr = CORE::CEventTypeRegistry::Instance();
-        CHECKMEM( etr, sizeof(CORE::CEventTypeRegistry) );
-        _codecaddevent = etr->RegisterType( "GUCEF::IMAGE::CIMGCODECMANAGER::IMGCODECADD" ,
-                                            sizeof(TIMGCodedAdded)                        );
-        _codecdelevent = etr->RegisterType( "GUCEF::IMAGE::CIMGCODECMANAGER::IMGCODECDEL" ,
-                                            sizeof(TIMGCodedDeleted)                      ); 
                                             
         /*
          *      Send an event for the hardcoded codec
@@ -196,7 +171,7 @@ CIMGCodecManager::AddCodec( const CORE::CString& filename )
                 /*
                  *      Send an event notifying the rest of the system 
                  *      that a new image codec is available
-                 */
+                 *
                 CORE::CEvent codecaddevent( _codecaddevent );                
                 TIMGCodedAdded data;
                 data.filenamestr = filename.Cache();
@@ -204,7 +179,9 @@ CIMGCodecManager::AddCodec( const CORE::CString& filename )
                 data.namestr = codec->GetName().Cache();
                 codecaddevent.SetData( &data                  ,
                                        sizeof(TIMGCodedAdded) ); 
-                CORE::CEventPump::Instance()->SendEvent( codecaddevent );
+                CORE::CEventPump::Instance()->SendEvent( codecaddevent ); */
+                
+                NotifyObservers( GetPluginLoadedEventID() );
                 
                 _mutex.Unlock();
                 return idx;
@@ -251,14 +228,16 @@ CIMGCodecManager::DeleteCodec( UInt32 codecidx )
                         /*
                          *      Send an event notifying the rest of the system 
                          *      that an image codec is no longer available
-                         */
+                         *
                         CORE::CEvent codecaddevent( _codecdelevent );
                         TIMGCodedDeleted data;
                         data.index = codecidx;
                         data.namestr = codec->GetName().Cache();
                         codecaddevent.SetData( &data                    ,
                                                sizeof(TIMGCodedDeleted) ); 
-                        CORE::CEventPump::Instance()->SendEvent( codecaddevent );
+                        CORE::CEventPump::Instance()->SendEvent( codecaddevent ); */
+                        
+                        NotifyObservers( GetPluginUnloadedEventID() );
                                         
                         delete codec;
                         _codecs.SetEntry( codecidx, NULL );                        

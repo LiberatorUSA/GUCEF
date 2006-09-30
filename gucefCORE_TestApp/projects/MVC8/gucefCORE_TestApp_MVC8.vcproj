@@ -19,7 +19,6 @@
 			OutputDirectory="..\..\bin\Debug_MVC8"
 			IntermediateDirectory="..\..\bin\Debug_MVC8"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
 			>
 			<Tool

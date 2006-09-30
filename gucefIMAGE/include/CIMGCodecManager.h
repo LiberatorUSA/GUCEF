@@ -54,7 +54,7 @@ namespace IMAGE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CIMGCodecManager : public CORE::CIPluginManager
+class EXPORT_CPP CIMGCodecManager : public CORE::CPluginManager
 {
         public:      
         

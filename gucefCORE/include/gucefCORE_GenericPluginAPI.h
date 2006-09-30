@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CEVENTPUMPCLIENT_H
-#define GUCEF_CORE_CEVENTPUMPCLIENT_H
+#ifndef GUCEF_CORE_GENERICPLUGINAPI_H
+#define GUCEF_CORE_GENERICPLUGINAPI_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,15 +24,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"
-#define GUCEF_CORE_CDYNAMICARRAY_H
-#endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"         /* often used gucefCORE macros */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifndef GUCEF_CORE_CEVENT_H
-#include "CEvent.h"
-#define GUCEF_CORE_CEVENT_H
-#endif /* GUCEF_CORE_CEVENT_H ? */
+#ifndef GUCEF_CORE_ESTRUCTS_H
+#include "EStructs.h"                 /* often used data structures */
+#define GUCEF_CORE_ESTRUCTS_H
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,71 +40,22 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
 namespace GUCEF {
 namespace CORE {
+#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CEventPump;
-
-class EXPORT_CPP CEventPumpClient
-{
-        public:
-
-        CEventPumpClient( void );
-
-        CEventPumpClient( const CEventPumpClient& other );
-
-        CEventPumpClient& operator=( const CEventPumpClient& other );
-
-        virtual ~CEventPumpClient();
-
-        bool SendEvent( CEvent& event );
-        
-        /**
-         *      Creates an event object initialized
-         *      with the ID given and the dispatches the event.
-         *      Saves you some effort if the event you are sending 
-         *      has no data payload.
-         *
-         *      @param eventid ID of the event you wish to send
-         */
-        bool SendEvent( UInt32 eventid );
-        
-        bool SendEventAndLockMailbox( CEvent& event );
-        
-        bool SendEventAndLockMailbox( const UInt32 eventid );
-
-        UInt32 GetPumpClientID( void ) const;
-
-        protected:
-        friend class CEventPump;
-        
-        virtual void OnProcessEvent( const CEvent& event );   
-        
-        /**
-         *      Called each event pump update cycle after the events for 
-         *      the current cycle have been pumped to all clients.
-         *
-         *      @param tickcount the tick count when the Update process commenced.
-         *      @param deltaticks ticks since the last Update process commenced.
-         */        
-        virtual void OnUpdate( const UInt32 tickcount  ,
-                               const UInt32 deltaticks );
-
-        private:
-        friend class CEventPump;
-
-        void SetPumpClientID( UInt32 clientid );
-
-        private:
-        UInt32 _clientid;
-        CEventPump* _pump;
-};
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TGUCEFGENERICPLUGFPTR_Load ) ( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TGUCEFGENERICPLUGFPTR_Unload ) ( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TGUCEFGENERICPLUGFPTR_GetVersion ) ( TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TGUCEFGENERICPLUGFPTR_GetCopyright ) ( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TGUCEFGENERICPLUGFPTR_GetDescription ) ( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -112,12 +63,14 @@ class EXPORT_CPP CEventPumpClient
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
 }; /* namespace CORE */
 }; /* namespace GUCEF */
+#endif /* __cplusplus ? */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CEVENTPUMPCLIENT_H ? */
+#endif /* GUCEF_CORE_GENERICPLUGINAPI_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -125,7 +78,7 @@ class EXPORT_CPP CEventPumpClient
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 12-11-2004 :
-        - Designed and implemented this class.
+- 04-05-2005 :
+        - Dinand: Initial version.
 
 -----------------------------------------------------------------------------*/

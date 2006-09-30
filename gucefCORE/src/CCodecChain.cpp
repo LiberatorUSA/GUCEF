@@ -225,6 +225,7 @@ CCodecChain::GetList( CStringList& list ) const
 void
 CCodecChain::SetCodecOrder( const CStringList& codecOrder )
 {TRACE;
+        // @TODO
         assert( 0 );
 }
 
@@ -245,7 +246,6 @@ CCodecChain::EncodeBuffers( const TDynamicBufferList& src   ,
     TDynamicBufferList::const_iterator i( src.begin() );
     while ( ( i != src.end() ) && ( n < sourceBuffersUsed ) )
     {                                     
-        // Try to encode the given data   @TODO @FIXME
         if ( !codec->Encode( (*i).GetBufferPtr() ,
                              (*i).GetDataSize()  ,
                              swapBuffers         ,
@@ -339,63 +339,108 @@ CCodecChain::Encode( const TDynamicBufferList& src  ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CCodecChain::Decode( const TDynamicBufferList& src ,
-                     const UInt32 sourceBufferSize ,
-                     TDynamicBufferList& dest      ,
-                     UInt32& destBuffersUsed       )
-{TRACE;        /*
-        if ( 0 != m_codecList.size() )
-        {
-                // initialize our swapping vars
-                CDynamicBuffer* destBuffer = &m_bufferA;
-                const void* srcBuffer( sourceBuffer );
-                UInt32 srcBufferSize( sourceBufferSize );
-                                
-                Int32 i( (Int32)m_codecList.size()-1 );
-                do
-                {
-                        // Perform a logical clear of the buffer, resetting the data carat
-                        destBuffer->Clear( true );
-                        
-                        // Try to decode the given data
-                        if ( !( (  m_codecList[ i ] )->Decode( srcBuffer     ,
-                                                               srcBufferSize ,
-                                                               *destBuffer   ) ) )
-                        {
-                                // One of the encoding steps failed
-                                destBuffer->CopyTo( dest );
-                                return false;
-                        }
-                        
-                        // Swap the buffers
-                        if ( destBuffer == &m_bufferA )
-                        {
-                                destBuffer = &m_bufferB;
-                                srcBuffer = m_bufferA.GetBufferPtr();
-                                srcBufferSize = m_bufferA.GetDataSize();
-                        }
-                        else
-                        {
-                                destBuffer = &m_bufferA;
-                                srcBuffer = m_bufferB.GetBufferPtr();
-                                srcBufferSize = m_bufferB.GetDataSize();                                
-                        }
-                        
-                        --i;
-                }
-                while ( i >= 0 );
-                
-                // Finished encoding, copy the result into the destination buffer
-                destBuffer->CopyTo( dest );
-                return true;
+CCodecChain::Decode( const TDynamicBufferList& src  ,
+                     const UInt32 sourceBuffersUsed ,
+                     TDynamicBufferList& dest       ,
+                     UInt32& destBuffersUsed        )
+{TRACE;
+
+    if ( 0 != m_codecList.size() )
+    {
+        UInt32 destBuffsUsed( 0 );
+        UInt32 srcBuffsUsed( sourceBuffersUsed );
+        const TDynamicBufferList* srcBuffer = &src;
+        TDynamicBufferList* destBuffer = &m_bufferB;
+        TCodecList::const_iterator i = m_codecList.begin();
+        do
+        {            
+            // Decode all buffers
+            if ( !DecodeBuffers( *srcBuffer    ,
+                                  srcBuffsUsed  ,
+                                  *destBuffer   ,
+                                  destBuffsUsed ,
+                                  m_bufferC     ,
+                                  (*i)          ) )
+            {
+                return false;
+            }
+
+            // Swap the buffers
+            if ( destBuffer == &m_bufferA )
+            {
+                srcBuffer = &m_bufferA;
+                destBuffer = &m_bufferB;
+            }
+            else
+            {
+                srcBuffer = &m_bufferB;
+                destBuffer = &m_bufferA;                               
+            }
+            srcBuffsUsed = destBuffsUsed;
+            destBuffsUsed = 0;
+            
+            ++i;
+           
         }
-        else
+        while ( i != m_codecList.end() );
+                        
+        // Assign the output
+        destBuffersUsed = srcBuffsUsed;
+        dest = *destBuffer;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CCodecChain::DecodeBuffers( const TDynamicBufferList& src   ,
+                            const UInt32 sourceBuffersUsed  ,
+                            TDynamicBufferList& dest        ,
+                            UInt32& destBuffsUsed           ,
+                            TDynamicBufferList& swapBuffers ,
+                            CICodec* codec                  ) const
+{TRACE;
+
+    assert( NULL != codec );
+    
+    UInt32 n( 0 ), swapBuffsUsed( 0 );
+    TDynamicBufferList::const_iterator i( src.begin() );
+    while ( ( i != src.end() ) && ( n < sourceBuffersUsed ) )
+    {                                     
+        if ( !codec->Encode( (*i).GetBufferPtr() ,
+                             (*i).GetDataSize()  ,
+                             swapBuffers         ,
+                             swapBuffsUsed       ) )
         {
-                // No encoding required, simply copy the data
-                dest.CopyFrom( sourceBufferSize, sourceBuffer );
-                return true;
-        }   */
-    return false;
+                // the decoding failed
+                return false;
+        }
+        
+        // Merge this decoding step into our current destination buffer list
+        TDynamicBufferList::iterator n( swapBuffers.begin() );
+        while ( n != swapBuffers.end() )
+        {        
+            // try to reuse destination buffers
+            if ( destBuffsUsed < dest.size() )
+            {
+                // Copy the buffer contents
+                dest[ destBuffsUsed ] = (*n);
+            }
+            else
+            {
+                // we need more destination buffers then are curently available
+                dest.push_back( (*n) );
+            }
+            ++destBuffsUsed;
+            ++n;
+        }
+        ++n;        
+        ++i;
+    }
+    
+    // batch decode was successfull
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

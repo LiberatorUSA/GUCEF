@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CEVENTDATAMEMORYPOOL_H
-#define GUCEF_CORE_CEVENTDATAMEMORYPOOL_H
+#ifndef GUCEF_CORE_CPLUGINMANAGER_H
+#define GUCEF_CORE_CPLUGINMANAGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,15 +24,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
+#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#include "gucefCORE_macros.h"         /* often used gucef macros */
+#define GUCEF_CORE_GUCEFCORE_MACROS_H
+#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
 
-#ifndef GUCEF_CORE_CMEMORYBLOCKPOOL_H
-#include "CMemoryBlockPool.h"
-#define GUCEF_CORE_CMEMORYBLOCKPOOL_H
-#endif /* GUCEF_CORE_CMEMORYBLOCKPOOL_H ? */
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -49,50 +49,71 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CEventDataMemoryPool
+/*
+ *      Forward declarations of framework classes used here
+ */
+class CString;
+class CPluginControl;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *      Generic base class for plugin managers
+ */
+class EXPORT_CPP CPluginManager : public CObservingNotifier
 {
-        public:
+    public:
 
-        static CEventDataMemoryPool* Instance( void );  
+    static const CORE::CString PluginLoadedEvent;
+    static const CORE::CString PluginUnloadedEvent;
+    
+    CPluginManager( void );
+    
+    CPluginManager( const CPluginManager& src );
+    
+    virtual ~CPluginManager();              
+    
+    CString GetPluginDir( void ) const;        
+    
+    virtual void LoadAll( void ) = 0;
+    
+    virtual void UnloadAll( void ) = 0;
+    
+    UInt32 GetPluginLoadedEventID( void ) const;
+    
+    UInt32 GetPluginUnloadedEventID( void ) const;
+    
+    static void RegisterEvents( void );
+    
+    protected:
+    friend class CPluginControl;
+    
+    virtual void OnSetPluginDir( const CString& path );
 
-        private:
-        friend class CEventTypeRegistry;
+    /**
+     *  Event callback member function.
+     *  Implement this in your decending class to handle
+     *  notification events.
+     *
+     *  @param notifier the notifier that sent the notification
+     *  @param eventid the unique event id for an event
+     *  @param eventdata optional notifier defined userdata
+     */
+    virtual void OnNotify( CNotifier* notifier           ,
+                           const UInt32 eventid          ,
+                           CICloneable* eventdata = NULL );
 
-        void SetBlockSize( UInt32 blocksize );
-
-        UInt32 GetBlockSize( void );
-
-        private:
-        friend class CEvent;
-
-        UInt32 GetBlockRefrence( void );
-
-        void CopyBlockRefrence( UInt32 blockid );
-
-        void UnrefrenceBlock( UInt32 blockid );
-        
-        void SetData( UInt32 blockid  ,
-                      const void* src ,
-                      UInt32 size     );                                        
-
-        void GetData( UInt32 blockid ,
-                      void* dest     ,
-                      UInt32 size    );
-
-        private:
-
-        CEventDataMemoryPool( void );
-        CEventDataMemoryPool( const CEventDataMemoryPool& src );
-        CEventDataMemoryPool& operator=( const CEventDataMemoryPool& src );
-        ~CEventDataMemoryPool();
-
-        UInt16* _blockcounters;
-        UInt32 _usecount;
-        CMemoryBlockPool _pool;
-        static CEventDataMemoryPool* _instance;
-        static MT::CMutex _mutex;
+    private:
+    
+    CPluginManager& operator=( const CPluginManager& src );
+    
+    private:
+    friend class CPluginControl;
+    
+    UInt32 _managerid; /**< ID used to quickly manage this manager at the plugin control center */
+    UInt32 m_pluginLoadedEventID;
+    UInt32 m_pluginUnloadedEventID;
 };
-
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -105,7 +126,7 @@ class CEventDataMemoryPool
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CEVENTDATAMEMORYPOOL_H ? */
+#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -113,8 +134,9 @@ class CEventDataMemoryPool
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 23-11-2004 :
-        - Designed and implemented this class.
+- 30-09-2006 :
+        - Dinand: Recoded the notification after crash wiped out the new code
+- 27-11-2004 :
+        - Dinand: Initial implementation
 
----------------------------------------------------------------------------*/
- 
+-----------------------------------------------------------------------------*/

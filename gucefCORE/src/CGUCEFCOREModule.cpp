@@ -76,6 +76,11 @@
 #define GUCEF_CORE_CNOTIFIER_H
 #endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
+#ifndef GUCEF_CORE_CGENERICPLUGINMANAGER_H
+#include "CGenericPluginManager.h"
+#define GUCEF_CORE_CGENERICPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
+
 #include "CGUCEFCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef ADD_MEMORY_MANAGER
@@ -164,11 +169,13 @@ CGUCEFCOREModule::Load( void )
         CURLHandlerRegistry::Instance();
         CGUCEFApplication::Instance();
         CSysConsole::Instance();
+        CGenericPluginManager::Instance();
         
         /*
          *      Register events for objects that can be created dynamicly
          */
         CNotifier::RegisterEvents();
+        CPluginManager::RegisterEvents();
         
         /*
          *      Register some default codecs/handlers 
@@ -189,6 +196,7 @@ CGUCEFCOREModule::Unload( void )
          *      cleanup all singletons
          *      Take care to deinstance them in the correct order !!!
          */
+        CGenericPluginManager::Deinstance(); 
         CSysConsole::Deinstance(); 
         CGUCEFApplication::Deinstance();
         CURLHandlerRegistry::Deinstance();

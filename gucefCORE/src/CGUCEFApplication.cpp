@@ -26,21 +26,6 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
-#ifndef GUCEF_CORE_CEVENTTYPEREGISTRY_H
-#include "CEventTypeRegistry.h"
-#define GUCEF_CORE_CEVENTTYPEREGISTRY_H
-#endif /* GUCEF_CORE_CEVENTTYPEREGISTRY_H ? */
-
-#ifndef GUCEF_CORE_CEVENTPUMP_H
-#include "CEventPump.h"
-#define GUCEF_CORE_CEVENTPUMP_H
-#endif /* GUCEF_CORE_CEVENTPUMP_H ? */
-
-#ifndef GUCEF_CORE_CEVENT
-#include "CEvent.h"
-#define GUCEF_CORE_CEVENT_H
-#endif /* GUCEF_CORE_CEVENT_H ? */
-
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"   /* Additional utilities for manipulating string class objects */ 
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -239,7 +224,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         
         /*
          *      Set the application dir
-         *      This is pure WIN32 code and is not portable !!!
+         *      This is pure MSWIN code and is not portable !!!
          */
         {
                 /*
@@ -379,12 +364,8 @@ CGUCEFApplication::Update( void )
                         deltaTicks );
         ++i;
     }
-
-    // request new update minimum from driver    
-    if ( NULL != m_appDriver )
-    {
-        m_appDriver->OnRequestNewMinimalUpdateFreq( m_minimalUpdateDelta );
-    }
+    m_appTickCount = tickCount;
+    
     UnlockData();
 }
 
@@ -393,7 +374,7 @@ CGUCEFApplication::Update( void )
 UInt32
 CGUCEFApplication::GetLastUpdateTickCount( void ) const
 {TRACE;
-    return CEventPump::Instance()->GetLastUpdateTickCount();    
+    return m_appTickCount;    
 }
 
 /*-------------------------------------------------------------------------*/

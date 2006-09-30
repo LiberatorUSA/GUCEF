@@ -128,7 +128,7 @@ class CMyHTTPClient : public CHTTPClientInterface
 
 /*-------------------------------------------------------------------------*/
 
-class CMyPumpClient : public CEventPumpClient
+class CMyPumpClient : public CGUCEFAppSubSystem
 {
         public:
         
