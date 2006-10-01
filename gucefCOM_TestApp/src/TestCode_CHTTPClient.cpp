@@ -130,36 +130,38 @@ class CMyHTTPClient : public CHTTPClientInterface
 
 class CMyPumpClient : public CGUCEFAppSubSystem
 {
-        public:
-        
-        CMyPumpClient( void )
+    public:
+    
+    CMyPumpClient( void )
+    {
+            m_startevent = GUCEF::CORE::CNotificationIDRegistry::Instance()->Lookup( GUCEF::CORE::CGUCEFApplication::AppInitEvent );       
+    }
+    
+    protected:
+    
+    virtual void OnUpdate( const CORE::UInt32 tickcount  ,
+                           const CORE::UInt32 deltaticks )
+    {
+    }
+
+    virtual void OnNotify( CORE::CNotifier* notifier                 ,
+                           const CORE::UInt32 eventid                ,
+                           CORE::CICloneable* eventdata /* = NULL */ )
+    {
+        if ( eventid == m_startevent )
         {
-                m_startevent = GUCEF::CORE::CEventTypeRegistry::Instance()->GetType( "GUCEF::CORE::CGUCEFApplication::INIT" );       
-        }
-        
-        protected:
-        
-        virtual void OnUpdate( const CORE::UInt32 tickcount  ,
-                               const CORE::UInt32 deltaticks )
-        {
-        }
-        
-        virtual void OnProcessEvent( const CEvent& event )
-        {
-                if ( event.GetEventType() == m_startevent )
+                if ( client.m_client.Get( "www.google.com" ,
+                                          80               ,
+                                          ""               ) )
                 {
-                        if ( client.m_client.Get( "www.google.com" ,
-                                                  80               ,
-                                                  ""               ) )
-                        {
-                                printf( "Get succeeded\n" );
-                        }
-                        else                        
-                        {
-                                printf( "Get failed\n" );
-                        }                                                  
-                }                                                 
-        }
+                        printf( "Get succeeded\n" );
+                }
+                else                        
+                {
+                        printf( "Get failed\n" );
+                }                                                  
+        }                                                 
+    }
         
         private:
         CMyHTTPClient client;

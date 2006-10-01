@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".;..\..\include;..\..\..\..\gucefCORE\include;..\..\..\..\gucefMT\include;..\..\..\..\gucefPATCHER\include"
+				AdditionalIncludeDirectories=".;..\..\include;..\..\..\..\gucefCORE\include;..\..\..\..\gucefMT\include;..\..\..\..\gucefPATCHER\include;..\..\..\..\common\include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -53,6 +53,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4251"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -68,9 +69,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCORE_MVC8_d.lib gucefMT_MVC8_d.lib gucefPATCHER_MVC8_d.lib"
+				AdditionalDependencies="gucefCORE_MVC8_d.lib gucefMT_MVC8_d.lib gucefPATCHER_MVC8_d.lib gucefCOMCORE_MVC8_d.lib gucefCOM_MVC8_d.lib gucefVFS_MVC8_d.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\gucefMT\bin\Debug_MVC8;..\..\..\gucefPATCHER\bin\Debug_MVC8"
+				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\..\gucefMT\bin\Debug_MVC8;..\..\..\..\gucefPATCHER\bin\Debug_MVC8;..\..\..\..\gucefCOM\bin\Debug_MVC8;..\..\..\..\gucefCOMCORE\bin\Debug_MVC8;..\..\..\..\gucefVFS\bin\Debug_MVC8"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -98,7 +99,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) ..\..\..\common\bin\Debug_MVC8"
+				CommandLine="copy $(TargetPath) ..\..\..\..\common\bin\Debug_MVC8"
 			/>
 		</Configuration>
 		<Configuration

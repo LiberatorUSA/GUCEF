@@ -24,7 +24,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CEventPumpClient.h"
+#include "CGUCEFAppSubSystem.h"
 #include "gucefPATCHER_CPatchSetParser.h"
 
 /*-------------------------------------------------------------------------//
@@ -33,7 +33,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
           
-class CPatcherApplication : public GUCEF::CORE::CEventPumpClient
+class CPatcherApplication : public GUCEF::CORE::CGUCEFAppSubSystem
 {
         public:
         
