@@ -21,6 +21,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include "CNotificationIDRegistry.h"
+
 #include "CPatcherApplication.h"
 
 /*-------------------------------------------------------------------------//
@@ -42,8 +44,10 @@ using namespace GUCEF;
 /*-------------------------------------------------------------------------*/
 
 CPatcherApplication::CPatcherApplication( void )
-        : m_parser()
+        : m_parser() ,
+          m_appStartEventID( 0 )
 {
+    m_appStartEventID = CORE::CNotificationIDRegistry::Instance()->Lookup( CORE::CGUCEFApplication::AppInitEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -72,6 +76,35 @@ CPatcherApplication::Deinstance( void )
 {
         delete m_instance;
         m_instance = NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatcherApplication::OnUpdate( const UInt32 applicationTicks ,
+                               const UInt32 deltaTicks       )
+{
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatcherApplication::OnNotify( CNotifier* notifier           ,
+                               const UInt32 eventid          ,
+                               CICloneable* eventdata = NULL )
+{
+    if ( eventid == m_appStartEventID )
+    {
+        CORE::CDataNode oldLocalList;
+        CORE::CDataNode newLocalList;
+        CORE::CDataNode localListDiff;
+        
+        m_parser.SubtractOldFromNewLocalList( oldLocalList  ,
+                                              newLocalList  ,
+                                              localListDiff );
+                                              
+        m_parser.ProcessPatchList( localListDiff )
+    }
 }
 
 /*-------------------------------------------------------------------------*/

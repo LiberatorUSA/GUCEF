@@ -12,7 +12,7 @@
 
 // CPatcherGUIDlg dialog
 
-
+using namespace GUCEF;
 
 
 CPatcherGUIDlg::CPatcherGUIDlg(CWnd* pParent /*=NULL*/)
@@ -85,3 +85,62 @@ HCURSOR CPatcherGUIDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+void
+CPatcherGUIDlg::OnPatchSetStart( const CORE::CString& patchSetName )
+{
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CPatcherGUIDlg::OnEnterLocalDir( const CORE::CString& localPath )
+{
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CPatcherGUIDlg::OnLocalFileOK( const CORE::CString& localPath ,
+                               const CORE::CString& localFile )
+{
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatcherGUIDlg::OnLocalFileNotFound( const CORE::CString& localPath ,
+                                     const CORE::CString& localFile )
+{
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatcherGUIDlg::OnLocalFileDifference( const CORE::CString& localPath ,
+                                       const CORE::CString& localFile )
+{
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatcherGUIDlg::OnNewSourceRequired( const TSourceInfo& sourceInfo )
+{
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CPatcherGUIDlg::OnLeaveLocalDir( const CORE::CString& localPath )
+{
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CPatcherGUIDlg::OnPatchSetEnd( const CORE::CString& patchSetName )
+{
+}
+
+/*-------------------------------------------------------------------------*/

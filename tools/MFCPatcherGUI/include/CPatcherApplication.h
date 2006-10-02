@@ -35,24 +35,43 @@
           
 class CPatcherApplication : public GUCEF::CORE::CGUCEFAppSubSystem
 {
-        public:
-        
-        static CPatcherApplication* Instance( void );                
+    public:
+    
+    static CPatcherApplication* Instance( void );                
 
-        private:
-        friend class CPatcherGUIApp;
-        
-        static void Deinstance( void );
-        
-        private:
-        CPatcherApplication( void );        
-        CPatcherApplication( const CPatcherApplication& src );
-        virtual ~CPatcherApplication();
-        CPatcherApplication& operator=( const CPatcherApplication& src );
-        
-        private:        
-        static CPatcherApplication* m_instance;
-        GUCEF::PATCHER::CPatchSetParser m_parser;
+    protected:
+    
+    virtual void OnUpdate( const UInt32 applicationTicks ,
+                           const UInt32 deltaTicks       );
+
+    /**
+     *  Event callback member function.
+     *  Implement this in your decending class to handle
+     *  notification events.
+     *
+     *  @param notifier the notifier that sent the notification
+     *  @param eventid the unique event id for an event
+     *  @param eventdata optional notifier defined userdata
+     */
+    virtual void OnNotify( CNotifier* notifier           ,
+                           const UInt32 eventid          ,
+                           CICloneable* eventdata = NULL );    
+
+    private:
+    friend class CPatcherGUIApp;
+    
+    static void Deinstance( void );
+    
+    private:
+    CPatcherApplication( void );        
+    CPatcherApplication( const CPatcherApplication& src );
+    virtual ~CPatcherApplication();
+    CPatcherApplication& operator=( const CPatcherApplication& src );
+    
+    private:        
+    static CPatcherApplication* m_instance;
+    GUCEF::PATCHER::CPatchSetParser m_parser;
+    UInt32 m_appStartEventID;
 };
 
 /*-------------------------------------------------------------------------*/
