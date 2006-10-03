@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h" /* macros that are GUCEF specific and generic macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifndef GUCEF_CORE_ETYPES_H
 #include "ETypes.h"           /* simple types used */
@@ -59,7 +59,7 @@ class CDataNode;
  *      Optionally the global CConfigStore can be used to load/unload the config of  
  *      all configurable classes that have the 'use global config' switch set.
  */
-class EXPORT_CPP CIConfigurable
+class GUCEFCORE_EXPORT_CPP CIConfigurable
 {
         public:
         

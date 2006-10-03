@@ -56,9 +56,9 @@
  *	Added export include and macros so that these functions become part
  *	of the GUCEF library compilation and can be used together with the rest
  */
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H */
+#endif /* GUCEF_CORE_MACROS_H */
 
 /*
  * This package supports both compile-time and run-time determination of CPU
@@ -87,13 +87,13 @@ extern "C"
 #endif
 
 /* Initialize the algorithm. */
-void EXPORT_C md5_init(md5_state_t *pms);
+void GUCEFCORE_EXPORT_C md5_init(md5_state_t *pms);
 
 /* Append a string to the message. */
-void EXPORT_C md5_append(md5_state_t *pms, const md5_byte_t *data, int nbytes);
+void GUCEFCORE_EXPORT_C md5_append(md5_state_t *pms, const md5_byte_t *data, int nbytes);
 
 /* Finish the message and return the digest. */
-void EXPORT_C md5_finish(md5_state_t *pms, md5_byte_t digest[16]);
+void GUCEFCORE_EXPORT_C md5_finish(md5_state_t *pms, md5_byte_t digest[16]);
 
 #ifdef __cplusplus
 };  /* end extern "C" */

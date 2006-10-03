@@ -68,7 +68,7 @@ class CBPTCPClientSocketInterface;
  *      length of each transmission. 
  *      Appart from that it's just the normal raw data stream.
  */
-class EXPORT_CPP CBPTCPClientSocket : public COMCORE::CTCPClientSocketInterface
+class GUCEFCOM_EXPORT_CPP CBPTCPClientSocket : public COMCORE::CTCPClientSocketInterface
 {
         public:
         

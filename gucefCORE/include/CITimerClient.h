@@ -51,7 +51,7 @@ class CTimer;
  *  This allows a decending class to be hooked to a timer object and respond
  *  to OnTimer events.
  */
-class EXPORT_CPP CITimerClient
+class GUCEFCORE_EXPORT_CPP CITimerClient
 {
     public:
     

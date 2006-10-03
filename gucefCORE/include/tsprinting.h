@@ -40,10 +40,10 @@
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"     /* often used gucef macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -73,8 +73,8 @@ namespace CORE {
  *	in which the output is generated from multiple threads but it does
  *	prevent output from getting mixed.
  */
-int
-EXPORT_C tsprintf( const char* __format, ... );
+GUCEFCORE_EXPORT_C int
+tsprintf( const char* __format, ... );
 
 /*-------------------------------------------------------------------------*/
 
@@ -83,8 +83,8 @@ EXPORT_C tsprintf( const char* __format, ... );
  *	in which the output is generated from multiple threads but it does
  *	prevent output from getting mixed.
  */
-int 
-EXPORT_C tsfprintf( FILE* __stream, const char* __format, ... );
+GUCEFCORE_EXPORT_C int 
+tsfprintf( FILE* __stream, const char* __format, ... );
 
 /*-------------------------------------------------------------------------*/
 
@@ -93,8 +93,8 @@ EXPORT_C tsfprintf( FILE* __stream, const char* __format, ... );
  *	The console output file will be used if tsusecoutfile() was called
  *	with argument true.
  */
-void
-EXPORT_C tssetcoutfile( const char *cout_file );
+GUCEFCORE_EXPORT_C void
+tssetcoutfile( const char *cout_file );
 
 /*-------------------------------------------------------------------------*/
 
@@ -102,16 +102,16 @@ EXPORT_C tssetcoutfile( const char *cout_file );
  *	Set wheter or not to use a file for console output.
  *	the file specified with tssetcoutfile() will be used.
  */
-void
-EXPORT_C tsusecoutfile( UInt32 use );
+GUCEFCORE_EXPORT_C void
+tsusecoutfile( UInt32 use );
 
 /*-------------------------------------------------------------------------*/
 
 /**
  *      Set wheter tsprintf() should output to console.
  */
-void
-EXPORT_C tspconsoleout( UInt32 use );
+GUCEFCORE_EXPORT_C void
+tspconsoleout( UInt32 use );
 
 /*-------------------------------------------------------------------------*/
 
@@ -122,8 +122,8 @@ EXPORT_C tspconsoleout( UInt32 use );
  *      reopened for a non-console application so you can't clear the console
  *      window using a standard O/S function.
  */
-void
-EXPORT_C console_clrscr( void );
+GUCEFCORE_EXPORT_C void
+console_clrscr( void );
 
 /*-------------------------------------------------------------------------*/
 
@@ -131,21 +131,21 @@ EXPORT_C console_clrscr( void );
  *	Initializes the mutex's needed for the threadsafe printing functions to
  *	work. 
  */
-void
-EXPORT_C tspinit( void );
+GUCEFCORE_EXPORT_C void
+tspinit( void );
 
 /*-------------------------------------------------------------------------*/
 
 /**
  *	Cleanup after a tspinit() has been used.
  */
-void
-EXPORT_C tspshutdown( void );
+GUCEFCORE_EXPORT_C void
+tspshutdown( void );
 
 /*--------------------------------------------------------------------------*/
 
 #ifdef __cplusplus
-   }
+   };
 #endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------//
@@ -170,19 +170,19 @@ EXPORT_C tspshutdown( void );
 //-------------------------------------------------------------------------//
 
 - 19-04-2004 :
-        - Added console_clrscr() for a portable method of clearing the console
+        - Dinand: Added console_clrscr() for a portable method of clearing the console
           window. Is is even manditory when making a WIN32 non-console
           application because then the console was application allocated.
           The catch is that tspinit() must have been called in order for
           this to function. By you should call that function anyways when using
           these functions.
 - 18-04-2004 :
-        - Added tspconsoleout() so that console output can be enabled/disabled
+        - Dinand: Added tspconsoleout() so that console output can be enabled/disabled
           at run-time aswell instead of just design-time.
 - 29-12-2003 :
-        - Added the option to route console output to a file of choice.
+        - Dinand: Added the option to route console output to a file of choice.
 - 26-10-2003 :
-        - Created this file because my debugging fprintf() info was getting
+        - Dinand: Created this file because my debugging fprintf() info was getting
           mucked up because multiple threads where printing info at the same
           time.
 

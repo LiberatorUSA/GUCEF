@@ -49,7 +49,7 @@ COM_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CHTTPClientInterface
+class GUCEFCOM_EXPORT_CPP CHTTPClientInterface
 {
         public:
         

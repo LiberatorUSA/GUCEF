@@ -58,7 +58,7 @@ class CExclusiveActiveObj;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CExclusiveActivationManager
+class GUCEFCORE_EXPORT_CPP CExclusiveActivationManager
 {
     public:
     

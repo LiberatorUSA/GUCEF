@@ -102,25 +102,25 @@ enum
 
 /*-------------------------------------------------------------------------*/
 
-typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Init )                ( void** plugdata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Shutdown )              ( void** plugdata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef const char* ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Name )           ( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef const char* ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Copyright )      ( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef const TVersion* ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Version )    ( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef const char* ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Type )           ( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Init )                ( void** plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Shutdown )              ( void** plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Name )           ( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Copyright )      ( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef const TVersion* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Version )    ( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Type )           ( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Dest_File_Open )      ( void** plugdata, void** filedata, const char* filename ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Dest_File_Close )       ( void** plugdata, void** filedata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Begin_Node_Store )      ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 haschildren ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_End_Node_Store )        ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 haschildren ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Store_Node_Att )        ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 attindex, const char* attname, const char* attvalue, UInt32 haschildren ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Begin_Node_Children )   ( void** plugdata, void** filedata, const char* nodename ) PLUGIN_CALLSPEC_SUFFIX; 
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_End_Node_Children )     ( void** plugdata, void** filedata, const char* nodename ) PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Dest_File_Open )      ( void** plugdata, void** filedata, const char* filename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Dest_File_Close )       ( void** plugdata, void** filedata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Begin_Node_Store )      ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_End_Node_Store )        ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Store_Node_Att )        ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 attindex, const char* attname, const char* attvalue, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Begin_Node_Children )   ( void** plugdata, void** filedata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX; 
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_End_Node_Children )     ( void** plugdata, void** filedata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Src_File_Open )       ( void** plugdata, void** filedata, TIOAccess* file ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Src_File_Close )        ( void** plugdata, void** filedata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Set_Read_Handlers )     ( void** plugdata, void** filedata, const TReadHandlers* rhandlers, void* privdata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Start_Reading )       ( void** plugdata, void** filedata ) PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Src_File_Open )       ( void** plugdata, void** filedata, TIOAccess* file ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Src_File_Close )        ( void** plugdata, void** filedata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Set_Read_Handlers )     ( void** plugdata, void** filedata, const TReadHandlers* rhandlers, void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Start_Reading )       ( void** plugdata, void** filedata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -128,8 +128,8 @@ typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Start_Reading )       (
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-void PLUGIN_CALLSPEC_PREFIX
-OnTreeBeginHandler( void* privdata ) PLUGIN_CALLSPEC_SUFFIX
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
+OnTreeBeginHandler( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         TParserData* pd = static_cast<TParserData*>(privdata);
         pd->errorcode = 0;
@@ -139,17 +139,17 @@ OnTreeBeginHandler( void* privdata ) PLUGIN_CALLSPEC_SUFFIX
 
 /*-------------------------------------------------------------------------*/
 
-void PLUGIN_CALLSPEC_PREFIX 
-OnTreeEndHandler( void* privdata ) PLUGIN_CALLSPEC_SUFFIX
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+OnTreeEndHandler( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         /* currently not used */
 }
 
 /*-------------------------------------------------------------------------*/
 
-void PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 OnNodeBeginHandler( void* privdata       , 
-                    const char* nodename ) PLUGIN_CALLSPEC_SUFFIX
+                    const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         TParserData* pd = static_cast<TParserData*>(privdata);
         if ( pd )
@@ -171,9 +171,9 @@ OnNodeBeginHandler( void* privdata       ,
 
 /*-------------------------------------------------------------------------*/
                     
-void PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 OnNodeEndHandler( void* privdata       , 
-                  const char* nodename ) PLUGIN_CALLSPEC_SUFFIX
+                  const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         TParserData* pd = static_cast<TParserData*>(privdata);
         if ( pd )
@@ -187,11 +187,11 @@ OnNodeEndHandler( void* privdata       ,
 
 /*-------------------------------------------------------------------------*/
                   
-void PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 OnNodeAttHandler( void* privdata       , 
                   const char* nodename , 
                   const char* attname  , 
-                  const char* attvalue ) PLUGIN_CALLSPEC_SUFFIX
+                  const char* attvalue ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         TParserData* pd = static_cast<TParserData*>(privdata);
         if ( pd )
@@ -205,28 +205,28 @@ OnNodeAttHandler( void* privdata       ,
 
 /*-------------------------------------------------------------------------*/
                   
-void PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 OnNodeChildrenBeginHandler( void* privdata       ,
-                            const char* nodename ) PLUGIN_CALLSPEC_SUFFIX
+                            const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         /* currently not used */
 }
                                           
 /*-------------------------------------------------------------------------*/
 
-void PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 OnNodeChildrenEndHandler( void* privdata       , 
-                          const char* nodename ) PLUGIN_CALLSPEC_SUFFIX
+                          const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         /* currently not used */
 }
 
 /*-------------------------------------------------------------------------*/
 
-void PLUGIN_CALLSPEC_PREFIX
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 OnParserErrorHandler( void* privdata          ,
                       Int32 errorcode         , 
-                      const char* description ) PLUGIN_CALLSPEC_SUFFIX
+                      const char* description ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         TParserData* pd = static_cast<TParserData*>(privdata);
         pd->error = description;

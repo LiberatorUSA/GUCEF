@@ -74,7 +74,7 @@ class CMySQLClientInterface;
  *      thread. Otherwise a problem could arrise out of the fact that the
  *      main application thread does the network event proccessing.
  */
-class EXPORT_CPP CMySQLClient: public COMCORE::CTCPClientSocketInterface
+class GUCEFCOM_EXPORT_CPP CMySQLClient: public COMCORE::CTCPClientSocketInterface
 {
 	public:
 	typedef COMCORE::CSocket::TSocketError TSocketError;

@@ -54,11 +54,11 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
  
-template EXPORT_CPP CTRegistry< CDStoreCodec >;
+template GUCEFCORE_EXPORT_CPP CTRegistry< CDStoreCodec >;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CDStoreCodecRegistry : public CTRegistry< CDStoreCodec >
+class GUCEFCORE_EXPORT_CPP CDStoreCodecRegistry : public CTRegistry< CDStoreCodec >
 {
         public:
         typedef TRegisteredObjPtr TDStoreCodecPtr;

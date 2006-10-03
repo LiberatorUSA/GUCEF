@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
   #include "gucefCORE_macros.h"
-  #define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+  #define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifdef DEBUG_MODE
 /*-------------------------------------------------------------------------//
@@ -54,7 +54,7 @@ namespace CORE {
  *      Note that it is recommended to use the TRACER macro instead of using the class
  *      directly
  */
-class EXPORT_CPP CTracer
+class GUCEFCORE_EXPORT_CPP CTracer
 {
         public:
         

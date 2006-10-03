@@ -54,7 +54,7 @@ namespace CORE {
  *  Interface class that adds a name retrieval interface to a class.
  *  By providing this type of interface data type abstraction be increased.
  */
-class EXPORT_CPP CINamedInstance
+class GUCEFCORE_EXPORT_CPP CINamedInstance
 {
     public:
     

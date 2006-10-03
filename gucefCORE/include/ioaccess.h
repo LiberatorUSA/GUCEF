@@ -168,7 +168,7 @@ extern "C" {
  *      specified in type. Should be used in combination with
  *      IOA_Destroy_IOAccess()
  */
-EXPORT_C TIOAccess*
+GUCEFCORE_EXPORT_C TIOAccess*
 IOA_Create_IOAccess( void *source, TIOType type );
 
 /*-------------------------------------------------------------------------*/
@@ -176,7 +176,7 @@ IOA_Create_IOAccess( void *source, TIOType type );
 /**
  *      De-allocate storage created with IOA_Create_IOAccess().
  */
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 IOA_Destroy_IOAccess( TIOAccess *access );
 
 /*-------------------------------------------------------------------------*/
@@ -191,7 +191,7 @@ IOA_Destroy_IOAccess( TIOAccess *access );
  *      combination with the IOACCESS_FILEPATH source type because the IOA
  *      functions will manage the cleanup.
  */
-EXPORT_C void* 
+GUCEFCORE_EXPORT_C void* 
 IOA_Source( TIOAccess *access );
 
 /*-------------------------------------------------------------------------*/
@@ -202,7 +202,7 @@ IOA_Source( TIOAccess *access );
  *      IOA_Create_IOAccess() due to internal conversions. 
  *
  */
-EXPORT_C TIOType
+GUCEFCORE_EXPORT_C TIOType
 IOA_Type( TIOAccess *access );
 
 /*-------------------------------------------------------------------------*/

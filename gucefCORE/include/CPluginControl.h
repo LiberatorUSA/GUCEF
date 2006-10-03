@@ -39,10 +39,10 @@
 #define GUCEF_CORE_CDYNAMICARRAY_H 
 #endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"         /* often used gucef macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,7 +72,7 @@ class CString;
  *      All plugin managers derived from CPluginManager automaticly register here.
  *      
  */
-class EXPORT_CPP CPluginControl
+class GUCEFCORE_EXPORT_CPP CPluginControl
 {
         public:
         

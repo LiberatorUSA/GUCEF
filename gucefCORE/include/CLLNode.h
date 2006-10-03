@@ -24,9 +24,9 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"     /* often used gucefCORE macros */
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -49,7 +49,7 @@ namespace CORE {
  *      list. Note that this is not a cyclic linked list, thus the last and prev
  *      nodes will be NULL at either end of the list.
  */
-class EXPORT_CPP CLLNode
+class GUCEFCORE_EXPORT_CPP CLLNode
 {
         private :
         CLLNode *next;  /* next node in list */

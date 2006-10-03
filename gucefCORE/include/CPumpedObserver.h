@@ -56,7 +56,7 @@ class CObserverPump;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPumpedObserver : public CObserver
+class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
 {
     public:
     

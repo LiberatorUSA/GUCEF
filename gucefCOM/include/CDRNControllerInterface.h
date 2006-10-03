@@ -44,7 +44,7 @@ COM_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-class EXPORT_CPP CDRNControllerInterface
+class GUCEFCOM_EXPORT_CPP CDRNControllerInterface
 {
         protected:
         friend class CDRNController;

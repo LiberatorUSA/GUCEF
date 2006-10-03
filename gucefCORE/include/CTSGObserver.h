@@ -60,7 +60,7 @@ class CTSGNotifier;
  *  Internally used class that is to be used in combination with the CTSGNotifier
  *  class to add observer behaviour to the CTSGNotifier
  */
-class EXPORT_CPP CTSGObserver : public CPumpedObserver
+class GUCEFCORE_EXPORT_CPP CTSGObserver : public CPumpedObserver
 {
     protected:
     

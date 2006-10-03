@@ -24,25 +24,48 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
+#include "ExceptionMacros.h"
+#define GUCEF_CORE_EXCEPTIONMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
+
+#ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
 #include "CGUCEFAppSubSystem.h"
+#define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
+#endif /* GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHSETPARSER_H
 #include "gucefPATCHER_CPatchSetParser.h"
+#define GUCEF_PATCHER_CPATCHSETPARSER_H
+#endif /* GUCEF_PATCHER_CPATCHSETPARSER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+class GUCEF::PATCHER::CPatchSetParserEventHandler;
+
+/*-------------------------------------------------------------------------*/
           
 class CPatcherApplication : public GUCEF::CORE::CGUCEFAppSubSystem
 {
     public:
     
-    static CPatcherApplication* Instance( void );                
+    typedef GUCEF::PATCHER::CPatchSetParserEventHandler TEventHandler;
+    typedef std::vector< TEventHandler* > TEventHandlerList;
+    
+    static CPatcherApplication* Instance( void );
+    
+    void SetEventHandlers( const TEventHandlerList& eventHandler );
 
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_VOIDDEF, ENoEventHandler );
+    
     protected:
     
-    virtual void OnUpdate( const UInt32 applicationTicks ,
-                           const UInt32 deltaTicks       );
+    virtual void OnUpdate( const GUCEF::CORE::UInt32 applicationTicks ,
+                           const GUCEF::CORE::UInt32 deltaTicks       );
 
     /**
      *  Event callback member function.
@@ -53,9 +76,9 @@ class CPatcherApplication : public GUCEF::CORE::CGUCEFAppSubSystem
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined userdata
      */
-    virtual void OnNotify( CNotifier* notifier           ,
-                           const UInt32 eventid          ,
-                           CICloneable* eventdata = NULL );    
+    virtual void OnNotify( GUCEF::CORE::CNotifier* notifier           ,
+                           const GUCEF::CORE::UInt32 eventid          ,
+                           GUCEF::CORE::CICloneable* eventdata = NULL );    
 
     private:
     friend class CPatcherGUIApp;
@@ -70,8 +93,10 @@ class CPatcherApplication : public GUCEF::CORE::CGUCEFAppSubSystem
     
     private:        
     static CPatcherApplication* m_instance;
+    TEventHandler* m_eventHandler;
     GUCEF::PATCHER::CPatchSetParser m_parser;
-    UInt32 m_appStartEventID;
+    TEventHandlerList m_eventHandlers;
+    GUCEF::CORE::UInt32 m_appStartEventID;
 };
 
 /*-------------------------------------------------------------------------*/

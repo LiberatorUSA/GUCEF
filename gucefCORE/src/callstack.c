@@ -54,7 +54,7 @@ namespace CORE {
 
 #define STACK_RESIZE_AMOUNT     256
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
   #define EOL                   "\r\n"
 #else
   #define EOL                   "\n"

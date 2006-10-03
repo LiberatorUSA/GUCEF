@@ -56,7 +56,7 @@ class CStringList;
  *      Allows you to create a chain of codecs that will operate 
  *      on the given data in order.
  */
-class EXPORT_CPP CCodecChain
+class GUCEFCORE_EXPORT_CPP CCodecChain
 {
         public:
         

@@ -52,48 +52,48 @@ namespace CORE {
 /**
  *      Turns the given relative path into an absolute path
  */
-EXPORT_CPP CString
+GUCEFCORE_EXPORT_CPP CString
 RelativePath( const CString& relpath );
 
 /*-------------------------------------------------------------------------*/
 
-EXPORT_CPP void
+GUCEFCORE_EXPORT_CPP void
 AppendToPath( CString& path           ,
               const CString& addition );
               
 /*-------------------------------------------------------------------------*/
 
-EXPORT_CPP CString
+GUCEFCORE_EXPORT_CPP CString
 VersionToString( const TVersion* version );
 
 /*-------------------------------------------------------------------------*/
 
-EXPORT_CPP bool
+GUCEFCORE_EXPORT_CPP bool
 StringToBool( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
-EXPORT_CPP Int32
+GUCEFCORE_EXPORT_CPP Int32
 StringToInt( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
-EXPORT_CPP CString
+GUCEFCORE_EXPORT_CPP CString
 IntToString( const Int32 value );
 
 /*-------------------------------------------------------------------------*/
 
-EXPORT_CPP CString
+GUCEFCORE_EXPORT_CPP CString
 StringToMD5String( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
-EXPORT_CPP CString
+GUCEFCORE_EXPORT_CPP CString
 FloatToString( const float value );
 
 /*-------------------------------------------------------------------------*/
 
-EXPORT_CPP CString
+GUCEFCORE_EXPORT_CPP CString
 DoubleToString( const double value );
 
 /*-------------------------------------------------------------------------//

@@ -44,7 +44,7 @@ COM_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CIPHUDPSocketEventHandler
+class GUCEFCOM_EXPORT_CPP CIPHUDPSocketEventHandler
 {                      
         public:
         

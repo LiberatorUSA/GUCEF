@@ -77,7 +77,7 @@ class CObserver;
  *  - chain reactions occuring during the handling of an event that access
  *    the notifier indirectly can cause errors 
  */
-class EXPORT_CPP CNotifier
+class GUCEFCORE_EXPORT_CPP CNotifier
 {
     public:
 

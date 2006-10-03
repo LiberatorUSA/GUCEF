@@ -45,7 +45,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefCOMCORE\include;..\..\..\gucefCORE\include;..\..\..\gucefMT\include;..\..\..\common\include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;BUILD_GUCEFCOM_DLL"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;GUCEFCOM_BUILD_MODULE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -134,7 +134,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;GUCEFCOM_BUILD_MODULE"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"
 				UsePrecompiledHeader="2"

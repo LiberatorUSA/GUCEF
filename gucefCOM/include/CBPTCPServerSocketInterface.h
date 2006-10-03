@@ -49,7 +49,7 @@ COM_NAMESPACE_BEGIN
  *      Derive a class from this and pass the overrided methods of this
  *      class as the event handlers for CTCPServerSocket
  */
-class EXPORT_CPP CBPTCPServerSocketInterface
+class GUCEFCOM_EXPORT_CPP CBPTCPServerSocketInterface
 {
         public:
         

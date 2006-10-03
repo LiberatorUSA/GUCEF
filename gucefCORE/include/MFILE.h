@@ -31,10 +31,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"       /* often used gucef macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifndef GUCEF_CORE_ETYPES_H
 #include "ETypes.h"             /* simple types used */
@@ -91,7 +91,7 @@ extern "C" {
  *      However it is recommended to staticly allocate MFILE and then use
  *      mfinit
  */
-EXPORT_C MFILE*
+GUCEFCORE_EXPORT_C MFILE*
 mfcreate( const void *mchunk  ,
           UInt32 size         );
 
@@ -103,7 +103,7 @@ mfcreate( const void *mchunk  ,
  *      However it is recommended to staticly allocate MFILE and then use
  *      mfinit
  */
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 mfdestroy( MFILE *mfile );
 
 /*-------------------------------------------------------------------------*/
@@ -111,7 +111,7 @@ mfdestroy( MFILE *mfile );
 /**
  *      Initialize values of an existing MFILE struct
  */
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 mfinit( MFILE* file        ,
         const void *mchunk ,
         const UInt32 size  );
@@ -123,7 +123,7 @@ mfinit( MFILE* file        ,
  *      from current position. Note that this function allocates
  *      memory that should be freed using mfree()
  */                   /* FIXME */
-EXPORT_C UInt32
+GUCEFCORE_EXPORT_C UInt32
 mfreadl( char **dest  ,
          MFILE *mfile );
 
@@ -135,7 +135,7 @@ mfreadl( char **dest  ,
  *      works from current position. Note that this function allocates
  *      memory that should be freed using mfree()
  */
-EXPORT_C UInt32
+GUCEFCORE_EXPORT_C UInt32
 mfreads( char **dest  ,
          MFILE *mfile );
 
@@ -145,7 +145,7 @@ mfreads( char **dest  ,
  *      Free a block of memory that was allocated using mfreadl() or
  *      mfreads()
  */
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 mfree( void *mem );
 
 /*-------------------------------------------------------------------------*/
@@ -154,7 +154,7 @@ mfree( void *mem );
  *      Binary read the maximum number of elements of esize each
  *      from current position
  */
-EXPORT_C UInt32
+GUCEFCORE_EXPORT_C UInt32
 mfread( void *dest      ,
         UInt32 esize    ,
         UInt32 elements ,
@@ -165,7 +165,7 @@ mfread( void *dest      ,
 /**
  *      Returns the current file pointer, which is a void*
  */
-EXPORT_C UInt32
+GUCEFCORE_EXPORT_C UInt32
 mftell( const MFILE *mfile );
 
 /*-------------------------------------------------------------------------*/
@@ -174,7 +174,7 @@ mftell( const MFILE *mfile );
  *      Set the file pointer to the given offset from the origin
  *      provided, origin can be : SEEK_CUR, SEEK_END, SEEK_SET
  */
-EXPORT_C Int32
+GUCEFCORE_EXPORT_C Int32
 mfseek( MFILE *mfile  ,
         UInt32 offset ,
         Int32 origin  );
@@ -185,7 +185,7 @@ mfseek( MFILE *mfile  ,
  *      Set the file pointer to the given offset from the beginning of
  *      the file
  */
-EXPORT_C Int32
+GUCEFCORE_EXPORT_C Int32
 mfsetpos( MFILE *mfile   ,
           UInt32 offset  );
 
@@ -194,7 +194,7 @@ mfsetpos( MFILE *mfile   ,
 /**
  *	MFILE version of getc()
  */
-EXPORT_C char
+GUCEFCORE_EXPORT_C char
 mfgetc( MFILE *mfile );
 
 /*-------------------------------------------------------------------------*/
@@ -202,7 +202,7 @@ mfgetc( MFILE *mfile );
 /**
  *	Identical to mfgetc()
  */
-EXPORT_C char
+GUCEFCORE_EXPORT_C char
 mgetc( MFILE *mfile );
 
 
@@ -212,7 +212,7 @@ mgetc( MFILE *mfile );
  *      Check if the filepointer has reached the end of the file
  *      if so returns true
  */
-EXPORT_C Int32
+GUCEFCORE_EXPORT_C Int32
 mfeof( const MFILE *mfile );
 
 /*-------------------------------------------------------------------------*/
@@ -221,7 +221,7 @@ mfeof( const MFILE *mfile );
  *      Dump memmory chunk to file with name specified
  *      mode should be "w" or "wb"
  */
-EXPORT_C Int32
+GUCEFCORE_EXPORT_C Int32
 mfdumptofile( MFILE *mfile         , 
               const char *filename ,
               const char *mode     );
@@ -271,7 +271,7 @@ mfdumptofile( MFILE *mfile         ,
         - Added mgetc() and mfgetc() which is the MFILE version of fgetc() and
           getc()
 - 18-08-2003 :
-        - Changed EXPORT into EXPORT_C
+        - Changed EXPORT into GUCEFCORE_EXPORT_C
         - Disabled mfwrite untill I implement some new writing code which would
           need a seperate struct from MFILE because the memory block the MFILE
           is assigned to should never change.

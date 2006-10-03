@@ -49,7 +49,7 @@ namespace CORE {
  *      Decending classes should implement the actual storage and
  *      retrieval methods.
  */
-class EXPORT_CPP CConfigStoreCodec : public CICloneable
+class GUCEFCORE_EXPORT_CPP CConfigStoreCodec : public CICloneable
 {
         public:
         

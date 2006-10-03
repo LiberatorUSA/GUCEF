@@ -44,7 +44,7 @@ COM_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CDRNClientInterface
+class GUCEFCOM_EXPORT_CPP CDRNClientInterface
 {
         virtual ~CDRNClientInterface();
         

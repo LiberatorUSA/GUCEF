@@ -88,14 +88,14 @@ HCURSOR CPatcherGUIDlg::OnQueryDragIcon()
 
 void
 CPatcherGUIDlg::OnPatchSetStart( const CORE::CString& patchSetName )
-{
+{TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
 CPatcherGUIDlg::OnEnterLocalDir( const CORE::CString& localPath )
-{
+{TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -103,7 +103,7 @@ CPatcherGUIDlg::OnEnterLocalDir( const CORE::CString& localPath )
 void
 CPatcherGUIDlg::OnLocalFileOK( const CORE::CString& localPath ,
                                const CORE::CString& localFile )
-{
+{TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -111,7 +111,7 @@ CPatcherGUIDlg::OnLocalFileOK( const CORE::CString& localPath ,
 void
 CPatcherGUIDlg::OnLocalFileNotFound( const CORE::CString& localPath ,
                                      const CORE::CString& localFile )
-{
+{TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -119,28 +119,36 @@ CPatcherGUIDlg::OnLocalFileNotFound( const CORE::CString& localPath ,
 void
 CPatcherGUIDlg::OnLocalFileDifference( const CORE::CString& localPath ,
                                        const CORE::CString& localFile )
-{
+{TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CPatcherGUIDlg::OnNewSourceRequired( const TSourceInfo& sourceInfo )
-{
+{TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
 CPatcherGUIDlg::OnLeaveLocalDir( const CORE::CString& localPath )
-{
+{TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
 CPatcherGUIDlg::OnPatchSetEnd( const CORE::CString& patchSetName )
-{
+{TRACE;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatcherGUIDlg::OnParserError( void )
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/

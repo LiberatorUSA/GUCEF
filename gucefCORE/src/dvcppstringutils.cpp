@@ -33,7 +33,7 @@
 
 #include "dvcppstringutils.h"   /* function prototypes of the functions implemented here */
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
   #define WIN32_LEAN_AND_MEAN
   #include <windows.h>		/* WIN32 API */
   #define MAX_DIR_LENGTH MAX_PATH
@@ -162,7 +162,7 @@ StringToMD5String( const CString& str )
 
 /*-------------------------------------------------------------------------*/
 
-EXPORT_CPP CString
+CString
 FloatToString( const float value )
 {TRACE;
         char floatChars[ 16 ];
@@ -173,7 +173,7 @@ FloatToString( const float value )
 
 /*-------------------------------------------------------------------------*/
 
-EXPORT_CPP CString
+CString
 DoubleToString( const double value )
 {TRACE;
         char doubleChars[ 16 ];

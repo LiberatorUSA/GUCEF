@@ -27,11 +27,11 @@
 
 #include "tsprinting.h"	     /* function prototypes */
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>
 #include <wincon.h>          /* for COORD */
 #include <conio.h>           /* need conio.h under WIN32 for clrscr() */
-#endif /* MSWIN_BUILD ? */
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
@@ -197,7 +197,7 @@ tspinit( void )
          *      allow ts functions to work even when this is not a
          *      console application.
          */
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
           #ifdef DEBUG_MODE        
           AllocConsole();
           #endif
@@ -208,7 +208,7 @@ tspinit( void )
         freopen("CONOUT$","wb",stdout);
         /* reopen stderr handle as console window output */
         freopen("CONOUT$","wb",stderr);
-        #endif /* MSWIN_BUILD */
+        #endif /* GUCEF_MSWIN_BUILD */
                 
         if ( !init )
         {
@@ -305,7 +305,7 @@ tspconsoleout( UInt32 use )
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 static void
 my_win32_clrscr( void )
 {
@@ -362,7 +362,7 @@ my_win32_clrscr( void )
 void
 console_clrscr( void )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         my_win32_clrscr();
         #else
         system( "cls" );

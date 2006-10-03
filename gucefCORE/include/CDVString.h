@@ -28,10 +28,10 @@
 
 #include <string>                 /* STL string class */
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"    /* macros that are GUCEF specific and generic macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifndef GUCEF_CORE_ETYPES_H
 #include "ETypes.h"              /* simple types used */
@@ -67,7 +67,7 @@ class CStringList;
  *      memory we want to keep it as fast as possible thus a minimal of memory
  *      management. And no, I do not want to use the STL implementation. 
  */
-class EXPORT_CPP CString
+class GUCEFCORE_EXPORT_CPP CString
 {
         public:
         
@@ -186,11 +186,11 @@ class EXPORT_CPP CString
 
 /*-------------------------------------------------------------------------*/
 
-EXPORT_CPP bool operator!=( const char* lhs, const CString& rhs );
-EXPORT_CPP bool operator==( const char* lhs, const CString& rhs );
-EXPORT_CPP CString operator+( const CString& lhs, const CString& rhs );
-EXPORT_CPP CString operator+( const CString& lhs, const char* rhs );        
-EXPORT_CPP CString operator+( const char* lhs, const CString& rhs ); 
+GUCEFCORE_EXPORT_CPP bool operator!=( const char* lhs, const CString& rhs );
+GUCEFCORE_EXPORT_CPP bool operator==( const char* lhs, const CString& rhs );
+GUCEFCORE_EXPORT_CPP CString operator+( const CString& lhs, const CString& rhs );
+GUCEFCORE_EXPORT_CPP CString operator+( const CString& lhs, const char* rhs );        
+GUCEFCORE_EXPORT_CPP CString operator+( const char* lhs, const CString& rhs ); 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

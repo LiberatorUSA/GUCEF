@@ -62,7 +62,7 @@ class CExclusiveActivationManager;
  *  for it's type ( ie familiy ). Calling Activate() on an object of type 'x'
  *  will cause all other registerd objects of type 'x' to be deactivated.
  */
-class EXPORT_CPP CExclusiveActiveObj
+class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
 {
     public:
     

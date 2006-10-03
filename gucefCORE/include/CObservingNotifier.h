@@ -59,7 +59,7 @@ namespace CORE {
  *  Mainly to be used for node objects in your chain-of-events
  *  tree
  */
-class EXPORT_CPP CObservingNotifier : public CNotifier
+class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
 {
     public:
     

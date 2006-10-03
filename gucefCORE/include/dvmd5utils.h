@@ -56,7 +56,7 @@ namespace CORE {
  *	Function that returns an MD5 digest generated from the recource given
  *	Returns 1 on success and 0 on failure.
  */
-EXPORT_C UInt32
+GUCEFCORE_EXPORT_C UInt32
 md5frommfile( TIOAccess* access  ,
               UInt8 digest[ 16 ] );
 
@@ -67,7 +67,7 @@ md5frommfile( TIOAccess* access  ,
  *	Each digest value is converted to 3 characters.
  *	A null terminator is not included.
  */
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 md5tostring( UInt8 digest[ 16 ] ,
              char md5_str[ 48 ] );
 
@@ -77,7 +77,7 @@ md5tostring( UInt8 digest[ 16 ] ,
  *	Converts the given null-terminated string 
  *      into an md5 digest 
  */
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 md5fromstring( const char* string ,
                UInt8 digest[ 16 ] );                      
 

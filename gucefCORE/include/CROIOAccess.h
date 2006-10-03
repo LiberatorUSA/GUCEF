@@ -50,7 +50,7 @@ namespace CORE {
  *      to avoid having to implement the write interface for each decending
  *      implementation.
  */
-class EXPORT_CPP CROIOAccess : public CIOAccess
+class GUCEFCORE_EXPORT_CPP CROIOAccess : public CIOAccess
 {
         public:
         

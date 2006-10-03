@@ -23,16 +23,17 @@
 
 #include <stdlib.h>
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"       /* build configuration */
 #define GUCEFCORE_MACROS_H
 #endif /* GUCEFCORE_MACROS_H ? */
 
-#ifdef MSWIN_BUILD
-/* Do not use WIN32_LEAN_AND_MEAN because it will remove timeBeginPeriod() ect. */
+#ifdef GUCEF_MSWIN_BUILD
+/* Do not use WIN32_LEAN_AND_MEAN because it will remove timeBeginPeriod() etc. */
+#undef  WIN32_LEAN_AND_MEAN
 #include <windows.h>                /* Windows API */
 #define MAX_DIR_LENGTH MAX_PATH
-#endif /* MSWIN_BUILD ? */
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 #ifdef LINUX_BUILD
   #include <limits.h>                 /* Linux OS limits */
@@ -73,7 +74,7 @@ namespace CORE {
  *      needed for GUCEFPrecisionDelay()
  *      Initialized in GUCEFPrecisionTimerInit() 
  */
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 static LARGE_INTEGER m_high_perf_timer_freq = { 0 };
 #endif
 
@@ -89,7 +90,7 @@ LoadModuleDynamicly( const char* filename )
         #ifdef LINUX_BUILD
         return (void*) dlopen( filename, RTLD_NOW );
         #else
-          #ifdef MSWIN_BUILD
+          #ifdef GUCEF_MSWIN_BUILD
           return (void*) LoadLibrary( filename );
           #else
           #error Unsupported target platform
@@ -105,7 +106,7 @@ UnloadModuleDynamicly( void *sohandle )
         if ( !sohandle ) return;
         #ifdef LINUX_BUILD
         dlclose( sohandle );
-        #elif defined( MSWIN_BUILD )
+        #elif defined( GUCEF_MSWIN_BUILD )
         FreeLibrary( (HMODULE)sohandle );
         #else
         #error Unsupported target platform
@@ -129,7 +130,7 @@ GetFunctionAddress( void *sohandle           ,
         #if defined( LINUX_BUILD )
         return (void*) dlsym( sohandle     ,
                               functionname );
-        #elif defined( MSWIN_BUILD )
+        #elif defined( GUCEF_MSWIN_BUILD )
         
         #pragma warning( push )
         #pragma warning( disable : 4054 ) /* warning C4054: 'type cast' : from function pointer 'FARPROC' to data pointer 'void *' */
@@ -192,7 +193,7 @@ GetFunctionAddress( void *sohandle           ,
 
 /*--------------------------------------------------------------------------*/
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 
 static HWND
 GetCurrentHWND( void )
@@ -239,7 +240,7 @@ GetCurrentHWND( void )
         return whandle;                
 }
 
-#endif /* MSWIN_BUILD ? */ 
+#endif /* GUCEF_MSWIN_BUILD ? */ 
 
 /*--------------------------------------------------------------------------*/
 
@@ -250,7 +251,7 @@ StringToClipboard( const char *str )
         {
                 UInt32 strlength = (UInt32) strlen( str );
                 
-                #ifdef MSWIN_BUILD
+                #ifdef GUCEF_MSWIN_BUILD
                                                                                         
                 HWND whandle = GetCurrentHWND();
                 UInt32 success = OSWRAP_FALSE;
@@ -311,7 +312,7 @@ StringToClipboard( const char *str )
         }
         return OSWRAP_FALSE;
         
-        #else /* MSWIN_BUILD */
+        #else /* GUCEF_MSWIN_BUILD */
 
         return OSWRAP_FALSE;
         
@@ -336,7 +337,7 @@ StringFromClipboard( char *dest     ,
                      UInt32 size    ,
                      UInt32 *wbytes )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         
         HWND whandle = GetCurrentHWND();
         HGLOBAL hglb;
@@ -394,7 +395,7 @@ StringFromClipboard( char *dest     ,
         }
         return OSWRAP_FALSE;
         
-        #else /* MSWIN_BUILD */
+        #else /* GUCEF_MSWIN_BUILD */
         
         return OSWRAP_FALSE;
         
@@ -407,7 +408,7 @@ UInt32
 GUCEFSetEnv( const char* key   ,
              const char* value )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         
         UInt32 retval;        
         char* envstr = malloc( strlen( key ) + strlen( value )+2 );
@@ -447,7 +448,7 @@ GUCEFGetTickCount( void )
 UInt32
 GetCurrentTaskID( void )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return GetCurrentThreadId();
         #else
         #error unsupported target platform
@@ -460,7 +461,7 @@ void
 ShowErrorMessage( const char* message     ,
                   const char* description )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         MessageBox( GetCurrentHWND()                    ,
                     description                         ,
                     message                             ,
@@ -485,7 +486,7 @@ ShowErrorMessage( const char* message     ,
 void
 GUCEFPrecisionDelay( UInt32 delay )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         
         /*
          *      Original code obtained from http://www.geisswerks.com/ryan/FAQS/timing.html
@@ -576,7 +577,7 @@ GUCEFPrecisionDelay( UInt32 delay )
 void
 GUCEFPrecisionTimerInit( void )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         /*
          *      Change Sleep() resolution to 1-2 milliseconds
          *
@@ -604,7 +605,7 @@ GUCEFPrecisionTimerInit( void )
 void
 GUCEFPrecisionTimerShutdown( void )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         /*
          *      Undo timer resolution change
          */

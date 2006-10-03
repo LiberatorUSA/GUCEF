@@ -66,7 +66,7 @@ namespace CORE {
  *
  */
 template< typename SelectionCriteriaType, class BaseClassType >
-class EXPORT_CPP CTAbstractFactory
+class GUCEFCORE_EXPORT_CPP CTAbstractFactory
 {
     public:
     typedef CTFactoryBase< BaseClassType > TConcreteFactory;

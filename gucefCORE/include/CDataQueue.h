@@ -56,7 +56,7 @@ namespace CORE {
  *      retrieve a pointer to it. When your done with the queued item you drop
  *      it from the queue.
  */
-class EXPORT_CPP CDataQueue
+class GUCEFCORE_EXPORT_CPP CDataQueue
 {
         public:
         

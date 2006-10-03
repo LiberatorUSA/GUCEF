@@ -49,7 +49,7 @@ CORE_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CMFileAccess : public CIOAccess
+class GUCEFCORE_EXPORT_CPP CMFileAccess : public CIOAccess
 {
         public:
         

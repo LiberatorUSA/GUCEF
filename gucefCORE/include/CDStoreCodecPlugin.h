@@ -61,7 +61,7 @@ class CDStoreCodecPluginManager;
  *      and reading from a recource to a data tree.
  *      A codec is metadata that converts data from one type to another.
  */
-class EXPORT_CPP CDStoreCodecPlugin
+class GUCEFCORE_EXPORT_CPP CDStoreCodecPlugin
 {
         public:
 

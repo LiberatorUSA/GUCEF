@@ -28,10 +28,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"         /* often used gucefCORE macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,14 +50,14 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnTreeBegin ) ( void* privdata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnTreeEnd ) ( void* privdata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeBegin ) ( void* privdata, const char* nodename ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeEnd ) ( void* privdata, const char* nodename ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeAtt ) ( void* privdata, const char* nodename, const char* attname, const char* attvalue ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeChildrenBegin ) ( void* privdata, const char* nodename ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeChildrenEnd ) ( void* privdata, const char* nodename ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnError ) ( void* privdata, Int32 errorcode, const char* description ) PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnTreeBegin ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnTreeEnd ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeBegin ) ( void* privdata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeEnd ) ( void* privdata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeAtt ) ( void* privdata, const char* nodename, const char* attname, const char* attvalue ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeChildrenBegin ) ( void* privdata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeChildrenEnd ) ( void* privdata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnError ) ( void* privdata, Int32 errorcode, const char* description ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

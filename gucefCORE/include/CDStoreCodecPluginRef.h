@@ -48,7 +48,7 @@ class CDStoreCodecPlugin;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CDStoreCodecPluginRef : public CDStoreCodec 
+class GUCEFCORE_EXPORT_CPP CDStoreCodecPluginRef : public CDStoreCodec 
 {
         public:
         

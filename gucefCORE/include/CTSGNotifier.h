@@ -69,7 +69,7 @@ namespace CORE {
  *  the event data before it is sent to the observers.
  *  Keep in mind that the CTSGNotifier will become the source notifier !!!
  */
-class EXPORT_CPP CTSGNotifier : public CNotifier
+class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
 {
     public:
     

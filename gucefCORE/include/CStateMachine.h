@@ -72,7 +72,7 @@ class CStateHandler;
  *      the CStateHandler derived objects. The state machine only uses them, 
  *      it does not assume ownership.
  */
-class EXPORT_CPP CStateMachine
+class GUCEFCORE_EXPORT_CPP CStateMachine
 {
         public:
         

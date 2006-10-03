@@ -54,7 +54,7 @@ namespace CORE {
  *      After successfully handling the state you should always call SignalStateHandled()
  *      with a condition value. This will trigger a transition to a new state.
  */
-class EXPORT_CPP CStateHandler
+class GUCEFCORE_EXPORT_CPP CStateHandler
 {               
         public:
         CStateHandler( void );

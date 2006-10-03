@@ -21,7 +21,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
+#ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
 #include "CNotificationIDRegistry.h"
+#define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
 
 #include "CPatcherApplication.h"
 
@@ -43,9 +51,14 @@ using namespace GUCEF;
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_IMPLEMENT_MSGEXCEPTION( CPatcherApplication, ENoEventHandler );
+
+/*-------------------------------------------------------------------------*/
+
 CPatcherApplication::CPatcherApplication( void )
-        : m_parser() ,
-          m_appStartEventID( 0 )
+        : m_parser()             ,
+          m_appStartEventID( 0 ) ,
+          m_eventHandler( NULL )
 {
     m_appStartEventID = CORE::CNotificationIDRegistry::Instance()->Lookup( CORE::CGUCEFApplication::AppInitEvent );
 }
@@ -81,20 +94,28 @@ CPatcherApplication::Deinstance( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CPatcherApplication::OnUpdate( const UInt32 applicationTicks ,
-                               const UInt32 deltaTicks       )
+CPatcherApplication::OnUpdate( const CORE::UInt32 applicationTicks ,
+                               const CORE::UInt32 deltaTicks       )
 {
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CPatcherApplication::OnNotify( CNotifier* notifier           ,
-                               const UInt32 eventid          ,
-                               CICloneable* eventdata = NULL )
+CPatcherApplication::OnNotify( CORE::CNotifier* notifier                 ,
+                               const CORE::UInt32 eventid                ,
+                               CORE::CICloneable* eventdata /* = NULL */ )
 {
     if ( eventid == m_appStartEventID )
     {
+        if ( m_eventHandlers.size() == 0 )
+        {
+            GUCEF_EMSGTHROW( ENoEventHandler, "CPatcherApplication::OnNotify(): Application has started but no event handler has been set" );
+            
+            // Just in case the exception doesn't work:
+            CORE::CGUCEFApplication::Instance()->Stop();
+        }
+        
         CORE::CDataNode oldLocalList;
         CORE::CDataNode newLocalList;
         CORE::CDataNode localListDiff;
@@ -103,8 +124,16 @@ CPatcherApplication::OnNotify( CNotifier* notifier           ,
                                               newLocalList  ,
                                               localListDiff );
                                               
-        m_parser.ProcessPatchList( localListDiff )
+        m_parser.ProcessPatchList( localListDiff, m_eventHandlers );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatcherApplication::SetEventHandlers( const TEventHandlerList& eventHandlers )
+{
+    m_eventHandlers = eventHandlers;
 }
 
 /*-------------------------------------------------------------------------*/

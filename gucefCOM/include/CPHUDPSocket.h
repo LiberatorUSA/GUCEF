@@ -84,7 +84,7 @@ class CIPHUDPSocketEventHandler;
  *      to have a correct checksum/data combo while being in fact a mangled packet.
  *      This will only occur in verry rare cases but keep it in mind.
  */
-class EXPORT_CPP CPHUDPSocket : public COMCORE::CIUDPSocketEventHandler
+class GUCEFCOM_EXPORT_CPP CPHUDPSocket : public COMCORE::CIUDPSocketEventHandler
 {
         public:
         

@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"     /* often used gucef macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifndef GUCEF_CORE_ETYPES_H
 #include "ETypes.h"               /* simple types used */
@@ -65,7 +65,7 @@ class CISysConsoleCmdHandler;
 /**
  *
  */
-class EXPORT_CPP CSysConsoleClient
+class GUCEFCORE_EXPORT_CPP CSysConsoleClient
 {
         protected:
         

@@ -57,7 +57,7 @@ class CGUCEFCOREModule;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CObserverPump : public CGUCEFAppSubSystem
+class GUCEFCORE_EXPORT_CPP CObserverPump : public CGUCEFAppSubSystem
 {
     public:
     

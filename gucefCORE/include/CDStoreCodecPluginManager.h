@@ -29,10 +29,10 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"   /* often used gucefCORE macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */ 
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */ 
  
 #ifndef GUCEF_CORE_CPLUGINMANAGER_H 
 #include "CPluginManager.h"    /* base class for plugin managers */
@@ -69,8 +69,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/  
  
-class EXPORT_CPP CDStoreCodecPluginManager : public CPluginManager ,
-                                             public CIConfigurable
+class GUCEFCORE_EXPORT_CPP CDStoreCodecPluginManager : public CPluginManager ,
+                                                       public CIConfigurable
 {
         public:
         

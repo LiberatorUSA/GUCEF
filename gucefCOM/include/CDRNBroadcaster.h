@@ -48,7 +48,7 @@ class CDRNLocalDataItem;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CDRNBroadcaster
+class GUCEFCOM_EXPORT_CPP CDRNBroadcaster
 {
         protected:
         friend class CDRNLocalDataItem;

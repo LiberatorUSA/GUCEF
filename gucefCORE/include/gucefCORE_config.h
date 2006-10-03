@@ -15,8 +15,19 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_CORE_GUCEFCORE_CONFIG_H
-#define GUCEF_CORE_GUCEFCORE_CONFIG_H
+#ifndef GUCEF_CORE_CONFIG_H
+#define GUCEF_CORE_CONFIG_H
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_CONFIG_H
+#include "gucef_config.h"      /* GUCEF platform build configuration */
+#define GUCEF_CONFIG_H
+#endif /* GUCEF_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,70 +36,18 @@
 //-------------------------------------------------------------------------*/
 
 /*
- *      Compile for platform...
- *      The O/S can be autodetected if you wish instead of defining it here.
- */
-#undef MANUAL_OS_DEFINE         /* do not change this line */ 
-#define MANUAL_OS_DEFINE        
-
-/*
- *      Target platform selection switches.
- *      Only has an effect if MANUAL_OS_DEFINE is defined.
- */
-#undef LINUX_BUILD         /* do not change this line */ 
-#undef MSWIN_BUILD         /* do not change this line */  
-/* #define LINUX_BUILD */
-#define MSWIN_BUILD      
-
-/*
- *      Do you wish to manually define wheter you are building or using a
- *      dynamicly linked library ?
- *      Manual is not recommended unless the macros do not fully support your
- *      compiler.
- */
-#undef MANUAL_EXPORT_DEFINE      /* do not change this line */  
-/* #define MANUAL_EXPORT_DEFINE */
-
-/*
- *      Dynamic or static linking ?
- *      and build the dynamic linked library or use it ?
- */
-#undef BUILD_DLL      /* do not change this line */  
-#undef USE_DLL        /* do not change this line */   
-#define BUILD_DLL                 
-/*#define USE_DLL */
+ *  Are we building the module itself or are we simply linking it ?
+ *  If possible you can also set this define in your project instead of altering the switch below    
+ */           
+/* #define GUCEFCORE_BUILD_MODULE */
 
 /*
  *      If we are building or using a DLL then it is sometimes desireable to
  *      export only C code or perhaps only C++ code. You can do this with the
  *      following defines
- */
-#undef EXPORT_CPP_CODE        /* do not change this line */ 
-#undef EXPORT_C_CODE          /* do not change this line */  
-#define EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
-#define EXPORT_C_CODE   /* do you want to enable the C exports ? */
-
-/*
- *      Switches for setting the calling convention used by the gucefCORE
- *      module. Please enable only 1, no more, no less.
- */
-#undef USE_CALLSPEC_C                /* do not change this line */
-#undef USE_CALLSPEC_STD              /* do not change this line */ 
-#undef USE_CALLSPEC_PASCAL           /* do not change this line */ 
-#undef USE_CALLSPEC_FAST             /* do not change this line */
-#undef USE_PLUGIN_CALLSPEC_C         /* do not change this line */
-#undef USE_PLUGIN_CALLSPEC_STD       /* do not change this line */ 
-#undef USE_PLUGIN_CALLSPEC_PASCAL    /* do not change this line */ 
-#undef USE_PLUGIN_CALLSPEC_FAST      /* do not change this line */
-  
-#define USE_CALLSPEC_C 
-/* #define USE_CALLSPEC_STD */
-/* #define USE_CALLSPEC_PASCAL */
-/* #define USE_CALLSPEC_FAST */
-#define USE_PLUGIN_CALLSPEC_C 
-/* #define USE_PLUGIN_CALLSPEC_STD */
-/* #define USE_PLUGIN_CALLSPEC_PASCAL */
-/* #define USE_PLUGIN_CALLSPEC_FAST */
+ */ 
+#define GUCEFCORE_EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
+#define GUCEFCORE_EXPORT_C_CODE   /* do you want to enable the C exports ? */
 
 /*
  *      Wheter or not to use the build swiches here to specify manually what
@@ -130,18 +89,6 @@
 /* #define ADD_EXTRA_INFO_TO_DEBUGOUTPUT */
 
 /*
- *      Switch for removing/adding the GUCEF namespace.
- */
-#undef USE_GUCEF_NAMESPACE      /* do not change this line */  
-#define USE_GUCEF_NAMESPACE
-
-/*
- *      Switch for removing/adding the CORE namespace.
- */
-#undef USE_CORE_NAMESPACE      /* do not change this line */   
-#define USE_CORE_NAMESPACE
-
-/*
  *      Switch that adds or removes the memory manager code from
  *      the module. If no modules use the memory manager then 
  *      comment this switch to get rid of the then unused code.
@@ -159,7 +106,7 @@
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_GUCEFCORE_CONFIG_H */
+#endif /* GUCEF_CORE_CONFIG_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

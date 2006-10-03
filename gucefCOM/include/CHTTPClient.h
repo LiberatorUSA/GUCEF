@@ -139,7 +139,7 @@ class CHTTPClientInterface;
 /**
  *      file downloading client utilising the HTTP protocol.
  */
-class EXPORT_CPP CHTTPClient : public COMCORE::CTCPClientSocketInterface
+class GUCEFCOM_EXPORT_CPP CHTTPClient : public COMCORE::CTCPClientSocketInterface
 {
 	public:
 

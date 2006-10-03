@@ -102,9 +102,9 @@ CPatchSetParser::ParseSourceList( const CORE::CDataNode& rootNode ,
 /*-------------------------------------------------------------------------*/
 
 void
-CPatchSetParser::ProcessPatchListImp( const CORE::CDataNode& rootNode           ,
-                                      const CORE::CString localPath             ,
-                                      CPatchSetParserEventHandler& eventHandler )
+CPatchSetParser::ProcessPatchListImp( const CORE::CDataNode& rootNode   ,
+                                      const CORE::CString localPath     ,
+                                      TEventHandlerList& eventHandlers  )
 {TRACE; /*
     CORE::CStringList ignoreList;
     ignoreList.Append( "Source" );            
@@ -165,15 +165,20 @@ CPatchSetParser::ProcessPatchListImp( const CORE::CDataNode& rootNode           
 /*-------------------------------------------------------------------------*/
 
 void
-CPatchSetParser::ProcessPatchList( const CORE::CDataNode& rootNode           ,
-                                   CPatchSetParserEventHandler& eventHandler )
+CPatchSetParser::ProcessPatchList( const CORE::CDataNode& rootNode  ,
+                                   TEventHandlerList& eventHandlers )
 {TRACE;
     const CORE::CDataNode* patchSetNode = rootNode.Find( "PatchSet" );
     if ( patchSetNode )
     {
         // lets get started shall we,.. get the patchset name
         CORE::CString patchSetName( patchSetNode->GetAttribute( "Name" )->value );
-        eventHandler.OnPatchSetStart( patchSetName );
+        TEventHandlerList::iterator i( eventHandlers.begin() );
+        while ( i != eventHandlers.end() )
+        {
+            (*i)->OnPatchSetStart( patchSetName );
+            ++i;
+        }
 
         // First we get the list of recource sources
         TSourceList sourceList;
@@ -197,16 +202,25 @@ CPatchSetParser::ProcessPatchList( const CORE::CDataNode& rootNode           ,
                 // call the recursive tree walker to process the dir structure
                 ProcessPatchListImp( *localListNode ,
                                      localRootPath  ,
-                                     eventHandler   );
+                                     eventHandlers  );
             }
         }
         
-        eventHandler.OnPatchSetEnd( patchSetName );
+        i = eventHandlers.begin();
+        while ( i != eventHandlers.end() )
+        {
+            (*i)->OnPatchSetEnd( patchSetName );
+            ++i;
+        }
     }
     else
     {
-        eventHandler.OnPatchSetStart( CORE::CString() );
-        eventHandler.OnPatchSetEnd( CORE::CString() );
+        TEventHandlerList::iterator i( eventHandlers.begin() );
+        while ( i != eventHandlers.end() )
+        {
+            (*i)->OnParserError();
+            ++i;
+        }   
     }
 }
 

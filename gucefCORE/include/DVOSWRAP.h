@@ -72,12 +72,12 @@ namespace CORE {
 
 /*--------------------------------------------------------------------------*/
 
-EXPORT_C void*
+GUCEFCORE_EXPORT_C void*
 LoadModuleDynamicly( const char* filename );
 
 /*--------------------------------------------------------------------------*/
 
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 UnloadModuleDynamicly( void *sohandle );
 
 /*--------------------------------------------------------------------------*/
@@ -94,7 +94,7 @@ UnloadModuleDynamicly( void *sohandle );
  *      names tend to get mucked up. 
  *      Tnx for the mess M$ _|_
  */
-EXPORT_C void*
+GUCEFCORE_EXPORT_C void*
 GetFunctionAddress( void *sohandle           ,
                     const char* functionname ,
                     UInt32 parambytes        );
@@ -114,7 +114,7 @@ GetFunctionAddress( void *sohandle           ,
  *              "HWND" environment setting after creating your primary window using
  *              the GUCEFSetEnv() function.
  */
-EXPORT_C UInt32
+GUCEFCORE_EXPORT_C UInt32
 StringToClipboard( const char *str );
 
 /*--------------------------------------------------------------------------*/
@@ -140,20 +140,20 @@ StringToClipboard( const char *str );
  *              "HWND" environment setting after creating your primary window using
  *              the GUCEFSetEnv() function.
  */
-EXPORT_C UInt32
+GUCEFCORE_EXPORT_C UInt32
 StringFromClipboard( char *dest     ,
                      UInt32 size    ,
                      UInt32 *wbytes );
                      
 /*--------------------------------------------------------------------------*/
 
-EXPORT_C UInt32
+GUCEFCORE_EXPORT_C UInt32
 GUCEFSetEnv( const char* key   ,
              const char* value );
         
 /*--------------------------------------------------------------------------*/        
 
-EXPORT_C const char*
+GUCEFCORE_EXPORT_C const char*
 GUCEFGetEnv( const char* key );
 
 /*--------------------------------------------------------------------------*/
@@ -161,12 +161,12 @@ GUCEFGetEnv( const char* key );
 /**
  *      Returns the application tickcount
  */
-EXPORT_C UInt32
+GUCEFCORE_EXPORT_C UInt32
 GUCEFGetTickCount( void );   
 
 /*--------------------------------------------------------------------------*/
 
-EXPORT_C UInt32
+GUCEFCORE_EXPORT_C UInt32
 GetCurrentTaskID( void );
 
 /*--------------------------------------------------------------------------*/
@@ -174,7 +174,7 @@ GetCurrentTaskID( void );
 /**
  *      Displays an O/S error message/dialog
  */
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 ShowErrorMessage( const char* message     ,
                   const char* description );                  
 
@@ -197,7 +197,7 @@ ShowErrorMessage( const char* message     ,
  *
  *      @param delay the number of milliseconds you wish to delay the caller thread 
  */
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 GUCEFPrecisionDelay( UInt32 delay );
 
 /*--------------------------------------------------------------------------*/
@@ -208,7 +208,7 @@ GUCEFPrecisionDelay( UInt32 delay );
  *      MUST be called at application startup.
  *      Also see GUCEFPrecisionTimerShutdown()
  */
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 GUCEFPrecisionTimerInit( void );
 
 /*--------------------------------------------------------------------------*/
@@ -219,7 +219,7 @@ GUCEFPrecisionTimerInit( void );
  *      MUST be called if you called GUCEFPrecisionTimerInit() !!!
  *      call at application shutdown.
  */
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 GUCEFPrecisionTimerShutdown( void );
 
 /*--------------------------------------------------------------------------*/

@@ -63,7 +63,7 @@ class CGUCEFApplication;
  *  pulses from the main application 'engine'.
  *  This class automaticly registers at the CGUCEFApplication singleton.
  */
-class EXPORT_CPP CGUCEFAppSubSystem : public CObservingNotifier
+class GUCEFCORE_EXPORT_CPP CGUCEFAppSubSystem : public CObservingNotifier
 {
     public:
     

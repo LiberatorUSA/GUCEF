@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"         /* often used gucef macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
@@ -60,7 +60,7 @@ class CPluginControl;
 /**
  *      Generic base class for plugin managers
  */
-class EXPORT_CPP CPluginManager : public CObservingNotifier
+class GUCEFCORE_EXPORT_CPP CPluginManager : public CObservingNotifier
 {
     public:
 

@@ -60,7 +60,7 @@ class CGUCEFApplication;
  *  an O/S dependant fashion in such a way that updates are performed uppon 
  *  request instead of the alternate busy-wait-poll scenario.
  */
-class EXPORT_CPP CIGUCEFApplicationDriver
+class GUCEFCORE_EXPORT_CPP CIGUCEFApplicationDriver
 {
     public:      
     

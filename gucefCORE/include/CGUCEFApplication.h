@@ -26,14 +26,14 @@
 
 #include <set>
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>                    /* Micro$oft Windows API */
-#endif /* MSWIN_BUILD ? */
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 #ifndef GUCEF_CORE_CTSGNOTIFIER_H
 #include "CTSGNotifier.h"
@@ -91,7 +91,7 @@ class CIGUCEFApplicationDriver;
  *              Signals that the application is shutting down at the
  *              GUCEF level. All higher level code should shutdown aswell 
  */
-class EXPORT_CPP CGUCEFApplication : public CTSGNotifier          , 
+class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          , 
                                      public CIConfigurable        ,
                                      public CISysConsoleCmdHandler
 {
@@ -102,7 +102,7 @@ class EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
         
         struct SAppInitEventData
         {
-                #ifdef MSWIN_BUILD
+                #ifdef GUCEF_MSWIN_BUILD
                 HINSTANCE hinstance;
                 HINSTANCE hprevinstance;
                 LPSTR lpcmdline;
@@ -117,7 +117,7 @@ class EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
 
         static CGUCEFApplication* Instance( void );
 
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         int Main( HINSTANCE hinstance     ,
                   HINSTANCE hprevinstance ,
                   LPSTR lpcmdline         ,

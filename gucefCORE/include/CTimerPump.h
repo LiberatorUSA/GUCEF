@@ -51,7 +51,7 @@ class CGUCEFCOREModule;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CTimerPump : public CGUCEFAppSubSystem
+class GUCEFCORE_EXPORT_CPP CTimerPump : public CGUCEFAppSubSystem
 {
     public:
     

@@ -15,71 +15,39 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEFCOM_CONFIG_H
-#define GUCEFCOM_CONFIG_H
+#ifndef GUCEF_COM_CONFIG_H
+#define GUCEF_COM_CONFIG_H
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_CONFIG_H
+#include "gucef_config.h"
+#define GUCEF_CONFIG_H
+#endif /* GUCEF_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      BUILD DEFINES                                                      //
 //                                                                         //
-//-------------------------------------------------------------------------*/
+//-------------------------------------------------------------------------*/ 
 
 /*
- *      Compile for platform...
- *      The O/S can be autodetected if you wish instead of defining it here.
- */
-#undef MANUAL_OS_DEFINE        /* do not change this line */
-#define MANUAL_OS_DEFINE        /* Do you wish to specify the O/S yourself ? */
-
-/*
- *      Target platform selection switches.
- *      Only has an effect if MANUAL_OS_DEFINE is defined.
- */
-#undef LINUX_BUILD        /* do not change this line */
-#undef MSWIN_BUILD        /* do not change this line */ 
-/* #define LINUX_BUILD */
-#define MSWIN_BUILD      
-
-/*
- *      Do you wish to manually define wheter you are building or using a
- *      dynamicly linked library ?
- *      Manual is not recommended unless the macros do not fully support your
- *      compiler.
- */
-#undef MANUAL_EXPORT_DEFINE        /* do not change this line */
-#define MANUAL_EXPORT_DEFINE
-
-/*
- *      Dynamic or static linking ?
- *      and build the dynamic linked library or use it ?
- */
-#undef BUILD_DLL        /* do not change this line */ 
-#undef USE_DLL          /* do not change this line */ 
-#define BUILD_DLL                 
-/*#define USE_DLL */
+ *  Are we building the module itself or are we simply linking it ?
+ *  If possible you can also set this define in your project instead of altering the switch below    
+ */           
+/* #define GUCEFCOM_BUILD_MODULE */
 
 /*
  *      If we are building or using a DLL then it is sometimes desireable to
  *      export only C code or perhaps only C++ code. You can do this with the
  *      following defines
  */
-#undef EXPORT_CPP_CODE        /* do not change this line */ 
-#undef EXPORT_C_CODE          /* do not change this line */  
-#define EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
-#define EXPORT_C_CODE   /* do you want to enable the C exports ? */
-
-/*
- *      Switches for setting the calling convention used by the gucefCORE
- *      module. Please enable only 1, no more, no less.
- */
-#undef USE_CALLSPEC_C        /* do not change this line */  
-#undef USE_CALLSPEC_STD      /* do not change this line */  
-#undef USE_CALLSPEC_PASCAL   /* do not change this line */  
-#undef USE_CALLSPEC_FAST     /* do not change this line */ 
-#define USE_CALLSPEC_C 
-/* #define USE_CALLSPEC_STD */
-/* #define USE_CALLSPEC_PASCAL */
-/* #define USE_CALLSPEC_FAST */
+#define GUCEFCOM_EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
+#define GUCEFCOM_EXPORT_C_CODE   /* do you want to enable the C exports ? */
 
 /*
  *      Wheter or not to use the build swiches here to specify manually what
@@ -142,7 +110,7 @@
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEFCOM_CONFIG_H */
+#endif /* GUCEF_COM_CONFIG_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -151,7 +119,7 @@
 //-------------------------------------------------------------------------//
 
 - 16-10-2004 :
-       - Initial version of this file.
+       - Dinand: Initial version of this file.
 
 -----------------------------------------------------------------------------*/
  

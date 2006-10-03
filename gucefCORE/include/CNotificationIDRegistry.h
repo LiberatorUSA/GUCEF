@@ -55,7 +55,7 @@ namespace CORE {
  *  If you follow this rule you should never have to worry about naming
  *  conflicts, while keeping the ease of use that comes from integer id's
  */
-class EXPORT_CPP CNotificationIDRegistry
+class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
 {
     public:
            
@@ -116,11 +116,11 @@ class EXPORT_CPP CNotificationIDRegistry
     
     bool IsRegistered( const std::string& keyvalue ) const;    
 
-    GUCEF_DEFINE_MSGEXCEPTION( EXPORT_CPP, EKeyAlreadyRegistered );
-    GUCEF_DEFINE_MSGEXCEPTION( EXPORT_CPP, EEmptyKeyString );
-    GUCEF_DEFINE_MSGEXCEPTION( EXPORT_CPP, EUnknownKey );
-    GUCEF_DEFINE_MSGEXCEPTION( EXPORT_CPP, EInvalidKey );
-    GUCEF_DEFINE_MSGEXCEPTION( EXPORT_CPP, EInvalidEventID );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EKeyAlreadyRegistered );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EEmptyKeyString );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EUnknownKey );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EInvalidKey );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EInvalidEventID );
     
     private:
     friend class CGUCEFCOREModule;

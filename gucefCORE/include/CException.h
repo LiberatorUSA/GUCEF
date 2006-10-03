@@ -48,7 +48,7 @@ namespace CORE {
  *  Offcourse you can always inherit from this class to create specific exception
  *  sub-sets which may or may not provide additional information.
  */
-class EXPORT_CPP CException
+class GUCEFCORE_EXPORT_CPP CException
 {
 	public:
 

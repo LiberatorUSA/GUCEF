@@ -29,10 +29,10 @@
 #define GUCEF_CORE_CDYNAMICARRAY_H
 #endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"         /* often used gucef macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,7 +55,7 @@ namespace CORE {
  *      key values do not have to be unique but Get() and the index operator
  *      will only return the first entry.
  */
-class EXPORT_CPP CIntMap
+class GUCEFCORE_EXPORT_CPP CIntMap
 {
         public:
         

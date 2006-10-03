@@ -25,6 +25,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <map>
+#include <vector>
 #include "CDataNode.h"
 #include "CDVString.h"
 
@@ -62,8 +63,8 @@ class EXPORT_CPP CPatchSetParser
         CORE::CString CodecParams;
     };
     typedef struct SSourceInfo TSourceInfo;
-
     typedef std::map< CORE::CString, TSourceInfo > TSourceList;
+    typedef std::vector< CPatchSetParserEventHandler* > TEventHandlerList;
         
     public:
     
@@ -80,8 +81,8 @@ class EXPORT_CPP CPatchSetParser
      *  calling the events handlers for each appropriote event
      */
     void 
-    ProcessPatchList( const CORE::CDataNode& patchList          ,
-                      CPatchSetParserEventHandler& eventHandler );
+    ProcessPatchList( const CORE::CDataNode& patchList ,
+                      TEventHandlerList& eventHandlers );
 
     /**
      *  Allows you to parse a source list from the given data tree
@@ -109,7 +110,7 @@ class EXPORT_CPP CPatchSetParser
     void
     ProcessPatchListImp( const CORE::CDataNode& rootNode           ,
                          const CORE::CString localPath             ,
-                         CPatchSetParserEventHandler& eventHandler );
+                         TEventHandlerList& eventHandler );
 
     void 
     ProcessPatchList( const TSourceList& sourceList ,

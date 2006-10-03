@@ -73,7 +73,7 @@ class CMySQLClient;	/* MySQL client implementation */
  *	Class which functions as a container of database fields from a single
  *	column.
  */
-class EXPORT_CPP CDBQuery
+class GUCEFCOM_EXPORT_CPP CDBQuery
 {
 	friend class CMySQLClient;
 

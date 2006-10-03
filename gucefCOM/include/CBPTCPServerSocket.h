@@ -61,7 +61,7 @@ class CBPTCPServerSocketInterface;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CBPTCPServerSocket : public COMCORE::CTCPServerSocketInterface
+class GUCEFCOM_EXPORT_CPP CBPTCPServerSocket : public COMCORE::CTCPServerSocketInterface
 {
         public:
         

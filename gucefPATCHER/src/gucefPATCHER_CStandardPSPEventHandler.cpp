@@ -42,27 +42,27 @@ namespace PATCHER {
  
 CStandardPSPEventHandler::CStandardPSPEventHandler( void )
         : CPatchSetParserEventHandler()
-{
+{TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CStandardPSPEventHandler::CStandardPSPEventHandler( const CStandardPSPEventHandler& src )
         : CPatchSetParserEventHandler( src )
-{
+{TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CStandardPSPEventHandler::~CStandardPSPEventHandler()
-{
+{TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CStandardPSPEventHandler&
 CStandardPSPEventHandler::operator=( const CStandardPSPEventHandler& src )
-{
+{TRACE;
         CPatchSetParserEventHandler::operator=( src );
         
         if ( &src != this )
@@ -76,7 +76,7 @@ CStandardPSPEventHandler::operator=( const CStandardPSPEventHandler& src )
 
 void
 CStandardPSPEventHandler::OnPatchSetStart( const CORE::CString& patchSetName )
-{
+{TRACE;
         // no need to do anything
 }
 
@@ -84,7 +84,7 @@ CStandardPSPEventHandler::OnPatchSetStart( const CORE::CString& patchSetName )
     
 void
 CStandardPSPEventHandler::OnEnterLocalDir( const CORE::CString& localPath )
-{
+{TRACE;
         // the directory should exist locally
         CORE::Create_Directory( localPath.C_String() );
 }
@@ -94,7 +94,7 @@ CStandardPSPEventHandler::OnEnterLocalDir( const CORE::CString& localPath )
 void
 CStandardPSPEventHandler::OnLocalFileOK( const CORE::CString& localPath ,
                                          const CORE::CString& localFile )
-{
+{TRACE;
         // no need to do anything
 }
 
@@ -103,7 +103,7 @@ CStandardPSPEventHandler::OnLocalFileOK( const CORE::CString& localPath ,
 void
 CStandardPSPEventHandler::OnLocalFileNotFound( const CORE::CString& localPath ,
                                                const CORE::CString& localFile )
-{
+{TRACE;
         // no need to do anything
 }
 
@@ -112,7 +112,7 @@ CStandardPSPEventHandler::OnLocalFileNotFound( const CORE::CString& localPath ,
 void
 CStandardPSPEventHandler::OnLocalFileDifference( const CORE::CString& localPath ,
                                                  const CORE::CString& localFile )
-{
+{TRACE;
         // no need to do anything
 }
 
@@ -120,7 +120,7 @@ CStandardPSPEventHandler::OnLocalFileDifference( const CORE::CString& localPath 
 
 void
 CStandardPSPEventHandler::OnNewSourceRequired( const TSourceInfo& sourceInfo )
-{
+{TRACE;
         m_sourceList[ sourceInfo.Tag ] = sourceInfo;
 }
 
@@ -128,14 +128,22 @@ CStandardPSPEventHandler::OnNewSourceRequired( const TSourceInfo& sourceInfo )
     
 void
 CStandardPSPEventHandler::OnLeaveLocalDir( const CORE::CString& localPath )
-{
+{TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
 CStandardPSPEventHandler::OnPatchSetEnd( const CORE::CString& patchSetName )
-{
+{TRACE;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStandardPSPEventHandler::OnParserError( void )
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------//

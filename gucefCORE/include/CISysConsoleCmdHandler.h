@@ -48,7 +48,7 @@ namespace CORE {
  *      Abstract interface base class for classes implementing an handler for
  *      system console command triggers.
  */ 
-class EXPORT_CPP CISysConsoleCmdHandler
+class GUCEFCORE_EXPORT_CPP CISysConsoleCmdHandler
 {
         protected:
         friend class CSysConsole;

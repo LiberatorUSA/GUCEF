@@ -54,7 +54,7 @@ COM_NAMESPACE_BEGIN
  *      Derive a class from this and pass the overrided member functions of this
  *      class as the event handlers for CTCPClientsocket
  */
-class EXPORT_CPP CBPTCPClientSocketInterface 
+class GUCEFCOM_EXPORT_CPP CBPTCPClientSocketInterface 
 {
         friend class CBPTCPClientSocket;
 

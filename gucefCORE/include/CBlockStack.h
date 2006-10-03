@@ -44,7 +44,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CBlockStack
+class GUCEFCORE_EXPORT_CPP CBlockStack
 {
         public:
         

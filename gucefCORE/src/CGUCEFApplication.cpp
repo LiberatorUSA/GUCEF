@@ -203,7 +203,7 @@ CGUCEFApplication::~CGUCEFApplication()
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 int
 CGUCEFApplication::Main( HINSTANCE hinstance     ,
                          HINSTANCE hprevinstance ,
@@ -482,7 +482,7 @@ CGUCEFApplication::OnUpdate( UInt32 tickcount  ,
                              UInt32 deltaticks )
 {TRACE;
         
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
     	MSG  msg;
         while( PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
         {                

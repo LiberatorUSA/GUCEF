@@ -61,7 +61,7 @@ class CIURLDataHandler;
  *      Use of this class is the recommended method for utilizing 
  *      URL resource retrieval.
  */
-class EXPORT_CPP CURL
+class GUCEFCORE_EXPORT_CPP CURL
 {
         public:
         

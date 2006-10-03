@@ -57,7 +57,7 @@ namespace CORE {
 /**
  *      Abstract base class for media independant recource access
  */
-class EXPORT_CPP CIOAccess : public CICloneable
+class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
 {
         public:
         

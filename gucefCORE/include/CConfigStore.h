@@ -71,7 +71,7 @@ class CIConfigurable;
  *      Allows you load and save the config of all configureable items that
  *      have global config usage enabled.
  */
-class EXPORT_CPP CConfigStore
+class GUCEFCORE_EXPORT_CPP CConfigStore
 {
         public:
         

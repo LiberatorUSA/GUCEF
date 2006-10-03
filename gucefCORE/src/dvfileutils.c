@@ -32,7 +32,7 @@
 
 #include "dvfileutils.h"	/* function prototypes */
 #include "dvstrutils.h"         /* My own string utils */
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
   #include <windows.h>		/* WIN32 API */
   /* #include <dir.h>: obsolete *//* needed for MAXFILE define */
   #include <io.h>                 /* Dir itteration: findfirst ect. */
@@ -77,7 +77,7 @@ namespace CORE {
  */
 struct SDI_Data
 {
- 	#ifdef MSWIN_BUILD
+ 	#ifdef GUCEF_MSWIN_BUILD
 	Int32 find_handle;        /* Unique handle identifying the file or set of files that resulted from a findfirst with the filter provided */
 	struct _finddata_t  find; /* struct that stores entry data */
         #else
@@ -110,7 +110,7 @@ DI_First_Dir_Entry( const char *path )
          *	In case of error NULL is returned.
          */
         struct SDI_Data *data;
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         char *tmp_path;
         #endif /* WIN32_BUILD ? */
 
@@ -121,7 +121,7 @@ DI_First_Dir_Entry( const char *path )
          */
         data = ( struct SDI_Data* ) malloc( sizeof( struct SDI_Data ) );
 
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
 
         /*
          *	In Win32 we use _findfirst ect. because even though the posix
@@ -243,7 +243,7 @@ DI_Next_Dir_Entry( struct SDI_Data *data )
          *	0 is returned in which case you should call DI_Cleanup(),
          *	otherwise 1 is returned.
          */
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return !_findnext( data->find_handle, &data->find );
 	#else
         #ifdef LINUX_BUILD
@@ -305,7 +305,7 @@ DI_Timestamp( struct SDI_Data *data )
          *	Returns the dir entry name of the current directory entry. This may be
          *	a directory name or a filename. Use DI_Is_It_A_File() to determine which
          */
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return (UInt32)data->find.time_write;
 	#else
         #ifdef LINUX_BUILD
@@ -334,7 +334,7 @@ DI_Size( struct SDI_Data *data )
          *	Returns the size of the current entry which in the case of a file is the
          *	filesize.
          */
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return data->find.size;
 	#else
         #ifdef LINUX_BUILD
@@ -363,7 +363,7 @@ DI_Is_It_A_File( struct SDI_Data *data )
          *	Returns boolean indicating wheter the current entry is a directory or
          *	a file.
          */
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return !( data->find.attrib & _A_SUBDIR );
 	#else
         #ifdef LINUX_BUILD
@@ -392,7 +392,7 @@ DI_Name( struct SDI_Data *data )
          *	Returns the dir entry name of the current directory entry. This may be
          *	a directory name or a filename. Use DI_Is_It_A_File() to determine which
          */
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return data->find.name;
 	#else
         #ifdef LINUX_BUILD
@@ -421,7 +421,7 @@ DI_Cleanup( struct SDI_Data *data )
          *	De-allocates data storage used for dir itteration which was created by
          *	a call to DI_First_Dir_Entry().
          */
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         _findclose( data->find_handle );
         free( data );
 	#else
@@ -448,7 +448,7 @@ Get_Current_Dir( char* dest_buffer, UInt32 buf_length )
          */
         if ( !dest_buffer ) return NULL;
 
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return _getcwd( dest_buffer, buf_length );
         #endif /* WIN32_BUILD */
         #ifdef LINUX_BUILD
@@ -470,7 +470,7 @@ Get_Current_Dir( char* dest_buffer, UInt32 buf_length )
 UInt32
 Max_Dir_Length( void )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return MAX_PATH;
         #endif /* WIN32_BUILD */
         #ifdef LINUX_BUILD
@@ -483,7 +483,7 @@ Max_Dir_Length( void )
 UInt32
 Max_Filename_Length( void )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return _MAX_FNAME;
         /*return MAXFILE+MAXEXT; */
         #endif /* WIN32_BUILD */
@@ -494,7 +494,7 @@ Max_Filename_Length( void )
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 /**
  *	Recursive function that creates directorys
  */
@@ -572,7 +572,7 @@ create_directory( const char *new_dir, UInt32 offset )
 UInt32
 Create_Directory( const char *new_dir )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
 	return create_directory( new_dir, 0 );
         #endif /* WIN32_BUILD */
         #ifdef LINUX_BUILD
@@ -646,7 +646,7 @@ Remove_Directory( const char *dir  ,
                 DI_Cleanup( ddata );
         }
 
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         /*
          *      Attempt to remove the directory itself. We can call the WIN32
          *      function directly here because it won't delete any files in the
@@ -675,7 +675,7 @@ Remove_Directory( const char *dir  ,
 UInt32
 Module_Path( char *dest, UInt32 dest_size )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return !GetModuleFileName( NULL, dest, dest_size ); 
         #else 
         #ifdef LINUX_BUILD
@@ -692,7 +692,7 @@ Module_Path( char *dest, UInt32 dest_size )
 UInt32
 Delete_File( const char *filename )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return DeleteFile( filename );
         #else
         #ifdef LINUX_BUILD
@@ -712,7 +712,7 @@ Delete_File( const char *filename )
 UInt32
 Copy_File( const char *dst, const char *src )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return !CopyFile( dst, src, 0 );
         #else
         char buffer[ 1024*512 ];
@@ -752,7 +752,7 @@ Copy_File( const char *dst, const char *src )
 UInt32
 Move_File( const char *dst, const char *src )
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         return MoveFile( src, dst );
         #else
         if ( Copy_File( dst, src ) )
@@ -766,7 +766,7 @@ Move_File( const char *dst, const char *src )
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 static HANDLE
 ExecuteProgramEx( const char *filename,
                   const char *cmdline )
@@ -817,7 +817,7 @@ Execute_Program( const char *filename ,
 {
         if ( filename )
         {
-                #ifdef MSWIN_BUILD
+                #ifdef GUCEF_MSWIN_BUILD
                 HANDLE phdl = ExecuteProgramEx( filename, cmdline );
                 if ( phdl )
                 {
@@ -840,7 +840,7 @@ Filesize( const char *filename )
 {
         if ( filename )
         {
-                #ifdef MSWIN_BUILD
+                #ifdef GUCEF_MSWIN_BUILD
                 UInt32 lfilesize;
                 WIN32_FIND_DATA FileInfo;
                 HANDLE hFind;
@@ -887,7 +887,7 @@ File_Exists( const char *filename )
 {
         if ( filename )
         {
-                #ifdef MSWIN_BUILD
+                #ifdef GUCEF_MSWIN_BUILD
                 WIN32_FIND_DATA FileInfo;
                 HANDLE hFind;
                 hFind = FindFirstFile( filename, &FileInfo );

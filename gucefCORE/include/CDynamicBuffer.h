@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"       /* config & macros specific to GUCEF */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifndef GUCEF_CORE_ETYPES_H
 #include "ETypes.h"             /* simple types used */
@@ -57,7 +57,7 @@ namespace CORE {
  *      Using a regular class to perform this task allows you to keep buffer 
  *      memory management in-scope.
  */
-class EXPORT_CPP CDynamicBuffer
+class GUCEFCORE_EXPORT_CPP CDynamicBuffer
 {
         public:
         

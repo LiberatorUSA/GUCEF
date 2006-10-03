@@ -54,11 +54,11 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
  
-template EXPORT_CPP CTRegistry< CURLHandler >;
+template GUCEFCORE_EXPORT_CPP CTRegistry< CURLHandler >;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CURLHandlerRegistry : public CTRegistry< CURLHandler >
+class GUCEFCORE_EXPORT_CPP CURLHandlerRegistry : public CTRegistry< CURLHandler >
 {
         public:
         

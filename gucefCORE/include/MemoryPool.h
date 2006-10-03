@@ -51,7 +51,7 @@ namespace CORE {
  *  function to the member function for the chosen default 
  *  strategy for that specific pool implementation.
  */
-class EXPORT_CPP CMemoryPool
+class GUCEFCORE_EXPORT_CPP CMemoryPool
 {
 	public:
 	

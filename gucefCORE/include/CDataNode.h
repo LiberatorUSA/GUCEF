@@ -56,7 +56,7 @@ namespace CORE {
  *      Note that CDataNode objects always remain owner of all their
  *      children so do not delete any node or node attribute directly yourself.
  */
-class EXPORT_CPP CDataNode
+class GUCEFCORE_EXPORT_CPP CDataNode
 {
         public:        
 
@@ -266,7 +266,7 @@ class EXPORT_CPP CDataNode
         
         CDataNode* GetPrevious( void ) const;
         
-        class EXPORT_CPP iterator
+        class GUCEFCORE_EXPORT_CPP iterator
         {
                 public:
 
@@ -297,7 +297,7 @@ class EXPORT_CPP CDataNode
                 bool _atstart;               /**< has the iterator reached the left end pos */ 
         };
 
-        class EXPORT_CPP const_iterator
+        class GUCEFCORE_EXPORT_CPP const_iterator
         {
                 public:
 

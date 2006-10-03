@@ -67,7 +67,7 @@ class CNotifier;
  *  decending class. Failure to do this will not cause any problems but should be 
  *  considdered to be dirty coding.
  */
-class EXPORT_CPP CObserver
+class GUCEFCORE_EXPORT_CPP CObserver
 {
     public:
 

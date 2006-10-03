@@ -44,7 +44,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\common\include;..\..\include;..\..\..\gucefMT\include;..\..\dependancy;..\..\dependancy\md5"
-				PreprocessorDefinitions="BUILD_GUCEFCORE_DLL;WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_DEPRECATE;GUCEFCORE_BUILD_MODULE"
 				StringPooling="true"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
@@ -137,7 +137,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_DEPRECATE;GUCEFCORE_BUILD_MODULE"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"
 				WarningLevel="3"

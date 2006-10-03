@@ -46,7 +46,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CFileAccess : public CIOAccess
+class GUCEFCORE_EXPORT_CPP CFileAccess : public CIOAccess
 {
         public:
         

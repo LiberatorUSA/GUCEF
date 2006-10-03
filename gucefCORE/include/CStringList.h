@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"     /* often used gucef macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifndef GUCEF_CORE_ETYPES_H
 #include "ETypes.h"               /* simple types used */
@@ -92,7 +92,7 @@ typedef enum
  *      Also note that this class uses the ASCII char set so don't pass buffers
  *      with 8 bit integers, meaning a 0 value in the middle of the buffer ect.
  */
-class EXPORT_CPP CStringList
+class GUCEFCORE_EXPORT_CPP CStringList
 {
         public:
 
@@ -134,7 +134,7 @@ class EXPORT_CPP CStringList
         
         void Clear( void );
 
-        class EXPORT_CPP iterator
+        class GUCEFCORE_EXPORT_CPP iterator
         {
                 public:
 
@@ -172,7 +172,7 @@ class EXPORT_CPP CStringList
                 UInt32 _pos;
         };
 
-        class EXPORT_CPP const_iterator
+        class GUCEFCORE_EXPORT_CPP const_iterator
         {
                 public:
 
@@ -255,7 +255,7 @@ class EXPORT_CPP CStringList
         - Redesigned and recoded this class. It now uses iterators and the
           refrence counted string class. void* links are no longer available. 
 - 18-08-2003 :
-        - Changed EXPORT into EXPORT_CPP
+        - Changed EXPORT into GUCEFCORE_EXPORT_CPP
 - 06-06-2003 :
         - Moved more functionality into this abstarct base class from it's
           decendants.

@@ -49,7 +49,7 @@ namespace CORE {
  *  implementations for sorting and storing memory pool administration related 
  *  data. Basicly a data container with a configurable compare functionality
  */
-class EXPORT_CPP CMemorySegment
+class GUCEFCORE_EXPORT_CPP CMemorySegment
 {
     public:
 

@@ -64,7 +64,7 @@ class CDRNController;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CDRNDataItem : public CORE::CNotifier
+class GUCEFCOM_EXPORT_CPP CDRNDataItem : public CORE::CNotifier
 {
         public:                       
         

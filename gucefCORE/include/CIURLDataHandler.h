@@ -54,7 +54,7 @@ namespace CORE {
  *      You can derive from this class and then pass a pointer to a CURL
  *      instance to handle URL operations
  */
-class EXPORT_CPP CIURLDataHandler
+class GUCEFCORE_EXPORT_CPP CIURLDataHandler
 {
         public:
         

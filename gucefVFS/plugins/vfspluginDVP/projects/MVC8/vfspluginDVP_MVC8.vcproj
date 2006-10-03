@@ -194,6 +194,10 @@
 				RelativePath="..\..\src\DVPACKSYS.c"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\..\..\gucefCORE\src\dvstrutils.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -210,6 +214,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\DVPACKSYS.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\gucefCORE\include\dvstrutils.h"
 				>
 			</File>
 		</Filter>

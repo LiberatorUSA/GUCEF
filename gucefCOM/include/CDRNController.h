@@ -71,7 +71,7 @@ class CDRNControllerInterface;
  *      It acts as the server in the client-server part of the architecture.
  *      
  */
-class EXPORT_CPP CDRNController : public CDRNBroadcaster                            
+class GUCEFCOM_EXPORT_CPP CDRNController : public CDRNBroadcaster                            
 {
         public:
         

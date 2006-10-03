@@ -49,7 +49,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CMFileAccess : public CROIOAccess
+class GUCEFCORE_EXPORT_CPP CMFileAccess : public CROIOAccess
 {
         public:
         

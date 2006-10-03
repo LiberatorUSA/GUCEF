@@ -44,7 +44,7 @@ COM_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CDRNPeerDataItem : public CDRNDataItem
+class GUCEFCOM_EXPORT_CPP CDRNPeerDataItem : public CDRNDataItem
 {       
         private:
         friend class CDRNClient;

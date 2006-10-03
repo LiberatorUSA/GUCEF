@@ -81,6 +81,8 @@ class EXPORT_CPP CPatchSetParserEventHandler
     virtual void OnLeaveLocalDir( const CORE::CString& localPath ) = 0;
     
     virtual void OnPatchSetEnd( const CORE::CString& patchSetName ) = 0;
+    
+    virtual void OnParserError( void ) = 0;
 };
 
 /*-------------------------------------------------------------------------//

@@ -74,6 +74,8 @@ class EXPORT_CPP CStandardPSPEventHandler : public CPatchSetParserEventHandler
     
     virtual void OnPatchSetEnd( const CORE::CString& patchSetName );
     
+    virtual void OnParserError( void );
+    
     private:
     
     TSourceList m_sourceList;

@@ -60,7 +60,7 @@ class CObservingNotifier;
  *  Class for internal use only.
  *  Implements the observer component of the CObservingNotifier class.
  */
-class EXPORT_CPP CNotifierObservingComponent : public CObserver
+class GUCEFCORE_EXPORT_CPP CNotifierObservingComponent : public CObserver
 {     
     protected:
     

@@ -53,7 +53,7 @@ class CPFileChunkAccess;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPFileAccess : public CROIOAccess
+class GUCEFCORE_EXPORT_CPP CPFileAccess : public CROIOAccess
 {
         public:
         

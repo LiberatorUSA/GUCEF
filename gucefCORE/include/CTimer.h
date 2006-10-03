@@ -75,7 +75,7 @@ class CITimerClient;
  *  Note that the timer resolution is NOT garanteed. An attempt is made to
  *  provide the theoretical minimum resolution of 1 millisecond. 
  */
-class EXPORT_CPP CTimer
+class GUCEFCORE_EXPORT_CPP CTimer
 {
     public:
     

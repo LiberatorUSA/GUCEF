@@ -73,7 +73,7 @@ class CSysConsoleClient;
  *      Think of it as a DOS-console/Bash but instead of a storage
  *      medium you can move trough a tree of system commands.
  */ 
-class EXPORT_CPP CSysConsole : public CISysConsoleCmdHandler
+class GUCEFCORE_EXPORT_CPP CSysConsole : public CISysConsoleCmdHandler
 {
         public:
         

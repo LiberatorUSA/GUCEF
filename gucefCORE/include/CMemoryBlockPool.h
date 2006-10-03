@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"     /* often used gucef macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifndef GUCEF_CORE_ETYPES_H
 #include "ETypes.h"               /* simple types used */
@@ -49,47 +49,47 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CMemoryBlockPool
+class GUCEFCORE_EXPORT_CPP CMemoryBlockPool
 {
         public:
 
-        CMemoryBlockPool( void );
+    CMemoryBlockPool( void );
 
-        CMemoryBlockPool( UInt32 capacity  ,
-                          UInt32 blocksize );
+    CMemoryBlockPool( UInt32 capacity  ,
+                      UInt32 blocksize );
 
-        CMemoryBlockPool( const CMemoryBlockPool& src );
+    CMemoryBlockPool( const CMemoryBlockPool& src );
 
-        ~CMemoryBlockPool();
+    ~CMemoryBlockPool();
 
-        CMemoryBlockPool& operator=( const CMemoryBlockPool& src );
+    CMemoryBlockPool& operator=( const CMemoryBlockPool& src );
 
-        void SetBlock( UInt32 blockindex ,
-                       const void* src   ,
-                       UInt32 size       );
-                       
-        void SetBlock( UInt32 blockindex ,
-                       const void* src   );                       
+    void SetBlock( UInt32 blockindex ,
+                   const void* src   ,
+                   UInt32 size       );
+                   
+    void SetBlock( UInt32 blockindex ,
+                   const void* src   );                       
 
-        void* GetBlock( UInt32 blockindex ) const;
+    void* GetBlock( UInt32 blockindex ) const;
 
-        void SetCapacity( UInt32 capacity );
+    void SetCapacity( UInt32 capacity );
 
-        UInt32 GetCapacity( void ) const;
+    UInt32 GetCapacity( void ) const;
 
-        bool SetBlockSize( UInt32 blocksize ,
-                           bool movedata    );
+    bool SetBlockSize( UInt32 blocksize ,
+                       bool movedata    );
 
-        UInt32 GetBlockSize( void ) const;
+    UInt32 GetBlockSize( void ) const;
 
-        void ShiftBlocksUp( void );
+    void ShiftBlocksUp( void );
 
-        void ShiftBlocksDown( void );
+    void ShiftBlocksDown( void );
 
-        private:
-        UInt32 _capacity;
-        UInt32 _blocksize;
-        UInt8* _pool;
+    private:
+    UInt32 _capacity;
+    UInt32 _blocksize;
+    UInt8* _pool;
 };
 
 /*-------------------------------------------------------------------------//
@@ -112,6 +112,6 @@ class EXPORT_CPP CMemoryBlockPool
 //-------------------------------------------------------------------------//
 
 - 12-11-2004 :
-        - Designed and implemented this class.
+        - Dinand: Designed and implemented this class.
 
 -----------------------------------------------------------------------------*/

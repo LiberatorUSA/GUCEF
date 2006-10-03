@@ -253,7 +253,7 @@ LTrim( char *str )
          *      returns a pointer to the new trimmed string
          */
 
-        int length = strlen( str )-1                                    ;
+        int length = (int)strlen( str )-1                                    ;
         int end = 0                                                     ;
         int i = 0                                                       ;
         char *tmp                                                 ;
@@ -314,7 +314,7 @@ Trim( const char *str )
          *      returns a pointer to the new trimmed string
          */
 
-        int i = strlen( str )-1                                         ;
+        int i = (int)strlen( str )-1                                         ;
         int end = i                                                     ;
         char *tmp                                                 ;
 
@@ -371,7 +371,7 @@ Remove_Char( char rchar, const char *buffer )
         /*
          *      Remove all occurences of the specified char out of the buffer
          */
-        int length = strlen( buffer )                                   ;
+        int length = (int)strlen( buffer )                                   ;
         int i                                                           ;
         int last                                                        ;
         int occ = 0                                                     ;
@@ -427,7 +427,7 @@ Replace_Char( char oldc, char newc, char *buffer )
          *      replace all occurences of the specified char with the new char
          */
 
-        int length = strlen( buffer )                                   ;
+        int length = (int)strlen( buffer )                                   ;
         int i                                                           ;
 
         /*
@@ -457,7 +457,7 @@ _Replace_Char( char oldc, char newc, const char *buffer )
          *      First we allocate a new buffer
          *      and copy string into it
          */
-        UInt32 len = strlen( buffer )+1;
+        UInt32 len = (UInt32)strlen( buffer )+1;
         char *newbuf = ( char* ) malloc( len );
         strcpy( newbuf, buffer );
 
@@ -566,7 +566,7 @@ File_Ext_Length( const char *filename )
         /*
          *      return the file extension length
          */
-        int length = strlen( filename );
+        int length = (int)strlen( filename );
         int i; 
         for ( i=length; i>=0; i-- )
         {
@@ -589,7 +589,7 @@ Extract_File_Ext( const char *filename )
         /*
          *      Extract the file extension
          */
-        UInt32 len = strlen( filename );
+        UInt32 len = (UInt32)strlen( filename );
         const char* i;
         for ( i = filename+len; i>=0; i-- )
         {
@@ -651,7 +651,7 @@ Str_To_Float( const char *digits )
         /*
          *      Converts an null-terminated string to a float
          */
-        UInt32 len = strlen( digits ); 
+        UInt32 len = (UInt32)strlen( digits ); 
         char *num;
         float flt;
 
@@ -675,7 +675,7 @@ Str_To_Float( const char *digits )
          *      Change the 2 parts into ints and calculate float
          */
         num = Get_Substr( 0, idx, digits );
-        flt = Str_To_Int( num );
+        flt = (float)Str_To_Int( num );
         free( num );
         num = Get_Substr( idx, len-1, digits );
         flt += ( Str_To_Int( num ) / ( len * 10 ) );
@@ -695,8 +695,8 @@ Last_Subdir( const char *path )
          *	This function basicly returns the index of the section that would get stripped
          *	by Strip_Last_Subdir()
          */
-        Int32 max = strlen( path );
-        #ifdef MSWIN_BUILD
+        Int32 max = (Int32)strlen( path );
+        #ifdef GUCEF_MSWIN_BUILD
         Int32 index = _Find_Char( 0, 0, '\\', path, max );
 	if ( index < 0 ) return 0;
         if ( index == (max-1) )
@@ -735,7 +735,7 @@ Strip_Last_Subdir( char *path )
          */
         Int32 index, findex, i, max;
 
-        max = strlen( path );
+        max = (Int32)strlen( path );
 
         /*
          *	First remove any filename if present
@@ -747,7 +747,7 @@ Strip_Last_Subdir( char *path )
                  *	Char we seek depends on OS since Linux and Win32 use
                  *      different seperation chars.
                  */
-        	#ifdef MSWIN_BUILD
+        	#ifdef GUCEF_MSWIN_BUILD
         	findex = _Find_Char( 0, 0, '\\', path, max );
                 #else
                 #ifdef LINUX_BUILD
@@ -768,7 +768,7 @@ Strip_Last_Subdir( char *path )
          *	Char we seek depends on OS since Linux and Win32 use
          *      different seperation chars.
          */
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         index = _Find_Char( 0, 0, '\\', path, max );
         #else
         #ifdef LINUX_BUILD
@@ -793,7 +793,7 @@ Tab_To_Space( char *buffer, UInt32 numspace )
         /*
          *      Change all tabs into chars
          */
-        UInt32 length = strlen( buffer )                                   ;
+        UInt32 length = (UInt32)strlen( buffer )                                   ;
         int count = Count_Char( buffer, length, 9 )                     ;        
         char aux[ 2 ]                                                   ;
         UInt32 i,n, last = 0                                               ;
@@ -835,7 +835,7 @@ Check_If_IP( const char *buffer )
          *      string form or something else, a host name for example.
          *      returns 1 if it's an IP address.
          */
-        UInt32 length = strlen( buffer );
+        UInt32 length = (UInt32) strlen( buffer );
         UInt32 i;
         UInt32 numcount = 0;
         UInt32 dotcount = 0;
@@ -906,10 +906,10 @@ Count_Char( const char *buffer, UInt32 buffer_size, char t )
 void
 Convert_Dir_Seperators( char *path )
 {
-        UInt32 i, len = strlen( path );
+        UInt32 i, len = (UInt32)strlen( path );
         for ( i=0; i<len; ++i )
         {
-                #ifdef MSWIN_BUILD
+                #ifdef GUCEF_MSWIN_BUILD
                 if ( *(path+i) == '/' )
                 {
                         *(path+i) = '\\';
@@ -940,7 +940,7 @@ Append_To_Path( char *path           ,
          *      Take care of any seperator that may be prefixed to
          *      the addition string.
          */
-        UInt32 offset = 0, len = strlen( path );
+        UInt32 offset = 0, len = (UInt32)strlen( path );
         if ( ( *addition == '/' ) || ( *addition == '\\' ) )
         {
                 offset = 1;
@@ -950,7 +950,7 @@ Append_To_Path( char *path           ,
          *      Now we make sure we have a dir seperator between the
          *      path and the addition strings.
          */
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         if ( path[ len-1 ] == '\\' )
         {
                 strcat( path, addition+offset );
@@ -1029,17 +1029,17 @@ _Strip_Filename( char *dest, const char *src_filepath )
  *      will be removed aswell. The new length of the path
  *      is returned.
  */
-EXPORT_C UInt32
+UInt32
 Strip_Filename( char* filepath )
 {
-	#ifdef MSWIN_BUILD
+	#ifdef GUCEF_MSWIN_BUILD
         #define SEP_CHAR        '\\'
         #else
         #define SEP_CHAR        '/'
         #endif
 
         Int32 idx;
-	idx = _Find_Char( 0, 0, SEP_CHAR, filepath, strlen( filepath ) );
+	idx = (UInt32)_Find_Char( 0, 0, SEP_CHAR, filepath, strlen( filepath ) );
         if ( idx > 0 )
         {
                 filepath[ idx ] = '\0';
@@ -1053,8 +1053,8 @@ Strip_Filename( char* filepath )
 Int32
 PtrToInt32( const void* ptr )
 {
-        char ptrstr[ 11 ];
-        sprintf( ptrstr, "%d", (Int32)ptr );
+        char ptrstr[ 64 ];
+        sprintf( ptrstr, "%d", (Int64)ptr );
         return Str_To_Int( ptrstr );
 }
 

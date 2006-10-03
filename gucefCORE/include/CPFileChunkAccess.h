@@ -44,7 +44,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPFileChunkAccess : public CROIOAccess
+class GUCEFCORE_EXPORT_CPP CPFileChunkAccess : public CROIOAccess
 {
         public:
         

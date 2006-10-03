@@ -126,91 +126,38 @@
 /*-------------------------------------------------------------------------*/
 
 /*
- *      When compiling the gucefCORE library you should define BUILD_GUCEFCOM_DLL
- *      before including this macro file.
- */
-#ifndef MANUAL_EXPORT_DEFINE
-  #undef USE_DLL
-  #undef BUILD_DLL
-  #ifdef BUILD_GUCEFCOM_DLL
-    #define BUILD_DLL
-  #else
-    #define USE_DLL 
-  #endif
-#endif /* MANUAL_EXPORT_DEFINE ? */
-
-/*-------------------------------------------------------------------------*/
-
-/*
- *      Macros for dynamic linking or static linking. Use the switches in the
+ *      Macros for dynamic linking. Use the switches in the
  *      config file to control the export type.
  */
-#undef EXPORT
-#ifdef MSWIN_BUILD
-  #ifdef BUILD_DLL
-    #define EXPORT __declspec( dllexport )
+#ifdef GUCEF_MSWIN_BUILD
+  #ifdef GUCEFCOM_BUILD_MODULE
+    #define GUCEFCOM_EXPORT __declspec( dllexport )
   #else
-    #ifdef USE_DLL
-      #define EXPORT __declspec( dllimport )
-    #else
-      #define EXPORT
-    #endif /* USE_DLL */
-  #endif /* BUILD_DLL */
+    #define GUCEFCOM_EXPORT __declspec( dllimport )
+  #endif /* GUCEFCOM_BUILD_MODULE ? */
 #else
-  #define EXPORT   /* Linux does not need an additional directive */
-#endif /* MSWIN_BUILD ? */
-
-#undef EXPORT_CPP
-#ifdef EXPORT_CPP_CODE
-  #define EXPORT_CPP EXPORT
-#else
-  #define EXPORT_CPP
-#endif /* EXPORT_CPP_CODE */
-
-#undef EXPORT_C 
-#ifdef EXPORT_C_CODE
-  #define EXPORT_C EXPORT
-#else
-  #define EXPORT_C
-#endif /* EXPORT_C_CODE */
-
-/*-------------------------------------------------------------------------*/
+  #define GUCEFCOM_EXPORT   /* Linux does not need an additional directive */
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 /*
- *      Change notation depending on the compiler used.
+ *  Are we exporting C++ code ?
  */
-#if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
-  #define CALLSPEC_C __cdecl
-#else  
-  #define CALLSPEC_C cdecl
-#endif  
-
-#undef CALLSPEC_TYPE
-#ifdef USE_CALLSPEC_C 
-  #define CALLSPEC_TYPE CALLSPEC_C
-#elif USE_CALLSPEC_STD  
-  #define CALLSPEC_TYPE CALLSPEC_STD
-#elif USE_CALLSPEC_PASCAL    
-  #define CALLSPEC_TYPE CALLSPEC_PASCAL
-#elif USE_CALLSPEC_FAST  
-  #define CALLSPEC_TYPE CALLSPEC_FAST
-#elif
-  #error No calling convention configuration was specified  
-#endif    
-      
-/*
- *      Macro that switches between a calling convention prefix and
- *      postfix notation.
- */
-#undef CALLSPEC_PREFIX
-#undef CALLSPEC_SUFFIX
-#if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
-  #define CALLSPEC_PREFIX CALLSPEC_TYPE
-  #define CALLSPEC_SUFFIX
+#undef GUCEFCOM_EXPORT_CPP
+#ifdef GUCEFCOM_EXPORT_CPP_CODE
+  #define GUCEFCOM_EXPORT_CPP GUCEFCOM_EXPORT
 #else
-  #define CALLSPEC_PREFIX
-  #define CALLSPEC_SUFFIX  __attribute__((CALLSPEC_TYPE))
-#endif
+  #define GUCEFCOM_EXPORT_CPP
+#endif /* GUCEFCOM_EXPORT_CPP_CODE ? */
+
+/*
+ *  Are we exporting C code ?
+ */
+#undef GUCEFCOM_EXPORT_C
+#ifdef GUCEFCOM_EXPORT_C_CODE
+  #define GUCEFCOM_EXPORT_C GUCEFCOM_EXPORT
+#else
+  #define GUCEFCOM_EXPORT_C
+#endif /* GUCEFCOM_EXPORT_C_CODE ? */
 
 /*-------------------------------------------------------------------------*/
 

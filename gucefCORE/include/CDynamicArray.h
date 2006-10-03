@@ -29,10 +29,10 @@
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"     /* often used gucef macros */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,7 +53,7 @@ namespace CORE {
  *      Simply implementation of a resizable array. 
  *      This class is NOT thread safe.
  */
-class EXPORT_CPP CDynamicArray
+class GUCEFCORE_EXPORT_CPP CDynamicArray
 {
         public:
 
@@ -232,7 +232,7 @@ class EXPORT_CPP CDynamicArray
         - Fixed access overun when using [] operator on with an index of
           the same size as the array.
 - 19-07-2003 :
-        - Changed EXPORT into EXPORT_CPP
+        - Changed EXPORT into GUCEFCORE_EXPORT_CPP
 - 18-07-2003 :
         - Added this section.
         - Fixed a bug in Append_Entry() when appending to an empty array.

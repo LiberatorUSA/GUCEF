@@ -42,10 +42,10 @@
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */                     
                      
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"      /* gucefCORE module build configuration */
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -96,7 +96,7 @@ MEMMAN_Shutdown( void );
  *      Dump the log report to the file, this is the same method that is automatically called 
  *      upon the programs termination to report all statistical information.
  */ 
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 MEMMAN_DumpLogReport( void );
 
 /*-------------------------------------------------------------------------*/
@@ -105,7 +105,7 @@ MEMMAN_DumpLogReport( void );
  *      MEMMAN_DumpMemoryAllocations():
  *      Report all allocated memory to the log file.
  */ 
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 MEMMAN_DumpMemoryAllocations( void );  
 
 /*-------------------------------------------------------------------------*/
@@ -114,7 +114,7 @@ MEMMAN_DumpMemoryAllocations( void );
  *      MEMMAN_SetLogFile():
  *      Allows for the log file to be changed from the default.
  */
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 MEMMAN_SetLogFile( const char *file );
 
 /*-------------------------------------------------------------------------*/ 
@@ -124,7 +124,7 @@ MEMMAN_SetLogFile( const char *file );
  *      This method allows for exhaustive testing.  It has the same functionality as the following
  *      function calls => setLogAlways( true ); setPaddingSize( 1024 ); 
  */
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 MEMMAN_SetExhaustiveTesting( UInt32 test );
 
 /*-------------------------------------------------------------------------*/
@@ -133,7 +133,7 @@ MEMMAN_SetExhaustiveTesting( UInt32 test );
  *      MEMMAN_SetLogAlways():
  *      Sets the flag for exhaustive information logging.  All information is sent to the log file.
  */
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 MEMMAN_SetLogAlways( UInt32 log );
 
 /*-------------------------------------------------------------------------*/
@@ -143,7 +143,7 @@ MEMMAN_SetLogAlways( UInt32 log );
  *      Sets the padding size for memory bounds checks.
  *      The default is 4
  */ 
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 MEMMAN_SetPaddingSize( UInt32 size );
 
 /*-------------------------------------------------------------------------*/
@@ -152,7 +152,7 @@ MEMMAN_SetPaddingSize( UInt32 size );
  *      MEMAN_CleanLogFile():
  *      Cleans out the log file by deleting it.
  */ 
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 MEMMAN_CleanLogFile( UInt32 clean );
 
 /*-------------------------------------------------------------------------*/  
@@ -161,7 +161,7 @@ MEMMAN_CleanLogFile( UInt32 clean );
  *      MEMMAN_BreakOnAllocation():
  *      Allows you to set a break point on the n-th allocation.
  */ 
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 MEMMAN_BreakOnAllocation( int alloccount );
 
 /*-------------------------------------------------------------------------*/
@@ -170,7 +170,7 @@ MEMMAN_BreakOnAllocation( int alloccount );
  *      MEMMAN_BreakOnDeallocation():
  *      Sets a flag that will set a break point when the specified memory is deallocated.
  */
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 MEMMAN_BreakOnDeallocation( void *address );  
 
 /*-------------------------------------------------------------------------*/
@@ -180,18 +180,18 @@ MEMMAN_BreakOnDeallocation( void *address );
  *      Sets a flag that will set a break point when the specified memory is reallocated by 
  *      using the realloc() method.
  */
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 MEMMAN_BreakOnReallocation( void *address );
 
 /*-------------------------------------------------------------------------*/
 
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 MEMMAN_Validate( const void* address ,
                  UInt32 blocksize    ,
                  const char *file    ,
                  int line            );
                  
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 MEMMAN_ValidateChunk( const void* address ,
                       const void* chunk   ,
                       UInt32 blocksize    ,
@@ -249,7 +249,7 @@ MEMMAN_ValidateChunk( const void* address ,
  *      This is the main memory allocation routine, this is called by all of the other 
  *      memory allocation routines to allocate and track memory.
  */ 
-EXPORT_C void* 
+GUCEFCORE_EXPORT_C void* 
 MEMMAN_AllocateMemory( const char *file , 
                        int line         , 
                        size_t size      , 
@@ -264,7 +264,7 @@ MEMMAN_AllocateMemory( const char *file ,
  *      This method is used by all of the other de-allocation routines 
  *      for de-allocating and tracking memory.
  */
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 MEMMAN_DeAllocateMemory( void *address   , 
                          char type       ); 
 
@@ -277,7 +277,7 @@ MEMMAN_DeAllocateMemory( void *address   ,
  *      seperate method for deallocation since we can not pass the addition parameters to 
  *      the delete methods like we do with the new methods.
  */
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 MEMMAN_SetOwner( const char *file , 
                  int line         ); 
 

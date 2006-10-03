@@ -28,9 +28,9 @@
 #include "gucefCORE_ETypes.h"             /* Simple types used */
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_Macros.h"       /* Library specific & generic macros */
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"          /* String class implementation */
@@ -78,7 +78,7 @@ typedef enum
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPropertyList
+class GUCEFCORE_EXPORT_CPP CPropertyList
 {
 
         public:

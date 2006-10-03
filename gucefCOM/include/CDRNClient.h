@@ -90,7 +90,7 @@ class CDRNClientInterface;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CDRNClient : public CDRNBroadcaster
+class GUCEFCOM_EXPORT_CPP CDRNClient : public CDRNBroadcaster
 {
         public:
         

@@ -49,7 +49,7 @@ COM_NAMESPACE_BEGIN
  *      Inherit from this interface class and implement whatever event handlers
  *      are appropriote for your situation.
  */
-class EXPORT_CPP CMySQLClientInterface
+class GUCEFCOM_EXPORT_CPP CMySQLClientInterface
 {
         public:
         typedef COMCORE::CSocket::TSocketError TSocketError;

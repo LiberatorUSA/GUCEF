@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"
-#define GUCEF_CORE_GUCEFCORE_MACROS_H
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,7 +60,7 @@ namespace CORE {
  *      @param file filename of the source file from where this function is called
  *      @param line line number in the caller source file
  */
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 GUCEF_UtilityCodeBegin( const char* file ,
                         int line         );
 
@@ -69,7 +69,7 @@ GUCEF_UtilityCodeBegin( const char* file ,
 /**
  *      Should be called at the end of a function.
  */
-EXPORT_C void                        
+GUCEFCORE_EXPORT_C void                        
 GUCEF_UtilityCodeEnd( void );
 
 /*-------------------------------------------------------------------------*/
@@ -77,7 +77,7 @@ GUCEF_UtilityCodeEnd( void );
 /**
  *      Prints the current callstack to stdout
  */
-EXPORT_C void                      
+GUCEFCORE_EXPORT_C void                      
 GUCEF_PrintCallstack( void );
 
 /*-------------------------------------------------------------------------*/ 
@@ -87,7 +87,7 @@ GUCEF_PrintCallstack( void );
  *
  *      @param filename path and name of the output file.
  */
-EXPORT_C void
+GUCEFCORE_EXPORT_C void
 GUCEF_DumpCallstack( const char* filename );                     
                                             
 /*--------------------------------------------------------------------------*/

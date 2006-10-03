@@ -28,9 +28,9 @@
 
 #include "gucefCORE_ETypes.h"     /* simple types used */
 
-#ifndef GUCEF_CORE_GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"     /* often used gucef macros */
-#endif /* GUCEF_CORE_GUCEFCORE_MACROS_H ? */
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,7 +59,7 @@ class CLLNode;
  *      and FILO ( First In Last Out ) are supported, uses a linked list
  *      implementation internally with the CLLNode class
  */
-class EXPORT_CPP CStack
+class GUCEFCORE_EXPORT_CPP CStack
 {
         private :
         CLLNode *first;                      /* bottom node of stack, which is the first in our linked list */

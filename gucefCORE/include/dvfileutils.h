@@ -86,7 +86,7 @@ extern "C" {
  *      this one will create all dir's in the string given
  *      (Like the Linux functions).
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 Create_Directory( const char *new_dir );
 
 /*-------------------------------------------------------------------------*/
@@ -98,7 +98,7 @@ Create_Directory( const char *new_dir );
  *      itself. If false and files or dirs are found the directory removal will
  *      fail.
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 Remove_Directory( const char *dir  ,
                   UInt32 del_files );
 
@@ -108,7 +108,7 @@ Remove_Directory( const char *dir  ,
  *      Function that will attempt to delete the given file.
  *      If succesfull true (1) is returned, otherwise false (0).
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 Delete_File( const char *filename );
 
 /*-------------------------------------------------------------------------*/
@@ -120,7 +120,7 @@ Delete_File( const char *filename );
  *      This function does not overwrite any existing file.
  *      If succesfull true (1) is returned, otherwise false (0).
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 Copy_File( const char *dst, const char *src );
 
 /*-------------------------------------------------------------------------*/
@@ -129,7 +129,7 @@ Copy_File( const char *dst, const char *src );
  *      moves a file from one location to the other
  *      If succesfull true (1) is returned, otherwise false (0).
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 Move_File( const char *dst, const char *src );
 
 /*-------------------------------------------------------------------------*/
@@ -140,7 +140,7 @@ Move_File( const char *dst, const char *src );
  *      If successfull true (1) is returned, otherwise false (0).
  *      This function returns regardless of the state of the executed program.
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 Execute_Program( const char *filename, const char *cmdline );
 
 /*-------------------------------------------------------------------------*/
@@ -154,7 +154,7 @@ Execute_Program( const char *filename, const char *cmdline );
  *      This function allocates data storage for the dir itteration process.
  *      In case of error NULL is returned.
  */
-EXPORT_C struct SDI_Data* 
+GUCEFCORE_EXPORT_C struct SDI_Data* 
 DI_First_Dir_Entry( const char *path );
 
 /*-------------------------------------------------------------------------*/
@@ -170,7 +170,7 @@ DI_First_Dir_Entry( const char *path );
  *      0 is returned in which case you should call DI_Cleanup(),
  *      otherwise 1 is returned.
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 DI_Next_Dir_Entry( struct SDI_Data *data );
 
 /*-------------------------------------------------------------------------*/
@@ -184,7 +184,7 @@ DI_Next_Dir_Entry( struct SDI_Data *data );
  *      De-allocates data storage used for dir itteration which was created by
  *      a call to DI_First_Dir_Entry().
  */
-EXPORT_C void 
+GUCEFCORE_EXPORT_C void 
 DI_Cleanup( struct SDI_Data *data );
 
 /*-------------------------------------------------------------------------*/
@@ -198,7 +198,7 @@ DI_Cleanup( struct SDI_Data *data );
  *      Returns the dir entry name of the current directory entry. This may be
  *      a directory name or a filename. Use DI_Is_It_A_File() to determine which
  */
-EXPORT_C const char* 
+GUCEFCORE_EXPORT_C const char* 
 DI_Name( struct SDI_Data *data );
 
 /*-------------------------------------------------------------------------*/
@@ -212,7 +212,7 @@ DI_Name( struct SDI_Data *data );
  *      Returns the size of the current entry which in the case of a file is the
  *      filesize.
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 DI_Size( struct SDI_Data *data );
 
 /*-------------------------------------------------------------------------*/
@@ -226,7 +226,7 @@ DI_Size( struct SDI_Data *data );
  *      Returns the timestamp of the file. This is when the file was last
  *      modified.
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 DI_Timestamp( struct SDI_Data *data );
 
 /*-------------------------------------------------------------------------*/
@@ -240,7 +240,7 @@ DI_Timestamp( struct SDI_Data *data );
  *      Returns boolean int indicating wheter the current entry is a directory
  *      or a file. If it's not a file then it's a directory.
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 DI_Is_It_A_File( struct SDI_Data *data );
 
 /*-------------------------------------------------------------------------*/
@@ -251,7 +251,7 @@ DI_Is_It_A_File( struct SDI_Data *data );
  *      chars. You can use Max_Dir_Length() for buf_length in which case you
  *      should never have problems with a dest_buffer that's to small.
  */
-EXPORT_C char* 
+GUCEFCORE_EXPORT_C char* 
 Get_Current_Dir( char* dest_buffer ,
                  UInt32 buf_length );
 
@@ -262,7 +262,7 @@ Get_Current_Dir( char* dest_buffer ,
  *      current O/S. Including the null terminating char. You can also use the
  *      MAX_DIR_LENGTH define for this.
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 Max_Dir_Length( void );
 
 /*-------------------------------------------------------------------------*/
@@ -272,7 +272,7 @@ Max_Dir_Length( void );
  *      current O/S. Including the null terminating char. You can also use the
  *      MAX_FILENAME_LENGTH define for this. 
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 Max_Filename_Length( void );
 
 /*-------------------------------------------------------------------------*/
@@ -285,7 +285,7 @@ Max_Filename_Length( void );
  *      then this function offers a good portable method to get the path to
  *      the application. returns 1 in case of error, otherwise returns 0.
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 Module_Path( char *dest, UInt32 dest_size );
 
 /*-------------------------------------------------------------------------*/
@@ -294,7 +294,7 @@ Module_Path( char *dest, UInt32 dest_size );
  *      Function for getting the size of a file using the fastest method
  *      possible for the target O/S.      
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 Filesize( const char *filename );
 
 /*-------------------------------------------------------------------------*/
@@ -304,7 +304,7 @@ Filesize( const char *filename );
  *      exists. 1 is true and 0  is false. the fastest method possible for the
  *      target O/S will be used.
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 File_Exists( const char *filename );
 
 /*-------------------------------------------------------------------------*/
@@ -320,7 +320,7 @@ File_Exists( const char *filename );
  *      It is assumed dest is large enough to store the data.
  *      The function returns the total number of bytes written to dest.
  */
-EXPORT_C UInt32 
+GUCEFCORE_EXPORT_C UInt32 
 Relative_Path( const char *pathstr ,
                char *dest          ,
                UInt32 buffersize   );
@@ -373,7 +373,7 @@ Relative_Path( const char *pathstr ,
         - Added Move_File()
         - Added ExecuteProgram()
 - 18-08-2003 :
-        - Changed EXPORT into EXPORT_C
+        - Changed EXPORT into GUCEFCORE_EXPORT_C
 - 13-08-2003 :
         - Added Create_Directory()
         - Added a set of functions for directory itteration.

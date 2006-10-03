@@ -49,7 +49,7 @@ namespace CORE {
  *      Handlers for HTTP for example should inherit and implement the
  *      interface from this and lower classes.
  */
-class EXPORT_CPP CFileURLHandler : public CURLHandler
+class GUCEFCORE_EXPORT_CPP CFileURLHandler : public CURLHandler
 {
         public:
         

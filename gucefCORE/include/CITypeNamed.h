@@ -44,7 +44,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CITypeNamed
+class GUCEFCORE_EXPORT_CPP CITypeNamed
 {
         public:
         

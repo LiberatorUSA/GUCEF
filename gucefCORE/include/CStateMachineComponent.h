@@ -59,7 +59,7 @@ namespace CORE {
  *  transition handling based on a defined state transition table that
  *  can be copied from an STD (State Transition Diagram).
  */
-class EXPORT_CPP CStateMachineComponent : public CObservingNotifier
+class GUCEFCORE_EXPORT_CPP CStateMachineComponent : public CObservingNotifier
 {
     public:
     

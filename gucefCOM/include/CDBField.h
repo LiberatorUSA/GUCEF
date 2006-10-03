@@ -60,7 +60,7 @@ class CMySQLClient;	/* MySQL client implementation */
  *	Inline implementation of a database field. Initial use is for the
  *	CMySQLClient as data storage.
  */
-class EXPORT_CPP CDBField
+class GUCEFCOM_EXPORT_CPP CDBField
 {
 	private:
         friend class CMySQLClient;

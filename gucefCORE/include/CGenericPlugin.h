@@ -69,7 +69,7 @@ class CGenericPluginManager;
  *  to be/do just about anything but with the drawback that it has to link to the GUCEF
  *  modules and as such has a more limited lifespan as a binary plugin.
  */
-class EXPORT_CPP CGenericPlugin : public CIPlugin
+class GUCEFCORE_EXPORT_CPP CGenericPlugin : public CIPlugin
 {
     public:
     
