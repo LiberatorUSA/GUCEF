@@ -187,6 +187,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\..\gucefCORE\src\dvfileutils.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\DVPACKSYS.c"
 				>
 			</File>
@@ -198,6 +202,10 @@
 			>
 			<File
 				RelativePath="..\..\include\DLLMainVFSpluginDVP.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\gucefCORE\include\dvfileutils.h"
 				>
 			</File>
 			<File
