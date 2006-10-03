@@ -15,16 +15,31 @@
 using namespace GUCEF;
 
 
+/*-------------------------------------------------------------------------*/
+
 CPatcherGUIDlg::CPatcherGUIDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CPatcherGUIDlg::IDD, pParent)
-{
+{TRACE;
+
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-void CPatcherGUIDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
+/*-------------------------------------------------------------------------*/
+
+void CPatcherGUIDlg::DoDataExchange( CDataExchange* pDX )
+{TRACE;
+
+	CDialog::DoDataExchange( pDX );
+
+	//{{AFX_DATA_MAP(CPatcherGUIDlg)
+	DDX_Control( pDX, IDC_LISTBOX, m_listBox );
+	DDX_Control( pDX, IDC_TRANSFERPROGRESS, m_transferProgress );
+	DDX_Control( pDX, IDC_TOTALPROGRESS, m_totalProgress );
+	//}}AFX_DATA_MAP
+	
 }
+
+/*-------------------------------------------------------------------------*/
 
 BEGIN_MESSAGE_MAP(CPatcherGUIDlg, CDialog)
 	ON_WM_PAINT()
@@ -33,10 +48,14 @@ BEGIN_MESSAGE_MAP(CPatcherGUIDlg, CDialog)
 END_MESSAGE_MAP()
 
 
+/*-------------------------------------------------------------------------*/
+
 // CPatcherGUIDlg message handlers
 
-BOOL CPatcherGUIDlg::OnInitDialog()
-{
+BOOL 
+CPatcherGUIDlg::OnInitDialog()
+{TRACE;
+
 	CDialog::OnInitDialog();
 
 	// Set the icon for this dialog.  The framework does this automatically
@@ -49,12 +68,15 @@ BOOL CPatcherGUIDlg::OnInitDialog()
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
+/*-------------------------------------------------------------------------*/
+
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
 
-void CPatcherGUIDlg::OnPaint()
-{
+void 
+CPatcherGUIDlg::OnPaint()
+{TRACE;
 	if (IsIconic())
 	{
 		CPaintDC dc(this); // device context for painting
@@ -78,17 +100,26 @@ void CPatcherGUIDlg::OnPaint()
 	}
 }
 
+/*-------------------------------------------------------------------------*/
+
 // The system calls this function to obtain the cursor to display while the user drags
 //  the minimized window.
-HCURSOR CPatcherGUIDlg::OnQueryDragIcon()
-{
+HCURSOR 
+CPatcherGUIDlg::OnQueryDragIcon()
+{TRACE;
+
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+/*-------------------------------------------------------------------------*/
 
 void
 CPatcherGUIDlg::OnPatchSetStart( const CORE::CString& patchSetName )
 {TRACE;
+    
+    CORE::CString infoStr( ">>> start patchset: " );
+    infoStr += patchSetName;
+    m_listBox.AddString( infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -96,6 +127,10 @@ CPatcherGUIDlg::OnPatchSetStart( const CORE::CString& patchSetName )
 void
 CPatcherGUIDlg::OnEnterLocalDir( const CORE::CString& localPath )
 {TRACE;
+
+    CORE::CString infoStr( "entering local directory: " );
+    infoStr += localPath;
+    m_listBox.AddString( infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -104,6 +139,12 @@ void
 CPatcherGUIDlg::OnLocalFileOK( const CORE::CString& localPath ,
                                const CORE::CString& localFile )
 {TRACE;
+
+    CORE::CString infoStr( "local file \"" );
+    infoStr += localFile;
+    infoStr += "\" is up-to-date. Path: ";
+    infoStr += localPath;
+    m_listBox.AddString( infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -112,6 +153,12 @@ void
 CPatcherGUIDlg::OnLocalFileNotFound( const CORE::CString& localPath ,
                                      const CORE::CString& localFile )
 {TRACE;
+
+    CORE::CString infoStr( "local file \"" );
+    infoStr += localFile;
+    infoStr += "\" is not found. Path: ";
+    infoStr += localPath;
+    m_listBox.AddString( infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -120,6 +167,12 @@ void
 CPatcherGUIDlg::OnLocalFileDifference( const CORE::CString& localPath ,
                                        const CORE::CString& localFile )
 {TRACE;
+
+    CORE::CString infoStr( "local file \"" );
+    infoStr += localFile;
+    infoStr += "\" differs from the master file. Path: ";
+    infoStr += localPath;
+    m_listBox.AddString( infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -127,6 +180,9 @@ CPatcherGUIDlg::OnLocalFileDifference( const CORE::CString& localPath ,
 void
 CPatcherGUIDlg::OnNewSourceRequired( const TSourceInfo& sourceInfo )
 {TRACE;
+
+    CORE::CString infoStr( "new source required" );
+    m_listBox.AddString( infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -134,6 +190,10 @@ CPatcherGUIDlg::OnNewSourceRequired( const TSourceInfo& sourceInfo )
 void
 CPatcherGUIDlg::OnLeaveLocalDir( const CORE::CString& localPath )
 {TRACE;
+
+    CORE::CString infoStr( "leaving local directory: " );
+    infoStr += localPath;
+    m_listBox.AddString( infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -141,6 +201,10 @@ CPatcherGUIDlg::OnLeaveLocalDir( const CORE::CString& localPath )
 void
 CPatcherGUIDlg::OnPatchSetEnd( const CORE::CString& patchSetName )
 {TRACE;
+
+    CORE::CString infoStr( ">>> end patchset: " );
+    infoStr += patchSetName;
+    m_listBox.AddString( infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -149,6 +213,8 @@ void
 CPatcherGUIDlg::OnParserError( void )
 {TRACE;
 
+    CORE::CString infoStr( ">>> parser error" );
+    m_listBox.AddString( infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/

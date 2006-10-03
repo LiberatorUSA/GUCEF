@@ -5,8 +5,11 @@
 #define IDD_PATCHERGUI_DIALOG           102
 #define IDR_MAINFRAME                   128
 #define IDC_LIST1                       1000
+#define IDC_LISTBOX                     1000
 #define IDC_PROGRESS1                   1001
+#define IDC_TOTALPROGRESS               1001
 #define IDC_PROGRESS2                   1002
+#define IDC_TRANSFERPROGRESS            1002
 
 // Next default values for new objects
 // 

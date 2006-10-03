@@ -24,6 +24,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <stdafx.h>
+
 #ifndef GUCEF_PATCHER_CPATCHSETPARSEREVENTHANDLER_H
 #include "gucefPATCHER_CPatchSetParserEventHandler.h"
 #define GUCEF_PATCHER_CPATCHSETPARSEREVENTHANDLER_H
@@ -42,9 +44,7 @@ class CPatcherGUIDlg : public CDialog                                      ,
 // Construction
 public:
 	CPatcherGUIDlg(CWnd* pParent = NULL);	// standard constructor
-
-    CListBox m_listBox;
-    
+   
 // Dialog Data
 	enum { IDD = IDD_PATCHERGUI_DIALOG };
 
@@ -84,6 +84,12 @@ private:
     virtual void OnPatchSetEnd( const GUCEF::CORE::CString& patchSetName );
     
     virtual void OnParserError( void );	
+    
+private:
+
+    CListBox m_listBox;
+    CProgressCtrl m_transferProgress;    
+    CProgressCtrl m_totalProgress;
 };
 
 #endif /* MFCPATCHERGUI_CPATCHERGUIDLG_H ? */

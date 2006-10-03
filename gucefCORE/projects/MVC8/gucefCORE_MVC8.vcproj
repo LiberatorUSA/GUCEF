@@ -954,7 +954,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CURL.H"
+				RelativePath="..\..\include\CURL.h"
 				>
 			</File>
 			<File

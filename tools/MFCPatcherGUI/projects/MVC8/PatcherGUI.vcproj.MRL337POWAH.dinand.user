@@ -10,7 +10,7 @@
 			>
 			<DebugSettings
 				Command="$(TargetPath)"
-				WorkingDirectory="..\..\..\common\Debug_MVC8"
+				WorkingDirectory="..\..\..\..\common\bin\Debug_MVC8"
 				CommandArguments=""
 				Attach="false"
 				DebuggerType="3"
