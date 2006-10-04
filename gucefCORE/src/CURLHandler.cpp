@@ -21,6 +21,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#include "CNotificationIDRegistry.h"
+#define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
+
 #include "CURLHandler.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -36,6 +41,18 @@
 
 namespace GUCEF {
 namespace CORE {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CURLHandler::URLActivateEvent = "GUCEF::CORE::CURLHandler::URLActivateEvent";
+const CString CURLHandler::URLDeactivateEvent = "GUCEF::CORE::CURLHandler::URLDeactivateEvent";
+const CString CURLHandler::URLDataRecievedEvent = "GUCEF::CORE::CURLHandler::URLDataRecievedEvent";
+const CString CURLHandler::URLAllDataRecievedEvent = "GUCEF::CORE::CURLHandler::URLAllDataRecievedEvent";
+const CString CURLHandler::URLDataRetrievalErrorEvent = "GUCEF::CORE::CURLHandler::URLDataRetrievalErrorEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,6 +84,20 @@ CURLHandler&
 CURLHandler::operator=( const CURLHandler& src )
 {TRACE;
         return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CURLHandler::RegisterEvents( void )
+{TRACE;
+
+    CNotificationIDRegistry* registry( CNotificationIDRegistry::Instance() );
+    registry->Register( URLActivateEvent, true );
+    registry->Register( URLDeactivateEvent, true );
+    registry->Register( URLDataRecievedEvent, true );
+    registry->Register( URLAllDataRecievedEvent, true );
+    registry->Register( URLDataRetrievalErrorEvent, true );
 }
 
 /*-------------------------------------------------------------------------//

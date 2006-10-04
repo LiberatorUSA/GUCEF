@@ -43,7 +43,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CObserver::CObserver( void )
-{
+{TRACE;
+
     /*
      *  Make sure that the standard notification events are registered
      */
@@ -62,14 +63,17 @@ CObserver::CObserver( void )
 /*-------------------------------------------------------------------------*/
 
 CObserver::CObserver( const CObserver& src )
-{
+{TRACE;
+
     //@TODO: makeme
+    assert( 0 );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CObserver::~CObserver()
-{
+{TRACE;
+
     LockData();
     
     /*
@@ -93,7 +97,9 @@ CObserver::~CObserver()
 
 CObserver&
 CObserver::operator=( const CObserver& src )
-{
+{TRACE;
+
+    assert( 0 );
     if ( this != &src )
     {
     }
@@ -104,7 +110,8 @@ CObserver::operator=( const CObserver& src )
 
 void 
 CObserver::UnsubscribeAll( void )
-{
+{TRACE;
+
     LockData();
     
     /*
@@ -130,7 +137,8 @@ CObserver::UnsubscribeAll( void )
                    
 void 
 CObserver::SubscribeTo( CNotifier* notifier )
-{
+{TRACE;
+
     LockData();
     
     TNotifierList::iterator i( m_notifiers.begin() );
@@ -163,9 +171,10 @@ CObserver::SubscribeTo( CNotifier* notifier )
 /*-------------------------------------------------------------------------*/                            
            
 void          
-CObserver::UnsubscribeFrom( CNotifier* notifier                   ,
-                            const bool forAllEvents /* = false */ )
-{
+CObserver::UnlinkFrom( CNotifier* notifier                   ,
+                       const bool forAllEvents /* = false */ )
+{TRACE;
+
     LockData();
     
     TNotifierList::iterator i( m_notifiers.begin() );
@@ -205,7 +214,8 @@ CObserver::UnsubscribeFrom( CNotifier* notifier                   ,
 
 UInt32 
 CObserver::GetSubscriptionCount( void )
-{    
+{TRACE;
+    
     UInt32 subscriptionCount( 0 );
     LockData();
     TNotifierList::const_iterator i( m_notifiers.begin() );
@@ -222,22 +232,35 @@ CObserver::GetSubscriptionCount( void )
 
 UInt32 
 CObserver::GetNotifierCount( void ) const
-{
+{TRACE;
+
     return (UInt32) m_notifiers.size();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CObserver::UnsubscribeFrom( CNotifier& notifier )
+{TRACE;
+
+    assert( &notifier );
+    notifier.Unsubscribe( this );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void 
 CObserver::LockData( void )
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
     
 void 
 CObserver::UnlockData( void )
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------//

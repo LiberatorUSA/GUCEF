@@ -98,6 +98,13 @@ BOOL CPatcherGUIApp::InitInstance()
 	eventHandlerList.push_back( &standardHandler );
 	m_patchApplication->SetEventHandlers( eventHandlerList );	
 	
+	// Hook GUCEF into the application message (and thus update) loop
+	CGUCEFAppWin32MFCDriver gucefDriver;
+	if ( !gucefDriver.Init( &dlg ) )
+	{
+	    return FALSE;
+	}
+	
 	// Start the dialog
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)

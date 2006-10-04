@@ -101,7 +101,7 @@ CNotifier::~CNotifier()
     TObserverList::iterator i = m_observers.begin();
     while ( i != m_observers.end() )
     {
-        (*i).first->UnsubscribeFrom( this, true );
+        (*i).first->UnlinkFrom( this, true );
         ++i;
     }    
 }
@@ -327,7 +327,7 @@ CNotifier::UnsubscribeFromAllEvents( CObserver* observer       ,
      *  Now remove the observer's refrence to the notifier
      *  for all events
      */
-    observer->UnsubscribeFrom( this, true );
+    observer->UnlinkFrom( this, true );
 
     if ( notifyObserver )
     {
@@ -374,7 +374,7 @@ CNotifier::Unsubscribe( CObserver* observer  ,
          *  for 1 event, effectivly reducing the observer's 
          *  refrence count for this notifier.
          */
-        observer->UnsubscribeFrom( this );
+        observer->UnlinkFrom( this );
 
         /*
          *  Send the standard unsubscribe event

@@ -34,6 +34,11 @@
 #define GUCEF_CORE_CICLONEABLE_H
 #endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
+#ifndef GUCEF_CORE_CNOTIFIER_H
+#include "CNotifier.h"
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -58,10 +63,17 @@ class CIURLDataHandler;
  *      Handlers for HTTP for example should inherit and implement the
  *      interface from this and lower classes.
  */
-class GUCEFCORE_EXPORT_CPP CURLHandler : public CICloneable
+class GUCEFCORE_EXPORT_CPP CURLHandler : public CNotifier
+                                         public CICloneable
 {
         public:
         typedef CURL::TDataHandlerSet TDataHandlerSet;
+
+        static const CString URLActivateEvent;
+        static const CString URLDeactivateEvent;
+        static const CString URLDataRecievedEvent;
+        static const CString URLAllDataRecievedEvent;
+        static const CString URLDataRetrievalErrorEvent;
         
         /**
          *      Doesnt do anything special atm.
@@ -83,11 +95,9 @@ class GUCEFCORE_EXPORT_CPP CURLHandler : public CICloneable
          */        
         CURLHandler& operator=( const CURLHandler& src );
 
-        virtual bool Activate( CURL& url                     ,
-                               TDataHandlerSet& dataHandlers ) = 0;
+        virtual bool Activate( CURL& url ) = 0;
         
-        virtual void Deactivate( CURL& url                     ,
-                                 TDataHandlerSet& dataHandlers ) = 0;
+        virtual void Deactivate( CURL& url ) = 0;
                          
         virtual bool IsActive( const CURL& url ) const = 0;       
 };

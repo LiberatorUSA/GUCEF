@@ -76,6 +76,9 @@
 #define GUCEF_CORE_CGENERICPLUGINMANAGER_H
 #endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
 
+#ifndef GUCEF_CORE_CURL_H
+#include "CURL.h"
+
 #include "CGUCEFCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef ADD_MEMORY_MANAGER
@@ -170,6 +173,7 @@ CGUCEFCOREModule::Load( void )
          */
         CNotifier::RegisterEvents();
         CPluginManager::RegisterEvents();
+        CURL::RegisterEvents();
         
         /*
          *      Register some default codecs/handlers 

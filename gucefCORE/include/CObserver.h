@@ -82,7 +82,15 @@ class GUCEFCORE_EXPORT_CPP CObserver
     /**
      *  Unsubscribes the observer from all notifiers.
      */
-    void UnsubscribeAll( void );
+    void UnsubscribeFromAll( void );
+    
+    /**
+     *  Detaches from the given notifier.
+     *  All the observers subscriptions will be cancelled
+     *  This includes both standard notifier events aswell 
+     *  as custom events.
+     */    
+    void UnsubscribeFrom( CNotifier& notifier );    
     
     UInt32 GetSubscriptionCount( void );
 
@@ -118,8 +126,8 @@ class GUCEFCORE_EXPORT_CPP CObserver
     /*
      *  Simply updates the observer administration, nothing more
      */    
-    void UnsubscribeFrom( CNotifier* notifier             ,
-                          const bool forAllEvents = false );    
+    void UnlinkFrom( CNotifier* notifier             ,
+                      const bool forAllEvents = false );    
                            
     private:
     struct SNotifierRef

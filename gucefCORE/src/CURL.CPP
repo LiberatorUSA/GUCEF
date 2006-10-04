@@ -33,6 +33,11 @@
 #define GUCEF_CORE_CURLHANDLER_H
 #endif /* GUCEF_CORE_CURLHANDLER_H ? */
 
+#ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#include "CNotificationIDRegistry.h"
+#define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
+
 #include "CURL.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -51,30 +56,67 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CURL::URLActivateEvent = "GUCEF::CORE::CURL::URLActivateEvent";
+const CString CURL::URLDeactivateEvent = "GUCEF::CORE::CURL::URLDeactivateEvent";
+const CString CURL::URLDataRecievedEvent = "GUCEF::CORE::CURL::URLDataRecievedEvent";
+const CString CURL::URLAllDataRecievedEvent = "GUCEF::CORE::CURL::URLAllDataRecievedEvent";
+const CString CURL::URLDataRetrievalErrorEvent = "GUCEF::CORE::CURL::URLDataRetrievalErrorEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CURL::CURL( void )
-        : m_handler( NULL ) ,
-          m_url()
+        : m_handler( NULL )                  ,
+          m_url()                            ,
+          m_hURLActivateEvent( 0 )           ,
+          m_hURLDeactivateEvent( 0 )         ,
+          m_hURLDataRecievedEvent( 0 )       ,
+          m_hURLAllDataRecievedEvent( 0 )    ,
+          m_hURLDataRetrievalErrorEvent( 0 )
 {TRACE;
 
+        CNotificationIDRegistry* registry = CNotificationIDRegistry::Instance();
+        m_hURLActivateEvent = registry->Lookup( CURLHandler::URLActivateEvent ); 
+        m_hURLDeactivateEvent = registry->Lookup( CURLHandler::URLDeactivateEvent );
+        m_hURLDataRecievedEvent = registry->Lookup( CURLHandler::URLDataRecievedEvent );
+        m_hURLAllDataRecievedEvent = registry->Lookup( CURLHandler::URLAllDataRecievedEvent );
+        m_hURLDataRetrievalErrorEvent = registry->Lookup( CURLHandler::URLDataRetrievalErrorEvent );    
 }
         
 /*-------------------------------------------------------------------------*/        
         
 CURL::CURL( const CString& url )
         : m_handler( GetHandlerForURL( url ) ) ,
-          m_url( url )
+          m_url( url )                         ,
+          m_hURLActivateEvent( 0 )             ,
+          m_hURLDeactivateEvent( 0 )           ,
+          m_hURLDataRecievedEvent( 0 )         ,
+          m_hURLAllDataRecievedEvent( 0 )      ,
+          m_hURLDataRetrievalErrorEvent( 0 )          
 {TRACE;
-   
+
+        CNotificationIDRegistry* registry = CNotificationIDRegistry::Instance();
+        m_hURLActivateEvent = registry->Lookup( CURLHandler::URLActivateEvent ); 
+        m_hURLDeactivateEvent = registry->Lookup( CURLHandler::URLDeactivateEvent );
+        m_hURLDataRecievedEvent = registry->Lookup( CURLHandler::URLDataRecievedEvent );
+        m_hURLAllDataRecievedEvent = registry->Lookup( CURLHandler::URLAllDataRecievedEvent );
+        m_hURLDataRetrievalErrorEvent = registry->Lookup( CURLHandler::URLDataRetrievalErrorEvent );   
+        
+        //m_handler
 }
 
 /*-------------------------------------------------------------------------*/
 
 CURL::~CURL()
 {TRACE;        
+        AsObserver().UnsubscribeFrom( *m_handler );
         delete m_handler;
 }
 
@@ -164,17 +206,26 @@ CURL::GetHandlerForURL( const CString& url ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CURL::RegisterDataHandler( CIURLDataHandler* dataHandler )
+CURL::RegisterEvents( void )
 {TRACE;
-        m_dataHandlers.insert( dataHandler );
+
+    CNotificationIDRegistry* registry( CNotificationIDRegistry::Instance() );
+    registry->Register( URLActivateEvent, true );
+    registry->Register( URLDeactivateEvent, true );
+    registry->Register( URLDataRecievedEvent, true );
+    registry->Register( URLAllDataRecievedEvent, true );
+    registry->Register( URLDataRetrievalErrorEvent, true );
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 void
-CURL::UnregisterDataHandler( CIURLDataHandler* dataHandler )
+CURL::OnNotify( CNotifier* notifier                 ,
+                const UInt32 eventid                ,
+                CICloneable* eventdata /* = NULL */ )
 {TRACE;
-        m_dataHandlers.erase( dataHandler );
+    
+    
 }
 
 /*-------------------------------------------------------------------------//

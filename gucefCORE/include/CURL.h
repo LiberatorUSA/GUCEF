@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CTSHAREDPTR_H
 #endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -52,7 +57,6 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CURLHandler;
-class CIURLDataHandler;
 
 /*-------------------------------------------------------------------------*/
 
@@ -61,9 +65,15 @@ class CIURLDataHandler;
  *      Use of this class is the recommended method for utilizing 
  *      URL resource retrieval.
  */
-class GUCEFCORE_EXPORT_CPP CURL
+class GUCEFCORE_EXPORT_CPP CURL : public CNotifier
 {
         public:
+        
+        static const CString URLActivateEvent;
+        static const CString URLDeactivateEvent;
+        static const CString URLDataRecievedEvent;
+        static const CString URLAllDataRecievedEvent;
+        static const CString URLDataRetrievalErrorEvent;
         
         /**
          *      initializes the object, no URL will be set and
@@ -102,24 +112,29 @@ class GUCEFCORE_EXPORT_CPP CURL
          */
         void Refresh( void );
         
-        void RegisterDataHandler( CIURLDataHandler* dataHandler );
+        static void RegisterEvents( void );
+
+        protected:
         
-        void UnregisterDataHandler( CIURLDataHandler* dataHandler );
-        
-        private:
-        friend class CURLHandler;
-        
-        typedef std::set< CIURLDataHandler* > TDataHandlerSet;
-                
+        virtual void OnNotify( CNotifier* notifier           ,
+                               const UInt32 eventid          ,
+                               CICloneable* eventdata = NULL );
+
         private:
         
         CURLHandler* GetHandlerForURL( const CString& url ) const;
         
+        static void RegisterEventsImp( CURL* url );
+        
         private:        
         
-        TDataHandlerSet m_dataHandlers;
         CString m_url;             /**< the URL string */
-        CURLHandler* m_handler;    /**< URL handler for the specified URL protocol */ 
+        CURLHandler* m_handler;    /**< URL handler for the specified URL protocol */
+        UInt32 m_hURLActivateEvent; 
+        UInt32 m_hURLDeactivateEvent;
+        UInt32 m_hURLDataRecievedEvent;
+        UInt32 m_hURLAllDataRecievedEvent;
+        UInt32 m_hURLDataRetrievalErrorEvent;
 };
 
 /*-------------------------------------------------------------------------//
