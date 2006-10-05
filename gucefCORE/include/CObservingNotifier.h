@@ -24,20 +24,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <set>
+#include <map>
+
 #include "CNotifierObservingComponent.h"
 #include "CNotifier.h"
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4018 ) // signed/unsigned mismatch
-#pragma warning( disable: 4146 ) // unary minus operator applied to unsigned type, result still unsigned
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 ) // return type for operator -> is 'const *' (ie; not a UDT or reference to a UDT).
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -131,6 +122,44 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
      *  As such this operation can be made in a threadsafe fashion.            
      */
     const CObserver& AsObserver( void ) const;
+    
+    /**
+     *  Adds the given event ID to the forwarding list.
+     *
+     *  This allows you to forward events from one notifier 
+     *  trough this notifier. This is usefull if you have a
+     *  notifier who's derived class delegates tasks to 
+     *  notifying sub-systems. Using forwarding you can create 
+     *  the composite class and make it seem like a single system 
+     *  to the observer.
+     *
+     *  Note that the instance of this class will become the sending
+     *  notifier instead of the original notifier. As such it is recommended
+     *  to create a event declaration interface from which both your exposed
+     *  class and potential sub-system classes derive. This allows you
+     *  to use forwarding without breaking event scoping rules.
+     *
+     *  @param eventid the ID specifiying the event you wish to forward
+     *  @param notifier if non-NULL only event's triggered from the 
+     *  @param notifier given notifier are forwarded, otherwise the 
+     *  @param notifier event is always forwarded
+     */
+    void AddEventForwarding( const UInt32 eventid       , 
+                             CNotifier* notifier = NULL );
+    
+
+    /**
+     *  Removes the given event ID to the forwarding list.
+     *
+     *  See AddEventForwarding() for more details
+     *
+     *  @param eventid the ID specifiying the event you wish to remove from forwarding
+     *  @param notifier if non-NULL only event's triggered from the 
+     *  @param notifier given notifier are removed from the forwarding list,  
+     *  @param notifier otherwise the event is always forwarded
+     */
+    void RemoveEventForwarding( const UInt32 eventid       , 
+                                CNotifier* notifier = NULL );    
 
     protected:
     friend class CNotifierObservingComponent;
@@ -140,17 +169,33 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
      *  Implement this in your decending class to handle
      *  notification events.
      *
+     *  Note: Do NOT  forget to call this class's implementation
+     *  from your decending class.
+     *
      *  @param notifier the notifier that sent the notification
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined userdata
      */
     virtual void OnNotify( CNotifier* notifier           ,
                            const UInt32 eventid          ,
-                           CICloneable* eventdata = NULL ) = 0;
+                           CICloneable* eventdata = NULL );
                            
     private:
     
-    CNotifierObservingComponent m_observer;                               
+    /**
+     *  Removes all refrences to the given notifier from our forwarding
+     *  system
+     */
+    void RemoveEventForwarding( CNotifier& notifier );
+                           
+    private:    
+    typedef std::set< UInt32 > TEventList;
+    typedef std::set< CNotifier* > TNotifierList;
+    typedef std::map< UInt32, TNotifierList > TEventNotifierMap;
+    
+    CNotifierObservingComponent m_observer;        
+    TEventList m_eventList;
+    TEventNotifierMap m_eventNotifierMap;                              
 };
 
 /*-------------------------------------------------------------------------//
@@ -161,12 +206,6 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

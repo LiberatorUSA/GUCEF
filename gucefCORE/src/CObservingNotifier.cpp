@@ -40,7 +40,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CObservingNotifier::CObservingNotifier( void )
-{
+{TRACE;
+
     m_observer.SetOwner( this );
 }
 
@@ -48,21 +49,24 @@ CObservingNotifier::CObservingNotifier( void )
     
 CObservingNotifier::CObservingNotifier( const CObservingNotifier& src )
     : m_observer( src.m_observer )
-{
+{TRACE;
+
     m_observer.SetOwner( this );
 }
 
 /*-------------------------------------------------------------------------*/
     
 CObservingNotifier::~CObservingNotifier()
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
     
 CObservingNotifier& 
 CObservingNotifier::operator=( const CObservingNotifier& src )
-{
+{TRACE;
+
     if ( this != &src )
     {
     }
@@ -73,7 +77,8 @@ CObservingNotifier::operator=( const CObservingNotifier& src )
     
 void 
 CObservingNotifier::UnsubscribeAllFromObserver( void )
-{
+{TRACE;
+
     LockData();
     m_observer.UnsubscribeAll();
     UnlockData();
@@ -83,7 +88,8 @@ CObservingNotifier::UnsubscribeAllFromObserver( void )
 
 UInt32 
 CObservingNotifier::GetObserverSubscriptionCount( void )
-{
+{TRACE;
+
     LockData();
     UInt32 retval( m_observer.GetSubscriptionCount() );
     UnlockData();
@@ -94,7 +100,8 @@ CObservingNotifier::GetObserverSubscriptionCount( void )
 
 UInt32 
 CObservingNotifier::GetObserverNotifierCount( void )
-{
+{TRACE;
+
     LockData();
     UInt32 retval( m_observer.GetNotifierCount() );
     UnlockData();
@@ -105,7 +112,8 @@ CObservingNotifier::GetObserverNotifierCount( void )
 
 void 
 CObservingNotifier::SubscribeTo( CNotifier* notifier )
-{
+{TRACE;
+
     LockData();
     notifier->Subscribe( &m_observer );
     UnlockData();
@@ -116,7 +124,8 @@ CObservingNotifier::SubscribeTo( CNotifier* notifier )
 void 
 CObservingNotifier::SubscribeTo( CNotifier* notifier  ,
                                    const UInt32 eventid )
-{
+{TRACE;
+
     LockData();
     notifier->Subscribe( &m_observer ,
                          eventid     );
@@ -127,7 +136,8 @@ CObservingNotifier::SubscribeTo( CNotifier* notifier  ,
 
 void 
 CObservingNotifier::UnsubscribeFrom( CNotifier* notifier )
-{
+{TRACE;
+
     LockData();
     notifier->Unsubscribe( &m_observer );
     UnlockData();
@@ -137,8 +147,9 @@ CObservingNotifier::UnsubscribeFrom( CNotifier* notifier )
                  
 void 
 CObservingNotifier::UnsubscribeFrom( CNotifier* notifier  ,
-                                       const UInt32 eventid )
-{
+                                     const UInt32 eventid )
+{TRACE;
+
     LockData();
     notifier->Unsubscribe( &m_observer ,
                            eventid     );
@@ -149,7 +160,8 @@ CObservingNotifier::UnsubscribeFrom( CNotifier* notifier  ,
 
 CObserver& 
 CObservingNotifier::AsObserver( void )
-{
+{TRACE;
+
     return m_observer;
 }
 
@@ -157,8 +169,125 @@ CObservingNotifier::AsObserver( void )
 
 const CObserver& 
 CObservingNotifier::AsObserver( void ) const
-{
+{TRACE;
+
     return m_observer;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CObservingNotifier::AddEventForwarding( const UInt32 eventid             , 
+                                        CNotifier* notifier /* = NULL */ )
+{TRACE;
+
+    if ( NULL != notifier )
+    {
+        LockData();
+        TNotifierList& notifierList = m_eventNotifierMap[ eventid ];
+        notifierList.insert( notifier );
+        UnlockData();
+    }
+    else
+    {
+        LockData();
+        m_eventList.insert( eventid );
+        UnlockData();        
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CObservingNotifier::RemoveEventForwarding( const UInt32 eventid             ,
+                                           CNotifier* notifier /* = NULL */ )
+{TRACE;
+
+    if ( NULL != notifier )
+    {
+        LockData();
+        TEventNotifierMap::iterator i( m_eventNotifierMap.find( eventid ) );
+        if ( i != m_eventNotifierMap.end() )
+        {
+            TNotifierList& notifierList = m_eventNotifierMap[ eventid ];
+            notifierList.erase( notifier );
+        }
+        UnlockData();
+    }
+    else
+    {
+        LockData();
+        m_eventList.erase( eventid );
+        UnlockData();        
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CObservingNotifier::RemoveEventForwarding( CNotifier& notifier )
+{TRACE;
+
+    assert( &notifier );
+    
+    LockData();
+    
+    TEventNotifierMap::iterator i( m_eventNotifierMap.begin() );
+    while ( i != m_eventNotifierMap.end() )
+    {
+        TNotifierList& notifierList = (*i).second;
+        TNotifierList::iterator n( notifierList.find( &notifier ) );
+        if ( n != notifierList.end() )
+        {
+            notifierList.erase( n );
+        }
+    }
+    
+    UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CObservingNotifier::OnNotify( CNotifier* notifier                 ,
+                              const UInt32 eventid                ,
+                              CICloneable* eventdata /* = NULL */ )
+{TRACE;
+
+    assert( NULL != notifier );
+    
+    // Check for administration updates
+    if ( eventid == notifier->GetDestructionEventID() )
+    {
+        // make sure that our forwarding list does not contain pointers 
+        // to already deleted notifier instances
+        RemoveEventForwarding( *notifier );
+    }
+    else
+    {
+        LockData();
+        
+        // Check for events we should forward
+        if ( m_eventList.end() != m_eventList.find( eventid ) )
+        {
+            NotifyObservers( eventid, eventdata );
+        }
+        else
+        {
+            // Check for events we should forward for this notifier
+            TEventNotifierMap::iterator i( m_eventNotifierMap.find( eventid ) );
+            if ( i != m_eventNotifierMap.end() )
+            {
+                TNotifierList::iterator n( notifierList.find( &notifier ) );
+                if ( n != notifierList.end() )
+                {
+                    NotifyObservers( eventid, eventdata );
+                }
+            }
+        }
+        
+        UnlockData();   
+    }
 }
 
 /*-------------------------------------------------------------------------//

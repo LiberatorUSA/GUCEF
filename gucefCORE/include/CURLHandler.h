@@ -63,11 +63,10 @@ class CIURLDataHandler;
  *      Handlers for HTTP for example should inherit and implement the
  *      interface from this and lower classes.
  */
-class GUCEFCORE_EXPORT_CPP CURLHandler : public CNotifier
+class GUCEFCORE_EXPORT_CPP CURLHandler : public CNotifier   ,
                                          public CICloneable
 {
         public:
-        typedef CURL::TDataHandlerSet TDataHandlerSet;
 
         static const CString URLActivateEvent;
         static const CString URLDeactivateEvent;

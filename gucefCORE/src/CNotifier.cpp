@@ -25,7 +25,6 @@
 #include "CNotificationIDRegistry.h"
 #include "CObserver.h"
 
-#define GUCEF_CORE_CNOTIFIER_CPP
 #include "CNotifier.h"
 
 /*-------------------------------------------------------------------------//
@@ -55,7 +54,8 @@ const CString CNotifier::DestructionEvent = "GUCEF::CORE::CNotifier::Destruction
 //-------------------------------------------------------------------------*/
 
 CNotifier::CNotifier( void )
-{
+{TRACE;
+
     CNotificationIDRegistry* registry = CNotificationIDRegistry::Instance();
     m_modifyEvent = registry->Lookup( ModifyEvent, true );
     m_destructionEvent = registry->Lookup( DestructionEvent, true );            
@@ -66,7 +66,8 @@ CNotifier::CNotifier( void )
 /*-------------------------------------------------------------------------*/
 
 CNotifier::CNotifier( const CNotifier& notifier )
-{
+{TRACE;
+
     //@TODO: makeme
     assert( 0 );
 }
@@ -75,7 +76,8 @@ CNotifier::CNotifier( const CNotifier& notifier )
 
 CNotifier&
 CNotifier::operator=( const CNotifier& src )
-{
+{TRACE;
+
     assert( 0 );
 
     if ( this != &src )
@@ -87,7 +89,8 @@ CNotifier::operator=( const CNotifier& src )
 /*-------------------------------------------------------------------------*/
 
 CNotifier::~CNotifier()
-{
+{TRACE;
+
     LockData();
     
     /*
@@ -110,7 +113,8 @@ CNotifier::~CNotifier()
 
 void 
 CNotifier::RegisterEvents( void )
-{
+{TRACE;
+
     CNotificationIDRegistry* registry = CNotificationIDRegistry::Instance();
     registry->Register( ModifyEvent, true );
     registry->Register( DestructionEvent, true );            
@@ -123,7 +127,8 @@ CNotifier::RegisterEvents( void )
 void
 CNotifier::ForceNotifyObserversOnce( const UInt32 eventid , 
                                      CICloneable* data    )
-{
+{TRACE;
+
     TObserverList::iterator i = m_observers.begin();
     while ( i != m_observers.end() )
     {
@@ -138,7 +143,8 @@ CNotifier::ForceNotifyObserversOnce( const UInt32 eventid ,
 
 void 
 CNotifier::Subscribe( CObserver* observer )
-{
+{TRACE;
+
     LockData();
     
     /*
@@ -172,7 +178,8 @@ CNotifier::Subscribe( CObserver* observer )
 void 
 CNotifier::Subscribe( CObserver* observer  ,
                       const UInt32 eventid )
-{
+{TRACE;
+
 	assert(eventid != 0); //you probably forgot to register your event at the NotificationIDRegistry
 
     LockData();
@@ -281,7 +288,8 @@ CNotifier::Subscribe( CObserver* observer  ,
 
 void
 CNotifier::Unsubscribe( CObserver* observer )
-{
+{TRACE;
+
     LockData();
     UnsubscribeFromAllEvents( observer ,
                               true     );
@@ -293,7 +301,8 @@ CNotifier::Unsubscribe( CObserver* observer )
 void 
 CNotifier::UnsubscribeFromAllEvents( CObserver* observer       ,
                                      const bool notifyObserver )
-{
+{TRACE;
+
     /*
      *  Unsubscribe the observer from all standard 
      *  notification events.
@@ -344,7 +353,8 @@ CNotifier::UnsubscribeFromAllEvents( CObserver* observer       ,
 void 
 CNotifier::Unsubscribe( CObserver* observer  ,
                         const UInt32 eventid )
-{
+{TRACE;
+
     LockData();
     
     if ( ( eventid != m_destructionEvent ) &&
@@ -390,7 +400,8 @@ CNotifier::Unsubscribe( CObserver* observer  ,
 
 void 
 CNotifier::NotifyObservers( void )
-{
+{TRACE;
+
     LockData();
     ForceNotifyObserversOnce( m_modifyEvent );
     UnlockData();
@@ -401,7 +412,8 @@ CNotifier::NotifyObservers( void )
 void 
 CNotifier::NotifyObservers( const UInt32 eventid   ,
                             CICloneable* eventData )
-{
+{TRACE;
+
     /*
      *  We will have to copy the lists here because the notification may trigger
      *  an administration mutation that could muck up our notification process.
@@ -452,7 +464,8 @@ CNotifier::NotifyObservers( const UInt32 eventid   ,
 
 void 
 CNotifier::OnObserverDestroy( CObserver* observer )
-{
+{TRACE;
+
     LockData();
     UnsubscribeFromAllEvents( observer ,
                               false    );
@@ -463,7 +476,8 @@ CNotifier::OnObserverDestroy( CObserver* observer )
 
 UInt32 
 CNotifier::GetSubscribeEventID( void ) const
-{
+{TRACE;
+
     return m_subscribeEvent;
 }
 
@@ -471,7 +485,8 @@ CNotifier::GetSubscribeEventID( void ) const
 
 UInt32 
 CNotifier::GetUnsubscribeEventID( void ) const
-{
+{TRACE;
+
     return m_unsubscribeEvent;
 }
 
@@ -479,7 +494,8 @@ CNotifier::GetUnsubscribeEventID( void ) const
     
 UInt32 
 CNotifier::GetModifyEventID( void ) const
-{
+{TRACE;
+
     return m_modifyEvent;
 }
 
@@ -487,7 +503,8 @@ CNotifier::GetModifyEventID( void ) const
 
 UInt32 
 CNotifier::GetDestructionEventID( void ) const
-{
+{TRACE;
+
     return m_destructionEvent;    
 }
 
@@ -495,7 +512,8 @@ CNotifier::GetDestructionEventID( void ) const
 
 std::string 
 CNotifier::GetTypeName( void ) const
-{
+{TRACE;
+
     return "GUCEF::CORE::CNotifier";
 }
 
@@ -503,14 +521,16 @@ CNotifier::GetTypeName( void ) const
 
 void 
 CNotifier::LockData( void )
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
     
 void 
 CNotifier::UnlockData( void )
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -518,7 +538,8 @@ CNotifier::UnlockData( void )
 void
 CNotifier::NotifyObservers( const CString& eventName            ,
                             CICloneable* eventData /* = NULL */ )
-{
+{TRACE;
+
     NotifyObservers( CNotificationIDRegistry::Instance()->Lookup( eventName ) ,
                      eventData                                                );
 }
