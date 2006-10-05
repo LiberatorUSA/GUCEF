@@ -147,6 +147,12 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
     void AddEventForwarding( const UInt32 eventid       , 
                              CNotifier* notifier = NULL );
     
+    /**
+     *  Utility member function that calls AddEventForwarding()
+     *  after converting the eventName into an event ID.
+     */
+    void AddEventForwarding( const CString& eventName   , 
+                             CNotifier* notifier = NULL );
 
     /**
      *  Removes the given event ID to the forwarding list.
@@ -161,6 +167,13 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
     void RemoveEventForwarding( const UInt32 eventid       , 
                                 CNotifier* notifier = NULL );    
 
+    /**
+     *  Utility member function that calls RemoveEventForwarding()
+     *  after converting the eventName into an event ID.
+     */
+    void RemoveEventForwarding( const CString& eventName   , 
+                                CNotifier* notifier = NULL );
+                             
     protected:
     friend class CNotifierObservingComponent;
     

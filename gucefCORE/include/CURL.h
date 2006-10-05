@@ -41,6 +41,11 @@
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
+#ifndef GUCEF_CORE_CIURLEVENTS_H
+#include "CIURLEvents.h"
+#define GUCEF_CORE_CIURLEVENTS_H
+#endif /* GUCEF_CORE_CIURLEVENTS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -65,15 +70,10 @@ class CURLHandler;
  *      Use of this class is the recommended method for utilizing 
  *      URL resource retrieval.
  */
-class GUCEFCORE_EXPORT_CPP CURL : public CNotifier
+class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
+                                  public CIURLEvents
 {
         public:
-        
-        static const CString URLActivateEvent;
-        static const CString URLDeactivateEvent;
-        static const CString URLDataRecievedEvent;
-        static const CString URLAllDataRecievedEvent;
-        static const CString URLDataRetrievalErrorEvent;
         
         /**
          *      initializes the object, no URL will be set and
@@ -111,8 +111,6 @@ class GUCEFCORE_EXPORT_CPP CURL : public CNotifier
          *      cache
          */
         void Refresh( void );
-        
-        static void RegisterEvents( void );
 
         protected:
         
@@ -130,11 +128,6 @@ class GUCEFCORE_EXPORT_CPP CURL : public CNotifier
         
         CString m_url;             /**< the URL string */
         CURLHandler* m_handler;    /**< URL handler for the specified URL protocol */
-        UInt32 m_hURLActivateEvent; 
-        UInt32 m_hURLDeactivateEvent;
-        UInt32 m_hURLDataRecievedEvent;
-        UInt32 m_hURLAllDataRecievedEvent;
-        UInt32 m_hURLDataRetrievalErrorEvent;
 };
 
 /*-------------------------------------------------------------------------//

@@ -344,7 +344,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CIURLDataHandler.cpp"
+				RelativePath="..\..\src\CIURLEvents.cpp"
 				>
 			</File>
 			<File
@@ -754,7 +754,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CIURLDataHandler.h"
+				RelativePath="..\..\include\CIURLEvents.h"
 				>
 			</File>
 			<File

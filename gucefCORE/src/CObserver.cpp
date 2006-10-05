@@ -21,11 +21,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <assert.h>
 #include "CNotificationIDRegistry.h"
 #include "CNotifier.h"
 
-#define GUCEF_CORE_COBSERVER_CPP
 #include "CObserver.h"
+
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -109,7 +114,7 @@ CObserver::operator=( const CObserver& src )
 /*-------------------------------------------------------------------------*/
 
 void 
-CObserver::UnsubscribeAll( void )
+CObserver::UnsubscribeFromAll( void )
 {TRACE;
 
     LockData();

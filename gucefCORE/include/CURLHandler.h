@@ -39,6 +39,11 @@
 #define GUCEF_CORE_CNOTIFIER_H
 #endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
+#ifndef GUCEF_CORE_CIURLEVENTS_H
+#include "CIURLEvents.h"
+#define GUCEF_CORE_CIURLEVENTS_H
+#endif /* GUCEF_CORE_CIURLEVENTS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -62,17 +67,15 @@ class CIURLDataHandler;
  *      Base class for URL handler implementations.
  *      Handlers for HTTP for example should inherit and implement the
  *      interface from this and lower classes.
+ *
+ *      The decending handler implementation is expected to emit event
+ *      notifications as declared in CIURLEvents
  */
 class GUCEFCORE_EXPORT_CPP CURLHandler : public CNotifier   ,
-                                         public CICloneable
+                                         public CICloneable ,
+                                         public CIURLEvents 
 {
         public:
-
-        static const CString URLActivateEvent;
-        static const CString URLDeactivateEvent;
-        static const CString URLDataRecievedEvent;
-        static const CString URLAllDataRecievedEvent;
-        static const CString URLDataRetrievalErrorEvent;
         
         /**
          *      Doesnt do anything special atm.

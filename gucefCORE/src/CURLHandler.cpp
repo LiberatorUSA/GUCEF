@@ -44,18 +44,6 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-const CString CURLHandler::URLActivateEvent = "GUCEF::CORE::CURLHandler::URLActivateEvent";
-const CString CURLHandler::URLDeactivateEvent = "GUCEF::CORE::CURLHandler::URLDeactivateEvent";
-const CString CURLHandler::URLDataRecievedEvent = "GUCEF::CORE::CURLHandler::URLDataRecievedEvent";
-const CString CURLHandler::URLAllDataRecievedEvent = "GUCEF::CORE::CURLHandler::URLAllDataRecievedEvent";
-const CString CURLHandler::URLDataRetrievalErrorEvent = "GUCEF::CORE::CURLHandler::URLDataRetrievalErrorEvent";
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -63,6 +51,8 @@ const CString CURLHandler::URLDataRetrievalErrorEvent = "GUCEF::CORE::CURLHandle
 CURLHandler::CURLHandler( void )
         : CICloneable()
 {TRACE;
+        
+    CIURLEvents::RegisterEvents();
 }
         
 /*-------------------------------------------------------------------------*/        
@@ -70,6 +60,8 @@ CURLHandler::CURLHandler( void )
 CURLHandler::CURLHandler( const CURLHandler& src )
         : CICloneable( src )
 {TRACE;    
+
+    CIURLEvents::RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -84,20 +76,6 @@ CURLHandler&
 CURLHandler::operator=( const CURLHandler& src )
 {TRACE;
         return *this;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CURLHandler::RegisterEvents( void )
-{TRACE;
-
-    CNotificationIDRegistry* registry( CNotificationIDRegistry::Instance() );
-    registry->Register( URLActivateEvent, true );
-    registry->Register( URLDeactivateEvent, true );
-    registry->Register( URLDataRecievedEvent, true );
-    registry->Register( URLAllDataRecievedEvent, true );
-    registry->Register( URLDataRetrievalErrorEvent, true );
 }
 
 /*-------------------------------------------------------------------------//

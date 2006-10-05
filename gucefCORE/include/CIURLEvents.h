@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CIURLDATAHANDLER_H
-#define GUCEF_CORE_CIURLDATAHANDLER_H
+#ifndef GUCEF_CORE_CIURLEVENTS_H
+#define GUCEF_CORE_CIURLEVENTS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,15 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CURL_H
-#include "CURL.h"      /* control class for URL handling */
-#define GUCEF_CORE_CURL_H
-#endif /* GUCEF_CORE_CURL_H ? */
-
-#ifndef GUCEF_CORE_CIOACCESS_H
-#include "CIOAccess.h"
-#define GUCEF_CORE_CIOACCESS_H
-#endif /* GUCEF_CORE_CIOACCESS_H ? */
+#ifndef GUCEF_CORE_CSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,32 +45,20 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *      callback interface class for handling URL handler events.
- *      You can derive from this class and then pass a pointer to a CURL
- *      instance to handle URL operations
+ *  Interface class defining URL related events and a namespaced global utility
+ *  for registering those events.         
  */
-class GUCEFCORE_EXPORT_CPP CIURLDataHandler
+class GUCEFCORE_EXPORT_CPP CIURLEvents
 {
         public:
+
+        static const CString URLActivateEvent;
+        static const CString URLDeactivateEvent;
+        static const CString URLDataRecievedEvent;
+        static const CString URLAllDataRecievedEvent;
+        static const CString URLDataRetrievalErrorEvent;
         
-        CIURLDataHandler( void );
-        
-        CIURLDataHandler( const CIURLDataHandler& src );        
-        
-        virtual ~CIURLDataHandler();
-        
-        CIURLDataHandler& operator=( const CIURLDataHandler& src );
-        
-        virtual void OnURLActivate( const CURL& url ) = 0;
-        
-        virtual void OnURLDeactivate( const CURL& url ) = 0;
-        
-        virtual void OnURLDataRecieved( const CURL& url       ,
-                                        CIOAccess& dataAccess ) = 0;
-                                        
-        virtual void OnURLAllDataRecieved( const CURL& url ) = 0;                                        
-        
-        virtual void OnURLDataRetrievalError( const CURL& url ) = 0;                                     
+        static void RegisterEvents( void );                                    
 };
 
 /*-------------------------------------------------------------------------//
@@ -89,7 +72,7 @@ class GUCEFCORE_EXPORT_CPP CIURLDataHandler
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CIURLDATAHANDLER_H ? */
+#endif /* GUCEF_CORE_CIURLEVENTS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

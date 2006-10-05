@@ -31,11 +31,6 @@
 #define GUCEF_CORE_CFILEACCESS_H
 #endif /* GUCEF_CORE_CFILEACCESS_H ? */
 
-#ifndef GUCEF_CORE_CIURLDATAHANDLER_H
-#include "CIURLDataHandler.h"
-#define GUCEF_CORE_CIURLDATAHANDLER_H
-#endif /* GUCEF_CORE_CIURLDATAHANDLER_H ? */
-
 #include "CFileURLHandler.h"
 
 /*-------------------------------------------------------------------------//
@@ -93,52 +88,31 @@ CFileURLHandler::Clone( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CFileURLHandler::Activate( CURL& url                     ,
-                           TDataHandlerSet& dataHandlers )
+CFileURLHandler::Activate( CURL& url )
 {TRACE;
-        // Tell the data handlers we have been activated
-        TDataHandlerSet::iterator i = dataHandlers.begin();
-        while ( i != dataHandlers.end() )
-        {
-                (*i)->OnURLActivate( url );
-                ++i;
-        }
 
-        // Obtain access to the file given
-        CString filePath( url.GetURL().SubstrToSubstr( "://", false ) );
-        CFileAccess fileAccess( filePath, "rb" );
-        if ( fileAccess.IsValid() )
-        {
-                i = dataHandlers.begin();
-                while ( i != dataHandlers.end() )
-                {
-                        (*i)->OnURLDataRecieved( url, fileAccess );
-                        
-                        // reset the file pointer for the next data handler
-                        fileAccess.Setpos( 0 );
-                        ++i;
-                }
+    // Tell the data handlers we have been activated
+    NotifyObservers( URLActivateEvent );
 
-                // Tell the data handlers we have finished recieving data        
-                i = dataHandlers.begin();
-                while ( i != dataHandlers.end() )
-                {
-                        (*i)->OnURLAllDataRecieved( url );
-                        ++i;
-                }
-                return true;
-        }
-        else
-        {
-                // Tell the data handlers an error occured        
-                i = dataHandlers.begin();
-                while ( i != dataHandlers.end() )
-                {
-                        (*i)->OnURLDataRetrievalError( url );
-                        ++i;
-                }
-                return false;
-        }
+    // Obtain access to the file given
+    CString filePath( url.GetURL().SubstrToSubstr( "://", false ) );
+    CFileAccess fileAccess( filePath, "rb" );
+    if ( fileAccess.IsValid() )
+    {
+        //@TODO: make fileAccess copy'able somehow
+        NotifyObservers( URLDataRecievedEvent, fileAccess );
+
+        // Tell the data handlers we have finished recieving data
+        NotifyObservers( URLAllDataRecievedEvent );        
+
+        return true;
+    }
+    else
+    {
+        // Tell the data handlers an error occured
+        NotifyObservers( URLDataRetrievalErrorEvent );
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

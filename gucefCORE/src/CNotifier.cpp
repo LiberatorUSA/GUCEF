@@ -27,6 +27,11 @@
 
 #include "CNotifier.h"
 
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

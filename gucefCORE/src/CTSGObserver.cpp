@@ -60,7 +60,7 @@ CTSGObserver::CTSGObserver( const CTSGObserver& src )
 
 CTSGObserver::~CTSGObserver()
 {
-    UnsubscribeAll();
+    UnsubscribeFromAll();
 }
 
 /*-------------------------------------------------------------------------*/

@@ -21,8 +21,19 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define GUCEF_CORE_COBSERVINGNOTIFIER_CPP
+#include <assert.h>
+
+#ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#include "CNotificationIDRegistry.h"
+#define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
+
 #include "CObservingNotifier.h"
+
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -80,7 +91,7 @@ CObservingNotifier::UnsubscribeAllFromObserver( void )
 {TRACE;
 
     LockData();
-    m_observer.UnsubscribeAll();
+    m_observer.UnsubscribeFromAll();
     UnlockData();
 }
     
@@ -197,6 +208,17 @@ CObservingNotifier::AddEventForwarding( const UInt32 eventid             ,
 }
 
 /*-------------------------------------------------------------------------*/
+
+void
+CObservingNotifier::AddEventForwarding( const CString& eventName         ,
+                                        CNotifier* notifier /* = NULL */ )
+{TRACE;
+
+    AddEventForwarding( CNotificationIDRegistry::Instance()->Lookup( eventName ) ,
+                        notifier                                                 );
+}
+
+/*-------------------------------------------------------------------------*/
     
 void
 CObservingNotifier::RemoveEventForwarding( const UInt32 eventid             ,
@@ -220,6 +242,17 @@ CObservingNotifier::RemoveEventForwarding( const UInt32 eventid             ,
         m_eventList.erase( eventid );
         UnlockData();        
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CObservingNotifier::RemoveEventForwarding( const CString& eventName         , 
+                                           CNotifier* notifier /* = NULL */ )
+{TRACE;
+
+    RemoveEventForwarding( CNotificationIDRegistry::Instance()->Lookup( eventName ) ,
+                           notifier                                                 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -278,7 +311,8 @@ CObservingNotifier::OnNotify( CNotifier* notifier                 ,
             TEventNotifierMap::iterator i( m_eventNotifierMap.find( eventid ) );
             if ( i != m_eventNotifierMap.end() )
             {
-                TNotifierList::iterator n( notifierList.find( &notifier ) );
+                TNotifierList& notifierList = (*i).second;
+                TNotifierList::iterator n( notifierList.find( notifier ) );
                 if ( n != notifierList.end() )
                 {
                     NotifyObservers( eventid, eventdata );

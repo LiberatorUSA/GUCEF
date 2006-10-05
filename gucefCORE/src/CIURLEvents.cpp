@@ -21,12 +21,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#include "CNotificationIDRegistry.h"
+#define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
+
+#include "CIURLEvents.h"
+
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
-
-#include "CIURLDataHandler.h"
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -39,37 +44,34 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CIURLEvents::URLActivateEvent = "GUCEF::CORE::CIURLEvents::URLActivateEvent";
+const CString CIURLEvents::URLDeactivateEvent = "GUCEF::CORE::CIURLEvents::URLDeactivateEvent";
+const CString CIURLEvents::URLDataRecievedEvent = "GUCEF::CORE::CIURLEvents::URLDataRecievedEvent";
+const CString CIURLEvents::URLAllDataRecievedEvent = "GUCEF::CORE::CIURLEvents::URLAllDataRecievedEvent";
+const CString CIURLEvents::URLDataRetrievalErrorEvent = "GUCEF::CORE::CIURLEvents::URLDataRetrievalErrorEvent";
+
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CIURLDataHandler::CIURLDataHandler( void )
+void
+CIURLEvents::RegisterEvents( void )
 {TRACE;
+
+    CNotificationIDRegistry* registry( CNotificationIDRegistry::Instance() );
+    registry->Register( URLActivateEvent, true );
+    registry->Register( URLDeactivateEvent, true );
+    registry->Register( URLDataRecievedEvent, true );
+    registry->Register( URLAllDataRecievedEvent, true );
+    registry->Register( URLDataRetrievalErrorEvent, true );
 }
-        
-/*-------------------------------------------------------------------------*/        
-        
-CIURLDataHandler::CIURLDataHandler( const CIURLDataHandler& src )
-{TRACE;    
-}
-
-/*-------------------------------------------------------------------------*/
-
-CIURLDataHandler::~CIURLDataHandler()
-{TRACE;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CIURLDataHandler& 
-CIURLDataHandler::operator=( const CIURLDataHandler& src )
-{TRACE;
-        if ( &src != this )
-        {
-        }
-        return *this;
-}
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

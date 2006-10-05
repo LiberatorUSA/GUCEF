@@ -73,11 +73,9 @@ class GUCEFCORE_EXPORT_CPP CFileURLHandler : public CURLHandler
          */        
         CFileURLHandler& operator=( const CFileURLHandler& src );
 
-        virtual bool Activate( CURL& url                     ,
-                               TDataHandlerSet& dataHandlers );
+        virtual bool Activate( CURL& url );
         
-        virtual void Deactivate( CURL& url                     ,
-                                 TDataHandlerSet& dataHandlers );
+        virtual void Deactivate( CURL& url );
                          
         virtual bool IsActive( const CURL& url ) const;
         
