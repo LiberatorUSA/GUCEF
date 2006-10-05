@@ -26,6 +26,7 @@
 #include "PatcherGUIDlg.h"
 #include "gucefPATCHER_CStandardPSPEventHandler.h"
 #include "CPatcherApplication.h"
+#include "CGUCEFAppWin32MFCDriver.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

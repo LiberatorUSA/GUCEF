@@ -26,11 +26,6 @@
 #define GUCEF_CORE_CURLHANDLERREGISTRY_H
 #endif /* GUCEF_CORE_CURLHANDLERREGISTRY_H ? */
 
-#ifndef GUCEF_CORE_CIURLDATAHANDLER_H
-#include "CIURLDataHandler.h"
-#define GUCEF_CORE_CIURLDATAHANDLER_H
-#endif /* GUCEF_CORE_CIURLDATAHANDLER_H ? */
-
 #ifndef GUCEF_VFS_MACROS_H
 #include "gucefVFS_macros.h"          /* often used gucefVFS macros */
 #define GUCEF_VFS_MACROS_H
@@ -117,74 +112,45 @@ CVFSURLHandler::Unregister( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CVFSURLHandler::Activate( CORE::CURL& url               ,
-                          TDataHandlerSet& dataHandlers )
+CVFSURLHandler::Activate( CORE::CURL& url )
 {TRACE;
         assert( &url );
-        assert( &dataHandlers );
         
         // Tell the data handlers we have begun our activation sequence
-        TDataHandlerSet::iterator i = dataHandlers.begin();
-        while ( i != dataHandlers.end() )
-        {
-                ( *i )->OnURLActivate( url );
-                ++i;
-        }
+        NotifyObservers( URLActivateEvent );
         
         // Obtain the file
         UInt32 errorcode;
         CVFSHandle* handle = m_vfs->GetFile( url.GetURL().SubstrToSubstr( "://", false ), errorcode );        
         if ( handle )
-        {
-                // Pass the file data on to the data handlers
-                CORE::CIOAccess* access = NULL;
-                TDataHandlerSet::iterator i = dataHandlers.begin();
-                while ( i != dataHandlers.end() )
+        {                
+                CORE::CIOAccess* access = handle->GetAccess();
+                if ( NULL == access )
                 {
-                        access = handle->GetAccess();
-                        if ( NULL == access )
-                        {
-                                // Tell the data handlers we experienced an error
-                                i = dataHandlers.begin();
-                                while ( i != dataHandlers.end() )
-                                {
-                                        ( *i )->OnURLDataRetrievalError( url );
-                                        ++i;
-                                }
-                                return false;
-                        }
-                        
-                        ( *i )->OnURLDataRecieved( url, *access );
-                        
-                        access->Setpos( 0 );                        
-                        ++i;
-                }                
-                
-                // Tell the data handlers we have 'recieved' all data
-                i = dataHandlers.begin();
-                while ( i != dataHandlers.end() )
-                {
-                        ( *i )->OnURLAllDataRecieved( url );
-                        ++i;
+                    NotifyObservers( URLDataRetrievalErrorEvent );
+                    return false;
                 }
-                return true;                
+                else
+                {
+                    // Pass the file data on to the data handlers
+                    NotifyObservers( URLDataRecievedEvent, access );
+                    
+                    NotifyObservers( URLAllDataRecievedEvent );
+                }
+                
+                return true;
         }
-        
-        // Tell the data handlers we experienced an error
-        i = dataHandlers.begin();
-        while ( i != dataHandlers.end() )
+        else
         {
-                ( *i )->OnURLDataRetrievalError( url );
-                ++i;
-        }        
-        return NULL; 
+            NotifyObservers( URLDataRetrievalErrorEvent );
+            return false;        
+        } 
 }
 
 /*-------------------------------------------------------------------------*/
         
 void
-CVFSURLHandler::Deactivate( CORE::CURL& url               ,
-                            TDataHandlerSet& dataHandlers )
+CVFSURLHandler::Deactivate( CORE::CURL& url )
 {TRACE;
         /*
          *      This URL handler works instantly and need not be deactivated

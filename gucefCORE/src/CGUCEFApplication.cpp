@@ -377,9 +377,46 @@ CGUCEFApplication::Update( void )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CGUCEFApplication::SetApplicationDriver( CIGUCEFApplicationDriver* appDriver )
+{TRACE;
+
+    m_appDriver = appDriver;
+}
+
+/*-------------------------------------------------------------------------*/
+        
+CIGUCEFApplicationDriver*
+CGUCEFApplication::GetApplicationDriver( void ) const
+{TRACE;
+    
+    return m_appDriver;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGUCEFApplication::GetRequiresPeriodicUpdate( void ) const
+{TRACE;
+
+    return m_requiresPeriodicUpdates;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CGUCEFApplication::GetMinimalReqUpdateResolution( void ) const
+{TRACE;
+
+    return m_minimalUpdateDelta;
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt32
 CGUCEFApplication::GetLastUpdateTickCount( void ) const
 {TRACE;
+
     return m_appTickCount;    
 }
 
@@ -388,6 +425,7 @@ CGUCEFApplication::GetLastUpdateTickCount( void ) const
 void
 CGUCEFApplication::Run( void )
 {TRACE;
+
         _active = true;
         while ( _active )
         {

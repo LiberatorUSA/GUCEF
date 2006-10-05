@@ -56,11 +56,12 @@ class CVFS;
 /**
  *      VFS URL handling implementation.
  *      for example: vfs://foo/bar.dat
+ *  
+ *      For internal use, no need to export this class
  */
-class EXPORT_CPP CVFSURLHandler : public CORE::CURLHandler
+class CVFSURLHandler : public CORE::CURLHandler
 {
         public:
-        typedef CORE::CURLHandler::TDataHandlerSet TDataHandlerSet;
         
         /**
          *      Doesnt do anything special atm.
@@ -82,11 +83,9 @@ class EXPORT_CPP CVFSURLHandler : public CORE::CURLHandler
          */        
         CVFSURLHandler& operator=( const CVFSURLHandler& src );
 
-        virtual bool Activate( CORE::CURL& url               ,
-                               TDataHandlerSet& dataHandlers );
+        virtual bool Activate( CORE::CURL& url );
         
-        virtual void Deactivate( CORE::CURL& url               ,
-                                 TDataHandlerSet& dataHandlers );
+        virtual void Deactivate( CORE::CURL& url );
                          
         virtual bool IsActive( const CORE::CURL& url ) const;        
 

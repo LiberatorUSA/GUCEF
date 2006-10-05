@@ -54,7 +54,7 @@ class CGUCEFAppWin32MFCDriver : public CWnd                                  ,
 
     protected:
 
-    virtual void OnSwitchUpdateMethod( const bool periodic ) = 0;
+    virtual void OnSwitchUpdateMethod( const bool periodic );
     
     virtual void OnRequestNewMinimalUpdateFreq( const GUCEF::CORE::UInt32 frequenty );
 

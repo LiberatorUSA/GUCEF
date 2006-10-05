@@ -99,8 +99,7 @@ CFileURLHandler::Activate( CURL& url )
     CFileAccess fileAccess( filePath, "rb" );
     if ( fileAccess.IsValid() )
     {
-        //@TODO: make fileAccess copy'able somehow
-        NotifyObservers( URLDataRecievedEvent, fileAccess );
+        NotifyObservers( URLDataRecievedEvent, &fileAccess );
 
         // Tell the data handlers we have finished recieving data
         NotifyObservers( URLAllDataRecievedEvent );        
@@ -118,8 +117,7 @@ CFileURLHandler::Activate( CURL& url )
 /*-------------------------------------------------------------------------*/
         
 void
-CFileURLHandler::Deactivate( CURL& url                     ,
-                             TDataHandlerSet& dataHandlers )
+CFileURLHandler::Deactivate( CURL& url )
 {TRACE;
         // no need to do anything, this handler works instantly instead of over time
 }

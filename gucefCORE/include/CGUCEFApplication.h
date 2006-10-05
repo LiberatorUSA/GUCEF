@@ -92,8 +92,8 @@ class CIGUCEFApplicationDriver;
  *              GUCEF level. All higher level code should shutdown aswell 
  */
 class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          , 
-                                     public CIConfigurable        ,
-                                     public CISysConsoleCmdHandler
+                                               public CIConfigurable        ,
+                                               public CISysConsoleCmdHandler
 {
         public:
 
@@ -165,9 +165,15 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
          *      @param treeroot pointer to the node that is to act as root of the data tree
          *      @return whether building the tree from the given file was successfull.
          */                                    
-        virtual bool LoadConfig( const CDataNode& treeroot );        
-
-        virtual ~CGUCEFApplication();
+        virtual bool LoadConfig( const CDataNode& treeroot );
+        
+        void SetApplicationDriver( CIGUCEFApplicationDriver* appDriver );
+        
+        CIGUCEFApplicationDriver* GetApplicationDriver( void ) const;
+        
+        bool GetRequiresPeriodicUpdate( void ) const;
+        
+        UInt32 GetMinimalReqUpdateResolution( void ) const;
         
         protected:
         
@@ -217,6 +223,7 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
         void Run( void );
         CGUCEFApplication( void );
         CGUCEFApplication( const CGUCEFApplication& src );
+        virtual ~CGUCEFApplication();
         
         private:
         typedef std::set< CGUCEFAppSubSystem* > TSubSystemList;
