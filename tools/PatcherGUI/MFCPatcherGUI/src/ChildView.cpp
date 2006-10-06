@@ -22,8 +22,14 @@
 //-------------------------------------------------------------------------*/
 
 #include "stdafx.h"
-#include "PatcherGUI.h"
-#include "PatcherGUIDlg.h"
+#include "MFCPatcherGUI.h"
+#include "CPatcherApplication.h"
+#include "gucefPATCHER_CStandardPSPEventHandler.h"
+#include "CGUCEFAppWin32MFCDriver.h"
+#include "CGUCEFApplication.h"
+#include "ChildView.h"
+
+using namespace GUCEF;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -31,211 +37,222 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-// CPatcherGUIDlg dialog
-
-using namespace GUCEF;
-
-
-/*-------------------------------------------------------------------------*/
-
-CPatcherGUIDlg::CPatcherGUIDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CPatcherGUIDlg::IDD, pParent)
+CChildView::CChildView()
+    : m_listBox( NULL )          ,
+      m_transferProgress( NULL ) ,
+      m_totalProgress( NULL )    ,
+      m_standardHandler( NULL )
 {TRACE;
 
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
 /*-------------------------------------------------------------------------*/
 
-void CPatcherGUIDlg::DoDataExchange( CDataExchange* pDX )
+CChildView::~CChildView()
 {TRACE;
 
-	CDialog::DoDataExchange( pDX );
-
-	//{{AFX_DATA_MAP(CPatcherGUIDlg)
-	DDX_Control( pDX, IDC_LISTBOX, m_listBox );
-	DDX_Control( pDX, IDC_TRANSFERPROGRESS, m_transferProgress );
-	DDX_Control( pDX, IDC_TOTALPROGRESS, m_totalProgress );
-	//}}AFX_DATA_MAP
-	
 }
 
 /*-------------------------------------------------------------------------*/
 
-BEGIN_MESSAGE_MAP(CPatcherGUIDlg, CDialog)
+
+BEGIN_MESSAGE_MAP(CChildView, CWnd)
+	//{{AFX_MSG_MAP(CChildView)
 	ON_WM_PAINT()
-	ON_WM_QUERYDRAGICON()
+    ON_WM_CREATE()
+    ON_WM_SIZE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 
 /*-------------------------------------------------------------------------*/
 
-// CPatcherGUIDlg message handlers
+// CChildView message handlers
 
-BOOL 
-CPatcherGUIDlg::OnInitDialog()
+BOOL CChildView::PreCreateWindow(CREATESTRUCT& cs) 
 {TRACE;
 
-	CDialog::OnInitDialog();
+	if (!CWnd::PreCreateWindow(cs))
+		return FALSE;
 
-	// Set the icon for this dialog.  The framework does this automatically
-	//  when the application's main window is not a dialog
-	SetIcon(m_hIcon, TRUE);			// Set big icon
-	SetIcon(m_hIcon, FALSE);		// Set small icon
+	cs.dwExStyle |= WS_EX_CLIENTEDGE;
+	cs.style &= ~WS_BORDER;
+	cs.lpszClass = AfxRegisterWndClass(CS_HREDRAW|CS_VREDRAW|CS_DBLCLKS, 
+		::LoadCursor(NULL, IDC_ARROW), HBRUSH(COLOR_WINDOW+1), NULL);
 
-	// TODO: Add extra initialization here
-
-	return TRUE;  // return TRUE  unless you set the focus to a control
+	return TRUE;
 }
 
 /*-------------------------------------------------------------------------*/
 
-// If you add a minimize button to your dialog, you will need the code below
-//  to draw the icon.  For MFC applications using the document/view model,
-//  this is automatically done for you by the framework.
-
-void 
-CPatcherGUIDlg::OnPaint()
+void CChildView::DoDataExchange( CDataExchange* pDX )
 {TRACE;
-	if (IsIconic())
-	{
-		CPaintDC dc(this); // device context for painting
 
-		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
+	CWnd::DoDataExchange( pDX );
 
-		// Center icon in client rectangle
-		int cxIcon = GetSystemMetrics(SM_CXICON);
-		int cyIcon = GetSystemMetrics(SM_CYICON);
-		CRect rect;
-		GetClientRect(&rect);
-		int x = (rect.Width() - cxIcon + 1) / 2;
-		int y = (rect.Height() - cyIcon + 1) / 2;
-
-		// Draw the icon
-		dc.DrawIcon(x, y, m_hIcon);
-	}
-	else
-	{
-		CDialog::OnPaint();
-	}
+	//{{AFX_DATA_MAP(CPatcherGUIDlg)
+//	DDX_Control( pDX, IDC_LISTBOX, *m_listBox );
+//	DDX_Control( pDX, IDC_TRANSFERPROGRESS, *m_transferProgress );
+//	DDX_Control( pDX, IDC_TOTALPROGRESS, *m_totalProgress );
+	//}}AFX_DATA_MAP
+	
 }
 
 /*-------------------------------------------------------------------------*/
 
-// The system calls this function to obtain the cursor to display while the user drags
-//  the minimized window.
-HCURSOR 
-CPatcherGUIDlg::OnQueryDragIcon()
+void CChildView::OnPaint() 
 {TRACE;
 
-	return static_cast<HCURSOR>(m_hIcon);
+	CPaintDC dc(this); // device context for painting
+	
+	// TODO: Add your message handler code here
+	
+	// Do not call CWnd::OnPaint() for painting messages
+}
+
+/*-------------------------------------------------------------------------*/
+
+int CChildView::OnCreate(LPCREATESTRUCT lpcs)
+{TRACE;
+
+    CWnd::OnCreate( lpcs );
+
+    m_gucefDriver = new CGUCEFAppWin32MFCDriver();
+    if ( m_gucefDriver->Init( this ) )
+    {
+        m_listBox = new CListBox();
+        m_listBox->Create( WS_CHILD|WS_VISIBLE|LBS_STANDARD|WS_HSCROLL , 
+                           CRect( 10, 10, 200, 200 )                   ,
+                           this                                        , 
+                           1                                           );
+
+        m_standardHandler = new CStandardPSPEventHandler();
+
+        TEventHandlerList handlerList;
+        handlerList.push_back( this );
+        handlerList.push_back( m_standardHandler );
+        CPatcherApplication::Instance()->SetEventHandlers( handlerList );
+        
+        CGUCEFApplication::Instance()->SetApplicationDriver( m_gucefDriver );
+        
+        return 0;
+    }
+    
+    return 1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void CChildView::OnSize(UINT nType, int cx, int cy)
+{TRACE;
+
+    m_listBox->MoveWindow(0, 0, cx, 100);
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CPatcherGUIDlg::OnPatchSetStart( const CORE::CString& patchSetName )
+CChildView::OnPatchSetStart( const CORE::CString& patchSetName )
 {TRACE;
     
     CORE::CString infoStr( ">>> start patchset: " );
     infoStr += patchSetName;
-    m_listBox.AddString( infoStr.C_String() );
+    m_listBox->AddString( (LPCTSTR) infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
-CPatcherGUIDlg::OnEnterLocalDir( const CORE::CString& localPath )
+CChildView::OnEnterLocalDir( const CORE::CString& localPath )
 {TRACE;
 
     CORE::CString infoStr( "entering local directory: " );
     infoStr += localPath;
-    m_listBox.AddString( infoStr.C_String() );
+    m_listBox->AddString( (LPCTSTR) infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
-CPatcherGUIDlg::OnLocalFileOK( const CORE::CString& localPath ,
-                               const CORE::CString& localFile )
+CChildView::OnLocalFileOK( const CORE::CString& localPath ,
+                           const CORE::CString& localFile )
 {TRACE;
 
     CORE::CString infoStr( "local file \"" );
     infoStr += localFile;
     infoStr += "\" is up-to-date. Path: ";
     infoStr += localPath;
-    m_listBox.AddString( infoStr.C_String() );
+    m_listBox->AddString( (LPCTSTR) infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CPatcherGUIDlg::OnLocalFileNotFound( const CORE::CString& localPath ,
-                                     const CORE::CString& localFile )
+CChildView::OnLocalFileNotFound( const CORE::CString& localPath ,
+                                 const CORE::CString& localFile )
 {TRACE;
 
     CORE::CString infoStr( "local file \"" );
     infoStr += localFile;
     infoStr += "\" is not found. Path: ";
     infoStr += localPath;
-    m_listBox.AddString( infoStr.C_String() );
+    m_listBox->AddString( (LPCTSTR) infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CPatcherGUIDlg::OnLocalFileDifference( const CORE::CString& localPath ,
-                                       const CORE::CString& localFile )
+CChildView::OnLocalFileDifference( const CORE::CString& localPath ,
+                                   const CORE::CString& localFile )
 {TRACE;
 
     CORE::CString infoStr( "local file \"" );
     infoStr += localFile;
     infoStr += "\" differs from the master file. Path: ";
     infoStr += localPath;
-    m_listBox.AddString( infoStr.C_String() );
+    m_listBox->AddString( (LPCTSTR) infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CPatcherGUIDlg::OnNewSourceRequired( const TSourceInfo& sourceInfo )
+CChildView::OnNewSourceRequired( const TSourceInfo& sourceInfo )
 {TRACE;
 
     CORE::CString infoStr( "new source required" );
-    m_listBox.AddString( infoStr.C_String() );
+    m_listBox->AddString( (LPCTSTR) infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
-CPatcherGUIDlg::OnLeaveLocalDir( const CORE::CString& localPath )
+CChildView::OnLeaveLocalDir( const CORE::CString& localPath )
 {TRACE;
 
     CORE::CString infoStr( "leaving local directory: " );
     infoStr += localPath;
-    m_listBox.AddString( infoStr.C_String() );
+    m_listBox->AddString( (LPCTSTR) infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
-CPatcherGUIDlg::OnPatchSetEnd( const CORE::CString& patchSetName )
+CChildView::OnPatchSetEnd( const CORE::CString& patchSetName )
 {TRACE;
 
     CORE::CString infoStr( ">>> end patchset: " );
     infoStr += patchSetName;
-    m_listBox.AddString( infoStr.C_String() );
+    m_listBox->AddString( (LPCTSTR) infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CPatcherGUIDlg::OnParserError( void )
+CChildView::OnParserError( void )
 {TRACE;
 
     CORE::CString infoStr( ">>> parser error" );
-    m_listBox.AddString( infoStr.C_String() );
+    m_listBox->AddString( (LPCTSTR) infoStr.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
