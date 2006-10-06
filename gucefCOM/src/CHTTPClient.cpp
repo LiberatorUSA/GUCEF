@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -23,10 +23,20 @@
 
 #include <stdlib.h>
 
-#ifndef CHTTPCLIENTINTERFACE_H
-#include "CHTTPClientInterface.h"
-#define CHTTPCLIENTINTERFACE_H
-#endif /* CHTTPCLIENTINTERFACE_H ? */
+#ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#include "CNotificationIDRegistry.h"
+#define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
+
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
+#ifndef GUCEF_CORE_CURLHANDLERREGISTRY_H
+#include "CURLHandlerRegistry.h"      /* gucefCORE registry for URL handlers */
+#define GUCEF_CORE_CURLHANDLERREGISTRY_H
+#endif /* GUCEF_CORE_CURLHANDLERREGISTRY_H ? */
 
 #include "CHTTPClient.h"
 
@@ -41,41 +51,52 @@ COM_NAMESPACE_BEGIN
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CString CHTTPClient::ConnectingEvent = "GUCEF::COM::CHTTPClient::ConnectingEvent";
+const CORE::CString CHTTPClient::ConnectedEvent = "GUCEF::COM::CHTTPClient::ConnectedEvent";
+const CORE::CString CHTTPClient::DisconnectedEvent = "GUCEF::COM::CHTTPClient::DisconnectedEvent";
+const CORE::CString CHTTPClient::ConnectionErrorEvent = "GUCEF::COM::CHTTPClient::ConnectionErrorEvent";        
+const CORE::CString CHTTPClient::HTTPErrorEvent = "GUCEF::COM::CHTTPClient::HTTPErrorEvent";
+const CORE::CString CHTTPClient::HTTPRedirectEvent = "GUCEF::COM::CHTTPClient::HTTPRedirectEvent";
+const CORE::CString CHTTPClient::HTTPContentEvent = "GUCEF::COM::CHTTPClient::HTTPContentEvent";                
+const CORE::CString CHTTPClient::HTTPDataRecievedEvent = "GUCEF::COM::CHTTPClient::HTTPDataRecievedEvent";
+const CORE::CString CHTTPClient::HTTPDataSendEvent = "GUCEF::COM::CHTTPClient::HTTPDataSendEvent";        
+const CORE::CString CHTTPClient::HTTPTransferFinishedEvent = "GUCEF::COM::CHTTPClient::HTTPTransferFinishedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CHTTPClient::CHTTPClient( void )
-        : m_socket( false )      ,
-          m_iface( NULL )        ,
-          m_downloading( false ) ,
-          m_recieved( 0 )        ,
-          m_filesize( 0 )
+        : m_socket( false )                  ,
+          m_downloading( false )             ,
+          m_recieved( 0 )                    ,
+          m_filesize( 0 )                    ,
+          m_connectingEventID( 0 )           ,
+          m_connectedEventID( 0 )            ,
+          m_disconnectedEventID( 0 )         ,
+          m_connectionErrorEventID( 0 )      ,
+          m_HTTPErrorEventID( 0 )            ,
+          m_HTTPRedirectEventID( 0 )         ,
+          m_HTTPContentEventID( 0 )          ,
+          m_HTTPDataRecievedEventID( 0 )     ,
+          m_HTTPDataSendEventID( 0 )         ,
+          m_HTTPTransferFinishedEventID( 0 )
 {TRACE;
-        m_socket.SetInterface( this );
-}
-
-/*-------------------------------------------------------------------------*/
         
-CHTTPClient::CHTTPClient( const CHTTPClient& src )
-        : m_socket( false )
-{TRACE;
-        /* dummy, do not use */
+        RegisterEventsImp( this );
+        m_socket.SetInterface( this );
 }
 
 /*-------------------------------------------------------------------------*/
         
 CHTTPClient::~CHTTPClient()
 {TRACE;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CHTTPClient& 
-CHTTPClient::operator=( const CHTTPClient& src )
-{TRACE;
-        /* dummy, do not use */
-        return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -313,22 +334,6 @@ CHTTPClient::ParseURL( const CORE::CString& urlstring ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CHTTPClient::SetInterface( CHTTPClientInterface* iface )
-{TRACE;
-        m_iface = iface;
-}
-	
-/*-------------------------------------------------------------------------*/
-
-CHTTPClientInterface* 
-CHTTPClient::GetInterface( void ) const
-{TRACE;
-        return m_iface;
-}
-
-/*-------------------------------------------------------------------------*/
-
 UInt32
 CHTTPClient::GetBytesRecieved( void ) const
 {TRACE;
@@ -387,8 +392,9 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket ,
                 if( http_code >= 400 )
                 {
                         DEBUGOUTPUTsi( "CHTTPClient: HTTP Error: ", http_code );
-
-                        if ( m_iface ) m_iface->OnHTTPError( *this, http_code );                        
+                        
+                        THTTPErrorEventData eventData( http_code );
+                        NotifyObservers( m_HTTPErrorEventID, &eventData );                        
                         return;
                 }
                 
@@ -432,7 +438,9 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket ,
                         socket.Close();
 
                         tempChar = &tempChar[i2];
-                        if ( m_iface ) m_iface->OnRedirect( *this, tempChar );
+                        
+                        THTTPRedirectEventData eventData( tempChar );
+                        NotifyObservers( m_HTTPRedirectEventID, &eventData );                        
 
                         Get( tempChar, 0 );
 
@@ -531,7 +539,9 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket ,
 
                                 if(i >= length) 
                                 {
-                                        if ( m_iface ) m_iface->OnError(*this);
+                                        // Bad data recieved
+                                        NotifyObservers( m_connectionErrorEventID );
+
                                         m_recieved = size = 0;
                                         socket.Close();
 
@@ -548,7 +558,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket ,
 
                                 if(m_filesize == 0) 
                                 {
-                                        if ( m_iface ) m_iface->OnFinish(*this);
+                                        NotifyObservers( m_HTTPTransferFinishedEventID );
 
                                         size = m_recieved;
                                         socket.Close();
@@ -564,12 +574,13 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket ,
                         }
 
                         if(m_filesize < length) 
-                        {
-                                if ( m_iface ) 
-                                {
-                                        //m_iface->OnContent( *this, resumeable, http_code );
-                                        m_iface->OnDataRecieved( *this, data, m_filesize );
-                                }                                        
+                        {                                
+                                // Notify observers about the HTTP transfer payload contents we recieved
+                                CORE::CDynamicBuffer linkBuffer;
+                                linkBuffer.LinkTo( data, m_filesize );
+                                THTTPDataRecievedEventData cBuffer( &linkBuffer );
+                                NotifyObservers( m_HTTPDataRecievedEventID, &cBuffer );
+                                                                 
                                 m_recieved += m_filesize;
                                 length -= m_filesize;
 
@@ -580,25 +591,46 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket ,
 
                 if(m_filesize > length && length != 0) 
                 {
-                        if ( m_iface ) 
-                        {
-                                m_iface->OnContent( *this, m_filesize, resumeable, http_code );
-                                m_iface->OnDataRecieved( *this, data, length );
-                        }                                
-                        m_recieved += length;
-                        m_filesize -= length;
+
+                    // Notify observers about the HTTP payload content info we recieved
+                    struct SHTTPContentEventData cedStruct;
+                    cedStruct.contentSize = m_filesize;
+                    cedStruct.resumeSupported = resumeable;
+                    cedStruct.HTTPcode = http_code;
+                    THTTPContentEventData contentEventData( cedStruct );
+                    NotifyObservers( m_HTTPContentEventID, &contentEventData );
+                                
+                    // Notify observers about the HTTP transfer payload contents we recieved
+                    CORE::CDynamicBuffer linkBuffer;
+                    linkBuffer.LinkTo( data, length );
+                    THTTPDataRecievedEventData cBuffer( &linkBuffer );
+                    NotifyObservers( m_HTTPDataRecievedEventID, &cBuffer );
+                                                          
+                    m_recieved += length;
+                    m_filesize -= length;
                 }
         }
         else 
         {
-                m_recieved += length;                
-                if ( m_iface )
-                {
-                        m_iface->OnContent( *this, size, resumeable, http_code );                                      	
-                        m_iface->OnDataRecieved( *this, data, length );                        
-                        m_iface->OnFinish(*this);                        
-                }
-                socket.Close();                   
+            m_recieved += length;                
+
+            // Notify observers about the HTTP payload content info we recieved
+            struct SHTTPContentEventData cedStruct;
+            cedStruct.contentSize = size;
+            cedStruct.resumeSupported = resumeable;
+            cedStruct.HTTPcode = http_code;
+            THTTPContentEventData contentEventData( cedStruct );
+            NotifyObservers( m_HTTPContentEventID, &contentEventData );
+                                                      	
+            // Notify observers about the HTTP transfer payload contents we recieved
+            CORE::CDynamicBuffer linkBuffer;
+            linkBuffer.LinkTo( data, length );
+            THTTPDataRecievedEventData cBuffer( &linkBuffer );
+            NotifyObservers( m_HTTPDataRecievedEventID, &cBuffer );                      
+                    
+            NotifyObservers( m_HTTPTransferFinishedEventID );                        
+
+            socket.Close();                   
         }                                    
 }
 
@@ -607,8 +639,9 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket ,
 void 
 CHTTPClient::OnDisconnect( COMCORE::CTCPClientSocket &socket )
 {TRACE;
+
         m_downloading = false;
-        if ( m_iface ) m_iface->OnDisconnected( *this );  
+        NotifyObservers( m_disconnectedEventID );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -616,7 +649,8 @@ CHTTPClient::OnDisconnect( COMCORE::CTCPClientSocket &socket )
 void 
 CHTTPClient::OnConnected( COMCORE::CTCPClientSocket &socket )
 {TRACE;
-        if ( m_iface ) m_iface->OnConnected( *this );        
+
+        NotifyObservers( m_connectedEventID );        
 }
 
 /*-------------------------------------------------------------------------*/
@@ -624,7 +658,8 @@ CHTTPClient::OnConnected( COMCORE::CTCPClientSocket &socket )
 void 
 CHTTPClient::OnConnecting( COMCORE::CTCPClientSocket& socket )
 {TRACE;
-        if ( m_iface ) m_iface->OnConnecting( *this );        
+
+        NotifyObservers( m_connectingEventID );        
 }
 
 /*-------------------------------------------------------------------------*/
@@ -634,10 +669,157 @@ CHTTPClient::OnWrite( COMCORE::CTCPClientSocket &socket ,
                       const void* data                  ,
                       UInt32 length                     )
 {TRACE;
-        if ( m_iface ) m_iface->OnDataSend( *this             ,
-                                            (const char*)data ,
-                                            length            ); 
+        
+    // Notify observers about the data dispatch
+    CORE::CDynamicBuffer linkBuffer;
+    linkBuffer.LinkTo( data, length );
+    THTTPDataRecievedEventData cBuffer( &linkBuffer );
+    NotifyObservers( m_HTTPDataSendEventID, &cBuffer );
 }                      
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CHTTPClient::IsConnected( void ) const
+{TRACE;
+    
+    return m_socket.IsActive();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CHTTPClient::RegisterEvents( void )
+{TRACE;
+
+    RegisterEventsImp( NULL );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CHTTPClient::RegisterEventsImp( CHTTPClient* obj )
+{TRACE;
+
+    CORE::CNotificationIDRegistry* registry = CORE::CNotificationIDRegistry::Instance();
+    
+    if ( NULL != obj )
+    {
+        obj->m_connectingEventID = registry->Register( CHTTPClient::ConnectingEvent, true );
+        obj->m_connectedEventID = registry->Register( CHTTPClient::ConnectedEvent, true );
+        obj->m_disconnectedEventID = registry->Register( CHTTPClient::DisconnectedEvent, true );
+        obj->m_connectionErrorEventID = registry->Register( CHTTPClient::ConnectionErrorEvent, true );
+        obj->m_HTTPErrorEventID = registry->Register( CHTTPClient::HTTPErrorEvent, true );
+        obj->m_HTTPRedirectEventID = registry->Register( CHTTPClient::HTTPRedirectEvent, true );
+        obj->m_HTTPContentEventID = registry->Register( CHTTPClient::HTTPContentEvent, true );
+        obj->m_HTTPDataRecievedEventID = registry->Register( CHTTPClient::HTTPDataRecievedEvent, true );
+        obj->m_HTTPDataSendEventID = registry->Register( CHTTPClient::HTTPDataSendEvent, true );
+        obj->m_HTTPTransferFinishedEventID = registry->Register( CHTTPClient::HTTPTransferFinishedEvent, true );
+    }
+    else
+    {
+        registry->Register( CHTTPClient::ConnectingEvent, true );
+        registry->Register( CHTTPClient::ConnectedEvent, true );
+        registry->Register( CHTTPClient::DisconnectedEvent, true );
+        registry->Register( CHTTPClient::ConnectionErrorEvent, true );
+        registry->Register( CHTTPClient::HTTPErrorEvent, true );
+        registry->Register( CHTTPClient::HTTPRedirectEvent, true );
+        registry->Register( CHTTPClient::HTTPContentEvent, true );
+        registry->Register( CHTTPClient::HTTPDataRecievedEvent, true );
+        registry->Register( CHTTPClient::HTTPDataSendEvent, true );
+        registry->Register( CHTTPClient::HTTPTransferFinishedEvent, true );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CHTTPClient::GetConnectingEventID( void ) const
+{TRACE;
+
+    return m_connectingEventID;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CHTTPClient::GetConnectedEventID( void ) const
+{TRACE;
+
+    return m_connectedEventID;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CHTTPClient::GetDisconnectedEventID( void ) const
+{TRACE;
+
+    return m_disconnectedEventID;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CHTTPClient::GetConnectionErrorEventID( void ) const
+{TRACE;
+
+    return m_connectionErrorEventID;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CHTTPClient::GetHTTPErrorEventID( void ) const
+{TRACE;
+
+    return m_HTTPErrorEventID;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CHTTPClient::GetHTTPRedirectEventID( void ) const
+{TRACE;
+
+    return m_HTTPRedirectEventID;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CHTTPClient::GetHTTPContentEventID( void ) const
+{TRACE;
+
+    return m_HTTPContentEventID;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CHTTPClient::GetHTTPDataRecievedEventID( void ) const
+{TRACE;
+
+    return m_HTTPDataRecievedEventID;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CHTTPClient::GetHTTPDataSendEventID( void ) const
+{TRACE;
+    
+    return m_HTTPDataSendEventID;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CHTTPClient::GetHTTPTransferFinishedEventID( void ) const
+{TRACE;
+
+    return m_HTTPTransferFinishedEventID;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

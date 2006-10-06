@@ -22,6 +22,7 @@
 //-------------------------------------------------------------------------*/
 
 #include "stdafx.h"
+#include <assert.h>
 #include "MFCPatcherGUI.h"
 #include "CPatcherApplication.h"
 #include "gucefPATCHER_CStandardPSPEventHandler.h"
@@ -41,7 +42,8 @@ CChildView::CChildView()
     : m_listBox( NULL )          ,
       m_transferProgress( NULL ) ,
       m_totalProgress( NULL )    ,
-      m_standardHandler( NULL )
+      m_standardHandler( NULL )  ,
+      m_gucefDriver( NULL )
 {TRACE;
 
 }
@@ -117,23 +119,48 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
 
     CWnd::OnCreate( lpcs );
 
+    // Hook the GUCEF application driver into the window message loop
     m_gucefDriver = new CGUCEFAppWin32MFCDriver();
+    assert( m_gucefDriver );
     if ( m_gucefDriver->Init( this ) )
     {
+        // Create our listbox
         m_listBox = new CListBox();
+        assert( m_listBox );
         m_listBox->Create( WS_CHILD|WS_VISIBLE|LBS_STANDARD|WS_HSCROLL , 
-                           CRect( 10, 10, 200, 200 )                   ,
+                           CRect( 10, 40, 200, 140 )                   ,
                            this                                        , 
                            1                                           );
+        
+        m_transferProgress = new CProgressCtrl();
+        assert( m_transferProgress );
+        m_transferProgress->Create( WS_CHILD|WS_VISIBLE      , 
+                                    CRect( 10, 10, 200, 20 ) ,
+                                    this                     , 
+                                    1                        );
+        m_totalProgress = new CProgressCtrl();
+        assert( m_totalProgress );
+        m_totalProgress->Create( WS_CHILD|WS_VISIBLE      , 
+                                 CRect( 10, 30, 200, 40 ) ,
+                                 this                     , 
+                                 1                        );
+                                    
+        // Create a standard event handler, this one does all the standard things
+        // such as creating dirs, patching files etc. ie the actual workhorse
+        m_standardHandler = new PATCHER::CStandardPSPEventHandler();
+        assert( m_standardHandler );
 
-        m_standardHandler = new CStandardPSPEventHandler();
-
-        TEventHandlerList handlerList;
+        // Make a list of event handlers which includes this class
+        CPatcherApplication::TEventHandlerList handlerList;
         handlerList.push_back( this );
         handlerList.push_back( m_standardHandler );
+        
+        // Hook the event handlers into the system
         CPatcherApplication::Instance()->SetEventHandlers( handlerList );
         
-        CGUCEFApplication::Instance()->SetApplicationDriver( m_gucefDriver );
+        // Now connect the application driver wih GUCEF, from this point on this can start
+        // happening behind the screen
+        CORE::CGUCEFApplication::Instance()->SetApplicationDriver( m_gucefDriver );
         
         return 0;
     }
@@ -146,7 +173,8 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
 void CChildView::OnSize(UINT nType, int cx, int cy)
 {TRACE;
 
-    m_listBox->MoveWindow(0, 0, cx, 100);
+    MoveWindow( 0, 0, 220, 160 );
+  //  m_listBox->MoveWindow(0, 0, cx, 100);
 }
 
 /*-------------------------------------------------------------------------*/

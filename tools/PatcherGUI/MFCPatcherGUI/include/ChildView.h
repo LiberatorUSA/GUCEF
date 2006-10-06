@@ -37,7 +37,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CStandardPSPEventHandler;
+namespace GUCEF { namespace PATCHER { class CStandardPSPEventHandler; } }
 class CGUCEFAppWin32MFCDriver;
 
 class CChildView : public CWnd                                         ,
@@ -97,7 +97,7 @@ class CChildView : public CWnd                                         ,
     CListBox* m_listBox;
     CProgressCtrl* m_transferProgress;    
     CProgressCtrl* m_totalProgress;
-    CStandardPSPEventHandler* m_standardHandler;
+    GUCEF::PATCHER::CStandardPSPEventHandler* m_standardHandler;
     CGUCEFAppWin32MFCDriver* m_gucefDriver;   
     
 };

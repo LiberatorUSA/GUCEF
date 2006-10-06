@@ -55,7 +55,7 @@ BOOL CMFCPatcherGUIApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
-	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+	SetRegistryKey(_T("VanvelzenSoftware"));
 	// To create the main window, this code creates a new frame window
 	// object and then sets it as the application's main window object
 	CMainFrame* pFrame = new CMainFrame;
@@ -63,6 +63,7 @@ BOOL CMFCPatcherGUIApp::InitInstance()
 		return FALSE;
 	m_pMainWnd = pFrame;
 	// create and load the frame with its resources
+
 	pFrame->LoadFrame(IDR_MAINFRAME,
 		WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL,
 		NULL);

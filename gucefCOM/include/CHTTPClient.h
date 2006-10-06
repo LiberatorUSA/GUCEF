@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CHTTPCLIENT_H
-#define CHTTPCLIENT_H
+#ifndef GUCEF_COM_CHTTPCLIENT_H
+#define GUCEF_COM_CHTTPCLIENT_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,6 +43,21 @@
 #include "CValueList.h"
 #define CVALUELIST_H
 #endif /* CVALUELIST_H ? */
+
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
+#include "CTCloneableObj.h"
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
 
 #ifndef GUCEFCOM_MACROS_H
 #include "gucefCOM_macros.h"
@@ -130,88 +145,130 @@ typedef enum THTTPCODE
 //-------------------------------------------------------------------------*/
 
 /**
- *      Forward declaration of this client's interface class
+ *      HTTP protocol client
  */
-class CHTTPClientInterface;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *      file downloading client utilising the HTTP protocol.
- */
-class GUCEFCOM_EXPORT_CPP CHTTPClient : public COMCORE::CTCPClientSocketInterface
+class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CNotifier                     ,
+                                        private COMCORE::CTCPClientSocketInterface
 {
 	public:
 
-        CHTTPClient( void );                
-        
-        virtual ~CHTTPClient();
-        
-        bool Post( const CORE::CString& host                ,
-                   UInt16 port                              ,
-                   const CORE::CString& path                , 
-                   const CORE::CValueList* valuelist = NULL );
-                   
-        bool Post( const CORE::CString& urlstring           ,
-                   const CORE::CValueList* valuelist = NULL );                   
-                   
-        bool Get( const CORE::CString& host                ,
-                  UInt16 port                              ,
-                  const CORE::CString& path                ,
-                  const UInt32 byteoffset = 0              ,
-                  const CORE::CValueList* valuelist = NULL );
+    static const CORE::CString ConnectingEvent;
+    static const CORE::CString ConnectedEvent;
+    static const CORE::CString DisconnectedEvent;
+    static const CORE::CString ConnectionErrorEvent;        
+    static const CORE::CString HTTPErrorEvent;
+    static const CORE::CString HTTPRedirectEvent;
+    static const CORE::CString HTTPContentEvent;                
+    static const CORE::CString HTTPDataRecievedEvent;
+    static const CORE::CString HTTPDataSendEvent;        
+    static const CORE::CString HTTPTransferFinishedEvent;
 
-        bool Get( const CORE::CString& urlstring           ,
-                  const UInt32 byteoffset = 0              ,
-                  const CORE::CValueList* valuelist = NULL );
-                  
-        void Close( void );                  
-                  
-        UInt32 GetBytesRecieved( void ) const;
-        
-	void SetInterface( CHTTPClientInterface* iface );
-	
-	CHTTPClientInterface* GetInterface( void ) const;
-	
-	protected:
-	
-        /**
-         *      Event handler that is called when we recieve data from the
-         *      server. Initial processing will be done by this server.
-         */
-        virtual void OnRead( COMCORE::CTCPClientSocket &socket ,
-                             const char *data              ,
-                             UInt32 length                 ,
-                             UInt32 &keepbytes             );
+	public:
 
-        virtual void OnConnecting( COMCORE::CTCPClientSocket& socket );
+    struct SHTTPContentEventData   /**< stores data about the HTTP transmission payload */
+    {
+        UInt32 contentSize;        /**< the size of the content in the HTTP payload in bytes */
+        bool resumeSupported;      /**< does the remote host support resume ? */
+        THTTPCODE HTTPcode;        /**< HTTP code for the given content */
+    };
+    typedef CORE::CTCloneableObj< struct SHTTPContentEventData >  THTTPContentEventData;      /**< see struct SHTTPContentEventData for details */
+    typedef CORE::TLinkedCloneableBuffer                          THTTPDataRecievedEventData; /**< contains buffer with the recieved data */
+    typedef CORE::TLinkedCloneableBuffer                          THTTPDataSendEventData;     /**< contains buffer with the dispatched data */    
+    typedef CORE::TCloneableString                                THTTPRedirectEventData;     /**< contains the URL to which the client is beeing redirected */
+    typedef CORE::CTCloneableObj< THTTPCODE >                     THTTPErrorEventData;        /**< contains the relevant HTTP error code */
 
-        virtual void OnConnected( COMCORE::CTCPClientSocket& socket );
+	public:
 
-        virtual void OnDisconnect( COMCORE::CTCPClientSocket& socket );
+    CHTTPClient( void );                
+    
+    virtual ~CHTTPClient();
+    
+    bool Post( const CORE::CString& host                ,
+               UInt16 port                              ,
+               const CORE::CString& path                , 
+               const CORE::CValueList* valuelist = NULL );
+               
+    bool Post( const CORE::CString& urlstring           ,
+               const CORE::CValueList* valuelist = NULL );                   
+               
+    bool Get( const CORE::CString& host                ,
+              UInt16 port                              ,
+              const CORE::CString& path                ,
+              const UInt32 byteoffset = 0              ,
+              const CORE::CValueList* valuelist = NULL );
+
+    bool Get( const CORE::CString& urlstring           ,
+              const UInt32 byteoffset = 0              ,
+              const CORE::CValueList* valuelist = NULL );
+              
+    void Close( void );                  
+              
+    bool IsConnected( void ) const;
+    
+    UInt32 GetBytesRecieved( void ) const;
         
-        virtual void OnWrite( COMCORE::CTCPClientSocket &socket ,
-                              const void* data                  ,
-                              UInt32 length                     );        	
+    UInt32 GetConnectingEventID( void ) const;
+    UInt32 GetConnectedEventID( void ) const;
+    UInt32 GetDisconnectedEventID( void ) const;
+    UInt32 GetConnectionErrorEventID( void ) const;        
+    UInt32 GetHTTPErrorEventID( void ) const;
+    UInt32 GetHTTPRedirectEventID( void ) const;
+    UInt32 GetHTTPContentEventID( void ) const;                
+    UInt32 GetHTTPDataRecievedEventID( void ) const;
+    UInt32 GetHTTPDataSendEventID( void ) const;        
+    UInt32 GetHTTPTransferFinishedEventID( void ) const;
+    	
+	static void RegisterEvents( void );
 	
-        private:
-        
-        bool ParseURL( const CORE::CString& urlstring ,
-                       CORE::CString& host            ,
-                       UInt16& port                   ,
-                       CORE::CString& path            );
-        
-        CHTTPClient( const CHTTPClient& src );
-        
-        CHTTPClient& operator=( const CHTTPClient& src );
-        
-        private:
-        
-        COMCORE::CTCPClientSocket m_socket;
-        CHTTPClientInterface* m_iface;
-        bool m_downloading;
-        UInt32 m_recieved;
-        UInt32 m_filesize;
+	private:
+	
+    /**
+     *      Event handler that is called when we recieve data from the
+     *      server. Initial processing will be done by this server.
+     */
+    virtual void OnRead( COMCORE::CTCPClientSocket &socket ,
+                         const char *data              ,
+                         UInt32 length                 ,
+                         UInt32 &keepbytes             );
+
+    virtual void OnConnecting( COMCORE::CTCPClientSocket& socket );
+
+    virtual void OnConnected( COMCORE::CTCPClientSocket& socket );
+
+    virtual void OnDisconnect( COMCORE::CTCPClientSocket& socket );
+    
+    virtual void OnWrite( COMCORE::CTCPClientSocket &socket ,
+                          const void* data                  ,
+                          UInt32 length                     );
+
+    private:
+    
+    bool ParseURL( const CORE::CString& urlstring ,
+                   CORE::CString& host            ,
+                   UInt16& port                   ,
+                   CORE::CString& path            );
+    
+    CHTTPClient( const CHTTPClient& src );
+    CHTTPClient& operator=( const CHTTPClient& src );
+    
+    static void RegisterEventsImp( CHTTPClient* obj );
+    
+    private:
+    
+    COMCORE::CTCPClientSocket m_socket;
+    bool m_downloading;
+    UInt32 m_recieved;
+    UInt32 m_filesize;
+    UInt32 m_connectingEventID;
+    UInt32 m_connectedEventID;
+    UInt32 m_disconnectedEventID;
+    UInt32 m_connectionErrorEventID;        
+    UInt32 m_HTTPErrorEventID;
+    UInt32 m_HTTPRedirectEventID;
+    UInt32 m_HTTPContentEventID;
+    UInt32 m_HTTPDataRecievedEventID;
+    UInt32 m_HTTPDataSendEventID;
+    UInt32 m_HTTPTransferFinishedEventID;
 };
 
 /*-------------------------------------------------------------------------//
@@ -225,7 +282,7 @@ GUCEF_NAMESPACE_END
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* CHTTPCLIENT_H ? */
+#endif /* GUCEF_COM_CHTTPCLIENT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -233,40 +290,43 @@ GUCEF_NAMESPACE_END
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 07-10-2006 :
+        - Dinand: Converted class to a notification based event handling system
+          instead of the customized event handler interface classes.
 - 18-09-2005 :
-        - Completed switch to a Post/Get based system
+        - Dinand: Completed switch to a Post/Get based system
 - 09-08-2005 :
-        - Class renamed to CHTTPClient
-        - Interface and code modified, only loosly based on the previous version
-          called CHTTPDownload.
+        - Dinand: Class renamed to CHTTPClient
+        - Dinand: Interface and code modified, only loosly based on the previous
+          version called CHTTPDownload.
 - 31-05-2005 :
-        - Commenced integration into new GUCEF codebase
+        - Dinand: Commenced integration into new GUCEF codebase
 - 19-04-2004 :
-        - If a file is not found (404) error there was no way to detect it.
+        - Dinand: If a file is not found (404) error there was no way to detect it.
           Thus i changed the OnError() event handler to include an error code.
           The error code given is one of the new enum values.
-        - Got rid of the use of atoi() because it's not always available.
-        - Added external include guards.
-        - Added HTTP_Code() member function.
+        - Dinand: Got rid of the use of atoi() because it's not always available.
+        - Dinand: Added external include guards.
+        - Dinand: Added HTTP_Code() member function.
 - 19-12-2003 :
-        - Changed handling of OnDisconnect event for the socket.
+        - Dinand: Changed handling of OnDisconnect event for the socket.
           This event generated by the socket will now always cause the
           OnDisconnect to be called of the interface. This may or may not be
           preceded with an OnFinish event.
-        - Fixed a bug in errorcode debug output.
-        - Replaced printf() debugging output with the tsprintf() version.
+        - Dinand: Fixed a bug in errorcode debug output.
+        - Dinand: Replaced printf() debugging output with the tsprintf() version.
 - 05-11-2003 :
-        - Created overloaded versions of the Download() member function.
+        - Dinand: Created overloaded versions of the Download() member function.
           In order to accomplish this some fuctions call other overloaded
           versions. Only accepting a complete URL is a bit of a drag if all you
           want to change is the file to download in an entire batch of downloads
-        - Made several inlined get functions const
-        - Removed some unneeded return values.
-        - Removed several data members which I replaced with a local variable
+        - Dinand: Made several inlined get functions const
+        - Dinand: Removed some unneeded return values.
+        - Dinand: Removed several data members which I replaced with a local variable
           in the relevant member functions.
 - 02-11-2003 :
-        - Recieved initial version of this class from Logan Benjamin. Many
+        - Dinand: Recieved initial version of this class from Logan Benjamin. Many
           thanks to him for contributing this class to the DVNETCOM codebase.
-        - Modified the file layout to conform with my latest standard.
+        - Dinand: Modified the file layout to conform with my latest standard.
 
 ---------------------------------------------------------------------------*/

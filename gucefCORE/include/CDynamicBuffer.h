@@ -66,6 +66,10 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
          */
         CDynamicBuffer( bool autoenlarge = true );
         
+        CDynamicBuffer( const char* externalBuffer ,
+                        const UInt32 bufferSize    ,
+                        bool autoenlarge = true    );
+        
         /**
          *      Initializes the buffer to the given size
          */
@@ -157,7 +161,29 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
 
         void SetAutoEnlarge( bool autoenlarge );
         
-        bool GetAutoEnlarge( void ) const;       
+        bool GetAutoEnlarge( void ) const;
+        
+        /**
+         *  Special operation that allows you to link to data outside of the dynamic buffer
+         *  Mainly used for optimization purposes & API compatibility reasons.
+         *
+         *  Automaticly calls Clear( false ) for safety reasons before performing 
+         *  the link operation.
+         *
+         *  Note that if a dynamic buffer is in a linked state it's data cannot be modified
+         *  directly. If you attempt to perform a mutation on the buffer the linked data will
+         *  be copied into a private buffer which can then be modified.
+         *  The same is true when you copy/assign the CDynamicBuffer, it will cause the linked 
+         *  data of the buffer to be copied and not linked.
+         */
+        void LinkTo( const void* externalBuffer ,
+                     UInt32 bufferSize          );
+                     
+        /**
+         *  Returns the buffer linkage state
+         *  See LinkTo() for more info
+         */
+        bool IsLinked( void ) const;
 
         /**
          *      Copys size number of bytes from src to the buffer at the offset
@@ -199,6 +225,17 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
         
         private:
         
+        /**
+         *  Called when a mutation operation is about to be performed
+         *  on the buffer. If the buffer is in a linked state the
+         *  external buffer will first be copied, causing us to unlink, 
+         *  before proceding with the mutation.
+         */
+        void SecureLinkBeforeMutation( void );
+
+        private:
+        
+        bool m_linked;     /**< is the buffer only linked to data owned by someone else ? */
         bool _autoenlarge; /**< automaticly enlarge buffer ? */
         char* _buffer;     /**< our byte buffer */
         UInt32 _bsize;     /**< current size of the buffer */
@@ -224,6 +261,8 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 06-10-2006 :
+        - Added LinkTo()
 - 13-03-2005 :
         - Updated to match new coding style
         - Added SetAutoEnlarge() and GetAutoEnlarge()

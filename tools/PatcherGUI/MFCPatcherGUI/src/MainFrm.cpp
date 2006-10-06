@@ -40,23 +40,51 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// create a view to occupy the client area of the frame
 	if (!m_wndView.Create(NULL, NULL, AFX_WS_DEFAULT_VIEW,
-		CRect(0, 0, 0, 0), this, AFX_IDW_PANE_FIRST, NULL))
+		CRect(0, 0, 220, 160), this, AFX_IDW_PANE_FIRST, NULL))
 	{
 		TRACE0("Failed to create view window\n");
 		return -1;
 	}
+	
+	//ModifyStyle(WS_SYSMENU, NULL);
+	
+    // Remove positions of menu
+    CMenu* pTopMenu = GetSystemMenu(FALSE);
+    if( pTopMenu != NULL)
+    {   
+       // pTopMenu->DestroyMenu();
+        pTopMenu->RemoveMenu(SC_SIZE, MF_BYCOMMAND);      // no resize
+       // pTopMenu->RemoveMenu(SC_MOVE, MF_BYCOMMAND);      //non-Moveable window
+        pTopMenu->RemoveMenu(SC_MAXIMIZE, MF_BYCOMMAND);  //no Maximize
+    }	
 	return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void CMainFrame::OnSize(UINT nType, int cx, int cy)
+{TRACE;
+
+   // MoveWindow( 0, 0, 220, 160 );
+  //  m_listBox->MoveWindow(0, 0, cx, 100);
 }
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
+	cs.cx = 220;
+	cs.cy = 160;
+	
 	if( !CFrameWnd::PreCreateWindow(cs) )
 		return FALSE;
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 
-	cs.style = WS_OVERLAPPED | WS_CAPTION | FWS_ADDTOTITLE
-		 | WS_MINIMIZEBOX;
+
+    // Create a window without max button and sizable border
+    cs.style &= ~(WS_MAXIMIZEBOX|WS_THICKFRAME);
+
+	//cs.style = WS_OVERLAPPED | WS_CAPTION 
+	//	 | WS_MINIMIZEBOX;
 
 	cs.dwExStyle &= ~WS_EX_CLIENTEDGE;
 	cs.lpszClass = AfxRegisterWndClass(0);

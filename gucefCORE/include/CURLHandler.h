@@ -34,10 +34,10 @@
 #define GUCEF_CORE_CICLONEABLE_H
 #endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
-#ifndef GUCEF_CORE_CNOTIFIER_H
-#include "CNotifier.h"
-#define GUCEF_CORE_CNOTIFIER_H
-#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CIURLEVENTS_H
 #include "CIURLEvents.h"
@@ -71,8 +71,8 @@ class CIURLDataHandler;
  *      The decending handler implementation is expected to emit event
  *      notifications as declared in CIURLEvents
  */
-class GUCEFCORE_EXPORT_CPP CURLHandler : public CNotifier   ,
-                                         public CICloneable ,
+class GUCEFCORE_EXPORT_CPP CURLHandler : public CObservingNotifier   ,
+                                         public CICloneable          ,
                                          public CIURLEvents 
 {
         public:

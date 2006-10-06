@@ -354,11 +354,6 @@
 #define GUCEF_CORE_CTREGISTRY_H
 #endif /* GUCEF_CORE_CTREGISTRY_H ? */
 
-#ifndef GUCEF_CORE_CTREGISTRY_H
-#include "CTRegistry.h"
-#define GUCEF_CORE_CTREGISTRY_H
-#endif /* GUCEF_CORE_CTREGISTRY_H ? */
-
 #ifndef GUCEF_CORE_CURL_H
 #include "CURL.h"
 #define GUCEF_CORE_CURL_H
@@ -421,6 +416,16 @@
 #define GUCEF_CORE_CIPLUGIN_H
 #endif /* GUCEF_CORE_CIPLUGIN_H ? */
 
+#ifndef GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
+#include "CTLinkedCloneableObj.h"
+#define GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H ? */
+
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
+#include "CTCloneableObj.h"
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
 
@@ -432,12 +437,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 06-10-2006 :
+       - Dinand: Added CTLinkedCloneableObj
+       - Dinand: re-Added CTCloneableObj
 - 30-09-2006 :
        - Dinand: re-Added CGenericPluginManager
        - Dinand: re-Added CIPlugin
        - Dinand: Removed CEventPump
        - Dinand: Removed CEventPumpClient
        - Dinand: Removed CStringStorage
+       - Dinand: Removed CTRegistryMT
 - 21-09-2005 :
        - Dinand: Added CValueList
 - 15-05-2005 :

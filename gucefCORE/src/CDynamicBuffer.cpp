@@ -53,7 +53,8 @@ CDynamicBuffer::CDynamicBuffer( bool autoenlarge )
         : _buffer( NULL )             , 
           _bsize( 0 )                 ,
           _autoenlarge( autoenlarge ) ,
-          m_dataSize( 0 )
+          m_dataSize( 0 )             ,
+          m_linked( false )
 {TRACE;
 
 }
@@ -65,10 +66,12 @@ CDynamicBuffer::CDynamicBuffer( UInt32 initialsize ,
         : _autoenlarge( autoenlarge ) ,
           _buffer( NULL )             ,
           _bsize( 0 )                 ,
-          m_dataSize( 0 )
+          m_dataSize( 0 )             ,
+          m_linked( false )
 {TRACE;
-        _buffer = (char*) malloc( initialsize );
-        _bsize = initialsize;               
+
+    _buffer = (char*) malloc( initialsize );
+    _bsize = initialsize;               
 }
 
 /*-------------------------------------------------------------------------*/
@@ -78,15 +81,33 @@ CDynamicBuffer::CDynamicBuffer( UInt32 initialsize ,
  *      of the given src.
  */
 CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src )
-        : _buffer( NULL ) ,
-          _bsize( 0 )     ,
-          m_dataSize( 0 ) ,
-          _autoenlarge( src._autoenlarge )
+        : _buffer( NULL )                  ,
+          _bsize( 0 )                      ,
+          m_dataSize( 0 )                  ,
+          _autoenlarge( src._autoenlarge ) ,
+          m_linked( false )
 {TRACE;
 
-        _buffer = (char*) malloc( src._bsize );
-        _bsize = src._bsize;
-        m_dataSize = src.m_dataSize;
+    _buffer = (char*) malloc( src._bsize );
+    _bsize = src._bsize;
+    m_dataSize = src.m_dataSize;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDynamicBuffer::CDynamicBuffer( const char* externalBuffer    ,
+                                const UInt32 bufferSize       ,
+                                bool autoenlarge /* = true */ )
+        : _buffer( NULL )      ,
+          _bsize( 0 )          ,
+          m_dataSize( 0 )      ,
+          _autoenlarge( true ) ,
+          m_linked( false )
+{TRACE;
+
+    CopyFrom( bufferSize     ,
+              externalBuffer );
+    _autoenlarge = autoenlarge;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -96,10 +117,8 @@ CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src )
  */
 CDynamicBuffer::~CDynamicBuffer()
 {TRACE;
-
-        free( _buffer );
-        _bsize = 0;
-        m_dataSize = 0;
+        
+        Clear( false );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -110,11 +129,14 @@ CDynamicBuffer::~CDynamicBuffer()
 UInt8&
 CDynamicBuffer::GetUByte( UInt32 index )
 {TRACE;
-        if ( index+1 > m_dataSize )
-        {
-                m_dataSize = index+1;
-        }
-        return *((UInt8*)_buffer+index);
+
+    SecureLinkBeforeMutation();
+    
+    if ( index+1 > m_dataSize )
+    {
+            m_dataSize = index+1;
+    }
+    return *((UInt8*)_buffer+index);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -126,11 +148,14 @@ void
 CDynamicBuffer::SetUByte( UInt32 index ,
                           UInt8 data   )
 {TRACE;
-        if ( index+1 > m_dataSize )
-        {
-                m_dataSize = index+1;
-        }
-        _buffer[ index ] = (char)data;
+        
+    SecureLinkBeforeMutation();
+    
+    if ( index+1 > m_dataSize )
+    {
+        m_dataSize = index+1;
+    }
+    _buffer[ index ] = (char)data;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -141,11 +166,14 @@ CDynamicBuffer::SetUByte( UInt32 index ,
 char&
 CDynamicBuffer::GetChar( UInt32 index )
 {TRACE;
-        if ( index+1 > m_dataSize )
-        {
-                m_dataSize = index+1;
-        }
-        return _buffer[ index ];
+
+    SecureLinkBeforeMutation();
+    
+    if ( index+1 > m_dataSize )
+    {
+        m_dataSize = index+1;
+    }
+    return _buffer[ index ];
 }
 
 /*-------------------------------------------------------------------------*/
@@ -157,11 +185,14 @@ void
 CDynamicBuffer::SetChar( UInt32 index ,
                          char data    )
 {TRACE;
-        if ( index+1 > m_dataSize )
-        {
-                m_dataSize = index+1;
-        }
-        _buffer[ index ] = data;
+
+    SecureLinkBeforeMutation();
+    
+    if ( index+1 > m_dataSize )
+    {
+        m_dataSize = index+1;
+    }
+    _buffer[ index ] = data;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -172,6 +203,8 @@ CDynamicBuffer::SetChar( UInt32 index ,
 char&
 CDynamicBuffer::operator[]( UInt32 index )
 {TRACE;
+        SecureLinkBeforeMutation();
+        
         if ( index+1 > m_dataSize )
         {
                 m_dataSize = index+1;
@@ -206,11 +239,12 @@ CDynamicBuffer::operator==( const CDynamicBuffer& other ) const
 bool
 CDynamicBuffer::operator!=( const CDynamicBuffer& other ) const
 {TRACE;
-        if ( m_dataSize == other.m_dataSize )
-        {
-                return memcmp( _buffer, other._buffer, m_dataSize ) != 0;
-        }       
-        return true;
+
+    if ( m_dataSize == other.m_dataSize )
+    {
+        return memcmp( _buffer, other._buffer, m_dataSize ) != 0;
+    }       
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -223,16 +257,17 @@ CDynamicBuffer&
 CDynamicBuffer::operator=( const CDynamicBuffer &src )
 {TRACE;
 
-        if ( this != &src )
-        {
-                free( _buffer );
-                _buffer = NULL;
-                _buffer = (char*) realloc( _buffer, src._bsize );
-                memcpy( _buffer, src._buffer, src._bsize );
-                _bsize = src._bsize;
-                m_dataSize = src.m_dataSize;                
-        }
-        return *this;                        
+    if ( this != &src )
+    {
+        Clear( true );
+        
+        _buffer = (char*) realloc( _buffer, src._bsize );
+        memcpy( _buffer, src._buffer, src._bsize );
+        _bsize = src._bsize;
+        m_dataSize = src.m_dataSize;
+        m_linked = false;                 
+    }
+    return *this;                        
 }
 
 /*-------------------------------------------------------------------------*/
@@ -244,26 +279,29 @@ void
 CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
                                const bool allowreduction )
 {TRACE;
-        if ( _bsize == newSize ) 
-        {
-                return;
-        }
-        if ( newSize < _bsize )
-        {
-                if ( !allowreduction )
-                {
-                        return;        
-                }
-                else
-                {
-                        if ( m_dataSize > newSize )
-                        {
-                                m_dataSize = newSize;
-                        }
-                }
-        }
-        _buffer = (char*) realloc( _buffer, newSize );
-        _bsize = newSize;
+
+    SecureLinkBeforeMutation();
+    
+    if ( _bsize == newSize ) 
+    {
+            return;
+    }
+    if ( newSize < _bsize )
+    {
+            if ( !allowreduction )
+            {
+                    return;        
+            }
+            else
+            {
+                    if ( m_dataSize > newSize )
+                    {
+                            m_dataSize = newSize;
+                    }
+            }
+    }
+    _buffer = (char*) realloc( _buffer, newSize );
+    _bsize = newSize;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -301,25 +339,28 @@ CDynamicBuffer::CopyFrom( UInt32 offset   ,
                           UInt32 size     ,
                           const void* src )
 {TRACE;
-        if ( _bsize < offset+size )         
-        {
-                if ( _autoenlarge )
-                {
-                        SetDataSize( offset+size );
-                }
-                else
-                {       
-                        Int32 max = (Int32)_bsize - (Int32)offset - (Int32)size;
-                        if ( max < 0 ) 
-                        {
-                                return;
-                        }                                
-                        size = max;
-                }                
-        }                                                
-        
-        m_dataSize = size;
-        memcpy( _buffer+offset, src, size );
+
+    SecureLinkBeforeMutation();
+
+    if ( _bsize < offset+size )         
+    {
+            if ( _autoenlarge )
+            {
+                    SetDataSize( offset+size );
+            }
+            else
+            {       
+                    Int32 max = (Int32)_bsize - (Int32)offset - (Int32)size;
+                    if ( max < 0 ) 
+                    {
+                            return;
+                    }                                
+                    size = max;
+            }                
+    }                                                
+    
+    m_dataSize = size;
+    memcpy( _buffer+offset, src, size );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -331,25 +372,28 @@ void
 CDynamicBuffer::CopyFrom( UInt32 size     ,
                           const void* src )
 {TRACE;
-        if ( _bsize < size )         
-        {
-                if ( _autoenlarge )
-                {
-                        SetDataSize( size );
-                }
-                else
-                {       
-                        Int32 max = (Int32)_bsize - (Int32)size;
-                        if ( max < 0 ) 
-                        {
-                                return;
-                        }                                
-                        size = max;
-                }                
-        }                                                
-        
-        m_dataSize = size;
-        memcpy( _buffer, src, size );        
+    
+    SecureLinkBeforeMutation();
+    
+    if ( _bsize < size )         
+    {
+            if ( _autoenlarge )
+            {
+                    SetDataSize( size );
+            }
+            else
+            {       
+                    Int32 max = (Int32)_bsize - (Int32)size;
+                    if ( max < 0 ) 
+                    {
+                            return;
+                    }                                
+                    size = max;
+            }                
+    }                                                
+    
+    m_dataSize = size;
+    memcpy( _buffer, src, size );        
 }                          
 
 /*-------------------------------------------------------------------------*/
@@ -363,16 +407,17 @@ CDynamicBuffer::CopyTo( UInt32 offset ,
                         UInt32 size   ,
                         void *dest    ) const
 {TRACE;
-        if ( offset+size > m_dataSize )
-        {
-                Int32 max = (Int32)m_dataSize - (Int32)offset - (Int32)size;
-                if ( max < 0 ) 
-                {
-                        return;
-                }                        
-                size = max;           
-        }
-        memcpy( dest, _buffer+offset, size );
+
+    if ( offset+size > m_dataSize )
+    {
+            Int32 max = (Int32)m_dataSize - (Int32)offset - (Int32)size;
+            if ( max < 0 ) 
+            {
+                    return;
+            }                        
+            size = max;           
+    }
+    memcpy( dest, _buffer+offset, size );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -383,7 +428,8 @@ CDynamicBuffer::CopyTo( UInt32 offset ,
 void 
 CDynamicBuffer::CopyTo( void *dest ) const
 {TRACE;
-        memcpy( dest, _buffer, m_dataSize );
+
+    memcpy( dest, _buffer, m_dataSize );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -391,7 +437,8 @@ CDynamicBuffer::CopyTo( void *dest ) const
 void 
 CDynamicBuffer::CopyTo( CDynamicBuffer& dest ) const
 {TRACE;
-        dest.CopyFrom( m_dataSize, _buffer );        
+
+    dest.CopyFrom( m_dataSize, _buffer );        
 }
 
 /*-------------------------------------------------------------------------*/
@@ -416,9 +463,12 @@ void
 CDynamicBuffer::Append( void* data  ,
                         UInt32 size )
 {TRACE;
-        SetDataSize( _bsize + size );
-        memcpy( _buffer+_bsize, data, size );
-        m_dataSize = _bsize;
+
+    SecureLinkBeforeMutation();
+
+    SetDataSize( _bsize + size );
+    memcpy( _buffer+_bsize, data, size );
+    m_dataSize = _bsize;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -426,13 +476,28 @@ CDynamicBuffer::Append( void* data  ,
 void 
 CDynamicBuffer::Clear( const bool logicalClearOnly /* = true */ )
 {TRACE;
+
+    if ( m_linked )
+    {
+        // Nothing to deallocate, we don't have ownership of the data
+        _buffer = NULL;
+        _bsize = 0;
+        m_dataSize = 0;
+    }
+    else
+    {
+        
         if ( !logicalClearOnly )
         {
-                free( _buffer );
-                _buffer = NULL;
-                _bsize = 0;
-        }
+            // Cleanup our toys
+            free( _buffer );
+            _buffer = NULL;
+            _bsize = 0;
+        } 
+        // else: reset carat only
+        
         m_dataSize = 0;        
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -440,6 +505,8 @@ CDynamicBuffer::Clear( const bool logicalClearOnly /* = true */ )
 void
 CDynamicBuffer::SetDataSize( const UInt32 newSize )
 {TRACE;
+        SecureLinkBeforeMutation();
+        
         SetBufferSize( m_dataSize, false );
         m_dataSize = newSize;        
 }
@@ -450,6 +517,73 @@ UInt32
 CDynamicBuffer::GetDataSize( void ) const
 {TRACE;
         return m_dataSize;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDynamicBuffer::LinkTo( const void* externalBuffer ,
+                        UInt32 bufferSize          )
+{TRACE;
+
+    // Always clear first for safety,.. we don't want memory leaks or invalid pointers
+    Clear( false );
+    
+    /*  Link to the external buffer
+     *
+     *  We cast away constness but constness is preserved/gaurded by the
+     *  SecureLinkBeforeMutation() mechanism so it's not as bad as it looks :)
+     */
+    _bsize = bufferSize;
+    m_dataSize = bufferSize;
+    _buffer = static_cast< char*>( const_cast< void* >( externalBuffer ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDynamicBuffer::IsLinked( void ) const
+{TRACE;
+    
+    return m_linked;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDynamicBuffer::SecureLinkBeforeMutation( void )
+{TRACE;
+
+    if ( m_linked )
+    {
+        /*  Buffer mutation requested but the buffer is linked to an
+         *  external recource for which this object does not have ownership.
+         *  We will copy the data of the extenal buffer and make it private.
+         *  The makes the mutation a safe operation.
+         *
+         *  First we copy our link locally
+         */
+        char* externalBuffer = _buffer;
+        UInt32 extBufferSize = _bsize;
+        UInt32 dataSize = m_dataSize;
+        const bool autoEnlarge = _autoenlarge;
+        
+        /*
+         *  Now we unlink
+         */
+        Clear( false );
+        m_linked = false; 
+        
+        /*
+         *  And then we simply copy from the external buffer
+         *  After the copy it is safe to mutate the buffer because we have ownership
+         */
+        _autoenlarge = true; 
+        CopyFrom( extBufferSize  ,
+                  externalBuffer );
+        _autoenlarge = autoEnlarge;
+        m_dataSize = dataSize;
+    }
 }
 
 /*-------------------------------------------------------------------------//

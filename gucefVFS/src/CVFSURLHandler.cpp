@@ -95,7 +95,7 @@ void
 CVFSURLHandler::Register( void )
 {TRACE;
         CORE::CURLHandlerRegistry* registry = CORE::CURLHandlerRegistry::Instance();
-        if ( registry->IsRegistered( "vfs" ) )
+        if ( !registry->IsRegistered( "vfs" ) )
         {
                 registry->Register( "vfs", new CVFSURLHandler() );
         }

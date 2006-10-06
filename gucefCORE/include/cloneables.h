@@ -24,19 +24,30 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_ETYPES_H
 #include "gucefCORE_ETypes.h"      /* gucefCORE basic types */
+#define GUCEF_CORE_ETYPES_H
+#endif /* GUCEF_CORE_ETYPES_H ? */
+
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
 #include "CTCloneableObj.h"        /* templated implementation of a cloneable object */
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
 
-/*-------------------------------------------------------------------------*/
+#ifndef GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
+#include "CTLinkedCloneableObj.h"        /* templated implementation of a linked cloneable object */
+#define GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H ? */
 
-#ifndef GUCEF_CORE_CLONEABLES_CPP
-    #pragma warning( push )
-#endif
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
 
-#pragma warning( disable: 4146 ) // unary minus operator applied to unsigned type, result still unsigned
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 ) // return type for operator -> is 'const *' (ie; not a UDT or reference to a UDT).
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,6 +64,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+typedef CTCloneableObj< CDynamicBuffer > TCloneableBuffer;
+typedef CTCloneableObj< CString >        TCloneableString;
 typedef CTCloneableObj< bool >           TCloneableBool;
 typedef CTCloneableObj< double >         TCloneableDouble;
 typedef CTCloneableObj< float >          TCloneableFloat;
@@ -63,6 +76,10 @@ typedef CTCloneableObj< Int16 >          TCloneableInt16;
 typedef CTCloneableObj< UInt8 >          TCloneableUInt8;
 typedef CTCloneableObj< Int8 >           TCloneableInt8;
 typedef TCloneableInt8                   TCloneableChar;
+typedef TCloneableInt8                   TCloneableByte;
+typedef TCloneableUInt8                  TCloneableUByte;
+
+typedef CTLinkedCloneableObj< CDynamicBuffer > TLinkedCloneableBuffer;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,12 +89,6 @@ typedef TCloneableInt8                   TCloneableChar;
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CLONEABLES_H
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

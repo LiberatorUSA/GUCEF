@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -15,23 +15,24 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
+#ifndef GUCEF_CORE_CHTTPURLHANDLER_H
+#define GUCEF_CORE_CHTTPURLHANDLER_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CURLHANDLER_H
+#include "CURLHandler.h"               /* base class for URL handlers */
+#define GUCEF_CORE_CURLHANDLER_H
+#endif /* GUCEF_CORE_CURLHANDLER_H ? */
+
 #ifndef GUCEF_COM_CHTTPCLIENT_H
 #include "CHTTPClient.h"
 #define GUCEF_COM_CHTTPCLIENT_H
 #endif /* GUCEF_COM_CHTTPCLIENT_H ? */
-
-#ifndef GUCEF_CORE_CHTTPURLHANDLER_H
-#include "CHTTPURLHandler.h"
-#define GUCEF_CORE_CHTTPURLHANDLER_H
-#endif /* GUCEF_CORE_CHTTPURLHANDLER_H ? */
-
-#include "CGUCEFCOMModule.h"  /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -39,8 +40,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_NAMESPACE_BEGIN
-COM_NAMESPACE_BEGIN
+namespace GUCEF {
+namespace COM {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,55 +49,53 @@ COM_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUCEFCOMModule::CGUCEFCOMModule( void )
-{TRACE;
-        /* dummy, should never be used */
-}
+/**
+ *      URL handler for "http://" URL's
+ */
+class CHTTPURLHandler : public CORE::CURLHandler
+{
+    public:
+    
+    /**
+     *      Doesnt do anything special atm.
+     */        
+    CHTTPURLHandler( void );
+    
+    /**
+     *      Doesnt do anything special atm.
+     */        
+    CHTTPURLHandler( const CHTTPURLHandler& src );
+    
+    /**
+     *      Doesnt do anything special atm.
+     */
+    virtual ~CHTTPURLHandler();
+    
+    /**
+     *      Doesnt do anything special atm.
+     */        
+    CHTTPURLHandler& operator=( const CHTTPURLHandler& src );
 
-/*-------------------------------------------------------------------------*/
-
-CGUCEFCOMModule::CGUCEFCOMModule( const CGUCEFCOMModule& src )
-{TRACE;
-        /* dummy, should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFCOMModule::~CGUCEFCOMModule()
-{TRACE;
-        /* dummy, should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFCOMModule&
-CGUCEFCOMModule::operator=( const CGUCEFCOMModule& src )
-{TRACE;
-        /* dummy, should never be used */
-        return *this;
-}
-        
-/*-------------------------------------------------------------------------*/        
-
-bool 
-CGUCEFCOMModule::Load( void )
-{TRACE;
-        /* simply instantiate our com manager when the module is loaded */
-        //CCom::Instance();
-        
-        CHTTPClient::RegisterEvents();        
-        CHTTPURLHandler::Register();
-        return true;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CGUCEFCOMModule::Unload( void )
-{TRACE;
-        //CCom::Deinstance();
-        return true;
-}
+    virtual bool Activate( CORE::CURL& url );
+    
+    virtual void Deactivate( CORE::CURL& url );
+                     
+    virtual bool IsActive( const CORE::CURL& url ) const;
+    
+    virtual CORE::CICloneable* Clone( void ) const;
+    
+    static void Register( void );
+    
+    protected:
+    
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::UInt32 eventid          ,
+                           CORE::CICloneable* eventdata = NULL );        
+    
+    private:
+    
+    CHTTPClient m_httpClient;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -104,7 +103,20 @@ CGUCEFCOMModule::Unload( void )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-COM_NAMESPACE_END
-GUCEF_NAMESPACE_END
+}; /* namespace COM */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_CORE_CHTTPURLHANDLER_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 06-10-2006 :
+        - Initial implementation
+          
+---------------------------------------------------------------------------*/
