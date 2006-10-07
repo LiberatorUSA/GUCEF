@@ -29,15 +29,10 @@
 #include "CICloneable.h"
 #include "gucefCORE_ETypes.h"
 
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_COBSERVER_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4018 ) // signed/unsigned mismatch
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
+#ifndef GUCEF_CORE_CEVENT_H
+#include "CEvent.h"
+#define GUCEF_CORE_CEVENT_H
+#endif /* GUCEF_CORE_CEVENT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -108,7 +103,7 @@ class GUCEFCORE_EXPORT_CPP CObserver
      *  @param eventdata optional notifier defined userdata
      */
     virtual void OnNotify( CNotifier* notifier           ,
-                           const UInt32 eventid          ,
+                           const CEvent& eventid         ,
                            CICloneable* eventdata = NULL ) = 0;
 
     virtual void LockData( void );
@@ -127,7 +122,7 @@ class GUCEFCORE_EXPORT_CPP CObserver
      *  Simply updates the observer administration, nothing more
      */    
     void UnlinkFrom( CNotifier* notifier             ,
-                      const bool forAllEvents = false );    
+                     const bool forAllEvents = false );    
                            
     private:
     struct SNotifierRef
@@ -139,11 +134,6 @@ class GUCEFCORE_EXPORT_CPP CObserver
     typedef std::vector<TNotifierRef> TNotifierList;
 
     TNotifierList m_notifiers;
-
-    UInt32 m_notifierSubscribeEvent;
-    UInt32 m_notifierUnsubscribeEvent;
-    UInt32 m_notifierModifyEvent;
-    UInt32 m_notifierDestructionEvent;
 };
 
 /*-------------------------------------------------------------------------//
@@ -154,12 +144,6 @@ class GUCEFCORE_EXPORT_CPP CObserver
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_COBSERVER_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

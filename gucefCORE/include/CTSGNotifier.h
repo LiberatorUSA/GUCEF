@@ -27,18 +27,6 @@
 #include "CTSGObserver.h"       /* observer implementation used internally by the CTSGNotifier */
 #include "CNotifier.h"          /* notification base class */
 
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTSGNOTIFIER_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4018 ) // signed/unsigned mismatch
-#pragma warning( disable: 4146 ) // unary minus operator applied to unsigned type, result still unsigned
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 ) // return type for operator -> is 'const *' (ie; not a UDT or reference to a UDT).
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -97,7 +85,7 @@ class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
      *  subscribes to the given custom event.
      */    
     void SubscribeTo( CNotifier* threadedNotifier ,
-                      const UInt32 eventid        );
+                      const CEvent& eventid       );
                       
     /**     
      *  Cancels the subscription at the given threadedNotifier
@@ -107,7 +95,7 @@ class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
      *  cannot be cancelled, attempts to do so will be ignored.
      */    
     void UnsubscribeFrom( CNotifier* threadedNotifier ,
-                          const UInt32 eventid        );                          
+                          const CEvent& eventid       );                          
     
     protected:
     friend class CTSGObserver;
@@ -127,7 +115,7 @@ class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
      *  @param eventdata optional notifier defined userdata
      */
     virtual void OnPumpedNotify( CNotifier* notifier           ,
-                                 const UInt32 eventid          ,
+                                 const CEvent& eventid         ,
                                  CICloneable* eventdata = NULL );    
     
     private:
@@ -143,12 +131,6 @@ class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTSGNOTIFIER_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

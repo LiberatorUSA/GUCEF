@@ -93,7 +93,7 @@ class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
         
         bool operator!=( const CURL& other ) const;
         
-        void SetURL( const CString& newurl );
+        bool SetURL( const CString& newurl );
         
         CString GetURL( void ) const;
         
@@ -112,10 +112,16 @@ class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
          */
         void Refresh( void );
 
+        CEvent GetURLActivateEventID( void ) const;
+        CEvent GetURLDeactivateEventID( void ) const;
+        CEvent GetURLDataRecievedEventID( void ) const;
+        CEvent GetURLAllDataRecievedEventID( void ) const;
+        CEvent GetURLDataRetrievalErrorEventID( void ) const;
+
         protected:
         
         virtual void OnNotify( CNotifier* notifier           ,
-                               const UInt32 eventid          ,
+                               const CEvent& eventid         ,
                                CICloneable* eventdata = NULL );
 
         private:
@@ -126,6 +132,11 @@ class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
         
         private:        
         
+        CEvent m_URLActivateEvent;
+        CEvent m_URLDeactivateEvent;
+        CEvent m_URLDataRecievedEvent;
+        CEvent m_URLAllDataRecievedEvent;
+        CEvent m_URLDataRetrievalErrorEvent;
         CString m_url;             /**< the URL string */
         CURLHandler* m_handler;    /**< URL handler for the specified URL protocol */
 };

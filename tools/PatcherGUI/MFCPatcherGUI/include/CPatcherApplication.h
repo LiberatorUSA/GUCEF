@@ -45,7 +45,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF::PATCHER::CPatchSetParserEventHandler;
+namespace GUCEF { namespace PATCHER { class CPatchSetParserEventHandler; } }
+namespace GUCEF { namespace VFS { class CVFS; } }
 
 /*-------------------------------------------------------------------------*/
           
@@ -77,7 +78,7 @@ class CPatcherApplication : public GUCEF::CORE::CGUCEFAppSubSystem
      *  @param eventdata optional notifier defined userdata
      */
     virtual void OnNotify( GUCEF::CORE::CNotifier* notifier           ,
-                           const GUCEF::CORE::UInt32 eventid          ,
+                           const GUCEF::CORE::CEvent& eventid         ,
                            GUCEF::CORE::CICloneable* eventdata = NULL );    
 
     private:
@@ -96,7 +97,8 @@ class CPatcherApplication : public GUCEF::CORE::CGUCEFAppSubSystem
     TEventHandler* m_eventHandler;
     GUCEF::PATCHER::CPatchSetParser m_parser;
     TEventHandlerList m_eventHandlers;
-    GUCEF::CORE::UInt32 m_appStartEventID;
+    GUCEF::CORE::CEvent m_appStartEventID;
+    GUCEF::VFS::CVFS* m_vfs;
 };
 
 /*-------------------------------------------------------------------------*/

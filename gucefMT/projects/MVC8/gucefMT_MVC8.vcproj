@@ -208,10 +208,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\gucefMT_CMailBox.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\gucefMT_CMutex.cpp"
 				>
 			</File>
@@ -225,6 +221,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\gucefMT_CSemaphore.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_CTMailBox.cpp"
 				>
 			</File>
 			<File
@@ -270,10 +270,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefMT_CMailBox.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\gucefMT_CMutex.h"
 				>
 			</File>
@@ -291,6 +287,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefMT_CSemaphore.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefMT_CTMailBox.h"
 				>
 			</File>
 			<File

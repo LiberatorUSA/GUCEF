@@ -99,12 +99,13 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
 
         static const std::string AppInitEvent;
         static const std::string AppShutdownEvent;
+
+        public:
         
         struct SAppInitEventData
         {
                 #ifdef GUCEF_MSWIN_BUILD
                 HINSTANCE hinstance;
-                HINSTANCE hprevinstance;
                 LPSTR lpcmdline;
                 int ncmdshow;
                 #endif 
@@ -112,14 +113,14 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
                 int argc;
                 char** argv;                
         };
-        typedef struct SAppInitEventData TAppInitEventData;
-        typedef CTCloneableObj< TAppInitEventData > CAppInitEventData;
+        typedef CTCloneableObj< struct SAppInitEventData > TAppInitEventData;
 
+        public:        
+        
         static CGUCEFApplication* Instance( void );
 
         #ifdef GUCEF_MSWIN_BUILD
         int Main( HINSTANCE hinstance     ,
-                  HINSTANCE hprevinstance ,
                   LPSTR lpcmdline         ,
                   int ncmdshow            ,
                   bool run                );
@@ -237,8 +238,8 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
         
         bool _initialized;
         bool _active;
-        UInt32 _appinitevent;
-        UInt32 _appstopevent;
+        CEvent _appinitevent;
+        CEvent _appstopevent;
         CString _appdir;
         UInt32 m_maxdeltaticksfordelay;
         UInt32 m_delaytime;

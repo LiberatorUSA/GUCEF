@@ -101,6 +101,9 @@ CGUCEFAppWin32MFCDriver::Init( CWnd* pParentWnd )
         {    
             m_initialized = true;
             m_appPtr->SetApplicationDriver( this );
+            
+            // Give the first update pulse
+            OnRequestNewUpdateCycle();
             return true;
         }
         return false;

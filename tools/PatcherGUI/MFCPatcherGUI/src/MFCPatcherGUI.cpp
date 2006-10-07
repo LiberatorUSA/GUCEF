@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+
 #include "MFCPatcherGUI.h"
 #include "MainFrm.h"
 
@@ -9,7 +10,6 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
 
 // CMFCPatcherGUIApp
 

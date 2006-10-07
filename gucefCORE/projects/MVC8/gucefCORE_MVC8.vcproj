@@ -264,6 +264,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CEvent.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CException.cpp"
 				>
 			</File>
@@ -667,6 +671,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CDynamicBuffer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CEvent.h"
 				>
 			</File>
 			<File

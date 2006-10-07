@@ -207,16 +207,16 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CNotifier                  
     
     UInt32 GetBytesRecieved( void ) const;
         
-    UInt32 GetConnectingEventID( void ) const;
-    UInt32 GetConnectedEventID( void ) const;
-    UInt32 GetDisconnectedEventID( void ) const;
-    UInt32 GetConnectionErrorEventID( void ) const;        
-    UInt32 GetHTTPErrorEventID( void ) const;
-    UInt32 GetHTTPRedirectEventID( void ) const;
-    UInt32 GetHTTPContentEventID( void ) const;                
-    UInt32 GetHTTPDataRecievedEventID( void ) const;
-    UInt32 GetHTTPDataSendEventID( void ) const;        
-    UInt32 GetHTTPTransferFinishedEventID( void ) const;
+    CORE::CEvent GetConnectingEventID( void ) const;
+    CORE::CEvent GetConnectedEventID( void ) const;
+    CORE::CEvent GetDisconnectedEventID( void ) const;
+    CORE::CEvent GetConnectionErrorEventID( void ) const;        
+    CORE::CEvent GetHTTPErrorEventID( void ) const;
+    CORE::CEvent GetHTTPRedirectEventID( void ) const;
+    CORE::CEvent GetHTTPContentEventID( void ) const;                
+    CORE::CEvent GetHTTPDataRecievedEventID( void ) const;
+    CORE::CEvent GetHTTPDataSendEventID( void ) const;        
+    CORE::CEvent GetHTTPTransferFinishedEventID( void ) const;
     	
 	static void RegisterEvents( void );
 	
@@ -251,24 +251,22 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CNotifier                  
     CHTTPClient( const CHTTPClient& src );
     CHTTPClient& operator=( const CHTTPClient& src );
     
-    static void RegisterEventsImp( CHTTPClient* obj );
-    
     private:
     
     COMCORE::CTCPClientSocket m_socket;
     bool m_downloading;
     UInt32 m_recieved;
     UInt32 m_filesize;
-    UInt32 m_connectingEventID;
-    UInt32 m_connectedEventID;
-    UInt32 m_disconnectedEventID;
-    UInt32 m_connectionErrorEventID;        
-    UInt32 m_HTTPErrorEventID;
-    UInt32 m_HTTPRedirectEventID;
-    UInt32 m_HTTPContentEventID;
-    UInt32 m_HTTPDataRecievedEventID;
-    UInt32 m_HTTPDataSendEventID;
-    UInt32 m_HTTPTransferFinishedEventID;
+    CORE::CEvent m_connectingEventID;
+    CORE::CEvent m_connectedEventID;
+    CORE::CEvent m_disconnectedEventID;
+    CORE::CEvent m_connectionErrorEventID;        
+    CORE::CEvent m_HTTPErrorEventID;
+    CORE::CEvent m_HTTPRedirectEventID;
+    CORE::CEvent m_HTTPContentEventID;
+    CORE::CEvent m_HTTPDataRecievedEventID;
+    CORE::CEvent m_HTTPDataSendEventID;
+    CORE::CEvent m_HTTPTransferFinishedEventID;
 };
 
 /*-------------------------------------------------------------------------//

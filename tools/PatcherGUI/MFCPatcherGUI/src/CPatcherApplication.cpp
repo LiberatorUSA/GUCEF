@@ -31,6 +31,11 @@
 #define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
 #endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
 
+#include "CPluginControl.h"
+#include "CDStoreCodecRegistry.h"
+#include "dvcppstringutils.h"
+#include "CVFS.h"
+
 #include "CPatcherApplication.h"
 
 /*-------------------------------------------------------------------------//
@@ -56,11 +61,15 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CPatcherApplication, ENoEventHandler );
 /*-------------------------------------------------------------------------*/
 
 CPatcherApplication::CPatcherApplication( void )
-        : m_parser()             ,
-          m_appStartEventID( 0 ) ,
-          m_eventHandler( NULL )
+        : GUCEF::CORE::CGUCEFAppSubSystem( true ) ,
+          m_parser()                              ,
+          m_appStartEventID()                     ,
+          m_eventHandler( NULL )                  ,
+          m_vfs( VFS::CVFS::Instance() )
 {
-    m_appStartEventID = CORE::CNotificationIDRegistry::Instance()->Lookup( CORE::CGUCEFApplication::AppInitEvent );
+    m_appStartEventID = CORE::CNotificationIDRegistry::Instance()->Lookup( CORE::CGUCEFApplication::AppInitEvent );     
+    m_vfs->AddRoot( CORE::RelativePath( "$CURWORKDIR$" ), false );
+    m_vfs->AddRoot( CORE::RelativePath( "$CURWORKDIR$\\TEMP" ), true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -103,7 +112,7 @@ CPatcherApplication::OnUpdate( const CORE::UInt32 applicationTicks ,
 
 void
 CPatcherApplication::OnNotify( CORE::CNotifier* notifier                 ,
-                               const CORE::UInt32 eventid                ,
+                               const CORE::CEvent& eventid               ,
                                CORE::CICloneable* eventdata /* = NULL */ )
 {
     if ( eventid == m_appStartEventID )
@@ -116,7 +125,21 @@ CPatcherApplication::OnNotify( CORE::CNotifier* notifier                 ,
             CORE::CGUCEFApplication::Instance()->Stop();
         }
         
+        CORE::CPluginControl::Instance()->SetPluginDir( CORE::RelativePath( "$CURWORKDIR$\\plugins" ) );
+        CORE::CPluginControl::Instance()->LoadAll();
+        
+        CORE::UInt32 errorCode;
+        VFS::CVFSHandle* oldListFile = m_vfs->GetFile( "oldLocalList.xml" ,
+                                                       errorCode         );
+        
         CORE::CDataNode oldLocalList;
+        if ( oldListFile )
+        {
+            GUCEF::CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = GUCEF::CORE::CDStoreCodecRegistry::Instance()->Lookup( "xml" );
+            codecPtr->BuildDataTree( &oldLocalList, oldListFile->GetAccess() );
+        }
+        
+        
         CORE::CDataNode newLocalList;
         CORE::CDataNode localListDiff;
         

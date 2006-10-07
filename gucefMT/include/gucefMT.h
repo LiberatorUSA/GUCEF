@@ -104,10 +104,10 @@
  *      implementation of a thread mailbox.
  *      basicly just a tread-safe stack for event data 
  */
-#ifndef GUCEF_MT_CMAILBOX_H
-#include "gucefMT_CMailBox.h"
-#define GUCEF_MT_CMAILBOX_H
-#endif /* GUCEF_MT_CMAILBOX_H ? */
+#ifndef GUCEF_MT_CTMAILBOX_H
+#include "gucefMT_CTMailBox.h"
+#define GUCEF_MT_CTMAILBOX_H
+#endif /* GUCEF_MT_CTMAILBOX_H ? */
 
 /*
  *      Wrapper class for my C implementation of a readers/writers lock

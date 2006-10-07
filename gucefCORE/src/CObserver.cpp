@@ -50,19 +50,6 @@ namespace CORE {
 CObserver::CObserver( void )
 {TRACE;
 
-    /*
-     *  Make sure that the standard notification events are registered
-     */
-    CNotifier::RegisterEvents();
-
-    /*
-     *  Get the unique event id's for the standard notification events
-     */
-    CNotificationIDRegistry* registry = CNotificationIDRegistry::Instance();
-    m_notifierModifyEvent = registry->Lookup( CNotifier::ModifyEvent );
-    m_notifierDestructionEvent = registry->Lookup( CNotifier::DestructionEvent );            
-    m_notifierSubscribeEvent = registry->Lookup( CNotifier::SubscribeEvent );
-    m_notifierUnsubscribeEvent = registry->Lookup( CNotifier::UnsubscribeEvent );
 }
 
 /*-------------------------------------------------------------------------*/

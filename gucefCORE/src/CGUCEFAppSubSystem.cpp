@@ -175,7 +175,7 @@ CGUCEFAppSubSystem::OnUpdate( const UInt32 applicationTicks ,
 
 void
 CGUCEFAppSubSystem::OnNotify( CNotifier* notifier                 ,
-                              const UInt32 eventid                ,
+                              const CEvent& eventid               ,
                               CICloneable* eventdata /* = NULL */ )
 {TRACE;
 

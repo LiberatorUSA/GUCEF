@@ -123,7 +123,7 @@ CNotificationIDRegistry::Deinstance( void )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+CEvent 
 CNotificationIDRegistry::Register( const std::string& keyvalue                   ,
                                    const bool okIfAlreadyRegisterd /* = false */ )
 {    
@@ -205,13 +205,13 @@ CNotificationIDRegistry::Unregister( const std::string& keyvalue                
         else
         {
             m_dataLock.Unlock();
-            GUCEF_EMSGTHROW( EUnknownKey, "unknown notification key string identifier" );
+            GUCEF_EMSGTHROW( EUnknownKey, "CNotificationIDRegistry::Unregister(): unknown notification key string identifier" );
         }
     }
     else
     {
         m_dataLock.Unlock();
-        GUCEF_EMSGTHROW( EUnknownKey, "invalid notification key string identifier" );
+        GUCEF_EMSGTHROW( EUnknownKey, "CNotificationIDRegistry::Unregister(): invalid notification key string identifier" );
     }
 
     m_dataLock.Unlock();
@@ -219,7 +219,7 @@ CNotificationIDRegistry::Unregister( const std::string& keyvalue                
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+CEvent 
 CNotificationIDRegistry::Lookup( const std::string& keyvalue ,
                                  const bool registerUnknown  )
 {
@@ -241,30 +241,35 @@ CNotificationIDRegistry::Lookup( const std::string& keyvalue ,
 
     m_dataLock.Unlock();
 
-    GUCEF_EMSGTHROW( EInvalidKey, "invalid notification key identifier" );    
+    GUCEF_EMSGTHROW( EInvalidKey, "CNotificationIDRegistry::Lookup(): invalid notification key identifier" );    
 }
 
 /*-------------------------------------------------------------------------*/
 
 std::string 
-CNotificationIDRegistry::Lookup( const UInt32 eventID ) const
+CNotificationIDRegistry::Lookup( const CEvent& eventID ) const
 {
     m_dataLock.Lock();
     
-    TRegistryList::const_iterator i = m_list.begin();
-    while ( i != m_list.end() )
+    UInt32 id( eventID.GetID() );
+    
+    if ( id > 0 )
     {
-        if ( (*i).second == eventID )
+        TRegistryList::const_iterator i = m_list.begin();
+        while ( i != m_list.end() )
         {
-            m_dataLock.Unlock();
-            return (*i).first;
+            if ( (*i).second == id )
+            {
+                m_dataLock.Unlock();
+                return (*i).first;
+            }
+            ++i;            
         }
-        ++i;            
     }
     
     m_dataLock.Unlock();
 
-    GUCEF_EMSGTHROW( EInvalidEventID, "invalid eventID" );
+    GUCEF_EMSGTHROW( EInvalidEventID, "CNotificationIDRegistry::Lookup(): invalid eventID" );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -607,6 +607,7 @@ CVFS::AddRoot( const CORE::CString& rootpath ,
                 }
                 
                 m_rootlist.AppendEntry( newroot );
+                DEBUGOUTPUTss( "CVFS: VFS root added: ", rootpath.C_String() );
                                     
                 _datalock.Unlock();
         }                

@@ -63,12 +63,10 @@ const CString CPluginManager::PluginUnloadedEvent = "GUCEF::CORE::CPluginManager
  *      Generic interface for plugin managers
  */
 CPluginManager::CPluginManager( void )
-    : CObservingNotifier()
+    : CObservingNotifier()                           ,
+      m_pluginLoadedEventID( PluginLoadedEvent )     ,
+      m_pluginUnloadedEventID( PluginUnloadedEvent )
 {TRACE;
-
-        CORE::CNotificationIDRegistry* registry = CNotificationIDRegistry::Instance();
-        m_pluginLoadedEventID = registry->Register( PluginLoadedEvent, true );
-        m_pluginUnloadedEventID = registry->Register( PluginUnloadedEvent, true ); 
 
         CPluginControl::Instance()->Register( this );       
 }
@@ -105,7 +103,7 @@ CPluginManager::OnSetPluginDir( const CString& path )
 }
 /*-------------------------------------------------------------------------*/
 
-UInt32
+CEvent
 CPluginManager::GetPluginLoadedEventID( void ) const
 {TRACE;
 
@@ -114,7 +112,7 @@ CPluginManager::GetPluginLoadedEventID( void ) const
 
 /*-------------------------------------------------------------------------*/
         
-UInt32
+CEvent
 CPluginManager::GetPluginUnloadedEventID( void ) const
 {TRACE;
 

@@ -172,6 +172,12 @@ class GUCEFCORE_EXPORT_CPP CString
                           
         CStringList ParseElements( char seperator ) const;                          
                             
+        bool Equals( const CString& otherStr          ,
+                     const bool syntaxSpecific = true ) const;
+
+        bool NotEquals( const CString& otherStr          ,
+                        const bool syntaxSpecific = true ) const;
+        
         void Clear( void );
         
         /**

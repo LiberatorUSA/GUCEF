@@ -26,17 +26,6 @@
 
 #include "CObserver.h"
 
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CNOTIFIEROBSERVINGCOMPONENT_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4018 ) // signed/unsigned mismatch
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 ) // return type for operator -> is 'const *' (ie; not a UDT or reference to a UDT).
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -65,7 +54,7 @@ class GUCEFCORE_EXPORT_CPP CNotifierObservingComponent : public CObserver
     protected:
     
     virtual void OnNotify( CNotifier* notifier           ,
-                           const UInt32 eventid          ,
+                           const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
                            
     virtual void LockData( void );
@@ -98,12 +87,6 @@ class GUCEFCORE_EXPORT_CPP CNotifierObservingComponent : public CObserver
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CNOTIFIEROBSERVINGCOMPONENT_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

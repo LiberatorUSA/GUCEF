@@ -98,7 +98,7 @@ CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier )
 
 void 
 CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier ,
-                           const UInt32 eventid        )
+                           const CEvent& eventid       )
 {
     threadedNotifier->Subscribe( &m_tsgObserver ,
                                  eventid        );
@@ -108,7 +108,7 @@ CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier ,
                       
 void 
 CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier ,
-                               const UInt32 eventid        )
+                               const CEvent& eventid       )
 {
     threadedNotifier->Unsubscribe( &m_tsgObserver ,
                                    eventid        );
@@ -118,7 +118,7 @@ CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier ,
 
 void 
 CTSGNotifier::OnPumpedNotify( CNotifier* notifier                 ,
-                              const UInt32 eventid                ,
+                              const CEvent& eventid               ,
                               CICloneable* eventdata /* = NULL */ )
 {
     NotifyObservers( eventid   ,

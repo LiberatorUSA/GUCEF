@@ -79,9 +79,9 @@ class GUCEFCORE_EXPORT_CPP CPluginManager : public CObservingNotifier
     
     virtual void UnloadAll( void ) = 0;
     
-    UInt32 GetPluginLoadedEventID( void ) const;
+    CEvent GetPluginLoadedEventID( void ) const;
     
-    UInt32 GetPluginUnloadedEventID( void ) const;
+    CEvent GetPluginUnloadedEventID( void ) const;
     
     static void RegisterEvents( void );
     
@@ -111,8 +111,8 @@ class GUCEFCORE_EXPORT_CPP CPluginManager : public CObservingNotifier
     friend class CPluginControl;
     
     UInt32 _managerid; /**< ID used to quickly manage this manager at the plugin control center */
-    UInt32 m_pluginLoadedEventID;
-    UInt32 m_pluginUnloadedEventID;
+    CEvent m_pluginLoadedEventID;
+    CEvent m_pluginUnloadedEventID;
 };
 
 /*-------------------------------------------------------------------------//

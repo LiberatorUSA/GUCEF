@@ -89,7 +89,7 @@ CTSGObserver::SetParent( CTSGNotifier* parentNotifier )
 
 void 
 CTSGObserver::OnPumpedNotify( CNotifier* notifier                  ,
-                              const UInt32 eventid                 ,
+                              const CEvent& eventid                ,
                               CICloneable* eventdata /* = NULL  */ )
 {
     m_parentNotifier->OnPumpedNotify( notifier  ,

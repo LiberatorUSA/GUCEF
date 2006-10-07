@@ -166,7 +166,7 @@ bool
 CGenericPlugin::IsLoaded( void ) const
 {TRACE;
     
-    return NULL == m_moduleHandle;
+    return NULL != m_moduleHandle;
 }
 
 /*-------------------------------------------------------------------------*/

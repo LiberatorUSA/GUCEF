@@ -83,7 +83,7 @@ CPatchSetParser::ParseSourceList( const CORE::CDataNode& rootNode ,
         while ( i != sourceListNode->ConstEnd() )
         {
             sourceEntry = (*i);
-            if ( sourceEntry->GetName() == "Source" )
+            if ( sourceEntry->GetName().Equals( "Source", false ) )
             {
                 // we found an entry, parse the data and add to our list
                 TSourceInfo entryInfo;

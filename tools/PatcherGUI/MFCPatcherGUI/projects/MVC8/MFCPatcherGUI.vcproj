@@ -21,7 +21,7 @@
 			IntermediateDirectory="..\..\bin\Debug_MVC8"
 			ConfigurationType="1"
 			UseOfMFC="2"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -43,6 +43,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				UseUnicodeResponseFiles="true"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\include;..\..\..\..\..\common\include;..\..\..\..\..\gucefCORE\include;..\..\..\..\..\gucefMT\include;..\..\..\..\..\gucefCOM\include;..\..\..\..\..\gucefCOMCORE\include;..\..\..\..\..\gucefVFS\include;..\..\..\..\..\gucefPATCHER\include;res"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG"
@@ -109,7 +110,7 @@
 			IntermediateDirectory="..\..\bin\Release_MVC8"
 			ConfigurationType="1"
 			UseOfMFC="2"
-			CharacterSet="1"
+			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
 			<Tool

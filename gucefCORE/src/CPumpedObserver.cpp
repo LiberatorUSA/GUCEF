@@ -25,7 +25,6 @@
 #include "CObserverPump.h"
 #include "CICloneable.h"
 
-#define GUCEF_CORE_CPUMPEDOBSERVER_CPP
 #include "CPumpedObserver.h"
 
 /*-------------------------------------------------------------------------//
@@ -148,7 +147,7 @@ CPumpedObserver::operator=( const CPumpedObserver& src )
 
 void 
 CPumpedObserver::OnNotify( CNotifier* notifier                 ,
-                           const UInt32 eventid                ,
+                           const CEvent& eventid               ,
                            CICloneable* eventdata /* = NULL */ )
 {
     if ( eventdata )
@@ -168,7 +167,7 @@ CPumpedObserver::OnNotify( CNotifier* notifier                 ,
 void 
 CPumpedObserver::OnUpdate( void )
 {
-    UInt32 eventid( 0 );
+    CEvent eventid;
     CICloneable* dataptr( NULL );
     CMailElement* maildata( NULL );
     while ( m_mailbox.GetMail( eventid  ,

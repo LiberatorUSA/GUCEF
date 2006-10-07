@@ -21,6 +21,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <assert.h>
+
 #ifndef GUCEF_CORE_DVOSWRAP_H
 #include "dvoswrap.h"           /* needed for GUCEFPrecisionTimerInit() ect. */
 #define GUCEF_CORE_DVOSWRAP_H
@@ -144,12 +146,13 @@ CGUCEFApplication::Deinstance( void )
 /*-------------------------------------------------------------------------*/
 
 CGUCEFApplication::CGUCEFApplication( void )
-        : CIConfigurable( true )       ,
-          _active( false )             ,
-          _initialized( false )        ,
-          _appinitevent( 0 )           ,
-          m_maxdeltaticksfordelay( 0 ) ,
-          m_delaytime( 10 )            ,
+        : CIConfigurable( true )                      ,
+          _active( false )                            ,
+          _initialized( false )                       ,
+          _appinitevent( AppInitEvent )               ,
+          _appstopevent( AppShutdownEvent )           ,
+          m_maxdeltaticksfordelay( 0 )                ,
+          m_delaytime( 10 )                           ,
           m_minimalUpdateDelta( GUCEFCORE_UINT32MAX ) ,
           m_requiresPeriodicUpdates( false )          ,
           m_inNeedOfAnUpdate( false )
@@ -158,15 +161,7 @@ CGUCEFApplication::CGUCEFApplication( void )
         /*
          *      Initialize high-resolution timing
          */
-        GUCEFPrecisionTimerInit(); 
-        
-        /*
-         *      This class can generate an application initialize and an shutdown event
-         *      We will register those event here.
-         */
-        CNotificationIDRegistry *ereg = CNotificationIDRegistry::Instance();
-        _appinitevent = ereg->Register( AppInitEvent );
-        _appstopevent = ereg->Register( AppShutdownEvent );
+        GUCEFPrecisionTimerInit();
                                             
         /*
          *      Set an initial app dir just in case we have trouble getting one 
@@ -206,7 +201,6 @@ CGUCEFApplication::~CGUCEFApplication()
 #ifdef GUCEF_MSWIN_BUILD
 int
 CGUCEFApplication::Main( HINSTANCE hinstance     ,
-                         HINSTANCE hprevinstance ,
                          LPSTR lpcmdline         ,
                          int ncmdshow            ,
                          bool run                )
@@ -220,7 +214,6 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         if ( !_instance )
         {
                 int retval = Instance()->Main( hinstance     ,
-                                               hprevinstance ,
                                                lpcmdline     ,
                                                ncmdshow      ,
                                                run           );
@@ -244,21 +237,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
                 char apppath[ MAX_PATH ]; 
                 if ( GetModuleFileName( hinstance, apppath, MAX_PATH ) )
                 {
-                        CString tmp( apppath );                        
-                        if ( tmp.Length() )
-                        {                
-                                for ( UInt32 i=tmp.Length()-1; i>=0; --i ) 
-                                {
-                                        if ( tmp[ i ] == '\\' )
-                                        {
-                                                if ( i > 0 )
-                                                {
-                                                        _appdir.Set( tmp.C_String(), i );
-                                                }
-                                                break;                                                        
-                                        }
-                                }
-                        }                        
+                        _appdir = apppath;
                 }                        
         }                
 
@@ -271,17 +250,16 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
          *      Thus we turn the following into a compound statement.
          */
         {
-                TAppInitEventData data;
+                struct SAppInitEventData data;
                 
                 data.hinstance = hinstance;
-                data.hprevinstance = hprevinstance;
                 data.lpcmdline = lpcmdline;
                 data.ncmdshow = ncmdshow;
 
                 data.argc = 0;
                 data.argv = NULL;
                 
-                CAppInitEventData cloneableData( data );                
+                TAppInitEventData cloneableData( data );                
                 NotifyObservers( _appinitevent, &cloneableData );
         }
 
@@ -334,12 +312,12 @@ CGUCEFApplication::main( int argc    ,
          *      Thus we turn the following into a compound statement.
          */
         {
-                TAppInitEventData data;
+                struct SAppInitEventData data;
                 
                 data.argc = argc;
                 data.argv = argv;
                 
-                CAppInitEventData cloneableData( data );
+                TAppInitEventData cloneableData( data );
                 NotifyObservers( _appinitevent, &cloneableData );
         }
 
@@ -427,6 +405,7 @@ CGUCEFApplication::Run( void )
 {TRACE;
 
         _active = true;
+        
         while ( _active )
         {
                 Update();                                
@@ -582,7 +561,10 @@ CGUCEFApplication::UnlockData( void )
 void
 CGUCEFApplication::RegisterSubSystem( CGUCEFAppSubSystem* subSystem )
 {TRACE;
-    m_subSysList.insert( subSystem );
+
+    assert( NULL != subSystem );
+    m_subSysList.insert( subSystem );    
+    Subscribe( &subSystem->AsObserver() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -590,7 +572,10 @@ CGUCEFApplication::RegisterSubSystem( CGUCEFAppSubSystem* subSystem )
 void
 CGUCEFApplication::UnregisterSubSystem( CGUCEFAppSubSystem* subSystem )
 {TRACE;
-    m_subSysList.erase( subSystem );
+
+    assert( NULL != subSystem );
+    m_subSysList.erase( subSystem );    
+    Unsubscribe( &subSystem->AsObserver() );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -24,18 +24,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefMT_CMailBox.h"
+#include "gucefMT_CTMailBox.h"
 #include "CObserver.h"
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CPUMPEDOBSERVER_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 ) // return type for operator -> is 'const *' (ie; not a UDT or reference to a UDT).
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -86,7 +76,7 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
      *  @param eventdata optional notifier defined userdata
      */
     virtual void OnPumpedNotify( CNotifier* notifier           ,
-                                 const UInt32 eventid          ,
+                                 const CEvent& eventid         ,
                                  CICloneable* eventdata = NULL ) = 0;
     
     protected:
@@ -108,12 +98,12 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
      *  @param eventdata optional notifier defined userdata
      */
     virtual void OnNotify( CNotifier* notifier           ,
-                           const UInt32 eventid          ,
+                           const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
 
     private:   
     
-    MT::CMailBox m_mailbox;
+    MT::CTMailBox< CEvent > m_mailbox;
 };
 
 /*-------------------------------------------------------------------------//
@@ -124,12 +114,6 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CPUMPEDOBSERVER_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

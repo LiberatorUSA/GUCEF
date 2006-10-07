@@ -41,14 +41,16 @@ namespace PATCHER {
 //-------------------------------------------------------------------------*/
  
 CStandardPSPEventHandler::CStandardPSPEventHandler( void )
-        : CPatchSetParserEventHandler()
+        : CPatchSetParserEventHandler() ,
+          m_errorOccured( false )
 {TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CStandardPSPEventHandler::CStandardPSPEventHandler( const CStandardPSPEventHandler& src )
-        : CPatchSetParserEventHandler( src )
+        : CPatchSetParserEventHandler( src ) ,
+          m_errorOccured( false )
 {TRACE;
 }
 
@@ -136,6 +138,11 @@ CStandardPSPEventHandler::OnLeaveLocalDir( const CORE::CString& localPath )
 void
 CStandardPSPEventHandler::OnPatchSetEnd( const CORE::CString& patchSetName )
 {TRACE;
+    
+    if ( !m_errorOccured )
+    {
+        
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -143,7 +150,8 @@ CStandardPSPEventHandler::OnPatchSetEnd( const CORE::CString& patchSetName )
 void
 CStandardPSPEventHandler::OnParserError( void )
 {TRACE;
-
+    
+    m_errorOccured = true;
 }
 
 /*-------------------------------------------------------------------------//

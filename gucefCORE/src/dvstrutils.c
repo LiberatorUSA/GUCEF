@@ -668,7 +668,7 @@ Str_To_Float( const char *digits )
                 /*
                  *      It is in fact an int not a float
                  */
-                return( Str_To_Int( digits ) );
+                return (Float32) Str_To_Int( digits );
         }
 
         /*
@@ -1039,7 +1039,7 @@ Strip_Filename( char* filepath )
         #endif
 
         Int32 idx;
-	idx = (UInt32)_Find_Char( 0, 0, SEP_CHAR, filepath, strlen( filepath ) );
+        idx = (UInt32)_Find_Char( 0, 0, SEP_CHAR, filepath, (UInt32)strlen( filepath ) );
         if ( idx > 0 )
         {
                 filepath[ idx ] = '\0';

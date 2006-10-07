@@ -195,12 +195,13 @@ CString::operator==( const char *other ) const
 bool
 CString::operator==( const CString &other ) const
 {TRACE;
-        if ( !m_string || !other.m_string )
-        {
-                return false;        
-        }         
-        return strcmp( m_string       ,
-                       other.m_string ) == 0;
+
+    if ( !m_string || !other.m_string )
+    {
+        return false;        
+    }         
+    return strcmp( m_string       ,
+                   other.m_string ) == 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -697,6 +698,40 @@ CString::HasSubstr( const CString& substr ,
                 }
         }
         return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CString::Equals( const CString& otherStr                ,
+                 const bool syntaxSpecific /* = true */ ) const
+{TRACE;
+
+    if ( syntaxSpecific )
+    {
+        return *this == otherStr;
+    }
+    else
+    {
+        return Lowercase() == otherStr.Lowercase();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CString::NotEquals( const CString& otherStr                ,
+                    const bool syntaxSpecific /* = true */ ) const
+{TRACE;
+
+    if ( syntaxSpecific )
+    {
+        return *this != otherStr;
+    }
+    else
+    {
+        return Lowercase() != otherStr.Lowercase();
+    }
 }
 
 /*-------------------------------------------------------------------------*/

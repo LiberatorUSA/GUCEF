@@ -27,6 +27,12 @@
 #include <string>
 #include <map>
 #include "gucefMT_CMutex.h"
+
+#ifndef GUCEF_CORE_CEVENT_H
+#include "CEvent.h"
+#define GUCEF_CORE_CEVENT_H
+#endif /* GUCEF_CORE_CEVENT_H ? */
+
 #include "gucefCORE_macros.h"
 #include "ExceptionMacros.h"
 
@@ -76,7 +82,7 @@ class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
      *  @throw EKeyAlreadyRegistered thrown when the given key is already registered and okIfAlreadyRegistered is false or an empty key string is given
      *  @return unique notification id for the given key identifier
      */
-    UInt32 Register( const std::string& keyvalue              ,
+    CEvent Register( const std::string& keyvalue              ,
                      const bool okIfAlreadyRegistered = false );
     
     /**
@@ -97,7 +103,7 @@ class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
      *  @param registerUnknown Whether or not to register the key if it does not yet exist.
      *  @throw EUnknownKey thrown when the requested item is not found and registerUnknown == false.
      */
-    UInt32 Lookup( const std::string& keyvalue        ,
+    CEvent Lookup( const std::string& keyvalue        ,
                    const bool registerUnknown = false );    
     
     /**
@@ -112,7 +118,7 @@ class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
      *  @throw EUnknownEventID thrown when the given event id is unknown
      *  @return the notification event identifier for the given id.
      */
-    std::string Lookup( const UInt32 eventID ) const;
+    std::string Lookup( const CEvent& eventID ) const;
     
     bool IsRegistered( const std::string& keyvalue ) const;    
 

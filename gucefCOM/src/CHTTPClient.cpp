@@ -73,23 +73,22 @@ const CORE::CString CHTTPClient::HTTPTransferFinishedEvent = "GUCEF::COM::CHTTPC
 //-------------------------------------------------------------------------*/
 
 CHTTPClient::CHTTPClient( void )
-        : m_socket( false )                  ,
-          m_downloading( false )             ,
-          m_recieved( 0 )                    ,
-          m_filesize( 0 )                    ,
-          m_connectingEventID( 0 )           ,
-          m_connectedEventID( 0 )            ,
-          m_disconnectedEventID( 0 )         ,
-          m_connectionErrorEventID( 0 )      ,
-          m_HTTPErrorEventID( 0 )            ,
-          m_HTTPRedirectEventID( 0 )         ,
-          m_HTTPContentEventID( 0 )          ,
-          m_HTTPDataRecievedEventID( 0 )     ,
-          m_HTTPDataSendEventID( 0 )         ,
-          m_HTTPTransferFinishedEventID( 0 )
+        : m_socket( false )                                          ,
+          m_downloading( false )                                     ,
+          m_recieved( 0 )                                            ,
+          m_filesize( 0 )                                            ,
+          m_connectingEventID( ConnectingEvent )                     ,
+          m_connectedEventID( ConnectedEvent )                       ,
+          m_disconnectedEventID( DisconnectedEvent )                 ,
+          m_connectionErrorEventID( ConnectionErrorEvent )           ,
+          m_HTTPErrorEventID( HTTPErrorEvent )                       ,
+          m_HTTPRedirectEventID( HTTPRedirectEvent )                 ,
+          m_HTTPContentEventID( HTTPContentEvent )                   ,
+          m_HTTPDataRecievedEventID( HTTPDataRecievedEvent )         ,
+          m_HTTPDataSendEventID( HTTPDataSendEvent )                 ,
+          m_HTTPTransferFinishedEventID( HTTPTransferFinishedEvent )
 {TRACE;
-        
-        RegisterEventsImp( this );
+
         m_socket.SetInterface( this );
 }
 
@@ -691,33 +690,8 @@ CHTTPClient::IsConnected( void ) const
 void
 CHTTPClient::RegisterEvents( void )
 {TRACE;
-
-    RegisterEventsImp( NULL );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CHTTPClient::RegisterEventsImp( CHTTPClient* obj )
-{TRACE;
-
-    CORE::CNotificationIDRegistry* registry = CORE::CNotificationIDRegistry::Instance();
-    
-    if ( NULL != obj )
-    {
-        obj->m_connectingEventID = registry->Register( CHTTPClient::ConnectingEvent, true );
-        obj->m_connectedEventID = registry->Register( CHTTPClient::ConnectedEvent, true );
-        obj->m_disconnectedEventID = registry->Register( CHTTPClient::DisconnectedEvent, true );
-        obj->m_connectionErrorEventID = registry->Register( CHTTPClient::ConnectionErrorEvent, true );
-        obj->m_HTTPErrorEventID = registry->Register( CHTTPClient::HTTPErrorEvent, true );
-        obj->m_HTTPRedirectEventID = registry->Register( CHTTPClient::HTTPRedirectEvent, true );
-        obj->m_HTTPContentEventID = registry->Register( CHTTPClient::HTTPContentEvent, true );
-        obj->m_HTTPDataRecievedEventID = registry->Register( CHTTPClient::HTTPDataRecievedEvent, true );
-        obj->m_HTTPDataSendEventID = registry->Register( CHTTPClient::HTTPDataSendEvent, true );
-        obj->m_HTTPTransferFinishedEventID = registry->Register( CHTTPClient::HTTPTransferFinishedEvent, true );
-    }
-    else
-    {
+        CORE::CNotificationIDRegistry* registry = CORE::CNotificationIDRegistry::Instance();
+        
         registry->Register( CHTTPClient::ConnectingEvent, true );
         registry->Register( CHTTPClient::ConnectedEvent, true );
         registry->Register( CHTTPClient::DisconnectedEvent, true );
@@ -728,12 +702,11 @@ CHTTPClient::RegisterEventsImp( CHTTPClient* obj )
         registry->Register( CHTTPClient::HTTPDataRecievedEvent, true );
         registry->Register( CHTTPClient::HTTPDataSendEvent, true );
         registry->Register( CHTTPClient::HTTPTransferFinishedEvent, true );
-    }
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+CORE::CEvent
 CHTTPClient::GetConnectingEventID( void ) const
 {TRACE;
 
@@ -742,7 +715,7 @@ CHTTPClient::GetConnectingEventID( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+CORE::CEvent
 CHTTPClient::GetConnectedEventID( void ) const
 {TRACE;
 
@@ -751,7 +724,7 @@ CHTTPClient::GetConnectedEventID( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+CORE::CEvent
 CHTTPClient::GetDisconnectedEventID( void ) const
 {TRACE;
 
@@ -760,7 +733,7 @@ CHTTPClient::GetDisconnectedEventID( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+CORE::CEvent
 CHTTPClient::GetConnectionErrorEventID( void ) const
 {TRACE;
 
@@ -769,7 +742,7 @@ CHTTPClient::GetConnectionErrorEventID( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+CORE::CEvent
 CHTTPClient::GetHTTPErrorEventID( void ) const
 {TRACE;
 
@@ -778,7 +751,7 @@ CHTTPClient::GetHTTPErrorEventID( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+CORE::CEvent
 CHTTPClient::GetHTTPRedirectEventID( void ) const
 {TRACE;
 
@@ -787,7 +760,7 @@ CHTTPClient::GetHTTPRedirectEventID( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+CORE::CEvent
 CHTTPClient::GetHTTPContentEventID( void ) const
 {TRACE;
 
@@ -796,7 +769,7 @@ CHTTPClient::GetHTTPContentEventID( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+CORE::CEvent
 CHTTPClient::GetHTTPDataRecievedEventID( void ) const
 {TRACE;
 
@@ -805,7 +778,7 @@ CHTTPClient::GetHTTPDataRecievedEventID( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+CORE::CEvent
 CHTTPClient::GetHTTPDataSendEventID( void ) const
 {TRACE;
     
@@ -814,7 +787,7 @@ CHTTPClient::GetHTTPDataSendEventID( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+CORE::CEvent
 CHTTPClient::GetHTTPTransferFinishedEventID( void ) const
 {TRACE;
 

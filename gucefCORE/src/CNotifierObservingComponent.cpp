@@ -43,8 +43,8 @@ namespace CORE {
 
 void 
 CNotifierObservingComponent::OnNotify( CNotifier* notifier                 ,
-                                         const UInt32 eventid                ,
-                                         CICloneable* eventdata /* = NULL */ )
+                                       const CEvent& eventid               ,
+                                       CICloneable* eventdata /* = NULL */ )
 {
     m_owner->OnNotify( notifier  ,
                        eventid   ,

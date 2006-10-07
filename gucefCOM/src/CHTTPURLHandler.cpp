@@ -21,6 +21,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include "CMFileAccess.h"
 #include "CHTTPURLHandler.h"
 
 /*-------------------------------------------------------------------------//
@@ -113,9 +114,9 @@ CHTTPURLHandler::Clone( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CHTTPURLHandler::OnNotify( CNotifier* notifier                 ,
-                           const UInt32 eventid                ,
-                           CICloneable* eventdata /* = NULL */ )
+CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
+                           const CORE::CEvent& eventid               ,
+                           CORE::CICloneable* eventdata /* = NULL */ )
 {TRACE;
 
     // We only accept events from our own HTTP client
@@ -129,7 +130,9 @@ CHTTPURLHandler::OnNotify( CNotifier* notifier                 ,
         }
         if ( eventid == m_httpClient.GetHTTPDataRecievedEventID() )
         {
-            //@TODO make me
+            CHTTPClient::THTTPDataRecievedEventData* eData = static_cast< CHTTPClient::THTTPDataRecievedEventData* >( eventdata );            
+            CORE::CMFileAccess mAccess( eData->GetData().GetBufferPtr(), eData->GetData().GetDataSize() );
+            NotifyObservers( CIURLEvents::URLDataRecievedEvent, &mAccess );
             return;
         }
         if ( eventid == m_httpClient.GetHTTPTransferFinishedEventID() )

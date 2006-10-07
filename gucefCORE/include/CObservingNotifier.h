@@ -83,8 +83,8 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
      *  notifier events if it is not yet subscribed plus
      *  subscribes to the given custom event.
      */    
-    void SubscribeTo( CNotifier* notifier  ,
-                      const UInt32 eventid );
+    void SubscribeTo( CNotifier* notifier   ,
+                      const CEvent& eventid );
 
     /**
      *  Detaches the observer component from the notifier.
@@ -100,8 +100,8 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
      *  Note that subscriptions to the standard notifier events 
      *  cannot be cancelled, attempts to do so will be ignored.
      */    
-    void UnsubscribeFrom( CNotifier* notifier  ,
-                          const UInt32 eventid );
+    void UnsubscribeFrom( CNotifier* notifier   ,
+                          const CEvent& eventid );
 
     /**
      *  Returns a refrence to the mutable observer component.
@@ -144,14 +144,7 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
      *  @param notifier given notifier are forwarded, otherwise the 
      *  @param notifier event is always forwarded
      */
-    void AddEventForwarding( const UInt32 eventid       , 
-                             CNotifier* notifier = NULL );
-    
-    /**
-     *  Utility member function that calls AddEventForwarding()
-     *  after converting the eventName into an event ID.
-     */
-    void AddEventForwarding( const CString& eventName   , 
+    void AddEventForwarding( const CEvent& eventid      , 
                              CNotifier* notifier = NULL );
 
     /**
@@ -164,14 +157,7 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
      *  @param notifier given notifier are removed from the forwarding list,  
      *  @param notifier otherwise the event is always forwarded
      */
-    void RemoveEventForwarding( const UInt32 eventid       , 
-                                CNotifier* notifier = NULL );    
-
-    /**
-     *  Utility member function that calls RemoveEventForwarding()
-     *  after converting the eventName into an event ID.
-     */
-    void RemoveEventForwarding( const CString& eventName   , 
+    void RemoveEventForwarding( const CEvent& eventid      , 
                                 CNotifier* notifier = NULL );
                              
     protected:
@@ -190,7 +176,7 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
      *  @param eventdata optional notifier defined userdata
      */
     virtual void OnNotify( CNotifier* notifier           ,
-                           const UInt32 eventid          ,
+                           const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
                            
     private:
@@ -202,9 +188,9 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
     void RemoveEventForwarding( CNotifier& notifier );
                            
     private:    
-    typedef std::set< UInt32 > TEventList;
+    typedef std::set< CEvent > TEventList;
     typedef std::set< CNotifier* > TNotifierList;
-    typedef std::map< UInt32, TNotifierList > TEventNotifierMap;
+    typedef std::map< CEvent, TNotifierList > TEventNotifierMap;
     
     CNotifierObservingComponent m_observer;        
     TEventList m_eventList;

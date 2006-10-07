@@ -105,7 +105,7 @@ class GUCEFCORE_EXPORT_CPP CGUCEFAppSubSystem : public CObservingNotifier
      *  @param eventdata optional notifier defined userdata
      */
     virtual void OnNotify( CNotifier* notifier           ,
-                           const UInt32 eventid          ,
+                           const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
    
     private:

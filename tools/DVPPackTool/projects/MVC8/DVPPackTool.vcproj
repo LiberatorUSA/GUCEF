@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../../../gucefCORE/include;../../../../gucefMT/include;../../../../gucefVFS/include;../../../../gucefVFS/plugins/vfspluginDVP/include"
+				AdditionalIncludeDirectories="../../../../common/include;../../../../gucefCORE/include;../../../../gucefMT/include;../../../../gucefVFS/include;../../../../gucefVFS/plugins/vfspluginDVP/include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -93,7 +93,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) ..\..\..\..\common\Debug_MVC8"
+				CommandLine="copy $(TargetPath) ..\..\..\..\common\bin\Debug_MVC8"
 			/>
 		</Configuration>
 		<Configuration

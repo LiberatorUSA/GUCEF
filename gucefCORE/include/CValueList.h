@@ -49,6 +49,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+// @deprecated replace with std::map< CString, CString >
 class GUCEFCORE_EXPORT_CPP CValueList
 {
         public:

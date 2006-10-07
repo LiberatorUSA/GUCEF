@@ -30,6 +30,11 @@
 #include "gucefCORE_ETypes.h"
 #include "CICloneable.h"
 
+#ifndef GUCEF_CORE_CEVENT_H
+#include "CEvent.h"
+#define GUCEF_CORE_CEVENT_H
+#endif /* GUCEF_CORE_CEVENT_H ? */
+
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H
@@ -57,7 +62,9 @@ class CObserver;
 /**
  *  Use the CNotificationIDRegistry to obtain unique event id's for 
  *  your events. It is strongly recommended to include the various namespaces 
- *  in the event strings.
+ *  in the event strings. Following this simply rule will ensure that your strings
+ *  are unique simply because your namespace::class::event combination is unique in 
+ *  C++ as well.
  *
  *  Note that this class automaticly registers four notification events
  *  if they are not already registered. These are:
@@ -106,8 +113,8 @@ class GUCEFCORE_EXPORT_CPP CNotifier
      *  notifier events if it is not yet subscribed plus
      *  subscribes to the given custom event.
      */    
-    void Subscribe( CObserver* observer  ,
-                    const UInt32 eventid );
+    void Subscribe( CObserver* observer   ,
+                    const CEvent& eventid );
 
     /**
      *  Detaches the given observer from the notifier.
@@ -123,8 +130,8 @@ class GUCEFCORE_EXPORT_CPP CNotifier
      *  Note that subscriptions to the standard notifier events 
      *  cannot be cancelled, attempts to do so will be ignored.
      */    
-    void Unsubscribe( CObserver* observer  ,
-                      const UInt32 eventid );
+    void Unsubscribe( CObserver* observer   ,
+                      const CEvent& eventid );
 
     static void RegisterEvents( void );
     
@@ -134,7 +141,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier
      *
      *  @return unique event id of the notifier subscribe event
      */
-    UInt32 GetSubscribeEventID( void ) const;
+    CEvent GetSubscribeEventID( void ) const;
 
     /**
      *  Utility member function, saves you some effort in retrieving
@@ -142,7 +149,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier
      *
      *  @return unique event id of the notifier unsubscribe event
      */
-    UInt32 GetUnsubscribeEventID( void ) const;
+    CEvent GetUnsubscribeEventID( void ) const;
     
     /**
      *  Utility member function, saves you some effort in retrieving
@@ -150,7 +157,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier
      *
      *  @return unique event id of the notifier modify event
      */    
-    UInt32 GetModifyEventID( void ) const;
+    CEvent GetModifyEventID( void ) const;
 
     /**
      *  Utility member function, saves you some effort in retrieving
@@ -158,7 +165,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier
      *
      *  @return unique event id of the notifier destruction event
      */    
-    UInt32 GetDestructionEventID( void ) const;
+    CEvent GetDestructionEventID( void ) const;
 
     /**
      *  Decending classes should override this with the classname
@@ -195,22 +202,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier
      *  Note that eventData is not copied. So when passing data across threads
      *  considder allocating a copy and passing that in as the data argument.
      */
-    void NotifyObservers( const UInt32 eventid          ,
-                          CICloneable* eventData = NULL );
-
-    /**
-     *  Dispatches the given eventid and eventData to all observers
-     *  that are subscribed to all events and the observers that are subscribed
-     *  to this specific eventid.
-     *
-     *  Note that the calling thread is the one in which the observer OnNotify 
-     *  event handlers will be processed. Keep this in mind when notification
-     *  occures across thread boundries.
-     *
-     *  Note that eventData is not copied. So when passing data across threads
-     *  considder allocating a copy and passing that in as the data argument.
-     */
-    void NotifyObservers( const CString& eventName      ,
+    void NotifyObservers( const CEvent& eventid         ,
                           CICloneable* eventData = NULL );
 
     virtual void LockData( void );
@@ -219,7 +211,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier
                  
     private:
     typedef std::set<CObserver*> TObserverSet;
-    typedef std::map<UInt32,TObserverSet> TNotificationList;
+    typedef std::map<CEvent,TObserverSet> TNotificationList;
     typedef std::map<CObserver*,bool> TObserverList;
 
     private:
@@ -238,16 +230,16 @@ class GUCEFCORE_EXPORT_CPP CNotifier
     void OnObserverDestroy( CObserver* observer );
 
     private:
-    void ForceNotifyObserversOnce( const UInt32 eventid     , 
+    void ForceNotifyObserversOnce( const CEvent& eventid    ,
                                    CICloneable* data = NULL );
 
     void UnsubscribeFromAllEvents( CObserver* observer       ,
                                    const bool notifyObserver );
     
-    UInt32 m_modifyEvent;
-    UInt32 m_destructionEvent;
-    UInt32 m_subscribeEvent;
-    UInt32 m_unsubscribeEvent;    
+    CEvent m_modifyEvent;
+    CEvent m_destructionEvent;
+    CEvent m_subscribeEvent;
+    CEvent m_unsubscribeEvent;    
     TNotificationList m_eventobservers;
     TObserverList m_observers;
 };

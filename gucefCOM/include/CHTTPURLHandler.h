@@ -89,7 +89,7 @@ class CHTTPURLHandler : public CORE::CURLHandler
     protected:
     
     virtual void OnNotify( CORE::CNotifier* notifier           ,
-                           const CORE::UInt32 eventid          ,
+                           const CORE::CEvent& eventid         ,
                            CORE::CICloneable* eventdata = NULL );        
     
     private:

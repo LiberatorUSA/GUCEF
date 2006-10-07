@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_PATCHER_CSTANDARDPSPEVENTHANDLER_H
-#define GUCEF_PATCHER_CSTANDARDPSPEVENTHANDLER_H
+#ifndef GUCEF_PATCHER_CPATCHLISTPARSER_H
+#define GUCEF_PATCHER_CPATCHLISTPARSER_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,7 +24,14 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefPATCHER_CPatchSetParserEventHandler.h"
+#include <map>
+#include <vector>
+#include "CDataNode.h"
+#include "CDVString.h"
+#include "CURL.h"
+#include "CObservingNotifier.h"
+
+#include "gucefPATCHER_macros.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,45 +48,73 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-class EXPORT_CPP CStandardPSPEventHandler : public CPatchSetParserEventHandler
+class CPatchSetParserEventHandler;
+
+/*-------------------------------------------------------------------------*/
+
+class EXPORT_CPP CPatchListParser : public CORE::CObservingNotifier
 {
     public:
     
-    CStandardPSPEventHandler( void );
+    static const CORE::CString PatchListRetrievalBeginEvent;
+    static const CORE::CString PatchListRetrievalEndEvent;
+    static const CORE::CString PatchListRetrievalErrorEvent;
+    static const CORE::CString PatchListEntryEvent;
+    static const CORE::CString PatchSetEntryEvent;
+    static const CORE::CString PatchSetRetrievalBeginEvent;
+    static const CORE::CString PatchSetRetrievalEndEvent;
+    static const CORE::CString PatchSetRetrievalErrorEvent;
+    static const CORE::CString ParserErrorEvent;
+        
+    public:
     
-    CStandardPSPEventHandler( const CStandardPSPEventHandler& src );
+    CPatchListParser( void );    
+       
+    virtual ~CPatchListParser();
     
-    virtual ~CStandardPSPEventHandler();
+    void ProcessPatchList( const CORE::CDataNode& patchList );
     
-    CStandardPSPEventHandler& operator=( const CStandardPSPEventHandler& src );
+    bool ProcessPatchList( const CORE::CString& patchListURL );
+    
+    bool IsActive( void ) const;
+    
+    void Stop( void );
+
+    CORE::CEvent GetPatchListRetrievalBeginEventID( void ) const;
+    CORE::CEvent GetPatchListRetrievalEndEventID( void ) const;
+    CORE::CEvent GetPatchListRetrievalErrorEventID( void ) const;
+    CORE::CEvent GetPatchListEntryEventID( void ) const;
+    CORE::CEvent GetPatchSetEntryEventID( void ) const;
+    CORE::CEvent GetPatchSetRetrievalBeginEventID( void ) const;
+    CORE::CEvent GetPatchSetRetrievalEndEventID( void ) const;
+    CORE::CEvent GetPatchSetRetrievalErrorEventID( void ) const;
+    CORE::CEvent GetParserErrorEventID( void ) const;
 
     protected:
     
-    virtual void OnPatchSetStart( const CORE::CString& patchSetName );
-    
-    virtual void OnEnterLocalDir( const CORE::CString& localPath );
-    
-    virtual void OnLocalFileOK( const CORE::CString& localPath ,
-                                const CORE::CString& localFile );
-
-    virtual void OnLocalFileNotFound( const CORE::CString& localPath ,
-                                      const CORE::CString& localFile );
-
-    virtual void OnLocalFileDifference( const CORE::CString& localPath ,
-                                        const CORE::CString& localFile );
-
-    virtual void OnNewSourceRequired( const TSourceInfo& sourceInfo );
-    
-    virtual void OnLeaveLocalDir( const CORE::CString& localPath );
-    
-    virtual void OnPatchSetEnd( const CORE::CString& patchSetName );
-    
-    virtual void OnParserError( void );
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );    
     
     private:
     
-    TSourceList m_sourceList;
-    bool m_errorOccured;
+    CPatchListParser( const CPatchListParser& src ); 
+    CPatchListParser& operator=( const CPatchListParser& src );
+    
+    private:
+    
+    CORE::CEvent m_patchListRetrievalBeginEventID;
+    CORE::CEvent m_patchListRetrievalEndEventID;
+    CORE::CEvent m_patchListRetrievalErrorEventID;
+    CORE::CEvent m_patchListEntryEventID;
+    CORE::CEvent m_patchSetEntryEventID;
+    CORE::CEvent m_patchSetRetrievalBeginEventID;
+    CORE::CEvent m_patchSetRetrievalEndEventID;
+    CORE::CEvent m_patchSetRetrievalErrorEventID;
+    CORE::CEvent m_parserErrorEventID;
+    CORE::CURL m_url;
+    bool m_isActive;
+    bool m_retrievingList;
 };
 
 /*-------------------------------------------------------------------------//
@@ -93,7 +128,7 @@ class EXPORT_CPP CStandardPSPEventHandler : public CPatchSetParserEventHandler
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHER_CSTANDARDPSPEVENTHANDLER_H ? */
+#endif /* GUCEF_PATCHER_CPATCHLISTPARSER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -101,7 +136,7 @@ class EXPORT_CPP CStandardPSPEventHandler : public CPatchSetParserEventHandler
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 06-05-2005 :
+- 07-10-2006 :
         - Initial version
 
 -----------------------------------------------------------------------------*/

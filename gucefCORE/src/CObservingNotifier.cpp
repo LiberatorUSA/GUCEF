@@ -133,8 +133,8 @@ CObservingNotifier::SubscribeTo( CNotifier* notifier )
 /*-------------------------------------------------------------------------*/
     
 void 
-CObservingNotifier::SubscribeTo( CNotifier* notifier  ,
-                                   const UInt32 eventid )
+CObservingNotifier::SubscribeTo( CNotifier* notifier   ,
+                                 const CEvent& eventid )
 {TRACE;
 
     LockData();
@@ -157,8 +157,8 @@ CObservingNotifier::UnsubscribeFrom( CNotifier* notifier )
 /*-------------------------------------------------------------------------*/
                  
 void 
-CObservingNotifier::UnsubscribeFrom( CNotifier* notifier  ,
-                                     const UInt32 eventid )
+CObservingNotifier::UnsubscribeFrom( CNotifier* notifier   ,
+                                     const CEvent& eventid )
 {TRACE;
 
     LockData();
@@ -188,7 +188,7 @@ CObservingNotifier::AsObserver( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CObservingNotifier::AddEventForwarding( const UInt32 eventid             , 
+CObservingNotifier::AddEventForwarding( const CEvent& eventid            , 
                                         CNotifier* notifier /* = NULL */ )
 {TRACE;
 
@@ -208,20 +208,9 @@ CObservingNotifier::AddEventForwarding( const UInt32 eventid             ,
 }
 
 /*-------------------------------------------------------------------------*/
-
-void
-CObservingNotifier::AddEventForwarding( const CString& eventName         ,
-                                        CNotifier* notifier /* = NULL */ )
-{TRACE;
-
-    AddEventForwarding( CNotificationIDRegistry::Instance()->Lookup( eventName ) ,
-                        notifier                                                 );
-}
-
-/*-------------------------------------------------------------------------*/
     
 void
-CObservingNotifier::RemoveEventForwarding( const UInt32 eventid             ,
+CObservingNotifier::RemoveEventForwarding( const CEvent& eventid            ,
                                            CNotifier* notifier /* = NULL */ )
 {TRACE;
 
@@ -242,17 +231,6 @@ CObservingNotifier::RemoveEventForwarding( const UInt32 eventid             ,
         m_eventList.erase( eventid );
         UnlockData();        
     }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CObservingNotifier::RemoveEventForwarding( const CString& eventName         , 
-                                           CNotifier* notifier /* = NULL */ )
-{TRACE;
-
-    RemoveEventForwarding( CNotificationIDRegistry::Instance()->Lookup( eventName ) ,
-                           notifier                                                 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -283,7 +261,7 @@ CObservingNotifier::RemoveEventForwarding( CNotifier& notifier )
 
 void
 CObservingNotifier::OnNotify( CNotifier* notifier                 ,
-                              const UInt32 eventid                ,
+                              const CEvent& eventid               ,
                               CICloneable* eventdata /* = NULL */ )
 {TRACE;
 

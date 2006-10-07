@@ -84,7 +84,7 @@ CGUCEFCOMModule::Load( void )
         /* simply instantiate our com manager when the module is loaded */
         //CCom::Instance();
         
-        CHTTPClient::RegisterEvents();        
+        CHTTPClient::RegisterEvents();
         CHTTPURLHandler::Register();
         return true;
 }

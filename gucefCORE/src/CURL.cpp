@@ -56,32 +56,39 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CURL::CURL( void )
-        : m_handler( NULL ) ,
-          m_url()
+        : m_handler( NULL )                                          ,
+          m_url()                                                    ,
+          m_URLActivateEvent( URLActivateEvent )                     ,
+          m_URLDeactivateEvent( URLDeactivateEvent )                 ,
+          m_URLDataRecievedEvent( URLDataRecievedEvent )             ,
+          m_URLAllDataRecievedEvent( URLAllDataRecievedEvent )       ,
+          m_URLDataRetrievalErrorEvent( URLDataRetrievalErrorEvent )         
 {TRACE;
-        CIURLEvents::RegisterEvents();
         
-        AddEventForwarding( URLActivateEvent );
-        AddEventForwarding( URLDeactivateEvent );
-        AddEventForwarding( URLDataRecievedEvent );
-        AddEventForwarding( URLAllDataRecievedEvent );
-        AddEventForwarding( URLDataRetrievalErrorEvent );  
+        AddEventForwarding( m_URLActivateEvent );
+        AddEventForwarding( m_URLDeactivateEvent );
+        AddEventForwarding( m_URLDataRecievedEvent );
+        AddEventForwarding( m_URLAllDataRecievedEvent );
+        AddEventForwarding( m_URLDataRetrievalErrorEvent );  
 }
         
 /*-------------------------------------------------------------------------*/        
         
 CURL::CURL( const CString& url )
-        : m_handler( GetHandlerForURL( url ) ) ,
-          m_url( url )         
+        : m_handler( GetHandlerForURL( url ) )                       ,
+          m_url( url )                                               ,
+          m_URLActivateEvent( URLActivateEvent )                     ,
+          m_URLDeactivateEvent( URLDeactivateEvent )                 ,
+          m_URLDataRecievedEvent( URLDataRecievedEvent )             ,
+          m_URLAllDataRecievedEvent( URLAllDataRecievedEvent )       ,
+          m_URLDataRetrievalErrorEvent( URLDataRetrievalErrorEvent )           
 {TRACE;
 
-        CIURLEvents::RegisterEvents();
-        
-        AddEventForwarding( URLActivateEvent );
-        AddEventForwarding( URLDeactivateEvent );
-        AddEventForwarding( URLDataRecievedEvent );
-        AddEventForwarding( URLAllDataRecievedEvent );
-        AddEventForwarding( URLDataRetrievalErrorEvent );
+        AddEventForwarding( m_URLActivateEvent );
+        AddEventForwarding( m_URLDeactivateEvent );
+        AddEventForwarding( m_URLDataRecievedEvent );
+        AddEventForwarding( m_URLAllDataRecievedEvent );
+        AddEventForwarding( m_URLDataRetrievalErrorEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -107,6 +114,8 @@ CURL::operator=( const CURL& src )
                 m_handler = NULL;
 
                 m_url = src.m_url;
+                
+                // We clone the handler, we want one exclusive to ourselves
                 m_handler = static_cast< CURLHandler* >( src.m_handler->Clone() );
                 
                 SubscribeTo( m_handler );
@@ -132,9 +141,13 @@ CURL::operator!=( const CURL& other ) const
         
 /*-------------------------------------------------------------------------*/        
 
-void 
+bool 
 CURL::SetURL( const CString& url )
 {TRACE; 
+
+    CURLHandler* newHandler = GetHandlerForURL( url );
+    if ( NULL != newHandler )
+    {
         m_url = url;
         
         if ( m_handler )
@@ -144,8 +157,13 @@ CURL::SetURL( const CString& url )
             m_handler = NULL;
         }
         
-        m_handler = GetHandlerForURL( url );
+        m_handler = newHandler;
         SubscribeTo( m_handler );
+        
+        return true;            
+    }
+    
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -185,14 +203,26 @@ CURL::IsActive( void ) const
 CURLHandler* 
 CURL::GetHandlerForURL( const CString& url ) const
 {TRACE;
-        return static_cast<CURLHandler*>( CURLHandlerRegistry::Instance()->Lookup( url.SubstrToSubstr( ":\\" ) )->Clone() );
+
+    CORE::CString protocolName( url.SubstrToSubstr( ":\\" ) );
+    if ( protocolName.Length() )
+    {
+        CURLHandlerRegistry* registry = CURLHandlerRegistry::Instance();
+        if ( registry->IsRegistered( protocolName ) )
+        {
+            // We clone the handler stored in the registry, we want one exclusive to ourselves
+            return static_cast<CURLHandler*>( registry->Lookup( protocolName )->Clone() );
+        }
+    }
+    
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CURL::OnNotify( CNotifier* notifier                 ,
-                const UInt32 eventid                ,
+                const CEvent& eventid               ,
                 CICloneable* eventdata /* = NULL */ )
 {TRACE;
     
@@ -200,6 +230,51 @@ CURL::OnNotify( CNotifier* notifier                 ,
     CObservingNotifier::OnNotify( notifier  ,
                                   eventid   ,
                                   eventdata );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEvent
+CURL::GetURLActivateEventID( void ) const
+{TRACE;
+    
+    return m_URLActivateEvent;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEvent
+CURL::GetURLDeactivateEventID( void ) const
+{TRACE;
+    
+    return m_URLDeactivateEvent;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEvent
+CURL::GetURLDataRecievedEventID( void ) const
+{TRACE;
+    
+    return m_URLDataRecievedEvent;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEvent
+CURL::GetURLAllDataRecievedEventID( void ) const
+{TRACE;
+
+    return m_URLAllDataRecievedEvent;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEvent
+CURL::GetURLDataRetrievalErrorEventID( void ) const
+{TRACE;
+
+    return m_URLDataRetrievalErrorEvent;
 }
 
 /*-------------------------------------------------------------------------//
