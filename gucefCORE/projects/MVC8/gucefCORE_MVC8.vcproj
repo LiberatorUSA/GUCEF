@@ -540,6 +540,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CURLDataRetriever.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CURLHandler.cpp"
 				>
 			</File>
@@ -963,6 +967,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CURL.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CURLDataRetriever.h"
 				>
 			</File>
 			<File

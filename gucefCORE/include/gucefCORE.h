@@ -369,6 +369,11 @@
 #define GUCEF_CORE_CURLHANDLERREGISTRY_H
 #endif /* GUCEF_CORE_CURLHANDLERREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_CURLDATARETRIEVER_H
+#include "CURLDataRetriever.h"
+#define GUCEF_CORE_CURLDATARETRIEVER_H
+#endif /* GUCEF_CORE_CURLDATARETRIEVER_H ? */
+
 /*
  *      State machine implementation.
  *      Once set in motion the state machine will simply go trough the state handing

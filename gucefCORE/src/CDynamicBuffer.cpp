@@ -460,8 +460,8 @@ CDynamicBuffer::GetBufferPtr( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CDynamicBuffer::Append( void* data  ,
-                        UInt32 size )
+CDynamicBuffer::Append( const void* data  ,
+                        const UInt32 size )
 {TRACE;
 
     SecureLinkBeforeMutation();

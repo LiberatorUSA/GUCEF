@@ -29,6 +29,11 @@
 #define GUCEF_CORE_CSTRING_H
 #endif /* GUCEF_CORE_CSTRING_H ? */
 
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -57,6 +62,8 @@ class GUCEFCORE_EXPORT_CPP CIURLEvents
         static const CString URLDataRecievedEvent;
         static const CString URLAllDataRecievedEvent;
         static const CString URLDataRetrievalErrorEvent;
+        
+        typedef TLinkedCloneableBuffer    TURLDataRecievedEventData;
         
         static void RegisterEvents( void );                                    
 };

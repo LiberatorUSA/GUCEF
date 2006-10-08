@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CURL_H
-#define GUCEF_CORE_CURL_H
+#ifndef GUCEF_CORE_CURLDATARETRIEVER_H
+#define GUCEF_CORE_CURLDATARETRIEVER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,27 +24,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <set>
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
-#ifndef GUCEF_CORE_CSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CSTRING_H
-#endif /* GUCEF_CORE_CSTRING_H ? */
-
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
-
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
-
-#ifndef GUCEF_CORE_CIURLEVENTS_H
-#include "CIURLEvents.h"
-#define GUCEF_CORE_CIURLEVENTS_H
-#endif /* GUCEF_CORE_CIURLEVENTS_H ? */
+#ifndef GUCEF_CORE_CURL_H
+#include "CURL.h"
+#define GUCEF_CORE_CURL_H
+#endif /* GUCEF_CORE_CURL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -61,72 +49,44 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CURLHandler;
-
-/*-------------------------------------------------------------------------*/
-
 /**
- *  class that allows you to retrieve data using URL's
+ *  class that allows you to retrieve and subsequently store data
+ *  using URL's
  */
-class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
-                                  public CIURLEvents
+class GUCEFCORE_EXPORT_CPP CURLDataRetriever : public CObservingNotifier ,
+                                               public CIURLEvents
 {
-        public:
-        
-        CURL( void );
-        
-        CURL( const CString& url );
-        
-        virtual ~CURL();
-        
-        CURL& operator=( const CURL& src );
-        
-        bool operator==( const CURL& other ) const;
-        
-        bool operator!=( const CURL& other ) const;
-        
-        bool SetURL( const CString& newurl );
-        
-        CString GetURL( void ) const;
-        
-        bool Activate( void );
-        
-        void Deactivate( void );
-        
-        /**
-         *      Is a URL resource retrieval action in progress
-         */
-        bool IsActive( void ) const;
-        
-        void Refresh( void );
+    public:
+    
+    CURLDataRetriever( void );
+    
+    virtual ~CURLDataRetriever();
+    
+    CURL& GetURL( void );
+    
+    CDynamicBuffer& GetBuffer( void );
+    
+    CEvent GetURLActivateEventID( void ) const;
+    CEvent GetURLDeactivateEventID( void ) const;
+    CEvent GetURLDataRecievedEventID( void ) const;
+    CEvent GetURLAllDataRecievedEventID( void ) const;
+    CEvent GetURLDataRetrievalErrorEventID( void ) const;    
 
-        CEvent GetURLActivateEventID( void ) const;
-        CEvent GetURLDeactivateEventID( void ) const;
-        CEvent GetURLDataRecievedEventID( void ) const;
-        CEvent GetURLAllDataRecievedEventID( void ) const;
-        CEvent GetURLDataRetrievalErrorEventID( void ) const;
-
-        protected:
-        
-        virtual void OnNotify( CNotifier* notifier           ,
-                               const CEvent& eventid         ,
-                               CICloneable* eventdata = NULL );
-
-        private:
-        
-        CURLHandler* GetHandlerForURL( const CString& url ) const;
-        
-        static void RegisterEventsImp( CURL* url );
-        
-        private:        
-        
-        CEvent m_URLActivateEvent;
-        CEvent m_URLDeactivateEvent;
-        CEvent m_URLDataRecievedEvent;
-        CEvent m_URLAllDataRecievedEvent;
-        CEvent m_URLDataRetrievalErrorEvent;
-        CString m_url;             /**< the URL string */
-        CURLHandler* m_handler;    /**< URL handler for the specified URL protocol */
+    protected:
+    
+    virtual void OnNotify( CNotifier* notifier           ,
+                           const CEvent& eventid         ,
+                           CICloneable* eventdata = NULL );
+    
+    private:
+    
+    CURLDataRetriever( const CURLDataRetriever& src );
+    CURLDataRetriever& operator=( CURLDataRetriever& src );
+    
+    private:
+    
+    CDynamicBuffer m_buffer;
+    CURL m_url;
 };
 
 /*-------------------------------------------------------------------------//
@@ -140,7 +100,7 @@ class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CURL_H ? */
+#endif /* GUCEF_CORE_CURLDATARETRIEVER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -148,7 +108,7 @@ class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 24-04-2005 :
+- 08-10-2006 :
         - Initial implementation
           
 ---------------------------------------------------------------------------*/

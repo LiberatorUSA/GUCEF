@@ -214,8 +214,8 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
         
         void CopyTo( CDynamicBuffer& dest ) const;
                      
-        void Append( void* data  ,
-                     UInt32 size );                     
+        void Append( const void* data  ,
+                     const UInt32 size );
                      
         void* GetBufferPtr( void );
         
