@@ -5,7 +5,7 @@
 #---------------------------------------------------------------------------
 PROJECT_NAME           = GUCEF
 PROJECT_NUMBER         = 0.1
-OUTPUT_DIRECTORY       = J:/BUILD/BUILD/GU/GUCEF/docs
+OUTPUT_DIRECTORY       = docs\API
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
 USE_WINDOWS_ENCODING   = YES
@@ -82,7 +82,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = J:/BUILD/BUILD/GU/GUCEF
+INPUT                  = 
 FILE_PATTERNS          = *.h
 RECURSIVE              = YES
 EXCLUDE                = unused \

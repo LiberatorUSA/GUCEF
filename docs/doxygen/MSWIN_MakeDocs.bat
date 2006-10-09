@@ -1,0 +1,6 @@
+SET PATH=%DOXYGEN%;%PATH%
+SET DOXFILEDIR=%CD%
+cd..
+cd..
+doxygen.exe %DOXFILEDIR%\GUCEF_API.dox
+cd %DOXFILEDIR%
