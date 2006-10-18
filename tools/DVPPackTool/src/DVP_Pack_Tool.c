@@ -676,7 +676,7 @@ Print_Info_Header( void )
          *  Build version string
          */
         char versionStr[ 16 ];
-        sprintf( "%d.%d.%d.%d", DVP_MAJOR_VERSION, DVP_MINOR_VERSION, DVP_RELEASE_VERSION, DVP_PATCH_VERSION );
+        sprintf( versionStr, "%d.%d.%d.%d", DVP_MAJOR_VERSION, DVP_MINOR_VERSION, DVP_RELEASE_VERSION, DVP_PATCH_VERSION );
         
         /*
          *      Output logo to console

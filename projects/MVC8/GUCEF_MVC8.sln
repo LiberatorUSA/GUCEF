@@ -104,6 +104,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFCPatcherGUI", "..\..\tool
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DVPPackTool", "..\..\tools\DVPPackTool\projects\MVC8\DVPPackTool.vcproj", "{EC92D299-1CF9-42E8-8B7A-4DABA71E2A1E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gucefDRN_MVC8", "..\..\gucefDRN\projects\MVC8\gucefDRN_MVC8.vcproj", "{EC85F48F-04B3-469A-882C-E5B07691716D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug ICONV using MultiTh RTL DLL|Win32 = Debug ICONV using MultiTh RTL DLL|Win32
@@ -256,6 +258,14 @@ Global
 		{EC92D299-1CF9-42E8-8B7A-4DABA71E2A1E}.Release ICONV using MultiTh RTL DLL|Win32.Build.0 = Release|Win32
 		{EC92D299-1CF9-42E8-8B7A-4DABA71E2A1E}.Release|Win32.ActiveCfg = Release|Win32
 		{EC92D299-1CF9-42E8-8B7A-4DABA71E2A1E}.Release|Win32.Build.0 = Release|Win32
+		{EC85F48F-04B3-469A-882C-E5B07691716D}.Debug ICONV using MultiTh RTL DLL|Win32.ActiveCfg = Debug|Win32
+		{EC85F48F-04B3-469A-882C-E5B07691716D}.Debug ICONV using MultiTh RTL DLL|Win32.Build.0 = Debug|Win32
+		{EC85F48F-04B3-469A-882C-E5B07691716D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EC85F48F-04B3-469A-882C-E5B07691716D}.Debug|Win32.Build.0 = Debug|Win32
+		{EC85F48F-04B3-469A-882C-E5B07691716D}.Release ICONV using MultiTh RTL DLL|Win32.ActiveCfg = Release|Win32
+		{EC85F48F-04B3-469A-882C-E5B07691716D}.Release ICONV using MultiTh RTL DLL|Win32.Build.0 = Release|Win32
+		{EC85F48F-04B3-469A-882C-E5B07691716D}.Release|Win32.ActiveCfg = Release|Win32
+		{EC85F48F-04B3-469A-882C-E5B07691716D}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -64,10 +64,10 @@
 
 /*---------------------------------------------------------------------------*/
 
-#define DVP_MAJOR_VERSION       1                               /* mayor version number of this module */
-#define DVP_MINOR_VERSION       1                               /* minor version number of this module */
-#define DVP_RELEASE_VERSION     0                               /* release version number of this module */
-#define DVP_PATCH_VERSION       0                               /* patch version number of this module */
+#define DVP_MAJOR_VERSION       1UL                             /* mayor version number of this module */
+#define DVP_MINOR_VERSION       1UL                             /* minor version number of this module */
+#define DVP_RELEASE_VERSION     0UL                             /* release version number of this module */
+#define DVP_PATCH_VERSION       0UL                             /* patch version number of this module */
 
 #define DVP_BLOCK_SIZE          (1024*1024) /* 1 MB */          /* default block size when reading/writing files */
 #define DVP_PACK_EXT            "dvp"                           /* file extension of pack files */

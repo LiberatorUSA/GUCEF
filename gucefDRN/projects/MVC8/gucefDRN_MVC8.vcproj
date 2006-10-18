@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="DVPPackTool"
-	ProjectGUID="{EC92D299-1CF9-42E8-8B7A-4DABA71E2A1E}"
-	RootNamespace="DVPPackTool"
+	Name="gucefDRN_MVC8"
+	ProjectGUID="{EC85F48F-04B3-469A-882C-E5B07691716D}"
+	RootNamespace="gucefDRN_MVC8"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -17,9 +17,9 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../bin/Debug_MVC8"
-			IntermediateDirectory="../../bin/Debug_MVC8"
-			ConfigurationType="1"
+			OutputDirectory="..\..\bin\Debug_MVC8"
+			IntermediateDirectory="..\..\bin\Debug_MVC8"
+			ConfigurationType="2"
 			CharacterSet="1"
 			>
 			<Tool
@@ -40,8 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../../../common/include;../../../../gucefCORE/include;../../../../gucefMT/include;../../../../gucefVFS/include;../../../../gucefVFS/plugins/vfspluginDVP/include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefCOMCORE\include;..\..\..\gucefCORE\include;..\..\..\gucefMT\include;..\..\..\common\include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GUCEFDRN_MVC8_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -49,7 +49,6 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
-				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -62,12 +61,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCORE_MVC8_d.lib"
-				Version="1.0"
+				AdditionalDependencies="gucefCOMCORE_MVC8_d.lib gucefCORE_MVC8_d.lib gucefMT_MVC8_d.lib"
+				OutputFile="$(OutDir)\gucefDRN_MVC8_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="../../../../gucefCORE/bin/Debug_MVC8"
+				AdditionalLibraryDirectories="..\..\..\gucefCOMCORE\bin\Debug_MVC8;..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\gucefMT\bin\Debug_MVC8"
 				GenerateDebugInformation="true"
-				SubSystem="1"
+				SubSystem="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -93,14 +92,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) ..\..\..\..\common\bin\Debug_MVC8"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -121,7 +119,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GUCEFDRN_MVC8_EXPORTS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -141,7 +139,7 @@
 				Name="VCLinkerTool"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
-				SubSystem="1"
+				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
@@ -181,11 +179,39 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\DVP_Pack_Tool.c"
+				RelativePath="..\..\src\CDRNClient.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\gucefVFS\plugins\vfspluginDVP\src\DVPACKSYS.c"
+				RelativePath="..\..\src\CDRNClientInterface.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CDRNController.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CDRNControllerMainComHandler.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CDRNControllerPHUDPPeerComHandler.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CDRNControllerTCPPeerComHandler.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CDRNDataItem.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CDRNLocalDataItem.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CDRNPeerDataItem.cpp"
 				>
 			</File>
 		</Filter>
@@ -195,7 +221,59 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\..\..\gucefVFS\plugins\vfspluginDVP\include\DVPACKSYS.h"
+				RelativePath="..\..\include\CDRNBroadcaster.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CDRNClient.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CDRNClientInterface.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CDRNController.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CDRNControllerInterface.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CDRNControllerMainComHandler.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CDRNControllerPHUDPPeerComHandler.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CDRNControllerTCPPeerComHandler.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CDRNControllerToClientHandler.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CDRNDataItem.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CDRNLocalDataItem.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CDRNPeerDataItem.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CDRNServer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\DRNProtocol.h"
 				>
 			</File>
 		</Filter>

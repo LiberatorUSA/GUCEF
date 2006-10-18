@@ -204,15 +204,11 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchListParserEvents.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefPATCHER_CPatchSetParser.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\gucefPATCHER_CPatchSetParserEventHandler.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\gucefPATCHER_CStandardPSPEventHandler.cpp"
 				>
 			</File>
 		</Filter>
@@ -222,15 +218,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\include\gucefPATCHER_CIPatchListParserEvents.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\gucefPATCHER_config.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefPATCHER_CPatchListHandler.h"
+				RelativePath="..\..\include\gucefPATCHER_CPatcher.h"
 				>
 			</File>
 			<File
@@ -238,15 +230,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchListParserEvents.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefPATCHER_CPatchSetParser.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefPATCHER_CPatchSetParserEventHandler.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefPATCHER_CStandardPSPEventHandler.h"
+				RelativePath="..\..\include\gucefPATCHER_CPatchSetParserEvents.h"
 				>
 			</File>
 			<File

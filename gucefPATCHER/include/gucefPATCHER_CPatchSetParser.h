@@ -28,6 +28,7 @@
 #include <vector>
 #include "CDataNode.h"
 #include "CDVString.h"
+#include "gucefPATCHER_CPatchSetParserEvents.h"
 
 #include "gucefPATCHER_macros.h"
 
@@ -50,7 +51,7 @@ class CPatchSetParserEventHandler;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPatchSetParser
+class EXPORT_CPP CPatchSetParser : public CPatchSetParserEvents
 {
     public:
     

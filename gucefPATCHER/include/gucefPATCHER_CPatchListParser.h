@@ -30,7 +30,7 @@
 #include "CDVString.h"
 #include "CURL.h"
 #include "CObservingNotifier.h"
-
+#include "gucefPATCHER_CPatchListParserEvents.h"
 #include "gucefPATCHER_macros.h"
 
 /*-------------------------------------------------------------------------//
@@ -48,11 +48,9 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-class CPatchSetParserEventHandler;
 
-/*-------------------------------------------------------------------------*/
-
-class EXPORT_CPP CPatchListParser : public CORE::CObservingNotifier
+class EXPORT_CPP CPatchListParser : public CORE::CObservingNotifier ,
+                                    public CPatchListParserEvents
 {
     public:
     
@@ -60,11 +58,9 @@ class EXPORT_CPP CPatchListParser : public CORE::CObservingNotifier
     static const CORE::CString PatchListRetrievalEndEvent;
     static const CORE::CString PatchListRetrievalErrorEvent;
     static const CORE::CString PatchListEntryEvent;
-    static const CORE::CString PatchSetEntryEvent;
     static const CORE::CString PatchSetRetrievalBeginEvent;
     static const CORE::CString PatchSetRetrievalEndEvent;
     static const CORE::CString PatchSetRetrievalErrorEvent;
-    static const CORE::CString ParserErrorEvent;
         
     public:
     
