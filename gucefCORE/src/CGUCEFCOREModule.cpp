@@ -81,6 +81,11 @@
 #define GUCEF_CORE_CIURLEVENTS_H
 #endif /* GUCEF_CORE_CIURLEVENTS_H ? */
 
+#ifndef GUCEF_CORE_CNOTIFYINGMAPEVENTS_H
+#include "CNotifyingMapEvents.h"
+#define GUCEF_CORE_CNOTIFYINGMAPEVENTS_H
+#endif /* GUCEF_CORE_CNOTIFYINGMAPEVENTS_H ? */
+
 #include "CGUCEFCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef ADD_MEMORY_MANAGER
@@ -139,7 +144,7 @@ bool
 CGUCEFCOREModule::Load( void )
 {
         /*
-         *      Verry important: Initialize the memory manager before anything else !!!!!
+         *      Very important: Initialize the memory manager before anything else !!!!!
          */
         #ifdef ADD_MEMORY_MANAGER        
         MEMMAN_SetLogFile( "GUCEFMemoryLog.txt" );
@@ -171,11 +176,12 @@ CGUCEFCOREModule::Load( void )
         CGenericPluginManager::Instance();
         
         /*
-         *      Register events for objects that can be created dynamicly
+         *      Register events for objects that can be created dynamically
          */
         CNotifier::RegisterEvents();
         CPluginManager::RegisterEvents();
         CIURLEvents::RegisterEvents();
+        CNotifyingMapEvents::RegisterEvents();
         
         /*
          *      Register some default codecs/handlers 
@@ -212,7 +218,7 @@ CGUCEFCOREModule::Unload( void )
         tspshutdown();
         
         /*
-         *      Verry important: Shutdown the memory manager last !!!!!
+         *      Very important: Shutdown the memory manager last !!!!!
          */
         #ifdef ADD_MEMORY_MANAGER 
         MEMMAN_Shutdown();

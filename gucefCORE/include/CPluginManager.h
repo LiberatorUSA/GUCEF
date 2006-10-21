@@ -64,8 +64,8 @@ class GUCEFCORE_EXPORT_CPP CPluginManager : public CObservingNotifier
 {
     public:
 
-    static const CORE::CString PluginLoadedEvent;
-    static const CORE::CString PluginUnloadedEvent;
+    static const CEvent PluginLoadedEvent;
+    static const CEvent PluginUnloadedEvent;
     
     CPluginManager( void );
     
@@ -79,10 +79,6 @@ class GUCEFCORE_EXPORT_CPP CPluginManager : public CObservingNotifier
     
     virtual void UnloadAll( void ) = 0;
     
-    CEvent GetPluginLoadedEventID( void ) const;
-    
-    CEvent GetPluginUnloadedEventID( void ) const;
-    
     static void RegisterEvents( void );
     
     protected:
@@ -92,7 +88,7 @@ class GUCEFCORE_EXPORT_CPP CPluginManager : public CObservingNotifier
 
     /**
      *  Event callback member function.
-     *  Implement this in your decending class to handle
+     *  Implement this in your descending class to handle
      *  notification events.
      *
      *  @param notifier the notifier that sent the notification
@@ -111,8 +107,6 @@ class GUCEFCORE_EXPORT_CPP CPluginManager : public CObservingNotifier
     friend class CPluginControl;
     
     UInt32 _managerid; /**< ID used to quickly manage this manager at the plugin control center */
-    CEvent m_pluginLoadedEventID;
-    CEvent m_pluginUnloadedEventID;
 };
 
 /*-------------------------------------------------------------------------//

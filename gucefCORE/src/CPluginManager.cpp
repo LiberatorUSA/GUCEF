@@ -50,8 +50,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CString CPluginManager::PluginLoadedEvent = "GUCEF::CORE::CPluginManager::PluginLoadedEvent";
-const CString CPluginManager::PluginUnloadedEvent = "GUCEF::CORE::CPluginManager::PluginUnloadedEvent";
+const CEvent CPluginManager::PluginLoadedEvent = "GUCEF::CORE::CPluginManager::PluginLoadedEvent";
+const CEvent CPluginManager::PluginUnloadedEvent = "GUCEF::CORE::CPluginManager::PluginUnloadedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,12 +63,10 @@ const CString CPluginManager::PluginUnloadedEvent = "GUCEF::CORE::CPluginManager
  *      Generic interface for plugin managers
  */
 CPluginManager::CPluginManager( void )
-    : CObservingNotifier()                           ,
-      m_pluginLoadedEventID( PluginLoadedEvent )     ,
-      m_pluginUnloadedEventID( PluginUnloadedEvent )
+    : CObservingNotifier()
 {TRACE;
 
-        CPluginControl::Instance()->Register( this );       
+    RegisterEvents();       
 }
 
 /*-------------------------------------------------------------------------*/
@@ -77,13 +75,15 @@ CPluginManager::CPluginManager( const CPluginManager& src )
     : CObservingNotifier( src )
 {TRACE;
 
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
         
 CPluginManager::~CPluginManager()
 {TRACE;
-        CPluginControl::Instance()->Unregister( this );
+    
+    CPluginControl::Instance()->Unregister( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -91,7 +91,8 @@ CPluginManager::~CPluginManager()
 CString
 CPluginManager::GetPluginDir( void ) const
 {TRACE;
-        return CPluginControl::Instance()->GetPluginDir();
+    
+    return CPluginControl::Instance()->GetPluginDir();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -101,32 +102,15 @@ CPluginManager::OnSetPluginDir( const CString& path )
 {TRACE;
       
 }
-/*-------------------------------------------------------------------------*/
-
-CEvent
-CPluginManager::GetPluginLoadedEventID( void ) const
-{TRACE;
-
-    return m_pluginLoadedEventID;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-CEvent
-CPluginManager::GetPluginUnloadedEventID( void ) const
-{TRACE;
-
-    return m_pluginUnloadedEventID;
-}
 
 /*-------------------------------------------------------------------------*/
 
 void
 CPluginManager::RegisterEvents( void )
 {TRACE;
-        CORE::CNotificationIDRegistry* registry = CNotificationIDRegistry::Instance();
-        registry->Register( PluginLoadedEvent, true );
-        registry->Register( PluginUnloadedEvent, true );
+        
+    PluginLoadedEvent.Initialize();
+    PluginUnloadedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -137,7 +121,7 @@ CPluginManager::OnNotify( CNotifier* notifier                 ,
                           CICloneable* eventdata /* = NULL */ )
 {TRACE;
 
-    /* dummy to avoid manditory implementation in the decending class */
+    /* dummy to avoid mandatory implementation in the descending class */
 }
         
 /*-------------------------------------------------------------------------//

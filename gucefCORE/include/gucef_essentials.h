@@ -41,7 +41,7 @@
   #endif /* GUCEF_CORE_CTRACER_H ? */ 
 #endif /* __cplusplus ? */ 
 
-#ifdef ADD_MEMORY_MANAGER
+#ifdef GUCEFCORE_ADD_MEMORY_MANAGER
   #ifndef GUCEF_CORE_MEMORYMANAGER_H
     #include "MemoryManager.h"    /* memory manager API */
     #define GUCEF_CORE_MEMORYMANAGER_H

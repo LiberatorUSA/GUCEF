@@ -147,7 +147,7 @@ CGenericPluginManager::UnloadAll( void )
     while ( i != m_pluginList.end() )
     {
         // notify observers that we are about to unload the module
-        NotifyObservers( GetPluginUnloadedEventID() );
+        NotifyObservers( PluginUnloadedEvent );
         
         // Perform the actual unload
         (*i)->Unload();
@@ -195,7 +195,7 @@ CGenericPluginManager::Load( const CString& pluginPath )
             m_pluginList.push_back( plugin );
             
             // Notify the observers of this event
-            NotifyObservers( GetPluginLoadedEventID() );
+            NotifyObservers( PluginLoadedEvent );
             
             return true;
         }
@@ -224,7 +224,7 @@ CGenericPluginManager::Unload( const CString& pluginPath )
         if ( pluginPath == (*i)->GetModulePath() )
         {
             // notify observers that we are about to unload the module
-            NotifyObservers( GetPluginUnloadedEventID() );
+            NotifyObservers( PluginUnloadedEvent );
 
             // Perform the actual unload
             (*i)->Unload();

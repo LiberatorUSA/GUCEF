@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -56,7 +56,7 @@ class GUCEFCORE_EXPORT_CPP CITypeNamed
         
         virtual ~CITypeNamed();
         
-        virtual CString GetType( void ) = 0;                            
+        virtual CString GetType( void ) const = 0;                            
 };
 
 /*-------------------------------------------------------------------------//

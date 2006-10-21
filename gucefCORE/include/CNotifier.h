@@ -29,6 +29,7 @@
 #include <map>
 #include "gucefCORE_ETypes.h"
 #include "CICloneable.h"
+#include "CITypeNamed.h"
 
 #ifndef GUCEF_CORE_CEVENT_H
 #include "CEvent.h"
@@ -66,32 +67,32 @@ class CObserver;
  *  are unique simply because your namespace::class::event combination is unique in 
  *  C++ as well.
  *
- *  Note that this class automaticly registers four notification events
+ *  Note that this class automatically registers four notification events
  *  if they are not already registered. These are:
  *      - "GUCEF::CORE::CNotifier::SubscribeEvent"
  *      - "GUCEF::CORE::CNotifier::UnsubscribeEvent"
  *      - "GUCEF::CORE::CNotifier::ModifyEvent"
  *      - "GUCEF::CORE::CNotifier::DestructionEvent"
  *
- *  Note that every observer will be automaticly subscribed to
+ *  Note that every observer will be automatically subscribed to
  *  the four standard notification events.
  *
  *  Note that CNotifier is NOT threadsafe on it's own to avoid introducing
- *  unnesesarry overhead. If you want a threadsafe notifier then simply
- *  implement LockData() and UnlockData() yourself in your decending class.
+ *  unnecessary overhead. If you want a threadsafe notifier then simply
+ *  implement LockData() and UnlockData() yourself in your descending class.
  *
  *  Current known issues:
- *  - chain reactions occuring during the handling of an event that access
+ *  - chain reactions occurring during the handling of an event that access
  *    the notifier indirectly can cause errors 
  */
-class GUCEFCORE_EXPORT_CPP CNotifier
+class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
 {
     public:
 
-    static const CString SubscribeEvent;
-    static const CString UnsubscribeEvent;
-    static const CString ModifyEvent;
-    static const CString DestructionEvent;
+    static const CEvent SubscribeEvent;
+    static const CEvent UnsubscribeEvent;
+    static const CEvent ModifyEvent;
+    static const CEvent DestructionEvent;
 
     CNotifier( void );
 
@@ -134,38 +135,6 @@ class GUCEFCORE_EXPORT_CPP CNotifier
                       const CEvent& eventid );
 
     static void RegisterEvents( void );
-    
-    /**
-     *  Utility member function, saves you some effort in retrieving
-     *  the unique id for the notifier subscribe event.
-     *
-     *  @return unique event id of the notifier subscribe event
-     */
-    CEvent GetSubscribeEventID( void ) const;
-
-    /**
-     *  Utility member function, saves you some effort in retrieving
-     *  the unique id for the notifier unsubscribe event.
-     *
-     *  @return unique event id of the notifier unsubscribe event
-     */
-    CEvent GetUnsubscribeEventID( void ) const;
-    
-    /**
-     *  Utility member function, saves you some effort in retrieving
-     *  the unique id for the notifier modify event.
-     *
-     *  @return unique event id of the notifier modify event
-     */    
-    CEvent GetModifyEventID( void ) const;
-
-    /**
-     *  Utility member function, saves you some effort in retrieving
-     *  the unique id for the notifier destruction event.
-     *
-     *  @return unique event id of the notifier destruction event
-     */    
-    CEvent GetDestructionEventID( void ) const;
 
     /**
      *  Decending classes should override this with the classname
@@ -175,11 +144,11 @@ class GUCEFCORE_EXPORT_CPP CNotifier
      *  Note that this mechanism is meant as a replacement for
      *  RTTI. You can accomplish the same with a dynamic_cast for 
      *  example. The catch is that RTTI has an implicit system-wide  
-     *  performace impact !!!. Since the scenario's where you need 
+     *  performance impact !!!. Since the scenario's where you need 
      *  functionality like this are limited or even non-existent 
      *  we chose to use this approach.
      */
-    virtual std::string GetTypeName( void ) const;
+    virtual CString GetType( void ) const;
 
     protected:
     
@@ -235,11 +204,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier
 
     void UnsubscribeFromAllEvents( CObserver* observer       ,
                                    const bool notifyObserver );
-    
-    CEvent m_modifyEvent;
-    CEvent m_destructionEvent;
-    CEvent m_subscribeEvent;
-    CEvent m_unsubscribeEvent;    
+        
     TNotificationList m_eventobservers;
     TObserverList m_observers;
 };

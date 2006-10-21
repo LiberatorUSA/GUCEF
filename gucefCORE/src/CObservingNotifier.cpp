@@ -268,7 +268,7 @@ CObservingNotifier::OnNotify( CNotifier* notifier                 ,
     assert( NULL != notifier );
     
     // Check for administration updates
-    if ( eventid == notifier->GetDestructionEventID() )
+    if ( eventid == DestructionEvent )
     {
         // make sure that our forwarding list does not contain pointers 
         // to already deleted notifier instances

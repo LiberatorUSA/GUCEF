@@ -46,7 +46,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Class that combines a notifier with observer behaviour
+ *  Class that combines a notifier with observer behavior
  *  Mainly to be used for node objects in your chain-of-events
  *  tree
  */
@@ -89,7 +89,7 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
     /**
      *  Detaches the observer component from the notifier.
      *  All the observers subscriptions will be cancelled
-     *  This includes both standard notifier events aswell 
+     *  This includes both standard notifier events as well 
      *  as custom events.
      */    
     void UnsubscribeFrom( CNotifier* notifier );
@@ -104,7 +104,7 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
                           const CEvent& eventid );
 
     /**
-     *  Returns a refrence to the mutable observer component.
+     *  Returns a reference to the mutable observer component.
      *
      *  Note that mutations to the observer component also lock
      *  the notification component in a multi-threading scenario
@@ -114,7 +114,7 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
     CObserver& AsObserver( void );
 
     /**
-     *  Returns a refrence to the observer component. 
+     *  Returns a reference to the observer component. 
      *
      *  Note that retrieval actions on the observer component also lock
      *  the notification component in a multi-threading scenario
@@ -139,7 +139,7 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
      *  class and potential sub-system classes derive. This allows you
      *  to use forwarding without breaking event scoping rules.
      *
-     *  @param eventid the ID specifiying the event you wish to forward
+     *  @param eventid the ID specifying the event you wish to forward
      *  @param notifier if non-NULL only event's triggered from the 
      *  @param notifier given notifier are forwarded, otherwise the 
      *  @param notifier event is always forwarded
@@ -152,7 +152,7 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
      *
      *  See AddEventForwarding() for more details
      *
-     *  @param eventid the ID specifiying the event you wish to remove from forwarding
+     *  @param eventid the ID specifying the event you wish to remove from forwarding
      *  @param notifier if non-NULL only event's triggered from the 
      *  @param notifier given notifier are removed from the forwarding list,  
      *  @param notifier otherwise the event is always forwarded
@@ -165,11 +165,11 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
     
     /**
      *  Event callback member function.
-     *  Implement this in your decending class to handle
+     *  Implement this in your descending class to handle
      *  notification events.
      *
      *  Note: Do NOT  forget to call this class's implementation
-     *  from your decending class.
+     *  from your descending class.
      *
      *  @param notifier the notifier that sent the notification
      *  @param eventid the unique event id for an event
@@ -182,7 +182,7 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
     private:
     
     /**
-     *  Removes all refrences to the given notifier from our forwarding
+     *  Removes all references to the given notifier from our forwarding
      *  system
      */
     void RemoveEventForwarding( CNotifier& notifier );

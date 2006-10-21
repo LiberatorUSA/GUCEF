@@ -134,12 +134,12 @@ CNotificationIDRegistry::Register( const std::string& keyvalue                  
         TRegistryList::const_iterator i = m_list.find( keyvalue );
         if ( i == m_list.end() )
         {
-            if ( ULONG_MAX > m_lastid )
+            if ( GUCEFCORE_UINT32MAX > m_lastid )
             {                
                 m_list[ keyvalue ] = m_lastid;
                 ++m_lastid;
                 m_dataLock.Unlock();
-                return m_lastid-1;
+                return CEvent( m_lastid-1, keyvalue );
             }
         
             /*
@@ -165,7 +165,7 @@ CNotificationIDRegistry::Register( const std::string& keyvalue                  
                 {
                     m_list[ keyvalue ] = n;
                     m_dataLock.Unlock();
-                    return n;
+                    return CEvent( n, keyvalue );
                 }
             }
         }
@@ -176,7 +176,7 @@ CNotificationIDRegistry::Register( const std::string& keyvalue                  
             GUCEF_EMSGTHROW( EKeyAlreadyRegistered, "CNotificationIDRegistry: Key is already registerd" );
         }
         m_dataLock.Unlock();
-        return (*i).second;
+        return CEvent( (*i).second, keyvalue );
     }
     else
     {
@@ -229,7 +229,7 @@ CNotificationIDRegistry::Lookup( const std::string& keyvalue ,
     if ( i != m_list.end() )
     {
         m_dataLock.Unlock();
-        return (*i).second;
+        return CEvent( (*i).second, keyvalue );
     }
     
     if ( registerUnknown )

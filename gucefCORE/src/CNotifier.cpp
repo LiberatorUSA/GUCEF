@@ -47,10 +47,10 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CString CNotifier::SubscribeEvent = "GUCEF::CORE::CNotifier::SubscribeEvent";
-const CString CNotifier::UnsubscribeEvent = "GUCEF::CORE::CNotifier::UnsubscribeEvent";
-const CString CNotifier::ModifyEvent = "GUCEF::CORE::CNotifier::ModifyEvent";
-const CString CNotifier::DestructionEvent = "GUCEF::CORE::CNotifier::DestructionEvent";
+const CEvent CNotifier::SubscribeEvent = "GUCEF::CORE::CNotifier::SubscribeEvent";
+const CEvent CNotifier::UnsubscribeEvent = "GUCEF::CORE::CNotifier::UnsubscribeEvent";
+const CEvent CNotifier::ModifyEvent = "GUCEF::CORE::CNotifier::ModifyEvent";
+const CEvent CNotifier::DestructionEvent = "GUCEF::CORE::CNotifier::DestructionEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,10 +59,6 @@ const CString CNotifier::DestructionEvent = "GUCEF::CORE::CNotifier::Destruction
 //-------------------------------------------------------------------------*/
 
 CNotifier::CNotifier( void )
-    : m_modifyEvent( ModifyEvent )           ,
-      m_destructionEvent( DestructionEvent ) ,
-      m_subscribeEvent( SubscribeEvent )     ,
-      m_unsubscribeEvent( UnsubscribeEvent )
 {TRACE;
 
 }
@@ -100,10 +96,10 @@ CNotifier::~CNotifier()
     /*
      *  Notify observers that the notifier is die-ing
      */
-    ForceNotifyObserversOnce( m_destructionEvent );
+    ForceNotifyObserversOnce( DestructionEvent );
     
     /*
-     *  Now we will remove refrences to this notifier at the observers
+     *  Now we will remove references to this notifier at the observers
      */   
     TObserverList::iterator i = m_observers.begin();
     while ( i != m_observers.end() )
@@ -119,11 +115,10 @@ void
 CNotifier::RegisterEvents( void )
 {TRACE;
 
-    CNotificationIDRegistry* registry = CNotificationIDRegistry::Instance();
-    registry->Register( ModifyEvent, true );
-    registry->Register( DestructionEvent, true );            
-    registry->Register( SubscribeEvent, true );
-    registry->Register( UnsubscribeEvent, true );
+    ModifyEvent.Initialize();
+    DestructionEvent.Initialize();
+    SubscribeEvent.Initialize();
+    UnsubscribeEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -153,7 +148,7 @@ CNotifier::Subscribe( CObserver* observer )
     
     /*
      *  Add the observer to our list of observers as needed.
-     *  This will automaticly subscribe the observer to 
+     *  This will automatically subscribe the observer to 
      *  all notification events.
      */
     TObserverList::iterator i = m_observers.find( observer );
@@ -169,9 +164,9 @@ CNotifier::Subscribe( CObserver* observer )
         /*
          *  Send the standard subscription event
          */
-        observer->OnNotify( this             ,
-                            m_subscribeEvent ,
-                            NULL             );            
+        observer->OnNotify( this           ,
+                            SubscribeEvent ,
+                            NULL           );            
     }
     
     UnlockData();   
@@ -189,13 +184,13 @@ CNotifier::Subscribe( CObserver* observer   ,
     bool notifyAboutSubscription = false;
     
     /*
-     *  We filter subscribtion requests for standard events because there is
+     *  We filter subscription requests for standard events because there is
      *  no need to store them. All observers are subscribed to these events at all times anyway.
      */
-    if ( ( eventid != m_destructionEvent ) &&
-         ( eventid != m_modifyEvent )      &&
-         ( eventid != m_subscribeEvent )   &&
-         ( eventid != m_unsubscribeEvent )  ) 
+    if ( ( eventid != DestructionEvent ) &&
+         ( eventid != ModifyEvent )      &&
+         ( eventid != SubscribeEvent )   &&
+         ( eventid != UnsubscribeEvent )  ) 
     {
         TNotificationList::iterator n( m_eventobservers.find( eventid ) );
         if ( n != m_eventobservers.end() )
@@ -225,9 +220,9 @@ CNotifier::Subscribe( CObserver* observer   ,
             /*
              *  Send the standard subscription event
              */
-            observer->OnNotify( this             ,
-                                m_subscribeEvent ,
-                                NULL             );
+            observer->OnNotify( this           ,
+                                SubscribeEvent ,
+                                NULL           );
         }
         else
         {
@@ -235,7 +230,7 @@ CNotifier::Subscribe( CObserver* observer   ,
              *  If we get here then the event is unknown to us at this time.
              *  We will add an entry to the list for this event and hook up the
              *  subscriber.
-             *  Adding the entry is acomplished by using the index operator on the map
+             *  Adding the entry is accomplished by using the index operator on the map
              */
             TObserverSet& eventObservers = m_eventobservers[ eventid ];
             eventObservers.insert( observer );
@@ -248,9 +243,9 @@ CNotifier::Subscribe( CObserver* observer   ,
             /*
              *  Send the standard subscription event
              */
-            observer->OnNotify( this             ,
-                                m_subscribeEvent ,
-                                NULL             );
+            observer->OnNotify( this           ,
+                                SubscribeEvent ,
+                                NULL           );
         }
     }
     else
@@ -260,7 +255,7 @@ CNotifier::Subscribe( CObserver* observer   ,
 
     /*
      *  Add the observer to our list of observers as needed.
-     *  This will automaticly subscribe the observer to the
+     *  This will automatically subscribe the observer to the
      *  four standard notification events.
      */
     TObserverList::iterator i = m_observers.find( observer );
@@ -278,9 +273,9 @@ CNotifier::Subscribe( CObserver* observer   ,
             /*
              *  Send the standard subscription event
              */
-            observer->OnNotify( this             ,
-                                m_subscribeEvent ,
-                                NULL             );            
+            observer->OnNotify( this           ,
+                                SubscribeEvent ,
+                                NULL           );            
         }               
     }
     UnlockData();
@@ -326,7 +321,7 @@ CNotifier::UnsubscribeFromAllEvents( CObserver* observer       ,
         if ( i != eventObservers.end() )
         {
             /*
-             *  Remove the refrence to the given observer
+             *  Remove the reference to the given observer
              */
             eventObservers.erase( i );
         }
@@ -335,7 +330,7 @@ CNotifier::UnsubscribeFromAllEvents( CObserver* observer       ,
     }
     
     /*
-     *  Now remove the observer's refrence to the notifier
+     *  Now remove the observer's reference to the notifier
      *  for all events
      */
     observer->UnlinkFrom( this, true );
@@ -345,8 +340,8 @@ CNotifier::UnsubscribeFromAllEvents( CObserver* observer       ,
         /*
          *  Send the standard unsubscribe event
          */
-        observer->OnNotify( this               ,
-                            m_unsubscribeEvent );
+        observer->OnNotify( this             ,
+                            UnsubscribeEvent );
     }
 }
 
@@ -359,10 +354,10 @@ CNotifier::Unsubscribe( CObserver* observer   ,
 
     LockData();
     
-    if ( ( eventid != m_destructionEvent ) &&
-         ( eventid != m_subscribeEvent )   &&
-         ( eventid != m_unsubscribeEvent ) &&
-         ( eventid != m_modifyEvent )        )
+    if ( ( eventid != DestructionEvent ) &&
+         ( eventid != SubscribeEvent )   &&
+         ( eventid != UnsubscribeEvent ) &&
+         ( eventid != ModifyEvent )       )
     {
         TObserverSet& eventObservers = m_eventobservers[ eventid ];    
         TObserverSet::iterator i( eventObservers.begin() );
@@ -382,17 +377,17 @@ CNotifier::Unsubscribe( CObserver* observer   ,
         }
 
         /*
-         *  Now remove the observer's refrence to the notifier
-         *  for 1 event, effectivly reducing the observer's 
-         *  refrence count for this notifier.
+         *  Now remove the observer's reference to the notifier
+         *  for 1 event, effectively reducing the observer's 
+         *  reference count for this notifier.
          */
         observer->UnlinkFrom( this );
 
         /*
          *  Send the standard unsubscribe event
          */
-        observer->OnNotify( this               ,
-                            m_unsubscribeEvent );
+        observer->OnNotify( this             ,
+                            UnsubscribeEvent );
     }
     
     UnlockData();
@@ -405,7 +400,7 @@ CNotifier::NotifyObservers( void )
 {TRACE;
 
     LockData();
-    ForceNotifyObserversOnce( m_modifyEvent );
+    ForceNotifyObserversOnce( ModifyEvent );
     UnlockData();
 }
 
@@ -476,44 +471,8 @@ CNotifier::OnObserverDestroy( CObserver* observer )
 
 /*-------------------------------------------------------------------------*/
 
-CEvent 
-CNotifier::GetSubscribeEventID( void ) const
-{TRACE;
-
-    return m_subscribeEvent;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CEvent 
-CNotifier::GetUnsubscribeEventID( void ) const
-{TRACE;
-
-    return m_unsubscribeEvent;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CEvent 
-CNotifier::GetModifyEventID( void ) const
-{TRACE;
-
-    return m_modifyEvent;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CEvent 
-CNotifier::GetDestructionEventID( void ) const
-{TRACE;
-
-    return m_destructionEvent;    
-}
-
-/*-------------------------------------------------------------------------*/
-
-std::string 
-CNotifier::GetTypeName( void ) const
+CString 
+CNotifier::GetType( void ) const
 {TRACE;
 
     return "GUCEF::CORE::CNotifier";

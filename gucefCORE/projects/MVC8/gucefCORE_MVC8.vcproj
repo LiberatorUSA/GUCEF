@@ -392,6 +392,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CNotifyingMapEvents.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CObserver.cpp"
 				>
 			</File>
@@ -501,6 +505,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\CTimerPump.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CTNotifyingMap.cpp"
 				>
 			</File>
 			<File
@@ -810,6 +818,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\CNotifyingMapEvents.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\CObserver.h"
 				>
 			</File>
@@ -931,6 +943,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CTimerPump.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CTNotifyingMap.h"
 				>
 			</File>
 			<File
