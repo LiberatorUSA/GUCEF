@@ -178,42 +178,6 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
-			<File
-				RelativePath="..\..\src\CDRNClient.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CDRNClientInterface.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CDRNController.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CDRNControllerMainComHandler.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CDRNControllerPHUDPPeerComHandler.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CDRNControllerTCPPeerComHandler.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CDRNDataItem.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CDRNLocalDataItem.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CDRNPeerDataItem.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -221,59 +185,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\include\CDRNBroadcaster.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CDRNClient.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CDRNClientInterface.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CDRNController.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CDRNControllerInterface.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CDRNControllerMainComHandler.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CDRNControllerPHUDPPeerComHandler.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CDRNControllerTCPPeerComHandler.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CDRNControllerToClientHandler.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CDRNDataItem.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CDRNLocalDataItem.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CDRNPeerDataItem.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\CDRNServer.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\DRNProtocol.h"
 				>
 			</File>
 		</Filter>
