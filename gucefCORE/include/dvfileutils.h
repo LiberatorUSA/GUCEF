@@ -376,7 +376,7 @@ Relative_Path( const char *pathstr ,
         - Changed EXPORT into GUCEFCORE_EXPORT_C
 - 13-08-2003 :
         - Added Create_Directory()
-        - Added a set of functions for directory itteration.
+        - Added a set of functions for directory iteration.
               DI_First_Dir_Entry()
               DI_Next_Dir_Entry()
               DI_Cleanup()
@@ -385,7 +385,7 @@ Relative_Path( const char *pathstr ,
               DI_Size()
               DI_Timestamp()
           You should use these functions instead of _findfirst or opendir() or
-          whatever because this way your code can stay platform independant
+          whatever because this way your code can stay platform independent
           while the real API calls are made by these functions depending on the
           build type.
           These functions allow support for:

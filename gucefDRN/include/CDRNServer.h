@@ -56,7 +56,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF { 
-namespace CORE {
+namespace DRN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -64,8 +64,9 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFDRN_EXPORT_CPP CDRNServer : public CNotifier  ,
-                                       private CObserver
+class CIDRNClientAuthenticator;
+
+class GUCEFDRN_EXPORT_CPP CDRNServer : public CObservingNotifier
 {
     public:
     
@@ -129,3 +130,16 @@ class GUCEFDRN_EXPORT_CPP CDRNServer : public CNotifier  ,
     COMCORE::CUDPSocket m_udpSocket;                          /**< server socket for UDP client-server communications */
     CIDRNClientAuthenticator* m_clientAuthenticator;
 };
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace DRN */
+}; /* namespace GUCEF */
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_DRN_CDRNSERVER_H ? */

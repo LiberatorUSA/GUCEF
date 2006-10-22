@@ -31,6 +31,10 @@
 #include "DVPACKSYS.h"  // Pack sys utils
 #include "dvstrutils.h" // My own string tools
 
+#ifdef MSWIN_BUILD
+#include <windows.h>
+#endif /* MSWIN_BUILD ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      DEFINES                                                            //
@@ -46,7 +50,39 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef MSWIN_BUILD
 
+void cls( void )
+{
+    COORD coordScreen = { 0, 0 }; /* here's where we'll home the cursor */
+    DWORD cCharsWritten;
+    CONSOLE_SCREEN_BUFFER_INFO csbi; /* to get buffer info */
+    DWORD dwConSize; /* number of character cells in the current buffer */
+
+    /* get the output console handle */
+    HANDLE hConsole=GetStdHandle(STD_OUTPUT_HANDLE);
+    
+    /* get the number of character cells in the current buffer */
+    GetConsoleScreenBufferInfo(hConsole, &csbi);    
+    dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+    
+    /* fill the entire screen with blanks */
+    FillConsoleOutputCharacter(hConsole, (TCHAR) ' ',
+      dwConSize, coordScreen, &cCharsWritten);
+      
+    /* get the current text attribute */
+    GetConsoleScreenBufferInfo(hConsole, &csbi);
+    
+    /* now set the buffer's attributes accordingly */
+    FillConsoleOutputAttribute(hConsole, csbi.wAttributes,
+      dwConSize, coordScreen, &cCharsWritten);
+      
+    /* put the cursor at (0, 0) */
+    SetConsoleCursorPosition(hConsole, coordScreen);
+    return;
+}
+
+#endif /* MSWIN_BUILD ? */
 
 /*---------------------------------------------------------------------------*/
 
@@ -208,6 +244,7 @@ Display_Header_Wizard( void )
                         printf( "\nPress any key to exit\n" )           ;
                         getch()                                         ;
                 }
+                fclose( fptr );
         }
         else
         {
@@ -221,8 +258,7 @@ Display_Header_Wizard( void )
                  */
                 printf( "\nPress any key to exit\n" )                   ;
                 getch()                                                 ;
-        }
-        fclose( fptr )                                                  ;
+        }        
         return                                                          ;
 }
 
@@ -681,7 +717,7 @@ Print_Info_Header( void )
         /*
          *      Output logo to console
          */
-        system( "cls" );
+        cls();
         printf( "*****************************************\n" )         ;
         printf( "*					*\n" )          ;
         printf( "*	DVP Pack tool 		        *\n" )          ;

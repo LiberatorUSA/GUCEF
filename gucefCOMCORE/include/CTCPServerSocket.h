@@ -92,14 +92,14 @@ class EXPORT_CPP CTCPServerSocket : public CSocket
          */
         bool ListenOnPort( UInt16 port );   /* listen on default nic with port given */
         
-        void Close( void ); /* stop listning for clients, close server socket */
+        void Close( void ); /* stop listening for clients, close server socket */
         
         UInt16 GetPort( void ) const;
         
         bool IsActive( void ) const;
         
         /**
-         *      Returns wheter the socket is blocking or non-blocking
+         *      Returns whether the socket is blocking or non-blocking
          */
         bool IsBlocking( void ) const;
         
@@ -110,7 +110,7 @@ class EXPORT_CPP CTCPServerSocket : public CSocket
         bool GetClientThreading( void ) const;
         
         /**                 
-         *      polls the socket ect. as needed and update stats.
+         *      polls the socket etc. as needed and update stats.
          *
          *      @param tickcount the tick count when the Update process commenced.
          *      @param deltaticks ticks since the last Update process commenced.          
@@ -143,7 +143,7 @@ class EXPORT_CPP CTCPServerSocket : public CSocket
 
         /**
          *	default constructor cannot be used, we need to know 
-         *      wheter this socket is blocking.
+         *      whether this socket is blocking.
          */
         CTCPServerSocket( void );     
         
