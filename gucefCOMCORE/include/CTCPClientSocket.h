@@ -63,6 +63,12 @@ class EXPORT_CPP CTCPClientSocket : public CSocket
 {
         public:
         
+        static const CEvent ConnectingEvent;
+        static const CEvent ConnectedEvent;
+        static const CEvent DisconnectedEvent;
+        static const CEvent DataRecievedEvent;
+        static const CEvent DataSentEvent;
+        
         CTCPClientSocket( bool blocking );
         
         virtual ~CTCPClientSocket();
@@ -143,11 +149,7 @@ class EXPORT_CPP CTCPClientSocket : public CSocket
         /**
          *      
          */       
-        bool IsBlocking( void ) const;  
-        
-        void SetInterface( CTCPClientSocketInterface* iface );
-        
-        CTCPClientSocketInterface* GetInterface( void ) const;
+        bool IsBlocking( void ) const;
 
         public:
         

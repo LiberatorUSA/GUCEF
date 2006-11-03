@@ -54,6 +54,18 @@
 namespace GUCEF {
 namespace COMCORE {
 
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CEvent CTCPClientSocket::ConnectingEvent = "GUCEF::COMCORE::CTCPClientSocket::ConnectingEvent";
+const CEvent CTCPClientSocket::ConnectedEvent = "GUCEF::COMCORE::CTCPClientSocket::ConnectedEvent";
+const CEvent CTCPClientSocket::DisconnectedEvent = "GUCEF::COMCORE::CTCPClientSocket::DisconnectedEvent";
+const CEvent CTCPClientSocket::DataRecievedEvent = "GUCEF::COMCORE::CTCPClientSocket::DataRecievedEvent";
+const CEvent CTCPClientSocket::DataSentEvent = "GUCEF::COMCORE::CTCPClientSocket::DataSentEvent";
+
 //-------------------------------------------------------------------------//
 //                                                                         //
 //      CONSTANTS                                                          //
@@ -91,21 +103,20 @@ typedef struct CTCPClientSocket::STCPClientSockData TTCPClientSockData;
 //-------------------------------------------------------------------------//
 
 CTCPClientSocket::CTCPClientSocket( void )
-        : CSocket( ST_TCP_CLIENT )
-{
+        : CSocket()
+{TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CTCPClientSocket::CTCPClientSocket( bool blocking ) 
-        : CSocket( ST_TCP_CLIENT ) ,
+        : CSocket()                ,
           _blocking( blocking )    ,
           _active( false )         ,
           m_iface( NULL )          ,
           m_maxreadbytes( 0 )      ,
           m_keepbytes( 0 )
-{
-        DEBUGOUTPUT( "CTCPClientSocket::Constructor()" );
+{TRACE;
 
         /*
          *      Constructor,
@@ -118,8 +129,7 @@ CTCPClientSocket::CTCPClientSocket( bool blocking )
 /*-------------------------------------------------------------------------*/
 
 CTCPClientSocket::~CTCPClientSocket()
-{
-        DEBUGOUTPUT( "CTCPClientSocket::~CTCPClientSocket()" );
+{TRACE;
 
         /*
          *      Constructor,
@@ -133,7 +143,7 @@ CTCPClientSocket::~CTCPClientSocket()
 
 CTCPClientSocket&
 CTCPClientSocket::operator=( const CTCPClientSocket& src )
-{                    
+{TRACE;                    
         /* dummy, do not use */   
         return *this;
 }
@@ -142,17 +152,29 @@ CTCPClientSocket::operator=( const CTCPClientSocket& src )
 
 bool
 CTCPClientSocket::IsActive( void ) const
-{
-        DEBUGOUTPUT( "CTCPClientSocket::IsActive( void ) const" );
+{TRACE;
         
         return _active;
 }
 
 /*-------------------------------------------------------------------------*/
 
+void
+CTCPClientSocket::RegisterEvents( void )
+{TRACE;
+    
+    ConnectingEvent.Initialize();
+    ConnectedEvent.Initialize();
+    DisconnectedEvent.Initialize();
+    DataRecievedEvent.Initialize();
+    DataSentEvent.Initialize();    
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CTCPClientSocket::IsBlocking( void ) const
-{
+{TRACE;
         return _blocking;
 }
 
@@ -179,8 +201,7 @@ CTCPClientSocket::IsBlocking( void ) const
  */
 void
 CTCPClientSocket::SetMaxRead( UInt32 mr )
-{
-        DEBUGOUTPUT( "CTCPClientSocket::SetMaxRead()" );
+{TRACE;
         
         datalock.Lock();        
         m_maxreadbytes = mr;
@@ -192,7 +213,7 @@ CTCPClientSocket::SetMaxRead( UInt32 mr )
 
 UInt32
 CTCPClientSocket::GetMaxRead( void ) const
-{
+{TRACE;
         return m_maxreadbytes;
 }
 
@@ -205,8 +226,7 @@ CTCPClientSocket::GetMaxRead( void ) const
  */
 bool
 CTCPClientSocket::Reconnect( void )
-{
-        DEBUGOUTPUT( "CTCPClientSocket::Reconnect( void )" );
+{TRACE;
 
         datalock.Lock();
         CORE::CString remoteaddr = _remoteaddr;
@@ -225,8 +245,7 @@ CTCPClientSocket::Reconnect( void )
 bool
 CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr , 
                              UInt16 port                     )
-{
-        DEBUGOUTPUT( "CTCPClientSocket::ConnectTo()" );
+{TRACE;
 
         if ( remoteaddr.Length() == 0 ) return false;  
 
@@ -318,7 +337,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
 
 void
 CTCPClientSocket::CheckRecieveBuffer( void )
-{        
+{TRACE;        
         if ( !_blocking && _active )
         {       
                 datalock.Lock();
@@ -378,7 +397,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
 void 
 CTCPClientSocket::Update( UInt32 tickcount  ,
                           UInt32 deltaticks )
-{        
+{TRACE;        
         CheckRecieveBuffer();
 }                          
 
@@ -386,8 +405,7 @@ CTCPClientSocket::Update( UInt32 tickcount  ,
 
 void
 CTCPClientSocket::Close( void )
-{
-        DEBUGOUTPUT( "CTCPClientSocket::Close( void )" );
+{TRACE;
 
         /*
          *      close the socket connection
@@ -428,8 +446,7 @@ bool
 CTCPClientSocket::Send( const void* data ,
                         UInt32 length    ,
                         UInt32 timeout   )
-{
-        DEBUGOUTPUT( "CTCPClientSocket::Send( const char *data , UInt32 length )" );
+{TRACE;
 
         /*
          *      Write data to socket
@@ -456,9 +473,8 @@ CTCPClientSocket::Send( const void* data ,
 
 bool
 CTCPClientSocket::Send( const CORE::CString& data )
-{
-        DEBUGOUTPUT( "CTCPClientSocket::Send( CORE::CString& data )" );
-        
+{TRACE;
+
         return Send( data.C_String() ,
                      data.Length()   ,
                      0               );
@@ -468,9 +484,8 @@ CTCPClientSocket::Send( const CORE::CString& data )
 
 void 
 CTCPClientSocket::SetInterface( CTCPClientSocketInterface* iface )
-{
-        DEBUGOUTPUT( "CTCPClientSocket::SetInterface( CTCPClientSocketInterface* iface )" );
-        
+{TRACE;
+
         m_iface = iface;
 }
 
@@ -478,9 +493,8 @@ CTCPClientSocket::SetInterface( CTCPClientSocketInterface* iface )
         
 CTCPClientSocketInterface* 
 CTCPClientSocket::GetInterface( void ) const
-{
-        DEBUGOUTPUT( "CTCPClientSocket::GetInterface( void ) const" );
-        
+{TRACE;
+
         return m_iface;
 }
 
@@ -501,7 +515,7 @@ CTCPClientSocket::GetInterface( void ) const
  */
 void
 CTCPClientSocket::Ping( bool active, Int32 pings, UInt32 maxhops )
-{
+{TRACE;
         if ( !datalock.Lock_Mutex()) return;
 
         if ( pings < 0 )

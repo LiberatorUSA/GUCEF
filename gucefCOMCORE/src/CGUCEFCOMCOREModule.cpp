@@ -26,6 +26,11 @@
 #define CCOM_H
 #endif /* CCOM_H ? */
 
+#ifndef CTCPCLIENTSOCKET_H
+#include "CTCPClientSocket.h"
+#define CTCPCLIENTSOCKET_H
+#endif /* CTCPCLIENTSOCKET_H ? */
+
 #include "CGUCEFCOMCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef ACTIVATE_MEMORY_MANAGER
@@ -85,6 +90,9 @@ CGUCEFCOMCOREModule::Load( void )
 {
         /* simply instantiate our com manager when the module is loaded */
         //CCom::Instance();
+        
+        CTCPClientSocket::RegisterEvents();
+        
         return true;
 }
 

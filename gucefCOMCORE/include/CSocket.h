@@ -34,6 +34,11 @@
 #define GUCEFMT_H
 #endif /* GUCEFMT_H ? */
 
+#ifndef GUCEF_CORE_CNOTIFIER_H
+#include "CNotifier.h"
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+
 #ifndef GUCEFCOMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"      /* macros and build config for the COMCORE library */
 #define GUCEFCOMCORE_MACROS_H
@@ -63,12 +68,9 @@ class CActiveComPump;
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Base class that forms the basis for all our socket classes.
- *`	It houses the threading control and the com registration mechanism.
- *	Also provides some member functions that are relevant to all socket
- *	types 
+ *  Base class for all our socket classes.
  */
-class EXPORT_CPP CSocket
+class EXPORT_CPP CSocket : public CNotifier
 {
         public:
         
@@ -91,24 +93,7 @@ class EXPORT_CPP CSocket
                 SOCKERR_CANT_SEND_DATA    ,
                 SOCKERR_CANT_OPEN_SOCKET  
                 
-        } TSocketError;        
-
-        /**
-         *      Socket types
-         */
-        typedef enum ESocketType
-        {
-                ST_TCP_CLIENT = 1        ,  /** TCP client socket */
-                ST_TCP_SERVER            ,  /** TCP server socket */
-                ST_TCP_SERVER_CONNECTION ,  /** TCP client connection to a TCP server socket */
-                ST_UDP                      /** UDP socket */
-                
-        } TSocketType;
-        
-        /*
-         *	Socket utilities
-         */
-        TSocketType GetType( void ) const;             /* enum value, type of socket object */
+        } TSocketError;              
         
         UInt32 GetSocketID( void ) const;
         
