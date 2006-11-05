@@ -56,19 +56,14 @@ class GUCEFMT_EXPORT_CPP CMutex
          *      process will have to wait for the mutex to allow a lock.
          *      The return value indicates wheter the lock failed or succeeded.
          */
-        bool Lock( void );
+        bool Lock( void ) const;
 
         /**
          *      Unlocks the mutex after a call to Lock_Mutex(). Other processes
          *      will have the ability to get a mutex lock after this call.
          *      The return value indicates wheter the unlock failed or succeeded.
          */
-        bool Unlock( void );
-
-        /**
-         *      Returns wheter the mutex is currently locked.
-         */
-        bool Locked( void ) const;
+        bool Unlock( void ) const;
 
         /**
          *      Default constructor, allocates storage for a mutex.
@@ -84,7 +79,6 @@ class GUCEFMT_EXPORT_CPP CMutex
         friend class CCondition;
 
         void* _mutexdata;
-        bool _locked;               /* is the mutex currently locked ? */
 
         CMutex( const CMutex& src );      /* Copying doesnt make sense */
         CMutex& operator=( const CMutex& src );   /* Copying doesnt make sense */
@@ -96,9 +90,9 @@ class GUCEFMT_EXPORT_CPP CMutex
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define MUTEX( varname ) (CMutex varname;)
-#define LOCKMUTEX( varname ) (varname.Lock();)
-#define UNLOCKMUTEX( varname ) (varname.Unlock();)
+#define GUCEF_MUTEX( varname ) (CMutex varname;)
+#define GUCEF_LOCKMUTEX( varname ) (varname.Lock();)
+#define GUCEF_UNLOCKMUTEX( varname ) (varname.Unlock();)
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -110,7 +104,6 @@ class GUCEFMT_EXPORT_CPP CMutex
 }; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/
-#else
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

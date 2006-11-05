@@ -77,7 +77,7 @@ typedef struct CUDPSocket::SUDPSockData TUDPSockData;
 //-------------------------------------------------------------------------*/
 
 CUDPSocket::CUDPSocket( bool blocking )
-        : CSocket( ST_UDP )     ,
+        : CSocket()     ,
           _blocking( blocking ) ,
           m_port( 0 )
 {

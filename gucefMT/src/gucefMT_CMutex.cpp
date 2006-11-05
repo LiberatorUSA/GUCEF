@@ -71,8 +71,7 @@ namespace MT {
  *      Default constructor, allocates storage for a mutex.
  */
 CMutex::CMutex( void )
-        : _mutexdata( NULL ) ,
-          _locked( false )
+        : _mutexdata( NULL )
 {
         #ifdef GUCEF_MSWIN_BUILD
         TMutexData* md = new TMutexData;
@@ -123,16 +122,14 @@ CMutex::~CMutex()
  *      The return value indicates wheter the lock failed or succeeded.
  */
 bool
-CMutex::Lock( void )
+CMutex::Lock( void ) const
 {
         #ifdef GUCEF_MSWIN_BUILD
         if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id ,
                                   INFINITE                      ) == WAIT_FAILED ) return false;
-        _locked = true;
         return true;
         #elif GUCEF_LINUX_BUILD
         if ( pthread_mutex_lock( &((TMutexData*)_mutexdata)->id ) < 0 ) return false;
-        _locked = true;
         return true;
         #endif
 }
@@ -145,28 +142,15 @@ CMutex::Lock( void )
  *      The return value indicates wheter the unlock failed or succeeded.
  */
 bool
-CMutex::Unlock( void )
+CMutex::Unlock( void ) const
 {
         #ifdef GUCEF_MSWIN_BUILD
         if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE ) return false;
-        _locked = false;
         return true;
         #elif GUCEF_LINUX_BUILD
         if ( pthread_mutex_unlock( &mutex->id ) < 0 ) return false;
-        _locked = false;
         return true;
         #endif
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Returns wheter the mutex is currently locked.
- */
-bool
-CMutex::Locked( void ) const
-{
-        return _locked;
 }
 
 /*-------------------------------------------------------------------------//

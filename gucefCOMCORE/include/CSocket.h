@@ -70,7 +70,7 @@ class CActiveComPump;
 /**
  *  Base class for all our socket classes.
  */
-class EXPORT_CPP CSocket : public CNotifier
+class EXPORT_CPP CSocket : public CORE::CNotifier
 {
         public:
         
@@ -101,10 +101,7 @@ class EXPORT_CPP CSocket : public CNotifier
         
         protected:
         
-        /**
-         *      
-         */
-        CSocket( TSocketType stype );                
+        CSocket();                
         
         protected:
         friend class CCom;               
@@ -126,12 +123,10 @@ class EXPORT_CPP CSocket : public CNotifier
         void SetSocketID( UInt32 sid );                                                                                                                                                                        
                              
         private:
-        CSocket( void );                           /* we need to know the decending type so we cant use the default constructor */
         CSocket( const CSocket& src );             /* making a copy of a socket doesnt make sense */
         CSocket& operator=( const CSocket& src );  /* making a copy of a socket doesnt make sense */
         
-        UInt32 _sid;
-        TSocketType _stype;           
+        UInt32 _sid;          
 };
 
 /*-------------------------------------------------------------------------//

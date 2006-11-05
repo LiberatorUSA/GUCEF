@@ -102,7 +102,7 @@ typedef struct STCPServerSockData TTCPServerSockData;
 //-------------------------------------------------------------------------*/
 
 CTCPServerSocket::CTCPServerSocket( void )
-        : CSocket( ST_TCP_SERVER ) ,
+        : CSocket() ,
           m_port(0)
 {
         /* dummy, should never be used */
@@ -111,7 +111,7 @@ CTCPServerSocket::CTCPServerSocket( void )
 /*-------------------------------------------------------------------------*/
 
 CTCPServerSocket::CTCPServerSocket( bool blocking ) 
-        : CSocket( ST_TCP_SERVER )                ,
+        : CSocket()                               ,
           _connections( DEFAULT_MAX_CONNECTIONS ) ,
           _active( false )                        ,
           _blocking( blocking )                   ,

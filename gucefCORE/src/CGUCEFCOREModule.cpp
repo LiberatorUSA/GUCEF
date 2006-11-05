@@ -176,12 +176,13 @@ CGUCEFCOREModule::Load( void )
         CGenericPluginManager::Instance();
         
         /*
-         *      Register events for objects that can be created dynamically
+         *      Make sure all events are registered from the start
          */
         CNotifier::RegisterEvents();
         CPluginManager::RegisterEvents();
         CIURLEvents::RegisterEvents();
         CNotifyingMapEvents::RegisterEvents();
+        CGUCEFApplication::RegisterEvents();
         
         /*
          *      Register some default codecs/handlers 

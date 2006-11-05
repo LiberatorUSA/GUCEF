@@ -82,7 +82,7 @@ typedef struct STCPServerConData TTCPServerConData;
  */
 CTCPServerConnection::CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
                                             UInt32 connection_idx            )
-        : CSocket( ST_TCP_SERVER_CONNECTION ) ,
+        : CSocket()                           ,
           _active( false )                    ,
           m_keepbytes( 0 )                    ,
           m_maxreadbytes( 0 )                 ,

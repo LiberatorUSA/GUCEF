@@ -174,9 +174,9 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
     void NotifyObservers( const CEvent& eventid         ,
                           CICloneable* eventData = NULL );
 
-    virtual void LockData( void );
+    virtual void LockData( void ) const;
     
-    virtual void UnlockData( void );
+    virtual void UnlockData( void ) const;
                  
     private:
     typedef std::set<CObserver*> TObserverSet;

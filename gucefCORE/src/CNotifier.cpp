@@ -481,7 +481,7 @@ CNotifier::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CNotifier::LockData( void )
+CNotifier::LockData( void ) const
 {TRACE;
 
 }
@@ -489,7 +489,7 @@ CNotifier::LockData( void )
 /*-------------------------------------------------------------------------*/
     
 void 
-CNotifier::UnlockData( void )
+CNotifier::UnlockData( void ) const
 {TRACE;
 
 }

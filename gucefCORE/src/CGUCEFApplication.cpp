@@ -95,8 +95,9 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const std::string CGUCEFApplication::AppInitEvent = "GUCEF::CORE::CGUCEFApplication::AppInitEvent";
-const std::string CGUCEFApplication::AppShutdownEvent = "GUCEF::CORE::CGUCEFApplication::AppShutdownEvent";
+const CEvent CGUCEFApplication::AppInitEvent = "GUCEF::CORE::CGUCEFApplication::AppInitEvent";
+const CEvent CGUCEFApplication::AppShutdownEvent = "GUCEF::CORE::CGUCEFApplication::AppShutdownEvent";
+
 CGUCEFApplication* CGUCEFApplication::_instance = NULL;
 MT::CMutex CGUCEFApplication::m_mutex;
 
@@ -125,7 +126,8 @@ CGUCEFApplication::Instance( void )
                  *  CGUCEFApplication as well. This would cause a endless recursive loop.
                  *  This is solved by doing it manually here
                  */
-                CObserverPump::Instance()->RegisterSubSystem();                 
+                CObserverPump::Instance()->RegisterSubSystem();
+                RegisterEvents();                 
         }
         m_mutex.Unlock();
         return _instance;
@@ -149,8 +151,6 @@ CGUCEFApplication::CGUCEFApplication( void )
         : CIConfigurable( true )                      ,
           _active( false )                            ,
           _initialized( false )                       ,
-          _appinitevent( AppInitEvent )               ,
-          _appstopevent( AppShutdownEvent )           ,
           m_maxdeltaticksfordelay( 0 )                ,
           m_delaytime( 10 )                           ,
           m_minimalUpdateDelta( GUCEFCORE_UINT32MAX ) ,
@@ -260,7 +260,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
                 data.argv = NULL;
                 
                 TAppInitEventData cloneableData( data );                
-                NotifyObservers( _appinitevent, &cloneableData );
+                NotifyObservers( AppInitEvent, &cloneableData );
         }
 
         _initialized = true;
@@ -295,7 +295,7 @@ CGUCEFApplication::main( int argc    ,
         
         {
                 /*
-                 *      Set the given values as enviornment vars
+                 *      Set the given values as environment vars
                  */
                 char intstr[ 10 ];
                 sprintf( intstr, "%d", argc );  
@@ -318,7 +318,7 @@ CGUCEFApplication::main( int argc    ,
                 data.argv = argv;
                 
                 TAppInitEventData cloneableData( data );
-                NotifyObservers( _appinitevent, &cloneableData );
+                NotifyObservers( AppInitEvent, &cloneableData );
         }
 
         _initialized = true;
@@ -329,6 +329,16 @@ CGUCEFApplication::main( int argc    ,
         }
         return 0;      
 }                        
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUCEFApplication::RegisterEvents( void )
+{TRACE;
+    
+    AppInitEvent.Initialize();
+    AppShutdownEvent.Initialize();
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -420,7 +430,7 @@ CGUCEFApplication::Stop( void )
     if ( _active )
     {
         _active = false;
-        NotifyObservers( _appstopevent );
+        NotifyObservers( AppShutdownEvent );
     }
 }
 
@@ -679,7 +689,7 @@ CGUCEFApplication::DoRequestSubSysUpdate( void )
 
 void
 CGUCEFApplication::OnPumpedNotify( CNotifier* notifier                 ,
-                                   const UInt32 eventid                ,
+                                   const CEvent& eventid               ,
                                    CICloneable* eventdata /* = NULL */ )
 {TRACE;
     // nothing to do here atm

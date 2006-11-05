@@ -53,27 +53,8 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 CSocket::CSocket( void )
-{
-        DEBUGOUTPUT( "CSocket::CSocket( void )" );
-        /* dummy, do not use */        
-}
+{TRACE;
 
-/*-------------------------------------------------------------------------*/
-
-CSocket::CSocket( const CSocket& src )
-{
-        DEBUGOUTPUT( "CSocket::CSocket( const CSocket& src )" );
-        
-        /* dummy, do not use */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CSocket::CSocket( TSocketType stype )
-        : _stype( stype )
-{
-        DEBUGOUTPUT( "CSocket::CSocket( UInt32 stype )" );
-        
         /*
          *      Register the socket object so that it's capable of 
          *      recieving update events.
@@ -83,9 +64,16 @@ CSocket::CSocket( TSocketType stype )
 
 /*-------------------------------------------------------------------------*/
 
+CSocket::CSocket( const CSocket& src )
+{TRACE;
+
+        /* dummy, do not use */
+}
+
+/*-------------------------------------------------------------------------*/
+
 CSocket::~CSocket()
-{
-        DEBUGOUTPUT( "CSocket::~CSocket()" );
+{TRACE;
 
         /*
          *      Unregister the socket object so that it's removed
@@ -98,9 +86,8 @@ CSocket::~CSocket()
 
 CSocket&
 CSocket::operator=( const CSocket& src )
-{
-        DEBUGOUTPUT( "CSocket::operator=( const CSocket& src )" );
-        
+{TRACE;
+       
         /* dummy, do not use */ 
         return *this;       
 }
@@ -109,9 +96,7 @@ CSocket::operator=( const CSocket& src )
 
 void 
 CSocket::SetSocketID( UInt32 sid )
-{
-        DEBUGOUTPUT( "CSocket::SetSocketID( UInt32 sid )" );
-        
+{TRACE;
         _sid = sid; 
 }
 
@@ -119,18 +104,9 @@ CSocket::SetSocketID( UInt32 sid )
 
 UInt32 
 CSocket::GetSocketID( void ) const
-{
-        DEBUGOUTPUT( "CSocket::GetSocketID( void ) const" );
-        
+{TRACE;
+
         return _sid;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CSocket::TSocketType 
-CSocket::GetType( void ) const
-{
-        return _stype;
 }
 
 /*-------------------------------------------------------------------------//

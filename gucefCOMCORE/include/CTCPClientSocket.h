@@ -49,144 +49,126 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      forward declaration of interface base class
- */
-class CTCPClientSocketInterface;
-
-/*-------------------------------------------------------------------------*/
-
 /**
  *      TCP Client socket class
  */
 class EXPORT_CPP CTCPClientSocket : public CSocket
 {
-        public:
+    public:
+    
+    static const CORE::CEvent ConnectingEvent;
+    static const CORE::CEvent ConnectedEvent;
+    static const CORE::CEvent DisconnectedEvent;
+    static const CORE::CEvent DataRecievedEvent;
+    static const CORE::CEvent DataSentEvent;
+    
+    typedef CORE::TLinkedCloneableBuffer TDataRecievedEventData;
+    typedef CORE::TLinkedCloneableBuffer TDataSentEventData;
         
-        static const CEvent ConnectingEvent;
-        static const CEvent ConnectedEvent;
-        static const CEvent DisconnectedEvent;
-        static const CEvent DataRecievedEvent;
-        static const CEvent DataSentEvent;
-        
-        CTCPClientSocket( bool blocking );
-        
-        virtual ~CTCPClientSocket();
+    CTCPClientSocket( bool blocking );
+    
+    virtual ~CTCPClientSocket();
 
-        /**
-         *     
-         */
-        bool ConnectTo( const CORE::CString& address , 
-                        UInt16 port                  ); 
+    /**
+     *     
+     */
+    bool ConnectTo( const CORE::CString& address , 
+                    UInt16 port                  ); 
 
-        /**
-         *      Attempts to reconnect to the server provided with
-         *      Connect_To(). If Connect_To() has not yet been called then this
-         *      member function has no effect.
-         */
-        bool Reconnect( void );
-        
-        void Close( void );                                  /* close the socket connection */
+    /**
+     *      Attempts to reconnect to the server provided with
+     *      Connect_To(). If Connect_To() has not yet been called then this
+     *      member function has no effect.
+     */
+    bool Reconnect( void );
+    
+    void Close( void );  /* close the socket connection */
 
-        /**
-         *      Attempt to send the data and returns imediatly.
-         *      The return value indicates the success/failure.
-         *      You can call this from multiple threads, however if you do then
-         *      the order in which the data will be send should be conssiddered
-         *      to be random.        
-         */
-        bool Send( const void* data   , 
-                   UInt32 length      ,
-                   UInt32 timeout = 0 );
-                       
-        bool Send( const CORE::CString& data );                       
+    /**
+     *      Attempt to send the data and returns immediately.
+     *      The return value indicates the success/failure.
+     *      You can call this from multiple threads, however if you do then
+     *      the order in which the data will be send should be considered
+     *      to be random.        
+     */
+    bool Send( const void* data   , 
+               UInt32 length      ,
+               UInt32 timeout = 0 );
+                   
+    bool Send( const CORE::CString& data );
 
-        #ifdef NETWORK_ICMP_SUPPORT
-        /**
-         *      This will allow you to ping a server.
-         *      active sets wheter or not we should ping.
-         *      pings is the number of ping to be performed. If this is smaller
-         *      then 0 a single ping will be performed with the caller thread
-         *      returning when the ping has been completed. In all other cases
-         *      a pinging task will be spawned after which this member function
-         *      will return. A value of 0 for ping equals infinite.
-         *      maxhops is the maximum number of hops to try before we abort the
-         *      ping.
-         */
-        void Ping( bool active    ,
-                   Int32 pings    ,
-                   UInt32 maxhops );
-        #endif /* NETWORK_ICMP_SUPPORT ? */
+    /**
+     *      Set's the maximum number of bytes to be read from the socket
+     *      received data buffer. A value of 0 means infinite. Setting this
+     *      value to non-zero allows you to avoid the server connection or
+     *      even the entire server socket (if the server socket is not using
+     *      a separate thread) from getting stuck reading data. If data is
+     *      being sent in such a fast rate that the continues stream will
+     *      be considered to be a single transmission the server will not
+     *      be able to stop reading. This is where the max read value comes
+     *      in. No matter how much new data is available the reading will
+     *      stop at the set number of bytes. If you have a fixed transmission
+     *      length then this is easy to deal with by using a factor of the
+     *      transmission length as the max read value. Otherwise you will
+     *      have to check what data you need and what data should be kept.
+     *      The data you think that should be kept will be prefixed to the
+     *      next data buffer. You can control this process by setting the
+     *      keepbytes value in the OnClientRead() event handler.
+     *      In short, this helps prevent a DOS attack on the software.
+     */
+    void SetMaxRead( UInt32 mr );
+    
+    UInt32 GetMaxRead( void ) const;
 
-        /**
-         *      Set's the maximum number of bytes to be read from the socket
-         *      recieved data buffer. A value of 0 means infinite. Setting this
-         *      value to non-zero allows you to avoid the server connection or
-         *      even the entire server socket (if the server socket is not using
-         *      a seperate thread) from getting stuck reading data. If data is
-         *      being sent in such a fast rate that the continues stream will
-         *      be considdered to be a single transmission the server will not
-         *      be able to stop reading. This is where the max read value comes
-         *      in. No matter how much new data is available the reading will
-         *      stop at the set number of bytes. If you have a fixed transmission
-         *      length then this is easy to deal with by using a factor of the
-         *      transmission length as the max read value. Otherwise you will
-         *      have to check what data you need and what data should be kept.
-         *      The data you think that should be kept will be prefixed to the
-         *      next data buffer. You can control this proccess by setting the
-         *      keepbytes value in the OnClientRead() event handler.
-         *      In short, this helps prevent a DOS attack on the software.
-         */
-        void SetMaxRead( UInt32 mr );
-        
-        UInt32 GetMaxRead( void ) const;
+    /** 
+     *
+     */
+    bool IsActive( void ) const; 
 
-        /** 
-         *
-         */
-        bool IsActive( void ) const; 
+    /**
+     *      
+     */       
+    bool IsBlocking( void ) const;
 
-        /**
-         *      
-         */       
-        bool IsBlocking( void ) const;
+    virtual CORE::CString GetType( void ) const;
 
-        public:
-        
-        struct STCPClientSockData;
-        
-        protected:
-        
-        /** 
-         *      polls the socket ect. as needed and update stats.
-         *
-         *      @param tickcount the tick count when the Update process commenced.
-         *      @param deltaticks ticks since the last Update process commenced.          
-         */
-        virtual void Update( UInt32 tickcount  ,
-                             UInt32 deltaticks );        
-        
-        
-        private:
-        
-        void CheckRecieveBuffer( void );               
-        
-        CORE::CString _remoteaddr;
-        UInt16 _remoteport;        
-        struct STCPClientSockData* _data;
-        bool _blocking;
-        bool _active;
-        MT::CMutex datalock;
-        CTCPClientSocketInterface* m_iface;
-        CORE::CDynamicBuffer m_readbuffer;
-        UInt32 m_maxreadbytes;
-        UInt32 m_keepbytes;                      
+    static void RegisterEvents( void );
 
-//        UInt32 maxrbytes;                      /* max number of bytes to recieve before proccessing it */
-//        UInt32 keepbytes;                      /* the number of bytes that should be kept untill next proccessing cycle */
+    public:
+    
+    struct STCPClientSockData;
+    
+    protected:
+    
+    /** 
+     *      polls the socket etc. as needed and update stats.
+     *
+     *      @param tickcount the tick count when the Update process commenced.
+     *      @param deltaticks ticks since the last Update process commenced.          
+     */
+    virtual void Update( UInt32 tickcount  ,
+                         UInt32 deltaticks );        
+    
+    
+    virtual void LockData( void ) const;
+    
+    virtual void UnlockData( void ) const;
 
-        CTCPClientSocket( void );                /* default constructor cannot be used since we need to register the socket */
-        CTCPClientSocket& operator=( const CTCPClientSocket& src ); /* making a copy of a socket doesnt make sense */
+    private:
+    
+    void CheckRecieveBuffer( void );               
+    
+    CORE::CString _remoteaddr;
+    UInt16 _remoteport;        
+    struct STCPClientSockData* _data;
+    bool _blocking;
+    bool _active;
+    MT::CMutex datalock;
+    CORE::CDynamicBuffer m_readbuffer;
+    UInt32 m_maxreadbytes;                  /**< max number of bytes to receive before processing it */ 
+
+    CTCPClientSocket( void );                /* default constructor cannot be used since we need to register the socket */
+    CTCPClientSocket& operator=( const CTCPClientSocket& src ); /* making a copy of a socket doesn't make sense */
 };
 
 /*-------------------------------------------------------------------------//

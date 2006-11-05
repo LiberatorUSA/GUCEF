@@ -304,16 +304,18 @@ class CTestTCPClientServer : public CGUCEFAppSubSystem
                   _udpsock1( block ) ,
                   _udpsock2( block )
         {
-                _appinitevent = GUCEF::CORE::CNotificationIDRegistry::Instance()->Lookup( CGUCEFApplication::AppInitEvent );
+
         }
         
         protected:
-                   /*
-        virtual void OnProcessEvent( const CEvent& event )
+                   
+        virtual void OnNotify( CORE::CNotifier* notifier           ,
+                               const CORE::CEvent& eventid         ,
+                               CORE::CICloneable* eventdata = NULL )
         {
-                if ( event.GetEventType() == _appinitevent )
+                if ( eventid == CGUCEFApplication::AppInitEvent )
                 {
-                        _clientsock.SetInterface( &_clientiface );
+                        _clientsock.Subscribe( &AsObserver() );
                         _serversock.SetInterface( &_serveriface );
                 
                         _serversock.ListenOnPort( 10000 );
@@ -324,7 +326,7 @@ class CTestTCPClientServer : public CGUCEFAppSubSystem
                         _udpsock2.socket.Open( 11001 );
                         _udpsock2.socket.SendPacketTo( "127.0.0.1", 11000, "TESTPACKET", 10 );                                                       
                 }
-        }  */
+        }
         
         /**
          *      Called each event pump update cycle after the events for 
@@ -368,7 +370,6 @@ WinMain( HINSTANCE hinstance     ,
         CTestTCPClientServer ttcpclientserver( false );                        
         
         return CGUCEFApplication::Instance()->Main( hinstance     ,
-                                                    hprevinstance ,
                                                     lpcmdline     ,
                                                     ncmdshow      ,
                                                     true          );                                                     

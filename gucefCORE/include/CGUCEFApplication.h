@@ -84,12 +84,12 @@ class CIGUCEFApplicationDriver;
  *      
  *      Dispatches the following events:
  *       - AppInitEvent:
- *              Indicates that the application is now inialized
+ *              Indicates that the application is now initialized
  *              at the GUCEF level. All higher level code should
  *              now be initialized.
  *       - AppShutdownEvent
  *              Signals that the application is shutting down at the
- *              GUCEF level. All higher level code should shutdown aswell 
+ *              GUCEF level. All higher level code should shutdown as well 
  */
 class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          , 
                                                public CIConfigurable        ,
@@ -97,8 +97,8 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
 {
         public:
 
-        static const std::string AppInitEvent;
-        static const std::string AppShutdownEvent;
+        static const CEvent AppInitEvent;
+        static const CEvent AppShutdownEvent;
 
         public:
         
@@ -176,6 +176,8 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
         
         UInt32 GetMinimalReqUpdateResolution( void ) const;
         
+        static void RegisterEvents( void );
+        
         protected:
         
         /**
@@ -186,7 +188,7 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
          *  @param eventdata optional notifier defined userdata
          */
         virtual void OnPumpedNotify( CNotifier* notifier           ,
-                                     const UInt32 eventid          ,
+                                     const CEvent& eventid         ,
                                      CICloneable* eventdata = NULL );
 
         virtual bool OnSysConsoleCommand( const CString& path     ,
@@ -238,8 +240,6 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
         
         bool _initialized;
         bool _active;
-        CEvent _appinitevent;
-        CEvent _appstopevent;
         CString _appdir;
         UInt32 m_maxdeltaticksfordelay;
         UInt32 m_delaytime;
