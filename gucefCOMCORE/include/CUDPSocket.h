@@ -249,7 +249,7 @@ class EXPORT_CPP CUDPSocket : public CSocket
         
         /**
          *      Unregisters the given event handling interface from
-         *      usage with the socket instance. It will no longer recieve 
+         *      usage with the socket instance. It will no longer receive 
          *      any events form the socket.
          *
          *      @param handler event handler interface
