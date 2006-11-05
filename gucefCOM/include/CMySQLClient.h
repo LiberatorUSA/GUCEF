@@ -29,10 +29,15 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef CTCPCLIENTSOCKETINTERFACE_H
-#include "CTCPClientSocketInterface.h"	/* base class for the MySQL client */
-#define CTCPCLIENTSOCKETINTERFACE_H
-#endif /* CTCPCLIENTSOCKETINTERFACE_H */
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
+#ifndef CTCPCLIENTSOCKET_H
+#include "CTCPClientSocket.h"	     /* TCP Client socket */
+#define CTCPCLIENTSOCKET_H
+#endif /* CTCPCLIENTSOCKET_H ? */
 
 #ifndef CDBQUERY_H
 #include "CDBQuery.h"           /* query class used to store query results */
@@ -68,16 +73,15 @@ class CMySQLClientInterface;
 /*--------------------------------------------------------------------------*/
 
 /**
- *      Easy to use MySQL client built ontop of a TCP client socket interface.
+ *      Easy to use MySQL client built on top of a TCP client socket interface.
  *      The client is threadsafe, but it should be noted that the client should
  *      only be accessed from created threads OR from the main application
- *      thread. Otherwise a problem could arrise out of the fact that the
- *      main application thread does the network event proccessing.
+ *      thread. Otherwise a problem could arise out of the fact that the
+ *      main application thread does the network event processing.
  */
-class GUCEFCOM_EXPORT_CPP CMySQLClient: public COMCORE::CTCPClientSocketInterface
+class GUCEFCOM_EXPORT_CPP CMySQLClient : public CORE::CObservingNotifier
 {
 	public:
-	typedef COMCORE::CSocket::TSocketError TSocketError;
 	
         /**
          *	Set of MySQL client connection states
@@ -121,7 +125,7 @@ class GUCEFCOM_EXPORT_CPP CMySQLClient: public COMCORE::CTCPClientSocketInterfac
         /**
          *      The following member function returns the last MySQL error
          *      in more human readable string form. Note that the returned
-         *      value can also be NULL if no error occured.
+         *      value can also be NULL if no error occurred.
          */
         CORE::CString GetError( void ) const;
 
@@ -132,7 +136,7 @@ class GUCEFCOM_EXPORT_CPP CMySQLClient: public COMCORE::CTCPClientSocketInterfac
 
         /**
          *      Send a MySQL query to the server. The resulting data will be
-         *      written into cdbquery when it is recieved. Note that if you need
+         *      written into cdbquery when it is received. Note that if you need
          *      the data after calling a query instead of delta T later then
          *      you should use Query_And_Wait(). This member function will return
          *      false if another query is already active or if there was a problem
@@ -143,8 +147,8 @@ class GUCEFCOM_EXPORT_CPP CMySQLClient: public COMCORE::CTCPClientSocketInterfac
 
         /**
          *      Send a MySQL query to the server. The resulting data will be
-         *      written into cdbquery when it is recieved. Note that this member
-         *      function will not return untill data is recieved from the server
+         *      written into cdbquery when it is received. Note that this member
+         *      function will not return until data is received from the server
          *      or the given timeout is reached.
          *      Note that the primary application thread does the
          *      initial network messaging so don't call this member function
@@ -156,7 +160,7 @@ class GUCEFCOM_EXPORT_CPP CMySQLClient: public COMCORE::CTCPClientSocketInterfac
                              Int32 timeout               );
 
         /**
-         *      Returns wheter there currently is an active query.
+         *      Returns whether there currently is an active query.
          */
         bool Query_Busy( void ) const;
 
@@ -202,13 +206,13 @@ class GUCEFCOM_EXPORT_CPP CMySQLClient: public COMCORE::CTCPClientSocketInterfac
         virtual void OnDisconnect( COMCORE::CTCPClientSocket &socket );
 
         /**
-         *      Event handler called when a socket error occured.
+         *      Event handler called when a socket error occurred.
          */
         virtual void OnError( COMCORE::CTCPClientSocket &socket ,
                               TSocketError *errorcode           );        
 
         /**
-         *	Handler for data we recieve on the TCP client socket 
+         *	Handler for data we receive on the TCP client socket 
          */
         virtual void OnRead( COMCORE::CTCPClientSocket &clientsocket ,
                              const char *data                        ,

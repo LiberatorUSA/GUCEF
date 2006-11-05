@@ -278,10 +278,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CTCPClientSocketInterface.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\CTCPServerConnection.h"
 				>
 			</File>

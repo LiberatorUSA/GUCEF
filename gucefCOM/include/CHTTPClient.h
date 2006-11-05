@@ -29,11 +29,6 @@
 #define CTCPCLIENTSOCKET_H
 #endif /* CTCPCLIENTSOCKET_H ? */
 
-#ifndef CTCPCLIENTSOCKETINTERFACE_H
-#include "CTCPClientSocketInterface.h" /* Interface for TCP Client Socket */
-#define CTCPCLIENTSOCKETINTERFACE_H
-#endif /* CTCPCLIENTSOCKETINTERFACE_H ? */
-
 #ifndef CDVSTRING_H
 #include "CDVString.h"
 #define CDVSTRING_H
@@ -147,8 +142,7 @@ typedef enum THTTPCODE
 /**
  *      HTTP protocol client
  */
-class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CNotifier                     ,
-                                        private COMCORE::CTCPClientSocketInterface
+class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
 {
 	public:
 

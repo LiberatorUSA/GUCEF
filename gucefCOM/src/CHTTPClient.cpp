@@ -89,7 +89,7 @@ CHTTPClient::CHTTPClient( void )
           m_HTTPTransferFinishedEventID( HTTPTransferFinishedEvent )
 {TRACE;
 
-        m_socket.SetInterface( this );
+        SubscribeTo( &m_socket );
 }
 
 /*-------------------------------------------------------------------------*/
