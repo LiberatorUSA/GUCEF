@@ -208,8 +208,7 @@ class GUCEFCOM_EXPORT_CPP CMySQLClient : public CORE::CObservingNotifier
         /**
          *      Event handler called when a socket error occurred.
          */
-        virtual void OnError( COMCORE::CTCPClientSocket &socket ,
-                              TSocketError *errorcode           );        
+        virtual void OnError( COMCORE::CTCPClientSocket &socket );        
 
         /**
          *	Handler for data we receive on the TCP client socket 

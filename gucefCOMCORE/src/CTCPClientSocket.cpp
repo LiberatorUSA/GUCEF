@@ -33,11 +33,6 @@
 #define DVWINSOCK_H
 #endif /* DVWINSOCK_H ? */
 
-#ifndef CTCPCLIENTSOCKETINTERFACE_H
-#include "CTCPClientSocketInterface.h"  /* virtual Event handling interface */
-#define CTCPCLIENTSOCKETINTERFACE_H
-#endif /* CTCPCLIENTSOCKETINTERFACE_H ? */
-
 #include "CTCPClientSocket.h"           /* Header with class for these utils */
 
 #ifdef ACTIVATE_MEMORY_MANAGER

@@ -124,7 +124,7 @@ CMySQLClient::CMySQLClient( bool blocking )
         CORE::tsprintf( "CMySQLClient::Constructor()\n" );
         #endif /* DEBUG_MODE */
 
-        socket.SetInterface( this );
+        socket.Subscribe( &AsObserver() );
         mysql_connection_state = MYSQL_DISCONNECTED;
         query_busy = false;
         iface = NULL;
@@ -679,11 +679,10 @@ CMySQLClient::OnDisconnect( COMCORE::CTCPClientSocket &socket )
  *      Event handler called when a socket error occured.
  */
 void
-CMySQLClient::OnError( COMCORE::CTCPClientSocket &socket ,
-                       TSocketError *errorcode           )
+CMySQLClient::OnError( COMCORE::CTCPClientSocket &socket )
 {TRACE;
         query_busy = false;
-        if ( iface ) iface->OnSocketError( *this, errorcode );
+//        if ( iface ) iface->OnSocketError( *this, errorcode );
 }
 
 /*--------------------------------------------------------------------------*/
