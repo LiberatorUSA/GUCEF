@@ -174,6 +174,18 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
     void NotifyObservers( const CEvent& eventid         ,
                           CICloneable* eventData = NULL );
 
+    /**
+     *  The same as NotifyObservers( CEvent, CICloneable )
+     *  except that this allows you to specify the sender yourself.
+     *  You will basicly be faking an event emitted at the given sender.
+     *  
+     *  Use with great care !!!
+     *  Use of this version should be an exception and not standard practice
+     */
+    void NotifyObservers( CNotifier& sender             ,
+                          const CEvent& eventid         ,
+                          CICloneable* eventData = NULL );
+
     virtual void LockData( void ) const;
     
     virtual void UnlockData( void ) const;

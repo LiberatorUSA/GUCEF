@@ -459,6 +459,19 @@ CNotifier::NotifyObservers( const CEvent& eventid  ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+CNotifier::NotifyObservers( CNotifier& sender                   ,
+                            const CEvent& eventid               ,
+                            CICloneable* eventData /* = NULL */ )
+{TRACE;
+
+    // Use the same-class friend relationship to access the NotifyObservers()
+    // member function of the given notifier.
+    sender.NotifyObservers( eventid, eventData );
+}                            
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CNotifier::OnObserverDestroy( CObserver* observer )
 {TRACE;

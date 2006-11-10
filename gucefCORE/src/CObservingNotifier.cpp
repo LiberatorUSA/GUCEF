@@ -188,10 +188,11 @@ CObservingNotifier::AsObserver( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CObservingNotifier::AddEventForwarding( const CEvent& eventid            , 
-                                        CNotifier* notifier /* = NULL */ )
+CObservingNotifier::AddEventForwarding( const CEvent& eventid                 ,
+                                        const TEventOriginFilter originFilter ,
+                                        CNotifier* notifier /* = NULL */      )
 {TRACE;
-
+        //@TODO: store the originFilter setting and apply it later on
     if ( NULL != notifier )
     {
         LockData();

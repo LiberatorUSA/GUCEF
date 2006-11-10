@@ -48,11 +48,11 @@ CURLDataRetriever::CURLDataRetriever( void )
       m_buffer()
 {TRACE;
 
-    AddEventForwarding( GetURLActivateEventID() );
-    AddEventForwarding( GetURLDeactivateEventID() );
-    AddEventForwarding( GetURLDataRecievedEventID() );
-    AddEventForwarding( GetURLAllDataRecievedEventID() );
-    AddEventForwarding( GetURLDataRetrievalErrorEventID() );
+    AddEventForwarding( GetURLActivateEventID(), EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( GetURLDeactivateEventID(), EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( GetURLDataRecievedEventID(), EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( GetURLAllDataRecievedEventID(), EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( GetURLDataRetrievalErrorEventID(), EVENTORIGINFILTER_TRANSFER );
     
     SubscribeTo( &m_url );
 }

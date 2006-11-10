@@ -85,7 +85,7 @@ class CTMailBox
     void Clear( void );
 
     void ClearAllExcept( const T& eventid );
-
+    
     void Delete( const T& eventid );
 
     bool HasMail( void ) const;

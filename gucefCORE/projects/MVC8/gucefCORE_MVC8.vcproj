@@ -524,6 +524,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CTransactionEventControl.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CTRegistry.cpp"
 				>
 			</File>
@@ -959,6 +963,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CTracer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CTransactionEventControl.h"
 				>
 			</File>
 			<File

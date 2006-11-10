@@ -65,11 +65,11 @@ CURL::CURL( void )
           m_URLDataRetrievalErrorEvent( URLDataRetrievalErrorEvent )         
 {TRACE;
         
-    AddEventForwarding( m_URLActivateEvent );
-    AddEventForwarding( m_URLDeactivateEvent );
-    AddEventForwarding( m_URLDataRecievedEvent );
-    AddEventForwarding( m_URLAllDataRecievedEvent );
-    AddEventForwarding( m_URLDataRetrievalErrorEvent );  
+    AddEventForwarding( m_URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( m_URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( m_URLDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( m_URLAllDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( m_URLDataRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );  
 }
         
 /*-------------------------------------------------------------------------*/        
@@ -84,11 +84,11 @@ CURL::CURL( const CString& url )
           m_URLDataRetrievalErrorEvent( URLDataRetrievalErrorEvent )           
 {TRACE;
 
-    AddEventForwarding( m_URLActivateEvent );
-    AddEventForwarding( m_URLDeactivateEvent );
-    AddEventForwarding( m_URLDataRecievedEvent );
-    AddEventForwarding( m_URLAllDataRecievedEvent );
-    AddEventForwarding( m_URLDataRetrievalErrorEvent );
+    AddEventForwarding( m_URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( m_URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( m_URLDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( m_URLAllDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( m_URLDataRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
 }
 
 /*-------------------------------------------------------------------------*/

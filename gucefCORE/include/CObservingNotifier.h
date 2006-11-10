@@ -53,6 +53,13 @@ namespace CORE {
 class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
 {
     public:
+
+    typedef enum TEventOriginFilter
+    {
+        EVENTORIGINFILTER_UNMODIFIED , /**< do not change the event emission origin */
+        EVENTORIGINFILTER_NO_SENDER  , /**< void's the event emitter, NULL will be given as sender */
+        EVENTORIGINFILTER_TRANSFER     /**< turns the CTransactionEventControl into the emitter of the event */
+    };
     
     CObservingNotifier( void );
     
@@ -144,8 +151,9 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
      *  @param notifier given notifier are forwarded, otherwise the 
      *  @param notifier event is always forwarded
      */
-    void AddEventForwarding( const CEvent& eventid      , 
-                             CNotifier* notifier = NULL );
+    void AddEventForwarding( const CEvent& eventid                 ,
+                             const TEventOriginFilter originFilter ,
+                             CNotifier* notifier = NULL            );
 
     /**
      *  Removes the given event ID to the forwarding list.
