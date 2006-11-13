@@ -99,6 +99,8 @@ class GUCEFCORE_EXPORT_CPP CTransactionEventControl : public CObservingNotifier
 
     bool IsTransactionActive( void ) const;
 
+    void ClearAllFilters( void );
+
     protected:
     
     virtual void OnNotify( CNotifier* notifier           ,

@@ -126,6 +126,28 @@ CTransactionEventControl::CTransactionEventControl( void )
 {
 }
 
+/*-------------------------------------------------------------------------*/
+
+CTransactionEventControl::~CTransactionEventControl()
+{TRACE;
+    
+    ClearAllFilters();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTransactionEventControl::ClearAllFilters( void )
+{TRACE;
+
+    m_mutex.Lock();
+    m_filterMap.clear();
+    m_senderFilterMap.clear();
+    m_mutex.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CTransactionEventControl::StartTransaction( void )
 {TRACE;
@@ -175,21 +197,31 @@ CTransactionEventControl::AddEventFilter( const CEvent& eventID                 
 {TRACE;
     
     m_mutex.Lock();
-    if ( NULL != sender )
+    
+    if ( !IsEventFiltered( eventID ,
+                           sender  ) )
     {
-        TFilterData& filterdata = m_senderFilterMap[ sender ].second[ eventID ].second;
-        filterdata.filterAction = filterAction;
-        filterdata.originFilter = originFilter;
-        filterdata.preserveEventData = preserveEventData;
+        if ( NULL != sender )
+        {
+            TFilterData& filterdata = (m_senderFilterMap[ sender ])[ eventID ];
+            filterdata.filterAction = filterAction;
+            filterdata.originFilter = originFilter;
+            filterdata.preserveEventData = preserveEventData;
+        }
+        else
+        {
+            TFilterData& filterdata = m_filterMap[ eventID ];
+            filterdata.filterAction = filterAction;
+            filterdata.originFilter = originFilter;
+            filterdata.preserveEventData = preserveEventData;
+        }
+        
+        m_mutex.Unlock();
+        return true;
     }
-    else
-    {
-        TFilterData& filterdata = m_filterMap[ eventID ].second;
-        filterdata.filterAction = filterAction;
-        filterdata.originFilter = originFilter;
-        filterdata.preserveEventData = preserveEventData;
-    }
+            
     m_mutex.Unlock();
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -207,7 +239,7 @@ CTransactionEventControl::RemoveEventFilter( const CEvent& eventID              
         TSenderFilterMap::iterator i = m_senderFilterMap.find( sender );
         if ( i != m_senderFilterMap.end() )
         {
-            TFilterMap& filterMap = m_senderFilterMap[ i ].second;
+            TFilterMap& filterMap = (*i).second;
             TFilterMap::iterator n = filterMap.find( eventID );
             if ( n != filterMap.end() )
             {
@@ -243,7 +275,7 @@ CTransactionEventControl::IsEventFiltered( const CEvent& eventID   ,
         TSenderFilterMap::const_iterator i = m_senderFilterMap.find( sender );
         if ( i != m_senderFilterMap.end() )
         {
-            TFilterMap& filterMap = m_senderFilterMap[ i ].second;
+            const TFilterMap& filterMap = (*i).second;
             TFilterMap::const_iterator n = filterMap.find( eventID );
             if ( n != filterMap.end() )
             {
@@ -282,11 +314,11 @@ CTransactionEventControl::GetFilterInfo( const CEvent& eventID            ,
         TSenderFilterMap::const_iterator i = m_senderFilterMap.find( sender );
         if ( i != m_senderFilterMap.end() )
         {
-            TFilterMap& filterMap = m_senderFilterMap[ i ].second;
+            const TFilterMap& filterMap = (*i).second;
             TFilterMap::const_iterator n = filterMap.find( eventID );
             if ( n != filterMap.end() )
             {
-                TFilterData& filterdata = filterMap[ n ].second;
+                const TFilterData& filterdata = (*n).second;
                 filterAction = filterdata.filterAction;
                 originFilter = filterdata.originFilter;
                 preserveEventData = filterdata.preserveEventData;
@@ -300,7 +332,7 @@ CTransactionEventControl::GetFilterInfo( const CEvent& eventID            ,
         TFilterMap::const_iterator i = m_filterMap.find( eventID );
         if ( i != m_filterMap.end() )
         {
-            TFilterData& filterdata = m_filterMap[ i ].second;
+            const TFilterData& filterdata = (*i).second;
             filterAction = filterdata.filterAction;
             originFilter = filterdata.originFilter;
             preserveEventData = filterdata.preserveEventData;
@@ -325,7 +357,7 @@ CTransactionEventControl::ApplyFilter( const TFilterMap& filterMap ,
     TFilterMap::const_iterator i = filterMap.find( eventID );
     if ( i != filterMap.end() )
     {
-        TFilterData& filterdata = filterMap[ i ].second;
+        const TFilterData& filterdata = (*i).second;
         
         // Apply the main action filter to the event
         switch ( filterdata.filterAction )
@@ -411,7 +443,7 @@ CTransactionEventControl::OnNotify( CNotifier* notifier                 ,
         TSenderFilterMap::const_iterator i = m_senderFilterMap.find( notifier );
         if ( i != m_senderFilterMap.end() )
         {
-            TFilterMap& filterMap = m_senderFilterMap[ i ].second;
+            const TFilterMap& filterMap = (*i).second;
             if ( ApplyFilter( filterMap, notifier, eventID, eventData ) )
             {
                 // Yay, it worked, we applied a filter to the event
