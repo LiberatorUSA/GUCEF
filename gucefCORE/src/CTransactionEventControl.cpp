@@ -201,25 +201,25 @@ CTransactionEventControl::AddEventFilter( const CEvent& eventID                 
     if ( !IsEventFiltered( eventID ,
                            sender  ) )
     {
-        if ( NULL != sender )
-        {
+    if ( NULL != sender )
+    {
             TFilterData& filterdata = (m_senderFilterMap[ sender ])[ eventID ];
-            filterdata.filterAction = filterAction;
-            filterdata.originFilter = originFilter;
-            filterdata.preserveEventData = preserveEventData;
-        }
-        else
-        {
-            TFilterData& filterdata = m_filterMap[ eventID ];
-            filterdata.filterAction = filterAction;
-            filterdata.originFilter = originFilter;
-            filterdata.preserveEventData = preserveEventData;
-        }
-        
-        m_mutex.Unlock();
-        return true;
+        filterdata.filterAction = filterAction;
+        filterdata.originFilter = originFilter;
+        filterdata.preserveEventData = preserveEventData;
     }
-            
+    else
+    {
+            TFilterData& filterdata = m_filterMap[ eventID ];
+        filterdata.filterAction = filterAction;
+        filterdata.originFilter = originFilter;
+        filterdata.preserveEventData = preserveEventData;
+    }
+        
+    m_mutex.Unlock();
+        return true;
+}
+
     m_mutex.Unlock();
     return false;
 }
