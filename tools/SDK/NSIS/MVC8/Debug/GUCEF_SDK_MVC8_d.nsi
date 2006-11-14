@@ -1,5 +1,8 @@
 ; Script generated with the Venis Install Wizard
 
+!define ALL_USERS
+!include "..\..\MSWIN\WriteEnvStr.nsh"
+
 ; Define your application name
 !define APPNAME "GUCEF SDK for MVC8 (debug)"
 !define APPNAMEANDVERSION "GUCEF SDK 0.1 (pre-release)"
