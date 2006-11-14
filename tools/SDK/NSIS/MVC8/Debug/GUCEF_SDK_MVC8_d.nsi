@@ -1,16 +1,17 @@
-; Script generated with the Venis Install Wizard
+; Script for the GUCEF SDK installer
 
-!define ALL_USERS
-!include "..\..\MSWIN\WriteEnvStr.nsh"
+
+; include functions for setting the environment settings
+!include "..\..\MSWIN\PathEnvUtils.nsh"
 
 ; Define your application name
 !define APPNAME "GUCEF SDK for MVC8 (debug)"
-!define APPNAMEANDVERSION "GUCEF SDK 0.1 (pre-release)"
+!define APPNAMEANDVERSION "GUCEF SDK 0.0.0.0 (pre-release)"
 
 ; Main Install settings
 Name "${APPNAMEANDVERSION}"
-InstallDir "$PROGRAMFILES\GUCEF SDK MVC8d"
-InstallDirRegKey HKLM "Software\VanvelzenSoftware\GUCEF SDK MVC8d" ""
+InstallDir "$PROGRAMFILES\GUCEF SDK\MVC8\Debug"
+InstallDirRegKey HKLM "Software\VanvelzenSoftware\GUCEF SDK\MVC8\Debug" ""
 OutFile "GUCEF_SDK_MVC8_d.exe"
 
 ; Modern interface settings
@@ -37,23 +38,18 @@ Section "GUCEF SDK" Section1
 	SetOverwrite on
 
 	; Set Section Files and Shortcuts
-	SetOutPath "$INSTDIR\"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\gucefCOMCORE_MVC8_d.dll"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\gucefCOM_MVC8_d.dll"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\gucefCORE_MVC8_d.dll"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\gucefIMAGE_MVC8_d.dll"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\gucefINPUT_MVC8_d.dll"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\gucefMT_MVC8_d.dll"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\gucefPATCHER_MVC8_d.dll"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\gucefVFS_MVC8_d.dll"
-	SetOutPath "$INSTDIR\plugins\"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\plugins\dstorepluginPARSIFALXML.dll"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\plugins\inputdriverDIRECTINPUT8.dll"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\plugins\inputdriverMSWINMSG.dll"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\plugins\vfspluginDVP.dll"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\plugins\vfspluginVP.dll"
-	CreateDirectory "$SMPROGRAMS\GUCEF SDK"
-	CreateShortCut "$SMPROGRAMS\GUCEF SDK\Uninstall.lnk" "$INSTDIR\uninstall.exe"
+	SetOutPath "$INSTDIR\bin"
+	File "..\..\..\..\..\common\bin\Debug_MVC8\*.dll"
+	SetOutPath "$INSTDIR\bin\plugins\"
+	File "..\..\..\..\..\common\bin\Debug_MVC8\plugins\*.dll"
+	SetOutPath "$INSTDIR\lib"
+	File /nonfatal "..\..\..\..\..\common\bin\Debug_MVC8\*.lib"
+	SetOutPath "$INSTDIR\lib\plugins"
+	File /nonfatal "..\..\..\..\..\common\bin\Debug_MVC8\plugins\*.lib"
+	SetOutPath "$INSTDIR\include"
+;	File "..\..\..\..\..\common\bin\Debug_MVC8\*.lib"		
+	CreateDirectory "$SMPROGRAMS\GUCEF SDK\MVC8\Debug"
+	CreateShortCut "$SMPROGRAMS\GUCEF SDK\MVC8\Debug\Uninstall.lnk" "$INSTDIR\uninstall.exe"
 
 SectionEnd
 
@@ -63,6 +59,16 @@ Section -FinishSection
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayName" "${APPNAME}"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$INSTDIR\uninstall.exe"
 	WriteUninstaller "$INSTDIR\uninstall.exe"
+
+	; Write the environment settings
+	Push "$INSTDIR\bin"
+  Call AddToPath
+	Push "INCLUDE"
+	Push "$INSTDIR"
+	Call AddToEnvVar
+	Push "LIB"
+	Push "$INSTDIR"
+	Call AddToEnvVar
 
 SectionEnd
 
@@ -82,27 +88,30 @@ Section Uninstall
 	Delete "$INSTDIR\uninstall.exe"
 
 	; Delete Shortcuts
-	Delete "$SMPROGRAMS\GUCEF SDK\Uninstall.lnk"
+	Delete "$SMPROGRAMS\GUCEF SDK\MVC8\Debug\Uninstall.lnk"
 
 	; Clean up GUCEF SDK
-	Delete "$INSTDIR\gucefCOMCORE_MVC8_d.dll"
-	Delete "$INSTDIR\gucefCOM_MVC8_d.dll"
-	Delete "$INSTDIR\gucefCORE_MVC8_d.dll"
-	Delete "$INSTDIR\gucefIMAGE_MVC8_d.dll"
-	Delete "$INSTDIR\gucefINPUT_MVC8_d.dll"
-	Delete "$INSTDIR\gucefMT_MVC8_d.dll"
-	Delete "$INSTDIR\gucefPATCHER_MVC8_d.dll"
-	Delete "$INSTDIR\gucefVFS_MVC8_d.dll"
-	Delete "$INSTDIR\plugins\dstorepluginPARSIFALXML.dll"
-	Delete "$INSTDIR\plugins\inputdriverDIRECTINPUT8.dll"
-	Delete "$INSTDIR\plugins\inputdriverMSWINMSG.dll"
-	Delete "$INSTDIR\plugins\vfspluginDVP.dll"
-	Delete "$INSTDIR\plugins\vfspluginVP.dll"
+	Delete "$INSTDIR\bin\*.dll"
+	Delete "$INSTDIR\bin\plugins\*.dll"
 
 	; Remove remaining directories
-	RMDir "$SMPROGRAMS\GUCEF SDK"
-	RMDir "$INSTDIR\plugins\"
+	RMDir "$SMPROGRAMS\GUCEF SDK\MVC8\Debug"
+	RMDir "$INSTDIR\bin\plugins\"
+	RMDir "$INSTDIR\bin"
+	RMDir "$INSTDIR\lib"
+	RMDir "$INSTDIR\include"	
 	RMDir "$INSTDIR\"
+
+	; Remove our environment settings
+	Push "$INSTDIR\bin"
+	Call un.RemoveFromPath	
+	Push "INCLUDE"
+	Push "$INSTDIR\include"
+	Call un.RemoveFromEnvVar
+	Push "LIB"
+	Push "$INSTDIR\lib"
+	Call un.RemoveFromEnvVar
+
 
 SectionEnd
 
