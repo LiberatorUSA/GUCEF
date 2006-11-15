@@ -113,8 +113,9 @@ class GUCEFDRN_EXPORT_CPP CDRNServer : public CObservingNotifier
                                const TComType comType     ,
                                const TComMethod comMethod );
     
-    TComMethod GetDataItemComMethod( const UInt32 itemID    ,
-                                     const TComType comType ) const;
+    bool GetDataItemComMethod( const UInt32 itemID    ,
+                               const TComType comType ,
+                               TComMethod& comMethod  ) const;
 
     void SetDRNClientAuthenticator( const CIDRNClientAuthenticator& clientAuthenticator );
     

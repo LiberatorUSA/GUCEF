@@ -78,8 +78,8 @@ class EXPORT_CPP CIMGCodec : public CORE::CICodec
     bool Decode( const CORE::CDynamicBuffer& encodedInput ,
                  CImage& outputImage                      );
 
-    bool Decode( const CORE::CIOAccess& encodedInput ,
-                 CImage& outputImage                 );
+    bool Decode( CORE::CIOAccess& encodedInput ,
+                 CImage& outputImage           );
 };
 
 /*-------------------------------------------------------------------------//

@@ -84,7 +84,9 @@ CIMGCodec::Encode( const CImage& inputImage            ,
     // We start with the header
     Int8 enumTemp;
     enumTemp = inputImage.GetPixelComponentDataType();
-    inputBuffer.CopyFrom( 1, &enumTemp );
+    inputBuffer.CopyFrom( 0, 1, &enumTemp );
+    
+    //inputBuffer.CopyFrom( GetTotalPixelStorageSize
 }
 
 /*-------------------------------------------------------------------------*/
@@ -144,11 +146,11 @@ CIMGCodec::Decode( const CORE::CDynamicBuffer& encodedInput ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CIMGCodec::Decode( const CORE::CIOAccess& encodedInput ,
-                   CImage& outputImage                 )
+CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
+                   CImage& outputImage           )
 {TRACE;
 
-    // First we copy the recource into a buffer
+    // First we copy the resource into a buffer
     CORE::CDynamicBuffer inputBuffer( encodedInput );
 
     // Now we use the buffer version to do the actual decoding

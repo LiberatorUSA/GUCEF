@@ -245,6 +245,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\CIMGCodec.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\CIMGCodecPlugin.h"
 				>
 			</File>
