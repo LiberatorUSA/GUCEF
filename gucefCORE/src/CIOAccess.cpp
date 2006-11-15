@@ -222,6 +222,30 @@ CIOAccess::SkipUntill( const void* delimiter ,
         GUCEF_END_RET( UInt32, Tell() - pos );                                            
 }                       
 
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CIOAccess::Read( CDynamicBuffer& dest ,
+                 UInt32 esize         ,
+                 UInt32 elements      )
+{TRACE;
+
+    // First we ensure that we have enough space in the buffer to copy our data 
+    // into the buffer manually
+    dest.SetBufferSize( dest.GetDataSize() + ( esize * elements ) ,
+                        false                                     );
+                        
+    // Perform the actual read
+    UInt32 nrOfBytesRead = Read( dest.GetBufferPtr() + dest.GetDataSize() ,
+                                 esize                                    ,
+                                 elements                                 );
+                                 
+    // Correct the data delimiter in the buffer
+    dest.SetDataSize( dest.GetDataSize() + nrOfBytesRead );
+    
+    return nrOfBytesRead;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -99,6 +99,9 @@ class EXPORT_CPP CImage
         UInt8   GetChannels( void ) const;
         Int8    GetFormat( void ) const;
         UInt32  GetFrames( void ) const;
+        
+        UInt32 GetTotalPixelStorageSize( void ) const;
+        TBuildinDataType GetPixelComponentDataType( void ) const;
 
         /**
          *      Get the number of mipmap levels per frame

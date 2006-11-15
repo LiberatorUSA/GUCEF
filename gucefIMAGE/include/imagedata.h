@@ -74,7 +74,7 @@ enum
 /**
  *      Possible color data component types
  */
-enum
+typedef enum TBuildinDataType
 {
         DT_FLOAT32 = 1 ,
         DT_FLOAT64     ,
@@ -140,7 +140,7 @@ struct SImageData
         UInt32 frames;      /* total number of images stored */
         UInt8 mipmaps;      /* number of mipmaps per frame */
         Int8 icf;           /* image compression format */
-        void *idata;        /* pointer to the pixel data. */
+        char compressionType[ 64 ];
 };
 
 typedef struct SImageData TImageData;

@@ -46,9 +46,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *      Default constructor, initializes to a zero-length buffer.
- */
 CDynamicBuffer::CDynamicBuffer( bool autoenlarge ) 
         : _buffer( NULL )             , 
           _bsize( 0 )                 ,
@@ -57,6 +54,42 @@ CDynamicBuffer::CDynamicBuffer( bool autoenlarge )
           m_linked( false )
 {TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDynamicBuffer::CDynamicBuffer( CIOAccess& ioAccess )
+        : _buffer( NULL )             , 
+          _bsize( 0 )                 ,
+          _autoenlarge( true )        ,
+          m_dataSize( 0 )             ,
+          m_linked( false )
+{TRACE;
+    
+    Int32 inputSize = encodedInput.GetSize();
+    if ( inputSize > -1 )
+    {
+        // Copy the recource data all at once
+        SetBufferSize( inputSize );
+        ioAccess.Read( *this     ,
+                       1         ,
+                       inputSize );
+    }
+    else
+    {
+        // read blocks till we hit the end of the recource
+        UInt32 nrOfBytesRead = 0;
+        while ( !ioAccess.Eof() )
+        {
+            nrOfBytesRead = ioAccess.Read( *this ,
+                                           1     ,
+                                           1024  );
+            if ( nrOfBytesRead < 1024 )
+            {
+                break;
+            }
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/

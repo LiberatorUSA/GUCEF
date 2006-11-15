@@ -54,6 +54,10 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CDynamicBuffer;
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *      Abstract base class for media independant recource access
  */
@@ -131,6 +135,10 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
         virtual UInt32 Read( void *dest      ,
                              UInt32 esize    ,
                              UInt32 elements ) = 0;
+
+        UInt32 Read( CDynamicBuffer& dest ,
+                     UInt32 esize         ,
+                     UInt32 elements      );
                              
         /**
          *      Attempts to write the specified number of bytes to the recourse
@@ -193,6 +201,11 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
          *      has something gone wrong ?
          */
         virtual bool IsValid( void ) = 0;
+        
+        /**
+         *  @return returns the size of the recource if possible. returns -1 if the size cannot be determined
+         */
+        virtual Int32 GetSize( void ) const = 0;
 
         virtual TIOAccess* CStyleAccess( void ) = 0;
 

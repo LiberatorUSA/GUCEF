@@ -49,6 +49,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CIOAccess;
+
 /**
  *      Class that implements a simple dynamic buffer. Simply an array of bytes.
  *      Member functions are provided to access the bytes as unsigned or signed
@@ -60,6 +62,8 @@ namespace CORE {
 class GUCEFCORE_EXPORT_CPP CDynamicBuffer
 {
         public:
+        
+        CDynamicBuffer( CIOAccess& ioAccess );
         
         /**
          *      Default constructor, initializes to a zero-length buffer.

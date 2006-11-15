@@ -57,7 +57,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable ,
-                           public CITypeNamed
+                                     public CITypeNamed
 {
         public:
         

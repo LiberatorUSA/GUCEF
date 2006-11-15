@@ -215,6 +215,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CIMGCodecRegistry.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefIMAGE.cpp"
 				>
 			</File>
@@ -241,11 +245,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CIMGCodec.h"
+				RelativePath="..\..\include\CIMGCodecPlugin.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CIMGCodecManager.h"
+				RelativePath="..\..\include\CIMGCodecPluginManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CIMGCodecRegistry.h"
 				>
 			</File>
 			<File
