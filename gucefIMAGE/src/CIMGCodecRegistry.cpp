@@ -15,19 +15,13 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_IMAGE_CIMGCODEC_H
-#define GUCEF_IMAGE_CIMGCODEC_H
- 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/
+//-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CICODEC_H
-#include "CICodec.h"
-#define GUCEF_CORE_CICODEC_H
-#endif /* GUCEF_CORE_CICODEC_H ? */
+#include "CIMGCodecRegistry.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,52 +34,11 @@ namespace IMAGE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CImage;
-class CORE::CIOAccess;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *  Abstract base class for image codec's
- *  It adds some utility member functions that make it easier to use 
- *  the interface when dealing with images
- *
- *  Note that decoded image data is expected to be a blob of the header
- *  info of type TImageInfo followed by the pixeldata. The pixeldata is
- *  defined as ordered in the following hierarchy:
- *      - frame
- *          - mipmap levels
- *  Each pixel segment is ordered with the bottom left pixel as the first 
- *  pixel in the segment stored as a series of horizontal scanlines.
- */
-class EXPORT_CPP CIMGCodec : public CORE::CICodec
-{
-    public:
-    
-    CIMGCodec( void );
-    
-    CIMGCodec( const CIMGCodec& src );
-    
-    virtual ~CIMGCodec();
-    
-    CIMGCodec& operator=( const CIMGCodec& src );
-    
-    bool Encode( const CImage& inputImage            ,
-                 CORE::CDynamicBuffer& encodedOutput ); 
-
-    bool Encode( const CImage& inputImage       ,
-                 CORE::CIOAccess& encodedOutput );
-                     
-    bool Decode( const CORE::CDynamicBuffer& encodedInput ,
-                 CImage& outputImage                      );
-
-    bool Decode( CORE::CIOAccess& encodedInput ,
-                 CImage& outputImage           );
-};
+GUCEF_DEFINE_SINGLETON( CIMGCodecRegistry, CORE::CTRegistry< CIMGCodec > );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -97,16 +50,3 @@ class EXPORT_CPP CIMGCodec : public CORE::CICodec
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_IMAGE_CIMGCODEC_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 20-07-2005 :
-        - Dinand: Added this class
-
------------------------------------------------------------------------------*/

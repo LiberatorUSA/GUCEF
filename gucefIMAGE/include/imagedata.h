@@ -72,28 +72,9 @@ enum
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Possible color data component types
- */
-typedef enum TBuildinDataType
-{
-        DT_FLOAT32 = 1 ,
-        DT_FLOAT64     ,
-        DT_UINT8       ,
-        DT_INT8        ,
-        DT_UINT16      ,
-        DT_INT16       ,
-        DT_UINT32      ,
-        DT_INT32       ,
-        DT_UINT64      ,
-        DT_INT64
-};
-
-/*-------------------------------------------------------------------------*/
-
-/**
  *      Image Storage formats
  */
-enum
+typedef enum TPixelStorageFormat
 {
         ISF_RGB = 1                  ,
         ISF_RGBA                     ,
@@ -107,43 +88,22 @@ enum
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Image compression formats
+ *      Storage structure for image information
  */
-enum
+struct SImageInfo
 {
-        ICF_NO_COMPRESSION = 0   ,
-        ICF_GL_COMPRESSED        ,
-        ICF_S3TC_COMPRESSED_DXT1 ,
-        ICF_S3TC_COMPRESSED_DXT3 ,
-        ICF_S3TC_COMPRESSED_DXT5 
+        TBuildinDataType pixelComponentDataType;  /**< data type of each value of idata */
+        UInt32 channelComponentSize;              /**< size of the data value of the pixel's color channel in bits */
+        UInt8 channelCountPerPixel;               /**< number of color component channels per pixel */
+        UInt8 hasAlpha;                           /**< wheter the image has an alpha channel */
+        UInt32 frameWidth;                        /**< Width of an image frame in pixels, mipmap level 0 */
+        UInt32 frameHeight;                       /**< Height of an image frame in pixels, mipmap level 0 */
+        TPixelStorageFormat pixelStorageFormat;   /**< format in which the pixel components are stored */
+        UInt32 framesInImage;                     /**< total number of images stored */
+        UInt8 mipmapLevelsPerFrame;               /**< number of mipmap levels per frame */
 };
 
-/*-------------------------------------------------------------------------*/
-
-/**
- *      Storage structure for image data.
- *      Some data members can be derived from others but for the sake of speed
- *      the derivative is stored aswell.
- */
-struct SImageData
-{
-        Int8 dtype;         /* data type of each value of idata */
-        UInt32 vsize;       /* size of each data value */
-        UInt8 channels;     /* number of channels per pixel */
-        UInt8 has_alpha;    /* wheter the image has an alpha channel */
-        UInt32 width;       /* Width of image. */
-        UInt32 height;      /* Height of image. */
-        UInt8 bbp;          /* BPP, Bits Per Pixel */
-        UInt32 stride;      /* Number of bytes in each horizontal scan line. used for flipping vertically */
-        UInt32 dsize;       /* Allocated pixel data space used by image. */
-        Int8 format;        /* format in which the pixel components are stored */
-        UInt32 frames;      /* total number of images stored */
-        UInt8 mipmaps;      /* number of mipmaps per frame */
-        Int8 icf;           /* image compression format */
-        char compressionType[ 64 ];
-};
-
-typedef struct SImageData TImageData;
+typedef struct SImageInfo TImageInfo;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -21,6 +21,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
+#ifndef GUCEF_IMAGE_CIMAGE_H
+#include "CImage.h"
+#define GUCEF_IMAGE_CIMAGE_H
+#endif /* GUCEF_IMAGE_CIMAGE_H ? */
+
 #include "CIMGCodec.h"
 
 /*-------------------------------------------------------------------------//
@@ -69,24 +74,47 @@ CIMGCodec::operator=( const CIMGCodec& src )
     }
     
     return *this;
-}
+} 
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CIMGCodec::Encode( const CImage& inputImage            ,
                    CORE::CDynamicBuffer& encodedOutput )
 {TRACE;
 
     // We need to first combine all the image data into a single buffer
-    CORE::CDynamicBuffer inputBuffer( inputImage.GetTotalPixelStorageSize() +  );
-    
+    CORE::CDynamicBuffer inputBuffer( sizeof( TImageInfo ) + inputImage.GetTotalPixelStorageSize() );
+   
     // We start with the header
-    Int8 enumTemp;
-    enumTemp = inputImage.GetPixelComponentDataType();
-    inputBuffer.CopyFrom( 0, 1, &enumTemp );
+    inputBuffer.CopyFrom( 0, sizeof( TImageInfo ), &inputImage.GetImageInfo() );
     
-    //inputBuffer.CopyFrom( GetTotalPixelStorageSize
+    // Now we copy the pixel map hierarchy into the buffer
+    CPixelMap* pixelMap = NULL;
+    for ( UInt32 frameNr=0; frameNr<inputImage.GetFrameCount(); ++frameNr )
+    {
+        for ( UInt32 mipLvl=0; mipLvl<inputImage.GetMipmapLevels(); ++mipLvl )
+        {
+            pixelMap = inputImage.GetFrame( frameNr, mipLvl );
+            inputBuffer.Append( pixelMap.GetDataPtr(), pixelMap.GetTotalSizeInBytes() );
+        }
+    }
+
+    // It is time to perform the actual Encode()
+    CORE::CICodec::TDynamicBufferList outputList( 1 );    
+    bool encodingSuccess = Encode( inputBuffer.GetBufferPtr() ,
+                                   inputBuffer.GetDataSize()  ,
+                                   outputList                 ,
+                                   0                          );
+
+    if ( encodingSuccess )
+    {
+        // Copy the data into the buffer given to us by the user
+        encodedOutput = *outputList.begin();
+    }
+    
+    return encodingSuccess;
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -97,7 +125,7 @@ CIMGCodec::Encode( const CImage& inputImage       ,
 {TRACE;
 
     CORE::CDynamicBuffer outputBuffer;
-    
+
     if ( Encode( inputImage   ,
                  outputBuffer ) )
     {
@@ -110,37 +138,33 @@ CIMGCodec::Encode( const CImage& inputImage       ,
 }
 
 /*-------------------------------------------------------------------------*/
-//           /*
-//struct SImageData
-//{
-//        Int8 dtype;         /* data type of each value of idata */
-//        UInt32 vsize;       /* size of each data value */
-//        UInt8 channels;     /* number of channels per pixel */
-//        UInt8 has_alpha;    /* wheter the image has an alpha channel */
-//        UInt32 width;       /* Width of image. */
-//        UInt32 height;      /* Height of image. */
-//        UInt8 bbp;          /* BPP, Bits Per Pixel */
-//        UInt32 stride;      /* Number of bytes in each horizontal scan line. used for flipping vertically */
-//        UInt32 dsize;       /* Allocated pixel data space used by image. */
-//        Int8 format;        /* format in which the pixel components are stored */
-//        UInt32 frames;      /* total number of images stored */
-//        UInt8 mipmaps;      /* number of mipmaps per frame */
-//        Int8 icf;           /* image compression format */
-//        char compressionType[ 64 ];
-//};
-//
-//typedef struct SImageData TImageData;
-
-}
-
-/*-------------------------------------------------------------------------*/
 
 bool
 CIMGCodec::Decode( const CORE::CDynamicBuffer& encodedInput ,
                    CImage& outputImage                      )
 {TRACE;
 
-    return false;
+    CORE::CICodec::TDynamicBufferList outputList( 1 );
+    
+    bool decodingSuccess = Decode( encodedInput.GetBufferPtr() ,
+                                   encodedInput.GetDataSize()  ,
+                                   outputList                  ,
+                                   0                           );
+
+    if ( decodingSuccess )
+    {
+        CORE::CDynamicBuffer& outputBuffer = *outputList.begin();
+        
+        // Fill our header from the buffer
+        TImageInfo imageInfo;
+        outputBuffer.CopyTo( 0, sizeof( TImageInfo ), &imageInfo );
+        
+        // Set the data in the outputImage obj
+        outputImage.SetData( imageInfo                                          ,
+                             outputBuffer.GetBufferPtr() + sizeof( TImageInfo ) );
+    }
+    
+    return decodingSuccess;
 }
 
 /*-------------------------------------------------------------------------*/

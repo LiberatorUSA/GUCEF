@@ -261,6 +261,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\CPixelMap.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefIMAGE.h"
 				>
 			</File>

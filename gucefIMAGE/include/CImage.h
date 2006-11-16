@@ -59,183 +59,123 @@ namespace IMAGE {
  *      in a protected manner. Designed to have a minimal memory footprint when
  *      loading and when storing image data. Also contains a few save to file
  *      functions.
- *      This class is not thread-safe.
  */
 class EXPORT_CPP CImage
 {
-        public :
+    public :
+    
+    CImage( const TImageInfo& imageInfo ,
+            const void* imageData       );
 
-        /**
-         *      Creates an empty image object
-         */
-        CImage( void );     
+    /**
+     *      Creates an empty image object
+     */
+    CImage( void );     
 
-        /**
-         *      Cleans up any data that may have been allocated/stored
-         */
-        ~CImage();
+    /**
+     *      Cleans up any data that may have been allocated/stored
+     */
+    ~CImage();
 
-        /**
-         *      Returns a refrence to the entire image data structure.
-         *      Note that it is a better idea to use the member functions of
-         *      this class to obtain the field values since they are less
-         *      likely to change.
-         *
-         *      @return the image storage structure
-         */
-        const TImageData& GetImageDataStructure( void ) const;
+    /**
+     *      Get Bits Per Pixel
+     *      Typical values are 8, 24, 32
+     *
+     *      @return the depth a.k.a bbp of the image data.
+     */
+    UInt8   GetDepth( void ) const;
 
-        /**
-         *      Get Bits Per Pixel
-         *      Typical values are 8, 24, 32
-         *
-         *      @return the depth a.k.a bbp of the image data.
-         */
-        UInt8   GetDepth( void ) const;
+    void SetData( const TImageInfo& imageInfo ,
+                  const void* imageData       );
+    
+    TBuildinDataType GetPixelComponentDataType( void ) const;
+    UInt8   GetNrOfChannelsPerPixel( void ) const;     
+    UInt32 GetTotalPixelStorageSize( void ) const;
+    UInt32 GetPixelComponentSize( void ) const;
+    UInt32 GetFrameCount( void ) const;
+    UInt32 GetFrameHeight( void ) const;
+    UInt32 GetFrameWidth( void ) const;        
+    TPixelStorageFormat GetPixelStorageFormat( void ) const;
 
-        UInt32  GetWidth( void ) const;
-        UInt32  GetStride( void ) const;
-        UInt32  GetHeight( void ) const;
-        UInt8   GetChannels( void ) const;
-        Int8    GetFormat( void ) const;
-        UInt32  GetFrames( void ) const;
+    CPixelMap* GetFrame( const UInt32 frameIndex      ,
+                         const UInt32 mipMapLevel = 0 );
+                         
+    const CPixelMap* GetFrame( const UInt32 frameIndex      ,
+                               const UInt32 mipMapLevel = 0 ) const;
         
-        UInt32 GetTotalPixelStorageSize( void ) const;
-        TBuildinDataType GetPixelComponentDataType( void ) const;
+    /**
+     *      Get the number of mipmap levels per frame
+     *
+     *      @return mipmap levels per frame.
+     */
+    UInt8 GetMipmapLevels( void ) const;
 
-        /**
-         *      Get the number of mipmap levels per frame
-         *
-         *      @return mipmap levels per frame.
-         */
-        UInt8 GetMipmapLevels( void ) const;
+    /**
+     *      Get the type of value that is used for each pixel component.
+     *
+     *      @return The type of each pixel component value.
+     */
+    Int8 GetPixelComponentType( void ) const;
 
-        /**
-         *      Get the frame size in bytes of a single frame at the highest
-         *      mipmap level.
-         *
-         *      @return size of the frame data in bytes 
-         */
-        UInt32 GetFrameSize( void ) const;
+    const TImageInfo& GetImageInfo( void ) const;
 
-        /**
-         *      Get a pointer to the pixel data of the first frame.
-         *      The pixel data is that of the highest mipmap level.
-         *
-         *      @return         pixel data of the requested frame.
-         */
-        const void* GetData( void ) const;
+    /**
+     *      Attempts to load image data using the plugin identified with
+     *      the provided handle. The plugin will attempt to load the image
+     *      data from the recource provided by 'access' and store the
+     *      result in 'imgdata'.
+     */
+    bool Load( UInt32 codecidx         ,
+               UInt32 hidx             ,
+               CORE::CIOAccess& access );
 
-        /**
-         *      Get a pointer to the pixel data of the frame given.
-         *      The pixel data is that of the highest mipmap level.
-         *
-         *      @param frame    frame index for which you want the pixel data
-         *      @return         pixel data of the requested frame.
-         */
-        const void* GetData( UInt32 frame ) const;
+    /**
+     *      This function should save the image data provided in the format
+     *      provided to a file with the given filename. If format is one of the
+     *      explicit types then the save must be in that format or the save
+     *      operation should fail. if format is IMGFORMAT_DONT_CARE then the
+     *      format of the output file can be decided uppon at the user's discression.
+     *      A return value of 0 indicates failure. A return value of > 0 indicates
+     *      success (I recommend using 1). compression is a percentage between 0
+     *      and 100 indicating the desired amount of compression. 0 indicates the
+     *      lowest level of compression the plugin can provide and 100 the highest.
+     */
+    bool Save( UInt32 codecidx               ,
+               UInt32 hidx                   ,
+               const CORE::CString& filename ,
+               UInt32 format                 ,
+               UInt32 compression            );
 
-        /**
-         *      Get a pointer to the pixel data of the frame given.
-         *      The pixel data is that of the highest mipmap level.
-         *
-         *      @param frame      frame index for which you want the pixel data
-         *      @param mipmapidx  index of the mipmap level.
-         *      @return           pixel data of the requested frame.
-         */
-        const void* GetData( UInt32 frame    ,
-                             UInt8 mipmapidx ) const;
+    /**
+     *      Unloads image data if needed and resets values to there defaults
+     */
+    void Clear( void );
 
-        /**
-         *      Get the type of value that is used for each pixel component.
-         *
-         *      @return The type of each pixel component value.
-         */
-        Int8 GetPixelComponentType( void ) const;
+    /**
+     *      flips image vertically
+     *
+     *      @return wheter or the the flip was successfull.
+     */
+    bool FlipVertical( void );
 
-        /**
-         *      Check if the image data has an alpha channel
-         *
-         *      @return Wheter or not the image data has an alpha channel.
-         */
-        bool GetHasAlpha( void ) const;
+    /**
+     *      flips image horizontally
+     *
+     *      @return wheter or the the flip was successfull.
+     */
+    bool FlipHorizontal( void );
 
-        /**
-         *      Adds an alpha channel to the stored data.
-         *      The alpha channel values are not initialized if an alpha channel
-         *      is added. Alpha channel data can be set with ApplyMaskColor()
-         */
-        void ForceAlphaChannel( void );
+    private :
+    CImage( const CImage& src ); /* @TODO: not implemented yet */
+    CImage& operator=( const CImage& src ); /* @TODO: not implemented yet */
 
-        /**
-         *      Use mask color given to set the aplha value of each pixel to 0
-         *      when the color matches the given values.
-         *
-         *      @param r        value of the red channel to match
-         *      @param g        value of the green channel to match
-         *      @param b        value of the blue channel to match
-         */
-        void ApplyMaskColor( Float32 r ,
-                             Float32 g ,
-                             Float32 b );
+    private:
+    
+    typedef std::vector< CPixelMap >   TMipMapList;
+    typedef std::vector< TMipMapList > TFrameList;        
 
-        /**
-         *      Attempts to load image data using the plugin identified with
-         *      the provided handle. The plugin will attempt to load the image
-         *      data from the recource provided by 'access' and store the
-         *      result in 'imgdata'.
-         */
-        bool Load( UInt32 codecidx         ,
-                   UInt32 hidx             ,
-                   CORE::CIOAccess& access );
-
-        /**
-         *      This function should save the image data provided in the format
-         *      provided to a file with the given filename. If format is one of the
-         *      explicit types then the save must be in that format or the save
-         *      operation should fail. if format is IMGFORMAT_DONT_CARE then the
-         *      format of the output file can be decided uppon at the user's discression.
-         *      A return value of 0 indicates failure. A return value of > 0 indicates
-         *      success (I recommend using 1). compression is a percentage between 0
-         *      and 100 indicating the desired amount of compression. 0 indicates the
-         *      lowest level of compression the plugin can provide and 100 the highest.
-         */
-        bool Save( UInt32 codecidx               ,
-                   UInt32 hidx                   ,
-                   const CORE::CString& filename ,
-                   UInt32 format                 ,
-                   UInt32 compression            );
-
-        /**
-         *      Unloads image data if needed and resets values to there defaults
-         */
-        void Clear( void );
-
-        /**
-         *      flips image vertically
-         *      Note that flipping is not possible when useing compressed data
-         *
-         *      @return wheter or the the flip was successfull.
-         */
-        bool FlipVertical( void );
-
-        /**
-         *      flips image horizontally
-         *      Note that flipping is not possible when useing compressed data
-         *
-         *      @return wheter or the the flip was successfull.
-         */
-        bool FlipHorizontal( void );
-
-        private :
-        CImage( const CImage& src ); /* @TODO: not implemented yet */
-        CImage& operator=( const CImage& src ); /* @TODO: not implemented yet */
-
-        TImageData _imgdata;
-        UInt32 _codecused;
-        UInt32 _hidxused;
-        bool _codecisowner;
-        void *_codecdata;        
+    TImageInfo m_imageInfo;
+    TFrameList m_frameList;
 };
 
 /*-------------------------------------------------------------------------//

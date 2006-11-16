@@ -97,6 +97,25 @@ typedef unsigned __int64 UInt64;  /* 8 bytes, unsigned */
 typedef float           Float32;  /* 4 bytes, signed, decimal */
 typedef double          Float64;  /* 8 bytes, signed, decimal */
 
+/*--------------------------------------------------------------------------*/
+
+/**
+ *      Build-in data types as part of an enumeration set
+ */
+typedef enum TBuildinDataType
+{
+        DT_FLOAT32 = 1 ,
+        DT_FLOAT64     ,
+        DT_UINT8       ,
+        DT_INT8        ,
+        DT_UINT16      ,
+        DT_INT16       ,
+        DT_UINT32      ,
+        DT_INT32       ,
+        DT_UINT64      ,
+        DT_INT64
+};
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

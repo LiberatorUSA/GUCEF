@@ -90,6 +90,8 @@ typedef CORE::UInt64 UInt64;   /* 8 bytes, unsigned */
 typedef CORE::Float32 Float32;  /* 4 bytes, signed, decimal */
 typedef CORE::Float64 Float64;  /* 8 bytes, signed, decimal */
 
+typedef CORE::TBuildinDataType TBuildinDataType;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -73,6 +73,15 @@ CImage::~CImage()
         Clear();
 }
 
+/*-------------------------------------------------------------------------*/
+
+const TImageInfo&
+CImage::GetImageInfo( void ) const
+{TRACE;
+    
+    return m_imageInfo;
+} 
+
 /*--------------------------------------------------------------------------*/
 
 /**
@@ -215,8 +224,8 @@ CImage::GetData( UInt32 frame    ,
  *
  *      @return The type of each pixel component value.
  */
-Int8
-CImage::GetPixelComponentType( void ) const
+TBuildinDataType
+CImage::GetPixelComponentDataType( void ) const
 {
         return _imgdata.dtype;
 }
@@ -346,45 +355,32 @@ CImage::Save( UInt32 codecidx               ,
 void
 CImage::Clear( void )
 {
-        if ( _codecisowner )
-        {
-                CIMGCodecManager::Instance()->UnloadImageData( _codecused ,
-                                                               _hidxused  ,
-                                                               &_imgdata  ,
-                                                               _codecdata );
-                _codecdata = NULL;
-                _codecused = _hidxused = 0;
-                memset( &_imgdata, 0, sizeof( TImageData ) );
-                _codecisowner = false;
-        }
+    m_frameList.clear();
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      flips image vertically
- *      Note that flipping is not possible when useing compressed data
- *
- *      @return wheter or the the flip was successfull.
- */
 bool
 CImage::FlipVertical( void )
-{
+{TRACE;
         return false;
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      flips image horizontally
- *      Note that flipping is not possible when useing compressed data
- *
- *      @return wheter or the the flip was successfull.
- */
 bool
 CImage::FlipHorizontal( void )
-{
+{TRACE;
         return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+CImage::GetPixelComponentSize( void ) const
+{TRACE;
+
+    return _imgdata.vsize;
 }
 
 /*-------------------------------------------------------------------------//
