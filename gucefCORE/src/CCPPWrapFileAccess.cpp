@@ -92,7 +92,7 @@ CCPPWrapFileAccess::Opened( void ) const
 /**
  *      returns the size of the recource in bytes
  */
-UInt32 
+Int32 
 CCPPWrapFileAccess::GetSize( void ) const
 {        
         GUCEF_BEGIN;

@@ -163,11 +163,6 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
          *      jump to the given offset in the recource
          */
         virtual UInt32 Setpos( UInt32 position ) = 0;
-        
-        /**
-         *      returns the size of the recource in bytes
-         */
-        virtual UInt32 GetSize( void ) const = 0;
 
         /**
          *      Read a single character

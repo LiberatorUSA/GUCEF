@@ -24,6 +24,11 @@
 #include <stdlib.h>             /* needed here for realloc() */
 #include <string.h>             /* needed for memcpy() */
 
+#ifndef GUCEF_CORE_CIOACCESS_H
+#include "CIOAccess.h"
+#define GUCEF_CORE_CIOACCESS_H
+#endif /* GUCEF_CORE_CIOACCESS_H ? */
+
 #include "CDynamicBuffer.h"     /* class definition */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -66,7 +71,7 @@ CDynamicBuffer::CDynamicBuffer( CIOAccess& ioAccess )
           m_linked( false )
 {TRACE;
     
-    Int32 inputSize = encodedInput.GetSize();
+    Int32 inputSize = ioAccess.GetSize();
     if ( inputSize > -1 )
     {
         // Copy the recource data all at once

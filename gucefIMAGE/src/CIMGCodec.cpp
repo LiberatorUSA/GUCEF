@@ -21,6 +21,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
+#ifndef GUCEF_CORE_CIOACCESS_H
+#include "CIOAccess.h"
+#define GUCEF_CORE_CIOACCESS_H
+#endif /* GUCEF_CORE_CIOACCESS_H ? */
+
 #ifndef GUCEF_IMAGE_CIMAGE_H
 #include "CImage.h"
 #define GUCEF_IMAGE_CIMAGE_H
@@ -82,7 +87,7 @@ bool
 CIMGCodec::Encode( const CImage& inputImage            ,
                    CORE::CDynamicBuffer& encodedOutput )
 {TRACE;
-
+     /*
     // We need to first combine all the image data into a single buffer
     CORE::CDynamicBuffer inputBuffer( sizeof( TImageInfo ) + inputImage.GetTotalPixelStorageSize() );
    
@@ -113,7 +118,9 @@ CIMGCodec::Encode( const CImage& inputImage            ,
         encodedOutput = *outputList.begin();
     }
     
-    return encodingSuccess;
+    return encodingSuccess;     */
+    
+    return false;
 
 }
 
@@ -144,7 +151,7 @@ CIMGCodec::Decode( const CORE::CDynamicBuffer& encodedInput ,
                    CImage& outputImage                      )
 {TRACE;
 
-    CORE::CICodec::TDynamicBufferList outputList( 1 );
+ /*   CORE::CICodec::TDynamicBufferList outputList( 1 );
     
     bool decodingSuccess = Decode( encodedInput.GetBufferPtr() ,
                                    encodedInput.GetDataSize()  ,
@@ -164,7 +171,9 @@ CIMGCodec::Decode( const CORE::CDynamicBuffer& encodedInput ,
                              outputBuffer.GetBufferPtr() + sizeof( TImageInfo ) );
     }
     
-    return decodingSuccess;
+    return decodingSuccess;    */
+    
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -181,5 +190,14 @@ CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
     return Decode( inputBuffer  ,
                    outputImage  );
 }
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace IMAGE */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

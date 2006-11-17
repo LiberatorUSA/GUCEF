@@ -21,10 +21,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef CIMGCODECMANAGER_H
-#include "CIMGCodecManager.h"      /* header for the main image codec manager */
-#define CIMGCODECMANAGER_H
-#endif /* CIMGCODECMANAGER_H ? */
+//#ifndef CIMGCODECMANAGER_H
+//#include "CIMGCodecManager.h"      /* header for the main image codec manager */
+//#define CIMGCODECMANAGER_H
+//#endif /* CIMGCODECMANAGER_H ? */
 
 #include "CGUCEFIMAGEModule.h"  /* definition of the class implemented here */
 

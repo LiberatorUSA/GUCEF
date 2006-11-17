@@ -47,63 +47,104 @@ namespace IMAGE {
 //-------------------------------------------------------------------------*/
 
 /**
- *      The following are a number of explicit image storage format types.
- */
-enum
-{
-        IMGFORMAT_JPEG = 1,                    /* usually has extension jpg */
-        IMGFORMAT_PORTABLE_NETWORK_GRAPHICS,   /* usually has extension png */
-        IMGFORMAT_TAGGED_IMAGE_FORMAT,         /* usually has extension tif */
-        IMGFORMAT_GRAPHICS_INTERCHANGE_FORMAT, /* usually has extension gif */
-        IMGFORMAT_PORTABLE_PIXMAP,             /* usually has extension ppm */
-        IMGFORMAT_TARGA,                       /* usually has extension tga */
-        IMGFORMAT_PC_PAINTBRUSH_EXCHANGE,      /* usually has extension pcx */
-        IMGFORMAT_GALAXY_UNLIMITED_IMAGE,      /* usually has extension gui */
-        IMGFORMAT_GALAXY_UNLIMITED_BITMAP,     /* usually has extension bm  */        
-        IMGFORMAT_MSWINDOWS_BITMAP,            /* usually has extension bmp */
-        IMGFORMAT_MSWINDOWS_CURSOR,            /* usually has extension cur */
-        IMGFORMAT_MSWINDOWS_ICON,              /* usually has extension ico */
-        IMGFORMAT_FS2_ANI,                     /* usually has extension ani */
-        IMGFORMAT_DIRECTDRAW_SURFACE,          /* usually has extension dds */
-        IMGFORMAT_OPENGL_CONTEXT,              /* for loading only, not a file format */ 
-        IMGFORMAT_DONT_CARE = 10000            /* who cares */
-};
-
-/*-------------------------------------------------------------------------*/
-
-/**
  *      Image Storage formats
  */
 typedef enum TPixelStorageFormat
 {
-        ISF_RGB = 1                  ,
-        ISF_RGBA                     ,
-        ISF_SINGLE_CHANNEL_RED       ,
-        ISF_SINGLE_CHANNEL_GREEN     ,
-        ISF_SINGLE_CHANNEL_BLUE      ,
-        ISF_SINGLE_CHANNEL_ALPHA     ,
-        ISF_SINGLE_CHANNEL_LUMINANCE
+        PSF_RGB = 1                  ,
+        PSF_RGBA                     ,
+        PSF_SINGLE_CHANNEL_RED       ,
+        PSF_SINGLE_CHANNEL_GREEN     ,
+        PSF_SINGLE_CHANNEL_BLUE      ,
+        PSF_SINGLE_CHANNEL_ALPHA     ,
+        PSF_SINGLE_CHANNEL_LUMINANCE
 };
 
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Storage structure for image information
+ *      structure for image information
  */
 struct SImageInfo
 {
-        TBuildinDataType pixelComponentDataType;  /**< data type of each value of idata */
-        UInt32 channelComponentSize;              /**< size of the data value of the pixel's color channel in bits */
-        UInt8 channelCountPerPixel;               /**< number of color component channels per pixel */
-        UInt8 hasAlpha;                           /**< wheter the image has an alpha channel */
-        UInt32 frameWidth;                        /**< Width of an image frame in pixels, mipmap level 0 */
-        UInt32 frameHeight;                       /**< Height of an image frame in pixels, mipmap level 0 */
-        TPixelStorageFormat pixelStorageFormat;   /**< format in which the pixel components are stored */
-        UInt32 framesInImage;                     /**< total number of images stored */
-        UInt8 mipmapLevelsPerFrame;               /**< number of mipmap levels per frame */
+    UInt32 version;                 /**< version of the TImageInfo definition */
+    UInt32 nrOfFramesInImage;       /**< total number of frames in the image */
 };
 
 typedef struct SImageInfo TImageInfo;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *      structure for image frame information
+ */
+struct SImageFrameInfo
+{
+    UInt32 version;                 /**< version of the TImageInfo definition */
+    UInt32 nrOfMipmapLevels;        /**< total number of mimmap levels in the image */
+};
+
+typedef struct SImageFrameInfo TImageFrameInfo;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *      structure for image frame mipmap level information
+ */
+struct SImageMipMapLevelInfo
+{
+    UInt32 version;                           /**< version of the TImageInfo definition */
+    TBuildinDataType pixelComponentDataType;  /**< data type of each value of idata */
+    UInt32 channelComponentSize;              /**< size of the data value of the pixel's color channel in bits */
+    UInt8 channelCountPerPixel;               /**< number of color component channels per pixel */
+    UInt32 frameWidth;                        /**< Width of an image frame in pixels, mipmap level 0 */
+    UInt32 frameHeight;                       /**< Height of an image frame in pixels, mipmap level 0 */
+    TPixelStorageFormat pixelStorageFormat;   /**< format in which the pixel components are stored */
+};
+
+typedef struct SImageMipMapLevelInfo TImageMipMapLevelInfo;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *      Storage structure for an image frame's mipmap level
+ */
+struct SImageMipMapLevel
+{
+    UInt32 version;                     /**< version of the TImageInfo definition */
+    TImageMipMapLevelInfo mipLevelInfo; /**< information about the mipmap level and it's data */
+    void* pixelData;                    /**< array with the actual pixel data */
+};
+
+typedef struct SImageMipMapLevel TImageMipMapLevel;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *      Storage structure for an image frame
+ */
+struct SImageFrame
+{
+    UInt32 version;                  /**< version of the TImageFrame definition */
+    TImageFrameInfo frameInfo;       /**< information about the frame */
+    TImageMipMapLevel* mipmapLevel;  /**< array with mipmap level info + data */
+};
+
+typedef struct SImageFrame TImageFrame;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *      Storage structure for an image
+ */
+struct SImage
+{
+    UInt32 version;             /**< version of the TImage definition */
+    TImageInfo imageInfo;       /**< basic image information */ 
+    TImageFrame* frames;        /**< array of image frames */
+};
+
+typedef struct SImage TImage;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -126,17 +167,22 @@ typedef struct SImageInfo TImageInfo;
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 16-11-2006 :
+        - Dinand: refactored the type definitions to allow for a more flexible
+          linking of image information
+        - Dinand: removed support in the definition for compression, it simply does not
+          belong here at this technical level.       
 - 29-08-2004 :
-        - Added the mipmaps field.
+        - Dinand: Added the mipmaps field.
 - 25-08-2004 :
-        - Added support for image compression: 
+        - Dinand: Added support for image compression: 
           An OpenGL compressed pixmap and an S3TC compressed pixmap.
-        - ISF_SINGLE_CHANNEL has been split into several formats so that the
+        - Dinand: ISF_SINGLE_CHANNEL has been split into several formats so that the
           channel type can be preserved.
-        - Got rid of the typedefs on the enums. typedefed enum fields turned
+        - Dinand: Got rid of the typedefs on the enums. typedefed enum fields turned
           into byte.
 - 01-03-2004 :
-        - Seperated the storage attributes of the CImage class into a seperate
+        - Dinand: Seperated the storage attributes of the CImage class into a seperate
           storage structure so that it may be used elsewhere aswell.
 
 -----------------------------------------------------------------------------*/

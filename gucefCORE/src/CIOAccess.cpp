@@ -21,6 +21,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
 #include "CIOAccess.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -236,9 +241,9 @@ CIOAccess::Read( CDynamicBuffer& dest ,
                         false                                     );
                         
     // Perform the actual read
-    UInt32 nrOfBytesRead = Read( dest.GetBufferPtr() + dest.GetDataSize() ,
-                                 esize                                    ,
-                                 elements                                 );
+    UInt32 nrOfBytesRead = Read( static_cast< UInt8* >( dest.GetBufferPtr() ) + dest.GetDataSize() ,
+                                 esize                                                             ,
+                                 elements                                                          );
                                  
     // Correct the data delimiter in the buffer
     dest.SetDataSize( dest.GetDataSize() + nrOfBytesRead );

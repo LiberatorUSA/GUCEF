@@ -112,7 +112,7 @@ class GUCEFCORE_EXPORT_CPP CPFileAccess : public CROIOAccess
         /**
          *      returns the size of the recource in bytes
          */
-        virtual UInt32 GetSize( void ) const;        
+        virtual Int32 GetSize( void ) const;        
 
         /**
          *      Read a single character

@@ -297,7 +297,7 @@ CPFileAccess::Setpos( UInt32 position )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+Int32
 CPFileAccess::GetSize( void ) const
 {
         return pafsize( _pafile );

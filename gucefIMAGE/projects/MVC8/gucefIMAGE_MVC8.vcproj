@@ -211,23 +211,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CIMGCodecManager.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CIMGCodecRegistry.cpp"
+				RelativePath="..\..\src\CPixelMap.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\gucefIMAGE.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\GUCEFimgloaders.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\gui_fileutils.c"
 				>
 			</File>
 		</Filter>
@@ -246,18 +234,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CIMGCodec.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CIMGCodecPlugin.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CIMGCodecPluginManager.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CIMGCodecRegistry.h"
 				>
 			</File>
 			<File
@@ -285,19 +261,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\GUCEFimgloaders.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gui_fileutils.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\imagedata.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\imgpluglink.h"
 				>
 			</File>
 		</Filter>

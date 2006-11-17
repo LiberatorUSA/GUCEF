@@ -24,7 +24,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEFIMAGE_MACROS_H
+#include "gucefIMAGE_macros.h"       /* module macro's */
+#define GUCEFIMAGE_MACROS_H
+#endif /* GUCEFIMAGE_MACROS_H ? */
 
+#ifndef IMAGEDATA_H
+#include "imagedata.h"               /* C-style shared header for image related types */
+#define IMAGEDATA_H
+#endif /* IMAGEDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,55 +53,69 @@ class EXPORT_CPP CPixelMap
 {
     public:
     
+    CPixelMap( const void* pixelMapData                      , 
+               const UInt32 widthInPixels                    ,
+               const UInt32 heightInPixels                   ,
+               const TPixelStorageFormat pixelStorageFormat  ,
+               const TBuildinDataType pixelComponentDataType );
+
     CPixelMap( const CPixelMap& src );
     
     virtual ~CPixelMap();
     
     CPixelMap& operator=( const CPixelMap& src );
     
-    UInt32 GetWidthInBits( void ) const;
+    UInt32 GetWidthInBytes( void ) const;
     
-    UInt32 GetHeightInBits( void ) const;
+    UInt32 GetHeightInBytes( void ) const;
+
+    UInt32 GetWidthInPixels( void ) const;
+    
+    UInt32 GetHeightInPixels( void ) const;
+    
+    UInt32 GetPixelCount( void ) const;
+    
+    UInt32 GetSizeOfPixelComponentInBytes( void ) const;
+    
+    UInt32 GetSizeOfPixelInBytes( void ) const;
+    
+    UInt32 GetTotalSizeInBytes( void ) const; 
+    
+    UInt32 GetNumberOfChannelsPerPixel( void ) const;   
     
     TPixelStorageFormat GetPixelStorageFormat( void ) const;
     
-    UInt32 GetStrideInBits( void ) const;
+    void* GetDataPtr( const UInt32 pixelOffset = 0 );
     
-    virtual void* GetDataPtr( void );
-    
-    virtual const void* GetDataPtr( void ) const;
+    const void* GetDataPtr( const UInt32 pixelOffset = 0 ) const;
 
-    virtual TBuildinDataType GetPixelComponentDataType( void ) const = 0;
-
-    void* GetDataAtPixelOffset( const UInt32 pixelIndex );
-    
-    const void* GetDataAtPixelOffset( const UInt32 pixelIndex ) const;
-    
+    TBuildinDataType GetPixelComponentDataType( void ) const;
+   
     void* GetDataAtScanLine( const UInt32 scanLineIndex );
     
     const void* GetDataAtScanLine( const UInt32 scanLineIndex ) const;
-    
-    UInt32 GetTotalSizeInBytes( void ) const;
 
     /**
-     *      flips image vertically
-     *      Note that flipping is not possible when useing compressed data
+     *  flips image vertically
+     *  This operation will be applied to all frames and mipmap levels    
      *
-     *      @return wheter or the the flip was successfull.
+     *  @return wheter or the the flip was successfull.
      */
     bool FlipVertical( void );
 
     /**
      *      flips image horizontally
-     *      Note that flipping is not possible when useing compressed data
      *
      *      @return wheter or the the flip was successfull.
      */
     bool FlipHorizontal( void );
     
     /**
-     *      Use mask color given to set the aplha value of each pixel to 0
-     *      when the color matches the given values.
+     *  Use mask color given to set the aplha value of each pixel to 0
+     *  when the color matches the given values.
+     *
+     *  Note that if the TPixelStorageFormat is not RGBA the data
+     *  will be converted to RGBA implicitly before the mask is applied
      *
      *      @param r        value of the red channel to match
      *      @param g        value of the green channel to match
@@ -103,26 +125,40 @@ class EXPORT_CPP CPixelMap
                          Float32 g ,
                          Float32 b );    
 
+    void ConvertPixelStorageFormatTo( const TPixelStorageFormat pixelStorageFormat );
+
+    void ConvertPixelComponentDataTypeTo( const TBuildinDataType pixelComponentDataType );
+
     /**
      *      Check if the image data has an alpha channel
      *
      *      @return Wheter or not the image data has an alpha channel.
      */
     bool GetHasAlpha( void ) const;
-
-    /**
-     *      Adds an alpha channel to the stored data.
-     *      The alpha channel values are not initialized if an alpha channel
-     *      is added. Alpha channel data can be set with ApplyMaskColor()
-     */
-    void ForceAlphaChannel( void );
     
     /**
      *      Unloads pixel data if needed and resets values to there defaults
      */
-    void Clear( void );    
+    void Clear( void );
     
-    protected:
+    /**
+     *  Assigns the data to the object.
+     *  If no source pixel data is given then a 0'ed pixel grid
+     *  will be generated instead which can be altered at a later time
+     *
+     *  @param pixelMapData pointer to the source pixel data, can be NULL in which case a pixel map is generated
+     *  @param widthInPixels width of the pixel map in pixels
+     *  @param heightInPixels height of the pixel map in pixels
+     *  @param pixelStorageFormat format used to define a pixel, ie. how the pixel component(s) make up a pixel
+     *  @param pixelComponentDataType data type used to store a single pixel component of a single pixel
+     */
+    void Assign( const void* pixelMapData                      , 
+                 const UInt32 widthInPixels                    ,
+                 const UInt32 heightInPixels                   ,
+                 const TPixelStorageFormat pixelStorageFormat  ,
+                 const TBuildinDataType pixelComponentDataType );
+    
+    private:
     
     CPixelMap( void );
     
@@ -133,7 +169,7 @@ class EXPORT_CPP CPixelMap
     TPixelStorageFormat m_pixelStorageFormat;
     TBuildinDataType m_pixelComponentDataType;
     
-    void* m_pixelMapData; 
+    UInt8* m_pixelMapData; 
 };
 
 /*-------------------------------------------------------------------------//
@@ -145,6 +181,15 @@ class EXPORT_CPP CPixelMap
 } /* namespace IMAGE */
 } /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 16-11-2006 :
+        - Dinand: designed and implemented CPixelMap class
+
+-----------------------------------------------------------------------------*/
 
 #endif /* GUCEF_IMAGE_CPIXELMAP_H ? */

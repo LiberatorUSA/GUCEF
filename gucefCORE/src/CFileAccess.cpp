@@ -392,7 +392,7 @@ CFileAccess::IsValid( void )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+Int32 
 CFileAccess::GetSize( void ) const
 {TRACE;
         if ( _file && _writeable )

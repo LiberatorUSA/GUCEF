@@ -24,20 +24,22 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCORE_H
-#include "gucefCORE.h"               /* gucef libary CORE module */
-#define GUCEFCORE_H
-#endif /* GUCEFCORE_H ? */
+#include <vector>
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
+#ifndef GUCEF_IMAGE_CPIXELMAP_H
+#include "CPixelMap.h"
+#define GUCEF_IMAGE_CPIXELMAP_H
+#endif /* GUCEF_IMAGE_CPIXELMAP_H ? */
 
 #ifndef GUCEFIMAGE_MACROS_H
-#include "gucefIMAGE_macros.h"       /* build switches */
+#include "gucefIMAGE_macros.h"       /* module macro's */
 #define GUCEFIMAGE_MACROS_H
 #endif /* GUCEFIMAGE_MACROS_H ? */
-
-#ifndef IMAGEDATA_H
-#include "imagedata.h"               /* image data storage */
-#define IMAGEDATA_H
-#endif /* IMAGEDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,126 +57,71 @@ namespace IMAGE {
 //-------------------------------------------------------------------------*/
 
 /**
- *      Capable of loading different formats of images and storing there data
- *      in a protected manner. Designed to have a minimal memory footprint when
- *      loading and when storing image data. Also contains a few save to file
- *      functions.
+ *  Image class that defines an image as a series of frames with each frame beeing
+ *  capable of having multiple mipmapping levels. Pixel maps can be shared between
+ *  image objects if desired.
  */
 class EXPORT_CPP CImage
 {
     public :
+
+    typedef CORE::CTSharedPtr< CImage >    TImagePtr;
+    typedef CORE::CTSharedPtr< CPixelMap > TPixelMapPtr;
+    typedef std::vector< TPixelMapPtr >    TMipMapList;
+    typedef std::vector< TMipMapList >     TFrameList;
+        
+    public:
     
-    CImage( const TImageInfo& imageInfo ,
-            const void* imageData       );
+    CImage( const TFrameList& frameList );
+    
+    CImage( const TMipMapList& mipmapList );
+    
+    explicit CImage( const TPixelMapPtr& pixelMapPtr );
 
     /**
      *      Creates an empty image object
      */
     CImage( void );     
 
-    /**
-     *      Cleans up any data that may have been allocated/stored
-     */
     ~CImage();
 
-    /**
-     *      Get Bits Per Pixel
-     *      Typical values are 8, 24, 32
-     *
-     *      @return the depth a.k.a bbp of the image data.
-     */
-    UInt8   GetDepth( void ) const;
-
-    void SetData( const TImageInfo& imageInfo ,
-                  const void* imageData       );
+    void Assign( const TFrameList& frameList );
     
-    TBuildinDataType GetPixelComponentDataType( void ) const;
-    UInt8   GetNrOfChannelsPerPixel( void ) const;     
-    UInt32 GetTotalPixelStorageSize( void ) const;
-    UInt32 GetPixelComponentSize( void ) const;
+    void Assign( const TMipMapList& mipmapList );
+    
+    void Assign( const TPixelMapPtr& pixelMapPtr );
+    
     UInt32 GetFrameCount( void ) const;
-    UInt32 GetFrameHeight( void ) const;
-    UInt32 GetFrameWidth( void ) const;        
-    TPixelStorageFormat GetPixelStorageFormat( void ) const;
 
-    CPixelMap* GetFrame( const UInt32 frameIndex      ,
-                         const UInt32 mipMapLevel = 0 );
-                         
-    const CPixelMap* GetFrame( const UInt32 frameIndex      ,
-                               const UInt32 mipMapLevel = 0 ) const;
+    UInt32 GetTotalPixelStorageSize( void ) const;
+
+    /**
+     *  Get the number of mipmap levels for the given frame
+     *
+     *  @return mipmap levels per frame.
+     *  @throw EInvalidIndex is thrown if an invalid index is given
+     */
+    UInt32 GetMipmapLevels( const UInt32 frameIndex = 0 ) const;
         
     /**
-     *      Get the number of mipmap levels per frame
-     *
-     *      @return mipmap levels per frame.
+     *  @throw EInvalidIndex is thrown if an invalid index is given
      */
-    UInt8 GetMipmapLevels( void ) const;
-
-    /**
-     *      Get the type of value that is used for each pixel component.
-     *
-     *      @return The type of each pixel component value.
-     */
-    Int8 GetPixelComponentType( void ) const;
-
-    const TImageInfo& GetImageInfo( void ) const;
-
-    /**
-     *      Attempts to load image data using the plugin identified with
-     *      the provided handle. The plugin will attempt to load the image
-     *      data from the recource provided by 'access' and store the
-     *      result in 'imgdata'.
-     */
-    bool Load( UInt32 codecidx         ,
-               UInt32 hidx             ,
-               CORE::CIOAccess& access );
-
-    /**
-     *      This function should save the image data provided in the format
-     *      provided to a file with the given filename. If format is one of the
-     *      explicit types then the save must be in that format or the save
-     *      operation should fail. if format is IMGFORMAT_DONT_CARE then the
-     *      format of the output file can be decided uppon at the user's discression.
-     *      A return value of 0 indicates failure. A return value of > 0 indicates
-     *      success (I recommend using 1). compression is a percentage between 0
-     *      and 100 indicating the desired amount of compression. 0 indicates the
-     *      lowest level of compression the plugin can provide and 100 the highest.
-     */
-    bool Save( UInt32 codecidx               ,
-               UInt32 hidx                   ,
-               const CORE::CString& filename ,
-               UInt32 format                 ,
-               UInt32 compression            );
+    TPixelMapPtr GetFrame( const UInt32 frameIndex = 0  ,
+                           const UInt32 mipMapLevel = 0 );
 
     /**
      *      Unloads image data if needed and resets values to there defaults
      */
     void Clear( void );
-
-    /**
-     *      flips image vertically
-     *
-     *      @return wheter or the the flip was successfull.
-     */
-    bool FlipVertical( void );
-
-    /**
-     *      flips image horizontally
-     *
-     *      @return wheter or the the flip was successfull.
-     */
-    bool FlipHorizontal( void );
+    
+    GUCEF_DEFINE_MSGEXCEPTION( EXPORT_CPP, EInvalidIndex );
 
     private :
     CImage( const CImage& src ); /* @TODO: not implemented yet */
     CImage& operator=( const CImage& src ); /* @TODO: not implemented yet */
 
-    private:
-    
-    typedef std::vector< CPixelMap >   TMipMapList;
-    typedef std::vector< TMipMapList > TFrameList;        
+    private:        
 
-    TImageInfo m_imageInfo;
     TFrameList m_frameList;
 };
 
@@ -197,127 +144,132 @@ class EXPORT_CPP CImage
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 16-11-2006 :
+        - Dinand: refactored this class:
+            - no longer operates as an interface to a plugin with plugin 'features'
+            - no longer handles all the data itself but the class is now more of a collection manager,
+              managing a collection of PixelMap objects. 
 - 27-11-2004 :
-        - Updated class coding style to the latest standerd:
+        - Dinand: Updated class coding style to the latest standerd:
             - Got rid of inline implementations.
             - Got rid of underscore in member function identifiers.
             - Added Get/Set prefixes where appropriote.
-        - Now uses the new codec system instead of the CImageLoaderPlugin class.
+        - Dinand: Now uses the new codec system instead of the CImageLoaderPlugin class.
 - 19-07-2004 :
-        - Disabled the copy member functions. They need to be updated. 
+        - Dinand: Disabled the copy member functions. They need to be updated. 
 - 03-02-2004 :
-        - Reconfigured the class and changed the member functions to
+        - Dinand: Reconfigured the class and changed the member functions to
           accomodate the new plugin implementation. All actual loading and/or
           saving and checking for the ability's to do so will no longer be
           implemented in this class. The CImage class will now simply provide
           an interface to the plugin utility's plus provide you with an instance
           of the data stored in a CImage object. This new setup will allow a lot
           more flexible image loading and/or saving capability.
-        - Implemented support for implementaion independant I/O access in the
+        - Dinand: Implemented support for implementaion independant I/O access in the
           form of the ioaccess functions.
 - 14-12-2003 :
-        - Implemented the DIB BMP loader.
+        - Dinand: Implemented the DIB BMP loader.
           Only uncompressed dib bmp files are supported
-        - Added support for frames. A frame is image data just like before
+        - Dinand: Added support for frames. A frame is image data just like before
           but more then one image can be stored by a CImage instance. The
           images are stored sequentially. 
 - 13-12-2003 :
-        - Implemented the GIF loader, now using libungif to avoid legal issues.
+        - Dinand: Implemented the GIF loader, now using libungif to avoid legal issues.
 - 21-08-2003 :
-        - Removed circular friend refrence which is not allowed by mingw.
+        - Dinand: Removed circular friend refrence which is not allowed by mingw.
 - 26-07-2003 :
-        - Added a loader for WIN32 cursor files. This is mainly intended to make
+        - Dinand: Added a loader for WIN32 cursor files. This is mainly intended to make
           reuse of resources more convenient. With this loader you can load a
           cursor and then make a texture with it for use with OpenGL.
           Colored cursors are not supported and the cursor's dimensions must be
           a power of 2. Multiple cursor images in a single cursor files are also
           not supported in which case only the first image gets loaded 
 - 23-07-2003 :
-        - Implemented the TGA save member function. Saving will not work if the
+        - Dinand: Implemented the TGA save member function. Saving will not work if the
           the image contained is a single channel. Otherwise either BGR or BGRA
           will be saved depending on the precense of an alpha channel. Bit depth
           is 24 or 32. No compression is applyed.
 - 08-07-2003 :
-        - Modifyed TGA loaders:
-        - Added a TGA id field skip so that the precense of an id field does not
+        - Dinand: Modifyed TGA loaders:
+        - Dinand: Added a TGA id field skip so that the precense of an id field does not
           pose a problem.
-        - Added support for 16 bit TGA images. This means we now support 16, 24
+        - Dinand: Added support for 16 bit TGA images. This means we now support 16, 24
           and 32 bit TGA images. Yay :)
-        - TGA support is limited to the following types: 2, 3, 10
+        - Dinand: TGA support is limited to the following types: 2, 3, 10
           This means colormaps are not supported.
 - 02-06-2003 :
-        - Added rounding of width and height in Read_From_glScreen so that
+        - Dinand: Added rounding of width and height in Read_From_glScreen so that
           we have nice byte allignment.
-        - Made the different specific loaders private, the user can use any of
+        - Dinand: Made the different specific loaders private, the user can use any of
           the generic loader functions.
-        - Added Clear() function to unload an image and reset some vars. It is
+        - Dinand: Added Clear() function to unload an image and reset some vars. It is
           automaticly called when you load an image thus unloading any previous
           image that may have been loaded.  
 - 31-05-2003 :
-        - Fixed a bug in the PCX loader where it would get stuck in a loop
+        - Dinand: Fixed a bug in the PCX loader where it would get stuck in a loop
           if the data was RLE packed.
 - 30-05-2003 :
-        - Changed interface a bit by removing the Get_ prefix from member
+        - Dinand: Changed interface a bit by removing the Get_ prefix from member
           function names.
-        - Added the glData_Type() member function so it's easyer to use the
+        - Dinand: Added the glData_Type() member function so it's easyer to use the
           pixmaps with OpenGL when you have the converted OpenGL element size.
-        - Added 3 Copy member functions allowing you to copy pixmap sections. 
+        - Dinand: Added 3 Copy member functions allowing you to copy pixmap sections. 
 - 24-03-2003 :
-        - Added the ability to read the screen data from the current OpenGL
+        - Dinand: Added the ability to read the screen data from the current OpenGL
           context with Read_From_glScreen().
 - 23-03-2003 :
-        - Added support for a custom RAW format, this format is meant for fast
+        - Dinand: Added support for a custom RAW format, this format is meant for fast
           loading, so in the final product you might want to use this format
           for run-time image loading.
-        - Implemented the TGA reading support
-        - Added the ability to change the storage format using Force_Value_Type()
+        - Dinand: Implemented the TGA reading support
+        - Dinand: Added the ability to change the storage format using Force_Value_Type()
           ie changing the size per value. This does not take into account any
           overflow problems that may arize. This ability is needed to comply
           with image format specifications when saving.
 - 21-03-2003 :
-        - Added #ifdef IMAGE_SUPPORT_xxx build swithes where applicable. This
+        - Dinand: Added #ifdef IMAGE_SUPPORT_xxx build swithes where applicable. This
           allows the enduser to remove support for image formats that arent used
           the modified image load libs are also edited with these swiches to
           assure the removal of all code even if they are still included in the
           project. 
 - 08-02-2003 :
-        - Added the ability to use a mask color to set alpha value's.
+        - Dinand: Added the ability to use a mask color to set alpha value's.
           If the mask color matches a pixel color the pixel will be invisible.
           if no alpha channel is present it will be added.
-        - Added generic loaders that use the filename extension to determine
+        - Dinand: Added generic loaders that use the filename extension to determine
           what loader to use.
 - 03-02-2003 :
-        - Added some Alpha channel capabilities. not all image formats have
+        - Dinand: Added some Alpha channel capabilities. not all image formats have
           alpha channels so it's usefull to have the capability to add one.
           Force_Alpha() is used uppon loading and setting force alpha.
           Therefore Has_Alpha() always returns the presense of an alpha channel
           depending on the current image data.
 - 24-01-2003 :
-        - Added Vertical_Flip() to flip images if so desired.
+        - Dinand: Added Vertical_Flip() to flip images if so desired.
           Comes in handy because OpenGL uses the image data upside down.
 - 21-01-2003 :
-        - Implemented Data dump of image data functionality.
+        - Dinand: Implemented Data dump of image data functionality.
           This gives you the option to view each value of the image in a
           textfile that has been written in binary mode.
-        - Changed PCX loader. now uses file version to check for 256 palette
+        - Dinand: Changed PCX loader. now uses file version to check for 256 palette
           if version is 5 then it's assumed a 256 color palette exists.
-        - Removed a lame ass division that mucked up the color table in PCX
-        - PCX loader now stores data in RGB with unsigned byte elements
+        - Dinand: Removed a lame ass division that mucked up the color table in PCX
+        - Dinand: PCX loader now stores data in RGB with unsigned byte elements
 - 20-01-2003 :
-        - Implemented the PPM loader.
+        - Dinand: Implemented the PPM loader.
           Only version P6 is supported. P6 is a lot faster then P3 but only
           supports a maximum of 256 color values.
           It is assumed there is only 1 image per PPM file.
           The RGB data is converted to RGBA, all alpha values will be set to 1.0
           Comments in the PPM file are not supported.
 - 19-01-2003 :
-        - Designed CImage class :
+        - Dinand: Designed CImage class :
           Both loading from disk and loading from a file in memory is
           supported.
-        - Implemented the BMP loader :
+        - Dinand: Implemented the BMP loader :
           Reads Win32 bitmap's. There is support for 8, 24 or 32 bit
           images.      
-        - Implemented the PCX loader :
+        - Dinand: Implemented the PCX loader :
           there is PCX support for 16 and 256 color images.
           The pixel data is stored in RGBA format,
           all alpha values will be set to 1.0

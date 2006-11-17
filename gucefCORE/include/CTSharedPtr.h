@@ -28,6 +28,7 @@
 #include "gucefCORE_macros.h"
 #include "CTSharedObjectDestructor.h"
 #include "ExceptionMacros.h"
+#include "CTracer.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

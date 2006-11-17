@@ -202,7 +202,7 @@
         class apiCall identifier baseClass                        \
         {                                                         \
             GUCEF_DECLARE_SINGLETON_INTERFACE( identifier )       \
-        }                                                         \
+        };                                                        \
 )
 #endif /* __cplusplus ? */
 

@@ -21,25 +21,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <malloc.h>       /* Memory Management */
-#include <string.h>       /* needed for memcpy() */
-
-#ifndef CIMGCODECMANAGER_H
-#include "CIMGCodecManager.h"
-#define CIMGCODECMANAGER_H
-#endif /* CIMGCODECMANAGER_H ? */
-
-#ifndef CIMAGE_H
 #include "CImage.h"       /* Header for this class */
-#define CIMAGE_H
-#endif /* CIMAGE_H ? */
-
-#ifdef ACTIVATE_MEMORY_MANAGER
-  #ifndef GUCEF_NEW_ON_H
-  #include "gucef_new_on.h"   /* Use the GUCEF memory manager instead of the standard manager ? */
-  #define GUCEF_NEW_ON_H
-  #endif /* GUCEF_NEW_ON_H ? */
-#endif /* ACTIVATE_MEMORY_MANAGER ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,331 +38,164 @@ namespace IMAGE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *      Creates an empty image object
- */
+GUCEF_IMPLEMENT_MSGEXCEPTION( CImage, EInvalidIndex );
+
+/*--------------------------------------------------------------------------*/
+
 CImage::CImage( void )
-{
+    : m_frameList()
+{TRACE;
+
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Cleans up any data that may have been allocated/stored
- */
+CImage::CImage( const TFrameList& frameList )
+    : m_frameList( frameList )
+{TRACE;
+
+}
+
+/*--------------------------------------------------------------------------*/
+    
+CImage::CImage( const TMipMapList& mipmapList )
+    : m_frameList()
+{TRACE;
+
+    m_frameList.push_back( mipmapList );
+}
+
+/*--------------------------------------------------------------------------*/
+    
+CImage::CImage( const TPixelMapPtr& pixelMapPtr )
+    : m_frameList()
+{TRACE;
+
+    TMipMapList mipmapList;
+    mipmapList.push_back( pixelMapPtr );
+    m_frameList.push_back( mipmapList );
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CImage::Assign( const TFrameList& frameList )
+{TRACE;
+
+    // First we clean up our toys
+    Clear();
+    
+    // Assign the image data
+    m_frameList = frameList;
+}
+
+/*--------------------------------------------------------------------------*/
+    
+void
+CImage::Assign( const TMipMapList& mipmapList )
+{TRACE;
+
+    // First we clean up our toys
+    Clear();
+    
+    // Assign the image data
+    m_frameList.push_back( mipmapList );
+}
+
+/*--------------------------------------------------------------------------*/
+    
+void
+CImage::Assign( const TPixelMapPtr& pixelMapPtr )
+{TRACE;
+
+    // First we clean up our toys
+    Clear();
+    
+    // Assign the image data
+    TMipMapList mipmapList;
+    mipmapList.push_back( pixelMapPtr );    
+    m_frameList.push_back( mipmapList );
+}
+
+/*--------------------------------------------------------------------------*/
+
 CImage::~CImage()
-{
+{TRACE;
         Clear();
 }
 
 /*-------------------------------------------------------------------------*/
 
-const TImageInfo&
-CImage::GetImageInfo( void ) const
+UInt32
+CImage::GetFrameCount( void ) const
 {TRACE;
+
+    return static_cast< UInt32 >( m_frameList.size() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CImage::GetMipmapLevels( const UInt32 frameIndex /* = 0 */ ) const
+{TRACE;
+
+    if ( m_frameList.size() > frameIndex )
+    {
+        return static_cast< UInt32 >( m_frameList[ frameIndex ].size() );
+    }
     
-    return m_imageInfo;
-} 
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Get the frame size in bytes of a single frame at the highest
- *      mipmap level.
- *
- *      @return size of the frame data in bytes
- */
-UInt32
-CImage::GetFrameSize( void ) const
-{
-        return _imgdata.dsize;
-}   
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Get Bits Per Pixel
- *      Typical values are 8, 24, 32
- *
- *      @return the depth a.k.a bbp of the image data.
- */
-UInt8
-CImage::GetDepth( void ) const
-{
-        return _imgdata.bbp;
+    GUCEF_EMSGTHROW( EInvalidIndex, "CImage::GetMipmapLevels(): Invalid frame index" );
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-UInt32
-CImage::GetWidth( void ) const
-{
-        return _imgdata.width;
-}
-
-/*--------------------------------------------------------------------------*/
-
-UInt32
-CImage::GetStride( void ) const
-{
-        return _imgdata.stride;
-}
-
-/*--------------------------------------------------------------------------*/
-
-UInt32
-CImage::GetHeight( void ) const
-{
-        return _imgdata.height;
-}
-
-/*--------------------------------------------------------------------------*/
-
-UInt8
-CImage::GetChannels( void ) const
-{
-        return _imgdata.channels;
-}
-
-/*--------------------------------------------------------------------------*/
-
-Int8
-CImage::GetFormat( void ) const
-{
-        return _imgdata.format;
-}
-
-/*--------------------------------------------------------------------------*/
-
-UInt32
-CImage::GetFrames( void ) const
-{
-        return _imgdata.frames;
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Get the number of mipmap levels per frame
- *
- *      @return mipmap levels per frame.
- */
-UInt8
-CImage::GetMipmapLevels( void ) const
-{
-        return _imgdata.mipmaps;        
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Get a pointer to the pixel data of the first frame.
- *      The pixel data is that of the highest mipmap level.
- *
- *      @return         pixel data of the requested frame.
- */
-const void*
-CImage::GetData( void ) const
-{
-        return _imgdata.idata;
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Get a pointer to the pixel data of the frame given.
- *      The pixel data is that of the highest mipmap level.
- *
- *      @param frame    frame index for which you want the pixel data
- *      @return         pixel data of the requested frame.
- */
-const void*
-CImage::GetData( UInt32 frame ) const
-{
-        return _imgdata.idata;
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Get a pointer to the pixel data of the frame given.
- *      The pixel data is that of the highest mipmap level.
- *
- *      @param frame      frame index for which you want the pixel data
- *      @param mipmapidx  index of the mipmap level.
- *      @return           pixel data of the requested frame.
- */
-const void*
-CImage::GetData( UInt32 frame    ,
-                 UInt8 mipmapidx ) const
-{
-        return _imgdata.idata;                
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Get the type of value that is used for each pixel component.
- *
- *      @return The type of each pixel component value.
- */
-TBuildinDataType
-CImage::GetPixelComponentDataType( void ) const
-{
-        return _imgdata.dtype;
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Check if the image data has an alpha channel
- *
- *      @return Wheter or not the image data has an alpha channel.
- */
-bool
-CImage::GetHasAlpha( void ) const
-{
-        return _imgdata.has_alpha > 0;
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Returns a refrence to the entire image data structure.
- *      Note that it is a better idea to use the member functions of
- *      this class to obtain the field values since they are less
- *      likely to change.
- *
- *      @return the image storage structure
- */
-const TImageData&
-CImage::GetImageDataStructure( void ) const
-{
-        return _imgdata;
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Adds an alpha channel to the stored data.
- *      The alpha channel values are not initialized if an alpha channel
- *      is added. Alpha channel data can be set with ApplyMaskColor()
- */
-void
-CImage::ForceAlphaChannel( void )
-{
-        
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Use mask color given to set the aplha value of each pixel to 0
- *      when the color matches the given values.
- *
- *      @param r        value of the red channel to match
- *      @param g        value of the green channel to match
- *      @param b        value of the blue channel to match
- */
-void
-CImage::ApplyMaskColor( Float32 r ,
-                        Float32 g ,
-                        Float32 b )
-{
-
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Attempts to load image data using the plugin identified with
- *      the provided handle. The plugin will attempt to load the image
- *      data from the recource provided by 'access' and store the
- *      result in 'imgdata'.
- */
-bool
-CImage::Load( UInt32 codecidx         ,
-              UInt32 hidx             ,
-              CORE::CIOAccess& access )
-{
-        Clear();
-
-        if ( CIMGCodecManager::Instance()->LoadImageData( codecidx    ,
-                                                          hidx        ,
-                                                          access      ,
-                                                          &_imgdata   ,
-                                                          &_codecdata ) )
-        {
-                _codecisowner = true;
-                _codecused = codecidx;
-                _hidxused = hidx;
-                return true;
-        }
-        return false;
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      This function should save the image data provided in the format
- *      provided to a file with the given filename. If format is one of the
- *      explicit types then the save must be in that format or the save
- *      operation should fail. if format is IMGFORMAT_DONT_CARE then the
- *      format of the output file can be decided uppon at the user's discression.
- *      A return value of 0 indicates failure. A return value of > 0 indicates
- *      success (I recommend using 1). compression is a percentage between 0
- *      and 100 indicating the desired amount of compression. 0 indicates the
- *      lowest level of compression the plugin can provide and 100 the highest.
- */
-bool
-CImage::Save( UInt32 codecidx               ,
-              UInt32 hidx                   ,
-              const CORE::CString& filename ,
-              UInt32 format                 ,
-              UInt32 compression            )
-{
-        return CIMGCodecManager::Instance()->SaveImageData( codecidx    ,
-                                                            hidx        ,
-                                                            filename    ,
-                                                            format      ,
-                                                            compression ,
-                                                            &_imgdata   );
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Unloads image data if needed and resets values to there defaults
- */
 void
 CImage::Clear( void )
 {
+    // Because we are using shared pointers all we have to do is clear the list
+    // this will cause things to be de-allocated as needed
     m_frameList.clear();
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-bool
-CImage::FlipVertical( void )
+CImage::TPixelMapPtr
+CImage::GetFrame( const UInt32 frameIndex /* = 0 */  ,
+                  const UInt32 mipMapLevel /* = 0 */ )
 {TRACE;
-        return false;
+
+    if ( m_frameList.size() > frameIndex )
+    {
+        TMipMapList& mipmapList = m_frameList[ frameIndex ];
+        if ( mipmapList.size() > mipMapLevel )
+        {
+            return mipmapList[ mipMapLevel ];
+        }
+    }
+    
+    GUCEF_EMSGTHROW( EInvalidIndex, "CImage::GetFrame(): Invalid frame or mipmap index" );    
 }
 
-/*--------------------------------------------------------------------------*/
-
-bool
-CImage::FlipHorizontal( void )
-{TRACE;
-        return false;
-}
-
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 UInt32
-CImage::GetPixelComponentSize( void ) const
-{TRACE;
-
-    return _imgdata.vsize;
+CImage::GetTotalPixelStorageSize( void ) const
+{
+    UInt32 totalBytes = 0;
+    TFrameList::const_iterator i = m_frameList.begin();
+    while ( i != m_frameList.end() )
+    {
+        const TMipMapList& mipmapList = (*i);
+        TMipMapList::const_iterator n = mipmapList.begin();
+        while ( n != mipmapList.end() )
+        {
+            totalBytes += (*n)->GetTotalSizeInBytes();
+            ++n;
+        }
+        ++i;
+    }
+    
+    return totalBytes;
 }
 
 /*-------------------------------------------------------------------------//

@@ -103,7 +103,7 @@ class GUCEFCORE_EXPORT_CPP CFileAccess : public CIOAccess
         /**
          *      Get the size of the recource in bytes
          */        
-        virtual UInt32 GetSize( void ) const;
+        virtual Int32 GetSize( void ) const;
 
         /**
          *      jump to a different part of the recource

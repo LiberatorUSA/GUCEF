@@ -78,6 +78,7 @@ typedef enum
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+//@deprecated
 class GUCEFCORE_EXPORT_CPP CPropertyList
 {
 

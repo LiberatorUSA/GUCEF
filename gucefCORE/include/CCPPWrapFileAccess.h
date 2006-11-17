@@ -70,7 +70,7 @@ class GUCEFCORE_EXPORT_CPP CCPPWrapFileAccess : public CIOAccess
         /**
          *      returns the size of the recource in bytes
          */
-        virtual UInt32 GetSize( void ) const;        
+        virtual Int32 GetSize( void ) const;        
 
         /**
          *      read a line of text

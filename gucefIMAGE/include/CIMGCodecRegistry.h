@@ -34,6 +34,11 @@
 #define GUCEF_CORE_CTREGISTRY_H
 #endif /* GUCEF_CORE_CTREGISTRY_H ? */
 
+#ifndef GUCEFIMAGE_MACROS_H
+#include "gucefIMAGE_macros.h"       /* module macro's */
+#define GUCEFIMAGE_MACROS_H
+#endif /* GUCEFIMAGE_MACROS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

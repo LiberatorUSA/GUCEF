@@ -307,7 +307,7 @@ CMFileAccess::Setpos( UInt32 position )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+Int32
 CMFileAccess::GetSize( void ) const
 {
         return _mfile.size;

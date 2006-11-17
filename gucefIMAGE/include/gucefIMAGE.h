@@ -77,38 +77,29 @@ namespace GUCEF
 #ifdef __cplusplus
 
 /*
- *      class that represents an image and stores the image data.
- *      The CIMGCodecManager is used internally to allow a variable number
- *      of saving/loading capabilities to be used.
- *      This class is not thread-safe.
+ *  class that represents an image
  */
-#ifndef CIMAGE_H
+#ifndef GUCEF_IMAGE_CIMAGE_H
 #include "CImage.h"
-#define CIMAGE_H
-#endif /* CIMAGE_H ? */
+#define GUCEF_IMAGE_CIMAGE_H
+#endif /* GUCEF_IMAGE_CIMAGE_H ? */
 
-/**
- *      Class that provides OOP access to an image handling codec plugin.
- *      Altough this class can be used seperatly it is recommended to use
- *      the CIMGCodecManager instead. This class is not threadsafe.
+/*
+ *  class that represents an 2D pixel grid called a pixelmap
  */
-#ifndef CIMGCODEC_H
+#ifndef GUCEF_IMAGE_CPIXELMAP_H
+#include "CPixelMap.h"
+#define GUCEF_IMAGE_CPIXELMAP_H
+#endif /* GUCEF_IMAGE_CPIXELMAP_H ? */
+
+/*
+ *  Class that specializes the CICodec to a more convenient interface
+ *  serves as an abstract base class for implementations of image codecs
+ */
+#ifndef GUCEF_IMAGE_CIMGCODEC_H
 #include "CIMGCodec.h"
-#define CIMGCODEC_H
-#endif /* CIMGCODEC_H ? */
-
-/**
- *      Thread-safe singleton class that manages a variable number of image data
- *      handler codecs. The codec plugin's should have certain functions
- *      specific to a GUCEF image handling codec plugin. If one or more of these
- *      functions are not found then the plugin cannot be used. Note that it is
- *      important for the functions in the dynamicly linked plugin library to
- *      have the correct function calling convention !!! 
- */
-#ifndef CIMGCODECMANAGER_H
-#include "CIMGCodecManager.h"
-#define CIMGCODECMANAGER_H
-#endif /* CIMGCODECMANAGER_H ? */
+#define GUCEF_IMAGE_CIMGCODEC_H
+#endif /* GUCEF_IMAGE_CIMGCODEC_H ? */
 
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
