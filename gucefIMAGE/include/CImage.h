@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CIMAGE_H
-#define CIMAGE_H
+#ifndef GUCEF_IMAGE_CIMAGE_H
+#define GUCEF_IMAGE_CIMAGE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -140,7 +140,7 @@ class EXPORT_CPP CImage
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* CIMAGE_H ? */
+#endif /* GUCEF_IMAGE_CIMAGE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -191,6 +191,15 @@ CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
                    outputImage  );
 }
 
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+CIMGCodec::GetCodecFamilyName( void ) const
+{TRACE;
+    
+    return "IMAGE";
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

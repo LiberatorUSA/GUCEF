@@ -90,6 +90,8 @@ class EXPORT_CPP CIMGCodec : public CORE::CICodec
 
     bool Decode( CORE::CIOAccess& encodedInput ,
                  CImage& outputImage           );
+                 
+    virtual CORE::CString GetFamilyName( void ) const;
 };
 
 /*-------------------------------------------------------------------------//

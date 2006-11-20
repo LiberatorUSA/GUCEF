@@ -642,6 +642,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\CCodecRegistry.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\CConfigStore.h"
 				>
 			</File>
