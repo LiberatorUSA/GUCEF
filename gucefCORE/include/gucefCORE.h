@@ -32,76 +32,46 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Library build configuration      
- */
 #ifndef GUCEF_CORE_GUCEFCORE_CONFIG_H
 #include "gucefCORE_config.h"
 #define GUCEF_CORE_GUCEFCORE_CONFIG_H
 #endif /* GUCEF_CORE_GUCEFCORE_CONFIG_H ? */
 
-/*
- *      Library specific macros and generic macros
- */
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
-/*
- *      Simple types
- */
 #ifndef GUCEF_CORE_ETYPES_H
 #include "ETypes.h"
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
-/*
- *      Image data storage structure
- */
 #ifndef GUCEF_CORE_ESTRUCTS_H
 #include "EStructs.h"
 #define GUCEF_CORE_ESTRUCTS_H
 #endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-/*
- *      MD5 utility functions
- */
 #ifndef GUCEF_CORE_DVMD5UTILS_H
 #include "dvmd5utils.h"
 #define GUCEF_CORE_DVMD5UTILS_H
 #endif /* GUCEF_CORE_DVMD5UTILS_H ? */
 
-/*
- *      Utilities for handling C-style strings
- */
 #ifndef GUCEF_CORE_DVSTRUTILS_H
 #include "dvstrutils.h"
 #define GUCEF_CORE_DVSTRUTILS_H
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
-/*
- *      Wrappers for common O/S functions
- */
 #ifndef GUCEF_CORE_DVOSWRAP_H
 #include "dvoswrap.h"
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
-/*
- *      utilities for accessing a block of memory as if it is a file.
- */
 #ifndef GUCEF_CORE_MFILE_H
 #include "MFILE.h"
 #define GUCEF_CORE_MFILE_H
 #endif /* GUCEF_CORE_MFILE_H ? */
 
-/*
- *      utilities for threadsafe paralell file access with an optional starting
- *      offset. You could use multiple FILE pointers for read only threadsafe
- *      paralell access but the advantage of PAFILE is that you can threat a
- *      block of a file as if it is the entire file.  
- */
 #ifndef GUCEF_CORE_PAFILE_H
 #include "PAFILE.h"
 #define GUCEF_CORE_PAFILE_H
@@ -112,11 +82,6 @@
 #define GUCEF_CORE_IOACCESS_H
 #endif /* GUCEF_CORE_IOACCESS_H ? */
 
-/*
- *      Memory manager API
- *      Compiled in if ADD_MEMORY_MANAGER is defined
- *      Needed if one or more modules have ACTIVATE_MEMORY_MANAGER defined.
- */
 #ifndef GUCEF_CORE_MEMORYMANAGER_H
 #include "MemoryManager.h"
 #define GUCEF_CORE_MEMORYMANAGER_H
@@ -134,45 +99,26 @@
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 
-/*
- *      C++ callstack trace object and the TRACE macro
- */
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
-/*
- *      Singleton application class.
- *      Basicly holds the main() code and translates operating system messages
- *      into GUCEF events.      
- */
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
-/*
- *      Base class for GUCEF application sub-systems
- */
 #ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
 #include "CGUCEFAppSubSystem.h"
 #define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
 #endif /* GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H ? */
 
-/*
- *      My verry own string class.
- *      It uses refrence counting internally so don't worry about copys
- *      consuming your memory.
- */
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
-/*
- *      Additional utilities for manipulating string class objects
- */
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h" 
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -213,62 +159,31 @@
 #define GUCEF_CORE_CGENERICPLUGINMANAGER_H
 #endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
 
-/*
- *      Stack implementation that simply uses pointers to the given data.
- *      This implementation has to (de)allocate memory when the stack is
- *      manipulated.
- */
 #ifndef GUCEF_CORE_CSTACK_H
 #include "CStack.h"
 #define GUCEF_CORE_CSTACK_H
 #endif /* GUCEF_CORE_CSTACK_H ? */
 
-/*
- *      Class implementing a queue for data.
- *      Memory allocations are kept to a minimum with this class using memory
- *      pools ect. Simply allows you to set data in the FILO queue and later
- *      retrieve a pointer to it. When your done with the queued item you drop
- *      it from the queue.
- */
 #ifndef GUCEF_CORE_CDATAQUEUE_H
 #include "CDataQueue.h"
 #define GUCEF_CORE_CDATAQUEUE_H
 #endif /* GUCEF_CORE_CDATAQUEUE_H ? */
 
-/*
- *      Stack implementation that uses a memory pool into which data is copied
- *      and from which data is retrieved. When used properly stack manipulations
- *      will overall not require a memory (de)allocation.
- */
 #ifndef GUCEF_CORE_CBLOCKSTACK_H
 #include "CBlockStack.h"
 #define GUCEF_CORE_CBLOCKSTACK_H
 #endif /* GUCEF_CORE_CBLOCKSTACK_H ? */
 
-/*
- *      Memory pool utility class.
- *      Helps avoid constant (de)allocation of memory blocks.
- */
 #ifndef GUCEF_CORE_CMEMORYBLOCKPOOL_H
 #include "CMemoryBlockPool.h"
 #define GUCEF_CORE_CMEMORYBLOCKPOOL_H
 #endif /* GUCEF_CORE_CMEMORYBLOCKPOOL_H ? */
 
-/*
- *      Simple datanode class.
- *      Can be used to build a tree of data with each tree node 
- *      having an optional number of attributes.
- *      Note that CDataNode objects always remain owner of all there
- *      children so do not delete any object in the tree directly yourself.
- */
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
-/*
- *      Class accessing class "properties" genericly 
- */
 #ifndef GUCEF_CORE_CPROPERTYLIST_H
 #include "CPropertyList.h"
 #define GUCEF_CORE_CPROPERTYLIST_H
@@ -379,38 +294,11 @@
 #define GUCEF_CORE_CURLDATARETRIEVER_H
 #endif /* GUCEF_CORE_CURLDATARETRIEVER_H ? */
 
-/*
- *      State machine implementation.
- *      Once set in motion the state machine will simply go trough the state handing
- *      path created by the user. The path can vary depending on the condition values
- *      that result from the handlers actions.
- *      
- *      Everything works with integers for performance reasons. 
- *      It is recommended to make an int enum of all your states and condition
- *      values and use those. The value 0 is reserved and should be considdered to have
- *      the following meaning:
- *              - condition value 0 : no condition
- *              - state value 0     : machine default non-state/invalid state
- *
- *      Note that the user remains responible for memory management of
- *      the CStateHandler derived objects. The state machine only uses them, 
- *      it does not assume ownership.
- */
 #ifndef GUCEF_CORE_CSTATEMACHINE_H
 #include "CStateMachine.h"
 #define GUCEF_CORE_CSTATEMACHINE_H
 #endif /* GUCEF_CORE_CSTATEMACHINE_H ? */
 
-/*
- *      Abstract base class that serves as the basis for state handlers for the
- *      CStateMachine class. Override the manditory and optional event handlers 
- *      as needed to handle the machine state.
- *      Note that the return values indicate machine errors. If you return false
- *      in any of the event handlers then it will be considdered to be a fatal 
- *      machine error and the state machine will stop.
- *      After successfully handling the state you should always call SignalStateHandled()
- *      with a condition value. This will trigger a transition to a new state.
- */
 #ifndef GUCEF_CORE_CSTATEHANDLER_H
 #include "CStateHandler.h"
 #define GUCEF_CORE_CSTATEHANDLER_H
@@ -435,6 +323,11 @@
 #include "CTCloneableObj.h"
 #define GUCEF_CORE_CTCLONEABLEOBJ_H
 #endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+
+#ifndef GUCEF_CORE_CTBASICSHAREDPTR_H 
+#include "CTBasicSharedPtr.h"
+#define GUCEF_CORE_CTBASICSHAREDPTR_H
+#endif /* GUCEF_CORE_CTBASICSHAREDPTR_H ? */
 
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/

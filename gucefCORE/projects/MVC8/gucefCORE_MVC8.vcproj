@@ -918,6 +918,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\CTBasicSharedPtr.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\CTCloneableObj.h"
 				>
 			</File>

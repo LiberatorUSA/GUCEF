@@ -160,8 +160,8 @@ CImage::Clear( void )
 /*-------------------------------------------------------------------------*/
 
 CImage::TPixelMapPtr
-CImage::GetFrame( const UInt32 frameIndex /* = 0 */  ,
-                  const UInt32 mipMapLevel /* = 0 */ )
+CImage::GetPixelMap( const UInt32 frameIndex /* = 0 */  ,
+                     const UInt32 mipMapLevel /* = 0 */ )
 {TRACE;
 
     if ( m_frameList.size() > frameIndex )
@@ -178,9 +178,38 @@ CImage::GetFrame( const UInt32 frameIndex /* = 0 */  ,
 
 /*-------------------------------------------------------------------------*/
 
+CImage::TMipMapList&
+CImage::GetFrame( const UInt32 frameIndex /* = 0 */ )
+{TRACE;
+
+    if ( m_frameList.size() > frameIndex )
+    {
+        return m_frameList[ frameIndex ];
+    }
+    
+    GUCEF_EMSGTHROW( EInvalidIndex, "CImage::GetFrame(): Invalid frame or mipmap index" );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CImage::TMipMapList&
+CImage::GetFrame( const UInt32 frameIndex /* = 0 */ ) const
+{TRACE;
+
+    if ( m_frameList.size() > frameIndex )
+    {
+        return m_frameList[ frameIndex ];
+    }
+    
+    GUCEF_EMSGTHROW( EInvalidIndex, "CImage::GetFrame(): Invalid frame or mipmap index" );    
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt32
 CImage::GetTotalPixelStorageSize( void ) const
-{
+{TRACE;
+
     UInt32 totalBytes = 0;
     TFrameList::const_iterator i = m_frameList.begin();
     while ( i != m_frameList.end() )

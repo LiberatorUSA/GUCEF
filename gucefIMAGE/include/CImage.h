@@ -106,8 +106,12 @@ class EXPORT_CPP CImage
     /**
      *  @throw EInvalidIndex is thrown if an invalid index is given
      */
-    TPixelMapPtr GetFrame( const UInt32 frameIndex = 0  ,
-                           const UInt32 mipMapLevel = 0 );
+    TPixelMapPtr GetPixelMap( const UInt32 frameIndex = 0  ,
+                              const UInt32 mipMapLevel = 0 );
+
+    TMipMapList& GetFrame( const UInt32 frameIndex = 0 );
+    
+    const TMipMapList& GetFrame( const UInt32 frameIndex = 0 ) const;
 
     /**
      *      Unloads image data if needed and resets values to there defaults

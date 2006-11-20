@@ -54,6 +54,8 @@ namespace CORE {
  *      Maintains a sorted list.
  *      key values do not have to be unique but Get() and the index operator
  *      will only return the first entry.
+ *
+ *      @deprecated
  */
 class GUCEFCORE_EXPORT_CPP CIntMap
 {
