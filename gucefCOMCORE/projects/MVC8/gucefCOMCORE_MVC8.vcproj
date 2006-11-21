@@ -212,10 +212,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CIUDPSocketEventHandler.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\CSocket.cpp"
 				>
 			</File>
@@ -263,10 +259,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CGUCEFCOMCOREModule.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CIUDPSocketEventHandler.h"
 				>
 			</File>
 			<File

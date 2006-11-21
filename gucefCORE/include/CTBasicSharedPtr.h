@@ -207,7 +207,7 @@ class CTBasicSharedPtr
 
     UInt32 GetReferenceCount( void ) const;
 
-    GUCEF_DEFINE_INLINED_MSGEXCEPTION( GUCEF_VOIDDEF, ENotInitialized );
+    GUCEF_DEFINE_INLINED_MSGEXCEPTION( ENotInitialized );
 
     protected:
 

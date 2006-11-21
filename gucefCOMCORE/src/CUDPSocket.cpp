@@ -28,8 +28,6 @@
 #define DVSTRUTILS_H
 #endif /* DVSTRUTILS_H ? */ 
 
-#include "CIUDPSocketEventHandler.h"
-
 #include "CUDPSocket.h" /* definition of the class implemented here */
 
 #ifdef MSWIN_BUILD
@@ -54,6 +52,17 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CEvent CUDPSocket::UDPSocketErrorEvent = "GUCEF::COMCORE::CUDPSocket::UDPSocketErrorEvent";
+const CORE::CEvent CUDPSocket::UDPSocketClosedEvent = "GUCEF::COMCORE::CUDPSocket::UDPSocketClosedEvent";
+const CORE::CEvent CUDPSocket::UDPSocketOpenedEvent = "GUCEF::COMCORE::CUDPSocket::UDPSocketOpenedEvent";
+const CORE::CEvent CUDPSocket::UDPPacketRecievedEvent = "GUCEF::COMCORE::CUDPSocket::UDPPacketRecievedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -68,7 +77,6 @@ struct CUDPSocket::SUDPSockData
         struct sockaddr_in localaddress;
         #endif
 };
-typedef struct CUDPSocket::SUDPSockData TUDPSockData;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -77,49 +85,38 @@ typedef struct CUDPSocket::SUDPSockData TUDPSockData;
 //-------------------------------------------------------------------------*/
 
 CUDPSocket::CUDPSocket( bool blocking )
-        : CSocket()     ,
+        : CSocket()             ,
           _blocking( blocking ) ,
-          m_port( 0 )
-{
+          m_port( 0 )           ,
+          _data( NULL )         ,
+          m_buffer()
+{TRACE;
         _data = new TUDPSockData;
         memset( _data, 0, sizeof( TUDPSockData ) );
+        
+        m_buffer.SetBufferSize( 1024 );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CUDPSocket::~CUDPSocket()
-{
+{TRACE;
         Close( true );
         
         delete _data;
+        _data = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CUDPSocket::ResolveDest( const CORE::CString& destaddrstr ,
-                         UInt16 destport                  ,  
-                         TIPAddress& dest                 )
-{
-        if ( CORE::Check_If_IP( destaddrstr.C_String() ) )
-        {
-                dest.netaddr = inet_addr( destaddrstr.C_String() );                
-                if ( dest.netaddr == INADDR_NONE ) return false;                
-                dest.port = htons( destport );
-                return true;
-        }
-        else
-        {              
-                struct hostent* retval;                              
-                retval = gethostbyname( destaddrstr.C_String() );
-                if ( retval )
-                {
-                        dest.netaddr = inet_addr( retval->h_addr_list[ 0 ] ); // <- werkt niet ??
-                        dest.port = htons( destport );
-                        return true;
-                }
-                return false;                   
-        }
+void
+CUDPSocket::RegisterEvents( void )
+{TRACE;
+
+    UDPSocketErrorEvent.Initialize();
+    UDPSocketClosedEvent.Initialize();
+    UDPSocketOpenedEvent.Initialize();
+    UDPPacketRecievedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/                         
@@ -128,14 +125,14 @@ Int32
 CUDPSocket::SendPacketTo( const TIPAddress& dest ,
                           const void* data       , 
                           UInt16 datasize        )
-{
+{TRACE;
         if ( !_data->sockid )
         {
                 Open();
         }
         
         struct sockaddr_in remote;
-        //CLEAR_ADDR( &remote );
+        memset( &remote, 0, sizeof( remote ) ); // should this be CLEAR_ADDR( &remote ); ?
         remote.sin_addr.s_addr = dest.netaddr;
         remote.sin_port = dest.port;
         remote.sin_family = AF_INET;
@@ -154,9 +151,9 @@ CUDPSocket::SendPacketTo( const CORE::CString& dnsname ,
                           UInt16 port                  ,
                           const void* data             , 
                           UInt16 datasize              )
-{
+{TRACE;
         TIPAddress dest;
-        if ( ResolveDest( dnsname, port, dest ) )
+        if ( ConvertToIPAddress( dnsname, port, dest ) )
         {
                 return SendPacketTo( dest, data, datasize );
         }
@@ -168,18 +165,25 @@ CUDPSocket::SendPacketTo( const CORE::CString& dnsname ,
 void 
 CUDPSocket::Update( UInt32 tickcount  ,
                     UInt32 deltaticks )
-{
-        if ( _checkfordata )
+{TRACE;
+
+    if ( !_blocking )
+    {
+        TIPAddress src;
+        while ( IsIncomingDataQueued() )
         {
-                CheckForData();
-        } 
+            Recieve( src  ,
+                     NULL ,
+                     0    );
+        }
+    }
 }                    
 
 /*-------------------------------------------------------------------------*/
 
-void
-CUDPSocket::CheckForData( void )
-{
+bool
+CUDPSocket::IsIncomingDataQueued( void ) const
+{TRACE;
         TIMEVAL time = { 0, 0 };
         fd_set sockset;
         FD_ZERO( &sockset );
@@ -187,24 +191,28 @@ CUDPSocket::CheckForData( void )
 
         if ( select( 2, &sockset, NULL, NULL, &time ) > 0 )
         {
-                _checkfordata = false;
-                SendEvent( UDP_PACKET_RECIEVED );                                        
+                return true;
         }
-        _checkfordata = true;
-}
+        return false;
+}                    
+
 /*-------------------------------------------------------------------------*/
 
-bool 
-CUDPSocket::ResolveSrc( const TIPAddress& src     ,
-                        CORE::CString& srcaddrstr ,
-                        UInt16& srcport           )
-{                   // @todo MAKEME
-        if ( src.netaddr == INADDR_ANY )
-        {
-                srcaddrstr = "localhost";       
-        }
-        return true;        
-}                        
+UInt32
+CUDPSocket::GetRecievedDataBufferSize( void ) const
+{TRACE;
+    
+    return m_buffer.GetBufferSize();
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CUDPSocket::SetRecievedDataBufferSize( const UInt32 newBufferSize )
+{TRACE;
+    
+    m_buffer.SetBufferSize( newBufferSize );
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -212,63 +220,76 @@ Int32
 CUDPSocket::Recieve( TIPAddress& src ,
                      void* destbuf   , 
                      UInt16 bufsize  )
-{        
-        struct sockaddr_in remote;        
-        int structsize( sizeof( remote ) );
-        int retval = recvfrom( _data->sockid             , 
-                               (char*)destbuf            , 
-                               bufsize                   , 
-                               0                         , 
-                               (struct sockaddr*)&remote ,
-                               &structsize               );
-        if ( retval < 0 ) 
+{TRACE;        
+
+    struct sockaddr_in remote;        
+    int structsize( sizeof( remote ) );
+    int retval = recvfrom( _data->sockid                  , 
+                           (char*)m_buffer.GetBufferPtr() , 
+                           m_buffer.GetBufferSize()       , 
+                           0                              , 
+                           (struct sockaddr*)&remote      ,
+                           &structsize                    );
+    if ( retval < 0 ) 
+    {
+            return -1;
+    }                               
+    if ( retval == 0 )
+    {
+            Close( true );
+            return 0;       
+    }                         
+    
+    // Set the actual usefull bytes of data in the buffer 
+    // to match the number of retrieved bytes
+    m_buffer.SetDataSize( retval );
+                   
+    // Copy the data directly to our user
+    src.port = remote.sin_port;
+    src.netaddr = remote.sin_addr.s_addr;
+    
+    if ( NULL != destbuf )
+    {
+        UInt32  copyLimit = bufsize;
+        if ( m_buffer.GetBufferSize() < copyLimit )
         {
-                return -1;
-        }                               
-        if ( retval == 0 )
-        {
-                Close( true );
-                return 0;       
-        }                         
-                       
-        src.port = remote.sin_port;
-        src.netaddr = remote.sin_addr.s_addr;                       
-                        
-        CheckForData();
-        return retval;                             
+            copyLimit = m_buffer.GetBufferSize(); 
+        }                       
+        memcpy( destbuf, m_buffer.GetBufferPtr(), copyLimit );
+    }
+                     
+    // Send an event notifying people that the data was recieved
+    struct SUDPPacketRecievedEventData infoStruct;
+    infoStruct.sourceAddress.port = remote.sin_port;
+    infoStruct.sourceAddress.netaddr = remote.sin_addr.s_addr;
+    infoStruct.dataBuffer = CORE::TLinkedCloneableBuffer( &m_buffer );
+    
+    UDPPacketRecievedEventData eventData( infoStruct );
+    NotifyObservers( UDPPacketRecievedEvent, &eventData );        
+    
+    return retval;                             
 }
 
 /*-------------------------------------------------------------------------*/
 
 Int32 
-CUDPSocket::Recieve( void* destbuf      , 
-                     UInt16 bufsize     )
-{
-        int retval = recvfrom( _data->sockid  ,
-                               (char*)destbuf , 
-                               bufsize        , 
-                               0              , 
-                               NULL           ,
-                               NULL           );
-        if ( retval < 0 ) 
-        {
-                return -1;
-        }                               
-        if ( retval == 0 )
-        {
-                Close( true );
-                return 0;       
-        }                         
-                
-        CheckForData();
-        return retval;
+CUDPSocket::Recieve( void* destbuf  ,
+                     UInt16 bufsize )
+{TRACE;
+
+    TIPAddress src;
+    return Recieve( src     , 
+                    destbuf ,
+                    bufsize );
 }                     
 
 /*-------------------------------------------------------------------------*/
        
 bool 
 CUDPSocket::Open( void )
-{
+{TRACE;
+        GUCEF_ASSERT_ALWAYS;
+        
         Close( true );           
         
         //----------- BEGIN MS WINDOWS IMPLEMENTATION        
@@ -288,7 +309,7 @@ CUDPSocket::Open( void )
         
         int size( sizeof(_data->localaddress) );
         getsockname( _data->sockid, (struct sockaddr*)&_data->localaddress, &size );
-        SendEvent( UDP_SOCKET_OPENED );
+        NotifyObservers( UDPSocketOpenedEvent );
         //m_port = ;  @MAKEME
         return true;
         
@@ -300,7 +321,7 @@ CUDPSocket::Open( void )
         
 bool 
 CUDPSocket::Open( UInt16 port )
-{
+{TRACE;
         Close( true );
         
         //----------- BEGIN MS WINDOWS IMPLEMENTATION
@@ -328,7 +349,7 @@ CUDPSocket::Open( UInt16 port )
                    sizeof(struct sockaddr_in)               ) == 0 )
         {
                 m_port = port;
-                SendEvent( UDP_SOCKET_OPENED );
+                NotifyObservers( UDPSocketOpenedEvent );
                 return true;
         }
         return false;
@@ -342,7 +363,7 @@ CUDPSocket::Open( UInt16 port )
 bool 
 CUDPSocket::Open( const CORE::CString& localaddr ,
                   UInt16 port                    )
-{
+{TRACE;
         Close( true );
         
         //----------- BEGIN MS WINDOWS IMPLEMENTATION
@@ -370,7 +391,7 @@ CUDPSocket::Open( const CORE::CString& localaddr ,
                    sizeof(struct sockaddr_in)               ) == 0 )
         {
                 m_port = port;
-                SendEvent( UDP_SOCKET_OPENED );
+                NotifyObservers( UDPSocketOpenedEvent );
                 return true;
         }
         return false;
@@ -383,20 +404,21 @@ CUDPSocket::Open( const CORE::CString& localaddr ,
         
 void 
 CUDPSocket::Close( bool force )
-{
-        if ( IsActive() )
-        {
-                force ? closesocket( _data->sockid ) : shutdown( _data->sockid, 1 );
-        
-                SendEvent( UDP_SOCKET_CLOSED );
-        }                
+{TRACE;
+
+    if ( IsActive() )
+    {
+        force ? closesocket( _data->sockid ) : shutdown( _data->sockid, 1 );
+
+        NotifyObservers( UDPSocketClosedEvent );
+    }                
 }
 
 /*-------------------------------------------------------------------------*/
  
 bool 
 CUDPSocket::IsBlocking( void ) const
-{
+{TRACE;
        return _blocking;
 }
 
@@ -404,48 +426,15 @@ CUDPSocket::IsBlocking( void ) const
 
 bool 
 CUDPSocket::IsActive( void ) const
-{
+{TRACE;
         return _data->sockid > 0;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CUDPSocket::SendEvent( TUDPSocketEvent event )
-{
-        CIUDPSocketEventHandler* handler;
-        UInt32 count = _ifaces.GetCount();
-        for ( UInt32 i=0; i<count; ++i )
-        {
-                handler = static_cast<CIUDPSocketEventHandler*>(_ifaces[ i ]);
-                if ( handler )
-                {
-                        handler->OnUDPSocketEvent( *this, event );
-                }
-        }                
-}
- 
-/*-------------------------------------------------------------------------*/
- 
-void 
-CUDPSocket::RegisterEventHandler( CIUDPSocketEventHandler* handler )
-{
-        handler->_index = _ifaces.AddEntry( handler );
-}
-
-/*-------------------------------------------------------------------------*/
-        
-void 
-CUDPSocket::UnregisterEventHandler( CIUDPSocketEventHandler* handler )
-{
-        _ifaces.SetEntry( handler->_index, NULL );
 }
 
 /*-------------------------------------------------------------------------*/
 
 UInt16 
 CUDPSocket::GetPort( void ) const
-{
+{TRACE;
         return m_port;
 }
  

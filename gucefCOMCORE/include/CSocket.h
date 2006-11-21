@@ -72,61 +72,90 @@ class CActiveComPump;
  */
 class EXPORT_CPP CSocket : public CORE::CNotifier
 {
-        public:
+    public:
+    
+    struct SIPAddress
+    {
+            UInt16 port;            /**< port in network byte order */
+            UInt32 netaddr;         /**< address in network byte order */
+    };
+    typedef struct SIPAddress TIPAddress;        
+    
+    typedef enum ESocketError
+    {
+            SOCKERR_NO_ERROR = 0      ,
+            SOCKERR_INTERNAL_ERROR    ,
+            SOCKERR_INVALID_SOCKET    ,
+            SOCKERR_OUT_OF_MEMORY     ,
+            SOCKERR_UDP_SEND_FAILED   ,
+            SOCKERR_INVALID_ADDRESS   ,
+            SOCKERR_CANT_FIND_ADDRESS ,
+            SOCKERR_CANT_SEND_DATA    ,
+            SOCKERR_CANT_OPEN_SOCKET  
+            
+    } TSocketError;              
+    
+    UInt32 GetSocketID( void ) const;
+    
+
+    /**
+     *      Attempts to resolve the given destination address and port
+     *      information and stores the result in the dest struct.
+     *      You should store the result for furture packet sends so
+     *      that the dns ect. no longer has to be resolved with each
+     *      packet send.
+     *
+     *      @param destaddrstr the destination address in string form that you wish to resolve
+     *      @param destport the port on the remote host you wish to address
+     *      @param resolvedDest structure that will hold the resolved version of the given data
+     *      @return returns wheter the given data could be resolved.      
+     */
+    static bool ConvertToIPAddress( const CORE::CString& destaddrstr ,
+                                    const UInt16 destport            ,  
+                                    TIPAddress& resolvedDest         );
+                                    
+    /**
+     *      Attempts to resolve the source information into a more human-friendly
+     *      version of the information. 
+     *
+     *      @param src the information about the data source in network format
+     *      @param srcaddrstr output variable for the source IP/DNS
+     *      @param srcport output variable for the source port                     
+     */
+    static bool ConvertFromIPAddress( const TIPAddress& src     ,
+                                      CORE::CString& srcaddrstr ,
+                                      UInt16& srcport           );
         
-        struct SIPAddress
-        {
-                UInt16 port;            /**< port in network byte order */
-                UInt32 netaddr;         /**< address in network byte order */
-        };
-        typedef struct SIPAddress TIPAddress;        
-        
-        typedef enum ESocketError
-        {
-                SOCKERR_NO_ERROR = 0      ,
-                SOCKERR_INTERNAL_ERROR    ,
-                SOCKERR_INVALID_SOCKET    ,
-                SOCKERR_OUT_OF_MEMORY     ,
-                SOCKERR_UDP_SEND_FAILED   ,
-                SOCKERR_INVALID_ADDRESS   ,
-                SOCKERR_CANT_FIND_ADDRESS ,
-                SOCKERR_CANT_SEND_DATA    ,
-                SOCKERR_CANT_OPEN_SOCKET  
-                
-        } TSocketError;              
-        
-        UInt32 GetSocketID( void ) const;
-        
-        virtual ~CSocket();
-        
-        protected:
-        
-        CSocket();                
-        
-        protected:
-        friend class CCom;               
-        friend class CActiveComPump;
-        
-        /** 
-         *      Decending classes should implement this updater to 
-         *      poll the socket ect. as needed and update stats.
-         *
-         *      @param tickcount the tick count when the Update process commenced.
-         *      @param deltaticks ticks since the last Update process commenced.          
-         */
-        virtual void Update( UInt32 tickcount  ,
-                             UInt32 deltaticks ) = 0;
-                                                                  
-        private:
-        friend class CCom;
-        
-        void SetSocketID( UInt32 sid );                                                                                                                                                                        
-                             
-        private:
-        CSocket( const CSocket& src );             /* making a copy of a socket doesnt make sense */
-        CSocket& operator=( const CSocket& src );  /* making a copy of a socket doesnt make sense */
-        
-        UInt32 _sid;          
+    virtual ~CSocket();
+    
+    protected:
+    
+    CSocket();                
+    
+    protected:
+    friend class CCom;               
+    friend class CActiveComPump;
+    
+    /** 
+     *      Decending classes should implement this updater to 
+     *      poll the socket ect. as needed and update stats.
+     *
+     *      @param tickcount the tick count when the Update process commenced.
+     *      @param deltaticks ticks since the last Update process commenced.          
+     */
+    virtual void Update( UInt32 tickcount  ,
+                         UInt32 deltaticks ) = 0;
+                                                              
+    private:
+    friend class CCom;
+    
+    void SetSocketID( UInt32 sid );                                                                                                                                                                        
+                         
+    private:
+    CSocket( const CSocket& src );             /* making a copy of a socket doesnt make sense */
+    CSocket& operator=( const CSocket& src );  /* making a copy of a socket doesnt make sense */
+    
+    UInt32 _sid;          
 };
 
 /*-------------------------------------------------------------------------//

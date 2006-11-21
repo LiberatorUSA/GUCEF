@@ -25,17 +25,26 @@
 
 #include "CSocket.h"              /* header for this class */
 
+#ifndef DVSTRUTILS_H
+#include "dvstrutils.h"
+#define DVSTRUTILS_H
+#endif /* DVSTRUTILS_H ? */
+
 #ifndef CCOM_H
 #include "CCom.h"		  /* network manager */
 #define CCOM_H
 #endif /* CCOM_H ? */
 
-#ifdef ACTIVATE_MEMORY_MANAGER
-  #ifndef GUCEF_NEW_ON_H
-  #include "gucef_new_on.h"   /* Use the GUCEF memory manager instead of the standard manager ? */
-  #define GUCEF_NEW_ON_H
-  #endif /* GUCEF_NEW_ON_H ? */
-#endif /* ACTIVATE_MEMORY_MANAGER ? */
+#ifdef MSWIN_BUILD
+  #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
+  #include <winsock2.h>
+#else
+ #ifdef LINUX_BUILD
+    #include <unistd.h>
+    #include <sys/socket.h>
+    #include <sys/types.h>
+ #endif
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -108,6 +117,51 @@ CSocket::GetSocketID( void ) const
 
         return _sid;
 }
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
+                             const UInt16 destport            ,  
+                             TIPAddress& resolvedDest         )
+{TRACE;
+        if ( CORE::Check_If_IP( destaddrstr.C_String() ) )
+        {
+                resolvedDest.netaddr = inet_addr( destaddrstr.C_String() );                
+                if ( resolvedDest.netaddr == INADDR_NONE ) return false;                
+                resolvedDest.port = htons( destport );
+                return true;
+        }
+        else
+        {              
+                struct hostent* retval = NULL;                              
+                retval = gethostbyname( destaddrstr.C_String() );
+                if ( retval )
+                {
+                        resolvedDest.netaddr = inet_addr( retval->h_addr_list[ 0 ] ); // <- werkt niet ??
+                        resolvedDest.port = htons( destport );
+                        return true;
+                }
+                return false;                   
+        }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CSocket::ConvertFromIPAddress( const TIPAddress& src     ,
+                               CORE::CString& srcaddrstr ,
+                               UInt16& srcport           )
+{TRACE;                   
+             // @todo MAKEME
+        GUCEF_ASSERT_ALWAYS;
+
+        if ( src.netaddr == INADDR_ANY )
+        {
+                srcaddrstr = "localhost";       
+        }
+        return true;        
+}  
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

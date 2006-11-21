@@ -31,6 +31,11 @@
 #define CTCPCLIENTSOCKET_H
 #endif /* CTCPCLIENTSOCKET_H ? */
 
+#ifndef GUCEF_COMCORE_CUDPSOCKET_H
+#include "CUDPSocket.h"
+#define GUCEF_COMCORE_CUDPSOCKET_H
+#endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
+
 #include "CGUCEFCOMCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef ACTIVATE_MEMORY_MANAGER
@@ -92,6 +97,7 @@ CGUCEFCOMCOREModule::Load( void )
         //CCom::Instance();
         
         CTCPClientSocket::RegisterEvents();
+        CUDPSocket::RegisterEvents();
         
         return true;
 }

@@ -64,6 +64,8 @@ class CTLinkedCloneableObj : public CICloneable
 {
     public:
 
+    CTLinkedCloneableObj( void );
+    
     explicit CTLinkedCloneableObj( const T* data );
 
     CTLinkedCloneableObj( const CTLinkedCloneableObj& src );
@@ -77,10 +79,6 @@ class CTLinkedCloneableObj : public CICloneable
     const T& GetData( void ) const;
 
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( ENULLPointer );
-    
-    private:
-
-    CTLinkedCloneableObj( void );
 
     private:
     const T* m_data;
@@ -92,6 +90,16 @@ class CTLinkedCloneableObj : public CICloneable
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+template< typename T >
+CTLinkedCloneableObj< T >::CTLinkedCloneableObj( void )
+        : m_data( NULL )    ,
+          m_linked( false )
+{TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
 
 template< typename T >
 CTLinkedCloneableObj< T >::CTLinkedCloneableObj( const T* data )
@@ -166,7 +174,12 @@ const T&
 CTLinkedCloneableObj< T >::GetData( void ) const
 {TRACE;
 
-    return *m_data;
+    if ( NULL != m_data )
+    {
+        return *m_data;
+    }
+    
+    GUCEF_EMSGTHROW( ENULLPointer, "CTLinkedCloneableObj::GetData(): This operation is impossible without a valid object" );
 }
 
 /*-------------------------------------------------------------------------//

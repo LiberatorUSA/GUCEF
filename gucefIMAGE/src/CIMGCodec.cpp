@@ -194,7 +194,7 @@ CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
 /*-------------------------------------------------------------------------*/
 
 CORE::CString
-CIMGCodec::GetCodecFamilyName( void ) const
+CIMGCodec::GetFamilyName( void ) const
 {TRACE;
     
     return "IMAGE";
