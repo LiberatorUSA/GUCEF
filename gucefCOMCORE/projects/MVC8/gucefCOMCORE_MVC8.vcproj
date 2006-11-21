@@ -286,10 +286,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CUDPSocketEventHandler.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\dvwinsock.h"
 				>
 			</File>

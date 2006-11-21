@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef CTCPSERVERSOCKET_H
-#define CTCPSERVERSOCKET_H
+#ifndef GUCEF_COMCORE_CTCPSERVERSOCKET_H
+#define GUCEF_COMCORE_CTCPSERVERSOCKET_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -30,6 +30,11 @@
 #include "gucefCOMCORE_macros.h"       /* build defines */
 #define GUCEFCOMCORE_MACROS_H
 #endif /* GUCEFCOMCORE_MACROS_H ? */
+
+#ifndef GUCEF_CORE_CEVENT_H
+#include "CEvent.h"
+#define GUCEF_CORE_CEVENT_H
+#endif /* GUCEF_CORE_CEVENT_H ? */
 
 #include "CSocket.h"                    /* socket base class */
 #include "CTCPServerConnection.h"       /* utils class for 1 client connection */
@@ -72,89 +77,104 @@ class CTCPServerSocketInterface;
  */
 class EXPORT_CPP CTCPServerSocket : public CSocket
 {
-        public:
+    public:
+    
+    static const CORE::CEvent ClientDataRecievedEvent;
+    static const CORE::CEvent ClientDataSentEvent;
+    static const CORE::CEvent ClientConnectedEvent;
+    static const CORE::CEvent ClientDisconnectedEvent;
+    static const CORE::CEvent ClientErrorEvent;        
+    static const CORE::CEvent ServerSocketOpenedEvent;
+    static const CORE::CEvent ServerSocketClosedEvent;
+    static const CORE::CEvent ServerSocketErrorEvent;
+    static const CORE::CEvent ServerSocketClientErrorEvent;
+    static const CORE::CEvent ServerSocketMaxConnectionsChangedEvent;
         
-        CTCPServerSocket( bool blocking );
+    public:
+    
+    CTCPServerSocket( bool blocking );
 
-        /*
-	 *	Obtain pointer to connection data by means of connection index
-         */
-        CTCPServerConnection* GetConnection( UInt32 index );
+    /*
+ *	Obtain pointer to connection data by means of connection index
+     */
+    CTCPServerConnection* GetConnection( UInt32 index );
 
-        UInt32 GetActiveCount( void ) const;
-        
-        void SetInterface( CTCPServerSocketInterface *new_iface );
-        
-        CTCPServerSocketInterface* GetInterface( void ) const;
+    UInt32 GetActiveCount( void ) const;
+    
+    void SetInterface( CTCPServerSocketInterface *new_iface );
+    
+    CTCPServerSocketInterface* GetInterface( void ) const;
 
-        /*
-         *      Methods that activate or de-activate the socket
-         */
-        bool ListenOnPort( UInt16 port );   /* listen on default nic with port given */
-        
-        void Close( void ); /* stop listening for clients, close server socket */
-        
-        UInt16 GetPort( void ) const;
-        
-        bool IsActive( void ) const;
-        
-        /**
-         *      Returns whether the socket is blocking or non-blocking
-         */
-        bool IsBlocking( void ) const;
-        
-        UInt32 GetMaxConnections( void ) const;
-        
-        void SetClientThreading( bool thread );
-        
-        bool GetClientThreading( void ) const;
-        
-        /**                 
-         *      polls the socket etc. as needed and update stats.
-         *
-         *      @param tickcount the tick count when the Update process commenced.
-         *      @param deltaticks ticks since the last Update process commenced.          
-         */
-        virtual void Update( UInt32 tickcount  ,
-                             UInt32 deltaticks );           
+    /*
+     *      Methods that activate or de-activate the socket
+     */
+    bool ListenOnPort( UInt16 port );   /* listen on default nic with port given */
+    
+    void Close( void ); /* stop listening for clients, close server socket */
+    
+    UInt16 GetPort( void ) const;
+    
+    bool IsActive( void ) const;
+    
+    /**
+     *      Returns whether the socket is blocking or non-blocking
+     */
+    bool IsBlocking( void ) const;
+    
+    UInt32 GetMaxConnections( void ) const;
+    
+    void SetClientThreading( bool thread );
+    
+    bool GetClientThreading( void ) const;
+    
+    /**                 
+     *      polls the socket etc. as needed and update stats.
+     *
+     *      @param tickcount the tick count when the Update process commenced.
+     *      @param deltaticks ticks since the last Update process commenced.          
+     */
+    virtual void Update( UInt32 tickcount  ,
+                         UInt32 deltaticks );           
 
-        /*
-         *      Constructor and Destructor
-         */
-        virtual ~CTCPServerSocket();
+    /*
+     *      Constructor and Destructor
+     */
+    virtual ~CTCPServerSocket();
 
-        private:
-        friend class CTCPServerConnection;
-        
-        void OnClientRead( CTCPServerConnection* connection ,
-                           const UInt32 connectionid        ,
-                           const char* data                 ,
-                           const UInt16 recieved            ,
-                           UInt16& keepbytes                );
+    static void RegisterEvents( void );
+    
+    private:
+    friend class CTCPServerConnection;
+    
+    void OnClientRead( CTCPServerConnection* connection ,
+                       const UInt32 connectionid        ,
+                       const char* data                 ,
+                       const UInt16 recieved            ,
+                       UInt16& keepbytes                );
 
-        void OnClientConnectionClosed( CTCPServerConnection* connection ,
-                                       const UInt32 connectionid        ,
-                                       bool closedbyclient              );
-        
-        private :
-        struct STCPServerSockData* _data;
-        bool _active; 
-        bool _blocking;               
+    void OnClientConnectionClosed( CTCPServerConnection* connection ,
+                                   const UInt32 connectionid        ,
+                                   bool closedbyclient              );
+    
+    private :
+    struct STCPServerSockData* _data;
+    bool _active; 
+    bool _blocking;               
 
-        /**
-         *	default constructor cannot be used, we need to know 
-         *      whether this socket is blocking.
-         */
-        CTCPServerSocket( void );     
-        
-        void AcceptClients( void );           
-        
-        CORE::CDynamicArray _connections;          /**< array of connection objects */
-        CTCPServerSocketInterface* _iface;         /**< Interface of event handlers */
-        UInt16 m_port;
-        MT::CMutex _datalock;
-        UInt32 _timeout;   
-        UInt32 _acount;                            /**< the number of active connections */        
+    /**
+     *	default constructor cannot be used, we need to know 
+     *      whether this socket is blocking.
+     */
+    CTCPServerSocket( void );     
+    
+    void AcceptClients( void );           
+    
+    CORE::CDynamicArray _connections;          /**< array of connection objects */
+    CTCPServerSocketInterface* _iface;         /**< Interface of event handlers */
+    UInt16 m_port;
+    MT::CMutex _datalock;
+    UInt32 _timeout;   
+    UInt32 _acount;                            /**< the number of active connections */        
 };
 
 /*-------------------------------------------------------------------------//

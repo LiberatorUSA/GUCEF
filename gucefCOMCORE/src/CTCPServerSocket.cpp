@@ -66,6 +66,23 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CEvent CTCPServerSocket::ClientDataRecievedEvent = "GUCEF::COMCORE::CTCPServerSocket::ClientDataRecievedEvent";
+const CORE::CEvent CTCPServerSocket::ClientDataSentEvent = "GUCEF::COMCORE::CTCPServerSocket::ClientDataSentEvent";
+const CORE::CEvent CTCPServerSocket::ClientConnectedEvent = "GUCEF::COMCORE::CTCPServerSocket::ClientConnectedEvent";
+const CORE::CEvent CTCPServerSocket::ClientDisconnectedEvent = "GUCEF::COMCORE::CTCPServerSocket::ClientDisconnectedEvent";
+const CORE::CEvent CTCPServerSocket::ClientErrorEvent = "GUCEF::COMCORE::CTCPServerSocket::ClientErrorEvent";
+const CORE::CEvent CTCPServerSocket::ServerSocketOpenedEvent = "GUCEF::COMCORE::CTCPServerSocket::ServerSocketOpenedEvent";
+const CORE::CEvent CTCPServerSocket::ServerSocketClosedEvent = "GUCEF::COMCORE::CTCPServerSocket::ServerSocketClosedEvent";
+const CORE::CEvent CTCPServerSocket::ServerSocketErrorEvent = "GUCEF::COMCORE::CTCPServerSocket::ServerSocketErrorEvent";
+const CORE::CEvent CTCPServerSocket::ServerSocketClientErrorEvent = "GUCEF::COMCORE::CTCPServerSocket::ServerSocketClientErrorEvent";
+const CORE::CEvent CTCPServerSocket::ServerSocketMaxConnectionsChangedEvent = "GUCEF::COMCORE::CTCPServerSocket::ServerSocketMaxConnectionsChangedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -104,7 +121,7 @@ typedef struct STCPServerSockData TTCPServerSockData;
 CTCPServerSocket::CTCPServerSocket( void )
         : CSocket() ,
           m_port(0)
-{
+{TRACE;
         /* dummy, should never be used */
 }
 
@@ -117,7 +134,7 @@ CTCPServerSocket::CTCPServerSocket( bool blocking )
           _blocking( blocking )                   ,
           _iface( NULL )                          ,
           m_port( 0 )
-{           
+{TRACE;           
         DEBUGOUTPUT( "CTCPServerSocket::CTCPServerSocket( void )" );
         
         _data = new TTCPServerSockData;
@@ -139,7 +156,7 @@ CTCPServerSocket::CTCPServerSocket( bool blocking )
 /*-------------------------------------------------------------------------*/
 
 CTCPServerSocket::~CTCPServerSocket()
-{
+{TRACE;
         /*
          *      Clean everything up
          */
@@ -157,8 +174,26 @@ CTCPServerSocket::~CTCPServerSocket()
 /*-------------------------------------------------------------------------*/
 
 void
+CTCPServerSocket::RegisterEvents( void )
+{TRACE;
+
+    ClientDataRecievedEvent.Initialize();
+    ClientDataSentEvent.Initialize();
+    ClientConnectedEvent.Initialize();
+    ClientDisconnectedEvent.Initialize();
+    ClientErrorEvent.Initialize();
+    ServerSocketOpenedEvent.Initialize();
+    ServerSocketClosedEvent.Initialize();
+    ServerSocketErrorEvent.Initialize();
+    ServerSocketClientErrorEvent.Initialize();
+    ServerSocketMaxConnectionsChangedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CTCPServerSocket::SetInterface( CTCPServerSocketInterface* new_iface )
-{
+{TRACE;
         _iface = new_iface;
         if ( _iface ) 
         {
@@ -175,7 +210,7 @@ CTCPServerSocket::SetInterface( CTCPServerSocketInterface* new_iface )
  */
 CTCPServerConnection* 
 CTCPServerSocket::GetConnection( UInt32 index )
- {
+ {TRACE;
         DEBUGOUTPUT( "CTCPServerSocket::Connection( UInt32 index ) const" );
 
 	return (CTCPServerConnection*)_connections[ index ];
@@ -193,7 +228,7 @@ CTCPServerSocket::GetConnection( UInt32 index )
 void 
 CTCPServerSocket::Update( UInt32 tickcount  ,
                           UInt32 deltaticks )
-{
+{TRACE;
         if ( _active )//&& ( _data->threadmethod == TM_NO_THREADING ) )
         {
                 /*
@@ -219,7 +254,7 @@ CTCPServerSocket::Update( UInt32 tickcount  ,
 
 void
 CTCPServerSocket::AcceptClients( void )
-{
+{TRACE;
         int s;          /* s is where the data is stored from the select function */
         int nfds;       /* This is used for Compatibility */
         fd_set conn;    /* Setup the read variable for the Select function */
@@ -307,7 +342,7 @@ CTCPServerSocket::AcceptClients( void )
 
 bool
 CTCPServerSocket::IsActive( void ) const 
-{
+{TRACE;
         return _active;
 }
 
@@ -315,7 +350,7 @@ CTCPServerSocket::IsActive( void ) const
 
 bool 
 CTCPServerSocket::IsBlocking( void ) const
-{
+{TRACE;
         return _blocking;
 }
                         
@@ -323,7 +358,7 @@ CTCPServerSocket::IsBlocking( void ) const
 
 bool
 CTCPServerSocket::ListenOnPort( UInt16 servport )
-{
+{TRACE;
         DEBUGOUTPUT( "CTCPServerSocket::ListenOnPort( UInt16 remote_port )" );
         
         /*
@@ -460,7 +495,7 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 
 UInt32 
 CTCPServerSocket::GetMaxConnections( void ) const
-{ 
+{TRACE; 
         return _connections.GetCount(); 
 }
 
@@ -468,7 +503,7 @@ CTCPServerSocket::GetMaxConnections( void ) const
 
 UInt32 
 CTCPServerSocket::GetActiveCount( void ) const
-{ 
+{TRACE; 
         return _acount; 
 }
 
@@ -476,7 +511,7 @@ CTCPServerSocket::GetActiveCount( void ) const
 
 CTCPServerSocketInterface* 
 CTCPServerSocket::GetInterface( void ) const 
-{ 
+{TRACE; 
         return _iface; 
 }
 
@@ -484,7 +519,7 @@ CTCPServerSocket::GetInterface( void ) const
 
 void
 CTCPServerSocket::Close( void )
-{
+{TRACE;
         DEBUGOUTPUT( "CTCPServerSocket::Close()" );
 
         /*
@@ -519,7 +554,7 @@ CTCPServerSocket::Close( void )
  */
 void
 CTCPServerSocket::SetClientThreading( bool thread )
-{       
+{TRACE;       
 	/*if ( ( method != TM_THREAD_PER_EVENT ) &&
              ( method != TM_CONSUMER_THREAD ) &&
              ( method != TM_NO_THREADING ) ) return false;
@@ -541,7 +576,7 @@ CTCPServerSocket::SetClientThreading( bool thread )
  */
 bool
 CTCPServerSocket::GetClientThreading( void ) const
-{
+{TRACE;
 /*	if ( !datalock.Lock_Mutex() ) return -1;
 	if ( (Int32)connection <= connections.Last() )
         {
@@ -557,7 +592,7 @@ CTCPServerSocket::GetClientThreading( void ) const
 
 UInt16
 CTCPServerSocket::GetPort( void ) const
-{
+{TRACE;
         return m_port;        
 }
 
@@ -569,7 +604,7 @@ CTCPServerSocket::OnClientRead( CTCPServerConnection* connection ,
                                 const char* data                 ,
                                 const UInt16 recieved            ,
                                 UInt16& keepbytes                )
-{
+{TRACE;
         _datalock.Lock();
         if ( _iface )
         {
@@ -589,7 +624,7 @@ void
 CTCPServerSocket::OnClientConnectionClosed( CTCPServerConnection* connection ,
                                             const UInt32 connectionid        ,
                                             bool closedbyclient              )
-{
+{TRACE;
         _datalock.Lock();
         if ( _iface )
         {

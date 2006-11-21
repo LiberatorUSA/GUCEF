@@ -36,6 +36,11 @@
 #define GUCEF_COMCORE_CUDPSOCKET_H
 #endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
 
+#ifndef GUCEF_COMCORE_CTCPSERVERSOCKET_H
+#include "CTCPServerSocket.h"
+#define GUCEF_COMCORE_CTCPSERVERSOCKET_H
+#endif /* GUCEF_COMCORE_CTCPSERVERSOCKET_H ? */
+
 #include "CGUCEFCOMCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef ACTIVATE_MEMORY_MANAGER
@@ -96,6 +101,7 @@ CGUCEFCOMCOREModule::Load( void )
         /* simply instantiate our com manager when the module is loaded */
         //CCom::Instance();
         
+        CTCPServerSocket::RegisterEvents();
         CTCPClientSocket::RegisterEvents();
         CUDPSocket::RegisterEvents();
         
