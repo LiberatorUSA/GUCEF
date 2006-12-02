@@ -100,11 +100,6 @@
 #include "CUDPSocket.h"
 #define CUDPSOCKET_H
 #endif /* CUDPSOCKET_H ? */
- 
-#ifndef CIUDPSOCKETEVENTHANDLER_H
-#include "CIUDPSocketEventHandler.h"
-#define CIUDPSOCKETEVENTHANDLER_H
-#endif /* CIUDPSOCKETEVENTHANDLER_H ? */
 
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
