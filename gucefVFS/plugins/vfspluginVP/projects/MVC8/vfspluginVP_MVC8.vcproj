@@ -92,7 +92,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) ..\..\..\..\..\common\bin\Debug_MVC8\plugins"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Debug_MVC8\plugins"
 			/>
 		</Configuration>
 		<Configuration
