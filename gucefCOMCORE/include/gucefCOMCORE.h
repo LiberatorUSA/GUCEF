@@ -96,11 +96,6 @@
 #define CTCPCLIENTSOCKET_H
 #endif /* CTCPCLIENTSOCKET_H ? */ 
 
-#ifndef CTCPCLIENTSOCKETINTERFACE_H
-#include "CTCPClientSocketInterface.h"
-#define CTCPCLIENTSOCKETINTERFACE_H
-#endif /* CTCPCLIENTSOCKETINTERFACE_H ? */
-
 #ifndef CUDPSOCKET_H
 #include "CUDPSocket.h"
 #define CUDPSOCKET_H

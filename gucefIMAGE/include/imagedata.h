@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef IMAGEDATA_H
-#define IMAGEDATA_H
+#ifndef GUCEF_IMAGE_IMAGEDATA_H
+#define GUCEF_IMAGE_IMAGEDATA_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,6 +53,8 @@ typedef enum TPixelStorageFormat
 {
         PSF_RGB = 1                  ,
         PSF_RGBA                     ,
+        PSF_BGR                      ,
+        PSF_BGRA                     ,
         PSF_SINGLE_CHANNEL_RED       ,
         PSF_SINGLE_CHANNEL_GREEN     ,
         PSF_SINGLE_CHANNEL_BLUE      ,
@@ -159,7 +161,7 @@ typedef struct SImage TImage;
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* IMAGEDATA_H ? */
+#endif /* GUCEF_IMAGE_IMAGEDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
