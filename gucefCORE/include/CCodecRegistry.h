@@ -15,29 +15,34 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CEVENTTYPEREGISTRY_H
-#define GUCEF_CORE_CEVENTTYPEREGISTRY_H
+#ifndef GUCEF_CORE_CCODECREGISTRY_H
+#define GUCEF_CORE_CCODECREGISTRY_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/
+//-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"   /* platform wide macros */
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
 
-#ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"
-#define GUCEF_CORE_CDYNAMICARRAY_H
-#endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
+#ifndef GUCEF_CORE_CTREGISTRY_H
+#include "CTRegistry.h"
+#define GUCEF_CORE_CTREGISTRY_H
+#endif /* GUCEF_CORE_CTREGISTRY_H ? */
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#ifndef GUCEF_CORE_CICODEC_H
+#include "CICodec.h"
+#define GUCEF_CORE_CICODEC_H
+#endif /* GUCEF_CORE_CICODEC_H ? */
+
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"       /* module macro's */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -54,31 +59,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CEventTypeRegistry
-{
-        public:
-
-        static CEventTypeRegistry* Instance( void );
-
-        UInt32 RegisterType( const CString& name ,
-                             UInt32 maxdatasize  );
-
-        UInt32 GetLargestDataBlock( void ) const;
-
-        UInt32 GetMaxDataSize( UInt32 eventtype ) const;
-
-        UInt32 GetType( const CString& name ) const;
-
-        CString GetTypeName( UInt32 eventtype ) const;
-
-        private:
-        CEventTypeRegistry( void );
-
-        UInt32 _mdsize;
-        CDynamicArray _etypes;
-        static MT::CMutex _mutex;
-        static CEventTypeRegistry* _instance;
-};
+//GUCEF_DECLARE_SINGLETON( GUCEFCORE_EXPORT_CPP, CCodecRegistry, CORE::CTRegistry< CICodec > );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -91,7 +72,7 @@ class GUCEFCORE_EXPORT_CPP CEventTypeRegistry
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CEVENTTYPEREGISTRY_H ? */
+#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -99,10 +80,7 @@ class GUCEFCORE_EXPORT_CPP CEventTypeRegistry
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 22-11-2004 :
-        - Added GetType()
-- 12-11-2004 :
-        - Designed and implemented this class.
+- 20-07-2005 :
+        - Dinand: Added this class
 
 -----------------------------------------------------------------------------*/
- 

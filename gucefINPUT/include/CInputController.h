@@ -69,8 +69,8 @@ class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
 {
     public:                
 
-    static const CORE::CString InputDriverLoadedEvent;
-    static const CORE::CString InputDriverUnloadedEvent;
+    static const CORE::CEvent InputDriverLoadedEvent;
+    static const CORE::CEvent InputDriverUnloadedEvent;
     
     static CInputController* Instance( void );                
     
@@ -100,7 +100,7 @@ class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
      *  @param eventdata optional notifier defined userdata
      */
     virtual void OnNotify( CORE::CNotifier* notifier           ,
-                           const UInt32 eventid                ,
+                           const CORE::CEvent& eventid         ,
                            CORE::CICloneable* eventdata = NULL );
         
     virtual void OnUpdate( const UInt32 applicationTicks ,
