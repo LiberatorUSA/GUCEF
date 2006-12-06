@@ -69,93 +69,93 @@ extern "C" {
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Init( void** plugdata    , 
-                      const char*** args ) PLUGIN_CALLSPEC_SUFFIX;
+                      const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Shutdown( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+INPUTDRIVERPLUG_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const char* PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Name( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
+EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+INPUTDRIVERPLUG_Name( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const char* PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Copyright( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
+EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+INPUTDRIVERPLUG_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const TVersion* PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Version( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
+EXPORT_C const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
+INPUTDRIVERPLUG_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Update( void* plugdata    , 
-                        void* contextdata ) PLUGIN_CALLSPEC_SUFFIX;
+                        void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                                void** contextdata               ,
                                const char*** args               ,
-                               const TInputCallbacks* callbacks ) PLUGIN_CALLSPEC_SUFFIX;
+                               const TInputCallbacks* callbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_DestroyContext( void* plugdata    , 
-                                void* contextdata ) PLUGIN_CALLSPEC_SUFFIX;
+                                void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetMousePos( void* plugdata    , 
                              void* contextdata , 
                              UInt32* xpos      , 
-                             UInt32* ypos      ) PLUGIN_CALLSPEC_SUFFIX;
+                             UInt32* ypos      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UByte* PLUGIN_CALLSPEC_PREFIX
+EXPORT_C UByte* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetKeyBoardKeyStates( void* plugdata    , 
-                                      void* contextdata ) PLUGIN_CALLSPEC_SUFFIX;
+                                      void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetMouseButtonPressedState( void* plugdata           , 
                                             void* contextdata        , 
-                                            const UInt32 buttonindex ) PLUGIN_CALLSPEC_SUFFIX;
+                                            const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetKeyboardKeyPressedState( void* plugdata        , 
                                             void* contextdata     , 
-                                            const UInt32 keyindex ) PLUGIN_CALLSPEC_SUFFIX;
+                                            const UInt32 keyindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetDeviceBoolState( void* plugdata          , 
                                     void* contextdata       , 
                                     const UInt32 deviceid   , 
-                                    const UInt32 stateindex ) PLUGIN_CALLSPEC_SUFFIX;
+                                    const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetDeviceVarState( void* plugdata          , 
                                    void* contextdata       , 
                                    const UInt32 deviceid   , 
-                                   const UInt32 stateindex ) PLUGIN_CALLSPEC_SUFFIX;
+                                   const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 

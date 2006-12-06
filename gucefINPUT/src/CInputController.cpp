@@ -70,8 +70,8 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CString CInputController::InputDriverLoadedEvent = "GUCEF::INPUT::InputDriverLoadedEvent";
-const CORE::CString CInputController::InputDriverUnloadedEvent = "GUCEF::INPUT::InputDriverUnloadedEvent";
+const CORE::CEvent CInputController::InputDriverLoadedEvent = "GUCEF::INPUT::InputDriverLoadedEvent";
+const CORE::CEvent CInputController::InputDriverUnloadedEvent = "GUCEF::INPUT::InputDriverUnloadedEvent";
 CInputController* CInputController::m_instance = NULL;
 
 /*-------------------------------------------------------------------------//
@@ -82,8 +82,7 @@ CInputController* CInputController::m_instance = NULL;
 
 CInputController::CInputController( void )
         : m_driverisplugin( false ) ,
-          m_driver( NULL )          ,
-          m_appinitevent( 0UL )
+          m_driver( NULL )
           
           #ifdef MSWIN_BUILD
           ,
@@ -91,8 +90,7 @@ CInputController::CInputController( void )
           #endif
 {TRACE;
 
-        CORE::CGUCEFApplication::Instance();
-        m_appinitevent = CORE::CNotificationIDRegistry::Instance()->Lookup( CORE::CGUCEFApplication::AppInitEvent );       
+        CORE::CGUCEFApplication::Instance();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -290,17 +288,27 @@ CInputController::OnUpdate( UInt32 tickcount  ,
 
 void
 CInputController::OnNotify( CORE::CNotifier* notifier                 ,
-                            const UInt32 eventid                      ,
+                            const CORE::CEvent& eventid               ,
                             CORE::CICloneable* eventdata /* = NULL */ )
 {TRACE;
         #ifdef MSWIN_BUILD
-        if ( eventid == m_appinitevent )
+        if ( eventid == CORE::CGUCEFApplication::AppInitEvent )
         {
-                CORE::CGUCEFApplication::CAppInitEventData* initData = static_cast< CORE::CGUCEFApplication::CAppInitEventData* >( eventdata );
+                CORE::CGUCEFApplication::TAppInitEventData* initData = static_cast< CORE::CGUCEFApplication::TAppInitEventData* >( eventdata );
                 #pragma warning( disable: 4311 ) // pointer truncation warning
                 m_hinstance = reinterpret_cast<UInt32>( initData->GetData().hinstance );
         }
         #endif /* MSWIN_BUILD ? */
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CInputController::RegisterEvents( void )
+{TRACE;
+    
+    InputDriverLoadedEvent.Initialize();
+    InputDriverUnloadedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------//

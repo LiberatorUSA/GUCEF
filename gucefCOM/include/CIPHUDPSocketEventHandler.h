@@ -53,8 +53,6 @@ class GUCEFCOM_EXPORT_CPP CIPHUDPSocketEventHandler
         protected:
         friend class CPHUDPSocket;                
         
-        virtual void OnPHUDPSocketEvent( CPHUDPSocket& socket                ,
-                                         CPHUDPSocket::TUDPSocketEvent event ) = 0;
                                          
         virtual void OnPacketRecieved( CPHUDPSocket& socket                ,
                                        const CPHUDPSocket::TIPAddress& src ,

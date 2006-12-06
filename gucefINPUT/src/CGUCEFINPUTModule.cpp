@@ -48,6 +48,7 @@ namespace INPUT {
 bool 
 CGUCEFINPUTModule::Load( void )
 {TRACE;
+        CInputController::RegisterEvents();
         CInputController::Instance();
         return true;
 }

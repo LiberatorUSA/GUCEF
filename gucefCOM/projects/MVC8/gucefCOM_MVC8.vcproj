@@ -217,10 +217,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CIPHUDPSocketEventHandler.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\CMySQLClient.cpp"
 				>
 			</File>
@@ -260,10 +256,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CHTTPURLHandler.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CIPHUDPSocketEventHandler.h"
 				>
 			</File>
 			<File

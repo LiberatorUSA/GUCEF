@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CHTTPURLHANDLER_H
-#define GUCEF_CORE_CHTTPURLHANDLER_H
+#ifndef GUCEF_COM_CHTTPURLHANDLER_H
+#define GUCEF_COM_CHTTPURLHANDLER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -108,7 +108,7 @@ class CHTTPURLHandler : public CORE::CURLHandler
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CHTTPURLHANDLER_H ? */
+#endif /* GUCEF_COM_CHTTPURLHANDLER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

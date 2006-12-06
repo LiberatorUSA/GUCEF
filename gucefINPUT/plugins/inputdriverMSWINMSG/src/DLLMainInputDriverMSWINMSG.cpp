@@ -466,9 +466,9 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Init( void** plugdata    ,
-                      const char*** args ) PLUGIN_CALLSPEC_SUFFIX
+                      const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         if ( driverData )
         {
@@ -489,8 +489,8 @@ INPUTDRIVERPLUG_Init( void** plugdata    ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Shutdown( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+INPUTDRIVERPLUG_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         free( driverData );
         driverData = NULL;
@@ -499,33 +499,33 @@ INPUTDRIVERPLUG_Shutdown( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
 
 /*---------------------------------------------------------------------------*/
 
-const char* PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Name( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+INPUTDRIVERPLUG_Name( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         return DRIVER_NAME;
 }
 
 /*---------------------------------------------------------------------------*/
 
-const char* PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Copyright( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+INPUTDRIVERPLUG_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         return DRIVER_COPYRIGHT;
 }
 
 /*---------------------------------------------------------------------------*/
 
-const TVersion* PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Version( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
+const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
+INPUTDRIVERPLUG_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         return &version;
 }
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Update( void* plugdata    , 
-                        void* contextdata ) PLUGIN_CALLSPEC_SUFFIX
+                        void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         if ( plugdata && contextdata )
         {
@@ -554,11 +554,11 @@ INPUTDRIVERPLUG_Update( void* plugdata    ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                                void** contextdata               ,
                                const char*** args               ,
-                               const TInputCallbacks* callbacks ) PLUGIN_CALLSPEC_SUFFIX
+                               const TInputCallbacks* callbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         TContextData* data;
         *contextdata = data = GetFreeContext();
@@ -604,9 +604,9 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_DestroyContext( void* plugdata    , 
-                                void* contextdata ) PLUGIN_CALLSPEC_SUFFIX
+                                void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         TContextData* data = (TContextData*) contextdata;
 
@@ -626,11 +626,11 @@ INPUTDRIVERPLUG_DestroyContext( void* plugdata    ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetMousePos( void* plugdata    , 
                              void* contextdata , 
                              UInt32* xpos      , 
-                             UInt32* ypos      ) PLUGIN_CALLSPEC_SUFFIX
+                             UInt32* ypos      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         TContextData* data = (TContextData*) contextdata;
         return 1;
@@ -638,9 +638,9 @@ INPUTDRIVERPLUG_GetMousePos( void* plugdata    ,
 
 /*---------------------------------------------------------------------------*/
 
-UByte* PLUGIN_CALLSPEC_PREFIX
+UByte* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetKeyBoardKeyStates( void* plugdata    , 
-                                      void* contextdata ) PLUGIN_CALLSPEC_SUFFIX
+                                      void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         TContextData* data = (TContextData*) contextdata;
         return data->keyStateBuffer;
@@ -648,10 +648,10 @@ INPUTDRIVERPLUG_GetKeyBoardKeyStates( void* plugdata    ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetMouseButtonPressedState( void* plugdata           , 
                                             void* contextdata        , 
-                                            const UInt32 buttonindex ) PLUGIN_CALLSPEC_SUFFIX
+                                            const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         TContextData* data = (TContextData*) contextdata;                         
         return 0;
@@ -659,10 +659,10 @@ INPUTDRIVERPLUG_GetMouseButtonPressedState( void* plugdata           ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetKeyboardKeyPressedState( void* plugdata        , 
                                             void* contextdata     , 
-                                            const UInt32 keyindex ) PLUGIN_CALLSPEC_SUFFIX
+                                            const UInt32 keyindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         TContextData* data = (TContextData*) contextdata;
         if ( keyindex < 256 )
@@ -674,11 +674,11 @@ INPUTDRIVERPLUG_GetKeyboardKeyPressedState( void* plugdata        ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetDeviceBoolState( void* plugdata          , 
                                     void* contextdata       , 
                                     const UInt32 deviceid   , 
-                                    const UInt32 stateindex ) PLUGIN_CALLSPEC_SUFFIX
+                                    const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         /* not supported */
         return 0;
@@ -686,11 +686,11 @@ INPUTDRIVERPLUG_GetDeviceBoolState( void* plugdata          ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetDeviceVarState( void* plugdata          , 
                                    void* contextdata       , 
                                    const UInt32 deviceid   , 
-                                   const UInt32 stateindex ) PLUGIN_CALLSPEC_SUFFIX
+                                   const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         /* not supported */
         return 0;

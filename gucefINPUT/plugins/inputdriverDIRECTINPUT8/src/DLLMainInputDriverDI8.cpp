@@ -672,9 +672,9 @@ ProcessJoystickDI8( TDI8Data* data )
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Init( void** plugdata    ,
-                      const char*** args ) PLUGIN_CALLSPEC_SUFFIX
+                      const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         *plugdata = NULL;
         return 1;
@@ -682,41 +682,41 @@ INPUTDRIVERPLUG_Init( void** plugdata    ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Shutdown( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+INPUTDRIVERPLUG_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         return 1;                        
 }
 
 /*---------------------------------------------------------------------------*/
 
-const char* PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Name( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+INPUTDRIVERPLUG_Name( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         return DRIVER_NAME;
 }
 
 /*---------------------------------------------------------------------------*/
 
-const char* PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Copyright( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+INPUTDRIVERPLUG_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         return DRIVER_COPYRIGHT;
 }
 
 /*---------------------------------------------------------------------------*/
 
-const TVersion* PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Version( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
+const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
+INPUTDRIVERPLUG_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         return &version;
 }
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Update( void* plugdata    , 
-                        void* contextdata ) PLUGIN_CALLSPEC_SUFFIX
+                        void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         TDI8Data* data = (TDI8Data*) contextdata;
         
@@ -731,13 +731,12 @@ INPUTDRIVERPLUG_Update( void* plugdata    ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                                void** contextdata               ,
                                const char*** args               ,
-                               const TInputCallbacks* callbacks ) PLUGIN_CALLSPEC_SUFFIX
+                               const TInputCallbacks* callbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        UInt32 i;
         TDI8Data* data = (TDI8Data*) malloc( sizeof( TDI8Data ) );
         *contextdata = data;
         
@@ -778,9 +777,9 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_DestroyContext( void* plugdata    , 
-                                void* contextdata ) PLUGIN_CALLSPEC_SUFFIX
+                                void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         TDI8Data* data = (TDI8Data*) contextdata;
 
@@ -796,11 +795,11 @@ INPUTDRIVERPLUG_DestroyContext( void* plugdata    ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetMousePos( void* plugdata    , 
                              void* contextdata , 
                              UInt32* xpos      , 
-                             UInt32* ypos      ) PLUGIN_CALLSPEC_SUFFIX
+                             UInt32* ypos      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         TDI8Data* data = (TDI8Data*) contextdata;
         
@@ -819,9 +818,9 @@ INPUTDRIVERPLUG_GetMousePos( void* plugdata    ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt8* PLUGIN_CALLSPEC_PREFIX
+UInt8* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetKeyBoardKeyStates( void* plugdata    , 
-                                      void* contextdata ) PLUGIN_CALLSPEC_SUFFIX
+                                      void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         TDI8Data* data = (TDI8Data*) contextdata;
         
@@ -845,10 +844,10 @@ INPUTDRIVERPLUG_GetKeyBoardKeyStates( void* plugdata    ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetMouseButtonPressedState( void* plugdata           , 
                                             void* contextdata        , 
-                                            const UInt32 buttonindex ) PLUGIN_CALLSPEC_SUFFIX
+                                            const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         if ( buttonindex < 8 )
         {
@@ -870,10 +869,10 @@ INPUTDRIVERPLUG_GetMouseButtonPressedState( void* plugdata           ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetKeyboardKeyPressedState( void* plugdata        , 
                                             void* contextdata     , 
-                                            const UInt32 keyindex ) PLUGIN_CALLSPEC_SUFFIX
+                                            const UInt32 keyindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         if ( keyindex < 256 )
         {
@@ -884,22 +883,22 @@ INPUTDRIVERPLUG_GetKeyboardKeyPressedState( void* plugdata        ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetDeviceBoolState( void* plugdata          , 
                                     void* contextdata       , 
                                     const UInt32 deviceid   , 
-                                    const UInt32 stateindex ) PLUGIN_CALLSPEC_SUFFIX
+                                    const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         return 1;
 }
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetDeviceVarState( void* plugdata          , 
                                    void* contextdata       , 
                                    const UInt32 deviceid   , 
-                                   const UInt32 stateindex ) PLUGIN_CALLSPEC_SUFFIX
+                                   const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         return 1;
 }

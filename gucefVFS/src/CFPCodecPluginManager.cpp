@@ -190,7 +190,7 @@ CFPCodecPluginManager::AddCodec( const CORE::CString& filename )
                           @TODO: update
                         */
                         
-                        NotifyObservers( GetPluginLoadedEventID() ); 
+                        NotifyObservers( PluginLoadedEvent ); 
                         
                         _mutex.Unlock();
                         return codec;

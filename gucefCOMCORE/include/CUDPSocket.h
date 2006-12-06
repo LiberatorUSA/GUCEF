@@ -63,7 +63,7 @@ namespace COMCORE {
  *      UDP Socket class that wraps the O/S UDP socket functionality.
  *      This class can act as a blocking or non-blocking UDP socket.
  *      In both cases a UDPPacketRecievedEvent will be sent when a packet
- *      is recieved.
+ *      is received.
  */
 class EXPORT_CPP CUDPSocket : public CSocket
 {
@@ -77,7 +77,7 @@ class EXPORT_CPP CUDPSocket : public CSocket
     struct SUDPPacketRecievedEventData
     {
         CSocket::TIPAddress sourceAddress;        /**< the source address of the data */
-        CORE::TLinkedCloneableBuffer dataBuffer;  /**< the recieved packet data */
+        CORE::TLinkedCloneableBuffer dataBuffer;  /**< the received packet data */
     };
     typedef CORE::CTCloneableObj< struct SUDPPacketRecievedEventData > UDPPacketRecievedEventData;
     

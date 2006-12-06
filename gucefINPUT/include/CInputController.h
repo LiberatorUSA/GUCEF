@@ -88,6 +88,8 @@ class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     bool LoadDriverModule( const CORE::CString& filename  ,
                            const CORE::CValueList& params );
 
+    static void RegisterEvents( void );
+    
     protected:
         
     /**
@@ -125,7 +127,6 @@ class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     CIInputDriver* m_driver;
     bool m_driverisplugin;        
     CORE::CDynamicArray m_contextlist;
-    UInt32 m_appinitevent;
     
     #ifdef MSWIN_BUILD
     UInt32 m_hinstance;

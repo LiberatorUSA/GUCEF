@@ -34,11 +34,6 @@
 #define CUDPSOCKET_H
 #endif /* CUDPSOCKET_H ? */
 
-#ifndef CIUDPSOCKETEVENTHANDLER_H
-#include "CIUDPSocketEventHandler.h"
-#define CIUDPSOCKETEVENTHANDLER_H
-#endif /* CIUDPSOCKETEVENTHANDLER_H ? */
-
 #ifndef GUCEFCOM_MACROS_H
 #include "gucefCOM_macros.h"      /* gucefCOM build config and macros */
 #define GUCEFCOM_MACROS_H
@@ -59,13 +54,6 @@ COM_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Forward declarations of classes used
- */
-class CIPHUDPSocketEventHandler;
-
-/*-------------------------------------------------------------------------*/
-
 /**
  *      Wraps a standard UDP socket and adds handling for wrangled packets and
  *      packet numbering. These basic things almost always need to be performed 
@@ -77,184 +65,162 @@ class CIPHUDPSocketEventHandler;
  *      Packet loss is not compensated by the PH UDP socket. If you cannot handle
  *      data loss then you should use a TCP based socket instead of UDP.
  *
- *      Most mangled packets will be filtered out and dropped. This occures if bytes
+ *      Most mangled packets will be filtered out and dropped. This occurs if bytes
  *      seem to be lost or added to the packet. The packet checksum must also be 
  *      correct in relation to the packet data payload.
  *      It is possible, in theory, that a packet has the correct size and just happens
  *      to have a correct checksum/data combo while being in fact a mangled packet.
- *      This will only occur in verry rare cases but keep it in mind.
+ *      This will only occur in very rare cases but keep it in mind.
  */
-class GUCEFCOM_EXPORT_CPP CPHUDPSocket : public COMCORE::CIUDPSocketEventHandler
+class GUCEFCOM_EXPORT_CPP CPHUDPSocket : public CORE::CObservingNotifier
 {
         public:
         
-        /*
-         *      Typedef some shortcut types
-         */
-        typedef COMCORE::CUDPSocket::TIPAddress TIPAddress;         
-        typedef COMCORE::CUDPSocket::TIPAddress TIPAddress;
-        typedef COMCORE::CUDPSocket::TUDPSocketEvent TUDPSocketEvent;
+    /*
+     *      Typedef some shortcut types
+     */
+    typedef COMCORE::CUDPSocket::TIPAddress TIPAddress;         
+    typedef COMCORE::CUDPSocket::TIPAddress TIPAddress;
         
-        /**
-         *      Constructs a GU protocol UDP socket
-         *      It adds some additional functionality ontop of normal UDP
-         *      packet handing.
-         *
-         *      @param minpayloadsize minimal data payload size you will send, used to initialze the buffer
-         *      @param sendpackettypes number of different packet types you will send, you cannot send packets with type id's higher then this number
-         *      @param rcvpackettypes number of different packet types you will recieve, you cannot recieve packets with type id's higher then this number
-         */        
-        CPHUDPSocket( UInt32 minpayloadsize = 100 ,
-                      UInt16 sendpackettypes = 16 ,
-                      UInt16 rcvpackettypes = 16  );
+    static const CORE::CEvent PHUDPSocketErrorEvent;
+    static const CORE::CEvent PHUDPSocketClosedEvent;
+    static const CORE::CEvent PHUDPSocketOpenedEvent;
+    static const CORE::CEvent PHUDPPacketRecievedEvent;        
         
-        /**
-         *      Cleans up the allocated data and closes the socket
-         */
-        virtual ~CPHUDPSocket();
-        
-        /**
-         *      Returns wheter the socket is currently active
-         *
-         *      @return activity status of the socket
-         */
-        bool IsActive( void ) const;
-        
-        /**
-         *      Attempts to open the UDP socket for use.
-         *      The port used is left up to the operating system.
-         *      This will typicly be used for clients in a client-server
-         *      architecture.
-         */
-        bool Open( void );
-        
-        /**
-         *      Attempts to open the UDP socket for use on the given port.
-         *      This will typicly be used for a server in a client-server
-         *      architecture or for an peer-to-peer architecture.
-         *      Any local address can be used.
-         *
-         *      @param port port used for sending and/or recieving data
-         */        
-        bool Open( UInt16 port );
-        
-        /**
-         *      Attempts to open the UDP socket for use on the given local
-         *      address and port. Basicly the same as Open( UInt16 port )
-         *      but here you binding to a specific local address manditory.
-         *
-         *      @param localaddr local address to be used for this socket
-         *      @param port port used for sending and/or recieving data
-         */  
-        bool Open( const GUCEF::CORE::CString& localaddr ,
-                   UInt16 port                           );
-                   
-        UInt16 GetPort( void ) const;                   
-        
-        /**
-         *      Closes the socket connection.
-         */
-        void Close( bool force = false );
-        
-        /**
-         *      Attempts to send a UDP packet to the given destination.
-         *      Note that the data you send must fit within the payload
-         *      space of a UDP packet.
-         *      Note that this method is inefficient for regular
-         *      transmissions to the same destination, use the other version
-         *      for such a purpose.
-         *
-         *      @param dnsname dns name of IP string of the remote host.
-         *      @param port remote port that the data is to be sent to.
-         *      @param data pointer to the data you wish to send
-         *      @param datasize size in bytes of the data block pointed to by data
-         *      @param packettype ID of the packet's type. This should not exceed the sendpackettypes value given uppon socket construction.
-         *      @param deliveralways Wheter the reciever should drop the packet if it already recieved a newer packet. false == drop.
-         *      @return the actual number of bytes that where sent. -1 indicates an error.
-         */
-        Int32 SendPacketTo( const GUCEF::CORE::CString& dnsname ,
-                            UInt16 port                         ,
-                            const void* data                    , 
-                            UInt16 datasize                     ,
-                            UInt16 packettype                   ,
-                            bool deliveralways                  );
+    /**
+     *      Constructs a GU protocol UDP socket
+     *      It adds some additional functionality on top of normal UDP
+     *      packet handing.
+     *
+     *      @param minpayloadsize minimal data payload size you will send, used to initialize the buffer
+     *      @param sendpackettypes number of different packet types you will send, you cannot send packets with type id's higher then this number
+     *      @param rcvpackettypes number of different packet types you will receive, you cannot receive packets with type id's higher then this number
+     */        
+    CPHUDPSocket( UInt32 minpayloadsize = 100 ,
+                  UInt16 sendpackettypes = 16 ,
+                  UInt16 rcvpackettypes = 16  );
+    
+    /**
+     *      Cleans up the allocated data and closes the socket
+     */
+    virtual ~CPHUDPSocket();
+    
+    /**
+     *      Returns whether the socket is currently active
+     *
+     *      @return activity status of the socket
+     */
+    bool IsActive( void ) const;
+    
+    /**
+     *      Attempts to open the UDP socket for use.
+     *      The port used is left up to the operating system.
+     *      This will typically be used for clients in a client-server
+     *      architecture.
+     */
+    bool Open( void );
+    
+    /**
+     *      Attempts to open the UDP socket for use on the given port.
+     *      This will typically be used for a server in a client-server
+     *      architecture or for an peer-to-peer architecture.
+     *      Any local address can be used.
+     *
+     *      @param port port used for sending and/or receiving data
+     */        
+    bool Open( UInt16 port );
+    
+    /**
+     *      Attempts to open the UDP socket for use on the given local
+     *      address and port. Basically the same as Open( UInt16 port )
+     *      but here you binding to a specific local address mandatory.
+     *
+     *      @param localaddr local address to be used for this socket
+     *      @param port port used for sending and/or receiving data
+     */  
+    bool Open( const CORE::CString& localaddr ,
+               UInt16 port                    );
+               
+    UInt16 GetPort( void ) const;                   
+    
+    /**
+     *      Closes the socket connection.
+     */
+    void Close( bool force = false );
+    
+    /**
+     *      Attempts to send a UDP packet to the given destination.
+     *      Note that the data you send must fit within the payload
+     *      space of a UDP packet.
+     *      Note that this method is inefficient for regular
+     *      transmissions to the same destination, use the other version
+     *      for such a purpose.
+     *
+     *      @param dnsname DNS name of IP string of the remote host.
+     *      @param port remote port that the data is to be sent to.
+     *      @param data pointer to the data you wish to send
+     *      @param datasize size in bytes of the data block pointed to by data
+     *      @param packettype ID of the packet's type. This should not exceed the sendpackettypes value given upon socket construction.
+     *      @param deliveralways Whether the receiver should drop the packet if it already received a newer packet. false == drop.
+     *      @return the actual number of bytes that where sent. -1 indicates an error.
+     */
+    Int32 SendPacketTo( const CORE::CString& dnsname ,
+                        UInt16 port                  ,
+                        const void* data             , 
+                        UInt16 datasize              ,
+                        UInt16 packettype            ,
+                        bool deliveralways           );
 
-        /**
-         *      Attempts to send a UDP packet to the given destination.
-         *      Note that the data you send must fit within the payload
-         *      space of a UDP packet.
-         *
-         *      @param dest Information about the packet destination.
-         *      @param data pointer to the data you wish to send
-         *      @param datasize size in bytes of the data block pointed to by data
-         *      @param packettype ID of the packet's type. This should not exceed the sendpackettypes value given uppon socket construction.
-         *      @param deliveralways Wheter the reciever should drop the packet if it already recieved a newer packet. false == drop.         
-         *      @return the actual number of bytes that where sent. -1 indicates an error.
-         */
-        Int32 SendPacketTo( const TIPAddress& dest ,
-                            const void* data       , 
-                            UInt16 datasize        ,
-                            UInt16 packettype      ,
-                            bool deliveralways     );
-        
-        /**
-         *      Attempts to resolve the given destination address and port
-         *      information and stores the result in the dest struct.
-         *      You should store the result for furture packet sends so
-         *      that the dns ect. no longer has to be resolved with each
-         *      packet send.
-         *
-         *      @param destaddrstr the destination address in string form that you wish to resolve
-         *      @param destport the port on the remote host you wish to address
-         *      @param dest structure that will hold the resolved version of the given data
-         *      @return returns wheter the given data could be resolved.      
-         */
-        static bool ResolveDest( const GUCEF::CORE::CString& destaddrstr ,
-                                 UInt16 destport                         ,  
-                                 TIPAddress& dest                        );                    
+    /**
+     *      Attempts to send a UDP packet to the given destination.
+     *      Note that the data you send must fit within the payload
+     *      space of a UDP packet.
+     *
+     *      @param dest Information about the packet destination.
+     *      @param data pointer to the data you wish to send
+     *      @param datasize size in bytes of the data block pointed to by data
+     *      @param packettype ID of the packet's type. This should not exceed the sendpackettypes value given upon socket construction.
+     *      @param deliveralways Whether the receiver should drop the packet if it already received a newer packet. false == drop.         
+     *      @return the actual number of bytes that where sent. -1 indicates an error.
+     */
+    Int32 SendPacketTo( const TIPAddress& dest ,
+                        const void* data       , 
+                        UInt16 datasize        ,
+                        UInt16 packettype      ,
+                        bool deliveralways     );
+   
+    static void RegisterEvents( void );
 
-        /**
-         *      Attempts to resolve the source information into a more human-friendly
-         *      version of the information. 
-         *
-         *      @param src the information about the data source in network format
-         *      @param srcaddrstr output variable for the source IP/DNS
-         *      @param srcport output variable for the source port                     
-         */
-        static bool ResolveSrc( const TIPAddress& src            ,
-                                GUCEF::CORE::CString& srcaddrstr ,
-                                UInt16& srcport                  );
-        
-        /**
-         *      Registers the given event handlign interface for use
-         *      with this socket. Events generated by this socket will
-         *      be sent to the handler.
-         *
-         *      @param handler event handler interface
-         */
-        void RegisterEventHandler( CIPHUDPSocketEventHandler* handler );        
+    protected:
+    
+    /**
+     *  Event callback member function.
+     *  Implement this in your descending class to handle
+     *  notification events.
+     *
+     *  @param notifier the notifier that sent the notification
+     *  @param eventid the unique event id for an event
+     *  @param eventdata optional notifier defined userdata
+     */
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );
+                    
+    private:
 
-        protected:
-        
-        virtual void OnUDPSocketEvent( COMCORE::CUDPSocket& socket ,
-                                       TUDPSocketEvent event       );
-                        
-        private:
+    void OnPacketRecieved( void );
 
-        void OnPacketRecieved( void );
-
-        void BufferPacketSendInfo( const void* data         ,
-                                   const UInt16 datasize    ,
-                                   const UInt16 packettype  ,
-                                   const bool deliveralways );
-        
-        UInt32* _sendpcounters;
-        UInt16 _sendpackettypes;
-        UInt32* _rcvpcounters;
-        UInt16 _rcvpackettypes;        
-        CORE::CDynamicBuffer _buffer;
-        COMCORE::CUDPSocket _sock;
-        CIPHUDPSocketEventHandler* _handler;
+    void BufferPacketSendInfo( const void* data         ,
+                               const UInt16 datasize    ,
+                               const UInt16 packettype  ,
+                               const bool deliveralways );
+    
+    UInt32* _sendpcounters;
+    UInt16 _sendpackettypes;
+    UInt32* _rcvpcounters;
+    UInt16 _rcvpackettypes;        
+    CORE::CDynamicBuffer _buffer;
+    COMCORE::CUDPSocket _sock;
 };
 
 /*-------------------------------------------------------------------------//

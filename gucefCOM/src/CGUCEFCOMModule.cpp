@@ -26,10 +26,15 @@
 #define GUCEF_COM_CHTTPCLIENT_H
 #endif /* GUCEF_COM_CHTTPCLIENT_H ? */
 
-#ifndef GUCEF_CORE_CHTTPURLHANDLER_H
+#ifndef GUCEF_COM_CHTTPURLHANDLER_H
 #include "CHTTPURLHandler.h"
-#define GUCEF_CORE_CHTTPURLHANDLER_H
-#endif /* GUCEF_CORE_CHTTPURLHANDLER_H ? */
+#define GUCEF_COM_CHTTPURLHANDLER_H
+#endif /* GUCEF_COM_CHTTPURLHANDLER_H ? */
+
+#ifndef GUCEF_COM_CPHUDPSOCKET_H
+#include "CPHUDPSocket.h"
+#define GUCEF_COM_CPHUDPSOCKET_H
+#endif /* GUCEF_COM_CPHUDPSOCKET_H ? */
 
 #include "CGUCEFCOMModule.h"  /* definition of the class implemented here */
 
@@ -86,6 +91,7 @@ CGUCEFCOMModule::Load( void )
         
         CHTTPClient::RegisterEvents();
         CHTTPURLHandler::Register();
+        CPHUDPSocket::RegisterEvents();
         return true;
 }
 

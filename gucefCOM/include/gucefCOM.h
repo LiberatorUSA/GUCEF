@@ -54,16 +54,6 @@
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 
-#ifndef CBPTCPCLIENTSOCKET_H
-#include "CBPTCPClientSocket.h"
-#define CBPTCPCLIENTSOCKET_H
-#endif /* CBPTCPCLIENTSOCKET_H ? */
-
-#ifndef CBPTCPSERVERSOCKET_H
-#include "CBPTCPServerSocket.h"
-#define CBPTCPSERVERSOCKET_H
-#endif /* CBPTCPSERVERSOCKET_H ? */
-
 #ifndef CMYSQLCLIENT_H
 #include "CMySQLClient.h"
 #define CMYSQLCLIENT_H
@@ -78,11 +68,6 @@
 #include "CHTTPClient.h"
 #define CHTTPCLIENT_H
 #endif /* CHTTPCLIENT_H ? */
-
-#ifndef CHTTPCLIENTINTERFACE_H
-#include "CHTTPClientInterface.h"
-#define CHTTPCLIENTINTERFACE_H
-#endif /* CHTTPCLIENTINTERFACE_H ? */
 
 #ifndef CDBQUERY_H
 #include "CDBQuery.h"
@@ -99,25 +84,10 @@
 #define CDBCOLUMN_H
 #endif /* CDBCOLUMN_H ? */
 
-#ifndef CDRNCONTROLLER_H
-#include "CDRNController.h"
-#define CDRNCONTROLLER_H
-#endif /* CDRNCONTROLLER_H ? */
-
-#ifndef CDRNCONTROLLERINTERFACE_H
-#include "CDRNControllerInterface.h"
-#define CDRNCONTROLLERINTERFACE_H
-#endif /* CDRNCONTROLLERINTERFACE_H ? */
-
-#ifndef CDRNCLIENT_H
-#include "CDRNClient.h"
-#define CDRNCLIENT_H
-#endif /* CDRNCLIENT_H ? */
-
-#ifndef CDRNCLIENTINTERFACE_H
-#include "CDRNClientInterface.h"
-#define CDRNCLIENTINTERFACE_H
-#endif /* CDRNCLIENTINTERFACE_H ? */
+#ifndef GUCEF_COM_CPHUDPSOCKET_H
+#include "CPHUDPSocket.h"
+#define GUCEF_COM_CPHUDPSOCKET_H
+#endif /* GUCEF_COM_CPHUDPSOCKET_H ? */
 
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/

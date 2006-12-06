@@ -38,11 +38,6 @@
 
 #include <string.h>
 
-#ifndef CIPHUDPSOCKETEVENTHANDLER_H
-#include "CIPHUDPSocketEventHandler.h"
-#define CIPHUDPSOCKETEVENTHANDLER_H
-#endif /* CIPHUDPSOCKETEVENTHANDLER_H ? */
-
 #include "CPHUDPSocket.h"
 
 /*-------------------------------------------------------------------------//
@@ -66,6 +61,17 @@ COM_NAMESPACE_BEGIN
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CEvent CPHUDPSocket::PHUDPSocketErrorEvent = "GUCEF::COM::CPHUDPSocket::PHUDPSocketErrorEvent";
+const CORE::CEvent CPHUDPSocket::PHUDPSocketClosedEvent = "GUCEF::COM::CPHUDPSocket::PHUDPSocketClosedEvent";
+const CORE::CEvent CPHUDPSocket::PHUDPSocketOpenedEvent = "GUCEF::COM::CPHUDPSocket::PHUDPSocketOpenedEvent";
+const CORE::CEvent CPHUDPSocket::PHUDPPacketRecievedEvent = "GUCEF::COM::CPHUDPSocket::PHUDPPacketRecievedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -78,13 +84,12 @@ CPHUDPSocket::CPHUDPSocket( UInt32 minpayloadsize  ,
           _sendpackettypes( sendpackettypes )             ,
           _rcvpackettypes( rcvpackettypes )               ,
           _sendpcounters( new UInt32[ sendpackettypes ] ) ,
-          _rcvpcounters( new UInt32[ rcvpackettypes ] )   ,
-          _handler( NULL )
+          _rcvpcounters( new UInt32[ rcvpackettypes ] )
 {TRACE;
         memset( _sendpcounters, 0, sendpackettypes*4 );
         memset( _rcvpcounters, 0, rcvpackettypes*4 );
         
-        _sock.RegisterEventHandler( this );
+        SubscribeTo( &_sock );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -93,18 +98,6 @@ CPHUDPSocket::~CPHUDPSocket()
 {TRACE;
         delete []_sendpcounters;
         delete []_rcvpcounters;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CPHUDPSocket::ResolveDest( const GUCEF::CORE::CString& destaddrstr ,
-                           UInt16 destport                         ,  
-                           TIPAddress& dest                        )
-{TRACE;
-        return GUCEF::COMCORE::CUDPSocket::ResolveDest( destaddrstr ,
-                                                        destport    ,
-                                                        dest        );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -180,23 +173,34 @@ CPHUDPSocket::SendPacketTo( const GUCEF::CORE::CString& dnsname ,
 /*-------------------------------------------------------------------------*/
 
 void 
-CPHUDPSocket::OnUDPSocketEvent( GUCEF::COMCORE::CUDPSocket& socket                ,
-                                GUCEF::COMCORE::CUDPSocket::TUDPSocketEvent event )
+CPHUDPSocket::OnNotify( CORE::CNotifier* notifier                 ,
+                        const CORE::CEvent& eventid               ,
+                        CORE::CICloneable* eventdata /* = NULL */ )
 {TRACE;
-        if ( !_handler ) return;
         
-        switch ( event )
-        {
-                case GUCEF::COMCORE::CUDPSocket::UDP_PACKET_RECIEVED :
-                {                        
-                        OnPacketRecieved();                        
-                        return;
-                }
-                default :
-                {
-                        _handler->OnPHUDPSocketEvent( *this, event );
-                }                                               
+    if ( notifier == &_sock )
+    {
+        if ( eventid == COMCORE::CUDPSocket::UDPPacketRecievedEvent )
+        {                        
+                OnPacketRecieved();                        
+                return;
         }
+        else
+        if ( eventid == COMCORE::CUDPSocket::UDPSocketClosedEvent )
+        {
+            NotifyObservers( PHUDPSocketClosedEvent );
+        }
+        else
+        if ( eventid == COMCORE::CUDPSocket::UDPSocketErrorEvent )
+        {
+            NotifyObservers( PHUDPSocketErrorEvent );
+        }            
+        else
+        if ( eventid == COMCORE::CUDPSocket::UDPSocketOpenedEvent )
+        {
+            NotifyObservers( PHUDPSocketOpenedEvent );
+        }                                             
+    }
 }                                
 
 /*-------------------------------------------------------------------------*/
@@ -243,24 +247,24 @@ CPHUDPSocket::OnPacketRecieved( void )
                                         if ( _rcvpcounters[ packettype ] < packetnumber )
                                         {
                                                 _rcvpcounters[ packettype ] = packetnumber;
-                                                
+                                                /*
                                                 _handler->OnPacketRecieved( *this        ,
                                                                             src          ,
                                                                             usrdata      ,
                                                                             datasize     ,
                                                                             packettype   ,
-                                                                            packetnumber );
+                                                                            packetnumber );     */
                                                 return;
                                         }
                                         else                        
                                         if ( ( *(buffer+8) ) ) // alwaysdeliver data field
                                         {
-                                                _handler->OnPacketRecieved( *this        ,
+                                            /*    _handler->OnPacketRecieved( *this        ,
                                                                             src          ,
                                                                             usrdata      ,
                                                                             datasize     ,
                                                                             packettype   ,
-                                                                            packetnumber );
+                                                                            packetnumber );  */
                                                 return;
                                         }
                                 }
@@ -268,19 +272,7 @@ CPHUDPSocket::OnPacketRecieved( void )
                 }                                                
         }
         DEBUGOUTPUT( "CPHUDPSocket: dropped packet" );
-}
-                 
-/*-------------------------------------------------------------------------*/
-
-bool 
-CPHUDPSocket::ResolveSrc( const TIPAddress& src            ,
-                          GUCEF::CORE::CString& srcaddrstr ,
-                          UInt16& srcport                  )
-{TRACE; 
-        return GUCEF::COMCORE::CUDPSocket::ResolveSrc( src        ,
-                                                       srcaddrstr ,
-                                                       srcport    );    
-}                                           
+}                                       
 
 /*-------------------------------------------------------------------------*/
        
@@ -325,19 +317,23 @@ CPHUDPSocket::IsActive( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
- 
-void 
-CPHUDPSocket::RegisterEventHandler( CIPHUDPSocketEventHandler* handler )
-{TRACE;
-        _handler = handler;        
-}
-
-/*-------------------------------------------------------------------------*/
 
 UInt16 
 CPHUDPSocket::GetPort( void ) const
 {TRACE;
         return _sock.GetPort();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPHUDPSocket::RegisterEvents( void )
+{TRACE;
+
+    PHUDPSocketErrorEvent.Initialize();
+    PHUDPSocketClosedEvent.Initialize();
+    PHUDPSocketOpenedEvent.Initialize();
+    PHUDPPacketRecievedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------//

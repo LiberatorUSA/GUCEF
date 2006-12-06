@@ -78,23 +78,23 @@ enum
 
 /*-------------------------------------------------------------------------*/
 
-typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Init )                   ( void** plugdata, const char*** args ) PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Shutdown )                 ( void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef const char* ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Name )              ( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef const char* ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Copyright )         ( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef const CORE::TVersion* ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Version ) ( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Init )                   ( void** plugdata, const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Shutdown )                 ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Name )              ( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Copyright )         ( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef const CORE::TVersion* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Version ) ( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Update )      ( void* plugdata, void* contextdata ) PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Update )      ( void* plugdata, void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_CreateContext )  ( void* plugdata, void** contextdata, const char*** args, const TInputCallbacks* callbacks ) PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_DestroyContext ) ( void* plugdata, void* contextdata ) PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_CreateContext )  ( void* plugdata, void** contextdata, const char*** args, const TInputCallbacks* callbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_DestroyContext ) ( void* plugdata, void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetMousePos ) ( void* plugdata, void* contextdata, UInt32* xpos, UInt32* ypos ) PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt8* ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetKeyBoardKeyStates ) ( void* plugdata, void* contextdata ) PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetMouseButtonPressedState ) ( void* plugdata, void* contextdata, const UInt32 buttonindex ) PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetKeyboardKeyPressedState ) ( void* plugdata, void* contextdata, const UInt32 keyindex ) PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetDeviceBoolState ) ( void* plugdata, void* contextdata, const UInt32 deviceid, const UInt32 stateindex ) PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetDeviceVarState ) ( void* plugdata, void* contextdata, const UInt32 deviceid, const UInt32 stateindex, Float32* varstate ) PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetMousePos ) ( void* plugdata, void* contextdata, UInt32* xpos, UInt32* ypos ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt8* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetKeyBoardKeyStates ) ( void* plugdata, void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetMouseButtonPressedState ) ( void* plugdata, void* contextdata, const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetKeyboardKeyPressedState ) ( void* plugdata, void* contextdata, const UInt32 keyindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetDeviceBoolState ) ( void* plugdata, void* contextdata, const UInt32 deviceid, const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetDeviceVarState ) ( void* plugdata, void* contextdata, const UInt32 deviceid, const UInt32 stateindex, Float32* varstate ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -131,9 +131,9 @@ class CPluginInputContext : public CInputContext
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-void PLUGIN_CALLSPEC_PREFIX
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 onMouseButtonDown( void* userData           , 
-                   const UInt32 buttonindex ) PLUGIN_CALLSPEC_SUFFIX
+                   const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         CPluginInputContext* context( static_cast<CPluginInputContext*>( userData ) );
         if ( NULL != context->DoGetMutableHandler() )
@@ -145,9 +145,9 @@ onMouseButtonDown( void* userData           ,
 
 /*-------------------------------------------------------------------------*/
 
-void PLUGIN_CALLSPEC_PREFIX
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 onMouseButtonUp( void* userData           , 
-                 const UInt32 buttonindex ) PLUGIN_CALLSPEC_SUFFIX
+                 const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         CPluginInputContext* context( static_cast<CPluginInputContext*>( userData ) );
         if ( NULL != context->DoGetMutableHandler() )
@@ -159,12 +159,12 @@ onMouseButtonUp( void* userData           ,
 
 /*-------------------------------------------------------------------------*/
 
-void PLUGIN_CALLSPEC_PREFIX
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 onMouseMove( void* userData     , 
              const Int32 xPos   ,
              const Int32 yPos   ,
              const Int32 xDelta ,
-             const Int32 yDelta ) PLUGIN_CALLSPEC_SUFFIX
+             const Int32 yDelta ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         CPluginInputContext* context( static_cast<CPluginInputContext*>( userData ) );
         if ( NULL != context->DoGetMutableHandler() )
@@ -179,11 +179,11 @@ onMouseMove( void* userData     ,
 
 /*-------------------------------------------------------------------------*/
 
-void PLUGIN_CALLSPEC_PREFIX
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 onMouseVarChanged( void* userData         , 
                    const UInt32 varIndex  ,
                    const Int32 value      ,
-                   const Int32 valueDelta ) PLUGIN_CALLSPEC_SUFFIX
+                   const Int32 valueDelta ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         CPluginInputContext* context( static_cast<CPluginInputContext*>( userData ) );
         if ( NULL != context->DoGetMutableHandler() )
@@ -197,10 +197,10 @@ onMouseVarChanged( void* userData         ,
 
 /*-------------------------------------------------------------------------*/
         
-void PLUGIN_CALLSPEC_PREFIX
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 onKeyboardKeyDown( void* userData           , 
                    const UInt32 keyindex    ,
-                   const UInt32 keyModState ) PLUGIN_CALLSPEC_SUFFIX
+                   const UInt32 keyModState ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         CPluginInputContext* context( static_cast<CPluginInputContext*>( userData ) );
         if ( NULL != context->DoGetMutableHandler() )
@@ -213,10 +213,10 @@ onKeyboardKeyDown( void* userData           ,
         
 /*-------------------------------------------------------------------------*/
 
-void PLUGIN_CALLSPEC_PREFIX
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 onKeyboardKeyUp( void* userData           , 
                  const UInt32 keyindex    ,
-                 const UInt32 keyModState ) PLUGIN_CALLSPEC_SUFFIX
+                 const UInt32 keyModState ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         CPluginInputContext* context( static_cast<CPluginInputContext*>( userData ) );
         if ( NULL != context->DoGetMutableHandler() )
@@ -229,10 +229,10 @@ onKeyboardKeyUp( void* userData           ,
         
 /*-------------------------------------------------------------------------*/
         
-void PLUGIN_CALLSPEC_PREFIX
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 onDeviceBooleanOff( void* userData          , 
                     const UInt32 deviceid   , 
-                    const UInt32 stateindex ) PLUGIN_CALLSPEC_SUFFIX
+                    const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         CPluginInputContext* context( static_cast<CPluginInputContext*>( userData ) );
         if ( NULL != context->DoGetMutableHandler() )
@@ -245,10 +245,10 @@ onDeviceBooleanOff( void* userData          ,
         
 /*-------------------------------------------------------------------------*/
         
-void PLUGIN_CALLSPEC_PREFIX
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 onDeviceBooleanOn( void* userData          , 
                    const UInt32 deviceid   , 
-                   const UInt32 stateindex ) PLUGIN_CALLSPEC_SUFFIX
+                   const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         CPluginInputContext* context( static_cast<CPluginInputContext*>( userData ) );
         if ( NULL != context->DoGetMutableHandler() )
@@ -261,11 +261,11 @@ onDeviceBooleanOn( void* userData          ,
         
 /*-------------------------------------------------------------------------*/
         
-void PLUGIN_CALLSPEC_PREFIX
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 onDeviceVarChanged( void* userData          , 
                     const UInt32 deviceid   , 
                     const UInt32 stateindex , 
-                    const Float32 value     ) PLUGIN_CALLSPEC_SUFFIX
+                    const Float32 value     ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {TRACE;
         CPluginInputContext* context( static_cast<CPluginInputContext*>( userData ) );
         if ( NULL != context->DoGetMutableHandler() )
