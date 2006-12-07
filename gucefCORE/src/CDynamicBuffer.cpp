@@ -484,13 +484,15 @@ CDynamicBuffer::CopyTo( CDynamicBuffer& dest ) const
 void* 
 CDynamicBuffer::GetBufferPtr( void )
 {TRACE;
+        SecureLinkBeforeMutation();
+        
         return _buffer;
 }
 
 /*-------------------------------------------------------------------------*/
        
 const void* 
-CDynamicBuffer::GetBufferPtr( void ) const
+CDynamicBuffer::GetConstBufferPtr( void ) const
 {TRACE;
         return _buffer;
 }

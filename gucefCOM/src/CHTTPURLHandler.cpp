@@ -131,7 +131,7 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
         if ( eventid == m_httpClient.GetHTTPDataRecievedEventID() )
         {
             CHTTPClient::THTTPDataRecievedEventData* eData = static_cast< CHTTPClient::THTTPDataRecievedEventData* >( eventdata );            
-            CORE::CMFileAccess mAccess( eData->GetData().GetBufferPtr(), eData->GetData().GetDataSize() );
+            CORE::CMFileAccess mAccess( eData->GetData().GetConstBufferPtr(), eData->GetData().GetDataSize() );
             NotifyObservers( CIURLEvents::URLDataRecievedEvent, &mAccess );
             return;
         }

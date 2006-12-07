@@ -106,6 +106,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DVPPackTool", "..\..\tools\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gucefDRN_MVC8", "..\..\gucefDRN\projects\MVC8\gucefDRN_MVC8.vcproj", "{EC85F48F-04B3-469A-882C-E5B07691716D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgpluginDEVIL", "..\..\gucefIMAGE\plugins\imgpluginDEVIL\projects\MVC8\imgpluginDEVIL.vcproj", "{85721DB2-43B6-495C-8F79-909287CB5FBB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug ICONV using MultiTh RTL DLL|Win32 = Debug ICONV using MultiTh RTL DLL|Win32
@@ -266,6 +268,14 @@ Global
 		{EC85F48F-04B3-469A-882C-E5B07691716D}.Release ICONV using MultiTh RTL DLL|Win32.Build.0 = Release|Win32
 		{EC85F48F-04B3-469A-882C-E5B07691716D}.Release|Win32.ActiveCfg = Release|Win32
 		{EC85F48F-04B3-469A-882C-E5B07691716D}.Release|Win32.Build.0 = Release|Win32
+		{85721DB2-43B6-495C-8F79-909287CB5FBB}.Debug ICONV using MultiTh RTL DLL|Win32.ActiveCfg = Debug|Win32
+		{85721DB2-43B6-495C-8F79-909287CB5FBB}.Debug ICONV using MultiTh RTL DLL|Win32.Build.0 = Debug|Win32
+		{85721DB2-43B6-495C-8F79-909287CB5FBB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{85721DB2-43B6-495C-8F79-909287CB5FBB}.Debug|Win32.Build.0 = Debug|Win32
+		{85721DB2-43B6-495C-8F79-909287CB5FBB}.Release ICONV using MultiTh RTL DLL|Win32.ActiveCfg = Release|Win32
+		{85721DB2-43B6-495C-8F79-909287CB5FBB}.Release ICONV using MultiTh RTL DLL|Win32.Build.0 = Release|Win32
+		{85721DB2-43B6-495C-8F79-909287CB5FBB}.Release|Win32.ActiveCfg = Release|Win32
+		{85721DB2-43B6-495C-8F79-909287CB5FBB}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

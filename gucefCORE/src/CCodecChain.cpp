@@ -246,10 +246,10 @@ CCodecChain::EncodeBuffers( const TDynamicBufferList& src   ,
     TDynamicBufferList::const_iterator i( src.begin() );
     while ( ( i != src.end() ) && ( n < sourceBuffersUsed ) )
     {                                     
-        if ( !codec->Encode( (*i).GetBufferPtr() ,
-                             (*i).GetDataSize()  ,
-                             swapBuffers         ,
-                             swapBuffsUsed       ) )
+        if ( !codec->Encode( (*i).GetConstBufferPtr() ,
+                             (*i).GetDataSize()       ,
+                             swapBuffers              ,
+                             swapBuffsUsed            ) )
         {
                 // the encoding failed
                 return false;
@@ -408,10 +408,10 @@ CCodecChain::DecodeBuffers( const TDynamicBufferList& src   ,
     TDynamicBufferList::const_iterator i( src.begin() );
     while ( ( i != src.end() ) && ( n < sourceBuffersUsed ) )
     {                                     
-        if ( !codec->Encode( (*i).GetBufferPtr() ,
-                             (*i).GetDataSize()  ,
-                             swapBuffers         ,
-                             swapBuffsUsed       ) )
+        if ( !codec->Encode( (*i).GetConstBufferPtr() ,
+                             (*i).GetDataSize()       ,
+                             swapBuffers              ,
+                             swapBuffsUsed            ) )
         {
                 // the decoding failed
                 return false;

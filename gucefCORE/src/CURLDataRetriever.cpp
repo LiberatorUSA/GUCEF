@@ -149,7 +149,7 @@ CURLDataRetriever::OnNotify( CNotifier* notifier                 ,
         {
             // append the recieved data to the data in our buffer (if any)
             const TURLDataRecievedEventData* data = static_cast< TURLDataRecievedEventData* >( eventdata );
-            m_buffer.Append( data->GetData().GetBufferPtr(), data->GetData().GetDataSize() );
+            m_buffer.Append( data->GetData().GetConstBufferPtr(), data->GetData().GetDataSize() );
             return;
         }        
     }

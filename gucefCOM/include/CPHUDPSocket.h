@@ -85,7 +85,16 @@ class GUCEFCOM_EXPORT_CPP CPHUDPSocket : public CORE::CObservingNotifier
     static const CORE::CEvent PHUDPSocketErrorEvent;
     static const CORE::CEvent PHUDPSocketClosedEvent;
     static const CORE::CEvent PHUDPSocketOpenedEvent;
-    static const CORE::CEvent PHUDPPacketRecievedEvent;        
+    static const CORE::CEvent PHUDPPacketRecievedEvent;
+    
+    struct SPHUDPPacketRecievedEventData
+    {
+        COMCORE::CSocket::TIPAddress sourceAddress; /**< the source address of the data */
+        CORE::TLinkedCloneableBuffer dataBuffer;    /**< the received packet data's payload */
+        UInt32 packetType;                          /**< type of the packet */
+        UInt32 packetNumber;                        /**< ordering number of this packet for it's type */
+    };
+    typedef CORE::CTCloneableObj< struct SPHUDPPacketRecievedEventData > PHUDPPacketRecievedEventData;
         
     /**
      *      Constructs a GU protocol UDP socket
@@ -195,8 +204,6 @@ class GUCEFCOM_EXPORT_CPP CPHUDPSocket : public CORE::CObservingNotifier
     
     /**
      *  Event callback member function.
-     *  Implement this in your descending class to handle
-     *  notification events.
      *
      *  @param notifier the notifier that sent the notification
      *  @param eventid the unique event id for an event
@@ -208,7 +215,8 @@ class GUCEFCOM_EXPORT_CPP CPHUDPSocket : public CORE::CObservingNotifier
                     
     private:
 
-    void OnPacketRecieved( void );
+    void OnPacketRecieved( const TIPAddress& sourceAddress                ,
+                           const CORE::TLinkedCloneableBuffer& dataBuffer );
 
     void BufferPacketSendInfo( const void* data         ,
                                const UInt16 datasize    ,
@@ -242,13 +250,15 @@ COM_NAMESPACE_END
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 07-12-2006 :
+        - Dinand: converted class to use the latest revision of the CORE module notification system
 - 23-07-2005 :
-        - Moved to GUCEF::COM
-        - Stripped 'deliver always' functionality
-        - Stripped 'packet type' handling functionality
-        - Renamed to CPHUDPSocket
+        - Dinand: Moved to GUCEF::COM
+        - Dinand: Stripped 'deliver always' functionality as a property of the packet type
+        - Dinand: Stripped manditory 'packet type' handling functionality
+        - Dinand: Renamed to CPHUDPSocket
 - 28-05-2005 :
-        - Designed and implemented this class.
+        - Dinand: Designed and implemented this class.
           This class will take care of some basic packet management ontop of
           the standard UDP functionality. It can be used to send player movements
           ect. with ease.

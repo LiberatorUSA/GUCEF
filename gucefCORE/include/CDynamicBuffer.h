@@ -92,7 +92,8 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
         ~CDynamicBuffer();        
 
         /**
-         *      Returns the unsigned byte located at the index given.
+         *  Returns the unsigned byte located at the index given.
+         *  Note that if the buffer is linked this operation will result in the creation of a private copy
          */
         UInt8& GetUByte( UInt32 index );
 
@@ -103,18 +104,21 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
                        UInt8 data   );
 
         /**
-         *      Returns the signed byte located at the index given.
+         *  Returns the signed byte located at the index given.
+         *  Note that if the buffer is linked this operation will result in the creation of a private copy
          */                        
         char& GetChar( UInt32 index );
 
         /**
-         *      Sets the signed byte located at the index given.
+         *  Sets the signed byte located at the index given.
+         *  Note that if the buffer is linked this operation will result in the creation of a private copy
          */
         void SetChar( UInt32 index ,
                       char data    );
 
         /**
-         *      Returns the signed byte located at the index given.
+         *  Returns the signed byte located at the index given.
+         *  Note that if the buffer is linked this operation will result in the creation of a private copy
          */                           
         char& operator[]( UInt32 index );
         
@@ -175,7 +179,8 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
          *  the link operation.
          *
          *  Note that if a dynamic buffer is in a linked state it's data cannot be modified
-         *  directly. If you attempt to perform a mutation on the buffer the linked data will
+         *  directly. If you attempt to perform a mutation on the buffer (or simply call a member 
+         *  function that allows mutations to take place) the linked data will
          *  be copied into a private buffer which can then be modified.
          *  The same is true when you copy/assign the CDynamicBuffer, it will cause the linked 
          *  data of the buffer to be copied and not linked.
@@ -190,15 +195,16 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
         bool IsLinked( void ) const;
 
         /**
-         *      Copys size number of bytes from src to the buffer at the offset
-         *      given.
+         *  Copys size number of bytes from src to the buffer at the offset given.
+         *  Note that if the buffer is linked this operation will result in the creation of a private copy
          */
         void CopyFrom( UInt32 offset   ,
                        UInt32 size     ,
                        const void* src );
                        
         /**
-         *      Copys size number of bytes from src to the buffer
+         *  Copys size number of bytes from src to the buffer
+         *  Note that if the buffer is linked this operation will result in the creation of a private copy
          */
         void CopyFrom( UInt32 size     ,
                        const void* src );                       
@@ -218,12 +224,20 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
         
         void CopyTo( CDynamicBuffer& dest ) const;
                      
+        /**
+         *  Appends the given data to the back of the data bytes in the buffer
+         *  Note that if the buffer is linked this operation will result in the creation of a private copy
+         */
         void Append( const void* data  ,
                      const UInt32 size );
                      
+        /**
+         *  Provides mutable access to the buffer as a block of memory
+         *  Note that if the buffer is linked this operation will result in the creation of a private copy
+         */
         void* GetBufferPtr( void );
         
-        const void* GetBufferPtr( void ) const;
+        const void* GetConstBufferPtr( void ) const;
         
         void Clear( const bool logicalClearOnly = true );
         

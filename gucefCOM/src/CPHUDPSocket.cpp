@@ -47,7 +47,7 @@
 //-------------------------------------------------------------------------*/
 
 #define GUPACKETHDRSIZE    15
-#define GUUDPSOCKETID      63475
+#define GUUDPSOCKETID      63475UL
 #define PACKETCOUNTERMAX   UINT32MAX-100;
 
 /*-------------------------------------------------------------------------//
@@ -178,12 +178,17 @@ CPHUDPSocket::OnNotify( CORE::CNotifier* notifier                 ,
                         CORE::CICloneable* eventdata /* = NULL */ )
 {TRACE;
         
+    // We only accept events from our local socket
     if ( notifier == &_sock )
     {
         if ( eventid == COMCORE::CUDPSocket::UDPPacketRecievedEvent )
         {                        
-                OnPacketRecieved();                        
-                return;
+            // Obtain data and pass it along for processing
+            COMCORE::CUDPSocket::UDPPacketRecievedEventData* eventData = static_cast< COMCORE::CUDPSocket::UDPPacketRecievedEventData* >( eventdata );
+            assert( NULL != eventData );
+            OnPacketRecieved( eventData->GetData().sourceAddress ,
+                              eventData->GetData().dataBuffer    );                        
+            return;
         }
         else
         if ( eventid == COMCORE::CUDPSocket::UDPSocketClosedEvent )
@@ -206,27 +211,28 @@ CPHUDPSocket::OnNotify( CORE::CNotifier* notifier                 ,
 /*-------------------------------------------------------------------------*/
 
 void
-CPHUDPSocket::OnPacketRecieved( void )
+CPHUDPSocket::OnPacketRecieved( const TIPAddress& sourceAddress                ,
+                                const CORE::TLinkedCloneableBuffer& dataBuffer )
 {TRACE;
         /*
-         *      Obtain the packet and hope that the user has set the
-         *      correct minimal buffer size
-         */
-        char* buffer = static_cast<char*>( _buffer.GetBufferPtr() );
-        TIPAddress src;
-        Int32 rbytes = _sock.Recieve( src                           ,
-                                      buffer                        ,
-                                      (UInt16)_buffer.GetDataSize() );
-
-        /*
-         *      Begin various checks before parsing packet info
+         *  Begin various checks before parsing packet info
+         *  First we check if the data is even large enough to hold our header info
          */                                      
+        const char* buffer = static_cast< const char* >( dataBuffer.GetData().GetConstBufferPtr() );
+        UInt32 rbytes = dataBuffer.GetData().GetDataSize();  
         if ( rbytes > GUPACKETHDRSIZE )             
         {
-                UInt16 datasize( *(UInt16*)(buffer+13) );
+                /*
+                 *  Perform a sanity check on the payload size
+                 */
+                UInt16 datasize( *( const UInt16*)(buffer+13) );
                 if ( rbytes == GUPACKETHDRSIZE + datasize )
                 {
-                        char* usrdata( buffer+GUPACKETHDRSIZE );
+                        /*
+                         *  Perform our simply 'hash' check to see if the data
+                         *  has not been corrupted
+                         */
+                        const char* usrdata( buffer+GUPACKETHDRSIZE );
                         UInt32 sum( 0UL );
                         for ( UInt16 i=0; i<datasize; ++i )
                         {
@@ -240,31 +246,37 @@ CPHUDPSocket::OnPacketRecieved( void )
                                  *      dropped if it's to old and pass to the handler if 
                                  *      possible
                                  */
-                                UInt16 packettype( *(UInt16*)(buffer+6) );                                
+                                UInt16 packettype( *( const UInt16*)(buffer+6) );                                
                                 if ( packettype < _rcvpackettypes )
                                 {
-                                        UInt32 packetnumber( *(UInt32*)(buffer+6) );
-                                        if ( _rcvpcounters[ packettype ] < packetnumber )
+                                        /*
+                                         *  Check the number of the packet
+                                         *  If the packet is no longer the latest news from the remote host
+                                         *  then we will use the 'always deliver' boolean field in the packet 
+                                         *  to determine if the packet should be dropped or passed on anyways
+                                         */
+                                        UInt32 packetnumber( *( const UInt32*)(buffer+6) );
+                                        if ( ( _rcvpcounters[ packettype ] < packetnumber )      ||
+                                             ( *(buffer+8) != 0 ) /* alwaysdeliver data field */  )
                                         {
-                                                _rcvpcounters[ packettype ] = packetnumber;
-                                                /*
-                                                _handler->OnPacketRecieved( *this        ,
-                                                                            src          ,
-                                                                            usrdata      ,
-                                                                            datasize     ,
-                                                                            packettype   ,
-                                                                            packetnumber );     */
-                                                return;
-                                        }
-                                        else                        
-                                        if ( ( *(buffer+8) ) ) // alwaysdeliver data field
-                                        {
-                                            /*    _handler->OnPacketRecieved( *this        ,
-                                                                            src          ,
-                                                                            usrdata      ,
-                                                                            datasize     ,
-                                                                            packettype   ,
-                                                                            packetnumber );  */
+                                                if ( _rcvpcounters[ packettype ] < packetnumber )
+                                                {
+                                                    _rcvpcounters[ packettype ] = packetnumber;
+                                                }    
+                                                
+                                                CORE::CDynamicBuffer userData;
+                                                userData.LinkTo( usrdata, datasize );
+                                                CORE::TLinkedCloneableBuffer userDataBuffer( &userData );
+                                                
+                                                SPHUDPPacketRecievedEventData data;
+                                                data.sourceAddress = sourceAddress;
+                                                data.packetType = packettype;
+                                                data.packetNumber = packetnumber;
+                                                data.dataBuffer = userDataBuffer;
+                                                
+                                                PHUDPPacketRecievedEventData dispatchData( data );
+                                                
+                                                NotifyObservers( PHUDPPacketRecievedEvent, &dispatchData );
                                                 return;
                                         }
                                 }
