@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="gucefCORE_TestApp_MVC8"
+	Name="gucefCORE_TestApp"
 	ProjectGUID="{DF2483C8-E486-4B03-8A5F-88CBDE20A486}"
 	Keyword="Win32Proj"
 	>

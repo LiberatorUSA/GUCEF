@@ -251,7 +251,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CVFS.H"
+				RelativePath="..\..\include\CVFS.h"
 				>
 			</File>
 			<File

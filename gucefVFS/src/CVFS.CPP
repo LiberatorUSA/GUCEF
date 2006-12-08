@@ -428,7 +428,7 @@ CVFS::LoadFromPack( const CORE::CString& file ,
 
 /*-------------------------------------------------------------------------*/
 
-CVFSHandle* 
+CVFS::CVFSHandlePtr 
 CVFS::GetFile( const CORE::CString& file          ,
                UInt32& errorcode                  ,
                const char* mode /* = "rb" */      ,
@@ -457,7 +457,7 @@ CVFS::GetFile( const CORE::CString& file          ,
                 if ( fh )
                 {
                         _datalock.Unlock();
-                        return fh;    
+                        return CVFSHandlePtr( fh, this );    
                 }         
                         
                 /*
@@ -468,7 +468,7 @@ CVFS::GetFile( const CORE::CString& file          ,
                 if ( fh )
                 {
                         _datalock.Unlock();
-                        return fh;       
+                        return CVFSHandlePtr( fh, this );       
                 }       
         }
 
@@ -483,7 +483,7 @@ CVFS::GetFile( const CORE::CString& file          ,
         if ( fh )
         {
                 _datalock.Unlock();
-                return fh;                        
+                return CVFSHandlePtr( fh, this );                        
         }          
         
         /*
@@ -492,13 +492,13 @@ CVFS::GetFile( const CORE::CString& file          ,
          */
         DEBUGOUTPUTss( "Cannot locate file: ", file.C_String() ); 
         _datalock.Unlock();
-        return NULL;                                
+        return CVFSHandlePtr();                                
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CVFS::Unload( CVFSHandle* vfshandle )
+void
+CVFS::DestroySharedObject( CVFSHandle* vfshandle )
 {TRACE;
         DEBUGOUTPUT( "CVFS::Unload( CVFSHandle* vfshandle )" );
         
