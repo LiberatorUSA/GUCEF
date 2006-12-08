@@ -122,30 +122,30 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
     // We only accept events from our own HTTP client
     if ( notifier == &m_httpClient )
     {
-        if ( ( eventid == m_httpClient.GetHTTPErrorEventID() )       ||
-             ( eventid == m_httpClient.GetConnectionErrorEventID() )  )
+        if ( ( eventid == CHTTPClient::HTTPErrorEvent )       ||
+             ( eventid == CHTTPClient::ConnectionErrorEvent )  )
         {
             NotifyObservers( CIURLEvents::URLDataRetrievalErrorEvent );
             return;
         }
-        if ( eventid == m_httpClient.GetHTTPDataRecievedEventID() )
+        if ( eventid == CHTTPClient::HTTPDataRecievedEvent )
         {
             CHTTPClient::THTTPDataRecievedEventData* eData = static_cast< CHTTPClient::THTTPDataRecievedEventData* >( eventdata );            
             CORE::CMFileAccess mAccess( eData->GetData().GetConstBufferPtr(), eData->GetData().GetDataSize() );
             NotifyObservers( CIURLEvents::URLDataRecievedEvent, &mAccess );
             return;
         }
-        if ( eventid == m_httpClient.GetHTTPTransferFinishedEventID() )
+        if ( eventid == CHTTPClient::HTTPTransferFinishedEvent )
         {
             NotifyObservers( CIURLEvents::URLAllDataRecievedEvent );
             return;
         }
-        if ( eventid == m_httpClient.GetConnectingEventID() )
+        if ( eventid == CHTTPClient::ConnectingEvent )
         {
             NotifyObservers( CIURLEvents::URLActivateEvent );
             return;
         }
-        if ( eventid == m_httpClient.GetDisconnectedEventID() )
+        if ( eventid == CHTTPClient::DisconnectedEvent )
         {
             NotifyObservers( CIURLEvents::URLDeactivateEvent );
             return;

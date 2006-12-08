@@ -146,16 +146,16 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
 {
 	public:
 
-    static const CORE::CString ConnectingEvent;
-    static const CORE::CString ConnectedEvent;
-    static const CORE::CString DisconnectedEvent;
-    static const CORE::CString ConnectionErrorEvent;        
-    static const CORE::CString HTTPErrorEvent;
-    static const CORE::CString HTTPRedirectEvent;
-    static const CORE::CString HTTPContentEvent;                
-    static const CORE::CString HTTPDataRecievedEvent;
-    static const CORE::CString HTTPDataSendEvent;        
-    static const CORE::CString HTTPTransferFinishedEvent;
+    static const CORE::CEvent ConnectingEvent;
+    static const CORE::CEvent ConnectedEvent;
+    static const CORE::CEvent DisconnectedEvent;
+    static const CORE::CEvent ConnectionErrorEvent;        
+    static const CORE::CEvent HTTPErrorEvent;
+    static const CORE::CEvent HTTPRedirectEvent;
+    static const CORE::CEvent HTTPContentEvent;                
+    static const CORE::CEvent HTTPDataRecievedEvent;
+    static const CORE::CEvent HTTPDataSendEvent;        
+    static const CORE::CEvent HTTPTransferFinishedEvent;
 
 	public:
 
@@ -200,17 +200,6 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     bool IsConnected( void ) const;
     
     UInt32 GetBytesRecieved( void ) const;
-        
-    CORE::CEvent GetConnectingEventID( void ) const;
-    CORE::CEvent GetConnectedEventID( void ) const;
-    CORE::CEvent GetDisconnectedEventID( void ) const;
-    CORE::CEvent GetConnectionErrorEventID( void ) const;        
-    CORE::CEvent GetHTTPErrorEventID( void ) const;
-    CORE::CEvent GetHTTPRedirectEventID( void ) const;
-    CORE::CEvent GetHTTPContentEventID( void ) const;                
-    CORE::CEvent GetHTTPDataRecievedEventID( void ) const;
-    CORE::CEvent GetHTTPDataSendEventID( void ) const;        
-    CORE::CEvent GetHTTPTransferFinishedEventID( void ) const;
     	
 	static void RegisterEvents( void );
 	
@@ -251,16 +240,6 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     bool m_downloading;
     UInt32 m_recieved;
     UInt32 m_filesize;
-    CORE::CEvent m_connectingEventID;
-    CORE::CEvent m_connectedEventID;
-    CORE::CEvent m_disconnectedEventID;
-    CORE::CEvent m_connectionErrorEventID;        
-    CORE::CEvent m_HTTPErrorEventID;
-    CORE::CEvent m_HTTPRedirectEventID;
-    CORE::CEvent m_HTTPContentEventID;
-    CORE::CEvent m_HTTPDataRecievedEventID;
-    CORE::CEvent m_HTTPDataSendEventID;
-    CORE::CEvent m_HTTPTransferFinishedEventID;
 };
 
 /*-------------------------------------------------------------------------//
@@ -282,6 +261,8 @@ GUCEF_NAMESPACE_END
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 08-11-2006 :
+        - Dinand: Updated notification system usage to the latest revision
 - 07-10-2006 :
         - Dinand: Converted class to a notification based event handling system
           instead of the customized event handler interface classes.
