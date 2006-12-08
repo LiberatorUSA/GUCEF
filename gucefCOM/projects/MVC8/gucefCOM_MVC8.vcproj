@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="gucefCOM_MVC8"
+	Name="gucefCOM"
 	ProjectGUID="{B12E8002-8B8D-47CC-9015-463C31D8FEFE}"
 	RootNamespace="gucefCOM_MVC8"
 	Keyword="MFCDLLProj"

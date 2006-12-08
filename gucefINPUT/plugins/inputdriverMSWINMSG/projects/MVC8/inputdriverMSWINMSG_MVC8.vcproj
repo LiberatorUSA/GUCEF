@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="inputdriverMSWINMSG_MVC8"
+	Name="inputdriverMSWINMSG"
 	ProjectGUID="{800D00D2-1D03-431B-B7AA-BDD3BDCD304B}"
 	Keyword="Win32Proj"
 	>

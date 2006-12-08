@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="dstorepluginPARSIFALXML_MVC8"
+	Name="dstorepluginPARSIFALXML"
 	ProjectGUID="{45D8596D-F50A-42AD-A381-FB90DBCD9F13}"
 	Keyword="Win32Proj"
 	>

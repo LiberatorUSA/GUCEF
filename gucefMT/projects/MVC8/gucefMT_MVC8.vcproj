@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="gucefMT_MVC8"
+	Name="gucefMT"
 	ProjectGUID="{B11FB695-0017-45B1-8FEE-29B64717BF24}"
 	RootNamespace="gucefMT_VC8"
 	Keyword="Win32Proj"

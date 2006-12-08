@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="vfspluginDVP_MVC8"
+	Name="vfspluginDVP"
 	ProjectGUID="{5B212F5A-82D3-4D58-AE6A-BF93CC89F575}"
 	Keyword="Win32Proj"
 	>
