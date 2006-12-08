@@ -1,18 +1,18 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
  * the source.
  *
  * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
  * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
+ * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
 #ifndef GUCEF_CORE_CTBASICSHAREDPTR_H
@@ -31,10 +31,17 @@
 #define GUCEF_CORE_CTSHAREDOBJECTDESTRUCTOR_H
 #endif /* GUCEF_CORE_CTSHAREDOBJECTDESTRUCTOR_H ? */
 
-#ifndef GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"       /* module macro's */
-#define GUCEFCORE_MACROS_H
-#endif /* GUCEFCORE_MACROS_H ? */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
+
+#include "ExceptionMacros.h"
+
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -104,13 +111,13 @@ class CTBasicSharedPtr
               reinterpret_cast< const CTBasicSharedPtr& >( src ).m_refCounter ),
           m_objectDestructor(
               reinterpret_cast< const CTBasicSharedPtr& >( src ).m_objectDestructor )
-    {TRACE;
-       
+    {   
         // regarding the initializer list:
         //   We use reinterpret_cast to make use of the automatic same-class-friend-relationship
         //   which allows us to access the data members of the given src.
         //   We perform an additional static_cast on the pointer to ensure that the template argument
         //   is actually part of the same inheritance chain.
+    
         if ( m_refCounter )
         {        
             ++(*m_refCounter);
@@ -124,8 +131,8 @@ class CTBasicSharedPtr
     // implemented inline as a workaround for VC6 issues
     template< class Derived >
     CTBasicSharedPtr& operator=( const CTBasicSharedPtr< Derived >& src )
-    {TRACE;
-
+    {
+        //TICS !GOLC-004: is protected
         if ( &reinterpret_cast< const CTBasicSharedPtr& >( src ) != this )
         {
             Unlink();
@@ -137,7 +144,7 @@ class CTBasicSharedPtr
             m_ptr = static_cast< Derived* >( reinterpret_cast< const CTBasicSharedPtr& >( src ).m_ptr );
             m_refCounter = reinterpret_cast< const CTBasicSharedPtr& >( src ).m_refCounter;
             m_objectDestructor = reinterpret_cast< const CTBasicSharedPtr& >( src ).m_objectDestructor;
- 
+            
             if ( m_refCounter )
             {
                 ++(*m_refCounter);
@@ -150,7 +157,7 @@ class CTBasicSharedPtr
     // The dummy param is a VC6 hack for templated member functions
     template< class Derived >
     CTBasicSharedPtr< Derived > StaticCast( Derived dummy = Derived() )
-    {TRACE;
+    {
             ++(*m_refCounter);
             
             CTBasicSharedPtr< Derived > retVal;
@@ -163,13 +170,13 @@ class CTBasicSharedPtr
  
     CTBasicSharedPtr& operator=( const CTBasicSharedPtr& src );
  
-    bool operator==( const T* other ) const;
+    inline bool operator==( const T* other ) const;
     
-    bool operator==( const CTBasicSharedPtr& other ) const;
+    inline bool operator==( const CTBasicSharedPtr& other ) const;
  
-    bool operator!=( const T* other ) const;
+    inline bool operator!=( const T* other ) const;
     
-    bool operator!=( const CTBasicSharedPtr& other ) const;
+    inline bool operator!=( const CTBasicSharedPtr& other ) const;
  
     /**
      *  operator that implements '(*mySharedPtr)'
@@ -260,7 +267,7 @@ CTBasicSharedPtr< T >::CTBasicSharedPtr( void )
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-CTBasicSharedPtr< T >::CTBasicSharedPtr( T* ptr                                     ,
+CTBasicSharedPtr< T >::CTBasicSharedPtr( T* ptr                        ,
                                          TDestructor* objectDestructor )
         : m_ptr( ptr )                           ,
           m_refCounter( NULL )                   ,
@@ -293,7 +300,7 @@ CTBasicSharedPtr< T >::CTBasicSharedPtr( const CTBasicSharedPtr< T >& src )
           m_refCounter( src.m_refCounter )             ,
           m_objectDestructor( src.m_objectDestructor )
 {TRACE;
-   
+
     if ( m_refCounter )
     {        
         ++(*m_refCounter);
@@ -363,8 +370,9 @@ CTBasicSharedPtr< T >::IsNULL( void ) const
 template< typename T >
 UInt32 
 CTBasicSharedPtr< T >::GetReferenceCount( void ) const
-{TRACE;
-
+{
+    XTRABASE_POINTERCHECK( m_refCounter );
+    
     if ( m_refCounter )
     {
         return *m_refCounter;
@@ -386,7 +394,7 @@ CTBasicSharedPtr< T >::operator=( const CTBasicSharedPtr< T >& src )
         m_ptr = src.m_ptr;
         m_refCounter = src.m_refCounter;
         m_objectDestructor = src.m_objectDestructor;
-
+        
         if ( m_refCounter )
         {
             ++(*m_refCounter);
@@ -619,8 +627,7 @@ CTBasicSharedPtr< T >::Unlink( void )
 template< typename T >
 void 
 CTBasicSharedPtr< T >::SetToNULL( void )
-{TRACE;
-
+{
     m_objectDestructor = NULL;
     delete m_refCounter;
     m_refCounter = NULL;
@@ -648,6 +655,5 @@ CTBasicSharedPtr< T >::SetToNULL( void )
           to be defined. ie you can create a shared pointer with a forward declaration.
 
 -----------------------------------------------------------------------------*/
-
 
 #endif /* GUCEF_CORE_CTBASICSHAREDPTR_H ? */

@@ -484,6 +484,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CTDefaultSOD.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CTFactory.cpp"
 				>
 			</File>
@@ -927,6 +931,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CTCloneableObj.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CTDefaultSOD.h"
 				>
 			</File>
 			<File
