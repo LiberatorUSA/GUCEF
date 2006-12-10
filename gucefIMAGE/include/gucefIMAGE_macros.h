@@ -77,43 +77,16 @@
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef MSWIN_BUILD
-#define WIN32_LEAN_AND_MEAN     /* don't change this line: trim fat from windoze */
-#define WIN32_EXTRA_LEAN        /* don't change this line: trim additional tub of lard from windoze */
-#endif
-
-/*-------------------------------------------------------------------------*/
-
-/*
- *      When compiling the gucefIMAGE library you should define BUILD_GUCEFIMAGE_DLL
- *      before including this macro file.
- */
-#ifndef MANUAL_EXPORT_DEFINE
-  #undef USE_DLL
-  #undef BUILD_DLL
-  #ifdef BUILD_GUCEFIMAGE_DLL
-    #define BUILD_DLL
-  #else
-    #define USE_DLL
-  #endif  
-#endif /* MANUAL_EXPORT_DEFINE ? */
-
-/*-------------------------------------------------------------------------*/
-
 /*
  *      Macros for dynamic linking or static linking. Use the switches in the
  *      config file to control the export type.
  */
 #undef EXPORT
-#ifdef MSWIN_BUILD
-  #ifdef BUILD_DLL
+#ifdef GUCEF_MSWIN_BUILD
+  #ifdef BUILD_GUCEFIMAGE_DLL
     #define EXPORT __declspec( dllexport )
   #else
-    #ifdef USE_DLL
-      #define EXPORT __declspec( dllimport )
-    #else
-      #define EXPORT
-    #endif /* USE_DLL */
+    #define EXPORT __declspec( dllimport )
   #endif /* BUILD_DLL */
 #else
   #define EXPORT   /* Linux does not need an additional directive */
