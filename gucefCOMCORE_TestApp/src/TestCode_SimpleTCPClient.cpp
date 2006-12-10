@@ -81,6 +81,15 @@ class CSimpleTCPClient : public CGUCEFAppSubSystem
             {
                 _clientsock.Send(Information);
             }
+            else if ( eventid == _clientsock.DataRecievedEvent )
+            {
+                int buffersize = ((CTCPClientSocket::TDataRecievedEventData*)eventdata)->GetData().GetDataSize();
+                char *buffer = new char[buffersize + 1];
+                memcpy(buffer, ((CTCPClientSocket::TDataRecievedEventData*)eventdata)->GetData().GetConstBufferPtr(), buffersize);
+                buffer[buffersize] = '\0';
+
+                printf("%s\r\n", buffer);
+            }
             else
             {
                 printf("%s - UNHANDLED\r\n", eventid.GetName());
