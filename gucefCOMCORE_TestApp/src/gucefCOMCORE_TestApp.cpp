@@ -59,7 +59,7 @@ WinMain( HINSTANCE hinstance     ,
         try 
         {                               
                 //SetupClientServerTest();
-                SetupSimpleTCPClient("69.64.50.167", 80, "GET /ee/trade.html\r\n\r\n");
+                SetupSimpleTCPClient("www.google.nl", 80, "GET /index.html\r\n\r\n");
 
                 CGUCEFApplication::Instance()->Main( hinstance     ,
                                                      lpcmdline     ,

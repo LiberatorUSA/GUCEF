@@ -358,7 +358,8 @@ void
 CTCPClientSocket::Update( UInt32 tickcount  ,
                           UInt32 deltaticks )
 {TRACE;        
-        //CheckRecieveBuffer();
+    
+    CheckRecieveBuffer();
 }                          
 
 /*-------------------------------------------------------------------------*/

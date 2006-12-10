@@ -79,7 +79,7 @@ class CSimpleTCPClient : public CGUCEFAppSubSystem
             }
             else if ( eventid == _clientsock.ConnectedEvent )
             {
-                system("pause");
+                //system("pause");
 
                 _clientsock.Send(Information);
             }

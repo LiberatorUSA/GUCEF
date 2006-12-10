@@ -114,7 +114,8 @@ CCom::Deinstance( void )
 /*-------------------------------------------------------------------------*/
 
 CCom::CCom()
-        : _keep_gstats( false )                ,
+        : CGUCEFAppSubSystem( true )           ,
+          _keep_gstats( false )                ,
           _scount( 0 )                         ,
           _pumpthread( false )                 ,
           _threadedpump( NULL )   
