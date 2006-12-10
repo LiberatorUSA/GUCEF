@@ -47,7 +47,7 @@ static const char* supportedTypes[] = {
     #ifdef IL_PNG
     "png",
     #endif
-    #ifndef IL_BMP
+    #ifdef IL_BMP
     "bmp", "dib",
     #endif
     #ifdef IL_GIF
@@ -200,6 +200,13 @@ IMAGEPLUGIN_Init( void** plugdata    ,
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 IMAGEPLUGIN_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
+    ilSetRead( NULL , 
+               NULL , 
+               NULL , 
+               NULL , 
+               NULL , 
+               NULL , 
+               NULL );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -223,7 +230,7 @@ IMAGEPLUGIN_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
 IMAGEPLUGIN_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    TVersion version;
+    //TVersion version;
     
 }
 
@@ -233,6 +240,14 @@ UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 IMAGEPLUGIN_LoadImage( void* plugdata           ,
                        TIOAccess* sourceData    ,  
                        TImage** outputImageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{
+}
+
+/*---------------------------------------------------------------------------*/
+
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+IMAGEPLUGIN_DetectImageType( void* plugdata        ,
+                             TIOAccess* sourceData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
 }
 

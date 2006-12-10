@@ -75,7 +75,7 @@ class CTCPServerSocketInterface;
 /**
  *      Server socket class for TCP 
  */
-class EXPORT_CPP CTCPServerSocket : public CSocket
+class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
 {
     public:
     

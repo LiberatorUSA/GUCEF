@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef CTCPCLIENTSOCKET_H
-#define CTCPCLIENTSOCKET_H
+#ifndef GUCEF_COMCORE_CTCPCLIENTSOCKET_H
+#define GUCEF_COMCORE_CTCPCLIENTSOCKET_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,15 +24,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef CSOCKET_H
+#ifndef GUCEF_COMCORE_CSOCKET_H
 #include "CSocket.h"                   /* socket Base class */
-#define CSOCKET_H
-#endif /* CSOCKET_H */
+#define GUCEF_COMCORE_CSOCKET_H
+#endif /* GUCEF_COMCORE_CSOCKET_H */
 
-#ifndef GUCEFCOMCORE_MACROS_H
+#ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"  /* GUCEF COMCORE specific macros and build defs */
-#define GUCEFCOMCORE_MACROS_H
-#endif /* GUCEFCOMCORE_MACROS_H ? */
+#define GUCEF_COMCORE_MACROS_H
+#endif /* GUCEF_COMCORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,7 +52,7 @@ namespace COMCORE {
 /**
  *      TCP Client socket class
  */
-class EXPORT_CPP CTCPClientSocket : public CSocket
+class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CSocket
 {
     public:
     
@@ -184,7 +184,7 @@ class EXPORT_CPP CTCPClientSocket : public CSocket
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* CTCPCLIENTSOCKET_H ? */
+#endif /* GUCEF_COMCORE_CTCPCLIENTSOCKET_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

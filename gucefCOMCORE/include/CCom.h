@@ -61,7 +61,7 @@ class CGUCEFCOMCOREModule;
  *      Singleton communication manager for sockets. 
  *      Provides a global control point for all sockets.
  */
-class EXPORT_CPP CCom : public CORE::CGUCEFAppSubSystem
+class GUCEF_COMCORE_EXPORT_CPP CCom : public CORE::CGUCEFAppSubSystem
 {
         public:
         

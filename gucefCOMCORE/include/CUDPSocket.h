@@ -65,7 +65,7 @@ namespace COMCORE {
  *      In both cases a UDPPacketRecievedEvent will be sent when a packet
  *      is received.
  */
-class EXPORT_CPP CUDPSocket : public CSocket
+class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
 {
     public:
     

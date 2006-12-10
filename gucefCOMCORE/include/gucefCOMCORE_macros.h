@@ -85,53 +85,33 @@
 /*-------------------------------------------------------------------------*/
 
 /*
- *      When compiling the gucefCORE library you should define BUILD_GUCEFCORE_DLL
- *      before including this macro file.
- */
-#ifndef MANUAL_EXPORT_DEFINE
-  #undef USE_DLL
-  #undef BUILD_DLL
-  #ifdef BUILD_GUCEFCOMCORE_DLL
-    #define BUILD_DLL
-  #else
-    #define USE_DLL 
-  #endif
-#endif /* MANUAL_EXPORT_DEFINE ? */
-
-/*-------------------------------------------------------------------------*/
-
-/*
  *      Macros for dynamic linking or static linking. Use the switches in the
  *      config file to control the export type.
  */
 #undef EXPORT
 #ifdef GUCEF_MSWIN_BUILD
-  #ifdef BUILD_DLL
+  #ifdef BUILD_GUCEF_COMCORE_DLL
     #define EXPORT __declspec( dllexport )
   #else
-    #ifdef USE_DLL
-      #define EXPORT __declspec( dllimport )
-    #else
-      #define EXPORT
-    #endif /* USE_DLL */
+    #define EXPORT __declspec( dllimport )
   #endif /* BUILD_DLL */
 #else
   #define EXPORT   /* Linux does not need an additional directive */
 #endif /* GUCEF_MSWIN_BUILD ? */
 
-#undef EXPORT_CPP
-#ifdef EXPORT_CPP_CODE
-  #define EXPORT_CPP EXPORT
+#undef GUCEF_COMCORE_EXPORT_CPP
+#ifdef GUCEF_COMCORE_EXPORT_CPP_CODE
+  #define GUCEF_COMCORE_EXPORT_CPP EXPORT
 #else
-  #define EXPORT_CPP
+  #define GUCEF_COMCORE_EXPORT_CPP
 #endif /* EXPORT_CPP_CODE */
 
-#undef EXPORT_C 
-#ifdef EXPORT_C_CODE
-  #define EXPORT_C EXPORT
+#undef GUCEF_COMCORE_EXPORT_C 
+#ifdef GUCEF_COMCORE_EXPORT_C_CODE
+  #define GUCEF_COMCORE_EXPORT_C EXPORT
 #else
-  #define EXPORT_C
-#endif /* EXPORT_C_CODE */
+  #define GUCEF_COMCORE_EXPORT_C
+#endif /* GUCEF_COMCORE_EXPORT_C_CODE */
 
 /*-------------------------------------------------------------------------*/
 

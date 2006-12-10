@@ -335,7 +335,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
             if ( ( bytesrecv < 0 ) || ( errorcode != 0 ) )
             {
                 TSocketErrorEventData eData( errorcode );
-                NotifyObservers( SocketErrorEvent );
+                NotifyObservers( SocketErrorEvent, &eData );
                 
                 UnlockData();
                 return;

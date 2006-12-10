@@ -102,6 +102,7 @@ IMAGEPLUGIN_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 IMAGEPLUGIN_LoadImage( void* plugdata           ,
+                       const char* imageType    ,
                        TIOAccess* sourceData    ,  
                        TImage** outputImageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
@@ -110,6 +111,12 @@ IMAGEPLUGIN_LoadImage( void* plugdata           ,
 EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 IMAGEPLUGIN_DeleteLoadedImage( void* plugdata    ,
                                TImage* imageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*---------------------------------------------------------------------------*/
+
+EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+IMAGEPLUGIN_DetectImageType( void* plugdata        ,
+                             TIOAccess* sourceData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 

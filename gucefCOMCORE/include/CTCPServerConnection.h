@@ -77,7 +77,7 @@ class CTCPServerSocket;
 /**
  *      Class that represents a single connection on a TCP server socket
  */
-class EXPORT_CPP CTCPServerConnection : public CSocket
+class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CSocket
 {
         public:
 

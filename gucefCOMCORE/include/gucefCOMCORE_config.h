@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEFCOMCORE_CONFIG_H
-#define GUCEFCOMCORE_CONFIG_H
+#ifndef GUCEF_COMCORE_CONFIG_H
+#define GUCEF_COMCORE_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,10 +67,10 @@
  *      export only C code or perhaps only C++ code. You can do this with the
  *      following defines
  */
-#undef EXPORT_CPP_CODE        /* do not change this line */ 
-#undef EXPORT_C_CODE          /* do not change this line */  
-#define EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
-#define EXPORT_C_CODE   /* do you want to enable the C exports ? */
+#undef GUCEF_COMCORE_EXPORT_CPP_CODE        /* do not change this line */ 
+#undef GUCEF_COMCORE_EXPORT_C_CODE          /* do not change this line */  
+#define GUCEF_COMCORE_EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
+#define GUCEF_COMCORE_EXPORT_C_CODE   /* do you want to enable the C exports ? */
 
 /*
  *      Switches for setting the calling convention used by the gucefCORE
@@ -136,7 +136,7 @@
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEFCOMCORE_CONFIG_H */
+#endif /* GUCEF_COMCORE_CONFIG_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

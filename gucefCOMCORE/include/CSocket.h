@@ -39,10 +39,10 @@
 #define GUCEF_CORE_CNOTIFIER_H
 #endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
-#ifndef GUCEFCOMCORE_MACROS_H
+#ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"      /* macros and build config for the COMCORE library */
-#define GUCEFCOMCORE_MACROS_H
-#endif /* GUCEFCOMCORE_MACROS_H ? */
+#define GUCEF_COMCORE_MACROS_H
+#endif /* GUCEF_COMCORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -70,7 +70,7 @@ class CActiveComPump;
 /**
  *  Base class for all our socket classes.
  */
-class EXPORT_CPP CSocket : public CORE::CNotifier
+class GUCEF_COMCORE_EXPORT_CPP CSocket : public CORE::CNotifier
 {
     public:
     
