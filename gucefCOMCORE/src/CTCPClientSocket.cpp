@@ -358,7 +358,7 @@ void
 CTCPClientSocket::Update( UInt32 tickcount  ,
                           UInt32 deltaticks )
 {TRACE;        
-        CheckRecieveBuffer();
+        //CheckRecieveBuffer();
 }                          
 
 /*-------------------------------------------------------------------------*/
@@ -437,7 +437,7 @@ CTCPClientSocket::Send( const CORE::CString& data )
 {TRACE;
 
         return Send( data.C_String() ,
-                     data.Length()+1 ,
+                     data.Length()   ,
                      0               );
 }
 
