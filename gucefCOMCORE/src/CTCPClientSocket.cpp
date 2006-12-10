@@ -62,6 +62,7 @@ const CORE::CEvent CTCPClientSocket::ConnectedEvent = "GUCEF::COMCORE::CTCPClien
 const CORE::CEvent CTCPClientSocket::DisconnectedEvent = "GUCEF::COMCORE::CTCPClientSocket::DisconnectedEvent";
 const CORE::CEvent CTCPClientSocket::DataRecievedEvent = "GUCEF::COMCORE::CTCPClientSocket::DataRecievedEvent";
 const CORE::CEvent CTCPClientSocket::DataSentEvent = "GUCEF::COMCORE::CTCPClientSocket::DataSentEvent";
+const CORE::CEvent CTCPClientSocket::SocketErrorEvent = "GUCEF::COMCORE::CTCPClientSocket::SocketErrorEvent";
 
 //-------------------------------------------------------------------------//
 //                                                                         //
@@ -164,7 +165,8 @@ CTCPClientSocket::RegisterEvents( void )
     ConnectedEvent.Initialize();
     DisconnectedEvent.Initialize();
     DataRecievedEvent.Initialize();
-    DataSentEvent.Initialize();    
+    DataSentEvent.Initialize();
+    SocketErrorEvent.Initialize();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -317,7 +319,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
          */
         int bytesrecv;
         UInt32 totalrecieved( 0 );
-        int errorcode;
+        int errorcode = 0;
         UInt32 readblocksize;
         m_maxreadbytes ? readblocksize = m_maxreadbytes : readblocksize = 1024;
         do
@@ -328,6 +330,17 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                                    readblocksize                                                 ,
                                    0                                                             ,
                                    &errorcode                                                    );
+            
+            // Check for an error
+            if ( ( bytesrecv < 0 ) || ( errorcode != 0 ) )
+            {
+                TSocketErrorEventData eData( errorcode );
+                NotifyObservers( SocketErrorEvent );
+                
+                UnlockData();
+                return;
+            }
+            
             totalrecieved += bytesrecv;
             if ( m_maxreadbytes )
             {

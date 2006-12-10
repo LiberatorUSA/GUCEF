@@ -61,9 +61,11 @@ class EXPORT_CPP CTCPClientSocket : public CSocket
     static const CORE::CEvent DisconnectedEvent;
     static const CORE::CEvent DataRecievedEvent;
     static const CORE::CEvent DataSentEvent;
+    static const CORE::CEvent SocketErrorEvent;
     
     typedef CORE::TLinkedCloneableBuffer TDataRecievedEventData;
     typedef CORE::TLinkedCloneableBuffer TDataSentEventData;
+    typedef CORE::TCloneableInt32        TSocketErrorEventData;
         
     CTCPClientSocket( bool blocking );
     
