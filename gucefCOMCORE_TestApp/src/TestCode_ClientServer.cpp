@@ -49,7 +49,7 @@ using namespace GUCEF::COMCORE;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-
+#if 0 // Needs conversion to new event system
 class ServerIFace : public CTCPServerSocketInterface
 {
         public:
@@ -351,37 +351,4 @@ class CTestTCPClientServer : public CGUCEFAppSubSystem
         CUDPTestobj _udpsock1;
         CUDPTestobj _udpsock2;                                    
 };
-
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      UTILITIES                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
-{         
-        tspinit();
-        
-        CTestTCPClientServer ttcpclientserver( false );                        
-        
-        return CGUCEFApplication::Instance()->Main( hinstance     ,
-                                                    lpcmdline     ,
-                                                    ncmdshow      ,
-                                                    true          );                                                     
-}       
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 07-02-2005 :
-        - Initial version
-
------------------------------------------------------------------------------*/
+#endif

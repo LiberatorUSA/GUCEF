@@ -182,7 +182,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\MAIN.CPP"
+				RelativePath="..\..\src\gucefCOMCORE_TestApp.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\TestCode_ClientServer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\TestCode_SimpleTCPClient.cpp"
 				>
 			</File>
 		</Filter>
@@ -191,6 +199,14 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\include\TestCode_ClientServer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\TestCode_SimpleTCPClient.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
