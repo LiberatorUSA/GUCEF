@@ -36,7 +36,7 @@
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */ 
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 
 #include "dvwinsock.h"                 /* wrapper for global winsock API */
 
@@ -393,5 +393,5 @@ WSTS_connect( SOCKET s                    ,
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* MSWIN_BUILD ? */
+#endif /* GUCEF_MSWIN_BUILD ? */
  

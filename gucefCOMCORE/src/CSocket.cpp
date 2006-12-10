@@ -35,11 +35,11 @@
 #define CCOM_H
 #endif /* CCOM_H ? */
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
   #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
   #include <winsock2.h>
 #else
- #ifdef LINUX_BUILD
+ #ifdef GUCEF_LINUX_BUILD
     #include <unistd.h>
     #include <sys/socket.h>
     #include <sys/types.h>

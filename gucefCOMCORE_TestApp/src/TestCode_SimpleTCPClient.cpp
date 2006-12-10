@@ -54,10 +54,10 @@ class CSimpleTCPClient : public CGUCEFAppSubSystem
         public:
         
         CSimpleTCPClient( const CORE::CString& remoteaddr  ,
-                        CORE::UInt16 port                ,
-                        const CORE::CString& information )
+                          CORE::UInt16 port                ,
+                          const CORE::CString& information )
                 : _clientsock( false ),
-                  CGUCEFAppSubSystem(true)
+                  CGUCEFAppSubSystem( true )
         {
             RemoteAddr  = remoteaddr;
             Port        = port;
@@ -79,8 +79,6 @@ class CSimpleTCPClient : public CGUCEFAppSubSystem
             }
             else if ( eventid == _clientsock.ConnectedEvent )
             {
-                //system("pause");
-
                 _clientsock.Send(Information);
             }
             else

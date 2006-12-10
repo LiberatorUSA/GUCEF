@@ -57,9 +57,9 @@
  */
 #ifndef MANUAL_OS_DEFINE
   #if defined( WIN32 ) || defined( _WIN32 )
-    #define MSWIN_BUILD
+    #define GUCEF_MSWIN_BUILD
   #else
-    #define LINUX_BUILD
+    #define GUCEF_LINUX_BUILD
   #endif 
 #endif /* MANUAL_OS_DEFINE ? */
 
@@ -90,7 +90,7 @@
   #endif /* BUILD_DLL */
 #else
   #define EXPORT   /* Linux does not need an additional directive */
-#endif /* MSWIN_BUILD ? */
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 #undef EXPORT_CPP
 #ifdef EXPORT_CPP_CODE

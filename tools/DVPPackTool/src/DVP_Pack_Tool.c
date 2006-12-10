@@ -31,9 +31,9 @@
 #include "DVPACKSYS.h"  // Pack sys utils
 #include "dvstrutils.h" // My own string tools
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>
-#endif /* MSWIN_BUILD ? */
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,7 +50,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 
 void cls( void )
 {
@@ -82,7 +82,7 @@ void cls( void )
     return;
 }
 
-#endif /* MSWIN_BUILD ? */
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 /*---------------------------------------------------------------------------*/
 

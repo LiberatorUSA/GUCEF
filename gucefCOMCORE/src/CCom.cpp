@@ -185,7 +185,7 @@ CCom::OnUpdate( UInt32 tickcount  ,
         }
         
         _mutex.Lock();
-        for ( Int32 i=0; i<=_sockets.GetLast(); ++i )
+        for ( Int32 i=0; i <= _sockets.GetLast(); ++i )
         {
                 if ( _sockets[ i ] )
                 {

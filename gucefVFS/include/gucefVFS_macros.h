@@ -57,9 +57,9 @@
  */
 #ifndef MANUAL_OS_DEFINE
   #if defined( WIN32 ) || defined( _WIN32 )
-    #define MSWIN_BUILD
+    #define GUCEF_MSWIN_BUILD
   #elif defined( linux )
-    #define LINUX_BUILD
+    #define GUCEF_LINUX_BUILD
   #else
     #error Cannot automaticly detect your operating system
   #endif  
@@ -147,7 +147,7 @@
  *      config file to control the export type.
  */
 #undef EXPORT
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
   #ifdef BUILD_DLL
     #define EXPORT __declspec( dllexport )
   #else
@@ -159,7 +159,7 @@
   #endif /* BUILD_DLL */
 #else
   #define EXPORT   /* Linux does not need an additional directive */
-#endif /* MSWIN_BUILD ? */
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 #undef EXPORT_CPP
 #ifdef EXPORT_CPP_CODE
@@ -257,9 +257,9 @@
 #ifndef MANUAL_BITTARGET_DEFINE
   #undef GUCEF32BIT
   #undef GUCEF64BIT
-  #if defined ( MSWIN_BUILD ) && ( defined( _WIN32 ) || defined( WIN32 ) )
+  #if defined ( GUCEF_MSWIN_BUILD ) && ( defined( _WIN32 ) || defined( WIN32 ) )
     #define GUCEF32BIT
-  #elif defined ( MSWIN_BUILD ) && ( defined( _WIN64 ) || defined( WIN64 ) )
+  #elif defined ( GUCEF_MSWIN_BUILD ) && ( defined( _WIN64 ) || defined( WIN64 ) )
     #define GUCEF64BIT
   #else  
     #error Cannot autodetect wheter this is a 32 or 64 bit build
@@ -274,7 +274,7 @@
  */
 #undef DIRSEPCHAR
 #undef DIRSEPCHAROPPOSITE
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
   #define DIRSEPCHAR         '\\'
   #define DIRSEPCHAROPPOSITE '/'
 #else

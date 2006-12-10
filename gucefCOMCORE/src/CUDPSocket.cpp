@@ -30,11 +30,11 @@
 
 #include "CUDPSocket.h" /* definition of the class implemented here */
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
   #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
   #include <winsock2.h>
 #else
- #ifdef LINUX_BUILD
+ #ifdef GUCEF_LINUX_BUILD
     #include <unistd.h>
     #include <sys/socket.h>
     #include <sys/types.h>
@@ -72,7 +72,7 @@ const CORE::CEvent CUDPSocket::UDPPacketRecievedEvent = "GUCEF::COMCORE::CUDPSoc
  */
 struct CUDPSocket::SUDPSockData
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         SOCKET sockid;
         struct sockaddr_in localaddress;
         #endif
@@ -293,7 +293,7 @@ CUDPSocket::Open( void )
         Close( true );           
         
         //----------- BEGIN MS WINDOWS IMPLEMENTATION        
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         
         _data->sockid = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
         if ( _data->sockid == INVALID_SOCKET ) return false;
@@ -313,7 +313,7 @@ CUDPSocket::Open( void )
         //m_port = ;  @MAKEME
         return true;
         
-        #endif /* MSWIN_BUILD ? */
+        #endif /* GUCEF_MSWIN_BUILD ? */
         //----------- END MS WINDOWS IMPLEMENTATION
 }       
 
@@ -325,7 +325,7 @@ CUDPSocket::Open( UInt16 port )
         Close( true );
         
         //----------- BEGIN MS WINDOWS IMPLEMENTATION
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         
         _data->sockid = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
         if ( _data->sockid == INVALID_SOCKET ) return false;
@@ -354,7 +354,7 @@ CUDPSocket::Open( UInt16 port )
         }
         return false;
         
-        #endif /* MSWIN_BUILD ? */
+        #endif /* GUCEF_MSWIN_BUILD ? */
         //----------- END MS WINDOWS IMPLEMENTATION
 }
 
@@ -367,7 +367,7 @@ CUDPSocket::Open( const CORE::CString& localaddr ,
         Close( true );
         
         //----------- BEGIN MS WINDOWS IMPLEMENTATION
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         
         _data->sockid = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
         if ( _data->sockid != INVALID_SOCKET ) return false;
@@ -396,7 +396,7 @@ CUDPSocket::Open( const CORE::CString& localaddr ,
         }
         return false;
         
-        #endif /* MSWIN_BUILD ? */
+        #endif /* GUCEF_MSWIN_BUILD ? */
         //----------- END MS WINDOWS IMPLEMENTATION       
 }
 

@@ -99,7 +99,7 @@ typedef struct STCPServerConData TTCPServerConData;
 
 struct STCPServerSockData
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         SOCKET sockid;           /* Winsock socket number */
         UInt32 connectcount;     /* number of clients connected to the server socket */
         UInt32 maxcon;           /* maximum number of connections for this server socket */
@@ -372,7 +372,7 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
         /*
          *      === Microsoft Windows implementation === 
          */        
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         
         int error;
         _data->sockid = WSTS_socket( AF_INET     ,    /* Go over TCP/IP */
@@ -484,7 +484,7 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
         /*
          *      === Linux implementation === 
          */         
-        #elif LINUX_BUILD
+        #elif GUCEF_LINUX_BUILD
             #error implementation not implemented
         #elif
         return false;

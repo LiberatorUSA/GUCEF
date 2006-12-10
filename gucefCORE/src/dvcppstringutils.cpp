@@ -37,7 +37,7 @@
   #define WIN32_LEAN_AND_MEAN
   #include <windows.h>		/* WIN32 API */
   #define MAX_DIR_LENGTH MAX_PATH
-#elif LINUX_BUILD
+#elif GUCEF_LINUX_BUILD
   #include <unistd.h>             /* POSIX utilities */
   #include <limits.h>             /* Linux OS limits */
   #define MAX_DIR_LENGTH PATH_MAX

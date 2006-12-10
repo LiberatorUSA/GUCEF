@@ -585,6 +585,7 @@ CDynamicBuffer::LinkTo( const void* externalBuffer ,
     _bsize = bufferSize;
     m_dataSize = bufferSize;
     _buffer = static_cast< char*>( const_cast< void* >( externalBuffer ) );
+    m_linked = true;
 }
 
 /*-------------------------------------------------------------------------*/

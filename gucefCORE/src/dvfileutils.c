@@ -38,7 +38,7 @@
   #include <io.h>                 /* Dir itteration: findfirst ect. */
   #include <direct.h>             /* dir tools */
   #define MAX_DIR_LENGTH MAX_PATH
-#elif LINUX_BUILD
+#elif GUCEF_LINUX_BUILD
   #include <dirent.h>             /* needed for dirent strcture */
   #include <unistd.h>             /* POSIX utilities */
   #include <limits.h>             /* Linux OS limits */
@@ -84,10 +84,10 @@ struct SDI_Data
         DIR *dir;                 /* Directory stream */
         struct dirent *entry;     /* Pointer needed for functions to iterating directory entries. Stores entry name which is used to get stat */
         struct stat statinfo;     /* Struct needed for determining info about an entry with stat(). */
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         #else
         /* -> empty struct because we don't support other OS's atm */
-        #endif /* LINUX_BUILD ? */
+        #endif /* GUCEF_LINUX_BUILD ? */
         #endif /* WIN32_BUILD ? */
 };
 
@@ -155,7 +155,7 @@ DI_First_Dir_Entry( const char *path )
         return data; 
 
         #else
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
 
         /*
          *	In Linux we use POSIX functions because these are independant of
@@ -223,7 +223,7 @@ DI_First_Dir_Entry( const char *path )
          */
         return NULL;
 
-        #endif /* LINUX_BUILD */        
+        #endif /* GUCEF_LINUX_BUILD */        
         #endif /* WIN32_BUILD */
 }
 
@@ -246,7 +246,7 @@ DI_Next_Dir_Entry( struct SDI_Data *data )
         #ifdef GUCEF_MSWIN_BUILD
         return !_findnext( data->find_handle, &data->find );
 	#else
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
 
         /*
          *	Read next entry
@@ -287,7 +287,7 @@ DI_Next_Dir_Entry( struct SDI_Data *data )
          *	Unsupported O/S build
          */
 
-        #endif /* LINUX_BUILD ? */
+        #endif /* GUCEF_LINUX_BUILD ? */
         #endif /* WIN32_BUILD ? */
 }
 
@@ -308,7 +308,7 @@ DI_Timestamp( struct SDI_Data *data )
         #ifdef GUCEF_MSWIN_BUILD
         return (UInt32)data->find.time_write;
 	#else
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         return data->statinfo.st_mtime;
         #else
 
@@ -316,7 +316,7 @@ DI_Timestamp( struct SDI_Data *data )
          *	Unsupported O/S build
          */
 
-        #endif /* LINUX_BUILD ? */
+        #endif /* GUCEF_LINUX_BUILD ? */
         #endif /* WIN32_BUILD ? */
 }
 
@@ -337,7 +337,7 @@ DI_Size( struct SDI_Data *data )
         #ifdef GUCEF_MSWIN_BUILD
         return data->find.size;
 	#else
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         return data->statinfo.st_size;
         #else
 
@@ -345,7 +345,7 @@ DI_Size( struct SDI_Data *data )
          *	Unsupported O/S build
          */
 
-        #endif /* LINUX_BUILD ? */
+        #endif /* GUCEF_LINUX_BUILD ? */
         #endif /* WIN32_BUILD ? */
 }
 
@@ -366,7 +366,7 @@ DI_Is_It_A_File( struct SDI_Data *data )
         #ifdef GUCEF_MSWIN_BUILD
         return !( data->find.attrib & _A_SUBDIR );
 	#else
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         return S_ISREG( data->statinfo.st_mode );
         #else
 
@@ -374,7 +374,7 @@ DI_Is_It_A_File( struct SDI_Data *data )
          *	Unsupported O/S build
          */
 
-        #endif /* LINUX_BUILD ? */
+        #endif /* GUCEF_LINUX_BUILD ? */
         #endif /* WIN32_BUILD ? */
 }
 
@@ -395,7 +395,7 @@ DI_Name( struct SDI_Data *data )
         #ifdef GUCEF_MSWIN_BUILD
         return data->find.name;
 	#else
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         return data->entry->d_name;
         #else
 
@@ -403,7 +403,7 @@ DI_Name( struct SDI_Data *data )
          *	Unsupported O/S build
          */
 
-        #endif /* LINUX_BUILD ? */
+        #endif /* GUCEF_LINUX_BUILD ? */
         #endif /* WIN32_BUILD ? */         
 }
 
@@ -425,7 +425,7 @@ DI_Cleanup( struct SDI_Data *data )
         _findclose( data->find_handle );
         free( data );
 	#else
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
 	closedir( data->dir );
         free( data );
         #else
@@ -434,7 +434,7 @@ DI_Cleanup( struct SDI_Data *data )
          *	Unsupported O/S build
          */
 
-        #endif /* LINUX_BUILD ? */
+        #endif /* GUCEF_LINUX_BUILD ? */
         #endif /* WIN32_BUILD ? */           
 }
 
@@ -451,14 +451,14 @@ Get_Current_Dir( char* dest_buffer, UInt32 buf_length )
         #ifdef GUCEF_MSWIN_BUILD
         return _getcwd( dest_buffer, buf_length );
         #endif /* WIN32_BUILD */
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         
         /*
          *	This call can actually fail: if another process has succeeded
          *	in removing the current directory of a process
          */
         return getcwd( dest_buffer, buf_length );
-        #endif /* LINUX_BUILD */
+        #endif /* GUCEF_LINUX_BUILD */
 }
 
 /*-------------------------------------------------------------------------*/
@@ -473,9 +473,9 @@ Max_Dir_Length( void )
         #ifdef GUCEF_MSWIN_BUILD
         return MAX_PATH;
         #endif /* WIN32_BUILD */
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         return PATH_MAX;
-        #endif /* LINUX_BUILD */
+        #endif /* GUCEF_LINUX_BUILD */
 }
 
 /*-------------------------------------------------------------------------*/
@@ -487,9 +487,9 @@ Max_Filename_Length( void )
         return _MAX_FNAME;
         /*return MAXFILE+MAXEXT; */
         #endif /* WIN32_BUILD */
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         return NAME_MAX+1;
-        #endif /* LINUX_BUILD */
+        #endif /* GUCEF_LINUX_BUILD */
 }
 
 /*-------------------------------------------------------------------------*/
@@ -575,12 +575,12 @@ Create_Directory( const char *new_dir )
         #ifdef GUCEF_MSWIN_BUILD
 	return create_directory( new_dir, 0 );
         #endif /* WIN32_BUILD */
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         /*
          *	Use posix function. returns -1 on failure and 0 on sucess
          */
         return mkdir( new_dir, 0777 )+1;
-        #endif /* LINUX_BUILD */
+        #endif /* GUCEF_LINUX_BUILD */
 }
 
 /*-------------------------------------------------------------------------*/
@@ -678,9 +678,9 @@ Module_Path( char *dest, UInt32 dest_size )
         #ifdef GUCEF_MSWIN_BUILD
         return !GetModuleFileName( NULL, dest, dest_size ); 
         #else 
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         #endif /* WIN32_BUILD ? */
-        #endif /* LINUX_BUILD ? */
+        #endif /* GUCEF_LINUX_BUILD ? */
 } 
 
 /*-------------------------------------------------------------------------*/
@@ -695,10 +695,10 @@ Delete_File( const char *filename )
         #ifdef GUCEF_MSWIN_BUILD
         return DeleteFile( filename );
         #else
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         return remove( filename );
         #endif /* WIN32_BUILD ? */
-        #endif /* LINUX_BUILD ? */
+        #endif /* GUCEF_LINUX_BUILD ? */
 }
 
 /*-------------------------------------------------------------------------*/
@@ -826,9 +826,9 @@ Execute_Program( const char *filename ,
                 }
                 return 0;
                 #else
-                #ifdef LINUX_BUILD
+                #ifdef GUCEF_LINUX_BUILD
                 #endif /* WIN32_BUILD ? */
-                #endif /* LINUX_BUILD ? */
+                #endif /* GUCEF_LINUX_BUILD ? */
         }
         return 0;
 }
@@ -856,7 +856,7 @@ Filesize( const char *filename )
                 FindClose( hFind );
                 return lfilesize;
                 #else
-                #ifdef LINUX_BUILD
+                #ifdef GUCEF_LINUX_BUILD
                 struct _stat buf;
                 UInt32 filesize;
                 int result;
@@ -871,7 +871,7 @@ Filesize( const char *filename )
                 fclose( fptr );
                 return filesize;
                 #endif /* WIN32_BUILD ? */
-                #endif /* LINUX_BUILD ? */                
+                #endif /* GUCEF_LINUX_BUILD ? */                
         }
         return 0;
 }
@@ -900,7 +900,7 @@ File_Exists( const char *filename )
                 
                 
                 #else
-                #ifdef LINUX_BUILD
+                #ifdef GUCEF_LINUX_BUILD
                 struct _stat buf;
                 if ( _stat( filename, &buf ) == -1 )
                 return errno == ENOENT;
@@ -911,7 +911,7 @@ File_Exists( const char *filename )
                 fclose( fptr );
                 return fptr > 0;
                 #endif /* WIN32_BUILD ? */
-                #endif /* LINUX_BUILD ? */                
+                #endif /* GUCEF_LINUX_BUILD ? */                
         }
         return 0;
 }

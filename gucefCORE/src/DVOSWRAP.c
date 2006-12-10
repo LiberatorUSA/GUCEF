@@ -35,11 +35,11 @@
 #define MAX_DIR_LENGTH MAX_PATH
 #endif /* GUCEF_MSWIN_BUILD ? */
 
-#ifdef LINUX_BUILD
+#ifdef GUCEF_LINUX_BUILD
   #include <limits.h>                 /* Linux OS limits */
   #include <dlfcn.h>                  /* dynamic linking utilities */
   #define MAX_DIR_LENGTH PATH_MAX
-#endif /* LINUX_BUILD ? */
+#endif /* GUCEF_LINUX_BUILD ? */
 
 #ifndef GUCEF_CORE_DVSTRUTILS_H
 #include "dvstrutils.h"               /* needed for str to int */
@@ -87,7 +87,7 @@ static LARGE_INTEGER m_high_perf_timer_freq = { 0 };
 void*
 LoadModuleDynamicly( const char* filename )
 {
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         return (void*) dlopen( filename, RTLD_NOW );
         #else
           #ifdef GUCEF_MSWIN_BUILD
@@ -104,7 +104,7 @@ void
 UnloadModuleDynamicly( void *sohandle )
 {
         if ( !sohandle ) return;
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         dlclose( sohandle );
         #elif defined( GUCEF_MSWIN_BUILD )
         FreeLibrary( (HMODULE)sohandle );
@@ -127,7 +127,7 @@ GetFunctionAddress( void *sohandle           ,
          */
         void* fptr;
         if ( !sohandle ) return NULL;
-        #if defined( LINUX_BUILD )
+        #if defined( GUCEF_LINUX_BUILD )
         return (void*) dlsym( sohandle     ,
                               functionname );
         #elif defined( GUCEF_MSWIN_BUILD )

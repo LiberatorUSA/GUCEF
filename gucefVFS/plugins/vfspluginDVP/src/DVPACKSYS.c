@@ -41,11 +41,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
   #include <windows.h>		/* WIN32 API */
   #define MAX_DIR_LENGTH MAX_PATH
 #else 
-  #ifdef LINUX_BUILD
+  #ifdef GUCEF_LINUX_BUILD
     #include <unistd.h>             /* POSIX utilities */
     #define MAX_DIR_LENGTH PATH_MAX
   #else 

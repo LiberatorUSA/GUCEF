@@ -437,7 +437,7 @@ CVFS::GetFile( const CORE::CString& file          ,
         DEBUGOUTPUT( "CVFS::GetFile( const CORE::CString& file, UInt32& errorcode )" );
         DEBUGOUTPUTss( "CVFS: Attempting to load file: ", file.C_String() );
         
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         CORE::CString filepath( file.ReplaceChar( '/', '\\' ) );
         #else
         CORE::CString filepath( file.ReplaceChar( '\\', '/' ) );

@@ -128,7 +128,7 @@ class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     bool m_driverisplugin;        
     CORE::CDynamicArray m_contextlist;
     
-    #ifdef MSWIN_BUILD
+    #ifdef GUCEF_MSWIN_BUILD
     UInt32 m_hinstance;
     #endif
     

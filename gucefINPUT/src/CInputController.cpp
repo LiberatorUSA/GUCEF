@@ -84,7 +84,7 @@ CInputController::CInputController( void )
         : m_driverisplugin( false ) ,
           m_driver( NULL )
           
-          #ifdef MSWIN_BUILD
+          #ifdef GUCEF_MSWIN_BUILD
           ,
           m_hinstance(0UL)
           #endif
@@ -147,7 +147,7 @@ CInputController::CreateContext( const CORE::CValueList& params       ,
 {TRACE;
         if ( m_driver )
         {
-                #ifdef MSWIN_BUILD
+                #ifdef GUCEF_MSWIN_BUILD
                 
                 CORE::CValueList extraparams( params );
                 CORE::CString hinststr;
@@ -291,14 +291,14 @@ CInputController::OnNotify( CORE::CNotifier* notifier                 ,
                             const CORE::CEvent& eventid               ,
                             CORE::CICloneable* eventdata /* = NULL */ )
 {TRACE;
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         if ( eventid == CORE::CGUCEFApplication::AppInitEvent )
         {
                 CORE::CGUCEFApplication::TAppInitEventData* initData = static_cast< CORE::CGUCEFApplication::TAppInitEventData* >( eventdata );
                 #pragma warning( disable: 4311 ) // pointer truncation warning
                 m_hinstance = reinterpret_cast<UInt32>( initData->GetData().hinstance );
         }
-        #endif /* MSWIN_BUILD ? */
+        #endif /* GUCEF_MSWIN_BUILD ? */
 }
 
 /*-------------------------------------------------------------------------*/

@@ -40,7 +40,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
   #include <windows.h>
 
   #undef DLL_INIT_FUNC
@@ -112,7 +112,7 @@
 		return 1;                                              \
         }                                                      
 #else          				
-  #ifdef LINUX_BUILD
+  #ifdef GUCEF_LINUX_BUILD
 
     #undef DLL_INIT_FUNC
     #define DLL_INIT_FUNC( ns )   \

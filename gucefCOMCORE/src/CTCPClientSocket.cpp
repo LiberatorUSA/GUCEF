@@ -83,12 +83,12 @@ const CORE::CEvent CTCPClientSocket::SocketErrorEvent = "GUCEF::COMCORE::CTCPCli
  */
 struct CTCPClientSocket::STCPClientSockData
 {
-        #ifdef MSWIN_BUILD
+        #ifdef GUCEF_MSWIN_BUILD
         LPHOSTENT hostent;
         SOCKET sockid;
         SOCKADDR_IN serverinfo;
         #else
-          #ifdef LINUX_BUILD
+          #ifdef GUCEF_LINUX_BUILD
           #endif
         #endif  
 };

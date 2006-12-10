@@ -109,7 +109,7 @@
         }                                                      
           		
 		
-#elif LINUX_BUILD
+#elif GUCEF_LINUX_BUILD
 
   #define DLL_INIT_FUNC( ns )   \
                                 \ 

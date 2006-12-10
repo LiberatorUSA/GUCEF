@@ -35,10 +35,10 @@
  *      Target platform selection switches.
  *      Only has an effect if MANUAL_OS_DEFINE is defined.
  */
-#undef LINUX_BUILD        /* do not change this line */
-#undef MSWIN_BUILD        /* do not change this line */ 
-/* #define LINUX_BUILD */
-#define MSWIN_BUILD      
+#undef GUCEF_LINUX_BUILD        /* do not change this line */
+#undef GUCEF_MSWIN_BUILD        /* do not change this line */ 
+/* #define GUCEF_LINUX_BUILD */
+#define GUCEF_MSWIN_BUILD      
 
 /*
  *      Do you wish to manually define wheter you are building or using a

@@ -40,7 +40,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
   #include <windows.h>
 
   #define DLL_INIT_FUNC( ns )                          \
@@ -109,7 +109,7 @@
         }                                                      
           		
 		
-#elif LINUX_BUILD
+#elif GUCEF_LINUX_BUILD
 
   #define DLL_INIT_FUNC( ns )   \
                                 \ 

@@ -707,7 +707,7 @@ Last_Subdir( const char *path )
         if ( index < max ) index++;
         return index;
         #else
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         Int32 index = _Find_Char( 0, 0, '/', path, max );
         if ( index < 0 ) return 0;
         if ( index == max )
@@ -718,7 +718,7 @@ Last_Subdir( const char *path )
         return index;
         #else
         return 0;
-        #endif /* LINUX_BUILD */
+        #endif /* GUCEF_LINUX_BUILD */
         #endif /* WIN32_BUILD */
 }
 
@@ -750,11 +750,11 @@ Strip_Last_Subdir( char *path )
         	#ifdef GUCEF_MSWIN_BUILD
         	findex = _Find_Char( 0, 0, '\\', path, max );
                 #else
-                #ifdef LINUX_BUILD
+                #ifdef GUCEF_LINUX_BUILD
                 findex = _Find_Char( 0, 0, '/', path, max );
                 #else
                 return max;
-                #endif /* LINUX_BUILD */
+                #endif /* GUCEF_LINUX_BUILD */
                 #endif /* WIN32_BUILD */
                 for ( i=findex; i<max; i++ )
                 {
@@ -771,11 +771,11 @@ Strip_Last_Subdir( char *path )
         #ifdef GUCEF_MSWIN_BUILD
         index = _Find_Char( 0, 0, '\\', path, max );
         #else
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         index = _Find_Char( 0, 0, '/', path, max );
         #else
         return max;
-        #endif /* LINUX_BUILD */
+        #endif /* GUCEF_LINUX_BUILD */
         #endif /* WIN32_BUILD */
         if ( index < 0 ) return findex;
         for ( i=index; i<findex; i++ )
@@ -961,7 +961,7 @@ Append_To_Path( char *path           ,
         strcat( path, addition+offset );
         Convert_Dir_Seperators( path );
         #else
-        #ifdef LINUX_BUILD
+        #ifdef GUCEF_LINUX_BUILD
         if ( path[ len-1 ] == '/' )
         {
                 strcat( path, addition+offset );
@@ -971,7 +971,7 @@ Append_To_Path( char *path           ,
         strcat( path, "/" );
         strcat( path, addition+offset );
         Convert_Dir_Seperators( path );
-        #endif /* LINUX_BUILD */
+        #endif /* GUCEF_LINUX_BUILD */
         #endif /* WIN32_BUILD */
 }
 

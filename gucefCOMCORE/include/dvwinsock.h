@@ -29,7 +29,7 @@
 #define GUCEFCOMCORE_MACROS_H
 #endif /* GUCEFCOMCORE_MACROS_H ? */
 
-#ifdef MSWIN_BUILD
+#ifdef GUCEF_MSWIN_BUILD
 
 //#ifndef SOCKETERRORS_H
 //#include "socketerrors.h"              /* network API independant socket errors */
@@ -213,7 +213,7 @@ WSTS_gethostbyaddr( const char* addr ,
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* MSWIN_BUILD ? */
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 /*--------------------------------------------------------------------------*/
 
