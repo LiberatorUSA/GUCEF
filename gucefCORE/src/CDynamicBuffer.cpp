@@ -338,7 +338,15 @@ CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
                     }
             }
     }
-    _buffer = (char*) realloc( _buffer, newSize );
+    
+    if ( NULL == _buffer )
+    {
+        _buffer = (char*) malloc( newSize );
+    }
+    else
+    {
+        _buffer = (char*) realloc( _buffer, newSize );
+    }
     _bsize = newSize;
 }
 
@@ -547,7 +555,7 @@ CDynamicBuffer::SetDataSize( const UInt32 newSize )
 {TRACE;
         SecureLinkBeforeMutation();
         
-        SetBufferSize( m_dataSize, false );
+        SetBufferSize( newSize, false );
         m_dataSize = newSize;        
 }
 
@@ -597,8 +605,8 @@ CDynamicBuffer::SecureLinkBeforeMutation( void )
     if ( m_linked )
     {
         /*  Buffer mutation requested but the buffer is linked to an
-         *  external recource for which this object does not have ownership.
-         *  We will copy the data of the extenal buffer and make it private.
+         *  external resource for which this object does not have ownership.
+         *  We will copy the data of the external buffer and make it private.
          *  The makes the mutation a safe operation.
          *
          *  First we copy our link locally
