@@ -58,8 +58,8 @@ WinMain( HINSTANCE hinstance     ,
                 
         try 
         {                               
-                //SetupClientServerTest();
-                SetupSimpleTCPClient("httpd.apache.org", 80, "GET /\r\n");
+                SetupClientServerTest();
+                //SetupSimpleTCPClient("httpd.apache.org", 80, "GET /\r\n");
 
                 CGUCEFApplication::Instance()->Main( hinstance     ,
                                                      lpcmdline     ,
