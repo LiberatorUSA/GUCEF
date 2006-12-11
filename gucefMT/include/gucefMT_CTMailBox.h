@@ -59,7 +59,7 @@ class CTMailBox
     virtual ~CTMailBox();
 
     /**
-     *  Adds the given eventid and data to the FILO stack.
+     *  Adds the given eventid and data to the FIFO stack.
      *  if data is non-NULL then it will be cloned.
      *
      *  @param eventid the ID of the event you wish to add to the mailbox
