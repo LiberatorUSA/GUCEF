@@ -235,7 +235,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     
     NotifyObservers( ConnectingEvent );
     
-    int errorcode;
+    int errorcode = 0;
     if ( CORE::Check_If_IP( remoteaddr.C_String() ) )
     {
             UInt32 addr = inet_addr( remoteaddr.C_String() );
@@ -248,7 +248,21 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     {
             _data->hostent = WSTS_gethostbyname( remoteaddr.C_String() ,
                                                  &errorcode            );
-    }                                             
+    }
+    
+    // Check for an error
+    if ( errorcode != 0 )
+    {
+        // Notify our users of the error
+        TSocketErrorEventData eData( errorcode );
+        NotifyObservers( SocketErrorEvent, &eData );
+        
+        // After a socket error you must always close the connection.
+        _active = false;
+        
+        UnlockData();
+        return;
+    }    
                                         
     if ( !_data->hostent ) return false;
 
@@ -256,6 +270,20 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
                                  SOCK_STREAM ,  /* This is a stream-oriented socket */
                                  IPPROTO_TCP ,  /* Use TCP rather than UDP */
                                  &errorcode  );
+
+    // Check for an error
+    if ( errorcode != 0 )
+    {
+        // Notify our users of the error
+        TSocketErrorEventData eData( errorcode );
+        NotifyObservers( SocketErrorEvent, &eData );
+        
+        // After a socket error you must always close the connection.
+        _active = false;
+        
+        UnlockData();
+        return;
+    }
                                  
     if ( _data->sockid == INVALID_SOCKET ) return false;
     
@@ -293,7 +321,20 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
                        &errorcode                     ) == SOCKET_ERROR )
     {
         _active = false;
-        return false;
+        
+        // Check for an error
+        if ( errorcode != 0 )
+        {
+            // Notify our users of the error
+            TSocketErrorEventData eData( errorcode );
+            NotifyObservers( SocketErrorEvent, &eData );
+        }        
+                
+        // After a socket error you must always close the connection.
+        _active = false;
+        
+        UnlockData();
+        return;
     }
         
     _remoteaddr = remoteaddr;
