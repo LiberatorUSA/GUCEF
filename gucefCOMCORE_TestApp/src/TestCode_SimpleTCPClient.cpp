@@ -77,11 +77,11 @@ class CSimpleTCPClient : public CGUCEFAppSubSystem
                 _clientsock.ConnectTo( RemoteAddr,
                                        Port      );
             }
-            else if ( eventid == _clientsock.ConnectedEvent )
+            else if ( eventid == CTCPClientSocket::ConnectedEvent )
             {
                 _clientsock.Send(Information);
             }
-            else if ( eventid == _clientsock.DataRecievedEvent )
+            else if ( eventid == CTCPClientSocket::DataRecievedEvent )
             {
                 int buffersize = ((CTCPClientSocket::TDataRecievedEventData*)eventdata)->GetData().GetDataSize();
                 char *buffer = new char[buffersize + 1];
@@ -89,6 +89,18 @@ class CSimpleTCPClient : public CGUCEFAppSubSystem
                 buffer[buffersize] = '\0';
 
                 printf("%s\r\n", buffer);
+            }
+            else if ( eventid == CTCPClientSocket::SocketErrorEvent )
+            {
+                if ( NULL != eventdata )
+                {
+                    CTCPClientSocket::TSocketErrorEventData* errorData = static_cast< CTCPClientSocket::TSocketErrorEventData* >( eventdata );                     
+                    printf( "%s - Error code: %d\r\n", eventid.GetName(), errorData->GetData() );
+                }
+                else
+                {
+                    printf( "%s - No error data found\r\n", eventid.GetName() );
+                }
             }
             else
             {
