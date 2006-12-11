@@ -334,8 +334,12 @@ CTCPClientSocket::CheckRecieveBuffer( void )
             // Check for an error
             if ( ( bytesrecv < 0 ) || ( errorcode != 0 ) )
             {
+                // Notify our users of the error
                 TSocketErrorEventData eData( errorcode );
                 NotifyObservers( SocketErrorEvent, &eData );
+                
+                // After a socket error you must always close the connection.
+                Close();
                 
                 UnlockData();
                 return;
