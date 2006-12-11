@@ -261,7 +261,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
         _active = false;
         
         UnlockData();
-        return;
+        return false;
     }    
                                         
     if ( !_data->hostent ) return false;
@@ -282,7 +282,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
         _active = false;
         
         UnlockData();
-        return;
+        return false;
     }
                                  
     if ( _data->sockid == INVALID_SOCKET ) return false;
@@ -334,7 +334,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
         _active = false;
         
         UnlockData();
-        return;
+        return false;
     }
         
     _remoteaddr = remoteaddr;
