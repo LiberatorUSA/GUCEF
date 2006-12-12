@@ -88,7 +88,7 @@ class CSimpleTCPClient : public CGUCEFAppSubSystem
                 memcpy(buffer, ((CTCPClientSocket::TDataRecievedEventData*)eventdata)->GetData().GetConstBufferPtr(), buffersize);
                 buffer[buffersize] = '\0';
 
-                printf("%s\r\n", buffer);
+                printf("%s", buffer);
             }
             else if ( eventid == CTCPClientSocket::SocketErrorEvent )
             {
