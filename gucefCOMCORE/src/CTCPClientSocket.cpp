@@ -385,7 +385,15 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                 UnlockData();
                 return;
             }
-            
+            else if ( bytesrecv == 0 )
+            {
+                // The connection has been closed on us
+                Close();
+
+                UnlockData();
+                return;
+            }
+
             totalrecieved += bytesrecv;
             if ( m_maxreadbytes )
             {
