@@ -90,6 +90,9 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     static const CORE::CEvent ServerSocketClientErrorEvent;
     static const CORE::CEvent ServerSocketMaxConnectionsChangedEvent;
         
+    typedef CORE::TCloneableInt32   TServerSocketErrorEventData;
+    typedef CORE::TCloneableInt32   TServerSocketClientErrorEventData;
+    
     public:
     
     CTCPServerSocket( bool blocking );
@@ -170,7 +173,6 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     void AcceptClients( void );           
     
     CORE::CDynamicArray _connections;          /**< array of connection objects */
-    CTCPServerSocketInterface* _iface;         /**< Interface of event handlers */
     UInt16 m_port;
     MT::CMutex _datalock;
     UInt32 _timeout;   

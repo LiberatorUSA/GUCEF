@@ -132,7 +132,6 @@ CTCPServerSocket::CTCPServerSocket( bool blocking )
           _connections( DEFAULT_MAX_CONNECTIONS ) ,
           _active( false )                        ,
           _blocking( blocking )                   ,
-          _iface( NULL )                          ,
           m_port( 0 )
 {TRACE;           
         DEBUGOUTPUT( "CTCPServerSocket::CTCPServerSocket( void )" );
@@ -187,20 +186,6 @@ CTCPServerSocket::RegisterEvents( void )
     ServerSocketErrorEvent.Initialize();
     ServerSocketClientErrorEvent.Initialize();
     ServerSocketMaxConnectionsChangedEvent.Initialize();
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTCPServerSocket::SetInterface( CTCPServerSocketInterface* new_iface )
-{TRACE;
-        _iface = new_iface;
-        if ( _iface ) 
-        {
-                _iface->OnMaxConnectionsChanged( *this                       , 
-                                                 _connections.GetArraySize() , 
-                                                 _connections.GetArraySize() );
-        }                                                 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -322,13 +307,8 @@ CTCPServerSocket::AcceptClients( void )
                                                                                     
                                                 /*
                                                  *      Call the on client connect event handler      
-                                                 */                                      
-                                                if ( _iface ) 
-                                                {
-                                                        _iface->OnClientConnected( *this      , 
-                                                                                   *clientcon , 
-                                                                                   i          );
-                                                }                                                                                  
+                                                 */
+                                                NotifyObservers( ClientConnectedEvent );                                                                                 
 
                                                 return;
                                         }                                        
@@ -374,7 +354,7 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
          */        
         #ifdef GUCEF_MSWIN_BUILD
         
-        int error;
+        int error = 0;
         _data->sockid = WSTS_socket( AF_INET     ,    /* Go over TCP/IP */
 	                             SOCK_STREAM ,    /* This is a stream-oriented socket */
 	                             IPPROTO_TCP ,    /* Use TCP rather than UDP */
@@ -382,14 +362,11 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
                 
         if ( _data->sockid == INVALID_SOCKET ) 
         {
-                DEBUGOUTPUTsi( "Socket error: ", error );                
-                if ( _iface ) 
-                {
-                        _iface->OnError( *this                  , 
-                                         SOCKERR_INVALID_SOCKET );                
-                }                                         
-		return false;			
-	}
+            DEBUGOUTPUTsi( "Socket error: ", error );
+            TServerSocketErrorEventData eData( error );
+            NotifyObservers( ServerSocketErrorEvent, &eData );                                                      
+            return false;			
+        }
 	
         /* Set the desired blocking mode */
         int mode = _blocking;
@@ -397,6 +374,7 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
                           FIONBIO            , 
                           (u_long FAR*)&mode ) == SOCKET_ERROR )
         {
+                NotifyObservers( ServerSocketErrorEvent );
                 return false;
         }	    
 	
@@ -427,11 +405,8 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 	if ( retval == SOCKET_ERROR ) 
 	{
 		DEBUGOUTPUTsi( "Socket error: ", error );
-                if ( _iface ) 
-                {
-                        _iface->OnError( *this                  , 
-                                         SOCKERR_INVALID_SOCKET );                
-                } 		
+		TServerSocketErrorEventData eData( error );
+		NotifyObservers( ServerSocketErrorEvent, &eData );		
 		return false;
 	}
 	
@@ -457,20 +432,14 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 
 	if ( retval == SOCKET_ERROR ) 
 	{
-                DEBUGOUTPUTsi( "Socket error: ", error );
-                if ( _iface ) 
-                {
-                        _iface->OnError( *this                  , 
-                                         SOCKERR_INVALID_SOCKET );                
-                }                 
+        DEBUGOUTPUTsi( "Socket error: ", error );
+		TServerSocketErrorEventData eData( error );
+		NotifyObservers( ServerSocketErrorEvent, &eData );                
 		return false;
 	}
 	_active = true;
 	
-	if ( _iface )
-	{
-	        _iface->OnOpen( *this );
-	}
+    NotifyObservers( ServerSocketOpenedEvent );
 	
 	m_port = servport;
 	
@@ -509,14 +478,6 @@ CTCPServerSocket::GetActiveCount( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CTCPServerSocketInterface* 
-CTCPServerSocket::GetInterface( void ) const 
-{TRACE; 
-        return _iface; 
-}
-
-/*-------------------------------------------------------------------------*/
-
 void
 CTCPServerSocket::Close( void )
 {TRACE;
@@ -534,10 +495,8 @@ CTCPServerSocket::Close( void )
         	
                 closesocket( _data->sockid );                    
                                 
-                if ( _iface ) 
-                {
-                        _iface->OnClose( *this );
-                }                        
+                NotifyObservers( ServerSocketClosedEvent );
+                                   
                 for( UInt32 i=0; i<_connections.GetCount(); ++i )
                 {
                         ((CTCPServerConnection*)_connections[ i ])->Close();
@@ -606,6 +565,9 @@ CTCPServerSocket::OnClientRead( CTCPServerConnection* connection ,
                                 UInt16& keepbytes                )
 {TRACE;
         _datalock.Lock();
+        
+        NotifyObservers( ClientDataRecievedEvent );
+        /*
         if ( _iface )
         {
                 _iface->OnClientRead( *this        ,
@@ -614,7 +576,7 @@ CTCPServerSocket::OnClientRead( CTCPServerConnection* connection ,
                                       data         ,
                                       recieved     ,
                                       keepbytes    );
-        }
+        } */
         _datalock.Unlock();        
 }
 
@@ -626,13 +588,16 @@ CTCPServerSocket::OnClientConnectionClosed( CTCPServerConnection* connection ,
                                             bool closedbyclient              )
 {TRACE;
         _datalock.Lock();
+        
+        NotifyObservers( ClientDisconnectedEvent );
+        /*
         if ( _iface )
         {
                 _iface->OnClientDisconnect( *this          ,
                                             *connection    ,
                                             connectionid   ,
                                             closedbyclient );
-        }
+        } */
         _datalock.Unlock();        
 }                                            
 

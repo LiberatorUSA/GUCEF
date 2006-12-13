@@ -141,7 +141,22 @@ CTestTCPClientServer::OnNotify( CORE::CNotifier* notifier                 ,
         // The test application is shutting down se we can cleanup our
         // test sub-system
         Deinstance();
-    }                
+    }
+    else
+    if ( notifier == &m_serverSock )                    
+    {
+        if ( eventid == CTCPServerSocket::ClientConnectedEvent )
+        {
+            printf( "%s\r\n", eventid.GetName() );
+            
+            CTCPServerSocket* serverSocket = static_cast< CTCPServerSocket* >( notifier );
+            serverSocket->
+        }
+        else
+        {
+            printf( "%s - UNHANDLED\r\n", eventid.GetName() );
+        }
+    }
     else
     {
         printf( "%s - UNHANDLED\r\n", eventid.GetName() );
