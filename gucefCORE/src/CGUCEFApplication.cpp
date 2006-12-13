@@ -427,11 +427,16 @@ CGUCEFApplication::Run( void )
 void
 CGUCEFApplication::Stop( void )
 {TRACE;
+    
+    LockData();
+    
     if ( _active )
     {
         _active = false;
         NotifyObservers( AppShutdownEvent );
     }
+    
+    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -439,9 +444,14 @@ CGUCEFApplication::Stop( void )
 void 
 CGUCEFApplication::SetPluginDir( const CString& plugindir )
 {TRACE;
-        CPluginControl* pc = CPluginControl::Instance();
-        pc->SetPluginDir( plugindir );
-        pc->LoadAll();
+
+    LockData();
+    
+    CPluginControl* pc = CPluginControl::Instance();
+    pc->SetPluginDir( plugindir );
+    pc->LoadAll();
+    
+    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -465,11 +475,16 @@ CGUCEFApplication::GetApplicationDir( void ) const
 bool 
 CGUCEFApplication::SaveConfig( CDataNode& tree )
 {TRACE;
-        CDataNode* n = tree.Structure( "GUCEF%CORE%CGUCEFApplication" ,
-                                       '%'                            );                     
-        n->SetAttribute( "appdir" ,
-                         _appdir  );                        
-        return true;
+
+    LockData();
+    
+    CDataNode* n = tree.Structure( "GUCEF%CORE%CGUCEFApplication" ,
+                                   '%'                            );                     
+    n->SetAttribute( "appdir" ,
+                     _appdir  );                        
+                     
+    UnlockData();
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -488,18 +503,24 @@ CGUCEFApplication::OnSysConsoleCommand( const CString& path     ,
                                         const CStringList& args ,
                                         CStringList& resultdata )
 {TRACE;
-        if ( command == "Stop" )
-        {
-                Stop();
-                return true;        
-        }
-        else
-        if ( command == "GetApplicationDir" )
-        {
-                resultdata.Append( GetApplicationDir() );
-                return true;
-        }
-        return false;
+
+    LockData();
+    
+    if ( command == "Stop" )
+    {
+            Stop();
+            UnlockData();
+            return true;        
+    }
+    else
+    if ( command == "GetApplicationDir" )
+    {
+            resultdata.Append( GetApplicationDir() );
+            UnlockData();
+            return true;
+    }
+    UnlockData();
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -511,12 +532,12 @@ CGUCEFApplication::OnUpdate( UInt32 tickcount  ,
         
         #ifdef GUCEF_MSWIN_BUILD
     	MSG  msg;
-        while( PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
+        while( ::PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
         {                
-                TranslateMessage( &msg );
-                DispatchMessage( &msg );
+                ::TranslateMessage( &msg );
+                ::DispatchMessage( &msg );
         }
-        #endif /* WIN32_BUILD ? */        
+        #endif /* GUCEF_MSWIN_BUILD ? */        
         
         if ( deltaticks <= m_maxdeltaticksfordelay )
         {
@@ -573,8 +594,11 @@ CGUCEFApplication::RegisterSubSystem( CGUCEFAppSubSystem* subSystem )
 {TRACE;
 
     assert( NULL != subSystem );
+    LockData();
     m_subSysList.insert( subSystem );    
     Subscribe( &subSystem->AsObserver() );
+    UnlockData();
+    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -584,8 +608,10 @@ CGUCEFApplication::UnregisterSubSystem( CGUCEFAppSubSystem* subSystem )
 {TRACE;
 
     assert( NULL != subSystem );
+    LockData();
     m_subSysList.erase( subSystem );    
     Unsubscribe( &subSystem->AsObserver() );
+    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
