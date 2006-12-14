@@ -42,6 +42,24 @@ namespace IMAGE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+/*
+ *  The following are a number of values that you should always assign to the
+ *  matching field of the struct mentioned. This will allow checking of the
+ *  linked type definition versus the runtime passed object
+ */
+#define GUCEF_IMAGE_TIMAGE_VERSION                  1
+#define GUCEF_IMAGE_TIMAGEINFO_VERSION              1
+#define GUCEF_IMAGE_TIMAGEFRAME_VERSION             1
+#define GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION         1
+#define GUCEF_IMAGE_TIMAGEMIPMAPLEVEL_VERSION       1
+#define GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION   1
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/

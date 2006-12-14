@@ -185,7 +185,10 @@ UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 IMAGEPLUGIN_Init( void** plugdata    , 
                   const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-
+    if ( ilGetInteger( IL_VERSION_NUM ) < IL_VERSION ) return 0;    
+    
+    if ( ilInit() == IL_FALSE ) return 0;
+    
     ilSetRead( ilfOpenRProc  , 
                ilfCloseRProc , 
                ilfEofProc    , 
@@ -207,6 +210,8 @@ IMAGEPLUGIN_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
                NULL , 
                NULL , 
                NULL );
+               
+    ilShutDown();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -238,9 +243,77 @@ IMAGEPLUGIN_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 IMAGEPLUGIN_LoadImage( void* plugdata           ,
+                       void** pluginImageData   ,
+                       const char* imageType    ,
                        TIOAccess* sourceData    ,  
                        TImage** outputImageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
+    int i=0, n=0, mipmapCount=0, frameCount=0;
+    ILint imageID = 0;
+    TImage* imageData = NULL;
+    TImageFrame* imageFrame = NULL;
+    TImageMipMapLevel* imageMMInfo = NULL;
+    
+    if ( ( NULL == pluginImageData ) || ( NULL == imageType ) || ( NULL == sourceData ) || ( NULL == outputImageData ) ) return 0;
+    
+    /* generate an image ID and make that ID the ID of the current image */
+    imageID = ilGenImage();
+    ilBindImage( imageID );
+    
+    if ( IL_TRUE == ilLoadF( ilTypeFromExt( imageType ), sourceData ) )
+    {
+        /* this plugin does not need to store additional data per image */
+        *pluginImageData = NULL;
+        
+        /* Create the image structure hierarchy */
+        imageData = (TImage*) malloc( sizeof( TImage ) );
+        imageData->version = GUCEF_IMAGE_TIMAGE_VERSION;
+        imageData->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
+        frameCount = ilGetInteger( IL_NUM_IMAGES );
+        imageData->imageInfo.nrOfFramesInImage = frameCount;
+        imageData->frames = (TImageFrame*) malloc( x * sizeof(TImageFrame) );
+        
+        /* Only 1 layer is supported atm */
+        ilActiveLayer( 0 );
+        
+        for ( i=0; i<frameCount; ++i )
+        {
+            /* activate the frame */
+            ilActiveImage( i );
+            
+            /* Add all information for this image frame */
+            imageFrame = &imageData->frames[ i ];
+            imageFrame->version = GUCEF_IMAGE_TIMAGEFRAME_VERSION;
+            imageFrame->frameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
+            mipmapCount = ilGetInteger( IL_NUM_MIPMAPS );
+            imageFrame->frameInfo.nrOfMipmapLevels = mipmapCount;
+            imageFrame->mipmapLevel = (TImageMipMapLevel*) malloc( mipmapCount * sizeof( TImageMipMapLevel ) );
+        
+            for ( n=0; n<mipmapCount; ++n )
+            {
+                /* activate the mipmap */
+                ilActiveMipmap( n );
+                
+                /* Add all information for this image frame's mip-map level */
+                imageMMInfo = &imageFrame->mipmapLevel[ n ];
+                imageMMInfo->version = GUCEF_IMAGE_TIMAGEMIPMAPLEVEL_VERSION;
+                imageMMInfo->mipLevelInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
+                imageMMInfo->pixelData = ilGetData();
+                imageMMInfo->mipLevelInfo.channelComponentSize = ilGetInteger( IL_IMAGE_BPP );
+                imageMMInfo->mipLevelInfo.channelCountPerPixel;
+                imageMMInfo->mipLevelInfo.frameHeight = ilGetInteger( IL_IMAGE_HEIGHT );
+                imageMMInfo->mipLevelInfo.frameWidth = ilGetInteger( IL_IMAGE_WIDTH );
+                imageMMInfo->mipLevelInfo.pixelComponentDataType = DT_UINT8; /* DevIL only supports this type */
+                imageMMInfo->mipLevelInfo.pixelStorageFormat                
+            }
+        }
+    }
+    
+    /*
+     *  the image has been loaded into our GUCEF structures so we have no need for
+     *  DevIL to store the data any more 
+     */
+    ilDeleteImage( imageID );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -249,14 +322,47 @@ const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 IMAGEPLUGIN_DetectImageType( void* plugdata        ,
                              TIOAccess* sourceData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
+    return NULL;
 }
 
 /*---------------------------------------------------------------------------*/
 
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_DeleteLoadedImage( void* plugdata    ,
-                               TImage* imageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+IMAGEPLUGIN_DeleteLoadedImage( void* plugdata         ,
+                               void* pluginImageData  ,
+                               TImage* imageData      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
+    int i=0, n=0, mipmapCount=0, frameCount=0;
+    TImage* imageData = NULL;
+    TImageFrame* imageFrame = NULL;
+    TImageMipMapLevel* imageMipmap = NULL;
+        
+    if ( NULL != imageData )
+    {       
+        /* Iterate the image structure hierarchy, cleaning up as we go */
+        frameCount = imageData->imageInfo.nrOfFramesInImage;                
+        for ( i=0; i<frameCount; ++i )
+        {
+            imageFrame = &imageData->frames[ i ];
+            mipmapCount = imageFrame->frameInfo.nrOfMipmapLevels;        
+            for ( n=0; n<mipmapCount; ++n )
+            {
+                /* delete the pixel data */
+                imageMipmap = &imageFrame->mipmapLevel[ n ];                
+                free( imageMipmap->pixelData );                                
+            }
+            
+            /* delete all mipmap structures for this frame */
+            free( imageFrame->mipmapLevel );
+        }
+        
+        /* delete all frame structures */
+        free( imageData->frames );     
+        
+        return 1;
+    }
+    
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -266,6 +372,7 @@ IMAGEPLUGIN_SaveImage( void* plugdata         ,
                        TImage* inputImageData ,
                        TIOAccess* outputMedia ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/

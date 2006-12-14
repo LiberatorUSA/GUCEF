@@ -101,7 +101,8 @@ IMAGEPLUGIN_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 /*---------------------------------------------------------------------------*/
 
 EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_LoadImage( void* plugdata           ,
+IMAGEPLUGIN_LoadImage( void* plugindata         ,
+                       void** pluginImageData   ,
                        const char* imageType    ,
                        TIOAccess* sourceData    ,  
                        TImage** outputImageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
