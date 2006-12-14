@@ -51,6 +51,10 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+GUCEF_IMPLEMENT_MSGEXCEPTION( CDynamicBuffer, EIllegalCast );
+
+/*-------------------------------------------------------------------------*/
+
 CDynamicBuffer::CDynamicBuffer( bool autoenlarge ) 
         : _buffer( NULL )             , 
           _bsize( 0 )                 ,
@@ -108,7 +112,7 @@ CDynamicBuffer::CDynamicBuffer( UInt32 initialsize ,
           m_linked( false )
 {TRACE;
 
-    _buffer = (char*) malloc( initialsize );
+    _buffer = (Int8*) malloc( initialsize );
     _bsize = initialsize;               
 }
 
@@ -126,7 +130,7 @@ CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src )
           m_linked( false )
 {TRACE;
 
-    _buffer = (char*) malloc( src._bsize );
+    _buffer = (Int8*) malloc( src._bsize );
     _bsize = src._bsize;
     m_dataSize = src.m_dataSize;
 }
@@ -211,7 +215,7 @@ CDynamicBuffer::GetChar( UInt32 index )
     {
         m_dataSize = index+1;
     }
-    return _buffer[ index ];
+    return reinterpret_cast< char* >( _buffer )[ index ];
 }
 
 /*-------------------------------------------------------------------------*/
@@ -247,7 +251,7 @@ CDynamicBuffer::operator[]( UInt32 index )
         {
                 m_dataSize = index+1;
         }
-        return _buffer[ index ];
+        return reinterpret_cast< char* >( _buffer )[ index ];
 }
 /*-------------------------------------------------------------------------*/
 
@@ -299,7 +303,7 @@ CDynamicBuffer::operator=( const CDynamicBuffer &src )
     {
         Clear( true );
         
-        _buffer = (char*) realloc( _buffer, src._bsize );
+        _buffer = (Int8*) realloc( _buffer, src._bsize );
         memcpy( _buffer, src._buffer, src._bsize );
         _bsize = src._bsize;
         m_dataSize = src.m_dataSize;
@@ -341,11 +345,11 @@ CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
     
     if ( NULL == _buffer )
     {
-        _buffer = (char*) malloc( newSize );
+        _buffer = (Int8*) malloc( newSize );
     }
     else
     {
-        _buffer = (char*) realloc( _buffer, newSize );
+        _buffer = (Int8*) realloc( _buffer, newSize );
     }
     _bsize = newSize;
 }
@@ -584,7 +588,7 @@ CDynamicBuffer::LinkTo( const void* externalBuffer ,
      */
     _bsize = bufferSize;
     m_dataSize = bufferSize;
-    _buffer = static_cast< char*>( const_cast< void* >( externalBuffer ) );
+    _buffer = static_cast< Int8* >( const_cast< void* >( externalBuffer ) );
     m_linked = true;
 }
 
@@ -612,7 +616,7 @@ CDynamicBuffer::SecureLinkBeforeMutation( void )
          *
          *  First we copy our link locally
          */
-        char* externalBuffer = _buffer;
+        Int8* externalBuffer = _buffer;
         UInt32 extBufferSize = _bsize;
         UInt32 dataSize = m_dataSize;
         const bool autoEnlarge = _autoenlarge;

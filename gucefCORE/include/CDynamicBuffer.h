@@ -34,6 +34,11 @@
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
+#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
+#include "ExceptionMacros.h"    /* macros for dealing with scope typed exceptions */
+#define GUCEF_CORE_EXCEPTIONMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -241,6 +246,35 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
         
         void Clear( const bool logicalClearOnly = true );
         
+        /**
+         *  Utility member function:
+         *  Templated assignment operator for easy assignment of a unit of the given type.
+         *  The raw data will be copied into the buffer.
+         */
+        template< typename T >
+        CDynamicBuffer& operator=( const T& rawData );
+
+        /**
+         *  Utility member function:
+         *  Performs a cast with size checking from the buffer content to the given type
+         *  Note that if the buffer is linked this operation will result in the creation of a private copy
+         *
+         *  @throw EIllegalCast thrown when the cast cannot be performed with the data available in the buffer
+         */
+        template< typename T >
+        T& AsType( const UInt32 byteOffset = 0 );
+
+        /**
+         *  Utility member function:
+         *  Performs a cast with size checking from the buffer content to the given type
+         *
+         *  @throw EIllegalCast thrown when the cast cannot be performed with the data available in the buffer
+         */
+        template< typename T >
+        const T& AsConstType( const UInt32 byteOffset = 0 ) const;
+        
+        GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EIllegalCast );
+        
         private:
         
         /**
@@ -255,10 +289,54 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
         
         bool m_linked;     /**< is the buffer only linked to data owned by someone else ? */
         bool _autoenlarge; /**< automaticly enlarge buffer ? */
-        char* _buffer;     /**< our byte buffer */
+        Int8* _buffer;     /**< our byte buffer */
         UInt32 _bsize;     /**< current size of the buffer */
         UInt32 m_dataSize; /**< logical buffer size, extend of the buffer actually filled with data */        
 };
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+template< typename T >
+CDynamicBuffer&
+CDynamicBuffer::operator=( const T& rawData )
+{TRACE;
+
+    CopyFrom( sizeof( T ), &rawData );
+}
+        
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+T&
+CDynamicBuffer::AsType( const UInt32 byteOffset /* = 0 */ )
+{TRACE;
+    
+    if ( byteOffset + sizeof( T ) <= GetDataSize() )
+    {
+        return *static_cast< T* >( GetBufferPtr() + byteOffset );
+    }
+    
+    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsType(): Cannot cast to the given type" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+const T&
+CDynamicBuffer::AsConstType( const UInt32 byteOffset /* = 0 */ ) const
+{TRACE;
+
+    if ( byteOffset + sizeof( T ) <= GetDataSize() )
+    {
+        T& dataObj = *static_cast< T* >( GetConstBufferPtr() + byteOffset );
+    }
+    
+    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstType(): Cannot cast to the given type" );
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -279,6 +357,9 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 14-12-2006 :
+        - Added some conversion utilities for ease of use using templated
+          member functions
 - 06-10-2006 :
         - Added LinkTo()
 - 13-03-2005 :
