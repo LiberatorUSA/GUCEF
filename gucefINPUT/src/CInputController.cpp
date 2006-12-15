@@ -38,11 +38,6 @@
 #define CGUCEFAPPLICATION_H
 #endif /* CGUCEFAPPLICATION_H ? */
 
-#ifndef CEVENTTYPEREGISTRY_H
-#include "CEventTypeRegistry.h"
-#define CEVENTTYPEREGISTRY_H
-#endif /* CEVENTTYPEREGISTRY_H ? */
-
 #ifndef CIINPUTDRIVER_H
 #include "CIInputDriver.h"
 #define CIINPUTDRIVER_H
