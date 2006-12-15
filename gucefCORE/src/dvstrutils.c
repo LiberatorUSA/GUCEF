@@ -593,7 +593,7 @@ Extract_File_Ext( const char *filename )
         const char* i;
         for ( i = filename+len; i>=0; i-- )
         {
-                if ( ( *i == '.' ) && ( (UInt32)i-(UInt32)filename != len ) )
+                if ( ( *i == '.' ) && ( (UInt32)(i-filename) != len ) )
                 {
                         /*
                          *      Return extension
