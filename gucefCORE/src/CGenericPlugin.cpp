@@ -144,7 +144,7 @@ CGenericPlugin::Load( const CString& pluginPath )
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CGenericPlugin::Unload( void )
 {TRACE;
 
@@ -158,6 +158,8 @@ CGenericPlugin::Unload( void )
         UnloadModuleDynamicly( m_moduleHandle );
         m_moduleHandle = NULL;
     }    
+    
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

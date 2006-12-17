@@ -370,9 +370,8 @@ CTBasicSharedPtr< T >::IsNULL( void ) const
 template< typename T >
 UInt32 
 CTBasicSharedPtr< T >::GetReferenceCount( void ) const
-{
-    XTRABASE_POINTERCHECK( m_refCounter );
-    
+{TRACE;
+
     if ( m_refCounter )
     {
         return *m_refCounter;

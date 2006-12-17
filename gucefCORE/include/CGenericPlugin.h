@@ -89,7 +89,7 @@ class GUCEFCORE_EXPORT_CPP CGenericPlugin : public CIPlugin
     
     virtual bool Load( const CString& pluginPath );
     
-    virtual void Unload( void );
+    virtual bool Unload( void );
         
     private:
     

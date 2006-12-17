@@ -39,6 +39,11 @@
 #define GUCEF_IMAGE_IMAGEDATA_H
 #endif /* GUCEF_IMAGE_IMAGEDATA_H ? */
 
+#ifndef GUCEF_IMAGE_CIMGCODEC_H
+#include "CIMGCodec.h"
+#define GUCEF_IMAGE_CIMGCODEC_H
+#endif /* GUCEF_IMAGE_CIMGCODEC_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -71,13 +76,13 @@ class EXPORT_CPP CIMGCodecPlugin : public CORE::CIPlugin
         
         bool IsPluginLoaded( void ) const;
         
-        virtual const CORE::CString& GetModulePath( void ) const;
+        virtual CORE::CString GetModulePath( void ) const;
 
         virtual CORE::CString GetName( void ) const;
 
         virtual CORE::CString GetCopyright( void ) const;
 
-        virtual const CORE::TVersion GetVersion( void ) const;
+        virtual CORE::TVersion GetVersion( void ) const;
 
         UInt32 GetLoadCount( void ) const;
 

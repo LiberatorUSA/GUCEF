@@ -21,6 +21,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CMFILEACCESS_H
+#include "CMFileAccess.h"
+#define GUCEF_CORE_CMFILEACCESS_H
+#endif /* GUCEF_CORE_CMFILEACCESS_H ? */
+
 #include "CIMGCodecPluginItem.h"
 #include "CIMGCodecPlugin.h"        /* definition of this class */
 
@@ -57,18 +62,18 @@ enum
 
 /*-------------------------------------------------------------------------*/
 
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Load ) ( void* plugindata, const char* imageType, TIOAccess* sourceData, TImage** outputImageData ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_UnloadLoaded ) ( void* plugdata, TImage* imageData ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Save ) ( UInt32 hidx, const char *filename, UInt32 format, UInt32 compression, const TImageData *imgdata ) GUCEF_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGPLUGFPRT_Load ) ( void* plugindata, const char* imageType, CORE::TIOAccess* sourceData, TImage** outputImageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGPLUGFPRT_UnloadLoaded ) ( void* plugdata, TImage* imageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGPLUGFPRT_Save ) ( void* plugdata, const char* imageType, TImage* inputImageData, CORE::TIOAccess* outputMedia ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-typedef const char*   ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_DetectType ) ( void* plugdata ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_FormatList ) ( void* plugdata, const char*** supportedFormats ) GUCEF_CALLSPEC_SUFFIX;
+typedef const char*   ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGPLUGFPRT_DetectType ) ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGPLUGFPRT_FormatList ) ( void* plugdata, const char*** supportedFormats ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Init ) ( void** plugdata, const char*** args ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Shutdown ) ( void* plugdata ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Name ) ( void* plugdata ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Copyright ) ( void* plugdata ) GUCEF_CALLSPEC_SUFFIX;
-typedef const CORE::TVersion* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Version ) ( void ) GUCEF_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGPLUGFPTR_Init ) ( void** plugdata, const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGPLUGFPTR_Shutdown ) ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGPLUGFPTR_Name ) ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGPLUGFPTR_Copyright ) ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef const CORE::TVersion* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGPLUGFPTR_Version ) ( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -146,16 +151,16 @@ CIMGCodecPlugin::LoadPlugin( const CORE::CString& filename )
                                                                 2*PTRSIZE                   );                                                            
     
     // Verify that we have obtained a function address for each of the functions
-    if ( ( !_fptable[ IMGPLUG_INIT ] ) ||
-         ( !_fptable[ IMGPLUG_SHUTDOWN ] ) ||
-         ( !_fptable[ IMGPLUG_FORMATLIST ] ) ||
-         ( !_fptable[ IMGPLUG_DETECTTYPE ] ) ||
-         ( !_fptable[ IMGPLUG_LOAD ] ) ||
-         ( !_fptable[ IMGPLUG_SAVE ] ) ||
-         ( !_fptable[ IMGPLUG_UNLOAD ] ) ||
-         ( !_fptable[ IMGPLUG_NAME ] ) ||
-         ( !_fptable[ IMGPLUG_COPYRIGHT ] ) ||
-         ( !_fptable[ IMGPLUG_VERSION ] ) )
+    if ( ( !m_fptable[ IMGPLUG_INIT ] ) ||
+         ( !m_fptable[ IMGPLUG_SHUTDOWN ] ) ||
+         ( !m_fptable[ IMGPLUG_FORMATLIST ] ) ||
+         ( !m_fptable[ IMGPLUG_DETECTTYPE ] ) ||
+         ( !m_fptable[ IMGPLUG_LOAD ] ) ||
+         ( !m_fptable[ IMGPLUG_SAVE ] ) ||
+         ( !m_fptable[ IMGPLUG_UNLOAD ] ) ||
+         ( !m_fptable[ IMGPLUG_NAME ] ) ||
+         ( !m_fptable[ IMGPLUG_COPYRIGHT ] ) ||
+         ( !m_fptable[ IMGPLUG_VERSION ] ) )
     {        
             CORE::UnloadModuleDynamicly( m_sohandle );
             m_sohandle = NULL;
@@ -167,7 +172,7 @@ CIMGCodecPlugin::LoadPlugin( const CORE::CString& filename )
     // The module and been successfully loaded and linked
     // we will now generate a list of codec's
     const char** formatList = NULL;
-    if ( 0 != ((TIMGPLUGFPRT_FormatList) _fptable[ IMGPLUG_FORMATLIST ])( m_pluginData, &formatList ) )
+    if ( 0 != ((TIMGPLUGFPRT_FormatList) m_fptable[ IMGPLUG_FORMATLIST ])( m_pluginData, &formatList ) )
     {
         while ( NULL != formatList )
         {
@@ -219,7 +224,7 @@ CIMGCodecPlugin::IsPluginLoaded( void ) const
 /*-------------------------------------------------------------------------*/
         
 CORE::CString
-CIMGCodecPlugin::GetPluginModulePath( void ) const
+CIMGCodecPlugin::GetModulePath( void ) const
 {TRACE;
     
     if ( IsPluginLoaded() )
@@ -258,7 +263,7 @@ CIMGCodecPlugin::GetCopyright( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::TVersion
+CORE::TVersion
 CIMGCodecPlugin::GetVersion( void ) const
 {TRACE;
 
@@ -294,7 +299,7 @@ CIMGCodecPlugin::Encode( const void* sourceData         ,
                          const CORE::CString& typeName  )
 {TRACE;
 
-
+    return false; //@todo makeme
 }
 
 /*-------------------------------------------------------------------------*/
@@ -308,37 +313,37 @@ CIMGCodecPlugin::Decode( const void* sourceData         ,
 {TRACE;
 
     CORE::CMFileAccess mfile( sourceData, sourceBuffersSize );
-    TImage image;
+    TImage* image;
     memset( &image, 0, sizeof( TImage ) );
     
-    if ( 0 != ((TIMGPLUGFPRT_Load) _fptable[ IMGPLUG_LOAD ])( m_pluginData         , 
-                                                              typeName.C_String()  ,
-                                                              mfile.CStyleAccess() ,
-                                                              &image               ) )
+    if ( 0 != ((TIMGPLUGFPRT_Load) m_fptable[ IMGPLUG_LOAD ])( m_pluginData         , 
+                                                               typeName.C_String()  ,
+                                                               mfile.CStyleAccess() ,
+                                                               &image               ) )
     {
         // The image data has been successfully loaded.
         // We must now shove the data into the buffer
         CORE::CDynamicBuffer& buffer = dest[ destBuffersUsed ];
         buffer.Clear();
-        buffer.Append( &image.imageInfo, sizeof( TImageInfo ) );
-        for ( UInt32 i=0; i<image.imageInfo.nrOfFramesInImage; ++i )
+        buffer.Append( &image->imageInfo, sizeof( TImageInfo ) );
+        for ( UInt32 i=0; i<image->imageInfo.nrOfFramesInImage; ++i )
         {            
-            TImageFrame* imageFrame = &image.frames[ i ];
-            buffer.Append( sizeof( TImageFrameInfo ), &imageFrame->frameInfo );
+            TImageFrame* imageFrame = &image->frames[ i ];
+            buffer.Append( &imageFrame->frameInfo, sizeof( TImageFrameInfo ) );
             
             for ( UInt32 n=0; n<imageFrame->frameInfo.nrOfMipmapLevels; ++n )
             {
                 TImageMipMapLevel* mipmapLevel = &imageFrame->mipmapLevel[ n ];
                 UInt32 pixelDataSize = ( ( mipmapLevel->mipLevelInfo.frameHeight * mipmapLevel->mipLevelInfo.frameWidth )                    *  // pixels in image
                                          ( mipmapLevel->mipLevelInfo.channelCountPerPixel * mipmapLevel->mipLevelInfo.channelComponentSize ) ); // size of a pixel in bytes
-                buffer.Append( sizeof( TImageMipMapLevelInfo ), &mipmapLevel->mipLevelInfo );
-                buffer.Append( pixelDataSize, mipmapLevel->pixelData );
+                buffer.Append( &mipmapLevel->mipLevelInfo, sizeof( TImageMipMapLevelInfo ) );
+                buffer.Append( mipmapLevel->pixelData, pixelDataSize );
             }
         }
         
         // Now that we finished the copy operation into the buffer we can unload the image again
-        ((TIMGPLUGFPRT_UnloadLoaded) _fptable[ IMGPLUG_UNLOAD ])( m_pluginData , 
-                                                                  &image       );
+        ((TIMGPLUGFPRT_UnloadLoaded) m_fptable[ IMGPLUG_UNLOAD ])( m_pluginData , 
+                                                                   image        );
         
         return true;
     }

@@ -81,7 +81,7 @@ class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable ,
                              TDynamicBufferList& dest       ,
                              UInt32& destBuffersUsed        ) = 0;
                              
-        virtual CString GetCodecFamilyName( void ) const = 0;
+        virtual CString GetFamilyName( void ) const = 0;
 };
 
 /*-------------------------------------------------------------------------//

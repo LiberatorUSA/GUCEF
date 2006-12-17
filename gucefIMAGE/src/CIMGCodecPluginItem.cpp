@@ -46,8 +46,8 @@ CIMGCodecPluginItem::CIMGCodecPluginItem( const CIMGCodecPluginItem& src )
       m_typeName( src.m_typeName )
 {TRACE;
 
-    assert( NULL != plugin );
-    assert( typeName.Length() > 0 );
+    assert( NULL != m_plugin );
+    assert( m_typeName.Length() > 0 );
 }
 
 /*-------------------------------------------------------------------------*/
