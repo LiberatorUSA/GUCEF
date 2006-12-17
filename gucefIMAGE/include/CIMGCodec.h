@@ -60,12 +60,12 @@ class CORE::CIOAccess;
  *  the interface when dealing with images
  *
  *  Note that decoded image data is expected to be a blob of the header
- *  info of type TImageInfo followed by the pixeldata. The pixeldata is
+ *  info of type TImageInfo followed by the pixel data. The pixel data is
  *  defined as ordered in the following hierarchy:
  *      - frame
  *          - mipmap levels
  *  Each pixel segment is ordered with the bottom left pixel as the first 
- *  pixel in the segment stored as a series of horizontal scanlines.
+ *  pixel in the segment stored as a series of horizontal scan lines.
  */
 class EXPORT_CPP CIMGCodec : public CORE::CICodec
 {

@@ -21,7 +21,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CIMGCodec.h"        /* definition of this class */
+#include "CIMGCodecPluginItem.h"
+#include "CIMGCodecPlugin.h"        /* definition of this class */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,38 +41,34 @@ namespace IMAGE {
 
 enum
 {
-        IMGPLUG_CHECK_LOADABLE_EXT = 0 ,
-        IMGPLUG_CHECK_LOADABLE_FILE    ,
-        IMGPLUG_CHECK_LOADABLE_FORMAT  ,
-        IMGPLUG_CHECK_SAVEABLE_EXT     ,
-        IMGPLUG_CHECK_SAVEABLE_FILE    ,
-        IMGPLUG_CHECK_SAVEABLE_FORMAT  ,
-        IMGPLUG_GET_LOADABLE_EXT_LIST  ,
-        IMGPLUG_GET_SAVEABLE_EXT_LIST  , 
+        IMGPLUG_INIT       = 0         ,        
+        IMGPLUG_SHUTDOWN               ,
         IMGPLUG_LOAD                   ,
-        IMGPLUG_SAVE                   ,
-        IMGPLUG_UNLOAD                 ,
+        IMGPLUG_UNLOAD                 ,         
+        IMGPLUG_SAVE                   ,               
         IMGPLUG_NAME                   ,
         IMGPLUG_COPYRIGHT              ,
-        IMGPLUG_VERSION 
+        IMGPLUG_VERSION                ,
+        IMGPLUG_DETECTTYPE             ,
+        IMGPLUG_FORMATLIST             ,
+        
+        IMGPLUG_FUNCTIONTABLESIZE
 };
 
 /*-------------------------------------------------------------------------*/
 
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Check_Ext_Loadable ) ( const char *filename, UInt32 *hidx ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Check_Loadable )     ( CORE::TIOAccess *access, UInt32 *hidx ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Check_FLoadable )    ( Int32 format, UInt32 *hidx ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Check_Ext_Saveable ) ( const char *filename, UInt32 *hidx ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Check_Saveable )     ( const TImageData* imgdata, UInt32 *hidx ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Check_FSaveable )    ( Int32 format, UInt32 *hidx ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Load )               ( UInt32 hidx, CORE::TIOAccess *access, TImageData *imgdata, void **plugdata ) GUCEF_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Save )               ( UInt32 hidx, const char *filename, UInt32 format, UInt32 compression, const TImageData *imgdata ) GUCEF_CALLSPEC_SUFFIX;
-typedef void   ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Unload )             ( UInt32 hidx, TImageData *imgdata, void *plugdata ) GUCEF_CALLSPEC_SUFFIX;
-typedef const char* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Name )          ( void ) GUCEF_CALLSPEC_SUFFIX;
-typedef const char** ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Loadable_Ext_List ) ( void ) GUCEF_CALLSPEC_SUFFIX;
-typedef const char** ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Saveable_Ext_List ) ( void ) GUCEF_CALLSPEC_SUFFIX;
-typedef const char* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Copyright )  ( void ) GUCEF_CALLSPEC_SUFFIX;
-typedef const CORE::TVersion* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Version )  ( void ) GUCEF_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Load ) ( void* plugindata, const char* imageType, TIOAccess* sourceData, TImage** outputImageData ) GUCEF_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_UnloadLoaded ) ( void* plugdata, TImage* imageData ) GUCEF_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_Save ) ( UInt32 hidx, const char *filename, UInt32 format, UInt32 compression, const TImageData *imgdata ) GUCEF_CALLSPEC_SUFFIX;
+
+typedef const char*   ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_DetectType ) ( void* plugdata ) GUCEF_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPRT_FormatList ) ( void* plugdata, const char*** supportedFormats ) GUCEF_CALLSPEC_SUFFIX;
+
+typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Init ) ( void** plugdata, const char*** args ) GUCEF_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Shutdown ) ( void* plugdata ) GUCEF_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Name ) ( void* plugdata ) GUCEF_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Copyright ) ( void* plugdata ) GUCEF_CALLSPEC_SUFFIX;
+typedef const CORE::TVersion* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Version ) ( void ) GUCEF_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -79,294 +76,275 @@ typedef const CORE::TVersion* ( GUCEF_CALLSPEC_PREFIX *TIMGPLUGFPTR_Version )  (
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CIMGCodec::CIMGCodec( const CORE::CString& filename )
-        : _sohandle( NULL ) ,
-          _loadcount( 0 )
-{
-        DEBUGOUTPUT( "CIMGCodec::CIMGCodec( const CORE::CString& filename )" );
-        
-        try 
+CIMGCodecPlugin::CIMGCodecPlugin( void )
+    : m_sohandle( NULL ) ,
+      m_modulePath()     ,
+      m_codecList()
+{TRACE;
+    
+    memset( m_fptable, 0, IMGPLUG_FUNCTIONTABLESIZE );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIMGCodecPlugin::~CIMGCodecPlugin()
+{TRACE;
+    
+    UnloadPlugin();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIMGCodecPlugin::LoadPlugin( const CORE::CString& filename )
+{TRACE;
+   
+    // First we try to load the module itself
+    try 
+    {
+        m_sohandle = CORE::LoadModuleDynamicly( filename.C_String() );        
+        if ( m_sohandle == NULL ) return false;        
+    }
+    catch ( ... )
+    {
+        m_sohandle = NULL;
+        m_modulePath = NULL;
+        return false;        
+    }
+    
+    // If we get here then the module is a loadable program extension, so now
+    // let's see if it is an image codec
+    m_fptable[ IMGPLUG_NAME ] = CORE::GetFunctionAddress( m_sohandle         ,
+                                                          "IMAGEPLUGIN_Name" ,
+                                                          1*PTRSIZE          );
+    m_fptable[ IMGPLUG_COPYRIGHT ] = CORE::GetFunctionAddress( m_sohandle              ,
+                                                               "IMAGEPLUGIN_Copyright" ,
+                                                               1*PTRSIZE               );
+    m_fptable[ IMGPLUG_VERSION ] = CORE::GetFunctionAddress( m_sohandle            ,
+                                                             "IMAGEPLUGIN_Version" ,
+                                                             1*PTRSIZE             );
+    m_fptable[ IMGPLUG_INIT ] = CORE::GetFunctionAddress( m_sohandle         ,
+                                                          "IMAGEPLUGIN_Init" ,
+                                                          2*PTRSIZE          ); 
+    m_fptable[ IMGPLUG_SHUTDOWN ] = CORE::GetFunctionAddress( m_sohandle             ,
+                                                              "IMAGEPLUGIN_Shutdown" ,
+                                                              1*PTRSIZE              );
+    m_fptable[ IMGPLUG_LOAD ] = CORE::GetFunctionAddress( m_sohandle         ,
+                                                          "IMAGEPLUGIN_Load" ,
+                                                          5*PTRSIZE          );                                                          
+    m_fptable[ IMGPLUG_SAVE ] = CORE::GetFunctionAddress( m_sohandle         ,
+                                                          "IMAGEPLUGIN_Save" ,
+                                                          4*PTRSIZE          );
+    m_fptable[ IMGPLUG_UNLOAD ] = CORE::GetFunctionAddress( m_sohandle                      ,
+                                                            "IMAGEPLUGIN_DeleteLoadedImage" ,
+                                                            3*PTRSIZE                       );
+    m_fptable[ IMGPLUG_DETECTTYPE ] = CORE::GetFunctionAddress( m_sohandle                    ,
+                                                                "IMAGEPLUGIN_DetectImageType" ,
+                                                                2*PTRSIZE                     );                                                            
+    m_fptable[ IMGPLUG_FORMATLIST ] = CORE::GetFunctionAddress( m_sohandle                  ,
+                                                                "IMAGEPLUGIN_GetFormatList" ,
+                                                                2*PTRSIZE                   );                                                            
+    
+    // Verify that we have obtained a function address for each of the functions
+    if ( ( !_fptable[ IMGPLUG_INIT ] ) ||
+         ( !_fptable[ IMGPLUG_SHUTDOWN ] ) ||
+         ( !_fptable[ IMGPLUG_FORMATLIST ] ) ||
+         ( !_fptable[ IMGPLUG_DETECTTYPE ] ) ||
+         ( !_fptable[ IMGPLUG_LOAD ] ) ||
+         ( !_fptable[ IMGPLUG_SAVE ] ) ||
+         ( !_fptable[ IMGPLUG_UNLOAD ] ) ||
+         ( !_fptable[ IMGPLUG_NAME ] ) ||
+         ( !_fptable[ IMGPLUG_COPYRIGHT ] ) ||
+         ( !_fptable[ IMGPLUG_VERSION ] ) )
+    {        
+            CORE::UnloadModuleDynamicly( m_sohandle );
+            m_sohandle = NULL;
+            m_modulePath = NULL;
+            return false;
+    }    
+    m_modulePath = filename;
+    
+    // The module and been successfully loaded and linked
+    // we will now generate a list of codec's
+    const char** formatList = NULL;
+    if ( 0 != ((TIMGPLUGFPRT_FormatList) _fptable[ IMGPLUG_FORMATLIST ])( m_pluginData, &formatList ) )
+    {
+        while ( NULL != formatList )
         {
-                _sohandle = CORE::LoadModuleDynamicly( filename.C_String() );        
-                if ( _sohandle == NULL ) return;        
+            if ( NULL != *formatList )
+            {
+                m_codecList.push_back( CIMGCodecPtr( new CIMGCodecPluginItem( this, *formatList ) ) );
+            }
+            
+            ++formatList;
         }
-        catch ( ... )
+    }       
+    
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+        
+bool
+CIMGCodecPlugin::UnloadPlugin( void )
+{TRACE;
+
+    // Check for outstanding references to our codec's
+    CIMGCodecPtrList::iterator i = m_codecList.begin();
+    while ( i != m_codecList.end() )
+    {
+        if ( (*i).GetReferenceCount() > 1 )
         {
-                _sohandle = NULL;
-                return;        
-        }                
-        
-        _fptable[ IMGPLUG_CHECK_LOADABLE_EXT ] = CORE::GetFunctionAddress( _sohandle                             ,
-                                                                           "IMGPLUG_Check_If_Loadable_Using_Ext" ,
-                                                                           2*PTRSIZE                             );
-        _fptable[ IMGPLUG_CHECK_LOADABLE_FILE ] = CORE::GetFunctionAddress( _sohandle                   ,
-                                                                            "IMGPLUG_Check_If_Loadable" ,
-                                                                            2*PTRSIZE                   );
-        _fptable[ IMGPLUG_CHECK_LOADABLE_FORMAT ] = CORE::GetFunctionAddress( _sohandle                          ,
-                                                                             "IMGPLUG_Check_If_Format_Loadable" ,
-                                                                             PTRSIZE+4                          );
-        _fptable[ IMGPLUG_CHECK_SAVEABLE_FORMAT ] = CORE::GetFunctionAddress( _sohandle                          ,
-                                                                              "IMGPLUG_Check_If_Format_Saveable" ,
-                                                                              PTRSIZE+4                          );
-        _fptable[ IMGPLUG_LOAD ] = CORE::GetFunctionAddress( _sohandle                 ,
-                                                             "IMGPLUG_Load_Image_Data" ,
-                                                             4+PTRSIZE*3               );
-        _fptable[ IMGPLUG_SAVE ] = CORE::GetFunctionAddress( _sohandle                 ,
-                                                             "IMGPLUG_Save_Image_Data" ,
-                                                             2*PTRSIZE+12              );
-        _fptable[ IMGPLUG_UNLOAD ] = CORE::GetFunctionAddress( _sohandle                   ,
-                                                               "IMGPLUG_Unload_Image_Data" ,
-                                                               2*PTRSIZE+4                 );
-        _fptable[ IMGPLUG_NAME ] = CORE::GetFunctionAddress( _sohandle             ,
-                                                             "IMGPLUG_Description" ,
-                                                             0                     );
-        _fptable[ IMGPLUG_COPYRIGHT ] = CORE::GetFunctionAddress( _sohandle                ,
-                                                                  "IMGPLUG_Copyright_EULA" ,
-                                                            0                        );
-        _fptable[ IMGPLUG_GET_LOADABLE_EXT_LIST ] = CORE::GetFunctionAddress( _sohandle                   ,
-                                                                              "IMGPLUG_Loadable_Ext_List" ,
-                                                                              0                           );                                                            
-        _fptable[ IMGPLUG_GET_SAVEABLE_EXT_LIST ] = CORE::GetFunctionAddress( _sohandle                   ,
-                                                                              "IMGPLUG_Saveable_Ext_List" ,
-                                                                              0                           );
-                                                                        
-        if ( ( !_fptable[ IMGPLUG_CHECK_LOADABLE_EXT ] ) ||
-             ( !_fptable[ IMGPLUG_CHECK_LOADABLE_FILE ] ) ||
-             ( !_fptable[ IMGPLUG_CHECK_LOADABLE_FORMAT ] ) ||
-             ( !_fptable[ IMGPLUG_CHECK_SAVEABLE_FORMAT ] ) ||
-             ( !_fptable[ IMGPLUG_LOAD ] ) ||
-             ( !_fptable[ IMGPLUG_SAVE ] ) ||
-             ( !_fptable[ IMGPLUG_UNLOAD ] ) ||
-             ( !_fptable[ IMGPLUG_NAME ] ) ||
-             ( !_fptable[ IMGPLUG_COPYRIGHT ] ) ||
-             ( !_fptable[ IMGPLUG_GET_LOADABLE_EXT_LIST ] ) ||
-             ( !_fptable[ IMGPLUG_GET_SAVEABLE_EXT_LIST ] ) )
-        {        
-                CORE::UnloadModuleDynamicly( _sohandle );
-                _sohandle = NULL;
-                
-                DEBUGOUTPUT( "Invalid codec module" );
-        }             
+            // Cannot unload the module if someone is still using one of it's codec's
+            return false;
+        }
+        ++i;
+    }    
+    
+    // No outstanding references,.. unload module
+    CORE::UnloadModuleDynamicly( m_sohandle );
+    m_sohandle = NULL;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
-
-CIMGCodec::CIMGCodec( const CIMGCodec& src )
-{
-        DEBUGOUTPUT( "CIMGCodec::CIMGCodec( const CIMGCodec& src )" );
         
-        /* should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CIMGCodec&
-CIMGCodec::operator=( const CIMGCodec& src )
-{
-        DEBUGOUTPUT( "CIMGCodec::operator=( const CIMGCodec& src )" );
-        
-        /* should never be used */
-        return *this;        
-}
-
-/*-------------------------------------------------------------------------*/
-
-CIMGCodec::~CIMGCodec()
-{
-        DEBUGOUTPUT( "CIMGCodec::~CIMGCodec()" );
-        
-        CORE::UnloadModuleDynamicly( _sohandle );
-}
-
-/*-------------------------------------------------------------------------*/
-
 bool
-CIMGCodec::CheckIfLoadable( const CORE::CString& filename ,
-                            UInt32 *hidx                  )
-{
-        DEBUGOUTPUT( "CIMGCodec::CheckIfLoadable( const CORE::CString& filename , UInt32 *hidx )" );
-        
-        return ((TIMGPLUGFPRT_Check_Ext_Loadable) _fptable[ IMGPLUG_CHECK_LOADABLE_EXT ])( filename.C_String() ,
-                                                                                           hidx                ) > 0;
+CIMGCodecPlugin::IsPluginLoaded( void ) const
+{TRACE;
+
+    return NULL != m_sohandle;
 }
 
 /*-------------------------------------------------------------------------*/
-
-bool
-CIMGCodec::CheckIfLoadable( CORE::CIOAccess& access ,
-                            UInt32 *hidx            )
-{
-        DEBUGOUTPUT( "CIMGCodec::CheckIfLoadable( CORE::CIOAccess& access , UInt32 *hidx )" );
         
-        return ((TIMGPLUGFPRT_Check_Loadable) _fptable[ IMGPLUG_CHECK_LOADABLE_FILE ])( access.CStyleAccess() ,
-                                                                                        hidx                  ) > 0;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CIMGCodec::CheckIfLoadable( Int32 format ,
-                            UInt32 *hidx )
-{
-        DEBUGOUTPUT( "CIMGCodec::CheckIfLoadable( Int32 format , UInt32 *hidx )" );
-        
-        return ((TIMGPLUGFPRT_Check_FLoadable) _fptable[ IMGPLUG_CHECK_LOADABLE_FORMAT ])( format ,
-                                                                                           hidx   ) > 0;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CIMGCodec::CheckIfSaveable( const CORE::CString& filename ,
-                            UInt32 *hidx                  )
-{
-        DEBUGOUTPUT( "CIMGCodec::CheckIfSaveable( const CORE::CString& filename, UInt32 *hidx )" );
-        
-        return ((TIMGPLUGFPRT_Check_Ext_Saveable) _fptable[ IMGPLUG_CHECK_SAVEABLE_EXT ])( CORE::Extract_File_Ext( filename.C_String() ) ,
-                                                                                           hidx                                          ) > 0;
-}                            
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CIMGCodec::CheckIfSaveable( const TImageData* imgdata ,
-                            UInt32 *hidx              )
-{
-        DEBUGOUTPUT( "CIMGCodec::CheckIfSaveable( const TImageData* imgdata, UInt32 *hidx )" );
-        
-        return ((TIMGPLUGFPRT_Check_Saveable) _fptable[ IMGPLUG_CHECK_SAVEABLE_FILE ])( imgdata ,
-                                                                                        hidx     ) > 0;
-}                            
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CIMGCodec::CheckIfSaveable( Int32 format ,
-                            UInt32 *hidx )
-{
-        DEBUGOUTPUT( "CIMGCodec::CheckIfSaveable( Int32 format, UInt32 *hidx )" );
-        
-        return ((TIMGPLUGFPRT_Check_FSaveable) _fptable[ IMGPLUG_CHECK_SAVEABLE_FORMAT ])( format ,
-                                                                                           hidx   ) > 0;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CIMGCodec::Load( UInt32 hidx             ,
-                 CORE::CIOAccess& access ,
-                 TImageData *imgdata     ,
-                 void **plugdata         )
-{
-        DEBUGOUTPUT( "CIMGCodec::Load( UInt32 hidx, CORE::CIOAccess& access, TImageData *imgdata, void **plugdata )" );
-        
-        return ((TIMGPLUGFPRT_Load) _fptable[ IMGPLUG_LOAD ])( hidx                  ,
-                                                               access.CStyleAccess() ,
-                                                               imgdata               ,
-                                                               plugdata              ) > 0;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CIMGCodec::Unload( UInt32 hidx         ,
-                   TImageData* imgdata ,
-                   void *plugdata      )
-{
-        DEBUGOUTPUT( "CIMGCodec::Unload( UInt32 hidx, TImageData* imgdata, void *plugdata )" );
-        
-        ((TIMGPLUGFPRT_Unload) _fptable[ IMGPLUG_UNLOAD ])( hidx     ,
-                                                            imgdata  ,
-                                                            plugdata );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CIMGCodec::Save( UInt32 hidx                   ,
-                 const CORE::CString& filename ,
-                 UInt32 format                 ,
-                 UInt32 compression            ,
-                 const TImageData *imgdata     )
-{
-        DEBUGOUTPUT( "CIMGCodec::Save( UInt32 hidx, const CORE::CString& filename, UInt32 format, UInt32 compression, const TImageData *imgdata )" );
-        
-        return ((TIMGPLUGFPRT_Save) _fptable[ IMGPLUG_SAVE ])( hidx                ,
-                                                               filename.C_String() ,
-                                                               format              ,
-                                                               compression         ,
-                                                               imgdata             ) > 0;
+CORE::CString
+CIMGCodecPlugin::GetPluginModulePath( void ) const
+{TRACE;
+    
+    if ( IsPluginLoaded() )
+    {
+        return m_modulePath;
+    }
+    
+    GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::IMAGE::CIMGCodecPlugin::GetPluginModulePath(): No module is loaded" );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CORE::CString
-CIMGCodec::GetName( void )
-{
-        return ((TIMGPLUGFPTR_Name) _fptable[ IMGPLUG_NAME ])();
+CIMGCodecPlugin::GetName( void ) const
+{TRACE;
+
+    if ( IsPluginLoaded() )
+    {
+    }
+   
+   GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::IMAGE::CIMGCodecPlugin::GetName(): No module is loaded" );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CORE::CString
-CIMGCodec::GetCopyrightEULA( void )
-{
-        return ((TIMGPLUGFPTR_Copyright) _fptable[ IMGPLUG_COPYRIGHT ])();
+CIMGCodecPlugin::GetCopyright( void ) const
+{TRACE;
+
+    if ( IsPluginLoaded() )
+    {
+    }
+    
+    GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::IMAGE::CIMGCodecPlugin::GetCopyright(): No module is loaded" );
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::TVersion*
-CIMGCodec::GetVersion( void )
-{
-        return ((TIMGPLUGFPTR_Version) _fptable[ IMGPLUG_VERSION ])();
-}
+const CORE::TVersion
+CIMGCodecPlugin::GetVersion( void ) const
+{TRACE;
 
-
-/*-------------------------------------------------------------------------*/
-
-UInt32
-CIMGCodec::GetLoadCount( void ) const
-{
-        return _loadcount;
+    if ( IsPluginLoaded() )
+    {
+    }
+    
+    GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::IMAGE::CIMGCodecPlugin::GetVersion(): No module is loaded" );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CIMGCodec::GetIsValid( void ) const
-{
-        return _sohandle > 0;
+CIMGCodecPlugin::GetCodecList( CIMGCodecPtrList& codecList )
+{TRACE;
+
+    if ( IsPluginLoaded() )
+    {    
+        codecList = m_codecList;
+        return true;
+    }
+
+    GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::IMAGE::CIMGCodecPlugin::GetCodecList(): No module is loaded" );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CStringList 
-CIMGCodec::GetLoadableExtList( void ) const
-{
-        CORE::CStringList list;
-        const char** clist = ((TIMGPLUGFPTR_Loadable_Ext_List) _fptable[ IMGPLUG_GET_LOADABLE_EXT_LIST ])();       
-        while ( clist )
-        {
-                list.Append( *clist );
-                ++clist;
-        }
-        return list;        
+bool
+CIMGCodecPlugin::Encode( const void* sourceData         ,
+                         const UInt32 sourceBuffersSize ,
+                         TDynamicBufferList& dest       ,
+                         UInt32& destBuffersUsed        ,
+                         const CORE::CString& typeName  )
+{TRACE;
+
+
 }
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CStringList 
-CIMGCodec::GetSaveableExtList( void ) const
-{
-        CORE::CStringList list;
-        const char** clist = ((TIMGPLUGFPTR_Saveable_Ext_List) _fptable[ IMGPLUG_GET_SAVEABLE_EXT_LIST ])();       
-        while ( clist )
-        {
-                list.Append( *clist );
-                ++clist;
+bool
+CIMGCodecPlugin::Decode( const void* sourceData         ,
+                         const UInt32 sourceBuffersSize ,
+                         TDynamicBufferList& dest       ,
+                         UInt32& destBuffersUsed        ,
+                         const CORE::CString& typeName  )
+{TRACE;
+
+    CORE::CMFileAccess mfile( sourceData, sourceBuffersSize );
+    TImage image;
+    memset( &image, 0, sizeof( TImage ) );
+    
+    if ( 0 != ((TIMGPLUGFPRT_Load) _fptable[ IMGPLUG_LOAD ])( m_pluginData         , 
+                                                              typeName.C_String()  ,
+                                                              mfile.CStyleAccess() ,
+                                                              &image               ) )
+    {
+        // The image data has been successfully loaded.
+        // We must now shove the data into the buffer
+        CORE::CDynamicBuffer& buffer = dest[ destBuffersUsed ];
+        buffer.Clear();
+        buffer.Append( &image.imageInfo, sizeof( TImageInfo ) );
+        for ( UInt32 i=0; i<image.imageInfo.nrOfFramesInImage; ++i )
+        {            
+            TImageFrame* imageFrame = &image.frames[ i ];
+            buffer.Append( sizeof( TImageFrameInfo ), &imageFrame->frameInfo );
+            
+            for ( UInt32 n=0; n<imageFrame->frameInfo.nrOfMipmapLevels; ++n )
+            {
+                TImageMipMapLevel* mipmapLevel = &imageFrame->mipmapLevel[ n ];
+                UInt32 pixelDataSize = ( ( mipmapLevel->mipLevelInfo.frameHeight * mipmapLevel->mipLevelInfo.frameWidth )                    *  // pixels in image
+                                         ( mipmapLevel->mipLevelInfo.channelCountPerPixel * mipmapLevel->mipLevelInfo.channelComponentSize ) ); // size of a pixel in bytes
+                buffer.Append( sizeof( TImageMipMapLevelInfo ), &mipmapLevel->mipLevelInfo );
+                buffer.Append( pixelDataSize, mipmapLevel->pixelData );
+            }
         }
-        return list;        
+        
+        // Now that we finished the copy operation into the buffer we can unload the image again
+        ((TIMGPLUGFPRT_UnloadLoaded) _fptable[ IMGPLUG_UNLOAD ])( m_pluginData , 
+                                                                  &image       );
+        
+        return true;
+    }
+    
+    // Loading failed
+    return false;
 }
 
 /*-------------------------------------------------------------------------//
@@ -379,6 +357,3 @@ CIMGCodec::GetSaveableExtList( void ) const
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-
- 

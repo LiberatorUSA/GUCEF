@@ -21,8 +21,8 @@
 /*
  *      (@file) ioaccess.h
  *
- *      The following is a toolkit to allow users to access a recource and
- *      preform I/O on it without actually knowing where the recource is stored.
+ *      The following is a toolkit to allow users to access a resource and
+ *      preform I/O on it without actually knowing where the resource is stored.
  *      It allows your code to use a single set of functions instead of making
  *      versions for each type of I/O operation. All the utility's are provided
  *      to keep memory management in scope. It is safe to pass a TIOAccess*

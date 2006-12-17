@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CIMGCODEC_H
-#define CIMGCODEC_H 
+#ifndef GUCEF_IMAGE_CIMGCODECPLUGIN_H
+#define GUCEF_IMAGE_CIMGCODECPLUGIN_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -29,15 +29,15 @@
 #define GUCEFCORE_H
 #endif /* GUCEFCORE_H ? */
 
-#ifndef GUCEFIMAGE_MACROS_H
+#ifndef GUCEF_IMAGE_MACROS_H
 #include "gucefIMAGE_macros.h"     /* IMAGE Library macros and build config */
-#define GUCEFIMAGE_MACROS_H
-#endif /* GUCEFIMAGE_MACROS_H ? */
+#define GUCEF_IMAGE_MACROS_H
+#endif /* GUCEF_IMAGE_MACROS_H ? */
 
-#ifndef IMAGEDATA_H
+#ifndef GUCEF_IMAGE_IMAGEDATA_H
 #include "imagedata.h"             /* image data storage */
-#define IMAGEDATA_H
-#endif /* IMAGEDATA_H ? */
+#define GUCEF_IMAGE_IMAGEDATA_H
+#endif /* GUCEF_IMAGE_IMAGEDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -54,68 +54,64 @@ namespace IMAGE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CIMGCodecPlugin
+class EXPORT_CPP CIMGCodecPlugin : public CORE::CIPlugin
 {
         public:       
 
-        CIMGCodec( const CORE::CString& filename );
+        typedef CORE::CTSharedPtr< CIMGCodec > CIMGCodecPtr;
+        typedef std::vector< CIMGCodecPtr > CIMGCodecPtrList;
 
-        ~CIMGCodec();
+        CIMGCodecPlugin( void );
 
-        bool GetIsValid( void ) const;
+        ~CIMGCodecPlugin();
         
-        bool CheckIfLoadable( const CORE::CString& filename ,
-                              UInt32 *hidx                  );
+        bool LoadPlugin( const CORE::CString& filename );
+        
+        bool UnloadPlugin( void );
+        
+        bool IsPluginLoaded( void ) const;
+        
+        virtual const CORE::CString& GetModulePath( void ) const;
 
-        bool CheckIfLoadable( CORE::CIOAccess& access ,
-                              UInt32 *hidx            );
+        virtual CORE::CString GetName( void ) const;
 
-        bool CheckIfLoadable( Int32 format ,
-                              UInt32 *hidx );
-                              
-        bool CheckIfSaveable( const CORE::CString& filename ,
-                              UInt32 *hidx                  );
+        virtual CORE::CString GetCopyright( void ) const;
 
-        bool CheckIfSaveable( const TImageData* imgdata ,
-                              UInt32 *hidx              );                              
-
-        bool CheckIfSaveable( Int32 format ,
-                              UInt32 *hidx );
-
-        bool Load( UInt32 hidx             ,
-                   CORE::CIOAccess& access ,
-                   TImageData *imgdata     ,
-                   void **plugdata         );
-
-        void Unload( UInt32 hidx         ,
-                     TImageData* imgdata ,
-                     void* plugdata      );
-
-        bool Save( UInt32 hidx                   ,
-                   const CORE::CString& filename ,
-                   UInt32 format                 ,
-                   UInt32 compression            ,
-                   const TImageData *imgdata     );
-
-        CORE::CString GetName( void );
-
-        CORE::CString GetCopyrightEULA( void );
-
-        const CORE::TVersion* GetVersion( void );
+        virtual const CORE::TVersion GetVersion( void ) const;
 
         UInt32 GetLoadCount( void ) const;
-        
-        CORE::CStringList GetLoadableExtList( void ) const;
-        
-        CORE::CStringList GetSaveableExtList( void ) const;
+
+        bool GetCodecList( CIMGCodecPtrList& codecList );
 
         private:
-        CIMGCodec( const CIMGCodec& src );            /**< should never be used */
-        CIMGCodec& operator=( const CIMGCodec& src ); /**< should never be used */
+        friend class CIMGCodecPluginItem;
+        
+        typedef CIMGCodec::TDynamicBufferList TDynamicBufferList;
+        
+        bool Encode( const void* sourceData         ,
+                     const UInt32 sourceBuffersSize ,
+                     TDynamicBufferList& dest       ,
+                     UInt32& destBuffersUsed        ,
+                     const CORE::CString& typeName  );
 
-        void* _fptable[ 14 ];  /**< function pointer table */
-        UInt32 _loadcount;     /**< number of outstanding image loads */
-        void *_sohandle;       /**< access to the so module */
+        bool Decode( const void* sourceData         ,
+                     const UInt32 sourceBuffersSize ,
+                     TDynamicBufferList& dest       ,
+                     UInt32& destBuffersUsed        ,
+                     const CORE::CString& typeName  );        
+        
+        private:
+        
+        CIMGCodecPlugin( const CIMGCodecPlugin& src );            /**< should never be used */
+        CIMGCodecPlugin& operator=( const CIMGCodecPlugin& src ); /**< should never be used */
+
+        private:
+        
+        void* m_fptable[ 10 ];  /**< function pointer table */
+        void* m_sohandle;       /**< access to the so module */
+        mutable void* m_pluginData;
+        CIMGCodecPtrList m_codecList;
+        CORE::CString m_modulePath;
 };
 
 /*-------------------------------------------------------------------------//
@@ -129,7 +125,7 @@ class EXPORT_CPP CIMGCodecPlugin
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* CIMGCODEC_H ? */
+#endif /* GUCEF_IMAGE_CIMGCODECPLUGIN_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -137,7 +133,10 @@ class EXPORT_CPP CIMGCodecPlugin
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 15-12-2006 :
+        - Dinand: rewrote this class. separated image loading/saving from the  
+                  plugin related functionality
 - 26-11-2004 :
-        - Designed and implemented this class.
+        - Dinand: Designed and implemented this class.
 
 -----------------------------------------------------------------------------*/

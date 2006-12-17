@@ -197,7 +197,7 @@ CORE::CString
 CIMGCodec::GetFamilyName( void ) const
 {TRACE;
     
-    return "IMAGE";
+    return "imageFormatCodec";
 }
 
 /*-------------------------------------------------------------------------//

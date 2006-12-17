@@ -6,17 +6,17 @@
  * the source.
  *
  * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
  * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF
+ * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_CORE_CIPLUGIN_H
-#define GUCEF_CORE_CIPLUGIN_H 
+#ifndef GUCEF_IMAGE_CIMGCODECPLUGINITEM_H
+#define GUCEF_IMAGE_CIMGCODECPLUGINITEM_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,20 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
-#include "ExceptionMacros.h"
-#define GUCEF_CORE_EXCEPTIONMACROS_H
-#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
-
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
-
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"         /* often used gucef data structs */
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+#ifndef GUCEF_IMAGE_CIMGCODEC_H
+#include "CIMGCodec.h"     
+#define GUCEF_IMAGE_CIMGCODEC_H
+#endif /* GUCEF_IMAGE_CIMGCODEC_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,7 +36,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace IMAGE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -54,36 +44,44 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Interface class for plugins
- */
-class GUCEFCORE_EXPORT_CPP CIPlugin
+class CIMGCodecPlugin;
+
+class CIMGCodecPluginItem : public CIMGCodec
 {
     public:
-    
-    CIPlugin( void );
-    
-    CIPlugin( const CIPlugin& src );
-    
-    virtual ~CIPlugin();
-    
-    CIPlugin& operator=( const CIPlugin& src );
-    
-    virtual CString GetDescription( void ) const = 0;
 
-    virtual CString GetCopyright( void ) const = 0;
-    
-    virtual TVersion GetVersion( void ) const = 0;
-    
-    virtual CString GetModulePath( void ) const = 0;
-    
-    virtual bool IsLoaded( void ) const = 0;
-    
-    virtual bool Load( const CString& pluginPath ) = 0;
-    
-    virtual bool Unload( void ) = 0;
+    virtual ~CIMGCodecPluginItem();
 
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, ENotLoaded );
+    virtual bool Encode( const void* sourceData         ,
+                         const UInt32 sourceBuffersSize ,
+                         TDynamicBufferList& dest       ,
+                         UInt32& destBuffersUsed        );
+
+    virtual bool Decode( const void* sourceData         ,
+                         const UInt32 sourceBuffersSize ,
+                         TDynamicBufferList& dest       ,
+                         UInt32& destBuffersUsed        );
+
+    virtual CORE::CICloneable* Clone( void ) const;
+    
+    virtual CORE::CString GetType( void ) const;
+                         
+    private:
+    friend class CIMGCodecPlugin;
+    
+    CIMGCodecPluginItem( CIMGCodecPlugin* plugin       ,
+                         const CORE::CString& typeName );
+                         
+    private:
+
+    CIMGCodecPluginItem( void );
+    CIMGCodecPluginItem( const CIMGCodecPluginItem& src );
+    CIMGCodecPluginItem& operator=( const CIMGCodecPluginItem& src );
+    
+    private:
+    
+    CIMGCodecPlugin* m_plugin;
+    CORE::CString m_typeName;
 };
 
 /*-------------------------------------------------------------------------//
@@ -92,12 +90,12 @@ class GUCEFCORE_EXPORT_CPP CIPlugin
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
-}; /* namespace GUCEF */
+} /* namespace IMAGE */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CIPLUGIN_H ? */
+#endif /* GUCEF_IMAGE_CIMGCODECPLUGINITEM_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -105,7 +103,7 @@ class GUCEFCORE_EXPORT_CPP CIPlugin
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 27-11-2004 :
-        - Dinand: Initial implementation
+- 15-12-2006 :
+        - Dinand: Designed and implemented this class.
 
 -----------------------------------------------------------------------------*/

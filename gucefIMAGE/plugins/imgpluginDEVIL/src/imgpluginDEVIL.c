@@ -21,18 +21,27 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <stdlib.h>             /* for memory utils */
+
+#include "imgpluginDEVIL.h"     /* function prototypes for this plugin */
+
 #ifndef __IL_H__
 #include "il.h"                 /* main API include for the DevIL library */
 #define __IL_H__
 #endif /* __IL_H__ ? */
-
-#include "imgpluginDEVIL.h"     /* function prototypes for this plugin */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#define IMGPLUGIN_DEVIL_MAYOR_VERSION       1
+#define IMGPLUGIN_DEVIL_MINOR_VERSION       0
+#define IMGPLUGIN_DEVIL_PATCH_VERSION       0
+#define IMGPLUGIN_DEVIL_RELEASE_VERSION     1
+
+/*---------------------------------------------------------------------------*/
 
 static TIOAccess* currentRecource = NULL;
 
@@ -124,7 +133,7 @@ ilfCloseRProc( ILHANDLE handle )
 {
     if ( NULL != currentRecource )
     {
-  //      currentRecource->close();
+        currentRecource->close( currentRecource );
     }
 }
 
@@ -135,8 +144,9 @@ ilfEofProc( ILHANDLE handle )
 {
     if ( NULL != currentRecource )
     {
-    //    currentRecource->close();
+        return currentRecource->eof( currentRecource ) != 0 ? IL_TRUE : IL_FALSE;
     }
+    return IL_TRUE;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -144,6 +154,11 @@ ilfEofProc( ILHANDLE handle )
 ILint ILAPIENTRY
 ilfGetcProc( ILHANDLE handle )
 {
+    if ( NULL != currentRecource )
+    {
+        return currentRecource->getc( currentRecource );
+    }
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -151,25 +166,41 @@ ilfGetcProc( ILHANDLE handle )
 ILHANDLE ILAPIENTRY 
 ilfOpenRProc( const ILstring ilstring )
 {
+    if ( NULL != currentRecource )
+    {
+        currentRecource->open( currentRecource );
+    }
+    
+    return currentRecource;
 }
 
 /*---------------------------------------------------------------------------*/
 
 ILint ILAPIENTRY
 ilfReadProc( void* data, 
-             ILuint a, 
-             ILuint  b    , 
+             ILuint size     , 
+             ILuint elements , 
              ILHANDLE handle )
 {
+    if ( NULL != currentRecource )
+    {
+        return currentRecource->read( currentRecource, data, size, elements );
+    }
+    return 0;        
 }
 
 /*---------------------------------------------------------------------------*/
 
 ILint ILAPIENTRY
 ilfSeekRProc( ILHANDLE handle , 
-              ILint a, 
-              ILint  b         )
+              ILint offset    , 
+              ILint origin    )
 {
+    if ( NULL != currentRecource )
+    {
+        return currentRecource->seek( currentRecource, offset, origin );
+    }
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -177,6 +208,7 @@ ilfSeekRProc( ILHANDLE handle ,
 ILint ILAPIENTRY
 ilfTellRProc( ILHANDLE handle )
 {
+    return currentRecource->tell( currentRecource );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -187,7 +219,7 @@ IMAGEPLUGIN_Init( void** plugdata    ,
 {
     if ( ilGetInteger( IL_VERSION_NUM ) < IL_VERSION ) return 0;    
     
-    if ( ilInit() == IL_FALSE ) return 0;
+    ilInit();
     
     ilSetRead( ilfOpenRProc  , 
                ilfCloseRProc , 
@@ -196,6 +228,8 @@ IMAGEPLUGIN_Init( void** plugdata    ,
                ilfReadProc   , 
                ilfSeekRProc  , 
                ilfTellRProc  );
+               
+    return 1;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -212,6 +246,8 @@ IMAGEPLUGIN_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
                NULL );
                
     ilShutDown();
+    
+    return 1;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -235,8 +271,31 @@ IMAGEPLUGIN_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
 IMAGEPLUGIN_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    //TVersion version;
+    static TVersion version;
     
+    version.mayor = IMGPLUGIN_DEVIL_MAYOR_VERSION;
+    version.minor = IMGPLUGIN_DEVIL_MINOR_VERSION;
+    version.patch = IMGPLUGIN_DEVIL_PATCH_VERSION;
+    version.release = IMGPLUGIN_DEVIL_RELEASE_VERSION;
+    
+    return &version;
+}
+
+/*---------------------------------------------------------------------------*/
+
+Int32
+ConvertILPixelFormatToGUCEFPixelFormat( ILint devilType )
+{
+    switch ( devilType )
+    {
+        case IL_RGB : return PSF_RGB;
+        case IL_RGBA : return PSF_RGBA;
+        case IL_BGR : return PSF_BGR;
+        case IL_BGRA : return PSF_BGRA;
+        case IL_LUMINANCE : return PSF_SINGLE_CHANNEL_LUMINANCE;
+        case IL_LUMINANCE_ALPHA : return PSF_SINGLE_CHANNEL_ALPHA;
+        default: return -1;
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -249,7 +308,7 @@ IMAGEPLUGIN_LoadImage( void* plugdata           ,
                        TImage** outputImageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     int i=0, n=0, mipmapCount=0, frameCount=0;
-    ILint imageID = 0;
+    ILint imageID = 0, imageSize = 0;
     TImage* imageData = NULL;
     TImageFrame* imageFrame = NULL;
     TImageMipMapLevel* imageMMInfo = NULL;
@@ -260,7 +319,9 @@ IMAGEPLUGIN_LoadImage( void* plugdata           ,
     imageID = ilGenImage();
     ilBindImage( imageID );
     
-    if ( IL_TRUE == ilLoadF( ilTypeFromExt( imageType ), sourceData ) )
+    currentRecource = sourceData;
+    
+    if ( IL_TRUE == ilLoadF( ilTypeFromExt( (const wchar_t*) imageType ), sourceData ) )
     {
         /* this plugin does not need to store additional data per image */
         *pluginImageData = NULL;
@@ -271,7 +332,7 @@ IMAGEPLUGIN_LoadImage( void* plugdata           ,
         imageData->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
         frameCount = ilGetInteger( IL_NUM_IMAGES );
         imageData->imageInfo.nrOfFramesInImage = frameCount;
-        imageData->frames = (TImageFrame*) malloc( x * sizeof(TImageFrame) );
+        imageData->frames = (TImageFrame*) malloc( frameCount * sizeof(TImageFrame) );
         
         /* Only 1 layer is supported atm */
         ilActiveLayer( 0 );
@@ -291,20 +352,25 @@ IMAGEPLUGIN_LoadImage( void* plugdata           ,
         
             for ( n=0; n<mipmapCount; ++n )
             {
-                /* activate the mipmap */
+                /* activate the mip-map */
                 ilActiveMipmap( n );
+                ilCompressFunc( IL_COMPRESS_NONE );
                 
                 /* Add all information for this image frame's mip-map level */
                 imageMMInfo = &imageFrame->mipmapLevel[ n ];
                 imageMMInfo->version = GUCEF_IMAGE_TIMAGEMIPMAPLEVEL_VERSION;
                 imageMMInfo->mipLevelInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
-                imageMMInfo->pixelData = ilGetData();
-                imageMMInfo->mipLevelInfo.channelComponentSize = ilGetInteger( IL_IMAGE_BPP );
-                imageMMInfo->mipLevelInfo.channelCountPerPixel;
+                imageMMInfo->mipLevelInfo.channelComponentSize = 8; /* DevIL only supports UInt8 */
+                imageMMInfo->mipLevelInfo.channelCountPerPixel = ilGetInteger( IL_IMAGE_BPP ) / 8;
                 imageMMInfo->mipLevelInfo.frameHeight = ilGetInteger( IL_IMAGE_HEIGHT );
                 imageMMInfo->mipLevelInfo.frameWidth = ilGetInteger( IL_IMAGE_WIDTH );
                 imageMMInfo->mipLevelInfo.pixelComponentDataType = DT_UINT8; /* DevIL only supports this type */
-                imageMMInfo->mipLevelInfo.pixelStorageFormat                
+                imageMMInfo->mipLevelInfo.pixelStorageFormat = ConvertILPixelFormatToGUCEFPixelFormat( ilGetInteger( IL_IMAGE_FORMAT ) );
+                
+                /* copy the pixel data */
+                imageSize = ilGetInteger( IL_IMAGE_SIZE_OF_DATA );
+                imageMMInfo->pixelData = malloc( imageSize );
+                memcpy( imageMMInfo->pixelData, ilGetData(), imageSize );
             }
         }
     }
@@ -314,6 +380,8 @@ IMAGEPLUGIN_LoadImage( void* plugdata           ,
      *  DevIL to store the data any more 
      */
     ilDeleteImage( imageID );
+    
+    return 1;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -333,7 +401,6 @@ IMAGEPLUGIN_DeleteLoadedImage( void* plugdata         ,
                                TImage* imageData      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     int i=0, n=0, mipmapCount=0, frameCount=0;
-    TImage* imageData = NULL;
     TImageFrame* imageFrame = NULL;
     TImageMipMapLevel* imageMipmap = NULL;
         
@@ -352,7 +419,7 @@ IMAGEPLUGIN_DeleteLoadedImage( void* plugdata         ,
                 free( imageMipmap->pixelData );                                
             }
             
-            /* delete all mipmap structures for this frame */
+            /* delete all mip-map structures for this frame */
             free( imageFrame->mipmapLevel );
         }
         
@@ -368,9 +435,10 @@ IMAGEPLUGIN_DeleteLoadedImage( void* plugdata         ,
 /*---------------------------------------------------------------------------*/
 
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_SaveImage( void* plugdata         , 
-                       TImage* inputImageData ,
-                       TIOAccess* outputMedia ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+IMAGEPLUGIN_SaveImage( void* plugdata           , 
+                       const char* imageType    ,
+                       TImage* inputImageData   ,
+                       TIOAccess* outputMedia   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     return 0;
 }

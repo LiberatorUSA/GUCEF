@@ -211,6 +211,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CIMGCodecPlugin.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CIMGCodecPluginItem.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CPixelMap.cpp"
 				>
 			</File>
@@ -234,6 +242,14 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CIMGCodec.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CIMGCodecPlugin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CIMGCodecPluginItem.h"
 				>
 			</File>
 			<File
