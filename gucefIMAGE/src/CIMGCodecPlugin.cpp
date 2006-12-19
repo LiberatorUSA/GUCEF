@@ -26,7 +26,16 @@
 #define GUCEF_CORE_CMFILEACCESS_H
 #endif /* GUCEF_CORE_CMFILEACCESS_H ? */
 
-#include "CIMGCodecPluginItem.h"
+#ifndef GUCEF_CORE_CTCODECPLUGINITEM_H
+#include "CTCodecPluginItem.h"
+#define GUCEF_CORE_CTCODECPLUGINITEM_H
+#endif /* GUCEF_CORE_CTCODECPLUGINITEM_H ? */
+
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H ? */
+
 #include "CIMGCodecPlugin.h"        /* definition of this class */
 
 /*-------------------------------------------------------------------------//
@@ -178,7 +187,8 @@ CIMGCodecPlugin::LoadPlugin( const CORE::CString& filename )
         {
             if ( NULL != *formatList )
             {
-                m_codecList.push_back( CIMGCodecPtr( new CIMGCodecPluginItem( this, *formatList ) ) );
+                CIMGCodecPtr codecObjPtr( new CORE::CTCodecPluginItem< CIMGCodec >( *this, *formatList ) );
+                m_codecList.push_back( codecObjPtr );
             }
             
             ++formatList;
@@ -195,7 +205,7 @@ CIMGCodecPlugin::UnloadPlugin( void )
 {TRACE;
 
     // Check for outstanding references to our codec's
-    CIMGCodecPtrList::iterator i = m_codecList.begin();
+    CIMGCodecList::iterator i = m_codecList.begin();
     while ( i != m_codecList.end() )
     {
         if ( (*i).GetReferenceCount() > 1 )
@@ -277,12 +287,18 @@ CIMGCodecPlugin::GetVersion( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CIMGCodecPlugin::GetCodecList( CIMGCodecPtrList& codecList )
+CIMGCodecPlugin::GetCodecList( CCodecList& codecList )
 {TRACE;
 
     if ( IsPluginLoaded() )
     {    
-        codecList = m_codecList;
+        codecList.reserve( m_codecList.size() );
+        CIMGCodecList::iterator i = m_codecList.begin();
+        while ( i != m_codecList.end() )
+        {
+            codecList.push_back( CORE::CTSharedPtr< CORE::CICodec >( (*i) ) );
+            ++i;
+        } 
         return true;
     }
 
@@ -292,12 +308,30 @@ CIMGCodecPlugin::GetCodecList( CIMGCodecPtrList& codecList )
 /*-------------------------------------------------------------------------*/
 
 bool
-CIMGCodecPlugin::Encode( const void* sourceData         ,
-                         const UInt32 sourceBuffersSize ,
-                         TDynamicBufferList& dest       ,
-                         UInt32& destBuffersUsed        ,
-                         const CORE::CString& typeName  )
+CIMGCodecPlugin::GetImageCodecList( CIMGCodecList& codecList )
 {TRACE;
+
+    if ( IsPluginLoaded() )
+    {    
+        codecList = m_codecList;
+        return true;
+    }
+
+    GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::IMAGE::CIMGCodecPlugin::GetImageCodecList(): No module is loaded" );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIMGCodecPlugin::Encode( const void* sourceData          ,
+                         const UInt32 sourceBuffersSize  ,
+                         TDynamicBufferList& dest        ,
+                         UInt32& destBuffersUsed         ,
+                         const CORE::CString& familyName ,
+                         const CORE::CString& typeName   )
+{TRACE;
+
+    if ( !IsPluginLoaded() ) return false;
 
     return false; //@todo makeme
 }
@@ -305,13 +339,16 @@ CIMGCodecPlugin::Encode( const void* sourceData         ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CIMGCodecPlugin::Decode( const void* sourceData         ,
-                         const UInt32 sourceBuffersSize ,
-                         TDynamicBufferList& dest       ,
-                         UInt32& destBuffersUsed        ,
-                         const CORE::CString& typeName  )
+CIMGCodecPlugin::Decode( const void* sourceData          ,
+                         const UInt32 sourceBuffersSize  ,
+                         TDynamicBufferList& dest        ,
+                         UInt32& destBuffersUsed         ,
+                         const CORE::CString& familyName ,
+                         const CORE::CString& typeName   )
 {TRACE;
 
+    if ( !IsPluginLoaded() ) return false;
+    
     CORE::CMFileAccess mfile( sourceData, sourceBuffersSize );
     TImage* image;
     memset( &image, 0, sizeof( TImage ) );
@@ -328,15 +365,19 @@ CIMGCodecPlugin::Decode( const void* sourceData         ,
         buffer.Append( &image->imageInfo, sizeof( TImageInfo ) );
         for ( UInt32 i=0; i<image->imageInfo.nrOfFramesInImage; ++i )
         {            
+            // Insert frame info into the buffer
             TImageFrame* imageFrame = &image->frames[ i ];
             buffer.Append( &imageFrame->frameInfo, sizeof( TImageFrameInfo ) );
             
             for ( UInt32 n=0; n<imageFrame->frameInfo.nrOfMipmapLevels; ++n )
             {
+                // Insert info about the frame's mipmap level into the buffer
                 TImageMipMapLevel* mipmapLevel = &imageFrame->mipmapLevel[ n ];
                 UInt32 pixelDataSize = ( ( mipmapLevel->mipLevelInfo.frameHeight * mipmapLevel->mipLevelInfo.frameWidth )                    *  // pixels in image
                                          ( mipmapLevel->mipLevelInfo.channelCountPerPixel * mipmapLevel->mipLevelInfo.channelComponentSize ) ); // size of a pixel in bytes
                 buffer.Append( &mipmapLevel->mipLevelInfo, sizeof( TImageMipMapLevelInfo ) );
+                
+                // Insert the pixel data for the given frame's mipmap level
                 buffer.Append( mipmapLevel->pixelData, pixelDataSize );
             }
         }

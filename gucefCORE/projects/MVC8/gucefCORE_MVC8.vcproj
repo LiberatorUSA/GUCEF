@@ -316,6 +316,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CICodecPlugin.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CIConfigurable.cpp"
 				>
 			</File>
@@ -481,6 +485,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\CTCloneableObj.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CTCodecPluginItem.cpp"
 				>
 			</File>
 			<File
@@ -750,6 +758,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\CICodecPlugin.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\CIConfigurable.h"
 				>
 			</File>
@@ -931,6 +943,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CTCloneableObj.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CTCodecPluginItem.h"
 				>
 			</File>
 			<File

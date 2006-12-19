@@ -15,19 +15,13 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_IMAGE_CIMGCODECPLUGINITEM_H
-#define GUCEF_IMAGE_CIMGCODECPLUGINITEM_H 
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_IMAGE_CIMGCODEC_H
-#include "CIMGCodec.h"     
-#define GUCEF_IMAGE_CIMGCODEC_H
-#endif /* GUCEF_IMAGE_CIMGCODEC_H ? */
+#include "CICodecPlugin.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -36,53 +30,23 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace IMAGE {
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIMGCodecPlugin;
+CICodecPlugin::CICodecPlugin( void )
+{TRACE;
+}
 
-class CIMGCodecPluginItem : public CIMGCodec
-{
-    public:
-
-    virtual ~CIMGCodecPluginItem();
-
-    virtual bool Encode( const void* sourceData         ,
-                         const UInt32 sourceBuffersSize ,
-                         TDynamicBufferList& dest       ,
-                         UInt32& destBuffersUsed        );
-
-    virtual bool Decode( const void* sourceData         ,
-                         const UInt32 sourceBuffersSize ,
-                         TDynamicBufferList& dest       ,
-                         UInt32& destBuffersUsed        );
-
-    virtual CORE::CICloneable* Clone( void ) const;
+/*-------------------------------------------------------------------------*/
     
-    virtual CORE::CString GetType( void ) const;
-                         
-    private:
-    friend class CIMGCodecPlugin;
-    
-    CIMGCodecPluginItem( CIMGCodecPlugin* plugin       ,
-                         const CORE::CString& typeName );
-                         
-    private:
-
-    CIMGCodecPluginItem( void );
-    CIMGCodecPluginItem( const CIMGCodecPluginItem& src );
-    CIMGCodecPluginItem& operator=( const CIMGCodecPluginItem& src );
-    
-    private:
-    
-    CIMGCodecPlugin* m_plugin;
-    CORE::CString m_typeName;
-};
+CICodecPlugin::~CICodecPlugin()
+{TRACE;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -90,20 +54,7 @@ class CIMGCodecPluginItem : public CIMGCodec
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace IMAGE */
+} /* namespace CORE */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_IMAGE_CIMGCODECPLUGINITEM_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 15-12-2006 :
-        - Dinand: Designed and implemented this class.
-
------------------------------------------------------------------------------*/

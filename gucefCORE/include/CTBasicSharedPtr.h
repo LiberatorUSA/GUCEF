@@ -156,7 +156,7 @@ class CTBasicSharedPtr
     // implemented inline as a workaround for VC6 issues
     // The dummy param is a VC6 hack for templated member functions
     template< class Derived >
-    CTBasicSharedPtr< Derived > StaticCast( Derived dummy = Derived() )
+    CTBasicSharedPtr< Derived > StaticCast( bool dummy = true )
     {
             ++(*m_refCounter);
             

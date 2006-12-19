@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCORE_H
-#include "gucefCORE.h"             /* CORE Library of the GUCEFramework */
-#define GUCEFCORE_H
-#endif /* GUCEFCORE_H ? */
+#ifndef GUCEF_CORE_CCODECPLUGIN_H
+#include "CICodecPlugin.h"
+#define GUCEF_CORE_CCODECPLUGIN_H
+#endif /* GUCEF_CORE_CCODECPLUGIN_H ? */
 
 #ifndef GUCEF_IMAGE_MACROS_H
 #include "gucefIMAGE_macros.h"     /* IMAGE Library macros and build config */
@@ -59,16 +59,16 @@ namespace IMAGE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CIMGCodecPlugin : public CORE::CIPlugin
+class EXPORT_CPP CIMGCodecPlugin : public CORE::CICodecPlugin
 {
-        public:       
-
+        public:
+        
         typedef CORE::CTSharedPtr< CIMGCodec > CIMGCodecPtr;
-        typedef std::vector< CIMGCodecPtr > CIMGCodecPtrList;
-
+        typedef std::vector< CIMGCodecPtr > CIMGCodecList;
+        
         CIMGCodecPlugin( void );
 
-        ~CIMGCodecPlugin();
+        virtual ~CIMGCodecPlugin();
         
         bool LoadPlugin( const CORE::CString& filename );
         
@@ -84,26 +84,28 @@ class EXPORT_CPP CIMGCodecPlugin : public CORE::CIPlugin
 
         virtual CORE::TVersion GetVersion( void ) const;
 
-        UInt32 GetLoadCount( void ) const;
-
-        bool GetCodecList( CIMGCodecPtrList& codecList );
-
-        private:
-        friend class CIMGCodecPluginItem;
+        virtual bool GetCodecList( CCodecList& codecList );
         
-        typedef CIMGCodec::TDynamicBufferList TDynamicBufferList;
+        /** 
+         *  Utility member function
+         *  Basicly the same as GetCodecList() except it
+         *  uses a more concrete codec type for convenience
+         */
+        bool GetImageCodecList( CIMGCodecList& codecList );
         
-        bool Encode( const void* sourceData         ,
-                     const UInt32 sourceBuffersSize ,
-                     TDynamicBufferList& dest       ,
-                     UInt32& destBuffersUsed        ,
-                     const CORE::CString& typeName  );
+        virtual bool Encode( const void* sourceData          ,
+                             const UInt32 sourceBuffersSize  ,
+                             TDynamicBufferList& dest        ,
+                             UInt32& destBuffersUsed         ,
+                             const CORE::CString& familyName ,
+                             const CORE::CString& typeName   );
 
-        bool Decode( const void* sourceData         ,
-                     const UInt32 sourceBuffersSize ,
-                     TDynamicBufferList& dest       ,
-                     UInt32& destBuffersUsed        ,
-                     const CORE::CString& typeName  );        
+        virtual bool Decode( const void* sourceData          ,
+                             const UInt32 sourceBuffersSize  ,
+                             TDynamicBufferList& dest        ,
+                             UInt32& destBuffersUsed         ,
+                             const CORE::CString& familyName ,
+                             const CORE::CString& typeName   );    
         
         private:
         
@@ -115,7 +117,7 @@ class EXPORT_CPP CIMGCodecPlugin : public CORE::CIPlugin
         void* m_fptable[ 10 ];  /**< function pointer table */
         void* m_sohandle;       /**< access to the so module */
         mutable void* m_pluginData;
-        CIMGCodecPtrList m_codecList;
+        CIMGCodecList m_codecList;
         CORE::CString m_modulePath;
 };
 
