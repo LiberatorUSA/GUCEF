@@ -302,7 +302,6 @@ ConvertILPixelFormatToGUCEFPixelFormat( ILint devilType )
 
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 IMAGEPLUGIN_LoadImage( void* plugdata           ,
-                       void** pluginImageData   ,
                        const char* imageType    ,
                        TIOAccess* sourceData    ,  
                        TImage** outputImageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
@@ -313,7 +312,7 @@ IMAGEPLUGIN_LoadImage( void* plugdata           ,
     TImageFrame* imageFrame = NULL;
     TImageMipMapLevel* imageMMInfo = NULL;
     
-    if ( ( NULL == pluginImageData ) || ( NULL == imageType ) || ( NULL == sourceData ) || ( NULL == outputImageData ) ) return 0;
+    if ( ( NULL == imageType ) || ( NULL == sourceData ) || ( NULL == outputImageData ) ) return 0;
     
     /* generate an image ID and make that ID the ID of the current image */
     imageID = ilGenImage();
@@ -322,10 +321,7 @@ IMAGEPLUGIN_LoadImage( void* plugdata           ,
     currentRecource = sourceData;
     
     if ( IL_TRUE == ilLoadF( ilTypeFromExt( (const wchar_t*) imageType ), sourceData ) )
-    {
-        /* this plugin does not need to store additional data per image */
-        *pluginImageData = NULL;
-        
+    {        
         /* Create the image structure hierarchy */
         imageData = (TImage*) malloc( sizeof( TImage ) );
         imageData->version = GUCEF_IMAGE_TIMAGE_VERSION;
@@ -397,7 +393,6 @@ IMAGEPLUGIN_DetectImageType( void* plugdata        ,
 
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 IMAGEPLUGIN_DeleteLoadedImage( void* plugdata         ,
-                               void* pluginImageData  ,
                                TImage* imageData      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     int i=0, n=0, mipmapCount=0, frameCount=0;

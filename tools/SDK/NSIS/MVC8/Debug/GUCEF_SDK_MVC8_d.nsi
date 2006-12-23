@@ -10,7 +10,7 @@
 
 ; Main Install settings
 Name "${APPNAMEANDVERSION}"
-InstallDir "$PROGRAMFILES\GUCEF SDK\MVC8\Debug"
+InstallDir "$PROGRAMFILES\VanvelzenSoftware"
 InstallDirRegKey HKLM "Software\VanvelzenSoftware\GUCEF SDK\MVC8\Debug" ""
 OutFile "GUCEF_SDK_MVC8_d.exe"
 
@@ -38,18 +38,61 @@ Section "GUCEF SDK" Section1
 	SetOverwrite on
 
 	; Set Section Files and Shortcuts
-	SetOutPath "$INSTDIR\bin"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\*.dll"
-	SetOutPath "$INSTDIR\bin\plugins\"
-	File "..\..\..\..\..\common\bin\Debug_MVC8\plugins\*.dll"
-	SetOutPath "$INSTDIR\lib"
-	File /nonfatal "..\..\..\..\..\common\bin\Debug_MVC8\*.lib"
-	SetOutPath "$INSTDIR\lib\plugins"
-	File /nonfatal "..\..\..\..\..\common\bin\Debug_MVC8\plugins\*.lib"
-	SetOutPath "$INSTDIR\include"
-;	File "..\..\..\..\..\common\bin\Debug_MVC8\*.lib"		
+	SetOutPath "$INSTDIR\GUCEF\docs"
+	File "..\..\..\..\..\docs\Licence_LGPL.txt"	
+  SetOutPath "$INSTDIR\GUCEF\common\include"
+	File "..\..\..\..\..\common\include\*.h"	
+	SetOutPath "$INSTDIR\GUCEF\gucefCORE\bin"
+	File "..\..\..\..\..\gucefCORE\bin\Debug_MVC8\*.dll"
+	File "..\..\..\..\..\gucefCORE\bin\Debug_MVC8\*.lib"
+	SetOutPath "$INSTDIR\GUCEF\gucefCORE\include"
+	File "..\..\..\..\..\gucefCORE\include\*.h"
+	SetOutPath "$INSTDIR\GUCEF\gucefVFS\bin"
+	File "..\..\..\..\..\gucefVFS\bin\Debug_MVC8\*.dll"
+	File "..\..\..\..\..\gucefVFS\bin\Debug_MVC8\*.lib"
+	SetOutPath "$INSTDIR\GUCEF\gucefVFS\include"
+	File "..\..\..\..\..\gucefVFS\include\*.h"
+	SetOutPath "$INSTDIR\GUCEF\gucefCOMCORE\bin"
+	File "..\..\..\..\..\gucefCOMCORE\bin\Debug_MVC8\*.dll"
+	File "..\..\..\..\..\gucefCOMCORE\bin\Debug_MVC8\*.lib"
+	SetOutPath "$INSTDIR\GUCEF\gucefCOMCORE\include"
+	File "..\..\..\..\..\gucefCOMCORE\include\*.h"
+	SetOutPath "$INSTDIR\GUCEF\gucefCOM\bin"
+	File "..\..\..\..\..\gucefCOM\bin\Debug_MVC8\*.dll"
+	File "..\..\..\..\..\gucefCOM\bin\Debug_MVC8\*.lib"
+	SetOutPath "$INSTDIR\GUCEF\gucefCOM\include"
+	File "..\..\..\..\..\gucefCOM\include\*.h"
+	SetOutPath "$INSTDIR\GUCEF\gucefINPUT\bin"
+	File "..\..\..\..\..\gucefINPUT\bin\Debug_MVC8\*.dll"
+	File "..\..\..\..\..\gucefINPUT\bin\Debug_MVC8\*.lib"
+	SetOutPath "$INSTDIR\GUCEF\gucefINPUT\include"
+	File "..\..\..\..\..\gucefINPUT\include\*.h"
+	SetOutPath "$INSTDIR\GUCEF\gucefMT\bin"
+	File "..\..\..\..\..\gucefMT\bin\Debug_MVC8\*.dll"
+	File "..\..\..\..\..\gucefMT\bin\Debug_MVC8\*.lib"
+	SetOutPath "$INSTDIR\GUCEF\gucefMT\include"
+	File "..\..\..\..\..\gucefMT\include\*.h"
+	SetOutPath "$INSTDIR\GUCEF\gucefIMAGE\bin"
+	File "..\..\..\..\..\gucefIMAGE\bin\Debug_MVC8\*.dll"
+	File "..\..\..\..\..\gucefIMAGE\bin\Debug_MVC8\*.lib"
+	SetOutPath "$INSTDIR\GUCEF\gucefIMAGE\include"
+	File "..\..\..\..\..\gucefIMAGE\include\*.h"	
+	SetOutPath "$INSTDIR\GUCEF\gucefPATCHER\bin"
+	File /nonfatal "..\..\..\..\..\gucefPATCHER\bin\Debug_MVC8\*.dll"
+	File /nonfatal "..\..\..\..\..\gucefPATCHER\bin\Debug_MVC8\*.lib"
+	SetOutPath "$INSTDIR\GUCEF\gucefPATCHER\include"
+	File /nonfatal "..\..\..\..\..\gucefPATCHER\include\*.h"
+	SetOutPath "$INSTDIR\GUCEF\gucefDRN\bin"
+	File /nonfatal "..\..\..\..\..\gucefDRN\bin\Debug_MVC8\*.dll"
+	File /nonfatal "..\..\..\..\..\gucefDRN\bin\Debug_MVC8\*.lib"
+	SetOutPath "$INSTDIR\GUCEF\gucefDRN\include"
+	File /nonfatal "..\..\..\..\..\gucefDRN\include\*.h"
+	SetOutPath "$INSTDIR\GUCEF\plugins\bin\Debug_MVC8"
+	File /nonfatal "..\..\..\..\..\common\bin\Debug_MVC8\plugins\*.dll"
+	
 	CreateDirectory "$SMPROGRAMS\GUCEF SDK\MVC8\Debug"
-	CreateShortCut "$SMPROGRAMS\GUCEF SDK\MVC8\Debug\Uninstall.lnk" "$INSTDIR\uninstall.exe"
+	CreateShortCut "$SMPROGRAMS\GUCEF SDK\MVC8\Debug\Uninstall.lnk" "$INSTDIR\GUCEF\uninstall.exe"
+	CreateShortCut "$SMPROGRAMS\GUCEF SDK\MVC8\Debug\licence.lnk" "$INSTDIR\GUCEF\docs\Licence_LGPL.txt"
 
 SectionEnd
 
@@ -57,17 +100,11 @@ Section -FinishSection
 
 	WriteRegStr HKLM "Software\${APPNAME}" "" "$INSTDIR"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayName" "${APPNAME}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$INSTDIR\uninstall.exe"
-	WriteUninstaller "$INSTDIR\uninstall.exe"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$INSTDIR\GUCEF\uninstall.exe"
+	WriteUninstaller "$INSTDIR\GUCEF\uninstall.exe"
 
-	; Write the environment settings
-	Push "$INSTDIR\bin"
-  Call AddToPath
-	Push "INCLUDE"
-	Push "$INSTDIR"
-	Call AddToEnvVar
-	Push "LIB"
-	Push "$INSTDIR"
+	Push "GUCEF_HOME"
+	Push "$INSTDIR\GUCEF"
 	Call AddToEnvVar
 
 SectionEnd
@@ -85,33 +122,31 @@ Section Uninstall
 	DeleteRegKey HKLM "SOFTWARE\${APPNAME}"
 
 	; Delete self
-	Delete "$INSTDIR\uninstall.exe"
+	Delete "$INSTDIR\GUCEF\uninstall.exe"
 
 	; Delete Shortcuts
 	Delete "$SMPROGRAMS\GUCEF SDK\MVC8\Debug\Uninstall.lnk"
 
 	; Clean up GUCEF SDK
-	Delete "$INSTDIR\bin\*.dll"
-	Delete "$INSTDIR\bin\plugins\*.dll"
+	Delete "$INSTDIR\GUCEF\docs\*.*"
+	Delete "$INSTDIR\GUCEF\gucefCORE\bin\Debug_MVC8\*.*"
+	Delete "$INSTDIR\GUCEF\gucefMT\bin\Debug_MVC8\*.*"
+	Delete "$INSTDIR\GUCEF\gucefIMAGE\bin\Debug_MVC8\*.*"
+	Delete "$INSTDIR\GUCEF\gucefVFS\bin\Debug_MVC8\*.*"
+	Delete "$INSTDIR\GUCEF\gucefCOMCORE\bin\Debug_MVC8\*.*"
+	Delete "$INSTDIR\GUCEF\gucefCOM\bin\Debug_MVC8\*.*"
+	Delete "$INSTDIR\GUCEF\gucefPATCHER\bin\Debug_MVC8\*.*"
+	Delete "$INSTDIR\GUCEF\gucefDRN\bin\Debug_MVC8\*.*"
+	Delete "$INSTDIR\GUCEF\plugins\bin\Debug_MVC8\*.*"
 
 	; Remove remaining directories
 	RMDir "$SMPROGRAMS\GUCEF SDK\MVC8\Debug"
-	RMDir "$INSTDIR\bin\plugins\"
-	RMDir "$INSTDIR\bin"
-	RMDir "$INSTDIR\lib"
-	RMDir "$INSTDIR\include"	
-	RMDir "$INSTDIR\"
+	RMDir "$INSTDIR\GUCEF"
 
 	; Remove our environment settings
-	Push "$INSTDIR\bin"
-	Call un.RemoveFromPath	
-	Push "INCLUDE"
-	Push "$INSTDIR\include"
+	Push "GUCEF_HOME"
+	Push "$INSTDIR\GUCEF"
 	Call un.RemoveFromEnvVar
-	Push "LIB"
-	Push "$INSTDIR\lib"
-	Call un.RemoveFromEnvVar
-
 
 SectionEnd
 
