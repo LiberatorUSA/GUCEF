@@ -3,6 +3,7 @@
 
 ; include functions for setting the environment settings
 !include "..\..\MSWIN\PathEnvUtils.nsh"
+!include "..\..\MSWIN\WriteEnvStr.nsh"
 
 ; Define your application name
 !define APPNAME "GUCEF SDK for MVC8 (debug)"
@@ -105,7 +106,7 @@ Section -FinishSection
 
 	Push "GUCEF_HOME"
 	Push "$INSTDIR\GUCEF"
-	Call AddToEnvVar
+	Call WriteEnvStr
 
 SectionEnd
 
