@@ -203,21 +203,21 @@
 #undef DEBUGOUTPUTsss
 #ifdef DEBUG_MODE
   #ifdef ADD_EXTRA_INFO_TO_DEBUGOUTPUT
-    #define DEBUGOUTPUT( c_str ) ( CORE::tsprintf( "%s @ Line %d File %s\n", c_str, __LINE__, __FILE__ ) )
+    #define DEBUGOUTPUT( c_str ) ( GUCEF::CORE::tsprintf( "%s @ Line %d File %s\n", c_str, __LINE__, __FILE__ ) )
     #define DEBUGOUTPUTs DEBUGOUTPUT
-    #define DEBUGOUTPUTi( intval ) ( CORE::tsprintf( "%i @ Line %d File %s\n", intval, __LINE__, __FILE__ ) )    
-    #define DEBUGOUTPUTss( c_str1, c_str2 ) ( CORE::tsprintf( "%s%s @ Line %d File %s\n", c_str1, c_str2, __LINE__, __FILE__ ) )
-    #define DEBUGOUTPUTis( intval, c_str ) ( CORE::tsprintf( "%i%s @ Line %d File %s\n", intval, c_str, __LINE__, __FILE__ ) )
-    #define DEBUGOUTPUTsi( c_str, intval ) ( CORE::tsprintf( "%s%i @ Line %d File %s\n", c_str, intval, __LINE__, __FILE__ ) )    
-    #define DEBUGOUTPUTsss( c_str1, c_str2, c_str3 ) ( CORE::tsprintf( "%s%s%s @ Line %d File %s\n", c_str1, c_str2, c_str3, __LINE__, __FILE__ ) )
+    #define DEBUGOUTPUTi( intval ) ( GUCEF::CORE::tsprintf( "%i @ Line %d File %s\n", intval, __LINE__, __FILE__ ) )    
+    #define DEBUGOUTPUTss( c_str1, c_str2 ) ( GUCEF::CORE::tsprintf( "%s%s @ Line %d File %s\n", c_str1, c_str2, __LINE__, __FILE__ ) )
+    #define DEBUGOUTPUTis( intval, c_str ) ( GUCEF::CORE::tsprintf( "%i%s @ Line %d File %s\n", intval, c_str, __LINE__, __FILE__ ) )
+    #define DEBUGOUTPUTsi( c_str, intval ) ( GUCEF::CORE::tsprintf( "%s%i @ Line %d File %s\n", c_str, intval, __LINE__, __FILE__ ) )    
+    #define DEBUGOUTPUTsss( c_str1, c_str2, c_str3 ) ( GUCEF::CORE::tsprintf( "%s%s%s @ Line %d File %s\n", c_str1, c_str2, c_str3, __LINE__, __FILE__ ) )
   #else
-    #define DEBUGOUTPUT( c_str ) ( CORE::tsprintf( "%s\n", c_str ) )
+    #define DEBUGOUTPUT( c_str ) ( GUCEF::CORE::tsprintf( "%s\n", c_str ) )
     #define DEBUGOUTPUTs DEBUGOUTPUT
-    #define DEBUGOUTPUTi( intval ) ( CORE::tsprintf( "%i\n", intval ) )    
-    #define DEBUGOUTPUTss( c_str1, c_str2 ) ( CORE::tsprintf( "%s%s\n", c_str1, c_str2 ) )
-    #define DEBUGOUTPUTis( intval, c_str ) ( CORE::tsprintf( "%i%s\n", intval, c_str ) )
-    #define DEBUGOUTPUTsi( c_str, intval ) ( CORE::tsprintf( "%s%i\n", c_str, intval ) )
-    #define DEBUGOUTPUTsss( c_str1, c_str2, c_str3 ) ( CORE::tsprintf( "%s%s%s\n", c_str1, c_str2, c_str3 ) )
+    #define DEBUGOUTPUTi( intval ) ( GUCEF::CORE::tsprintf( "%i\n", intval ) )    
+    #define DEBUGOUTPUTss( c_str1, c_str2 ) ( GUCEF::CORE::tsprintf( "%s%s\n", c_str1, c_str2 ) )
+    #define DEBUGOUTPUTis( intval, c_str ) ( GUCEF::CORE::tsprintf( "%i%s\n", intval, c_str ) )
+    #define DEBUGOUTPUTsi( c_str, intval ) ( GUCEF::CORE::tsprintf( "%s%i\n", c_str, intval ) )
+    #define DEBUGOUTPUTsss( c_str1, c_str2, c_str3 ) ( GUCEF::CORE::tsprintf( "%s%s%s\n", c_str1, c_str2, c_str3 ) )
   #endif  
 #else
   #define DEBUGOUTPUT( c_str ) ( )
