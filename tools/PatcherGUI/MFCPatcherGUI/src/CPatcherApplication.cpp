@@ -129,8 +129,8 @@ CPatcherApplication::OnNotify( CORE::CNotifier* notifier                 ,
         CORE::CPluginControl::Instance()->LoadAll();
         
         CORE::UInt32 errorCode;
-        VFS::CVFSHandle* oldListFile = m_vfs->GetFile( "oldLocalList.xml" ,
-                                                       errorCode         );
+        VFS::CVFS::CVFSHandlePtr oldListFile = m_vfs->GetFile( "oldLocalList.xml" ,
+                                                                errorCode         );
         
         CORE::CDataNode oldLocalList;
         if ( oldListFile )

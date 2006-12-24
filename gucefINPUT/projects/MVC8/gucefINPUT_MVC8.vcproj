@@ -67,9 +67,9 @@
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\gucefMT\bin\Debug_MVC8"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/gucefINPUT_MVC.pdb"
+				ProgramDatabaseFile="$(OutDir)/gucefINPUT_MVC8.pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)/gucefINPUT_MVC.lib"
+				ImportLibrary="$(OutDir)/gucefINPUT_MVC8_d.lib"
 				TargetMachine="1"
 			/>
 			<Tool
