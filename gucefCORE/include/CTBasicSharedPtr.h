@@ -132,7 +132,6 @@ class CTBasicSharedPtr
     template< class Derived >
     CTBasicSharedPtr& operator=( const CTBasicSharedPtr< Derived >& src )
     {
-        //TICS !GOLC-004: is protected
         if ( &reinterpret_cast< const CTBasicSharedPtr& >( src ) != this )
         {
             Unlink();
@@ -169,6 +168,8 @@ class CTBasicSharedPtr
     }
  
     CTBasicSharedPtr& operator=( const CTBasicSharedPtr& src );
+    
+    CTBasicSharedPtr& operator=( int nullValue );
  
     inline bool operator==( const T* other ) const;
     
@@ -377,6 +378,18 @@ CTBasicSharedPtr< T >::GetReferenceCount( void ) const
         return *m_refCounter;
     }
     return 0UL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+CTBasicSharedPtr< T >&
+CTBasicSharedPtr< T >::operator=( int nullValue )
+{TRACE;
+
+    assert( nullValue == NULL );
+    SetToNULL();
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
