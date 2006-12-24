@@ -66,7 +66,6 @@ WinMain( HINSTANCE hinstance     ,
                 SetupHTTPClientTest();
 
                 CGUCEFApplication::Instance()->Main( hinstance     ,
-                                                     hprevinstance ,
                                                      lpcmdline     ,
                                                      ncmdshow      ,
                                                      true          );
