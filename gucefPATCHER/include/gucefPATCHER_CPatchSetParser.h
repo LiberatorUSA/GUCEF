@@ -28,7 +28,6 @@
 #include <vector>
 #include "CDataNode.h"
 #include "CDVString.h"
-#include "gucefPATCHER_CPatchSetParserEvents.h"
 
 #include "gucefPATCHER_macros.h"
 
@@ -47,89 +46,67 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-class CPatchSetParserEventHandler;
-
-/*-------------------------------------------------------------------------*/
-
-class EXPORT_CPP CPatchSetParser : public CPatchSetParserEvents
+class EXPORT_CPP CPatchSetParser
 {
     public:
     
-    struct SSourceInfo
+    struct SFileLocation
     {
-        CORE::CString Tag;
-        CORE::CString URL;
-        CORE::CString Alternative;
-        CORE::CString Codec;
-        CORE::CString CodecParams;
+        CORE::CString URL;          /**< URL where the file can be retrieved */
+        CORE::CString codec;        /**< codec that should be used on the file once it's retrieved (if any) */
+        CORE::CString codecParams;  /**< parameters for the codec that should be used on the file once it's retrieved (if any) */
     };
-    typedef struct SSourceInfo TSourceInfo;
-    typedef std::map< CORE::CString, TSourceInfo > TSourceList;
-    typedef std::vector< CPatchSetParserEventHandler* > TEventHandlerList;
-        
+    typedef struct SFileLocation TFileLocation;
+
+    struct SFileEntry
+    {
+        CORE::CString name;
+        UInt32 sizeInBytes;
+        CORE::CString hash;
+        std::vector< TFileLocation > fileLocations;
+    };
+    typedef struct SFileEntry TFileEntry;
+    
+    struct SDirEntry
+    {
+        CORE::CString name;
+        UInt32 sizeInBytes;
+        CORE::CString hash;
+        std::vector< TFileEntry > files;
+        std::vector< struct SDirEntry > subDirs;
+    };
+    typedef struct SDirEntry TDirEntry;
+
+    typedef std::vector< TDirEntry > TPatchSet;
+    
     public:
     
     CPatchSetParser( void );
     
-    CPatchSetParser( const CPatchSetParser& src );
-    
     ~CPatchSetParser();
-    
-    CPatchSetParser& operator=( const CPatchSetParser& src );
-    
-    /**
-     *  High-level parser, extracts the source list and starts
-     *  calling the events handlers for each appropriote event
-     */
-    void 
-    ProcessPatchList( const CORE::CDataNode& patchList ,
-                      TEventHandlerList& eventHandlers );
 
-    /**
-     *  Allows you to parse a source list from the given data tree
-     */
-    void
-    ParseSourceList( const CORE::CDataNode& rootNode ,
-                     TSourceList& sourceList         );
-    
-    /**
-     *  Merge capability. If so desired you can subtract the old from the 
-     *  new patchset local list.
-     *  It simply copies all the diffrences into the diffList 
-     */
-    void 
-    SubtractOldFromNewLocalList( const CORE::CDataNode& oldLocalList ,
-                                 const CORE::CDataNode& newLocalList ,
-                                 CORE::CDataNode& diffList           );
+    bool ParsePatchSet( const CORE::CDataNode& patchSetData ,
+                        TPatchSet& patchSet                 ) const;
     
     private:
     
-    void 
-    ParseSourceList( TSourceList& sourceList ,
-                     CORE::CDataNode* n      );
-                          
-    void
-    ProcessPatchListImp( const CORE::CDataNode& rootNode           ,
-                         const CORE::CString localPath             ,
-                         TEventHandlerList& eventHandler );
+    CPatchSetParser( const CPatchSetParser& src );
+    CPatchSetParser& operator=( const CPatchSetParser& src );
+    
+    bool ParseTopLevelDir( const CORE::CDataNode& patchSetDirNode ,
+                           TPatchSet& patchSet                    ) const;
 
-    void 
-    ProcessPatchList( const TSourceList& sourceList ,
-                      CORE::CDataNode* n            );
-                           
-    const CORE::CDataNode*
-    FindPathInLocalListImp( const CORE::CDataNode& currentNode ,
-                            const CORE::CString& path          );
+    bool ParseAndWalkDirTree( const CORE::CDataNode& patchSetDirNode ,
+                              TDirEntry& parentDir                   ) const;
+                   
+    bool ValidateAndParseFileEntry( const CORE::CDataNode& patchSetFileNode ,
+                                    TFileEntry& fileEntry                   ) const;
 
-    const CORE::CDataNode*
-    FindPathInLocalList( const CORE::CDataNode& rootNode ,
-                         const CORE::CString& path       );
-                         
-    void
-    SubtractOldFromNewLocalListImp( const CORE::CDataNode& oldLocalListRoot ,
-                                    const CORE::CDataNode& newLocalListNode ,
-                                    const CORE::CString& localPath          ,
-                                    CORE::CDataNode& diffList               );
+    bool ValidateAndParseFileLocEntries( const CORE::CDataNode& patchSetFileNode ,
+                                         TFileEntry& fileEntry                   ) const;
+
+    bool ValidateAndParseDirEntry( const CORE::CDataNode& patchSetDirNode ,
+                                   TDirEntry& dirEntry                    ) const;
 };
 
 /*-------------------------------------------------------------------------//
@@ -151,6 +128,10 @@ class EXPORT_CPP CPatchSetParser : public CPatchSetParserEvents
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 26-12-2006 :
+        - rewrote this class. It is now simply a parser of a data tree into
+          a more concrete data structure. The data structure is validated
+          while it is parsed.
 - 06-05-2005 :
         - Initial version
 

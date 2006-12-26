@@ -51,10 +51,10 @@
 /*
  *      Simple types
  */
-#ifndef ETYPES_H
-#include "ETypes.h"
-#define ETYPES_H
-#endif /* ETYPES_H ? */
+#ifndef GUCEF_VFS_ETYPES_H
+#include "gucefVFS_ETypes.h"
+#define GUCEF_VFS_ETYPES_H
+#endif /* GUCEF_VFS_ETYPES_H ? */
 
 /*---------------------------------------------------------------------------/
 

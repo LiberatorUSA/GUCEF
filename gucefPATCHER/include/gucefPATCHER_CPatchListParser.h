@@ -28,8 +28,6 @@
 #include <vector>
 #include "CDataNode.h"
 #include "CDVString.h"
-#include "CURL.h"
-#include "CObservingNotifier.h"
 #include "gucefPATCHER_CPatchListParserEvents.h"
 #include "gucefPATCHER_macros.h"
 
@@ -48,69 +46,29 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-
-class EXPORT_CPP CPatchListParser : public CORE::CObservingNotifier ,
-                                    public CPatchListParserEvents
+/**
+ *  Parser that parses a data node tree for the information required to
+ *  build a patch list. Any and all corrupt entries will be dropped.
+ */
+class EXPORT_CPP CPatchListParser
 {
     public:
     
-    static const CORE::CString PatchListRetrievalBeginEvent;
-    static const CORE::CString PatchListRetrievalEndEvent;
-    static const CORE::CString PatchListRetrievalErrorEvent;
-    static const CORE::CString PatchListEntryEvent;
-    static const CORE::CString PatchSetRetrievalBeginEvent;
-    static const CORE::CString PatchSetRetrievalEndEvent;
-    static const CORE::CString PatchSetRetrievalErrorEvent;
-        
-    public:
+    typedef std::pair< CORE::CString, CORE::CString > TPatchSetLocation;
+    typedef std::vector< TPatchSetLocation > TPatchSetLocations;
+    typedef std::map< CORE::CString, TPatchSetLocations > TPatchList;
     
     CPatchListParser( void );    
        
     virtual ~CPatchListParser();
     
-    void ProcessPatchList( const CORE::CDataNode& patchList );
-    
-    bool ProcessPatchList( const CORE::CString& patchListURL );
-    
-    bool IsActive( void ) const;
-    
-    void Stop( void );
-
-    CORE::CEvent GetPatchListRetrievalBeginEventID( void ) const;
-    CORE::CEvent GetPatchListRetrievalEndEventID( void ) const;
-    CORE::CEvent GetPatchListRetrievalErrorEventID( void ) const;
-    CORE::CEvent GetPatchListEntryEventID( void ) const;
-    CORE::CEvent GetPatchSetEntryEventID( void ) const;
-    CORE::CEvent GetPatchSetRetrievalBeginEventID( void ) const;
-    CORE::CEvent GetPatchSetRetrievalEndEventID( void ) const;
-    CORE::CEvent GetPatchSetRetrievalErrorEventID( void ) const;
-    CORE::CEvent GetParserErrorEventID( void ) const;
-
-    protected:
-    
-    virtual void OnNotify( CORE::CNotifier* notifier           ,
-                           const CORE::CEvent& eventid         ,
-                           CORE::CICloneable* eventdata = NULL );    
-    
+    void ParsePatchList( const CORE::CDataNode& patchListData ,
+                         TPatchList& patchList                ) const;
+   
     private:
     
     CPatchListParser( const CPatchListParser& src ); 
     CPatchListParser& operator=( const CPatchListParser& src );
-    
-    private:
-    
-    CORE::CEvent m_patchListRetrievalBeginEventID;
-    CORE::CEvent m_patchListRetrievalEndEventID;
-    CORE::CEvent m_patchListRetrievalErrorEventID;
-    CORE::CEvent m_patchListEntryEventID;
-    CORE::CEvent m_patchSetEntryEventID;
-    CORE::CEvent m_patchSetRetrievalBeginEventID;
-    CORE::CEvent m_patchSetRetrievalEndEventID;
-    CORE::CEvent m_patchSetRetrievalErrorEventID;
-    CORE::CEvent m_parserErrorEventID;
-    CORE::CURL m_url;
-    bool m_isActive;
-    bool m_retrievingList;
 };
 
 /*-------------------------------------------------------------------------//
@@ -132,7 +90,11 @@ class EXPORT_CPP CPatchListParser : public CORE::CObservingNotifier ,
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 25-12-2006 :
+        - Dinand: rewrote this class, it's far simpler now. Simply parses the 
+          given patch list data tree for information and stores it into a  
+          structure that is easy to use.
 - 07-10-2006 :
-        - Initial version
+        - Dinand: Initial version
 
 -----------------------------------------------------------------------------*/

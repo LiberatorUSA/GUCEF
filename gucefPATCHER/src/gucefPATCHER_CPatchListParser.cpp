@@ -34,43 +34,13 @@ namespace PATCHER {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-const CORE::CString CPatchListParser::PatchListRetrievalBeginEvent = "GUCEF::PATCHER::CPatchListParser::PatchListRetrievalBeginEvent";
-const CORE::CString CPatchListParser::PatchListRetrievalEndEvent = "GUCEF::PATCHER::CPatchListParser::PatchListRetrievalEndEvent";
-const CORE::CString CPatchListParser::PatchListRetrievalErrorEvent = "GUCEF::PATCHER::CPatchListParser::PatchListRetrievalErrorEvent";
-const CORE::CString CPatchListParser::PatchListEntryEvent = "GUCEF::PATCHER::CPatchListParser::PatchListEntryEvent";
-const CORE::CString CPatchListParser::PatchSetEntryEvent = "GUCEF::PATCHER::CPatchListParser::PatchSetEntryEvent";
-const CORE::CString CPatchListParser::PatchSetRetrievalBeginEvent = "GUCEF::PATCHER::CPatchListParser::PatchSetRetrievalBeginEvent";
-const CORE::CString CPatchListParser::PatchSetRetrievalEndEvent = "GUCEF::PATCHER::CPatchListParser::PatchSetRetrievalEndEvent";
-const CORE::CString CPatchListParser::PatchSetRetrievalErrorEvent = "GUCEF::PATCHER::CPatchListParser::PatchSetRetrievalErrorEvent";
-const CORE::CString CPatchListParser::ParserErrorEvent = "GUCEF::PATCHER::CPatchListParser::ParserErrorEvent";
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CPatchListParser::CPatchListParser( void )
-    : CORE::CObservingNotifier()                                       ,
-      m_patchListRetrievalBeginEventID( PatchListRetrievalBeginEvent ) ,
-      m_patchListRetrievalEndEventID( PatchListRetrievalEndEvent )     ,
-      m_patchListRetrievalErrorEventID( PatchListRetrievalErrorEvent ) ,
-      m_patchListEntryEventID( PatchListEntryEvent )                   ,
-      m_patchSetEntryEventID( PatchSetEntryEvent )                     ,
-      m_patchSetRetrievalBeginEventID( PatchSetRetrievalBeginEvent )   ,
-      m_patchSetRetrievalEndEventID( PatchSetRetrievalEndEvent )       ,
-      m_patchSetRetrievalErrorEventID( PatchSetRetrievalErrorEvent )   ,
-      m_parserErrorEventID( ParserErrorEvent )                         ,
-      m_url()                                                          ,
-      m_isActive( false )                                              ,
-      m_retrievingList( false )
 {TRACE;
 
-    SubscribeTo( &m_url );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -83,158 +53,67 @@ CPatchListParser::~CPatchListParser()
 /*-------------------------------------------------------------------------*/
 
 void
-CPatchListParser::ProcessPatchList( const CORE::CDataNode& patchList )
+CPatchListParser::ParsePatchList( const CORE::CDataNode& patchListData ,
+                                  TPatchList& patchList                ) const
 {TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CPatchListParser::ProcessPatchList( const CORE::CString& patchListURL )
-{TRACE;
+    const CORE::CDataNode* patchListNode = patchListData.Find( "PatchList" );
     
-    if ( !m_isActive )
+    if ( patchListNode != NULL )
     {
-        if ( m_url.SetURL( patchListURL ) )
+        const CORE::CDataNode* patchListEntry( NULL );
+        CORE::CDataNode::const_iterator i = patchListNode->ConstBegin();
+        while ( i != patchListNode->ConstEnd() )
         {
-            if ( m_url.Activate() )
+            patchListEntry = (*i);
+            if ( patchListEntry->GetName().Equals( "PatchSetEntry", false ) )
             {
-                m_isActive = true;
-                m_retrievingList = true;
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CPatchListParser::OnNotify( CORE::CNotifier* notifier                 ,
-                            const CORE::CEvent& eventid               ,
-                            CORE::CICloneable* eventdata /* = NULL */ )
-{TRACE;
-
-    // Don't process async notifications if we are not active
-    if ( m_isActive )
-    {
-        // Only process messages from our own URL handler
-        if ( notifier == &m_url )
-        {
-            if ( eventid == m_url.GetURLDataRetrievalErrorEventID() )
-            {
-                if ( m_retrievingList )
+                // Validate that the patch set has a name property
+                const CORE::CDataNode::TNodeAtt* attData = patchListEntry->GetAttribute( "Name" );
+                if ( attData != NULL )
                 {
-                    NotifyObservers( m_patchListRetrievalErrorEventID );
+                    // A name was found, we can continue on to parse the patch set's locations
+                    const CORE::CString& patchSetName = attData->value;
+                    
+                    const CORE::CDataNode* patchSetLocEntry( NULL );
+                    CORE::CDataNode::const_iterator n = patchListEntry->ConstBegin();
+                    while ( n != patchListEntry->ConstEnd() )
+                    {
+                        // Get the information we need from each location entry
+                        patchSetLocEntry = (*n);
+                        if ( patchSetLocEntry->GetName().Equals( "Location", false ) )
+                        {
+                            // Get the URL of the patch set location
+                            attData = patchListEntry->GetAttribute( "URL" );
+                            if ( attData != NULL )
+                            {
+                                // We have a URL
+                                const CORE::CString& patchSetLocURL = attData->value;
+                                
+                                // Get the codec name for the patch set data
+                                attData = patchListEntry->GetAttribute( "Codec" ); 
+                                if ( attData != NULL )
+                                {
+                                    // We have the codec name
+                                    const CORE::CString& patchSetDataCodec = attData->value;
+                                    
+                                    // We have all the info we need for this location
+                                    // we can now add the location to the list
+                                    TPatchSetLocation location( patchSetLocURL, patchSetDataCodec );
+                                    TPatchSetLocations& locationList = patchList[ patchSetName ];
+                                    locationList.push_back( location );
+                                }
+                            }
+                        }
+                        
+                        ++n;
+                    }
                 }
-                else
-                {
-                    NotifyObservers( m_patchSetRetrievalErrorEventID );
-                }
-                
-                Stop();
-                return;
             }
-           // if ( eventid ==  )
+                           
+            ++i;
         }
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CPatchListParser::IsActive( void ) const
-{TRACE;
-    
-    return m_isActive;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CPatchListParser::Stop( void )
-{TRACE;
-
-    if ( m_isActive )
-    {
-        m_url.Deactivate();
-        m_isActive = false;
-        m_retrievingList = false;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CEvent
-CPatchListParser::GetPatchListEntryEventID( void ) const
-{TRACE;
-    return m_patchListEntryEventID;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CEvent
-CPatchListParser::GetPatchSetEntryEventID( void ) const
-{TRACE;
-    return m_patchSetEntryEventID;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CEvent
-CPatchListParser::GetPatchSetRetrievalBeginEventID( void ) const
-{TRACE;
-    return m_patchSetRetrievalBeginEventID;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CEvent
-CPatchListParser::GetPatchSetRetrievalEndEventID( void ) const
-{TRACE;
-    return m_patchSetRetrievalEndEventID;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CEvent
-CPatchListParser::GetPatchSetRetrievalErrorEventID( void ) const
-{TRACE;
-    return m_patchSetRetrievalErrorEventID;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CEvent
-CPatchListParser::GetParserErrorEventID( void ) const
-{TRACE;
-    return m_parserErrorEventID;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CEvent
-CPatchListParser::GetPatchListRetrievalBeginEventID( void ) const
-{TRACE;
-    return m_patchListRetrievalBeginEventID;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CEvent
-CPatchListParser::GetPatchListRetrievalEndEventID( void ) const
-{TRACE;
-    return m_patchListRetrievalEndEventID;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CEvent
-CPatchListParser::GetPatchListRetrievalErrorEventID( void ) const
-{TRACE;
-    return m_patchListRetrievalErrorEventID;
+    } 
 }
 
 /*-------------------------------------------------------------------------//

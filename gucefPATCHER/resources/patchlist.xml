@@ -1,9 +1,9 @@
 <PatchList>
-	<PatchSetEntry Name="GUCEF" />
+	<PatchSetEntry Name="GUCEF" >
 		<Location URL="" Codec="" />
 		<Location URL="" Codec="" />
 	</PatchSetEntry>
-	<PatchSetEntry Name="" />
+	<PatchSetEntry Name="" >
 		<Location URL="" Codec="" />
 		<Location URL="" Codec="" />
 	</PatchSetEntry>

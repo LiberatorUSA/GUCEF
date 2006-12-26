@@ -204,10 +204,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\gucefPATCHER_CPatchListParserEvents.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\gucefPATCHER_CPatchSetParser.cpp"
 				>
 			</File>
@@ -230,15 +226,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefPATCHER_CPatchListParserEvents.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\gucefPATCHER_CPatchSetParser.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefPATCHER_CPatchSetParserEvents.h"
 				>
 			</File>
 			<File
