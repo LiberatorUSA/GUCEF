@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_PATCHER_CPATCHSETPARSEREVENTHANDLER_H
-#define GUCEF_PATCHER_CPATCHSETPARSEREVENTHANDLER_H
+#ifndef GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
+#define GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,8 +24,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CDVString.h"
-#include "gucefPATCHER_CPatchSetParser.h"
+#include "CEvent.h"
 #include "gucefPATCHER_macros.h"
 
 /*-------------------------------------------------------------------------//
@@ -41,48 +40,33 @@ namespace PATCHER {
 //                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPatchSetParserEventHandler
+class EXPORT_CPP CPatchSetFileEngineEvents
 {
     public:
     
-    typedef CPatchSetParser::TSourceInfo TSourceInfo;
-    typedef CPatchSetParser::TSourceList TSourceList;
+    static const CORE::CEvent FileListProcessingStartedEvent;
+    static const CORE::CEvent LocalFileSizeMismatchEvent;
+    static const CORE::CEvent LocalFileHashMismatchEvent;
+    static const CORE::CEvent LocalFileNotFoundEvent;
+    static const CORE::CEvent FileRetrievalStartedEvent;
+    static const CORE::CEvent FileRetrievalCompleteEvent;
+    static const CORE::CEvent FileRetrievalErrorEvent;
+    static const CORE::CEvent FileStorageErrorEvent;
+    static const CORE::CEvent FileListProcessingCompleteEvent;
+    static const CORE::CEvent FileListProcessingAbortedEvent;
     
-    public:
+    static void RegisterEvents( void );
     
-    CPatchSetParserEventHandler( void );
-    
-    CPatchSetParserEventHandler( const CPatchSetParserEventHandler& src );
-    
-    virtual ~CPatchSetParserEventHandler();
-    
-    CPatchSetParserEventHandler& operator=( const CPatchSetParserEventHandler& src );
-
     protected:
-    friend class CPatchSetParser;
     
-    virtual void OnPatchSetStart( const CORE::CString& patchSetName ) = 0;
+    CPatchSetFileEngineEvents( void );
+    virtual ~CPatchSetFileEngineEvents();
     
-    virtual void OnEnterLocalDir( const CORE::CString& localPath ) = 0;
-    
-    virtual void OnLocalFileOK( const CORE::CString& localPath ,
-                                const CORE::CString& localFile ) = 0;
-
-    virtual void OnLocalFileNotFound( const CORE::CString& localPath ,
-                                      const CORE::CString& localFile ) = 0;
-
-    virtual void OnLocalFileDifference( const CORE::CString& localPath ,
-                                        const CORE::CString& localFile ) = 0;
-
-    virtual void OnNewSourceRequired( const TSourceInfo& sourceInfo ) = 0;
-    
-    virtual void OnLeaveLocalDir( const CORE::CString& localPath ) = 0;
-    
-    virtual void OnPatchSetEnd( const CORE::CString& patchSetName ) = 0;
-    
-    virtual void OnParserError( void ) = 0;
+    private:
+    CPatchSetFileEngineEvents( const CPatchSetFileEngineEvents& src );            /**< not implemented */
+    CPatchSetFileEngineEvents& operator=( const CPatchSetFileEngineEvents& src ); /**< not implemented */
 };
 
 /*-------------------------------------------------------------------------//
@@ -96,7 +80,7 @@ class EXPORT_CPP CPatchSetParserEventHandler
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHER_CPATCHSETPARSEREVENTHANDLER_H ? */
+#endif /* GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -104,7 +88,7 @@ class EXPORT_CPP CPatchSetParserEventHandler
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 06-05-2005 :
-        - Initial version
+- 27-12-2006 :
+        - Dinand: Initial version
 
 -----------------------------------------------------------------------------*/

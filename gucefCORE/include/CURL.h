@@ -100,12 +100,6 @@ class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
         
         void Refresh( void );
 
-        CEvent GetURLActivateEventID( void ) const;
-        CEvent GetURLDeactivateEventID( void ) const;
-        CEvent GetURLDataRecievedEventID( void ) const;
-        CEvent GetURLAllDataRecievedEventID( void ) const;
-        CEvent GetURLDataRetrievalErrorEventID( void ) const;
-
         protected:
         
         virtual void OnNotify( CNotifier* notifier           ,
@@ -116,15 +110,8 @@ class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
         
         CURLHandler* GetHandlerForURL( const CString& url ) const;
         
-        static void RegisterEventsImp( CURL* url );
-        
         private:        
-        
-        CEvent m_URLActivateEvent;
-        CEvent m_URLDeactivateEvent;
-        CEvent m_URLDataRecievedEvent;
-        CEvent m_URLAllDataRecievedEvent;
-        CEvent m_URLDataRetrievalErrorEvent;
+       
         CString m_url;             /**< the URL string */
         CURLHandler* m_handler;    /**< URL handler for the specified URL protocol */
 };

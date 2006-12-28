@@ -44,15 +44,14 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CURLDataRetriever::CURLDataRetriever( void )
-    : m_url()    ,
-      m_buffer()
+    : m_url()
 {TRACE;
 
-    AddEventForwarding( GetURLActivateEventID(), EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( GetURLDeactivateEventID(), EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( GetURLDataRecievedEventID(), EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( GetURLAllDataRecievedEventID(), EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( GetURLDataRetrievalErrorEventID(), EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( URLDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( URLAllDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( URLDataRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
     
     SubscribeTo( &m_url );
 }
@@ -75,57 +74,21 @@ CURLDataRetriever::GetURL( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
-CDynamicBuffer&
-CURLDataRetriever::GetBuffer( void )
+
+void
+CURLDataRetriever::SetIOAccess( CIOAccess* ioAccess )
 {TRACE;
 
-    return m_buffer;
+    m_ioAccess = ioAccess;
 }
 
 /*-------------------------------------------------------------------------*/
     
-CEvent
-CURLDataRetriever::GetURLActivateEventID( void ) const
+CIOAccess*
+CURLDataRetriever::GetIOAccess( void ) const
 {TRACE;
 
-    return m_url.GetURLActivateEventID();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CEvent
-CURLDataRetriever::GetURLDeactivateEventID( void ) const
-{TRACE;
-
-    return m_url.GetURLDeactivateEventID();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CEvent
-CURLDataRetriever::GetURLDataRecievedEventID( void ) const
-{TRACE;
-
-    return m_url.GetURLDataRecievedEventID();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CEvent
-CURLDataRetriever::GetURLAllDataRecievedEventID( void ) const
-{TRACE;
-
-    return m_url.GetURLAllDataRecievedEventID();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CEvent
-CURLDataRetriever::GetURLDataRetrievalErrorEventID( void ) const
-{TRACE;
-
-    return m_url.GetURLDataRetrievalErrorEventID();
+    return m_ioAccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -136,22 +99,34 @@ CURLDataRetriever::OnNotify( CNotifier* notifier                 ,
                              CICloneable* eventdata /* = NULL */ )
 {TRACE;
 
-    // We only process events from our own URL object
-    if ( notifier == &m_url )
+    if ( m_ioAccess != NULL )
     {
-        if ( eventid == GetURLActivateEventID() )
+        // We only process events from our own URL object
+        if ( notifier == &m_url )
         {
-            // perform a logical clear of the buffer
-            m_buffer.Clear( true );
-            return;
+            if ( eventid == URLActivateEvent )
+            {
+                // prepare to receive the data
+                m_ioAccess->Open();
+            }
+            else
+            if ( eventid == URLDataRecievedEvent )
+            {
+                if ( m_ioAccess->Opened() )
+                {
+                    // append the received data to the IO media
+                    const TURLDataRecievedEventData* data = static_cast< TURLDataRecievedEventData* >( eventdata );
+                    m_ioAccess->Write( data->GetData().GetConstBufferPtr(), data->GetData().GetDataSize(), 1 );
+                }
+            }
+            else
+            if ( ( eventid == URLDeactivateEvent )         ||
+                 ( eventid == URLAllDataRecievedEvent )    ||
+                 ( eventid == URLDataRetrievalErrorEvent )  )
+            {
+                m_ioAccess->Close();
+            }
         }
-        if ( eventid == GetURLDataRecievedEventID() )
-        {
-            // append the recieved data to the data in our buffer (if any)
-            const TURLDataRecievedEventData* data = static_cast< TURLDataRecievedEventData* >( eventdata );
-            m_buffer.Append( data->GetData().GetConstBufferPtr(), data->GetData().GetDataSize() );
-            return;
-        }        
     }
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_PATCHER_CSTANDARDPSPEVENTHANDLER_H
-#define GUCEF_PATCHER_CSTANDARDPSPEVENTHANDLER_H
+#ifndef GUCEF_PATCHER_CPATCHSETDIRENGINE_H
+#define GUCEF_PATCHER_CPATCHSETDIRENGINE_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,7 +24,25 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefPATCHER_CPatchSetParserEventHandler.h"
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHSETPARSER_H
+#include "gucefPATCHER_CPatchSetParser.h"
+#define GUCEF_PATCHER_CPATCHSETPARSER_H
+#endif /* GUCEF_PATCHER_CPATCHSETPARSER_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
+#include "gucefPATCHER_CPatchSetFileEngineEvents.h"
+#define GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
+#endif /* GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H ? */
+
+#ifndef GUCEF_PATCHER_MACROS_H
+#include "gucefPATCHER_macros.h"
+#define GUCEF_PATCHER_MACROS_H
+#endif /* GUCEF_PATCHER_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,45 +59,70 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-class EXPORT_CPP CStandardPSPEventHandler : public CPatchSetParserEventHandler
+class CPatchSetFileEngine;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Engine for patching a directory tree and all the files it contains.
+ *  The tree is mirrored to the one starting at the given local root.
+ */
+class EXPORT_CPP CPatchSetDirEngine : public CORE::CObservingNotifier  ,
+                                      public CPatchSetFileEngineEvents
 {
     public:
+
+    typedef CPatchSetParser::TFileLocation TFileLocation;
+    typedef CPatchSetParser::TFileEntry TFileEntry;
+    typedef CPatchSetParser::TDirEntry TDirEntry;
     
-    CStandardPSPEventHandler( void );
+    static const CORE::CEvent DirProcessingStartedEvent;
+    static const CORE::CEvent SubDirProcessingStartedEvent;
+    static const CORE::CEvent SubDirProcessingCompletedEvent;
+    static const CORE::CEvent DirProcessingCompletedEvent;
+    static const CORE::CEvent DirProcessingAbortedEvent;
     
-    CStandardPSPEventHandler( const CStandardPSPEventHandler& src );
+    static void RegisterEvents( void );
     
-    virtual ~CStandardPSPEventHandler();
+    public:
     
-    CStandardPSPEventHandler& operator=( const CStandardPSPEventHandler& src );
+    CPatchSetDirEngine( void );
+    
+    virtual ~CPatchSetDirEngine();
+    
+    public:
+    
+    bool Start( const TDirEntry& startingDir         ,
+                const CORE::CString& localRoot       ,
+                const CORE::CString& tempStorageRoot );
+    
+    void Stop( void );
+    
+    bool IsActive( void ) const;
 
     protected:
-    
-    virtual void OnPatchSetStart( const CORE::CString& patchSetName );
-    
-    virtual void OnEnterLocalDir( const CORE::CString& localPath );
-    
-    virtual void OnLocalFileOK( const CORE::CString& localPath ,
-                                const CORE::CString& localFile );
-
-    virtual void OnLocalFileNotFound( const CORE::CString& localPath ,
-                                      const CORE::CString& localFile );
-
-    virtual void OnLocalFileDifference( const CORE::CString& localPath ,
-                                        const CORE::CString& localFile );
-
-    virtual void OnNewSourceRequired( const TSourceInfo& sourceInfo );
-    
-    virtual void OnLeaveLocalDir( const CORE::CString& localPath );
-    
-    virtual void OnPatchSetEnd( const CORE::CString& patchSetName );
-    
-    virtual void OnParserError( void );
+        
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );    
     
     private:
     
-    TSourceList m_sourceList;
-    bool m_errorOccured;
+    bool ProcessCurSubDir( void );
+    bool ProcessNextSubDir( void );
+    bool ProcessFilesInDir( void );
+    
+    private:
+        
+    UInt32 m_curSubDirIndex;
+    CPatchSetDirEngine* m_subDirPatchEngine;
+    CPatchSetFileEngine* m_filePatchEngine;
+    
+    const TDirEntry* m_dir;
+    bool m_isActive;
+    bool m_stopSignalGiven;
+    CORE::CString m_localRoot;
+    CORE::CString m_tempStorageRoot;
 };
 
 /*-------------------------------------------------------------------------//
@@ -93,7 +136,7 @@ class EXPORT_CPP CStandardPSPEventHandler : public CPatchSetParserEventHandler
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHER_CSTANDARDPSPEVENTHANDLER_H ? */
+#endif /* GUCEF_PATCHER_CPATCHSETDIRENGINE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -101,7 +144,7 @@ class EXPORT_CPP CStandardPSPEventHandler : public CPatchSetParserEventHandler
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 06-05-2005 :
-        - Initial version
+- 27-12-2006 :
+        - Dinand: Initial version
 
 -----------------------------------------------------------------------------*/

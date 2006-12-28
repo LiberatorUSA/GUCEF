@@ -89,6 +89,11 @@ StringToMD5String( const CString& str );
 /*-------------------------------------------------------------------------*/
 
 GUCEFCORE_EXPORT_CPP CString
+MD5ToString( const UInt8 md5Digest[ 16 ] );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
 FloatToString( const float value );
 
 /*-------------------------------------------------------------------------*/

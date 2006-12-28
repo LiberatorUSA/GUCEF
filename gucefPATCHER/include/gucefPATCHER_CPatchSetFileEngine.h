@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -15,19 +15,22 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_CORE_DVMD5UTILS_H
-#define GUCEF_CORE_DVMD5UTILS_H
-
+#ifndef GUCEF_PATCHER_CPATCHSETFILEENGINE_H
+#define GUCEF_PATCHER_CPATCHSETFILEENGINE_H
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_IOACCESS_H
-#include "ioaccess.h"     /* medium & source independant file handling utils */
-#define GUCEF_CORE_IOACCESS_H
-#endif /* GUCEF_CORE_IOACCESS_H ? */
+#include "CDVString.h"
+#include "CURLDataRetriever.h"
+#include "CFileAccess.h"
+
+#include "gucefPATCHER_CPatchSetFileEngineEvents.h"
+#include "gucefPATCHER_CPatchSetParser.h"
+#include "gucefPATCHER_macros.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -35,57 +38,74 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
 namespace GUCEF {
-namespace CORE {
-#endif /* __cplusplus ? */
+namespace PATCHER {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
-//-------------------------------------------------------------------------*/
-
-#ifdef __cplusplus
-   extern "C" {
-#endif   /* __cplusplus */
-
-/*-------------------------------------------------------------------------*/
+//-------------------------------------------------------------------------*/ 
 
 /**
- *	Function that returns an MD5 digest generated from the resource given
- *	Returns 1 on success and 0 on failure.
+ *  Engine for patching a list of files given.
+ *  The files are compared with the ones in the local root that is given.
  */
-GUCEFCORE_EXPORT_C UInt32
-md5frommfile( TIOAccess* access  ,
-              UInt8 digest[ 16 ] );
+class EXPORT_CPP CPatchSetFileEngine : public CORE::CObservingNotifier  ,
+                                       public CPatchSetFileEngineEvents
+{
+    public:
 
-/*--------------------------------------------------------------------------*/
+    typedef CPatchSetParser::TFileLocation TFileLocation;
+    typedef CPatchSetParser::TFileEntry TFileEntry;
+    typedef std::vector< TFileEntry > TFileList;
+  
+    public:
+    
+    CPatchSetFileEngine( void );
+    virtual ~CPatchSetFileEngine();
+    
+    public:
+    
+    bool Start( const TFileList& fileList            ,
+                const CORE::CString& localRoot       ,
+                const CORE::CString& tempStorageRoot );
+    
+    void Stop( void );
+    
+    bool IsActive( void ) const;
+    
+    protected:
+        
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );
 
-/**
- *	Converts an md5 digest into a string 48 chars long.
- *	Each digest value is converted to 3 characters.
- *	A null terminator is not included.
- */
-GUCEFCORE_EXPORT_C void
-md5tostring( const UInt8 digest[ 16 ] ,
-             char md5_str[ 48 ]       );
-
-/*--------------------------------------------------------------------------*/
-                      
-/**
- *	Converts the given null-terminated string 
- *      into an md5 digest 
- */
-GUCEFCORE_EXPORT_C void
-md5fromstring( const char* string ,
-               UInt8 digest[ 16 ] );                      
-
-/*--------------------------------------------------------------------------*/
-
-#ifdef __cplusplus
-   }
-#endif /* __cplusplus */
+    private:
+    
+    bool ProcessCurrentFile( void );
+    bool ProceedToNextFile( void );
+    bool TryNextFileLocation( void );
+    
+    private:
+    
+    CPatchSetFileEngine( const CPatchSetFileEngine& src );            /**< not implemented */
+    CPatchSetFileEngine& operator=( const CPatchSetFileEngine& src ); /**< not implemented */
+    
+    private:
+    
+    UInt32 m_curFileIndex;
+    UInt32 m_curFileLocIndex;
+    const TFileList* m_fileList;
+    
+    CORE::CFileAccess* m_fileAccess;
+    CORE::CURLDataRetriever m_dataRetriever;
+    
+    bool m_isActive;
+    bool m_stopSignalGiven;
+    CORE::CString m_localRoot;
+    CORE::CString m_tempStorageRoot;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -93,14 +113,12 @@ md5fromstring( const char* string ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
-}; /* namespace CORE */
+}; /* namespace PATCHER */
 }; /* namespace GUCEF */
-#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_DVMD5UTILS_H ? */
+#endif /* GUCEF_PATCHER_CPATCHSETFILEENGINE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -108,11 +126,7 @@ md5fromstring( const char* string ,
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 21-09-2005 :
-        - Added stringtomd5string()
-- 25-11-2004 :
-        - Got rid of dependancy on MFILE and duplicate impementations for
-          different recource sources. Instead TIOAccess is used now.
+- 27-12-2006 :
+        - Dinand: Initial version
 
----------------------------------------------------------------------------*/
-
+-----------------------------------------------------------------------------*/

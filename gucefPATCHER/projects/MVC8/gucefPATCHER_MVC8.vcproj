@@ -204,6 +204,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchSetDirEngine.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchSetEngine.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchSetFileEngine.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchSetFileEngineEvents.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefPATCHER_CPatchSetParser.cpp"
 				>
 			</File>
@@ -218,11 +234,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefPATCHER_CPatcher.h"
+				RelativePath="..\..\include\gucefPATCHER_CPatchListParser.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefPATCHER_CPatchListParser.h"
+				RelativePath="..\..\include\gucefPATCHER_CPatchSetDirEngine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchSetEngine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchSetFileEngine.h"
 				>
 			</File>
 			<File

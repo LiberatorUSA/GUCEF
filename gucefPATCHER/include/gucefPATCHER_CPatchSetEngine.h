@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -14,6 +14,9 @@
  * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#ifndef GUCEF_PATCHER_CPATCHSETENGINE_H
+#define GUCEF_PATCHER_CPATCHSETENGINE_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -21,7 +24,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefPATCHER_CPatchSetParserEventHandler.h"
+#include "CDVString.h"
+#include "CURLDataRetriever.h"
+
+#include "gucefPATCHER_CPatchSetParser.h"
+#include "gucefPATCHER_macros.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,32 +45,37 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-CPatchSetParserEventHandler::CPatchSetParserEventHandler( void )
-{TRACE;
-}
+/**
+ *  Parser that parses a data node tree for the information required to
+ *  build a patch list. Any and all corrupt entries will be dropped.
+ */
+class EXPORT_CPP CPatchSetEngine : public CORE::CObservingNotifier
+{
+    public:
 
-/*-------------------------------------------------------------------------*/
-
-CPatchSetParserEventHandler::CPatchSetParserEventHandler( const CPatchSetParserEventHandler& src )
-{TRACE;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CPatchSetParserEventHandler::~CPatchSetParserEventHandler()
-{TRACE;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CPatchSetParserEventHandler&
-CPatchSetParserEventHandler::operator=( const CPatchSetParserEventHandler& src )
-{TRACE;
-        if ( &src != this )
-        {
-        }
-        return *this;
-}
+    typedef CPatchSetParser::TFileLocation TFileLocation;
+    typedef CPatchSetParser::TFileEntry TFileEntry;
+    typedef CPatchSetParser::TDirEntry TDirEntry;
+    typedef CPatchSetParser::TPatchSet TPatchSet;
+    
+    public:
+    
+    bool Start( const TPatchSet& pathSet ,
+                CORE::CString& localRoot );
+    
+    void Stop( void );
+    
+    bool IsActive( void ) const;
+    
+    private:
+    
+    TPatchSet* m_patchSet;
+    CPatchSetDirEngine* m_patchSetDirEngine;
+    bool m_isActive;
+    bool m_stopSignalGiven;
+    CORE::CString m_localRoot;
+    CORE::CString m_localPath;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -75,3 +87,16 @@ CPatchSetParserEventHandler::operator=( const CPatchSetParserEventHandler& src )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_PATCHER_CPATCHSETENGINE_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 27-12-2006 :
+        - Dinand: Initial version
+
+-----------------------------------------------------------------------------*/

@@ -148,16 +148,24 @@ StringToMD5String( const CString& str )
         
         md5fromstring( str.C_String() ,
                        md5digest      );
-                       
+        
+        return MD5ToString( md5digest );                               
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
+MD5ToString( const UInt8 md5Digest[ 16 ] )
+{
         char md5string[ 48 ];
         
-        md5tostring( md5digest ,
+        md5tostring( md5Digest ,
                      md5string );
                      
         CString md5str;
         md5str.Set( md5string, 48 );
         
-        return md5str;                               
+        return md5str;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -56,39 +56,34 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CURL::CURL( void )
-        : m_handler( NULL )                                          ,
-          m_url()                                                    ,
-          m_URLActivateEvent( URLActivateEvent )                     ,
-          m_URLDeactivateEvent( URLDeactivateEvent )                 ,
-          m_URLDataRecievedEvent( URLDataRecievedEvent )             ,
-          m_URLAllDataRecievedEvent( URLAllDataRecievedEvent )       ,
-          m_URLDataRetrievalErrorEvent( URLDataRetrievalErrorEvent )         
+        : m_handler( NULL ) ,
+          m_url()       
 {TRACE;
         
-    AddEventForwarding( m_URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( m_URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( m_URLDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( m_URLAllDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( m_URLDataRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );  
+    AddEventForwarding( URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( URLDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( URLAllDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( URLDataRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );  
 }
         
 /*-------------------------------------------------------------------------*/        
         
 CURL::CURL( const CString& url )
-        : m_handler( GetHandlerForURL( url ) )                       ,
-          m_url( url )                                               ,
-          m_URLActivateEvent( URLActivateEvent )                     ,
-          m_URLDeactivateEvent( URLDeactivateEvent )                 ,
-          m_URLDataRecievedEvent( URLDataRecievedEvent )             ,
-          m_URLAllDataRecievedEvent( URLAllDataRecievedEvent )       ,
-          m_URLDataRetrievalErrorEvent( URLDataRetrievalErrorEvent )           
+        : m_handler( GetHandlerForURL( url ) ) ,
+          m_url( url )           
 {TRACE;
 
-    AddEventForwarding( m_URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( m_URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( m_URLDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( m_URLAllDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( m_URLDataRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
+    if ( m_handler == NULL )
+    {
+        m_url = NULL;
+    }
+    
+    AddEventForwarding( URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( URLDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( URLAllDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( URLDataRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -226,55 +221,10 @@ CURL::OnNotify( CNotifier* notifier                 ,
                 CICloneable* eventdata /* = NULL */ )
 {TRACE;
     
-    // Manditory: call the base-class implementation
+    // Mandatory: call the base-class implementation
     CObservingNotifier::OnNotify( notifier  ,
                                   eventid   ,
                                   eventdata );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CEvent
-CURL::GetURLActivateEventID( void ) const
-{TRACE;
-    
-    return m_URLActivateEvent;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CEvent
-CURL::GetURLDeactivateEventID( void ) const
-{TRACE;
-    
-    return m_URLDeactivateEvent;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CEvent
-CURL::GetURLDataRecievedEventID( void ) const
-{TRACE;
-    
-    return m_URLDataRecievedEvent;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CEvent
-CURL::GetURLAllDataRecievedEventID( void ) const
-{TRACE;
-
-    return m_URLAllDataRecievedEvent;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CEvent
-CURL::GetURLDataRetrievalErrorEventID( void ) const
-{TRACE;
-
-    return m_URLDataRetrievalErrorEvent;
 }
 
 /*-------------------------------------------------------------------------//

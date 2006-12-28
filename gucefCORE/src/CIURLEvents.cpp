@@ -48,11 +48,11 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CString CIURLEvents::URLActivateEvent = "GUCEF::CORE::CIURLEvents::URLActivateEvent";
-const CString CIURLEvents::URLDeactivateEvent = "GUCEF::CORE::CIURLEvents::URLDeactivateEvent";
-const CString CIURLEvents::URLDataRecievedEvent = "GUCEF::CORE::CIURLEvents::URLDataRecievedEvent";
-const CString CIURLEvents::URLAllDataRecievedEvent = "GUCEF::CORE::CIURLEvents::URLAllDataRecievedEvent";
-const CString CIURLEvents::URLDataRetrievalErrorEvent = "GUCEF::CORE::CIURLEvents::URLDataRetrievalErrorEvent";
+const CEvent CIURLEvents::URLActivateEvent = "GUCEF::CORE::CIURLEvents::URLActivateEvent";
+const CEvent CIURLEvents::URLDeactivateEvent = "GUCEF::CORE::CIURLEvents::URLDeactivateEvent";
+const CEvent CIURLEvents::URLDataRecievedEvent = "GUCEF::CORE::CIURLEvents::URLDataRecievedEvent";
+const CEvent CIURLEvents::URLAllDataRecievedEvent = "GUCEF::CORE::CIURLEvents::URLAllDataRecievedEvent";
+const CEvent CIURLEvents::URLDataRetrievalErrorEvent = "GUCEF::CORE::CIURLEvents::URLDataRetrievalErrorEvent";
 
 
 /*-------------------------------------------------------------------------//
@@ -61,16 +61,37 @@ const CString CIURLEvents::URLDataRetrievalErrorEvent = "GUCEF::CORE::CIURLEvent
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CIURLEvents::CIURLEvents( void )
+{TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIURLEvents::CIURLEvents( const CIURLEvents& src )
+{TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIURLEvents::~CIURLEvents()
+{TRACE;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CIURLEvents::RegisterEvents( void )
 {TRACE;
 
-    CNotificationIDRegistry* registry( CNotificationIDRegistry::Instance() );
-    registry->Register( URLActivateEvent, true );
-    registry->Register( URLDeactivateEvent, true );
-    registry->Register( URLDataRecievedEvent, true );
-    registry->Register( URLAllDataRecievedEvent, true );
-    registry->Register( URLDataRetrievalErrorEvent, true );
+    URLActivateEvent.Initialize();
+    URLDeactivateEvent.Initialize();
+    URLDataRecievedEvent.Initialize();
+    URLAllDataRecievedEvent.Initialize();
+    URLDataRetrievalErrorEvent.Initialize();
 }
 /*-------------------------------------------------------------------------//
 //                                                                         //

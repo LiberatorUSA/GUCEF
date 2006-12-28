@@ -68,7 +68,7 @@ class CIURLDataHandler;
  *      Handlers for HTTP for example should inherit and implement the
  *      interface from this and lower classes.
  *
- *      The decending handler implementation is expected to emit event
+ *      The descending handler implementation is expected to emit event
  *      notifications as declared in CIURLEvents
  */
 class GUCEFCORE_EXPORT_CPP CURLHandler : public CObservingNotifier   ,
@@ -78,22 +78,22 @@ class GUCEFCORE_EXPORT_CPP CURLHandler : public CObservingNotifier   ,
         public:
         
         /**
-         *      Doesnt do anything special atm.
+         *      Doesn't do anything special atm.
          */        
         CURLHandler( void );
         
         /**
-         *      Doesnt do anything special atm.
+         *      Doesn't do anything special atm.
          */        
         CURLHandler( const CURLHandler& src );
         
         /**
-         *      Doesnt do anything special atm.
+         *      Doesn't do anything special atm.
          */
         virtual ~CURLHandler();
         
         /**
-         *      Doesnt do anything special atm.
+         *      Doesn't do anything special atm.
          */        
         CURLHandler& operator=( const CURLHandler& src );
 

@@ -90,8 +90,8 @@ md5frommfile( TIOAccess *access  ,
  *	Each digest value is converted to 3 characters.
  */
 void
-md5tostring( UInt8 digest[ 16 ] ,
-             char md5_str[ 48 ] )
+md5tostring( const UInt8 digest[ 16 ] ,
+             char md5_str[ 48 ]       )
 {
         char tmp_str[ 4 ];
         UInt32 tmp, i;

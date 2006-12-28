@@ -57,15 +57,21 @@ class GUCEFCORE_EXPORT_CPP CIURLEvents
 {
         public:
 
-        static const CString URLActivateEvent;
-        static const CString URLDeactivateEvent;
-        static const CString URLDataRecievedEvent;
-        static const CString URLAllDataRecievedEvent;
-        static const CString URLDataRetrievalErrorEvent;
+        static const CEvent URLActivateEvent;
+        static const CEvent URLDeactivateEvent;
+        static const CEvent URLDataRecievedEvent;
+        static const CEvent URLAllDataRecievedEvent;
+        static const CEvent URLDataRetrievalErrorEvent;
         
         typedef TLinkedCloneableBuffer    TURLDataRecievedEventData;
         
         static void RegisterEvents( void );                                    
+        
+        protected:
+        
+        CIURLEvents( void );
+        CIURLEvents( const CIURLEvents& src );
+        virtual ~CIURLEvents();
 };
 
 /*-------------------------------------------------------------------------//

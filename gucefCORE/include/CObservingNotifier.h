@@ -58,7 +58,7 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
     {
         EVENTORIGINFILTER_UNMODIFIED , /**< do not change the event emission origin */
         EVENTORIGINFILTER_NO_SENDER  , /**< void's the event emitter, NULL will be given as sender */
-        EVENTORIGINFILTER_TRANSFER     /**< turns the CTransactionEventControl into the emitter of the event */
+        EVENTORIGINFILTER_TRANSFER     /**< turns the re-sender into the emitter of the event */
     };
     
     CObservingNotifier( void );

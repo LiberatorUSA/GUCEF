@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_PATCHER_CPATCHLISTPARSER_H
-#define GUCEF_PATCHER_CPATCHLISTPARSER_H
+#ifndef GUCEF_PATCHER_CPATCHSETPARSERREVENTS_H
+#define GUCEF_PATCHER_CPATCHSETPARSERREVENTS_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,11 +24,23 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <map>
-#include <vector>
-#include "CDataNode.h"
+#ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_CORE_CEVENT_H
+#include "CEvent.h"
+#define GUCEF_CORE_CEVENT_H
+#endif /* GUCEF_CORE_CEVENT_H ? */
+
+#include "gucefPATCHER_CPatchListParser.h"
+#include "gucefPATCHER_CPatchSetParser.h"
+
+#ifndef GUCEF_PATCHER_MACROS_H
 #include "gucefPATCHER_macros.h"
+#define GUCEF_PATCHER_MACROS_H
+#endif /* GUCEF_PATCHER_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,31 +55,27 @@ namespace PATCHER {
 //                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
-/**
- *  Parser that parses a data node tree for the information required to
- *  build a patch list. Any and all corrupt entries will be dropped.
- */
-class EXPORT_CPP CPatchListParser
+class EXPORT_CPP CPatcher : public CORE::CObservingNotifier
 {
     public:
+
+    typedef CPatchListParser::TPatchSetLocation TPatchSetLocation;
+    typedef CPatchListParser::TPatchSetLocations TPatchSetLocations;
+    typedef CPatchListParser::TPatchList TPatchList;
+    typedef CPatchSetParser::TPatchSet TFileLocation;
+    typedef CPatchSetParser::TPatchSet TFileEntry;
+    typedef CPatchSetParser::TPatchSet TPatchSet;
     
-    typedef std::pair< CORE::CString, CORE::CString > TPatchSetLocation;
-    typedef std::vector< TPatchSetLocation > TPatchSetLocations;
-    typedef std::map< CORE::CString, TPatchSetLocations > TPatchList;
+    bool ProcessPatchList( const TPatchList& patchList    ,
+                           const CORE::CString& localRoot );
     
-    CPatchListParser( void );    
-       
-    virtual ~CPatchListParser();
+    bool ProcessPatchSet( const TPatchSet& patchSet      ,
+                          const CORE::CString& localRoot );
     
-    void ParsePatchList( const CORE::CDataNode& patchListData ,
-                         TPatchList& patchList                ) const;
-   
     private:
-    
-    CPatchListParser( const CPatchListParser& src ); 
-    CPatchListParser& operator=( const CPatchListParser& src );
+    CORE::CURLDataRetriever m_urlDataRetriever;
 };
 
 /*-------------------------------------------------------------------------//
@@ -81,19 +89,4 @@ class EXPORT_CPP CPatchListParser
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHER_CPATCHLISTPARSER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 25-12-2006 :
-        - Dinand: rewrote this class, it's far simpler now. Simply parses the 
-          given patch list data tree for information and stores it into a  
-          structure that is easy to use.
-- 07-10-2006 :
-        - Dinand: Initial version
-
------------------------------------------------------------------------------*/
+#endif /* GUCEF_PATCHER_CPATCHSETPARSERREVENTS_H ? */
