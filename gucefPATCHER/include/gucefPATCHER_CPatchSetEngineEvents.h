@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_PATCHER_CPATCHSETPARSERREVENTS_H
-#define GUCEF_PATCHER_CPATCHSETPARSERREVENTS_H
+#ifndef GUCEF_PATCHER_CPATCHSETENGINEEVENTS_H
+#define GUCEF_PATCHER_CPATCHSETENGINEEVENTS_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,23 +24,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
-
 #ifndef GUCEF_CORE_CEVENT_H
 #include "CEvent.h"
 #define GUCEF_CORE_CEVENT_H
 #endif /* GUCEF_CORE_CEVENT_H ? */
 
-#include "gucefPATCHER_CPatchListParser.h"
-#include "gucefPATCHER_CPatchSetParser.h"
-
-#ifndef GUCEF_PATCHER_MACROS_H
 #include "gucefPATCHER_macros.h"
-#define GUCEF_PATCHER_MACROS_H
-#endif /* GUCEF_PATCHER_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,25 +46,25 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPatcher : public CORE::CObservingNotifier
+class EXPORT_CPP CPatchSetEngineEvents
 {
     public:
-
-    typedef CPatchListParser::TPatchSetLocation TPatchSetLocation;
-    typedef CPatchListParser::TPatchSetLocations TPatchSetLocations;
-    typedef CPatchListParser::TPatchList TPatchList;
-    typedef CPatchSetParser::TPatchSet TFileLocation;
-    typedef CPatchSetParser::TPatchSet TFileEntry;
-    typedef CPatchSetParser::TPatchSet TPatchSet;
     
-    bool ProcessPatchList( const TPatchList& patchList    ,
-                           const CORE::CString& localRoot );
+    static const CORE::CEvent PatchSetProcessingStartedEvent;
+    static const CORE::CEvent PatchSetProcessingCompletedEvent;
+    static const CORE::CEvent PatchSetProcessingAbortedEvent;
+    static const CORE::CEvent PatchSetProcessingFailedEvent;
     
-    bool ProcessPatchSet( const TPatchSet& patchSet      ,
-                          const CORE::CString& localRoot );
+    static void RegisterEvents( void );
+    
+    protected:
+    
+    CPatchSetEngineEvents( void );
+    virtual ~CPatchSetEngineEvents();
     
     private:
-    CORE::CURLDataRetriever m_urlDataRetriever;
+    CPatchSetEngineEvents( const CPatchSetEngineEvents& src );            /**< not implemented */
+    CPatchSetEngineEvents& operator=( const CPatchSetEngineEvents& src ); /**< not implemented */
 };
 
 /*-------------------------------------------------------------------------//
@@ -89,4 +78,15 @@ class EXPORT_CPP CPatcher : public CORE::CObservingNotifier
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHER_CPATCHSETPARSERREVENTS_H ? */
+#endif /* GUCEF_PATCHER_CPATCHSETENGINEEVENTS_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 27-12-2006 :
+        - Dinand: Initial version
+
+-----------------------------------------------------------------------------*/

@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
-#define GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
+#ifndef GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H
+#define GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,31 +46,26 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPatchSetFileEngineEvents
+class EXPORT_CPP CPatchSetDirEngineEvents
 {
     public:
     
-    static const CORE::CEvent FileListProcessingStartedEvent;
-    static const CORE::CEvent LocalFileSizeMismatchEvent;
-    static const CORE::CEvent LocalFileHashMismatchEvent;
-    static const CORE::CEvent LocalFileNotFoundEvent;
-    static const CORE::CEvent FileRetrievalStartedEvent;
-    static const CORE::CEvent FileRetrievalCompleteEvent;
-    static const CORE::CEvent FileRetrievalErrorEvent;
-    static const CORE::CEvent FileStorageErrorEvent;
-    static const CORE::CEvent FileListProcessingCompleteEvent;
-    static const CORE::CEvent FileListProcessingAbortedEvent;
+    static const CORE::CEvent DirProcessingStartedEvent;
+    static const CORE::CEvent SubDirProcessingStartedEvent;
+    static const CORE::CEvent SubDirProcessingCompletedEvent;
+    static const CORE::CEvent DirProcessingCompletedEvent;
+    static const CORE::CEvent DirProcessingAbortedEvent;
     
     static void RegisterEvents( void );
     
     protected:
     
-    CPatchSetFileEngineEvents( void );
-    virtual ~CPatchSetFileEngineEvents();
+    CPatchSetDirEngineEvents( void );
+    virtual ~CPatchSetDirEngineEvents();
     
     private:
-    CPatchSetFileEngineEvents( const CPatchSetFileEngineEvents& src );            /**< not implemented */
-    CPatchSetFileEngineEvents& operator=( const CPatchSetFileEngineEvents& src ); /**< not implemented */
+    CPatchSetDirEngineEvents( const CPatchSetDirEngineEvents& src );            /**< not implemented */
+    CPatchSetDirEngineEvents& operator=( const CPatchSetDirEngineEvents& src ); /**< not implemented */
 };
 
 /*-------------------------------------------------------------------------//
@@ -84,7 +79,7 @@ class EXPORT_CPP CPatchSetFileEngineEvents
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H ? */
+#endif /* GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

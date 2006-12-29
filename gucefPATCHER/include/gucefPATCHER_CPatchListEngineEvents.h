@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
-#define GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
+#ifndef GUCEF_PATCHER_CPATCHLISTENGINEEVENTS_H
+#define GUCEF_PATCHER_CPATCHLISTENGINEEVENTS_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,31 +46,31 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPatchSetFileEngineEvents
+class EXPORT_CPP CPatchListEngineEvents
 {
     public:
     
-    static const CORE::CEvent FileListProcessingStartedEvent;
-    static const CORE::CEvent LocalFileSizeMismatchEvent;
-    static const CORE::CEvent LocalFileHashMismatchEvent;
-    static const CORE::CEvent LocalFileNotFoundEvent;
-    static const CORE::CEvent FileRetrievalStartedEvent;
-    static const CORE::CEvent FileRetrievalCompleteEvent;
-    static const CORE::CEvent FileRetrievalErrorEvent;
-    static const CORE::CEvent FileStorageErrorEvent;
-    static const CORE::CEvent FileListProcessingCompleteEvent;
-    static const CORE::CEvent FileListProcessingAbortedEvent;
+    static const CORE::CEvent PatchListProcessingStartedEvent;
+    static const CORE::CEvent PatchListProcessingCompletedEvent;
+    static const CORE::CEvent PatchListProcessingAbortedEvent;
+    static const CORE::CEvent PatchListProcessingFailedEvent;
+    static const CORE::CEvent PatchSetDataRecievedEvent;
+    static const CORE::CEvent PatchSetRetrievalStartedEvent;
+    static const CORE::CEvent PatchSetRetrievalCompletedEvent;
+    static const CORE::CEvent PatchSetRetrievalFailedEvent;
+    static const CORE::CEvent PatchSetRetrievalAbortedEvent;
+    static const CORE::CEvent PatchSetDecodingFailedEvent;
     
     static void RegisterEvents( void );
     
     protected:
     
-    CPatchSetFileEngineEvents( void );
-    virtual ~CPatchSetFileEngineEvents();
+    CPatchListEngineEvents( void );
+    virtual ~CPatchListEngineEvents();
     
     private:
-    CPatchSetFileEngineEvents( const CPatchSetFileEngineEvents& src );            /**< not implemented */
-    CPatchSetFileEngineEvents& operator=( const CPatchSetFileEngineEvents& src ); /**< not implemented */
+    CPatchListEngineEvents( const CPatchListEngineEvents& src );            /**< not implemented */
+    CPatchListEngineEvents& operator=( const CPatchListEngineEvents& src ); /**< not implemented */
 };
 
 /*-------------------------------------------------------------------------//
@@ -84,7 +84,7 @@ class EXPORT_CPP CPatchSetFileEngineEvents
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H ? */
+#endif /* GUCEF_PATCHER_CPATCHLISTENGINEEVENTS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -92,7 +92,7 @@ class EXPORT_CPP CPatchSetFileEngineEvents
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 27-12-2006 :
+- 29-12-2006 :
         - Dinand: Initial version
 
 -----------------------------------------------------------------------------*/

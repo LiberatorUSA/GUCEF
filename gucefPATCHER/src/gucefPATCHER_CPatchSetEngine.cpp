@@ -21,6 +21,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_PATCHER_CPATCHSETDIRENGINE_H
+#include "gucefPATCHER_CPatchSetDirEngine.h"
+#define GUCEF_PATCHER_CPATCHSETDIRENGINE_H
+#endif /* GUCEF_PATCHER_CPATCHSETDIRENGINE_H ? */
+
 #include "gucefPATCHER_CPatchSetEngine.h"	/* definition of this class */
 
 /*-------------------------------------------------------------------------//
@@ -39,9 +44,38 @@ namespace PATCHER {
 //-------------------------------------------------------------------------*/
 
 CPatchSetEngine::CPatchSetEngine( void )
+    : CORE::CObservingNotifier()                      ,
+      CPatchSetDirEngineEvents()                      ,
+      CPatchSetFileEngineEvents()                     ,
+      CPatchSetEngineEvents()                         ,
+      m_patchSetDirEngine( new CPatchSetDirEngine() ) ,
+      m_patchSet( NULL )                              ,
+      m_dirIndex( 0 )                                 ,
+      m_isActive( false )                             ,
+      m_stopSignalGiven( false )                      ,
+      m_localRoot()
+      
 {TRACE;
 
-    SubscribeTo( &m_dataRetriever );
+    assert( m_patchSetDirEngine != NULL );
+    
+    // Forward events from the dir engines
+    AddEventForwarding( SubDirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
+    
+    // Forward file engine events
+    AddEventForwarding( FileListProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( LocalFileHashMismatchEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( FileRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( FileRetrievalCompleteEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( FileRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( FileStorageErrorEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( FileListProcessingCompleteEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( FileListProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );    
+    
+    SubscribeTo( m_patchSetDirEngine );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -55,8 +89,9 @@ CPatchSetEngine::~CPatchSetEngine()
 /*-------------------------------------------------------------------------*/
 
 bool
-CPatchSetEngine::Start( const TPatchSet& patchSet ,
-                        CORE::CString& localRoot  )
+CPatchSetEngine::Start( const TPatchSet& patchSet            ,
+                        const CORE::CString& localRoot       ,
+                        const CORE::CString& tempStorageRoot )
 {TRACE;
 
     assert( &patchSet != NULL );
@@ -71,14 +106,16 @@ CPatchSetEngine::Start( const TPatchSet& patchSet ,
             m_isActive = true;
             m_stopSignalGiven = false;
             
-            m_patchSet = &patchSet;
-            m_curDir = *(m_patchSet->begin());
-            m_parentDir = NULL;
-            m_curFile = NULL;
+            m_patchSet = patchSet;
+
             m_localRoot = localRoot;
-            m_localPath = localRoot;
+            m_tempStorageRoot = tempStorageRoot;
+            m_dirIndex = 0;
             
-            ProcessCurDir();
+            NotifyObservers( PatchSetProcessingStartedEvent );            
+            m_patchSetDirEngine->Start( m_patchSet[ m_dirIndex ] ,
+                                        m_localRoot              ,
+                                        m_tempStorageRoot        );
             
             return true;
         }
@@ -88,24 +125,14 @@ CPatchSetEngine::Start( const TPatchSet& patchSet ,
 }
 
 /*-------------------------------------------------------------------------*/
-    
-void
-CPatchSetEngine::ProcessCurDir( void )
-{TRACE;
-
-    if ( m_curDir != NULL )
-    {
-        m_curDir->files
-    }
-}
-
-/*-------------------------------------------------------------------------*/
 
 void
 CPatchSetEngine::Stop( void )
 {TRACE;
     
     m_stopSignalGiven = true;
+    
+    m_patchSetDirEngine->Stop();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -115,6 +142,59 @@ CPatchSetEngine::IsActive( void ) bool
 {TRACE;
     
     return m_isActive;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
+                           const CORE::CEvent& eventid               ,
+                           CORE::CICloneable* eventdata /* = NULL */ )
+{TRACE;
+
+    if ( !m_stopSignalGiven && m_isActive )
+    {
+        // Call base-class version
+        CORE::CObservingNotifier::OnNotify( notifier  ,
+                                            eventid   ,
+                                            eventdata );
+        
+        if ( notifier == m_subDirPatchEngine )
+        {
+            if ( eventid == DirProcessingCompletedEvent )
+            {
+                NotifyObservers( SubDirProcessingCompletedEvent );
+                
+                // Move on to the next sub-dir (if any exists)
+                if ( m_dirIndex+1 < m_patchSet->size() )
+                {
+                    ++m_dirIndex;
+                    
+                    NotifyObservers( SubDirProcessingStartedEvent );
+                    m_patchSetDirEngine->Start( (*m_patchSet)[ m_dirIndex ] ,
+                                                m_localRoot                 ,
+                                                m_tempStorageRoot           );
+                }
+                else
+                {
+                    NotifyObservers( PatchSetProcessingCompletedEvent );
+                }
+                return;
+            }
+            else
+            if ( eventid == DirProcessingAbortedEvent )
+            {
+                NotifyObservers( PatchSetProcessingAbortedEvent );
+                return;
+            }
+        }
+    }
+    else
+    {
+        m_stopSignalGiven = false;
+        m_isActive = false;
+        NotifyObservers( PatchSetProcessingAbortedEvent );
+    }
 }
 
 /*-------------------------------------------------------------------------//

@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_PATCHER_CPATCHSETDIRENGINE_H
-#define GUCEF_PATCHER_CPATCHSETDIRENGINE_H
+#ifndef GUCEF_PATCHER_CPATCHLISTENGINE_H
+#define GUCEF_PATCHER_CPATCHLISTENGINE_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -34,6 +34,21 @@
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
+#ifndef GUCEF_CORE_CURL_H
+#include "CURL.h"
+#define GUCEF_CORE_CURL_H
+#endif /* GUCEF_CORE_CURL_H ? */
+
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHLISTPARSER_H
+#include "gucefPATCHER_CPatchListParser.h"
+#define GUCEF_PATCHER_CPATCHLISTPARSER_H
+#endif /* GUCEF_PATCHER_CPATCHLISTPARSER_H ? */
+
 #ifndef GUCEF_PATCHER_CPATCHSETPARSER_H
 #include "gucefPATCHER_CPatchSetParser.h"
 #define GUCEF_PATCHER_CPATCHSETPARSER_H
@@ -48,6 +63,16 @@
 #include "gucefPATCHER_CPatchSetDirEngineEvents.h"
 #define GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H
 #endif /* GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHSETENGINEEVENTS_H
+#include "gucefPATCHER_CPatchSetEngineEvents.h"
+#define GUCEF_PATCHER_CPATCHSETENGINEEVENTS_H
+#endif /* GUCEF_PATCHER_CPATCHSETENGINEEVENTS_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHLISTENGINEEVENTS_H
+#include "gucefPATCHER_CPatchListEngineEvents.h"
+#define GUCEF_PATCHER_CPATCHLISTENGINEEVENTS_H
+#endif /* GUCEF_PATCHER_CPATCHLISTENGINEEVENTS_H ? */
 
 #ifndef GUCEF_PATCHER_MACROS_H
 #include "gucefPATCHER_macros.h"
@@ -69,59 +94,65 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-class CPatchSetFileEngine;
+class CPatchSetEngine;
 
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Engine for patching a directory tree and all the files it contains.
- *  The tree is mirrored to the one starting at the given local root.
+ *  Engine for processing a patch list.
  */
-class EXPORT_CPP CPatchSetDirEngine : public CORE::CObservingNotifier  ,
-                                      public CPatchSetFileEngineEvents ,
-                                      public CPatchSetDirEngineEvents
+class EXPORT_CPP CPatchListEngine : public CORE::CObservingNotifier  ,
+                                    public CPatchSetDirEngineEvents  , /* event interface */
+                                    public CPatchSetFileEngineEvents , /* event interface */
+                                    public CPatchSetEngineEvents     , /* event interface */
+                                    public CPatchListEngineEvents      /* event interface */
 {
     public:
+
+    typedef CPatchListParser::TPatchSetLocation TPatchSetLocation;
+    typedef CPatchListParser::TPatchSetLocations TPatchSetLocations;
+    typedef CPatchListParser::TPatchList TPatchList;
 
     typedef CPatchSetParser::TFileLocation TFileLocation;
     typedef CPatchSetParser::TFileEntry TFileEntry;
     typedef CPatchSetParser::TDirEntry TDirEntry;
+    typedef CPatchSetParser::TPatchSet TPatchSet;
     
     public:
     
-    CPatchSetDirEngine( void );
+    CPatchListEngine( void );
+    virtual ~CPatchListEngine();
     
-    virtual ~CPatchSetDirEngine();
-    
-    public:
-    
-    bool Start( const TDirEntry& startingDir         ,
+    bool Start( const TPatchList& patchList          ,
                 const CORE::CString& localRoot       ,
                 const CORE::CString& tempStorageRoot );
     
     void Stop( void );
     
     bool IsActive( void ) const;
-
+    
     protected:
         
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
-                           CORE::CICloneable* eventdata = NULL );    
+                           CORE::CICloneable* eventdata = NULL );
+
+    private:
+    
+    CPatchListEngine( const CPatchListEngine& src ); /**< not implemented */
+    CPatchListEngine& operator=( const CPatchListEngine& src ); /**< not implemented */
+    bool ObtainCurrentPatchSet( void );
+    bool ProcessRecievedPatchSet( void );
+    bool GetCurrentPatchSetLocation( TPatchSetLocation** location );
     
     private:
     
-    bool ProcessCurSubDir( void );
-    bool ProcessNextSubDir( void );
-    bool ProcessFilesInDir( void );
-    
-    private:
-        
-    UInt32 m_curSubDirIndex;
-    CPatchSetDirEngine* m_subDirPatchEngine;
-    CPatchSetFileEngine* m_filePatchEngine;
-    
-    TDirEntry m_dir;
+    TPatchList m_patchList;
+    UInt32 m_setIndex;
+    UInt32 m_setLocIndex;
+    CPatchSetEngine* m_patchSetEngine;
+    CORE::CURL m_url;
+    CORE::CDynamicBuffer m_setDataBuffer;
     bool m_isActive;
     bool m_stopSignalGiven;
     CORE::CString m_localRoot;
@@ -139,7 +170,7 @@ class EXPORT_CPP CPatchSetDirEngine : public CORE::CObservingNotifier  ,
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHER_CPATCHSETDIRENGINE_H ? */
+#endif /* GUCEF_PATCHER_CPATCHLISTENGINE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -147,7 +178,7 @@ class EXPORT_CPP CPatchSetDirEngine : public CORE::CObservingNotifier  ,
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 27-12-2006 :
+- 29-12-2006 :
         - Dinand: Initial version
 
 -----------------------------------------------------------------------------*/

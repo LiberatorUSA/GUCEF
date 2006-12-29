@@ -50,7 +50,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Interface class defining URL related events and a namespaced global utility
+ *  Interface class defining URL related events and a namespace'd global utility
  *  for registering those events.         
  */
 class GUCEFCORE_EXPORT_CPP CIURLEvents

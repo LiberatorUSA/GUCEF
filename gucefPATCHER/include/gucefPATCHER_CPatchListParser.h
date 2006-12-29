@@ -53,7 +53,12 @@ class EXPORT_CPP CPatchListParser
 {
     public:
     
-    typedef std::pair< CORE::CString, CORE::CString > TPatchSetLocation;
+    struct SPatchSetLocation
+    {
+        CORE::CString URL;          /**< URL where the patch set can be retrieved */
+        CORE::CString codec;        /**< codec that should be used on the raw patch set data once it's retrieved */
+    };
+    typedef struct SPatchSetLocation TPatchSetLocation;
     typedef std::vector< TPatchSetLocation > TPatchSetLocations;
     typedef std::map< CORE::CString, TPatchSetLocations > TPatchList;
     

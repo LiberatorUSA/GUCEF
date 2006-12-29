@@ -96,7 +96,7 @@ class EXPORT_CPP CPatchSetFileEngine : public CORE::CObservingNotifier  ,
     
     UInt32 m_curFileIndex;
     UInt32 m_curFileLocIndex;
-    const TFileList* m_fileList;
+    TFileList m_fileList;
     
     CORE::CFileAccess* m_fileAccess;
     CORE::CURLDataRetriever m_dataRetriever;

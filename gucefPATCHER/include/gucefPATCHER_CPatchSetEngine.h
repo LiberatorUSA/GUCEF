@@ -24,11 +24,40 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"
-#include "CURLDataRetriever.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
 
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHSETPARSER_H
 #include "gucefPATCHER_CPatchSetParser.h"
+#define GUCEF_PATCHER_CPATCHSETPARSER_H
+#endif /* GUCEF_PATCHER_CPATCHSETPARSER_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
+#include "gucefPATCHER_CPatchSetFileEngineEvents.h"
+#define GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
+#endif /* GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H
+#include "gucefPATCHER_CPatchSetDirEngineEvents.h"
+#define GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H
+#endif /* GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHSETENGINEEVENTS_H
+#include "gucefPATCHER_CPatchSetEngineEvents.h"
+#define GUCEF_PATCHER_CPATCHSETENGINEEVENTS_H
+#endif /* GUCEF_PATCHER_CPATCHSETENGINEEVENTS_H ? */
+
+#ifndef GUCEF_PATCHER_MACROS_H
 #include "gucefPATCHER_macros.h"
+#define GUCEF_PATCHER_MACROS_H
+#endif /* GUCEF_PATCHER_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,11 +74,17 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
+class CPatchSetDirEngine;
+
+/*-------------------------------------------------------------------------*/
+
 /**
- *  Parser that parses a data node tree for the information required to
- *  build a patch list. Any and all corrupt entries will be dropped.
+ *  Engine for processing a patch set.
  */
-class EXPORT_CPP CPatchSetEngine : public CORE::CObservingNotifier
+class EXPORT_CPP CPatchSetEngine : public CORE::CObservingNotifier  ,
+                                   public CPatchSetDirEngineEvents  , /* event interface */
+                                   public CPatchSetFileEngineEvents , /* event interface */
+                                   public CPatchSetEngineEvents       /* event interface */
 {
     public:
 
@@ -57,24 +92,40 @@ class EXPORT_CPP CPatchSetEngine : public CORE::CObservingNotifier
     typedef CPatchSetParser::TFileEntry TFileEntry;
     typedef CPatchSetParser::TDirEntry TDirEntry;
     typedef CPatchSetParser::TPatchSet TPatchSet;
-    
+       
     public:
     
-    bool Start( const TPatchSet& pathSet ,
-                CORE::CString& localRoot );
+    CPatchSetEngine( void );
+    virtual ~CPatchSetEngine();
+    
+    bool Start( const TPatchSet& pathSet             ,
+                const CORE::CString& localRoot       ,
+                const CORE::CString& tempStorageRoot );
     
     void Stop( void );
     
     bool IsActive( void ) const;
     
+    protected:
+        
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );
+
     private:
     
-    TPatchSet* m_patchSet;
+    CPatchSetEngine( const CPatchSetEngine& src ); /**< not implemented */
+    CPatchSetEngine& operator=( const CPatchSetEngine& src ); /**< not implemented */
+    
+    private:
+    
+    TPatchSet m_patchSet;
+    UInt32 m_dirIndex;
     CPatchSetDirEngine* m_patchSetDirEngine;
     bool m_isActive;
     bool m_stopSignalGiven;
     CORE::CString m_localRoot;
-    CORE::CString m_localPath;
+    CORE::CString m_tempStorageRoot;
 };
 
 /*-------------------------------------------------------------------------//

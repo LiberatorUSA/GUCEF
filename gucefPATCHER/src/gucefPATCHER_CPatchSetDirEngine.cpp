@@ -46,19 +46,7 @@
 
 namespace GUCEF {
 namespace PATCHER {
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-const CORE::CEvent CPatchSetDirEngine::DirProcessingStartedEvent = "GUCEF::PATCHER::CPatchSetDirEngine::DirProcessingStartedEvent";
-const CORE::CEvent CPatchSetDirEngine::SubDirProcessingStartedEvent = "GUCEF::PATCHER::CPatchSetDirEngine::SubDirProcessingStartedEvent";
-const CORE::CEvent CPatchSetDirEngine::SubDirProcessingCompletedEvent = "GUCEF::PATCHER::CPatchSetDirEngine::SubDirProcessingCompletedEvent";
-const CORE::CEvent CPatchSetDirEngine::DirProcessingCompletedEvent = "GUCEF::PATCHER::CPatchSetDirEngine::DirProcessingCompletedEvent";
-const CORE::CEvent CPatchSetDirEngine::DirProcessingAbortedEvent = "GUCEF::PATCHER::CPatchSetDirEngine::DirProcessingAbortedEvent";
-    
+   
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -78,8 +66,6 @@ CPatchSetDirEngine::CPatchSetDirEngine( void )
       m_tempStorageRoot()
 {TRACE;
 
-    RegisterEvents();
-    
     // Forward events from child sub-dir engines
     AddEventForwarding( SubDirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
@@ -102,19 +88,6 @@ CPatchSetDirEngine::CPatchSetDirEngine( void )
 CPatchSetDirEngine::~CPatchSetDirEngine()
 {TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CPatchSetDirEngine::RegisterEvents( void )
-{TRACE;
-
-    DirProcessingStartedEvent.Initialize();
-    SubDirProcessingStartedEvent.Initialize();
-    SubDirProcessingCompletedEvent.Initialize();
-    DirProcessingCompletedEvent.Initialize();
-    DirProcessingAbortedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -199,7 +172,7 @@ CPatchSetDirEngine::Start( const TDirEntry& startingDir         ,
             NotifyObservers( DirProcessingStartedEvent );
             
             // Copy and link params for later use
-            m_dir = &startingDir;
+            m_dir = startingDir;
             m_localRoot = localRoot;
             m_tempStorageRoot = tempStorageRoot;
             m_curSubDirIndex = 0;

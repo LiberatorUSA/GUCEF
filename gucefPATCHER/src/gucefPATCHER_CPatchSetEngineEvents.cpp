@@ -14,9 +14,6 @@
  * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifndef GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
-#define GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,12 +21,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CEVENT_H
-#include "CEvent.h"
-#define GUCEF_CORE_CEVENT_H
-#endif /* GUCEF_CORE_CEVENT_H ? */
-
-#include "gucefPATCHER_macros.h"
+#include "gucefPATCHER_CPatchSetEngineEvents.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,36 +34,45 @@ namespace PATCHER {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPatchSetFileEngineEvents
-{
-    public:
+const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingStartedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::DirProcessingStartedEvent";
+const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingCompletedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::SubDirProcessingStartedEvent";
+const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingAbortedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::SubDirProcessingCompletedEvent";
+const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingFailedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::DirProcessingCompletedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CPatchSetEngineEvents::CPatchSetEngineEvents( void )
+{TRACE;
     
-    static const CORE::CEvent FileListProcessingStartedEvent;
-    static const CORE::CEvent LocalFileSizeMismatchEvent;
-    static const CORE::CEvent LocalFileHashMismatchEvent;
-    static const CORE::CEvent LocalFileNotFoundEvent;
-    static const CORE::CEvent FileRetrievalStartedEvent;
-    static const CORE::CEvent FileRetrievalCompleteEvent;
-    static const CORE::CEvent FileRetrievalErrorEvent;
-    static const CORE::CEvent FileStorageErrorEvent;
-    static const CORE::CEvent FileListProcessingCompleteEvent;
-    static const CORE::CEvent FileListProcessingAbortedEvent;
-    
-    static void RegisterEvents( void );
-    
-    protected:
-    
-    CPatchSetFileEngineEvents( void );
-    virtual ~CPatchSetFileEngineEvents();
-    
-    private:
-    CPatchSetFileEngineEvents( const CPatchSetFileEngineEvents& src );            /**< not implemented */
-    CPatchSetFileEngineEvents& operator=( const CPatchSetFileEngineEvents& src ); /**< not implemented */
-};
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPatchSetEngineEvents::~CPatchSetEngineEvents()
+{TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatchSetEngineEvents::RegisterEvents( void )
+{TRACE;
+
+    PatchSetProcessingStartedEvent.Initialize();
+    PatchSetProcessingCompletedEvent.Initialize();
+    PatchSetProcessingAbortedEvent.Initialize();
+    PatchSetProcessingFailedEvent.Initialize();
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -83,16 +84,3 @@ class EXPORT_CPP CPatchSetFileEngineEvents
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-12-2006 :
-        - Dinand: Initial version
-
------------------------------------------------------------------------------*/

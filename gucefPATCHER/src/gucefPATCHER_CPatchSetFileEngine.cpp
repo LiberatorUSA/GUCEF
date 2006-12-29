@@ -90,7 +90,7 @@ CPatchSetFileEngine::Start( const TFileList& fileList            ,
             m_stopSignalGiven = false;
             
             // Copy and link params for later use
-            m_fileList = &fileList;
+            m_fileList = fileList;
             m_localRoot = localRoot;
             m_tempStorageRoot = tempStorageRoot;
             m_curFileIndex = 0;

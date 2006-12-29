@@ -200,6 +200,18 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchEngine.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchListEngine.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchListEngineEvents.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefPATCHER_CPatchListParser.cpp"
 				>
 			</File>
@@ -208,7 +220,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchSetDirEngineEvents.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefPATCHER_CPatchSetEngine.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchSetEngineEvents.cpp"
 				>
 			</File>
 			<File
@@ -234,6 +254,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchEngine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchListEngine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchListEngineEvents.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefPATCHER_CPatchListParser.h"
 				>
 			</File>
@@ -242,11 +274,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchSetDirEngineEvents.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefPATCHER_CPatchSetEngine.h"
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchSetEngineEvents.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefPATCHER_CPatchSetFileEngine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchSetFileEngineEvents.h"
 				>
 			</File>
 			<File
