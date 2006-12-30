@@ -240,6 +240,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchSetGenerator.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefPATCHER_CPatchSetParser.cpp"
 				>
 			</File>
@@ -291,6 +295,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefPATCHER_CPatchSetFileEngineEvents.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchSetGenerator.h"
 				>
 			</File>
 			<File

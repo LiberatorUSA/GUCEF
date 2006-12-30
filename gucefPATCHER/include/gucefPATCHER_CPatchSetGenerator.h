@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_PATCHER_CPATCHSETPARSER_H
-#define GUCEF_PATCHER_CPATCHSETPARSER_H
+#ifndef GUCEF_PATCHER_CPATCHSETGENERATOR_H
+#define GUCEF_PATCHER_CPATCHSETGENERATOR_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,12 +24,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <map>
-#include <vector>
-#include "CDataNode.h"
-#include "CDVString.h"
+#ifndef GUCEF_PATCHER_CPATCHSETPARSER_H
+#include "gucefPATCHER_CPatchSetParser.h"
+#define GUCEF_PATCHER_CPATCHSETPARSER_H
+#endif /* GUCEF_PATCHER_CPATCHSETPARSER_H ? */
 
+#ifndef GUCEF_PATCHER_MACROS_H
 #include "gucefPATCHER_macros.h"
+#define GUCEF_PATCHER_MACROS_H
+#endif /* GUCEF_PATCHER_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,72 +47,43 @@ namespace PATCHER {
 //                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPatchSetParser
+class EXPORT_CPP CPatchSetGenerator
 {
     public:
-    
-    struct SFileLocation
-    {
-        CORE::CString URL;          /**< URL where the file can be retrieved */
-        CORE::CString codec;        /**< codec that should be used on the file once it's retrieved (if any) */
-        CORE::CString codecParams;  /**< parameters for the codec that should be used on the file once it's retrieved (if any) */
-    };
-    typedef struct SFileLocation TFileLocation;
 
-    struct SFileEntry
-    {
-        CORE::CString name;
-        UInt32 sizeInBytes;
-        CORE::CString hash;
-        std::vector< TFileLocation > fileLocations;
-    };
-    typedef struct SFileEntry TFileEntry;
+    typedef CPatchSetParser::TFileLocation TFileLocation;
+    typedef CPatchSetParser::TFileEntry TFileEntry;
+    typedef CPatchSetParser::TDirEntry TDirEntry;
+    typedef CPatchSetParser::TPatchSet TPatchSet;
     
-    struct SDirEntry
-    {
-        CORE::CString name;
-        UInt32 sizeInBytes;
-        CORE::CString hash;
-        std::vector< TFileEntry > files;
-        std::vector< struct SDirEntry > subDirs;
-    };
-    typedef struct SDirEntry TDirEntry;
+    public :
+    
+    CPatchSetGenerator( void );
+    ~CPatchSetGenerator();
+    
+    bool GeneratePatchSet( const CORE::CString& localRoot ,
+                           const CORE::CString& URLRoot   ,
+                           TPatchSet& patchSet            ) const;
 
-    typedef std::vector< TDirEntry > TPatchSet;
-    
-    public:
-    
-    CPatchSetParser( void );
-    
-    ~CPatchSetParser();
+    bool GeneratePatchSet( const CORE::CString& localRoot ,
+                           const CORE::CString& URLRoot   ,
+                           CORE::CDataNode& patchSet      ) const;
 
-    bool ParsePatchSet( const CORE::CDataNode& patchSetData ,
-                        TPatchSet& patchSet                 ) const;
-    
-    bool ParsePatchSet( const TPatchSet& patchSetData ,
-                        CORE::CDataNode& patchSet     ) const;
-
+    bool GeneratePatchSet( const CORE::CString& localRoot    ,
+                           const CORE::CString& URLRoot      ,
+                           const CORE::CString& storageCodec ,
+                           CORE::CIOAccess& patchSetStorage  ) const;
+                           
     private:
     
-    CPatchSetParser( const CPatchSetParser& src );
-    CPatchSetParser& operator=( const CPatchSetParser& src );
+    CPatchSetGenerator( const CPatchSetGenerator& src );
+    CPatchSetGenerator& operator=( const CPatchSetGenerator& src );
     
-    bool ParseTopLevelDir( const CORE::CDataNode& patchSetDirNode ,
-                           TPatchSet& patchSet                    ) const;
-
-    bool ParseAndWalkDirTree( const CORE::CDataNode& patchSetDirNode ,
-                              TDirEntry& parentDir                   ) const;
-                   
-    bool ValidateAndParseFileEntry( const CORE::CDataNode& patchSetFileNode ,
-                                    TFileEntry& fileEntry                   ) const;
-
-    bool ValidateAndParseFileLocEntries( const CORE::CDataNode& patchSetFileNode ,
-                                         TFileEntry& fileEntry                   ) const;
-
-    bool ValidateAndParseDirEntry( const CORE::CDataNode& patchSetDirNode ,
-                                   TDirEntry& dirEntry                    ) const;
+    bool GeneratePatchSet( const CORE::CString& localRoot ,
+                           const CORE::CString& URLRoot   ,
+                           TDirEntry& currentDir          ) const;
 };
 
 /*-------------------------------------------------------------------------//
@@ -123,7 +97,7 @@ class EXPORT_CPP CPatchSetParser
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHER_CPATCHSETPARSER_H ? */
+#endif /* GUCEF_PATCHER_CPATCHSETGENERATOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -131,11 +105,7 @@ class EXPORT_CPP CPatchSetParser
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 26-12-2006 :
-        - rewrote this class. It is now simply a parser of a data tree into
-          a more concrete data structure. The data structure is validated
-          while it is parsed.
-- 06-05-2005 :
-        - Initial version
+- 30-12-2006 :
+        - Dinand: Initial version
 
 -----------------------------------------------------------------------------*/
