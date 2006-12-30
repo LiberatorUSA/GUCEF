@@ -101,6 +101,11 @@ FloatToString( const float value );
 GUCEFCORE_EXPORT_CPP CString
 DoubleToString( const double value );
 
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
+LastSubDir( const CString& path );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

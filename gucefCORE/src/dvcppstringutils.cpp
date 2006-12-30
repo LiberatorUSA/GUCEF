@@ -190,6 +190,17 @@ DoubleToString( const double value )
         return doubleChars; 
 }
 
+/*-------------------------------------------------------------------------*/
+
+CString
+LastSubDir( const CString& path )
+{TRACE;
+
+    CString lastSubDir;
+    lastSubDir.Set( path.C_String(), Last_Subdir( path.C_String() ) );
+    return lastSubDir;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

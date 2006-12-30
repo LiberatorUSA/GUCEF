@@ -61,8 +61,8 @@ class CIOAccess;
 
 /**
  *      Abstract base class for an codec for storing an data tree 
- *      and reading from a recource to a data tree.
- *      A codec is metadata that converts data from one type to another.
+ *      and reading from a resource to a data tree.
+ *      A codec is meta data that converts data from one type to another.
  */
 class GUCEFCORE_EXPORT_CPP CDStoreCodec : public CICloneable 
 {
@@ -73,7 +73,7 @@ class GUCEFCORE_EXPORT_CPP CDStoreCodec : public CICloneable
         virtual ~CDStoreCodec();
         
         /**
-         *      Wheter or not the codec is currently valid
+         *      Whether or not the codec is currently valid
          *
          *      @return validity of the codec
          */
@@ -81,22 +81,22 @@ class GUCEFCORE_EXPORT_CPP CDStoreCodec : public CICloneable
         
         /**
          *      Attempts to store the given tree in the file
-         *      given according to the method of the codec metadata
+         *      given according to the method of the codec meta data
          *
          *      @param tree the data tree you wish to store
          *      @param filename path and name of the file you wish to store the data in.
-         *      @return wheter storing the tree was successfull
+         *      @return whether storing the tree was successful
          */
         virtual bool StoreDataTree( const CDataNode* tree   ,
                                     const CString& filename ) = 0;
 
         /**
          *      Attempts to store the given tree in the file
-         *      given according to the method of the codec metadata
+         *      given according to the method of the codec meta data
          *
          *      @param tree the data tree you wish to store
-         *      @param file access to the recource to which the data will be written
-         *      @return wheter storing the tree was successfull
+         *      @param file access to the resource to which the data will be written
+         *      @return whether storing the tree was successful
          */
         virtual bool StoreDataTree( const CDataNode* tree   ,
                                     CIOAccess* file         ) = 0;
@@ -109,7 +109,7 @@ class GUCEFCORE_EXPORT_CPP CDStoreCodec : public CICloneable
          *
          *      @param treeroot pointer to the node that is to act as root of the data tree
          *      @param filename path and name of the file from which the data tree information should be loaded
-         *      @return whether building the tree from the given file was successfull.
+         *      @return whether building the tree from the given file was successful.
          */                                    
         virtual bool BuildDataTree( CDataNode* treeroot     ,
                                     const CString& filename ) = 0;
@@ -120,8 +120,8 @@ class GUCEFCORE_EXPORT_CPP CDStoreCodec : public CICloneable
          *      and any children the node may already have will be deleted.
          *
          *      @param treeroot pointer to the node that is to act as root of the data tree
-         *      @param file media independant access to the data source from which the data tree information should be loaded
-         *      @return whether building the tree from the given file was successfull.
+         *      @param file media independent access to the data source from which the data tree information should be loaded
+         *      @return whether building the tree from the given file was successful.
          */                                    
         virtual bool BuildDataTree( CDataNode* treeroot ,
                                     CIOAccess* file     ) = 0;
@@ -139,7 +139,7 @@ class GUCEFCORE_EXPORT_CPP CDStoreCodec : public CICloneable
          *      Get the name of the type that this codec implements 
          *      support for
          *
-         *      @return the name of the recource type supported by this codec
+         *      @return the name of the resource type supported by this codec
          */
         virtual CString GetTypeName( void ) const = 0;
         

@@ -81,7 +81,7 @@ extern "C" {
 
 /**
  *      Function that attempts to create a directory using the system default
- *      security attributes. Returns true (1) if succesfull and false (0) in
+ *      security attributes. Returns true (1) if successful and false (0) in
  *      case of an error. Unlike the normal create dir functions for windows
  *      this one will create all dir's in the string given
  *      (Like the Linux functions).
@@ -93,7 +93,7 @@ Create_Directory( const char *new_dir );
 
 /**
  *      Function that attempts to remove the specified directory.
- *      The del_files parameter allows you to specify wheter you wish to delete
+ *      The del_files parameter allows you to specify whether you wish to delete
  *      all the files and dirs in the directory before deleting the directory
  *      itself. If false and files or dirs are found the directory removal will
  *      fail.
@@ -106,7 +106,7 @@ Remove_Directory( const char *dir  ,
 
 /**
  *      Function that will attempt to delete the given file.
- *      If succesfull true (1) is returned, otherwise false (0).
+ *      If succesful true (1) is returned, otherwise false (0).
  */
 GUCEFCORE_EXPORT_C UInt32 
 Delete_File( const char *filename );
@@ -118,7 +118,7 @@ Delete_File( const char *filename );
  *      src is the source file.
  *      dst is the destination file.
  *      This function does not overwrite any existing file.
- *      If succesfull true (1) is returned, otherwise false (0).
+ *      If succesful true (1) is returned, otherwise false (0).
  */
 GUCEFCORE_EXPORT_C UInt32 
 Copy_File( const char *dst, const char *src );
@@ -127,7 +127,7 @@ Copy_File( const char *dst, const char *src );
 
 /**
  *      moves a file from one location to the other
- *      If succesfull true (1) is returned, otherwise false (0).
+ *      If successful true (1) is returned, otherwise false (0).
  */
 GUCEFCORE_EXPORT_C UInt32 
 Move_File( const char *dst, const char *src );
@@ -137,7 +137,7 @@ Move_File( const char *dst, const char *src );
 /**
  *      Function that will attempt to execute the given program.
  *      cmdline are the command line arguments to be passed to the program.
- *      If successfull true (1) is returned, otherwise false (0).
+ *      If successful true (1) is returned, otherwise false (0).
  *      This function returns regardless of the state of the executed program.
  */
 GUCEFCORE_EXPORT_C UInt32 
@@ -151,7 +151,7 @@ Execute_Program( const char *filename, const char *cmdline );
  *      combined allow you to iterate trough a directory in a cross-platform
  *      manner. Note that the DI_ functions are NOT thread-safe.
  *
- *      This function allocates data storage for the dir itteration process.
+ *      This function allocates data storage for the dir iteration process.
  *      In case of error NULL is returned.
  */
 GUCEFCORE_EXPORT_C struct SDI_Data* 
@@ -160,13 +160,13 @@ DI_First_Dir_Entry( const char *path );
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Function that should be used for directory entry itteration.
+ *      Function that should be used for directory entry iteration.
  *      All the functions listed here with a DI_ prefix belong together and
- *      combined allow you to itterate trough a directory in a cross-platform
+ *      combined allow you to iterate trough a directory in a cross-platform
  *      manner. Note that the DI_ functions are NOT threadsafe.
  *
  *      Function that selects the next directory entry. If there are no more
- *      directory entry's available ie we itterated over all entry's then
+ *      directory entry's available i.e. we iterated over all entry's then
  *      0 is returned in which case you should call DI_Cleanup(),
  *      otherwise 1 is returned.
  */
@@ -176,12 +176,12 @@ DI_Next_Dir_Entry( struct SDI_Data *data );
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Function that should be used for directory entry itteration.
+ *      Function that should be used for directory entry iteration.
  *      All the functions listed here with a DI_ prefix belong together and
- *      combined allow you to itterate trough a directory in a cross-platform
+ *      combined allow you to iterate trough a directory in a cross-platform
  *      manner. Note that the DI_ functions are NOT threadsafe.
  *
- *      De-allocates data storage used for dir itteration which was created by
+ *      De-allocates data storage used for dir iteration which was created by
  *      a call to DI_First_Dir_Entry().
  */
 GUCEFCORE_EXPORT_C void 
@@ -190,9 +190,9 @@ DI_Cleanup( struct SDI_Data *data );
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Function that should be used for directory entry itteration.
+ *      Function that should be used for directory entry iteration.
  *      All the functions listed here with a DI_ prefix belong together and
- *      combined allow you to itterate trough a directory in a cross-platform
+ *      combined allow you to iterate trough a directory in a cross-platform
  *      manner. Note that the DI_ functions are NOT threadsafe.
  *
  *      Returns the dir entry name of the current directory entry. This may be
@@ -204,13 +204,13 @@ DI_Name( struct SDI_Data *data );
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Function that should be used for directory entry itteration.
+ *      Function that should be used for directory entry iteration.
  *      All the functions listed here with a DI_ prefix belong together and
- *      combined allow you to itterate trough a directory in a cross-platform
+ *      combined allow you to iterate trough a directory in a cross-platform
  *      manner. Note that the DI_ functions are NOT threadsafe.
  *
  *      Returns the size of the current entry which in the case of a file is the
- *      filesize.
+ *      file size.
  */
 GUCEFCORE_EXPORT_C UInt32 
 DI_Size( struct SDI_Data *data );
@@ -218,9 +218,9 @@ DI_Size( struct SDI_Data *data );
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Function that should be used for directory entry itteration.
+ *      Function that should be used for directory entry iteration.
  *      All the functions listed here with a DI_ prefix belong together and
- *      combined allow you to itterate trough a directory in a cross-platform
+ *      combined allow you to iterate trough a directory in a cross-platform
  *      manner. Note that the DI_ functions are NOT threadsafe.
  *
  *      Returns the timestamp of the file. This is when the file was last
@@ -232,12 +232,12 @@ DI_Timestamp( struct SDI_Data *data );
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Function that should be used for directory entry itteration.
+ *      Function that should be used for directory entry iteration.
  *      All the functions listed here with a DI_ prefix belong together and
- *      combined allow you to itterate trough a directory in a cross-platform
+ *      combined allow you to iterate trough a directory in a cross-platform
  *      manner. Note that the DI_ functions are NOT threadsafe.
  *
- *      Returns boolean int indicating wheter the current entry is a directory
+ *      Returns boolean int indicating whether the current entry is a directory
  *      or a file. If it's not a file then it's a directory.
  */
 GUCEFCORE_EXPORT_C UInt32 
@@ -300,7 +300,7 @@ Filesize( const char *filename );
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Returns a boolean value indicating wheter or not the given file
+ *      Returns a boolean value indicating whether or not the given file
  *      exists. 1 is true and 0  is false. the fastest method possible for the
  *      target O/S will be used.
  */
@@ -316,7 +316,7 @@ File_Exists( const char *filename );
  *        $MODULEDIR$ : this will be replaced with the module dir.
  *      The following tag can be placed after one of the above mentioned tags
  *        $UPDIR$ : go up one dir 
- *      Dir seperator chars will be forced to that of the the target O/S.
+ *      Dir separator chars will be forced to that of the the target O/S.
  *      It is assumed dest is large enough to store the data.
  *      The function returns the total number of bytes written to dest.
  */
