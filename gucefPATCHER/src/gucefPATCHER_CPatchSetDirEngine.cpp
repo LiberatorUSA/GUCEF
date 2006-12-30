@@ -59,7 +59,7 @@ CPatchSetDirEngine::CPatchSetDirEngine( void )
       m_curSubDirIndex( 0 )       ,
       m_subDirPatchEngine( NULL ) ,
       m_filePatchEngine( NULL )   ,    
-      m_dir( NULL )               ,
+      m_dir()                     ,
       m_isActive( false )         ,
       m_stopSignalGiven( false )  ,
       m_localRoot()               ,
@@ -96,7 +96,7 @@ bool
 CPatchSetDirEngine::ProcessFilesInDir( void )
 {TRACE;
 
-    if ( m_dir->files.size() > 0 )
+    if ( m_dir.files.size() > 0 )
     {
         // We will be needing an engine for our file processing
         if ( m_filePatchEngine == NULL )
@@ -106,7 +106,7 @@ CPatchSetDirEngine::ProcessFilesInDir( void )
         }
         
         // process the files in this directory
-        return m_filePatchEngine->Start( m_dir->files      ,
+        return m_filePatchEngine->Start( m_dir.files       ,
                                          m_localRoot       ,
                                          m_tempStorageRoot );
     }
@@ -120,7 +120,7 @@ bool
 CPatchSetDirEngine::ProcessCurSubDir( void )
 {TRACE;
 
-    if ( m_curSubDirIndex <= m_dir->subDirs.size() )
+    if ( m_curSubDirIndex <= m_dir.subDirs.size() )
     {
         NotifyObservers( SubDirProcessingStartedEvent );
         
@@ -132,7 +132,7 @@ CPatchSetDirEngine::ProcessCurSubDir( void )
         }
         
         // Create the correct path strings for this sub-sir
-        const TDirEntry* subDir = &m_dir->subDirs[ m_curSubDirIndex ];
+        const TDirEntry* subDir = &m_dir.subDirs[ m_curSubDirIndex ];
         CORE::CString subDirPath = m_localRoot;
         CORE::AppendToPath( subDirPath, subDir->name );
         CORE::CString subTmpDirPath = m_tempStorageRoot;
@@ -177,7 +177,7 @@ CPatchSetDirEngine::Start( const TDirEntry& startingDir         ,
             m_tempStorageRoot = tempStorageRoot;
             m_curSubDirIndex = 0;
             
-            if ( m_dir->files.size() > 0 )
+            if ( m_dir.files.size() > 0 )
             {
                 return ProcessFilesInDir();
             }
@@ -235,7 +235,7 @@ CPatchSetDirEngine::ProcessNextSubDir( void )
 {TRACE;
 
     // Move on to the next sub-dir (if any exists)
-    if ( m_curSubDirIndex+1 < m_dir->subDirs.size() )
+    if ( m_curSubDirIndex+1 < m_dir.subDirs.size() )
     {
         ++m_curSubDirIndex;
         return ProcessCurSubDir();

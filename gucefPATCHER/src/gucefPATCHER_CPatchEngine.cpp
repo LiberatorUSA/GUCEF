@@ -151,22 +151,22 @@ void
 CPatchEngine::RegisterEvents( void )
 {TRACE;
     
-    PatchProcessStartedEvent.Intialize();
-    PatchProcessCompletedEvent.Intialize();
-    PatchProcessAbortedEvent.Intialize();
-    PatchProcessFailedEvent.Intialize();
-    PatchListDataReceivedEvent.Intialize();
-    PatchListRetrievalStartedEvent.Intialize();
-    PatchListRetrievalCompletedEvent.Intialize();
-    PatchListRetrievalFailedEvent.Intialize();
-    PatchListRetrievalAbortedEvent.Intialize();
-    PatchListDecodingFailedEvent.Intialize();
+    PatchProcessStartedEvent.Initialize();
+    PatchProcessCompletedEvent.Initialize();
+    PatchProcessAbortedEvent.Initialize();
+    PatchProcessFailedEvent.Initialize();
+    PatchListDataReceivedEvent.Initialize();
+    PatchListRetrievalStartedEvent.Initialize();
+    PatchListRetrievalCompletedEvent.Initialize();
+    PatchListRetrievalFailedEvent.Initialize();
+    PatchListRetrievalAbortedEvent.Initialize();
+    PatchListDecodingFailedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CPatchEngine::SaveConfig( CDataNode& tree )
+CPatchEngine::SaveConfig( CORE::CDataNode& tree )
 {TRACE;
     
     return false;
@@ -175,7 +175,7 @@ CPatchEngine::SaveConfig( CDataNode& tree )
 /*-------------------------------------------------------------------------*/
                                    
 bool
-CPatchEngine::LoadConfig( const CDataNode& treeroot )
+CPatchEngine::LoadConfig( const CORE::CDataNode& treeroot )
 {TRACE;
 
     return false;
@@ -368,7 +368,7 @@ CPatchEngine::Stop( void )
 /*-------------------------------------------------------------------------*/
     
 bool
-CPatchEngine::IsActive( void ) bool
+CPatchEngine::IsActive( void ) const
 {TRACE;
     
     return m_isActive;
@@ -391,21 +391,20 @@ CPatchEngine::ProcessRecievedPatchList( void )
                                        m_listDataBuffer.GetDataSize()       );
                                        
         // decode the data in our buffer into a data tree
-        if ( codecPtr->BuildDataTree( &rootNode  ,
-                                      dataAccess ) )
+        if ( codecPtr->BuildDataTree( &rootNode   ,
+                                      &dataAccess ) )
         {
             // Now we have to parse the data tree into something more familiar
             CPatchListParser::TPatchList patchList;
             CPatchListParser listParser;                        
-            if ( listParser.ParsePatchList( rootNode  ,
-                                            patchList ) )
-            {
-                // Now that the raw data has been processed into a real patch list we can commence
-                // with the patching process for this patch list
-                return m_patchListEngine->Start( patchList         ,
-                                                 m_localRoot       ,
-                                                 m_tempStorageRoot );
-            }
+            listParser.ParsePatchList( rootNode  ,
+                                       patchList );
+                                       
+            // Now that the raw data has been processed into a real patch list we can commence
+            // with the patching process for this patch list
+            return m_patchListEngine->Start( patchList         ,
+                                             m_localRoot       ,
+                                             m_tempStorageRoot );
         }
     }
     
@@ -417,9 +416,9 @@ CPatchEngine::ProcessRecievedPatchList( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
-                            const CORE::CEvent& eventid               ,
-                            CORE::CICloneable* eventdata /* = NULL */ )
+CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
+                        const CORE::CEvent& eventid               ,
+                        CORE::CICloneable* eventdata /* = NULL */ )
 {TRACE;
 
     if ( !m_stopSignalGiven && m_isActive )
@@ -453,11 +452,11 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
             if ( eventid == CORE::CURL::URLDataRecievedEvent )
             {
                 // Translate event data
-                const CORE::CDynamicBuffer& buffer = ( static_cast< CORE::CURL::TURLDataRecievedEventData >( eventdata ) ).GetData();
+                const CORE::CDynamicBuffer& buffer = ( static_cast< CORE::CURL::TURLDataRecievedEventData* >( eventdata ) )->GetData();
                 
                 // Append the data to our buffer
-                m_setDataBuffer.Append( buffer.GetConstBufferPtr() , 
-                                        buffer.GetDataSize()       );
+                m_listDataBuffer.Append( buffer.GetConstBufferPtr() , 
+                                         buffer.GetDataSize()       );
                                         
                 NotifyObservers( PatchListDataReceivedEvent );
             }

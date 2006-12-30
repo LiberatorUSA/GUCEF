@@ -82,6 +82,10 @@ class GUCEFCORE_EXPORT_CPP CString
         CString( const char *src ,
                  UInt32 length   );
 
+        CString( const char src );
+        
+        CString( const int NULLvalue );
+        
         ~CString();
                 
         CString& operator=( const CString &src );
@@ -101,7 +105,7 @@ class GUCEFCORE_EXPORT_CPP CString
         
         CString operator+( const CString& addition );
         
-        CString operator+( const char* addition );               
+        CString operator+( const char* addition );
 
         bool operator==( const CString &other ) const;        
         
@@ -197,6 +201,7 @@ GUCEFCORE_EXPORT_CPP bool operator==( const char* lhs, const CString& rhs );
 GUCEFCORE_EXPORT_CPP CString operator+( const CString& lhs, const CString& rhs );
 GUCEFCORE_EXPORT_CPP CString operator+( const CString& lhs, const char* rhs );        
 GUCEFCORE_EXPORT_CPP CString operator+( const char* lhs, const CString& rhs ); 
+GUCEFCORE_EXPORT_CPP CString operator+( const char lhs, const CString& rhs );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -218,12 +223,12 @@ GUCEFCORE_EXPORT_CPP CString operator+( const char* lhs, const CString& rhs );
 //-------------------------------------------------------------------------//
 
 - 01-10-2006 :
-        - Dinand: This string implementation is no longer refrence counted.
-          There is no way to make it both refrence counted and threadsafe at the same time
-          without using some gobal mechanism which in turn causes problems when using strings
+        - Dinand: This string implementation is no longer reference counted.
+          There is no way to make it both reference counted and threadsafe at the same time
+          without using some global mechanism which in turn causes problems when using strings
           as global variables.
-          Since most people already assume strings dont have stellar performance I decided to
-          rewrite the code to get rid of the refrence counting and simply allocate memory 
+          Since most people already assume strings don't have stellar performance I decided to
+          rewrite the code to get rid of the reference counting and simply allocate memory 
           when needed
 - 05-05-2005 :
         - Dinand: Fixed a bug in operator+=( const CString &other ): the old string was 
@@ -242,7 +247,7 @@ GUCEFCORE_EXPORT_CPP CString operator+( const char* lhs, const CString& rhs );
 - 11-04-2005 :
         - Dinand: Added include that disabled the memory manager defines before including
           the STL header. The STL can't handle our manager and would freak out.
-          The subsequent inclusion of the macro file will reenable the defines
+          The subsequent inclusion of the macro file will re enable the defines
           if needed.
 - 10-04-2005 :
         - Dinand: Fixed: String length wasn't set when using Set()
@@ -260,7 +265,7 @@ GUCEFCORE_EXPORT_CPP CString operator+( const char* lhs, const CString& rhs );
         - Dinand: Fixed several string length bugs. The length data member simply wasnt
           updated in the = operator ect.
 - 13-11-2004 :
-        - Dinand: Converted class to use refrence counting. 
+        - Dinand: Converted class to use reference counting. 
 - 19-04-2004 :
         - Dinand: Designed and implemented this class.
 

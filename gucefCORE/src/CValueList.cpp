@@ -95,6 +95,49 @@ CValueList::operator=( const CValueList& src )
 
 /*-------------------------------------------------------------------------*/
 
+CString
+CValueList::operator[]( const CString& key ) const
+{TRACE;
+
+    return GetValue( key );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CValueList::SetMultiple( const CString& keyandvalue ,
+                         const char seperator       )
+{TRACE;
+
+    CString remnant = keyandvalue;
+    while ( remnant.Length() > 0 )
+    {
+        CString tmp = remnant.SubstrToChar( seperator, true );
+        if ( ( tmp.Length() > 0 )          || 
+             ( remnant[ 0 ] == seperator )  )
+        {
+            remnant = remnant.CutChars( tmp.Length()+1, true );
+            
+            CString keyValueStr = remnant.SubstrToChar( seperator, true );
+            if ( keyValueStr.Length() > 0 )
+            {
+                Set( keyValueStr );
+                remnant = remnant.CutChars( keyValueStr.Length()+1, true );
+            }
+            else
+            {
+                return;
+            }
+        }
+        else
+        {
+            return;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CValueList::Set( const CString& keyandvalue )
 {TRACE;
@@ -111,6 +154,9 @@ void
 CValueList::Set( const CString& key   ,
                  const CString& value )
 {TRACE;
+        
+    if ( key.Length() > 0 )
+    {
         CString* thevalue = static_cast<CString*>( m_list.Get( key ) );
         if ( thevalue )
         {
@@ -119,7 +165,8 @@ CValueList::Set( const CString& key   ,
         }
         
         m_list.Add( key                  ,
-                    new CString( value ) );        
+                    new CString( value ) );
+    }
 }
 
 /*-------------------------------------------------------------------------*/                
@@ -199,7 +246,7 @@ CValueList::GetKey( const UInt32 index ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CValueList::Exists( const CString& key ) const
+CValueList::HasKey( const CString& key ) const
 {TRACE;
         return NULL != static_cast<const CString*>( m_list.Get( key ) );
 }

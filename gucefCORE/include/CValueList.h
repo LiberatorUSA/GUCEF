@@ -49,7 +49,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-// @deprecated replace with std::map< CString, CString >
 class GUCEFCORE_EXPORT_CPP CValueList
 {
         public:
@@ -62,6 +61,11 @@ class GUCEFCORE_EXPORT_CPP CValueList
         
         virtual ~CValueList();
                
+        CString operator[]( const CString& key ) const;
+        
+        void SetMultiple( const CString& keyandvalue ,
+                          const char seperator       );
+        
         void Set( const CString& keyandvalue );
         
         void Set( const CString& key   ,
@@ -77,7 +81,7 @@ class GUCEFCORE_EXPORT_CPP CValueList
         
         CString GetKey( const UInt32 index ) const;                
         
-        bool Exists( const CString& key ) const;
+        bool HasKey( const CString& key ) const;
         
         void Delete( const CString& key );
         

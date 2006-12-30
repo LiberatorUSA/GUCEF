@@ -99,7 +99,9 @@ CPatchListParser::ParsePatchList( const CORE::CDataNode& patchListData ,
                                     
                                     // We have all the info we need for this location
                                     // we can now add the location to the list
-                                    TPatchSetLocation location( patchSetLocURL, patchSetDataCodec );
+                                    TPatchSetLocation location;
+                                    location.codec = patchSetDataCodec;
+                                    location.URL = patchSetLocURL;
                                     TPatchSetLocations& locationList = patchList[ patchSetName ];
                                     locationList.push_back( location );
                                 }

@@ -21,6 +21,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <assert.h>
+
 #ifndef GUCEF_PATCHER_CPATCHSETDIRENGINE_H
 #include "gucefPATCHER_CPatchSetDirEngine.h"
 #define GUCEF_PATCHER_CPATCHSETDIRENGINE_H
@@ -138,7 +140,7 @@ CPatchSetEngine::Stop( void )
 /*-------------------------------------------------------------------------*/
     
 bool
-CPatchSetEngine::IsActive( void ) bool
+CPatchSetEngine::IsActive( void ) const
 {TRACE;
     
     return m_isActive;
@@ -159,21 +161,21 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
                                             eventid   ,
                                             eventdata );
         
-        if ( notifier == m_subDirPatchEngine )
+        if ( notifier == m_patchSetDirEngine )
         {
             if ( eventid == DirProcessingCompletedEvent )
             {
                 NotifyObservers( SubDirProcessingCompletedEvent );
                 
                 // Move on to the next sub-dir (if any exists)
-                if ( m_dirIndex+1 < m_patchSet->size() )
+                if ( m_dirIndex+1 < m_patchSet.size() )
                 {
                     ++m_dirIndex;
                     
                     NotifyObservers( SubDirProcessingStartedEvent );
-                    m_patchSetDirEngine->Start( (*m_patchSet)[ m_dirIndex ] ,
-                                                m_localRoot                 ,
-                                                m_tempStorageRoot           );
+                    m_patchSetDirEngine->Start( m_patchSet[ m_dirIndex ] ,
+                                                m_localRoot              ,
+                                                m_tempStorageRoot        );
                 }
                 else
                 {

@@ -62,7 +62,7 @@ CPatchListEngine::CPatchListEngine( void )
       m_patchSetEngine( new CPatchSetEngine() ) ,
       m_url()                                   ,
       m_setDataBuffer()                         ,
-      m_patchList( NULL )                       ,
+      m_patchList()                             ,
       m_setIndex( 0 )                           ,
       m_setLocIndex( 0 )                        ,
       m_isActive( false )                       ,
@@ -72,7 +72,7 @@ CPatchListEngine::CPatchListEngine( void )
       
 {TRACE;
 
-    assert( m_patchSetDirEngine != NULL );
+    assert( m_patchSetEngine != NULL );
   
     // Forward events from the set engine
     AddEventForwarding( PatchSetProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
@@ -122,7 +122,7 @@ CPatchListEngine::GetCurrentPatchSetLocation( TPatchSetLocation** location )
 
     // Get the current set
     TPatchList::iterator i = m_patchList.begin();
-    i += m_setIndex;
+    for ( UInt32 n; n<m_setIndex; ++n ) { ++i; }
 
     // Get the current set location 
     TPatchSetLocations& patchSetLocations = (*i).second;
@@ -173,13 +173,13 @@ CPatchListEngine::Start( const TPatchList& patchList          ,
                          const CORE::CString& tempStorageRoot )
 {TRACE;
 
-    assert( &patchSet != NULL );
+    assert( &patchList != NULL );
     
     // The user should explicitly stop first if we are already busy
     if ( !IsActive() )
     {
         // parameter sanity check
-        if ( ( patchSet.size() > 1 )     &&
+        if ( ( patchList.size() > 1 )   &&
              ( localRoot.Length() > 0 )  )
         {
             m_isActive = true;
@@ -227,7 +227,7 @@ CPatchListEngine::Stop( void )
 /*-------------------------------------------------------------------------*/
     
 bool
-CPatchListEngine::IsActive( void ) bool
+CPatchListEngine::IsActive( void ) const
 {TRACE;
     
     return m_isActive;
@@ -253,8 +253,8 @@ CPatchListEngine::ProcessRecievedPatchSet( void )
                                            m_setDataBuffer.GetDataSize()       );
                                            
             // decode the data in our buffer into a data tree
-            if ( codecPtr->BuildDataTree( &rootNode  ,
-                                          dataAccess ) )
+            if ( codecPtr->BuildDataTree( &rootNode   ,
+                                          &dataAccess ) )
             {
                 // Make sure the buffer is cleared
                 m_setDataBuffer.Clear();
@@ -329,7 +329,7 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
             if ( eventid == CORE::CURL::URLDataRecievedEvent )
             {
                 // Translate event data
-                const CORE::CDynamicBuffer& buffer = ( static_cast< CORE::CURL::TURLDataRecievedEventData >( eventdata ) ).GetData();
+                const CORE::CDynamicBuffer& buffer = ( static_cast< CORE::CURL::TURLDataRecievedEventData* >( eventdata ) )->GetData();
                 
                 // Append the data to our buffer
                 m_setDataBuffer.Append( buffer.GetConstBufferPtr() , 

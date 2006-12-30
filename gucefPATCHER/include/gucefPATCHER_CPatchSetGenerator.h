@@ -24,6 +24,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CIOACCESS_H
+#include "CIOAccess.h"
+#define GUCEF_CORE_CIOACCESS_H
+#endif /* GUCEF_CORE_CIOACCESS_H  ? */
+
 #ifndef GUCEF_PATCHER_CPATCHSETPARSER_H
 #include "gucefPATCHER_CPatchSetParser.h"
 #define GUCEF_PATCHER_CPATCHSETPARSER_H

@@ -115,7 +115,7 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
     if ( !m_stopSignalGiven && m_isActive )
     {
         // Get our current file
-        const TFileEntry* curFile = &((*m_fileList)[ m_curFileIndex ]);
+        const TFileEntry* curFile = &m_fileList[ m_curFileIndex ];
         
         // Create a path string to the file
         CORE::CString filePath = m_localRoot;
@@ -153,7 +153,7 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
                         {
                             // Woohoo, this file is already up-to-date
                             // We can now proceed to the next file if there is any
-                            if ( m_curFileIndex+1 < m_fileList->size() )
+                            if ( m_curFileIndex+1 < m_fileList.size() )
                             {
                                 ++m_curFileIndex;
                                 return ProcessCurrentFile();
@@ -263,12 +263,12 @@ CPatchSetFileEngine::TryNextFileLocation( void )
 
     m_fileAccess->Close();
 
-    const TFileEntry* curFile = &(*m_fileList)[ m_curFileIndex ];
+    const TFileEntry& curFile = m_fileList[ m_curFileIndex ];
     do
     {
         // if we get here then we where unable to retrieve the file using the given URL
         // We will try the next one,.. if there is a next one
-        if ( m_curFileLocIndex+1 < curFile->fileLocations.size() )
+        if ( m_curFileLocIndex+1 < curFile.fileLocations.size() )
         {
             // we ran out of options,.. the end
             m_stopSignalGiven = false;
@@ -286,7 +286,7 @@ CPatchSetFileEngine::TryNextFileLocation( void )
             return true;
         }
     }
-    while ( m_curFileLocIndex < curFile->fileLocations.size() );
+    while ( m_curFileLocIndex < curFile.fileLocations.size() );
     
     return false;
 }

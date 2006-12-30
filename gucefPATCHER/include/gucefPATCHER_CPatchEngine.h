@@ -143,9 +143,9 @@ class EXPORT_CPP CPatchEngine : public CORE::CObservingNotifier  ,
     
     bool IsActive( void ) const;
     
-    virtual bool SaveConfig( CDataNode& tree );
+    virtual bool SaveConfig( CORE::CDataNode& tree );
                                    
-    virtual bool LoadConfig( const CDataNode& treeroot );
+    virtual bool LoadConfig( const CORE::CDataNode& treeroot );
     
     bool AddEngineStartTriggerEvent( const CORE::CEvent& triggerEvent );   
     

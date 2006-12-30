@@ -65,6 +65,19 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CPatchSetGenerator::CPatchSetGenerator( void )
+{TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPatchSetGenerator::~CPatchSetGenerator()
+{
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
                                       const CORE::CString& URLRoot   ,

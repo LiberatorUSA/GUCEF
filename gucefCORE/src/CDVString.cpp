@@ -123,6 +123,25 @@ CString::CString( const char *src ,
 
 /*-------------------------------------------------------------------------*/
 
+CString::CString( const char src )
+    : m_string( new char( src ) ) ,
+      m_length( 1 ) 
+{TRACE;
+
+    assert( m_string != NULL );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString::CString( const int NULLvalue )
+    : m_string( NULL ) ,
+      m_length( 0 )
+{TRACE;
+
+    assert( NULLvalue == NULL );
+}
+/*-------------------------------------------------------------------------*/
+
 CString::~CString()
 {TRACE;
     
@@ -277,12 +296,14 @@ CString::Set( const char *new_str ,
               UInt32 len          )
 {TRACE;
     
-    if ( new_str && len )
+    if ( ( new_str != NULL ) &&
+         ( len > 0 )          )
     {
         m_length = len;
-        m_string = new char[ m_length+1 ];
-        assert( m_string );                                                                                
-        memcpy( m_string, new_str, m_length+1 );                                 
+        m_string = new char[ len+1 ];
+        assert( m_string != NULL );                                                                                
+        memcpy( m_string, new_str, m_length+1 );
+        m_string[ len ] = '\0';                                
     }    
 }
 
@@ -433,7 +454,7 @@ CString::SubstrToChar( char searchchar ,
                         {
                                 CString substr;
                                 substr.Set( m_string ,
-                                            i       );            
+                                            i        );            
                                 return substr;
                         }
                 }
@@ -446,8 +467,8 @@ CString::SubstrToChar( char searchchar ,
                 if ( m_string[ i ] == searchchar )
                 {
                         CString substr;
-                        substr.Set( m_string+(m_length-i) ,
-                                    i                   );                                   
+                        substr.Set( m_string+i+1 ,
+                                    m_length-i+1 );                                   
                         return substr;
                 }
         }
@@ -803,6 +824,16 @@ operator!=( const char* lhs    ,
             const CString& rhs )
 {TRACE;
         return rhs != lhs;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+operator+( const char lhs     , 
+           const CString& rhs )
+{TRACE;
+
+    return CString( &lhs, 1 ) + rhs;
 }
 
 /*-------------------------------------------------------------------------//
