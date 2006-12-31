@@ -144,8 +144,6 @@ class GUCEFCORE_EXPORT_CPP CFileAccess : public CIOAccess
          *      has something gone wrong ?
          */
         virtual bool IsValid( void );
-
-        virtual TIOAccess* CStyleAccess( void );
         
         virtual CICloneable* Clone( void ) const;
         
@@ -156,7 +154,6 @@ class GUCEFCORE_EXPORT_CPP CFileAccess : public CIOAccess
         bool _readable;
         CString m_mode;        
         FILE* _file;
-        TIOAccess _access;
         CString _filename;
         UInt32 _size;
 };

@@ -84,14 +84,12 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
                                       TPatchSet& patchSet            ) const
 {TRACE;
 
-    CORE::CString rootDir;
     CORE::CString subDir = CORE::LastSubDir( localRoot );
-    rootDir.Set( localRoot.C_String(), subDir.Length() );
     CORE::CString URLRootDir = URLRoot + '/' + subDir;
     
     TDirEntry dirEntry;
     dirEntry.name = subDir;
-    if ( GeneratePatchSet( rootDir    ,
+    if ( GeneratePatchSet( localRoot  ,
                            URLRootDir ,
                            dirEntry   ) )
     {
@@ -118,57 +116,62 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
     {
         do 
         {
-            if ( 0 == CORE::DI_Is_It_A_File( dirEntry ) )
+            CORE::CString entryName = CORE::DI_Name( dirEntry );
+            if ( ( entryName != "." )  &&
+                 ( entryName != ".." )  )
             {
-                // We found a sub-sir
-                TDirEntry subDirs;
-                subDirs.name = CORE::DI_Name( dirEntry );
-                
-                CORE::CString subDirPath = localRoot;
-                CORE::AppendToPath( subDirPath, subDirs.name );
-                CORE::CString URLRootPlusDir = URLRoot + '/' + subDirs.name;
-                
-                if ( GeneratePatchSet( subDirPath     ,
-                                       URLRootPlusDir ,
-                                       subDirs        ) )
+                if ( 0 == CORE::DI_Is_It_A_File( dirEntry ) )
                 {
-                    currentDir.sizeInBytes += subDirs.sizeInBytes;
-                    currentDir.hash += subDirs.hash;
-                    currentDir.subDirs.push_back( subDirs );
-                }               
-            }
-            else
-            {
-                // We found a file in this dir
-                TFileEntry fileEntry;
-                fileEntry.name = CORE::DI_Name( dirEntry );
-                fileEntry.sizeInBytes = CORE::DI_Size( dirEntry );
-                CORE::CString filePath = localRoot;
-                CORE::AppendToPath( filePath, fileEntry.name );
-                CORE::CFileAccess fileAccess( filePath, "rb" );
-                fileAccess.Open();
-                
-                UInt8 md5Digest[ 16 ];
-                if ( 0 == CORE::md5frommfile( fileAccess.CStyleAccess() ,
-                                              md5Digest                 ) )
-                {
-                    // clean up our toys
-                    CORE::DI_Cleanup( dirEntry );
-                    return false;
+                    // We found a sub-dir
+                    TDirEntry subDirs;
+                    subDirs.name = entryName;
+                    
+                    CORE::CString subDirPath = localRoot;
+                    CORE::AppendToPath( subDirPath, subDirs.name );
+                    CORE::CString URLRootPlusDir = URLRoot + '/' + subDirs.name;
+                    
+                    if ( GeneratePatchSet( subDirPath     ,
+                                           URLRootPlusDir ,
+                                           subDirs        ) )
+                    {
+                        currentDir.sizeInBytes += subDirs.sizeInBytes;
+                        currentDir.hash += subDirs.hash;
+                        currentDir.subDirs.push_back( subDirs );
+                    }               
                 }
-                
-                fileEntry.hash = CORE::MD5ToString( md5Digest );
-                
-                currentDir.hash += fileEntry.hash;
-                currentDir.sizeInBytes += fileEntry.sizeInBytes;
-                
-                TFileLocation location;
-                location.URL = URLRoot + '/' + fileEntry.name;
-                fileEntry.fileLocations.push_back( location );                
-                currentDir.files.push_back( fileEntry );
-            }
-            
-        } while ( CORE::DI_Next_Dir_Entry( dirEntry ) != 0 );
+                else
+                {
+                    // We found a file in this dir
+                    TFileEntry fileEntry;
+                    fileEntry.name = entryName;
+                    fileEntry.sizeInBytes = CORE::DI_Size( dirEntry );
+                    CORE::CString filePath = localRoot;
+                    CORE::AppendToPath( filePath, fileEntry.name );
+                    CORE::CFileAccess fileAccess( filePath, "rb" );
+                    fileAccess.Open();
+                    
+                    UInt8 md5Digest[ 16 ];
+                    if ( 0 == CORE::md5frommfile( fileAccess.CStyleAccess() ,
+                                                  md5Digest                 ) )
+                    {
+                        // clean up our toys
+                        CORE::DI_Cleanup( dirEntry );
+                        return false;
+                    }
+                    
+                    fileEntry.hash = CORE::MD5ToString( md5Digest );
+                    
+                    currentDir.hash += fileEntry.hash;
+                    currentDir.sizeInBytes += fileEntry.sizeInBytes;
+                    
+                    TFileLocation location;
+                    location.URL = URLRoot + '/' + fileEntry.name;
+                    fileEntry.fileLocations.push_back( location );                
+                    currentDir.files.push_back( fileEntry );
+                }
+            }            
+        } 
+        while ( CORE::DI_Next_Dir_Entry( dirEntry ) != 0 );
         
         // clean up our toys
         CORE::DI_Cleanup( dirEntry );
@@ -216,12 +219,16 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot    ,
                            patchSet  ) )
     {
         // Get the required codec for the patch set storage conversion
-        CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = CORE::CDStoreCodecRegistry::Instance()->Lookup( storageCodec );
-        if ( NULL != codecPtr )
-        {
-            // decode the data in our buffer into a data tree
-            return codecPtr->StoreDataTree( &patchSet        ,
-                                            &patchSetStorage );
+        CORE::CDStoreCodecRegistry* codecRegistry = CORE::CDStoreCodecRegistry::Instance();
+        if ( codecRegistry->IsRegistered( storageCodec ) )
+        { 
+            CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = codecRegistry->Lookup( storageCodec );
+            if ( NULL != codecPtr )
+            {
+                // decode the data in our buffer into a data tree
+                return codecPtr->StoreDataTree( &patchSet        ,
+                                                &patchSetStorage );
+            }
         }
     }
     

@@ -47,7 +47,7 @@
 #define INDENT_CHAR             9  /* horizontal tab */
 
 #define VERSION_MAYOR_FIELD     1
-#define VERSION_MINOR_FIELD     0
+#define VERSION_MINOR_FIELD     1
 #define VERSION_PATCH_FIELD     0
 #define VERSION_RELEASE_FIELD   0
 
@@ -59,7 +59,7 @@
 
 struct SDestFileData
 {
-        FILE* fptr;
+        TIOAccess* fptr;
         Int32 indent;
         char* line;
         UInt32 linelen;
@@ -166,8 +166,8 @@ ParsifalElementEnd( void* userdata         ,
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Init( void** plugdata ) PLUGIN_CALLSPEC_SUFFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+DSTOREPLUG_Init( void** plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         /* parsifal does not require global initialization */
         *plugdata = NULL;
@@ -176,33 +176,34 @@ DSTOREPLUG_Init( void** plugdata ) PLUGIN_CALLSPEC_SUFFIX
 
 /*---------------------------------------------------------------------------*/
 
-void PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Shutdown( void** plugdata ) PLUGIN_CALLSPEC_SUFFIX
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
+DSTOREPLUG_Shutdown( void** plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         /* parsifal does not require global cleanup */
 }
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 PLUGIN_CALLSPEC_PREFIX 
-DSTOREPLUG_Dest_File_Open( void** plugdata      , 
-                           void** filedata      ,
-                           const char* filename ) PLUGIN_CALLSPEC_SUFFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+DSTOREPLUG_Dest_File_Open( void** plugdata    , 
+                           void** filedata    ,
+                           TIOAccess* outFile ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {        
-        FILE* fptr = fopen( filename, "wb" );
         *filedata = NULL;
-        if ( fptr )
+        if ( outFile != NULL )
         {
+                char outBuffer[ 250 ];
                 TDestFileData* fd = (TDestFileData*) malloc( sizeof( TDestFileData ) );
-                fd->fptr = fptr;
+                fd->fptr = outFile;
                 fd->indent = 0;
                 fd->line = NULL;
                 fd->linelen = 0;
                 *filedata = fd;
                 
-                fprintf( fd->fptr, "<?xml version=\"1.0\"?>\r\n" );
-                fprintf( fd->fptr, "<!-- Generated using dstorepluginXMLPARSIFAL (v%d.%d.%d.%d) for the GUCEF platform - Copyright (C) Dinand Vanvelzen. All rights reserved -->\r\n", VERSION_MAYOR_FIELD, VERSION_MINOR_FIELD, VERSION_PATCH_FIELD, VERSION_RELEASE_FIELD );
-                
+                sprintf( outBuffer, "<?xml version=\"1.0\"?>\r\n" );
+                outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
+                sprintf( outBuffer, "<!-- Generated using dstorepluginXMLPARSIFAL (v%d.%d.%d.%d) for the GUCEF platform - Copyright (C) Dinand Vanvelzen. All rights reserved -->\r\n", VERSION_MAYOR_FIELD, VERSION_MINOR_FIELD, VERSION_PATCH_FIELD, VERSION_RELEASE_FIELD );
+                outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
                 return 1;
         }
         return 0;
@@ -210,16 +211,16 @@ DSTOREPLUG_Dest_File_Open( void** plugdata      ,
                            
 /*---------------------------------------------------------------------------*/
                            
-void PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Dest_File_Close( void** plugdata , 
-                            void** filedata ) PLUGIN_CALLSPEC_SUFFIX
+                            void** filedata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         if ( filedata )
         { 
                 if ( *filedata )
                 {       
                         TDestFileData* fd = (TDestFileData*)*filedata;
-                        fclose( fd->fptr );
+                        fd->fptr->close( fd->fptr );
                         if ( fd->line && fd->linelen ) free( fd->line );
                         free( fd );
                 }
@@ -228,12 +229,12 @@ DSTOREPLUG_Dest_File_Close( void** plugdata ,
                             
 /*---------------------------------------------------------------------------*/
                             
-void PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Begin_Node_Store( void** plugdata      , 
                              void** filedata      , 
                              const char* nodename , 
                              UInt32 attscount     ,
-                             UInt32 haschildren   ) PLUGIN_CALLSPEC_SUFFIX
+                             UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         TDestFileData* fd = (TDestFileData*)*filedata;        
         UInt32 max, len;
@@ -260,17 +261,17 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
                 return;
         }
         haschildren ? sprintf( fd->line+fd->indent, "<%s>\r\n", nodename ) : sprintf( fd->line+fd->indent, "<%s/>\r\n", nodename );
-        fprintf( fd->fptr, fd->line );          
+        fd->fptr->write( fd->fptr, fd->line, (UInt32)strlen( fd->line ), 1 );       
 }                             
 
 /*---------------------------------------------------------------------------*/
                              
-void PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_End_Node_Store( void** plugdata      , 
                            void** filedata      , 
                            const char* nodename ,
                            UInt32 attscount     ,
-                           UInt32 haschildren   ) PLUGIN_CALLSPEC_SUFFIX
+                           UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         if ( !nodename )
         {
@@ -281,13 +282,13 @@ DSTOREPLUG_End_Node_Store( void** plugdata      ,
                 TDestFileData* fd = (TDestFileData*)*filedata;
                 memset( fd->line, INDENT_CHAR, fd->indent );
                 sprintf( fd->line+fd->indent, "</%s>\r\n", nodename );
-                fprintf( fd->fptr, fd->line );                
+                fd->fptr->write( fd->fptr, fd->line, (UInt32)strlen( fd->line ), 1 );                
         }
 }                           
                            
 /*---------------------------------------------------------------------------*/
                            
-void PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Store_Node_Att( void** plugdata      , 
                            void** filedata      , 
                            const char* nodename ,
@@ -295,7 +296,7 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
                            UInt32 attindex      , 
                            const char* attname  , 
                            const char* attvalue ,
-                           UInt32 haschildren   ) PLUGIN_CALLSPEC_SUFFIX  
+                           UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX  
 {
         TDestFileData* fd = (TDestFileData*)*filedata;
         UInt32 linelen, len;
@@ -326,15 +327,15 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
         {
                 sprintf( fd->line+linelen, "%s=\"%s\" />\r\n", attname, attvalue );
         }                
-        fprintf( fd->fptr, fd->line );
+        fd->fptr->write( fd->fptr, fd->line, (UInt32)strlen( fd->line ), 1 );
 }                           
                            
 /*---------------------------------------------------------------------------*/
                            
-void PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Begin_Node_Children( void** plugdata      , 
                                 void** filedata      , 
-                                const char* nodename ) PLUGIN_CALLSPEC_SUFFIX
+                                const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         TDestFileData* fd = (TDestFileData*)*filedata;        
         fd->indent += NODE_STORE_INDENT;
@@ -342,10 +343,10 @@ DSTOREPLUG_Begin_Node_Children( void** plugdata      ,
                                 
 /*---------------------------------------------------------------------------*/
                                 
-void PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_End_Node_Children( void** plugdata      , 
                               void** filedata      , 
-                              const char* nodename ) PLUGIN_CALLSPEC_SUFFIX
+                              const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         TDestFileData* fd = (TDestFileData*)*filedata;       
         fd->indent -= NODE_STORE_INDENT;
@@ -353,10 +354,10 @@ DSTOREPLUG_End_Node_Children( void** plugdata      ,
                                   
 /*---------------------------------------------------------------------------*/                                  
                                   
-UInt32 PLUGIN_CALLSPEC_PREFIX 
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Src_File_Open( void** plugdata      , 
                           void** filedata      ,
-                          TIOAccess* file      ) PLUGIN_CALLSPEC_SUFFIX
+                          TIOAccess* file      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {        
         TSrcFileData* sd;
         *plugdata = NULL;        
@@ -384,9 +385,9 @@ DSTOREPLUG_Src_File_Open( void** plugdata      ,
                           
 /*---------------------------------------------------------------------------*/
                           
-void PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Src_File_Close( void** plugdata , 
-                           void** filedata ) PLUGIN_CALLSPEC_SUFFIX
+                           void** filedata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         if ( *filedata )
         {
@@ -398,11 +399,11 @@ DSTOREPLUG_Src_File_Close( void** plugdata ,
                            
 /*---------------------------------------------------------------------------*/
                            
-void PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Set_Read_Handlers( void** plugdata                , 
                               void** filedata                , 
                               const TReadHandlers* rhandlers , 
-                              void* privdata                 ) PLUGIN_CALLSPEC_SUFFIX
+                              void* privdata                 ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         if ( *filedata )
         {
@@ -414,9 +415,9 @@ DSTOREPLUG_Set_Read_Handlers( void** plugdata                ,
                               
 /*---------------------------------------------------------------------------*/
                              
-UInt32 PLUGIN_CALLSPEC_PREFIX 
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Start_Reading( void** plugdata , 
-                          void** filedata ) PLUGIN_CALLSPEC_SUFFIX
+                          void** filedata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         if ( *filedata )
         {
@@ -434,16 +435,16 @@ DSTOREPLUG_Start_Reading( void** plugdata ,
                           
 /*---------------------------------------------------------------------------*/                           
  
-const char* PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Type( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+DSTOREPLUG_Type( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         return "xml";
 }                                       
                   
 /*---------------------------------------------------------------------------*/
 
-const char* PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Name( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+DSTOREPLUG_Name( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         static char buffer[ 128 ];
         sprintf( buffer, "gucefCORE DSTORE codec plugin utilizing the Parsifal XML parser %s", XMLParser_GetVersionString() );
@@ -452,16 +453,16 @@ DSTOREPLUG_Name( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
 
 /*---------------------------------------------------------------------------*/
 
-const char* PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Copyright( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+DSTOREPLUG_Copyright( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         return "Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.";
 }
 
 /*---------------------------------------------------------------------------*/
 
-const TVersion* PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Version( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX
+const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
+DSTOREPLUG_Version( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         static TVersion version;
         version.mayor = VERSION_MAYOR_FIELD;

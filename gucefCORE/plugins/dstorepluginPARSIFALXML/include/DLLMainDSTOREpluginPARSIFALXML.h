@@ -50,6 +50,16 @@
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      MACROS                                                             //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef DSTOREPLUG_BUILD_MODULE
+  #define DSTOREPLUG_EXPORT_C GUCEFCORE_EXPORT
+#endif 
+ 
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -63,48 +73,48 @@ extern "C" {
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Init( void** plugdata ) PLUGIN_CALLSPEC_SUFFIX;
+DSTOREPLUG_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+DSTOREPLUG_Init( void** plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C void PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Shutdown( void** plugdata ) PLUGIN_CALLSPEC_SUFFIX;
+DSTOREPLUG_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
+DSTOREPLUG_Shutdown( void** plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX 
+DSTOREPLUG_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Dest_File_Open( void** plugdata      ,
                            void** filedata      ,
-                           const char* filename ) PLUGIN_CALLSPEC_SUFFIX;
+                           TIOAccess* outFile   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
                            
 /*---------------------------------------------------------------------------*/
                            
-EXPORT_C void PLUGIN_CALLSPEC_PREFIX 
+DSTOREPLUG_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Dest_File_Close( void** plugdata , 
-                            void** filedata ) PLUGIN_CALLSPEC_SUFFIX;
+                            void** filedata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
                             
 /*---------------------------------------------------------------------------*/
                             
-EXPORT_C void PLUGIN_CALLSPEC_PREFIX 
+DSTOREPLUG_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Begin_Node_Store( void** plugdata      , 
                              void** filedata      , 
                              const char* nodename , 
                              UInt32 attscount     ,
-                             UInt32 haschildren   ) PLUGIN_CALLSPEC_SUFFIX;
+                             UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
                              
-EXPORT_C void PLUGIN_CALLSPEC_PREFIX 
+DSTOREPLUG_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_End_Node_Store( void** plugdata      , 
                            void** filedata      , 
                            const char* nodename ,
                            UInt32 attscount     ,
-                           UInt32 haschildren   ) PLUGIN_CALLSPEC_SUFFIX;
+                           UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
                            
 /*---------------------------------------------------------------------------*/
                            
-EXPORT_C void PLUGIN_CALLSPEC_PREFIX 
+DSTOREPLUG_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Store_Node_Att( void** plugdata      , 
                            void** filedata      , 
                            const char* nodename ,
@@ -112,68 +122,68 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
                            UInt32 attindex      , 
                            const char* attname  , 
                            const char* attvalue ,
-                           UInt32 haschildren   ) PLUGIN_CALLSPEC_SUFFIX;
+                           UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
                            
 /*---------------------------------------------------------------------------*/
                            
-EXPORT_C void PLUGIN_CALLSPEC_PREFIX 
+DSTOREPLUG_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Begin_Node_Children( void** plugdata      , 
                                 void** filedata      , 
-                                const char* nodename ) PLUGIN_CALLSPEC_SUFFIX; 
+                                const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX; 
                                 
 /*---------------------------------------------------------------------------*/
                                 
-EXPORT_C void PLUGIN_CALLSPEC_PREFIX 
+DSTOREPLUG_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_End_Node_Children( void** plugdata      , 
                               void** filedata      , 
-                              const char* nodename ) PLUGIN_CALLSPEC_SUFFIX;
+                              const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
                                   
 /*---------------------------------------------------------------------------*/                                  
                                   
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX 
+DSTOREPLUG_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Src_File_Open( void** plugdata      , 
                           void** filedata      ,
-                          TIOAccess* file      ) PLUGIN_CALLSPEC_SUFFIX;
+                          TIOAccess* file      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
                           
 /*---------------------------------------------------------------------------*/
                           
-EXPORT_C void PLUGIN_CALLSPEC_PREFIX 
+DSTOREPLUG_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Src_File_Close( void** plugdata , 
-                           void** filedata ) PLUGIN_CALLSPEC_SUFFIX;
+                           void** filedata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
                            
 /*---------------------------------------------------------------------------*/
                            
-EXPORT_C void PLUGIN_CALLSPEC_PREFIX 
+DSTOREPLUG_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Set_Read_Handlers( void** plugdata                , 
                               void** filedata                , 
                               const TReadHandlers* rhandlers , 
-                              void* privdata                 ) PLUGIN_CALLSPEC_SUFFIX;
+                              void* privdata                 ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
                               
 /*---------------------------------------------------------------------------*/
                              
-EXPORT_C UInt32 PLUGIN_CALLSPEC_PREFIX 
+DSTOREPLUG_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
 DSTOREPLUG_Start_Reading( void** plugdata , 
-                          void** filedata ) PLUGIN_CALLSPEC_SUFFIX;
+                          void** filedata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
                   
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const char* PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Type( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
+DSTOREPLUG_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+DSTOREPLUG_Type( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
                   
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const char* PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Name( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
+DSTOREPLUG_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+DSTOREPLUG_Name( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const char* PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Copyright( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
+DSTOREPLUG_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+DSTOREPLUG_Copyright( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const TVersion* PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Version( const void* plugdata ) PLUGIN_CALLSPEC_SUFFIX;
+DSTOREPLUG_EXPORT_C const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
+DSTOREPLUG_Version( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/                 
 

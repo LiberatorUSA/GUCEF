@@ -337,12 +337,83 @@ CPatchSetParser::ParsePatchSet( const CORE::CDataNode& patchSetData ,
 /*-------------------------------------------------------------------------*/
 
 bool
+CPatchSetParser::ParseAndWalkDirTree( const TDirEntry& patchSetDir   ,
+                                      CORE::CDataNode& parentDirNode ) const
+{TRACE;
+
+    // Set all attributes of this dir node
+    CORE::CDataNode newNode;
+    newNode.SetName( "Dir" );
+    newNode.SetAttribute( "Name", patchSetDir.name );
+    newNode.SetAttribute( "TotalSize", CORE::IntToString( patchSetDir.sizeInBytes ) );
+    newNode.SetAttribute( "Hash", patchSetDir.hash );
+    
+    // Recursively add all sub-directories
+    for ( UInt32 i=0; i<patchSetDir.subDirs.size(); ++i )
+    {
+        if ( !ParseAndWalkDirTree( patchSetDir.subDirs[ i ] ,
+                                   newNode                  ) )
+        {
+            return false;
+        }
+    }
+    
+    // Now we add the files
+    const TFileEntry* fileEntry = NULL;
+    CORE::CDataNode fileNode;
+    fileNode.SetName( "File" );
+    for ( UInt32 i=0; i<patchSetDir.files.size(); ++i )
+    {
+        fileEntry = &patchSetDir.files[ i ];
+        fileNode.SetAttribute( "Name", fileEntry->name );
+        fileNode.SetAttribute( "Hash", fileEntry->hash );
+        fileNode.SetAttribute( "Size", CORE::IntToString( fileEntry->sizeInBytes ) );
+        
+        const TFileLocations& locList = fileEntry->fileLocations;
+        const TFileLocation* fileLoc = NULL;
+        CORE::CDataNode fileLocNode;
+        fileLocNode.SetName( "FileLocation" );
+        for ( UInt32 n=0; n<locList.size(); ++n )
+        {
+            fileLoc = &locList[ n ];
+            fileLocNode.SetAttribute( "URL", fileLoc->URL );
+            fileLocNode.SetAttribute( "Codec", fileLoc->codec );
+            fileLocNode.SetAttribute( "CodecParams", fileLoc->codecParams );
+            
+            fileNode.AddChild( fileLocNode );
+        }
+        
+        newNode.AddChild( fileNode );
+        fileNode.DelSubTree();
+    }
+    
+    // Now we copy our entire 'newNode' tree below the parent node
+    parentDirNode.AddChild( newNode );    
+    
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CPatchSetParser::ParsePatchSet( const TPatchSet& patchSetData ,
                                 CORE::CDataNode& patchSet     ) const
 {TRACE;
-
-    assert( 0 ); // @TODO makeme
-    return false;
+    
+    patchSet.SetName( "PatchSet" );
+    patchSet.DelSubTree();
+    patchSet.ClearAttributes();
+    
+    for ( UInt32 i=0; i<patchSetData.size(); ++i )
+    {
+        const TDirEntry& dirEntry = patchSetData[ i ];
+        if ( !ParseAndWalkDirTree( dirEntry ,
+                                   patchSet ) )
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

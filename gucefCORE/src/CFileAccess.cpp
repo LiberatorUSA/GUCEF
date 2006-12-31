@@ -50,126 +50,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-UInt32 GUCEF_CALLSPEC_PREFIX 
-fa_open( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
-        ( (CFileAccess*) access->privdata )->Open();
-        return 0;
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt32 GUCEF_CALLSPEC_PREFIX 
-fa_opened( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
-        return ( (CFileAccess*) access->privdata )->Opened();
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt32 GUCEF_CALLSPEC_PREFIX
-fa_close( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
-        ( (CFileAccess*) access->privdata )->Close();
-        return 0;
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt32 GUCEF_CALLSPEC_PREFIX 
-fa_readl( struct SIOAccess* access , 
-          char **dest              ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
-        CString str = ( (CFileAccess*) access->privdata )->ReadLine();
-        *dest = new char[ str.Length()+1 ];
-        memcpy( *dest, str.C_String(), str.Length() );
-        return str.Length();
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt32 GUCEF_CALLSPEC_PREFIX 
-fa_reads( struct SIOAccess* access , 
-          char **dest              ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
-        CString str = ( (CFileAccess*) access->privdata )->ReadString();
-        *dest = new char[ str.Length()+1 ];
-        memcpy( *dest, str.C_String(), str.Length() );        
-        return str.Length();
-}
-
-/*-------------------------------------------------------------------------*/
-           
-UInt32 GUCEF_CALLSPEC_PREFIX
-fa_read( struct SIOAccess* access , 
-         void *dest               , 
-         UInt32 esize             , 
-         UInt32 elements          ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
-        return ( (CFileAccess*) access->privdata )->Read( dest     ,
-                                                          esize    ,
-                                                          elements );
-}
-
-/*-------------------------------------------------------------------------*/
-          
-UInt32 GUCEF_CALLSPEC_PREFIX
-fa_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( UInt32, ( (CFileAccess*) access->privdata )->Tell() );
-}
-
-/*-------------------------------------------------------------------------*/
-
-Int32 GUCEF_CALLSPEC_PREFIX
-fa_seek( struct SIOAccess* access , 
-         UInt32 offset            , 
-         Int32 origin             ) GUCEF_CALLSPEC_SUFFIX
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( Int32, ( (CFileAccess*) access->privdata )->Seek( offset ,
-                                                                         origin ) );
-}
-
-/*-------------------------------------------------------------------------*/
-          
-UInt32 GUCEF_CALLSPEC_PREFIX 
-fa_setpos( struct SIOAccess* access , 
-           UInt32 pos               ) GUCEF_CALLSPEC_SUFFIX
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( UInt32, ( (CFileAccess*) access->privdata )->Setpos( pos ) );
-}
-
-/*-------------------------------------------------------------------------*/
-            
-Int32 GUCEF_CALLSPEC_PREFIX 
-fa_getc( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( Int32, ( (CFileAccess*) access->privdata )->GetChar() );
-}
-
-/*-------------------------------------------------------------------------*/
-
-Int32 GUCEF_CALLSPEC_PREFIX
-fa_eof( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( Int32, ( (CFileAccess*) access->privdata )->Eof() );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void GUCEF_CALLSPEC_PREFIX 
-fa_free( void* mem ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
-        delete []((char*)mem);
-}
-
-/*-------------------------------------------------------------------------*/
-
 CFileAccess::CFileAccess( const CString& file           ,
                           const char* mode /* = "rb" */ )
         : _filename( file ) ,
@@ -181,21 +61,7 @@ CFileAccess::CFileAccess( const CString& file           ,
         
         _size = Filesize( file.C_String() );
         _file = fopen( file.C_String() ,
-                       mode            ); 
-                        
-        _access.open = fa_open;
-        _access.close = fa_close;                       
-        _access.opened = fa_opened;
-        _access.readl = fa_readl;
-        _access.reads = fa_reads;
-        _access.read = fa_read;
-        _access.tell = fa_tell;
-        _access.seek = fa_seek;
-        _access.setpos = fa_setpos;
-        _access.getc = fa_getc;
-        _access.eof = fa_eof;
-        _access.memfree = fa_free;
-        _access.privdata = this;                        
+                       mode            );                      
 }
 
 /*-------------------------------------------------------------------------*/
@@ -368,14 +234,6 @@ CFileAccess::Write( const void* srcdata ,
                                 esize    , 
                                 elements , 
                                 _file    );
-}
-
-/*-------------------------------------------------------------------------*/
-
-TIOAccess* 
-CFileAccess::CStyleAccess( void )
-{TRACE;
-        return &_access;        
 }
 
 /*-------------------------------------------------------------------------*/

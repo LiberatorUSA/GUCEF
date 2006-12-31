@@ -124,11 +124,11 @@ CString::CString( const char *src ,
 /*-------------------------------------------------------------------------*/
 
 CString::CString( const char src )
-    : m_string( new char( src ) ) ,
-      m_length( 1 ) 
+    : m_string( NULL ) ,
+      m_length( 0 ) 
 {TRACE;
-
-    assert( m_string != NULL );    
+    
+    Set( &src, 1 );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -322,7 +322,7 @@ CString::Append( const char *appendstr ,
             assert( newString );                                                                                
             memcpy( newString, m_string, m_length );
             memcpy( newString+m_length, appendstr, len );            
-            m_length = m_length+len+1;
+            m_length = m_length+len;
             newString[ m_length ] = 0;            
             delete []m_string;
             m_string = newString;
@@ -468,7 +468,7 @@ CString::SubstrToChar( char searchchar ,
                 {
                         CString substr;
                         substr.Set( m_string+i+1 ,
-                                    m_length-i+1 );                                   
+                                    m_length-i-1 );                                   
                         return substr;
                 }
         }

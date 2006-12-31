@@ -202,8 +202,15 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
          */
         virtual Int32 GetSize( void ) const = 0;
 
-        virtual TIOAccess* CStyleAccess( void ) = 0;
-
+        virtual TIOAccess* CStyleAccess( void );
+        
+        private:
+        
+        void LinkCStyleAccess( void );
+        
+        private:
+        
+        TIOAccess m_cStyleAccess;
 };
 
 /*-------------------------------------------------------------------------//

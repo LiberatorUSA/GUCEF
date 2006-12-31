@@ -48,27 +48,155 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+UInt32 GUCEF_CALLSPEC_PREFIX 
+fa_open( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
+{TRACE;
+        ( (CIOAccess*) access->privdata )->Open();
+        return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 GUCEF_CALLSPEC_PREFIX 
+fa_opened( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
+{TRACE;
+        return ( (CIOAccess*) access->privdata )->Opened();
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 GUCEF_CALLSPEC_PREFIX
+fa_close( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
+{TRACE;
+        ( (CIOAccess*) access->privdata )->Close();
+        return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 GUCEF_CALLSPEC_PREFIX 
+fa_readl( struct SIOAccess* access , 
+          char **dest              ) GUCEF_CALLSPEC_SUFFIX
+{TRACE;
+        CString str = ( (CIOAccess*) access->privdata )->ReadLine();
+        *dest = new char[ str.Length()+1 ];
+        memcpy( *dest, str.C_String(), str.Length() );
+        return str.Length();
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 GUCEF_CALLSPEC_PREFIX 
+fa_reads( struct SIOAccess* access , 
+          char **dest              ) GUCEF_CALLSPEC_SUFFIX
+{TRACE;
+        CString str = ( (CIOAccess*) access->privdata )->ReadString();
+        *dest = new char[ str.Length()+1 ];
+        memcpy( *dest, str.C_String(), str.Length() );        
+        return str.Length();
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 GUCEF_CALLSPEC_PREFIX
+fa_write( struct SIOAccess* access , 
+          const void *srcData      , 
+          UInt32 esize             , 
+          UInt32 elements          ) GUCEF_CALLSPEC_SUFFIX
+{TRACE;
+        return ( (CIOAccess*) access->privdata )->Write( srcData  ,
+                                                         esize    ,
+                                                         elements );
+}
+
+/*-------------------------------------------------------------------------*/
+           
+UInt32 GUCEF_CALLSPEC_PREFIX
+fa_read( struct SIOAccess* access , 
+         void *dest               , 
+         UInt32 esize             , 
+         UInt32 elements          ) GUCEF_CALLSPEC_SUFFIX
+{TRACE;
+        return ( (CIOAccess*) access->privdata )->Read( dest     ,
+                                                        esize    ,
+                                                        elements );
+}
+
+/*-------------------------------------------------------------------------*/
+          
+UInt32 GUCEF_CALLSPEC_PREFIX
+fa_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
+{TRACE;
+
+        return ( (CIOAccess*) access->privdata )->Tell();
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32 GUCEF_CALLSPEC_PREFIX
+fa_seek( struct SIOAccess* access , 
+         UInt32 offset            , 
+         Int32 origin             ) GUCEF_CALLSPEC_SUFFIX
+{TRACE;
+        return ( (CIOAccess*) access->privdata )->Seek( offset ,
+                                                        origin );
+}
+
+/*-------------------------------------------------------------------------*/
+          
+UInt32 GUCEF_CALLSPEC_PREFIX 
+fa_setpos( struct SIOAccess* access , 
+           UInt32 pos               ) GUCEF_CALLSPEC_SUFFIX
+{TRACE;
+        return ( (CIOAccess*) access->privdata )->Setpos( pos );
+}
+
+/*-------------------------------------------------------------------------*/
+            
+Int32 GUCEF_CALLSPEC_PREFIX 
+fa_getc( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
+{TRACE;
+        return ( (CIOAccess*) access->privdata )->GetChar();
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32 GUCEF_CALLSPEC_PREFIX
+fa_eof( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
+{TRACE;
+        return ( (CIOAccess*) access->privdata )->Eof();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void GUCEF_CALLSPEC_PREFIX 
+fa_free( void* mem ) GUCEF_CALLSPEC_SUFFIX
+{TRACE;
+        delete []((char*)mem);
+}
+
+/*-------------------------------------------------------------------------*/
+
 CIOAccess::CIOAccess( void )
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+{TRACE;
+
+    LinkCStyleAccess();
 }
 
 /*-------------------------------------------------------------------------*/
 
 CIOAccess::CIOAccess( const CIOAccess& src )
-{
-        GUCEF_BEGIN;
-        /* dummy, doesnt do anything */
-        GUCEF_END;
+{TRACE;
+
+    LinkCStyleAccess();
 }
 
 /*-------------------------------------------------------------------------*/
 
 CIOAccess::~CIOAccess()
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+{TRACE;
+
+    memset( &m_cStyleAccess, 0, sizeof( TIOAccess ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -76,26 +204,40 @@ CIOAccess::~CIOAccess()
 CIOAccess& 
 CIOAccess::operator=( const CIOAccess& src )
 {
-        GUCEF_BEGIN;
-        /* dummy, doesnt do anything */
-        GUCEF_END;
-        return *this;
+    if ( this != &src )
+    {
+
+    }
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      reads data untill the specified delimiter is reached.
- *      The data is written into the destination buffer untill the
- *      delimiter is reached or the end of the file is reached.
- *      The delimiter itself is not written to the destination buffer
- *
- *      @param dest the destination buffer for the data
- *      @param bsize size of the destination buffer
- *      @param delimiter data segment delimiter
- *      @param size of the data segment delimiter
- *      @return number of bytes written into dest
- */
+void
+CIOAccess::LinkCStyleAccess( void )
+{TRACE;
+
+    memset( &m_cStyleAccess, 0, sizeof( TIOAccess ) );
+    
+    m_cStyleAccess.close = fa_close;
+    m_cStyleAccess.open = fa_open;
+    m_cStyleAccess.write = fa_write;
+    m_cStyleAccess.close = fa_close;                       
+    m_cStyleAccess.opened = fa_opened;
+    m_cStyleAccess.readl = fa_readl;
+    m_cStyleAccess.reads = fa_reads;
+    m_cStyleAccess.read = fa_read;
+    m_cStyleAccess.tell = fa_tell;
+    m_cStyleAccess.seek = fa_seek;
+    m_cStyleAccess.setpos = fa_setpos;
+    m_cStyleAccess.getc = fa_getc;
+    m_cStyleAccess.eof = fa_eof;
+    m_cStyleAccess.memfree = fa_free;
+    m_cStyleAccess.privdata = this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt32 
 CIOAccess::ReadUntill( void *dest            ,
                        UInt32 bsize          ,
@@ -249,6 +391,15 @@ CIOAccess::Read( CDynamicBuffer& dest ,
     dest.SetDataSize( dest.GetDataSize() + nrOfBytesRead );
     
     return nrOfBytesRead;
+}
+
+/*-------------------------------------------------------------------------*/
+
+TIOAccess*
+CIOAccess::CStyleAccess( void )
+{TRACE;
+
+    return &m_cStyleAccess;
 }
 
 /*-------------------------------------------------------------------------//

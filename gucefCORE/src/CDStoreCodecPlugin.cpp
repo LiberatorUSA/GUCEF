@@ -109,7 +109,7 @@ typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Copyright ) 
 typedef const TVersion* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Version )    ( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Type )           ( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Dest_File_Open )      ( void** plugdata, void** filedata, const char* filename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Dest_File_Open )      ( void** plugdata, void** filedata, TIOAccess* file ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Dest_File_Close )       ( void** plugdata, void** filedata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Begin_Node_Store )      ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_End_Node_Store )        ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
@@ -425,7 +425,7 @@ CDStoreCodecPlugin::StoreNode( const CDataNode* n ,
                                                                                                    name       );
 
                 /*
-                 *      Iterate the child node recursivly storing each node level
+                 *      Iterate the child node recursively storing each node level
                  */                                                                                              
                 CDataNode::const_iterator i = n->ConstBegin();
                 while ( i != n->ConstEnd() )
@@ -456,31 +456,13 @@ CDStoreCodecPlugin::StoreDataTree( const CDataNode* tree   ,
                                    const CString& filename )
 {TRACE;
         
-        if ( !_sohandle ) 
-        { 
-                return false; 
-        }
-        
-        /*
-         *      Open the destenation file
-         */
-        void* filedata;       
-        if ( !((TDSTOREPLUGFPTR_Dest_File_Open)_fptable[ DSTOREPLUG_DEST_FILE_OPEN ])( &_plugdata, &filedata, filename.C_String() ) ) 
-        {  
-                return false; 
-        }
-        
-        /*
-         *      Recursivly traverse the tree storing each node and sub-triers as we go
-         */
-        StoreNode( tree      ,
-                   &filedata ); 
-        
-        /*
-         *      We are finished,.. close the file
-         */
-        ((TDSTOREPLUGFPTR_Dest_File_Close)_fptable[ DSTOREPLUG_DEST_FILE_CLOSE ])( &_plugdata, &filedata );
-        return true;
+    CFileAccess access( filename );
+    if ( access.IsValid() )
+    {
+        return StoreDataTree( tree     ,
+                              &access  );
+    }
+    return false;
 }                                   
 
 /*-------------------------------------------------------------------------*/
@@ -490,7 +472,31 @@ CDStoreCodecPlugin::StoreDataTree( const CDataNode* tree   ,
                                    CIOAccess* file         )
 {TRACE;
 
-        return false;
+    if ( !_sohandle ) 
+    { 
+            return false; 
+    }
+    
+    /*
+     *      Open the destination file
+     */
+    void* filedata;       
+    if ( !((TDSTOREPLUGFPTR_Dest_File_Open)_fptable[ DSTOREPLUG_DEST_FILE_OPEN ])( &_plugdata, &filedata, file->CStyleAccess() ) ) 
+    {  
+            return false; 
+    }
+    
+    /*
+     *      Recursively traverse the tree storing each node and sub-triers as we go
+     */
+    StoreNode( tree      ,
+               &filedata ); 
+    
+    /*
+     *      We are finished,.. close the file
+     */
+    ((TDSTOREPLUGFPTR_Dest_File_Close)_fptable[ DSTOREPLUG_DEST_FILE_CLOSE ])( &_plugdata, &filedata );
+    return true;
 }
                                     
 /*-------------------------------------------------------------------------*/

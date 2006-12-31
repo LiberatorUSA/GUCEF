@@ -66,7 +66,9 @@ CPluginManager::CPluginManager( void )
     : CObservingNotifier()
 {TRACE;
 
-    RegisterEvents();       
+    RegisterEvents();
+    
+    CPluginControl::Instance()->Register( this );       
 }
 
 /*-------------------------------------------------------------------------*/
@@ -76,6 +78,8 @@ CPluginManager::CPluginManager( const CPluginManager& src )
 {TRACE;
 
     RegisterEvents();
+    
+    CPluginControl::Instance()->Register( this );
 }
 
 /*-------------------------------------------------------------------------*/

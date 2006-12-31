@@ -197,7 +197,15 @@ LastSubDir( const CString& path )
 {TRACE;
 
     CString lastSubDir;
-    lastSubDir.Set( path.C_String(), Last_Subdir( path.C_String() ) );
+    UInt32 offset = Last_Subdir( path.C_String() );
+    if ( offset > 0 )
+    {
+        lastSubDir.Set( path.C_String()+offset, path.Length() - offset );
+    }
+    else
+    {
+        lastSubDir = path;
+    }
     return lastSubDir;
 }
 

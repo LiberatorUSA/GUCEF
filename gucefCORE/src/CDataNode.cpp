@@ -200,17 +200,12 @@ CDataNode::operator=( const CDataNode& src )
                 Detach();
                 DelSubTree();
                 
-                // erase all current attributes
-                TNodeAtt* srcatt;
-                TNodeAtt* att;
-                UInt32 i, count = src._atts.GetCount();                                        
-                for ( i=0; i<count; ++i )
-                {
-                        CHECKMEM( _atts[ i ], sizeof(TNodeAtt) );
-                        delete static_cast<TNodeAtt*>( _atts[ i ] );
-                }
+                ClearAttributes();
                 
                 // copy new attribute values
+                TNodeAtt* srcatt;
+                TNodeAtt* att;
+                UInt32 count, i;
                 _name = src._name;
                 _atts.SetArraySize( src._atts.GetArraySize() );
                 count = src._atts.GetCount();
@@ -249,7 +244,7 @@ CDataNode::SetName( const CString& name )
 
 /*-------------------------------------------------------------------------*/
         
-CString 
+const CString&
 CDataNode::GetName( void ) const
 {
         GUCEF_BEGIN;
@@ -347,6 +342,21 @@ CDataNode::operator[]( const CString& name )
         }       
         GUCEF_END;
         return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDataNode::ClearAttributes( void )
+{TRACE;
+
+    // erase all current attributes
+    UInt32 count = _atts.GetCount();                                        
+    for ( UInt32 i=0; i<count; ++i )
+    {
+        delete static_cast<TNodeAtt*>( _atts[ i ] );
+    }
+    _atts.Clear();
 }
 
 /*-------------------------------------------------------------------------*/

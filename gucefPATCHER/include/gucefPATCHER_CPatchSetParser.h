@@ -57,13 +57,14 @@ class EXPORT_CPP CPatchSetParser
         CORE::CString codecParams;  /**< parameters for the codec that should be used on the file once it's retrieved (if any) */
     };
     typedef struct SFileLocation TFileLocation;
-
+    typedef std::vector< TFileLocation > TFileLocations;
+    
     struct SFileEntry
     {
         CORE::CString name;
         UInt32 sizeInBytes;
         CORE::CString hash;
-        std::vector< TFileLocation > fileLocations;
+        TFileLocations fileLocations;
     };
     typedef struct SFileEntry TFileEntry;
     
@@ -96,6 +97,9 @@ class EXPORT_CPP CPatchSetParser
     CPatchSetParser( const CPatchSetParser& src );
     CPatchSetParser& operator=( const CPatchSetParser& src );
     
+    bool ParseAndWalkDirTree( const TDirEntry& patchSetDir   ,
+                              CORE::CDataNode& parentDirNode ) const;
+
     bool ParseTopLevelDir( const CORE::CDataNode& patchSetDirNode ,
                            TPatchSet& patchSet                    ) const;
 

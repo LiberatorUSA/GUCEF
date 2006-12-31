@@ -107,6 +107,7 @@ struct SIOAccess;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_open ) ( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_opened ) ( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_close ) ( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_write ) ( struct SIOAccess* access, const void* srcData, UInt32 esize, UInt32 elements ) GUCEF_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_readl ) ( struct SIOAccess* access, char **dest ) GUCEF_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_reads ) ( struct SIOAccess* access, char **dest ) GUCEF_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_read ) ( struct SIOAccess* access, void *dest, UInt32 esize, UInt32 elements ) GUCEF_CALLSPEC_SUFFIX;
@@ -131,6 +132,7 @@ struct SIOAccess
 {
         TIOAccessfunction_open   open;    /* open the resource for I/O */
         TIOAccessfunction_close  close;   /* close the recource */
+        TIOAccessfunction_write  write;   /* writes to to the output medium */
         TIOAccessfunction_opened opened;  /* is the recource opened for reading ? */
         TIOAccessfunction_readl  readl;   /* read a line of text (allocates mem)*/
         TIOAccessfunction_reads  reads;   /* read a string (allocates mem)*/

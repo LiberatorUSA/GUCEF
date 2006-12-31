@@ -50,6 +50,11 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
 #ifndef GUCEF_PATCHER_CPATCHSETGENERATOR_H
 #include "gucefPATCHER_CPatchSetGenerator.h"
 #define GUCEF_PATCHER_CPATCHSETGENERATOR_H
@@ -132,9 +137,11 @@ PrintHelp( void )
     printf( "\n" );
     printf( " - Program arguments:\n" );
     printf( "  Arguments should be passed in the form \"key=value\"\n" );
-    printf( "    'RootDirPath': the root directory of the patch set\n" );
-    printf( "    'PatchSetOutFile': the output patch set file\n" );
-    printf( "    'URLRoot': the root of the URL to which the paths will be appended\n" );
+    printf( "    'RootDirPath'     : the root directory of the patch set\n" );
+    printf( "    'PatchSetOutFile' : the output patch set file\n" );
+    printf( "    'URLRoot'         : the root of the URL to which the paths will be appended\n" );
+    printf( "    'PluginDir'       : optional parameter: path to a dir where plugins can be\n" );
+    printf( "                        found\n" );
     printf( "    'PatchSetOutCodec': optional parameter: the codec to use for the output\n" );
     printf( "                        patch set file, the default codec is 'xml'\n" );
 }
@@ -213,48 +220,65 @@ main( int argc , char* argv[] )
             getchar();
             return 1;
         }
-        
-        // Load all plugins, this allows us to support multiple codec's
-        // with our minimal console interface
-        GUCEF::CORE::CPluginControl* pluginControl = GUCEF::CORE::CPluginControl::Instance();
-        pluginControl->SetPluginDir( GUCEF::CORE::RelativePath( "$CURWORKDIR$" ) );
-        pluginControl->LoadAll();
-        
+               
         GUCEF::CORE::CString rootDirPath = argList[ "RootDirPath" ];
         GUCEF::CORE::CString patchSetOutFile = argList[ "PatchSetOutFile" ];
         GUCEF::CORE::CString URLRoot = argList[ "URLRoot" ];
         GUCEF::CORE::CString patchSetOutCodec = argList[ "PatchSetOutCodec" ];
+        GUCEF::CORE::CString pluginDir = argList[ "PluginDir" ];
         
         if ( patchSetOutCodec.Length() == 0 )
         {
             // Use our codec default which is xml
             patchSetOutCodec = "xml";
         }
-        
-        GUCEF::CORE::CFileAccess fileAccess( patchSetOutFile, "wb" );
-        if ( fileAccess.Opened() && fileAccess.IsValid() )
-        {        
-            GUCEF::PATCHER::CPatchSetGenerator psGenerator;
-            if ( psGenerator.GeneratePatchSet( rootDirPath      ,
-                                               URLRoot          ,
-                                               patchSetOutCodec ,
-                                               fileAccess       ) )
-            {
-                printf( "SUCCESS: The patch set generation process has been successfully completed\n" );
-                return 0;
+        if ( pluginDir.Length() == 0 )
+        {
+            // Use our codec default plugin path
+            pluginDir = GUCEF::CORE::RelativePath( "$MODULEDIR$\\plugins" );
+        }
+
+        // Load all plugins, this allows us to support multiple codec's
+        // with our minimal console interface
+        GUCEF::CORE::CPluginControl* pluginControl = GUCEF::CORE::CPluginControl::Instance();
+        pluginControl->SetPluginDir( pluginDir );
+        pluginControl->LoadAll();
+
+        // Validate in advance that we have a codec loaded of the desired type
+        // This will save us some work if it is not available
+        if ( GUCEF::CORE::CDStoreCodecRegistry::Instance()->IsRegistered( patchSetOutCodec ) )
+        {
+            GUCEF::CORE::CFileAccess fileAccess( patchSetOutFile, "wb" );
+            if ( fileAccess.Opened() && fileAccess.IsValid() )
+            {        
+                GUCEF::PATCHER::CPatchSetGenerator psGenerator;
+                if ( psGenerator.GeneratePatchSet( rootDirPath      ,
+                                                   URLRoot          ,
+                                                   patchSetOutCodec ,
+                                                   fileAccess       ) )
+                {
+                    printf( "SUCCESS: The patch set generation process has been successfully completed\n" );
+                    return 0;
+                }
+                else
+                {
+                    printf( "ERROR: An error occurred during the patch set generation process\n" );
+                    getchar();
+                    return 1;
+                }
             }
             else
             {
-                printf( "ERROR: An error occurred during the patch set generation process\n" );
+                printf( "ERROR: failed to open output file for writing\n" );
                 getchar();
-                return 1;
+                return 1;        
             }
         }
         else
         {
-            printf( "ERROR: failed to open output file for writing\n" );
+            printf( "ERROR: no data storage codec is available of the given type\n" );
             getchar();
-            return 1;        
+            return 1;         
         }
 	}
 	

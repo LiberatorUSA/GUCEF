@@ -72,7 +72,10 @@ md5frommfile( TIOAccess *access  ,
         do
         {
                 rbytes = access->read( access, buffer, 1, 1024 );
-                md5_append( &md5state, buffer, rbytes );
+                if ( rbytes > 0 )
+                {
+                    md5_append( &md5state, buffer, rbytes );
+                }
                 
         } while ( rbytes );
 

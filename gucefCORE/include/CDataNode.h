@@ -130,7 +130,7 @@ class GUCEFCORE_EXPORT_CPP CDataNode
          *
          *      @return the current node name
          */
-        CString GetName( void ) const;                
+        const CString& GetName( void ) const;                
         
         bool IsAttribute( const CString& name ) const;
         
@@ -154,6 +154,8 @@ class GUCEFCORE_EXPORT_CPP CDataNode
                            const CString& value );                           
                            
         void DelAttribute( const CString& name );                           
+
+        void ClearAttributes( void );
         
         UInt32 GetAttCount( void ) const;
         

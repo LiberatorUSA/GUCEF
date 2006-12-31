@@ -40,8 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include;..\..\dependancy\libparsifal\include\libparsifal;..\..\..\..\include;..\..\..\..\..\gucefMT\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;DSTOREPLUGINPARSIFALXML_EXPORTS"
+				AdditionalIncludeDirectories="..\..\include;..\..\dependancy\libparsifal\include\libparsifal;..\..\..\..\include;..\..\..\..\..\gucefMT\include;..\..\..\..\..\common\include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;DSTOREPLUGINPARSIFALXML_EXPORTS;DSTOREPLUG_BUILD_MODULE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
