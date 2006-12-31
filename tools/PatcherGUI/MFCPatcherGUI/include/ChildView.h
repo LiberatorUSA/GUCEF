@@ -26,10 +26,15 @@
 
 #include <stdafx.h>
 
-#ifndef GUCEF_PATCHER_CPATCHSETPARSEREVENTHANDLER_H
-#include "gucefPATCHER_CPatchSetParserEventHandler.h"
-#define GUCEF_PATCHER_CPATCHSETPARSEREVENTHANDLER_H
-#endif /* GUCEF_PATCHER_CPATCHSETPARSEREVENTHANDLER_H ? */
+#ifndef GUCEF_CORE_COBSERVER_H
+#include "CObserver.h"
+#define GUCEF_CORE_COBSERVER_H
+#endif /* GUCEF_CORE_COBSERVER_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHENGINE_H
+#include "gucefPATCHER_CPatchEngine.h"
+#define GUCEF_PATCHER_CPATCHENGINE_H
+#endif /* GUCEF_PATCHER_CPATCHENGINE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,8 +45,8 @@
 namespace GUCEF { namespace PATCHER { class CStandardPSPEventHandler; } }
 class CGUCEFAppWin32MFCDriver;
 
-class CChildView : public CWnd                                         ,
-                   private GUCEF::PATCHER::CPatchSetParserEventHandler 
+class CChildView : public CWnd                    ,
+                   private GUCEF::CORE::CObserver 
 {
     // Construction
     public:
@@ -70,7 +75,7 @@ class CChildView : public CWnd                                         ,
     DECLARE_MESSAGE_MAP()
 
     private:
-
+    /*
     virtual void OnPatchSetStart( const GUCEF::CORE::CString& patchSetName );
 
     virtual void OnEnterLocalDir( const GUCEF::CORE::CString& localPath );
@@ -90,14 +95,19 @@ class CChildView : public CWnd                                         ,
 
     virtual void OnPatchSetEnd( const GUCEF::CORE::CString& patchSetName );
 
-    virtual void OnParserError( void );
+    virtual void OnParserError( void );   */
+
+    virtual void OnNotify( GUCEF::CORE::CNotifier* notifier           ,
+                           const GUCEF::CORE::CEvent& eventid         ,
+                           GUCEF::CORE::CICloneable* eventdata = NULL );
 
     private:
 
     CListBox* m_listBox;
     CProgressCtrl* m_transferProgress;    
     CProgressCtrl* m_totalProgress;
-    GUCEF::PATCHER::CStandardPSPEventHandler* m_standardHandler;
+    
+    GUCEF::PATCHER::CPatchEngine m_patchEngine;
     CGUCEFAppWin32MFCDriver* m_gucefDriver;   
     
 };

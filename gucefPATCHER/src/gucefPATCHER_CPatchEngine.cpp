@@ -187,6 +187,11 @@ bool
 CPatchEngine::AddEngineStartTriggerEvent( const CORE::CEvent& triggerEvent )
 {TRACE;
 
+    if ( !m_isActive )
+    {
+        m_startTriggers.insert( triggerEvent );
+        return true;
+    }
     return false;
 }
 
@@ -196,6 +201,11 @@ bool
 CPatchEngine::RemoveEngineStartTriggerEvent( const CORE::CEvent& triggerEvent )
 {TRACE;
 
+    if ( !m_isActive )
+    {
+        m_startTriggers.erase( triggerEvent );
+        return true;
+    }
     return false;
 }
 
@@ -205,6 +215,11 @@ bool
 CPatchEngine::AddEngineStopTriggerEvent( const CORE::CEvent& triggerEvent )
 {TRACE;
 
+    if ( !m_isActive )
+    {
+        m_stopTriggers.insert( triggerEvent );
+        return true;
+    }
     return false;
 }
 
@@ -214,6 +229,11 @@ bool
 CPatchEngine::RemoveEngineStopTriggerEvent( const CORE::CEvent& triggerEvent )
 {TRACE;
 
+    if ( !m_isActive )
+    {
+        m_stopTriggers.erase( triggerEvent );
+        return true;
+    }
     return false;
 }
 
@@ -347,6 +367,7 @@ CPatchEngine::Start( void )
         }
     }
     
+    NotifyObservers( PatchProcessFailedEvent );
     return false;
 }
 
@@ -493,11 +514,26 @@ CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
     }
     else
     {
-        if ( m_isActive )
+        if ( m_stopSignalGiven && m_isActive )
         {
             m_stopSignalGiven = false;
             m_isActive = false;
             NotifyObservers( PatchProcessAbortedEvent );
+        }
+        else
+        if ( ( eventid != CORE::CNotifier::DestructionEvent ) &&
+             ( eventid != CORE::CNotifier::UnsubscribeEvent ) &&
+             ( eventid != CORE::CNotifier::SubscribeEvent   )  )
+        {
+            if ( m_startTriggers.end() != m_startTriggers.find( eventid ) )
+            {
+                Start();
+            }
+            else
+            if ( m_stopTriggers.end() != m_stopTriggers.find( eventid ) )
+            {
+                Stop();
+            }             
         }
     }
 }

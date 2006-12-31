@@ -54,7 +54,7 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPatchSetGenerator
+class GUCEFPATCHER_EXPORT_CPP CPatchSetGenerator
 {
     public:
 

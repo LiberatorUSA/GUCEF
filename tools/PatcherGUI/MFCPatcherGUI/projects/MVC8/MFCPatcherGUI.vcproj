@@ -205,10 +205,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CPatcherApplication.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\MainFrm.cpp"
 				>
 			</File>
@@ -232,10 +228,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\ChildView.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CPatcherApplication.h"
 				>
 			</File>
 			<File

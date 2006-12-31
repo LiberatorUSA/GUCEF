@@ -49,7 +49,7 @@ namespace PATCHER {
  *  Parser that parses a data node tree for the information required to
  *  build a patch list. Any and all corrupt entries will be dropped.
  */
-class EXPORT_CPP CPatchListParser
+class GUCEFPATCHER_EXPORT_CPP CPatchListParser
 {
     public:
     

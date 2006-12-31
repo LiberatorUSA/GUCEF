@@ -81,10 +81,10 @@ class CPatchSetDirEngine;
 /**
  *  Engine for processing a patch set.
  */
-class EXPORT_CPP CPatchSetEngine : public CORE::CObservingNotifier  ,
-                                   public CPatchSetDirEngineEvents  , /* event interface */
-                                   public CPatchSetFileEngineEvents , /* event interface */
-                                   public CPatchSetEngineEvents       /* event interface */
+class GUCEFPATCHER_EXPORT_CPP CPatchSetEngine : public CORE::CObservingNotifier  ,
+                                                public CPatchSetDirEngineEvents  , /* event interface */
+                                                public CPatchSetFileEngineEvents , /* event interface */
+                                                public CPatchSetEngineEvents       /* event interface */
 {
     public:
 

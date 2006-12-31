@@ -24,8 +24,6 @@
 #include "stdafx.h"
 #include <assert.h>
 #include "MFCPatcherGUI.h"
-#include "CPatcherApplication.h"
-#include "gucefPATCHER_CStandardPSPEventHandler.h"
 #include "CGUCEFAppWin32MFCDriver.h"
 #include "CGUCEFApplication.h"
 #include "ChildView.h"
@@ -42,10 +40,21 @@ CChildView::CChildView()
     : m_listBox( NULL )          ,
       m_transferProgress( NULL ) ,
       m_totalProgress( NULL )    ,
-      m_standardHandler( NULL )  ,
+      m_patchEngine()            ,
       m_gucefDriver( NULL )
 {TRACE;
 
+    // Subscribe to all patch engine events
+    m_patchEngine.Subscribe( this );
+    
+    // Subscribe the patch engine to the GUCEF application object
+    CORE::CGUCEFApplication* gucefApp = CORE::CGUCEFApplication::Instance();
+    m_patchEngine.SubscribeTo( gucefApp, CORE::CGUCEFApplication::AppInitEvent );
+    m_patchEngine.SubscribeTo( gucefApp, CORE::CGUCEFApplication::AppShutdownEvent );
+    
+    // Set the application startup and shutdown events as triggers
+    m_patchEngine.AddEngineStartTriggerEvent( CORE::CGUCEFApplication::AppInitEvent );
+    m_patchEngine.AddEngineStopTriggerEvent( CORE::CGUCEFApplication::AppShutdownEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -53,6 +62,7 @@ CChildView::CChildView()
 CChildView::~CChildView()
 {TRACE;
 
+    UnsubscribeFromAll();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -128,37 +138,31 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
         m_listBox = new CListBox();
         assert( m_listBox );
         m_listBox->Create( WS_CHILD|WS_VISIBLE|LBS_STANDARD|WS_HSCROLL , 
-                           CRect( 10, 40, 200, 140 )                   ,
+                           CRect( 10, 40, 460, 200 )                   ,
                            this                                        , 
                            1                                           );
+   
+        CFont listFont;
+        if ( TRUE == listFont.CreatePointFont( 60, "Arial" ) )
+        {
+            m_listBox->SetFont( &listFont, TRUE );
+        }
         
         m_transferProgress = new CProgressCtrl();
         assert( m_transferProgress );
         m_transferProgress->Create( WS_CHILD|WS_VISIBLE      , 
-                                    CRect( 10, 10, 200, 20 ) ,
+                                    CRect( 10, 10, 460, 20 ) ,
                                     this                     , 
                                     1                        );
         m_totalProgress = new CProgressCtrl();
         assert( m_totalProgress );
         m_totalProgress->Create( WS_CHILD|WS_VISIBLE      , 
-                                 CRect( 10, 30, 200, 40 ) ,
+                                 CRect( 10, 30, 460, 40 ) ,
                                  this                     , 
                                  1                        );
-                                    
-        // Create a standard event handler, this one does all the standard things
-        // such as creating dirs, patching files etc. ie the actual workhorse
-        m_standardHandler = new PATCHER::CStandardPSPEventHandler();
-        assert( m_standardHandler );
-
-        // Make a list of event handlers which includes this class
-        CPatcherApplication::TEventHandlerList handlerList;
-        handlerList.push_back( this );
-      //  handlerList.push_back( m_standardHandler );
+                                            
         
-        // Hook the event handlers into the system
-        CPatcherApplication::Instance()->SetEventHandlers( handlerList );
-        
-        // Now connect the application driver wih GUCEF, from this point on this can start
+        // Now connect the application driver with GUCEF, from this point on this can start
         // happening behind the screen
         CORE::CGUCEFApplication::Instance()->SetApplicationDriver( m_gucefDriver );
         
@@ -178,114 +182,147 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
 void CChildView::OnSize(UINT nType, int cx, int cy)
 {TRACE;
 
-    MoveWindow( 0, 0, 220, 160 );
+  //  MoveWindow( 0, 0, 480, 160 );
   //  m_listBox->MoveWindow(0, 0, cx, 100);
 }
 
 /*-------------------------------------------------------------------------*/
-
-void
-CChildView::OnPatchSetStart( const CORE::CString& patchSetName )
-{TRACE;
-    
-    CORE::CString infoStr( ">>> start patchset: " );
-    infoStr += patchSetName;
-    m_listBox->AddString( infoStr.C_String() );
-}
+//
+//void
+//CChildView::OnPatchSetStart( const CORE::CString& patchSetName )
+//{TRACE;
+//    
+//    CORE::CString infoStr( ">>> start patchset: " );
+//    infoStr += patchSetName;
+//    m_listBox->AddString( infoStr.C_String() );
+//}
+//
+///*-------------------------------------------------------------------------*/
+//    
+//void
+//CChildView::OnEnterLocalDir( const CORE::CString& localPath )
+//{TRACE;
+//
+//    CORE::CString infoStr( "entering local directory: " );
+//    infoStr += localPath;
+//    m_listBox->AddString( infoStr.C_String() );
+//}
+//
+///*-------------------------------------------------------------------------*/
+//    
+//void
+//CChildView::OnLocalFileOK( const CORE::CString& localPath ,
+//                           const CORE::CString& localFile )
+//{TRACE;
+//
+//    CORE::CString infoStr( "local file \"" );
+//    infoStr += localFile;
+//    infoStr += "\" is up-to-date. Path: ";
+//    infoStr += localPath;
+//    m_listBox->AddString( infoStr.C_String() );
+//}
+//
+///*-------------------------------------------------------------------------*/
+//
+//void
+//CChildView::OnLocalFileNotFound( const CORE::CString& localPath ,
+//                                 const CORE::CString& localFile )
+//{TRACE;
+//
+//    CORE::CString infoStr( "local file \"" );
+//    infoStr += localFile;
+//    infoStr += "\" is not found. Path: ";
+//    infoStr += localPath;
+//    m_listBox->AddString( infoStr.C_String() );
+//}
+//
+///*-------------------------------------------------------------------------*/
+//
+//void
+//CChildView::OnLocalFileDifference( const CORE::CString& localPath ,
+//                                   const CORE::CString& localFile )
+//{TRACE;
+//
+//    CORE::CString infoStr( "local file \"" );
+//    infoStr += localFile;
+//    infoStr += "\" differs from the master file. Path: ";
+//    infoStr += localPath;
+//    m_listBox->AddString( infoStr.C_String() );
+//}
+//
+///*-------------------------------------------------------------------------*/
+//
+//void
+//CChildView::OnNewSourceRequired( const TSourceInfo& sourceInfo )
+//{TRACE;
+//
+//    CORE::CString infoStr( "new source required" );
+//    m_listBox->AddString( infoStr.C_String() );
+//}
+//
+///*-------------------------------------------------------------------------*/
+//    
+//void
+//CChildView::OnLeaveLocalDir( const CORE::CString& localPath )
+//{TRACE;
+//
+//    CORE::CString infoStr( "leaving local directory: " );
+//    infoStr += localPath;
+//    m_listBox->AddString( infoStr.C_String() );
+//}
+//
+///*-------------------------------------------------------------------------*/
+//    
+//void
+//CChildView::OnPatchSetEnd( const CORE::CString& patchSetName )
+//{TRACE;
+//
+//    CORE::CString infoStr( ">>> end patchset: " );
+//    infoStr += patchSetName;
+//    m_listBox->AddString( infoStr.C_String() );
+//}
+//
+///*-------------------------------------------------------------------------*/
+//
+//void
+//CChildView::OnParserError( void )
+//{TRACE;
+//
+//    CORE::CString infoStr( ">>> parser error" );
+//    m_listBox->AddString( infoStr.C_String() );
+//}
 
 /*-------------------------------------------------------------------------*/
-    
-void
-CChildView::OnEnterLocalDir( const CORE::CString& localPath )
-{TRACE;
-
-    CORE::CString infoStr( "entering local directory: " );
-    infoStr += localPath;
-    m_listBox->AddString( infoStr.C_String() );
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void
-CChildView::OnLocalFileOK( const CORE::CString& localPath ,
-                           const CORE::CString& localFile )
-{TRACE;
-
-    CORE::CString infoStr( "local file \"" );
-    infoStr += localFile;
-    infoStr += "\" is up-to-date. Path: ";
-    infoStr += localPath;
-    m_listBox->AddString( infoStr.C_String() );
-}
-
-/*-------------------------------------------------------------------------*/
 
 void
-CChildView::OnLocalFileNotFound( const CORE::CString& localPath ,
-                                 const CORE::CString& localFile )
+CChildView::OnNotify( CORE::CNotifier* notifier                 ,
+                      const CORE::CEvent& eventid               ,
+                      CORE::CICloneable* eventdata /* = NULL */ )
 {TRACE;
 
-    CORE::CString infoStr( "local file \"" );
-    infoStr += localFile;
-    infoStr += "\" is not found. Path: ";
-    infoStr += localPath;
-    m_listBox->AddString( infoStr.C_String() );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CChildView::OnLocalFileDifference( const CORE::CString& localPath ,
-                                   const CORE::CString& localFile )
-{TRACE;
-
-    CORE::CString infoStr( "local file \"" );
-    infoStr += localFile;
-    infoStr += "\" differs from the master file. Path: ";
-    infoStr += localPath;
-    m_listBox->AddString( infoStr.C_String() );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CChildView::OnNewSourceRequired( const TSourceInfo& sourceInfo )
-{TRACE;
-
-    CORE::CString infoStr( "new source required" );
-    m_listBox->AddString( infoStr.C_String() );
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void
-CChildView::OnLeaveLocalDir( const CORE::CString& localPath )
-{TRACE;
-
-    CORE::CString infoStr( "leaving local directory: " );
-    infoStr += localPath;
-    m_listBox->AddString( infoStr.C_String() );
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void
-CChildView::OnPatchSetEnd( const CORE::CString& patchSetName )
-{TRACE;
-
-    CORE::CString infoStr( ">>> end patchset: " );
-    infoStr += patchSetName;
-    m_listBox->AddString( infoStr.C_String() );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CChildView::OnParserError( void )
-{TRACE;
-
-    CORE::CString infoStr( ">>> parser error" );
-    m_listBox->AddString( infoStr.C_String() );
+    if ( notifier == &m_patchEngine )
+    {
+        if ( eventid == PATCHER::CPatchEngine::PatchProcessStartedEvent )
+        {
+            m_listBox->AddString( "Patch process starting" );
+        }
+        else
+        if ( eventid == PATCHER::CPatchEngine::PatchProcessFailedEvent )
+        {
+            m_listBox->AddString( "ERROR: Patch process failed" );
+        }
+        else
+        {
+            if ( ( NULL != m_listBox )                            &&
+                 ( eventid != CORE::CNotifier::DestructionEvent ) &&
+                 ( eventid != CORE::CNotifier::UnsubscribeEvent )  )
+            {
+                CORE::CString eventStr( "Event: " );
+                eventStr += eventid.GetName();
+                m_listBox->AddString( eventStr.C_String() );
+            }
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/

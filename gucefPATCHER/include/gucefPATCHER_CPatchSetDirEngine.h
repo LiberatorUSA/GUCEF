@@ -77,9 +77,9 @@ class CPatchSetFileEngine;
  *  Engine for patching a directory tree and all the files it contains.
  *  The tree is mirrored to the one starting at the given local root.
  */
-class EXPORT_CPP CPatchSetDirEngine : public CORE::CObservingNotifier  ,
-                                      public CPatchSetFileEngineEvents ,
-                                      public CPatchSetDirEngineEvents
+class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngine : public CORE::CObservingNotifier  ,
+                                                   public CPatchSetFileEngineEvents ,
+                                                   public CPatchSetDirEngineEvents
 {
     public:
 

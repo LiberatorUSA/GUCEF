@@ -246,7 +246,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
          *      our main() code. We will send the application initialization
          *      event to all event clients. The following code segment is a
          *      special case since it may be followed by the main application
-         *      loop which would keep anything staticly allocated here in memory
+         *      loop which would keep anything statically allocated here in memory
          *      Thus we turn the following into a compound statement.
          */
         {

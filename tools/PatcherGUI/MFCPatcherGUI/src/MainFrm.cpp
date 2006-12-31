@@ -40,7 +40,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// create a view to occupy the client area of the frame
 	if (!m_wndView.Create(NULL, NULL, AFX_WS_DEFAULT_VIEW,
-		CRect(0, 0, 220, 160), this, AFX_IDW_PANE_FIRST, NULL))
+		CRect(0, 0, 480, 160), this, AFX_IDW_PANE_FIRST, NULL))
 	{
 		TRACE0("Failed to create view window\n");
 		return -1;
@@ -71,8 +71,8 @@ void CMainFrame::OnSize(UINT nType, int cx, int cy)
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
-	cs.cx = 220;
-	cs.cy = 160;
+	cs.cx = 480;
+	cs.cy = 300;
 	
 	if( !CFrameWnd::PreCreateWindow(cs) )
 		return FALSE;

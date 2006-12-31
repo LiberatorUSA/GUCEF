@@ -101,11 +101,11 @@ class CPatchSetEngine;
 /**
  *  Engine for processing a patch list.
  */
-class EXPORT_CPP CPatchListEngine : public CORE::CObservingNotifier  ,
-                                    public CPatchSetDirEngineEvents  , /* event interface */
-                                    public CPatchSetFileEngineEvents , /* event interface */
-                                    public CPatchSetEngineEvents     , /* event interface */
-                                    public CPatchListEngineEvents      /* event interface */
+class GUCEFPATCHER_EXPORT_CPP CPatchListEngine : public CORE::CObservingNotifier  ,
+                                                 public CPatchSetDirEngineEvents  , /* event interface */
+                                                 public CPatchSetFileEngineEvents , /* event interface */
+                                                 public CPatchSetEngineEvents     , /* event interface */
+                                                 public CPatchListEngineEvents      /* event interface */
 {
     public:
 

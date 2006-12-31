@@ -122,7 +122,7 @@ CPatchListEngine::GetCurrentPatchSetLocation( TPatchSetLocation** location )
 
     // Get the current set
     TPatchList::iterator i = m_patchList.begin();
-    for ( UInt32 n; n<m_setIndex; ++n ) { ++i; }
+    for ( UInt32 n=0; n<m_setIndex; ++n ) { ++i; }
 
     // Get the current set location 
     TPatchSetLocations& patchSetLocations = (*i).second;

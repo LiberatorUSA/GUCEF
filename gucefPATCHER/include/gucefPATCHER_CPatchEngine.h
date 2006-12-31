@@ -24,6 +24,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <set>
+
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H
@@ -107,12 +109,12 @@ class CPatchListEngine;
  *  Top-level engine for performing patching tasks
  *  This class is intended as a RAD component
  */
-class EXPORT_CPP CPatchEngine : public CORE::CObservingNotifier  ,
-                                public CORE::CIConfigurable      , /* interface */
-                                public CPatchSetDirEngineEvents  , /* event interface */
-                                public CPatchSetFileEngineEvents , /* event interface */
-                                public CPatchSetEngineEvents     , /* event interface */
-                                public CPatchListEngineEvents      /* event interface */
+class GUCEFPATCHER_EXPORT_CPP CPatchEngine : public CORE::CObservingNotifier  ,
+                                             public CORE::CIConfigurable      , /* interface */
+                                             public CPatchSetDirEngineEvents  , /* event interface */
+                                             public CPatchSetFileEngineEvents , /* event interface */
+                                             public CPatchSetEngineEvents     , /* event interface */
+                                             public CPatchListEngineEvents      /* event interface */
 {
     public:
     
@@ -194,6 +196,8 @@ class EXPORT_CPP CPatchEngine : public CORE::CObservingNotifier  ,
     CORE::CString m_patchListCodec;
     CORE::CString m_localRoot;
     CORE::CString m_tempStorageRoot;
+    std::set< CORE::CEvent > m_startTriggers;
+    std::set< CORE::CEvent > m_stopTriggers;
 };
 
 /*-------------------------------------------------------------------------//

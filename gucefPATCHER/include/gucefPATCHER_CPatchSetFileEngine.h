@@ -51,8 +51,8 @@ namespace PATCHER {
  *  Engine for patching a list of files given.
  *  The files are compared with the ones in the local root that is given.
  */
-class EXPORT_CPP CPatchSetFileEngine : public CORE::CObservingNotifier  ,
-                                       public CPatchSetFileEngineEvents
+class GUCEFPATCHER_EXPORT_CPP CPatchSetFileEngine : public CORE::CObservingNotifier  ,
+                                                    public CPatchSetFileEngineEvents
 {
     public:
 

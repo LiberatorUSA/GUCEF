@@ -46,7 +46,7 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPatchSetEngineEvents
+class GUCEFPATCHER_EXPORT_CPP CPatchSetEngineEvents
 {
     public:
     
