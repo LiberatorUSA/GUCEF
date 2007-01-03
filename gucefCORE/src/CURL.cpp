@@ -174,7 +174,12 @@ CURL::GetURL( void ) const
 bool
 CURL::Activate( void )
 {TRACE;
+        
+    if ( m_handler != NULL )
+    {
         return m_handler->Activate( *this );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -199,7 +204,7 @@ CURLHandler*
 CURL::GetHandlerForURL( const CString& url ) const
 {TRACE;
 
-    CORE::CString protocolName( url.SubstrToSubstr( ":\\" ) );
+    CORE::CString protocolName( url.SubstrToSubstr( "://" ) );
     if ( protocolName.Length() )
     {
         CURLHandlerRegistry* registry = CURLHandlerRegistry::Instance();

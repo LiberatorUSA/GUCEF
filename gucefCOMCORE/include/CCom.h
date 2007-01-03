@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CCOM_H
-#define CCOM_H
+#ifndef GUCEF_COMCORE_CCOM_H
+#define GUCEF_COMCORE_CCOM_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -182,7 +182,7 @@ class GUCEF_COMCORE_EXPORT_CPP CCom : public CORE::CGUCEFAppSubSystem
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* CCOM_H ? */
+#endif /* GUCEF_COMCORE_CCOM_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

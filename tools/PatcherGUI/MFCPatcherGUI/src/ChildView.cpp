@@ -226,6 +226,8 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
             m_listBox->SetFont( &listFont, TRUE );
         }
         
+        m_listBox->SetFont( GetFont() );
+        
         m_transferProgress = new CProgressCtrl();
         assert( m_transferProgress );
         m_transferProgress->Create( WS_CHILD|WS_VISIBLE      , 
@@ -383,12 +385,22 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
     {
         if ( eventid == PATCHER::CPatchEngine::PatchProcessStartedEvent )
         {
-            m_listBox->AddString( "Patch process starting" );
+            m_listBox->AddString( "Patch process starting..." );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::PatchProcessFailedEvent )
         {
             m_listBox->AddString( "ERROR: Patch process failed" );
+        }
+        else
+        if ( eventid == PATCHER::CPatchEngine::PatchListRetrievalStartedEvent )
+        {
+            m_listBox->AddString( "Retrieving patch list..." );
+        }
+        else        
+        if ( eventid == PATCHER::CPatchEngine::PatchListRetrievalFailedEvent )
+        {
+            m_listBox->AddString( "ERROR: Failed to retrieve the patch list" );
         }
         else
         {

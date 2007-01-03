@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef CVFS_H
-#define CVFS_H
+#ifndef GUCEF_VFS_CVFS_H
+#define GUCEF_VFS_CVFS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -157,7 +157,7 @@ GUCEF_NAMESPACE_END
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CVFS_H ? */
+#endif /* GUCEF_VFS_CVFS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

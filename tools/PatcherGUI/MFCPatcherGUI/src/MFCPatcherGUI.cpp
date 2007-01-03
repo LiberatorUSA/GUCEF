@@ -8,6 +8,21 @@
 #define GUCEF_CORE_CPLUGINCONTROL_H
 #endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
 
+#ifndef GUCEF_VFS_CVFS_H
+#include "CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
+#ifndef GUCEF_COMCORE_CCOM_H
+#include "CCom.h"
+#define GUCEF_COMCORE_CCOM_H
+#endif /* GUCEF_COMCORE_CCOM_H ? */
+
+#ifndef GUCEF_COM_CHTTPCLIENT_H
+#include "CHTTPClient.h"
+#define GUCEF_COM_CHTTPCLIENT_H
+#endif /* GUCEF_COM_CHTTPCLIENT_H ? */
+
 #include "MFCPatcherGUI.h"
 #include "MainFrm.h"
 #include "CMFCCommandLineInfo.h"
@@ -24,7 +39,14 @@ END_MESSAGE_MAP()
 CMFCPatcherGUIApp::CMFCPatcherGUIApp()
     : m_cmdLineParamList()
 {
-	// TODO: add construction code here,
+    // We have to call some code in several modules as a hacky method for those modules to actually
+    // be linked and loaded. Those modules can auto-register functionality.
+    // Some compilers/linkers attempt to optimize by removing dependancies on modules that have to 
+    // direct calls from this app.
+    GUCEF::VFS::CVFS::Instance();
+    GUCEF::COMCORE::CCom::Instance();
+    GUCEF::COM::CHTTPClient::RegisterEvents();
+
 	// Place all significant initialization in InitInstance
 }
 
@@ -71,7 +93,7 @@ BOOL CMFCPatcherGUIApp::InitInstance()
     if ( !m_cmdLineParamList.HasKey( "ConfigFileCodec" ) )
     {
         m_cmdLineParamList.Set( "ConfigFileCodec", "xml" );
-    }    
+    }
 
 	// InitCommonControlsEx() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
@@ -89,10 +111,9 @@ BOOL CMFCPatcherGUIApp::InitInstance()
 	// If you are not using these features and wish to reduce the size
 	// of your final executable, you should remove from the following
 	// the specific initialization routines you do not need
-	// Change the registry key under which our settings are stored
-	// TODO: You should modify this string to be something appropriate
-	// such as the name of your company or organization
+	// Change the registry key under which our settings are stored	
 	SetRegistryKey(_T("VanvelzenSoftware"));
+	
 	// To create the main window, this code creates a new frame window
 	// object and then sets it as the application's main window object
 	CMainFrame* pFrame = new CMainFrame;
