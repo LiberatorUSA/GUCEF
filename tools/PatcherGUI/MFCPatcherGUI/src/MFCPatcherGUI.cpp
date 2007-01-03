@@ -3,13 +3,14 @@
 
 #include "stdafx.h"
 
+#ifndef GUCEF_CORE_CPLUGINCONTROL_H
+#include "CPluginControl.h"
+#define GUCEF_CORE_CPLUGINCONTROL_H
+#endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
+
 #include "MFCPatcherGUI.h"
 #include "MainFrm.h"
-
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+#include "CMFCCommandLineInfo.h"
 
 // CMFCPatcherGUIApp
 
@@ -21,6 +22,7 @@ END_MESSAGE_MAP()
 // CMFCPatcherGUIApp construction
 
 CMFCPatcherGUIApp::CMFCPatcherGUIApp()
+    : m_cmdLineParamList()
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
@@ -31,11 +33,46 @@ CMFCPatcherGUIApp::CMFCPatcherGUIApp()
 
 CMFCPatcherGUIApp theApp;
 
+CFrameWnd*
+CMFCPatcherGUIApp::GetMainFrame( void )
+{TRACE;
+
+    return static_cast< CFrameWnd* >( m_pMainWnd );
+}
 
 // CMFCPatcherGUIApp initialization
 
 BOOL CMFCPatcherGUIApp::InitInstance()
 {
+    // Parse the command line params	
+    CMFCCommandLineInfo oInfo;
+    ParseCommandLine( oInfo );
+    m_cmdLineParamList.SetMultiple( oInfo.GetParamString(), '"' );
+
+    // Obtain the plugin dir path
+    GUCEF::CORE::CString pluginDir = m_cmdLineParamList.GetValue( "PluginDir" );
+    if ( pluginDir.Length() == 0 )
+    {
+        pluginDir = "$CURWORKDIR$\\plugins";
+    }
+    
+    // Load all plugins
+    GUCEF::CORE::CPluginControl* pluginControl = GUCEF::CORE::CPluginControl::Instance();
+    pluginControl->SetPluginDir( pluginDir );
+    pluginControl->LoadAll();
+
+    // Check for mandatory command line params
+    // If we do not find any params we will use defaults, this makes it easy to use the tool 
+    // for rapid deployment while keeping your options open.
+    if ( !m_cmdLineParamList.HasKey( "ConfigFile" ) )
+    {
+        m_cmdLineParamList.Set( "ConfigFile", "$CURWORKDIR$\\MFCPatcherConfig.xml" );
+    }
+    if ( !m_cmdLineParamList.HasKey( "ConfigFileCodec" ) )
+    {
+        m_cmdLineParamList.Set( "ConfigFileCodec", "xml" );
+    }    
+
 	// InitCommonControlsEx() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
 	// visual styles.  Otherwise, any window creation will fail.
@@ -47,7 +84,7 @@ BOOL CMFCPatcherGUIApp::InitInstance()
 	InitCommonControlsEx(&InitCtrls);
 
 	CWinApp::InitInstance();
-
+	
 	// Standard initialization
 	// If you are not using these features and wish to reduce the size
 	// of your final executable, you should remove from the following
@@ -62,16 +99,11 @@ BOOL CMFCPatcherGUIApp::InitInstance()
 	if (!pFrame)
 		return FALSE;
 	m_pMainWnd = pFrame;
+	
 	// create and load the frame with its resources
-
 	pFrame->LoadFrame(IDR_MAINFRAME,
 		WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL,
 		NULL);
-
-
-
-
-
 
 	// The one and only window has been initialized, so show and update it
 	pFrame->ShowWindow(SW_SHOW);
@@ -81,6 +113,12 @@ BOOL CMFCPatcherGUIApp::InitInstance()
 	return TRUE;
 }
 
+const GUCEF::CORE::CValueList&
+CMFCPatcherGUIApp::GetCommandLineParams( void ) const
+{TRACE;
+    
+    return m_cmdLineParamList;
+}
 
 // CMFCPatcherGUIApp message handlers
 

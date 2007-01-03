@@ -178,6 +178,53 @@ bool
 CPatchEngine::LoadConfig( const CORE::CDataNode& treeroot )
 {TRACE;
 
+    const CORE::CDataNode* infoNode = treeroot.Find( "CPatchEngine" );
+    if ( infoNode != NULL )
+    {
+        // First we obtain the mandatory atributes
+        const CORE::CDataNode::TNodeAtt* att = infoNode->GetAttribute( "LocalRootDir" );
+        if ( att == NULL ) return false;
+        SetLocalRootDir( att->value );
+        
+        att = infoNode->GetAttribute( "TempStorageRoot" );
+        if ( att == NULL ) return false;
+        SetLocalTempStorageRootDir( att->value );
+        
+        att = infoNode->GetAttribute( "PatchListURL" );
+        if ( att == NULL ) return false;
+        SetPatchListURL( att->value );
+
+        att = infoNode->GetAttribute( "PatchListCodec" );
+        if ( att == NULL ) return false;
+        SetPatchListCodec( att->value );
+        
+        // Try and find some optional engine trigger events
+        const CORE::CDataNode* childNode = NULL;
+        CORE::CDataNode::const_iterator i = infoNode->ConstBegin();
+        while ( i != infoNode->ConstEnd() )
+        {
+            childNode = (*i);
+            if ( childNode->GetName() == "EngineStartTrigger" )
+            {
+                att = infoNode->GetAttribute( "Event" );
+                if ( att != NULL )
+                {
+                    AddEngineStartTriggerEvent( att->value );
+                }
+            }
+            else
+            if ( childNode->GetName() == "EngineStopTrigger" )
+            {
+                att = infoNode->GetAttribute( "Event" );
+                if ( att != NULL )
+                {
+                    AddEngineStopTriggerEvent( att->value );
+                }
+            }            
+            ++i;
+        }
+        return true;
+    }  
     return false;
 }
 

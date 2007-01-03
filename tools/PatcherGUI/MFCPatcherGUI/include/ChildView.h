@@ -97,10 +97,16 @@ class CChildView : public CWnd                    ,
 
     virtual void OnParserError( void );   */
 
+    protected:
+
     virtual void OnNotify( GUCEF::CORE::CNotifier* notifier           ,
                            const GUCEF::CORE::CEvent& eventid         ,
                            GUCEF::CORE::CICloneable* eventdata = NULL );
 
+    private:
+    
+    bool LoadPatchEngineConfig( void );
+    
     private:
 
     CListBox* m_listBox;

@@ -24,8 +24,29 @@
 #include "stdafx.h"
 #include <assert.h>
 #include "MFCPatcherGUI.h"
+
+#ifndef MFCWIN32_CGUCEFAPPWIN32MFCDRIVER_H
 #include "CGUCEFAppWin32MFCDriver.h"
+#define MFCWIN32_CGUCEFAPPWIN32MFCDRIVER_H
+#endif /* MFCWIN32_CGUCEFAPPWIN32MFCDRIVER_H ? */
+
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
+#include "DVOSWRAP.h"
+
 #include "ChildView.h"
 
 using namespace GUCEF;
@@ -124,10 +145,67 @@ void CChildView::OnPaint()
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CChildView::LoadPatchEngineConfig( void )
+{TRACE;
+
+    // Check for mandatory command line params
+    if ( !theApp.GetCommandLineParams().HasKey( "ConfigFile" ) )
+    {
+        // we need command line params
+        return false;
+    }
+    if ( !theApp.GetCommandLineParams().HasKey( "ConfigFileCodec" ) )
+    {
+        // we need command line params
+        return false;
+    }    
+    
+    GUCEF::CORE::CString configFile = theApp.GetCommandLineParams().GetValue( "ConfigFile" );    
+    configFile = GUCEF::CORE::RelativePath( configFile );
+    GUCEF::CORE::CString configFileCodec = theApp.GetCommandLineParams().GetValue( "ConfigFileCodec" );
+    if ( ( configFile.Length() == 0 )     ||
+         ( configFileCodec.Length() == 0 ) )
+    {
+        // We need actual values
+        return false;
+    }
+    
+    // Load the config for the patch engine
+    GUCEF::CORE::CDStoreCodecRegistry* codecRegistry = GUCEF::CORE::CDStoreCodecRegistry::Instance();
+    if ( codecRegistry->IsRegistered( configFileCodec ) )
+    {
+        GUCEF::CORE::CDataNode configData;
+        GUCEF::CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec = codecRegistry->Lookup( configFileCodec );
+        if ( codec->BuildDataTree( &configData ,
+                                   configFile  ) )
+        {
+            return m_patchEngine.LoadConfig( configData );
+        }
+        else
+        {
+            // The configuration data was not as required by the patch engine
+            return false;
+        }
+    }
+    else
+    {   
+        // The requested codec is not available, this is a fatal error
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 int CChildView::OnCreate(LPCREATESTRUCT lpcs)
 {TRACE;
 
-    CWnd::OnCreate( lpcs );
+    if ( !LoadPatchEngineConfig() )
+    {
+        GUCEF::CORE::ShowErrorMessage( "Init error", "Failed to load patch engine config" );
+        PostQuitMessage( 0 );
+        return 1;
+    }
 
     // Hook the GUCEF application driver into the window message loop
     m_gucefDriver = new CGUCEFAppWin32MFCDriver();
@@ -159,10 +237,9 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
         m_totalProgress->Create( WS_CHILD|WS_VISIBLE      , 
                                  CRect( 10, 30, 460, 40 ) ,
                                  this                     , 
-                                 1                        );
-                                            
+                                 1                        );        
         
-        // Now connect the application driver with GUCEF, from this point on this can start
+        // Now connect the application driver with GUCEF, from this point on things can start
         // happening behind the screen
         CORE::CGUCEFApplication::Instance()->SetApplicationDriver( m_gucefDriver );
         
@@ -174,6 +251,8 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
         return 0;                                                  
     }
     
+    GUCEF::CORE::ShowErrorMessage( "Init error", "Failed to initialize the GUCEF application driver" );
+    PostQuitMessage( 0 );
     return 1;
 }
 
