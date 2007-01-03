@@ -220,11 +220,11 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
                            this                                        , 
                            1                                           );
    
-        CFont listFont;
+      /*  CFont listFont;
         if ( TRUE == listFont.CreatePointFont( 60, "Arial" ) )
         {
             m_listBox->SetFont( &listFont, TRUE );
-        }
+        } */
         
         m_listBox->SetFont( GetFont() );
         
@@ -403,6 +403,21 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
             m_listBox->AddString( "ERROR: Failed to retrieve the patch list" );
         }
         else
+        if ( eventid == PATCHER::CPatchEngine::PatchListRetrievalCompletedEvent )
+        {
+            m_listBox->AddString( "Completed patch list retrieval" );
+        }
+        else
+        if ( eventid == PATCHER::CPatchEngine::PatchListRetrievalAbortedEvent )
+        {
+            m_listBox->AddString( "Aborted patch list retrieval" );
+        } 
+        else
+        if ( eventid == PATCHER::CPatchEngine::PatchListDecodingFailedEvent )
+        {
+            m_listBox->AddString( "ERROR: Failed to decode the patch list" );
+        }                               
+       // else
         {
             if ( ( NULL != m_listBox )                            &&
                  ( eventid != CORE::CNotifier::DestructionEvent ) &&

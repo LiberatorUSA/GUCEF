@@ -202,21 +202,32 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     UInt32 GetBytesRecieved( void ) const;
     	
 	static void RegisterEvents( void );
-	
+
+    protected:	
+
+    /**
+     *  Event callback member function.
+     *  Implement this in your descending class to handle
+     *  notification events.
+     *
+     *  Note: Do NOT  forget to call this class's implementation
+     *  from your descending class.
+     *
+     *  @param notifier the notifier that sent the notification
+     *  @param eventid the unique event id for an event
+     *  @param eventdata optional notifier defined userdata
+     */
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );
 	private:
 	
     /**
      *      Event handler that is called when we recieve data from the
      *      server. Initial processing will be done by this server.
      */
-    virtual void OnRead( COMCORE::CTCPClientSocket &socket ,
-                         const char *data              ,
-                         UInt32 length                 ,
-                         UInt32 &keepbytes             );
-
-    virtual void OnConnecting( COMCORE::CTCPClientSocket& socket );
-
-    virtual void OnConnected( COMCORE::CTCPClientSocket& socket );
+    virtual void OnRead( COMCORE::CTCPClientSocket &socket    ,
+                         CORE::TLinkedCloneableBuffer& buffer );
 
     virtual void OnDisconnect( COMCORE::CTCPClientSocket& socket );
     

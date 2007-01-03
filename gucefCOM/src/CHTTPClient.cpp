@@ -332,10 +332,8 @@ CHTTPClient::GetBytesRecieved( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket ,
-                     const char *data                  ,
-                     UInt32 length                     ,
-                     UInt32 &keepbytes                 )
+CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
+                     CORE::TLinkedCloneableBuffer& buffer )
 {TRACE;       
         THTTPCODE http_code = HTTPCODE_DEFAULT;
         UInt32 size( 0 );
@@ -636,24 +634,6 @@ CHTTPClient::OnDisconnect( COMCORE::CTCPClientSocket &socket )
 /*-------------------------------------------------------------------------*/
 
 void 
-CHTTPClient::OnConnected( COMCORE::CTCPClientSocket &socket )
-{TRACE;
-
-        NotifyObservers( ConnectedEvent );        
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CHTTPClient::OnConnecting( COMCORE::CTCPClientSocket& socket )
-{TRACE;
-
-        NotifyObservers( ConnectingEvent );        
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
 CHTTPClient::OnWrite( COMCORE::CTCPClientSocket &socket ,
                       const void* data                  ,
                       UInt32 length                     )
@@ -691,6 +671,50 @@ CHTTPClient::RegisterEvents( void )
     HTTPDataRecievedEvent.Initialize();
     HTTPDataSendEvent.Initialize();        
     HTTPTransferFinishedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CHTTPClient::OnNotify( CORE::CNotifier* notifier                 ,
+                       const CORE::CEvent& eventid               ,
+                       CORE::CICloneable* eventdata /* = NULL */ )
+{TRACE;
+
+    if ( notifier == &m_socket )
+    {
+        if ( eventid == COM::CTCPClientSocket::ConnectedEvent )
+        {
+            NotifyObservers( ConnectedEvent );
+        }
+        else
+        if ( eventid == COM::CTCPClientSocket::ConnectingEvent )
+        {
+            NotifyObservers( ConnectingEvent );
+        }
+        else
+        if ( eventid == COM::CTCPClientSocket::DisconnectedEvent )
+        {
+            OnDisconnect( m_socket );
+        }
+        else
+        if ( eventid == COM::CTCPClientSocket::DisconnectedEvent )
+        {
+            NotifyObservers( DisconnectedEvent );
+        }
+        else
+        if ( eventid == COM::CTCPClientSocket::ConnectionErrorEvent )
+        {
+            NotifyObservers( ConnectionErrorEvent );
+        }
+        else
+        if ( eventid == COM::CTCPClientSocket::DataRecievedEvent )
+        {
+            TDataRecievedEventData
+            OnRead( m_socket ,
+                    
+        }                                      
+    }
 }
 
 /*-------------------------------------------------------------------------//
