@@ -167,9 +167,7 @@ CString::operator=( const CString &src )
             m_string = new char[ m_length+1 ];
             assert( m_string );                                                                                
             memcpy( m_string, src.m_string, m_length+1 );        
-        }
-        
-        return *this;                 
+        }              
     }              
     return *this;
 }
@@ -180,19 +178,21 @@ CString&
 CString::operator=( const char *src )
 {TRACE;
     
-    delete []m_string;
-    m_string = NULL;
-    m_length = 0;
-    
-    if ( src )
+    // protect against self-assignment
+    if ( src != m_string )
     {
-        m_length = (UInt32)strlen( src );
-        m_string = new char[ m_length+1 ];
-        assert( m_string );
-        memcpy( m_string, src, m_length+1 );       
-        
-        return *this;                 
-    } 
+        delete []m_string;
+        m_string = NULL;
+        m_length = 0;
+    
+        if ( src )
+        {
+            m_length = (UInt32)strlen( src );
+            m_string = new char[ m_length+1 ];
+            assert( m_string );
+            memcpy( m_string, src, m_length+1 );                
+        } 
+    }
     return *this;
 }
 
@@ -380,8 +380,8 @@ CString::C_String( void ) const
 std::string 
 CString::STL_String( void ) const
 {TRACE;
-        std::string stlstr( m_string );
-        return stlstr;
+
+    return std::string( m_string );
 }
 
 /*-------------------------------------------------------------------------*/
