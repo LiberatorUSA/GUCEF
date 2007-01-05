@@ -170,6 +170,7 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     typedef CORE::TLinkedCloneableBuffer                          THTTPDataSendEventData;     /**< contains buffer with the dispatched data */    
     typedef CORE::TCloneableString                                THTTPRedirectEventData;     /**< contains the URL to which the client is beeing redirected */
     typedef CORE::CTCloneableObj< THTTPCODE >                     THTTPErrorEventData;        /**< contains the relevant HTTP error code */
+    typedef COMCORE::CTCPClientSocket::TSocketErrorEventData      TConnectionErrorEventData;  /**< socket error code */
 
 	public:
 
@@ -226,14 +227,14 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
      *      Event handler that is called when we recieve data from the
      *      server. Initial processing will be done by this server.
      */
-    virtual void OnRead( COMCORE::CTCPClientSocket &socket    ,
-                         CORE::TLinkedCloneableBuffer& buffer );
+    void OnRead( COMCORE::CTCPClientSocket &socket    ,
+                 const char* data                     ,
+                 const UInt32 length                  );
 
-    virtual void OnDisconnect( COMCORE::CTCPClientSocket& socket );
+    void OnDisconnect( COMCORE::CTCPClientSocket& socket );
     
-    virtual void OnWrite( COMCORE::CTCPClientSocket &socket ,
-                          const void* data                  ,
-                          UInt32 length                     );
+    void OnWrite( COMCORE::CTCPClientSocket &socket                   ,
+                  COMCORE::CTCPClientSocket::TDataSentEventData& data );
 
     private:
     
