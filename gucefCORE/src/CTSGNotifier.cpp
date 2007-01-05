@@ -23,7 +23,11 @@
 
 #include <assert.h>
 
-#define GUCEF_CORE_CTSGNOTIFIER_CPP
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 #include "CTSGNotifier.h"
 
 /*-------------------------------------------------------------------------//
@@ -43,7 +47,8 @@ namespace CORE {
 
 CTSGNotifier::CTSGNotifier( void )
     : m_tsgObserver()
-{
+{TRACE;
+
     m_tsgObserver.SetParent( this );
 }
 
@@ -51,7 +56,8 @@ CTSGNotifier::CTSGNotifier( void )
 
 CTSGNotifier::CTSGNotifier( const CTSGNotifier& src )
     : m_tsgObserver()
-{
+{TRACE;
+
     m_tsgObserver.SetParent( this );
     
     assert(0);
@@ -61,14 +67,16 @@ CTSGNotifier::CTSGNotifier( const CTSGNotifier& src )
 /*-------------------------------------------------------------------------*/
 
 CTSGNotifier::~CTSGNotifier()
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CTSGNotifier&
 CTSGNotifier::operator=( const CTSGNotifier& src )
-{
+{TRACE;
+
     assert(0);
     /* @TODO: makeme */    
 
@@ -82,7 +90,8 @@ CTSGNotifier::operator=( const CTSGNotifier& src )
 
 void 
 CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier )
-{
+{TRACE;
+
     threadedNotifier->Subscribe( &m_tsgObserver );
 }
 
@@ -90,7 +99,8 @@ CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier )
     
 void 
 CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier )
-{
+{TRACE;
+
     threadedNotifier->Unsubscribe( &m_tsgObserver );
 }
 
@@ -99,7 +109,8 @@ CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier )
 void 
 CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier ,
                            const CEvent& eventid       )
-{
+{TRACE;
+
     threadedNotifier->Subscribe( &m_tsgObserver ,
                                  eventid        );
 }
@@ -109,7 +120,8 @@ CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier ,
 void 
 CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier ,
                                const CEvent& eventid       )
-{
+{TRACE;
+
     threadedNotifier->Unsubscribe( &m_tsgObserver ,
                                    eventid        );
 }                           
@@ -120,10 +132,34 @@ void
 CTSGNotifier::OnPumpedNotify( CNotifier* notifier                 ,
                               const CEvent& eventid               ,
                               CICloneable* eventdata /* = NULL */ )
-{
+{TRACE;
+
     NotifyObservers( eventid   ,
                      eventdata );       
 }                              
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTSGNotifier::NotifyObserversFromThread( void )
+{TRACE;
+
+    m_tsgObserver.AddEventToMailbox( this                   ,
+                                     CNotifier::ModifyEvent ,
+                                     NULL                   );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CTSGNotifier::NotifyObserversFromThread( const CEvent& eventid               ,
+                                         CICloneable* eventData /* = NULL */ )
+{TRACE;
+    
+    m_tsgObserver.AddEventToMailbox( this      ,
+                                     eventid   ,
+                                     eventData );
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -126,9 +126,29 @@ CObserver::UnsubscribeFromAll( void )
 }
 
 /*-------------------------------------------------------------------------*/                        
+
+void
+CObserver::SubscribeTo( CNotifier* notifier )
+{TRACE;
+
+    notifier->Subscribe( this );
+}
+
+/*-------------------------------------------------------------------------*/                        
+
+void
+CObserver::SubscribeTo( CNotifier* notifier   ,
+                        const CEvent& eventid )
+{TRACE;
+
+    notifier->Subscribe( this    ,
+                         eventid );
+}
+
+/*-------------------------------------------------------------------------*/
                    
 void 
-CObserver::SubscribeTo( CNotifier* notifier )
+CObserver::LinkTo( CNotifier* notifier )
 {TRACE;
 
     LockData();

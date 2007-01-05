@@ -159,7 +159,7 @@ CNotifier::Subscribe( CObserver* observer )
         /*
          *  Establish our bi-directional communication path
          */
-        observer->SubscribeTo( this );
+        observer->LinkTo( this );
 
         /*
          *  Send the standard subscription event

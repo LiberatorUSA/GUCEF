@@ -140,10 +140,13 @@ bool
 CURL::SetURL( const CString& url )
 {TRACE; 
 
-    CURLHandler* newHandler = GetHandlerForURL( url );
+    CORE::CString lowerCaseURL( url.Lowercase() );
+    lowerCaseURL = lowerCaseURL.ReplaceChar( '\\', '/' );
+    
+    CURLHandler* newHandler = GetHandlerForURL( lowerCaseURL );
     if ( NULL != newHandler )
     {
-        m_url = url;
+        m_url = lowerCaseURL;
         
         if ( m_handler )
         {

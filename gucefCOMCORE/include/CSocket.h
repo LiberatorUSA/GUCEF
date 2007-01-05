@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef CSOCKET_H
-#define CSOCKET_H
+#ifndef GUCEF_COMCORE_CSOCKET_H
+#define GUCEF_COMCORE_CSOCKET_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -169,7 +169,7 @@ class GUCEF_COMCORE_EXPORT_CPP CSocket : public CORE::CNotifier
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* CSOCKET_H ? */
+#endif /* GUCEF_COMCORE_CSOCKET_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

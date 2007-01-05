@@ -21,11 +21,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define GUCEF_CORE_CTSGOBSERVER_CPP
-#include "CTSGObserver.h"
-
 #include <cassert>
 #include "CTSGNotifier.h"
+
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
+#include "CTSGObserver.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,14 +48,16 @@ namespace CORE {
 
 CTSGObserver::CTSGObserver( void )
     : m_parentNotifier( NULL )
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CTSGObserver::CTSGObserver( const CTSGObserver& src )
     : m_parentNotifier( src.m_parentNotifier )
-{
+{TRACE;
+
     assert( 0 );
     /* @TODO: makeme */
 }
@@ -59,7 +65,8 @@ CTSGObserver::CTSGObserver( const CTSGObserver& src )
 /*-------------------------------------------------------------------------*/
 
 CTSGObserver::~CTSGObserver()
-{
+{TRACE;
+
     UnsubscribeFromAll();
 }
 
@@ -67,7 +74,8 @@ CTSGObserver::~CTSGObserver()
 
 CTSGObserver&
 CTSGObserver::operator=( const CTSGObserver& src )
-{
+{TRACE;
+
     assert( 0 );
     /* @TODO: makeme */
 
@@ -81,7 +89,8 @@ CTSGObserver::operator=( const CTSGObserver& src )
 
 void 
 CTSGObserver::SetParent( CTSGNotifier* parentNotifier )
-{
+{TRACE;
+
     m_parentNotifier = parentNotifier;
 }
 
@@ -91,10 +100,24 @@ void
 CTSGObserver::OnPumpedNotify( CNotifier* notifier                  ,
                               const CEvent& eventid                ,
                               CICloneable* eventdata /* = NULL  */ )
-{
+{TRACE;
+
     m_parentNotifier->OnPumpedNotify( notifier  ,
                                       eventid   ,
                                       eventdata );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTSGObserver::AddEventToMailbox( CNotifier* notifier                 ,
+                                 const CEvent& eventid               ,
+                                 CICloneable* eventdata /* = NULL */ )
+{TRACE;
+
+    OnNotify( notifier  ,
+              eventid   ,
+              eventdata );
 }
 
 /*-------------------------------------------------------------------------//

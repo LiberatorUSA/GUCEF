@@ -68,8 +68,8 @@ ThreadDelay( UInt32 delay )
 /*--------------------------------------------------------------------------*/
 
 
-static UInt32
-ThreadMain( void* tdvptr )
+static UInt32 GUCEF_CALLSPEC_PREFIX
+ThreadMain( void* tdvptr ) GUCEF_CALLSPEC_SUFFIX
 {
         UInt32 retval = ((TThreadData*)tdvptr)->func( ((TThreadData*)tdvptr)->data );
         free( ((TThreadData*)tdvptr) );

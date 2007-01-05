@@ -46,7 +46,8 @@ namespace MT {
 CActiveObject::CActiveObject( void )
         : _taskdata( NULL ) ,
           _delay( 10 )      ,
-          _active( false )
+          _active( false )  ,
+          _suspend( false )
 {
 
 }
@@ -56,23 +57,13 @@ CActiveObject::CActiveObject( void )
 CActiveObject::CActiveObject( const CActiveObject& src )
         : _taskdata( src._taskdata ) ,
           _delay( src._delay )       ,
-          _active( false )
+          _active( false )           ,
+          _suspend( false )
 {
         if ( src.IsActive() )
         {
                 Activate();
         }
-}
-
-/*-------------------------------------------------------------------------*/
-
-CActiveObject::CActiveObject( void* taskdata ,
-                              UInt32 delay   )
-        : _taskdata( taskdata ) ,
-          _delay( delay )       ,
-          _active( false )
-{
-
 }
 
 /*-------------------------------------------------------------------------*/
@@ -92,39 +83,31 @@ CActiveObject::IsActive( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void
-CActiveObject::Activate( void )
-{
-        Activate( _taskdata );
-}
-
-/*-------------------------------------------------------------------------*/
-
 UInt32
 CActiveObject::OnActivate( void* thisobject )
 {
         CActiveObject* tao = (CActiveObject*) thisobject;
         void* taskdata = tao->GetTaskData();
 
-        tao->OnTaskStart( taskdata );
-
-        bool taskfinished = false;
-        while ( !taskfinished && tao->_active )
+        if ( tao->OnTaskStart( taskdata ) )
         {
-                if ( tao->_suspend )
-                {
-                        ThreadSuspend( tao->_td );
-                }
-                taskfinished = tao->OnTaskCycle( taskdata );
+            bool taskfinished = false;
+            while ( !taskfinished && tao->_active )
+            {
+                    if ( tao->_suspend )
+                    {
+                            ThreadSuspend( tao->_td );
+                    }
+                    taskfinished = tao->OnTaskCycle( taskdata );
 
-                if ( !taskfinished )
-                {
-                        ThreadDelay( tao->_delay );
-                }
+                    if ( !taskfinished )
+                    {
+                            ThreadDelay( tao->_delay );
+                    }
+            }
+
+            tao->OnTaskEnd( taskdata );
         }
-
-        tao->OnTaskEnd( taskdata );
-
         tao->_td = NULL;
         return 1;
 }
@@ -132,11 +115,13 @@ CActiveObject::OnActivate( void* thisobject )
 /*-------------------------------------------------------------------------*/
 
 void
-CActiveObject::Activate( void* taskdata )
+CActiveObject::Activate( void* taskdata /* = NULL */        ,
+                         const UInt32 cycleDelay /* = 10 */ )
 {
         if ( _active ) return;
 
         _taskdata = taskdata;
+        _delay = cycleDelay; 
         _td = ThreadCreate( (void *)OnActivate ,
                             this       );
         _active = true;

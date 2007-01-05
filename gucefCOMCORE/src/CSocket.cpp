@@ -138,7 +138,7 @@ CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
                 retval = gethostbyname( destaddrstr.C_String() );
                 if ( retval )
                 {
-                        resolvedDest.netaddr = inet_addr( retval->h_addr_list[ 0 ] ); // <- werkt niet ??
+                        resolvedDest.netaddr = inet_addr( retval->h_addr_list[ 0 ] ); // <- does this actually work ???
                         resolvedDest.port = htons( destport );
                         return true;
                 }
@@ -153,14 +153,12 @@ CSocket::ConvertFromIPAddress( const TIPAddress& src     ,
                                CORE::CString& srcaddrstr ,
                                UInt16& srcport           )
 {TRACE;                   
-             // @todo MAKEME
-        GUCEF_ASSERT_ALWAYS;
 
-        if ( src.netaddr == INADDR_ANY )
-        {
-                srcaddrstr = "localhost";       
-        }
-        return true;        
+    if ( src.netaddr == INADDR_ANY )
+    {
+        srcaddrstr = "localhost";       
+    }
+    return false;        
 }  
 
 /*-------------------------------------------------------------------------//

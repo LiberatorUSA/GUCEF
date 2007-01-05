@@ -65,16 +65,12 @@ class GUCEFMT_EXPORT_CPP CActiveObject
 
         CActiveObject( const CActiveObject& src );
 
-        CActiveObject( void* taskdata    ,
-                       UInt32 delay = 10 );
-
         virtual ~CActiveObject();
 
         bool IsActive( void ) const;
 
-        void Activate( void );
-
-        void Activate( void* taskdata );
+        void Activate( void* taskdata = NULL        ,
+                       const UInt32 cycleDelay = 10 );
 
         void Deactivate( bool force );
 
@@ -94,7 +90,7 @@ class GUCEFMT_EXPORT_CPP CActiveObject
 
         private:
         CActiveObject& operator=( const CActiveObject& src );
-        static UInt32 OnActivate( void* thisobject );
+        static UInt32 GUCEF_CALLSPEC_PREFIX OnActivate( void* thisobject ) GUCEF_CALLSPEC_SUFFIX;
 
         struct SThreadData* _td;
         void* _taskdata;

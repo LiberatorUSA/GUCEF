@@ -293,14 +293,15 @@ CGUCEFApplication::main( int argc    ,
                 return retval;
         }
         
-        {
-                /*
-                 *      Set the given values as environment vars
-                 */
-                char intstr[ 10 ];
-                sprintf( intstr, "%d", argc );  
-                GUCEFSetEnv( "argc", intstr );
-                GUCEFSetEnv( "argv", (char*)argv );                 
+        /*
+         *      Set the given values as environment vars
+         */
+        if ( argc > 0 )
+        { 
+            char intstr[ 10 ];
+            sprintf( intstr, "%d", argc );  
+            GUCEFSetEnv( "argc", intstr );
+            GUCEFSetEnv( "argv", (char*)argv );                 
         }
 
         /*

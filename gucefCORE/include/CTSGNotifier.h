@@ -99,6 +99,18 @@ class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
     
     protected:
     friend class CTSGObserver;
+
+    /**
+     *  Same as NotifyObservers() except the notification is pumped first
+     */
+    void NotifyObserversFromThread( void );
+    
+    /**
+     *  Same as NotifyObservers( eventid, CICloneable* ) except the 
+     *  notification is pumped first.
+     */
+    void NotifyObserversFromThread( const CEvent& eventid         ,
+                                    CICloneable* eventData = NULL );
     
     /**
      *  Event callback member function.

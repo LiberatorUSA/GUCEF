@@ -33,6 +33,7 @@
 #define GUCEFCOMCORE_H
 #endif /* GUCEFCOMCORE_H ? */
 
+#include "TestCode_PingTest.h"
 #include "TestCode_ClientServer.h"
 #include "TestCode_SimpleTCPClient.h"
 
@@ -58,6 +59,7 @@ WinMain( HINSTANCE hinstance     ,
                 
         try 
         {                               
+                PerformPingTest();
                 SetupClientServerTest();
                 //SetupSimpleTCPClient("httpd.apache.org", 80, "GET /\r\n");
 

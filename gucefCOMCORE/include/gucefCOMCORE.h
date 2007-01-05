@@ -66,40 +66,45 @@
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 
-#ifndef CCOM_H
+#ifndef GUCEF_COMCORE_CCOM_H
 #include "CCom.h"
-#define CCOM_H
-#endif /* CCOM_H ? */
+#define GUCEF_COMCORE_CCOM_H
+#endif /* GUCEF_COMCORE_CCOM_H ? */
 
-#ifndef CSOCKET_H
+#ifndef GUCEF_COMCORE_CSOCKET_H
 #include "CSocket.h"
-#define CSOCKET_H
-#endif /* CSOCKET_H ? */
+#define GUCEF_COMCORE_CSOCKET_H
+#endif /* GUCEF_COMCORE_CSOCKET_H ? */
 
-#ifndef CTCPSERVERSOCKET_H
+#ifndef GUCEF_COMCORE_CTCPSERVERSOCKET_H
 #include "CTCPServerSocket.h"
-#define CTCPSERVERSOCKET_H
-#endif /* CTCPSERVERSOCKET_H ? */
+#define GUCEF_COMCORE_CTCPSERVERSOCKET_H
+#endif /* GUCEF_COMCORE_CTCPSERVERSOCKET_H ? */
 
-#ifndef CTCPSERVERSOCKETINTERFACE_H
+#ifndef GUCEF_COMCORE_CTCPSERVERSOCKETINTERFACE_H
 #include "CTCPServerSocketInterface.h"
-#define CTCPSERVERSOCKETINTERFACE_H
-#endif /* CTCPSERVERSOCKETINTERFACE_H ? */
+#define GUCEF_COMCORE_CTCPSERVERSOCKETINTERFACE_H
+#endif /* GUCEF_COMCORE_CTCPSERVERSOCKETINTERFACE_H ? */
 
-#ifndef CTCPSERVERCONNECTION_H
+#ifndef GUCEF_COMCORE_CTCPSERVERCONNECTION_H
 #include "CTCPServerConnection.h"
-#define CTCPSERVERCONNECTION_H
-#endif /* CTCPSERVERCONNECTION_H ? */
+#define GUCEF_COMCORE_CTCPSERVERCONNECTION_H
+#endif /* GUCEF_COMCORE_CTCPSERVERCONNECTION_H ? */
 
-#ifndef CTCPCLIENTSOCKET_H
+#ifndef GUCEF_COMCORE_CTCPCLIENTSOCKET_H
 #include "CTCPClientSocket.h"
-#define CTCPCLIENTSOCKET_H
-#endif /* CTCPCLIENTSOCKET_H ? */ 
+#define GUCEF_COMCORE_CTCPCLIENTSOCKET_H
+#endif /* GUCEF_COMCORE_CTCPCLIENTSOCKET_H ? */ 
 
-#ifndef CUDPSOCKET_H
+#ifndef GUCEF_COMCORE_CUDPSOCKET_H
 #include "CUDPSocket.h"
-#define CUDPSOCKET_H
-#endif /* CUDPSOCKET_H ? */
+#define GUCEF_COMCORE_CUDPSOCKET_H
+#endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
+
+#ifndef GUCEF_COMCORE_CPING_H
+#include "CPing.h"
+#define GUCEF_COMCORE_CPING_H
+#endif /* GUCEF_COMCORE_CPING_H ? */
 
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/

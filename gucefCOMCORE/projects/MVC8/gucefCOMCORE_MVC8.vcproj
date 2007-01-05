@@ -212,6 +212,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CPing.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CSocket.cpp"
 				>
 			</File>
@@ -259,6 +263,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CGUCEFCOMCOREModule.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CPing.h"
 				>
 			</File>
 			<File

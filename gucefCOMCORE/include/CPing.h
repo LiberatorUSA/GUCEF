@@ -15,45 +15,34 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
+#ifndef GUCEF_COMCORE_CPING_H
+#define GUCEF_COMCORE_CPING_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef CCOM_H
-#include "CCom.h"      /* header for the main communication manager */
-#define CCOM_H
-#endif /* CCOM_H ? */
+#ifndef GUCEF_COMCORE_MACROS_H
+#include "gucefCOMCORE_macros.h"       /* build defines */
+#define GUCEF_COMCORE_MACROS_H
+#endif /* GUCEF_COMCORE_MACROS_H ? */
 
-#ifndef CTCPCLIENTSOCKET_H
-#include "CTCPClientSocket.h"
-#define CTCPCLIENTSOCKET_H
-#endif /* CTCPCLIENTSOCKET_H ? */
+#ifndef GUCEF_CORE_CEVENT_H
+#include "CEvent.h"                    /* our event class */
+#define GUCEF_CORE_CEVENT_H
+#endif /* GUCEF_CORE_CEVENT_H ? */
 
-#ifndef GUCEF_COMCORE_CUDPSOCKET_H
-#include "CUDPSocket.h"
-#define GUCEF_COMCORE_CUDPSOCKET_H
-#endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
-#ifndef GUCEF_COMCORE_CTCPSERVERSOCKET_H
-#include "CTCPServerSocket.h"
-#define GUCEF_COMCORE_CTCPSERVERSOCKET_H
-#endif /* GUCEF_COMCORE_CTCPSERVERSOCKET_H ? */
-
-#ifndef GUCEF_COMCORE_CPING_H
-#include "CPing.h"
-#define GUCEF_COMCORE_CPING_H
-#endif /* GUCEF_COMCORE_CPING_H ? */
-
-#include "CGUCEFCOMCOREModule.h"  /* definition of the class implemented here */
-
-#ifdef ACTIVATE_MEMORY_MANAGER
-  #ifndef GUCEF_NEW_ON_H
-  #include "gucef_new_on.h"   /* Use the GUCEF memory manager instead of the standard manager ? */
-  #define GUCEF_NEW_ON_H
-  #endif /* GUCEF_NEW_ON_H ? */
-#endif /* ACTIVATE_MEMORY_MANAGER ? */
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -70,58 +59,61 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUCEFCOMCOREModule::CGUCEFCOMCOREModule( void )
+/**
+ *  Class that implements ping functionality for the target platform
+ *  You can ping a remote host and an event will be emitted when a response is
+ *  received. If no response is sent a timeout will occur.
+ */
+class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CObservingNotifier
 {
-        /* dummy, should never be used */
-}
+    public:
+    
+    static const CORE::CEvent PingStartedEvent;
+    static const CORE::CEvent PingReponseEvent;
+    static const CORE::CEvent PingTimeoutEvent;
+    static const CORE::CEvent PingFailedEvent;
+    static const CORE::CEvent PingStoppedEvent;
 
-/*-------------------------------------------------------------------------*/
+    typedef CORE::TCloneableUInt32  TPingReponseEventData;
+    
+    static void RegisterEvents( void );
+    
+    public:
+    
+    CPing( void );
+    
+    virtual ~CPing();
 
-CGUCEFCOMCOREModule::CGUCEFCOMCOREModule( const CGUCEFCOMCOREModule& src )
-{
-        /* dummy, should never be used */
-}
+    /**
+     *  
+     */
+    bool Start( const CORE::CString& remoteHost ,
+                const UInt32 maxPings = 0       ,
+                const UInt32 bytesToSend = 32   ,
+                const UInt32 timeout = 1000     );
 
-/*-------------------------------------------------------------------------*/
-
-CGUCEFCOMCOREModule::~CGUCEFCOMCOREModule()
-{
-        /* dummy, should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFCOMCOREModule&
-CGUCEFCOMCOREModule::operator=( const CGUCEFCOMCOREModule& src )
-{
-        /* dummy, should never be used */
-        return *this;
-}
-        
-/*-------------------------------------------------------------------------*/        
-
-bool 
-CGUCEFCOMCOREModule::Load( void )
-{
-        /* simply instantiate our com manager when the module is loaded */
-        //CCom::Instance();
-        
-        CTCPServerSocket::RegisterEvents();
-        CTCPClientSocket::RegisterEvents();
-        CUDPSocket::RegisterEvents();
-        CPing::RegisterEvents();
-        
-        return true;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CGUCEFCOMCOREModule::Unload( void )
-{
-        CCom::Deinstance();
-        return true;
-}
+    void Stop( void );
+    
+    bool IsActive( void ) const;
+    
+    const CORE::CString& GetRemoteHost( void ) const;
+    
+    UInt32 GetMaxPings( void ) const;
+    
+    private:
+    
+    CPing( const CPing& src );
+    CPing& operator=( const CPing& src );
+    
+    private:
+    
+    bool m_isActive;
+    CORE::CString m_remoteHost;
+    UInt32 m_maxPings;
+    UInt32 m_bytesToSend;
+    UInt32 m_timeout;
+    void* m_osData;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -133,3 +125,14 @@ CGUCEFCOMCOREModule::Unload( void )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_COMCORE_CPING_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+
+---------------------------------------------------------------------------*/

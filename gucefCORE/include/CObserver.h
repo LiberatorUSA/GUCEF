@@ -73,6 +73,11 @@ class GUCEFCORE_EXPORT_CPP CObserver
     virtual ~CObserver();
     
     CObserver& operator=( const CObserver& src );
+    
+    void SubscribeTo( CNotifier* notifier );
+    
+    void SubscribeTo( CNotifier* notifier   ,
+                      const CEvent& eventid );
                                
     /**
      *  Unsubscribes the observer from all notifiers.
@@ -116,7 +121,7 @@ class GUCEFCORE_EXPORT_CPP CObserver
     /*
      *  Simply updates the observer administration, nothing more
      */
-    void SubscribeTo( CNotifier* notifier );
+    void LinkTo( CNotifier* notifier );
                      
     /*
      *  Simply updates the observer administration, nothing more

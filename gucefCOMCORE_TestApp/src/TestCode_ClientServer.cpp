@@ -149,8 +149,8 @@ CTestTCPClientServer::OnNotify( CORE::CNotifier* notifier                 ,
         {
             printf( "%s\r\n", eventid.GetName() );
             
-            CTCPServerSocket* serverSocket = static_cast< CTCPServerSocket* >( notifier );
-            serverSocket->
+           // CTCPServerSocket* serverSocket = static_cast< CTCPServerSocket* >( notifier );
+           // serverSocket->
         }
         else
         {

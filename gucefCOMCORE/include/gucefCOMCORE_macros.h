@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEFCOMCORE_MACROS_H
-#define GUCEFCOMCORE_MACROS_H
+#ifndef GUCEF_COMCORE_MACROS_H
+#define GUCEF_COMCORE_MACROS_H
 
 /*
  *      Build configuration specific macros.
@@ -231,7 +231,7 @@
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEFCOMCORE_MACROS_H ? */
+#endif /* GUCEF_COMCORE_MACROS_H ? */
 
 
 

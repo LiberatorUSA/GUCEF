@@ -74,6 +74,10 @@ class GUCEFCORE_EXPORT_CPP CTSGObserver : public CPumpedObserver
     
     void SetParent( CTSGNotifier* parentNotifier );
     
+    void AddEventToMailbox( CNotifier* notifier           ,
+                            const CEvent& eventid         ,
+                            CICloneable* eventdata = NULL );    
+    
     private:
     
     CTSGObserver( const CTSGObserver& src );

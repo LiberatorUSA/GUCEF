@@ -190,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\TestCode_PingTest.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\TestCode_SimpleTCPClient.cpp"
 				>
 			</File>
@@ -201,6 +205,10 @@
 			>
 			<File
 				RelativePath="..\..\include\TestCode_ClientServer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\TestCode_PingTest.h"
 				>
 			</File>
 			<File
