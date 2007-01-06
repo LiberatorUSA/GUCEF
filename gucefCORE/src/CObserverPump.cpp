@@ -104,7 +104,9 @@ CObserverPump::Deinstance( void )
 void 
 CObserverPump::RegisterObserver( CPumpedObserver* observer )
 {
+    m_dataLock.Lock();
     m_observerList.insert( observer );
+    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -112,7 +114,9 @@ CObserverPump::RegisterObserver( CPumpedObserver* observer )
 void 
 CObserverPump::UnregisterObserver( CPumpedObserver* observer )
 {
+    m_dataLock.Lock();
     m_observerList.erase( observer );
+    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -121,12 +125,14 @@ void
 CObserverPump::OnUpdate( const UInt64 tickCount               ,
                          const Float64 updateDeltaInMilliSecs )
 {
+    m_dataLock.Lock();
     TObserverList::iterator i( m_observerList.begin() );
     while ( i != m_observerList.end() )
     {
         (*i)->OnUpdate();
         ++i;
     }
+    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

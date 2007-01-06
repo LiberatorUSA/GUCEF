@@ -48,6 +48,13 @@
 
 #include "CGUCEFCOMCOREModule.h"  /* definition of the class implemented here */
 
+#ifdef GUCEF_MSWIN_BUILD
+  #ifndef DVWINSOCK_H
+  #include "dvwinsock.h"
+  #define DVWINSOCK_H
+  #endif /* DVWINSOCK_H */
+#endif
+
 #ifdef ACTIVATE_MEMORY_MANAGER
   #ifndef GUCEF_NEW_ON_H
   #include "gucef_new_on.h"   /* Use the GUCEF memory manager instead of the standard manager ? */
@@ -103,6 +110,10 @@ CGUCEFCOMCOREModule::operator=( const CGUCEFCOMCOREModule& src )
 bool 
 CGUCEFCOMCOREModule::Load( void )
 {
+        #ifdef GUCEF_MSWIN_BUILD
+        InitWinsock( 1 );
+        #endif
+        
         /* simply instantiate our com manager when the module is loaded */
         //CCom::Instance();
         
@@ -120,6 +131,11 @@ bool
 CGUCEFCOMCOREModule::Unload( void )
 {
         CCom::Deinstance();
+        
+        #ifdef GUCEF_MSWIN_BUILD
+        ShutdownWinsock();
+        #endif
+                
         return true;
 }
 

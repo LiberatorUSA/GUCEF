@@ -231,6 +231,11 @@ class CMSWinPingTask : public MT::CActiveObject   ,
                 m_replyBuffer = (VOID*) malloc( m_replyBufferSize );
                 m_sendBuffer = (VOID*) malloc( m_bytesToSend );
             }
+            else
+            {
+                NotifyObserversFromThread( CPing::PingFailedEvent );
+                return false;
+            }
             
             NotifyObserversFromThread( CPing::PingStartedEvent );
             

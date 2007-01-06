@@ -135,10 +135,10 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
     
         if ( eventid == CORE::CGUCEFApplication::AppInitEvent )
         {   
-            if ( !m_ping.Start( "127.0.0.1"  , 
-                                MAX_PINGS    ,
-                                PING_BYTES   ,
-                                PING_TIMEOUT ) )
+            if ( !m_ping.Start( "www.google.com"  , 
+                                MAX_PINGS         ,
+                                PING_BYTES        ,
+                                PING_TIMEOUT      ) )
             {
                 // Failed to start the ping sequence
                 printf( "ERROR: CPingTester: Failed to start the ping sequence\n" );
@@ -148,7 +148,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
         else
         if ( eventid == CORE::CGUCEFApplication::AppShutdownEvent )
         {
-            Deinstance();
+         //   Deinstance();
         }
         else
         if ( eventid == COMCORE::CPing::PingReponseEvent )
@@ -173,15 +173,15 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
         else
         if ( eventid == COMCORE::CPing::PingTimeoutEvent )
         {   
-            // We are pinging the localhost, we should not get a timeout
-            printf( "ERROR: CPingTester: timeout while pinging localhost, this should not happen\n" );
+            // We are pinging google, we should not get a timeout (unless google is having a bad day)
+            printf( "ERROR: CPingTester: timeout while pinging, this should not happen\n" );
             ERRORHERE;
         }
         else
         if ( eventid == COMCORE::CPing::PingFailedEvent )
         {   
-            // We are pinging the localhost, we not have failed
-            printf( "ERROR: CPingTester: error while pinging localhost\n" );
+            // some error occured while attempting to ping
+            printf( "ERROR: CPingTester: error while pinging\n" );
             ERRORHERE;
         }
         else

@@ -74,12 +74,12 @@ StringToBool( const CString& str );
 /*-------------------------------------------------------------------------*/
 
 GUCEFCORE_EXPORT_CPP Int32
-StringToInt( const CString& str );
+StringToInt32( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
 GUCEFCORE_EXPORT_CPP CString
-IntToString( const Int32 value );
+Int32ToString( const Int32 value );
 
 /*-------------------------------------------------------------------------*/
 

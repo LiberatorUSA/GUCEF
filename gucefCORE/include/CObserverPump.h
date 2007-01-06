@@ -27,6 +27,11 @@
 #include <set>
 #include "CGUCEFAppSubSystem.h"
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 /*-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_COBSERVERPUMP_CPP
@@ -90,7 +95,7 @@ class GUCEFCORE_EXPORT_CPP CObserverPump : public CGUCEFAppSubSystem
     
     CObserverPump& operator=( const CObserverPump& src );
     
-    virtual ~CObserverPump();
+    virtual ~CObserverPump();    
     
     private:
     typedef std::set<CPumpedObserver*> TObserverList;
@@ -98,6 +103,7 @@ class GUCEFCORE_EXPORT_CPP CObserverPump : public CGUCEFAppSubSystem
     static CObserverPump* m_instance;
     
     TObserverList m_observerList;
+    MT::CMutex m_dataLock;
 };
 
 /*-------------------------------------------------------------------------//

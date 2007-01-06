@@ -30,6 +30,11 @@
 #define DVSTRUTILS_H
 #endif /* DVSTRUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef CCOM_H
 #include "CCom.h"		  /* network manager */
 #define CCOM_H
@@ -38,6 +43,8 @@
 #ifdef GUCEF_MSWIN_BUILD
   #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
   #include <winsock2.h>
+  #include <Ws2tcpip.h>
+  #include <Wspiapi.h>
 #else
  #ifdef GUCEF_LINUX_BUILD
     #include <unistd.h>
@@ -66,7 +73,7 @@ CSocket::CSocket( void )
 
         /*
          *      Register the socket object so that it's capable of 
-         *      recieving update events.
+         *      receiving update events.
          */
         CCom::Instance()->RegisterSocketObject( this );
 }
@@ -125,25 +132,52 @@ CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
                              const UInt16 destport            ,  
                              TIPAddress& resolvedDest         )
 {TRACE;
-        if ( CORE::Check_If_IP( destaddrstr.C_String() ) )
+
+    if ( CORE::Check_If_IP( destaddrstr.C_String() ) )
+    {
+        resolvedDest.netaddr = inet_addr( destaddrstr.C_String() );                
+        if ( resolvedDest.netaddr == INADDR_NONE ) return false;                
+        resolvedDest.port = htons( destport );
+        return true;
+    }
+    else
+    {              
+        #if 1
+
+        struct hostent* retval = gethostbyname( destaddrstr.C_String() );        
+        if ( retval != NULL )
         {
-                resolvedDest.netaddr = inet_addr( destaddrstr.C_String() );                
-                if ( resolvedDest.netaddr == INADDR_NONE ) return false;                
-                resolvedDest.port = htons( destport );
-                return true;
+            DEBUGOUTPUTss( "CSocket::ConvertToIPAddress(): gethostbyname(): full name: ", retval->h_name );
+            char* addrStr = inet_ntoa( *( struct in_addr*)( retval->h_addr_list[0] ) );
+            resolvedDest.netaddr = inet_addr( addrStr );
+            resolvedDest.port = htons( destport );             
+            return true;            
         }
-        else
-        {              
-                struct hostent* retval = NULL;                              
-                retval = gethostbyname( destaddrstr.C_String() );
-                if ( retval )
-                {
-                        resolvedDest.netaddr = inet_addr( retval->h_addr_list[ 0 ] ); // <- does this actually work ???
-                        resolvedDest.port = htons( destport );
-                        return true;
-                }
-                return false;                   
+        return false;
+        
+        #else
+        
+        struct addrinfo* info = NULL;
+        CORE::CString portString( CORE::Int32ToString( destport ) );
+        int retval = getaddrinfo( destaddrstr.C_String() ,
+                                  portString.C_String()  ,
+                                  NULL                   ,
+                                  &info                  );
+        if ( retval == 0 )
+        {
+            struct in_addr* addr = (struct in_addr*)info->ai_addr;
+            DEBUGOUTPUTssss( "CSocket::ConvertToIPAddress(): resolved DNS name ", destaddrstr.C_String(), " to ", inet_ntoa( *addr ) );
+            resolvedDest.netaddr = inet_addr( inet_ntoa( *addr ) ); // <- does this actually work ???
+            resolvedDest.port = htons( destport );
+            return true;
         }
+        #ifdef GUCEF_COMCORE_DEBUG_MODE
+        DEBUGOUTPUTsi( "CSocket::ConvertToIPAddress(): gethostbyname() failed with code ", retval );
+        #endif
+        return false;
+        
+        #endif
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -154,9 +188,14 @@ CSocket::ConvertFromIPAddress( const TIPAddress& src     ,
                                UInt16& srcport           )
 {TRACE;                   
 
-    if ( src.netaddr == INADDR_ANY )
+    in_addr addrStruct;
+    addrStruct.S_un.S_addr = src.netaddr;
+    const char* addrStr = inet_ntoa( addrStruct );
+    if ( addrStr != NULL )
     {
-        srcaddrstr = "localhost";       
+        srcaddrstr = addrStr;
+        srcport = ntohs( src.port );
+        return true;
     }
     return false;        
 }  

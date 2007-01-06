@@ -96,11 +96,14 @@ IsWinsockInitialized( void )
 void 
 InitWinsock( UInt16 desiredversion )
 {
+    if ( _wsinit == 0 )
+    {
         _globallock = MutexCreate();
                 
         WSAStartup( desiredversion , 
                     &wsadata       );
-        _wsinit = 1;                                        
+        _wsinit = 1; 
+    }                                       
 }    
 
 /*-------------------------------------------------------------------------*/
@@ -108,9 +111,12 @@ InitWinsock( UInt16 desiredversion )
 void
 ShutdownWinsock( void )
 {
+    if ( _wsinit == 1 )
+    {
         WSACleanup();
-        _wsinit = 0;        
-        MutexDestroy( _globallock );        
+        MutexDestroy( _globallock );
+        _wsinit = 0;                
+    }                
 }
 
 /*-------------------------------------------------------------------------*/

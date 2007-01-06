@@ -118,8 +118,6 @@ CCom::CCom()
 {TRACE;
         _sockets.SetResizeChange( HEAP_RESIZE_AMOUNT );
         memset( &_stats, 0, sizeof(TSocketStats) );   
-        
-        InitWinsock( 1 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -127,8 +125,7 @@ CCom::CCom()
 CCom::~CCom()
 {TRACE;
 
-        SetPumpThreading( false );
-        ShutdownWinsock();                      
+        SetPumpThreading( false );                     
 }
 
 /*-------------------------------------------------------------------------*/

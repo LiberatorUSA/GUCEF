@@ -124,7 +124,7 @@ StringToBool( const CString& str )
 /*-------------------------------------------------------------------------*/
 
 Int32
-StringToInt( const CString& str )
+StringToInt32( const CString& str )
 {TRACE;
         return Str_To_Int( str.C_String() );        
 }
@@ -132,11 +132,11 @@ StringToInt( const CString& str )
 /*-------------------------------------------------------------------------*/
 
 CString
-IntToString( const Int32 value )
+Int32ToString( const Int32 value )
 {TRACE;
-        CString intstr;
-        intstr.SetInt( value );
-        return intstr;
+        char intBuffer[ 10 ];
+        sprintf( intBuffer, "%d", value );
+        return CString( intBuffer );
 }
 
 /*-------------------------------------------------------------------------*/
