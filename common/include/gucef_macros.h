@@ -177,6 +177,28 @@
   #define GUCEF_PLUGIN_CALLSPEC_SUFFIX __attribute__((GUCEF_PLUGIN_CALLSPEC_TYPE))
 #endif
 
+
+/*
+ *      Macro that switches between a calling convention prefix and
+ *      postfix notation for the calling convention macro for the std
+ *      calling convention
+ */
+#undef GUCEF_CALLSPEC_STD_PREFIX
+#undef GUCEF_CALLSPEC_STD_SUFFIX
+#undef GUCEF_PLUGIN_CALLSPEC_STD_PREFIX
+#undef GUCEF_PLUGIN_CALLSPEC_STD_SUFFIX
+#if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
+  #define GUCEF_CALLSPEC_STD_PREFIX GUCEF_CALLSPEC_STD
+  #define GUCEF_CALLSPEC_STD_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_STD_PREFIX GUCEF_CALLSPEC_STD
+  #define GUCEF_PLUGIN_CALLSPEC_STD_SUFFIX
+#else
+  #define GUCEF_CALLSPEC_STD_PREFIX
+  #define GUCEF_CALLSPEC_STD_SUFFIX  __attribute__((GUCEF_CALLSPEC_STD))
+  #define GUCEF_PLUGIN_CALLSPEC_STD_PREFIX
+  #define GUCEF_PLUGIN_CALLSPEC_STD_SUFFIX __attribute__((GUCEF_CALLSPEC_STD))
+#endif
+
 /*-------------------------------------------------------------------------*/
 
 #ifdef __cplusplus
@@ -249,6 +271,14 @@
 
 #define GUCEF_ASSERT_ALWAYS    assert( 0 );
 #define GUCEF_UNREACHABLE      GUCEF_ASSERT_ALWAYS;
+
+/*-------------------------------------------------------------------------*/
+
+/* now we include some dynamicly linked module macro's */
+#ifndef GUCEF_DLLINIT_H
+#include "gucef_DLLInit.h"
+#define GUCEF_DLLINIT_H
+#endif /* GUCEF_DLLINIT_H ? */
 
 /*-------------------------------------------------------------------------*/
 

@@ -32,16 +32,6 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTIMER_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 ) // return type for operator -> is 'const *' (ie; not a UDT or reference to a UDT).
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -67,19 +57,19 @@ class CITimerClient;
  *  millisecond resolution.
  *
  *  Note that timer calls are performed in the main application thread
- *  (Assuming you are calling the CXBApplication Update() from your main thread).
+ *  (Assuming you are calling the CGUCEFApplication Update() from your main thread).
  *  As such operations by handlers will suspend the message handling 
  *  in the application for their duration. Keep this in mind when hooking
  *  up a lengthy process to a timer in an GUI based application.
  *
- *  Note that the timer resolution is NOT garanteed. An attempt is made to
+ *  Note that the timer resolution is NOT guaranteed. An attempt is made to
  *  provide the theoretical minimum resolution of 1 millisecond. 
  */
 class GUCEFCORE_EXPORT_CPP CTimer
 {
     public:
     
-    explicit CTimer( const UInt32 interval = 10 );        
+    explicit CTimer( const UInt32 updateDeltaInMilliSecs = 10 );        
     
     CTimer( const CTimer& src );
     
@@ -87,7 +77,7 @@ class GUCEFCORE_EXPORT_CPP CTimer
 
     CTimer& operator=( const CTimer& src );
     
-    void SetInterval( const UInt32 interval );
+    void SetInterval( const UInt32 updateDeltaInMilliSecs );
     
     UInt32 GetInterval( void ) const;
     
@@ -96,21 +86,36 @@ class GUCEFCORE_EXPORT_CPP CTimer
     bool GetEnabled( void ) const;
     
     /**
-     *  Returns the tickcount since the start of the timer.
+     *  Returns the tick count since the start of the timer.
      *  
      *  Note that reseting the timer alters the timer count 
      *  but not the run ticks since the timer didn't actually stop.
      */
-    UInt32 GetRunTicks( void ) const;
+    UInt64 GetRunTicks( void ) const;
+    
+    Float64 GetRunTimeInMilliSecs( void ) const;
 
     /**
-     *  Returns the current tickcount of the timer.
-     *  The tickcount gets reset by either the start of a timer or
-     *  trough the use of an explicit Reset() call.
+     *  Returns the actual tick count of the timer.
+     *
+     *  Note that the tick count gets reset by either the start 
+     *  of a timer or trough the use of an explicit Reset() call.
      */
-    UInt32 GetTickCount( void ) const;
+    UInt64 GetTickCount( void ) const;
+    
+    Float64 GetTimeInMilliSecs( void ) const;
 	
 	void Reset( void );
+	
+	/**
+	 *  Returns the approximated maximum timer resolution in milliseconds
+	 *
+	 *  Note that this is the theoretical maximum resolution of the timer in milliseconds
+	 *  Application update delays and timer logic will increase the actual maximum resolution.
+	 *
+	 *  @return approximated maximum timer resolution in milliseconds
+	 */
+	static Float64 GetApproxMaxTimerResolutionInMilliSecs( void );
     
     void Subscribe( CITimerClient* client );
     
@@ -119,17 +124,18 @@ class GUCEFCORE_EXPORT_CPP CTimer
     private:
     friend class CTimerPump;
 
-    void OnUpdate( const UInt32 tickCount  ,
-                   const UInt32 deltaTicks );
+    void OnUpdate( void );
     
     private:
     typedef std::set< CITimerClient* > TTimerClientSet;
     
+    CTimerPump* m_timerPump;
     TTimerClientSet m_clients;
-    UInt32 m_lastTimerCycle;
-    UInt32 m_tickCount;
-    UInt32 m_interval;
-    UInt32 m_activationTickCount;
+    Float64 m_timerFreq;
+    UInt64 m_lastTimerCycle;
+    UInt64 m_tickCount;
+    UInt32 m_updateDeltaInMilliSecs;
+    UInt64 m_activationTickCount;
     bool m_enabled;
 };
 
@@ -141,12 +147,6 @@ class GUCEFCORE_EXPORT_CPP CTimer
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTIMER_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

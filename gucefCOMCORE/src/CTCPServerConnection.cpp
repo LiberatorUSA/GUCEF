@@ -318,8 +318,7 @@ CTCPServerConnection::CheckRecieveBuffer( void )
  *      @param deltaticks ticks since the last Update process commenced.          
  */
 void 
-CTCPServerConnection::Update( UInt32 tickcount  ,
-                              UInt32 deltaticks )
+CTCPServerConnection::Update( void )
 {
         if ( !_blocking && _active )
         {       

@@ -98,7 +98,8 @@ CEvent::operator=( const CEvent& src )
 {TRACE;
 
     if ( &src != this )
-    {
+    {        
+        m_eventName = src.m_eventName;
         m_eventID = src.m_eventID;
     }
     return *this;

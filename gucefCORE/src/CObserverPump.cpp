@@ -118,8 +118,8 @@ CObserverPump::UnregisterObserver( CPumpedObserver* observer )
 /*-------------------------------------------------------------------------*/
 
 void 
-CObserverPump::OnUpdate( const UInt32 tickCount  ,
-                         const UInt32 deltaTicks )
+CObserverPump::OnUpdate( const UInt64 tickCount               ,
+                         const Float64 updateDeltaInMilliSecs )
 {
     TObserverList::iterator i( m_observerList.begin() );
     while ( i != m_observerList.end() )

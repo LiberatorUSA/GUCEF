@@ -26,6 +26,7 @@
 #ifdef GUCEF_MSWIN_BUILD
 
   /* #include <Icmpapi.h> -> this is the header for the functions that we dynamicly link */  
+  #define WIN32_LEAN_AND_MEAN
   #include <winsock.h>                  /* windows networking API, used here for it's type declarations */
   
   #ifndef GUCEF_CORE_DVOSWRAP_H
@@ -200,7 +201,7 @@ TIcmpSendEchoPtr IcmpSendEcho = NULL;
 #ifdef GUCEF_MSWIN_BUILD
 
 /**
- *  private task class for handling ping behaviour on ms windows
+ *  private task class for handling ping behavior on ms windows
  */
 class CMSWinPingTask : public MT::CActiveObject   ,
                        private CORE::CTSGNotifier
@@ -221,7 +222,7 @@ class CMSWinPingTask : public MT::CActiveObject   ,
                 return false;
             }
            
-            // resolve the dns name if we have one and get the network byte order ip
+            // resolve the DNS name if we have one and get the network byte order ip
             if ( CSocket::ConvertToIPAddress( m_remoteHost ,
                                               80           ,
                                               m_ip         ) )
@@ -262,9 +263,11 @@ class CMSWinPingTask : public MT::CActiveObject   ,
                 // Get the RTT (Round Trip Time)
                 ICMP_ECHO_REPLY& reply = ( *(ICMP_ECHO_REPLY*) m_replyBuffer );
                 
-                if ( ( reply.Status == IP_SUCCESS ) || ( reply.Status == IP_SOURCE_QUENCH ) )
+                if ( ( reply.Status == 0  )               ||
+                     ( reply.Status == IP_SUCCESS )       || 
+                     ( reply.Status == IP_SOURCE_QUENCH ) )
                 {
-                    // Notify our observers with a ping reponse event
+                    // Notify our observers with a ping response event
                     CPing::TPingReponseEventData eData( reply.RoundTripTime );
                     NotifyObserversFromThread( CPing::PingReponseEvent, &eData );
                 }
@@ -286,12 +289,12 @@ class CMSWinPingTask : public MT::CActiveObject   ,
             }
             
             ++m_pingsCompleted;        
-            return true;
+            return false;
         }
         else
         {
             // we are done, end the task
-            return false;
+            return true;
         }
     }
     
@@ -299,7 +302,7 @@ class CMSWinPingTask : public MT::CActiveObject   ,
 
     virtual void OnTaskEnd( void* taskdata )
     {TRACE;
-    
+
         IcmpCloseHandle( m_icmpHandle );
         
         free( m_replyBuffer );
@@ -318,16 +321,16 @@ class CMSWinPingTask : public MT::CActiveObject   ,
     /*---------------------------------------------------------------------*/
     
     CMSWinPingTask( void )
-        : CActiveObject()        ,
-          CTSGNotifier()         ,
-          m_replyBuffer( NULL )  ,
-          m_sendBuffer( NULL )   ,
-          m_icmpHandle( NULL )   ,
-          m_remoteHost()         ,
-          m_maxPings( 0 )        ,
-          m_bytesToSend( 32 )    ,
-          m_replyBufferSize( 0 ) ,
-          m_timeout( 1000 )      ,
+        : CActiveObject()           ,
+          CTSGNotifier()            ,
+          m_replyBuffer( NULL )     ,
+          m_sendBuffer( NULL )      ,
+          m_icmpHandle( NULL )      ,
+          m_remoteHost()            ,
+          m_maxPings( 0 )           ,
+          m_bytesToSend( 32 )       ,
+          m_replyBufferSize( 0 )    ,
+          m_timeout( 1000 )         ,
           m_pingsCompleted( 0 )
     {TRACE;
     }
@@ -340,10 +343,10 @@ class CMSWinPingTask : public MT::CActiveObject   ,
 
     /*---------------------------------------------------------------------*/
         
-    bool SetTaskData( const CORE::CString& remoteHost  ,
-                      const UInt32 maxPings = 0        ,
-                      const UInt32 bytesToSend = 32    ,
-                      const UInt32 timeout = 1000      )
+    bool SetTaskData( const CORE::CString& remoteHost     ,
+                      const UInt32 maxPings = 0           ,
+                      const UInt32 bytesToSend = 32       ,
+                      const UInt32 timeout = 1000         )
     {TRACE;
     
         if ( !IsActive() )
@@ -472,10 +475,13 @@ CPing::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CPing::CPing( void )
-    : m_isActive( false ) ,
-      m_remoteHost()      ,
-      m_maxPings( 0 )     ,
-      m_bytesToSend( 32 )
+    : CObservingNotifier()     ,
+      m_isActive( false )      ,
+      m_remoteHost()           ,
+      m_maxPings( 0 )          ,
+      m_bytesToSend( 32 )      ,
+      m_timeout( 1000 )        ,
+      m_minimalPingDelta( 500 )
 {TRACE;
 
     RegisterEvents();    
@@ -507,10 +513,11 @@ CPing::~CPing()
 /*-------------------------------------------------------------------------*/
 
 bool
-CPing::Start( const CORE::CString& remoteHost     ,
-              const UInt32 maxPings /* = 0 */     ,
-              const UInt32 bytesToSend /* = 32 */ ,
-              const UInt32 timeout /* = 1000 */   )
+CPing::Start( const CORE::CString& remoteHost           ,
+              const UInt32 maxPings /* = 0 */           ,
+              const UInt32 bytesToSend /* = 32 */       ,
+              const UInt32 timeout /* = 1000 */         ,
+              const UInt32 minimalPingDelta /* = 500 */ )
 {TRACE;
 
     if ( !m_isActive && ( remoteHost.Length() > 0 ) )
@@ -519,6 +526,7 @@ CPing::Start( const CORE::CString& remoteHost     ,
         m_maxPings = maxPings;
         m_timeout = timeout;
         m_bytesToSend = bytesToSend;
+        m_minimalPingDelta = minimalPingDelta;
         
         #ifdef GUCEF_MSWIN_BUILD
         
@@ -531,14 +539,23 @@ CPing::Start( const CORE::CString& remoteHost     ,
                 
                 // configure our task and subscribe to it
                 m_osData = pingTask;
-                pingTask->SetTaskData( remoteHost  ,
-                                       maxPings    ,
-                                       bytesToSend ,
-                                       timeout     );                                   
+                pingTask->SetTaskData( remoteHost       ,
+                                       maxPings         ,
+                                       bytesToSend      ,
+                                       timeout          );                                   
                 SubscribeTo( pingTask );
                 
                 // here we go...
-                pingTask->Activate();
+                if ( minimalPingDelta > 0 )
+                {
+                    pingTask->Activate( NULL                 ,
+                                        minimalPingDelta / 2 ,
+                                        minimalPingDelta     );
+                }
+                else
+                {
+                    pingTask->Activate();
+                }
                 return true;
             }
             

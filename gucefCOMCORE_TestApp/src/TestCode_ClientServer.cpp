@@ -70,8 +70,8 @@ class CTestTCPClientServer : public CGUCEFAppSubSystem
          *      @param tickcount the tick count when the Update process commenced.
          *      @param deltaticks ticks since the last Update process commenced.
          */        
-        virtual void OnUpdate( const CORE::UInt32 tickcount  ,
-                               const CORE::UInt32 deltaticks );
+        virtual void OnUpdate( const CORE::UInt64 tickcount               ,
+                               const CORE::Float64 updateDeltaInMilliSecs );
         
         private:
         
@@ -166,8 +166,8 @@ CTestTCPClientServer::OnNotify( CORE::CNotifier* notifier                 ,
 /*-------------------------------------------------------------------------*/
 
 void
-CTestTCPClientServer::OnUpdate( const CORE::UInt32 tickcount  ,
-                                const CORE::UInt32 deltaticks )
+CTestTCPClientServer::OnUpdate( const CORE::UInt64 tickcount               ,
+                                const CORE::Float64 updateDeltaInMilliSecs )
 {TRACE;
         /* don't hogg the CPU */
        // ThreadDelay( 10 );

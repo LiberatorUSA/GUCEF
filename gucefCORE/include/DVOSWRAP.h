@@ -166,61 +166,12 @@ GUCEFGetTickCount( void );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_C UInt32
-GetCurrentTaskID( void );
-
-/*--------------------------------------------------------------------------*/
-
 /**
  *      Displays an O/S error message/dialog
  */
 GUCEFCORE_EXPORT_C void
 ShowErrorMessage( const char* message     ,
                   const char* description );                  
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Verry accurate delay mechanism.
- *      Uses the target O/S facilitys to attempt to delay
- *      for the given number of milliseconds as accuratly as possible.
- *      The CPU will be yielded whenever possible as long as possible 
- *      while attempting to garantee a delay as close to the requested number
- *      of milliseconds as possible.      
- *
- *      This function requires you to call GUCEFPrecisionTimerInit() at
- *      application startup and GUCEFPrecisionTimerShutdown() at application
- *      shutdown.
- *
- *      Note that for the MSWIN platform you will have to link to winmm.lib
- *      The code used for that platform is not linked to by default
- *
- *      @param delay the number of milliseconds you wish to delay the caller thread 
- */
-GUCEFCORE_EXPORT_C void
-GUCEFPrecisionDelay( UInt32 delay );
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Does whatever initialization is required for GUCEFPrecisionDelay() to
- *      perform it's magic.
- *      MUST be called at application startup.
- *      Also see GUCEFPrecisionTimerShutdown()
- */
-GUCEFCORE_EXPORT_C void
-GUCEFPrecisionTimerInit( void );
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *      Cleans up whatever needs to be cleaned up after a class to 
- *      GUCEFPrecisionTimerInit().
- *      MUST be called if you called GUCEFPrecisionTimerInit() !!!
- *      call at application shutdown.
- */
-GUCEFCORE_EXPORT_C void
-GUCEFPrecisionTimerShutdown( void );
 
 /*--------------------------------------------------------------------------*/
 

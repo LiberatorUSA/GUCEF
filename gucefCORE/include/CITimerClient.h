@@ -66,9 +66,9 @@ class GUCEFCORE_EXPORT_CPP CITimerClient
     protected:
     friend class CTimer;
     
-    virtual void OnTimer( CTimer& timer           ,
-                          const UInt32 tickCount  ,
-                          const UInt32 deltaTicks ) = 0;           
+    virtual void OnTimer( CTimer& timer                        ,
+                          const UInt64 tickCount               ,
+                          const Float64 updateDeltaInMilliSecs ) = 0;
 };
 
 /*-------------------------------------------------------------------------//

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H
-#define GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H 
+#ifndef GUCEF_MT_CGUCEFMTMODULE_H
+#define GUCEF_MT_CGUCEFMTMODULE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,15 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
-
-#ifndef GUCEF_CORE_ETYPES_H
-#include "gucefCORE_ETypes.h"
-#define GUCEF_CORE_ETYPES_H
-#endif /* GUCEF_CORE_ETYPES_H ? */
+#ifndef GUCEF_MT_MACROS_H
+#include "gucefMT_macros.h"      /* module config macros */
+#define GUCEF_MT_MACROS_H
+#endif /* GUCEF_MT_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,8 +35,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
-namespace CORE {
+namespace GUCEF {
+namespace MT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -49,35 +44,19 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUCEFApplication;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *  Interface class for an application driver.
- *
- *  An application driver basicly implements the application update cycle in
- *  an O/S dependant fashion in such a way that updates are performed uppon 
- *  request instead of the alternate busy-wait-poll scenario.
- */
-class GUCEFCORE_EXPORT_CPP CIGUCEFApplicationDriver
+class CGUCEFMTModule
 {
-    public:      
-    
-    /**
-     *  Destructor is only implemented to ensure that a virtual 
-     *  destructor is provided.
-     */
-    virtual ~CIGUCEFApplicationDriver();
-    
-    protected:
-    friend class CGUCEFApplication;
-    
-    virtual void OnSwitchUpdateMethod( const bool periodic ) = 0;
-    
-    virtual void OnRequestNewMinimalUpdateFreq( const Float64 updateDeltaInMilliSecs ) = 0;
-
-    virtual void OnRequestNewUpdateCycle( void ) = 0;
+        public:
+        
+        static bool Load( void );
+        
+        static bool Unload( void );
+        
+        private:
+        CGUCEFMTModule( void );                                 /** not implemented */
+        CGUCEFMTModule( const CGUCEFMTModule& src );            /** not implemented */
+        ~CGUCEFMTModule();                                      /** not implemented */
+        CGUCEFMTModule& operator=( const CGUCEFMTModule& src ); /** not implemented */
 };
 
 /*-------------------------------------------------------------------------//
@@ -86,12 +65,12 @@ class GUCEFCORE_EXPORT_CPP CIGUCEFApplicationDriver
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace MT */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H  ? */
+          
+#endif /* GUCEF_MT_CGUCEFMTMODULE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -99,8 +78,7 @@ class GUCEFCORE_EXPORT_CPP CIGUCEFApplicationDriver
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 12-11-2004 :
-        - Designed and implemented this class.
+- 12-02-2005 :
+        - Initial implementation
 
 -----------------------------------------------------------------------------*/
-

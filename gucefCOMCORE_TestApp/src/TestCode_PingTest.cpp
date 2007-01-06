@@ -110,6 +110,8 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
           m_ping()
     {TRACE;
     
+        printf( "**** STARTING THE PING TEST ****\n" );
+        
         SubscribeTo( &m_ping );
     }
     
@@ -132,9 +134,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
     {TRACE;
     
         if ( eventid == CORE::CGUCEFApplication::AppInitEvent )
-        {
-            printf( "**** STARTING THE PING TEST ****\n" );
-            
+        {   
             if ( !m_ping.Start( "127.0.0.1"  , 
                                 MAX_PINGS    ,
                                 PING_BYTES   ,
@@ -161,24 +161,40 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
                 ERRORHERE;
             }            
             printf( "CPingTester: Received ping response: %d ms\n", eData->GetData() );
-            ++m_pingCount;
-            
-            if ( m_pingCount == MAX_PINGS )
+                        
+            if ( m_pingCount > MAX_PINGS )
             {
-                printf( "**** SUCCESSFULLY COMPLETED THE PING TEST ****\n" );
-                CORE::CGUCEFApplication::Instance()->Stop();
+                // check if the maximum ping count functionality is working
+                printf( "ERROR: CPingTester: we are getting more ping responses then we asked for\n" );
+                ERRORHERE;
             }
+            ++m_pingCount;
         }
         else
         if ( eventid == COMCORE::CPing::PingTimeoutEvent )
         {   
             // We are pinging the localhost, we should not get a timeout
-            printf( "ERROR: CPingTester: timeout while pinging localhost\n" );
+            printf( "ERROR: CPingTester: timeout while pinging localhost, this should not happen\n" );
             ERRORHERE;
         }
         else
+        if ( eventid == COMCORE::CPing::PingFailedEvent )
+        {   
+            // We are pinging the localhost, we not have failed
+            printf( "ERROR: CPingTester: error while pinging localhost\n" );
+            ERRORHERE;
+        }
+        else
+        if ( eventid == COMCORE::CPing::PingStoppedEvent )
         {
-            printf( "CPingTester: Received event: %s\n", COMCORE::CPing::PingStartedEvent.GetName() );
+            // If we got here without any errors then we are finished
+            printf( "CPingTester: Stopped pinging\n" );
+            printf( "**** SUCCESSFULLY COMPLETED THE PING TEST ****\n" );
+            CORE::CGUCEFApplication::Instance()->Stop();
+        }                
+        else
+        {
+            printf( "CPingTester: Received event: %s\n", eventid.GetName() );
         }
     }
     

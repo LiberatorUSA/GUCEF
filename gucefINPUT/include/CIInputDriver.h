@@ -91,9 +91,9 @@ class EXPORT_CPP CIInputDriver
         protected:
         friend class CInputController;
         
-        virtual bool OnUpdate( const UInt32 tickcount  ,
-                               const UInt32 deltaticks ,
-                               CInputContext* context  ) = 0;        
+        virtual bool OnUpdate( const UInt64 tickcount               ,
+                               const Float64 updateDeltaInMilliSecs ,
+                               CInputContext* context               ) = 0;        
         
         virtual CInputContext* CreateContext( const CORE::CValueList& params ,
                                               CIInputHandler* handler = NULL ) = 0;

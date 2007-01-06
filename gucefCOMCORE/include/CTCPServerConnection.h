@@ -158,8 +158,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CSocket
          *      @param tickcount the tick count when the Update process commenced.
          *      @param deltaticks ticks since the last Update process commenced.          
          */
-        virtual void Update( UInt32 tickcount  ,
-                             UInt32 deltaticks ); 
+        virtual void Update( void ); 
                              
         private:
         

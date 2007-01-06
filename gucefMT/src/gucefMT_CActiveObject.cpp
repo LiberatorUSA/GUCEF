@@ -83,47 +83,71 @@ CActiveObject::IsActive( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
-CActiveObject::OnActivate( void* thisobject )
+UInt32 GUCEF_CALLSPEC_STD_PREFIX
+CActiveObject::OnActivate( void* thisobject ) GUCEF_CALLSPEC_STD_SUFFIX
 {
-        CActiveObject* tao = (CActiveObject*) thisobject;
-        void* taskdata = tao->GetTaskData();
+    CActiveObject* tao = (CActiveObject*) thisobject;
+    void* taskdata = tao->GetTaskData();
 
-        if ( tao->OnTaskStart( taskdata ) )
+    if ( tao->OnTaskStart( taskdata ) )
+    {
+        Float64 timerRes = ( PrecisionTimerResolution() * 1.0 );
+        UInt64 tickCount = PrecisionTickCount(); 
+        UInt64 newTime = tickCount;
+        Float64 timeDelta = 0;
+        
+        bool taskfinished = false;
+        while ( !taskfinished && tao->_active )
         {
-            bool taskfinished = false;
-            while ( !taskfinished && tao->_active )
+            // Check if the order has been given to suspend the thread
+            if ( tao->_suspend )
             {
-                    if ( tao->_suspend )
-                    {
-                            ThreadSuspend( tao->_td );
-                    }
-                    taskfinished = tao->OnTaskCycle( taskdata );
-
-                    if ( !taskfinished )
-                    {
-                            ThreadDelay( tao->_delay );
-                    }
+                ThreadSuspend( tao->_td );
             }
-
-            tao->OnTaskEnd( taskdata );
+            
+            // We can do a cycle
+            taskfinished = tao->OnTaskCycle( taskdata );
+            
+            // check if we are finished
+            if ( !taskfinished )
+            {
+                // If we are going to do another cycle then make sure we
+                // stay within the time slice range requested.
+                // Here we calculate the time that has passed in seconds
+                newTime = PrecisionTickCount();
+                timeDelta = ( tickCount - newTime ) / timerRes;
+                if ( timeDelta < tao->m_minimalCycleDelta )
+                {
+                    PrecisionDelay( tao->_delay );
+                    tickCount = PrecisionTickCount();
+                }
+                else
+                {
+                    tickCount = newTime;
+                }
+            }
         }
-        tao->_td = NULL;
-        return 1;
+
+        tao->OnTaskEnd( taskdata );
+    }
+    tao->_td = NULL;
+    return 1;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CActiveObject::Activate( void* taskdata /* = NULL */        ,
-                         const UInt32 cycleDelay /* = 10 */ )
+CActiveObject::Activate( void* taskdata /* = NULL */               ,
+                         const UInt32 cycleDelay /* = 0 */         ,
+                         const UInt32 minimalCycleDelta /* = 10 */ )
 {
         if ( _active ) return;
 
         _taskdata = taskdata;
-        _delay = cycleDelay; 
-        _td = ThreadCreate( (void *)OnActivate ,
-                            this       );
+        _delay = cycleDelay;
+        m_minimalCycleDelta = minimalCycleDelta / 1000.0; // <- the unit used here is seconds not milliseconds
+        _td = ThreadCreate( (void*) OnActivate ,
+                            this               );
         _active = true;
 }
 
@@ -132,6 +156,8 @@ CActiveObject::Activate( void* taskdata /* = NULL */        ,
 void
 CActiveObject::Deactivate( bool force )
 {
+    if ( _active )
+    {
         if ( force )
         {
                 /*
@@ -140,6 +166,7 @@ CActiveObject::Deactivate( bool force )
                 ThreadKill( _td );
         }
         _active = false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

@@ -255,8 +255,8 @@ CInputController::UnloadDriverModule( void )
 /*-------------------------------------------------------------------------*/
 
 void 
-CInputController::OnUpdate( UInt32 tickcount  ,
-                            UInt32 deltaticks )
+CInputController::OnUpdate( const UInt64 tickcount               ,
+                            const Float64 updateDeltaInMilliSecs )
 {TRACE;
         for ( UInt32 i=0; i<m_contextlist.GetCount(); ++i )
         {

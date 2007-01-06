@@ -87,10 +87,11 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CObservingNotifier
     /**
      *  
      */
-    bool Start( const CORE::CString& remoteHost ,
-                const UInt32 maxPings = 0       ,
-                const UInt32 bytesToSend = 32   ,
-                const UInt32 timeout = 1000     );
+    bool Start( const CORE::CString& remoteHost     ,
+                const UInt32 maxPings = 0           ,
+                const UInt32 bytesToSend = 32       ,
+                const UInt32 timeout = 1000         ,
+                const UInt32 minimalPingDelta = 500 );
 
     void Stop( void );
     
@@ -112,6 +113,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CObservingNotifier
     UInt32 m_maxPings;
     UInt32 m_bytesToSend;
     UInt32 m_timeout;
+    UInt32 m_minimalPingDelta;
     void* m_osData;
 };
 

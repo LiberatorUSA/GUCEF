@@ -148,21 +148,18 @@ CGUCEFApplication::Deinstance( void )
 /*-------------------------------------------------------------------------*/
 
 CGUCEFApplication::CGUCEFApplication( void )
-        : CIConfigurable( true )                      ,
-          _active( false )                            ,
-          _initialized( false )                       ,
-          m_maxdeltaticksfordelay( 0 )                ,
-          m_delaytime( 10 )                           ,
-          m_minimalUpdateDelta( GUCEFCORE_UINT32MAX ) ,
-          m_requiresPeriodicUpdates( false )          ,
-          m_inNeedOfAnUpdate( false )
+        : CIConfigurable( true )                                 ,
+          _active( false )                                       ,
+          _initialized( false )                                  ,
+          m_minimalCycleDeltaInMilliSecs( 0.0 )                  ,
+          m_cycleDelayInMilliSecs( 10 )                          ,
+          m_minimalUpdateDelta( GUCEFCORE_UINT32MAX )            ,
+          m_requiresPeriodicUpdates( false )                     ,
+          m_inNeedOfAnUpdate( false )                            ,
+          m_appTickCount( MT::PrecisionTickCount() )             ,
+          m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )
 {TRACE;
-
-        /*
-         *      Initialize high-resolution timing
-         */
-        GUCEFPrecisionTimerInit();
-                                            
+                                           
         /*
          *      Set an initial app dir just in case we have trouble getting one 
          *      at a later stage
@@ -193,7 +190,7 @@ CGUCEFApplication::CGUCEFApplication( void )
 
 CGUCEFApplication::~CGUCEFApplication()
 {TRACE;
-        GUCEFPrecisionTimerShutdown();
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -227,7 +224,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
          */
         {
                 /*
-                 *      Set the given values as enviornment vars
+                 *      Set the given values as environment vars
                  */
                 #pragma warning( disable: 4311 ) 
                 char intstr[ 10 ];
@@ -349,19 +346,33 @@ CGUCEFApplication::Update( void )
 
     LockData();
     
-    UInt32 tickCount( GUCEFGetTickCount() );
-    UInt32 deltaTicks( tickCount - m_appTickCount );
+    UInt64 newTickCount = MT::PrecisionTickCount();    
+    Float64 deltaMilliSecs = ( ( m_appTickCount - newTickCount ) / m_timerFreq ) ;
+    m_appTickCount = newTickCount;
+    
+    SingleUpdate( newTickCount   ,
+                  deltaMilliSecs );
+    
+    UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUCEFApplication::SingleUpdate( const UInt64 tickCount               ,
+                                 const Float64 updateDeltaInMilliSecs )
+{TRACE;
+
+    OnUpdate( tickCount              ,
+              updateDeltaInMilliSecs );
     
     TSubSystemList::iterator i = m_subSysList.begin();
     while ( i != m_subSysList.end() )
     {
-        (*i)->OnUpdate( tickCount  ,
-                        deltaTicks );
+        (*i)->OnUpdate( tickCount              ,
+                        updateDeltaInMilliSecs );
         ++i;
     }
-    m_appTickCount = tickCount;
-    
-    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -393,7 +404,7 @@ CGUCEFApplication::GetRequiresPeriodicUpdate( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+Float64
 CGUCEFApplication::GetMinimalReqUpdateResolution( void ) const
 {TRACE;
 
@@ -402,7 +413,7 @@ CGUCEFApplication::GetMinimalReqUpdateResolution( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 CGUCEFApplication::GetLastUpdateTickCount( void ) const
 {TRACE;
 
@@ -415,12 +426,22 @@ void
 CGUCEFApplication::Run( void )
 {TRACE;
 
-        _active = true;
+    _active = true;
+    UInt64 newTickCount = 0;
+    Float64 deltaMilliSecs = 0;
+    
+    // Cache the precision timer resolution in time slices per millisecond
+    m_timerFreq = ( MT::PrecisionTimerResolution() / 1000.0 ); 
         
-        while ( _active )
-        {
-                Update();                                
-        }
+    while ( _active )
+    {
+        newTickCount = MT::PrecisionTickCount();
+        deltaMilliSecs = ( ( m_appTickCount - newTickCount ) / m_timerFreq );
+        m_appTickCount = newTickCount;
+
+        SingleUpdate( newTickCount   ,
+                      deltaMilliSecs );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -527,8 +548,8 @@ CGUCEFApplication::OnSysConsoleCommand( const CString& path     ,
 /*-------------------------------------------------------------------------*/
 
 void 
-CGUCEFApplication::OnUpdate( UInt32 tickcount  ,
-                             UInt32 deltaticks )
+CGUCEFApplication::OnUpdate( const UInt64 tickcount               ,
+                             const Float64 updateDeltaInMilliSecs )
 {TRACE;
         
         #ifdef GUCEF_MSWIN_BUILD
@@ -540,34 +561,34 @@ CGUCEFApplication::OnUpdate( UInt32 tickcount  ,
         }
         #endif /* GUCEF_MSWIN_BUILD ? */        
         
-        if ( deltaticks <= m_maxdeltaticksfordelay )
+        if ( updateDeltaInMilliSecs <= m_minimalCycleDeltaInMilliSecs )
         {
                 /*
-                 *      Not much action atm, so we should
-                 *      avoid hogging the CPU 
+                 *      Not much action ATM, so we should
+                 *      avoid hogging the system resources 
                  */
-                GUCEFPrecisionDelay( m_delaytime );                
+                MT::PrecisionDelay( m_cycleDelayInMilliSecs );                
         }
 }
 
 /*-------------------------------------------------------------------------*/                             
 
 void 
-CGUCEFApplication::SetCycleDelay( UInt32 maxdeltaticks ,
-                                  UInt32 delay         )
+CGUCEFApplication::SetCycleDelay( const Float64 minimalCycleDeltaInMilliSecs ,
+                                  const UInt32 cycleDelayInMilliSecs         )
 {TRACE;
-    m_maxdeltaticksfordelay = maxdeltaticks;
-    m_delaytime = delay;
+    m_minimalCycleDeltaInMilliSecs = minimalCycleDeltaInMilliSecs;
+    m_cycleDelayInMilliSecs = cycleDelayInMilliSecs;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void 
-CGUCEFApplication::GetCycleDelay( UInt32& maxdeltaticks ,
-                                  UInt32& delay         ) const
+CGUCEFApplication::GetCycleDelay( Float64& minimalCycleDeltaInMilliSecs ,
+                                  UInt32& cycleDelayInMilliSecs         ) const
 {TRACE;
-    maxdeltaticks = m_maxdeltaticksfordelay;
-    delay = m_delaytime;
+    minimalCycleDeltaInMilliSecs = m_minimalCycleDeltaInMilliSecs;
+    cycleDelayInMilliSecs = m_cycleDelayInMilliSecs;
 }                                  
 
 /*-------------------------------------------------------------------------*/
@@ -623,7 +644,7 @@ CGUCEFApplication::RefreshMinimalSubSysInterval( void )
     
     LockData();
     
-    UInt32 temp( 0 );
+    Float64 temp( 0 );
     
     TSubSystemList::iterator i = m_subSysList.begin();
     while ( i != m_subSysList.end() )

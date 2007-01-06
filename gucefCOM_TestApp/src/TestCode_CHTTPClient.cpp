@@ -139,8 +139,8 @@ class CMyPumpClient : public CGUCEFAppSubSystem
     
     protected:
     
-    virtual void OnUpdate( const CORE::UInt32 tickcount  ,
-                           const CORE::UInt32 deltaticks )
+    virtual void OnUpdate( const CORE::UInt64 tickcount               ,
+                           const CORE::Float64 updateDeltaInMilliSecs )
     {
     }
 

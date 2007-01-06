@@ -203,16 +203,8 @@ CTCPServerSocket::GetConnection( UInt32 index )
 
 /*-------------------------------------------------------------------------*/
 
-/** 
- *      Decending classes should implement this updater to 
- *      poll the socket ect. as needed and update stats.
- *
- *      @param tickcount the tick count when the Update process commenced.
- *      @param deltaticks ticks since the last Update process commenced.          
- */
 void 
-CTCPServerSocket::Update( UInt32 tickcount  ,
-                          UInt32 deltaticks )
+CTCPServerSocket::Update( void )
 {TRACE;
         if ( _active )//&& ( _data->threadmethod == TM_NO_THREADING ) )
         {
@@ -228,8 +220,7 @@ CTCPServerSocket::Update( UInt32 tickcount  ,
                 {
                         for ( UInt32 i=0; i<_data->maxcon; ++i )
                         {
-                                ((CTCPServerConnection*)(_connections[ i ]))->Update( tickcount  ,
-                                                                                      deltaticks );
+                                ((CTCPServerConnection*)(_connections[ i ]))->Update();
                         } 
                 }
         }                                       

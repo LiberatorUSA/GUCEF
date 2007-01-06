@@ -29,10 +29,10 @@
 #define GUCEF_MT_ETYPES_H
 #endif /* GUCEF_MT_ETYPES_H */
 
-#ifndef GUCEF_MT_GUCEFMT_MACROS_H
-#include "gucefMT_macros.h"             /* often used gucef macros */
-#define GUCEF_MT_GUCEFMT_MACROS_H
-#endif /* GUCEF_MT_GUCEFMT_MACROS_H ? */
+#ifndef GUCEF_MT_MACROS_H
+#include "gucefMT_macros.h"             /* module config */
+#define GUCEF_MT_MACROS_H
+#endif /* GUCEF_MT_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -114,6 +114,77 @@ ThreadKill( struct SThreadData* td );
 GUCEFMT_EXPORT_C UInt32
 ThreadWait( struct SThreadData* td ,
             Int32 timeout          );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEFMT_EXPORT_C UInt32
+GetCurrentTaskID( void );
+
+/*--------------------------------------------------------------------------*/
+
+
+/**
+ *      Very accurate delay mechanism.
+ *      Uses the target O/S to attempt to delay
+ *      for the given number of milliseconds as accurately as possible.
+ *      The CPU will be yielded whenever possible as long as possible 
+ *      while attempting to guarantee a delay as close to the requested number
+ *      of milliseconds as possible.      
+ *
+ *      This function requires you to call PrecisionTimerInit() at
+ *      application startup and PrecisionTimerShutdown() at application
+ *      shutdown.
+ *
+ *      Note that for the MSWIN platform you will have to link to winmm.lib
+ *      The code used for that platform is not linked to by default
+ *
+ *      @param delay the number of milliseconds you wish to delay the caller thread 
+ */
+GUCEFMT_EXPORT_C void
+PrecisionDelay( UInt32 delay );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *  Returns the application tick count in ticks.
+ *  The time a single tick represents can be obtained with PrecisionTimerResolution()
+ */
+GUCEFMT_EXPORT_C UInt64
+PrecisionTickCount( void );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *  Returns the resolution of the precision timer in time-slices per second
+ *  So a return value of 1000 would indicate the system's precision timer (if one is available)
+ *  is capable of a precision in the millisecond range with each time-slice having a resolution
+ *  of about 1 millisecond. This means that each 'tick' will count for about 1 milliseconds in this
+ *  example.
+ */
+GUCEFMT_EXPORT_C UInt64
+PrecisionTimerResolution( void );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *      Does whatever initialization is required for PrecisionDelay() and
+ *      PrecisionTickCount() to perform their magic.
+ *      MUST be called at application startup.
+ *      Also see PrecisionTimerShutdown()
+ */
+GUCEFMT_EXPORT_C void
+PrecisionTimerInit( void );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *      Cleans up whatever needs to be cleaned up after a class to 
+ *      PrecisionTimerInit().
+ *      MUST be called if you called PrecisionTimerInit() !!!
+ *      call at application shutdown.
+ */
+GUCEFMT_EXPORT_C void
+PrecisionTimerShutdown( void );
 
 /*--------------------------------------------------------------------------*/
 

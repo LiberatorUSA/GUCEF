@@ -86,9 +86,9 @@ class EXPORT_CPP CInputDriverPlugin : public CIInputDriver
                                                 
         protected:
         
-        virtual bool OnUpdate( const UInt32 tickcount  ,
-                               const UInt32 deltaticks ,
-                               CInputContext* context  );
+        virtual bool OnUpdate( const UInt64 tickcount               ,
+                               const Float64 updateDeltaInMilliSecs ,
+                               CInputContext* context               );
 
         virtual CInputContext* CreateContext( const CORE::CValueList& params ,
                                               CIInputHandler* handler = NULL );

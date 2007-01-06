@@ -86,9 +86,7 @@ MT::CMutex CCom::_mutex;
 
 CCom*
 CCom::Instance( void )
-{
-        DEBUGOUTPUT( "CCom::Instance()" );
-        
+{TRACE;
         _mutex.Lock();
         if ( !_instance ) 
         {
@@ -102,9 +100,7 @@ CCom::Instance( void )
 
 void 
 CCom::Deinstance( void )
-{
-        DEBUGOUTPUT( "CCom::Deinstance()" );
-        
+{TRACE;
         _mutex.Lock();
         delete _instance;
         _instance = NULL;
@@ -119,9 +115,7 @@ CCom::CCom()
           _scount( 0 )                         ,
           _pumpthread( false )                 ,
           _threadedpump( NULL )   
-{
-        DEBUGOUTPUT( "CCom::CCom()" );  
-        
+{TRACE;
         _sockets.SetResizeChange( HEAP_RESIZE_AMOUNT );
         memset( &_stats, 0, sizeof(TSocketStats) );   
         
@@ -131,9 +125,8 @@ CCom::CCom()
 /*-------------------------------------------------------------------------*/
 
 CCom::~CCom()
-{
-        DEBUGOUTPUT( "CCom::~CCom()" );
-        
+{TRACE;
+
         SetPumpThreading( false );
         ShutdownWinsock();                      
 }
@@ -147,9 +140,8 @@ CCom::~CCom()
  */
 void                       
 CCom::RegisterSocketObject( CSocket* socket )
-{
-        DEBUGOUTPUT( "CCom::RegisterSocketObject()" );
-        
+{TRACE;
+
         _mutex.Lock();
         socket->SetSocketID( _sockets.AddEntry( socket ) );        
         ++_scount;
@@ -160,9 +152,7 @@ CCom::RegisterSocketObject( CSocket* socket )
 
 void
 CCom::UnregisterSocketObject( const CSocket* socket )
-{
-        DEBUGOUTPUT( "CCom::UnregisterSocketObject()" );
-        
+{TRACE;
         _mutex.Lock();
         _sockets.SetEntry( socket->GetSocketID(), NULL );        
         --_scount;
@@ -172,25 +162,16 @@ CCom::UnregisterSocketObject( const CSocket* socket )
 /*-------------------------------------------------------------------------*/
 
 void 
-CCom::OnUpdate( UInt32 tickcount  ,
-                UInt32 deltaticks )
-{       
-        // SPAM: DEBUGOUTPUT( "CCom::Update( UInt32 tickcount, UInt32 deltaticks )" );     
-        
-        if ( _pumpthread )
-        {
-                _threadedpump->Update( tickcount  ,
-                                       deltaticks );
-                return;                                       
-        }
-        
+CCom::OnUpdate( const UInt64 tickcount               ,
+                const Float64 updateDeltaInMilliSecs )
+{TRACE;    
+
         _mutex.Lock();
         for ( Int32 i=0; i <= _sockets.GetLast(); ++i )
         {
                 if ( _sockets[ i ] )
                 {
-                        ( (CSocket*)_sockets[ i ] )->Update( tickcount  ,
-                                                             deltaticks );
+                        ( (CSocket*)_sockets[ i ] )->Update();
                 }
         }
         _mutex.Unlock();   
@@ -198,15 +179,10 @@ CCom::OnUpdate( UInt32 tickcount  ,
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *	Returns the total number of sockets that are currently registerd
- *	at this manager.
- */
 UInt32 
 CCom::GetSocketCount( void ) const
-{
-        DEBUGOUTPUT( "CCom::GetSocketCount( void ) const" );
-        
+{TRACE;
+
         return _scount;
 }
 
@@ -214,9 +190,8 @@ CCom::GetSocketCount( void ) const
 
 void 
 CCom::SetUseGlobalStats( bool keep_gstats )
-{
-        DEBUGOUTPUT( "CCom::SetUseGlobalStats( bool keep_gstats )" );
-        
+{TRACE;
+
         _keep_gstats = keep_gstats;
 }
 
@@ -224,9 +199,8 @@ CCom::SetUseGlobalStats( bool keep_gstats )
         
 bool 
 CCom::GetUseGlobalStats( void ) const
-{
-        DEBUGOUTPUT( "CCom::GetUseGlobalStats( void )" );
-        
+{TRACE;
+
         return _keep_gstats;
 }
 
@@ -234,17 +208,15 @@ CCom::GetUseGlobalStats( void ) const
         
 void 
 CCom::ResetGlobalStats( void )
-{
-        DEBUGOUTPUT( "CCom::ResetGlobalStats( void )" );
+{TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
         
 const CCom::TSocketStats& 
 CCom::GetGlobalStats( void ) const
-{
-        DEBUGOUTPUT( "CCom::GetGlobalStats( void ) const" );
-        
+{TRACE;
+
         return _stats;
 }
 
@@ -252,9 +224,7 @@ CCom::GetGlobalStats( void ) const
 
 void 
 CCom::SetPumpThreading( bool thread )
-{
-        DEBUGOUTPUT( "CCom::SetPumpThreading( bool thread )" );
-        
+{TRACE;
         _mutex.Lock();
         
         if ( _pumpthread == thread )
@@ -283,9 +253,8 @@ CCom::SetPumpThreading( bool thread )
 
 bool 
 CCom::GetPumpThreading( void ) const
-{
-        DEBUGOUTPUT( "CCom::GetPumpThreading( void ) const" );
-        
+{TRACE;
+
         return _pumpthread;        
 }
 

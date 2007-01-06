@@ -58,9 +58,6 @@ class CActiveComPump : public MT::CActiveObject
 {
         public:                
         
-        void Update( UInt32 tickcount  ,
-                     UInt32 deltaticks );
-
         virtual ~CActiveComPump();
 
         protected:
@@ -82,9 +79,6 @@ class CActiveComPump : public MT::CActiveObject
         
         MT::CMutex* _datalock;
         CORE::CDynamicArray* _sockets;
-        UInt32 _tickcount;
-        UInt32 _deltaticks;
-         
 };
 
 /*-------------------------------------------------------------------------//

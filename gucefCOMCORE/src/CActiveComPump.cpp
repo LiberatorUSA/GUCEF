@@ -56,8 +56,7 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 CActiveComPump::CActiveComPump( void )
-        : _tickcount( 0 )                         ,
-          _deltaticks( 0 )                        ,
+        : CActiveObject()                         ,
           _sockets( &CCom::Instance()->_sockets ) ,
           _datalock( &CCom::Instance()->_mutex )
 {
@@ -85,18 +84,6 @@ CActiveComPump::operator=( const CActiveComPump& src )
         return *this;
 }
 
-/*-------------------------------------------------------------------------*/
-
-void
-CActiveComPump::Update( UInt32 tickcount  ,
-                        UInt32 deltaticks )
-{
-        _datalock->Lock();
-        _tickcount = tickcount;
-        _deltaticks = deltaticks;
-        _datalock->Unlock();
-}  
-
 /*-------------------------------------------------------------------------*/                      
 
 bool 
@@ -115,8 +102,7 @@ CActiveComPump::OnTaskCycle( void* taskdata )
         {
                 if ( _sockets->operator[]( i ) )
                 {
-                        ( (CSocket*)((*_sockets)[ i ]) )->Update( _tickcount  ,
-                                                                  _deltaticks );
+                        ( (CSocket*)((*_sockets)[ i ]) )->Update();
                 }
         }
         _datalock->Unlock();

@@ -91,22 +91,24 @@ class GUCEFCORE_EXPORT_CPP CGUCEFAppSubSystem : public CObservingNotifier
     
     void RequestUpdate( void );
     
-    void RequestUpdateInterval( const UInt32 deltaTicks );
+    void RequestUpdateInterval( const UInt32 updateDeltaInMilliSecs );
+    
+    void SetPeriodicUpdateRequirement( const bool requiresPeriodicUpdates );
     
     protected:
     friend class CGUCEFApplication;
     
-    virtual void OnUpdate( const UInt32 applicationTicks ,
-                           const UInt32 deltaTicks       );
+    virtual void OnUpdate( const UInt64 tickCount               ,
+                           const Float64 updateDeltaInMilliSecs );
 
     /**
      *  Event callback member function.
-     *  Implement this in your decending class to handle
+     *  Implement this in your descending class to handle
      *  notification events.
      *
      *  @param notifier the notifier that sent the notification
      *  @param eventid the unique event id for an event
-     *  @param eventdata optional notifier defined userdata
+     *  @param eventdata optional notifier defined user data
      */
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,

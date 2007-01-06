@@ -501,9 +501,9 @@ CInputDriverPlugin::GetDeviceVariableState( CInputContext* context  ,
 /*-------------------------------------------------------------------------*/
 
 bool 
-CInputDriverPlugin::OnUpdate( const UInt32 tickcount  ,
-                              const UInt32 deltaticks ,
-                              CInputContext* context  )
+CInputDriverPlugin::OnUpdate( const UInt64 tickcount               ,
+                              const Float64 updateDeltaInMilliSecs ,
+                              CInputContext* context               )
 {TRACE;
         
         return ( (TINPUTDRIVERPLUGFPTR_Update) m_fptable[ INPUTDRIVERPLUG_UPDATE ] )( m_plugdata, static_cast<CPluginInputContext*>( context )->m_contextdata ) > 0;

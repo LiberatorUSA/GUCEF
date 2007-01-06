@@ -24,7 +24,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <set>
+#include <map>
 
 #ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
 #include "CGUCEFAppSubSystem.h"
@@ -51,6 +51,9 @@ class CGUCEFCOREModule;
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Internally used class for updating timers
+ */
 class GUCEFCORE_EXPORT_CPP CTimerPump : public CGUCEFAppSubSystem
 {
     public:
@@ -59,8 +62,8 @@ class GUCEFCORE_EXPORT_CPP CTimerPump : public CGUCEFAppSubSystem
     
     protected:
     
-    virtual void OnUpdate( const UInt32 tickCount  ,
-                           const UInt32 deltaTicks );
+    virtual void OnUpdate( const UInt64 tickCount               ,
+                           const Float64 updateDeltaInMilliSecs );
     
     private:
     friend class CTimer;
@@ -68,6 +71,9 @@ class GUCEFCORE_EXPORT_CPP CTimerPump : public CGUCEFAppSubSystem
     void RegisterTimer( CTimer* timer );
     
     void UnregisterTimer( CTimer* timer );
+    
+    void TimerSetRequiresUpdates( CTimer* timer              ,
+                                  const bool requiresUpdates );
     
     private:
     friend class CGUCEFCOREModule;
@@ -85,12 +91,13 @@ class GUCEFCORE_EXPORT_CPP CTimerPump : public CGUCEFAppSubSystem
     virtual ~CTimerPump();
     
     private:
-    typedef std::set< CTimer* > TTimerList;
+    typedef std::map< CTimer*, bool > TTimerList;
     
     static CTimerPump* m_instance;
     
     TTimerList m_timerList;
     UInt32 m_minimalResolution;
+    bool m_isATimerActive;
 };
 
 /*-------------------------------------------------------------------------//

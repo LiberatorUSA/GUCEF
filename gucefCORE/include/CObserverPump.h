@@ -65,8 +65,8 @@ class GUCEFCORE_EXPORT_CPP CObserverPump : public CGUCEFAppSubSystem
     
     protected:
     
-    virtual void OnUpdate( const UInt32 tickCount  ,
-                           const UInt32 deltaTicks );
+    virtual void OnUpdate( const UInt64 tickCount               ,
+                           const Float64 updateDeltaInMilliSecs );
 
     private:
     friend class CPumpedObserver;

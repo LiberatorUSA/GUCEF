@@ -120,7 +120,17 @@ CGUCEFAppSubSystem::IsInNeedOfAnUpdate( void ) const
 bool
 CGUCEFAppSubSystem::ArePeriodicUpdatesRequired( void ) const
 {TRACE;
+    
     return m_requiresPeriodicUpdates;
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CGUCEFAppSubSystem::SetPeriodicUpdateRequirement( const bool requiresPeriodicUpdates )
+{TRACE;
+    
+    m_requiresPeriodicUpdates = requiresPeriodicUpdates;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -128,6 +138,7 @@ CGUCEFAppSubSystem::ArePeriodicUpdatesRequired( void ) const
 void
 CGUCEFAppSubSystem::RequestUpdate( void )
 {TRACE;
+
     if ( !m_inNeedOfAnUpdate )
     {
         m_inNeedOfAnUpdate = true;
@@ -145,11 +156,12 @@ CGUCEFAppSubSystem::RequestUpdate( void )
 /*--------------------------------------------------------------------------*/
     
 void
-CGUCEFAppSubSystem::RequestUpdateInterval( const UInt32 deltaTicks )
+CGUCEFAppSubSystem::RequestUpdateInterval( const UInt32 updateDeltaInMilliSecs )
 {TRACE;
-    if ( deltaTicks != m_updateInterval )
+
+    if ( updateDeltaInMilliSecs != m_updateInterval )
     {
-        m_updateInterval = deltaTicks;
+        m_updateInterval = updateDeltaInMilliSecs;
     }
 }
 
@@ -158,17 +170,18 @@ CGUCEFAppSubSystem::RequestUpdateInterval( const UInt32 deltaTicks )
 UInt32
 CGUCEFAppSubSystem::GetDesiredUpdateInterval( void ) const
 {TRACE;
+
     return m_updateInterval;
 }
 
 /*--------------------------------------------------------------------------*/
 
 void
-CGUCEFAppSubSystem::OnUpdate( const UInt32 applicationTicks ,
-                              const UInt32 deltaTicks       )
+CGUCEFAppSubSystem::OnUpdate( const UInt64 tickCount               ,
+                              const Float64 updateDeltaInMilliSecs )
 {TRACE;
 
-    /* dummy to avoid manditory implementation by decending classes */
+    /* dummy to avoid mandatory implementation by descending classes */
 }
 
 /*--------------------------------------------------------------------------*/
@@ -179,7 +192,7 @@ CGUCEFAppSubSystem::OnNotify( CNotifier* notifier                 ,
                               CICloneable* eventdata /* = NULL */ )
 {TRACE;
 
-    /* dummy to avoid manditory implementation by decending classes */
+    /* dummy to avoid mandatory implementation by descending classes */
 }
 
 /*-------------------------------------------------------------------------//

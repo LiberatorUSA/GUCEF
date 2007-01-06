@@ -100,8 +100,8 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
         static const CEvent AppInitEvent;
         static const CEvent AppShutdownEvent;
 
-        public:
-        
+        static void RegisterEvents( void );
+               
         struct SAppInitEventData
         {
                 #ifdef GUCEF_MSWIN_BUILD
@@ -141,20 +141,26 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
         
         CString GetApplicationDir( void ) const;
         
-        UInt32 GetLastUpdateTickCount( void ) const;
+        UInt64 GetLastUpdateTickCount( void ) const;
         
-        void SetCycleDelay( UInt32 maxdeltaticks ,
-                            UInt32 delay         );
+        /**
+         *  If you want to make sure your application does not cycle
+         *  to fast (perhaps to prevent the application from hogging the
+         *  system resources), you can use this member function to limit
+         *  the cycle rate.
+         */
+        void SetCycleDelay( const Float64 minimalCycleDeltaInMilliSecs ,
+                            const UInt32 cycleDelayInMilliSecs         );
                             
-        void GetCycleDelay( UInt32& maxdeltaticks ,
-                            UInt32& delay         ) const;                            
+        void GetCycleDelay( Float64& minimalCycleDeltaInMilliSecs ,
+                            UInt32& cycleDelayInMilliSecs         ) const;                            
         
         /**
          *      Attempts to store the given tree in the file
-         *      given according to the method of the codec metadata
+         *      given according to the method of the codec meta data
          *
          *      @param tree the data tree you wish to store
-         *      @return wheter storing the tree was successfull
+         *      @return whether storing the tree was successfull
          */
         virtual bool SaveConfig( CDataNode& tree );
                                     
@@ -174,9 +180,14 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
         
         bool GetRequiresPeriodicUpdate( void ) const;
         
-        UInt32 GetMinimalReqUpdateResolution( void ) const;
-        
-        static void RegisterEvents( void );
+        /**
+         *  returns the minimal required resolution for the application
+         *  update interval in milliseconds as requested by the application
+         *  sub systems.
+         *
+         *  @return the minimal required update frequency in milliseconds
+         */
+        Float64 GetMinimalReqUpdateResolution( void ) const;
         
         protected:
         
@@ -185,7 +196,7 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
          *
          *  @param notifier the notifier that sent the notification
          *  @param eventid the unique event id for an event
-         *  @param eventdata optional notifier defined userdata
+         *  @param eventdata optional notifier defined user data
          */
         virtual void OnPumpedNotify( CNotifier* notifier           ,
                                      const CEvent& eventid         ,
@@ -196,8 +207,8 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
                                           const CStringList& args ,
                                           CStringList& resultdata );
                                           
-        virtual void OnUpdate( const UInt32 tickcount  ,
-                               const UInt32 deltaticks );
+        virtual void OnUpdate( const UInt64 tickCount               ,
+                               const Float64 updateDeltaInMilliSecs );
                                
         virtual void LockData( void );
         
@@ -215,8 +226,18 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
         
         void UnregisterSubSystem( CGUCEFAppSubSystem* subSystem );
         
+        /**
+         *  Ask all sub systems what their desired sub system update 
+         *  interval is. This is combined to form the desired application
+         *  update interval in milliseconds
+         */
         void RefreshMinimalSubSysInterval( void );
         
+        /**
+         *  Ask all sub systems if they require periodic updates without
+         *  explicit update requests. This determines the applications
+         *  periodic update requirement
+         */
         void RefreshPeriodicUpdateRequirement( void );
         
         void DoRequestSubSysUpdate( void );
@@ -224,9 +245,14 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
         private:
 
         void Run( void );
+        
+        void SingleUpdate( const UInt64 tickCount               ,
+                           const Float64 updateDeltaInMilliSecs );
+                           
         CGUCEFApplication( void );
         CGUCEFApplication( const CGUCEFApplication& src );
         virtual ~CGUCEFApplication();
+        CGUCEFApplication& operator=( const CGUCEFApplication& src ); /**< not implemented */
         
         private:
         typedef std::set< CGUCEFAppSubSystem* > TSubSystemList;
@@ -234,15 +260,16 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
         TSubSystemList m_subSysList;
         bool m_requiresPeriodicUpdates;
         bool m_inNeedOfAnUpdate;
-        UInt32 m_minimalUpdateDelta;
-        UInt32 m_appTickCount;
+        Float64 m_minimalUpdateDelta;
+        UInt64 m_appTickCount;
+        Float64 m_timerFreq;
         CIGUCEFApplicationDriver* m_appDriver;
         
         bool _initialized;
         bool _active;
         CString _appdir;
-        UInt32 m_maxdeltaticksfordelay;
-        UInt32 m_delaytime;
+        Float64 m_minimalCycleDeltaInMilliSecs;
+        UInt32 m_cycleDelayInMilliSecs;
         
         static CGUCEFApplication* _instance;
         static MT::CMutex m_mutex;

@@ -131,13 +131,9 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     bool GetClientThreading( void ) const;
     
     /**                 
-     *      polls the socket etc. as needed and update stats.
-     *
-     *      @param tickcount the tick count when the Update process commenced.
-     *      @param deltaticks ticks since the last Update process commenced.          
+     *      polls the socket etc. as needed and update stats.        
      */
-    virtual void Update( UInt32 tickcount  ,
-                         UInt32 deltaticks );           
+    virtual void Update( void );           
 
     /*
      *      Constructor and Destructor

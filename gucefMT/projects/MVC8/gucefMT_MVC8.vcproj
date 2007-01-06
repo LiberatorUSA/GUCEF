@@ -64,6 +64,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="winmm.lib"
 				OutputFile="$(OutDir)/gucefMT_MVC8_d.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -192,6 +193,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\src\gucefMT.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefMT_CActiveObject.cpp"
 				>
 			</File>
@@ -201,6 +206,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\gucefMT_CCriticalSection.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_CGUCEFMTModule.cpp"
 				>
 			</File>
 			<File
@@ -263,6 +272,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefMT_CCriticalSection.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefMT_CGUCEFMTModule.h"
 				>
 			</File>
 			<File

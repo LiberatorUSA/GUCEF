@@ -21,14 +21,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
+#include <assert.h>
+#include "gucefMT_dvmtoswrap.h"  /* needed for the precision timer */
 #include "CTimerPump.h"
-#include "CGUCEFApplication.h"
 #include "CITimerClient.h"
-
-#define GUCEF_CORE_CTIMER_CPP
+#include "CTracer.h"
 #include "CTimer.h"
 
 /*-------------------------------------------------------------------------//
@@ -46,43 +43,53 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CTimer::CTimer( const UInt32 interval /* = 10 */ )
-    : m_lastTimerCycle( 0UL )      ,
-      m_enabled( false )           ,
-      m_interval( interval )       ,
-      m_activationTickCount( 0UL ) ,
-      m_tickCount( 0UL )
-{
-    CTimerPump::Instance()->RegisterTimer( this );
+CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 10 */ )
+    : m_lastTimerCycle( 0 )                                    ,
+      m_enabled( false )                                       ,
+      m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )       ,
+      m_activationTickCount( 0 )                               ,
+      m_tickCount( 0 )                                         ,
+      m_timerPump( CTimerPump::Instance() )                    ,
+      m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )
+{TRACE;
+
+    assert( m_timerFreq != 0 );
+    m_timerPump->RegisterTimer( this );
 }          
 
 /*-------------------------------------------------------------------------*/
 
 CTimer::CTimer( const CTimer& src )
-     : m_interval( src.m_interval )             ,
-       m_lastTimerCycle( src.m_lastTimerCycle ) ,
-       m_enabled( false )                       ,
-       m_activationTickCount( 0UL )             ,
-       m_tickCount( 0UL )
-{
-    CTimerPump::Instance()->RegisterTimer( this );
+     : m_updateDeltaInMilliSecs( src.m_updateDeltaInMilliSecs ) ,
+       m_lastTimerCycle( src.m_lastTimerCycle )                 ,
+       m_enabled( false )                                       ,
+       m_activationTickCount( 0 )                               ,
+       m_tickCount( 0 )                                         ,
+       m_timerPump( CTimerPump::Instance() )                    ,
+       m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )
+{TRACE;
+
+    assert( m_timerFreq != 0 );
+    m_timerPump->RegisterTimer( this );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CTimer::~CTimer()
-{
-    CTimerPump::Instance()->UnregisterTimer( this );
+{TRACE;
+
+    m_timerPump->UnregisterTimer( this );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CTimer& 
 CTimer::operator=( const CTimer& src )
-{
+{TRACE;
+
     if ( this != &src )
     {
-        m_interval = src.m_interval;
+        m_updateDeltaInMilliSecs = src.m_updateDeltaInMilliSecs;
         m_lastTimerCycle = src.m_lastTimerCycle;
         m_enabled = src.m_enabled;
         m_tickCount = src.m_tickCount;
@@ -93,32 +100,45 @@ CTimer::operator=( const CTimer& src )
 /*-------------------------------------------------------------------------*/
     
 void 
-CTimer::SetInterval( const UInt32 interval )
-{
-    m_interval = interval;
+CTimer::SetInterval( const UInt32 updateDeltaInMilliSecs )
+{TRACE;
+
+    m_updateDeltaInMilliSecs = updateDeltaInMilliSecs;
 }
 
 /*-------------------------------------------------------------------------*/
     
 UInt32 
 CTimer::GetInterval( void ) const
-{
-    return m_interval;
+{TRACE;
+
+    return m_updateDeltaInMilliSecs;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CTimer::SetEnabled( const bool enabled )
-{
+{TRACE;
+
     if ( m_enabled != enabled )
     {
         m_enabled = enabled;                
         
         if ( enabled )
-        {        
-            m_lastTimerCycle = m_activationTickCount = ::GetTickCount();
-            m_tickCount = 0UL;           
+        {                    
+            m_lastTimerCycle = m_activationTickCount = MT::PrecisionTickCount();
+            m_timerFreq = MT::PrecisionTimerResolution() / 1000.0;
+            assert( m_timerFreq != 0 );
+            m_tickCount = 0;
+            
+            // Make sure we get an update and tell the pump about our update requirement
+            m_timerPump->TimerSetRequiresUpdates( this, true );
+        }
+        else
+        {
+            // we don't need periodic updates anymore 
+            m_timerPump->TimerSetRequiresUpdates( this, false );
         }
     }
 }
@@ -127,7 +147,8 @@ CTimer::SetEnabled( const bool enabled )
 
 bool
 CTimer::GetEnabled( void ) const
-{
+{TRACE;
+
     return m_enabled;
 } 
 
@@ -135,7 +156,8 @@ CTimer::GetEnabled( void ) const
 
 void 
 CTimer::Subscribe( CITimerClient* client )
-{
+{TRACE;
+
     m_clients.insert( client );
 }
 
@@ -143,59 +165,99 @@ CTimer::Subscribe( CITimerClient* client )
     
 void 
 CTimer::Unsubscribe( CITimerClient* client )
-{
+{TRACE;
+
     m_clients.erase( client );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void 
-CTimer::OnUpdate( const UInt32 tickCount  ,
-                  const UInt32 deltaTicks )
-{
+CTimer::OnUpdate( void )
+{TRACE;
+
     if ( m_enabled )
     {
-        Int32 timerDelta( (Int32)tickCount - (Int32)m_lastTimerCycle );
-        if ( timerDelta >= (Int32)m_interval )
-        {        
-            m_tickCount += deltaTicks;
-            
+        UInt64 newTickCount = MT::PrecisionTickCount();    
+        UInt64 deltaTicks = m_lastTimerCycle - newTickCount;
+        Float64 deltaMilliSecs = ( deltaTicks / m_timerFreq ) ;
+        m_lastTimerCycle = newTickCount;
+        m_tickCount += deltaTicks;
+
+        if ( deltaMilliSecs >= m_updateDeltaInMilliSecs )
+        {                    
             TTimerClientSet::iterator i = m_clients.begin();
             while ( i != m_clients.end() )
             {
-                (*i)->OnTimer( *this      ,
-                               tickCount  ,
-                               timerDelta ); 
+                (*i)->OnTimer( *this          ,
+                               m_tickCount    ,
+                               deltaMilliSecs ); 
                 ++i;
-            }            
-            m_lastTimerCycle = tickCount;   
+            }  
         }
     }         
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt64 
 CTimer::GetRunTicks( void ) const
-{
-    return ::GetTickCount() - m_activationTickCount;
+{TRACE;
+
+    if ( m_enabled )
+    {
+        return MT::PrecisionTickCount() - m_activationTickCount;
+    }
+    else
+    {
+        return m_tickCount;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+Float64
+CTimer::GetRunTimeInMilliSecs( void ) const
+{TRACE;
+
+    return GetRunTicks() / m_timerFreq;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt64
 CTimer::GetTickCount( void ) const
-{
+{TRACE;
+
     return m_tickCount;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Float64
+CTimer::GetTimeInMilliSecs( void ) const
+{TRACE;
+
+    return m_tickCount / m_timerFreq;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CTimer::Reset( void )
-{
-    m_lastTimerCycle = CGUCEFApplication::Instance()->GetLastUpdateTickCount();
-    m_tickCount = 0UL;
+{TRACE;
+
+    m_lastTimerCycle = MT::PrecisionTickCount();
+    m_tickCount = 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Float64
+CTimer::GetApproxMaxTimerResolutionInMilliSecs( void )
+{TRACE;
+
+    return MT::PrecisionTimerResolution() / 1000.0;
 }
 
 /*-------------------------------------------------------------------------//

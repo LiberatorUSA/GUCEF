@@ -123,8 +123,8 @@ class GUCEF_COMCORE_EXPORT_CPP CCom : public CORE::CGUCEFAppSubSystem
          *      @param tickcount the tick count when the Update process commenced.
          *      @param deltaticks ticks since the last Update process commenced.         
          */
-        virtual void OnUpdate( const UInt32 tickcount  ,
-                               const UInt32 deltaticks );
+        virtual void OnUpdate( const UInt64 tickcount               ,
+                               const Float64 updateDeltaInMilliSecs );
                              
                              
         private:

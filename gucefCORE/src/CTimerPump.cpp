@@ -21,9 +21,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include "CTracer.h"
 #include "CTimer.h"
-
-#define GUCEF_CORE_CTIMERPUMP_CPP
 #include "CTimerPump.h"
 
 /*-------------------------------------------------------------------------//
@@ -50,40 +49,27 @@ CTimerPump* CTimerPump::m_instance = NULL;
 //-------------------------------------------------------------------------*/
 
 CTimerPump::CTimerPump( void )
-{
+    : CGUCEFAppSubSystem()                       ,
+      m_isATimerActive( false )                  ,
+      m_timerList()                              ,
+      m_minimalResolution( GUCEFCORE_UINT32MAX )
+{TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTimerPump::CTimerPump( const CTimerPump& src )
-{
 }
 
 /*-------------------------------------------------------------------------*/
 
 CTimerPump::~CTimerPump()
-{
-}
+{TRACE;
 
-/*-------------------------------------------------------------------------*/
-
-CTimerPump&
-CTimerPump::operator=( const CTimerPump& src )
-{
-    /* dummy, do not use */
-
-    if ( this != &src )
-    {
-    }
-    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CTimerPump*
 CTimerPump::Instance( void )
-{
+{TRACE;
+
     if ( !m_instance )
     {
         m_instance = new CTimerPump();
@@ -95,7 +81,8 @@ CTimerPump::Instance( void )
 
 void
 CTimerPump::Deinstance( void )
-{
+{TRACE;
+
     delete m_instance;
     m_instance = NULL;
 }
@@ -104,30 +91,90 @@ CTimerPump::Deinstance( void )
 
 void 
 CTimerPump::RegisterTimer( CTimer* timer )
-{
-    m_timerList.insert( timer );
+{TRACE;
+
+    m_timerList.insert( std::pair< CTimer*, bool >( timer, false ) );
 }
 
 /*-------------------------------------------------------------------------*/
     
 void 
 CTimerPump::UnregisterTimer( CTimer* timer )
-{
+{TRACE;
+
     m_timerList.erase( timer );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void 
-CTimerPump::OnUpdate( const UInt32 tickCount  ,
-                      const UInt32 deltaTicks )
-{
+CTimerPump::OnUpdate( const UInt64 tickCount               ,
+                      const Float64 updateDeltaInMilliSecs )
+{TRACE;
+
     TTimerList::iterator i( m_timerList.begin() );
     while ( i != m_timerList.end() )
     {
-        (*i)->OnUpdate( tickCount  ,
-                        deltaTicks );
+        (*i).first->OnUpdate();
         ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTimerPump::TimerSetRequiresUpdates( CTimer* timer              ,
+                                     const bool requiresUpdates )
+{TRACE;
+
+    // First we determine if we still have a periodic update requirement
+    if ( requiresUpdates )
+    {
+        m_isATimerActive = true;
+    }
+    else
+    {
+        // Check if any other timers are active
+        bool isATimerActive = false;
+        TTimerList::iterator i( m_timerList.begin() );
+        while ( i != m_timerList.end() )
+        {
+            if ( ( (*i).first != timer ) &&
+                 (*i).second              )
+            {
+                isATimerActive = true;
+                break;
+            }
+            ++i;
+        }
+        
+        m_isATimerActive = isATimerActive;
+    }
+    
+    if ( m_isATimerActive )
+    {
+        // Determine the minimal resolution of all the timer combined
+        // @todo we should be using the smallest divider here
+        UInt32 interval = 0;
+        TTimerList::iterator i( m_timerList.begin() );
+        while ( i != m_timerList.end() )
+        {
+            interval = (*i).first->GetInterval();
+            if ( interval < m_minimalResolution )
+            {
+                m_minimalResolution = interval;
+                break;
+            }
+            ++i;
+        }
+        
+        SetPeriodicUpdateRequirement( true );
+        RequestUpdateInterval( m_minimalResolution );
+    }
+    else
+    {
+        SetPeriodicUpdateRequirement( false );
+        RequestUpdateInterval( GUCEFCORE_UINT32MAX );
     }
 }
 

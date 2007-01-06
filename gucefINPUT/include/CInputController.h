@@ -105,8 +105,8 @@ class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
                            const CORE::CEvent& eventid         ,
                            CORE::CICloneable* eventdata = NULL );
         
-    virtual void OnUpdate( const UInt32 applicationTicks ,
-                           const UInt32 deltaTicks       );        
+    virtual void OnUpdate( const UInt64 applicationTicks        ,
+                           const Float64 updateDeltaInMilliSecs );
 
     private:
     friend class CGUCEFINPUTModule;

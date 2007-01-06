@@ -136,15 +136,7 @@ class GUCEF_COMCORE_EXPORT_CPP CSocket : public CORE::CNotifier
     friend class CCom;               
     friend class CActiveComPump;
     
-    /** 
-     *      Decending classes should implement this updater to 
-     *      poll the socket ect. as needed and update stats.
-     *
-     *      @param tickcount the tick count when the Update process commenced.
-     *      @param deltaticks ticks since the last Update process commenced.          
-     */
-    virtual void Update( UInt32 tickcount  ,
-                         UInt32 deltaticks ) = 0;
+    virtual void Update( void ) = 0;
                                                               
     private:
     friend class CCom;
