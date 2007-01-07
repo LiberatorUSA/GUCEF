@@ -21,6 +21,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CALLSTACK_H
+#include "callstack.h"
+#define GUCEF_CORE_CALLSTACK_H
+#endif /* GUCEF_CORE_CALLSTACK_H ? */
+
 #ifndef GUCEF_CORE_CONFIGSTORE_H
 #include "CConfigStore.h"               /* centralized configuration management */
 #define GUCEF_CORE_CONFIGSTORE_H
@@ -143,6 +148,9 @@ CGUCEFCOREModule::operator=( const CGUCEFCOREModule& src )
 bool 
 CGUCEFCOREModule::Load( void )
 {
+        // it is important to initialize the call stack tracer at an early stage
+        GUCEF_InitCallstackUtility();
+        
         /*
          *      Very important: Initialize the memory manager before anything else !!!!!
          */
@@ -152,7 +160,7 @@ CGUCEFCOREModule::Load( void )
         MEMMAN_SetPaddingSize( 0 );
         MEMMAN_Initialize();       
         #endif 
-
+        
         /*
          *      Initialize centralized output
          */
@@ -217,14 +225,17 @@ CGUCEFCOREModule::Unload( void )
          *      Shutdown centralized output last
          */
         tspshutdown();
-        
+              
         /*
          *      Very important: Shutdown the memory manager last !!!!!
          */
         #ifdef ADD_MEMORY_MANAGER 
         MEMMAN_Shutdown();
         #endif
-                
+        
+        // it important to shutdown the call stack tracer as the last
+        GUCEF_ShutdowntCallstackUtility();
+                        
         return true;
 }
 

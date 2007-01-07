@@ -99,64 +99,6 @@
 
 /*-------------------------------------------------------------------------*/
 
-#ifndef ADD_MEMORY_MANAGER
-  #define CHECKMEM( addr, size )
-  #define CHECKMEMSEG( addr, chunk, size ) 
-#endif
-
-/*-------------------------------------------------------------------------*/
-
-/*
- *      Detection of 32/64 bits builds. 
- */
-#ifndef MANUAL_BITTARGET_DEFINE
-  #undef GUCEF32BIT
-  #undef GUCEF64BIT
-  #if defined ( GUCEF_MSWIN_BUILD ) && ( defined( _WIN32 ) || defined( WIN32 ) )
-    #define GUCEF32BIT
-  #elif defined ( GUCEF_MSWIN_BUILD ) && ( defined( _WIN64 ) || defined( WIN64 ) )
-    #define GUCEF64BIT
-  #else  
-    #error Cannot autodetect wheter this is a 32 or 64 bit build
-  #endif
-#endif
-
-/*-------------------------------------------------------------------------*/
-
-#undef DIRSEPCHAR
-#undef DIRSEPCHAROPPOSITE
-#ifdef GUCEF_MSWIN_BUILD
-  #define DIRSEPCHAR         '\\'
-  #define DIRSEPCHAROPPOSITE '/'
-#else
-  #define DIRSEPCHAR         '/'
-  #define DIRSEPCHAROPPOSITE '\\'
-#endif     
-
-/*-------------------------------------------------------------------------*/
-
-/*
- *      Small macro that changes integers used for storing memory 
- *      addresses to 32 or 64 bit depending on the build target.
- *      Usage of INTPTR allows you to safely cast or manipulate a 
- *      pointer as an integer.  
- */
-#undef INTPTR 
-#ifdef GUCEF32BIT
-  #define INTPTR UInt32
-#else /* 64 Bit target */
-  #define INTPTR UInt64
-#endif
-
-#undef PTRSIZE
-#ifdef GUCEF32BIT
-  #define PTRSIZE 4
-#else /* 64 Bit target */
-  #define PTRSIZE 8
-#endif
-
-/*-------------------------------------------------------------------------*/
-
 #ifdef DEBUG_MODE
   #ifndef TSPRINTING_H
     #include "tsprinting.h"

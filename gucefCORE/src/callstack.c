@@ -24,10 +24,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#ifndef GUCEF_CORE_DVOSWRAP_H
-#include "dvoswrap.h"
-#define GUCEF_CORE_DVOSWRAP_H
-#endif /* GUCEF_CORE_DVOSWRAP_H ? */
+#ifndef GUCEF_MT_DVMTOSWRAP_H
+#include "gucefMT_dvmtoswrap.h"
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
+
+#ifndef GUCEF_MT_MUTEX_H
+#include "gucefMT_mutex.h"
+#define GUCEF_MT_MUTEX_H
+#endif /* GUCEF_MT_MUTEX_H ? */
+
+#ifndef GUCEF_MT_ETYPES_H
+#include "gucefMT_ETypes.h"
+#define GUCEF_MT_ETYPES_H
+#endif /* GUCEF_MT_ETYPES_H ? */
 
 #include "callstack.h"
 
@@ -84,7 +94,11 @@ typedef struct SCallStack TCallStack;
 
 static TCallStack* _stacks = NULL;
 static UInt32 stackcount = 0;
+static char* logFilename = NULL;
 static FILE* log = NULL;
+static struct SMutex* mutex = NULL;
+static UInt32 logStack = 0;
+static UInt32 isInitialized = 0;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -94,16 +108,15 @@ static FILE* log = NULL;
 
 static void
 Log( const char* logtype ,
+     UInt32 threadID     ,
      Int32 stackheight   ,
      const char* file    ,
      int line            )
 {
-   /*     log = fopen( "GUCEFCallstackHist.txt", "ab" );
-        if ( !log ) return;
-        
-        fprintf( log, "%s: %d: %s(%d)%s", logtype, stackheight, file, line, EOL );
-        
-        fclose( log );  */
+    if ( ( logStack == 1 ) && ( log != NULL ) )
+    {
+        fprintf( log, "Thread %d: %s: %d: %s(%d)%s", threadID, logtype, stackheight, file, line, EOL );
+    }
 }     
 
 /*-------------------------------------------------------------------------*/
@@ -124,7 +137,7 @@ Push( TCallStack* stack ,
         stack->linenr[ stack->items ] = line;
         ++stack->items;
         
-        Log( "PUSH", stack->items, file, line ); 
+        Log( "PUSH", stack->threadid, stack->items, file, line ); 
 }          
 
 /*-------------------------------------------------------------------------*/
@@ -133,7 +146,13 @@ void
 GUCEF_UtilityCodeBegin( const char* file ,
                         int line         )
 {
-        UInt32 i, threadid = GetCurrentTaskID();
+    if ( isInitialized == 1 )
+    {
+        UInt32 i, threadid;
+        
+        MutexLock( mutex );
+        
+        threadid = GetCurrentTaskID();
         for ( i=0; i<stackcount; ++i )
         {
                 if ( _stacks[ i ].threadid == threadid )
@@ -141,6 +160,7 @@ GUCEF_UtilityCodeBegin( const char* file ,
                         Push( &_stacks[ i ] ,
                               file          ,
                               line          );
+                        MutexUnlock( mutex );
                         return;      
                 }
         }
@@ -154,7 +174,10 @@ GUCEF_UtilityCodeBegin( const char* file ,
         Push( &_stacks[ stackcount ] ,
               file                   ,
               line                   );
-        stackcount++;              
+        stackcount++;
+        
+        MutexUnlock( mutex );
+    }             
 }                        
 
 /*-------------------------------------------------------------------------*/
@@ -162,19 +185,29 @@ GUCEF_UtilityCodeBegin( const char* file ,
 void                        
 GUCEF_UtilityCodeEnd( void )
 {
-        UInt32 i, threadid = GetCurrentTaskID();
+    if ( isInitialized == 1 )
+    {
+        UInt32 i, threadid;
+        
+        MutexLock( mutex );
+        
+        threadid = GetCurrentTaskID();
         for ( i=0; i<stackcount; ++i )
         {
                 if ( _stacks[ i ].threadid == threadid )
                 {
-                        if ( _stacks[ i ].items )
+                        if ( _stacks[ i ].items != 0 )
                         {
                                 --_stacks[ i ].items;
-                                Log( " POP", _stacks[ i ].items+1, _stacks[ i ].file[ _stacks[ i ].items ], _stacks[ i ].linenr[ _stacks[ i ].items ] );                                                
+                                Log( " POP", _stacks[ i ].threadid, _stacks[ i ].items+1, _stacks[ i ].file[ _stacks[ i ].items ], _stacks[ i ].linenr[ _stacks[ i ].items ] );                                                
+                                MutexUnlock( mutex );
                                 return;
                         }                                                        
                 }
         }
+        
+        MutexUnlock( mutex );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -182,27 +215,27 @@ GUCEF_UtilityCodeEnd( void )
 static void
 PrintCallstack( FILE* dest )
 {
-        UInt32 i, n;
-        for ( i=0; i<stackcount; ++i )
+    UInt32 i, n;
+    for ( i=0; i<stackcount; ++i )
+    {
+        fprintf( dest, "------------------------------%s", EOL );
+        fprintf( dest, "Callstack for thread %d:%s%s", _stacks[ i ].threadid, EOL, EOL );
+        fprintf( dest, "stack size = %d%s", _stacks[ i ].items, EOL );
+        fprintf( dest, "------------------------------%s%s", EOL, EOL );
+        if ( _stacks[ i ].items )
         {
-                fprintf( dest, "------------------------------%s", EOL );
-                fprintf( dest, "Callstack for thread %d:%s%s", _stacks[ i ].threadid, EOL, EOL );
-                fprintf( dest, "stack size = %d%s", _stacks[ i ].items, EOL );
-                fprintf( dest, "------------------------------%s%s", EOL, EOL );
-                if ( _stacks[ i ].items )
-                {
-                        for ( n=0; n<_stacks[ i ].items; ++n )
-                        {
-                                fprintf( dest, "%d: %s(%d)%s", n+1, _stacks[ i ].file[ n ], _stacks[ i ].linenr[ n ], EOL );
-                        }
-                        fprintf( dest, "%s%s------------------------------%s%s", EOL, EOL, EOL, EOL );
-                }
-                else
-                {
-                        fprintf( dest, ">>> no items on stack <<<%s%s", EOL, EOL );
-                        fprintf( dest, "------------------------------%s%s", EOL, EOL );        
-                }                                                
+            for ( n=0; n<_stacks[ i ].items; ++n )
+            {
+                    fprintf( dest, "%d: %s(%d)%s", n+1, _stacks[ i ].file[ n ], _stacks[ i ].linenr[ n ], EOL );
+            }
+            fprintf( dest, "%s%s------------------------------%s%s", EOL, EOL, EOL, EOL );
         }
+        else
+        {
+            fprintf( dest, ">>> no items on stack <<<%s%s", EOL, EOL );
+            fprintf( dest, "------------------------------%s%s", EOL, EOL );        
+        }                                                
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -210,7 +243,14 @@ PrintCallstack( FILE* dest )
 void                      
 GUCEF_PrintCallstack( void )
 {
-        PrintCallstack( stdout );         
+    if ( isInitialized == 1 )
+    {
+        MutexLock( mutex );
+        
+        PrintCallstack( stdout );
+        
+        MutexUnlock( mutex );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -218,12 +258,135 @@ GUCEF_PrintCallstack( void )
 void
 GUCEF_DumpCallstack( const char* filename )
 {
-        FILE* fptr = fopen( filename, "wb" );
+    if ( isInitialized == 1 )
+    {
+        FILE* fptr = NULL;
+        
+        MutexLock( mutex );
+        
+        fptr = fopen( filename, "wb" );
         if ( fptr )
         {
                 PrintCallstack( fptr );
                 fclose( fptr );  
-        }                
+        }
+        
+        MutexUnlock( mutex ); 
+    }          
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+GUCEF_InitCallstackUtility( void )
+{
+    if ( isInitialized == 0 )
+    {
+        mutex = MutexCreate();
+        isInitialized = 1;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+GUCEF_ShutdowntCallstackUtility( void )
+{   
+    if ( isInitialized == 1 )
+    {
+        MutexLock( mutex );
+        if ( ( log != stdout ) && ( log != NULL ) )
+        {
+            fclose( log );
+        }
+        free( logFilename );
+        logFilename = NULL;
+        
+        isInitialized = 0;
+        MutexDestroy( mutex );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+GUCEF_SetStackLogging( const UInt32 logStackBool )
+{
+    if ( isInitialized == 1 )
+    {
+        MutexLock( mutex );
+        logStack = logStackBool;
+        if ( logStack == 1 )
+        {
+            if ( ( logFilename != NULL ) &&
+                 ( log == NULL )          )
+            {
+                log = fopen( logFilename, "ab" );
+            }
+            else
+            {
+                MutexUnlock( mutex );
+                GUCEF_LogStackToStdOut();
+                return;
+            }
+        }
+        else
+        {
+            if ( ( log != NULL )  &&
+                 ( log != stdout ) )
+            {
+                fclose( log );
+                log = NULL;
+            }
+        }
+        MutexUnlock( mutex );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+GUCEF_LogStackToStdOut( void )
+{
+    if ( isInitialized == 1 )
+    {    
+        MutexLock( mutex );
+        if ( ( log != NULL )  &&
+             ( log != stdout ) )
+        {
+            fclose( log );
+        }
+        log = stdout;
+        free( logFilename );
+        logFilename = NULL;
+        MutexUnlock( mutex );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+GUCEF_LogStackTo( const char* filename )
+{
+    if ( isInitialized == 1 )
+    {    
+        UInt32 strLen;
+        
+        MutexLock( mutex );
+        if ( ( log != stdout ) && ( log != NULL ) )
+        {
+            fclose( log );
+        }
+        free( logFilename );
+        logFilename = NULL;
+        
+        strLen = (UInt32) strlen( filename )+1;
+        logFilename = (char*) malloc( strLen );
+        memcpy( logFilename, filename, strLen );
+        log = fopen( logFilename, "ab" );
+        
+        MutexUnlock( mutex );
+    }   
 }
 
 /*-------------------------------------------------------------------------//

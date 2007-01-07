@@ -265,55 +265,55 @@ CDStoreCodecPlugin::CDStoreCodecPlugin( const CString& pluginfile )
         
         _fptable[ DSTOREPLUG_INIT ] = GetFunctionAddress( _sohandle         ,
                                                           "DSTOREPLUG_Init" ,
-                                                          1*PTRSIZE         );
+                                                          1*sizeof(void*)   );
         _fptable[ DSTOREPLUG_SHUTDOWN ] = GetFunctionAddress( _sohandle             ,
                                                               "DSTOREPLUG_Shutdown" ,
-                                                              1*PTRSIZE             );
+                                                              1*sizeof(void*)       );
         _fptable[ DSTOREPLUG_NAME ] = GetFunctionAddress( _sohandle         ,
                                                           "DSTOREPLUG_Name" ,
-                                                          1*PTRSIZE         );
+                                                          1*sizeof(void*)   );
         _fptable[ DSTOREPLUG_COPYRIGHT ] = GetFunctionAddress( _sohandle              ,
                                                                "DSTOREPLUG_Copyright" ,
-                                                               1*PTRSIZE              );
+                                                               1*sizeof(void*)        );
         _fptable[ DSTOREPLUG_VERSION ] = GetFunctionAddress( _sohandle            ,
                                                              "DSTOREPLUG_Version" ,
-                                                             1*PTRSIZE            );                                                               
+                                                             1*sizeof(void*)      );                                                               
         _fptable[ DSTOREPLUG_TYPE ] = GetFunctionAddress( _sohandle         ,
                                                           "DSTOREPLUG_Type" ,
-                                                          1*PTRSIZE         );
+                                                          1*sizeof(void*)   );
         _fptable[ DSTOREPLUG_DEST_FILE_OPEN ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_Dest_File_Open" ,
-                                                                    3*PTRSIZE                   );
+                                                                    3*sizeof(void*)             );
         _fptable[ DSTOREPLUG_DEST_FILE_CLOSE ] = GetFunctionAddress( _sohandle                    ,
                                                                      "DSTOREPLUG_Dest_File_Close" ,
-                                                                     2*PTRSIZE                    );
+                                                                     2*sizeof(void*)              );
         _fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] = GetFunctionAddress( _sohandle                    ,
                                                                      "DSTOREPLUG_Begin_Node_Store" ,
-                                                                     3*PTRSIZE+8                   );                                                                                                                                                                                                   
+                                                                     3*sizeof(void*)+8             );                                                                                                                                                                                                   
         _fptable[ DSTOREPLUG_END_NODE_STORE ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_End_Node_Store" ,
-                                                                    3*PTRSIZE+8                 );
+                                                                    3*sizeof(void*)+8           );
         _fptable[ DSTOREPLUG_STORE_NODE_ATT ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_Store_Node_Att" ,
-                                                                    5*PTRSIZE+12                );                                                                                                                                                                                                            
+                                                                    5*sizeof(void*)+12          );                                                                                                                                                                                                            
         _fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ] = GetFunctionAddress( _sohandle                        ,
                                                                          "DSTOREPLUG_Begin_Node_Children" ,
-                                                                         3*PTRSIZE                        );
+                                                                         3*sizeof(void*)                  );
         _fptable[ DSTOREPLUG_END_NODE_CHILDREN ] = GetFunctionAddress( _sohandle                      ,
                                                                        "DSTOREPLUG_End_Node_Children" ,
-                                                                       3*PTRSIZE                      );                                                                         
+                                                                       3*sizeof(void*)                );                                                                         
         _fptable[ DSTOREPLUG_SRC_FILE_OPEN ] = GetFunctionAddress( _sohandle                  ,
                                                                    "DSTOREPLUG_Src_File_Open" ,
-                                                                   2*PTRSIZE                  );
+                                                                   2*sizeof(void*)            );
         _fptable[ DSTOREPLUG_SRC_FILE_CLOSE ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_Src_File_Close" ,
-                                                                    2*PTRSIZE                   ); 
+                                                                    2*sizeof(void*)                   ); 
         _fptable[ DSTOREPLUG_SET_READ_HANDLERS ] = GetFunctionAddress( _sohandle                      ,
                                                                        "DSTOREPLUG_Set_Read_Handlers" ,
-                                                                       4*PTRSIZE                      );
+                                                                       4*sizeof(void*)                );
         _fptable[ DSTOREPLUG_START_READING ] = GetFunctionAddress( _sohandle                  ,
                                                                    "DSTOREPLUG_Start_Reading" ,
-                                                                   2*PTRSIZE                  );                                                                                                                                                                                                                      
+                                                                   2*sizeof(void*)            );                                                                                                                                                                                                                      
                                                                                                                        
         
         if ( ( !_fptable[ DSTOREPLUG_INIT ] ) ||

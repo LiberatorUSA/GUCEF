@@ -97,6 +97,8 @@ class GUCEFCORE_EXPORT_CPP CEvent
      */
     void Initialize( void ) const;
     
+    bool IsInitialized( void ) const;
+    
     private:
     friend class CNotificationIDRegistry;
     

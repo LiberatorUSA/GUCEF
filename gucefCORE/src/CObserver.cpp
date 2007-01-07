@@ -69,20 +69,15 @@ CObserver::~CObserver()
     LockData();
     
     /*
-     *  Neatly unsubscribe from all notifiers
+     *  Neatly un-subscribe from all notifiers
      */
-    TNotifierList listcopy( m_notifiers );
-    TNotifierList::iterator i( listcopy.begin() );
-    while ( i != listcopy.end() )
+    TNotifierList::iterator i( m_notifiers.begin() );
+    while ( i != m_notifiers.end() )
     {
-        /*
-         *  It might not be evident here but it is the notifier
-         *  who updates our administration which is why we had to make a copy of
-         *  our notifier list.
-         */
         (*i).notifier->OnObserverDestroy( this );
         ++i;
     }
+    m_notifiers.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -107,7 +102,7 @@ CObserver::UnsubscribeFromAll( void )
     LockData();
     
     /*
-     *  Neatly unsubscribe from all notifiers
+     *  Neatly un-subscribe from all notifiers
      */
     TNotifierList listcopy( m_notifiers );
     TNotifierList::iterator i( listcopy.begin() );

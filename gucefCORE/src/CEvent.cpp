@@ -51,7 +51,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CEvent::CEvent( void )
-    : m_eventID( 0 )
+    : m_eventID( 0 ) ,
+      m_eventName()
 {TRACE;
 }
 
@@ -62,7 +63,7 @@ CEvent::CEvent( const CORE::CString& eventName )
       m_eventName( eventName )
 {TRACE;
     
-    // Wait for lazy initialization
+    // Wait for delayed initialization
 }
 
 /*-------------------------------------------------------------------------*/
@@ -111,7 +112,11 @@ CEvent&
 CEvent::operator=( const CORE::CString& eventName )
 {TRACE;
     
-    m_eventName = eventName;
+    if ( eventName != m_eventName )
+    {
+        m_eventName = eventName;
+        m_eventID = 0;    // <- Wait for delayed initialization
+    }        
     return *this;
 }
 
@@ -121,6 +126,8 @@ bool
 CEvent::operator==( const CEvent& other ) const
 {TRACE;
     
+    assert( m_eventID > 0 );
+    assert( other.m_eventID > 0 );
     return m_eventID == other.m_eventID;
 }
 
@@ -130,6 +137,8 @@ bool
 CEvent::operator!=( const CEvent& other ) const
 {TRACE;
     
+    assert( m_eventID > 0 );
+    assert( other.m_eventID > 0 );
     return m_eventID != other.m_eventID;
 }
 
@@ -139,6 +148,8 @@ bool
 CEvent::operator<( const CEvent& other ) const
 {TRACE;
     
+    assert( m_eventID > 0 );
+    assert( other.m_eventID > 0 );
     return m_eventID < other.m_eventID;
 }
 
@@ -148,6 +159,7 @@ UInt32
 CEvent::GetID( void ) const
 {TRACE;
 
+    assert( m_eventID > 0 );
     return m_eventID;
 }
 
@@ -156,7 +168,7 @@ CEvent::GetID( void ) const
 CORE::CString
 CEvent::GetName( void ) const
 {TRACE;
-
+    
     return m_eventName;
 }
 
@@ -173,6 +185,15 @@ CEvent::Initialize( void ) const
      *  while allowing event objects to be defined globally is an implementation level problem.
      */
     const_cast< CEvent& >( *this ) = CNotificationIDRegistry::Instance()->Lookup( m_eventName, true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CEvent::IsInitialized( void ) const
+{TRACE;
+
+    return m_eventID > 0;
 }
 
 /*-------------------------------------------------------------------------//

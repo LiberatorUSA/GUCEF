@@ -228,7 +228,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
                  */
                 #pragma warning( disable: 4311 ) 
                 char intstr[ 10 ];
-                sprintf( intstr, "%d", (INTPTR)hinstance );  
+                sprintf( intstr, "%d", (UInt32)hinstance );  
                 GUCEFSetEnv( "HINSTANCE", intstr );                 
                 
                 char apppath[ MAX_PATH ]; 

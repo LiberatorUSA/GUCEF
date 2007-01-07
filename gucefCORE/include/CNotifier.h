@@ -26,6 +26,7 @@
 
 #include <string>
 #include <set>
+#include <vector>
 #include <map>
 #include "gucefCORE_ETypes.h"
 #include "CICloneable.h"
@@ -137,7 +138,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
     static void RegisterEvents( void );
 
     /**
-     *  Decending classes should override this with the classname
+     *  descending classes should override this with the class name
      *  ie: a class named CMyClass should implement this member 
      *  function as: { return "MyNamespace::CMyClass"; }
      *
@@ -154,7 +155,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
     
     /**
      *  Dispatches the standard CNotifier::ModifyEvent
-     *  Usefull for a notification system where you only care if
+     *  Useful for a notification system where you only care if
      *  a mutation is performed on an object.
      */
     void NotifyObservers( void );
@@ -166,10 +167,10 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      *
      *  Note that the calling thread is the one in which the observer OnNotify 
      *  event handlers will be processed. Keep this in mind when notification
-     *  occures across thread boundries.
+     *  occurs across thread boundaries.
      *
      *  Note that eventData is not copied. So when passing data across threads
-     *  considder allocating a copy and passing that in as the data argument.
+     *  consider allocating a copy and passing that in as the data argument.
      */
     void NotifyObservers( const CEvent& eventid         ,
                           CICloneable* eventData = NULL );
@@ -177,7 +178,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
     /**
      *  The same as NotifyObservers( CEvent, CICloneable )
      *  except that this allows you to specify the sender yourself.
-     *  You will basicly be faking an event emitted at the given sender.
+     *  You will basically be faking an event emitted at the given sender.
      *  
      *  Use with great care !!!
      *  Use of this version should be an exception and not standard practice
@@ -202,23 +203,49 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      *  Handler for observers that are deleted without having been
      *  unsubscribed first. This results in an observer that is no longer
      *  able to handle notification messages due to the deallocation 
-     *  chain of events (decending class is already deallocated).
+     *  chain of events (descending class is already deallocated).
      *
      *  Note that if you code neatly you will want to call UnsubscribeAll()
-     *  from your class destructor that decends from CObserver and implements
+     *  from your class destructor that descends from CObserver and implements
      *  OnNotify()
      */
     void OnObserverDestroy( CObserver* observer );
 
     private:
+   
     void ForceNotifyObserversOnce( const CEvent& eventid    ,
                                    CICloneable* data = NULL );
 
     void UnsubscribeFromAllEvents( CObserver* observer       ,
                                    const bool notifyObserver );
+
+    void ProcessMailbox( void );
+    void ProcessCmdMailbox( void );
+    void ProcessEventMailbox( void );
+
+    private:
+    
+    typedef std::pair< CEvent, CICloneable* > TEventMailElement;
+    typedef enum TCmdType
+    {
+        REQUEST_SUBSCRIBE   ,
+        REQUEST_UNSUBSCRIBE
+    };
+    
+    struct SCmdMailElement
+    {
+        TCmdType cmdType;
+        CObserver* observer;
+        CEvent eventID;
+        bool notify;
+    };
+    typedef struct SCmdMailElement TCmdMailElement;    
         
     TNotificationList m_eventobservers;
     TObserverList m_observers;
+    bool m_isBusy;
+    std::vector< TEventMailElement > m_eventMailStack;
+    std::vector< TCmdMailElement > m_cmdMailStack;
 };
 
 /*-------------------------------------------------------------------------//

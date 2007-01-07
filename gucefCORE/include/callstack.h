@@ -75,7 +75,7 @@ GUCEF_UtilityCodeEnd( void );
 /*-------------------------------------------------------------------------*/
            
 /**
- *      Prints the current callstack to stdout
+ *      Prints the current call stack to stdout
  */
 GUCEFCORE_EXPORT_C void                      
 GUCEF_PrintCallstack( void );
@@ -83,12 +83,41 @@ GUCEF_PrintCallstack( void );
 /*-------------------------------------------------------------------------*/ 
 
 /**
- *      Dumps the current callstack to the file with the given name
+ *      Dumps the current call stack to the file with the given name
  *
  *      @param filename path and name of the output file.
  */
 GUCEFCORE_EXPORT_C void
-GUCEF_DumpCallstack( const char* filename );                     
+GUCEF_DumpCallstack( const char* filename );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_C void
+GUCEF_LogStackTo( const char* filename );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_C void
+GUCEF_LogStackToStdOut( void );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_C void
+GUCEF_SetStackLogging( const UInt32 logStackBool );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Initializes the call stack utility, should be called before using any of 
+ *  the functions.
+ */  
+GUCEFCORE_EXPORT_C void
+GUCEF_InitCallstackUtility( void );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_C void
+GUCEF_ShutdowntCallstackUtility( void );
                                             
 /*--------------------------------------------------------------------------*/
 

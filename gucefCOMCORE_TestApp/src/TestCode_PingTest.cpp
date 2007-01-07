@@ -55,7 +55,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define MAX_PINGS    50
+#define MAX_PINGS    1
 #define PING_BYTES   32
 #define PING_TIMEOUT 1000
 
@@ -148,7 +148,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
         else
         if ( eventid == CORE::CGUCEFApplication::AppShutdownEvent )
         {
-         //   Deinstance();
+           //Deinstance();
         }
         else
         if ( eventid == COMCORE::CPing::PingReponseEvent )
@@ -180,7 +180,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
         else
         if ( eventid == COMCORE::CPing::PingFailedEvent )
         {   
-            // some error occured while attempting to ping
+            // some error occurred while attempting to ping
             printf( "ERROR: CPingTester: error while pinging\n" );
             ERRORHERE;
         }
@@ -224,8 +224,24 @@ CPingTester* CPingTester::m_instance = NULL;
 void
 PerformPingTest( void )
 {
-    CPingTester::Instance();
-    CORE::CGUCEFApplication::Instance()->main( 0, NULL, true );
+    #ifdef DEBUG_MODE
+    CORE::GUCEF_LogStackToStdOut();
+    CORE::GUCEF_SetStackLogging( 1 );
+    #endif /* DEBUG_MODE ? */
+    
+    try
+    {
+        CPingTester::Instance();
+        CORE::CGUCEFApplication::Instance()->main( 0, NULL, true );
+    }
+    catch ( ... )
+    {
+        printf( "ERROR unhandled exception during test\n" );
+        #ifdef DEBUG_MODE
+        CORE::GUCEF_PrintCallstack();
+        #endif /* DEBUG_MODE ? */
+        ERRORHERE;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

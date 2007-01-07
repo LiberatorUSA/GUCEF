@@ -178,7 +178,7 @@ CTMailBox< T >::GetMail( T& eventid         ,
                          CICloneable** data )
 {
     m_datalock.Lock();
-    if ( m_mailStack.size() )
+    if ( !m_mailStack.empty() )
     {
         TMailElement entry( m_mailStack[ m_mailStack.size()-1 ] );
         eventid = entry.eventid;
