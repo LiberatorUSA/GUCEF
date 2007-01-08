@@ -58,6 +58,7 @@
 #define MAX_PINGS    1
 #define PING_BYTES   32
 #define PING_TIMEOUT 1000
+#define REMOTE_HOST  "127.0.0.1"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -135,10 +136,11 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
     
         if ( eventid == CORE::CGUCEFApplication::AppInitEvent )
         {   
-            if ( !m_ping.Start( "www.google.com"  , 
-                                MAX_PINGS         ,
-                                PING_BYTES        ,
-                                PING_TIMEOUT      ) )
+            printf( "CPingTester: pinging %s for %d time(s) with %d bytes and a timeout of %d ms\n", REMOTE_HOST, MAX_PINGS, PING_BYTES, PING_TIMEOUT );
+            if ( !m_ping.Start( REMOTE_HOST  , 
+                                MAX_PINGS    ,
+                                PING_BYTES   ,
+                                PING_TIMEOUT ) )
             {
                 // Failed to start the ping sequence
                 printf( "ERROR: CPingTester: Failed to start the ping sequence\n" );
@@ -148,7 +150,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
         else
         if ( eventid == CORE::CGUCEFApplication::AppShutdownEvent )
         {
-           //Deinstance();
+           // Deinstance();
         }
         else
         if ( eventid == COMCORE::CPing::PingReponseEvent )
@@ -160,7 +162,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
                 printf( "ERROR: CPingTester: no event data for event PingReponseEvent\n" );
                 ERRORHERE;
             }            
-            printf( "CPingTester: Received ping response: %d ms\n", eData->GetData() );
+            printf( "CPingTester: Received ping response from %s: %d ms\n", REMOTE_HOST, eData->GetData() );
                         
             if ( m_pingCount > MAX_PINGS )
             {
@@ -173,8 +175,8 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
         else
         if ( eventid == COMCORE::CPing::PingTimeoutEvent )
         {   
-            // We are pinging google, we should not get a timeout (unless google is having a bad day)
-            printf( "ERROR: CPingTester: timeout while pinging, this should not happen\n" );
+            // We are pinging REMOTE_HOST, we should not get a timeout (unless REMOTE_HOST is having a bad day)
+            printf( "ERROR: CPingTester: timeout while pinging %s, this should not happen\n", REMOTE_HOST );
             ERRORHERE;
         }
         else
@@ -225,8 +227,8 @@ void
 PerformPingTest( void )
 {
     #ifdef DEBUG_MODE
-    CORE::GUCEF_LogStackToStdOut();
-    CORE::GUCEF_SetStackLogging( 1 );
+   // CORE::GUCEF_LogStackToStdOut();
+   // CORE::GUCEF_SetStackLogging( 1 );
     #endif /* DEBUG_MODE ? */
     
     try

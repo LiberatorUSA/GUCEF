@@ -516,7 +516,7 @@ CNotifier::NotifyObservers( const CEvent& eventid  ,
             {
                 // Check if we have not already notified this observer
                 oPtr = (*i).first;
-                if ( notifiedObservers.find( oPtr ) != notifiedObservers.end() )
+                if ( notifiedObservers.find( oPtr ) == notifiedObservers.end() )
                 {
                     // Perform the notification
                     oPtr->OnNotify( this      ,
@@ -557,7 +557,7 @@ CNotifier::NotifyObservers( const CEvent& eventid  ,
             // Check if we have not already notified this observer
             notified = false;
             oPtr = (*n);
-            if ( notifiedObservers.find( oPtr ) != notifiedObservers.end() )
+            if ( notifiedObservers.find( oPtr ) == notifiedObservers.end() )
             {
                 // Perform the notification
                 i = m_observers.find( oPtr );
