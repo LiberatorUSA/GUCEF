@@ -106,6 +106,13 @@ CNotifier::~CNotifier()
     LockData();
     
     /*
+     *  The notifier should no longer be busy with some action if it is beeing destroyed.
+     *  If it is still busy then the code would resume after the object is deleted which
+     *  causes undefined behaviour possibly resulting in a crash.
+     */
+    assert( !m_isBusy );
+    
+    /*
      *  Notify observers that the notifier is die-ing
      */
     ForceNotifyObserversOnce( DestructionEvent );

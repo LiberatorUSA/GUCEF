@@ -150,7 +150,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
         else
         if ( eventid == CORE::CGUCEFApplication::AppShutdownEvent )
         {
-           // Deinstance();
+            Deinstance();
         }
         else
         if ( eventid == COMCORE::CPing::PingReponseEvent )
