@@ -141,7 +141,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType >::~CTAbstractFactory()
 template< typename SelectionCriteriaType, class BaseClassType >
 CTAbstractFactory< SelectionCriteriaType, BaseClassType >& 
 CTAbstractFactory< SelectionCriteriaType, BaseClassType >::operator=( const CTAbstractFactory< SelectionCriteriaType, BaseClassType >& src )
-{   //TICS !GOLC-004: is protected
+{
     if ( &src != this )
     {
     }

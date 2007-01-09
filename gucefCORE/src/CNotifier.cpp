@@ -66,6 +66,8 @@ CNotifier::CNotifier( void )
       m_imp( NULL )
 {TRACE;
 
+    RegisterEvents();
+    
     m_imp = CNotifierImplementor::Create( this );
     assert( m_imp != NULL );
 }
@@ -77,6 +79,8 @@ CNotifier::CNotifier( const CNotifier& src )
       m_imp( NULL )
 {TRACE;
 
+    RegisterEvents();
+   
     m_imp = CNotifierImplementor::Create( this, src );
     assert( m_imp != NULL );
 }
@@ -156,35 +160,35 @@ CNotifier::Unsubscribe( CObserver* observer   ,
 
 /*-------------------------------------------------------------------------*/                        
 
-void 
+bool 
 CNotifier::NotifyObservers( void )
 {TRACE;
 
-    m_imp->NotifyObservers();
+    return m_imp->NotifyObservers();
 }
 
 /*-------------------------------------------------------------------------*/
     
-void 
+bool 
 CNotifier::NotifyObservers( const CEvent& eventid  ,
                             CICloneable* eventData )
 {TRACE;
 
-    m_imp->NotifyObservers( eventid   ,
-                            eventData );   
+    return m_imp->NotifyObservers( eventid   ,
+                                   eventData );   
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CNotifier::NotifyObservers( CNotifier& sender                   ,
                             const CEvent& eventid               ,
                             CICloneable* eventData /* = NULL */ )
 {TRACE;
 
-    m_imp->NotifyObservers( sender    ,
-                            eventid   ,
-                            eventData );
+    return m_imp->NotifyObservers( sender    ,
+                                   eventid   ,
+                                   eventData );
 }                            
 
 /*-------------------------------------------------------------------------*/
@@ -211,7 +215,7 @@ void
 CNotifier::LockData( void ) const
 {TRACE;
 
-    /* can be implemented in a decending class to add thread-safety */
+    /* can be implemented in a descending class to add thread-safety */
 }
 
 /*-------------------------------------------------------------------------*/
@@ -220,7 +224,7 @@ void
 CNotifier::UnlockData( void ) const
 {TRACE;
 
-    /* can be implemented in a decending class to add thread-safety */
+    /* can be implemented in a descending class to add thread-safety */
 }
 
 /*-------------------------------------------------------------------------//

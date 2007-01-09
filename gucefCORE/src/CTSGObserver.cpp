@@ -91,7 +91,30 @@ void
 CTSGObserver::SetParent( CTSGNotifier* parentNotifier )
 {TRACE;
 
+    assert( parentNotifier != NULL );
     m_parentNotifier = parentNotifier;
+    SubscribeTo( parentNotifier );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTSGObserver::OnNotify( CNotifier* notifier                  ,
+                        const CEvent& eventid                ,
+                        CICloneable* eventdata /* = NULL  */ )
+{TRACE;
+
+    if ( ( notifier == m_parentNotifier )           && 
+         ( eventid == CNotifier::DestructionEvent )  )
+    {
+        m_parentNotifier = NULL;
+    }
+    else
+    {
+        CPumpedObserver::OnNotify( notifier   ,
+                                   eventid    ,
+                                   eventdata  );        
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -102,9 +125,14 @@ CTSGObserver::OnPumpedNotify( CNotifier* notifier                  ,
                               CICloneable* eventdata /* = NULL  */ )
 {TRACE;
 
-    m_parentNotifier->OnPumpedNotify( notifier  ,
-                                      eventid   ,
-                                      eventdata );
+    // Make sure we still have a parent
+    if ( m_parentNotifier != NULL )
+    {
+        // Pass on the message
+        m_parentNotifier->OnPumpedNotify( notifier  ,
+                                          eventid   ,
+                                          eventdata );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

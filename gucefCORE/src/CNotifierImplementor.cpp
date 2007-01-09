@@ -112,7 +112,7 @@ CNotifierImplementor::~CNotifierImplementor()
     /*
      *  The notifier should no longer be busy with some action if it is beeing destroyed.
      *  If it is still busy then the code would resume after the object is deleted which
-     *  causes undefined behaviour possibly resulting in a crash.
+     *  causes undefined behavior possibly resulting in a crash.
      *  If you hit this assert then you have found a bug in the logic of this class
      */
     assert( !m_isBusy );    
@@ -152,19 +152,58 @@ CNotifierImplementor::Destroy( CNotifierImplementor* obj )
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid , 
                                                 CICloneable* data     )
 {TRACE;
 
+    m_isBusy = true;
+    
+    CObserver* oPtr = NULL;
+    TObserverSet notifiedObservers;
+            
     TObserverList::iterator i = m_observers.begin();
     while ( i != m_observers.end() )
-    {
-        (*i).first->OnNotify( m_ownerNotifier ,
-                              eventid         ,
-                              data            );
+    {       
+        // Check if we have not already notified this observer
+        oPtr = (*i).first;
+        if ( notifiedObservers.find( oPtr ) == notifiedObservers.end() )
+        {
+            (*i).first->OnNotify( m_ownerNotifier ,
+                                  eventid         ,
+                                  data            );
+                                  
+            // Check if someone deleted our owner notifier
+            if ( m_ownerNotifier == NULL )
+            {
+                // Gracefully handle the destruction sequence
+                m_isBusy = false;
+                Destroy( this );
+                return false;
+            }
+                                
+            // Add the observer to our 'notified' list
+            notifiedObservers.insert( oPtr );                      
+            
+            // Process command mail if needed
+            if ( !m_cmdMailStack.empty() )
+            {
+                // We have command mail
+                m_isBusy = false;
+                ProcessCmdMailbox();
+                m_isBusy = true;
+                
+                // the administration has been altered, we now have no choice 
+                // but to start from the beginning
+                i = m_observers.begin();
+                continue;
+            }
+        }
         ++i;        
     } 
+    
+    m_isBusy = false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -492,18 +531,19 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
 
 /*-------------------------------------------------------------------------*/                        
 
-void 
+bool 
 CNotifierImplementor::NotifyObservers( void )
 {TRACE;
 
     LockData();
-    ForceNotifyObserversOnce( CNotifier::ModifyEvent );
+    bool aliveState = ForceNotifyObserversOnce( CNotifier::ModifyEvent );
     UnlockData();
+    return aliveState;
 }
 
 /*-------------------------------------------------------------------------*/
     
-void 
+bool 
 CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
                                        CICloneable* eventData )
 {TRACE;
@@ -546,7 +586,7 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
                         // Gracefully handle the destruction sequence
                         m_isBusy = false;
                         Destroy( this );
-                        return;
+                        return false;
                     }
                                         
                     // Add the observer to our 'notified' list
@@ -613,7 +653,7 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
                         // Gracefully handle the destruction sequence
                         m_isBusy = false;
                         Destroy( this );
-                        return;
+                        return false;
                     }                    
                     
                     // Add the observer to our 'notified' list
@@ -649,6 +689,8 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
     }
     
     UnlockData();    
+    
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -727,7 +769,7 @@ CNotifierImplementor::ProcessMailbox( void )
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CNotifierImplementor::NotifyObservers( CNotifier& sender                   ,
                                        const CEvent& eventid               ,
                                        CICloneable* eventData /* = NULL */ )
@@ -735,7 +777,7 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender                   ,
 
     // Use the friend relationship to access the NotifyObservers()
     // member function of the given notifier.
-    sender.NotifyObservers( eventid, eventData );
+    return sender.NotifyObservers( eventid, eventData );
 }                            
 
 /*-------------------------------------------------------------------------*/
@@ -775,8 +817,8 @@ CNotifierImplementor::OnDeathOfOwnerNotifier( void )
 
     /*
      *  This is an important step,..
-     *  We null the owner pointer which functions as a flag signalling that
-     *  the owner notifier is now considdered to be destroyed.
+     *  We null the owner pointer which functions as a flag signaling that
+     *  the owner notifier is now considered to be destroyed.
      */
     m_ownerNotifier = NULL;
     

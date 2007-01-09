@@ -118,7 +118,7 @@ CTFactory< BaseClassType, ConcreteClassType >::~CTFactory()
 template< class BaseClassType, class ConcreteClassType >
 CTFactory< BaseClassType, ConcreteClassType >& 
 CTFactory< BaseClassType, ConcreteClassType >::operator=( const CTFactory< BaseClassType, ConcreteClassType >& src )
-{   //TICS !GOLC-004: tics bug
+{
     if ( &src != this )
     {
     }

@@ -128,7 +128,7 @@ class CNotifierImplementor
      *  Useful for a notification system where you only care if
      *  a mutation is performed on an object.
      */
-    void NotifyObservers( void );
+    bool NotifyObservers( void );
     
     /**
      *  Dispatches the given eventid and eventData to all observers
@@ -142,7 +142,7 @@ class CNotifierImplementor
      *  Note that eventData is not copied. So when passing data across threads
      *  consider allocating a copy and passing that in as the data argument.
      */
-    void NotifyObservers( const CEvent& eventid         ,
+    bool NotifyObservers( const CEvent& eventid         ,
                           CICloneable* eventData = NULL );
 
     /**
@@ -153,7 +153,7 @@ class CNotifierImplementor
      *  Use with great care !!!
      *  Use of this version should be an exception and not standard practice
      */
-    void NotifyObservers( CNotifier& sender             ,
+    bool NotifyObservers( CNotifier& sender             ,
                           const CEvent& eventid         ,
                           CICloneable* eventData = NULL );
 
@@ -175,7 +175,7 @@ class CNotifierImplementor
     
     void UnlockData( void ) const;
    
-    void ForceNotifyObserversOnce( const CEvent& eventid    ,
+    bool ForceNotifyObserversOnce( const CEvent& eventid    ,
                                    CICloneable* data = NULL );
 
     void UnsubscribeFromAllEvents( CObserver* observer       ,

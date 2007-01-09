@@ -21,6 +21,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
+
 #define GUCEF_CORE_CNOTIFIEROBSERVINGCOMPONENT_CPP
 #include "CNotifierObservingComponent.h"
 
@@ -45,7 +50,8 @@ void
 CNotifierObservingComponent::OnNotify( CNotifier* notifier                 ,
                                        const CEvent& eventid               ,
                                        CICloneable* eventdata /* = NULL */ )
-{
+{TRACE;
+
     m_owner->OnNotify( notifier  ,
                        eventid   ,
                        eventdata );
@@ -55,7 +61,8 @@ CNotifierObservingComponent::OnNotify( CNotifier* notifier                 ,
 
 void 
 CNotifierObservingComponent::LockData( void )
-{
+{TRACE;
+
     m_owner->LockData();
 }
 
@@ -63,33 +70,38 @@ CNotifierObservingComponent::LockData( void )
     
 void 
 CNotifierObservingComponent::UnlockData( void )
-{
+{TRACE;
+
     m_owner->UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
 
 CNotifierObservingComponent::CNotifierObservingComponent( void )
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
     
 CNotifierObservingComponent::CNotifierObservingComponent( const CNotifierObservingComponent& src )
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
     
 CNotifierObservingComponent::~CNotifierObservingComponent()
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
     
 CNotifierObservingComponent& 
 CNotifierObservingComponent::operator=( const CNotifierObservingComponent& src )
-{	//TICS !GOLC-004: is protected
+{TRACE;
+
     if ( this != &src )
     {
     }
@@ -100,7 +112,8 @@ CNotifierObservingComponent::operator=( const CNotifierObservingComponent& src )
 
 void 
 CNotifierObservingComponent::SetOwner( CObservingNotifier* owner )
-{
+{TRACE;
+
     m_owner = owner;
 }
 

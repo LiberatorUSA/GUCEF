@@ -282,7 +282,7 @@ CObservingNotifier::OnNotify( CNotifier* notifier                 ,
         // Check for events we should forward
         if ( m_eventList.end() != m_eventList.find( eventid ) )
         {
-            NotifyObservers( eventid, eventdata );
+            if ( !NotifyObservers( eventid, eventdata ) ) return;
         }
         else
         {
@@ -294,7 +294,7 @@ CObservingNotifier::OnNotify( CNotifier* notifier                 ,
                 TNotifierList::iterator n( notifierList.find( notifier ) );
                 if ( n != notifierList.end() )
                 {
-                    NotifyObservers( eventid, eventdata );
+                    if ( !NotifyObservers( eventid, eventdata ) ) return;
                 }
             }
         }

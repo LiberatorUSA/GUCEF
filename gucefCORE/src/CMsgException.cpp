@@ -21,6 +21,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
+
 #include "CMsgException.h"
 
 /*-------------------------------------------------------------------------//
@@ -43,7 +48,8 @@ CMsgException::CMsgException( const char* originFile   ,
                               const char* errorMsg     )
     : CException( originFile, originLineNr )             ,
       m_errorMsg( errorMsg )
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -51,20 +57,23 @@ CMsgException::CMsgException( const char* originFile   ,
 CMsgException::CMsgException( const CMsgException& src )
     : CException( src )              ,
       m_errorMsg( src.m_errorMsg )
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CMsgException::~CMsgException()
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CMsgException& 
 CMsgException::operator=( const CMsgException& src )
-{	//TICS !GOLC-004: is protected
+{TRACE;
+
     if ( this != &src )
     {
         m_errorMsg = src.m_errorMsg;
@@ -76,7 +85,8 @@ CMsgException::operator=( const CMsgException& src )
     
 const char* 
 CMsgException::GetErrorMsg( void ) const
-{
+{TRACE;
+
     return m_errorMsg;
 }
 

@@ -146,11 +146,13 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
                 printf( "ERROR: CPingTester: Failed to start the ping sequence\n" );
                 ERRORHERE;
             }
+            printf( "CPingTester: Ping started\n" );
         }
         else
         if ( eventid == CORE::CGUCEFApplication::AppShutdownEvent )
         {
-            Deinstance();
+            printf( "CPingTester: The application is shutting down\n" );
+            //Deinstance();
         }
         else
         if ( eventid == COMCORE::CPing::PingReponseEvent )
@@ -193,6 +195,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
             printf( "CPingTester: Stopped pinging\n" );
             printf( "**** SUCCESSFULLY COMPLETED THE PING TEST ****\n" );
             CORE::CGUCEFApplication::Instance()->Stop();
+            printf( "CPingTester: Application stopped\n" );
         }                
         else
         {
@@ -227,8 +230,8 @@ void
 PerformPingTest( void )
 {
     #ifdef DEBUG_MODE
-   // CORE::GUCEF_LogStackToStdOut();
-   // CORE::GUCEF_SetStackLogging( 1 );
+    //CORE::GUCEF_LogStackToStdOut();
+    //CORE::GUCEF_SetStackLogging( 1 );
     #endif /* DEBUG_MODE ? */
     
     try

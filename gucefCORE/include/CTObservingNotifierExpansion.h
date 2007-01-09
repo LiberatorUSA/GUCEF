@@ -167,7 +167,7 @@ template < class BaseClass >
 CObserver& 
 CTObservingNotifierExpansion< BaseClass >::AsObserver( void )
 {
-    return m_notificationComponent.AsObserver();  //TICS !GOOP-002: special case, this is a compound object and should be seen as 1 conceptual oject
+    return m_notificationComponent.AsObserver();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -185,7 +185,7 @@ template < class BaseClass >
 CNotifier& 
 CTObservingNotifierExpansion< BaseClass >::AsNotifier( void )
 {
-    return m_notificationComponent;  //TICS !GOOP-002: special case, this is a compound object and should be seen as 1 conceptual oject
+    return m_notificationComponent;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -257,7 +257,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
                 data.argv = NULL;
                 
                 TAppInitEventData cloneableData( data );                
-                NotifyObservers( AppInitEvent, &cloneableData );
+                if ( !NotifyObservers( AppInitEvent, &cloneableData ) ) return 0;
         }
 
         _initialized = true;
@@ -306,7 +306,7 @@ CGUCEFApplication::main( int argc    ,
          *      our main() code. We will send the application initialization
          *      event to all event clients. The following code segment is a
          *      special case since it may be followed by the main application
-         *      loop which would keep anything staticly allocated here in memory
+         *      loop which would keep anything statically allocated here in memory
          *      Thus we turn the following into a compound statement.
          */
         {
@@ -316,7 +316,7 @@ CGUCEFApplication::main( int argc    ,
                 data.argv = argv;
                 
                 TAppInitEventData cloneableData( data );
-                NotifyObservers( AppInitEvent, &cloneableData );
+                if ( !NotifyObservers( AppInitEvent, &cloneableData ) ) return 0;
         }
 
         _initialized = true;
@@ -455,7 +455,7 @@ CGUCEFApplication::Stop( void )
     if ( _active )
     {
         _active = false;
-        NotifyObservers( AppShutdownEvent );
+        if ( !NotifyObservers( AppShutdownEvent ) ) return;
     }
     
     UnlockData();

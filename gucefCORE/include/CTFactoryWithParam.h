@@ -139,7 +139,7 @@ CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::~
 template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType >
 CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >& 
 CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::operator=( const CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >& src )
-{   //TICS !GOLC-004: tics bug
+{
     if ( &src != this )
     {
     }

@@ -83,9 +83,13 @@ class CNotifierImplementor;
  *  unnecessary overhead. If you want a threadsafe notifier then simply
  *  implement LockData() and UnlockData() yourself in your descending class.
  *
- *  Current known issues:
- *  - chain reactions occurring during the handling of an event that access
- *    the notifier indirectly can cause errors 
+ *  Note that notification can cause that chain reaction resulting in the destruction
+ *  of the object that triggered the notification. If you wish to safely handle this scenario
+ *  you will have to check the boolean return value of the member functions. 
+ *  The return value is the 'alive' state of the notifier itself, If false then the 
+ *  notifier has been destroyed. Any attempt to access data in that object will result 
+ *  in invalid memory access. If the notifier has been destroyed you should exit the code
+ *  that called the member function with accessing any data members
  */
 class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
 {
@@ -122,7 +126,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
     /**
      *  Detaches the given observer from the notifier.
      *  All the observers subscriptions will be cancelled
-     *  This includes both standard notifier events aswell 
+     *  This includes both standard notifier events as well 
      *  as custom events.
      */    
     void Unsubscribe( CObserver* observer );
@@ -159,8 +163,10 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      *  Dispatches the standard CNotifier::ModifyEvent
      *  Useful for a notification system where you only care if
      *  a mutation is performed on an object.
+     *
+     *  @return Alive state of the notifier, if false then the notifier died itself as a result of the notification.
      */
-    void NotifyObservers( void );
+    bool NotifyObservers( void );
     
     /**
      *  Dispatches the given eventid and eventData to all observers
@@ -173,8 +179,10 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      *
      *  Note that eventData is not copied. So when passing data across threads
      *  consider allocating a copy and passing that in as the data argument.
+     *
+     *  @return Alive state of the notifier, if false then the notifier died itself as a result of the notification.
      */
-    void NotifyObservers( const CEvent& eventid         ,
+    bool NotifyObservers( const CEvent& eventid         ,
                           CICloneable* eventData = NULL );
 
     /**
@@ -184,8 +192,10 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      *  
      *  Use with great care !!!
      *  Use of this version should be an exception and not standard practice
+     *
+     *  @return Alive state of the notifier, if false then the notifier died itself as a result of the notification.
      */
-    void NotifyObservers( CNotifier& sender             ,
+    bool NotifyObservers( CNotifier& sender             ,
                           const CEvent& eventid         ,
                           CICloneable* eventData = NULL );
 
@@ -198,7 +208,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
 
     /**
      *  Handler for observers that are deleted without having been
-     *  unsubscribed first. This results in an observer that is no longer
+     *  un-subscribed first. This results in an observer that is no longer
      *  able to handle notification messages due to the deallocation 
      *  chain of events (descending class is already deallocated).
      *

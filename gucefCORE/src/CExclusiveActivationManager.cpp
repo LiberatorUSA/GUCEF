@@ -24,6 +24,11 @@
 #include <assert.h>
 #include "CExclusiveActiveObj.h"
 
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
+
 #define GUCEF_CORE_CEXCLUSIVEACTIVATIONMANAGER_CPP
 #include "CExclusiveActivationManager.h"
 
@@ -51,25 +56,28 @@ CExclusiveActivationManager* CExclusiveActivationManager::m_instance = NULL;
 //-------------------------------------------------------------------------*/
 
 CExclusiveActivationManager::CExclusiveActivationManager( void )
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CExclusiveActivationManager::~CExclusiveActivationManager()
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CExclusiveActivationManager* 
 CExclusiveActivationManager::Instance( void )
-{
+{TRACE;
+
     if ( !m_instance )
     {
         m_instance = new CExclusiveActivationManager();
     }
-    return m_instance;	//TICS !GOOP-002: is Singleton pattern
+    return m_instance;
 }
     
 /*-------------------------------------------------------------------------*/
@@ -77,7 +85,8 @@ CExclusiveActivationManager::Instance( void )
 bool 
 CExclusiveActivationManager::SetActivateObj( const std::string& objTypeName ,
                                              const std::string& objName     )
-{
+{TRACE;
+
     /*
      *  Validate the input
      */
@@ -180,7 +189,8 @@ CExclusiveActivationManager::SetActivateObj( const std::string& objTypeName ,
 
 bool 
 CExclusiveActivationManager::DisableActivateObj( const std::string& objTypeName )    
-{
+{TRACE;
+
     std::string defaultObj;
     if ( GetDefaultObjForType( objTypeName , 
                                defaultObj  ) )
@@ -195,7 +205,8 @@ CExclusiveActivationManager::DisableActivateObj( const std::string& objTypeName 
 
 CExclusiveActiveObj* 
 CExclusiveActivationManager::GetActiveObject( const std::string& objTypeName ) const
-{
+{TRACE;
+
     TObjTypeList::const_iterator typeItterator( m_typeList.find( objTypeName ) ); 
     if ( typeItterator != m_typeList.end() )
     {
@@ -208,7 +219,8 @@ CExclusiveActivationManager::GetActiveObject( const std::string& objTypeName ) c
     
 void 
 CExclusiveActivationManager::Deinstance( void )
-{
+{TRACE;
+
     delete m_instance;
     m_instance = NULL;
 }
@@ -217,7 +229,8 @@ CExclusiveActivationManager::Deinstance( void )
 
 void 
 CExclusiveActivationManager::RegisterObj( CExclusiveActiveObj* newObj )
-{
+{TRACE;
+
     #ifdef _DEBUG
     assert( newObj );
     #endif
@@ -259,7 +272,8 @@ CExclusiveActivationManager::RegisterObj( CExclusiveActiveObj* newObj )
     
 void 
 CExclusiveActivationManager::UnregisterObj( CExclusiveActiveObj* theObj )
-{
+{TRACE;
+
     #ifdef _DEBUG
     assert( theObj );
     #endif
@@ -286,7 +300,8 @@ CExclusiveActivationManager::UnregisterObj( CExclusiveActiveObj* theObj )
 
 UInt32 
 CExclusiveActivationManager::GetRegisteredTypeCount( void ) const
-{
+{TRACE;
+
     return (UInt32) m_typeList.size();
 }
 
@@ -295,7 +310,8 @@ CExclusiveActivationManager::GetRegisteredTypeCount( void ) const
 bool 
 CExclusiveActivationManager::SetDefaultObjForType( const std::string& objTypeName ,
                                                    const std::string& objName     )
-{
+{TRACE;
+
     TObjTypeList::iterator typeItterator( m_typeList.find( objTypeName ) ); 
     if ( typeItterator != m_typeList.end() )
     {
@@ -310,7 +326,8 @@ CExclusiveActivationManager::SetDefaultObjForType( const std::string& objTypeNam
 bool
 CExclusiveActivationManager::GetDefaultObjForType( const std::string& objTypeName ,
                                                    std::string& objName           )
-{
+{TRACE;
+
     TObjTypeList::const_iterator typeItterator( m_typeList.find( objTypeName ) ); 
     if ( typeItterator != m_typeList.end() )
     {

@@ -23,6 +23,11 @@
 
 #include <assert.h>
 
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
+
 #include "CException.h"
 
 /*-------------------------------------------------------------------------//
@@ -41,7 +46,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CException::CException( void )
-{
+{TRACE;
+
     assert( 0 );
     /* dummy, do not use */
 }
@@ -52,7 +58,8 @@ CException::CException( const char* m_originFile   ,
                         const Int32 m_originLineNr )
     : m_originFile( m_originFile )     ,
       m_originLineNr( m_originLineNr )
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -60,13 +67,14 @@ CException::CException( const char* m_originFile   ,
 CException::CException( const CException& src )
     : m_originFile( src.m_originFile )     ,
       m_originLineNr( src.m_originLineNr )
-{
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CException::~CException()
-{
+{TRACE;
     
 }
 
@@ -74,7 +82,8 @@ CException::~CException()
 
 CException&
 CException::operator=( const CException& src )
-{	//TICS !GOLC-004: is protected
+{TRACE;
+
     if ( this != &src )
     {
         m_originFile = src.m_originFile;
@@ -87,7 +96,8 @@ CException::operator=( const CException& src )
 
 const char* 
 CException::GetOriginFile( void ) const
-{
+{TRACE;
+
     return m_originFile;
 }
 
@@ -95,7 +105,8 @@ CException::GetOriginFile( void ) const
 
 Int32 
 CException::GetOriginLineNr( void ) const
-{
+{TRACE;
+
     return m_originLineNr;
 }
 

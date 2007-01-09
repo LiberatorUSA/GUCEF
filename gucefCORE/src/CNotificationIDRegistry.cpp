@@ -24,6 +24,11 @@
 #include <limits.h>
 #include "CMsgException.h"
 
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
+
 #define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_CPP
 #include "CNotificationIDRegistry.h"
 
@@ -61,21 +66,24 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CNotificationIDRegistry, EInvalidEventID );
 
 CNotificationIDRegistry::CNotificationIDRegistry( void )
     : m_lastid( 1 )
-{
+{TRACE;
+
     /* nothing to do here */
 }
 
 /*-------------------------------------------------------------------------*/
 
 CNotificationIDRegistry::CNotificationIDRegistry( const CNotificationIDRegistry& src )
-{
+{TRACE;
+
     /* dummy, do not use */
 }
 
 /*-------------------------------------------------------------------------*/
 
 CNotificationIDRegistry::~CNotificationIDRegistry()
-{
+{TRACE;
+
     /* nothing to do here */    
 }
 
@@ -83,7 +91,8 @@ CNotificationIDRegistry::~CNotificationIDRegistry()
 
 CNotificationIDRegistry&
 CNotificationIDRegistry::operator=( const CNotificationIDRegistry& src )
-{	//TICS !GOLC-004: is protected
+{TRACE;
+
     /* dummy, do not use */
 
     if ( this != &src )
@@ -96,7 +105,8 @@ CNotificationIDRegistry::operator=( const CNotificationIDRegistry& src )
 
 CNotificationIDRegistry* 
 CNotificationIDRegistry::Instance( void )
-{
+{TRACE;
+
     m_dataLock.Lock();
 
     if ( !m_instance )
@@ -105,14 +115,15 @@ CNotificationIDRegistry::Instance( void )
     }
 
     m_dataLock.Unlock();
-    return m_instance; //TICS !GOOP-002: singleton pattern
+    return m_instance;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void 
 CNotificationIDRegistry::Deinstance( void )
-{
+{TRACE;
+
     m_dataLock.Lock();
 
     delete m_instance;
@@ -126,7 +137,8 @@ CNotificationIDRegistry::Deinstance( void )
 CEvent 
 CNotificationIDRegistry::Register( const std::string& keyvalue                   ,
                                    const bool okIfAlreadyRegisterd /* = false */ )
-{    
+{TRACE;
+    
     m_dataLock.Lock();
     
     if ( (size_t)0 != keyvalue.length() )
@@ -192,7 +204,8 @@ CNotificationIDRegistry::Register( const std::string& keyvalue                  
 void 
 CNotificationIDRegistry::Unregister( const std::string& keyvalue                  ,
                                      const bool okIfUnknownKeyGiven /* = false */ )
-{
+{TRACE;
+
     m_dataLock.Lock();
 
     if ( keyvalue.size() > 0 )
@@ -222,7 +235,8 @@ CNotificationIDRegistry::Unregister( const std::string& keyvalue                
 CEvent 
 CNotificationIDRegistry::Lookup( const std::string& keyvalue ,
                                  const bool registerUnknown  )
-{
+{TRACE;
+
     m_dataLock.Unlock();
 
     TRegistryList::iterator i = m_list.find( keyvalue );
@@ -248,7 +262,8 @@ CNotificationIDRegistry::Lookup( const std::string& keyvalue ,
 
 std::string 
 CNotificationIDRegistry::Lookup( const CEvent& eventID ) const
-{
+{TRACE;
+
     m_dataLock.Lock();
     
     UInt32 id( eventID.GetID() );
@@ -276,7 +291,8 @@ CNotificationIDRegistry::Lookup( const CEvent& eventID ) const
 
 bool
 CNotificationIDRegistry::IsRegistered( const std::string& keyvalue ) const
-{
+{TRACE;
+
     m_dataLock.Lock();
 
     TRegistryList::const_iterator i = m_list.find( keyvalue );
