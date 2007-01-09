@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2007.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CNOTIFIER_H
-#define GUCEF_CORE_CNOTIFIER_H
+#ifndef GUCEF_CORE_CNOTIFIERIMPLEMENTOR_H
+#define GUCEF_CORE_CNOTIFIERIMPLEMENTOR_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,51 +58,38 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CObserver;
-class CNotifierImplementor;
+class CNotifier;
 
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Use the CNotificationIDRegistry to obtain unique event id's for 
- *  your events. It is strongly recommended to include the various namespaces 
- *  in the event strings. Following this simply rule will ensure that your strings
- *  are unique simply because your namespace::class::event combination is unique in 
- *  C++ as well.
- *
- *  Note that this class automatically registers four notification events
- *  if they are not already registered. These are:
- *      - "GUCEF::CORE::CNotifier::SubscribeEvent"
- *      - "GUCEF::CORE::CNotifier::UnsubscribeEvent"
- *      - "GUCEF::CORE::CNotifier::ModifyEvent"
- *      - "GUCEF::CORE::CNotifier::DestructionEvent"
- *
- *  Note that every observer will be automatically subscribed to
- *  the four standard notification events.
- *
- *  Note that CNotifier is NOT threadsafe on it's own to avoid introducing
- *  unnecessary overhead. If you want a threadsafe notifier then simply
- *  implement LockData() and UnlockData() yourself in your descending class.
- *
- *  Current known issues:
- *  - chain reactions occurring during the handling of an event that access
- *    the notifier indirectly can cause errors 
+ *  Internally used class.
+ *  This class houses the actual notification mechamism. The reason for a seperate
+ *  class is simple, robustness. Since you can use notification for all your dynamic
+ *  communication links it has to be able to handle all kinds of exotic scenarios.
+ *  One of those scenarios is destruction of the notifier as a result of it's notification.
+ *  this class makes that scenario something that can be handled safely and care-free.
  */
-class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
-{
-    public:
-
-    static const CEvent SubscribeEvent;
-    static const CEvent UnsubscribeEvent;
-    static const CEvent ModifyEvent;
-    static const CEvent DestructionEvent;
-
-    CNotifier( void );
-
-    CNotifier( const CNotifier& src );
+class CNotifierImplementor
+{  
+    private:
+    friend class CNotifier;
     
-    virtual ~CNotifier();
+    static CNotifierImplementor* Create( CNotifier* ownerNotifier );
     
-    CNotifier& operator=( const CNotifier& src );
+    static CNotifierImplementor* Create( CNotifier* ownerNotifier ,
+                                         const CNotifier& src     );
+
+    static void Destroy( CNotifierImplementor* obj );
+        
+    CNotifierImplementor( CNotifier* ownerNotifier );
+    
+    CNotifierImplementor( CNotifier* ownerNotifier ,
+                          const CNotifier& src     );
+    
+    ~CNotifierImplementor();
+    
+    CNotifierImplementor& operator=( const CNotifierImplementor& src );
 
     /**
      *  Subscribes the given observer to all
@@ -135,25 +122,6 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      */    
     void Unsubscribe( CObserver* observer   ,
                       const CEvent& eventid );
-
-    static void RegisterEvents( void );
-
-    /**
-     *  descending classes should override this with the class name
-     *  ie: a class named CMyClass should implement this member 
-     *  function as: { return "MyNamespace::CMyClass"; }
-     *
-     *  Note that this mechanism is meant as a replacement for
-     *  RTTI. You can accomplish the same with a dynamic_cast for 
-     *  example. The catch is that RTTI has an implicit system-wide  
-     *  performance impact !!!. Since the scenario's where you need 
-     *  functionality like this are limited or even non-existent 
-     *  we chose to use this approach.
-     */
-    virtual CString GetType( void ) const;
-
-    protected:
-    friend class CNotifierImplementor;
     
     /**
      *  Dispatches the standard CNotifier::ModifyEvent
@@ -189,13 +157,6 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
                           const CEvent& eventid         ,
                           CICloneable* eventData = NULL );
 
-    virtual void LockData( void ) const;
-    
-    virtual void UnlockData( void ) const;
-
-    private:
-    friend class CObserver;
-
     /**
      *  Handler for observers that are deleted without having been
      *  unsubscribed first. This results in an observer that is no longer
@@ -207,10 +168,61 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      *  OnNotify()
      */
     void OnObserverDestroy( CObserver* observer );
+    
+    void OnDeathOfOwnerNotifier( void );    
+
+    void LockData( void ) const;
+    
+    void UnlockData( void ) const;
+   
+    void ForceNotifyObserversOnce( const CEvent& eventid    ,
+                                   CICloneable* data = NULL );
+
+    void UnsubscribeFromAllEvents( CObserver* observer       ,
+                                   const bool notifyObserver );
+
+    void ProcessMailbox( void );
+    
+    void ProcessCmdMailbox( void );
+    
+    void ProcessEventMailbox( void );
 
     private:
     
-    CNotifierImplementor* m_imp;
+    CNotifierImplementor( const CNotifierImplementor& src ); /**< should not be implemented */
+    
+    private:
+    
+    typedef std::set<CObserver*> TObserverSet;
+    typedef std::map<CEvent,TObserverSet> TNotificationList;
+    typedef std::map<CObserver*,bool> TObserverList;
+    
+    typedef std::pair< CEvent, CICloneable* > TEventMailElement;
+    typedef enum TCmdType
+    {
+        REQUEST_SUBSCRIBE   ,
+        REQUEST_UNSUBSCRIBE
+    };
+    
+    struct SCmdMailElement
+    {
+        TCmdType cmdType;
+        CObserver* observer;
+        CEvent eventID;
+        bool notify;
+    };
+    typedef struct SCmdMailElement TCmdMailElement;
+
+    private:
+    
+    CNotifier* m_ownerNotifier;
+    
+    TNotificationList m_eventobservers;
+    TObserverList m_observers;
+    
+    bool m_isBusy;
+    std::vector< TEventMailElement > m_eventMailStack;
+    std::vector< TCmdMailElement > m_cmdMailStack;
 };
 
 /*-------------------------------------------------------------------------//
@@ -224,4 +236,4 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+#endif /* GUCEF_CORE_CNOTIFIERIMPLEMENTOR_H ? */

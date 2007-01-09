@@ -392,6 +392,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CNotifierImplementor.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CNotifierObservingComponent.cpp"
 				>
 			</File>
@@ -835,6 +839,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CNotifier.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CNotifierImplementor.h"
 				>
 			</File>
 			<File

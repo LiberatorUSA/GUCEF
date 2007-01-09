@@ -50,6 +50,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CNotifier;
+class CNotifierImplementor;
 
 /*-------------------------------------------------------------------------*/
 
@@ -97,6 +98,7 @@ class GUCEFCORE_EXPORT_CPP CObserver
     UInt32 GetNotifierCount( void ) const;
 
     protected:
+    friend class CNotifierImplementor;
     
     /**
      *  Event callback member function.
@@ -116,7 +118,7 @@ class GUCEFCORE_EXPORT_CPP CObserver
     virtual void UnlockData( void );
 
     private:
-    friend class CNotifier;
+    friend class CNotifierImplementor;
     
     /*
      *  Simply updates the observer administration, nothing more
