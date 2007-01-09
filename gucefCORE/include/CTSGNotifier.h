@@ -114,17 +114,17 @@ class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
     
     /**
      *  Event callback member function.
-     *  Implement this in your decending class to handle
+     *  Implement this in your descending class to handle
      *  notification events. 
      *
      *  Note that this call is always made in the main
      *  application thread. As such it is well suited for linking
-     *  non-treadsafe code via an observer behaviour to a notifier  
+     *  non-treadsafe code via an observer behavior to a notifier  
      *  that operates from within another thread.
      *
      *  @param notifier the notifier that sent the notification
      *  @param eventid the unique event id for an event
-     *  @param eventdata optional notifier defined userdata
+     *  @param eventdata optional notifier defined user data
      */
     virtual void OnPumpedNotify( CNotifier* notifier           ,
                                  const CEvent& eventid         ,

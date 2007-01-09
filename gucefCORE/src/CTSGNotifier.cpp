@@ -68,7 +68,8 @@ CTSGNotifier::CTSGNotifier( const CTSGNotifier& src )
 
 CTSGNotifier::~CTSGNotifier()
 {TRACE;
-
+    
+    m_tsgObserver.SetParent( NULL );
 }
 
 /*-------------------------------------------------------------------------*/

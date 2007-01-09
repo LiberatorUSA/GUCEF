@@ -91,9 +91,7 @@ void
 CTSGObserver::SetParent( CTSGNotifier* parentNotifier )
 {TRACE;
 
-    assert( parentNotifier != NULL );
     m_parentNotifier = parentNotifier;
-    SubscribeTo( parentNotifier );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -104,12 +102,7 @@ CTSGObserver::OnNotify( CNotifier* notifier                  ,
                         CICloneable* eventdata /* = NULL  */ )
 {TRACE;
 
-    if ( ( notifier == m_parentNotifier )           && 
-         ( eventid == CNotifier::DestructionEvent )  )
-    {
-        m_parentNotifier = NULL;
-    }
-    else
+    if ( m_parentNotifier != NULL )
     {
         CPumpedObserver::OnNotify( notifier   ,
                                    eventid    ,
