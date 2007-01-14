@@ -508,8 +508,8 @@ CInputActionMap::SaveConfig( CORE::CDataNode& tree )
         newnode.SetName( "MouseButtonUp" );
         for ( UInt32 i=0; i<m_mousemapcount; ++i )
         {
-                newnode.SetAttribute( buttonIndexStr, CORE::IntToString( i ) );
-                newnode.SetAttribute( actionIndexStr, CORE::IntToString( m_mousebupmap[ i ] ) );
+                newnode.SetAttribute( buttonIndexStr, CORE::Int32ToString( i ) );
+                newnode.SetAttribute( actionIndexStr, CORE::Int32ToString( m_mousebupmap[ i ] ) );
                 newnode.SetAttribute( actionNameStr, m_mouseBUpActionNames[ i ] );
                 
                 listRoot->AddChild( newnode );
@@ -517,8 +517,8 @@ CInputActionMap::SaveConfig( CORE::CDataNode& tree )
         newnode.SetName( "MouseButtonDown" );
         for ( UInt32 i=0; i<m_mousemapcount; ++i )
         {
-                newnode.SetAttribute( buttonIndexStr, CORE::IntToString( i ) );
-                newnode.SetAttribute( actionIndexStr, CORE::IntToString( m_mousebdownmap[ i ] ) );
+                newnode.SetAttribute( buttonIndexStr, CORE::Int32ToString( i ) );
+                newnode.SetAttribute( actionIndexStr, CORE::Int32ToString( m_mousebdownmap[ i ] ) );
                 newnode.SetAttribute( actionNameStr, m_mouseBDownActionNames[ i ] );
                 
                 listRoot->AddChild( newnode );
@@ -526,8 +526,8 @@ CInputActionMap::SaveConfig( CORE::CDataNode& tree )
         newnode.SetName( "KeyboardKeyUp" );
         for ( UInt32 i=0; i<m_keyboardmapcount; ++i )
         {
-                newnode.SetAttribute( keyIndexStr, CORE::IntToString( i ) );
-                newnode.SetAttribute( actionIndexStr, CORE::IntToString( m_keyboardkupmap[ i ] ) );
+                newnode.SetAttribute( keyIndexStr, CORE::Int32ToString( i ) );
+                newnode.SetAttribute( actionIndexStr, CORE::Int32ToString( m_keyboardkupmap[ i ] ) );
                 newnode.SetAttribute( actionNameStr, m_keyboardKUpActionNames[ i ] );
                 
                 listRoot->AddChild( newnode );
@@ -535,8 +535,8 @@ CInputActionMap::SaveConfig( CORE::CDataNode& tree )
         newnode.SetName( "KeyboardKeyDown" );
         for ( UInt32 i=0; i<m_keyboardmapcount; ++i )
         {
-                newnode.SetAttribute( keyIndexStr, CORE::IntToString( i ) );
-                newnode.SetAttribute( actionIndexStr, CORE::IntToString( m_keyboardkdownmap[ i ] ) );
+                newnode.SetAttribute( keyIndexStr, CORE::Int32ToString( i ) );
+                newnode.SetAttribute( actionIndexStr, CORE::Int32ToString( m_keyboardkdownmap[ i ] ) );
                 newnode.SetAttribute( actionNameStr, m_keyboardKDownActionNames[ i ] );
                 
                 listRoot->AddChild( newnode );

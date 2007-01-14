@@ -150,7 +150,7 @@ CPatchSetParser::ValidateAndParseFileEntry( const CORE::CDataNode& patchSetFileN
         {
             // We found our file's size
             const CORE::CString& fileSizeStr = attData->value;
-            UInt32 fileSize = CORE::StringToInt( fileSizeStr );
+            UInt32 fileSize = CORE::StringToInt32( fileSizeStr );
             
             // Validate that the file has a hash property
             const CORE::CDataNode::TNodeAtt* attData = patchSetFileNode.GetAttribute( "Hash" );
@@ -197,7 +197,7 @@ CPatchSetParser::ValidateAndParseDirEntry( const CORE::CDataNode& patchSetDirNod
         {
             // We found our directory's total size
             const CORE::CString& dirTotalSizeStr = attData->value;
-            UInt32 totalDirSize = CORE::StringToInt( dirTotalSizeStr );
+            UInt32 totalDirSize = CORE::StringToInt32( dirTotalSizeStr );
             
             // Validate that the directory has a hash property
             const CORE::CDataNode::TNodeAtt* attData = patchSetDirNode.GetAttribute( "Hash" );
@@ -345,7 +345,7 @@ CPatchSetParser::ParseAndWalkDirTree( const TDirEntry& patchSetDir   ,
     CORE::CDataNode newNode;
     newNode.SetName( "Dir" );
     newNode.SetAttribute( "Name", patchSetDir.name );
-    newNode.SetAttribute( "TotalSize", CORE::IntToString( patchSetDir.sizeInBytes ) );
+    newNode.SetAttribute( "TotalSize", CORE::Int32ToString( patchSetDir.sizeInBytes ) );
     newNode.SetAttribute( "Hash", patchSetDir.hash );
     
     // Recursively add all sub-directories
@@ -367,7 +367,7 @@ CPatchSetParser::ParseAndWalkDirTree( const TDirEntry& patchSetDir   ,
         fileEntry = &patchSetDir.files[ i ];
         fileNode.SetAttribute( "Name", fileEntry->name );
         fileNode.SetAttribute( "Hash", fileEntry->hash );
-        fileNode.SetAttribute( "Size", CORE::IntToString( fileEntry->sizeInBytes ) );
+        fileNode.SetAttribute( "Size", CORE::Int32ToString( fileEntry->sizeInBytes ) );
         
         const TFileLocations& locList = fileEntry->fileLocations;
         const TFileLocation* fileLoc = NULL;

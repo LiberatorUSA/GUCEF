@@ -163,8 +163,7 @@ CUDPSocket::SendPacketTo( const CORE::CString& dnsname ,
 /*-------------------------------------------------------------------------*/
 
 void 
-CUDPSocket::Update( UInt32 tickcount  ,
-                    UInt32 deltaticks )
+CUDPSocket::Update( void )
 {TRACE;
 
     if ( !_blocking )

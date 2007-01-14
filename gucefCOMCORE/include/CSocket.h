@@ -101,14 +101,14 @@ class GUCEF_COMCORE_EXPORT_CPP CSocket : public CORE::CNotifier
     /**
      *      Attempts to resolve the given destination address and port
      *      information and stores the result in the dest struct.
-     *      You should store the result for furture packet sends so
+     *      You should store the result for future packet sends so
      *      that the dns ect. no longer has to be resolved with each
      *      packet send.
      *
      *      @param destaddrstr the destination address in string form that you wish to resolve
      *      @param destport the port on the remote host you wish to address
      *      @param resolvedDest structure that will hold the resolved version of the given data
-     *      @return returns wheter the given data could be resolved.      
+     *      @return returns whether the given data could be resolved.      
      */
     static bool ConvertToIPAddress( const CORE::CString& destaddrstr ,
                                     const UInt16 destport            ,  

@@ -41,6 +41,11 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVSTRUTILS_H
+#include "dvstrutils.h"
+#define GUCEF_CORE_DVSTRUTILS_H
+#endif /* GUCEF_CORE_DVSTRUTILS_H ? */
+
 #include "CConfigStore.h"       /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
@@ -68,8 +73,8 @@ MT::CMutex CConfigStore::_datalock;
 //-------------------------------------------------------------------------*/ 
 
 CConfigStore::CConfigStore( void )
-        : _codectype( "xml" )           ,
-          _configfile( "GUCEFcfg.xml" )
+        : _codectype()  ,
+          _configfile()
 {TRACE;
 
 }
@@ -130,7 +135,7 @@ void
 CConfigStore::SetConfigFile( const CString& filepath )
 {TRACE;
         _datalock.Lock();
-        _configfile = RelativePath( filepath );
+        _configfile = RelativePath( filepath );        
         _datalock.Unlock();
 }
 
@@ -176,7 +181,7 @@ CConfigStore::SaveConfig( const CString& name ,
         /*
          *      If the preserve flag is set then the old data tree
          *      will be loaded first to prevent any data loss.
-         *      This basicly allows you to add and/or modify data
+         *      This basically allows you to add and/or modify data
          *      but not remove items from the tree unless you do so on purpose.
          */
         CDataNode rootnode( name );
@@ -240,6 +245,11 @@ bool
 CConfigStore::LoadConfig( void )
 {TRACE;        
         _datalock.Lock();        
+        
+        if ( _codectype.Length() == 0 )
+        {
+            _codectype = Extract_File_Ext( _configfile.C_String() );
+        }
         
         try 
         {

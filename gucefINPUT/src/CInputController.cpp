@@ -85,6 +85,7 @@ CInputController::CInputController( void )
           #endif
 {TRACE;
 
+        RegisterEvents();
         CORE::CGUCEFApplication::Instance();    
 }
 
@@ -263,7 +264,7 @@ CInputController::OnUpdate( const UInt64 tickcount               ,
                 #ifdef DEBUG_MODE
 
                 if ( !m_driver->OnUpdate( tickcount                                         ,
-                                          deltaticks                                        ,
+                                          updateDeltaInMilliSecs                            ,
                                           static_cast<CInputContext*>( m_contextlist[ i ] ) ) )
                 {
                         DEBUGOUTPUTsi( "CInputController::OnUpdate() Failed on context ", i );
@@ -272,7 +273,7 @@ CInputController::OnUpdate( const UInt64 tickcount               ,
                 #else
                 
                 m_driver->OnUpdate( tickcount                                         ,
-                                    deltaticks                                        ,
+                                    updateDeltaInMilliSecs                            ,
                                     static_cast<CInputContext*>( m_contextlist[ i ] ) );
 
                 #endif                                    

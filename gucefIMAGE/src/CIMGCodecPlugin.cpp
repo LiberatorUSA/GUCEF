@@ -130,34 +130,34 @@ CIMGCodecPlugin::LoadPlugin( const CORE::CString& filename )
     // let's see if it is an image codec
     m_fptable[ IMGPLUG_NAME ] = CORE::GetFunctionAddress( m_sohandle         ,
                                                           "IMAGEPLUGIN_Name" ,
-                                                          1*PTRSIZE          );
+                                                          1*sizeof(void*)          );
     m_fptable[ IMGPLUG_COPYRIGHT ] = CORE::GetFunctionAddress( m_sohandle              ,
                                                                "IMAGEPLUGIN_Copyright" ,
-                                                               1*PTRSIZE               );
+                                                               1*sizeof(void*)               );
     m_fptable[ IMGPLUG_VERSION ] = CORE::GetFunctionAddress( m_sohandle            ,
                                                              "IMAGEPLUGIN_Version" ,
-                                                             1*PTRSIZE             );
+                                                             1*sizeof(void*)             );
     m_fptable[ IMGPLUG_INIT ] = CORE::GetFunctionAddress( m_sohandle         ,
                                                           "IMAGEPLUGIN_Init" ,
-                                                          2*PTRSIZE          ); 
+                                                          2*sizeof(void*)          ); 
     m_fptable[ IMGPLUG_SHUTDOWN ] = CORE::GetFunctionAddress( m_sohandle             ,
                                                               "IMAGEPLUGIN_Shutdown" ,
-                                                              1*PTRSIZE              );
+                                                              1*sizeof(void*)              );
     m_fptable[ IMGPLUG_LOAD ] = CORE::GetFunctionAddress( m_sohandle         ,
                                                           "IMAGEPLUGIN_Load" ,
-                                                          5*PTRSIZE          );                                                          
+                                                          5*sizeof(void*)          );                                                          
     m_fptable[ IMGPLUG_SAVE ] = CORE::GetFunctionAddress( m_sohandle         ,
                                                           "IMAGEPLUGIN_Save" ,
-                                                          4*PTRSIZE          );
+                                                          4*sizeof(void*)          );
     m_fptable[ IMGPLUG_UNLOAD ] = CORE::GetFunctionAddress( m_sohandle                      ,
                                                             "IMAGEPLUGIN_DeleteLoadedImage" ,
-                                                            3*PTRSIZE                       );
+                                                            3*sizeof(void*)                       );
     m_fptable[ IMGPLUG_DETECTTYPE ] = CORE::GetFunctionAddress( m_sohandle                    ,
                                                                 "IMAGEPLUGIN_DetectImageType" ,
-                                                                2*PTRSIZE                     );                                                            
+                                                                2*sizeof(void*)                     );                                                            
     m_fptable[ IMGPLUG_FORMATLIST ] = CORE::GetFunctionAddress( m_sohandle                  ,
                                                                 "IMAGEPLUGIN_GetFormatList" ,
-                                                                2*PTRSIZE                   );                                                            
+                                                                2*sizeof(void*)                   );                                                            
     
     // Verify that we have obtained a function address for each of the functions
     if ( ( !m_fptable[ IMGPLUG_INIT ] ) ||

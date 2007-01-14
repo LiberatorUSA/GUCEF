@@ -71,6 +71,10 @@ class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
 
     static const CORE::CEvent InputDriverLoadedEvent;
     static const CORE::CEvent InputDriverUnloadedEvent;
+
+    static void RegisterEvents( void );
+    
+    public:
     
     static CInputController* Instance( void );                
     
@@ -87,8 +91,6 @@ class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
             
     bool LoadDriverModule( const CORE::CString& filename  ,
                            const CORE::CValueList& params );
-
-    static void RegisterEvents( void );
     
     protected:
         

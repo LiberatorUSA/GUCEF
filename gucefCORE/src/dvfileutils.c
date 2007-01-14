@@ -132,7 +132,7 @@ DI_First_Dir_Entry( const char *path )
         tmp_path = (char*)calloc( strlen( path )+5, sizeof( char ) );
 	strcpy( tmp_path, path );
         Append_To_Path( tmp_path, "*.*\0" );
-        data->find_handle = (INTPTR) _findfirst( tmp_path, &data->find );
+        data->find_handle = (Int32) _findfirst( tmp_path, &data->find );
 	free( tmp_path );
 
         /*

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2007.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -16,28 +16,19 @@
  */
 
 /*
- *      This is the main include header for the gucefINPUT library.
+ *      This is the main include header for the gucefPATCHER library.
  *      It is part of a framework called GUCEF.
- *      All classes in this library have to do with user input management and
- *      the interfacing with the hardware.
+ *      All classes in this library have to do with file patching/updating/sync'ing
  */
 
-#ifndef GUCEFINPUT_H
-#define GUCEFINPUT_H
+#ifndef GUCEF_PATCHER_H
+#define GUCEF_PATCHER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-/*
- *      Library specific macros and generic macros
- */
-#ifndef GUCEFINPUT_MACROS_H
-#include "gucefINPUT_macros.h"
-#define GUCEFINPUT_MACROS_H
-#endif /* GUCEFINPUT_MACROS_H ? */
 
 /*---------------------------------------------------------------------------/
 
@@ -46,25 +37,15 @@
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 
-#ifndef CINPUTCONTROLLER_H
-#include "CInputController.h"
-#define CINPUTCONTROLLER_H
-#endif /* CINPUTCONTROLLER_H ? */
-
-#ifndef CINPUTCONTEXT_H
-#include "CInputContext.h"
-#define CINPUTCONTEXT_H
-#endif /* CINPUTCONTEXT_H ? */
-
-#ifndef CINPUTACTIONMAP_H
-#include "CInputActionMap.h"
-#define CINPUTACTIONMAP_H
-#endif /* CINPUTACTIONMAP_H ? */
+#ifndef GUCEF_PATCHER_CPATCHENGINE_H
+#include "gucefPATCHER_CPatchEngine.h"
+#define GUCEF_PATCHER_CPATCHENGINE_H
+#endif /* GUCEF_PATCHER_CPATCHENGINE_H ? */
 
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
 
-#endif /* GUCEFINPUT_H ? */
+#endif /* GUCEF_PATCHER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,7 +53,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 13-09-2005 :
+- 02-01-2007 :
        - Initial version.
 
 -----------------------------------------------------------------------------*/

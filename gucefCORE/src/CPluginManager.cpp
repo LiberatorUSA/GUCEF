@@ -26,7 +26,15 @@
 #define GUCEF_CORE_CPLUGINCONTROL_H
 #endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
 
-#include "CNotificationIDRegistry.h"
+#ifndef GUCEF_CORE_DVFILEUTILS_H
+#include "dvfileutils.h"                /* file handling utils */
+#define GUCEF_CORE_DVFILEUTILS_H
+#endif /* GUCEF_CORE_DVFILEUTILS_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"           /* C++ string utils */ 
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
 #include "CPluginManager.h"    /* definition of the class implemented here */
 
@@ -126,6 +134,46 @@ CPluginManager::OnNotify( CNotifier* notifier                 ,
 {TRACE;
 
     /* dummy to avoid mandatory implementation in the descending class */
+}
+/*-------------------------------------------------------------------------*/
+
+CPluginManager::TPluginPtr
+CPluginManager::LoadPlugin( const CString& pluginPath )
+{TRACE;
+
+    // return a NULL pointer
+    return TPluginPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPluginManager::LoadAll( void )
+{TRACE;
+
+    CString file;
+    CString filepath; 
+    CString path = GetPluginDir();
+    
+    struct SDI_Data* did = DI_First_Dir_Entry( path.C_String() );
+    if ( did )
+    {
+        do 
+        {                
+            if ( DI_Is_It_A_File( did ) == 1 )
+            {
+                DEBUGOUTPUTsss( "Attempt to load ", DI_Name( did ), " as a plugin" );
+                
+                filepath = path; 
+                file = DI_Name( did );
+                AppendToPath( filepath, file );
+                LoadPlugin( filepath );
+            }
+        }
+        while ( DI_Next_Dir_Entry( did ) != 0 );
+        
+        DI_Cleanup( did );
+    }
 }
         
 /*-------------------------------------------------------------------------//

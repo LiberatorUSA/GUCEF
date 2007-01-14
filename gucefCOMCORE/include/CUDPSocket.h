@@ -106,28 +106,28 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     /**
      *      Attempts to open the UDP socket for use.
      *      The port used is left up to the operating system.
-     *      This will typicly be used for clients in a client-server
+     *      This will typically be used for clients in a client-server
      *      architecture.
      */
     bool Open( void );
     
     /**
      *      Attempts to open the UDP socket for use on the given port.
-     *      This will typicly be used for a server in a client-server
+     *      This will typically be used for a server in a client-server
      *      architecture or for an peer-to-peer architecture.
      *      Any local address can be used.
      *
-     *      @param port port used for sending and/or recieving data
+     *      @param port port used for sending and/or receiving data
      */        
     bool Open( UInt16 port );
     
     /**
      *      Attempts to open the UDP socket for use on the given local
-     *      address and port. Basicly the same as Open( UInt16 port )
-     *      but here you binding to a specific local address manditory.
+     *      address and port. Basically the same as Open( UInt16 port )
+     *      but here you binding to a specific local address mandatory.
      *
      *      @param localaddr local address to be used for this socket
-     *      @param port port used for sending and/or recieving data
+     *      @param port port used for sending and/or receiving data
      */  
     bool Open( const CORE::CString& localaddr ,
                UInt16 port                    );
@@ -173,20 +173,20 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
                         UInt16 datasize        );
 
     /**
-     *      For blocking sockets this call will not return untill data is
-     *      recieved. For non-blocking sockets this call returns imediatly
+     *      For blocking sockets this call will not return until data is
+     *      received. For non-blocking sockets this call returns immediately
      *      if there is no data and returns an error value.
      *
-     *      Recieved data is written into destbuf up to bufsize bytes.
+     *      Received data is written into destbuf up to bufsize bytes.
      *      If the destination buffer is not large enough to hold the entire
      *      packet data then the remaining data will be lost !!!
      *
      *      If there are more packets queued after a successfull read then
-     *      a new UDPPacketRecievedEvent will be sent. This cycle repeats untill 
+     *      a new UDPPacketRecievedEvent will be sent. This cycle repeats until 
      *      there are no more packets in the queue.
      *
      *      @param src structure that will hold the information about the source of the data
-     *      @param destbuf buffer the recieved data will be written to.
+     *      @param destbuf buffer the received data will be written to.
      *      @param bufsize size of the destination buffer in bytes.
      *      @return the number of bytes written to the given buffer, returns -1 on error.
      */
@@ -200,32 +200,32 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *      Only use this version if you don't care where the packet 
      *      came from
      *
-     *      @param destbuf buffer the recieved data will be written to.
+     *      @param destbuf buffer the received data will be written to.
      *      @param bufsize size of the destination buffer in bytes.         
      */                       
     Int32 Recieve( void* destbuf      , 
                    UInt16 bufsize     );
                              
     /**
-     *      returns wheter this socket is a blocking socket
+     *      returns whether this socket is a blocking socket
      *
-     *      @return wheter this socket is a blocking socket
+     *      @return whether this socket is a blocking socket
      */                                 
     bool IsBlocking( void ) const;
     
     /**
-     *  returns the size of the buffer used for a single recieved data packet
+     *  returns the size of the buffer used for a single received data packet
      *
-     *  @return the size of the buffer for recieved data
+     *  @return the size of the buffer for received data
      */
     UInt32 GetRecievedDataBufferSize( void ) const;
     
     /**
-     *  sets the size of the buffer used for a single recieved data packet
-     *  Typicly you will want to set this to the exact size of your UDP packages
+     *  sets the size of the buffer used for a single received data packet
+     *  Typically you will want to set this to the exact size of your UDP packages
      *  That way you don't have to perform any additional mergers/parsing operations
      *
-     *  @param newBufferSize size of the buffer for recieved data
+     *  @param newBufferSize size of the buffer for received data
      */
     void SetRecievedDataBufferSize( const UInt32 newBufferSize );
 
@@ -240,8 +240,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *      If any data is known to be queued after a poll then the
      *      PACKET_RECIEVED event will be sent. 
      */
-    virtual void Update( UInt32 tickcount  ,
-                         UInt32 deltaticks );
+    virtual void Update( void );
     
     private:
     

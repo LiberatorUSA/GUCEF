@@ -107,7 +107,7 @@ GetFunctionAddress( void *sohandle           ,
  *      OSWRAP_FALSE will be returned. Otherwise OSWRAP_TRUE will be returned.
  *
  *      For MS windows:
- *              The handle to the primairy window is needed for propper operation
+ *              The handle to the primary window is needed for propper operation
  *              various attempts will be made to obtain it including getting the
  *              "HWND" environment variable. If these attempts fail an attempts will
  *              be made to use the previous clipboard owner HWND. You should set the

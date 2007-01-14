@@ -246,9 +246,8 @@ CDataNode::SetName( const CString& name )
         
 const CString&
 CDataNode::GetName( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+{TRACE;
+
         return _name;
 }
 

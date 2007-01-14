@@ -86,7 +86,7 @@ File_Ext_Length( const char *filename );
 
 /**
  *      Extract the file extension.
- *      It creates a new const char* with the appropriote offset.
+ *      It creates a new const char* with the appropriate offset.
  */
 GUCEFCORE_EXPORT_C const char*
 Extract_File_Ext( const char *filename );

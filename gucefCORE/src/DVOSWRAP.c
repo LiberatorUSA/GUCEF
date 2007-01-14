@@ -73,15 +73,46 @@ namespace CORE {
 void*
 LoadModuleDynamicly( const char* filename )
 {
-        #ifdef GUCEF_LINUX_BUILD
-        return (void*) dlopen( filename, RTLD_NOW );
+    char* fName = (char*) filename;
+    const char* fileExt = Extract_File_Ext( filename );
+    void* modulePtr = NULL;
+    
+    /*
+     *  If no module extension was given we will add the O/S default
+     */
+    if ( fileExt == NULL )
+    {
+        UInt32 sLen = (UInt32) strlen( filename );
+        fName = malloc( sLen + 5 );
+        memcpy( fName, filename, sLen );
+        
+        #ifdef GUCEF_MSWIN_BUILD
+        memcpy( fName+sLen, ".dll\0", 5 );        
         #else
-          #ifdef GUCEF_MSWIN_BUILD
-          return (void*) LoadLibrary( filename );
+          #ifdef GUCEF_LINUX_BUILD
+          memcpy( fName+sLen, ".so\0", 4 ); 
           #else
-          #error Unsupported target platform
-          #endif
+            #error Unsupported target platform
+          #endif  
         #endif
+    }
+    
+    #ifdef GUCEF_LINUX_BUILD
+    modulePtr = (void*) dlopen( fName, RTLD_NOW );
+    #else
+      #ifdef GUCEF_MSWIN_BUILD      
+      modulePtr = (void*) LoadLibrary( fName );
+      #else
+        #error Unsupported target platform
+      #endif
+    #endif
+    
+    if ( fileExt == NULL )
+    {
+        free( fName );
+    }
+    
+    return modulePtr;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -203,7 +234,7 @@ GetCurrentHWND( void )
         #pragma warning( disable: 4047 ) // 'HWND' differs in levels of indirection from 'Int32'
                 
         /*
-         *      Try to get the HWND from the proccess enviorment settings
+         *      Try to get the HWND from the process environment settings
          */
         hwndstr = GUCEFGetEnv( "HWND" );
         if ( hwndstr )
@@ -213,7 +244,7 @@ GetCurrentHWND( void )
         else
         {                         
                 /*
-                 *      If all previous attemps failed then try to use the previous
+                 *      If all previous attempts failed then try to use the previous
                  *      clipboard owner (if there is one).
                  */
                 whandle = GetClipboardOwner();

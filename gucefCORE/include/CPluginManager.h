@@ -34,6 +34,16 @@
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
+#ifndef GUCEF_CORE_CIPLUGIN_H
+#include "CIPlugin.h"
+#define GUCEF_CORE_CIPLUGIN_H
+#endif /* GUCEF_CORE_CIPLUGIN_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -66,6 +76,12 @@ class GUCEFCORE_EXPORT_CPP CPluginManager : public CObservingNotifier
 
     static const CEvent PluginLoadedEvent;
     static const CEvent PluginUnloadedEvent;
+
+    static void RegisterEvents( void );
+    
+    public:
+    
+    typedef CTSharedPtr< CIPlugin > TPluginPtr;
     
     CPluginManager( void );
     
@@ -75,11 +91,11 @@ class GUCEFCORE_EXPORT_CPP CPluginManager : public CObservingNotifier
     
     CString GetPluginDir( void ) const;        
     
-    virtual void LoadAll( void ) = 0;
+    virtual void LoadAll( void );
     
     virtual void UnloadAll( void ) = 0;
     
-    static void RegisterEvents( void );
+    virtual TPluginPtr LoadPlugin( const CString& pluginPath );
     
     protected:
     friend class CPluginControl;
@@ -93,7 +109,7 @@ class GUCEFCORE_EXPORT_CPP CPluginManager : public CObservingNotifier
      *
      *  @param notifier the notifier that sent the notification
      *  @param eventid the unique event id for an event
-     *  @param eventdata optional notifier defined userdata
+     *  @param eventdata optional notifier defined user data
      */
     virtual void OnNotify( CNotifier* notifier           ,
                            const UInt32 eventid          ,

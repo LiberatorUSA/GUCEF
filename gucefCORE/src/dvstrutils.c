@@ -589,17 +589,19 @@ Extract_File_Ext( const char *filename )
         /*
          *      Extract the file extension
          */
-        UInt32 len = (UInt32)strlen( filename );
-        const char* i;
-        for ( i = filename+len; i>=0; i-- )
+        Int32 len = (Int32)strlen( filename );
+        Int32 n = 0;
+        const char* i = filename+len;
+        for ( n=0; n<len; ++n )
         {
-                if ( ( *i == '.' ) && ( (UInt32)(i-filename) != len ) )
+                if ( ( *i == '.' ) && ( n != len ) )
                 {
                         /*
                          *      Return extension
                          */
                         return i+1;
                 }
+                --i;
         }
         return NULL;
 }

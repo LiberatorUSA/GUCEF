@@ -113,40 +113,40 @@ CFPCodecPlugin::CFPCodecPlugin( const CORE::CString& codecfile )
         
         _fptable[ VFSPLUG_INIT ] = CORE::GetFunctionAddress( _sohandle      ,
                                                              "VFSPLUG_Init" ,
-                                                             1*PTRSIZE      );                                                       
+                                                             1*sizeof(void*)      );                                                       
         _fptable[ VFSPLUG_SHUTDOWN ] = CORE::GetFunctionAddress( _sohandle          ,
                                                                  "VFSPLUG_Shutdown" ,
-                                                                 1*PTRSIZE          );
+                                                                 1*sizeof(void*)          );
         _fptable[ VFSPLUG_PACK_OPEN ] = CORE::GetFunctionAddress( _sohandle           ,
                                                                   "VFSPLUG_Pack_Open" ,
-                                                                  3*PTRSIZE           );                                                       
+                                                                  3*sizeof(void*)           );                                                       
         _fptable[ VFSPLUG_PACK_CLOSE ] = CORE::GetFunctionAddress( _sohandle           ,
                                                                    "VFSPLUG_Pack_Close" ,
-                                                                   3*PTRSIZE            );                                                                                                                            
+                                                                   3*sizeof(void*)            );                                                                                                                            
         _fptable[ VFSPLUG_LOAD ] = CORE::GetFunctionAddress( _sohandle      ,
                                                              "VFSPLUG_Load" ,
-                                                             5*PTRSIZE      );
+                                                             5*sizeof(void*)      );
         _fptable[ VFSPLUG_LOAD_WRITEABLE ] = CORE::GetFunctionAddress( _sohandle                ,
                                                                        "VFSPLUG_Load_Writeable" ,
-                                                                       5*PTRSIZE                );
+                                                                       5*sizeof(void*)                );
         _fptable[ VFSPLUG_UNLOAD ] = CORE::GetFunctionAddress( _sohandle        ,
                                                                "VFSPLUG_Unload" ,
-                                                               6*PTRSIZE        );                                                         
+                                                               6*sizeof(void*)        );                                                         
         _fptable[ VFSPLUG_FILELIST ] = CORE::GetFunctionAddress( _sohandle          ,
                                                                  "VFSPLUG_Filelist" ,
-                                                                 4*PTRSIZE          );                                                                 
+                                                                 4*sizeof(void*)          );                                                                 
         _fptable[ VFSPLUG_FREE_FILELIST ] = CORE::GetFunctionAddress( _sohandle               ,
                                                                       "VFSPLUG_Free_Filelist" ,
-                                                                      5*PTRSIZE               );                                                            
+                                                                      5*sizeof(void*)               );                                                            
         _fptable[ VFSPLUG_NAME ] = CORE::GetFunctionAddress( _sohandle      ,
                                                              "VFSPLUG_Name" ,
-                                                             PTRSIZE        );
+                                                             sizeof(void*)        );
         _fptable[ VFSPLUG_COPYRIGHT ] = CORE::GetFunctionAddress( _sohandle                ,
                                                                   "VFSPLUG_Copyright_EULA" ,
-                                                                  PTRSIZE                  );
+                                                                  sizeof(void*)                  );
         _fptable[ VFSPLUG_VERSION ] = CORE::GetFunctionAddress( _sohandle         ,
                                                                 "VFSPLUG_Version" ,
-                                                                PTRSIZE           );
+                                                                sizeof(void*)           );
                                                           
         if ( ( !_fptable[ VFSPLUG_INIT ] ) ||
              ( !_fptable[ VFSPLUG_SHUTDOWN ] ) ||

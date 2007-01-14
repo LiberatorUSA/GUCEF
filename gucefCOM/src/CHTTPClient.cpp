@@ -640,10 +640,7 @@ CHTTPClient::OnWrite( COMCORE::CTCPClientSocket &socket                   ,
 {TRACE;
         
     // Notify observers about the data dispatch
-    CORE::CDynamicBuffer linkBuffer;
-    linkBuffer.LinkTo( data, length );
-    THTTPDataSendEventData cBuffer( data );
-    NotifyObservers( HTTPDataSendEvent, &cBuffer );
+    NotifyObservers( HTTPDataSendEvent, &data );
 }                      
 
 /*-------------------------------------------------------------------------*/
