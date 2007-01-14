@@ -291,10 +291,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CInputHandlerMapper.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\CInputHandlerMultiMap.h"
 				>
 			</File>

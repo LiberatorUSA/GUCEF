@@ -15,15 +15,20 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-/*
+#ifndef GUCEFINPUT_H
+#define GUCEFINPUT_H
+
+#ifdef __cplusplus
+namespace GUCEF {
+
+/**
  *      This is the main include header for the gucefINPUT library.
  *      It is part of a framework called GUCEF.
  *      All classes in this library have to do with user input management and
  *      the interfacing with the hardware.
  */
-
-#ifndef GUCEFINPUT_H
-#define GUCEFINPUT_H
+namespace INPUT {} }
+#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
