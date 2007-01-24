@@ -496,7 +496,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CTDefaultSOD.cpp"
+				RelativePath="..\..\src\CTDynamicDestructor.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CTDynamicDestructorBase.cpp"
 				>
 			</File>
 			<File
@@ -553,10 +557,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\CTSGObserver.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CTSharedObjectDestructor.cpp"
 				>
 			</File>
 			<File
@@ -958,11 +958,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CTDefaultSOD.h"
+				RelativePath="..\..\include\CTDynamicArray.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CTDynamicArray.h"
+				RelativePath="..\..\include\CTDynamicDestructor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CTDynamicDestructorBase.h"
 				>
 			</File>
 			<File
@@ -1019,10 +1023,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CTSGObserver.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CTSharedObjectDestructor.h"
 				>
 			</File>
 			<File

@@ -26,10 +26,10 @@
 
 #include <assert.h>
 
-#ifndef GUCEF_CORE_CTSHAREDOBJECTDESTRUCTOR_H
-#include "CTSharedObjectDestructor.h"
-#define GUCEF_CORE_CTSHAREDOBJECTDESTRUCTOR_H
-#endif /* GUCEF_CORE_CTSHAREDOBJECTDESTRUCTOR_H ? */
+#ifndef GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
+#include "CTDynamicDestructorBase.h"
+#define GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
+#endif /* GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H ? */
 
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"       /* module macro's */
@@ -81,7 +81,7 @@ class CTBasicSharedPtr
 {
     public:
     
-    typedef CTSharedObjectDestructor< T >   TDestructor;
+    typedef CTDynamicDestructorBase< T >   TDestructor;
     
     public:
         
@@ -330,8 +330,6 @@ CTBasicSharedPtr< T >::Initialize( T* ptr                        ,
     assert( m_ptr == NULL );
     assert( m_objectDestructor == NULL );
     assert( m_refCounter == NULL );
-
-    objectDestructor->DestroySharedObject( NULL );
 
     *this = CTBasicSharedPtr< T >( ptr, objectDestructor );
 }
@@ -616,7 +614,7 @@ CTBasicSharedPtr< T >::Unlink( void )
             // A descending class may NULL it for its own purposes.
             if ( NULL != m_objectDestructor )
             {
-                m_objectDestructor->DestroySharedObject( m_ptr );
+                m_objectDestructor->DestroyObject( m_ptr );
                 m_objectDestructor = NULL;
             }
             

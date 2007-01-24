@@ -71,7 +71,7 @@ VFS_NAMESPACE_BEGIN
  *      Threadsafe Virtual File System
  */
 class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
-                        private CORE::CTSharedObjectDestructor< CVFSHandle >
+                        private CORE::CTDynamicDestructorBase< CVFSHandle >
 {
         public:
         
@@ -123,7 +123,7 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
         
         private:
         
-        virtual void DestroySharedObject( CVFSHandle* sharedPointer );
+        virtual void DestroyObject( CVFSHandle* sharedPointer );
 
         private:
         static CVFS* _instance;

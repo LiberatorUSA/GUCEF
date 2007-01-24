@@ -25,8 +25,16 @@
 //-------------------------------------------------------------------------*/
 
 #include <assert.h>
+
+#ifndef GUCEF_CORE_CTBASICSHAREDPTR_H
 #include "CTBasicSharedPtr.h"
-#include "CTDefaultSOD.h"
+#define GUCEF_CORE_CTBASICSHAREDPTR_H
+#endif /* GUCEF_CORE_CTBASICSHAREDPTR_H ? */
+
+#ifndef GUCEF_CORE_CTDYNAMICDESTRUCTOR_H
+#include "CTDynamicDestructor.h"
+#define GUCEF_CORE_CTDYNAMICDESTRUCTOR_H
+#endif /* GUCEF_CORE_CTDYNAMICDESTRUCTOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -106,8 +114,7 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
     // inlined copy constructor, has to be inlined in class definition for now due to VC6 limitations
     template< class Derived >
     CTSharedPtr( const CTSharedPtr< Derived >& src )
-        : CTBasicSharedPtr< T >( reinterpret_cast< const CTSharedPtr& >( src ) ) ,
-          m_localDestructor()
+        : CTBasicSharedPtr< T >( reinterpret_cast< const CTSharedPtr& >( src ) )
     {TRACE;
        
         // regarding the initializer list:
@@ -121,14 +128,6 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
         Derived* testPtrDerived( NULL );
         T* testPtrT( static_cast< Derived* >( testPtrDerived ) );
         testPtrT = NULL;
-
-        // Check if source is the designated destroyer, if so then we make this instance
-        // the owner instead, allowing the other object to die without causing problems
-        // while still keeping the memory deallocation location constant.
-        if ( (TLocalDestructor*)GetDestructor() == &reinterpret_cast< const CTSharedPtr& >( src ).m_localDestructor )
-        {        
-            OverrideDestructor( &m_localDestructor );
-        }
     }
     
     CTSharedPtr( const CTSharedPtr& src );
@@ -151,14 +150,6 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
             testPtrT = NULL;
             
             CTBasicSharedPtr< T >::operator=( reinterpret_cast< const CTSharedPtr& >( src ) );
-
-            // Check if source is the designated destroyer, if so then we make this instance
-            // the owner instead, allowing the other object to die without causing problems
-            // while still keeping the memory dealocation location constant.
-            if ( (TLocalDestructor*)GetDestructor() == &reinterpret_cast< const CTSharedPtr& >( src ).m_localDestructor )
-            {        
-                OverrideDestructor( &m_localDestructor );
-            }
         }
         return *this;
     }
@@ -200,13 +191,6 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
      *  @throws ENotInitialized if the pointer is not initialized
      */
     inline const T* operator->( void ) const;
-
-    virtual void DestroySharedObject( T* sharedPointer );
-
-    private:
-    typedef CTDefaultSOD< T >   TLocalDestructor;
-
-    TLocalDestructor m_localDestructor;
 };
 
 /*-------------------------------------------------------------------------//
@@ -217,8 +201,7 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
 
 template< typename T >
 CTSharedPtr< T >::CTSharedPtr( void )
-        : CTBasicSharedPtr< T >() ,
-          m_localDestructor() 
+        : CTBasicSharedPtr< T >()
 {TRACE;
     // Note that if this constructor is used an assignment is required at
     // a later time to initialize the shared pointer
@@ -229,8 +212,7 @@ CTSharedPtr< T >::CTSharedPtr( void )
 template< typename T >
 CTSharedPtr< T >::CTSharedPtr( T* ptr                                     ,
                                TDestructor* objectDestructor /* = NULL */ )
-        : CTBasicSharedPtr< T >() ,
-          m_localDestructor() 
+        : CTBasicSharedPtr< T >()
 {TRACE;
     
     if ( NULL != objectDestructor )
@@ -239,7 +221,7 @@ CTSharedPtr< T >::CTSharedPtr( T* ptr                                     ,
     }
     else
     {
-        Initialize( ptr, &m_localDestructor );
+        Initialize( ptr, new CTDynamicDestructor< T >( true ) );
     }
 }
 
@@ -258,7 +240,7 @@ CTSharedPtr< T >::CTSharedPtr( T& ptr                                     ,
     }
     else
     {
-        Initialize( &ptr, &m_localDestructor );
+        Initialize( &ptr, new CTDynamicDestructor< T >( true ) );
     }
 }
 
@@ -266,25 +248,16 @@ CTSharedPtr< T >::CTSharedPtr( T& ptr                                     ,
 
 template< typename T >
 CTSharedPtr< T >::CTSharedPtr( const CTSharedPtr< T >& src )
-        : CTBasicSharedPtr< T >( src ) ,
-          m_localDestructor()
+        : CTBasicSharedPtr< T >( src )
 {TRACE;
        
-    // Check if source is the designated destroyer, if so then we make this instance
-    // the owner instead, allowing the other object to die without causing problems
-    // while still keeping the memory dealocation location constant.
-    if ( (TLocalDestructor*)GetDestructor() == &src.m_localDestructor )
-    {        
-        OverrideDestructor( &m_localDestructor );
-    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
 CTSharedPtr< T >::CTSharedPtr( const CTBasicSharedPtr< T >& src )
-    : CTBasicSharedPtr< T >( src ) ,
-      m_localDestructor()
+    : CTBasicSharedPtr< T >( src )
 {TRACE;
     
 }
@@ -295,25 +268,6 @@ template< typename T >
 CTSharedPtr< T >::~CTSharedPtr()
 {TRACE;
 
-    // Check if this instance is the destructor,.. if so then we cannot
-    // use the callback mechanism because this object will have been destroyed by the time
-    // the baseclass destructor implementation is called
-    assert( this != NULL );
-    if ( (TLocalDestructor*)GetDestructor() == &m_localDestructor )
-    {
-        // Call Unlink() while we still can
-        Unlink();
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-template< typename T > 
-void
-CTSharedPtr< T >::DestroySharedObject( T* sharedPointer )
-{TRACE;
-
-    delete sharedPointer;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -326,14 +280,6 @@ CTSharedPtr< T >::operator=( const CTSharedPtr< T >& src )
     if ( this != &src )
     {
         CTBasicSharedPtr< T >::operator=( src );
-
-        // Check if source is the designated destroyer, if so then we make this instance
-        // the owner instead, allowing the other object to die without causing problems
-        // while still keeping the memory dealocation location constant.
-        if ( (TLocalDestructor*)GetDestructor() == &src.m_localDestructor )
-        {        
-            OverrideDestructor( &m_localDestructor );
-        }
     }
     return *this;
 }
@@ -350,14 +296,6 @@ CTSharedPtr< T >::operator=( const CTSharedPtr< Derived >& src )
         CTSharedPtr< T > basePtr( static_cast );
         
         CTBasicSharedPtr< T >::operator=( src );
-
-        // Check if source is the designated destroyer, if so then we make this instance
-        // the owner instead, allowing the other object to die without causing problems
-        // while still keeping the memory dealocation location constant.
-        if ( (TLocalDestructor*)GetDestructor() == &src.m_localDestructor )
-        {        
-            OverrideDestructor( &m_localDestructor );
-        }
     }
     return *this;    
 }
@@ -503,6 +441,16 @@ CTSharedPtr< T >::operator->( void ) const
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 24-01-2007 :
+        - Dinand: Fixed and cleaned up the object destruction mechanics
+          Instead of using a local object to delete the shared object we now use
+          a self-deleting destructor delegator. This allows us to copy the destructor
+          pointer safely in all scenario's since it's garanteed to be kepts alive as
+          long as the reference count does not hit zero. This could actually cause 
+          nasty crashes in the previous implementation because the local destructor
+          mechanism broke down when a CTSharedPtr got converted into a CTBasicSharedPtr
+          which could result in an invalid destructor object beeing invoked.
+          This fix has the desireable side-effect of simplifying the code.
 - 14-12-2005 :
         - Dinand: Moved code into this new baseclass from CTSharedPtr to allow
           some level of shared pointer usage without actually requiring the type

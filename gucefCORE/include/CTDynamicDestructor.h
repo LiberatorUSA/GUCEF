@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2007.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -14,32 +14,17 @@
  * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
-
-#ifndef GUCEF_CORE_CTDEFAULTSOD_H
-#define GUCEF_CORE_CTDEFAULTSOD_H
  
+#ifndef GUCEF_CORE_CTDYNAMICDESTRUCTOR_H
+#define GUCEF_CORE_CTDYNAMICDESTRUCTOR_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <assert.h>
-
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"       /* module macro's */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
-
-#ifndef GUCEF_CORE_CTSHAREDOBJECTDESTRUCTOR_H
-#include "CTSharedObjectDestructor.h"
-#define GUCEF_CORE_CTSHAREDOBJECTDESTRUCTOR_H
-#endif /* GUCEF_CORE_CTSHAREDOBJECTDESTRUCTOR_H ? */
-
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
+#include "CTDynamicDestructorBase.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,22 +42,32 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Templated shared object destructor that simply deletes the given pointer.
+ *  Class meant for delegation of destruction duties.
  */
 template< typename T >
-class CTDefaultSOD : public CTSharedObjectDestructor< T >
+class CTDynamicDestructor : public CTDynamicDestructorBase< T >
 {
     public:
 
-    CTDefaultSOD( void );
+    typedef T TDestructorType;
+        
+    /**
+     *  
+     */
+    CTDynamicDestructor( const bool destroySelfOnDestroyObject = false );
+  
+    virtual void DestroyObject( T* objectToBeDestroyed );
 
-    CTDefaultSOD( const CTDefaultSOD& src );
+    virtual ~CTDynamicDestructor();    
 
-    virtual ~CTDefaultSOD();
+    private:
 
-    CTDefaultSOD& operator=( const CTDefaultSOD& src );
+    CTDynamicDestructor( const CTDynamicDestructor& src );            /**< not implemented */
+    CTDynamicDestructor& operator=( const CTDynamicDestructor& src ); /**< not implemented */
 
-    virtual void DestroySharedObject( T* sharedPointer );
+    private:
+
+    bool m_destroySelfOnDestroyObject;
 };
 
 /*-------------------------------------------------------------------------//
@@ -82,46 +77,33 @@ class CTDefaultSOD : public CTSharedObjectDestructor< T >
 //-------------------------------------------------------------------------*/
 
 template< typename T >
-CTDefaultSOD< T >::CTDefaultSOD( void )
+CTDynamicDestructor< T >::CTDynamicDestructor( const bool destroySelfOnDestroyObject /* = false */ )
+    : CTDynamicDestructorBase< T >()                             ,
+      m_destroySelfOnDestroyObject( destroySelfOnDestroyObject ) 
+{
+
+}
+
+/*-------------------------------------------------------------------------*/
+   
+template< typename T >
+CTDynamicDestructor< T >::~CTDynamicDestructor()
 {
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-CTDefaultSOD< T >::CTDefaultSOD( const CTDefaultSOD< T >& src )
-{
-
-}
-
-/*-------------------------------------------------------------------------*/
-  
-template< typename T >
-CTDefaultSOD< T >::~CTDefaultSOD()
-{
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-template< typename T >
-CTDefaultSOD< T >&
-CTDefaultSOD< T >::operator=( const CTDefaultSOD& src )
-{
-    if ( &src != this )
-    {
-    }
-    return *this;
-}
-
-/*-------------------------------------------------------------------------*/
-
-template< typename T >
+template< typename T > 
 void
-CTDefaultSOD< T >::DestroySharedObject( T* sharedPointer )
+CTDynamicDestructor< T >::DestroyObject( T* objectToBeDestroyed )
 {
-    delete sharedPointer;
+    delete objectToBeDestroyed;
+
+    if ( m_destroySelfOnDestroyObject )
+    {
+        delete this;
+    }
 }
 
 /*-------------------------------------------------------------------------//
@@ -133,16 +115,6 @@ CTDefaultSOD< T >::DestroySharedObject( T* sharedPointer )
 }; /* namespace CORE */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
+/*-------------------------------------------------------------------------*/
 
-- 14-12-2005 :
-        - file layout update to latest standard
-
------------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CTDEFAULTSOD_H ? */
-
+#endif /* GUCEF_CORE_CTDYNAMICDESTRUCTOR_H ? */

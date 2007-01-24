@@ -498,7 +498,7 @@ CVFS::GetFile( const CORE::CString& file          ,
 /*-------------------------------------------------------------------------*/
 
 void
-CVFS::DestroySharedObject( CVFSHandle* vfshandle )
+CVFS::DestroyObject( CVFSHandle* vfshandle )
 {TRACE;
         DEBUGOUTPUT( "CVFS::Unload( CVFSHandle* vfshandle )" );
         

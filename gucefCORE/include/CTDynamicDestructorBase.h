@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2007.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -14,9 +14,9 @@
  * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
-
-#ifndef GUCEF_CORE_CTSHAREDOBJECTDESTRUCTOR_H
-#define GUCEF_CORE_CTSHAREDOBJECTDESTRUCTOR_H
+ 
+#ifndef GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
+#define GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,7 +24,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefCORE_macros.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,24 +41,26 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Template for an interface class for deleting objects.
- *  Meant to allow implementation of destructor classes to control object
- *  ownership. Designed to be used in combination with CTSharedPtr.
+ *  Base class for destructor delegator specializations
  */
-template< typename PointerType >
-class CTSharedObjectDestructor
+template< typename T >
+class CTDynamicDestructorBase
 {
     public:
-    
-    virtual ~CTSharedObjectDestructor();
-        
-    virtual void DestroySharedObject( PointerType* sharedPointer ) = 0;
 
-public:
-    CTSharedObjectDestructor() {}
-private:
-    const CTSharedObjectDestructor& operator=(const CTSharedObjectDestructor&);
-    CTSharedObjectDestructor(const CTSharedObjectDestructor&);
+    typedef T TDestructorType;
+        
+    CTDynamicDestructorBase( void );
+  
+    virtual void DestroyObject( T* objectToBeDestroyed ) = 0;
+
+    virtual ~CTDynamicDestructorBase();    
+
+    private:
+
+    CTDynamicDestructorBase( const CTDynamicDestructorBase& src );            /**< not implemented */
+    CTDynamicDestructorBase& operator=( const CTDynamicDestructorBase& src ); /**< not implemented */
+
 };
 
 /*-------------------------------------------------------------------------//
@@ -67,11 +68,19 @@ private:
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-  
-template< typename PointerType >
-CTSharedObjectDestructor< PointerType >::~CTSharedObjectDestructor()
+
+template< typename T >
+CTDynamicDestructorBase< T >::CTDynamicDestructorBase( void )
 {
-    /* implemented to ensure that a virtual destructor is provided */
+
+}
+
+/*-------------------------------------------------------------------------*/
+   
+template< typename T >
+CTDynamicDestructorBase< T >::~CTDynamicDestructorBase()
+{
+
 }
 
 /*-------------------------------------------------------------------------//
@@ -81,8 +90,8 @@ CTSharedObjectDestructor< PointerType >::~CTSharedObjectDestructor()
 //-------------------------------------------------------------------------*/
 
 }; /* namespace CORE */
-}; /* namespace GUCEF */
+}; /* namespace GUCEF *
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CTSHAREDOBJECTDESTRUCTOR_H ? */
+#endif /* GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H ? */
