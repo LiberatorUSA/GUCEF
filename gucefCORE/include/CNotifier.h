@@ -89,7 +89,7 @@ class CNotifierImplementor;
  *  The return value is the 'alive' state of the notifier itself, If false then the 
  *  notifier has been destroyed. Any attempt to access data in that object will result 
  *  in invalid memory access. If the notifier has been destroyed you should exit the code
- *  that called the member function with accessing any data members
+ *  that called the member function with accessing any data members.
  */
 class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
 {
@@ -100,6 +100,10 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
     static const CEvent ModifyEvent;
     static const CEvent DestructionEvent;
 
+    static void RegisterEvents( void );
+    
+    public:
+    
     CNotifier( void );
 
     CNotifier( const CNotifier& src );
@@ -140,8 +144,6 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
     void Unsubscribe( CObserver* observer   ,
                       const CEvent& eventid );
 
-    static void RegisterEvents( void );
-
     /**
      *  descending classes should override this with the class name
      *  ie: a class named CMyClass should implement this member 
@@ -155,6 +157,15 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      *  we chose to use this approach.
      */
     virtual CString GetType( void ) const;
+    
+    /**
+     *  Sets a destruction flag that will cause the notifier object to be
+     *  destroyed after notification is finished (if not busy the notifier
+     *  is destroyed immediately).
+     *  Using this member function is the recommened method for deleting a
+     *  notifier while beeing notified from this notifier.
+     */
+    void ScheduleForDestruction( void );
 
     protected:
     friend class CNotifierImplementor;

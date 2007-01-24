@@ -152,7 +152,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
         if ( eventid == CORE::CGUCEFApplication::AppShutdownEvent )
         {
             printf( "CPingTester: The application is shutting down\n" );
-            //Deinstance();
+            // @TODO: ScheduleForDestruction 
         }
         else
         if ( eventid == COMCORE::CPing::PingReponseEvent )

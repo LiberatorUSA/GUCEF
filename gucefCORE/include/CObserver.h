@@ -62,6 +62,13 @@ class CNotifierImplementor;
  *  This can be done by calling UnsubscribeAll() from the destructor of your 
  *  decending class. Failure to do this will not cause any problems but should be 
  *  considdered to be dirty coding.
+ *
+ *  Note that in general it is recommened not to delete a notifier while a 
+ *  notification is beeing handled, ie during the OnNotify() callback. It is
+ *  possible to do this but it is a rather involved process for both the observer
+ *  and the notifier. The recommened method for deleting a notifier that is
+ *  notififying you is to schedule the notifier for deletion after the notification
+ *  finishes. 
  */
 class GUCEFCORE_EXPORT_CPP CObserver
 {

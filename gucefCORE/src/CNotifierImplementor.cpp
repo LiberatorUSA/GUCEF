@@ -61,12 +61,13 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CNotifierImplementor::CNotifierImplementor( CNotifier* ownerNotifier )
-    : m_isBusy( false )                ,
-      m_observers()                    ,
-      m_eventobservers()               ,
-      m_eventMailStack()               ,
-      m_cmdMailStack()                 ,
-      m_ownerNotifier( ownerNotifier )
+    : m_isBusy( false )                 ,
+      m_observers()                     ,
+      m_eventobservers()                ,
+      m_eventMailStack()                ,
+      m_cmdMailStack()                  ,
+      m_ownerNotifier( ownerNotifier )  ,
+      m_scheduledForDestruction( false )
 {TRACE;
 
     assert( m_ownerNotifier != NULL );
@@ -76,12 +77,13 @@ CNotifierImplementor::CNotifierImplementor( CNotifier* ownerNotifier )
 
 CNotifierImplementor::CNotifierImplementor( CNotifier* ownerNotifier ,
                                             const CNotifier& src     )
-    : m_isBusy( false )                ,
-      m_observers()                    ,
-      m_eventobservers()               ,
-      m_eventMailStack()               ,
-      m_cmdMailStack()                 ,
-      m_ownerNotifier( ownerNotifier )
+    : m_isBusy( false )                 ,
+      m_observers()                     ,
+      m_eventobservers()                ,
+      m_eventMailStack()                ,
+      m_cmdMailStack()                  ,
+      m_ownerNotifier( ownerNotifier )  ,
+      m_scheduledForDestruction( false )
 {TRACE;
 
     //@TODO: makeme
@@ -203,6 +205,13 @@ CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid ,
     } 
     
     m_isBusy = false;
+    
+    if ( m_scheduledForDestruction )
+    {
+        delete m_ownerNotifier;
+        return false;
+    }
+        
     return true;
 }
 
@@ -241,6 +250,14 @@ CNotifierImplementor::Subscribe( CObserver* observer )
                                 NULL                       );
                                 
             m_isBusy = false;
+            
+            if ( m_scheduledForDestruction )
+            {
+                UnlockData();
+                delete m_ownerNotifier;
+                return false;
+            }
+            
             ProcessMailbox();            
         }
     }
@@ -368,6 +385,14 @@ CNotifierImplementor::Subscribe( CObserver* observer   ,
         }
         
         m_isBusy = false;
+        
+        if ( m_scheduledForDestruction )
+        {
+            UnlockData();
+            delete m_ownerNotifier;
+            return;
+        }        
+        
         ProcessMailbox();
     }
     else
@@ -451,6 +476,14 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer       ,
         }
 
         m_isBusy = false;
+        
+        if ( m_scheduledForDestruction )
+        {
+            UnlockData();
+            delete m_ownerNotifier;
+            return;
+        }
+                
         ProcessMailbox();        
     }
     else
@@ -515,6 +548,14 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
         }
 
         m_isBusy = false;
+        
+        if ( m_scheduledForDestruction )
+        {
+            UnlockData();
+            delete m_ownerNotifier;
+            return;
+        }
+                
         ProcessMailbox();        
     }
     else
@@ -677,8 +718,17 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
             ++n;
         }
         
-        // Now we check if any requests where received while we where busy
+        
         m_isBusy = false;
+
+        if ( m_scheduledForDestruction )
+        {
+            UnlockData();
+            delete m_ownerNotifier;
+            return false;
+        }        
+        
+        // Now we check if any requests where received while we where busy
         ProcessMailbox();        
     }
     else
@@ -831,6 +881,34 @@ CNotifierImplementor::OnDeathOfOwnerNotifier( void )
          */
         Destroy( this );          
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CNotifierImplementor::ScheduleForDestruction( void )
+{
+   LockData();
+   
+   if ( !m_isBusy )
+    {
+        /*
+         *  We are not busy, meaning we did not arrive here trough some action
+         *  trigger by the notifier itself. Thus we can safely delete the notifier
+         */
+        UnlockData();
+        delete m_ownerNotifier;          
+    }
+    else
+    {
+        /*
+         *  We are busy and the user has opted to perform a delayed delete
+         *  We will simply set a flag signalling that the notifier should be deleted
+         *  once it finishes it's current operation
+         */
+        m_scheduledForDestruction = true;
+        UnlockData();
+    }    
 }
 
 /*-------------------------------------------------------------------------*/

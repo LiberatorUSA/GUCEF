@@ -211,6 +211,15 @@ CNotifier::GetType( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CNotifier::ScheduleForDestruction( void )
+{TRACE;
+
+    m_imp->ScheduleForDestruction();
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CNotifier::LockData( void ) const
 {TRACE;

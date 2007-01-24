@@ -174,6 +174,8 @@ class CNotifierImplementor
     void LockData( void ) const;
     
     void UnlockData( void ) const;
+    
+    void ScheduleForDestruction( void );
    
     bool ForceNotifyObserversOnce( const CEvent& eventid    ,
                                    CICloneable* data = NULL );
@@ -221,6 +223,7 @@ class CNotifierImplementor
     TObserverList m_observers;
     
     bool m_isBusy;
+    bool m_scheduledForDestruction;
     std::vector< TEventMailElement > m_eventMailStack;
     std::vector< TCmdMailElement > m_cmdMailStack;
 };
