@@ -59,10 +59,10 @@ class CGUCEFApplication;
 /*--------------------------------------------------------------------------*/
 
 /**
- *  Application sub-systems can derive from this class to recieve update
+ *  Application sub-systems can derive from this class to receive update
  *  pulses from the main application 'engine'.
  *
- *  This class can automaticly register at the CGUCEFApplication singleton if
+ *  This class can automatically register at the CGUCEFApplication singleton if
  *  you wish. You can also register at a later time depending on your needs.
  *  Registering the sub-system causes you to subscribes the sub-system to application 
  *  update pulses and subscribes to notifications

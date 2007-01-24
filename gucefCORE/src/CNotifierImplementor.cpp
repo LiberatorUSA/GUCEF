@@ -255,7 +255,7 @@ CNotifierImplementor::Subscribe( CObserver* observer )
             {
                 UnlockData();
                 delete m_ownerNotifier;
-                return false;
+                return;
             }
             
             ProcessMailbox();            

@@ -64,6 +64,8 @@ class CTCloneableObj : public CICloneable
     
     virtual CICloneable* Clone( void ) const;    
     
+    T GetDataCopy( void ) const;
+    
     const T& GetData( void ) const;
 
     private:
@@ -134,6 +136,16 @@ CTCloneableObj< T >::Clone( void ) const
 template< typename T >
 const T& 
 CTCloneableObj< T >::GetData( void ) const
+{TRACE;
+
+    return m_data;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+T 
+CTCloneableObj< T >::GetDataCopy( void ) const
 {TRACE;
 
     return m_data;
