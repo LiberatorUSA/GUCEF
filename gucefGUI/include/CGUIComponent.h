@@ -26,9 +26,9 @@
 
 #include "stdafx.h"
 #include <string>
-#include "XtraBase/XBGeneral/XBExceptionMacros.h"
-#include "XtraBase/XBGeneral/CICloneable.h"
-#include "XtraBase/XBGeneral/CObservingNotifier.h"
+#include "ExceptionMacros.h"
+#include "CICloneable.h"
+#include "CObservingNotifier.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -36,11 +36,13 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+DRAFT, NOT COMPILEABLE
+
 /**
  *  Abstract base class from which all form based GUI elements should be derived
  */
-class CGUIForm : public XtraBase::CObservingNotifier ,
-                        XtraBase::CICloneable
+class CGUIForm : public CORE::CObservingNotifier ,
+                        CORE::CICloneable
 {
     public:
 
@@ -76,9 +78,9 @@ class CGUIForm : public XtraBase::CObservingNotifier ,
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined userdata
      */
-    virtual void OnNotify( XtraBase::CNotifier* notifier           ,
-                           const XtraBase::UInt32 eventid          ,
-                           XtraBase::CICloneable* eventdata = NULL );
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::UInt32 eventid          ,
+                           CORE::CICloneable* eventdata = NULL );
 
     private:
 
