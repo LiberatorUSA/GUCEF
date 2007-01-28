@@ -386,7 +386,7 @@ CTBasicSharedPtr< T >::operator=( int nullValue )
 {TRACE;
 
     assert( nullValue == NULL );
-    SetToNULL();
+    Unlink();
     return *this;
 }
 
