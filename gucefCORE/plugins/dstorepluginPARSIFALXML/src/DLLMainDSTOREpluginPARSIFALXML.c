@@ -30,6 +30,9 @@
 #define PARSIFAL__H
 #endif /* PARSIFAL__H ? */
 
+/* Parsifal defines BYTE in the global namesapce which can cause problems :( */
+#undef BYTE
+
 #include "DLLMainDSTOREpluginPARSIFALXML.h"    /* gucefCORE DSTORE codec plugin API */
 
 #ifndef GUCEF_CORE_MACROS_H

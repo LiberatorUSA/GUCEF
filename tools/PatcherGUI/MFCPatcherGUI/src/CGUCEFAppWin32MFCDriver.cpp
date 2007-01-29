@@ -114,10 +114,10 @@ CGUCEFAppWin32MFCDriver::Init( CWnd* pParentWnd )
 /*-------------------------------------------------------------------------*/
 
 void 
-CGUCEFAppWin32MFCDriver::OnRequestNewMinimalUpdateFreq( const GUCEF::CORE::UInt32 frequency )
+CGUCEFAppWin32MFCDriver::OnRequestNewMinimalUpdateFreq( const GUCEF::CORE::Float64 updateDeltaInMilliSecs )
 {TRACE;
 
-    m_frequency = frequency;
+    m_frequency = updateDeltaInMilliSecs;
     if ( m_appPtr->GetRequiresPeriodicUpdate() )
     {
         /*
@@ -166,7 +166,7 @@ CGUCEFAppWin32MFCDriver::OnStartUpdateTimer( WPARAM wParam ,
         {
             KillTimer( m_nTimer );
         }
-        m_nTimer = (UINT) SetTimer( GUCEFWIN32DRIVERMSG_UPDATE, m_frequency, 0 );
+        m_nTimer = (UINT) SetTimer( GUCEFWIN32DRIVERMSG_UPDATE, (DWORD)m_frequency, 0 );
     }
     return 0;
 }

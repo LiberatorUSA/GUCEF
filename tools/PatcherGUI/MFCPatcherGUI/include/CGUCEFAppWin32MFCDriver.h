@@ -56,7 +56,7 @@ class CGUCEFAppWin32MFCDriver : public CWnd                                  ,
 
     virtual void OnSwitchUpdateMethod( const bool periodic );
     
-    virtual void OnRequestNewMinimalUpdateFreq( const GUCEF::CORE::UInt32 frequenty );
+    virtual void OnRequestNewMinimalUpdateFreq( const GUCEF::CORE::Float64 updateDeltaInMilliSecs );
 
     virtual void OnRequestNewUpdateCycle( void );
 
@@ -79,7 +79,7 @@ class CGUCEFAppWin32MFCDriver : public CWnd                                  ,
     private:
 
     UINT m_nTimer;
-    GUCEF::CORE::UInt32 m_frequency;
+    GUCEF::CORE::Float64 m_frequency;
     GUCEF::CORE::CGUCEFApplication* m_appPtr;
     bool m_initialized;
 };

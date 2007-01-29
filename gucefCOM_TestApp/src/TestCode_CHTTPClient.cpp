@@ -134,7 +134,7 @@ class CMyPumpClient : public CGUCEFAppSubSystem
     
     CMyPumpClient( void )
     {
-            m_startevent = GUCEF::CORE::CNotificationIDRegistry::Instance()->Lookup( GUCEF::CORE::CGUCEFApplication::AppInitEvent );       
+            SubscribeTo( GUCEF::CORE::CGUCEFApplication::Instance(), GUCEF::CORE::CGUCEFApplication::AppInitEvent );       
     }
     
     protected:
@@ -148,7 +148,7 @@ class CMyPumpClient : public CGUCEFAppSubSystem
                            const CORE::UInt32 eventid                ,
                            CORE::CICloneable* eventdata /* = NULL */ )
     {
-        if ( eventid == m_startevent )
+        if ( eventid == GUCEF::CORE::CGUCEFApplication::AppInitEvent )
         {
                 if ( client.m_client.Get( "www.google.com" ,
                                           80               ,
@@ -164,8 +164,7 @@ class CMyPumpClient : public CGUCEFAppSubSystem
     }
         
         private:
-        CMyHTTPClient client;
-        CORE::UInt32 m_startevent;        
+        CMyHTTPClient client;   
                                               
 };
 
