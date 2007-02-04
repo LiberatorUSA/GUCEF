@@ -130,9 +130,11 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
         }
         if ( eventid == CHTTPClient::HTTPDataRecievedEvent )
         {
-            CHTTPClient::THTTPDataRecievedEventData* eData = static_cast< CHTTPClient::THTTPDataRecievedEventData* >( eventdata );            
-            CORE::CMFileAccess mAccess( eData->GetData().GetConstBufferPtr(), eData->GetData().GetDataSize() );
-            NotifyObservers( CIURLEvents::URLDataRecievedEvent, &mAccess );
+            //CHTTPClient::THTTPDataRecievedEventData* eData = static_cast< CHTTPClient::THTTPDataRecievedEventData* >( eventdata );            
+            //CORE::CMFileAccess mAccess( eData->GetData().GetConstBufferPtr(), eData->GetData().GetDataSize() );
+            
+            // pass on the eventdata since it's a cloneable buffer it  will sort itself out
+            NotifyObservers( CIURLEvents::URLDataRecievedEvent, eventdata );
             return;
         }
         if ( eventid == CHTTPClient::HTTPTransferFinishedEvent )

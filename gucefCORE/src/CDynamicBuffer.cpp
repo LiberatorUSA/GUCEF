@@ -518,8 +518,9 @@ CDynamicBuffer::Append( const void* data  ,
 
     SecureLinkBeforeMutation();
 
-    SetDataSize( _bsize + size );
-    memcpy( _buffer+_bsize, data, size );
+    UInt32 oldBufferSize = _bsize;
+    SetDataSize( oldBufferSize + size );
+    memcpy( _buffer + oldBufferSize, data, size );
     m_dataSize = _bsize;
 }
 

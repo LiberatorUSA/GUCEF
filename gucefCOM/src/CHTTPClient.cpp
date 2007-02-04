@@ -284,8 +284,8 @@ CHTTPClient::ParseURL( const CORE::CString& urlstring ,
 {TRACE;
         if ( urlstring.Length() < 10 ) return false;
         
-        CORE::CString lowcaseurl( urlstring.Lowercase() );
-        lowcaseurl = lowcaseurl.ReplaceChar( '\\', '/' );
+        CORE::CString urlStr = urlstring.ReplaceChar( '\\', '/' );
+        CORE::CString lowcaseurl( urlStr.Lowercase() );
                 
         if ( 0 != lowcaseurl.HasSubstr( "http://", true ) )
         {       
@@ -300,7 +300,7 @@ CHTTPClient::ParseURL( const CORE::CString& urlstring ,
          *      if it is included
          */
         CORE::CString remainder;
-        remainder.Set( lowcaseurl.C_String()+7, lowcaseurl.Length()-7 );
+        remainder.Set( urlStr.C_String()+7, urlStr.Length()-7 );
         CORE::CString segmenta( remainder.SubstrToChar( '/' ) );
         CORE::CString segmentb( remainder.SubstrToChar( ':' ) );
         port = 80; 
@@ -580,7 +580,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
                 if(m_filesize > length && length != 0) 
                 {
 
-                    // Notify observers about the HTTP payload content info we recieved
+                    // Notify observers about the HTTP payload content info we received
                     struct SHTTPContentEventData cedStruct;
                     cedStruct.contentSize = m_filesize;
                     cedStruct.resumeSupported = resumeable;
@@ -588,7 +588,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
                     THTTPContentEventData contentEventData( cedStruct );
                     NotifyObservers( HTTPContentEvent, &contentEventData );
                                 
-                    // Notify observers about the HTTP transfer payload contents we recieved
+                    // Notify observers about the HTTP transfer payload contents we received
                     CORE::CDynamicBuffer linkBuffer;
                     linkBuffer.LinkTo( data, length );
                     THTTPDataRecievedEventData cBuffer( &linkBuffer );
@@ -602,15 +602,15 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
         {
             m_recieved += length;                
 
-            // Notify observers about the HTTP payload content info we recieved
+            // Notify observers about the HTTP payload content info we received
             struct SHTTPContentEventData cedStruct;
             cedStruct.contentSize = size;
             cedStruct.resumeSupported = resumeable;
             cedStruct.HTTPcode = http_code;
             THTTPContentEventData contentEventData( cedStruct );
             NotifyObservers( HTTPContentEvent, &contentEventData );
-                                                      	
-            // Notify observers about the HTTP transfer payload contents we recieved
+                                                      	                       
+            // Notify observers about the HTTP transfer payload contents we received
             CORE::CDynamicBuffer linkBuffer;
             linkBuffer.LinkTo( data, length );
             THTTPDataRecievedEventData cBuffer( &linkBuffer );

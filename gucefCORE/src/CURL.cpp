@@ -146,7 +146,7 @@ CURL::SetURL( const CString& url )
     CURLHandler* newHandler = GetHandlerForURL( lowerCaseURL );
     if ( NULL != newHandler )
     {
-        m_url = lowerCaseURL;
+        m_url = url;
         
         if ( m_handler )
         {
