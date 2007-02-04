@@ -1,10 +1,5 @@
 <PatchList>
-	<PatchSetEntry Name="GUCEF" >
-		<Location URL="" Codec="" />
-		<Location URL="" Codec="" />
-	</PatchSetEntry>
-	<PatchSetEntry Name="" >
-		<Location URL="" Codec="" />
-		<Location URL="" Codec="" />
+	<PatchSetEntry Name="PatcherTest" >
+		<Location URL="http://www.VanvelzenSoftware.com/bin/GUCEF/tools/PatcherGUI/PatcherTest/PatcherPatchSetDummy.xml" Codec="xml" />
 	</PatchSetEntry>
 </PatchList>
