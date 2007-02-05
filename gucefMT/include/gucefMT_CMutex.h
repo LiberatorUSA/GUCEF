@@ -45,7 +45,7 @@ namespace MT {
 //-------------------------------------------------------------------------*/
 
 /**
- *      Mutex class implementation that currently supports mswindows and linux
+ *      O/S Mutex wrapper
  */
 class GUCEFMT_EXPORT_CPP CMutex
 {
@@ -54,14 +54,14 @@ class GUCEFMT_EXPORT_CPP CMutex
         /**
          *      Lock the mutex. If the mutex is already locked the calling
          *      process will have to wait for the mutex to allow a lock.
-         *      The return value indicates wheter the lock failed or succeeded.
+         *      The return value indicates whether the lock failed or succeeded.
          */
         bool Lock( void ) const;
 
         /**
          *      Unlocks the mutex after a call to Lock_Mutex(). Other processes
          *      will have the ability to get a mutex lock after this call.
-         *      The return value indicates wheter the unlock failed or succeeded.
+         *      The return value indicates whether the unlock failed or succeeded.
          */
         bool Unlock( void ) const;
 
@@ -86,16 +86,6 @@ class GUCEFMT_EXPORT_CPP CMutex
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      MACROS                                                             //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-#define GUCEF_MUTEX( varname ) (CMutex varname;)
-#define GUCEF_LOCKMUTEX( varname ) (varname.Lock();)
-#define GUCEF_UNLOCKMUTEX( varname ) (varname.Unlock();)
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -103,13 +93,17 @@ class GUCEFMT_EXPORT_CPP CMutex
 }; /* namespace MT */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      MACROS                                                             //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#define GUCEF_MUTEX( varName )       ( GUCEF::MT::CMutex varName; )
+#define GUCEF_LOCKMUTEX( varName )   ( varName.Lock(); )
+#define GUCEF_UNLOCKMUTEX( varName ) ( varName.Unlock(); )
+
+/*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
@@ -121,7 +115,7 @@ class GUCEFMT_EXPORT_CPP CMutex
 
 - 27-11-2004 :
        - Wrote a new implementation of the member functions to get rid of the
-         dependancy on SDL.
+         dependency on SDL.
 - 11-03-2004 :
        - Designed and implemented this class.
 

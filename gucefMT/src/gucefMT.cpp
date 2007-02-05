@@ -40,3 +40,11 @@
 GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::MT::CGUCEFMTModule )
 
 /*-------------------------------------------------------------------------*/
+
+const char*
+GUCEF_MT_ModuleCompileTimeStamp( void )
+{
+    return __TIMESTAMP__;
+}
+
+/*-------------------------------------------------------------------------*/

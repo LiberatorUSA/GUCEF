@@ -91,6 +91,11 @@
 #define GUCEF_CORE_CNOTIFYINGMAPEVENTS_H
 #endif /* GUCEF_CORE_CNOTIFYINGMAPEVENTS_H ? */
 
+#ifndef GUCEF_CORE_CCODECREGISTRY_H
+#include "CCodecRegistry.h"
+#define GUCEF_CORE_CCODECREGISTRY_H
+#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
+
 #include "CGUCEFCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef ADD_MEMORY_MANAGER

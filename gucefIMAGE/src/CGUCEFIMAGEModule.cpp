@@ -21,6 +21,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CCODECREGISTRY_H
+#include "CCodecRegistry.h"
+#define GUCEF_CORE_CCODECREGISTRY_H
+#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
+
 //#ifndef CIMGCODECMANAGER_H
 //#include "CIMGCodecManager.h"      /* header for the main image codec manager */
 //#define CIMGCODECMANAGER_H
@@ -43,51 +48,19 @@ namespace IMAGE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUCEFIMAGEModule::CGUCEFIMAGEModule( void )
-{
-        DEBUGOUTPUT( "CGUCEFIMAGEModule::CGUCEFIMAGEModule( void )" );
-        
-        /* dummy, should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFIMAGEModule::CGUCEFIMAGEModule( const CGUCEFIMAGEModule& src )
-{
-        DEBUGOUTPUT( "CGUCEFIMAGEModule::CGUCEFIMAGEModule( const CGUCEFIMAGEModule& src )" );
-        
-        /* dummy, should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFIMAGEModule::~CGUCEFIMAGEModule()
-{
-        DEBUGOUTPUT( "CGUCEFIMAGEModule::~CGUCEFIMAGEModule()" );
-        
-        /* dummy, should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFIMAGEModule&
-CGUCEFIMAGEModule::operator=( const CGUCEFIMAGEModule& src )
-{
-        DEBUGOUTPUT( "CGUCEFIMAGEModule::operator=( const CGUCEFIMAGEModule& src )" );
-        
-        /* dummy, should never be used */
-        return *this;
-}
-        
-/*-------------------------------------------------------------------------*/        
-
 bool 
 CGUCEFIMAGEModule::Load( void )
-{
-        DEBUGOUTPUT( "CGUCEFIMAGEModule::Load( void )" );
+{TRACE;
+        
+        try
+        {
+            CORE::CCodecRegistry::Instance()->Register( "ImageCodec", new CORE::CCodecRegistry::TCodecFamilyRegistry() );
+        }
+        catch ( CORE::CCodecRegistry::EAlreadyRegistered& )
+        {
+        }
         
         /* simply instantiate our codec manager when the module is loaded */
-        //CIMGCodecManager::Instance();
         return true;
 }
 
@@ -95,9 +68,8 @@ CGUCEFIMAGEModule::Load( void )
         
 bool 
 CGUCEFIMAGEModule::Unload( void )
-{
-        DEBUGOUTPUT( "CGUCEFIMAGEModule::Unload( void )" );
-        
+{TRACE;
+
         return true;
 }
 

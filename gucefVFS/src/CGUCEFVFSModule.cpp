@@ -21,6 +21,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CCODECREGISTRY_H
+#include "CCodecRegistry.h"
+#define GUCEF_CORE_CCODECREGISTRY_H
+#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
+
 #include "CGUCEFVFSModule.h"  /* definition of the class implemented here */
 
 #ifndef CFPCODECREGISTRY_H
@@ -58,48 +63,18 @@ VFS_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUCEFVFSModule::CGUCEFVFSModule( void )
-{TRACE;
-        DEBUGOUTPUT( "CGUCEFVFSModule::CGUCEFVFSModule( void )" );
-        
-        /* dummy, should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFVFSModule::CGUCEFVFSModule( const CGUCEFVFSModule& src )
-{TRACE;
-        DEBUGOUTPUT( "CGUCEFVFSModule::CGUCEFVFSModule( const CGUCEFVFSModule& src )" );
-        
-        /* dummy, should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFVFSModule::~CGUCEFVFSModule()
-{TRACE;
-        DEBUGOUTPUT( "CGUCEFVFSModule::~CGUCEFVFSModule()" );
-        
-        /* dummy, should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFVFSModule&
-CGUCEFVFSModule::operator=( const CGUCEFVFSModule& src )
-{TRACE;
-        DEBUGOUTPUT( "CGUCEFVFSModule::operator=( const CGUCEFVFSModule& src )" );
-        
-        /* dummy, should never be used */
-        return *this;
-}
-        
-/*-------------------------------------------------------------------------*/        
-
 bool 
 CGUCEFVFSModule::Load( void )
 {TRACE;
         DEBUGOUTPUT( "CGUCEFVFSModule::Load( void )" );
+
+        try
+        {
+            CORE::CCodecRegistry::Instance()->Register( "VFSPackCodec", new CORE::CCodecRegistry::TCodecFamilyRegistry() );
+        }
+        catch ( CORE::CCodecRegistry::EAlreadyRegistered& )
+        {
+        }
         
         /*
          *      Instantiate all singletons

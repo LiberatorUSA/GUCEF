@@ -330,12 +330,21 @@
 #endif /* GUCEF_CORE_CTBASICSHAREDPTR_H ? */
 
 #ifndef GUCEF_CORE_CCODECREGISTRY_H
-//#include "CCodecRegistry.h"
+#include "CCodecRegistry.h"
 #define GUCEF_CORE_CCODECREGISTRY_H
 #endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
 
 #endif /* __cplusplus ? */
-/*--------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_C const char* GUCEF_CORE_ModuleCompileTimeStamp( void );
+
+/*-------------------------------------------------------------------------*/
 
 #endif /* GUCEFCORE_H ? */
 

@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CCODECREGISTRY_H
-#define GUCEF_CORE_CCODECREGISTRY_H 
+#ifndef GUCEF_CORE_CTSINGLETON_H
+#define GUCEF_CORE_CTSINGLETON_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,15 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CTREGISTRY_H
-#include "CTRegistry.h"
-#define GUCEF_CORE_CTREGISTRY_H
-#endif /* GUCEF_CORE_CTREGISTRY_H ? */
-
-#ifndef GUCEF_CORE_CICODEC_H
-#include "CICodec.h"
-#define GUCEF_CORE_CICODEC_H
-#endif /* GUCEF_CORE_CICODEC_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"       /* module macro's */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -49,30 +44,103 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CCodecRegistry : public CTRegistry< CTRegistry< CICodec > >
+template < class BaseClass >
+class CTSingleton : public BaseClass
 {
     public:
     
-    typedef CTRegistry< CICodec > TCodecFamilyRegistry;
-    
-    static CCodecRegistry* Instance( void );
-    
-    private:
-    friend class CGUCEFCOREModule;
+    static BaseClass* Instance( void );
     
     static void Deinstance( void );
     
+    protected:
+    
+    virtual void LockData( void ) const;
+    
+    virtual void UnlockData( void ) const;
+    
     private:
     
-    CCodecRegistry( void );
-    virtual ~CCodecRegistry();
-    CCodecRegistry( const CCodecRegistry& src );              /**< not implemented, don't use */
-    CCodecRegistry& operator=( const CCodecRegistry& src );   /**< not implemented, don't use */
+    CTSingleton( void );
+    virtual ~CTSingleton();
+    CTSingleton( const CTSingleton& src );              /**< not implemented, don't use */
+    CTSingleton& operator=( const CTSingleton& src );   /**< not implemented, don't use */ 
     
     private:
     
-    static CCodecRegistry* m_instance;
+    static BaseClass* m_instance;
 };
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+template< class BaseClass >
+CTSingleton< BaseClass >::CTSingleton( void )
+    : BaseClass()
+{
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class BaseClass >
+CTSingleton< BaseClass >::~CTSingleton()
+{
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class BaseClass >
+BaseClass*
+CTSingleton< BaseClass >::Instance( void )
+{
+    LockData();
+    
+    if ( m_instance == NULL )
+    {
+        m_instance = new CTSingleton< BaseClass >();
+    }
+    
+    UnlockData();
+    
+    return m_instance;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class BaseClass >
+void
+CTSingleton< BaseClass >::Deinstance( void )
+{
+    LockData();
+    
+    delete m_instance;
+    m_instance = NULL;
+    
+    UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class BaseClass >
+void
+CTSingleton< BaseClass >::LockData( void ) const
+{
+    /* dummy to avoid mandatory implementation by descending classes */
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class BaseClass >
+void
+CTSingleton< BaseClass >::UnlockData( void ) const
+{
+    /* dummy to avoid mandatory implementation by descending classes */
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -85,7 +153,7 @@ class GUCEFCORE_EXPORT_CPP CCodecRegistry : public CTRegistry< CTRegistry< CICod
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
+#endif /* GUCEF_CORE_CTSINGLETON_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

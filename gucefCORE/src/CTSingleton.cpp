@@ -21,30 +21,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_GUCEFCOREDLLINIT_H
-#include "gucefCOREDLLInit.h"
-#define GUCEF_CORE_GUCEFCOREDLLINIT_H
-#endif /* GUCEF_CORE_GUCEFCOREDLLINIT_H ? */
-
-#ifndef GUCEF_CORE_CGUCEFCOREMODULE_H
-#include "CGUCEFCOREModule.h"
-#define GUCEF_CORE_CGUCEFCOREMODULE_H
-#endif /*GUCEF_CORE_CGUCEFCOREMODULE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      UTILITIES                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-DLL_INIT_FUNC_BEG_END( GUCEF::CORE::CGUCEFCOREModule )
-
-/*-------------------------------------------------------------------------*/
-
-const char*
-GUCEF_CORE_ModuleCompileTimeStamp( void )
-{
-    return __TIMESTAMP__;
-}
+#include "CTSingleton.h"
 
 /*-------------------------------------------------------------------------*/

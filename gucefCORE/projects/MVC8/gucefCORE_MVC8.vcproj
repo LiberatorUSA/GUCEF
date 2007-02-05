@@ -216,6 +216,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CCodecRegistry.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CConfigStore.cpp"
 				>
 			</File>
@@ -561,6 +565,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\CTSharedPtr.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CTSingleton.cpp"
 				>
 			</File>
 			<File
@@ -1027,6 +1035,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CTSharedPtr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CTSingleton.h"
 				>
 			</File>
 			<File

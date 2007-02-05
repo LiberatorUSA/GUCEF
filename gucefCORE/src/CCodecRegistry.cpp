@@ -15,24 +15,13 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CCODECREGISTRY_H
-#define GUCEF_CORE_CCODECREGISTRY_H 
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTREGISTRY_H
-#include "CTRegistry.h"
-#define GUCEF_CORE_CTREGISTRY_H
-#endif /* GUCEF_CORE_CTREGISTRY_H ? */
-
-#ifndef GUCEF_CORE_CICODEC_H
-#include "CICodec.h"
-#define GUCEF_CORE_CICODEC_H
-#endif /* GUCEF_CORE_CICODEC_H ? */
+#include "CCodecRegistry.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,34 +34,54 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CCodecRegistry : public CTRegistry< CTRegistry< CICodec > >
-{
-    public:
+CCodecRegistry* CCodecRegistry::m_instance = NULL;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CCodecRegistry::CCodecRegistry( void )
+    : CTRegistry< CTRegistry< CICodec > >()
+{TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CCodecRegistry::~CCodecRegistry()
+{TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CCodecRegistry*
+CCodecRegistry::Instance( void )
+{TRACE;
     
-    typedef CTRegistry< CICodec > TCodecFamilyRegistry;
+    if ( m_instance == NULL )
+    {
+        m_instance = new CCodecRegistry();
+    }
     
-    static CCodecRegistry* Instance( void );
-    
-    private:
-    friend class CGUCEFCOREModule;
-    
-    static void Deinstance( void );
-    
-    private:
-    
-    CCodecRegistry( void );
-    virtual ~CCodecRegistry();
-    CCodecRegistry( const CCodecRegistry& src );              /**< not implemented, don't use */
-    CCodecRegistry& operator=( const CCodecRegistry& src );   /**< not implemented, don't use */
-    
-    private:
-    
-    static CCodecRegistry* m_instance;
-};
+    return m_instance;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CCodecRegistry::Deinstance( void )
+{TRACE;
+
+    delete m_instance;
+    m_instance = NULL;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -84,16 +93,3 @@ class GUCEFCORE_EXPORT_CPP CCodecRegistry : public CTRegistry< CTRegistry< CICod
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 20-07-2005 :
-        - Dinand: Added this class
-
------------------------------------------------------------------------------*/
