@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_CORE_CICODECPLUGIN_H
-#define GUCEF_CORE_CICODECPLUGIN_H 
+#ifndef GUCEF_CORE_CODECPLUGINLINK_H
+#define GUCEF_CORE_CODECPLUGINLINK_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,20 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CICODEC_H
-#include "CICodec.h"
-#define GUCEF_CORE_CICODEC_H
-#endif /* GUCEF_CORE_CICODEC_H ? */
-
-#ifndef GUCEF_CORE_CIPLUGIN_H
-#include "CIPlugin.h"
-#define GUCEF_CORE_CIPLUGIN_H
-#endif /* GUCEF_CORE_CIPLUGIN_H ? */
-
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+#ifndef GUCEF_CORE_IOACCESS_H
+#include "ioaccess.h"
+#define GUCEF_CORE_IOACCESS_H
+#endif /* GUCEF_CORE_IOACCESS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,75 +35,46 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
 namespace GUCEF {
 namespace CORE {
+#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Interface class for plugin's that provide a number of codec's
- *
- *  Note that the CTCodecPluginItem template can be used by the class 
- *  decending from this class to specify it's codec's delegation to the 
- *  plugin module with ease. This allows you to use a more generic class
- *  as the utility interface and base class for the given codec family.
- */
-class GUCEFCORE_EXPORT_CPP CICodecPlugin : public CIPlugin
-{
-    public:
-    
-    typedef CTSharedPtr< CICodec > CCodecPtr;
-    typedef std::map< CString, CCodecPtr > CCodecFamilySet;
-    typedef std::map< CString, CCodecFamilySet > CCodecSet;
-    typedef std::map< CString, CCodecFamilyList > CCodecList;
-    typedef std::vector< CString > CCodecFamilyList;
-            
-    public:
-    
-    CICodecPlugin( void );
-    
-    virtual ~CICodecPlugin();
-    
-    virtual bool GetCodecs( CCodecSet& codecSet ) = 0;
-    
-    virtual bool GetCodecList( CCodecList& codecList ) = 0;
-
-    virtual bool Encode( const void* sourceData         ,
-                         const UInt32 sourceBuffersSize ,
-                         CIOAccess& dest                ,
-                         UInt32& destBytesWritten       ,
-                         const CString& familyName      ,
-                         const CString& typeName        ) = 0;
-
-    virtual bool Decode( const void* sourceData         ,
-                         const UInt32 sourceBuffersSize ,
-                         CIOAccess& dest                ,
-                         UInt32& destBytesWritten       ,
-                         const CString& familyName      ,
-                         const CString& typeName        ) = 0;
-                 
-    private:
-
-    CICodecPlugin( const CICodecPlugin& src );
-    CICodecPlugin& operator=( const CICodecPlugin& src );
-};
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-} /* namespace CORE */
-} /* namespace GUCEF */
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Encode ) ( void* plugdata, const void* input, UInt32 inputSize, TIOAccess* output ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Decode ) ( void* plugdata, const void* input, UInt32 inputSize, TIOAccess* output ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CICODECPLUGIN_H ? */
+struct SCodecPluginLink
+{
+    TCODECPLUGFPTR_Encode encode;
+    TCODECPLUGFPTR_Decode decode;
+    char* codecType;
+    char* codecFamily;
+};
+
+typedef struct SCodecPluginLink TCodecPluginLink;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+}; /* namespace CORE */
+}; /* namespace GUCEF */
+#endif /* __cplusplus ? */
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_CORE_CODECPLUGINLINK_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -121,7 +82,7 @@ class GUCEFCORE_EXPORT_CPP CICodecPlugin : public CIPlugin
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 15-12-2006 :
-        - Dinand: Designed and implemented this class.
-
+- 06-02-2007 :
+        - re-implemented the pre-crash version
+        
 -----------------------------------------------------------------------------*/

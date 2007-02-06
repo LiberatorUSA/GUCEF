@@ -464,6 +464,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CStdCodecPlugin.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CSTDOStreamAdapter.cpp"
 				>
 			</File>
@@ -874,6 +878,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\CodecPluginLink.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\ConfigStoreCodec.h"
 				>
 			</File>
@@ -923,6 +931,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CStateMachineComponent.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CStdCodecPlugin.h"
 				>
 			</File>
 			<File

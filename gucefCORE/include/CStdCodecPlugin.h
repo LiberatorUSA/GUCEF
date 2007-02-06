@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEF_CORE_CICODECPLUGIN_H
-#define GUCEF_CORE_CICODECPLUGIN_H 
+#ifndef GUCEF_CORE_CSTDCODECPLUGIN_H
+#define GUCEF_CORE_CSTDCODECPLUGIN_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,20 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CICODEC_H
-#include "CICodec.h"
-#define GUCEF_CORE_CICODEC_H
-#endif /* GUCEF_CORE_CICODEC_H ? */
-
-#ifndef GUCEF_CORE_CIPLUGIN_H
-#include "CIPlugin.h"
-#define GUCEF_CORE_CIPLUGIN_H
-#endif /* GUCEF_CORE_CIPLUGIN_H ? */
-
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+#ifndef GUCEF_CORE_CICODECPLUGIN_H
+#include "CICodecPlugin.h"
+#define GUCEF_CORE_CICODECPLUGIN_H
+#endif /* GUCEF_CORE_CICODECPLUGIN_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,51 +45,63 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Interface class for plugin's that provide a number of codec's
- *
- *  Note that the CTCodecPluginItem template can be used by the class 
- *  decending from this class to specify it's codec's delegation to the 
- *  plugin module with ease. This allows you to use a more generic class
- *  as the utility interface and base class for the given codec family.
+ *  GUCEF CORE module plugin implementation for codecs
  */
-class GUCEFCORE_EXPORT_CPP CICodecPlugin : public CIPlugin
-{
+class GUCEFCORE_EXPORT_CPP CStdCodecPlugin : public CICodecPlugin
+{            
     public:
     
-    typedef CTSharedPtr< CICodec > CCodecPtr;
-    typedef std::map< CString, CCodecPtr > CCodecFamilySet;
-    typedef std::map< CString, CCodecFamilySet > CCodecSet;
-    typedef std::map< CString, CCodecFamilyList > CCodecList;
-    typedef std::vector< CString > CCodecFamilyList;
-            
-    public:
+    CStdCodecPlugin( void );
     
-    CICodecPlugin( void );
+    virtual ~CStdCodecPlugin();
     
-    virtual ~CICodecPlugin();
+    virtual bool GetCodecs( CCodecSet& codecSet );
     
-    virtual bool GetCodecs( CCodecSet& codecSet ) = 0;
-    
-    virtual bool GetCodecList( CCodecList& codecList ) = 0;
+    virtual bool GetCodecList( CCodecList& codecList );
 
     virtual bool Encode( const void* sourceData         ,
                          const UInt32 sourceBuffersSize ,
                          CIOAccess& dest                ,
                          UInt32& destBytesWritten       ,
                          const CString& familyName      ,
-                         const CString& typeName        ) = 0;
+                         const CString& typeName        );
 
     virtual bool Decode( const void* sourceData         ,
                          const UInt32 sourceBuffersSize ,
                          CIOAccess& dest                ,
                          UInt32& destBytesWritten       ,
                          const CString& familyName      ,
-                         const CString& typeName        ) = 0;
+                         const CString& typeName        );
+
+    virtual CString GetDescription( void ) const;
+
+    virtual CString GetCopyright( void ) const;
+    
+    virtual TVersion GetVersion( void ) const;
+    
+    virtual CString GetModulePath( void ) const;
+    
+    virtual bool IsLoaded( void ) const;
+    
+    virtual bool Load( const CString& pluginPath );
+    
+    virtual bool Unload( void );
                  
     private:
 
-    CICodecPlugin( const CICodecPlugin& src );
-    CICodecPlugin& operator=( const CICodecPlugin& src );
+    CStdCodecPlugin( const CStdCodecPlugin& src );            /**< not implemented */
+    CStdCodecPlugin& operator=( const CStdCodecPlugin& src ); /**< not implemented */
+    
+    void LinkCodecSet( void );
+    
+    private:
+    
+    CCodecSet m_codecSet;
+    CCodecList m_codecList;
+    CString m_modulePath;
+    void* m_fpTable[ 10 ];  /**< function pointer table */
+    void* m_soHandle;       /**< access to the so module */
+    void* m_pluginData;    
 };
 
 /*-------------------------------------------------------------------------//
@@ -113,7 +115,7 @@ class GUCEFCORE_EXPORT_CPP CICodecPlugin : public CIPlugin
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CICODECPLUGIN_H ? */
+#endif /* GUCEF_CORE_CSTDCODECPLUGIN_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

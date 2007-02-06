@@ -56,12 +56,14 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CIOAccess;
+
+/*-------------------------------------------------------------------------*/
+
 class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable ,
                                      public CITypeNamed
 {
         public:
-        
-        typedef std::vector< CDynamicBuffer >  TDynamicBufferList;
         
         CICodec( void );
         
@@ -73,15 +75,11 @@ class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable ,
         
         virtual bool Encode( const void* sourceData         ,
                              const UInt32 sourceBuffersSize ,
-                             TDynamicBufferList& dest       ,
-                             UInt32& destBuffersUsed        ) = 0;
+                             CIOAccess& dest                ) = 0;
 
         virtual bool Decode( const void* sourceData         ,
                              const UInt32 sourceBuffersSize ,
-                             TDynamicBufferList& dest       ,
-                             UInt32& destBuffersUsed        ) = 0;
-                             
-        virtual CString GetFamilyName( void ) const = 0;
+                             CIOAccess& dest                ) = 0;
 };
 
 /*-------------------------------------------------------------------------//
