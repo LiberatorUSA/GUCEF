@@ -55,7 +55,7 @@ class CORE::CIOAccess;
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Abstract base class for image codec's
+ *  conversion class for image codec's
  *  It adds some utility member functions that make it easier to use 
  *  the interface when dealing with images
  *
@@ -67,31 +67,52 @@ class CORE::CIOAccess;
  *  Each pixel segment is ordered with the bottom left pixel as the first 
  *  pixel in the segment stored as a series of horizontal scan lines.
  */
-class EXPORT_CPP CIMGCodec : public CORE::CICodec
+class EXPORT_CPP CIMGCodec
 {
     public:
     
-    CIMGCodec( void );
+    typedef CORE::CTSharedPtr< CORE::CICodec > CCodecPtr;
+    
+    /**
+     *  Constructs and links the conversion object
+     *
+     *  @throw EInvalidCodec thrown if the given codec is not of the "ImageCodec" family
+     */
+    CIMGCodec( const CCodecPtr& codecPtr );
     
     CIMGCodec( const CIMGCodec& src );
     
-    virtual ~CIMGCodec();
+    ~CIMGCodec();
     
     CIMGCodec& operator=( const CIMGCodec& src );
-    
-    bool Encode( const CImage& inputImage            ,
-                 CORE::CDynamicBuffer& encodedOutput ); 
 
     bool Encode( const CImage& inputImage       ,
                  CORE::CIOAccess& encodedOutput );
                      
-    bool Decode( const CORE::CDynamicBuffer& encodedInput ,
-                 CImage& outputImage                      );
-
     bool Decode( CORE::CIOAccess& encodedInput ,
                  CImage& outputImage           );
                  
-    virtual CORE::CString GetFamilyName( void ) const;
+    bool Encode( const void* sourceData         ,
+                 const UInt32 sourceBuffersSize ,
+                 CORE::CIOAccess& dest          );
+
+    bool Decode( const void* sourceData         ,
+                 const UInt32 sourceBuffersSize ,
+                 CORE::CIOAccess& dest          );
+                 
+    CORE::CString GetFamilyName( void ) const;
+    
+    CORE::CString GetType( void ) const;
+    
+    GUCEF_DEFINE_MSGEXCEPTION( EXPORT_CPP, EInvalidCodec );
+    
+    private:
+    
+    CIMGCodec( void );
+    
+    private:
+    
+    CCodecPtr m_codecPtr;
 };
 
 /*-------------------------------------------------------------------------//

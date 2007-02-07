@@ -48,15 +48,25 @@ namespace IMAGE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CIMGCodec::CIMGCodec( void )
-    : CICodec()
+GUCEF_IMPLEMENT_MSGEXCEPTION( CIMGCodec, EInvalidCodec );
+
+/*-------------------------------------------------------------------------*/
+
+CIMGCodec::CIMGCodec( const CCodecPtr& codecPtr )
+    : m_codecPtr( codecPtr )
 {TRACE;
+
+    if ( m_codecPtr->GetFamilyName() != "ImageCodec" )
+    {
+        m_codecPtr = NULL;
+        GUCEF_EMSGTHROW( EInvalidCodec, "CIMGCodec::CIMGCodec(): Invalid codec type given" );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
     
 CIMGCodec::CIMGCodec( const CIMGCodec& src )
-    : CICodec( src )
+    : m_codecPtr( src.m_codecPtr )
 {TRACE;
 }
 
@@ -71,23 +81,47 @@ CIMGCodec::~CIMGCodec()
 CIMGCodec&
 CIMGCodec::operator=( const CIMGCodec& src )
 {TRACE;
-    
-    CICodec::operator=( src );
-    
+
     if ( &src != this )
     {        
     }
     
     return *this;
-} 
+}
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CIMGCodec::Encode( const CImage& inputImage            ,
-                   CORE::CDynamicBuffer& encodedOutput )
+CIMGCodec::Encode( const void* sourceData         ,
+                   const UInt32 sourceBuffersSize ,
+                   CORE::CIOAccess& dest          )
 {TRACE;
-     /*
+
+    return m_codecPtr->Encode( sourceData        ,
+                               sourceBuffersSize ,
+                               dest              );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIMGCodec::Decode( const void* sourceData         ,
+                   const UInt32 sourceBuffersSize ,
+                   CORE::CIOAccess& dest          )
+{TRACE;
+
+    return m_codecPtr->Decode( sourceData        ,
+                               sourceBuffersSize ,
+                               dest              );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIMGCodec::Encode( const CImage& inputImage       ,
+                   CORE::CIOAccess& encodedOutput )
+{TRACE;
+     /*     //@todo @makeme
     // We need to first combine all the image data into a single buffer
     CORE::CDynamicBuffer inputBuffer( sizeof( TImageInfo ) + inputImage.GetTotalPixelStorageSize() );
    
@@ -127,30 +161,10 @@ CIMGCodec::Encode( const CImage& inputImage            ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CIMGCodec::Encode( const CImage& inputImage       ,
-                   CORE::CIOAccess& encodedOutput )
+CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
+                   CImage& outputImage           )
 {TRACE;
-
-    CORE::CDynamicBuffer outputBuffer;
-
-    if ( Encode( inputImage   ,
-                 outputBuffer ) )
-    {
-        return outputBuffer.GetDataSize() == encodedOutput.Write( outputBuffer.GetBufferPtr() ,
-                                                                  1                           ,
-                                                                  outputBuffer.GetDataSize()  );
-    }
-    
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CIMGCodec::Decode( const CORE::CDynamicBuffer& encodedInput ,
-                   CImage& outputImage                      )
-{TRACE;
-
+           //@todo @makeme
  /*   CORE::CICodec::TDynamicBufferList outputList( 1 );
     
     bool decodingSuccess = Decode( encodedInput.GetBufferPtr() ,
@@ -178,26 +192,20 @@ CIMGCodec::Decode( const CORE::CDynamicBuffer& encodedInput ,
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
-                   CImage& outputImage           )
+CORE::CString
+CIMGCodec::GetFamilyName( void ) const
 {TRACE;
-
-    // First we copy the resource into a buffer
-    CORE::CDynamicBuffer inputBuffer( encodedInput );
-
-    // Now we use the buffer version to do the actual decoding
-    return Decode( inputBuffer  ,
-                   outputImage  );
+    
+    return m_codecPtr->GetFamilyName();
 }
 
 /*-------------------------------------------------------------------------*/
 
 CORE::CString
-CIMGCodec::GetFamilyName( void ) const
+CIMGCodec::GetType( void ) const
 {TRACE;
-    
-    return "imageFormatCodec";
+
+    return m_codecPtr->GetType();
 }
 
 /*-------------------------------------------------------------------------//
