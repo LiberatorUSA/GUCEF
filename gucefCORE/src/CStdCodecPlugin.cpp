@@ -21,6 +21,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <assert.h>
+
 #ifndef GUCEF_CORE_CODECPLUGINLINK_H
 #include "CodecPluginLink.h"
 #define GUCEF_CORE_CODECPLUGINLINK_H
@@ -30,6 +32,11 @@
 #include "DVOSWRAP.h"
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
+
+#ifndef GUCEF_CORE_CSTDCODECPLUGINITEM_H
+#include "CStdCodecPluginItem.h"
+#define GUCEF_CORE_CSTDCODECPLUGINITEM_H
+#endif /* GUCEF_CORE_CSTDCODECPLUGINITEM_H ? */
 
 #include "CStdCodecPlugin.h"
 
@@ -68,9 +75,9 @@ enum
 
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Init ) ( void** plugdata, const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Shutdown ) ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Copyright ) ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef TVersion ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Version ) ( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Description ) ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Copyright ) ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef TVersion ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Version ) ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Description ) ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_GetCodecSetBegin ) ( void* plugdata, void** iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_GetCodecLink ) ( void* plugdata, void* iterator, TCodecPluginLink** codecLink ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
@@ -109,7 +116,7 @@ void
 CStdCodecPlugin::LinkCodecSet( void )
 {TRACE;
 
-    if ( IsPluginLoaded() )
+    if ( IsLoaded() )
     {
         m_codecSet.clear();
         m_codecList.clear();
@@ -122,9 +129,12 @@ CStdCodecPlugin::LinkCodecSet( void )
                 TCodecPluginLink* codecLink = NULL;
                 if ( ( (TCODECPLUGFPTR_GetCodecLink) m_fpTable[ STDCODEC_CODECLINK ] )( m_pluginData, iterator, &codecLink ) != 0 )
                 {
-                    CStdCodecPluginItem* codecItem = new CStdCodecPluginItem( codecLink );
+                    assert( codecLink != NULL );
+                    CStdCodecPluginItem* codecItem = new CStdCodecPluginItem( m_pluginData, *codecLink );
                     CCodecFamilySet& familySet = m_codecSet[ codecLink->codecFamily ];
-                    familySet.insert( codecLink->codecType, CCodecPtr( codecItem ) );
+                    familySet.insert( std::pair< CString, CCodecPtr >( codecLink->codecType, CCodecPtr( codecItem ) ) );
+                    CCodecFamilyList& familyList = m_codecList[ codecLink->codecFamily ];
+                    familyList.push_back( codecLink->codecType );
                     
                     ( (TCODECPLUGFPTR_FreeCodecLink) m_fpTable[ STDCODEC_FREECODECLINK ] )( m_pluginData, codecLink );
                 }
@@ -162,24 +172,22 @@ bool
 CStdCodecPlugin::Encode( const void* sourceData         ,
                          const UInt32 sourceBuffersSize ,
                          CIOAccess& dest                ,
-                         UInt32& destBytesWritten       ,
                          const CString& familyName      ,
                          const CString& typeName        )
 {TRACE;
 
-    if ( IsPluginLoaded() )
+    if ( IsLoaded() )
     {
-        CCodecFamilySet::iterator i = m_codecSet.find( familyName );
+        CCodecSet::iterator i = m_codecSet.find( familyName );
         if ( m_codecSet.end() != i )
         {
-            CCodecFamilySet& familySet = i.second;
+            CCodecFamilySet& familySet = (*i).second;
             CCodecFamilySet::iterator n = familySet.find( typeName );
             if ( familySet.end() != n )
             {
-                return n.second->Encode( sourceData        ,
-                                         sourceBuffersSize ,
-                                         dest              ,
-                                         destBytesWritten  );
+                return (*n).second->Encode( sourceData        ,
+                                            sourceBuffersSize ,
+                                            dest              );
             }
         }
         return false;
@@ -194,24 +202,22 @@ bool
 CStdCodecPlugin::Decode( const void* sourceData         ,
                          const UInt32 sourceBuffersSize ,
                          CIOAccess& dest                ,
-                         UInt32& destBytesWritten       ,
                          const CString& familyName      ,
                          const CString& typeName        )
 {TRACE;
 
-    if ( IsPluginLoaded() )
+    if ( IsLoaded() )
     {
-        CCodecFamilySet::iterator i = m_codecSet.find( familyName );
+        CCodecSet::iterator i = m_codecSet.find( familyName );
         if ( m_codecSet.end() != i )
         {
-            CCodecFamilySet& familySet = i.second;
+            CCodecFamilySet& familySet = (*i).second;
             CCodecFamilySet::iterator n = familySet.find( typeName );
             if ( familySet.end() != n )
             {
-                return n.second->Decode( sourceData        ,
-                                         sourceBuffersSize ,
-                                         dest              ,
-                                         destBytesWritten  );
+                return (*n).second->Decode( sourceData        ,
+                                            sourceBuffersSize ,
+                                            dest              );
             }
         }
         return false;
@@ -226,9 +232,9 @@ CString
 CStdCodecPlugin::GetDescription( void ) const
 {TRACE;
 
-    if ( IsPluginLoaded() )
+    if ( IsLoaded() )
     {
-        return ( (TCODECPLUGFPTR_Description) m_fpTable[ STDCODEC_DESCRIPTION ] )( m_soHandle );
+        return ( (TCODECPLUGFPTR_Description) m_fpTable[ STDCODEC_DESCRIPTION ] )( m_pluginData );
     }
     
     GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::CORE::CStdCodecPlugin::GetDescription(): No module is loaded" );
@@ -240,9 +246,9 @@ CString
 CStdCodecPlugin::GetCopyright( void ) const
 {TRACE;
     
-    if ( IsPluginLoaded() )
+    if ( IsLoaded() )
     {
-        return ( (TCODECPLUGFPTR_Copyright) m_fpTable[ STDCODEC_COPYRIGHT ] )( m_soHandle );
+        return ( (TCODECPLUGFPTR_Copyright) m_fpTable[ STDCODEC_COPYRIGHT ] )( m_pluginData );
     }
     
     GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::CORE::CStdCodecPlugin::GetCopyright(): No module is loaded" );
@@ -254,9 +260,9 @@ TVersion
 CStdCodecPlugin::GetVersion( void ) const
 {TRACE;
     
-    if ( IsPluginLoaded() )
+    if ( IsLoaded() )
     {
-        return ( (TCODECPLUGFPTR_Version) m_fpTable[ STDCODEC_VERSION ] )( m_soHandle );
+        return ( (TCODECPLUGFPTR_Version) m_fpTable[ STDCODEC_VERSION ] )( m_pluginData );
     }
     
     GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::CORE::CStdCodecPlugin::GetVersion(): No module is loaded" );
@@ -268,7 +274,7 @@ CString
 CStdCodecPlugin::GetModulePath( void ) const
 {TRACE;
     
-    if ( IsPluginLoaded() )
+    if ( IsLoaded() )
     {
         return m_modulePath;
     }
@@ -302,74 +308,71 @@ CStdCodecPlugin::Load( const CString& pluginPath )
     }
     catch ( ... )
     {
-        m_sohandle = NULL;
+        m_soHandle = NULL;
         return false;        
     }
     
     // If we get here then the module is a loadable program extension, so now
-    // let's see if it is an image codec
-    m_fpTable[ STDCODECPLUG_DESCRIPTION ] = GetFunctionAddress( m_sohandle                ,
-                                                                "CODECPLUGIN_Description" ,
-                                                                1*sizeof(void*)           );
-    m_fpTable[ STDCODECPLUG_COPYRIGHT ] = GetFunctionAddress( m_sohandle              ,
-                                                              "CODECPLUGIN_Copyright" ,
-                                                              1*sizeof(void*)         );
-    m_fpTable[ STDCODECPLUG_VERSION ] = GetFunctionAddress( m_sohandle            ,
-                                                            "CODECPLUGIN_Version" ,
-                                                            1*sizeof(void*)       );
-    m_fpTable[ STDCODECPLUG_INIT ] = GetFunctionAddress( m_sohandle         ,
-                                                         "CODECPLUGIN_Init" ,
-                                                         2*sizeof(void*)    ); 
-    m_fpTable[ STDCODECPLUG_SHUTDOWN ] = GetFunctionAddress( m_sohandle             ,
-                                                             "CODECPLUGIN_Shutdown" ,
-                                                             1*sizeof(void*)        );
-    m_fpTable[ STDCODEC_CODECSET ] = GetFunctionAddress( m_sohandle                ,
-                                                         "CODECPLUGIN_GetCodecSet" ,
-                                                         1*sizeof(void*)           );
-    m_fpTable[ STDCODEC_CODECLIST ] = GetFunctionAddress( m_sohandle                 ,
-                                                          "CODECPLUGIN_GetCodecList" ,
-                                                          1*sizeof(void*)            );
-    m_fpTable[ STDCODEC_ENCODE ] = GetFunctionAddress( m_sohandle           ,
-                                                       "CODECPLUGIN_Encode" ,
-                                                       1*sizeof(void*)      );
-    m_fpTable[ STDCODEC_DECODE ] = GetFunctionAddress( m_sohandle           ,
-                                                       "CODECPLUGIN_Decode" ,
-                                                       1*sizeof(void*)      );
+    // let's see if it is a codec plugin
+    m_fpTable[ STDCODEC_DESCRIPTION ] = GetFunctionAddress( m_soHandle                ,
+                                                            "CODECPLUGIN_Description" ,
+                                                            sizeof(void*)             );
+    m_fpTable[ STDCODEC_COPYRIGHT ] = GetFunctionAddress( m_soHandle              ,
+                                                          "CODECPLUGIN_Copyright" ,
+                                                          sizeof(void*)           );
+    m_fpTable[ STDCODEC_VERSION ] = GetFunctionAddress( m_soHandle            ,
+                                                        "CODECPLUGIN_Version" ,
+                                                        sizeof(void*)         );
+    m_fpTable[ STDCODEC_INIT ] = GetFunctionAddress( m_soHandle                      ,
+                                                     "CODECPLUGIN_Init"              ,
+                                                     2*sizeof(void*)+sizeof(char***) ); 
+    m_fpTable[ STDCODEC_SHUTDOWN ] = GetFunctionAddress( m_soHandle             ,
+                                                         "CODECPLUGIN_Shutdown" ,
+                                                         sizeof(void*)          );
+    m_fpTable[ STDCODEC_CODECSETBEGIN ] = GetFunctionAddress( m_soHandle                     ,
+                                                              "CODECPLUGIN_GetCodecSetBegin" ,
+                                                              sizeof(void*)+sizeof(void**)   );
+    m_fpTable[ STDCODEC_CODECLINK ] = GetFunctionAddress( m_soHandle                                 ,
+                                                          "CODECPLUGIN_GetCodecLink"                 ,
+                                                          2*sizeof(void*)+sizeof(TCodecPluginLink**) );
+    m_fpTable[ STDCODEC_FREECODECLINK ] = GetFunctionAddress( m_soHandle                              ,
+                                                              "CODECPLUGIN_FreeCodecLink"             ,
+                                                              sizeof(void*)+sizeof(TCodecPluginLink*) );
+    m_fpTable[ STDCODEC_CODECSETNEXT ] = GetFunctionAddress( m_soHandle                        ,
+                                                             "CODECPLUGIN_GetCodecSetNextItem" ,
+                                                             2*sizeof(void*)                   );
                                                                                                                                                                                                                                            
     // Verify that we have obtained a function address for each of the functions
-    if ( ( !m_fpTable[ STDCODECPLUG_INIT ] )        ||
-         ( !m_fpTable[ STDCODECPLUG_SHUTDOWN ] )    ||
-         ( !m_fpTable[ STDCODECPLUG_DESCRIPTION ] ) ||
-         ( !m_fpTable[ STDCODECPLUG_COPYRIGHT ] )   ||
-         ( !m_fpTable[ STDCODECPLUG_VERSION ] ) )   ||
-         ( !m_fpTable[ STDCODEC_CODECSET ] )        ||
-         ( !m_fpTable[ STDCODEC_CODECLIST ] )       ||
-         ( !m_fpTable[ STDCODEC_ENCODE ] )          ||
-         ( !m_fpTable[ STDCODEC_DECODE ] )           )
+    if ( ( !m_fpTable[ STDCODEC_INIT ] )           ||
+         ( !m_fpTable[ STDCODEC_SHUTDOWN ] )       ||
+         ( !m_fpTable[ STDCODEC_DESCRIPTION ] )    ||
+         ( !m_fpTable[ STDCODEC_COPYRIGHT ] )      ||
+         ( !m_fpTable[ STDCODEC_VERSION ] )        ||
+         ( !m_fpTable[ STDCODEC_CODECSETBEGIN ] )  ||
+         ( !m_fpTable[ STDCODEC_CODECLINK ] )      ||
+         ( !m_fpTable[ STDCODEC_FREECODECLINK ] )  ||
+         ( !m_fpTable[ STDCODEC_CODECSETNEXT ] )    )
     {        
             UnloadModuleDynamicly( m_soHandle );
-            m_sohandle = NULL;
-            m_modulePath = NULL;
+            m_soHandle = NULL;
+            memset( m_fpTable, 0, STDCODEC_FUNCTIONTABLESIZE );
             return false;
-    }    
+    }
+    
+    // We will now try to initialize the module
+    if ( ( (TCODECPLUGFPTR_Init) m_fpTable[ STDCODEC_INIT ] )( &m_pluginData, NULL ) == 0 )
+    {
+        UnloadModuleDynamicly( m_soHandle );
+        m_soHandle = NULL;
+        memset( m_fpTable, 0, STDCODEC_FUNCTIONTABLESIZE );
+        return false;
+    }
+    
     m_modulePath = pluginPath;
     
     // The module and been successfully loaded and linked
     // we will now generate a list of codec's
-    const char** formatList = NULL;
-    if ( 0 != ((TIMGPLUGFPRT_FormatList) m_fptable[ IMGPLUG_FORMATLIST ])( m_pluginData, &formatList ) )
-    {
-        while ( NULL != formatList )
-        {
-            if ( NULL != *formatList )
-            {
-                CIMGCodecPtr codecObjPtr( new CORE::CTCodecPluginItem< CIMGCodec >( *this, *formatList ) );
-                m_codecList.push_back( codecObjPtr );
-            }
-            
-            ++formatList;
-        }
-    }       
+    LinkCodecSet();
     
     return true;
 }
@@ -380,21 +383,38 @@ bool
 CStdCodecPlugin::Unload( void )
 {TRACE;
 
+    // Check if we have something to unload
+    if ( m_soHandle != NULL ) return true;
+    
     // Check for outstanding references to our codec's
-    CIMGCodecList::iterator i = m_codecList.begin();
-    while ( i != m_codecList.end() )
+    CCodecSet::iterator i = m_codecSet.begin();
+    while ( i != m_codecSet.end() )
     {
-        if ( (*i).GetReferenceCount() > 1 )
+        CCodecFamilySet& codecFamily = (*i).second;
+        CCodecFamilySet::iterator n = codecFamily.begin();
+        while ( n != codecFamily.end() )
         {
-            // Cannot unload the module if someone is still using one of it's codec's
-            return false;
+            if ( (*n).second.GetReferenceCount() > 1 )
+            {
+                // Cannot unload the module if someone is still using one of it's codec's
+                return false;
+            }
+            ++n;
         }
         ++i;
     }    
     
-    // No outstanding references,.. unload module
-    CORE::UnloadModuleDynamicly( m_sohandle );
-    m_sohandle = NULL;
+    // We will now try to shut the module down
+    if ( ( (TCODECPLUGFPTR_Shutdown) m_fpTable[ STDCODEC_SHUTDOWN ] )( m_pluginData ) == 0 )
+    {
+        return false;
+    }
+
+    // Module shutdown complete + no outstanding references,.. unload module
+    UnloadModuleDynamicly( m_soHandle );
+    memset( m_fpTable, 0, STDCODEC_FUNCTIONTABLESIZE );
+    m_soHandle = NULL;
+    m_modulePath = NULL;
     return true;
 }
 

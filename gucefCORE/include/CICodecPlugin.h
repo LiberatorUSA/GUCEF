@@ -24,6 +24,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <map>
+
 #ifndef GUCEF_CORE_CICODEC_H
 #include "CICodec.h"
 #define GUCEF_CORE_CICODEC_H
@@ -69,8 +71,8 @@ class GUCEFCORE_EXPORT_CPP CICodecPlugin : public CIPlugin
     typedef CTSharedPtr< CICodec > CCodecPtr;
     typedef std::map< CString, CCodecPtr > CCodecFamilySet;
     typedef std::map< CString, CCodecFamilySet > CCodecSet;
+    typedef std::vector< CString > CCodecFamilyList;    
     typedef std::map< CString, CCodecFamilyList > CCodecList;
-    typedef std::vector< CString > CCodecFamilyList;
             
     public:
     

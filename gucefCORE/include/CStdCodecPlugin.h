@@ -62,14 +62,12 @@ class GUCEFCORE_EXPORT_CPP CStdCodecPlugin : public CICodecPlugin
     virtual bool Encode( const void* sourceData         ,
                          const UInt32 sourceBuffersSize ,
                          CIOAccess& dest                ,
-                         UInt32& destBytesWritten       ,
                          const CString& familyName      ,
                          const CString& typeName        );
 
     virtual bool Decode( const void* sourceData         ,
                          const UInt32 sourceBuffersSize ,
                          CIOAccess& dest                ,
-                         UInt32& destBytesWritten       ,
                          const CString& familyName      ,
                          const CString& typeName        );
 

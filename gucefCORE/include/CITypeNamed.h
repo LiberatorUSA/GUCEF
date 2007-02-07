@@ -46,17 +46,17 @@ namespace CORE {
 
 class GUCEFCORE_EXPORT_CPP CITypeNamed
 {
-        public:
-        
-        CITypeNamed( void );
-        
-        CITypeNamed( const CITypeNamed& src );
-        
-        CITypeNamed& operator=( const CITypeNamed& src );
-        
-        virtual ~CITypeNamed();
-        
-        virtual CString GetType( void ) const = 0;                            
+    public:
+    
+    CITypeNamed( void );
+    
+    CITypeNamed( const CITypeNamed& src );
+    
+    CITypeNamed& operator=( const CITypeNamed& src );
+    
+    virtual ~CITypeNamed();
+    
+    virtual CString GetType( void ) const = 0;                            
 };
 
 /*-------------------------------------------------------------------------//

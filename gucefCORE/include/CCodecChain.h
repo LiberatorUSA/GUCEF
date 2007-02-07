@@ -55,12 +55,10 @@ class CStringList;
  *      Utility class for sequential encoding/decoding steps
  *      Allows you to create a chain of codecs that will operate 
  *      on the given data in order.
- */
+ *
 class GUCEFCORE_EXPORT_CPP CCodecChain
 {
         public:
-        
-        typedef CICodec::TDynamicBufferList TDynamicBufferList;
         
         CCodecChain( void );
         
@@ -85,15 +83,13 @@ class GUCEFCORE_EXPORT_CPP CCodecChain
         
         void SetCodecOrder( const CStringList& codecOrder );
         
-        bool Encode( const TDynamicBufferList& src  ,
-                     const UInt32 sourceBuffersUsed ,
-                     TDynamicBufferList& dest       ,
-                     UInt32& destBuffersUsed        );
+        bool Encode( const void* sourceData         ,
+                     const UInt32 sourceBuffersSize ,
+                     CIOAccess& dest                );
 
-        bool Decode( const TDynamicBufferList& src  ,
-                     const UInt32 sourceBuffersUsed ,
-                     TDynamicBufferList& dest       ,
-                     UInt32& destBuffersUsed        );
+        bool Decode( const void* sourceData         ,
+                     const UInt32 sourceBuffersSize ,
+                     CIOAccess& dest                );
                      
         void Clear( void );
         
@@ -120,7 +116,7 @@ class GUCEFCORE_EXPORT_CPP CCodecChain
         TDynamicBufferList m_bufferB;
         TDynamicBufferList m_bufferC;
         TCodecList m_codecList;
-};
+};   */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

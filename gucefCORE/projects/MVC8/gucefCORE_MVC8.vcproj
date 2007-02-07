@@ -468,6 +468,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CStdCodecPluginItem.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CSTDOStreamAdapter.cpp"
 				>
 			</File>
@@ -935,6 +939,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CStdCodecPlugin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CStdCodecPluginItem.h"
 				>
 			</File>
 			<File

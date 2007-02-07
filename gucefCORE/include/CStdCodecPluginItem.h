@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CICODEC_H
-#define GUCEF_CORE_CICODEC_H 
+#ifndef GUCEF_CORE_CSTDCODECPLUGINITEM_H
+#define GUCEF_CORE_CSTDCODECPLUGINITEM_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,17 +24,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#include <vector>
+#ifndef GUCEF_CORE_CODECPLUGINLINK_H
+#include "CodecPluginLink.h"
+#define GUCEF_CORE_CODECPLUGINLINK_H
+#endif /* GUCEF_CORE_CODECPLUGINLINK_H ? */
 
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
-
-#ifndef GUCEF_CORE_CITYPENAMED_H
-#include "CITypeNamed.h"
-#define GUCEF_CORE_CITYPENAMED_H
-#endif /* GUCEF_CORE_CITYPENAMED_H ? */
+#ifndef GUCEF_CORE_CICODEC_H
+#include "CICodec.h"
+#define GUCEF_CORE_CICODEC_H
+#endif /* GUCEF_CORE_CICODEC_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,31 +50,51 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CIOAccess;
+class CStdCodecPlugin;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable ,
-                                     public CITypeNamed
+/**
+ *  Private class used to redirect from the codec interface to a codec plugin
+ *  interface. 
+ */
+class CStdCodecPluginItem : public CICodec
 {
     public:
     
-    CICodec( void );
-    
-    CICodec( const CICodec& src );
-    
-    CICodec& operator=( const CICodec& src );
-    
-    virtual ~CICodec();
-    
     virtual bool Encode( const void* sourceData         ,
                          const UInt32 sourceBuffersSize ,
-                         CIOAccess& dest                ) = 0;
+                         CIOAccess& dest                );
 
     virtual bool Decode( const void* sourceData         ,
                          const UInt32 sourceBuffersSize ,
-                         CIOAccess& dest                ) = 0;
+                         CIOAccess& dest                );
                          
-    virtual CString GetFamilyName( void ) const = 0;
+    virtual CICloneable* Clone( void ) const;
+    
+    virtual CString GetType( void ) const;
+    
+    virtual CString GetFamilyName( void ) const;
+
+    private:    
+    friend class CStdCodecPlugin;
+    
+    CStdCodecPluginItem( void* pluginData                   ,
+                         const TCodecPluginLink& pluginLink );
+    
+    CStdCodecPluginItem( const CStdCodecPluginItem& src );
+    
+    CStdCodecPluginItem& operator=( const CStdCodecPluginItem& src );
+    
+    virtual ~CStdCodecPluginItem();
+    
+    private:
+    
+    TCODECPLUGFPTR_Encode encode;
+    TCODECPLUGFPTR_Decode decode;
+    CString m_type;
+    CString m_familyName;
+    void* m_pluginData;
 };
 
 /*-------------------------------------------------------------------------//
@@ -90,7 +108,7 @@ class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable ,
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CICODEC_H ? */
+#endif /* GUCEF_CORE_CSTDCODECPLUGINITEM_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
