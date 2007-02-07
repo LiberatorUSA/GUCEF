@@ -255,6 +255,55 @@ CCom::GetPumpThreading( void ) const
         return _pumpthread;        
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CCom::SetSystemWideProxyServer( const CORE::CString& protocol   ,
+                                const CORE::CString& remoteHost ,
+                                const UInt16 remotePort         )
+{TRACE;
+    
+    TProxyServer& proxyServer = m_proxyList[ protocol ];
+    proxyServer.host = remoteHost;
+    proxyServer.port = remotePort;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CCom::GetSystemWideProxyServer( const CORE::CString& protocol ,
+                                CORE::CString& remoteHost     ,
+                                UInt16& remotePort            ,
+                                bool& active                  ) const
+{TRACE;
+
+    TProxyList::const_iterator i = m_proxyList.find( protocol );
+    if ( i != m_proxyList.end() )
+    {
+        const TProxyServer& proxyServer = (*i).second;
+        remoteHost = proxyServer.host;
+        remotePort = proxyServer.port;
+        active = proxyServer.active;
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CCom::IsSystemWideProxyServerActive( const CORE::CString& protocol ) const
+{TRACE;
+
+    TProxyList::const_iterator i = m_proxyList.find( protocol );
+    if ( i != m_proxyList.end() )
+    {
+        return (*i).second.active;
+    }
+    return false;    
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

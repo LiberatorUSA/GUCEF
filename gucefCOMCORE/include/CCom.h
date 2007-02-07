@@ -115,6 +115,17 @@ class GUCEF_COMCORE_EXPORT_CPP CCom : public CORE::CGUCEFAppSubSystem
          */        
         const TSocketStats& GetGlobalStats( void ) const;
         
+        bool SetSystemWideProxyServer( const CORE::CString& protocol   ,
+                                       const CORE::CString& remoteHost ,
+                                       const UInt16 remotePort         );
+
+        bool GetSystemWideProxyServer( const CORE::CString& protocol ,
+                                       CORE::CString& remoteHost     ,
+                                       UInt16& remotePort            ,
+                                       bool& active                  ) const;
+        
+        bool IsSystemWideProxyServerActive( const CORE::CString& protocol ) const;
+        
         protected:
         
         /**
@@ -130,26 +141,7 @@ class GUCEF_COMCORE_EXPORT_CPP CCom : public CORE::CGUCEFAppSubSystem
         private:
         friend class CGUCEFCOMCOREModule;
         
-        static void Deinstance( void );
-                                             
-
-        private:         
-        static CCom* _instance;             /** global CCom instance pointer */
-        CCom( void );                       /** does nothing atm */
-        CCom( const CCom& src );            /** dummy implementation */
-        ~CCom();                            /** does nothing atm */
-        CCom& operator=( const CCom& src ); /** dummy implementation */
-        TSocketStats _stats;                /** global socket traffic stats */
-        bool _keep_gstats;                  /** wheter or not to keep track of global stats */
-        UInt32 _scount;                     /** current number of registered sockets */
-        bool _pumpthread;                   /** use a thead to update the sockets ? */
-        CActiveComPump* _threadedpump;
-                
-        private:
-        friend class CActiveComPump;
-              
-        CORE::CDynamicArray _sockets;       /** our socket object heap */
-        static MT::CMutex _mutex;           /** global CCom mutex */                                
+        static void Deinstance( void );                              
                 
         private:
         friend class CSocket;      
@@ -168,7 +160,37 @@ class GUCEF_COMCORE_EXPORT_CPP CCom : public CORE::CGUCEFAppSubSystem
          *
          *      @param socket the socket object that you wish to unregister      
          */                                  
-        void UnregisterSocketObject( const CSocket* socket );        
+        void UnregisterSocketObject( const CSocket* socket );
+
+        private:
+        friend class CActiveComPump;
+              
+        CORE::CDynamicArray _sockets;       /** our socket object heap */
+        static MT::CMutex _mutex;           /** global CCom mutex */ 
+                
+        private:
+        
+        struct SProxyServer
+        {
+            CORE::CString host;
+            UInt16 port;
+            bool active;
+        };
+        typedef struct SProxyServer TProxyServer;
+        typedef std::map< CORE::CString, TProxyServer > TProxyList;
+                 
+        static CCom* _instance;             /** global CCom instance pointer */
+        CCom( void );                       /** does nothing atm */
+        CCom( const CCom& src );            /** dummy implementation */
+        ~CCom();                            /** does nothing atm */
+        CCom& operator=( const CCom& src ); /** dummy implementation */
+        TSocketStats _stats;                /** global socket traffic stats */
+        bool _keep_gstats;                  /** wheter or not to keep track of global stats */
+        UInt32 _scount;                     /** current number of registered sockets */
+        bool _pumpthread;                   /** use a thead to update the sockets ? */
+        CActiveComPump* _threadedpump;
+                
+        TProxyList m_proxyList;
 };
 
 /*-------------------------------------------------------------------------//

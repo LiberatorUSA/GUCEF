@@ -157,6 +157,8 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     static const CORE::CEvent HTTPDataSendEvent;        
     static const CORE::CEvent HTTPTransferFinishedEvent;
 
+	static void RegisterEvents( void );
+	
 	public:
 
     struct SHTTPContentEventData   /**< stores data about the HTTP transmission payload */
@@ -201,9 +203,13 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     bool IsConnected( void ) const;
     
     UInt32 GetBytesRecieved( void ) const;
-    	
-	static void RegisterEvents( void );
 
+    bool SetHTTPProxy( const CORE::CString& proxyHost ,
+                       const UInt16 port = 80         );
+    
+    void GetHTTPProxy( CORE::CString& proxyHost ,
+                       UInt16& port             );
+    
     protected:	
 
     /**
@@ -252,6 +258,8 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     bool m_downloading;
     UInt32 m_recieved;
     UInt32 m_filesize;
+    CORE::CString m_proxyHost;
+    UInt16 m_proxyPort;
 };
 
 /*-------------------------------------------------------------------------//
@@ -273,6 +281,8 @@ GUCEF_NAMESPACE_END
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 07-02-2007 :
+        - Dinand: Added basic HTTP proxy support
 - 08-11-2006 :
         - Dinand: Updated notification system usage to the latest revision
 - 07-10-2006 :

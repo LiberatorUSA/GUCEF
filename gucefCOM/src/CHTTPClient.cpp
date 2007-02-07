@@ -23,6 +23,11 @@
 
 #include <stdlib.h>
 
+#ifndef GUCEF_COMCORE_CCOM_H
+#include "CCom.h"
+#define GUCEF_COMCORE_CCOM_H
+#endif /* GUCEF_COMCORE_CCOM_H ? */
+
 #ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
 #include "CNotificationIDRegistry.h"
 #define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
@@ -76,7 +81,9 @@ CHTTPClient::CHTTPClient( void )
         : m_socket( false )       ,
           m_downloading( false )  ,
           m_recieved( 0 )         ,
-          m_filesize( 0 )
+          m_filesize( 0 )         ,
+          m_proxyHost()           ,
+          m_proxyPort( 80 )
 {TRACE;
 
         SubscribeTo( &m_socket );
@@ -221,31 +228,75 @@ CHTTPClient::Get( const CORE::CString& host                      ,
                 }
         }
         
-        char* buffer( NULL );
-        if ( byteoffset == 0 )
+        // Check if a system wide proxy server has been enabled
+        CORE::CString proxyHost;
+        UInt16 proxyPort = 80;
+        bool systemWideProxyActive = false;
+        COMCORE::CCom::Instance()->GetSystemWideProxyServer( "HTTP"                ,
+                                                             proxyHost             ,
+                                                             proxyPort             ,
+                                                             systemWideProxyActive );
+        if ( !systemWideProxyActive )
         {
-                buffer = new char[ 100 + valuepath.Length() + host.Length() ];
-                sprintf( buffer, "GET %s HTTP/1.1\r\nHost: %s\r\nAccept: */*\r\nUser-Agent: gucefCOM-HTTP/1.0 (Windows;)\r\n\r\n", valuepath.C_String(), host.C_String() );
+            // no system wide proxy has been set,.. use the local settings
+            proxyHost = m_proxyHost;
+            proxyPort = m_proxyPort;
+        }        
+        else
+        {
+            // Allow a local proxy setting to override
+            if ( m_proxyHost.Length() > 0 )
+            {
+                proxyHost = m_proxyHost;
+                proxyPort = m_proxyPort;            
+            }
+        }
+        
+        char* buffer( NULL );
+        if ( proxyHost.Length() > 0 )
+        {
+            // Forward our request to the proxy
+            CORE::CString remoteHost( host + ":" + CORE::Int32ToString( port ) + "/" + valuepath );
+            buffer = new char[ 32 + valuepath.Length() + remoteHost.Length() ];
+            sprintf( buffer, "GET %s HTTP/1.1\r\n\r\n", remoteHost.C_String() );
+            
+            if ( m_socket.ConnectTo( proxyHost ,
+                                     proxyPort ) )
+            {                                         
+                    bool success = m_socket.Send( buffer, (UInt32)strlen( buffer ) );
+                    
+                    delete []buffer;
+                    
+                    return success;
+            }            
         }
         else
         {
-                CORE::CString intstr;
-                intstr.SetInt( byteoffset );                
-                
-                buffer = new char[ 100 + valuepath.Length() + host.Length() + intstr.Length() ];
-                sprintf( buffer, "GET %s HTTP/1.1\r\nHost: %s\r\nRange: bytes=%d-\r\nUser-Agent: gucefCOM-HTTP/1.0 (Linux;)\r\n\r\n", valuepath.C_String(), host.C_String(), byteoffset );        
+            if ( byteoffset == 0 )
+            {
+                    buffer = new char[ 100 + valuepath.Length() + host.Length() ];
+                    sprintf( buffer, "GET %s HTTP/1.1\r\nHost: %s\r\nAccept: */*\r\nUser-Agent: gucefCOM-HTTP/1.0 (Windows;)\r\n\r\n", valuepath.C_String(), host.C_String() );
+            }
+            else
+            {
+                    CORE::CString intstr;
+                    intstr.SetInt( byteoffset );                
+                    
+                    buffer = new char[ 100 + valuepath.Length() + host.Length() + intstr.Length() ];
+                    sprintf( buffer, "GET %s HTTP/1.1\r\nHost: %s\r\nRange: bytes=%d-\r\nUser-Agent: gucefCOM-HTTP/1.0 (Linux;)\r\n\r\n", valuepath.C_String(), host.C_String(), byteoffset );        
+            }
+            
+            if ( m_socket.ConnectTo( host ,
+                                     port ) )
+            {                                         
+                    bool success = m_socket.Send( buffer, (UInt32)strlen( buffer ) );
+                    
+                    delete []buffer;
+                    
+                    return success;
+            }            
         }
 
-
-        if ( m_socket.ConnectTo( host ,
-                                 port ) )
-        {                                         
-                bool success = m_socket.Send( buffer, (UInt32)strlen( buffer ) );
-                
-                delete []buffer;
-                
-                return success;
-        }
         return false;                       
 }
 
@@ -256,6 +307,7 @@ CHTTPClient::Get( const CORE::CString& urlstring                 ,
                   const UInt32 byteoffset /* = 0 */              ,
                   const CORE::CValueList* valuelist /* = NULL */ )
 {TRACE;
+        
         CORE::CString host;
         UInt16 port;
         CORE::CString path;
@@ -650,6 +702,32 @@ CHTTPClient::IsConnected( void ) const
 {TRACE;
     
     return m_socket.IsActive();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CHTTPClient::SetHTTPProxy( const CORE::CString& proxyHost ,
+                           const UInt16 port /* = 80 */   )
+{TRACE;
+    if ( !IsConnected() )
+    {
+        m_proxyHost = proxyHost;
+        m_proxyPort = port;
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CHTTPClient::GetHTTPProxy( CORE::CString& proxyHost ,
+                           UInt16& port             )
+{TRACE;
+
+    proxyHost = m_proxyHost;
+    port = m_proxyPort;
 }
 
 /*-------------------------------------------------------------------------*/

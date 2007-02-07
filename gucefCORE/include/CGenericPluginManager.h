@@ -57,7 +57,7 @@ class CGenericPlugin;
  *  These are typicly C++ modules that link back to the GUCEF modules and
  *  uppon load integrate themselves in the framework. This allows a generic plugin
  *  to be/do just about anything but with the drawback that it has to link to the GUCEF
- *  modules and as such has a more limited lifespan as a binary plugin.
+ *  modules and as such has a more limited lifespan as a C-interface plugin.
  */
 class GUCEFCORE_EXPORT_CPP CGenericPluginManager : public CPluginManager
 {
