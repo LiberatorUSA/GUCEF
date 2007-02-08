@@ -15,26 +15,19 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CICODEC_H
-#define GUCEF_CORE_CICODEC_H 
+#ifndef GUCEF_CORE_CSTDCODECPLUGINMANAGER_H
+#define GUCEF_CORE_CSTDCODECPLUGINMANAGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
-#include <vector>
-
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
-
-#ifndef GUCEF_CORE_CITYPENAMED_H
-#include "CITypeNamed.h"
-#define GUCEF_CORE_CITYPENAMED_H
-#endif /* GUCEF_CORE_CITYPENAMED_H ? */
+#ifndef GUCEF_CORE_CPLUGINMANAGER_H
+#include "CPluginManager.h"
+#define GUCEF_CORE_CPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,30 +44,34 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIOAccess;
-
-/*-------------------------------------------------------------------------*/
-
-class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable ,
-                                     public CITypeNamed
+/**
+ *  plugin manager for GUCEF codec plugins
+ */
+class GUCEFCORE_EXPORT_CPP CStdCodecPluginManager : public CPluginManager
 {
     public:
     
-    CICodec( void );
-    
-    CICodec( const CICodec& src );
-    
-    CICodec& operator=( const CICodec& src );
-    
-    virtual ~CICodec();
-    
-    virtual bool Encode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
+    static CStdCodecPluginManager* Instance( void );
 
-    virtual bool Decode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
-                         
-    virtual CString GetFamilyName( void ) const = 0;
+    virtual void UnloadAll( void );
+    
+    virtual TPluginPtr LoadPlugin( const CString& pluginPath );
+
+    private:
+    friend class CGUCEFCOREModule;
+    
+    static void Deinstance( void );
+    
+    private:
+    CStdCodecPluginManager( void );
+    CStdCodecPluginManager( const CStdCodecPluginManager& src );
+    virtual ~CStdCodecPluginManager();    
+    CStdCodecPluginManager& operator=( const CStdCodecPluginManager& src );
+    
+    private:
+
+    std::vector< TPluginPtr > m_plugins;
+    static CStdCodecPluginManager* m_instance;
 };
 
 /*-------------------------------------------------------------------------//
@@ -88,7 +85,7 @@ class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable ,
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CICODEC_H ? */
+#endif /* GUCEF_CORE_CSTDCODECPLUGINMANAGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -96,7 +93,7 @@ class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable ,
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 20-07-2005 :
-        - Dinand: Added this class
+- 30-09-2006 :
+        - Dinand: Recoded after crash wiped out the new code
 
 -----------------------------------------------------------------------------*/

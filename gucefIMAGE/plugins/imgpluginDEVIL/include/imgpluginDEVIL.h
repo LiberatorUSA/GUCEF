@@ -29,7 +29,7 @@
 //-------------------------------------------------------------------------*/ 
 
 #ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"           /* gucefIMAGE structures, needed for TVersion */
+#include "EStructs.h"           /* gucef core structures, needed for TVersion */
 #define GUCEF_CORE_ESTRUCTS_H
 #endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
@@ -42,6 +42,11 @@
 #include "imagedata.h"          /* plugin API structures */
 #define GUCEF_IMAGE_IMAGEDATA_H
 #endif /* GUCEF_IMAGE_IMAGEDATA_H ? */
+
+#ifndef GUCEF_CORE_CODECPLUGINLINK_H
+#include "CodecPluginLink.h"
+#define GUCEF_CORE_CODECPLUGINLINK_H
+#endif /* GUCEF_CORE_CODECPLUGINLINK_H ? */
 
 #ifndef GUCEF_IMAGE_MACROS_H
 #include "gucefIMAGE_macros.h"  /* gucefIMAGE macros, used here for the export and callspec macros */
@@ -61,6 +66,18 @@ namespace IMAGE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      MACROS                                                             //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef GUCEF_CODECPLUGIN_BUILD_MODULE
+ #define GUCEF_CODEC_EXPORT_C GUCEF_EXPORT
+#else
+ #define GUCEF_CODEC_EXPORT_C GUCEF_IMPORT
+#endif /* GUCEF_CODECPLUGIN_BUILD_MODULE ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -74,63 +91,60 @@ extern "C" {
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_Init( void** plugdata    , 
+GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_Init( void** plugdata    , 
                   const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_Name( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUCEF_CODEC_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_Description( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUCEF_CODEC_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUCEF_CODEC_EXPORT_C TVersion GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_LoadImage( void* plugindata         ,
-                       const char* imageType    ,
-                       TIOAccess* sourceData    ,  
-                       TImage** outputImageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_GetCodecSetBegin( void* plugdata  , 
+                              void** iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_DeleteLoadedImage( void* plugdata        ,
-                               TImage* imageData     ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+CODECPLUGIN_GetCodecLink( void* plugdata               ,
+                          void* iterator               , 
+                          TCodecPluginLink** codecLink ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_DetectImageType( void* plugdata        ,
-                             TIOAccess* sourceData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_FreeCodecLink( void* plugdata              ,
+                           TCodecPluginLink* codecLink ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_SaveImage( void* plugdata         , 
-                       const char* imageType  ,
-                       TImage* inputImageData ,
-                       TIOAccess* outputMedia ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_FreeCodecIterator( void* plugdata , 
+                               void* iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_GetFormatList( void* plugdata                 , 
-                           const char*** supportedFormats ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_GetCodecSetNextItem( void* plugdata ,
+                                 void* iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 

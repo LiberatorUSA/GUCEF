@@ -84,19 +84,15 @@ class GUCEFCORE_EXPORT_CPP CICodecPlugin : public CIPlugin
     
     virtual bool GetCodecList( CCodecList& codecList ) = 0;
 
-    virtual bool Encode( const void* sourceData         ,
-                         const UInt32 sourceBuffersSize ,
-                         CIOAccess& dest                ,
-                         UInt32& destBytesWritten       ,
-                         const CString& familyName      ,
-                         const CString& typeName        ) = 0;
+    virtual bool Encode( CIOAccess& source         ,
+                         CIOAccess& dest           ,
+                         const CString& familyName ,
+                         const CString& typeName   ) = 0;
 
-    virtual bool Decode( const void* sourceData         ,
-                         const UInt32 sourceBuffersSize ,
-                         CIOAccess& dest                ,
-                         UInt32& destBytesWritten       ,
-                         const CString& familyName      ,
-                         const CString& typeName        ) = 0;
+    virtual bool Decode( CIOAccess& source         ,
+                         CIOAccess& dest           ,
+                         const CString& familyName ,
+                         const CString& typeName   ) = 0;
                  
     private:
 

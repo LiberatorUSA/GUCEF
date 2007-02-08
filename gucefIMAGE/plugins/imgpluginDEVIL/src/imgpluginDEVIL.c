@@ -43,9 +43,10 @@
 
 /*---------------------------------------------------------------------------*/
 
-static TIOAccess* currentRecource = NULL;
+static TIOAccess* currentResource = NULL;
+static UInt32 codecCount = 0;
 
-static const char* supportedTypes[] = {
+static char* supportedTypes[] = {
 
     #ifdef IL_TGA
     "tga", "vda", "icb", "vst",
@@ -131,9 +132,10 @@ static const char* supportedTypes[] = {
 ILvoid ILAPIENTRY
 ilfCloseRProc( ILHANDLE handle )
 {
-    if ( NULL != currentRecource )
+    TIOAccess* input = (TIOAccess*) handle;
+    if ( NULL != input )
     {
-        currentRecource->close( currentRecource );
+        input->close( input );
     }
 }
 
@@ -142,9 +144,10 @@ ilfCloseRProc( ILHANDLE handle )
 ILboolean ILAPIENTRY 
 ilfEofProc( ILHANDLE handle )
 {
-    if ( NULL != currentRecource )
+    TIOAccess* input = (TIOAccess*) handle;
+    if ( NULL != input )
     {
-        return currentRecource->eof( currentRecource ) != 0 ? IL_TRUE : IL_FALSE;
+        return input->eof( input ) != 0 ? IL_TRUE : IL_FALSE;
     }
     return IL_TRUE;
 }
@@ -154,9 +157,10 @@ ilfEofProc( ILHANDLE handle )
 ILint ILAPIENTRY
 ilfGetcProc( ILHANDLE handle )
 {
-    if ( NULL != currentRecource )
+    TIOAccess* input = (TIOAccess*) handle;
+    if ( NULL != currentResource )
     {
-        return currentRecource->getc( currentRecource );
+        return currentResource->getc( currentResource );
     }
     return 0;
 }
@@ -166,12 +170,13 @@ ilfGetcProc( ILHANDLE handle )
 ILHANDLE ILAPIENTRY 
 ilfOpenRProc( const ILstring ilstring )
 {
-    if ( NULL != currentRecource )
+    TIOAccess* input = currentResource;
+    if ( NULL != input )
     {
-        currentRecource->open( currentRecource );
+        input->open( input );
     }
     
-    return currentRecource;
+    return input;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -182,9 +187,10 @@ ilfReadProc( void* data,
              ILuint elements , 
              ILHANDLE handle )
 {
-    if ( NULL != currentRecource )
+    TIOAccess* input = (TIOAccess*) handle;
+    if ( NULL != input )
     {
-        return currentRecource->read( currentRecource, data, size, elements );
+        return input->read( input, data, size, elements );
     }
     return 0;        
 }
@@ -196,9 +202,10 @@ ilfSeekRProc( ILHANDLE handle ,
               ILint offset    , 
               ILint origin    )
 {
-    if ( NULL != currentRecource )
+    TIOAccess* input = (TIOAccess*) handle;
+    if ( NULL != input )
     {
-        return currentRecource->seek( currentRecource, offset, origin );
+        return input->seek( input, offset, origin );
     }
     return 0;
 }
@@ -208,15 +215,24 @@ ilfSeekRProc( ILHANDLE handle ,
 ILint ILAPIENTRY
 ilfTellRProc( ILHANDLE handle )
 {
-    return currentRecource->tell( currentRecource );
+    TIOAccess* input = (TIOAccess*) handle;
+    return input->tell( input );
 }
 
 /*---------------------------------------------------------------------------*/
 
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_Init( void** plugdata    , 
+CODECPLUGIN_Init( void** plugdata    , 
                   const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
+    /* count the total number of available codecs */
+    const char** sTypes = supportedTypes;
+    while ( *sTypes != NULL )
+    {
+        ++codecCount;
+        ++sTypes;
+    }
+
     if ( ilGetInteger( IL_VERSION_NUM ) < IL_VERSION ) return 0;    
     
     ilInit();
@@ -228,14 +244,14 @@ IMAGEPLUGIN_Init( void** plugdata    ,
                ilfReadProc   , 
                ilfSeekRProc  , 
                ilfTellRProc  );
-               
+
     return 1;
 }
 
 /*---------------------------------------------------------------------------*/
 
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CODECPLUGIN_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     ilSetRead( NULL , 
                NULL , 
@@ -253,32 +269,32 @@ IMAGEPLUGIN_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 /*---------------------------------------------------------------------------*/
 
 const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_Name( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CODECPLUGIN_Description( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    return "imgpluginDEVIL";
+    return "imgpluginDEVIL: image codec collection using DevIL as a backend\0";
 }
 
 /*---------------------------------------------------------------------------*/
 
 const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CODECPLUGIN_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    return "Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.\0";
+    return "Copyright (C) Dinand Vanvelzen. 2002 - 2007.  All rights reserved.\0";
 }
 
 /*---------------------------------------------------------------------------*/
 
-const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+TVersion GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    static TVersion version;
+    TVersion version;
     
     version.mayor = IMGPLUGIN_DEVIL_MAYOR_VERSION;
     version.minor = IMGPLUGIN_DEVIL_MINOR_VERSION;
     version.patch = IMGPLUGIN_DEVIL_PATCH_VERSION;
     version.release = IMGPLUGIN_DEVIL_RELEASE_VERSION;
     
-    return &version;
+    return version;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -301,35 +317,47 @@ ConvertILPixelFormatToGUCEFPixelFormat( ILint devilType )
 /*---------------------------------------------------------------------------*/
 
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_LoadImage( void* plugdata           ,
-                       const char* imageType    ,
-                       TIOAccess* sourceData    ,  
-                       TImage** outputImageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CODECPLUGIN_Encode( void* plugdata         ,
+                    void* codecData        ,
+                    const char* familyType ,
+                    const char* codecType  ,
+                    TIOAccess* input       ,
+                    TIOAccess* output      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    int i=0, n=0, mipmapCount=0, frameCount=0;
+    return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_Decode( void* plugdata         ,
+                    void* codecData        ,
+                    const char* familyType ,
+                    const char* codecType  ,
+                    TIOAccess* input       ,
+                    TIOAccess* output      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{
+    UInt32 i=0, n=0, mipmapCount=0, frameCount=0;
     ILint imageID = 0, imageSize = 0;
-    TImage* imageData = NULL;
-    TImageFrame* imageFrame = NULL;
-    TImageMipMapLevel* imageMMInfo = NULL;
+    TImageInfo imageInfo;
+    TImageFrameInfo imageFrameInfo;
+    TImageMipMapLevelInfo imageMMInfo;
     
-    if ( ( NULL == imageType ) || ( NULL == sourceData ) || ( NULL == outputImageData ) ) return 0;
+    if ( ( NULL == familyType ) || ( NULL == codecType ) || ( NULL == input ) || ( NULL == output ) ) return 0;
     
     /* generate an image ID and make that ID the ID of the current image */
     imageID = ilGenImage();
     ilBindImage( imageID );
     
-    currentRecource = sourceData;
+    currentResource = input;
     
-    if ( IL_TRUE == ilLoadF( ilTypeFromExt( (const wchar_t*) imageType ), sourceData ) )
+    if ( IL_TRUE == ilLoadF( ilTypeFromExt( (const wchar_t*) codecType ), input ) )
     {        
-        /* Create the image structure hierarchy */
-        imageData = (TImage*) malloc( sizeof( TImage ) );
-        imageData->version = GUCEF_IMAGE_TIMAGE_VERSION;
-        imageData->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
-        frameCount = ilGetInteger( IL_NUM_IMAGES );
-        imageData->imageInfo.nrOfFramesInImage = frameCount;
-        imageData->frames = (TImageFrame*) malloc( frameCount * sizeof(TImageFrame) );
-        
+        /* write the TImageInfo section */
+        imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
+        frameCount = imageInfo.nrOfFramesInImage = (UInt32) ilGetInteger( IL_NUM_IMAGES );        
+        output->write( output, &imageInfo, sizeof( imageInfo ), 1  );
+
         /* Only 1 layer is supported atm */
         ilActiveLayer( 0 );
         
@@ -338,36 +366,43 @@ IMAGEPLUGIN_LoadImage( void* plugdata           ,
             /* activate the frame */
             ilActiveImage( i );
             
-            /* Add all information for this image frame */
-            imageFrame = &imageData->frames[ i ];
-            imageFrame->version = GUCEF_IMAGE_TIMAGEFRAME_VERSION;
-            imageFrame->frameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
-            mipmapCount = ilGetInteger( IL_NUM_MIPMAPS );
-            imageFrame->frameInfo.nrOfMipmapLevels = mipmapCount;
-            imageFrame->mipmapLevel = (TImageMipMapLevel*) malloc( mipmapCount * sizeof( TImageMipMapLevel ) );
+            /* write the TImageFrameInfo section */
+            imageFrameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
+            mipmapCount = imageFrameInfo.nrOfMipmapLevels = (UInt32) ilGetInteger( IL_NUM_MIPMAPS );
+            output->write( output, &imageFrameInfo, sizeof( imageFrameInfo ), 1 );
         
+            for ( n=0; n<mipmapCount; ++n )
+            {
+                /* activate the mip-map */
+                ilActiveMipmap( n );
+                
+                /* write the TImageMipMapLevelInfo section */
+                imageMMInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
+                imageMMInfo.channelComponentSize = 8; /* DevIL only supports UInt8 */
+                imageMMInfo.channelCountPerPixel = ilGetInteger( IL_IMAGE_BPP ) / 8;
+                imageMMInfo.frameHeight = ilGetInteger( IL_IMAGE_HEIGHT );
+                imageMMInfo.frameWidth = ilGetInteger( IL_IMAGE_WIDTH );
+                imageMMInfo.pixelComponentDataType = DT_UINT8; /* DevIL only supports this type */
+                imageMMInfo.pixelStorageFormat = ConvertILPixelFormatToGUCEFPixelFormat( ilGetInteger( IL_IMAGE_FORMAT ) );
+                output->write( output, &imageMMInfo, sizeof( imageMMInfo ), 1 );
+            }
+        }
+        
+        /* now we append the pixel data */
+        for ( i=0; i<frameCount; ++i )
+        {
+            /* activate the frame */
+            ilActiveImage( i );
+            
             for ( n=0; n<mipmapCount; ++n )
             {
                 /* activate the mip-map */
                 ilActiveMipmap( n );
                 ilCompressFunc( IL_COMPRESS_NONE );
                 
-                /* Add all information for this image frame's mip-map level */
-                imageMMInfo = &imageFrame->mipmapLevel[ n ];
-                imageMMInfo->version = GUCEF_IMAGE_TIMAGEMIPMAPLEVEL_VERSION;
-                imageMMInfo->mipLevelInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
-                imageMMInfo->mipLevelInfo.channelComponentSize = 8; /* DevIL only supports UInt8 */
-                imageMMInfo->mipLevelInfo.channelCountPerPixel = ilGetInteger( IL_IMAGE_BPP ) / 8;
-                imageMMInfo->mipLevelInfo.frameHeight = ilGetInteger( IL_IMAGE_HEIGHT );
-                imageMMInfo->mipLevelInfo.frameWidth = ilGetInteger( IL_IMAGE_WIDTH );
-                imageMMInfo->mipLevelInfo.pixelComponentDataType = DT_UINT8; /* DevIL only supports this type */
-                imageMMInfo->mipLevelInfo.pixelStorageFormat = ConvertILPixelFormatToGUCEFPixelFormat( ilGetInteger( IL_IMAGE_FORMAT ) );
-                
-                /* copy the pixel data */
-                imageSize = ilGetInteger( IL_IMAGE_SIZE_OF_DATA );
-                imageMMInfo->pixelData = malloc( imageSize );
-                memcpy( imageMMInfo->pixelData, ilGetData(), imageSize );
-            }
+                /* write the pixel data */
+                output->write( output, ilGetData(), ilGetInteger( IL_IMAGE_SIZE_OF_DATA ), 1 );
+            }            
         }
     }
     
@@ -382,70 +417,76 @@ IMAGEPLUGIN_LoadImage( void* plugdata           ,
 
 /*---------------------------------------------------------------------------*/
 
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_DetectImageType( void* plugdata        ,
-                             TIOAccess* sourceData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_GetCodecSetBegin( void* plugdata  , 
+                              void** iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    return NULL;
+    *iterator = malloc( sizeof( UInt32 ) );
+    *( (UInt32*) *iterator ) = 0;
+    return 1;    
 }
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_DeleteLoadedImage( void* plugdata         ,
-                               TImage* imageData      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+CODECPLUGIN_GetCodecLink( void* plugdata               ,
+                          void* iterator               , 
+                          TCodecPluginLink** codecLink ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    int i=0, n=0, mipmapCount=0, frameCount=0;
-    TImageFrame* imageFrame = NULL;
-    TImageMipMapLevel* imageMipmap = NULL;
-        
-    if ( NULL != imageData )
-    {       
-        /* Iterate the image structure hierarchy, cleaning up as we go */
-        frameCount = imageData->imageInfo.nrOfFramesInImage;                
-        for ( i=0; i<frameCount; ++i )
-        {
-            imageFrame = &imageData->frames[ i ];
-            mipmapCount = imageFrame->frameInfo.nrOfMipmapLevels;        
-            for ( n=0; n<mipmapCount; ++n )
-            {
-                /* delete the pixel data */
-                imageMipmap = &imageFrame->mipmapLevel[ n ];                
-                free( imageMipmap->pixelData );                                
-            }
-            
-            /* delete all mip-map structures for this frame */
-            free( imageFrame->mipmapLevel );
-        }
-        
-        /* delete all frame structures */
-        free( imageData->frames );     
-        
+    UInt32 codecIndex = *( (UInt32*) iterator );
+    
+    if ( codecIndex < codecCount )
+    {
+        *codecLink = (TCodecPluginLink*) malloc( sizeof( TCodecPluginLink ) );
+        (*codecLink)->codecData = NULL;
+        (*codecLink)->codecFamily = "ImageCodec";
+        (*codecLink)->codecType = supportedTypes[ codecIndex ];
+        (*codecLink)->encode = CODECPLUGIN_Encode;
+        (*codecLink)->decode = CODECPLUGIN_Decode;
         return 1;
     }
     
+    /* There is no codec with the given index */
     return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 
-UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_SaveImage( void* plugdata           , 
-                       const char* imageType    ,
-                       TImage* inputImageData   ,
-                       TIOAccess* outputMedia   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_FreeCodecLink( void* plugdata              , 
+                           TCodecPluginLink* codecLink ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    return 0;
-}
-
-/*---------------------------------------------------------------------------*/
-
-UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-IMAGEPLUGIN_GetFormatList( void* plugdata                 , 
-                           const char*** supportedFormats ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{
-    *supportedFormats = supportedTypes;
+    free( codecLink );
     return 1;
+}
+
+/*---------------------------------------------------------------------------*/
+
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_FreeCodecIterator( void* plugdata , 
+                               void* iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{
+    UInt32* codecIndex = (UInt32*) iterator;
+    free( codecIndex );
+    return 1;
+}
+
+/*---------------------------------------------------------------------------*/
+
+EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+CODECPLUGIN_GetCodecSetNextItem( void* plugdata ,
+                                 void* iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{
+    UInt32* codecIndex = ( (UInt32*) iterator );
+    ++(*codecIndex);
+    
+    if ( (*codecIndex) < codecCount )
+    {
+        return 1;
+    }
+    
+    /* There are no more codecs */
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/

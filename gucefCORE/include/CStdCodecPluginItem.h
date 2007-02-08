@@ -62,13 +62,11 @@ class CStdCodecPluginItem : public CICodec
 {
     public:
     
-    virtual bool Encode( const void* sourceData         ,
-                         const UInt32 sourceBuffersSize ,
-                         CIOAccess& dest                );
+    virtual bool Encode( CIOAccess& source ,
+                         CIOAccess& dest   );
 
-    virtual bool Decode( const void* sourceData         ,
-                         const UInt32 sourceBuffersSize ,
-                         CIOAccess& dest                );
+    virtual bool Decode( CIOAccess& source ,  
+                         CIOAccess& dest   );
                          
     virtual CICloneable* Clone( void ) const;
     
@@ -79,8 +77,8 @@ class CStdCodecPluginItem : public CICodec
     private:    
     friend class CStdCodecPlugin;
     
-    CStdCodecPluginItem( void* pluginData                   ,
-                         const TCodecPluginLink& pluginLink );
+    CStdCodecPluginItem( void* pluginData             ,
+                         TCodecPluginLink* pluginLink );
     
     CStdCodecPluginItem( const CStdCodecPluginItem& src );
     
@@ -88,12 +86,13 @@ class CStdCodecPluginItem : public CICodec
     
     virtual ~CStdCodecPluginItem();
     
+    TCodecPluginLink* GetCodecPluginLink( void ) const;
+    
+    void* GetPluginData( void ) const;
+    
     private:
     
-    TCODECPLUGFPTR_Encode encode;
-    TCODECPLUGFPTR_Decode decode;
-    CString m_type;
-    CString m_familyName;
+    TCodecPluginLink* m_codecLink;
     void* m_pluginData;
 };
 

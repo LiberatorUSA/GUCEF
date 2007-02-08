@@ -41,7 +41,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\include;..\..\dependancy\Devil\include\IL;..\..\..\..\include;..\..\..\..\..\common\include;..\..\..\..\..\gucefCORE\include;..\..\..\..\..\gucefMT\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;IMGPLUGINDEVIL_EXPORTS"
+				PreprocessorDefinitions="GUCEF_CODECPLUGIN_BUILD_MODULE;WIN32;_DEBUG;_WINDOWS;_USRDLL;IMGPLUGINDEVIL_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -92,6 +92,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Debug_MVC8\plugins&#x0D;&#x0A;copy ..\..\dependancy\Devil\lib\DevIL.dll ..\..\..\..\..\common\bin\Debug_MVC8"
 			/>
 		</Configuration>
 		<Configuration

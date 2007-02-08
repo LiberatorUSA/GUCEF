@@ -46,8 +46,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Encode ) ( void* plugdata, const void* input, UInt32 inputSize, TIOAccess* output ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Decode ) ( void* plugdata, const void* input, UInt32 inputSize, TIOAccess* output ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Encode ) ( void* pluginData, void* codecData, const char* codecFamily, const char* codecType, TIOAccess* input, TIOAccess* output ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Decode ) ( void* pluginData, void* codecData, const char* codecFamily, const char* codecType, TIOAccess* input, TIOAccess* output ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
@@ -57,6 +57,7 @@ struct SCodecPluginLink
     TCODECPLUGFPTR_Decode decode;
     char* codecType;
     char* codecFamily;
+    void* codecData;
 };
 
 typedef struct SCodecPluginLink TCodecPluginLink;

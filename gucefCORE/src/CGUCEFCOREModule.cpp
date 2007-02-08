@@ -96,6 +96,11 @@
 #define GUCEF_CORE_CCODECREGISTRY_H
 #endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_CSTDCODECPLUGINMANAGER_H
+#include "CStdCodecPluginManager.h"
+#define GUCEF_CORE_CSTDCODECPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CSTDCODECPLUGINMANAGER_H ? */
+
 #include "CGUCEFCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef ADD_MEMORY_MANAGER
@@ -187,6 +192,7 @@ CGUCEFCOREModule::Load( void )
         CGUCEFApplication::Instance();
         CSysConsole::Instance();
         CGenericPluginManager::Instance();
+        CStdCodecPluginManager::Instance();
         
         /*
          *      Make sure all events are registered from the start
@@ -216,6 +222,7 @@ CGUCEFCOREModule::Unload( void )
          *      cleanup all singletons
          *      Take care to deinstance them in the correct order !!!
          */
+        CStdCodecPluginManager::Deinstance();
         CGenericPluginManager::Deinstance(); 
         CSysConsole::Deinstance(); 
         CGUCEFApplication::Deinstance();

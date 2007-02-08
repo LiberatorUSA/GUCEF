@@ -15,26 +15,18 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_CICODEC_H
-#define GUCEF_CORE_CICODEC_H 
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
-#include <vector>
+#ifndef GUCEF_CORE_CSTDCODECPLUGIN_H
+#include "CStdCodecPlugin.h"
+#define GUCEF_CORE_CSTDCODECPLUGIN_H
+#endif /* GUCEF_CORE_CSTDCODECPLUGIN_H ? */
 
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
-
-#ifndef GUCEF_CORE_CITYPENAMED_H
-#include "CITypeNamed.h"
-#define GUCEF_CORE_CITYPENAMED_H
-#endif /* GUCEF_CORE_CITYPENAMED_H ? */
+#include "CStdCodecPluginManager.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,35 +39,86 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIOAccess;
+CStdCodecPluginManager* CStdCodecPluginManager::m_instance = NULL;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CStdCodecPluginManager::CStdCodecPluginManager( void )
+    : CPluginManager() ,
+      m_plugins()
+{TRACE;
+    
+}
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable ,
-                                     public CITypeNamed
-{
-    public:
-    
-    CICodec( void );
-    
-    CICodec( const CICodec& src );
-    
-    CICodec& operator=( const CICodec& src );
-    
-    virtual ~CICodec();
-    
-    virtual bool Encode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
+CStdCodecPluginManager::~CStdCodecPluginManager()
+{TRACE;
 
-    virtual bool Decode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
-                         
-    virtual CString GetFamilyName( void ) const = 0;
-};
+    UnloadAll();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CStdCodecPluginManager*
+CStdCodecPluginManager::Instance( void )
+{TRACE;
+    
+    if ( NULL == m_instance )
+    {
+        m_instance = new CStdCodecPluginManager();
+    }
+    return m_instance;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStdCodecPluginManager::Deinstance( void )
+{TRACE;
+
+    delete m_instance;
+    m_instance = NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CStdCodecPluginManager::TPluginPtr
+CStdCodecPluginManager::LoadPlugin( const CString& pluginPath )
+{TRACE;
+
+    CStdCodecPlugin* plugin = new CStdCodecPlugin();
+    if ( plugin->Load( pluginPath ) )
+    {
+        TPluginPtr pluginPtr( plugin );
+        m_plugins.push_back( pluginPtr );
+        return pluginPtr;
+    }
+
+    delete plugin;
+    return TPluginPtr(); // return NULL pointer
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStdCodecPluginManager::UnloadAll( void )
+{TRACE;
+
+    while ( !m_plugins.empty() )
+    {
+        ( m_plugins.back() )->Unload();
+        m_plugins.pop_back();
+    }
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -87,16 +130,3 @@ class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable ,
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CICODEC_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 20-07-2005 :
-        - Dinand: Added this class
-
------------------------------------------------------------------------------*/

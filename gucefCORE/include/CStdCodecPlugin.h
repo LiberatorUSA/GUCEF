@@ -59,17 +59,15 @@ class GUCEFCORE_EXPORT_CPP CStdCodecPlugin : public CICodecPlugin
     
     virtual bool GetCodecList( CCodecList& codecList );
 
-    virtual bool Encode( const void* sourceData         ,
-                         const UInt32 sourceBuffersSize ,
-                         CIOAccess& dest                ,
-                         const CString& familyName      ,
-                         const CString& typeName        );
+    virtual bool Encode( CIOAccess& source         ,
+                         CIOAccess& dest           ,
+                         const CString& familyName ,
+                         const CString& typeName   );
 
-    virtual bool Decode( const void* sourceData         ,
-                         const UInt32 sourceBuffersSize ,
-                         CIOAccess& dest                ,
-                         const CString& familyName      ,
-                         const CString& typeName        );
+    virtual bool Decode( CIOAccess& source         ,
+                         CIOAccess& dest           ,
+                         const CString& familyName ,
+                         const CString& typeName   );
 
     virtual CString GetDescription( void ) const;
 
@@ -91,6 +89,7 @@ class GUCEFCORE_EXPORT_CPP CStdCodecPlugin : public CICodecPlugin
     CStdCodecPlugin& operator=( const CStdCodecPlugin& src ); /**< not implemented */
     
     void LinkCodecSet( void );
+    void UnlinkCodecSet( void );
     
     private:
     

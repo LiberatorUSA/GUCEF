@@ -54,6 +54,7 @@ class GUCEFCORE_EXPORT_CPP CCodecRegistry : public CTRegistry< CTRegistry< CICod
     public:
     
     typedef CTRegistry< CICodec > TCodecFamilyRegistry;
+    typedef CTSharedPtr< TCodecFamilyRegistry > TCodecFamilyRegistryPtr;
     
     static CCodecRegistry* Instance( void );
     

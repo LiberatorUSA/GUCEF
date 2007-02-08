@@ -50,31 +50,21 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CStdCodecPluginItem::CStdCodecPluginItem( void* pluginData                   ,
-                                          const TCodecPluginLink& pluginLink )
-    : CICodec()                              ,
-      encode( pluginLink.encode )            ,
-      decode( pluginLink.decode )            ,
-      m_type( pluginLink.codecType )         ,
-      m_familyName( pluginLink.codecFamily ) ,
+CStdCodecPluginItem::CStdCodecPluginItem( void* pluginData            ,
+                                          TCodecPluginLink* codecLink )
+    : CICodec()                  ,
+      m_codecLink( codecLink )   ,
       m_pluginData( pluginData )
 {TRACE;
 
-    assert( m_pluginData != NULL );
-    assert( encode != NULL );
-    assert( decode != NULL );
-    assert( m_type.Length() > 0 );
-    assert( m_familyName.Length() > 0 );
+    assert( m_codecLink != NULL );
 }
 
 /*-------------------------------------------------------------------------*/
     
 CStdCodecPluginItem::CStdCodecPluginItem( const CStdCodecPluginItem& src )
     : CICodec()                        ,
-      encode( src.encode )             ,
-      decode( src.decode )             ,
-      m_type( src.m_type )             ,
-      m_familyName( src.m_familyName ) ,
+      m_codecLink( src.m_codecLink )   ,
       m_pluginData( src.m_pluginData )
 {TRACE;
 
@@ -90,10 +80,8 @@ CStdCodecPluginItem::operator=( const CStdCodecPluginItem& src )
     {
         CICodec::operator=( src );
         
-        encode = src.encode;
-        decode = src.decode;
-        m_type = src.m_type;
-        m_familyName = src.m_familyName;
+        m_codecLink = src.m_codecLink;
+        m_pluginData = src.m_pluginData;
     }
     return *this;
 }
@@ -106,25 +94,51 @@ CStdCodecPluginItem::~CStdCodecPluginItem()
 }
 
 /*-------------------------------------------------------------------------*/
-    
-bool
-CStdCodecPluginItem::Encode( const void* sourceData         ,
-                             const UInt32 sourceBuffersSize ,
-                             CIOAccess& dest                )
+
+TCodecPluginLink*
+CStdCodecPluginItem::GetCodecPluginLink( void ) const
 {TRACE;
 
-    return encode( m_pluginData, sourceData, sourceBuffersSize, dest.CStyleAccess() ) != 0;
+    return m_codecLink;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void*
+CStdCodecPluginItem::GetPluginData( void ) const
+{TRACE;
+
+    return m_pluginData;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CStdCodecPluginItem::Encode( CIOAccess& source ,
+                             CIOAccess& dest   )
+{TRACE;
+
+    return m_codecLink->encode( m_pluginData             , 
+                                m_codecLink->codecData   , 
+                                m_codecLink->codecFamily ,
+                                m_codecLink->codecType   ,
+                                source.CStyleAccess()    ,
+                                dest.CStyleAccess()      ) != 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CStdCodecPluginItem::Decode( const void* sourceData         ,
-                             const UInt32 sourceBuffersSize ,
-                             CIOAccess& dest                )
+CStdCodecPluginItem::Decode( CIOAccess& source ,
+                             CIOAccess& dest   )
 {TRACE;
 
-    return decode( m_pluginData, sourceData, sourceBuffersSize, dest.CStyleAccess() ) != 0;
+    return m_codecLink->decode( m_pluginData             , 
+                                m_codecLink->codecData   , 
+                                m_codecLink->codecFamily ,
+                                m_codecLink->codecType   ,
+                                source.CStyleAccess()    ,
+                                dest.CStyleAccess()      ) != 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -142,7 +156,7 @@ CString
 CStdCodecPluginItem::GetType( void ) const
 {TRACE;
 
-    return m_type;
+    return m_codecLink->codecType;
 }
     
 /*-------------------------------------------------------------------------*/
@@ -151,7 +165,7 @@ CString
 CStdCodecPluginItem::GetFamilyName( void ) const
 {TRACE;
 
-    return m_familyName;
+    return m_codecLink->codecFamily;
 }
 
 /*-------------------------------------------------------------------------//
