@@ -24,6 +24,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
+#include <stdio.h>
+
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"          /* GUCEF string implementation */
 #define GUCEF_CORE_CDVSTRING_H

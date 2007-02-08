@@ -380,11 +380,7 @@ CDynamicBuffer::GetAutoEnlarge( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Copys size number of bytes from src to the buffer at the offset
- *      given.
- */
-void
+UInt32
 CDynamicBuffer::CopyFrom( UInt32 offset   ,
                           UInt32 size     ,
                           const void* src )
@@ -403,7 +399,7 @@ CDynamicBuffer::CopyFrom( UInt32 offset   ,
                     Int32 max = (Int32)_bsize - (Int32)offset - (Int32)size;
                     if ( max < 0 ) 
                     {
-                            return;
+                            return 0;
                     }                                
                     size = max;
             }                
@@ -411,14 +407,12 @@ CDynamicBuffer::CopyFrom( UInt32 offset   ,
     
     m_dataSize = size;
     memcpy( _buffer+offset, src, size );
+    return size;
 }
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Copys size number of bytes from src to the buffer
- */
-void 
+UInt32 
 CDynamicBuffer::CopyFrom( UInt32 size     ,
                           const void* src )
 {TRACE;
@@ -436,7 +430,7 @@ CDynamicBuffer::CopyFrom( UInt32 size     ,
                     Int32 max = (Int32)_bsize - (Int32)size;
                     if ( max < 0 ) 
                     {
-                            return;
+                            return 0;
                     }                                
                     size = max;
             }                
@@ -444,6 +438,7 @@ CDynamicBuffer::CopyFrom( UInt32 size     ,
     
     m_dataSize = size;
     memcpy( _buffer, src, size );        
+    return size;
 }                          
 
 /*-------------------------------------------------------------------------*/
@@ -452,7 +447,7 @@ CDynamicBuffer::CopyFrom( UInt32 size     ,
  *      Copys size number of bytes from the buffer to src at the offset
  *      given.
  */
-void
+UInt32
 CDynamicBuffer::CopyTo( UInt32 offset ,
                         UInt32 size   ,
                         void *dest    ) const
@@ -463,11 +458,12 @@ CDynamicBuffer::CopyTo( UInt32 offset ,
             Int32 max = (Int32)m_dataSize - (Int32)offset - (Int32)size;
             if ( max < 0 ) 
             {
-                    return;
+                    return 0;
             }                        
             size = max;           
     }
     memcpy( dest, _buffer+offset, size );
+    return size;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -475,20 +471,22 @@ CDynamicBuffer::CopyTo( UInt32 offset ,
 /**
  *      Copys all data from the buffer to dest
  */
-void 
+UInt32 
 CDynamicBuffer::CopyTo( void *dest ) const
 {TRACE;
 
     memcpy( dest, _buffer, m_dataSize );
+    return m_dataSize;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+UInt32 
 CDynamicBuffer::CopyTo( CDynamicBuffer& dest ) const
 {TRACE;
 
-    dest.CopyFrom( m_dataSize, _buffer );        
+    dest.CopyFrom( m_dataSize, _buffer );
+    return m_dataSize;        
 }
 
 /*-------------------------------------------------------------------------*/

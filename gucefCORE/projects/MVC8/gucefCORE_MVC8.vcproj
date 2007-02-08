@@ -268,6 +268,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CDynamicBufferAccess.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CEvent.cpp"
 				>
 			</File>
@@ -727,6 +731,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CDynamicBuffer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CDynamicBufferAccess.h"
 				>
 			</File>
 			<File

@@ -180,7 +180,7 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
          *  Special operation that allows you to link to data outside of the dynamic buffer
          *  Mainly used for optimization purposes & API compatibility reasons.
          *
-         *  Automaticly calls Clear( false ) for safety reasons before performing 
+         *  Automatically calls Clear( false ) for safety reasons before performing 
          *  the link operation.
          *
          *  Note that if a dynamic buffer is in a linked state it's data cannot be modified
@@ -200,34 +200,35 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
         bool IsLinked( void ) const;
 
         /**
-         *  Copys size number of bytes from src to the buffer at the offset given.
+         *  Copies size number of bytes from src to the buffer at the offset given.
          *  Note that if the buffer is linked this operation will result in the creation of a private copy
          */
-        void CopyFrom( UInt32 offset   ,
-                       UInt32 size     ,
-                       const void* src );
+        UInt32 CopyFrom( UInt32 offset   ,
+                         UInt32 size     ,
+                         const void* src );
                        
         /**
-         *  Copys size number of bytes from src to the buffer
+         *  Copies size number of bytes from src to the buffer
          *  Note that if the buffer is linked this operation will result in the creation of a private copy
          */
-        void CopyFrom( UInt32 size     ,
-                       const void* src );                       
+        UInt32 CopyFrom( UInt32 size     ,
+                         const void* src );                       
 
         /**
-         *      Copys size number of bytes from the buffer to src from the offset
-         *      given.
+         *  Copies size number of bytes from the buffer to src from the offset given.
+         *  
+         *  @return number of bytes written
          */
-        void CopyTo( UInt32 offset ,
-                     UInt32 size   ,
-                     void *dest    ) const;
+        UInt32 CopyTo( UInt32 offset ,
+                       UInt32 size   ,
+                       void *dest    ) const;
                      
         /**
-         *      Copys all data from the buffer to dest
+         *      Copies all data from the buffer to dest
          */
-        void CopyTo( void *dest ) const;
+        UInt32 CopyTo( void *dest ) const;
         
-        void CopyTo( CDynamicBuffer& dest ) const;
+        UInt32 CopyTo( CDynamicBuffer& dest ) const;
                      
         /**
          *  Appends the given data to the back of the data bytes in the buffer

@@ -84,6 +84,7 @@ CIMGCodec::operator=( const CIMGCodec& src )
 
     if ( &src != this )
     {        
+        m_codecPtr = src.m_codecPtr;
     }
     
     return *this;
