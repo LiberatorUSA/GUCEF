@@ -177,6 +177,7 @@ CStdCodecPlugin::UnlinkCodecSet( void )
 
     if ( IsLoaded() )
     {
+        CCodecRegistry* codecRegistry = CCodecRegistry::Instance();
         CStdCodecPluginItem* pluginItem = NULL;
         CCodecSet::iterator i = m_codecSet.begin();
         while ( i != m_codecSet.end() )
@@ -186,6 +187,21 @@ CStdCodecPlugin::UnlinkCodecSet( void )
             while ( n != codecFamily.end() )
             {
                 pluginItem = static_cast< CStdCodecPluginItem* >( &( *( (*n).second ) ) );
+                TCodecPluginLink* codecLink = pluginItem->GetCodecPluginLink();
+                
+                // Now we unregister the codecs from this plugin from the GUCEF codec registry
+                // First we check if family registry still exists                
+                if ( codecRegistry->IsRegistered( codecLink->codecFamily ) )
+                {
+                    // we now have access to a registry for this codec family
+                    // We will add this codec if there no codec already registered with such a name
+                    CCodecRegistry::TCodecFamilyRegistryPtr familyRegistry = codecRegistry->Lookup( codecLink->codecFamily );
+                    if ( !familyRegistry->IsRegistered( codecLink->codecType ) )
+                    {
+                        familyRegistry->Unregister( codecLink->codecType );
+                    }                    
+                }
+
                 ( (TCODECPLUGFPTR_FreeCodecLink) m_fpTable[ STDCODEC_FREECODECLINK ] )( pluginItem->GetPluginData()      ,
                                                                                         pluginItem->GetCodecPluginLink() );
                 ++n;

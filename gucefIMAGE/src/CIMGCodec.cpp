@@ -92,27 +92,23 @@ CIMGCodec::operator=( const CIMGCodec& src )
 /*-------------------------------------------------------------------------*/
 
 bool
-CIMGCodec::Encode( const void* sourceData         ,
-                   const UInt32 sourceBuffersSize ,
-                   CORE::CIOAccess& dest          )
+CIMGCodec::Encode( CORE::CIOAccess& source ,
+                   CORE::CIOAccess& dest   )
 {TRACE;
 
-    return m_codecPtr->Encode( sourceData        ,
-                               sourceBuffersSize ,
-                               dest              );
+    return m_codecPtr->Encode( source ,
+                               dest   );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CIMGCodec::Decode( const void* sourceData         ,
-                   const UInt32 sourceBuffersSize ,
-                   CORE::CIOAccess& dest          )
+CIMGCodec::Decode( CORE::CIOAccess& source ,
+                   CORE::CIOAccess& dest   )
 {TRACE;
 
-    return m_codecPtr->Decode( sourceData        ,
-                               sourceBuffersSize ,
-                               dest              );
+    return m_codecPtr->Decode( source ,
+                               dest   );
 }
 
 /*-------------------------------------------------------------------------*/

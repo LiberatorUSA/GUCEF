@@ -55,7 +55,7 @@ class CORE::CIOAccess;
 /*-------------------------------------------------------------------------*/
 
 /**
- *  conversion class for image codec's
+ *  Utility conversion class for image codec's
  *  It adds some utility member functions that make it easier to use 
  *  the interface when dealing with images
  *
@@ -92,13 +92,11 @@ class EXPORT_CPP CIMGCodec
     bool Decode( CORE::CIOAccess& encodedInput ,
                  CImage& outputImage           );
                  
-    bool Encode( const void* sourceData         ,
-                 const UInt32 sourceBuffersSize ,
-                 CORE::CIOAccess& dest          );
+    bool Encode( CORE::CIOAccess& source ,
+                 CORE::CIOAccess& dest   );
 
-    bool Decode( const void* sourceData         ,
-                 const UInt32 sourceBuffersSize ,
-                 CORE::CIOAccess& dest          );
+    bool Decode( CORE::CIOAccess& source ,
+                 CORE::CIOAccess& dest   );
                  
     CORE::CString GetFamilyName( void ) const;
     
