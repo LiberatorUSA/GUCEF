@@ -130,7 +130,7 @@ static char* supportedTypes[] = {
 //-------------------------------------------------------------------------*/
 
 ILvoid ILAPIENTRY
-ilfCloseRProc( ILHANDLE handle )
+ilfCloseProc( ILHANDLE handle )
 {
     TIOAccess* input = (TIOAccess*) handle;
     if ( NULL != input )
@@ -168,7 +168,7 @@ ilfGetcProc( ILHANDLE handle )
 /*---------------------------------------------------------------------------*/
 
 ILHANDLE ILAPIENTRY 
-ilfOpenRProc( const ILstring ilstring )
+ilfOpenProc( const ILstring ilstring )
 {
     TIOAccess* input = currentResource;
     if ( NULL != input )
@@ -198,9 +198,9 @@ ilfReadProc( void* data,
 /*---------------------------------------------------------------------------*/
 
 ILint ILAPIENTRY
-ilfSeekRProc( ILHANDLE handle , 
-              ILint offset    , 
-              ILint origin    )
+ilfSeekProc( ILHANDLE handle , 
+             ILint offset    , 
+             ILint origin    )
 {
     TIOAccess* input = (TIOAccess*) handle;
     if ( NULL != input )
@@ -213,10 +213,32 @@ ilfSeekRProc( ILHANDLE handle ,
 /*---------------------------------------------------------------------------*/
 
 ILint ILAPIENTRY
-ilfTellRProc( ILHANDLE handle )
+ilfTellProc( ILHANDLE handle )
 {
     TIOAccess* input = (TIOAccess*) handle;
     return input->tell( input );
+}
+
+/*---------------------------------------------------------------------------*/
+
+ILint ILAPIENTRY
+ilfPutcProc( ILubyte putByte , 
+             ILHANDLE handle )
+{
+    TIOAccess* input = (TIOAccess*) handle;
+    return input->write( input, &putByte, 1, 1 );
+}
+
+/*---------------------------------------------------------------------------*/
+
+ILint ILAPIENTRY
+ilfWriteProc( const void* data , 
+              ILuint eSize     , 
+              ILuint eCount    ,
+              ILHANDLE handle  )
+{
+    TIOAccess* input = (TIOAccess*) handle;
+    return input->write( input, data, eSize, eCount );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -237,13 +259,20 @@ CODECPLUGIN_Init( void** plugdata    ,
     
     ilInit();
     
-    ilSetRead( ilfOpenRProc  , 
-               ilfCloseRProc , 
-               ilfEofProc    , 
-               ilfGetcProc   , 
-               ilfReadProc   , 
-               ilfSeekRProc  , 
-               ilfTellRProc  );
+    ilSetRead( ilfOpenProc  , 
+               ilfCloseProc , 
+               ilfEofProc   , 
+               ilfGetcProc  , 
+               ilfReadProc  , 
+               ilfSeekProc  , 
+               ilfTellProc  );
+
+    ilSetWrite( ilfOpenProc  ,
+                ilfCloseProc ,
+                ilfPutcProc  , 
+                ilfSeekProc  , 
+                ilfTellProc  , 
+                ilfWriteProc );
 
     return 1;
 }
@@ -261,6 +290,13 @@ CODECPLUGIN_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
                NULL , 
                NULL );
                
+    ilSetWrite( NULL , 
+                NULL , 
+                NULL , 
+                NULL , 
+                NULL , 
+                NULL );
+
     ilShutDown();
     
     return 1;
@@ -316,6 +352,42 @@ ConvertILPixelFormatToGUCEFPixelFormat( ILint devilType )
 
 /*---------------------------------------------------------------------------*/
 
+ILint
+ConvertGUCEFPixelFormatToILPixelFormat( Int32 gucefType )
+{
+    switch ( gucefType )
+    {
+        case PSF_RGB : return IL_RGB;
+        case PSF_RGBA : return IL_RGBA;
+        case PSF_BGR : return IL_BGR;
+        case PSF_BGRA : return IL_BGRA;
+        case PSF_SINGLE_CHANNEL_LUMINANCE : return IL_LUMINANCE;
+        case PSF_SINGLE_CHANNEL_ALPHA : return IL_LUMINANCE_ALPHA;
+        default: return -1;
+    }    
+}
+
+/*---------------------------------------------------------------------------*/
+
+ILint
+ConvertGUCEFTypeToILType( Int32 gucefType )
+{
+    switch ( gucefType )
+    {
+        case DT_FLOAT32 : return IL_FLOAT;
+        case DT_FLOAT64 : return IL_DOUBLE;
+        case DT_UINT8 : return IL_UNSIGNED_BYTE;
+        case DT_INT8 : return IL_BYTE;
+        case DT_UINT16 : return IL_UNSIGNED_SHORT;
+        case DT_INT16 : return IL_SHORT;
+        case DT_UINT32 : return IL_UNSIGNED_INT;
+        case DT_INT32 : return IL_INT;
+        default: return -1;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 CODECPLUGIN_Encode( void* plugdata         ,
                     void* codecData        ,
@@ -324,6 +396,143 @@ CODECPLUGIN_Encode( void* plugdata         ,
                     TIOAccess* input       ,
                     TIOAccess* output      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
+    UInt32 i=0, n=0, m=0, readBytes=0, imageBufferSize=0, pixeMapSize=0;
+    TImageInfo imageInfo;
+    TImageFrame* imageFrames = NULL;
+    TImageFrameInfo* imageFrameInfo = NULL;
+    TImageMipMapLevelInfo* mipInfo = NULL;
+    void* imageBuffer = NULL;
+    
+    /* input sanity check */
+    if ( ( NULL == familyType ) || ( NULL == codecType ) || ( NULL == input ) || ( NULL == output ) ) return 0;
+    
+    /* read the image header */    
+    readBytes = input->read( input, &imageInfo, sizeof( TImageInfo ), 1 );
+    
+    /* sanity check */
+    if ( ( readBytes != sizeof( TImageInfo ) )                  ||
+         ( imageInfo.version != GUCEF_IMAGE_TIMAGEINFO_VERSION ) ) 
+    {
+        return 0;
+    }
+
+    /* First we gather all information */    
+    imageFrames = (TImageFrame*) malloc( sizeof( TImageFrame ) * imageInfo.nrOfFramesInImage );
+    for ( i=0; i<imageInfo.nrOfFramesInImage; ++i )
+    {
+        /* read the frame header */
+        readBytes = input->read( input, &imageFrames[ i ].frameInfo, sizeof( TImageFrameInfo ), 1 );
+        
+        /* sanity check */
+        if ( ( readBytes != sizeof( TImageFrameInfo ) )                  ||
+             ( imageInfo.version != GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION ) ) 
+        {
+            free( imageFrames );
+            return 0;
+        }
+
+        /* read the frame's mipmap info */
+        imageFrameInfo = &imageFrames[ i ].frameInfo;
+        imageFrames[ i ].mipmapLevel = (TImageMipMapLevel*) malloc( sizeof( TImageMipMapLevel ) * imageFrameInfo->nrOfMipmapLevels );        
+        for ( n=0; n<imageFrameInfo->nrOfMipmapLevels; ++n )
+        {
+            /* get a shortcut */
+            mipInfo = &imageFrames[ i ].mipmapLevel[ n ].mipLevelInfo;
+            
+            /* read the mipmap header */
+            readBytes = input->read( input, &mipInfo, sizeof( TImageMipMapLevelInfo ), 1 );
+            
+            /* sanity check */
+            if ( ( readBytes != sizeof( TImageMipMapLevelInfo ) )                  ||
+                 ( imageInfo.version != GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION ) ) 
+            {
+                for ( m=0; m<imageInfo.nrOfFramesInImage; ++m ) free( imageFrames[ i ].mipmapLevel );
+                free( imageFrames );
+                return 0;
+            }            
+        }
+    }
+    
+    /* generate an image ID and make that ID the ID of the current image */
+    ilBindImage( ilGenImage() );
+
+    /* Only 1 layer is supported atm */
+    ilActiveLayer( 0 );
+
+    imageBuffer = malloc( 10240 );
+    imageBufferSize = 10240;
+    for ( i=0; i<imageInfo.nrOfFramesInImage; ++i )
+    {
+        /* activate the frame */
+        ilActiveImage( i );        
+        
+        imageFrameInfo = &imageFrames[ i ].frameInfo;
+        for ( n=0; n<imageFrameInfo->nrOfMipmapLevels; ++n )
+        {
+            /* activate the mip-map */
+            ilActiveMipmap( n );
+            
+            /* create a shortcut */
+            mipInfo = &imageFrames[ i ].mipmapLevel[ n ].mipLevelInfo;
+            
+            /* calculate the size of the pixel map */
+            pixeMapSize = ( mipInfo->channelComponentSize * mipInfo->channelCountPerPixel ) * 
+                          ( mipInfo->frameWidth * mipInfo->frameHeight )                    ;
+                          
+            /* check if our local buffer is large enough to hold the pixel data */
+            if ( imageBufferSize < pixeMapSize )
+            {
+                imageBuffer = realloc( imageBuffer, pixeMapSize );
+                imageBufferSize = pixeMapSize;
+            }
+            
+            /* read the pixel map */
+            readBytes = input->read( input, imageBuffer, pixeMapSize, 1 );
+            
+            /* sanity check */
+            if ( readBytes != pixeMapSize )
+            {
+                for ( m=n; m<imageInfo.nrOfFramesInImage; ++m ) free( imageFrames[ i ].mipmapLevel );
+                free( imageFrames );    
+                imageFrames = NULL;
+                free( imageBuffer );
+                return 0;
+            }
+            
+            /* hand the data over to DevIL */
+            if ( IL_TRUE != ilTexImage( (ILuint)mipInfo->frameWidth                                                   ,
+                                        (ILuint)mipInfo->frameHeight                                                  ,
+                                        (ILuint)1                                                                     ,
+                                        (ILubyte)mipInfo->channelCountPerPixel                                        ,
+                                        (ILenum)ConvertGUCEFPixelFormatToILPixelFormat( mipInfo->pixelStorageFormat ) ,
+                                        (ILenum)ConvertGUCEFTypeToILType( mipInfo->pixelComponentDataType )           ,
+                                        (ILvoid*)imageBuffer                                                          ) )
+            {
+                /* Failed to transfer the data over to DevIL */
+                for ( m=n; m<imageInfo.nrOfFramesInImage; ++m ) free( imageFrames[ i ].mipmapLevel );
+                free( imageFrames );    
+                imageFrames = NULL;
+                free( imageBuffer );
+                return 0;
+            }
+                        
+        }
+        free( imageFrames[ i ].mipmapLevel );
+        imageFrames[ i ].mipmapLevel = NULL;
+    }
+    free( imageFrames );    
+    imageFrames = NULL;
+    free( imageBuffer );
+    
+    /* now we can perform the actual save */
+    currentResource = output;
+    if ( IL_TRUE == ilSaveF( ilTypeFromExt( (const wchar_t*) codecType ), output ) )
+    {
+        currentResource = NULL;
+        return 1;
+    }
+    
+    currentResource = NULL;
     return 0;
 }
 
@@ -411,6 +620,8 @@ CODECPLUGIN_Decode( void* plugdata         ,
      *  DevIL to store the data any more 
      */
     ilDeleteImage( imageID );
+    
+    currentResource = NULL;
     
     return 1;
 }
