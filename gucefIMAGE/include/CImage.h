@@ -70,8 +70,8 @@ class EXPORT_CPP CImage
     typedef std::vector< TPixelMapPtr >    TMipMapList;
     typedef std::vector< TMipMapList >     TFrameList;
         
-    public:
-    
+    public:    
+
     CImage( const TFrameList& frameList );
     
     CImage( const TMipMapList& mipmapList );
@@ -109,9 +109,21 @@ class EXPORT_CPP CImage
     TPixelMapPtr GetPixelMap( const UInt32 frameIndex = 0  ,
                               const UInt32 mipMapLevel = 0 );
 
+    void AddFrame( TPixelMapPtr& imageFrame );
+
+    void AddFrame( TMipMapList& imageFrame );
+    
+    void SetFrame( TPixelMapPtr& imageFrame    ,
+                   const UInt32 frameIndex = 0 );
+
+    void SetFrame( TMipMapList& imageFrame     ,
+                   const UInt32 frameIndex = 0 );
+    
     TMipMapList& GetFrame( const UInt32 frameIndex = 0 );
     
     const TMipMapList& GetFrame( const UInt32 frameIndex = 0 ) const;
+    
+    bool HasFrames( void ) const;
 
     /**
      *      Unloads image data if needed and resets values to there defaults

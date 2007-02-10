@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEFIMAGE_MACROS_H
-#define GUCEFIMAGE_MACROS_H
+#ifndef GUCEF_IMAGE_MACROS_H
+#define GUCEF_IMAGE_MACROS_H
 
 /*
  *      Build configuration specific macros.
@@ -108,7 +108,7 @@
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEFIMAGE_MACROS_H ? */
+#endif /* GUCEF_IMAGE_MACROS_H ? */
 
 
 

@@ -402,6 +402,27 @@ CIOAccess::CStyleAccess( void )
     return &m_cStyleAccess;
 }
 
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CIOAccess::Write( CIOAccess& sourceData )
+{TRACE;
+
+    UInt32 byteCount=0, totalByteCount=0;
+    CDynamicBuffer readBuffer( 1024, true );
+    readBuffer.SetDataSize( 1024 );
+    
+    while ( !sourceData.Eof() )
+    {
+        byteCount = sourceData.Read( readBuffer.GetBufferPtr(), 1, 1024 );
+        Write( readBuffer.GetBufferPtr(), byteCount, 1 );
+        
+        totalByteCount += byteCount;
+    }
+    
+    return totalByteCount;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

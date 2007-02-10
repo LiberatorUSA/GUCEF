@@ -119,6 +119,60 @@ CImage::Assign( const TPixelMapPtr& pixelMapPtr )
 
 /*--------------------------------------------------------------------------*/
 
+void
+CImage::AddFrame( TMipMapList& imageFrame )
+{TRACE;
+
+    m_frameList.push_back( imageFrame );
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CImage::AddFrame( TPixelMapPtr& imageFrame )
+{TRACE;
+
+    TMipMapList mipMapList;
+    mipMapList.push_back( imageFrame );
+    m_frameList.push_back( mipMapList );
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CImage::SetFrame( TPixelMapPtr& imageFrame          ,
+                  const UInt32 frameIndex /* = 0 */ )
+{TRACE;
+
+    TMipMapList mipMapList;
+    mipMapList.push_back( imageFrame );
+    SetFrame( mipMapList, frameIndex );    
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CImage::SetFrame( TMipMapList& imageFrame           ,
+                  const UInt32 frameIndex /* = 0 */ )
+{TRACE;
+    
+    if ( frameIndex < m_frameList.size() )
+    {
+        m_frameList[ frameIndex ] = imageFrame;
+    }
+    else
+    if ( frameIndex == m_frameList.size() )
+    {
+        m_frameList.push_back( imageFrame );
+    }
+    else
+    {
+        GUCEF_EMSGTHROW( EInvalidIndex, "CImage::SetFrame(): Invalid frame index" );
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
 CImage::~CImage()
 {TRACE;
         Clear();
@@ -202,6 +256,15 @@ CImage::GetFrame( const UInt32 frameIndex /* = 0 */ ) const
     }
     
     GUCEF_EMSGTHROW( EInvalidIndex, "CImage::GetFrame(): Invalid frame or mipmap index" );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CImage::HasFrames( void ) const
+{TRACE;
+
+    return !m_frameList.empty();
 }
 
 /*-------------------------------------------------------------------------*/

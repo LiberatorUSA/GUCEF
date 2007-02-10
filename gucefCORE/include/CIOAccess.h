@@ -206,6 +206,8 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
 
         virtual TIOAccess* CStyleAccess( void );
         
+        UInt32 Write( CIOAccess& sourceData );
+        
         private:
         
         void LinkCStyleAccess( void );

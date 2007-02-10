@@ -116,7 +116,7 @@ struct SImageMipMapLevelInfo
     UInt32 version;                    /**< version of the TImageInfo definition */
     Int32 pixelComponentDataType;      /**< data type of each value of idata */
     UInt32 channelComponentSize;       /**< size of the data value of the pixel's color channel in bits */
-    UInt8 channelCountPerPixel;        /**< number of color component channels per pixel */
+    UInt32 channelCountPerPixel;       /**< number of color component channels per pixel */
     UInt32 frameWidth;                 /**< Width of an image frame in pixels, mipmap level 0 */
     UInt32 frameHeight;                /**< Height of an image frame in pixels, mipmap level 0 */
     Int32 pixelStorageFormat;          /**< format in which the pixel components are stored */

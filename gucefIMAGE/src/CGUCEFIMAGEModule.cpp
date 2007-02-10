@@ -26,10 +26,10 @@
 #define GUCEF_CORE_CCODECREGISTRY_H
 #endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
 
-//#ifndef CIMGCODECMANAGER_H
-//#include "CIMGCodecManager.h"      /* header for the main image codec manager */
-//#define CIMGCODECMANAGER_H
-//#endif /* CIMGCODECMANAGER_H ? */
+#ifndef GUCEF_IMAGE_CGUIIMAGECODEC_H
+#include "CGUIImageCodec.h"
+#define GUCEF_IMAGE_CGUIIMAGECODEC_H
+#endif /* GUCEF_IMAGE_CGUIIMAGECODEC_H ? */
 
 #include "CGUCEFIMAGEModule.h"  /* definition of the class implemented here */
 
@@ -52,15 +52,22 @@ bool
 CGUCEFIMAGEModule::Load( void )
 {TRACE;
         
-        try
-        {
-            CORE::CCodecRegistry::Instance()->Register( "ImageCodec", new CORE::CCodecRegistry::TCodecFamilyRegistry() );
-        }
-        catch ( CORE::CCodecRegistry::EAlreadyRegistered& )
-        {
-        }
+        CORE::CCodecRegistry* codecRegistry = CORE::CCodecRegistry::Instance();
+        CORE::CCodecRegistry::TCodecFamilyRegistryPtr registry; 
         
-        /* simply instantiate our codec manager when the module is loaded */
+        if ( !codecRegistry->IsRegistered( "ImageCodec" ) )
+        {
+            registry = new CORE::CCodecRegistry::TCodecFamilyRegistry();
+            codecRegistry->Register( "ImageCodec", registry );
+        }
+        else
+        {
+            registry = codecRegistry->Lookup( "ImageCodec" );
+        }
+
+        // Register the dummy codec for our native format
+        registry->Register( "gui", new CGUIImageCodec() );
+        
         return true;
 }
 
@@ -70,7 +77,17 @@ bool
 CGUCEFIMAGEModule::Unload( void )
 {TRACE;
 
-        return true;
+    CORE::CCodecRegistry* codecRegistry = CORE::CCodecRegistry::Instance();
+    CORE::CCodecRegistry::TCodecFamilyRegistryPtr registry;
+    
+    if ( codecRegistry->IsRegistered( "ImageCodec" ) )
+    {
+        registry = codecRegistry->Lookup( "ImageCodec" );
+        
+        // unregister the dummy codec for our native format
+        registry->Unregister( "gui" );
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

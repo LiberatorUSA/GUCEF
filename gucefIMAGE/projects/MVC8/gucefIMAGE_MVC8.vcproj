@@ -203,6 +203,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CGUIImageCodec.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CImage.cpp"
 				>
 			</File>
@@ -226,6 +230,10 @@
 			>
 			<File
 				RelativePath="..\..\include\CGUCEFIMAGEModule.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CGUIImageCodec.h"
 				>
 			</File>
 			<File
