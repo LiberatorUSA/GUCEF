@@ -10,7 +10,7 @@ echo "Running $AUTOHEADER..."
 $AUTOHEADER
 echo "Running $LIBTOOLIZE --automake..."
 $LIBTOOLIZE --automake
-echo "Running $AUTOMAKE --gnu --add-missing --copy..."
+echo "Running $AUTOMAKE --add-missing..."
 $AUTOMAKE --add-missing
 echo "Running $AUTOCONF..."
 $AUTOCONF
