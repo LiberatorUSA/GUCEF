@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2004.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2007.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -24,18 +24,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTOBSERVINGNOTIFIERCOMPONENT_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4146 ) // unary minus operator applied to unsigned type, result still unsigned
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 ) // return type for operator -> is 'const *' (ie; not a UDT or reference to a UDT).
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -54,7 +51,7 @@ namespace CORE {
 
 /**
  *  Template for encapsulating a CObservingNotifier instance in another class
- *  It will proxy the manditory overloads to the component owner, allowing instances
+ *  It will proxy the mandatory overloads to the component owner, allowing instances
  *  to be created without having to implement the pure virtuals.
  *
  *  Note that as a user you will most likely only want to use the
@@ -89,6 +86,46 @@ class CTObservingNotifierComponent : public CObservingNotifier
      */
     void SetOwner( TOwnerClass* ownerInstance );
     
+    /**
+     *  Dispatches the standard CNotifier::ModifyEvent
+     *  Useful for a notification system where you only care if
+     *  a mutation is performed on an object.
+     *
+     *  @return Alive state of the notifier, if false then the notifier died itself as a result of the notification.
+     */
+    bool DoNotifyObservers( void );
+    
+    /**
+     *  Dispatches the given eventid and eventData to all observers
+     *  that are subscribed to all events and the observers that are subscribed
+     *  to this specific eventid.
+     *
+     *  Note that the calling thread is the one in which the observer OnNotify 
+     *  event handlers will be processed. Keep this in mind when notification
+     *  occurs across thread boundaries.
+     *
+     *  Note that eventData is not copied. So when passing data across threads
+     *  consider allocating a copy and passing that in as the data argument.
+     *
+     *  @return Alive state of the notifier, if false then the notifier died itself as a result of the notification.
+     */
+    bool DoNotifyObservers( const CEvent& eventid         ,
+                            CICloneable* eventData = NULL );
+
+    /**
+     *  The same as DoNotifyObservers( CEvent, CICloneable )
+     *  except that this allows you to specify the sender yourself.
+     *  You will basically be faking an event emitted at the given sender.
+     *  
+     *  Use with great care !!!
+     *  Use of this version should be an exception and not standard practice
+     *
+     *  @return Alive state of the notifier, if false then the notifier died itself as a result of the notification.
+     */
+    bool DoNotifyObservers( CNotifier& sender             ,
+                            const CEvent& eventid         ,
+                            CICloneable* eventData = NULL );
+    
     protected:
     
     /**
@@ -120,7 +157,7 @@ template < class TOwnerClass >
 CTObservingNotifierComponent< TOwnerClass >::CTObservingNotifierComponent( void )
     : CObservingNotifier()     ,
       m_componentOwner( NULL )
-{
+{TRACE;
 
 }
 
@@ -130,7 +167,7 @@ template < class TOwnerClass >
 CTObservingNotifierComponent< TOwnerClass >::CTObservingNotifierComponent( const CTObservingNotifierComponent& src )
     : CObservingNotifier( src ) ,
       m_componentOwner( NULL )
-{
+{TRACE;
     
 }
 
@@ -138,7 +175,8 @@ CTObservingNotifierComponent< TOwnerClass >::CTObservingNotifierComponent( const
 
 template < class TOwnerClass >
 CTObservingNotifierComponent< TOwnerClass >::~CTObservingNotifierComponent( void )
-{
+{TRACE;
+
     UnsubscribeAllFromObserver();
 }
 
@@ -147,7 +185,8 @@ CTObservingNotifierComponent< TOwnerClass >::~CTObservingNotifierComponent( void
 template < class TOwnerClass >
 CTObservingNotifierComponent< TOwnerClass >&
 CTObservingNotifierComponent< TOwnerClass >::operator=( const CTObservingNotifierComponent& src )
-{
+{TRACE;
+
     CObservingNotifier::operator=( src );
     
     if ( &src != this )
@@ -162,8 +201,45 @@ CTObservingNotifierComponent< TOwnerClass >::operator=( const CTObservingNotifie
 template < class TOwnerClass >
 void 
 CTObservingNotifierComponent< TOwnerClass >::SetOwner( TOwnerClass* ownerInstance )
-{
+{TRACE;
+
     m_componentOwner = ownerInstance;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < class TOwnerClass >
+bool
+CTObservingNotifierComponent< TOwnerClass >::DoNotifyObservers( void )
+{TRACE;
+
+    return NotifyObservers();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < class TOwnerClass >
+bool
+CTObservingNotifierComponent< TOwnerClass >::DoNotifyObservers( const CEvent& eventid               ,
+                                                                CICloneable* eventData /* = NULL */ )
+{TRACE;
+
+    return NotifyObservers( eventid   ,
+                            eventData );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < class TOwnerClass >
+bool
+CTObservingNotifierComponent< TOwnerClass >::DoNotifyObservers( CNotifier& sender                   ,
+                                                                const CEvent& eventid               ,
+                                                                CICloneable* eventData /* = NULL */ )
+{TRACE;
+
+    return NotifyObservers( sender    ,
+                            eventid   ,
+                            eventData );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -173,10 +249,11 @@ void
 CTObservingNotifierComponent< TOwnerClass >::OnNotify( CNotifier* notifier                 ,
                                                        const UInt32 eventid                ,
                                                        CICloneable* eventdata /* = NULL */ )
-{
+{TRACE;
+
     /*
      *  If you crash here then you forgot to call SetOwner() in your
-     *  class contructor.
+     *  class constructor.
      */
     assert( m_componentOwner );
     
@@ -197,12 +274,6 @@ CTObservingNotifierComponent< TOwnerClass >::OnNotify( CNotifier* notifier      
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTOBSERVINGNOTIFIERCOMPONENT_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

@@ -560,6 +560,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CTONRegistry.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CTracer.cpp"
 				>
 			</File>
@@ -1047,6 +1051,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CTObservingNotifierExpansion.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CTONRegistry.h"
 				>
 			</File>
 			<File

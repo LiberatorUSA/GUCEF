@@ -70,20 +70,20 @@ class CTRegistry
     
     CTRegistry& operator=( const CTRegistry& src );
     
-    bool IsRegistered( const CString& name ) const;
+    virtual bool IsRegistered( const CString& name ) const;
     
-    TRegisteredObjPtr Lookup( const CString& name ) const;
+    virtual TRegisteredObjPtr Lookup( const CString& name ) const;
     
-    void Register( const CString& name                ,
-                   const TRegisteredObjPtr& sharedPtr );
+    virtual void Register( const CString& name                ,
+                           const TRegisteredObjPtr& sharedPtr );
                    
-    void Unregister( const CString& name );                   
+    virtual void Unregister( const CString& name );                   
     
-    void UnregisterAll( void );
+    virtual void UnregisterAll( void );
 
-    UInt32 GetCount( void ) const;
+    virtual UInt32 GetCount( void ) const;
 
-    void GetList( TStringList& destList ) const;
+    virtual void GetList( TStringList& destList ) const;
     
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( EAlreadyRegistered );
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( EUnregisteredName );

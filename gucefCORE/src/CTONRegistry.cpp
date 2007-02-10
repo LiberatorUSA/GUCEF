@@ -14,14 +14,14 @@
  * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
-
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CCodecRegistry.h"
+#include "CTONRegistry.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,7 +38,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CCodecRegistry* CCodecRegistry::m_instance = NULL;
+const CEvent CTONRegistryEvents::ItemRegisteredEvent = "GUCEF::CORE::CTONRegistryEvents::ItemRegisteredEvent";
+const CEvent CTONRegistryEvents::ItemUnregisteredEvent = "GUCEF::CORE::CTONRegistryEvents::ItemUnregisteredEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,41 +47,44 @@ CCodecRegistry* CCodecRegistry::m_instance = NULL;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CCodecRegistry::CCodecRegistry( void )
-    : CTONRegistry< CTONRegistry< CICodec > >()
-{TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CCodecRegistry::~CCodecRegistry()
-{TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CCodecRegistry*
-CCodecRegistry::Instance( void )
-{TRACE;
-    
-    if ( m_instance == NULL )
-    {
-        m_instance = new CCodecRegistry();
-    }
-    
-    return m_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
 void
-CCodecRegistry::Deinstance( void )
+CTONRegistryEvents::RegisterEvents( void )
 {TRACE;
 
-    delete m_instance;
-    m_instance = NULL;
+    ItemRegisteredEvent.Initialize();
+    ItemUnregisteredEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTONRegistryEvents::CTONRegistryEvents( void )
+{TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTONRegistryEvents::CTONRegistryEvents( const CTONRegistryEvents& src )
+{TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTONRegistryEvents::~CTONRegistryEvents()
+{TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTONRegistryEvents&
+CTONRegistryEvents::operator=( const CTONRegistryEvents& src )
+{TRACE;
+
+    return *this;
 }
 
 /*-------------------------------------------------------------------------//

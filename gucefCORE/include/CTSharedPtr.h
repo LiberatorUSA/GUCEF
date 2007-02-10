@@ -122,11 +122,11 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
         //   which allows us to access the data members of the given src.
 
         // Cast performed for safety reasons:
-        // Allows us to catch unlawfull casts compile time.
+        // Allows us to catch unlawful casts compile time.
         // If you get an error here then 'Derived' is not actually in the same 
         // inheritance chain as 'T'
-        Derived* testPtrDerived( NULL );
-        T* testPtrT( static_cast< Derived* >( testPtrDerived ) );
+        Derived* testPtrDerived = NULL;
+        T* testPtrT = static_cast< Derived* >( testPtrDerived );
         testPtrT = NULL;
     }
     
@@ -142,7 +142,7 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
         if ( &reinterpret_cast< const CTSharedPtr& >( src ) != this )
         {
             // Cast performed for safety reasons:
-            // Allows us to catch unlawfull casts compile time.
+            // Allows us to catch unlawful casts compile time.
             // If you get an error here then 'Derived' is not actually in the same 
             // inheritance chain as 'T'
             Derived* testPtrDerived( NULL );

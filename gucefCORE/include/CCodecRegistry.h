@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CTREGISTRY_H
-#include "CTRegistry.h"
-#define GUCEF_CORE_CTREGISTRY_H
-#endif /* GUCEF_CORE_CTREGISTRY_H ? */
+#ifndef GUCEF_CORE_CTONREGISTRY_H
+#include "CTONRegistry.h"
+#define GUCEF_CORE_CTONREGISTRY_H
+#endif /* GUCEF_CORE_CTONREGISTRY_H ? */
 
 #ifndef GUCEF_CORE_CICODEC_H
 #include "CICodec.h"
@@ -49,11 +49,11 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CCodecRegistry : public CTRegistry< CTRegistry< CICodec > >
+class GUCEFCORE_EXPORT_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< CICodec > >
 {
     public:
     
-    typedef CTRegistry< CICodec > TCodecFamilyRegistry;
+    typedef CTONRegistry< CICodec > TCodecFamilyRegistry;
     typedef CTSharedPtr< TCodecFamilyRegistry > TCodecFamilyRegistryPtr;
     
     static CCodecRegistry* Instance( void );

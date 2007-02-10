@@ -26,17 +26,6 @@
 
 #include "CTObservingNotifierComponent.h"
 
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTOBSERVINGNOTIFIEREXPANSION_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4146 ) // unary minus operator applied to unsigned type, result still unsigned
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 ) // return type for operator -> is 'const *' (ie; not a UDT or reference to a UDT).
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -98,7 +87,7 @@ class CTObservingNotifierExpansion : public BaseClass
     
     /**
      *  Event callback member function.
-     *  Implement this in your decending class to handle
+     *  Implement this in your descending class to handle
      *  notification events.
      *
      *  @param notifier the notifier that sent the notification
@@ -108,7 +97,47 @@ class CTObservingNotifierExpansion : public BaseClass
     virtual void OnNotify( CNotifier* notifier           ,
                            const UInt32 eventid          ,
                            CICloneable* eventdata = NULL );
+
+    /**
+     *  Dispatches the standard CNotifier::ModifyEvent
+     *  Useful for a notification system where you only care if
+     *  a mutation is performed on an object.
+     *
+     *  @return Alive state of the notifier, if false then the notifier died itself as a result of the notification.
+     */
+    bool NotifyObservers( void );
     
+    /**
+     *  Dispatches the given eventid and eventData to all observers
+     *  that are subscribed to all events and the observers that are subscribed
+     *  to this specific eventid.
+     *
+     *  Note that the calling thread is the one in which the observer OnNotify 
+     *  event handlers will be processed. Keep this in mind when notification
+     *  occurs across thread boundaries.
+     *
+     *  Note that eventData is not copied. So when passing data across threads
+     *  consider allocating a copy and passing that in as the data argument.
+     *
+     *  @return Alive state of the notifier, if false then the notifier died itself as a result of the notification.
+     */
+    bool NotifyObservers( const CEvent& eventid         ,
+                          CICloneable* eventData = NULL );
+
+    /**
+     *  The same as NotifyObservers( CEvent, CICloneable )
+     *  except that this allows you to specify the sender yourself.
+     *  You will basically be faking an event emitted at the given sender.
+     *  
+     *  Use with great care !!!
+     *  Use of this version should be an exception and not standard practice
+     *
+     *  @return Alive state of the notifier, if false then the notifier died itself as a result of the notification.
+     */
+    bool NotifyObservers( CNotifier& sender             ,
+                          const CEvent& eventid         ,
+                          CICloneable* eventData = NULL );
+                              
     private:
     
     typedef CTObservingNotifierComponent< TONExpansion > TObservingNotifierComponent;
@@ -124,8 +153,10 @@ class CTObservingNotifierExpansion : public BaseClass
 
 template < class BaseClass >
 CTObservingNotifierExpansion< BaseClass >::CTObservingNotifierExpansion( void )
-    : BaseClass()
-{
+    : BaseClass()               ,
+      m_notificationComponent()
+{TRACE;
+
     m_notificationComponent.SetOwner( this );
 }
 
@@ -133,8 +164,10 @@ CTObservingNotifierExpansion< BaseClass >::CTObservingNotifierExpansion( void )
 
 template < class BaseClass >
 CTObservingNotifierExpansion< BaseClass >::CTObservingNotifierExpansion( const CTObservingNotifierExpansion& src )
-    : BaseClass( src )
-{
+    : BaseClass( src )          ,
+      m_notificationComponent()
+{TRACE;
+
     m_notificationComponent.SetOwner( this );
 }
 
@@ -142,7 +175,8 @@ CTObservingNotifierExpansion< BaseClass >::CTObservingNotifierExpansion( const C
 
 template < class BaseClass >
 CTObservingNotifierExpansion< BaseClass >::~CTObservingNotifierExpansion()
-{
+{TRACE;
+
     m_notificationComponent.UnsubscribeAllFromObserver();
 }
 
@@ -151,7 +185,8 @@ CTObservingNotifierExpansion< BaseClass >::~CTObservingNotifierExpansion()
 template < class BaseClass >
 CTObservingNotifierExpansion< BaseClass >&
 CTObservingNotifierExpansion< BaseClass >::operator=( const CTObservingNotifierExpansion< BaseClass >& src )
-{
+{TRACE;
+
     BaseClass::operator=( src );
 
     if ( &src != this )
@@ -166,7 +201,8 @@ CTObservingNotifierExpansion< BaseClass >::operator=( const CTObservingNotifierE
 template < class BaseClass >
 CObserver& 
 CTObservingNotifierExpansion< BaseClass >::AsObserver( void )
-{
+{TRACE;
+
     return m_notificationComponent.AsObserver();
 }
 
@@ -175,7 +211,8 @@ CTObservingNotifierExpansion< BaseClass >::AsObserver( void )
 template < class BaseClass >
 const CObserver& 
 CTObservingNotifierExpansion< BaseClass >::AsObserver( void ) const
-{
+{TRACE;
+
     return m_notificationComponent.AsObserver();
 }
 
@@ -184,7 +221,8 @@ CTObservingNotifierExpansion< BaseClass >::AsObserver( void ) const
 template < class BaseClass >
 CNotifier& 
 CTObservingNotifierExpansion< BaseClass >::AsNotifier( void )
-{
+{TRACE;
+
     return m_notificationComponent;
 }
 
@@ -193,8 +231,45 @@ CTObservingNotifierExpansion< BaseClass >::AsNotifier( void )
 template < class BaseClass >
 const CNotifier& 
 CTObservingNotifierExpansion< BaseClass >::AsNotifier( void ) const
-{
+{TRACE;
+
     return m_notificationComponent;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < class BaseClass >
+bool
+CTObservingNotifierExpansion< BaseClass >::NotifyObservers( void )
+{TRACE;
+
+    return m_notificationComponent.DoNotifyObservers();
+}
+
+/*-------------------------------------------------------------------------*/
+    
+template < class BaseClass >
+bool
+CTObservingNotifierExpansion< BaseClass >::NotifyObservers( const CEvent& eventid               ,
+                                                            CICloneable* eventData /* = NULL */ )
+{TRACE;
+
+    return m_notificationComponent.DoNotifyObservers( eventid   ,
+                                                      eventData );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+template < class BaseClass >
+bool
+CTObservingNotifierExpansion< BaseClass >::NotifyObservers( CNotifier& sender                   ,
+                                                            const CEvent& eventid               ,
+                                                            CICloneable* eventData /* = NULL */ )
+{TRACE;
+
+    return m_notificationComponent.DoNotifyObservers( sender    ,
+                                                      eventid   ,
+                                                      eventData );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -204,8 +279,9 @@ void
 CTObservingNotifierExpansion< BaseClass >::OnNotify( CNotifier* /* notifier */                ,
                                                      const UInt32 /* eventid */               ,
                                                      CICloneable* /* eventdata *//* = NULL */ )
-{
-    /* implemented to avoid manditory implementation by decending classes */
+{TRACE;
+
+    /* implemented to avoid mandatory implementation by descending classes */
 }
 
 /*-------------------------------------------------------------------------//
@@ -216,12 +292,6 @@ CTObservingNotifierExpansion< BaseClass >::OnNotify( CNotifier* /* notifier */  
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTOBSERVINGNOTIFIEREXPANSION_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 
