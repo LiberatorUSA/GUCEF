@@ -83,8 +83,8 @@ CActiveObject::IsActive( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 GUCEF_CALLSPEC_STD_PREFIX
-CActiveObject::OnActivate( void* thisobject ) GUCEF_CALLSPEC_STD_SUFFIX
+UInt32
+CActiveObject::OnActivate( void* thisobject )
 {
     CActiveObject* tao = (CActiveObject*) thisobject;
     void* taskdata = tao->GetTaskData();
@@ -92,10 +92,10 @@ CActiveObject::OnActivate( void* thisobject ) GUCEF_CALLSPEC_STD_SUFFIX
     if ( tao->OnTaskStart( taskdata ) )
     {
         Float64 timerRes = ( PrecisionTimerResolution() * 1.0 );
-        UInt64 tickCount = PrecisionTickCount(); 
+        UInt64 tickCount = PrecisionTickCount();
         UInt64 newTime = tickCount;
         Float64 timeDelta = 0;
-        
+
         bool taskfinished = false;
         while ( !taskfinished && tao->_active )
         {
@@ -104,10 +104,10 @@ CActiveObject::OnActivate( void* thisobject ) GUCEF_CALLSPEC_STD_SUFFIX
             {
                 ThreadSuspend( tao->_td );
             }
-            
+
             // We can do a cycle
             taskfinished = tao->OnTaskCycle( taskdata );
-            
+
             // check if we are finished
             if ( !taskfinished )
             {
