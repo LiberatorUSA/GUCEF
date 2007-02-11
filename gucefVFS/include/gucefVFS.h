@@ -35,18 +35,18 @@
 /*
  *      Library build configuration      
  */
-#ifndef GUCEFVFS_CONFIG_H
+#ifndef GUCEF_VFS_CONFIG_H
 #include "gucefVFS_config.h"
-#define GUCEFVFS_CONFIG_H
-#endif /* GUCEFVFS_CONFIG_H ? */
+#define GUCEF_VFS_CONFIG_H
+#endif /* GUCEF_VFS_CONFIG_H ? */
 
 /*
  *      Library specific macros and generic macros
  */
-#ifndef GUCEFVFS_MACROS_H
+#ifndef GUCEF_VFS_MACROS_H
 #include "gucefVFS_macros.h"
-#define GUCEFVFS_MACROS_H
-#endif /* GUCEFVFS_MACROS_H ? */
+#define GUCEF_VFS_MACROS_H
+#endif /* GUCEF_VFS_MACROS_H ? */
 
 /*
  *      Simple types

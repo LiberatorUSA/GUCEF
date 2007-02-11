@@ -131,7 +131,7 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
         
         CVFS( void );
         CVFS( const CVFS& src );
-        ~CVFS();
+        virtual ~CVFS();
         CVFS& operator=( const CVFS& src );
         
         CVFSHandle* LoadFromDiskCache( const CORE::CString& file, UInt32& errorcode );

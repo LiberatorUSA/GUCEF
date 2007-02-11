@@ -23,8 +23,8 @@
  *      It houses the generic toolkits.
  */
 
-#ifndef GUCEF_CORE_GUCEFCORE_H
-#define GUCEF_CORE_GUCEFCORE_H
+#ifndef GUCEF_CORE_H
+#define GUCEF_CORE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -351,7 +351,7 @@ GUCEFCORE_EXPORT_C const char* GUCEF_CORE_ModuleCompileTimeStamp( void );
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEFCORE_H ? */
+#endif /* GUCEF_CORE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

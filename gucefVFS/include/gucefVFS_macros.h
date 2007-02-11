@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEFVFS_MACROS_H
-#define GUCEFVFS_MACROS_H
+#ifndef GUCEF_VFS_MACROS_H
+#define GUCEF_VFS_MACROS_H
 
 /*
  *      Build configuration specific macros.
@@ -29,20 +29,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef MACROS_H
+#ifndef GUCEF_CORE_BASICMACROS_H
 #include "macros.h"                /* generic often used macros */
-#define MACROS_H
-#endif /* MACROS_H ? */
+#define GUCEF_CORE_BASICMACROS_H
+#endif /* GUCEF_CORE_BASICMACROS_H ? */
 
-#ifndef GUCEFVFS_ETYPES_H
+#ifndef GUCEF_VFS_ETYPES_H
 #include "gucefVFS_ETypes.h"      /* simple types */
-#define GUCEFVFS_ETYPES_H
-#endif /* GUCEFVFS_ETYPES_H ? */
+#define GUCEF_VFS_ETYPES_H
+#endif /* GUCEF_VFS_ETYPES_H ? */
 
-#ifndef GUCEFVFS_CONFIG_H
+#ifndef GUCEF_VFS_CONFIG_H
 #include "gucefVFS_config.h"      /* Module build configuration */
-#define GUCEFVFS_CONFIG_H
-#endif /* GUCEFVFS_CONFIG_H ? */
+#define GUCEF_VFS_CONFIG_H
+#endif /* GUCEF_VFS_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -345,7 +345,7 @@
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEFVFS_MACROS_H ? */
+#endif /* GUCEF_VFS_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

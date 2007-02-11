@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEFVFS_CONFIG_H
-#define GUCEFVFS_CONFIG_H
+#ifndef GUCEF_VFS_CONFIG_H
+#define GUCEF_VFS_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -177,7 +177,7 @@
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEFVFS_CONFIG_H */
+#endif /* GUCEF_VFS_CONFIG_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -186,6 +186,6 @@
 //-------------------------------------------------------------------------//
 
 - 16-10-2004 :
-       - Initial version of this file.
+       - Dinand: Initial version of this file.
 
 -----------------------------------------------------------------------------*/
