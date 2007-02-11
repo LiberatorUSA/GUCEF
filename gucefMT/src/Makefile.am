@@ -15,3 +15,5 @@ libgucefMT_la_SOURCES = gucefMT.cpp \
                         gucefMT_dvmtoswrap.c \
                         gucefMT_DVRWLOCK.c \
                         gucefMT_MUTEX.c
+
+libhello_la_LDFLAGS    = -no-undefined -version-info 0:0:0
