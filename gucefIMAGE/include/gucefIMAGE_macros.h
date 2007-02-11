@@ -29,20 +29,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef MACROS_H
+#ifndef GUCEF_CORE_BASICMACROS_H
 #include "macros.h"             /* generic often used macros */
-#define MACROS_H
-#endif /* MACROS_H ? */
+#define GUCEF_CORE_BASICMACROS_H
+#endif /* GUCEF_CORE_BASICMACROS_H ? */
 
 #ifndef GUCEF_IMAGE_ETYPES_H
 #include "gucefIMAGE_ETypes.h"      /* simple types */
 #define GUCEF_IMAGE_ETYPES_H
 #endif /* GUCEF_IMAGE_ETYPES_H ? */
 
-#ifndef GUCEFIMAGE_CONFIG_H
+#ifndef GUCEF_IMAGE_CONFIG_H
 #include "gucefIMAGE_config.h"      /* Module build configuration */
-#define GUCEFIMAGE_CONFIG_H
-#endif /* GUCEFIMAGE_CONFIG_H ? */
+#define GUCEF_IMAGE_CONFIG_H
+#endif /* GUCEF_IMAGE_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -54,27 +54,23 @@
  *      Macros for dynamic linking or static linking. Use the switches in the
  *      config file to control the export type.
  */
-#undef EXPORT
-#ifdef GUCEF_MSWIN_BUILD
-  #ifdef GUCEF_IMAGE_BUILD_MODULE
-    #define EXPORT __declspec( dllexport )
-  #else
-    #define EXPORT __declspec( dllimport )
-  #endif /* BUILD_DLL */
+#undef GUCEF_EXPORTSPEC
+#ifdef GUCEF_IMAGE_BUILD_MODULE
+  #define GUCEF_EXPORTSPEC GUCEF_EXPORT
 #else
-  #define EXPORT   /* Linux does not need an additional directive */
-#endif /* GUCEF_MSWIN_BUILD ? */
+  #define GUCEF_EXPORTSPEC GUCEF_IMPORT
+#endif /* BUILD_DLL */
 
 #undef GUCEF_IMAGE_EXPORT_CPP
 #ifdef GUCEF_IMAGE_EXPORT_CPP_CODE
-  #define GUCEF_IMAGE_EXPORT_CPP EXPORT
+  #define GUCEF_IMAGE_EXPORT_CPP GUCEF_EXPORTSPEC
 #else
   #define GUCEF_IMAGE_EXPORT_CPP
 #endif /* GUCEF_IMAGE_EXPORT_CPP_CODE */
 
 #undef GUCEF_IMAGE_EXPORT_C 
 #ifdef GUCEF_IMAGE_EXPORT_C_CODE
-  #define GUCEF_IMAGE_EXPORT_C EXPORT
+  #define GUCEF_IMAGE_EXPORT_C GUCEF_EXPORTSPEC
 #else
   #define GUCEF_IMAGE_EXPORT_C
 #endif /* GUCEF_IMAGE_EXPORT_C_CODE */

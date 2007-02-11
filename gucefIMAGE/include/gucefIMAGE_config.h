@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GUCEFIMAGE_CONFIG_H
-#define GUCEFIMAGE_CONFIG_H
+#ifndef GUCEF_IMAGE_CONFIG_H
+#define GUCEF_IMAGE_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,7 +41,7 @@
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEFIMAGE_CONFIG_H */
+#endif /* GUCEF_IMAGE_CONFIG_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

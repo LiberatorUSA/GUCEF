@@ -634,7 +634,7 @@ CODECPLUGIN_Decode( void* plugdata         ,
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 CODECPLUGIN_GetCodecSetBegin( void* plugdata  , 
                               void** iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
@@ -645,7 +645,7 @@ CODECPLUGIN_GetCodecSetBegin( void* plugdata  ,
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
 CODECPLUGIN_GetCodecLink( void* plugdata               ,
                           void* iterator               , 
                           TCodecPluginLink** codecLink ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
@@ -669,7 +669,7 @@ CODECPLUGIN_GetCodecLink( void* plugdata               ,
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 CODECPLUGIN_FreeCodecLink( void* plugdata              , 
                            TCodecPluginLink* codecLink ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
@@ -679,7 +679,7 @@ CODECPLUGIN_FreeCodecLink( void* plugdata              ,
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 CODECPLUGIN_FreeCodecIterator( void* plugdata , 
                                void* iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
@@ -690,7 +690,7 @@ CODECPLUGIN_FreeCodecIterator( void* plugdata ,
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 CODECPLUGIN_GetCodecSetNextItem( void* plugdata ,
                                  void* iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
