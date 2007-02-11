@@ -85,7 +85,7 @@ class CTMailBox
     void Clear( void );
 
     void ClearAllExcept( const T& eventid );
-    
+
     void Delete( const T& eventid );
 
     bool HasMail( void ) const;
@@ -165,7 +165,7 @@ CTMailBox< T >::AddMail( const T& eventid                     ,
     else
     {
         entry.data = NULL;
-    }        
+    }
     m_mailStack.insert( m_mailStack.begin(), entry );
     m_datalock.Unlock();
 }
@@ -173,7 +173,7 @@ CTMailBox< T >::AddMail( const T& eventid                     ,
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-bool 
+bool
 CTMailBox< T >::GetMail( T& eventid         ,
                          CICloneable** data )
 {
@@ -183,27 +183,27 @@ CTMailBox< T >::GetMail( T& eventid         ,
         TMailElement entry( m_mailStack[ m_mailStack.size()-1 ] );
         eventid = entry.eventid;
         *data = entry.data;
-        
+
         m_mailStack.pop_back();
         m_datalock.Unlock();
         return true;
     }
-    *data = NULL;        
+    *data = NULL;
     m_datalock.Unlock();
-    return false;    
+    return false;
 }
 
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-void 
+void
 CTMailBox< T >::Clear( void )
 {
     m_datalock.Lock();
-    TMailStack::iterator i( m_mailStack.begin() );
+    typename TMailStack::iterator i( m_mailStack.begin() );
     while ( i != m_mailStack.end() )
     {
-        delete (*i).data;     
+        delete (*i).data;
         ++i;
     }
     m_mailStack.clear();
@@ -211,48 +211,48 @@ CTMailBox< T >::Clear( void )
 }
 
 /*--------------------------------------------------------------------------*/
-    
+
 template< typename T >
-void 
+void
 CTMailBox< T >::ClearAllExcept( const T& eventid )
 {
     m_datalock.Lock();
     TMailElement* entry;
-    TMailStack::iterator i( m_mailStack.begin() );
+    typename TMailStack::iterator i( m_mailStack.begin() );
     while ( i != m_mailStack.end() )
     {
         entry = &(*i);
         if ( entry->eventid != eventid )
         {
-            delete entry->data;            
+            delete entry->data;
             m_mailStack.erase( i );
-            i = m_mailStack.begin(); 
-            continue;   
-        }        
+            i = m_mailStack.begin();
+            continue;
+        }
         ++i;
     }
     m_datalock.Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
-    
+
 template< typename T >
-void 
+void
 CTMailBox< T >::Delete( const T& eventid )
 {
     m_datalock.Lock();
     TMailElement* entry;
-    TMailStack::iterator i( m_mailStack.begin() );
+    typename TMailStack::iterator i( m_mailStack.begin() );
     while ( i != m_mailStack.end() )
     {
         entry = &(*i);
         if ( entry->eventid == eventid )
         {
-            delete entry->data;            
+            delete entry->data;
             m_mailStack.erase( i );
             i = m_mailStack.begin();
-            continue;    
-        }        
+            continue;
+        }
         ++i;
     }
     m_datalock.Unlock();
@@ -261,7 +261,7 @@ CTMailBox< T >::Delete( const T& eventid )
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-bool 
+bool
 CTMailBox< T >::HasMail( void ) const
 {
     return m_mailStack.size() > 0;
