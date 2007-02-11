@@ -69,15 +69,19 @@ namespace IMAGE {
  */
 typedef enum TPixelStorageFormat
 {
-        PSF_RGB = 1                  ,
-        PSF_RGBA                     ,
-        PSF_BGR                      ,
-        PSF_BGRA                     ,
-        PSF_SINGLE_CHANNEL_RED       ,
-        PSF_SINGLE_CHANNEL_GREEN     ,
-        PSF_SINGLE_CHANNEL_BLUE      ,
-        PSF_SINGLE_CHANNEL_ALPHA     ,
-        PSF_SINGLE_CHANNEL_LUMINANCE
+    PSF_UNKNOWN = 0              ,
+    
+    PSF_RGB = 1                  ,
+    PSF_RGBA                     ,
+    PSF_BGR                      ,
+    PSF_BGRA                     ,
+    PSF_SINGLE_CHANNEL_RED       ,
+    PSF_SINGLE_CHANNEL_GREEN     ,
+    PSF_SINGLE_CHANNEL_BLUE      ,
+    PSF_SINGLE_CHANNEL_ALPHA     ,
+    PSF_SINGLE_CHANNEL_LUMINANCE ,
+    
+    PSF_COUNT
 };
 
 /*-------------------------------------------------------------------------*/

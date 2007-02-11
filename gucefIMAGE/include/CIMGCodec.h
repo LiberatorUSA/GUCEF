@@ -67,7 +67,7 @@ class CORE::CIOAccess;
  *  Each pixel segment is ordered with the bottom left pixel as the first 
  *  pixel in the segment stored as a series of horizontal scan lines.
  */
-class EXPORT_CPP CIMGCodec
+class GUCEF_IMAGE_EXPORT_CPP CIMGCodec
 {
     public:
     
@@ -102,7 +102,7 @@ class EXPORT_CPP CIMGCodec
     
     CORE::CString GetType( void ) const;
     
-    GUCEF_DEFINE_MSGEXCEPTION( EXPORT_CPP, EInvalidCodec );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_IMAGE_EXPORT_CPP, EInvalidCodec );
     
     private:
     

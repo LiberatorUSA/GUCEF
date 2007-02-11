@@ -585,6 +585,12 @@ CODECPLUGIN_Decode( void* plugdata         ,
                 /* activate the mip-map */
                 ilActiveMipmap( n );
                 
+                // Converted paletted images
+                if( ilGetInteger( IL_IMAGE_FORMAT ) == IL_COLOUR_INDEX )
+                {
+                    ilConvertImage( IL_BGRA, IL_UNSIGNED_BYTE );
+                }
+                
                 /* write the TImageMipMapLevelInfo section */
                 imageMMInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
                 imageMMInfo.channelComponentSize = 8; /* DevIL only supports UInt8 */

@@ -51,39 +51,12 @@
 //-------------------------------------------------------------------------*/
 
 /*
- *      O/S Detection macro.
- *      If you don't want to use the auto detection macro then set
- *      the MANUAL_OS_DEFINE define in the config file.
- */
-#ifndef MANUAL_OS_DEFINE
-  #if defined( WIN32 ) || defined( _WIN32 )
-    #define GUCEF_MSWIN_BUILD
-  #else
-    #define GUCEF_LINUX_BUILD
-  #endif 
-#endif /* MANUAL_OS_DEFINE ? */
-
-/*-------------------------------------------------------------------------*/
-
-/*
- *      Auto detection of debug mode
- */
-#ifndef MANUAL_DEBUG_MODE_DEFINE
-  #undef DEBUG_MODE
-  #if defined( _DEBUG )
-    #define DEBUG_MODE
-  #endif /* compiler DEBUG switches */
-#endif /* MANUAL_DEBUG_MODE_DEFINE ? */
-
-/*-------------------------------------------------------------------------*/
-
-/*
  *      Macros for dynamic linking or static linking. Use the switches in the
  *      config file to control the export type.
  */
 #undef EXPORT
 #ifdef GUCEF_MSWIN_BUILD
-  #ifdef BUILD_GUCEFIMAGE_DLL
+  #ifdef GUCEF_IMAGE_BUILD_MODULE
     #define EXPORT __declspec( dllexport )
   #else
     #define EXPORT __declspec( dllimport )
@@ -92,19 +65,19 @@
   #define EXPORT   /* Linux does not need an additional directive */
 #endif /* GUCEF_MSWIN_BUILD ? */
 
-#undef EXPORT_CPP
-#ifdef EXPORT_CPP_CODE
-  #define EXPORT_CPP EXPORT
+#undef GUCEF_IMAGE_EXPORT_CPP
+#ifdef GUCEF_IMAGE_EXPORT_CPP_CODE
+  #define GUCEF_IMAGE_EXPORT_CPP EXPORT
 #else
-  #define EXPORT_CPP
-#endif /* EXPORT_CPP_CODE */
+  #define GUCEF_IMAGE_EXPORT_CPP
+#endif /* GUCEF_IMAGE_EXPORT_CPP_CODE */
 
-#undef EXPORT_C 
-#ifdef EXPORT_C_CODE
-  #define EXPORT_C EXPORT
+#undef GUCEF_IMAGE_EXPORT_C 
+#ifdef GUCEF_IMAGE_EXPORT_C_CODE
+  #define GUCEF_IMAGE_EXPORT_C EXPORT
 #else
-  #define EXPORT_C
-#endif /* EXPORT_C_CODE */
+  #define GUCEF_IMAGE_EXPORT_C
+#endif /* GUCEF_IMAGE_EXPORT_C_CODE */
 
 /*-------------------------------------------------------------------------*/
 

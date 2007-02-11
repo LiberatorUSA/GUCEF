@@ -61,7 +61,7 @@ class CDynamicBuffer;
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Abstract base class for media independant recource access
+ *      Abstract base class for media independent resource access
  */
 class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
 {
@@ -86,7 +86,7 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
         virtual void Close( void ) = 0;
 
         /**
-         *      is the recource opened for reading ?
+         *      is the resource opened for reading ?
          */
         virtual bool Opened( void ) const = 0;
 
@@ -98,8 +98,8 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
         virtual CString ReadLine( void ) = 0;
                 
         /**
-         *      reads data untill the specified delimiter is reached.
-         *      The data is written into the destination buffer untill the
+         *      reads data until the specified delimiter is reached.
+         *      The data is written into the destination buffer until the
          *      delimiter is reached or the end of the file is reached.
          *      The delimiter itself is not written to the destination buffer
          *
@@ -115,8 +115,8 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
                            UInt32 delimsize      );
                            
         /**
-         *      Skips bytes untill the delimiter is reached or
-         *      untill the end of the file is reached.
+         *      Skips bytesuntil the delimiter is reached or
+         *      until the end of the file is reached.
          *      the actual number of bytes skipped is returned.
          *
          *      @param delimiter the delimiter bytes
@@ -127,7 +127,7 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
                            UInt32 delimsize      );                                   
 
         /**
-         *      Reads a string from the recource
+         *      Reads a string from the resource
          */
         virtual CString ReadString( void ) = 0;
 
@@ -150,19 +150,21 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
                               UInt32 esize        ,
                               UInt32 elements     ) = 0;
 
+        virtual UInt32 Write( CIOAccess& sourceData );
+
         /**
          *      Get the current offset in bytes
          */
         virtual UInt32 Tell( void ) const = 0;
 
         /**
-         *      jump to a different part of the recource
+         *      jump to a different part of the resource
          */
         virtual Int32 Seek( UInt32 offset ,
                             Int32 origin  ) = 0;
 
         /**
-         *      jump to the given offset in the recource
+         *      jump to the given offset in the resource
          */
         virtual UInt32 Setpos( UInt32 position ) = 0;
 
@@ -172,24 +174,24 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
         virtual char GetChar( void ) = 0;
 
         /**
-         *      are we at the end of the recource ?
+         *      are we at the end of the resource ?
          */
         virtual bool Eof( void ) const = 0;
         
         /**
          *      Is the only allowed access method reading ?
-         *      If true the recource cannot be written to
+         *      If true the resource cannot be written to
          */
         virtual bool IsReadOnly( void ) const = 0;
         
         /**
          *      Is the only allowed access method writing ?
-         *      if true the recource cannot be read.
+         *      if true the resource cannot be read.
          */
         virtual bool IsWriteOnly( void ) const = 0;
         
         /**
-         *      Are both read AND write operations possible on the recource ?         
+         *      Are both read AND write operations possible on the resource ?         
          */
         virtual bool IsReadAndWrite( void ) const = 0;                
         
@@ -200,13 +202,11 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
         virtual bool IsValid( void ) = 0;
         
         /**
-         *  @return returns the size of the recource if possible. returns -1 if the size cannot be determined
+         *  @return returns the size of the resource if possible. returns -1 if the size cannot be determined
          */
         virtual Int32 GetSize( void ) const = 0;
 
         virtual TIOAccess* CStyleAccess( void );
-        
-        UInt32 Write( CIOAccess& sourceData );
         
         private:
         

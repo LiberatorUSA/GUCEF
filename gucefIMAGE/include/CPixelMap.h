@@ -49,7 +49,7 @@ namespace IMAGE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CPixelMap
+class GUCEF_IMAGE_EXPORT_CPP CPixelMap
 {
     public:
     

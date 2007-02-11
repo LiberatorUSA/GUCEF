@@ -61,13 +61,14 @@ namespace IMAGE {
  *  capable of having multiple mipmapping levels. Pixel maps can be shared between
  *  image objects if desired.
  */
-class EXPORT_CPP CImage
+class GUCEF_IMAGE_EXPORT_CPP CImage
 {
     public :
 
     typedef CORE::CTSharedPtr< CImage >    TImagePtr;
     typedef CORE::CTSharedPtr< CPixelMap > TPixelMapPtr;
     typedef std::vector< TPixelMapPtr >    TMipMapList;
+    typedef TMipMapList                    TFrame;
     typedef std::vector< TMipMapList >     TFrameList;
         
     public:    
@@ -130,7 +131,7 @@ class EXPORT_CPP CImage
      */
     void Clear( void );
     
-    GUCEF_DEFINE_MSGEXCEPTION( EXPORT_CPP, EInvalidIndex );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_IMAGE_EXPORT_CPP, EInvalidIndex );
 
     private :
     CImage( const CImage& src ); /* @TODO: not implemented yet */

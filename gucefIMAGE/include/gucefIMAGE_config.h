@@ -35,7 +35,9 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/* this module currently has no build switches of it's own */
+/* Switches for the export of C++ and/or C code */
+#define GUCEF_IMAGE_EXPORT_CPP_CODE
+#define GUCEF_IMAGE_EXPORT_C_CODE
 
 /*-------------------------------------------------------------------------*/
 

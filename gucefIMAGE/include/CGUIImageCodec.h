@@ -54,7 +54,7 @@ namespace IMAGE {
  *  GUCEF. 'gui' stands for Galaxy Unlimited Image. The output of the codec
  *  is identical to the input because the input is already in the desired format.
  */
-class EXPORT_CPP CGUIImageCodec : public CORE::CICodec
+class GUCEF_IMAGE_EXPORT_CPP CGUIImageCodec : public CORE::CICodec
 {
     public:
     
