@@ -924,20 +924,24 @@ File_Exists( const char *filename )
  */
 UInt32
 GetUpCount( const char* pathstr ,
-            UInt32 pstrlen      )
+            UInt32 pstrlen      ,
+            UInt32* offset      )
 {
-        const char* cp = pathstr;
-        UInt32 i, max = pstrlen / 7;
-        
-        for ( i=0; i<max; ++i )
-        {
-                if ( memcmp( cp, "$UPDIR$", 7 ) != 0 )
-                {                        
-                        return i;        
-                }
-                cp += 7;
+    const char* cp = pathstr;
+    Int32 i, max = pstrlen - 7;
+    UInt32 count=0;
+    
+    *offset = 0;
+    for ( i=0; i<max; ++i )
+    {
+        if ( memcmp( cp, "$UPDIR$", 7 ) == 0 )
+        {                        
+            ++count;
+            *offset = i+7;        
         }
-        return 0;
+        ++cp;
+    }
+    return count;
 }
 
 /*-------------------------------------------------------------------------*/            
@@ -963,7 +967,7 @@ Relative_Path( const char *pathstr ,
         UInt32 tagfound = 0;
         char tmpbuffer[ MAX_DIR_LENGTH ];
         const char* addition = "\0"; 
-        UInt32 i, upcount=0, pstrlen = (UInt32) strlen( pathstr );
+        UInt32 i, upOffset=0, upcount=0, pstrlen = (UInt32) strlen( pathstr );
         
         /*
          *      Check for the root dir tags that are to be prefixed
@@ -976,8 +980,9 @@ Relative_Path( const char *pathstr ,
                                      MAX_DIR_LENGTH );
                         Strip_Filename( tmpbuffer );             
                         upcount = GetUpCount( pathstr+11 ,
-                                              pstrlen-11 );                                              
-                        addition = (pathstr+(11+(upcount*7)));
+                                              pstrlen-11 ,
+                                              &upOffset  );                                              
+                        addition = pathstr+11+upOffset;
                         tagfound = 1;
                 }
                 else
@@ -988,8 +993,9 @@ Relative_Path( const char *pathstr ,
                                 Get_Current_Dir( tmpbuffer      ,  
                                                  MAX_DIR_LENGTH );
                                 upcount = GetUpCount( pathstr+12 ,
-                                                      pstrlen-12 );
-                                addition = (pathstr+(12+(upcount*7))); 
+                                                      pstrlen-12 ,
+                                                      &upOffset  );
+                                addition = pathstr+12+upOffset; 
                                 tagfound = 1;                    
                         }
                 }
