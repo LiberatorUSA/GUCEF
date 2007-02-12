@@ -24,6 +24,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <map>
+
 #include "CIConfigurable.h"
 #include "CDVString.h"
 

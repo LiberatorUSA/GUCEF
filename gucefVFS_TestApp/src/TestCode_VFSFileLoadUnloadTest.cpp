@@ -98,7 +98,7 @@ PerformVFSFileLoadUnloadTest( void )
         }
         
         // We will attempt to load a number of files in sequence
-        VFS::UInt32 maxFiles = (VFS::UInt32) fileList.size() > 5 ? 5 : fileList.size();
+        VFS::UInt32 maxFiles = (VFS::UInt32) fileList.size() > 5 ? 5 : (VFS::UInt32) fileList.size();
         std::vector< VFS::CVFS::CVFSHandlePtr > fileHandles;
         for ( VFS::UInt32 i=0; i<maxFiles; ++i )
         {

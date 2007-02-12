@@ -66,16 +66,6 @@
 #define GUCEFVFS_MACROS_H
 #endif /* GUCEFVFS_MACROS_H ? */
 
-#ifndef CFPCODECPLUGINMANAGER_H
-#include "CFPCodecPluginManager.h"   /* manager for codecs loaded as FPCodec plugins */
-#define CFPCODECPLUGINMANAGER_H
-#endif /* CFPCODECPLUGINMANAGER_H ? */
-
-#ifndef CFILEPACKAGE_H
-#include "CFilePackage.h"        /* class for storaging package info */
-#define CFILEPACKAGE_H
-#endif /* CFILEPACKAGE_H ? */
-
 #include "CVFS.h"                /* definition of the file implemented here */
 
 #ifdef ACTIVATE_MEMORY_MANAGER
