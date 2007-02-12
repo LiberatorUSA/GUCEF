@@ -88,16 +88,17 @@ PerformVFSFileLoadUnloadTest( void )
         
         // We will use the root directory itself and ask for a list with no recursive
         // dir iteration and no filter.
-        CORE::CStringList fileList = vfs->GetList( "", false, "" );
+        VFS::CVFS::TStringList fileList;
+        vfs->GetList( fileList, "", false, "" );
         
-        if ( fileList.GetCount() == 0 )
+        if ( fileList.size() == 0 )
         {
             // We should have at least 1 file in that dir
             ERRORHERE;
         }
         
         // We will attempt to load a number of files in sequence
-        VFS::UInt32 maxFiles = fileList.GetCount() > 5 ? 5 : fileList.GetCount();
+        VFS::UInt32 maxFiles = (VFS::UInt32) fileList.size() > 5 ? 5 : fileList.size();
         std::vector< VFS::CVFS::CVFSHandlePtr > fileHandles;
         for ( VFS::UInt32 i=0; i<maxFiles; ++i )
         {
@@ -111,18 +112,20 @@ PerformVFSFileLoadUnloadTest( void )
             if ( filePtr == NULL )
             {
                 // We failed to load a file even though we know it is there
+                // make sure the file is not being written to because that would invalidate this test
                 ERRORHERE;
             }
             
+            printf( "Loaded file %s\n", filePtr->GetFilename().C_String() );
             fileHandles.push_back( filePtr );
         }
         
         // Now we try to unload the files we loaded in sequence
-        while ( !fileHandles.empty() )
+       // while ( !fileHandles.empty() )
         {
             // unloading should work automatically when we get rid of our
-            // file handles
-            fileHandles.pop_back();
+            /// file handles
+           // fileHandles.pop_back();
         }
     }
     catch ( ... )

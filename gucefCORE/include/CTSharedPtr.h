@@ -98,6 +98,8 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
      */
     CTSharedPtr( void );
     
+    CTSharedPtr( const int NULLvalue );
+    
     CTSharedPtr( T* ptr                               ,
                  TDestructor* objectDestructor = NULL );
  
@@ -205,6 +207,18 @@ CTSharedPtr< T >::CTSharedPtr( void )
 {TRACE;
     // Note that if this constructor is used an assignment is required at
     // a later time to initialize the shared pointer
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+CTSharedPtr< T >::CTSharedPtr( const int NULLvalue )
+    : CTBasicSharedPtr< T >()
+{TRACE;
+
+    // Note that if this constructor is used an assignment is required at
+    // a later time to initialize the shared pointer
+    assert( NULLvalue == NULL );    
 }
 
 /*-------------------------------------------------------------------------*/

@@ -50,10 +50,12 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CDynamicBufferAccess::CDynamicBufferAccess( CDynamicBuffer& buffer )
-        : CIOAccess()         ,
-          m_buffer( &buffer ) ,
-          m_carat( 0 )
+CDynamicBufferAccess::CDynamicBufferAccess( CDynamicBuffer* buffer                               ,
+                                            const bool deleteBufferUponDestruction /* = false */ )
+        : CIOAccess()                                                  ,
+          m_buffer( buffer )                                           ,
+          m_carat( 0 )                                                 ,
+          m_deleteBufferUponDestruction( deleteBufferUponDestruction )
 {TRACE;
         
     assert( m_buffer != NULL );                    
@@ -63,7 +65,14 @@ CDynamicBufferAccess::CDynamicBufferAccess( CDynamicBuffer& buffer )
 
 CDynamicBufferAccess::~CDynamicBufferAccess()
 {TRACE;
-        Close();    
+
+    Close();
+
+    if ( m_deleteBufferUponDestruction )
+    {
+        delete m_buffer;
+        m_buffer = NULL;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

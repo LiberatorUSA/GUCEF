@@ -73,77 +73,91 @@ VFS_NAMESPACE_BEGIN
 class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
                         private CORE::CTDynamicDestructorBase< CVFSHandle >
 {
-        public:
-        
-        typedef CORE::CTBasicSharedPtr< CVFSHandle > CVFSHandlePtr;
-        
-        static CVFS* Instance( void );
-        
-        void AddRoot( const CORE::CString& rootdir ,
-                      const bool writeable = false );
-        
-        CVFSHandlePtr GetFile( const CORE::CString& file    ,
-                               UInt32& errorcode            ,
-                               const char* mode = "rb"      ,
-                               const bool overwrite = false );
-                                      
-        CORE::CStringList GetList( const CORE::CString& location    , 
-                                   bool recursive = false           ,
-                                   const CORE::CString& filter = "" ) const;
-        
-        bool FileExists( const CORE::CString& file ) const;
+    public:
+    
+    typedef CORE::CTBasicSharedPtr< CVFSHandle > CVFSHandlePtr;
+    typedef std::vector< CORE::CString >         TStringList;
+    
+    static CVFS* Instance( void );
+    
+    void AddRoot( const CORE::CString& rootdir ,
+                  const bool writeable = false );
+    
+    CVFSHandlePtr GetFile( const CORE::CString& file    ,
+                           UInt32& errorcode            ,
+                           const char* mode = "rb"      ,
+                           const bool overwrite = false );
+                                  
+    void GetList( TStringList& outputList          ,
+                  const CORE::CString& location    , 
+                  bool recursive = false           ,
+                  const CORE::CString& filter = "" ) const;
+    
+    bool FileExists( const CORE::CString& file ) const;
 
-        void SetMemloadSize( UInt32 bytesize );
-        
-        UInt32 GetMemloadSize( void ) const;
-        
-        /**
-         *      Attempts to store the given tree in the file
-         *      given according to the method of the codec metadata
-         *
-         *      @param tree the data tree you wish to store
-         *      @return wheter storing the tree was successfull
-         */
-        virtual bool SaveConfig( CORE::CDataNode& tree );
-                                    
-        /**
-         *      Attempts to load data from the given file to the 
-         *      root node given. The root data will be replaced 
-         *      and any children the node may already have will be deleted.
-         *
-         *      @param treeroot pointer to the node that is to act as root of the data tree
-         *      @return whether building the tree from the given file was successfull.
-         */                                    
-        virtual bool LoadConfig( const CORE::CDataNode& treeroot );                                             
+    void SetMemloadSize( UInt32 bytesize );
+    
+    UInt32 GetMemloadSize( void ) const;
+    
+    /**
+     *      Attempts to store the given tree in the file
+     *      given according to the method of the codec metadata
+     *
+     *      @param tree the data tree you wish to store
+     *      @return wheter storing the tree was successfull
+     */
+    virtual bool SaveConfig( CORE::CDataNode& tree );
+                                
+    /**
+     *      Attempts to load data from the given file to the 
+     *      root node given. The root data will be replaced 
+     *      and any children the node may already have will be deleted.
+     *
+     *      @param treeroot pointer to the node that is to act as root of the data tree
+     *      @return whether building the tree from the given file was successfull.
+     */                                    
+    virtual bool LoadConfig( const CORE::CDataNode& treeroot );                                             
 
-        private:
-        friend class CGUCEFVFSModule;
-        
-        static void Deinstance( void );
-        
-        private:
-        
-        virtual void DestroyObject( CVFSHandle* sharedPointer );
+    private:
+    friend class CGUCEFVFSModule;
+    
+    static void Deinstance( void );
+    
+    private:
+    
+    virtual void DestroyObject( CVFSHandle* sharedPointer );
 
-        private:
-        static CVFS* _instance;
-        static MT::CMutex _datalock;
-        
-        CVFS( void );
-        CVFS( const CVFS& src );
-        virtual ~CVFS();
-        CVFS& operator=( const CVFS& src );
-        
-        CVFSHandle* LoadFromDiskCache( const CORE::CString& file, UInt32& errorcode );
-        CVFSHandle* LoadFromPack( const CORE::CString& file, UInt32& errorcode );
-        CVFSHandle* LoadFromDisk( const CORE::CString& file, UInt32& errorcode, const char* mode = "rb", const bool overwrite = false );
-        void GetListFromRoot( const CORE::CString& root, bool recursive, const CORE::CString& filter, CORE::CStringList& list ) const;
-        bool FilterValidation( const CORE::CString& filename, const CORE::CString& filter ) const; 
-        
-        CORE::CDynamicArray m_rootlist;
-        CORE::CDynamicArray _packlist;
-        CORE::CDynamicArray _loaded;
-        UInt32 _maxmemloadsize;
+    private:
+    
+    static CVFS* _instance;
+    static MT::CMutex m_datalock;
+    
+    CVFS( void );
+    CVFS( const CVFS& src );
+    virtual ~CVFS();
+    CVFS& operator=( const CVFS& src );
+
+    CVFSHandle* LoadFromDisk( const CORE::CString& file, UInt32& errorcode, const char* mode = "rb", const bool overwrite = false );
+    void GetListFromRoot( const CORE::CString& root, bool recursive, const CORE::CString& filter, TStringList& outputList ) const;
+    bool FilterValidation( const CORE::CString& filename, const CORE::CString& filter ) const; 
+
+    private:
+
+    struct SRootDir
+    {
+        CORE::CString abspath;
+        CORE::CString path;
+        bool writeable;
+    };
+    typedef struct SRootDir TRootDir;
+    
+    typedef std::vector< TRootDir >                      TRootList;
+    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer >    TDynamicBufferPtr;
+    typedef std::map< CORE::CString, TDynamicBufferPtr > TFileMemCache;
+    
+    TRootList m_rootlist;
+    TFileMemCache m_diskCacheList;
+    UInt32 _maxmemloadsize;
 };
 
 /*-------------------------------------------------------------------------//

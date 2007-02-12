@@ -405,6 +405,18 @@ CIOAccess::CStyleAccess( void )
 /*-------------------------------------------------------------------------*/
 
 UInt32
+CIOAccess::Write( const void* srcdata ,
+                  UInt32 esize        ,
+                  UInt32 elements     )
+{TRACE;
+
+    // Dummy at this level, override to implement
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
 CIOAccess::Write( CIOAccess& sourceData )
 {TRACE;
 
@@ -415,9 +427,15 @@ CIOAccess::Write( CIOAccess& sourceData )
     while ( !sourceData.Eof() )
     {
         byteCount = sourceData.Read( readBuffer.GetBufferPtr(), 1, 1024 );
-        Write( readBuffer.GetBufferPtr(), byteCount, 1 );
-        
-        totalByteCount += byteCount;
+        if ( byteCount > 0 )
+        {
+            Write( readBuffer.GetBufferPtr(), 1, byteCount );
+            totalByteCount += byteCount;
+        }
+        else
+        {
+            return totalByteCount;
+        }
     }
     
     return totalByteCount;

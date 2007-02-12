@@ -181,22 +181,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\CFilePackage.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CFPCodecPlugin.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CFPCodecPluginManager.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CFPCodecRegistry.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\CGUCEFVFSModule.cpp"
 				>
 			</File>
@@ -222,30 +206,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath="..\..\include\CFilePackage.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CFPCodec.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CFPCodecPlugin.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CFPCodecPluginManager.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CFPCodecPluginRef.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CFPCodecRegistry.h"
-				>
-			</File>
 			<File
 				RelativePath="..\..\include\CGUCEFVFSModule.h"
 				>

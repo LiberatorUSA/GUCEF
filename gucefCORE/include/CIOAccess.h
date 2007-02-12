@@ -81,7 +81,7 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
         virtual void Open( void ) = 0;
 
         /**
-         *      close the recource
+         *      close the resource
          */
         virtual void Close( void ) = 0;
 
@@ -132,7 +132,7 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
         virtual CString ReadString( void ) = 0;
 
         /**
-         *      Attempts to read the specified number of bytes from the recourse
+         *      Attempts to read the specified number of bytes from the resource
          */
         virtual UInt32 Read( void *dest      ,
                              UInt32 esize    ,
@@ -143,12 +143,12 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
                      UInt32 elements      );
                              
         /**
-         *      Attempts to write the specified number of bytes to the recourse
+         *      Attempts to write the specified number of bytes to the resource
          *      using srcdata as the data source.
          */        
         virtual UInt32 Write( const void* srcdata ,
                               UInt32 esize        ,
-                              UInt32 elements     ) = 0;
+                              UInt32 elements     );
 
         virtual UInt32 Write( CIOAccess& sourceData );
 

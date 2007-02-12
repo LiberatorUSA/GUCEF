@@ -196,7 +196,8 @@ CFileAccess::GetChar( void )
 bool 
 CFileAccess::Eof( void ) const
 {TRACE;
-        return feof( _file ) == 1;
+
+    return feof( _file ) != 0;
 }
 
 /*-------------------------------------------------------------------------*/

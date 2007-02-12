@@ -54,7 +54,8 @@ class GUCEFCORE_EXPORT_CPP CDynamicBufferAccess : public CIOAccess
 {
     public:
     
-    CDynamicBufferAccess( CDynamicBuffer& buffer );
+    CDynamicBufferAccess( CDynamicBuffer* buffer                         ,
+                          const bool deleteBufferUponDestruction = false );
 
     virtual ~CDynamicBufferAccess();
 
@@ -158,6 +159,7 @@ class GUCEFCORE_EXPORT_CPP CDynamicBufferAccess : public CIOAccess
     
     UInt32 m_carat;
     CDynamicBuffer* m_buffer;
+    bool m_deleteBufferUponDestruction;
 };
 
 /*-------------------------------------------------------------------------//

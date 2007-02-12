@@ -28,16 +28,6 @@
 
 #include "CGUCEFVFSModule.h"  /* definition of the class implemented here */
 
-#ifndef CFPCODECREGISTRY_H
-#include "CFPCodecRegistry.h"
-#define CFPCODECREGISTRY_H
-#endif /* CFPCODECREGISTRY_H ? */
-
-#ifndef CFPCODECPLUGINMANAGER_H
-#include "CFPCodecPluginManager.h"
-#define CFPCODECPLUGINMANAGER_H 
-#endif /* CFPCODECPLUGINMANAGER_H ? */
-
 #ifndef CVFS_H
 #include "CVFS.h"
 #define CVFS_H
@@ -79,8 +69,6 @@ CGUCEFVFSModule::Load( void )
         /*
          *      Instantiate all singletons
          */
-        CFPCodecRegistry::Instance();
-        CFPCodecPluginManager::Instance();
         CVFS::Instance();
         
         /*
@@ -99,9 +87,7 @@ CGUCEFVFSModule::Unload( void )
         
         CVFSURLHandler::Unregister();
         
-        CVFS::Deinstance();        
-        CFPCodecPluginManager::Deinstance();
-        CFPCodecRegistry::Deinstance();
+        CVFS::Deinstance();
         return true;
 }
 
