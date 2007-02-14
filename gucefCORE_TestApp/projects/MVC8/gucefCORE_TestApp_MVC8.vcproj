@@ -186,12 +186,28 @@
 				RelativePath="..\..\src\gucefCORE_TestApp_main.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\TestNotifierObserver.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\TestSharedPtr.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\src\TestNotifierObserver.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\TestSharedPtr.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
