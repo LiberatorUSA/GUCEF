@@ -136,7 +136,7 @@ public:
         }
         else
         {
-            printf( "This is observer %d calling: Recieved event \"%s\" with id %d\n", m_index, CNotificationIDRegistry::Instance()->Lookup(eventid).c_str(), eventid );
+            printf( "This is observer %d calling: Recieved event \"%s\" with id %d\n", m_index, CNotificationIDRegistry::Instance()->Lookup(eventid).C_String(), eventid );
             m_eventCache[ m_index ] = eventid;        
         }            
     }
@@ -219,7 +219,7 @@ PerformNotifierObserverTests( void )
         {
             ERRORHERE;
         }
-        CEvent modifyEvent = registry->Lookup( CNotifier::ModifyEvent.GetName().STL_String() );
+        CEvent modifyEvent = registry->Lookup( CNotifier::ModifyEvent.GetName() );
         if ( !modifyEvent.IsInitialized() )
         {
             ERRORHERE;

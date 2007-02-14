@@ -59,10 +59,19 @@ WinMain( HINSTANCE hinstance     ,
                 
         try 
         {       
+                CString* x = new CString( "x" );
                 CString w("w");
                 w = NULL;
                 w = "aap";
-        
+                
+                std::string* stlStr = new std::string( "stlStr" );
+                w = *stlStr;
+                *stlStr = "1234567";
+                delete stlStr;
+                stlStr = new std::string( *x );
+                delete x;
+                delete stlStr;
+                
                 CString a("a"), b("b"), c("c"), d, e, f;
         
                 d = a;

@@ -90,7 +90,7 @@ CString::CString( const std::string& src )
     {
         m_length = (UInt32)src.size();
         m_string = new char[ m_length+1 ];
-        assert( m_string );                                                                                
+        assert( m_string != NULL );                                                                                
         memcpy( m_string, src.c_str(), m_length+1 );
     }                
 }
@@ -291,7 +291,7 @@ CString::operator std::string() const
     
     if ( m_length > 0 )
     {
-        return std::string( m_string );
+        return std::string( m_string, m_length );
     }
     return std::string();
 }
@@ -408,7 +408,7 @@ CString::STL_String( void ) const
 
     if ( m_string > 0 )
     {
-        return std::string( m_string );
+        return std::string( m_string, m_length );
     }
     return std::string();
 }

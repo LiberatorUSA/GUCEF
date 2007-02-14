@@ -82,7 +82,7 @@ class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
      *  @throw EKeyAlreadyRegistered thrown when the given key is already registered and okIfAlreadyRegistered is false or an empty key string is given
      *  @return unique notification id for the given key identifier
      */
-    CEvent Register( const std::string& keyvalue              ,
+    CEvent Register( const CString& keyvalue                  ,
                      const bool okIfAlreadyRegistered = false );
     
     /**
@@ -92,7 +92,7 @@ class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
      *  @param okIfUnknownKeyGiven indicates whether an unregister action using an unknown key string identifier should be handled silently
      *  @throw EUnknownKey thrown when the given key string is unknown and okIfUnknownKeyGiven is false or an empty key string is given
      */
-    void Unregister( const std::string& keyvalue            ,
+    void Unregister( const CString& keyvalue                ,
                      const bool okIfUnknownKeyGiven = false );
     
     /**
@@ -103,7 +103,7 @@ class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
      *  @param registerUnknown Whether or not to register the key if it does not yet exist.
      *  @throw EUnknownKey thrown when the requested item is not found and registerUnknown == false.
      */
-    CEvent Lookup( const std::string& keyvalue        ,
+    CEvent Lookup( const CString& keyvalue            ,
                    const bool registerUnknown = false );    
     
     /**
@@ -118,9 +118,9 @@ class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
      *  @throw EUnknownEventID thrown when the given event id is unknown
      *  @return the notification event identifier for the given id.
      */
-    std::string Lookup( const CEvent& eventID ) const;
+    CString Lookup( const CEvent& eventID ) const;
     
-    bool IsRegistered( const std::string& keyvalue ) const;    
+    bool IsRegistered( const CString& keyvalue ) const;    
 
     GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EKeyAlreadyRegistered );
     GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EEmptyKeyString );
@@ -148,7 +148,7 @@ class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
     static CNotificationIDRegistry* m_instance;
     static MT::CMutex m_dataLock;
     
-    typedef std::map<const std::string,UInt32> TRegistryList;
+    typedef std::map<const CString,UInt32> TRegistryList;
     TRegistryList m_list;
     UInt32 m_lastid;
 };

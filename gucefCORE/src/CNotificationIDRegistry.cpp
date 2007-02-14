@@ -29,7 +29,6 @@
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
-#define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_CPP
 #include "CNotificationIDRegistry.h"
 
 /*-------------------------------------------------------------------------//
@@ -135,13 +134,13 @@ CNotificationIDRegistry::Deinstance( void )
 /*-------------------------------------------------------------------------*/
 
 CEvent 
-CNotificationIDRegistry::Register( const std::string& keyvalue                   ,
+CNotificationIDRegistry::Register( const CString& keyvalue                       ,
                                    const bool okIfAlreadyRegisterd /* = false */ )
 {TRACE;
     
     m_dataLock.Lock();
     
-    if ( (size_t)0 != keyvalue.length() )
+    if ( keyvalue.Length() > 0 )
     {    
         TRegistryList::const_iterator i = m_list.find( keyvalue );
         if ( i == m_list.end() )
@@ -202,13 +201,13 @@ CNotificationIDRegistry::Register( const std::string& keyvalue                  
 /*-------------------------------------------------------------------------*/
     
 void 
-CNotificationIDRegistry::Unregister( const std::string& keyvalue                  ,
+CNotificationIDRegistry::Unregister( const CString& keyvalue                      ,
                                      const bool okIfUnknownKeyGiven /* = false */ )
 {TRACE;
 
     m_dataLock.Lock();
 
-    if ( keyvalue.size() > 0 )
+    if ( keyvalue.Length() > 0 )
     {
         TRegistryList::iterator i = m_list.find( keyvalue );
         if ( i != m_list.end() )
@@ -233,7 +232,7 @@ CNotificationIDRegistry::Unregister( const std::string& keyvalue                
 /*-------------------------------------------------------------------------*/
 
 CEvent 
-CNotificationIDRegistry::Lookup( const std::string& keyvalue ,
+CNotificationIDRegistry::Lookup( const CString& keyvalue     ,
                                  const bool registerUnknown  )
 {TRACE;
 
@@ -260,7 +259,7 @@ CNotificationIDRegistry::Lookup( const std::string& keyvalue ,
 
 /*-------------------------------------------------------------------------*/
 
-std::string 
+CString 
 CNotificationIDRegistry::Lookup( const CEvent& eventID ) const
 {TRACE;
 
@@ -290,7 +289,7 @@ CNotificationIDRegistry::Lookup( const CEvent& eventID ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CNotificationIDRegistry::IsRegistered( const std::string& keyvalue ) const
+CNotificationIDRegistry::IsRegistered( const CString& keyvalue ) const
 {TRACE;
 
     m_dataLock.Lock();
