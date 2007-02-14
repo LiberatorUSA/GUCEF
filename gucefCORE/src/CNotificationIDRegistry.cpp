@@ -109,7 +109,7 @@ CNotificationIDRegistry::Instance( void )
 
     m_dataLock.Lock();
 
-    if ( !m_instance )
+    if ( m_instance == NULL )
     {
         m_instance = new CNotificationIDRegistry();
     }

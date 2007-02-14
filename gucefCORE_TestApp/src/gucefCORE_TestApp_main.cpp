@@ -58,11 +58,7 @@ WinMain( HINSTANCE hinstance     ,
         using namespace GUCEF::CORE;
                 
         try 
-        {
-                PerformSharedPtrTests();
-                
-                PerformNotifierObserverTests();
-                
+        {       
                 CString w("w");
                 w = NULL;
                 w = "aap";
@@ -76,18 +72,22 @@ WinMain( HINSTANCE hinstance     ,
                 e = NULL;
                 f = NULL;
         
-                CPluginControl::Instance()->SetPluginDir( "$MODULEDIR$\\plugins" );
-                CPluginControl::Instance()->LoadAll();
+               // CPluginControl::Instance()->SetPluginDir( "$MODULEDIR$\\plugins" );
+               // CPluginControl::Instance()->LoadAll();
         
-                CConfigStore* cs = CConfigStore::Instance();
+              //  CConfigStore* cs = CConfigStore::Instance();
                 
                 //cs->SetConfigFile( "GUC_cfg.xml" );
                 //cs->SaveConfig( "GUCCONFIG" );
                 
                 
                 //cs->LoadConfig();
+
+                //PerformSharedPtrTests();
+                
+                PerformNotifierObserverTests();
         
-                cs->SaveConfig( "GUCCONFIG" ); 
+               // cs->SaveConfig( "GUCCONFIG" ); 
                 
                 return 1;                                                                            
         }

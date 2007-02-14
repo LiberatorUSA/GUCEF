@@ -60,8 +60,8 @@ WinMain( HINSTANCE hinstance     ,
         try 
         {                               
                 PerformPingTest();
-                //SetupClientServerTest();
-                //SetupSimpleTCPClient("httpd.apache.org", 80, "GET /\r\n");
+                SetupClientServerTest();
+                SetupSimpleTCPClient("httpd.apache.org", 80, "GET /\r\n");
                 
                 return 1;                                                                            
         }

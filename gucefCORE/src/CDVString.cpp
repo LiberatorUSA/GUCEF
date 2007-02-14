@@ -68,8 +68,15 @@ CString::CString( void )
 CString::CString( const CString &src )
         : m_string( NULL ) ,
           m_length( 0 )
-{TRACE;        
-        *this = src;
+{TRACE;
+
+    if ( src.m_length > 0 )
+    {
+        m_string = new char[ src.m_length+1 ];
+        assert( m_string != NULL );
+        m_length = src.m_length;
+        memcpy( m_string, src.m_string, m_length+1 );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -79,7 +86,7 @@ CString::CString( const std::string& src )
           m_length( 0 )
 {TRACE;
     
-    if ( src.size() )
+    if ( src.size() > 0 )
     {
         m_length = (UInt32)src.size();
         m_string = new char[ m_length+1 ];
@@ -95,7 +102,7 @@ CString::CString( const char *src )
           m_length( 0 )
 {TRACE;
     
-    if ( src )
+    if ( src != NULL )
     {
         m_length = (UInt32)strlen( src );
         m_string = new char[ m_length+1 ];
@@ -162,7 +169,7 @@ CString::operator=( const CString &src )
         m_string = NULL;
         m_length = src.m_length;
         
-        if ( m_length )
+        if ( m_length > 0 )
         {
             m_string = new char[ m_length+1 ];
             assert( m_string );                                                                                
@@ -185,12 +192,15 @@ CString::operator=( const char *src )
         m_string = NULL;
         m_length = 0;
     
-        if ( src )
+        if ( src != NULL )
         {
             m_length = (UInt32)strlen( src );
-            m_string = new char[ m_length+1 ];
-            assert( m_string );
-            memcpy( m_string, src, m_length+1 );                
+            if ( m_length > 0 )
+            {
+                m_string = new char[ m_length+1 ];
+                assert( m_string );
+                memcpy( m_string, src, m_length+1 );
+            }
         } 
     }
     return *this;
@@ -206,7 +216,7 @@ CString::operator==( const char *other ) const
                 return false;        
         } 
         return strcmp( m_string ,
-                       other   ) == 0;
+                       other    ) == 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -279,11 +289,17 @@ CString::operator<( const CString& other ) const
 CString::operator std::string() const
 {TRACE;
     
-    return std::string( m_string );
+    if ( m_length > 0 )
+    {
+        return std::string( m_string );
+    }
+    return std::string();
 }
 
 /*-------------------------------------------------------------------------*/
-/*
+/* 
+     Disabled in favor of std::string() conversion
+
 CString::operator const char*() const
 {TRACE;
         return m_string;
@@ -296,15 +312,22 @@ CString::Set( const char *new_str ,
               UInt32 len          )
 {TRACE;
     
-    if ( ( new_str != NULL ) &&
-         ( len > 0 )          )
+    if ( new_str != m_string )
     {
-        m_length = len;
-        m_string = new char[ len+1 ];
-        assert( m_string != NULL );                                                                                
-        memcpy( m_string, new_str, m_length+1 );
-        m_string[ len ] = '\0';                                
-    }    
+        delete []m_string;
+        m_string = NULL;
+        m_length = 0;
+
+        if ( ( new_str != NULL ) &&
+             ( len > 0 )          )
+        {
+            m_length = len;
+            m_string = new char[ len+1 ];
+            assert( m_string != NULL );                                                                                
+            memcpy( m_string, new_str, m_length+1 );
+            m_string[ len ] = '\0';                                
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -314,12 +337,14 @@ CString::Append( const char *appendstr ,
                  UInt32 len            )
 {TRACE;
     
-    if ( appendstr && len )
+    if ( ( appendstr != m_string ) &&
+         ( appendstr != NULL )     && 
+         ( len > 0 )                )
     {
-        if ( m_length )
+        if ( m_length > 0 )
         {
             char* newString = new char[ m_length+len+1 ];       
-            assert( newString );                                                                                
+            assert( newString != NULL );                                                                                
             memcpy( newString, m_string, m_length );
             memcpy( newString+m_length, appendstr, len );            
             m_length = m_length+len;
@@ -381,7 +406,11 @@ std::string
 CString::STL_String( void ) const
 {TRACE;
 
-    return std::string( m_string );
+    if ( m_string > 0 )
+    {
+        return std::string( m_string );
+    }
+    return std::string();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -398,23 +427,24 @@ CString
 CString::ReplaceChar( char oldchar ,
                       char newchar ) const
 {TRACE;
-        if ( m_length )
+
+    if ( m_length > 0 )
+    {
+        char* str = new char[ m_length+1 ];
+        memcpy( str, m_string, m_length+1 );
+        for ( UInt32 i=0; i<m_length; ++i )
         {
-                char* str = new char[ m_length+1 ];
-                memcpy( str, m_string, m_length+1 );
-                for ( UInt32 i=0; i<m_length; ++i )
+                if ( str[ i ] == oldchar )
                 {
-                        if ( str[ i ] == oldchar )
-                        {
-                                str[ i ] = newchar;
-                        }
+                        str[ i ] = newchar;
                 }
-                CString newstr( str );
-                delete []str;
-                return newstr;
         }
-        CString emptystr;       
-        return emptystr;  
+        CString newstr( str );
+        delete []str;
+        return newstr;
+    }
+    CString emptystr;       
+    return emptystr;  
 }                             
 
 /*-------------------------------------------------------------------------*/
@@ -724,11 +754,11 @@ CString::HasSubstr( const CString& substr ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CString::Equals( const CString& otherStr                ,
-                 const bool syntaxSpecific /* = true */ ) const
+CString::Equals( const CString& otherStr               ,
+                 const bool caseSensitive /* = true */ ) const
 {TRACE;
 
-    if ( syntaxSpecific )
+    if ( caseSensitive )
     {
         return *this == otherStr;
     }
@@ -741,11 +771,11 @@ CString::Equals( const CString& otherStr                ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CString::NotEquals( const CString& otherStr                ,
-                    const bool syntaxSpecific /* = true */ ) const
+CString::NotEquals( const CString& otherStr               ,
+                    const bool caseSensitive /* = true */ ) const
 {TRACE;
 
-    if ( syntaxSpecific )
+    if ( caseSensitive )
     {
         return *this != otherStr;
     }
