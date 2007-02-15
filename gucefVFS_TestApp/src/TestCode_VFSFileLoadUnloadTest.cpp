@@ -67,10 +67,10 @@ using namespace GUCEF;
 
 void
 PerformVFSFileLoadUnloadTest( void )
-{
+{  
     #ifdef GUCEF_VFS_DEBUG_MODE
-    //CORE::GUCEF_LogStackToStdOut();
-    //CORE::GUCEF_SetStackLogging( 1 );
+    CORE::GUCEF_LogStackToStdOut();
+    CORE::GUCEF_SetStackLogging( 1 );
     #endif /* GUCEF_VFS_DEBUG_MODE ? */
     
     try
@@ -85,18 +85,18 @@ PerformVFSFileLoadUnloadTest( void )
         // We can use the module directory since it should hold the at least 1 file
         // which is the test app itself
         vfs->AddRoot( "$MODULEDIR$" );
-        
+
         // We will use the root directory itself and ask for a list with no recursive
         // dir iteration and no filter.
         VFS::CVFS::TStringList fileList;
         vfs->GetList( fileList, "", false, "" );
-        
+                     fileList.pop_back();
         if ( fileList.size() == 0 )
         {
             // We should have at least 1 file in that dir
-            //ERRORHERE;
+            ERRORHERE;
         }
-        
+
         // We will attempt to load a number of files in sequence
         VFS::UInt32 maxFiles = (VFS::UInt32) fileList.size() > 5 ? 5 : (VFS::UInt32) fileList.size();
         std::vector< VFS::CVFS::CVFSHandlePtr > fileHandles;
@@ -121,11 +121,11 @@ PerformVFSFileLoadUnloadTest( void )
         }
         
         // Now we try to unload the files we loaded in sequence
-       // while ( !fileHandles.empty() )
+        while ( !fileHandles.empty() )
         {
             // unloading should work automatically when we get rid of our
-            /// file handles
-           // fileHandles.pop_back();
+            // file handles
+            fileHandles.pop_back();
         }
     }
     catch ( ... )
@@ -135,7 +135,7 @@ PerformVFSFileLoadUnloadTest( void )
         CORE::GUCEF_PrintCallstack();
         #endif /* GUCEF_VFS_DEBUG_MODE ? */
         ERRORHERE;
-    }
+    } 
 }
 
 /*-------------------------------------------------------------------------*/

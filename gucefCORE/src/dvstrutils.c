@@ -927,22 +927,23 @@ Convert_Dir_Seperators( char *path )
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Appends a new sub directory or filename to the path given.
- *      It is assumed path is large enough. Usefull if you don't want to type
- *      ifdef all the time because win32 and linux use different seperation chars
- *      Checks if there is already a seperator present as last char so you
- *      don't have to do this yourself.
- */
 void 
 Append_To_Path( char *path           ,
                 const char *addition )
 {
+        UInt32 offset = 0, len = 0;
+        
+        /*
+         *  Sanity checks
+         */
+        if ( ( addition == NULL ) || ( path == NULL ) ) return;
+        if ( *addition == '\0' ) return;
+        
         /*
          *      Take care of any seperator that may be prefixed to
          *      the addition string.
          */
-        UInt32 offset = 0, len = (UInt32)strlen( path );
+        len = (UInt32)strlen( path );
         if ( ( *addition == '/' ) || ( *addition == '\\' ) )
         {
                 offset = 1;
