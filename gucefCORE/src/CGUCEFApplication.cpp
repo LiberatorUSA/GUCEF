@@ -230,9 +230,10 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
                 char intstr[ 10 ];
                 sprintf( intstr, "%d", (UInt32)hinstance );  
                 GUCEFSetEnv( "HINSTANCE", intstr );                 
-                
-                char apppath[ MAX_PATH ]; 
-                if ( GetModuleFileName( hinstance, apppath, MAX_PATH ) )
+
+                char apppath[ MAX_PATH ];
+
+                if ( GetModuleFileNameA( hinstance, apppath, MAX_PATH ) )
                 {
                         _appdir = apppath;
                 }                        
