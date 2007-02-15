@@ -132,7 +132,7 @@ CIMGCodec::Encode( const CImage& inputImage       ,
     if ( inputImage.HasFrames() )
     {    
         CORE::CDynamicBuffer inputBuffer( 102400, true );
-        CORE::CDynamicBufferAccess bufferAccess( inputBuffer );
+        CORE::CDynamicBufferAccess bufferAccess( &inputBuffer, false );
         
         // Fill our header
         TImageInfo imageInfo;
@@ -198,7 +198,7 @@ CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
 {TRACE;
 
     CORE::CDynamicBuffer outputBuffer( 102400, true );
-    CORE::CDynamicBufferAccess bufferAccess( outputBuffer );
+    CORE::CDynamicBufferAccess bufferAccess( &outputBuffer, false );
     
     if ( Decode( encodedInput  ,
                  bufferAccess  ) )
