@@ -151,24 +151,25 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
         CDynamicBuffer& operator=( const CDynamicBuffer &src );
 
         /**
-         *      Sets the new buffer size.
+         *      Sets the new actual buffer size.
          */
         void SetBufferSize( const UInt32 newSize       ,
                             bool allowreduction = true );       
         
         /**
-         *      Returns the current buffer size.
+         *      Returns the actual buffer size.
          */
         UInt32 GetBufferSize( void ) const;
 
         /**
-         *      Sets the new buffer size.
+         *      Sets the logical buffer size ( used buffer space )
+         *      This is assumed to be useful data and the remainder simply extra buffer space         
          */
         void SetDataSize( const UInt32 newSize );       
         
         /**
          *      Returns the current used buffer space
-         *      This is assumed to be usefull data and the remainder simply extra buffer space
+         *      This is assumed to be useful data and the remainder simply extra buffer space
          */
         UInt32 GetDataSize( void ) const;
 
@@ -234,8 +235,9 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
          *  Appends the given data to the back of the data bytes in the buffer
          *  Note that if the buffer is linked this operation will result in the creation of a private copy
          */
-        void Append( const void* data  ,
-                     const UInt32 size );
+        void Append( const void* data                      ,
+                     const UInt32 size                     ,
+                     const bool appendToLogicalData = true );
                      
         /**
          *  Provides mutable access to the buffer as a block of memory
@@ -282,14 +284,14 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
          *  Called when a mutation operation is about to be performed
          *  on the buffer. If the buffer is in a linked state the
          *  external buffer will first be copied, causing us to unlink, 
-         *  before proceding with the mutation.
+         *  before proceeding with the mutation.
          */
         void SecureLinkBeforeMutation( void );
 
         private:
         
         bool m_linked;     /**< is the buffer only linked to data owned by someone else ? */
-        bool _autoenlarge; /**< automaticly enlarge buffer ? */
+        bool _autoenlarge; /**< automatically enlarge buffer ? */
         Int8* _buffer;     /**< our byte buffer */
         UInt32 _bsize;     /**< current size of the buffer */
         UInt32 m_dataSize; /**< logical buffer size, extend of the buffer actually filled with data */        
@@ -333,7 +335,7 @@ CDynamicBuffer::AsConstType( const UInt32 byteOffset /* = 0 */ ) const
 
     if ( byteOffset + sizeof( T ) <= GetDataSize() )
     {
-        T& dataObj = *static_cast< T* >( GetConstBufferPtr() + byteOffset );
+        return *static_cast< const T* >( GetConstBufferPtr() + byteOffset );
     }
     
     GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstType(): Cannot cast to the given type" );

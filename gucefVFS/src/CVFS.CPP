@@ -221,6 +221,10 @@ CVFS::LoadFromDisk( const CORE::CString& file          ,
                     if ( fsize == bufferAccess->Write( *fa ) )
                     {
                         delete fa;
+                        fa = NULL;
+                        
+                        // reset the carat so the user can access the file from the beginning
+                        bufferAccess->Setpos( 0 );
                         
                         // Add the file to our buffered files list
                         m_diskCacheList.insert( std::pair< CORE::CString, TDynamicBufferPtr >( filepath, bufferPtr ) );

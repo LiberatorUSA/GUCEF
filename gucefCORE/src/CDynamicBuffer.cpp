@@ -392,7 +392,7 @@ CDynamicBuffer::CopyFrom( UInt32 offset   ,
     {
             if ( _autoenlarge )
             {
-                    SetDataSize( offset+size );
+                    SetBufferSize( offset+size );
             }
             else
             {       
@@ -405,7 +405,10 @@ CDynamicBuffer::CopyFrom( UInt32 offset   ,
             }                
     }                                                
     
-    m_dataSize = size;
+    if ( offset + size > m_dataSize )
+    {
+        m_dataSize = offset + size;
+    }
     memcpy( _buffer+offset, src, size );
     return size;
 }
@@ -423,7 +426,7 @@ CDynamicBuffer::CopyFrom( UInt32 size     ,
     {
             if ( _autoenlarge )
             {
-                    SetDataSize( size );
+                    SetBufferSize( size );
             }
             else
             {       
@@ -510,16 +513,26 @@ CDynamicBuffer::GetConstBufferPtr( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CDynamicBuffer::Append( const void* data  ,
-                        const UInt32 size )
+CDynamicBuffer::Append( const void* data                            ,
+                        const UInt32 size                           ,
+                        const bool appendToLogicalData /* = true */ )
 {TRACE;
 
     SecureLinkBeforeMutation();
 
-    UInt32 oldBufferSize = _bsize;
-    SetDataSize( oldBufferSize + size );
-    memcpy( _buffer + oldBufferSize, data, size );
-    m_dataSize = _bsize;
+    if ( appendToLogicalData )
+    {
+        SetBufferSize( m_dataSize + size, false );
+        memcpy( _buffer + m_dataSize, data, size );
+        m_dataSize += size;
+    }
+    else
+    {
+        UInt32 oldBufferSize = _bsize;
+        SetBufferSize( oldBufferSize + size, false );
+        memcpy( _buffer + oldBufferSize, data, size );
+        m_dataSize = _bsize;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
