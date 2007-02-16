@@ -33,10 +33,6 @@ function add_package(package_name)
 
     package.includepaths = { "../../include", "../../dependancy", "../../../common/include" }
 
-    if(windows) then
-    package.links = { "" }
-    end
-
     package.config["Debug"].bindir = "../../bin/Debug_"..compiler
     package.config["Debug"].libdir = "../../bin/Debug_"..compiler
     package.config["Debug"].objdir = "../../bin/Debug_"..compiler
