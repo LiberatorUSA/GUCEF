@@ -90,7 +90,7 @@
  */
 #undef EXPORT
 #ifdef GUCEF_MSWIN_BUILD
-  #ifdef BUILD_GUCEF_COMCORE_DLL
+  #ifdef GUCEFCOMCORE_BUILD_MODULE
     #define EXPORT __declspec( dllexport )
   #else
     #define EXPORT __declspec( dllimport )
