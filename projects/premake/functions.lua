@@ -1,7 +1,11 @@
 function project_setup(project_name)
+    addoption("compiler", "Specify compiler type (eg. MVC8, MVC7.1, GCC)")
+    
     to_compiler = { ["vs2005"] = "MVC8", ["vs2003"] = "MVC7.1", ["vs2002"] = "MVC7", ["vs6"] = "MVC6" }
 
-    if(to_compiler[target]) then
+    if(options["compiler"]) then
+        compiler = options["compiler"]
+    elseif(to_compiler[target]) then
         compiler = to_compiler[target]
     else
         compiler = target
