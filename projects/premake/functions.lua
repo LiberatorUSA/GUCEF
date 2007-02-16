@@ -37,16 +37,16 @@ function add_package(package_name)
 
     package.includepaths = { "../../include", "../../dependancy", "../../../common/include" }
 
-    package.config["Debug"].bindir = "../../bin/Debug_"..compiler
-    package.config["Debug"].libdir = "../../bin/Debug_"..compiler
-    package.config["Debug"].objdir = "../../bin/Debug_"..compiler
+    package.config["Debug"].bindir = "../../../"..package_name.."/bin/Debug_"..compiler
+    package.config["Debug"].libdir = "../../../"..package_name.."/bin/Debug_"..compiler
+    package.config["Debug"].objdir = "../../../"..package_name.."/bin/Debug_"..compiler
 
     package.config["Debug"].defines = { "DEBUG", "_DEBUG" }
     package.config["Debug"].target = package_name.."_"..compiler.."_d"
 
-    package.config["Release"].bindir = "../../bin/Release_"..compiler
-    package.config["Release"].libdir = "../../bin/Release_"..compiler
-    package.config["Release"].objdir = "../../bin/Release_"..compiler
+    package.config["Release"].bindir = "../../../"..package_name.."/bin/Release_"..compiler
+    package.config["Release"].libdir = "../../../"..package_name.."/bin/Release_"..compiler
+    package.config["Release"].objdir = "../../../"..package_name.."/bin/Release_"..compiler
 
     package.config["Release"].target = package_name.."_"..compiler
 
@@ -61,10 +61,7 @@ end
 
 function add_package_dependancy(package_name)
     table.insert(package.includepaths, 3, "../../../"..package_name.."/include")
-    table.insert(package.config["Debug"].libpaths, "../../../"..package_name.."/bin/Debug_"..compiler)
-    table.insert(package.config["Debug"].links, package_name.."_"..compiler.."_d")
-    table.insert(package.config["Release"].libpaths, "../../../"..package_name.."/bin/Release_"..compiler)
-    table.insert(package.config["Release"].links, package_name.."_"..compiler)
+    table.insert(package.links, package_name.."_"..compiler)
 end
 
 function add_library_dependancy(lib_name)
