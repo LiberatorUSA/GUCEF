@@ -58,17 +58,17 @@ class GUCEFCORE_EXPORT_CPP CCPPWrapFileAccess : public CIOAccess
         virtual void Open( void );
 
         /**
-         *      close the recource
+         *      close the resource
          */
         virtual void Close( void );
 
         /**
-         *      is the recource opened for reading ?
+         *      is the resource opened for reading ?
          */
         virtual bool Opened( void ) const;
         
         /**
-         *      returns the size of the recource in bytes
+         *      returns the size of the resource in bytes
          */
         virtual Int32 GetSize( void ) const;        
 
@@ -78,7 +78,7 @@ class GUCEFCORE_EXPORT_CPP CCPPWrapFileAccess : public CIOAccess
         virtual CString ReadLine( void );
 
         /**
-         *      Reads a string from the recource
+         *      Reads a string from the resource
          */
         virtual CString ReadString( void );
 
@@ -103,13 +103,13 @@ class GUCEFCORE_EXPORT_CPP CCPPWrapFileAccess : public CIOAccess
         virtual UInt32 Tell( void ) const;
 
         /**
-         *      jump to a different part of the recource
+         *      jump to a different part of the resource
          */
-        virtual Int32 Seek( UInt32 offset ,
-                            Int32 origin  );
+        virtual Int32 Seek( Int32 offset ,
+                            Int32 origin );
 
         /**
-         *      jump to the given offset in the recource
+         *      jump to the given offset in the resource
          */
         virtual UInt32 Setpos( UInt32 position );
 
@@ -119,7 +119,7 @@ class GUCEFCORE_EXPORT_CPP CCPPWrapFileAccess : public CIOAccess
         virtual char GetChar( void );
 
         /**
-         *      are we at the end of the recource ?
+         *      are we at the end of the resource ?
          */
         virtual bool Eof( void ) const;
         
@@ -127,12 +127,12 @@ class GUCEFCORE_EXPORT_CPP CCPPWrapFileAccess : public CIOAccess
         
         /**
          *      Is the only allowed access method writing ?
-         *      if true the recource cannot be read.
+         *      if true the resource cannot be read.
          */
         virtual bool IsWriteOnly( void ) const;
         
         /**
-         *      Are both read AND write operations possible on the recource ?         
+         *      Are both read AND write operations possible on the resource ?         
          */
         virtual bool IsReadAndWrite( void ) const;
         

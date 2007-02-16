@@ -151,8 +151,8 @@ CDynamicBufferAccess::Tell( void ) const
 /*-------------------------------------------------------------------------*/
 
 Int32 
-CDynamicBufferAccess::Seek( UInt32 offset ,
-                            Int32 origin  )
+CDynamicBufferAccess::Seek( Int32 offset ,
+                            Int32 origin )
 {TRACE;
 
     switch ( origin )
@@ -169,7 +169,7 @@ CDynamicBufferAccess::Seek( UInt32 offset ,
         }
         case SEEK_SET :
         {
-            if ( offset < m_buffer->GetDataSize() )
+            if ( offset < (Int32)m_buffer->GetDataSize() )
             {
                 m_carat = offset;
                 return 0;

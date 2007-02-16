@@ -112,7 +112,7 @@ typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_readl ) ( struct SIOAc
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_reads ) ( struct SIOAccess* access, char **dest ) GUCEF_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_read ) ( struct SIOAccess* access, void *dest, UInt32 esize, UInt32 elements ) GUCEF_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_tell ) ( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX;
-typedef Int32  ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_seek ) ( struct SIOAccess* access, UInt32 offset, Int32 origin ) GUCEF_CALLSPEC_SUFFIX;
+typedef Int32  ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_seek ) ( struct SIOAccess* access, Int32 offset, Int32 origin ) GUCEF_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_setpos ) ( struct SIOAccess* access, UInt32 pos ) GUCEF_CALLSPEC_SUFFIX;
 typedef Int32  ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_getc ) ( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX;
 typedef Int32  ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_eof ) ( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX;

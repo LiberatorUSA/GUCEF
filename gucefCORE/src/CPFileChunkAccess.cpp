@@ -118,8 +118,8 @@ pfca_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 Int32 GUCEF_CALLSPEC_PREFIX
 pfca_seek( struct SIOAccess* access , 
-          UInt32 offset            , 
-          Int32 origin             ) GUCEF_CALLSPEC_SUFFIX
+           Int32 offset             , 
+           Int32 origin             ) GUCEF_CALLSPEC_SUFFIX
 {
         return ( (CPFileChunkAccess*) access->privdata )->Seek( offset ,
                                                                 origin );
@@ -296,8 +296,8 @@ CPFileChunkAccess::Tell( void ) const
 /*-------------------------------------------------------------------------*/
 
 Int32 
-CPFileChunkAccess::Seek( UInt32 offset ,
-                         Int32 origin  )
+CPFileChunkAccess::Seek( Int32 offset ,
+                         Int32 origin )
 {
         return pafseek( _pafile ,
                         offset  ,

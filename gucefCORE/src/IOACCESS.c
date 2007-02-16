@@ -124,7 +124,7 @@ ioa_paftell( TIOAccess *access )
 /*-------------------------------------------------------------------------*/
 
 UInt32
-ioa_pafseek( TIOAccess *access, UInt32 offset, Int32 origin )
+ioa_pafseek( TIOAccess *access, Int32 offset, Int32 origin )
 {
         return pafseek( (PAFILE*)((TIOAccessPrivateData*)access->privdata)->source, offset, origin );
 }
@@ -225,7 +225,7 @@ ioa_mftell( TIOAccess *access )
 /*-------------------------------------------------------------------------*/
 
 UInt32
-ioa_mfseek( TIOAccess *access, UInt32 offset, Int32 origin )
+ioa_mfseek( TIOAccess *access, Int32 offset, Int32 origin )
 {
         return mfseek( (MFILE*)((TIOAccessPrivateData*)access->privdata)->source, offset, origin );
 }
@@ -358,7 +358,7 @@ ioa_ftell( TIOAccess *access )
 /*-------------------------------------------------------------------------*/
 
 UInt32
-ioa_fseek( TIOAccess *access, UInt32 offset, Int32 origin )
+ioa_fseek( TIOAccess *access, Int32 offset, Int32 origin )
 {
         return fseek( (FILE*)((TIOAccessPrivateData*)access->privdata)->source, offset, origin );
 }

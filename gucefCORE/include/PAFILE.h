@@ -190,7 +190,7 @@ pafsize( PAFILE *pafile );
  */
 GUCEFCORE_EXPORT_C Int32
 pafseek( PAFILE *pafile ,
-         UInt32 offset  ,
+         Int32 offset   ,
          Int32 origin   );
 
 /*-------------------------------------------------------------------------*/

@@ -170,8 +170,8 @@ CCPPWrapFileAccess::Tell( void ) const
 /*-------------------------------------------------------------------------*/
 
 Int32 
-CCPPWrapFileAccess::Seek( UInt32 offset ,
-                          Int32 origin  )
+CCPPWrapFileAccess::Seek( Int32 offset ,
+                          Int32 origin )
 {
         GUCEF_BEGIN;
         GUCEF_END_RET( Int32, _access->seek( _access ,

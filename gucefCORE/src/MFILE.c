@@ -360,7 +360,7 @@ mfsetpos( MFILE *mfile, UInt32 offset )
 /*-------------------------------------------------------------------------*/
 
 Int32
-mfseek( MFILE *mfile, UInt32 offset, Int32 origin )
+mfseek( MFILE *mfile, Int32 offset, Int32 origin )
 {
         /*
          *      Set the file pointer to the given offset from the origin
@@ -375,7 +375,7 @@ mfseek( MFILE *mfile, UInt32 offset, Int32 origin )
                 }
                 case SEEK_END :
                 {
-                        if ( offset <= mfile->size )
+                        if ( offset <= (Int32)mfile->size )
                         {
                                 mfile->curpos = mfile->mchunk + mfile->size-offset;
                                 mfile->offset = mfile->size-offset;

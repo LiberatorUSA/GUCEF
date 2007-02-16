@@ -364,7 +364,7 @@ pafsize( PAFILE *pafile )
  */
 Int32
 pafseek( PAFILE *pafile ,
-         UInt32 offset  ,
+         Int32 offset   ,
          Int32 origin   )
 {
         Int32 retval;
@@ -401,7 +401,7 @@ pafseek( PAFILE *pafile ,
                 }
                 case SEEK_END :
                 {
-                        if ( offset > pafile->csize )
+                        if ( offset > (Int32)pafile->csize )
                         {
                                 /*
                                  *      We can't go beyond the start of the chunk

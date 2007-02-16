@@ -160,8 +160,8 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
         /**
          *      jump to a different part of the resource
          */
-        virtual Int32 Seek( UInt32 offset ,
-                            Int32 origin  ) = 0;
+        virtual Int32 Seek( Int32 offset ,
+                            Int32 origin ) = 0;
 
         /**
          *      jump to the given offset in the resource

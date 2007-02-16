@@ -118,7 +118,7 @@ mfa_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 Int32 GUCEF_CALLSPEC_PREFIX
 mfa_seek( struct SIOAccess* access , 
-          UInt32 offset            , 
+          Int32 offset             ,
           Int32 origin             ) GUCEF_CALLSPEC_SUFFIX
 {
         return ( (CMFileAccess*) access->privdata )->Seek( offset ,
@@ -288,8 +288,8 @@ CMFileAccess::Tell( void ) const
 /*-------------------------------------------------------------------------*/
 
 Int32 
-CMFileAccess::Seek( UInt32 offset ,
-                    Int32 origin  )
+CMFileAccess::Seek( Int32 offset ,
+                    Int32 origin )
 {
         return mfseek( &_mfile ,
                        offset  ,

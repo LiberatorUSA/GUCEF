@@ -158,9 +158,9 @@ ILint ILAPIENTRY
 ilfGetcProc( ILHANDLE handle )
 {
     TIOAccess* input = (TIOAccess*) handle;
-    if ( NULL != currentResource )
+    if ( NULL != input )
     {
-        return currentResource->getc( currentResource );
+        return input->getc( input );
     }
     return 0;
 }

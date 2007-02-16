@@ -112,8 +112,8 @@ class GUCEFCORE_EXPORT_CPP CDynamicBufferAccess : public CIOAccess
     /**
      *      jump to a different part of the resource
      */
-    virtual Int32 Seek( UInt32 offset ,
-                        Int32 origin  );
+    virtual Int32 Seek( Int32 offset ,
+                        Int32 origin );
 
     /**
      *      jump to the given offset in the resource

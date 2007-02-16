@@ -118,7 +118,7 @@ pfa_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 Int32 GUCEF_CALLSPEC_PREFIX
 pfa_seek( struct SIOAccess* access , 
-          UInt32 offset            , 
+          Int32 offset             ,
           Int32 origin             ) GUCEF_CALLSPEC_SUFFIX
 {
         return ( (CPFileAccess*) access->privdata )->Seek( offset ,
@@ -278,8 +278,8 @@ CPFileAccess::Tell( void ) const
 /*-------------------------------------------------------------------------*/
 
 Int32 
-CPFileAccess::Seek( UInt32 offset ,
-                    Int32 origin  )
+CPFileAccess::Seek( Int32 offset ,
+                    Int32 origin )
 {
         return pafseek( _pafile ,
                         offset  ,

@@ -458,12 +458,13 @@ CDynamicBuffer::CopyTo( UInt32 offset ,
 
     if ( offset+size > m_dataSize )
     {
-            Int32 max = (Int32)m_dataSize - (Int32)offset - (Int32)size;
-            if ( max < 0 ) 
-            {
-                    return 0;
-            }                        
-            size = max;           
+        Int32 maxPossible = (Int32)m_dataSize - (Int32)offset;
+        if ( maxPossible > 0 )
+        {
+            memcpy( dest, _buffer+offset, maxPossible );
+            return maxPossible;
+        }
+        return 0;
     }
     memcpy( dest, _buffer+offset, size );
     return size;

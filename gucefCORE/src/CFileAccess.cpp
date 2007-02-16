@@ -165,8 +165,8 @@ CFileAccess::Tell( void ) const
 /*-------------------------------------------------------------------------*/
 
 Int32 
-CFileAccess::Seek( UInt32 offset ,
-                    Int32 origin  )
+CFileAccess::Seek( Int32 offset ,
+                   Int32 origin )
 {TRACE;
         return fseek( _file     ,
                       offset    ,

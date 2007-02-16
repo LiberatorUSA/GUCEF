@@ -135,7 +135,7 @@ fa_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 Int32 GUCEF_CALLSPEC_PREFIX
 fa_seek( struct SIOAccess* access , 
-         UInt32 offset            , 
+         Int32 offset             , 
          Int32 origin             ) GUCEF_CALLSPEC_SUFFIX
 {TRACE;
         return ( (CIOAccess*) access->privdata )->Seek( offset ,

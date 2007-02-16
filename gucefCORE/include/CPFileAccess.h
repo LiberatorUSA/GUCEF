@@ -101,8 +101,8 @@ class GUCEFCORE_EXPORT_CPP CPFileAccess : public CROIOAccess
         /**
          *      jump to a different part of the recource
          */
-        virtual Int32 Seek( UInt32 offset ,
-                            Int32 origin  );
+        virtual Int32 Seek( Int32 offset ,
+                            Int32 origin );
 
         /**
          *      jump to the given offset in the recource

@@ -175,9 +175,9 @@ mftell( const MFILE *mfile );
  *      provided, origin can be : SEEK_CUR, SEEK_END, SEEK_SET
  */
 GUCEFCORE_EXPORT_C Int32
-mfseek( MFILE *mfile  ,
-        UInt32 offset ,
-        Int32 origin  );
+mfseek( MFILE *mfile ,
+        Int32 offset ,
+        Int32 origin );
 
 /*-------------------------------------------------------------------------*/
 
