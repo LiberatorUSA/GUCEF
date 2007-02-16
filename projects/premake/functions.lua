@@ -34,7 +34,7 @@ function add_package(package_name)
     package.includepaths = { "../../include", "../../dependancy", "../../../common/include" }
 
     if(windows) then
-    package.links = { "winmm" }
+    package.links = { "" }
     end
 
     package.config["Debug"].bindir = "../../bin/Debug_"..compiler
@@ -65,4 +65,8 @@ function depends_on_package(package_name)
     table.insert(package.config["Debug"].links, package_name.."_"..compiler.."_d")
     table.insert(package.config["Release"].libpaths, "../../../"..package_name.."/bin/Release_"..compiler)
     table.insert(package.config["Release"].links, package_name.."_"..compiler)
+end
+
+function add_lib(lib_name)
+   table.insert(package.links, lib_name)
 end
