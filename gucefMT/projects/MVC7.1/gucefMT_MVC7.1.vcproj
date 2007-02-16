@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="gucefMT"
-	ProjectGUID="{669C1680-C7E4-4AE1-A545-D57A585A0C0C}"
-	Keyword="MFCDLLProj">
+	Name="gucefMT_MVC7.1"
+	ProjectGUID="{65493F3B-9CAF-2B4C-A460-8207F327DF8A}"
+	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -12,54 +12,49 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../Debug_MVC7.1"
-			IntermediateDirectory="../../Debug_MVC7.1"
+			OutputDirectory="../../bin/Debug_MVC7.1"
+			IntermediateDirectory="../../bin/Debug_MVC7.1"
 			ConfigurationType="2"
-			UseOfMFC="0"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../include;../../../gucefCORE\include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;GUCEFMT_DLL_BUILD;GUCEF_MT_SUPPORT"
+				AdditionalIncludeDirectories="../../include;../../dependancy;../../../common/include"
+				PreprocessorDefinitions="_UNICODE;UNICODE;_WINDLL;WIN32;_WINDOWS;_USRDLL;GUCEFMT_BUILD_MODULE;DEBUG;_DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				TreatWChar_tAsBuiltInType="TRUE"
-				UsePrecompiledHeader="0"
-				WarningLevel="4"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="2"
+				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="4"
-				DisableSpecificWarnings="4055;4100;4251"/>
+				DebugInformationFormat="4"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies=".lib winmm.lib"
 				OutputFile="$(OutDir)/gucefMT_MVC7.1_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories=""
-				ModuleDefinitionFile=""
+				AdditionalLibraryDirectories="../../bin/Debug_MVC7.1"
 				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)/gucefMT_MVC7.1_d.pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)/gucefMT_MVC7.1_d.lib"
+				ImportLibrary="../../bin/Debug_MVC7.1/gucefMT_MVC7.1_d.lib"
 				TargetMachine="1"/>
 			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="FALSE"/>
+				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC7.1
-"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1043"
-				AdditionalIncludeDirectories="$(IntDir)"/>
+				PreprocessorDefinitions="_UNICODE;UNICODE;_WINDLL;WIN32;_WINDOWS;_USRDLL;GUCEFMT_BUILD_MODULE;DEBUG;_DEBUG"
+				AdditionalIncludeDirectories="../../include;../../dependancy;../../../common/include"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -73,36 +68,39 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			OutputDirectory="../../bin/Release_MVC7.1"
+			IntermediateDirectory="../../bin/Release_MVC7.1"
 			ConfigurationType="2"
-			UseOfMFC="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
+				Optimization="3"
+				AdditionalIncludeDirectories="../../include;../../dependancy;../../../common/include"
+				PreprocessorDefinitions="_UNICODE;UNICODE;_WINDLL;WIN32;_WINDOWS;_USRDLL;GUCEFMT_BUILD_MODULE"
+				StringPooling="TRUE"
 				RuntimeLibrary="2"
-				TreatWChar_tAsBuiltInType="TRUE"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/gucefMT.dll"
+				AdditionalDependencies=".lib winmm.lib"
+				OutputFile="$(OutDir)/gucefMT_MVC7.1.dll"
 				LinkIncremental="1"
-				ModuleDefinitionFile=".\gucefMT.def"
-				GenerateDebugInformation="TRUE"
+				AdditionalLibraryDirectories="../../bin/Release_MVC7.1"
+				GenerateDebugInformation="FALSE"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)/gucefMT.lib"
+				ImportLibrary="../../bin/Release_MVC7.1/gucefMT_MVC7.1.lib"
 				TargetMachine="1"/>
 			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="FALSE"/>
+				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -111,9 +109,8 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1043"
-				AdditionalIncludeDirectories="$(IntDir)"/>
+				PreprocessorDefinitions="_UNICODE;UNICODE;_WINDLL;WIN32;_WINDOWS;_USRDLL;GUCEFMT_BUILD_MODULE"
+				AdditionalIncludeDirectories="../../include;../../dependancy;../../../common/include"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -130,50 +127,8 @@
 	</References>
 	<Files>
 		<Filter
-			Name="Source Files"
-			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
-			<File
-				RelativePath="..\..\src\gucefMT_CActiveObject.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\gucefMT_CCondition.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\gucefMT_CCriticalSection.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\gucefMT_CICloneable.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\gucefMT_CMailBox.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\gucefMT_CMutex.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\gucefMT_CReadWriteLock.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\gucefMT_CScopeMutex.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\gucefMT_CSemaphore.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\gucefMT_dvmtoswrap.c">
-			</File>
-			<File
-				RelativePath="..\..\src\gucefMT_DVRWLOCK.C">
-			</File>
-			<File
-				RelativePath="..\..\src\gucefMT_MUTEX.C">
-			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			Name="include"
+			Filter="">
 			<File
 				RelativePath="..\..\include\gucefMT.h">
 			</File>
@@ -190,10 +145,10 @@
 				RelativePath="..\..\include\gucefMT_CCriticalSection.h">
 			</File>
 			<File
-				RelativePath="..\..\include\gucefMT_CICloneable.h">
+				RelativePath="..\..\include\gucefMT_CGUCEFMTModule.h">
 			</File>
 			<File
-				RelativePath="..\..\include\gucefMT_CMailBox.h">
+				RelativePath="..\..\include\gucefMT_CICloneable.h">
 			</File>
 			<File
 				RelativePath="..\..\include\gucefMT_CMutex.h">
@@ -211,10 +166,13 @@
 				RelativePath="..\..\include\gucefMT_CSemaphore.h">
 			</File>
 			<File
+				RelativePath="..\..\include\gucefMT_CTMailBox.h">
+			</File>
+			<File
 				RelativePath="..\..\include\gucefMT_dvmtoswrap.h">
 			</File>
 			<File
-				RelativePath="..\..\include\gucefMT_DVRWLOCK.H">
+				RelativePath="..\..\include\gucefMT_DVRWLOCK.h">
 			</File>
 			<File
 				RelativePath="..\..\include\gucefMT_ETypes.h">
@@ -224,6 +182,52 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefMT_mutex.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="src"
+			Filter="">
+			<File
+				RelativePath="..\..\src\gucefMT_dvmtoswrap.c">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_DVRWLOCK.c">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_MUTEX.c">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_CActiveObject.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_CCondition.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_CCriticalSection.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_CGUCEFMTModule.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_CICloneable.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_CMutex.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_CReadWriteLock.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_CScopeMutex.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_CSemaphore.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\gucefMT_CTMailBox.cpp">
 			</File>
 		</Filter>
 	</Files>

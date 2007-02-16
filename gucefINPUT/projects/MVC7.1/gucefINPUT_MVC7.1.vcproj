@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="gucefINPUT"
-	ProjectGUID="{0664F429-30EE-4A2E-953C-40E14362D2C9}"
+	Name="gucefINPUT_MVC7.1"
+	ProjectGUID="{3AAD89BD-495E-C34F-8448-1C6860C7D178}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -12,47 +12,49 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../Debug_MVC7.1"
-			IntermediateDirectory="../../Debug_MVC7.1"
+			OutputDirectory="../../bin/Debug_MVC7.1"
+			IntermediateDirectory="../../bin/Debug_MVC7.1"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../include;../../..\gucefCORE\include;../../..\gucefMT\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GUCEFINPUT_EXPORTS;BUILD_GUCEFINPUT_DLL"
+				AdditionalIncludeDirectories="../../include;../../dependancy;../../../gucefCORE/include;../../../gucefMT/include;../../../common/include"
+				PreprocessorDefinitions="_UNICODE;UNICODE;_WINDLL;WIN32;_WINDOWS;_USRDLL;GUCEFINPUT_BUILD_MODULE;DEBUG;_DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				UsePrecompiledHeader="0"
+				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"
-				DisableSpecificWarnings="4251"/>
+				DebugInformationFormat="4"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCORE_MVC7.1_d.lib gucefMT_MVC7.1_d.lib"
+				AdditionalDependencies=".lib gucefMT_MVC7.1_d.lib gucefCORE_MVC7.1_d.lib"
 				OutputFile="$(OutDir)/gucefINPUT_MVC7.1_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\gucefCORE\Debug_MVC7.1;..\..\..\gucefMT\Debug_MVC7.1"
+				AdditionalLibraryDirectories="../../bin/Debug_MVC7.1;../../../gucefMT/bin/Debug_MVC7.1;../../../gucefCORE/bin/Debug_MVC7.1"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/gucefINPUT_MVC.pdb"
+				ProgramDatabaseFile="$(OutDir)/gucefINPUT_MVC7.1_d.pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)/gucefINPUT_MVC7.1_d.lib"
+				ImportLibrary="../../bin/Debug_MVC7.1/gucefINPUT_MVC7.1_d.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) ..\..\..\common\Debug_MVC7.1"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_UNICODE;UNICODE;_WINDLL;WIN32;_WINDOWS;_USRDLL;GUCEFINPUT_BUILD_MODULE;DEBUG;_DEBUG"
+				AdditionalIncludeDirectories="../../include;../../dependancy;../../../gucefCORE/include;../../../gucefMT/include;../../../common/include"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -66,29 +68,36 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			OutputDirectory="../../bin/Release_MVC7.1"
+			IntermediateDirectory="../../bin/Release_MVC7.1"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GUCEFINPUT_EXPORTS"
-				RuntimeLibrary="0"
-				UsePrecompiledHeader="0"
+				Optimization="3"
+				AdditionalIncludeDirectories="../../include;../../dependancy;../../../gucefCORE/include;../../../gucefMT/include;../../../common/include"
+				PreprocessorDefinitions="_UNICODE;UNICODE;_WINDLL;WIN32;_WINDOWS;_USRDLL;GUCEFINPUT_BUILD_MODULE"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/gucefINPUT.dll"
+				AdditionalDependencies=".lib ../../bin/Release_MVC7.1/gucefMT_MVC7.1.lib ../../bin/Release_MVC7.1/gucefCORE_MVC7.1.lib"
+				OutputFile="$(OutDir)/gucefINPUT_MVC7.1.dll"
 				LinkIncremental="1"
-				GenerateDebugInformation="TRUE"
+				AdditionalLibraryDirectories="../../bin/Release_MVC7.1;../../../gucefMT/bin/Release_MVC7.1;../../../gucefCORE/bin/Release_MVC7.1"
+				GenerateDebugInformation="FALSE"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)/gucefINPUT.lib"
+				ImportLibrary="../../bin/Release_MVC7.1/gucefINPUT_MVC7.1.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -99,7 +108,9 @@
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_UNICODE;UNICODE;_WINDLL;WIN32;_WINDOWS;_USRDLL;GUCEFINPUT_BUILD_MODULE"
+				AdditionalIncludeDirectories="../../include;../../dependancy;../../../gucefCORE/include;../../../gucefMT/include;../../../common/include"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -116,56 +127,8 @@
 	</References>
 	<Files>
 		<Filter
-			Name="Source Files"
-			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
-			<File
-				RelativePath="..\..\src\CGUCEFINPUTModule.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CIInputActionHandler.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CIInputDriver.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CInputActionHandler.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CInputActionMap.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CInputActionMultiMapHandler.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CInputBasedManipulator.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CInputContext.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CInputController.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CInputDriverPlugin.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CInputHandlerMultiMap.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CInputProfile.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CInputProfileManager.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\CInputToActionHandler.cpp">
-			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			Name="include"
+			Filter="">
 			<File
 				RelativePath="..\..\include\CGUCEFINPUTModule.h">
 			</File>
@@ -218,6 +181,9 @@
 				RelativePath="..\..\include\gucefINPUT.h">
 			</File>
 			<File
+				RelativePath="..\..\include\gucefINPUTDLLInit.h">
+			</File>
+			<File
 				RelativePath="..\..\include\gucefINPUT_config.h">
 			</File>
 			<File
@@ -227,10 +193,53 @@
 				RelativePath="..\..\include\gucefINPUT_macros.h">
 			</File>
 			<File
-				RelativePath="..\..\include\gucefINPUTDLLInit.h">
+				RelativePath="..\..\include\inputdriverpluginstructs.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="src"
+			Filter="">
+			<File
+				RelativePath="..\..\src\CGUCEFINPUTModule.cpp">
 			</File>
 			<File
-				RelativePath="..\..\include\inputdriverpluginstructs.h">
+				RelativePath="..\..\src\CIInputActionHandler.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CIInputDriver.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CInputActionHandler.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CInputActionMap.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CInputActionMultiMapHandler.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CInputBasedManipulator.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CInputContext.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CInputController.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CInputDriverPlugin.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CInputHandlerMultiMap.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CInputProfile.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CInputProfileManager.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\CInputToActionHandler.cpp">
 			</File>
 		</Filter>
 	</Files>
