@@ -59,7 +59,7 @@ function add_package(package_name)
     end
 end
 
-function depends_on_package(package_name)
+function add_package_dependancy(package_name)
     table.insert(package.includepaths, 3, "../../../"..package_name.."/include")
     table.insert(package.config["Debug"].libpaths, "../../../"..package_name.."/bin/Debug_"..compiler)
     table.insert(package.config["Debug"].links, package_name.."_"..compiler.."_d")
@@ -67,6 +67,6 @@ function depends_on_package(package_name)
     table.insert(package.config["Release"].links, package_name.."_"..compiler)
 end
 
-function add_lib(lib_name)
+function add_library_dependancy(lib_name)
    table.insert(package.links, lib_name)
 end
