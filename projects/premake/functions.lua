@@ -21,6 +21,11 @@ function project_setup(project_name)
 
     project.name = project_name.."_"..compiler
     project.path = "../"..compiler
+    
+    common = { ["Bin/Debug"]   = "common\\bin\\Debug_"..compiler,
+               ["Bin/Release"] = "common\\bin\\Release_"..compiler }
+    os.execute("mkdir \"..\\..\\"..common["Bin/Debug"].."\"")
+    os.execute("mkdir \"..\\..\\"..common["Bin/Release"].."\"")
 end
 
 function add_package(package_name)
@@ -43,12 +48,16 @@ function add_package(package_name)
 
     package.config["Debug"].defines = { "DEBUG", "_DEBUG" }
     package.config["Debug"].target = package_name.."_"..compiler.."_d"
-
+    
+    package.config["Debug"].postbuildcommands = { "copy &quot;..\\..\\..\\"..package_name.."\\bin\\Debug_"..compiler.."\\"..package.config["Debug"].target..".dll&quot; &quot;..\\..\\..\\"..common["Bin/Debug"].."&quot;" }
+    
     package.config["Release"].bindir = "../../../"..package_name.."/bin/Release_"..compiler
     package.config["Release"].libdir = "../../../"..package_name.."/bin/Release_"..compiler
     package.config["Release"].objdir = "../../../"..package_name.."/bin/Release_"..compiler
 
     package.config["Release"].target = package_name.."_"..compiler
+
+    package.config["Release"].postbuildcommands = { "copy &quot;..\\..\\..\\"..package_name.."\\bin\\Release_"..compiler.."\\"..package.config["Release"].target..".dll&quot; &quot;..\\..\\..\\"..common["Bin/Debug"].."&quot;" }
 
     for k,v in pairs(global_defines) do table.insert(package.defines, v) end
 
