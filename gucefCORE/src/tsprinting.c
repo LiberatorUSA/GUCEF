@@ -143,9 +143,9 @@ tsprintf( const char * __format, ... )
                         fptr = fopen( coutfile, "a+" );
                 }
                 rt = vfprintf( fptr, __format, arglist );
-             /*   #ifdef DEBUG_MODE */
+             /*   #ifdef GUCEF_CORE_DEBUG_MODE */
                 fflush( fptr );
-             /*   #endif *//* DEBUG_MODE */
+             /*   #endif *//* GUCEF_CORE_DEBUG_MODE */
         }
         va_end( arglist );
         return rt;
@@ -198,7 +198,7 @@ tspinit( void )
          *      console application.
          */
         #ifdef GUCEF_MSWIN_BUILD
-          #ifdef DEBUG_MODE        
+          #ifdef GUCEF_CORE_DEBUG_MODE        
           AllocConsole();
           #endif
         
@@ -231,7 +231,7 @@ tspshutdown( void )
 {
 	if ( init )
         {
-                #ifdef DEBUG_MODE
+                #ifdef GUCEF_CORE_DEBUG_MODE
                 FreeConsole();
                 #endif
                 

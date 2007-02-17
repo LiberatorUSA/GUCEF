@@ -78,8 +78,8 @@
  *      generated run-time. This will howerver slow down program excecution and
  *      use more memory.
  */
-#undef DEBUG_MODE      /* do not change this line */ 
-/* #define DEBUG_MODE */
+#undef GUCEF_CORE_DEBUG_MODE      /* do not change this line */ 
+/* #define GUCEF_CORE_DEBUG_MODE */
 
 /*
  *      If enabled extra information like line and file information is added to

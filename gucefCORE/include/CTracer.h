@@ -29,7 +29,7 @@
   #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifdef DEBUG_MODE
+#ifdef GUCEF_CORE_DEBUG_MODE
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -81,7 +81,7 @@ class GUCEFCORE_EXPORT_CPP CTracer
 }; /* namespace CORE */
 }; /* namespace GUCEF */
 
-#endif /* DEBUG_MODE ? */
+#endif /* GUCEF_CORE_DEBUG_MODE ? */
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      MACROS                                                             //
@@ -93,7 +93,7 @@ class GUCEFCORE_EXPORT_CPP CTracer
  *      precompiler directives. This should save you some typing.
  */
 #undef TRACE
-#ifdef DEBUG_MODE    
+#ifdef GUCEF_CORE_DEBUG_MODE    
   #define TRACE GUCEF::CORE::CTracer GUCEFStackTracerObject( __FILE__, __LINE__ );
 #else
   #define TRACE

@@ -101,6 +101,11 @@
 #define GUCEF_CORE_CSTDCODECPLUGINMANAGER_H
 #endif /* GUCEF_CORE_CSTDCODECPLUGINMANAGER_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #include "CGUCEFCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef ADD_MEMORY_MANAGER
@@ -175,7 +180,7 @@ CGUCEFCOREModule::Load( void )
          *      Initialize centralized output
          */
         tspinit();
-        #ifdef DEBUG_MODE        
+        #ifdef GUCEF_CORE_DEBUG_MODE        
         tssetcoutfile( "GUCEFLog.txt" );
         tsusecoutfile( 1 );
         #endif
@@ -183,6 +188,7 @@ CGUCEFCOREModule::Load( void )
         /*
          *      Instantiate all the singletons
          */
+        CLogManager::Instance();
         CNotificationIDRegistry::Instance();        
         CPluginControl::Instance();         
         CDStoreCodecRegistry::Instance();

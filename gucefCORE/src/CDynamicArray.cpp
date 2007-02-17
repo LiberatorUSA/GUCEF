@@ -27,14 +27,14 @@
 
 #include "CDynamicArray.h"	/* definition of this class */
 
-#if !defined( TSPRINTING_H ) && defined( DEBUG_MODE )
+#if !defined( TSPRINTING_H ) && defined( GUCEF_CORE_DEBUG_MODE )
 #include "tsprinting.h"		  /* threadsafe printing */ 
 #endif /* TSPRINTING_H ? */
 
-#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#ifndef GUCEF_CORE_ESSENTIALS_H
 #include "gucef_essentials.h"
-#define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */  
+#define GUCEF_CORE_ESSENTIALS_H
+#endif /* GUCEF_CORE_ESSENTIALS_H ? */  
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

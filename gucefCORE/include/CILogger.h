@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2007.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -15,20 +15,20 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
+#ifndef GUCEF_CORE_CILOGGER_H
+#define GUCEF_CORE_CILOGGER_H 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/
+//-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CALLSTACK_H
-#include "callstack.h"
-#define GUCEF_CORE_CALLSTACK_H
-#endif /* GUCEF_CORE_CALLSTACK_H ? */
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
-#include "CTracer.h"
-
-#ifdef GUCEF_CORE_DEBUG_MODE
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -40,45 +40,33 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
- 
-CTracer::CTracer( const char* file ,
-                  const int line   )
-{
-        GUCEF_UtilityCodeBegin( file, line );
-}
 
-/*-------------------------------------------------------------------------*/                  
-
-CTracer::CTracer( void )
-{
-        /* dummy, do not use */
-}
+class CString;
 
 /*-------------------------------------------------------------------------*/
 
-CTracer::CTracer( const CTracer& src )
+/**
+ *  Interface class for implementors of logging.
+ */
+class GUCEFCORE_EXPORT_CPP CILogger
 {
-        /* dummy, do not use */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTracer::~CTracer()
-{
-        GUCEF_UtilityCodeEnd();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTracer&
-CTracer::operator=( const CTracer& src )
-{
-        /* dummy, do not use */
-        return *this;
-}
+    public:
+    
+    typedef CLogManager::TLogMsgType TLogMsgType;
+                           
+    virtual void Log( const TLogMsgType logMsgType ,
+                      const Int32 logLevel         ,
+                      const CString& logMessage    ) const = 0;
+    
+    
+    CILogger( void );                             /**< interface class: no-op */
+    virtual ~CILogger();                          /**< interface class: no-op */
+    CILogger( const CILogger& src );              /**< interface class: no-op */
+    CILogger& operator=( const CILogger& src );   /**< interface class: no-op */
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -90,4 +78,16 @@ CTracer::operator=( const CTracer& src )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-#endif /* GUCEF_CORE_DEBUG_MODE ? */
+
+#endif /* GUCEF_CORE_CILOGGER_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 16-02-2007 :
+        - Dinand: Added this class
+
+-----------------------------------------------------------------------------*/

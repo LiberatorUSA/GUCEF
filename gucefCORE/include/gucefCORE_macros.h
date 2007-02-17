@@ -55,9 +55,9 @@
  */
 #ifndef MANUAL_DEBUG_MODE_DEFINE
   #if defined( _DEBUG )
-    #define DEBUG_MODE
+    #define GUCEF_CORE_DEBUG_MODE
   #else
-    #undef DEBUG_MODE
+    #undef GUCEF_CORE_DEBUG_MODE
   #endif /* compiler DEBUG switches */
 #endif /* MANUAL_DEBUG_MODE_DEFINE ? */
 
@@ -99,12 +99,12 @@
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef DEBUG_MODE
+#ifdef GUCEF_CORE_DEBUG_MODE
   #ifndef TSPRINTING_H
     #include "tsprinting.h"
     #define TSPRINTING_H
   #endif /* TSPRINTING_H ? */
-#endif /* DEBUG_MODE ? */  
+#endif /* GUCEF_CORE_DEBUG_MODE ? */  
 
 /*-------------------------------------------------------------------------*/
 
@@ -115,7 +115,7 @@
 #undef DEBUGOUTPUTsi
 #undef DEBUGOUTPUTis
 #undef DEBUGOUTPUTsss
-#ifdef DEBUG_MODE
+#ifdef GUCEF_CORE_DEBUG_MODE
   #ifdef ADD_EXTRA_INFO_TO_DEBUGOUTPUT
     #define DEBUGOUTPUT( c_str ) ( GUCEF::CORE::tsprintf( "%s @ Line %d File %s\n", c_str, __LINE__, __FILE__ ) )
     #define DEBUGOUTPUTs DEBUGOUTPUT
@@ -144,7 +144,7 @@
   #define DEBUGOUTPUTis( intval, c_str ) ( )
   #define DEBUGOUTPUTsss( c_str1, c_str2, c_str3 ) ( )
   #define DEBUGOUTPUTssss( c_str1, c_str2, c_str3, c_str4 ) ( )
-#endif /* DEBUG_MODE ? */  
+#endif /* GUCEF_CORE_DEBUG_MODE ? */  
 
 /*-------------------------------------------------------------------------*/
 

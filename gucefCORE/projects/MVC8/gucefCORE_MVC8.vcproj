@@ -336,6 +336,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CILogger.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CINamedInstance.cpp"
 				>
 			</File>
@@ -365,6 +369,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\CLLNode.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CLogManager.cpp"
 				>
 			</File>
 			<File
@@ -806,6 +814,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\CILogger.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\CINamedInstance.h"
 				>
 			</File>
@@ -839,6 +851,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CLLNode.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CLogManager.h"
 				>
 			</File>
 			<File

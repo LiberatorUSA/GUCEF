@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
-#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#ifndef GUCEF_CORE_ESSENTIALS_H
+#define GUCEF_CORE_ESSENTIALS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,7 +56,7 @@
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_ESSENTIALS_H ? */
+#endif /* GUCEF_CORE_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

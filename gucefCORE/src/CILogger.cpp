@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2007.  All rights reserved.
  *
  * All source code herein is the property of Dinand Vanvelzen. You may not sell
  * or otherwise commercially exploit the source or things you created based on
@@ -21,14 +21,13 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CALLSTACK_H
-#include "callstack.h"
-#define GUCEF_CORE_CALLSTACK_H
-#endif /* GUCEF_CORE_CALLSTACK_H ? */
+#include "CILogger.h"
 
-#include "CTracer.h"
+#ifndef GUCEF_CORE_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_ESSENTIALS_H
+#endif /* GUCEF_CORE_ESSENTIALS_H ? */
 
-#ifdef GUCEF_CORE_DEBUG_MODE
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -43,41 +42,33 @@ namespace CORE {
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
- 
-CTracer::CTracer( const char* file ,
-                  const int line   )
-{
-        GUCEF_UtilityCodeBegin( file, line );
-}
 
-/*-------------------------------------------------------------------------*/                  
+CILogger::CILogger( void )
+{TRACE;
 
-CTracer::CTracer( void )
-{
-        /* dummy, do not use */
 }
 
 /*-------------------------------------------------------------------------*/
 
-CTracer::CTracer( const CTracer& src )
-{
-        /* dummy, do not use */
+CILogger::~CILogger()
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
-CTracer::~CTracer()
-{
-        GUCEF_UtilityCodeEnd();
+CILogger::CILogger( const CILogger& src )
+{TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
-CTracer&
-CTracer::operator=( const CTracer& src )
-{
-        /* dummy, do not use */
-        return *this;
+CILogger&
+CILogger::operator=( const CILogger& src )
+{TRACE;
+    
+    return *this;
 }
 
 /*-------------------------------------------------------------------------//
@@ -90,4 +81,3 @@ CTracer::operator=( const CTracer& src )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-#endif /* GUCEF_CORE_DEBUG_MODE ? */
