@@ -21,31 +21,26 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEFMT_H
-#include "gucefMT.h"                   /* platform threading utils */
-#define GUCEFMT_H
-#endif /* GUCEFMT_H ? */
+#ifndef GUCEF_MT_MUTEX_H
+#include "gucefMT_mutex.h"
+#define GUCEF_MT_MUTEX_H
+#endif /* GUCEF_MT_MUTEX_H ? */
 
-#ifndef GUCEFCOMCORE_MACROS_H
+#ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"       /* library build defines & macros */
-#define GUCEFCOMCORE_MACROS_H
-#endif /* GUCEFCOMCORE_MACROS_H ? */
+#define GUCEF_COMCORE_MACROS_H
+#endif /* GUCEF_COMCORE_MACROS_H ? */
+
+#ifdef GUCEF_MSWIN_BUILD
 
 #ifndef GUCEF_CORE_ETYPES_H
 #include "gucefCORE_ETypes.h"          /* simple types used */
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */ 
 
-#ifdef GUCEF_MSWIN_BUILD
+#include <winsock2.h>                  /* windows networking API */
 
 #include "dvwinsock.h"                 /* wrapper for global winsock API */
-
-#ifdef ACTIVATE_MEMORY_MANAGER
-  #ifndef GUCEF_NEW_ON_H
-  #include "gucef_new_on.h"   /* Use the GUCEF memory manager instead of the standard manager ? */
-  #define GUCEF_NEW_ON_H
-  #endif /* GUCEF_NEW_ON_H ? */
-#endif /* ACTIVATE_MEMORY_MANAGER ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -126,7 +121,7 @@ ShutdownWinsock( void )
  *
  *      @return returns the global winsock data structure information
  */
-const WSADATA*
+const void*
 GetWinsockData( void )
 {
         MutexLock( _globallock );        

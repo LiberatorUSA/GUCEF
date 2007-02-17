@@ -29,46 +29,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef MACROS_H
-#include "macros.h"                /* generic often used macros */
-#define MACROS_H
-#endif /* MACROS_H ? */
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
 
 #ifndef GUCEF_COMCORE_ETYPES_H
 #include "gucefCOMCORE_ETypes.h"      /* simple types */
 #define GUCEF_COMCORE_ETYPES_H
 #endif /* GUCEF_COMCORE_ETYPES_H ? */
 
-#ifndef GUCEFCOMCORE_CONFIG_H
+#ifndef GUCEF_COMCORE_CONFIG_H
 #include "gucefCOMCORE_config.h"      /* Module build configuration */
-#define GUCEFCOMCORE_CONFIG_H
-#endif /* GUCEFCOMCORE_CONFIG_H ? */
-
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"              /* we want the log manager for its defines */
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      GENERAL MACROS                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-/*
- *      O/S Detection macro.
- *      If you don't want to use the auto detection macro then set
- *      the MANUAL_OS_DEFINE define in the config file.
- */
-#ifndef MANUAL_OS_DEFINE
-  #if defined( WIN32 ) || defined( _WIN32 )
-    #define GUCEF_MSWIN_BUILD
-  #elif defined( linux )
-    #define GUCEF_LINUX_BUILD
-  #else
-    #error Cannot automaticly detect your operating system
-  #endif  
-#endif /* MANUAL_OS_DEFINE ? */
+#define GUCEF_COMCORE_CONFIG_H
+#endif /* GUCEF_COMCORE_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

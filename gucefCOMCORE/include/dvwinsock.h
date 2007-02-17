@@ -24,19 +24,32 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEFCOMCORE_MACROS_H
+#ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"       /* library build defines & macros */
-#define GUCEFCOMCORE_MACROS_H
-#endif /* GUCEFCOMCORE_MACROS_H ? */
+#define GUCEF_COMCORE_MACROS_H
+#endif /* GUCEF_COMCORE_MACROS_H ? */
 
 #ifdef GUCEF_MSWIN_BUILD
 
-//#ifndef SOCKETERRORS_H
-//#include "socketerrors.h"              /* network API independant socket errors */
-//#define SOCKETERRORS_H
-//#endif /* SOCKETERRORS_H ? */
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
 
-#include <winsock.h>                   /* windows networking API */
+struct hostent;
+
+#if !defined( _WINSOCKAPI_ ) && !defined( _WINSOCK2API_ )
+typedef UINT_PTR        SOCKET;
+typedef struct hostent HOSTENT;
+typedef struct hostent *PHOSTENT;
+typedef struct hostent FAR *LPHOSTENT;
+#endif
+
+struct fd_set;
+struct sockaddr;
+struct in_addr;
+struct timeval;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -65,7 +78,7 @@ namespace COMCORE {
 /*--------------------------------------------------------------------------*/
 
 /**
- *      Checks wheter winsock has already been initialized.
+ *      Checks whether winsock has already been initialized.
  *
  *      @return boolean indicating true (>0) or false (0)
  */
@@ -77,9 +90,9 @@ IsWinsockInitialized( void );
 /**
  *      Returns the global winsock 
  *
- *      @return returns the global winsock data structure information
+ *      @return returns the global WSADATA* winsock data structure information
  */
-const WSADATA*
+const void*
 GetWinsockData( void );
 
 /*-------------------------------------------------------------------------*/
@@ -87,7 +100,7 @@ GetWinsockData( void );
 /**
  *      Initializes winsock if winsock has not yet been initialized
  *      Should be called before each instance of use for winsock.
- *      ie for each socket. Each call increaments a counter that is 
+ *      ie for each socket. Each call increments a counter that is 
  *      decremented with a call to ShutdownWinsock().
  *
  *      @param desiredversion the winsock version you require

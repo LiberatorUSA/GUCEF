@@ -30,6 +30,11 @@
 #define DVSTRUTILS_H
 #endif /* DVSTRUTILS_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"              /* we want the log manager for its defines */
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H

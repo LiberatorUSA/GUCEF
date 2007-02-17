@@ -65,13 +65,6 @@ struct STCPServerSockData;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Forward declaration of interface base class
- */
-class CTCPServerSocketInterface;
-
-/*-------------------------------------------------------------------------*/
-
 /**
  *      Server socket class for TCP 
  */
@@ -103,10 +96,6 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     CTCPServerConnection* GetConnection( UInt32 index );
 
     UInt32 GetActiveCount( void ) const;
-    
-    void SetInterface( CTCPServerSocketInterface *new_iface );
-    
-    CTCPServerSocketInterface* GetInterface( void ) const;
 
     /*
      *      Methods that activate or de-activate the socket

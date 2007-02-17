@@ -28,10 +28,16 @@
 #define DVSTRUTILS_H
 #endif /* DVSTRUTILS_H ? */
 
+#ifdef GUCEF_MSWIN_BUILD
+
 #ifndef DVWINSOCK_H
-#include "dvwinsock.h"                  /* threadsafe winsock wrapper */
+#include "dvwinsock.h"
 #define DVWINSOCK_H
 #endif /* DVWINSOCK_H ? */
+
+#include <winsock2.h>                   /* windows networking API */
+
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 #include "CTCPClientSocket.h"           /* Header with class for these utils */
 

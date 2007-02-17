@@ -27,10 +27,16 @@
 #include "CTCPServerSocketInterface.h"  /* interface of parent server socket */
 #include "tsprinting.h"			/* threadsafe printing */
 
+#ifdef GUCEF_MSWIN_BUILD
+
 #ifndef DVWINSOCK_H
 #include "dvwinsock.h"
 #define DVWINSOCK_H
 #endif /* DVWINSOCK_H ? */
+
+#include <winsock.h>                   /* windows networking API */
+
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 #ifdef ACTIVATE_MEMORY_MANAGER
   #ifndef GUCEF_NEW_ON_H

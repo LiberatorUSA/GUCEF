@@ -27,12 +27,21 @@
 #include "dvstrutils.h"                 /* my own string utils */
 #include "tsprinting.h"			/* threadsafe printing */
 
-#include "CTCPServerSocketInterface.h"  /* event handler interface class */
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"              /* we want the log manager for its defines */
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
+#ifdef GUCEF_MSWIN_BUILD
 
 #ifndef DVWINSOCK_H
-#include "dvwinsock.h"          /* threadsafe winsock wrapper */
+#include "dvwinsock.h"
 #define DVWINSOCK_H
 #endif /* DVWINSOCK_H ? */
+
+#include <winsock2.h>                   /* windows networking API */
+
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 #include "CTCPServerSocket.h"           /* this file's header */
 
