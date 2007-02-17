@@ -126,6 +126,11 @@ class GUCEFCORE_EXPORT_CPP CLogManager
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#undef GUCEF_ERROR_LOG
+#define GUCEF_ERROR_LOG( logLevel, logMessage ) GUCEF::CORE::CLogManager::Instance()->Log( GUCEF::CORE::CLogManager::LOG_ERROR, logLevel, logMessage );
+
+/*-------------------------------------------------------------------------*/
+
 #undef GUCEF_LOG
 #define GUCEF_LOG( logLevel, logMessage ) GUCEF::CORE::CLogManager::Instance()->Log( GUCEF::CORE::CLogManager::LOG_STANDARD, logLevel, logMessage );
 #define GUCEF_STANDARD_LOG GUCEF_LOG

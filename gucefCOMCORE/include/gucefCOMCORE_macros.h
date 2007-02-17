@@ -44,6 +44,11 @@
 #define GUCEFCOMCORE_CONFIG_H
 #endif /* GUCEFCOMCORE_CONFIG_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"              /* we want the log manager for its defines */
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      GENERAL MACROS                                                     //

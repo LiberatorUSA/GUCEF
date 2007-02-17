@@ -133,8 +133,7 @@ CTCPServerSocket::CTCPServerSocket( bool blocking )
           _active( false )                        ,
           _blocking( blocking )                   ,
           m_port( 0 )
-{TRACE;           
-        DEBUGOUTPUT( "CTCPServerSocket::CTCPServerSocket( void )" );
+{TRACE;
         
         _data = new TTCPServerSockData;
         _data->blocking = blocking;
@@ -196,7 +195,6 @@ CTCPServerSocket::RegisterEvents( void )
 CTCPServerConnection* 
 CTCPServerSocket::GetConnection( UInt32 index )
  {TRACE;
-        DEBUGOUTPUT( "CTCPServerSocket::Connection( UInt32 index ) const" );
 
 	return (CTCPServerConnection*)_connections[ index ];
 }
@@ -330,8 +328,7 @@ CTCPServerSocket::IsBlocking( void ) const
 bool
 CTCPServerSocket::ListenOnPort( UInt16 servport )
 {TRACE;
-        DEBUGOUTPUT( "CTCPServerSocket::ListenOnPort( UInt16 remote_port )" );
-        
+
         /*
          *      Close all existing connections
          */
@@ -353,7 +350,7 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
                 
         if ( _data->sockid == INVALID_SOCKET ) 
         {
-            DEBUGOUTPUTsi( "Socket error: ", error );
+            GUCEF_ERROR_LOG( 1, "Socket error: " + CORE::Int32ToString( error ) );
             TServerSocketErrorEventData eData( error );
             NotifyObservers( ServerSocketErrorEvent, &eData );                                                      
             return false;			
@@ -395,7 +392,7 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 
 	if ( retval == SOCKET_ERROR ) 
 	{
-		DEBUGOUTPUTsi( "Socket error: ", error );
+		GUCEF_ERROR_LOG( 1, "Socket error: " + CORE::Int32ToString( error ) );
 		TServerSocketErrorEventData eData( error );
 		NotifyObservers( ServerSocketErrorEvent, &eData );		
 		return false;
@@ -423,7 +420,6 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 
 	if ( retval == SOCKET_ERROR ) 
 	{
-        DEBUGOUTPUTsi( "Socket error: ", error );
 		TServerSocketErrorEventData eData( error );
 		NotifyObservers( ServerSocketErrorEvent, &eData );                
 		return false;
@@ -472,7 +468,6 @@ CTCPServerSocket::GetActiveCount( void ) const
 void
 CTCPServerSocket::Close( void )
 {TRACE;
-        DEBUGOUTPUT( "CTCPServerSocket::Close()" );
 
         /*
          *      Close the socket

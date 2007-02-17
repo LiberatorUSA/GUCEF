@@ -89,8 +89,7 @@ CTCPServerConnection::CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
           m_parentsock( tcp_serversock )      ,
           m_connectionidx( connection_idx )
           
-{
-        DEBUGOUTPUT( "CTCPServerConnection::Constructor()" );
+{TRACE;
         
         _data = new TTCPServerConData;        
 }
@@ -134,8 +133,7 @@ CTCPServerConnection::Close( void )
 bool
 CTCPServerConnection::Send( const char *data , 
                             UInt32 length    )
-{        
-        DEBUGOUTPUT( "CTCPServerConnection::Send()" );
+{TRACE;
         
         _datalock.Lock();
         int error;
@@ -223,9 +221,8 @@ CTCPServerConnection::Read( char *dest     ,
                             UInt32 size    , 
                             UInt32 &wbytes , 
                             Int32 timeout  )
-{
-        DEBUGOUTPUT( "CTCPServerConnection::Read()" );
-        
+{TRACE;
+
      //   _datalock.Lock();
      //   recv( _data->sockid              ,
      //         _readbuffer.GetBufferPtr() ,

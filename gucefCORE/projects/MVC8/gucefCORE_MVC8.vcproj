@@ -488,6 +488,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CStdLogger.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CSTDOStreamAdapter.cpp"
 				>
 			</File>
@@ -979,6 +983,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CStdCodecPluginManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CStdLogger.h"
 				>
 			</File>
 			<File
