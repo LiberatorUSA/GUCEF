@@ -57,9 +57,10 @@ class GUCEFCORE_EXPORT_CPP CStdLogger : public CILogger
     public:
     
     CStdLogger( void );    
-    CStdLogger( const CStdLogger& src );
+    
+    CStdLogger( CIOAccess& output );
+    
     virtual ~CStdLogger();
-    CStdLogger& operator=( const CStdLogger& src );
 
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
@@ -68,6 +69,11 @@ class GUCEFCORE_EXPORT_CPP CStdLogger : public CILogger
     void SetOutput( CIOAccess& output );
 
     CString GetLogMsgTypeString( const TLogMsgType logMsgType ) const;
+    
+    private:
+    
+    CStdLogger& operator=( const CStdLogger& src );
+    CStdLogger( const CStdLogger& src );
     
     private:
     

@@ -339,6 +339,31 @@
 #define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
+#ifndef GUCEF_CORE_CILOGGER_H
+#include "CILogger.h"
+#define GUCEF_CORE_CILOGGER_H
+#endif /* GUCEF_CORE_CILOGGER_H ? */
+
+#ifndef GUCEF_CORE_CSTDLOGGER_H
+#include "CStdLogger.h"
+#define GUCEF_CORE_CSTDLOGGER_H
+#endif /* GUCEF_CORE_CSTDLOGGER_H ? */
+
+#ifndef GUCEF_CORE_CFILEACCESS_H
+#include "CFileAccess.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//
@@ -359,6 +384,10 @@ GUCEFCORE_EXPORT_C const char* GUCEF_CORE_ModuleCompileTimeStamp( void );
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 18-02-2007 :
+       - Dinand: Added CLogManager
+       - Dinand: Added CILogger
+       - Dinand: Added CStdLogger
 - 06-10-2006 :
        - Dinand: Added CTLinkedCloneableObj
        - Dinand: re-Added CTCloneableObj

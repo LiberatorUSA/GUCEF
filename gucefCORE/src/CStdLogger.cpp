@@ -56,9 +56,21 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CStdLogger::CStdLogger( void )
-    : CILogger()
+    : CILogger()       ,
+      m_output( NULL )
 {TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+CStdLogger::CStdLogger( CIOAccess& output )
+    : CILogger()          ,
+      m_output( &output )
+{TRACE;
+
+    assert( &m_output != NULL );
+    assert( m_output != NULL );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -66,23 +78,6 @@ CStdLogger::CStdLogger( void )
 CStdLogger::~CStdLogger()
 {TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-CStdLogger::CStdLogger( const CStdLogger& src )
-    : CILogger( src )
-{TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CStdLogger&
-CStdLogger::operator=( const CStdLogger& src )
-{TRACE;
-    
-    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
