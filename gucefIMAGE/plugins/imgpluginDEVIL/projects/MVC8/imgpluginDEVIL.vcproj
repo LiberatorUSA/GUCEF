@@ -61,10 +61,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="DevIL.lib"
+				AdditionalDependencies="DevIL-d.lib"
 				OutputFile="$(OutDir)\imgpluginDEVIL_MVC8_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\dependancy\Devil\lib"
+				AdditionalLibraryDirectories="..\..\dependancy\Devil\lib\debug"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -92,7 +92,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Debug_MVC8\plugins&#x0D;&#x0A;copy ..\..\dependancy\Devil\lib\DevIL.dll ..\..\..\..\..\common\bin\Debug_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Debug_MVC8\plugins&#x0D;&#x0A;copy ..\..\dependancy\Devil\lib\debug\DevIL-d.dll ..\..\..\..\..\common\bin\Debug_MVC8&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration

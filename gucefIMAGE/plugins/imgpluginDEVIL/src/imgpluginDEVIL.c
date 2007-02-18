@@ -564,7 +564,12 @@ CODECPLUGIN_Decode( void* plugdata         ,
     {        
         /* write the TImageInfo section */
         imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
-        frameCount = imageInfo.nrOfFramesInImage = (UInt32) ilGetInteger( IL_NUM_IMAGES );        
+        frameCount = imageInfo.nrOfFramesInImage = (UInt32) ilGetInteger( IL_NUM_IMAGES );
+        if ( frameCount == 0 )
+        {
+            /* DevIL returns a image count of 0 for single-image images */
+            frameCount = imageInfo.nrOfFramesInImage = 1;
+        }
         output->write( output, &imageInfo, sizeof( imageInfo ), 1  );
 
         /* Only 1 layer is supported atm */
@@ -578,6 +583,11 @@ CODECPLUGIN_Decode( void* plugdata         ,
             /* write the TImageFrameInfo section */
             imageFrameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
             mipmapCount = imageFrameInfo.nrOfMipmapLevels = (UInt32) ilGetInteger( IL_NUM_MIPMAPS );
+            if ( mipmapCount == 0 )
+            {
+                /* DevIL returns a mipmap count of 0 images without mipmapping, we use 0 for the base image */
+                mipmapCount = imageFrameInfo.nrOfMipmapLevels = 1;
+            }            
             output->write( output, &imageFrameInfo, sizeof( imageFrameInfo ), 1 );
         
             for ( n=0; n<mipmapCount; ++n )
@@ -594,7 +604,7 @@ CODECPLUGIN_Decode( void* plugdata         ,
                 /* write the TImageMipMapLevelInfo section */
                 imageMMInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
                 imageMMInfo.channelComponentSize = 8; /* DevIL only supports UInt8 */
-                imageMMInfo.channelCountPerPixel = ilGetInteger( IL_IMAGE_BPP ) / 8;
+                imageMMInfo.channelCountPerPixel = ilGetInteger( IL_IMAGE_BPP );
                 imageMMInfo.frameHeight = ilGetInteger( IL_IMAGE_HEIGHT );
                 imageMMInfo.frameWidth = ilGetInteger( IL_IMAGE_WIDTH );
                 imageMMInfo.pixelComponentDataType = DT_UINT8; /* DevIL only supports this type */

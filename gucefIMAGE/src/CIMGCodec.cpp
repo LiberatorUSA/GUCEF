@@ -203,13 +203,13 @@ CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
     if ( Decode( encodedInput  ,
                  bufferAccess  ) )
     {
-        UInt32 bytesWritten = 0;
+        UInt32 bytesRead = 0;
         bufferAccess.Setpos( 0 );
         
         // Fill our header from the buffer
         TImageInfo imageInfo;
-        bytesWritten = bufferAccess.Read( &imageInfo, sizeof( TImageInfo ), 1 );
-        if ( bytesWritten !=  sizeof( TImageInfo ) ) return false;
+        bytesRead = bufferAccess.Read( &imageInfo, sizeof( TImageInfo ), 1 );
+        if ( bytesRead !=  sizeof( TImageInfo ) ) return false;
         
         // Check the header version for compatibility
         if ( imageInfo.version != GUCEF_IMAGE_TIMAGEINFO_VERSION ) return false;
@@ -223,30 +223,30 @@ CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
         {            
             // Read the frame info
             TImageFrameInfo* currentFrame = &imageFrameInfo[ i ].frameInfo;
-            bytesWritten = bufferAccess.Read( currentFrame, sizeof( TImageFrameInfo ), 1 );
+            bytesRead = bufferAccess.Read( currentFrame, sizeof( TImageFrameInfo ), 1 );
             
             // Sanity check 
-            if ( ( bytesWritten != sizeof( TImageFrameInfo ) )                   ||
+            if ( ( bytesRead != sizeof( TImageFrameInfo ) )                       ||
                  ( currentFrame->version != GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION )  )
             {
                 delete []imageFrameInfo;
                 return false;
+            }
             
-                imageFrameInfo[ i ].mipmapLevel = new TImageMipMapLevel[ currentFrame->nrOfMipmapLevels ];
-                for ( UInt32 n=0; n<currentFrame->nrOfMipmapLevels; ++n )
+            imageFrameInfo[ i ].mipmapLevel = new TImageMipMapLevel[ currentFrame->nrOfMipmapLevels ];
+            for ( UInt32 n=0; n<currentFrame->nrOfMipmapLevels; ++n )
+            {
+                // Read the frame's mipmap info
+                TImageMipMapLevelInfo* mipMapLevel = &imageFrameInfo[ i ].mipmapLevel[ n ].mipLevelInfo;
+                bytesRead = bufferAccess.Read( mipMapLevel, sizeof( TImageMipMapLevelInfo ), 1 );
+                
+                // Sanity check
+                if ( ( bytesRead != sizeof( TImageMipMapLevelInfo ) )                      ||
+                     ( mipMapLevel->version != GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION )  )
                 {
-                    // Read the frame's mipmap info
-                    TImageMipMapLevelInfo* mipMapLevel = &imageFrameInfo[ i ].mipmapLevel[ n ].mipLevelInfo;
-                    bytesWritten = bufferAccess.Read( mipMapLevel, sizeof( TImageMipMapLevelInfo ), 1 );
-                    
-                    // Sanity check
-                    if ( ( bytesWritten != sizeof( TImageMipMapLevelInfo ) )                   ||
-                         ( mipMapLevel->version != GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION )  )
-                    {
-                        for ( UInt32 m=0; m<n; ++m ) delete []imageFrameInfo[ m ].mipmapLevel;
-                        delete []imageFrameInfo;
-                        return false;
-                    }
+                    for ( UInt32 m=0; m<n; ++m ) delete []imageFrameInfo[ m ].mipmapLevel;
+                    delete []imageFrameInfo;
+                    return false;
                 }
             }
         }
@@ -272,22 +272,24 @@ CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
                 // Add this mipmap level to the frame
                 mipMapList.push_back( CImage::TPixelMapPtr( pixelMap ) );
                 
-                // Jump to the next image component in the buffer
-                UInt32 pixelBlockSize = ( mipMapLevel->frameWidth * mipMapLevel->frameHeight ) * ( mipMapLevel->channelComponentSize * mipMapLevel->channelCountPerPixel );
-                bufferOffset += pixelBlockSize;
-                if ( bufferOffset < outputBuffer.GetDataSize() )
+                if ( i+1 < imageInfo.nrOfFramesInImage )
                 {
-                    pixelBuffer += pixelBlockSize;
+                    // Jump to the next image component in the buffer
+                    UInt32 pixelBlockSize = ( mipMapLevel->frameWidth * mipMapLevel->frameHeight ) * ( mipMapLevel->channelComponentSize * mipMapLevel->channelCountPerPixel );
+                    bufferOffset += pixelBlockSize;
+                    if ( bufferOffset < outputBuffer.GetDataSize() )
+                    {
+                        pixelBuffer += pixelBlockSize;
+                    }
+                    else
+                    {
+                        // oh oh,.. we ran out of pixels in our buffer even though our image info
+                        // suggests we should have more pixels
+                        for ( UInt32 m=n; m<currentFrame->nrOfMipmapLevels; ++m ) delete []imageFrameInfo[ m ].mipmapLevel;
+                        delete []imageFrameInfo;
+                        return false;
+                    }
                 }
-                else
-                {
-                    // oh oh,.. we ran out of pixels in our buffer even though our image info
-                    // suggests we should have more pixels
-                    for ( UInt32 m=n; m<currentFrame->nrOfMipmapLevels; ++m ) delete []imageFrameInfo[ m ].mipmapLevel;
-                    delete []imageFrameInfo;
-                    return false;
-                }
-                
             }
             
             // Add the frame with all it's mipmap levels to the frame list

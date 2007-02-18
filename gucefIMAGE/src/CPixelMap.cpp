@@ -276,10 +276,12 @@ CPixelMap::GetNumberOfChannelsPerPixel( void ) const
     
     switch ( m_pixelStorageFormat )
     {
+        case PSF_BGR :
         case PSF_RGB :
         {
             return 3;
         }
+        case PSF_BGRA :
         case PSF_RGBA :
         {
             return 4;

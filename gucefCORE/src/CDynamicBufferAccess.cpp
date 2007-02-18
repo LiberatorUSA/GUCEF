@@ -159,8 +159,9 @@ CDynamicBufferAccess::Seek( Int32 offset ,
     {
         case SEEK_CUR :
         {
-            UInt32 carat = m_carat + offset;
-            if ( carat < m_buffer->GetDataSize() )
+            Int32 carat = m_carat + offset;
+            if ( ( carat < (Int32)m_buffer->GetDataSize() ) &&
+                 ( carat >= 0                             )  )
             {
                 m_carat = carat;
                 return 0;
