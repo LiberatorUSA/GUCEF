@@ -74,5 +74,5 @@ function add_package_dependancy(package_name)
 end
 
 function add_library_dependancy(lib_name)
-   table.insert(package.links, lib_name)
+    table.insert(package.links, lib_name)
 end
