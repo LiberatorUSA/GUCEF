@@ -258,14 +258,32 @@ CCom::GetPumpThreading( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
+CCom::SetSystemWideProxyServer( const CORE::CString& protocol ,
+                                const bool active             )
+{TRACE;
+    
+    TProxyList::const_iterator i = m_proxyList.find( protocol );
+    if ( i != m_proxyList.end() )
+    {
+        (*i).second.active = active;
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CCom::SetSystemWideProxyServer( const CORE::CString& protocol   ,
                                 const CORE::CString& remoteHost ,
-                                const UInt16 remotePort         )
+                                const UInt16 remotePort         ,
+                                const bool active               )
 {TRACE;
     
     TProxyServer& proxyServer = m_proxyList[ protocol ];
     proxyServer.host = remoteHost;
     proxyServer.port = remotePort;
+    proxyServer.active = active;
     return true;
 }
 

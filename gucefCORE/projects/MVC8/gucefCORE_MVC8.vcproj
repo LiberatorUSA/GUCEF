@@ -43,7 +43,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\common\include;..\..\include;..\..\..\gucefMT\include;..\..\dependancy;..\..\dependancy\md5"
+				AdditionalIncludeDirectories="..\..\..\common\include;..\..\include;..\..\include\mswin;..\..\..\gucefMT\include;..\..\dependancy;..\..\dependancy\md5"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_DEPRECATE;GUCEFCORE_BUILD_MODULE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -624,6 +624,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\mswin\CWindowMsgHook.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\dvcppstringutils.cpp"
 				>
 			</File>
@@ -1127,6 +1131,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CValueList.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\mswin\CWindowMsgHook.h"
 				>
 			</File>
 			<File

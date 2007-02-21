@@ -115,15 +115,44 @@ class GUCEF_COMCORE_EXPORT_CPP CCom : public CORE::CGUCEFAppSubSystem
          */        
         const TSocketStats& GetGlobalStats( void ) const;
         
+        
+        /**
+         *  Attempts to set the active state of a proxy server for the given protocol
+         *  If no proxy server is defined for the given protocol the call will fail
+         *
+         *  @param protocol the protocol for which to set the active state
+         *  @param active the new value for the active state for the given protocol proxy
+         *  @return false is retuned uppon failure
+         */
+        bool SetSystemWideProxyServer( const CORE::CString& protocol ,
+                                       const bool active             );
+
+        /**
+         *  Attempts to set the active state of a proxy server for the given protocol
+         *  If no proxy server is defined for the given protocol the call will fail
+         *
+         *  @param protocol the protocol for which to set the active state
+         *  @param remoteHost IP or hostname of the proxyserver
+         *  @param remotePort port of the proxyserver where the proxy service is hosted
+         *  @param active the active state for the given protocol proxy
+         *  @return false is retuned uppon failure
+         */
         bool SetSystemWideProxyServer( const CORE::CString& protocol   ,
                                        const CORE::CString& remoteHost ,
-                                       const UInt16 remotePort         );
+                                       const UInt16 remotePort         ,
+                                       const bool active               );
 
         bool GetSystemWideProxyServer( const CORE::CString& protocol ,
                                        CORE::CString& remoteHost     ,
                                        UInt16& remotePort            ,
                                        bool& active                  ) const;
         
+       /**
+         *  Attempts to retrieve the active state of a proxy server for the given protocol
+         *  If no proxy server is defined for the given protocol the call will return false
+         *
+         *  @return the active state for the given protocol proxy, false if no proxy is defined
+         */
         bool IsSystemWideProxyServerActive( const CORE::CString& protocol ) const;
         
         protected:
