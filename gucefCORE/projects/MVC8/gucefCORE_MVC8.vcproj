@@ -228,6 +228,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CCyclicDynamicBuffer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CDataNode.cpp"
 				>
 			</File>
@@ -711,6 +715,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CCPPWrapFileAccess.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CCyclicDynamicBuffer.h"
 				>
 			</File>
 			<File
