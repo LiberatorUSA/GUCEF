@@ -262,7 +262,7 @@ CCom::SetSystemWideProxyServer( const CORE::CString& protocol ,
                                 const bool active             )
 {TRACE;
     
-    TProxyList::const_iterator i = m_proxyList.find( protocol );
+    TProxyList::iterator i = m_proxyList.find( protocol );
     if ( i != m_proxyList.end() )
     {
         (*i).second.active = active;
