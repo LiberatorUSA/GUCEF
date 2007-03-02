@@ -84,6 +84,63 @@ MT::CMutex CCom::_mutex;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef GUCEF_MSWIN_BUILD
+
+bool
+GetMSWinInternetProxyFromRegistry( CORE::CString& remoteHost ,
+                                   UInt16& port              ,
+                                   bool& active              )
+{TRACE;
+
+    char lszValue[ 255 ];
+    HKEY hKey;
+    DWORD dwType = REG_SZ;
+    DWORD dwSize = 255;
+
+    if( ERROR_SUCCESS == RegOpenKeyEx( HKEY_CURRENT_USER                                                 , 
+                                       "SOFTWARE\\MICROSOFT\\WINDOWS\\CURRENTVERSION\\INTERNET SETTINGS" ,
+                                       0L                                                                ,
+                                       KEY_ALL_ACCESS                                                    ,
+                                       &hKey                                                             ) )
+    {
+        if ( ERROR_SUCCESS == RegQueryValueEx( hKey              , 
+                                               "ProxyServer"     , 
+                                               NULL              , 
+                                               &dwType           ,
+                                               (LPBYTE)&lszValue , 
+                                               &dwSize           ) )
+        {
+            CORE::CString regValue( lszValue );
+            remoteHost = regValue.SubstrToChar( ':', true );
+            port = 80;
+
+            CORE::CString portStr( regValue.SubstrToChar( ':', false ) );
+            if ( portStr.Length() > 0 )
+            {
+                port = static_cast< UInt16 >( CORE::StringToInt32( portStr ) );
+            }
+            
+            active = false;
+            if ( ERROR_SUCCESS == RegQueryValueEx( hKey              , 
+                                                   "ProxyEnable"     , 
+                                                   NULL              , 
+                                                   &dwType           ,
+                                                   (LPBYTE)&lszValue , 
+                                                   &dwSize           ) )
+            {
+                active = CORE::StringToBool( lszValue );
+            }
+            return true;
+        }
+        RegCloseKey( hKey );
+    }
+    return false;
+}
+
+#endif /* GUCEF_MSWIN_BUILD ? */
+
+/*-------------------------------------------------------------------------*/
+
 CCom*
 CCom::Instance( void )
 {TRACE;
@@ -118,6 +175,28 @@ CCom::CCom()
 {TRACE;
         _sockets.SetResizeChange( HEAP_RESIZE_AMOUNT );
         memset( &_stats, 0, sizeof(TSocketStats) );   
+        
+        #ifdef GUCEF_MSWIN_BUILD
+        
+        /*
+         *  Read the O/S proxy server settings 
+         */
+        
+        CORE::CString remoteHost;
+        UInt16 port;
+        bool active;
+        
+        if ( GetMSWinInternetProxyFromRegistry( remoteHost ,
+                                                port       ,
+                                                active     ) )
+        {
+            SetSystemWideProxyServer( "http"     ,
+                                      remoteHost ,
+                                      port       ,
+                                      active     );
+        }
+        
+        #endif /* GUCEF_MSWIN_BUILD ? */
 }
 
 /*-------------------------------------------------------------------------*/
