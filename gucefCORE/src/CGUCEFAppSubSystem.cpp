@@ -78,6 +78,7 @@ CGUCEFAppSubSystem::RegisterSubSystem( void )
     if ( !m_isRegistered )
     {
         CGUCEFApplication::Instance()->RegisterSubSystem( this );
+        m_isRegistered = true;
         
         if ( m_inNeedOfAnUpdate )
         {
@@ -95,6 +96,7 @@ CGUCEFAppSubSystem::UnregisterSubSystem( void )
     if ( m_isRegistered )
     {
         CGUCEFApplication::Instance()->UnregisterSubSystem( this );
+        m_isRegistered = false;
     }
 }
 
@@ -131,6 +133,7 @@ CGUCEFAppSubSystem::SetPeriodicUpdateRequirement( const bool requiresPeriodicUpd
 {TRACE;
     
     m_requiresPeriodicUpdates = requiresPeriodicUpdates;
+    CGUCEFApplication::Instance()->RefreshPeriodicUpdateRequirement();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -163,6 +166,7 @@ CGUCEFAppSubSystem::RequestUpdateInterval( const UInt32 updateDeltaInMilliSecs )
     {
         m_updateInterval = updateDeltaInMilliSecs;
     }
+    RequestUpdate();
 }
 
 /*--------------------------------------------------------------------------*/

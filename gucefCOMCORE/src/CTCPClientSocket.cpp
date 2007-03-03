@@ -357,6 +357,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
 void
 CTCPClientSocket::CheckRecieveBuffer( void )
 {TRACE;        
+
     if ( !_blocking && _active )
     {       
         LockData();

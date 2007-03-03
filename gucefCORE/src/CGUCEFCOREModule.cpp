@@ -106,6 +106,11 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_CORE_CTIMER_H
+#include "CTimer.h"
+#define GUCEF_CORE_CTIMER_H
+#endif /* GUCEF_CORE_CTIMER_H ? */
+
 #include "CGUCEFCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef ADD_MEMORY_MANAGER
@@ -204,6 +209,7 @@ CGUCEFCOREModule::Load( void )
          *      Make sure all events are registered from the start
          */
         CNotifier::RegisterEvents();
+        CTimer::RegisterEvents();
         CPluginManager::RegisterEvents();
         CIURLEvents::RegisterEvents();
         CNotifyingMapEvents::RegisterEvents();

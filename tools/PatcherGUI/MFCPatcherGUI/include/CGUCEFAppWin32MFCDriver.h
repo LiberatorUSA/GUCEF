@@ -82,6 +82,7 @@ class CGUCEFAppWin32MFCDriver : public CWnd                                  ,
     GUCEF::CORE::Float64 m_frequency;
     GUCEF::CORE::CGUCEFApplication* m_appPtr;
     bool m_initialized;
+    bool m_useTimer;
 };
 
 /*-------------------------------------------------------------------------*/

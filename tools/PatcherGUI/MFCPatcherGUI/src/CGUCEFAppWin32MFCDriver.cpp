@@ -66,7 +66,8 @@ CGUCEFAppWin32MFCDriver::CGUCEFAppWin32MFCDriver( void )
     : m_appPtr( GUCEF::CORE::CGUCEFApplication::Instance() ) ,
       m_nTimer( 0 )                                          ,
       m_frequency( 10 )                                      ,
-      m_initialized( false )
+      m_initialized( false )                                 ,
+      m_useTimer( false )
 {TRACE;
 
 }
@@ -123,6 +124,7 @@ CGUCEFAppWin32MFCDriver::OnRequestNewMinimalUpdateFreq( const GUCEF::CORE::Float
         /*
          *  Reset the timer with the new timer interval
          */
+        m_useTimer = true;
         if ( GetSafeHwnd() )
         {
             PostMessage( GUCEFWIN32DRIVERMSG_STARTTIMER );
@@ -186,6 +188,7 @@ CGUCEFAppWin32MFCDriver::OnStopUpdateTimer( WPARAM wParam ,
             m_nTimer = 0;
         }
     }
+    m_useTimer = false;
     return 0;
 }
 
@@ -227,11 +230,19 @@ CGUCEFAppWin32MFCDriver::OnSwitchUpdateMethod( const bool periodic )
 
     if ( periodic )
     {
+        // don't start the timer twice
+        if ( m_useTimer )
+        {
+            return;
+        }
+        
+        // Get the update frequency desired and post the timer start message
         m_frequency = m_appPtr->GetMinimalReqUpdateResolution();
         if ( GetSafeHwnd() )
         {
             PostMessage( GUCEFWIN32DRIVERMSG_STARTTIMER );
         }
+        m_useTimer = true;
     }
     else
     {
@@ -239,6 +250,7 @@ CGUCEFAppWin32MFCDriver::OnSwitchUpdateMethod( const bool periodic )
         {
             PostMessage( GUCEFWIN32DRIVERMSG_STOPTIMER );
         }
+        m_useTimer = false;
     }
 }
 

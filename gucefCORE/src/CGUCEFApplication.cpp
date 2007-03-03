@@ -157,7 +157,8 @@ CGUCEFApplication::CGUCEFApplication( void )
           m_requiresPeriodicUpdates( false )                     ,
           m_inNeedOfAnUpdate( false )                            ,
           m_appTickCount( MT::PrecisionTickCount() )             ,
-          m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )
+          m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 ) ,
+          m_appDriver( NULL )
 {TRACE;
                                            
         /*
@@ -383,6 +384,7 @@ CGUCEFApplication::SetApplicationDriver( CIGUCEFApplicationDriver* appDriver )
 {TRACE;
 
     m_appDriver = appDriver;
+    RefreshPeriodicUpdateRequirement();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -679,16 +681,17 @@ CGUCEFApplication::RefreshPeriodicUpdateRequirement( void )
     {
         if ( (*i)->ArePeriodicUpdatesRequired() )
         {
-            if ( !m_requiresPeriodicUpdates )
+            m_requiresPeriodicUpdates = true;
+            
+            // Make sure we have the correct update frequency before we get started
+            RefreshMinimalSubSysInterval();
+                                
+            // notify driver of change                
+            if ( NULL != m_appDriver )
             {
-                m_requiresPeriodicUpdates = true;
-                                    
-                // notify driver of change                
-                if ( NULL != m_appDriver )
-                {
-                    m_appDriver->OnSwitchUpdateMethod( true );
-                }
+                m_appDriver->OnSwitchUpdateMethod( true );
             }
+            
             UnlockData();
             return;
         }

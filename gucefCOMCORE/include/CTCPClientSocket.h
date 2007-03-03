@@ -195,25 +195,25 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CSocket
         - The Ping() member function will from now on only be available if
           NETWORK_ICMP_SUPPORT is defined. 
 - 17-04-2004 :
-        - Added Send_Data_And_Wait(). This member function helps get arround the
-          problems that occur when using a seperate wait fuction since then a
-          response could be recieved before the wait is reached.
+        - Added Send_Data_And_Wait(). This member function helps get around the
+          problems that occur when using a separate wait function since then a
+          response could be received before the wait is reached.
 - 05-12-2003 :
-        - Changed behaviour. If a socket error occures the socket will be closed.
+        - Changed behavior. If a socket error occurs the socket will be closed.
 - 20-12-2003 :
         - Fixed a small bug when resizing buffer which caused a '\0' to replace
           some characters.
 - 06-12-2003 :
         - Changed code in the Handle_Recieved() member function. Allocation of
           storage now happens less because the buffer is recycled between
-          transmissions. This meant the addtion of 2 private data members. 
+          transmissions. This meant the addition of 2 private data members. 
 - 30-10-2003 :
-        - Changed contructor to use the new self registering system with the com
+        - Changed constructor to use the new self registering system with the com
           manager.
 - 23-09-2003 :
         - Added Wait_Untill_Read() in order to provide a method of operation
           similar to a blocking socket. Also added Read_Data() which will allow
-          a blocking socket impementation to be used. You should only call these
+          a blocking socket implementation to be used. You should only call these
           member functions from a thread other then the main application thread.
 - 05-08-2003 :
         - Changed SDL_Event_Handler into Handle_SDL_Event because of the new

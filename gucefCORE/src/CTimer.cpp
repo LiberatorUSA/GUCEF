@@ -24,7 +24,6 @@
 #include <assert.h>
 #include "gucefMT_dvmtoswrap.h"  /* needed for the precision timer */
 #include "CTimerPump.h"
-#include "CITimerClient.h"
 #include "CTracer.h"
 #include "CTimer.h"
 
@@ -36,6 +35,17 @@
 
 namespace GUCEF { 
 namespace CORE {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CEvent CTimer::TimerStartedEvent = "GUCEF::CORE::CTimer::TimerStartedEvent";
+const CEvent CTimer::TimerUpdateEvent = "GUCEF::CORE::CTimer::TimerUpdateEvent";
+const CEvent CTimer::TimerStoppedEvent = "GUCEF::CORE::CTimer::TimerStoppedEvent";
+const CEvent CTimer::TimerIntervalChangedEvent = "GUCEF::CORE::CTimer::TimerIntervalChangedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,6 +63,8 @@ CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 10 */ )
       m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )
 {TRACE;
 
+    RegisterEvents();
+    
     assert( m_timerFreq != 0 );
     m_timerPump->RegisterTimer( this );
 }          
@@ -69,6 +81,8 @@ CTimer::CTimer( const CTimer& src )
        m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )
 {TRACE;
 
+    RegisterEvents();
+    
     assert( m_timerFreq != 0 );
     m_timerPump->RegisterTimer( this );
 }
@@ -98,12 +112,27 @@ CTimer::operator=( const CTimer& src )
 }
 
 /*-------------------------------------------------------------------------*/
+
+void
+CTimer::RegisterEvents( void )
+{TRACE;
+
+    TimerStartedEvent.Initialize();
+    TimerUpdateEvent.Initialize();
+    TimerStoppedEvent.Initialize();
+    TimerIntervalChangedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
     
 void 
 CTimer::SetInterval( const UInt32 updateDeltaInMilliSecs )
 {TRACE;
 
     m_updateDeltaInMilliSecs = updateDeltaInMilliSecs;
+    
+    TimerIntervalChangedEventData eData( updateDeltaInMilliSecs );
+    NotifyObservers( TimerIntervalChangedEvent, &eData );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -134,11 +163,15 @@ CTimer::SetEnabled( const bool enabled )
             
             // Make sure we get an update and tell the pump about our update requirement
             m_timerPump->TimerSetRequiresUpdates( this, true );
+            
+            NotifyObservers( TimerStartedEvent );
         }
         else
         {
             // we don't need periodic updates anymore 
             m_timerPump->TimerSetRequiresUpdates( this, false );
+            
+            NotifyObservers( TimerStoppedEvent );
         }
     }
 }
@@ -151,24 +184,6 @@ CTimer::GetEnabled( void ) const
 
     return m_enabled;
 } 
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CTimer::Subscribe( CITimerClient* client )
-{TRACE;
-
-    m_clients.insert( client );
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void 
-CTimer::Unsubscribe( CITimerClient* client )
-{TRACE;
-
-    m_clients.erase( client );
-}
 
 /*-------------------------------------------------------------------------*/
 
@@ -186,14 +201,11 @@ CTimer::OnUpdate( void )
 
         if ( deltaMilliSecs >= m_updateDeltaInMilliSecs )
         {                    
-            TTimerClientSet::iterator i = m_clients.begin();
-            while ( i != m_clients.end() )
-            {
-                (*i)->OnTimer( *this          ,
-                               m_tickCount    ,
-                               deltaMilliSecs ); 
-                ++i;
-            }  
+            TTimerUpdateData updateData;
+            updateData.tickCount = m_tickCount;
+            updateData.updateDeltaInMilliSecs = deltaMilliSecs;
+            TimerUpdateEventData cuData( updateData );
+            NotifyObservers( TimerUpdateEvent, &cuData );
         }
     }         
 }

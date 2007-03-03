@@ -171,32 +171,36 @@ CCom::CCom()
           _keep_gstats( false )                ,
           _scount( 0 )                         ,
           _pumpthread( false )                 ,
-          _threadedpump( NULL )   
+          _threadedpump( NULL )                ,
+          m_timerPump()
 {TRACE;
-        _sockets.SetResizeChange( HEAP_RESIZE_AMOUNT );
-        memset( &_stats, 0, sizeof(TSocketStats) );   
-        
-        #ifdef GUCEF_MSWIN_BUILD
-        
-        /*
-         *  Read the O/S proxy server settings 
-         */
-        
-        CORE::CString remoteHost;
-        UInt16 port;
-        bool active;
-        
-        if ( GetMSWinInternetProxyFromRegistry( remoteHost ,
-                                                port       ,
-                                                active     ) )
-        {
-            SetSystemWideProxyServer( "http"     ,
-                                      remoteHost ,
-                                      port       ,
-                                      active     );
-        }
-        
-        #endif /* GUCEF_MSWIN_BUILD ? */
+
+    _sockets.SetResizeChange( HEAP_RESIZE_AMOUNT );
+    memset( &_stats, 0, sizeof(TSocketStats) );   
+    
+    #ifdef GUCEF_MSWIN_BUILD
+    
+    /*
+     *  Read the O/S proxy server settings 
+     */
+    
+    CORE::CString remoteHost;
+    UInt16 port;
+    bool active;
+    
+    if ( GetMSWinInternetProxyFromRegistry( remoteHost ,
+                                            port       ,
+                                            active     ) )
+    {
+        SetSystemWideProxyServer( "http"     ,
+                                  remoteHost ,
+                                  port       ,
+                                  active     );
+    }
+    
+    #endif /* GUCEF_MSWIN_BUILD ? */
+    
+    SubscribeTo( &m_timerPump, CORE::CTimer::TimerUpdateEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -209,11 +213,6 @@ CCom::~CCom()
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *	A new socket object has been created and wishes to be registered.
- *	This registration allows the socket object to get periodic updates
- *      for polling reasons
- */
 void                       
 CCom::RegisterSocketObject( CSocket* socket )
 {TRACE;
@@ -221,6 +220,13 @@ CCom::RegisterSocketObject( CSocket* socket )
         _mutex.Lock();
         socket->SetSocketID( _sockets.AddEntry( socket ) );        
         ++_scount;
+        
+        if ( !m_timerPump.GetEnabled() )
+        {
+            m_timerPump.SetInterval( 10 );
+            m_timerPump.SetEnabled( true );
+        }
+        
         _mutex.Unlock();
 }
 
@@ -232,7 +238,37 @@ CCom::UnregisterSocketObject( const CSocket* socket )
         _mutex.Lock();
         _sockets.SetEntry( socket->GetSocketID(), NULL );        
         --_scount;
+        
+        if ( _scount == 0 )
+        {
+            m_timerPump.SetEnabled( false );
+        }
+        
         _mutex.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CCom::OnNotify( CORE::CNotifier* notifier                 ,
+                const CORE::CEvent& eventid               ,
+                CORE::CICloneable* eventdata /* = NULL */ )
+{
+    if ( notifier == &m_timerPump )
+    {
+        if ( eventid == CORE::CTimer::TimerUpdateEvent )
+        {
+            _mutex.Lock();
+            for ( Int32 i=0; i <= _sockets.GetLast(); ++i )
+            {
+                if ( _sockets[ i ] )
+                {
+                    ( (CSocket*)_sockets[ i ] )->Update();
+                }
+            }
+            _mutex.Unlock();            
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -242,15 +278,15 @@ CCom::OnUpdate( const UInt64 tickcount               ,
                 const Float64 updateDeltaInMilliSecs )
 {TRACE;    
 
-        _mutex.Lock();
-        for ( Int32 i=0; i <= _sockets.GetLast(); ++i )
-        {
-                if ( _sockets[ i ] )
-                {
-                        ( (CSocket*)_sockets[ i ] )->Update();
-                }
-        }
-        _mutex.Unlock();   
+    _mutex.Lock();
+    for ( Int32 i=0; i <= _sockets.GetLast(); ++i )
+    {
+            if ( _sockets[ i ] )
+            {
+                    ( (CSocket*)_sockets[ i ] )->Update();
+            }
+    }
+    _mutex.Unlock();   
 }              
 
 /*-------------------------------------------------------------------------*/
@@ -259,7 +295,7 @@ UInt32
 CCom::GetSocketCount( void ) const
 {TRACE;
 
-        return _scount;
+    return _scount;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -268,7 +304,7 @@ void
 CCom::SetUseGlobalStats( bool keep_gstats )
 {TRACE;
 
-        _keep_gstats = keep_gstats;
+    _keep_gstats = keep_gstats;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -277,7 +313,7 @@ bool
 CCom::GetUseGlobalStats( void ) const
 {TRACE;
 
-        return _keep_gstats;
+    return _keep_gstats;
 }
 
 /*-------------------------------------------------------------------------*/

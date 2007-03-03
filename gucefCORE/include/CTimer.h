@@ -24,13 +24,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <set>
-#include "gucefCORE_ETypes.h"
+#ifndef GUCEF_CORE_CNOTIFIER_H
+#include "CNotifier.h"
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"           /* often used gucef macros */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
+#include "CTCloneableObj.h"
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,7 +55,6 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CTimerPump;
-class CITimerClient;
 
 /*-------------------------------------------------------------------------*/
 
@@ -65,8 +71,26 @@ class CITimerClient;
  *  Note that the timer resolution is NOT guaranteed. An attempt is made to
  *  provide the theoretical minimum resolution of 1 millisecond. 
  */
-class GUCEFCORE_EXPORT_CPP CTimer
+class GUCEFCORE_EXPORT_CPP CTimer : public CNotifier
 {
+    public:
+    
+    static const CEvent TimerStartedEvent;
+    static const CEvent TimerUpdateEvent;
+    static const CEvent TimerStoppedEvent;
+    static const CEvent TimerIntervalChangedEvent;
+    
+    struct STimerUpdateData
+    {
+        UInt64 tickCount;
+        Float64 updateDeltaInMilliSecs;
+    };
+    typedef struct STimerUpdateData TTimerUpdateData;
+    typedef CTCloneableObj< TTimerUpdateData > TimerUpdateEventData;
+    typedef TCloneableUInt32 TimerIntervalChangedEventData;
+        
+    static void RegisterEvents( void );
+    
     public:
     
     explicit CTimer( const UInt32 updateDeltaInMilliSecs = 10 );        
@@ -117,20 +141,14 @@ class GUCEFCORE_EXPORT_CPP CTimer
 	 */
 	static Float64 GetApproxMaxTimerResolutionInMilliSecs( void );
     
-    void Subscribe( CITimerClient* client );
-    
-    void Unsubscribe( CITimerClient* client );
-
     private:
     friend class CTimerPump;
 
     void OnUpdate( void );
     
     private:
-    typedef std::set< CITimerClient* > TTimerClientSet;
-    
+
     CTimerPump* m_timerPump;
-    TTimerClientSet m_clients;
     Float64 m_timerFreq;
     UInt64 m_lastTimerCycle;
     UInt64 m_tickCount;
@@ -148,6 +166,17 @@ class GUCEFCORE_EXPORT_CPP CTimer
 }; /* namespace CORE */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 03-03-2007 :
+        - Dinand: Added this section.
+        - Dinand: Converted class from callback interface based mechanics to 
+          notification
+
+-----------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CTIMER_H  ? */

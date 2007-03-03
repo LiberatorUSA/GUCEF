@@ -360,10 +360,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CITimerClient.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\CITypeNamed.cpp"
 				>
 			</File>
@@ -851,10 +847,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CISysConsoleCmdHandler.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CITimerClient.h"
 				>
 			</File>
 			<File

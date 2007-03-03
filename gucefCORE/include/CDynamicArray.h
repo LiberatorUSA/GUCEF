@@ -50,8 +50,10 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *      Simply implementation of a resizable array. 
+ *      Simply implementation of a resize-able array. 
  *      This class is NOT thread safe.
+ *
+ *      @deprecated
  */
 class GUCEFCORE_EXPORT_CPP CDynamicArray
 {

@@ -94,6 +94,7 @@ CTimerPump::RegisterTimer( CTimer* timer )
 {TRACE;
 
     m_timerList.insert( std::pair< CTimer*, bool >( timer, false ) );
+    RegisterSubSystem();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -103,6 +104,10 @@ CTimerPump::UnregisterTimer( CTimer* timer )
 {TRACE;
 
     m_timerList.erase( timer );
+    if ( m_timerList.empty() )
+    {
+        UnregisterSubSystem();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
