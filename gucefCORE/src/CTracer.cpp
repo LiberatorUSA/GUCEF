@@ -28,7 +28,6 @@
 
 #include "CTracer.h"
 
-#ifdef GUCEF_CORE_DEBUG_MODE
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -90,4 +89,3 @@ CTracer::operator=( const CTracer& src )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-#endif /* GUCEF_CORE_DEBUG_MODE ? */

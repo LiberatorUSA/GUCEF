@@ -1,7 +1,0 @@
-<PatchSet>
-	<Dir Name="data" TotalSize="" Hash="" >
-		<File Name="DummyDataFile.txt" Size="" Hash="" >
-			<FileLocation URL="" Codec="" CodecParams="" />
-		</File>
-	</Dir>
-</PatchSet>

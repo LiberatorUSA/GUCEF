@@ -29,7 +29,6 @@
   #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifdef GUCEF_CORE_DEBUG_MODE
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -46,8 +45,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/ 
 
 /**
- *      Verry simply class that calls the GUCEF callstack functions.
- *      This allows us to use creation and destruction behaviour of a C++ object
+ *      Very simply class that calls the GUCEF callstack functions.
+ *      This allows us to use creation and destruction behavior of a C++ object
  *      to ensure that both the begin and end callstack functions are called for
  *      the scope where the tracer object is created.
  *
@@ -81,7 +80,6 @@ class GUCEFCORE_EXPORT_CPP CTracer
 }; /* namespace CORE */
 }; /* namespace GUCEF */
 
-#endif /* GUCEF_CORE_DEBUG_MODE ? */
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      MACROS                                                             //

@@ -365,19 +365,28 @@ CTCPClientSocket::CheckRecieveBuffer( void )
          *      Since this is a non-blocking socket we need to poll for received data
          */
         int bytesrecv;
-        UInt32 totalrecieved( 0 );
         int errorcode = 0;
         UInt32 readblocksize;
-        m_maxreadbytes ? readblocksize = m_maxreadbytes : readblocksize = 1024;
+        m_maxreadbytes > 0 ? readblocksize = m_maxreadbytes : readblocksize = 1024;
+        
+        // reset our logical data size delimiter
+        m_readbuffer.SetDataSize( 0 );
+        
         do
         {                 
-            m_readbuffer.SetDataSize( m_readbuffer.GetDataSize()+readblocksize );
-            bytesrecv = WSTS_recv( _data->sockid                                                 , 
-                                   static_cast<char*>(m_readbuffer.GetBufferPtr())+totalrecieved ,
-                                   readblocksize                                                 ,
-                                   0                                                             ,
-                                   &errorcode                                                    );
+            // make sure the buffer can hold another read block
+            m_readbuffer.SetBufferSize( m_readbuffer.GetDataSize()+readblocksize );
             
+            // read an additional block
+            bytesrecv = WSTS_recv( _data->sockid                                                                , 
+                                   static_cast<char*>(m_readbuffer.GetBufferPtr()) + m_readbuffer.GetDataSize() ,
+                                   readblocksize                                                                ,
+                                   0                                                                            ,
+                                   &errorcode                                                                   );
+            
+            // Increase the logical data size delimiter by the amount we just copied into the buffer
+            m_readbuffer.SetDataSize( m_readbuffer.GetDataSize() + bytesrecv );
+                        
             // Check for an error
             if ( ( bytesrecv < 0 ) || ( errorcode != 0 ) )
             {
@@ -400,10 +409,9 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                 return;
             }
 
-            totalrecieved += bytesrecv;
-            if ( m_maxreadbytes )
+            if ( m_maxreadbytes > 0 )
             {
-                if ( m_maxreadbytes <= totalrecieved )
+                if ( m_maxreadbytes <= m_readbuffer.GetDataSize() )
                 {
                         break;
                 }
@@ -412,10 +420,10 @@ CTCPClientSocket::CheckRecieveBuffer( void )
         
         while ( bytesrecv == readblocksize );
         
-        if ( totalrecieved > 0 )
+        if ( m_readbuffer.GetDataSize() > 0 )
         {
             CORE::CDynamicBuffer linkedBuffer;
-            linkedBuffer.LinkTo( m_readbuffer.GetBufferPtr(), totalrecieved );
+            linkedBuffer.LinkTo( m_readbuffer.GetConstBufferPtr(), m_readbuffer.GetDataSize() );
             TDataRecievedEventData cData( &linkedBuffer );
             NotifyObservers( DataRecievedEvent, &cData );
         }

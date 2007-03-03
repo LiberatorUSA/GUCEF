@@ -307,6 +307,7 @@ CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
         outputImage.Assign( frameList );
         return true;
     }
+    
     return false;
 }
 

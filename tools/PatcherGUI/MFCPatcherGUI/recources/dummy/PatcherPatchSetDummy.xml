@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- Generated using dstorepluginXMLPARSIFAL (v1.1.0.0) for the GUCEF platform - Copyright (C) Dinand Vanvelzen. All rights reserved -->
+<PatchSet>
+	<Dir Name="data" TotalSize="402" Hash="039014169193035133029134139152108032037000048059" >
+		<File Name="DummyDataFile.txt" Hash="231114240050019050096057044190254234235046041244" Size="402" >
+			<FileLocation URL="http://www.VanvelzenSoftware.com/bin/GUCEF/tools/PatcherGUI/PatcherTest/data/DummyDataFile.txt" />
+		</File>
+	</Dir>
+</PatchSet>

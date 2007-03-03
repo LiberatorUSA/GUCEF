@@ -190,7 +190,11 @@ CURL::Activate( void )
 void
 CURL::Deactivate( void )
 {TRACE;
+
+    if ( m_handler != NULL )
+    {
         m_handler->Deactivate( *this );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -198,7 +202,12 @@ CURL::Deactivate( void )
 bool
 CURL::IsActive( void ) const
 {TRACE;
+
+    if ( m_handler != NULL )
+    {
         return m_handler->IsActive( *this );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

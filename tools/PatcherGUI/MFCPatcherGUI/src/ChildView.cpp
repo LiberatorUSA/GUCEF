@@ -408,6 +408,16 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
             m_listBox->AddString( "Completed patch list retrieval" );
         }
         else
+        if ( eventid == PATCHER::CPatchEngine::PatchListProcessingStartedEvent )
+        {
+            m_listBox->AddString( "Patch list processing started..." );
+        }
+        else        
+        if ( eventid == PATCHER::CPatchEngine::PatchListDataReceivedEvent )
+        {
+            m_listBox->AddString( "Received patch list data" );
+        }
+        else
         if ( eventid == PATCHER::CPatchEngine::PatchListRetrievalAbortedEvent )
         {
             m_listBox->AddString( "Aborted patch list retrieval" );
@@ -416,8 +426,38 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
         if ( eventid == PATCHER::CPatchEngine::PatchListDecodingFailedEvent )
         {
             m_listBox->AddString( "ERROR: Failed to decode the patch list" );
-        }                               
-       // else
+        }
+        else
+        if ( eventid == PATCHER::CPatchEngine::PatchSetRetrievalFailedEvent )
+        {
+            m_listBox->AddString( "ERROR: Failed to retrieve the patch set" );
+        }
+        else
+        if ( eventid == PATCHER::CPatchEngine::PatchSetRetrievalAbortedEvent )
+        {
+            m_listBox->AddString( "Aborted patch set retrieval" );
+        }  
+        else        
+        if ( eventid == PATCHER::CPatchEngine::PatchSetRetrievalStartedEvent )
+        {
+            m_listBox->AddString( "Retrieving patch set..." );
+        }  
+        else        
+        if ( eventid == PATCHER::CPatchEngine::PatchSetRetrievalCompletedEvent )
+        {
+            m_listBox->AddString( "Completed patch set retrieval" );
+        }  
+        else
+        if ( eventid == PATCHER::CPatchEngine::PatchSetDecodingFailedEvent )
+        {
+            m_listBox->AddString( "ERROR: Failed to decode a patch set" );
+        }
+        else
+        if ( eventid == PATCHER::CPatchEngine::PatchProcessAbortedEvent )
+        {
+            m_listBox->AddString( "The patching process has been aborted" );
+        }        
+        else
         {
             if ( ( NULL != m_listBox )                            &&
                  ( eventid != CORE::CNotifier::DestructionEvent ) &&

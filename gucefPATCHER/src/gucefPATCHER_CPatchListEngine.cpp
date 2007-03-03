@@ -21,6 +21,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef GUCEF_CORE_CMFILEACCESS_H
 #include "CMFileAccess.h"
 #define GUCEF_CORE_CMFILEACCESS_H
@@ -179,7 +184,7 @@ CPatchListEngine::Start( const TPatchList& patchList          ,
     if ( !IsActive() )
     {
         // parameter sanity check
-        if ( ( patchList.size() > 1 )   &&
+        if ( ( patchList.size() > 0 )   &&
              ( localRoot.Length() > 0 )  )
         {
             m_isActive = true;
@@ -187,8 +192,8 @@ CPatchListEngine::Start( const TPatchList& patchList          ,
             
             m_patchList = patchList;
 
-            m_localRoot = localRoot;
-            m_tempStorageRoot = tempStorageRoot;
+            m_localRoot = CORE::RelativePath( localRoot );
+            m_tempStorageRoot = CORE::RelativePath( tempStorageRoot );
             m_setIndex = 0;
             m_setLocIndex = 0;
             
@@ -239,37 +244,41 @@ bool
 CPatchListEngine::ProcessRecievedPatchSet( void )
 {TRACE;
 
-    // Now we must process the raw patch set data to turn it into something we can use
-    TPatchSetLocation* setLocation = NULL;
-    if ( GetCurrentPatchSetLocation( &setLocation ) )
+    if ( m_setDataBuffer.GetDataSize() > 0 )
     {
-        // Get the required codec for the current raw patch set data type
-        CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = CORE::CDStoreCodecRegistry::Instance()->Lookup( setLocation->codec );
-        if ( NULL != codecPtr )
+        // Now we must process the raw patch set data to turn it into something we can use
+        TPatchSetLocation* setLocation = NULL;
+        if ( GetCurrentPatchSetLocation( &setLocation ) )
         {
-            // Prepare vars for the decoding process
-            CORE::CDataNode rootNode;
-            CORE::CMFileAccess dataAccess( m_setDataBuffer.GetConstBufferPtr() , 
-                                           m_setDataBuffer.GetDataSize()       );
-                                           
-            // decode the data in our buffer into a data tree
-            if ( codecPtr->BuildDataTree( &rootNode   ,
-                                          &dataAccess ) )
+            // Get the required codec for the current raw patch set data type
+            CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = CORE::CDStoreCodecRegistry::Instance()->Lookup( setLocation->codec );
+            if ( NULL != codecPtr )
             {
-                // Make sure the buffer is cleared
-                m_setDataBuffer.Clear();
                 
-                // Now we have to parse the data tree into something more familiar
-                TPatchSet patchSet;
-                CPatchSetParser setParser;                        
-                if ( setParser.ParsePatchSet( rootNode ,
-                                              patchSet ) )
+                // Prepare vars for the decoding process
+                CORE::CDataNode rootNode;
+                CORE::CMFileAccess dataAccess( m_setDataBuffer.GetConstBufferPtr() , 
+                                               m_setDataBuffer.GetDataSize()       );
+                                               
+                // decode the data in our buffer into a data tree
+                if ( codecPtr->BuildDataTree( &rootNode   ,
+                                              &dataAccess ) )
                 {
-                    // Now that the raw data has been processed into a real patch list we can commence
-                    // with the patching process for this patch set
-                    return m_patchSetEngine->Start( patchSet          ,
-                                                    m_localRoot       ,
-                                                    m_tempStorageRoot );
+                    // Make sure the buffer is cleared
+                    m_setDataBuffer.Clear();
+                    
+                    // Now we have to parse the data tree into something more familiar
+                    TPatchSet patchSet;
+                    CPatchSetParser setParser;                        
+                    if ( setParser.ParsePatchSet( rootNode ,
+                                                  patchSet ) )
+                    {
+                        // Now that the raw data has been processed into a real patch list we can commence
+                        // with the patching process for this patch set
+                        return m_patchSetEngine->Start( patchSet          ,
+                                                        m_localRoot       ,
+                                                        m_tempStorageRoot );
+                    }
                 }
             }
         }

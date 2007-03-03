@@ -102,7 +102,7 @@ CPatchSetEngine::Start( const TPatchSet& patchSet            ,
     if ( !IsActive() )
     {
         // parameter sanity check
-        if ( ( patchSet.size() > 1 )     &&
+        if ( ( patchSet.size() > 0 )     &&
              ( localRoot.Length() > 0 )  )
         {
             m_isActive = true;

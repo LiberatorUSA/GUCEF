@@ -388,290 +388,305 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
                      const char* data                     ,
                      const UInt32 bufferLength            )
 {TRACE;       
-        THTTPCODE http_code = HTTPCODE_DEFAULT;
-        UInt32 size( 0 ), length( bufferLength );
-        bool resumeable( false );
-        
-        DEBUGOUTPUTsi( "CHTTPClient::OnRead(): bytes: ", length );
-        
-        if( !m_downloading )
+
+    THTTPCODE http_code = HTTPCODE_DEFAULT;
+    UInt32 size( 0 ), length( bufferLength );
+    bool resumeable( false );
+    
+    DEBUGOUTPUTsi( "CHTTPClient::OnRead(): bytes: ", length );
+    
+    if( !m_downloading )
+    {
+        if ( length < 13 )
         {
-                if ( length < 13 )
-                {
-                        DEBUGOUTPUT( "Invalid HTTP header recieved" );
-                        return;
-                }                
-                
-                UInt32 i, i2, i3;
-                char *headers, *tempChar;
-
-                /*
-                 *	Check if the server is using the HTTP protocol.
-                 */
-                if( ( strncmp( data, "HTTP/1.1", 8 ) != 0 ) &&
-                    ( strncmp( data, "HTTP/1.0", 8 ) != 0 ) )
-                {
-                        DEBUGOUTPUT("Doesnt look like HTTP protocol");
-                        return;
-                }
-                
-                /*
-                 *      Parse the error code from the string.
-                 */
-                char codestr[ 4 ];
-                codestr[ 3 ] = '\0';
-                strncpy( codestr, data+9, 4 );
-                http_code = (THTTPCODE) CORE::Str_To_Int( codestr );                        
-
-                /*
-                 *      Check if an error occured.
-                 *      If so we will stop processing the data.
-                 *      There are codes that are not errors so we need to
-                 *      check for them
-                 */
-                if( http_code >= 400 )
-                {
-                        DEBUGOUTPUTsi( "CHTTPClient: HTTP Error: ", http_code );
-                        
-                        THTTPErrorEventData eventData( http_code );
-                        NotifyObservers( HTTPErrorEvent, &eventData );                        
-                        return;
-                }
-                
-                /*
-                 *      Move to the next segment end delimiter
-                 *      This will give use the size of the header segment
-                 */
-                for(i = 0; data[i] != '\r' || data[i+2] != '\r'; i++) {}
-                i += 2;
-
-                /*
-                 *      Create a buffer for the header data and copy
-                 *      the header info into it.
-                 */
-                headers = new char[i+1];
-                strncpy(headers, data, i);
-                headers[i] = '\0';
-                
-                DEBUGOUTPUTsi( "header size: ", i );
-                DEBUGOUTPUT( headers );                
-                
-                /*
-                 *      Check wheter we are beeing told to look somewhere else for
-                 *      the requested recource
-                 */                 
-                if( http_code == HTTPCODE_302_FOUND ) 
-                {
-                        m_recieved = size = 0;
-
-                        tempChar = strstr(headers, "\nLocation");
-
-                        i2 = 9;
-
-                        if(tempChar[i2] == ':') i2++;
-                        if(tempChar[i2] == ' ') i2++;
-
-                        for(i3 = i2; tempChar[i3] != '\r' && tempChar[i3] != '\n'; i3++) {}
-
-                        tempChar[i3] = '\0';
-
-                        socket.Close();
-
-                        tempChar = &tempChar[i2];
-                        
-                        THTTPRedirectEventData eventData( tempChar );
-                        NotifyObservers( HTTPRedirectEvent, &eventData );                        
-
-                        Get( tempChar, 0 );
-
-                        delete[] headers;
-
-                        return ;
-                }
-                
-                m_downloading = true;
-                
-                /*
-                 *      Parse the content-length integer
-                 */
-                tempChar = strstr(headers, "\nContent-Length");
-                if(tempChar != NULL) 
-                {
-                        char *tempChar2;
-                        UInt32 length2;
-                        i2 = 15;
-
-         	        if(tempChar[i2] == ':') i2++;
-        	        if(tempChar[i2] == ' ') i2++;
-
-	        	for(i3 = i2; tempChar[i3] != '\r' && tempChar[i3] != '\n'; i3++) {}
-
-                        length2 = i3 - i2;
-
-                        tempChar2 = new char[length2 + 1];
-
-                        strncpy(tempChar2, &tempChar[i2], length2 + 1);
-                        tempChar2[length2] = '\0';
-
-                        size = CORE::Str_To_Int(tempChar2);
-
-                        delete[] tempChar2;
-                }
-                else 
-                {
-                        size = 0;
-                }
-
-        	m_recieved = 0;
-
-                /*
-                 *      Check whether the transfer is resumeable
-                 */
-                tempChar = strstr(headers, "\nAccept-Ranges");
-                
-                if(tempChar != NULL) 
-                {
-                        i2 = 14;
-
-         	        if(tempChar[i2] == ':') i2++;
-        	        if(tempChar[i2] == ' ') i2++;
-
-                        if(strncmp(&tempChar[i2], "bytes", 5) == 0) resumeable = true;
-                        else resumeable = false;
-                }
-                else resumeable = false;
-
-                /*
-                 *      Clean up and reposition the pointer to remove the header
-                 */
-                delete[] headers;
-
-		i += 2;
-                length -= i;
-                data = &data[i];
-	}
+            DEBUGOUTPUT( "Invalid HTTP header received" );
+            return;
+        }                
         
-        if ( 0 == size )
-	{
-                /*
-                 *      Since we did not find a content-length segment we will have to
-                 *      check the data for content manually and try to determine the
-                 *      content-length if there is any.
-                 */
-                UInt32 i;
-                char *tempChar;                
-                
-                while(m_filesize < length) 
-                {
-                        if(m_filesize == 0) 
-                        {
-                                for(i = 0; (data[i] == '\r' || data[i] == '\n') && i < length; i++) {}
+        UInt32 i, i2, i3;
+        char *headers, *tempChar;
 
-                                if(i != 0) 
-                                {
-                                        length -= i;
-                                        data = &data[i];
-                                }
+        /*
+         *	Check if the server is using the HTTP protocol.
+         */
+        if( ( strncmp( data, "HTTP/1.1", 8 ) != 0 ) &&
+            ( strncmp( data, "HTTP/1.0", 8 ) != 0 ) )
+        {
+            DEBUGOUTPUT("Doesnt look like HTTP protocol");
+            return;
+        }
+            
+        /*
+         *      Parse the error code from the string.
+         */
+        char codestr[ 4 ];
+        codestr[ 3 ] = '\0';
+        strncpy( codestr, data+9, 4 );
+        http_code = (THTTPCODE) CORE::Str_To_Int( codestr );                        
 
-                                if(length == 0) return;
+        /*
+         *      Check if an error occurred.
+         *      If so we will stop processing the data.
+         *      There are codes that are not errors so we need to
+         *      check for them
+         */
+        if( http_code >= 400 )
+        {
+            DEBUGOUTPUTsi( "CHTTPClient: HTTP Error: ", http_code );
+            
+            THTTPErrorEventData eventData( http_code );
+            NotifyObservers( HTTPErrorEvent, &eventData );                        
+            return;
+        }
+        
+        /*
+         *      Move to the next segment end delimiter
+         *      This will give use the size of the header segment
+         */
+        for(i = 0; data[i] != '\r' || data[i+2] != '\r'; i++) {}
+        i += 2;
 
-                                for(i = 0; data[i] != '\r' && data[i] != '\n' && i < length; i++) {}
+        /*
+         *      Create a buffer for the header data and copy
+         *      the header info into it.
+         */
+        headers = new char[i+1];
+        strncpy(headers, data, i);
+        headers[i] = '\0';
+        
+        DEBUGOUTPUTsi( "header size: ", i );
+        DEBUGOUTPUT( headers );                
+            
+        /*
+         *      Check whether we are being told to look somewhere else for
+         *      the requested resource
+         */                 
+        if( http_code == HTTPCODE_302_FOUND ) 
+        {
+            m_recieved = size = 0;
 
-                                if(i >= length) 
-                                {
-                                        // Bad data recieved
-                                        NotifyObservers( ConnectionErrorEvent );
+            tempChar = strstr(headers, "\nLocation");
 
-                                        m_recieved = size = 0;
-                                        socket.Close();
+            i2 = 9;
 
-                                        return;
-                                }
+            if(tempChar[i2] == ':') i2++;
+            if(tempChar[i2] == ' ') i2++;
 
-                                tempChar = new char[i + 1];
-                                strncpy(tempChar, data, i + 1);
-                                tempChar[i] = '\0';
-                                sscanf(tempChar, "%x", &m_filesize);
-                                delete[] tempChar;
-   
-                                DEBUGOUTPUTi( m_filesize );
+            for(i3 = i2; tempChar[i3] != '\r' && tempChar[i3] != '\n'; i3++) {}
 
-                                if(m_filesize == 0) 
-                                {
-                                        NotifyObservers( HTTPTransferFinishedEvent );
+            tempChar[i3] = '\0';
 
-                                        size = m_recieved;
-                                        socket.Close();
+            socket.Close();
 
-                                        return;
-                                }
+            tempChar = &tempChar[i2];
+            
+            THTTPRedirectEventData eventData( tempChar );
+            NotifyObservers( HTTPRedirectEvent, &eventData );                        
 
-                                if(data[i] == '\r' && data[i + 1] == '\n') i += 2;
-                                else i++;
+            Get( tempChar, 0 );
 
-                                length -= i;
-                                data = &data[i];
-                        }
+            delete[] headers;
 
-                        if(m_filesize < length) 
-                        {                                
-                                // Notify observers about the HTTP transfer payload contents we recieved
-                                CORE::CDynamicBuffer linkBuffer;
-                                linkBuffer.LinkTo( data, m_filesize );
-                                THTTPDataRecievedEventData cBuffer( &linkBuffer );
-                                NotifyObservers( HTTPDataRecievedEvent, &cBuffer );
-                                                                 
-                                m_recieved += m_filesize;
-                                length -= m_filesize;
+            return ;
+        }
+            
+        m_downloading = true;
+        
+        /*
+         *      Parse the content-length integer
+         */
+        tempChar = strstr(headers, "\nContent-Length");
+        if(tempChar != NULL) 
+        {
+            char *tempChar2;
+            UInt32 length2;
+            i2 = 15;
 
-                                data = &data[m_filesize];
-                                m_filesize = 0;
-                        }
-                }
+            if(tempChar[i2] == ':') i2++;
+            if(tempChar[i2] == ' ') i2++;
 
-                if(m_filesize > length && length != 0) 
-                {
+            for(i3 = i2; tempChar[i3] != '\r' && tempChar[i3] != '\n'; i3++) {}
 
-                    // Notify observers about the HTTP payload content info we received
-                    struct SHTTPContentEventData cedStruct;
-                    cedStruct.contentSize = m_filesize;
-                    cedStruct.resumeSupported = resumeable;
-                    cedStruct.HTTPcode = http_code;
-                    THTTPContentEventData contentEventData( cedStruct );
-                    NotifyObservers( HTTPContentEvent, &contentEventData );
-                                
-                    // Notify observers about the HTTP transfer payload contents we received
-                    CORE::CDynamicBuffer linkBuffer;
-                    linkBuffer.LinkTo( data, length );
-                    THTTPDataRecievedEventData cBuffer( &linkBuffer );
-                    NotifyObservers( HTTPDataRecievedEvent, &cBuffer );
-                                                          
-                    m_recieved += length;
-                    m_filesize -= length;
-                }
+            length2 = i3 - i2;
+
+            tempChar2 = new char[length2 + 1];
+
+            strncpy(tempChar2, &tempChar[i2], length2 + 1);
+            tempChar2[length2] = '\0';
+
+            size = CORE::Str_To_Int(tempChar2);
+
+            delete[] tempChar2;
         }
         else 
         {
-            m_recieved += length;                
+            size = 0;
+        }
+
+	    m_recieved = 0;
+
+        /*
+         *      Check whether the transfer is resumeable
+         */
+        tempChar = strstr( headers, "\nAccept-Ranges" );
+        
+        if( tempChar != NULL ) 
+        {
+            i2 = 14;
+
+            if(tempChar[i2] == ':') i2++;
+            if(tempChar[i2] == ' ') i2++;
+
+            if( strncmp( &tempChar[ i2], "bytes", 5 ) == 0 )
+            {
+                resumeable = true;
+            }
+            else
+            {
+                resumeable = false;
+            }
+        }
+        else
+        {
+            resumeable = false;
+        }
+
+        /*
+         *      Clean up and reposition the pointer to remove the header
+         */
+        delete[] headers;
+        i += 2;
+        length -= i;
+        data = &data[i];
+    }
+    
+    if ( 0 == size )
+    {
+        /*
+         *      Since we did not find a content-length segment we will have to
+         *      check the data for content manually and try to determine the
+         *      content-length if there is any.
+         */
+        UInt32 i;
+        char *tempChar;                
+        
+        while( m_filesize < length ) 
+        {
+            if( m_filesize == 0 ) 
+            {
+                for( i = 0; (data[i] == '\r' || data[i] == '\n') && i < length; i++ ) {}
+
+                if( i != 0 ) 
+                {
+                    length -= i;
+                    data = &data[i];
+                }
+
+                if( length == 0 ) return;
+
+                for( i = 0; data[i] != '\r' && data[i] != '\n' && i < length; i++) {}
+
+                if( i >= length ) 
+                {
+                    // Bad data received
+                    NotifyObservers( ConnectionErrorEvent );
+
+                    m_recieved = size = 0;
+                    socket.Close();
+
+                    return;
+                }
+
+                tempChar = new char[i + 1];
+                strncpy(tempChar, data, i + 1);
+                tempChar[i] = '\0';
+                sscanf(tempChar, "%x", &m_filesize);
+                delete[] tempChar;
+
+                DEBUGOUTPUTi( m_filesize );
+
+                if(m_filesize == 0) 
+                {
+                    NotifyObservers( HTTPTransferFinishedEvent );
+
+                    size = m_recieved;
+                    socket.Close();
+
+                    return;
+                }
+
+                if(data[i] == '\r' && data[i + 1] == '\n') i += 2;
+                else i++;
+
+                length -= i;
+                data = &data[i];
+            }
+
+            if(m_filesize < length) 
+            {                                
+                // Notify observers about the HTTP transfer payload contents we received
+                CORE::CDynamicBuffer linkBuffer;
+                linkBuffer.LinkTo( data, m_filesize );
+                THTTPDataRecievedEventData cBuffer( &linkBuffer );
+                NotifyObservers( HTTPDataRecievedEvent, &cBuffer );
+                                                 
+                m_recieved += m_filesize;
+                length -= m_filesize;
+
+                data = &data[m_filesize];
+                m_filesize = 0;
+            }
+        }
+
+        if(m_filesize > length && length != 0) 
+        {
 
             // Notify observers about the HTTP payload content info we received
             struct SHTTPContentEventData cedStruct;
-            cedStruct.contentSize = size;
+            cedStruct.contentSize = m_filesize;
             cedStruct.resumeSupported = resumeable;
             cedStruct.HTTPcode = http_code;
             THTTPContentEventData contentEventData( cedStruct );
             NotifyObservers( HTTPContentEvent, &contentEventData );
-                                                      	                       
+                        
             // Notify observers about the HTTP transfer payload contents we received
             CORE::CDynamicBuffer linkBuffer;
             linkBuffer.LinkTo( data, length );
             THTTPDataRecievedEventData cBuffer( &linkBuffer );
+            NotifyObservers( HTTPDataRecievedEvent, &cBuffer );
+                                                  
+            m_recieved += length;
+            m_filesize -= length;
+        }
+    }
+    else 
+    {
+        // Notify observers about the HTTP payload content info we received
+        struct SHTTPContentEventData cedStruct;
+        cedStruct.contentSize = size;
+        cedStruct.resumeSupported = resumeable;
+        cedStruct.HTTPcode = http_code;
+        THTTPContentEventData contentEventData( cedStruct );
+        NotifyObservers( HTTPContentEvent, &contentEventData );
+        
+        // Sanity check on the content size, make sure we have enough room left
+        // in the buffer so that it can possibly store the data it claims to store
+        if ( length >= size )
+        {
+            m_recieved += size;  
+            
+            // Notify observers about the HTTP transfer payload contents we received
+            CORE::CDynamicBuffer linkBuffer;
+            linkBuffer.LinkTo( data, size );
+            THTTPDataRecievedEventData cBuffer( &linkBuffer );
             NotifyObservers( HTTPDataRecievedEvent, &cBuffer );                      
                     
-            NotifyObservers( HTTPTransferFinishedEvent );                        
-
-            socket.Close();                   
-        }                                    
+            NotifyObservers( HTTPTransferFinishedEvent );    
+            
+            socket.Close();
+        }
+        
+    }                                    
 }
 
 /*-------------------------------------------------------------------------*/

@@ -84,14 +84,14 @@ CPatchListParser::ParsePatchList( const CORE::CDataNode& patchListData ,
                         if ( patchSetLocEntry->GetName().Equals( "Location", false ) )
                         {
                             // Get the URL of the patch set location
-                            attData = patchListEntry->GetAttribute( "URL" );
+                            attData = patchSetLocEntry->GetAttribute( "URL" );
                             if ( attData != NULL )
                             {
                                 // We have a URL
                                 const CORE::CString& patchSetLocURL = attData->value;
                                 
                                 // Get the codec name for the patch set data
-                                attData = patchListEntry->GetAttribute( "Codec" ); 
+                                attData = patchSetLocEntry->GetAttribute( "Codec" ); 
                                 if ( attData != NULL )
                                 {
                                     // We have the codec name
