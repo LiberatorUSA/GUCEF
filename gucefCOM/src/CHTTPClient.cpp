@@ -78,12 +78,12 @@ const CORE::CEvent CHTTPClient::HTTPTransferFinishedEvent = "GUCEF::COM::CHTTPCl
 //-------------------------------------------------------------------------*/
 
 CHTTPClient::CHTTPClient( void )
-        : m_socket( false )       ,
-          m_downloading( false )  ,
-          m_recieved( 0 )         ,
-          m_filesize( 0 )         ,
-          m_proxyHost()           ,
-          m_proxyPort( 80 )
+        : m_socket( false )      ,
+          m_downloading( false ) ,
+          m_recieved( 0 )        ,
+          m_filesize( 0 )        ,
+          m_proxyHost()          ,
+          m_proxyPort( 80 )                
 {TRACE;
 
         SubscribeTo( &m_socket );
@@ -113,8 +113,10 @@ CHTTPClient::Post( const CORE::CString& host                      ,
 {TRACE;
         m_socket.Close();
         
+        // reset our counters because we are beginning a new transfer
         m_recieved = 0;
         m_filesize = 0;
+        
         UInt32 contentsize( 0 );
         if ( valuelist )
         {
@@ -191,8 +193,10 @@ CHTTPClient::Get( const CORE::CString& host                      ,
 {TRACE;
         m_socket.Close();
         
+        // reset our counters because we are beginning a new transfer
         m_recieved = 0;
         m_filesize = 0;
+        
         UInt32 contentsize( 0 );
         CORE::CString valuepath( path );
         
@@ -412,7 +416,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
         if( ( strncmp( data, "HTTP/1.1", 8 ) != 0 ) &&
             ( strncmp( data, "HTTP/1.0", 8 ) != 0 ) )
         {
-            DEBUGOUTPUT("Doesnt look like HTTP protocol");
+            DEBUGOUTPUT("Doesn't look like HTTP protocol");
             return;
         }
             
@@ -489,14 +493,12 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
 
             return ;
         }
-            
-        m_downloading = true;
         
         /*
          *      Parse the content-length integer
          */
         tempChar = strstr(headers, "\nContent-Length");
-        if(tempChar != NULL) 
+        if( tempChar != NULL ) 
         {
             char *tempChar2;
             UInt32 length2;
@@ -558,97 +560,103 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
         i += 2;
         length -= i;
         data = &data[i];
-    }
-    
-    if ( 0 == size )
-    {
-        /*
-         *      Since we did not find a content-length segment we will have to
-         *      check the data for content manually and try to determine the
-         *      content-length if there is any.
-         */
-        UInt32 i;
-        char *tempChar;                
         
-        while( m_filesize < length ) 
+        if ( 0 == size )
         {
-            if( m_filesize == 0 ) 
+            /*
+             *      Since we did not find a content-length segment we will have to
+             *      check the data for content manually and try to determine the
+             *      content-length if there is any.
+             */
+            UInt32 i;
+            char *tempChar;                
+            
+            while( m_filesize < length ) 
             {
-                for( i = 0; (data[i] == '\r' || data[i] == '\n') && i < length; i++ ) {}
-
-                if( i != 0 ) 
+                if( m_filesize == 0 ) 
                 {
+                    for( i = 0; (data[i] == '\r' || data[i] == '\n') && i < length; i++ ) {}
+
+                    if( i != 0 ) 
+                    {
+                        length -= i;
+                        data = &data[i];
+                    }
+
+                    if( length == 0 ) return;
+
+                    for( i = 0; data[i] != '\r' && data[i] != '\n' && i < length; i++) {}
+
+                    if( i >= length ) 
+                    {
+                        // Bad data received
+                        NotifyObservers( ConnectionErrorEvent );
+
+                        m_recieved = size = 0;
+                        socket.Close();
+                        return;
+                    }
+
+                    tempChar = new char[i + 1];
+                    strncpy(tempChar, data, i + 1);
+                    tempChar[i] = '\0';
+                    sscanf(tempChar, "%x", &m_filesize);
+                    delete[] tempChar;
+
+                    DEBUGOUTPUTi( m_filesize );
+
+                    if( m_filesize == 0 ) 
+                    {
+                        NotifyObservers( HTTPTransferFinishedEvent );
+                        m_recieved = size;
+                        socket.Close();
+                        return;
+                    }
+
+                    if(data[i] == '\r' && data[i + 1] == '\n') i += 2;
+                    else i++;
+
                     length -= i;
                     data = &data[i];
                 }
 
-                if( length == 0 ) return;
+                if( m_filesize <= length ) 
+                {                                
+                    // Notify observers about the HTTP transfer payload contents we received
+                    CORE::CDynamicBuffer linkBuffer;
+                    linkBuffer.LinkTo( data, m_filesize );
+                    THTTPDataRecievedEventData cBuffer( &linkBuffer );
+                    NotifyObservers( HTTPDataRecievedEvent, &cBuffer );
+                                                     
+                    m_recieved += m_filesize;
+                    length -= m_filesize;
 
-                for( i = 0; data[i] != '\r' && data[i] != '\n' && i < length; i++) {}
-
-                if( i >= length ) 
-                {
-                    // Bad data received
-                    NotifyObservers( ConnectionErrorEvent );
-
-                    m_recieved = size = 0;
-                    socket.Close();
-
-                    return;
+                    data = &data[m_filesize];
+                    m_filesize = 0;
                 }
-
-                tempChar = new char[i + 1];
-                strncpy(tempChar, data, i + 1);
-                tempChar[i] = '\0';
-                sscanf(tempChar, "%x", &m_filesize);
-                delete[] tempChar;
-
-                DEBUGOUTPUTi( m_filesize );
-
-                if(m_filesize == 0) 
-                {
-                    NotifyObservers( HTTPTransferFinishedEvent );
-
-                    size = m_recieved;
-                    socket.Close();
-
-                    return;
-                }
-
-                if(data[i] == '\r' && data[i + 1] == '\n') i += 2;
-                else i++;
-
-                length -= i;
-                data = &data[i];
-            }
-
-            if(m_filesize < length) 
-            {                                
-                // Notify observers about the HTTP transfer payload contents we received
-                CORE::CDynamicBuffer linkBuffer;
-                linkBuffer.LinkTo( data, m_filesize );
-                THTTPDataRecievedEventData cBuffer( &linkBuffer );
-                NotifyObservers( HTTPDataRecievedEvent, &cBuffer );
-                                                 
-                m_recieved += m_filesize;
-                length -= m_filesize;
-
-                data = &data[m_filesize];
-                m_filesize = 0;
             }
         }
-
-        if(m_filesize > length && length != 0) 
+        else
         {
+            // Set the file size based on the given content size in the header
+            m_filesize = size;
+        }
+        
+        // Set the download flag so that we can process the next data burst we receive
+        // as part of the same file and skip the header parsing    
+        m_downloading = true;        
+        
+        // Notify observers about the HTTP payload content info we received
+        struct SHTTPContentEventData cedStruct;
+        cedStruct.contentSize = m_filesize;
+        cedStruct.resumeSupported = resumeable;
+        cedStruct.HTTPcode = http_code;
+        THTTPContentEventData contentEventData( cedStruct );
+        NotifyObservers( HTTPContentEvent, &contentEventData );                    
 
-            // Notify observers about the HTTP payload content info we received
-            struct SHTTPContentEventData cedStruct;
-            cedStruct.contentSize = m_filesize;
-            cedStruct.resumeSupported = resumeable;
-            cedStruct.HTTPcode = http_code;
-            THTTPContentEventData contentEventData( cedStruct );
-            NotifyObservers( HTTPContentEvent, &contentEventData );
-                        
+        // Check if there is more data in the buffer then just the content header
+        if ( m_filesize >= length && length != 0 ) 
+        {    
             // Notify observers about the HTTP transfer payload contents we received
             CORE::CDynamicBuffer linkBuffer;
             linkBuffer.LinkTo( data, length );
@@ -657,35 +665,31 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
                                                   
             m_recieved += length;
             m_filesize -= length;
-        }
+            
+            // Check if we are already finished
+            if ( m_filesize == 0 )
+            {
+                NotifyObservers( HTTPTransferFinishedEvent );
+                m_socket.Close();
+            }
+        }        
     }
     else 
     {
-        // Notify observers about the HTTP payload content info we received
-        struct SHTTPContentEventData cedStruct;
-        cedStruct.contentSize = size;
-        cedStruct.resumeSupported = resumeable;
-        cedStruct.HTTPcode = http_code;
-        THTTPContentEventData contentEventData( cedStruct );
-        NotifyObservers( HTTPContentEvent, &contentEventData );
-        
-        // Sanity check on the content size, make sure we have enough room left
-        // in the buffer so that it can possibly store the data it claims to store
-        if ( length >= size )
+        // if we get here then we are busy with an ongoing download and the header was already
+        // processed in a previous data burst.        
+        // Sanity check on data, make sure we are expecting more data to arrive
+        if ( m_filesize >= length )
         {
-            m_recieved += size;  
+            m_recieved += length;
+            m_filesize -= length;  
             
             // Notify observers about the HTTP transfer payload contents we received
             CORE::CDynamicBuffer linkBuffer;
             linkBuffer.LinkTo( data, size );
             THTTPDataRecievedEventData cBuffer( &linkBuffer );
-            NotifyObservers( HTTPDataRecievedEvent, &cBuffer );                      
-                    
-            NotifyObservers( HTTPTransferFinishedEvent );    
-            
-            socket.Close();
+            NotifyObservers( HTTPDataRecievedEvent, &cBuffer );
         }
-        
     }                                    
 }
 
@@ -696,6 +700,7 @@ CHTTPClient::OnDisconnect( COMCORE::CTCPClientSocket &socket )
 {TRACE;
 
         m_downloading = false;
+        m_filesize = 0;
         NotifyObservers( DisconnectedEvent );
 }
 
