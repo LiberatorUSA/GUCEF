@@ -275,6 +275,15 @@ CFileAccess::Clone( void ) const
         return NULL;
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CFileAccess::GetFilename( void ) const
+{TRACE;
+
+    return _filename; 
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -95,6 +95,7 @@ class CHTTPURLHandler : public CORE::CURLHandler
     private:
     
     CHTTPClient m_httpClient;
+    bool m_transferFinished;
 };
 
 /*-------------------------------------------------------------------------//

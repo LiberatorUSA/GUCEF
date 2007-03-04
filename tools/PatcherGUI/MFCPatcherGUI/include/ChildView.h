@@ -112,6 +112,7 @@ class CChildView : public CWnd                    ,
     CListBox* m_listBox;
     CProgressCtrl* m_transferProgress;    
     CProgressCtrl* m_totalProgress;
+    bool m_closeAppWhenDone;
     
     GUCEF::PATCHER::CPatchEngine m_patchEngine;
     CGUCEFAppWin32MFCDriver* m_gucefDriver;   

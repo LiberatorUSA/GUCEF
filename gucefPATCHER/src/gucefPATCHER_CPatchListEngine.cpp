@@ -94,6 +94,7 @@ CPatchListEngine::CPatchListEngine( void )
     AddEventForwarding( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( LocalFileHashMismatchEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( LocalFileReplacedEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( FileRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( FileRetrievalCompleteEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( FileRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
@@ -253,8 +254,7 @@ CPatchListEngine::ProcessRecievedPatchSet( void )
             // Get the required codec for the current raw patch set data type
             CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = CORE::CDStoreCodecRegistry::Instance()->Lookup( setLocation->codec );
             if ( NULL != codecPtr )
-            {
-                
+            {                
                 // Prepare vars for the decoding process
                 CORE::CDataNode rootNode;
                 CORE::CMFileAccess dataAccess( m_setDataBuffer.GetConstBufferPtr() , 

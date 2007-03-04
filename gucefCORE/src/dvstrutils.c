@@ -980,11 +980,6 @@ Append_To_Path( char *path           ,
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *	Attempt to find and return the index of a null terminator in the given
- *	string. The maximum length of the string is provided. If no null
- *	terminator is found then -1 is returned.
- */
 Int32
 Find_Null( UInt32 start_at_front ,
            const char *src       ,
@@ -1010,12 +1005,6 @@ Find_Null( UInt32 start_at_front ,
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *	Removes the filename (if present) from the given file path and
- *	copy's the result into dest. If there is a seperator char prefexed to
- *	the filename then it will be removed aswell. The length of the path
- *	copyed into dest is returned.
- */
 UInt32
 _Strip_Filename( char *dest, const char *src_filepath )
 {
@@ -1025,13 +1014,6 @@ _Strip_Filename( char *dest, const char *src_filepath )
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Removes the filename (if present) from the given file path.
- *      Removal is done by means of setting char to '\0'. 
- *      If there is a seperator char prefexed to the filename then it 
- *      will be removed aswell. The new length of the path
- *      is returned.
- */
 UInt32
 Strip_Filename( char* filepath )
 {

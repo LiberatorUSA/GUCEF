@@ -75,6 +75,7 @@ CPatchSetDirEngine::CPatchSetDirEngine( void )
     AddEventForwarding( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( LocalFileHashMismatchEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( LocalFileReplacedEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( FileRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( FileRetrievalCompleteEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( FileRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
@@ -120,7 +121,7 @@ bool
 CPatchSetDirEngine::ProcessCurSubDir( void )
 {TRACE;
 
-    if ( m_curSubDirIndex <= m_dir.subDirs.size() )
+    if ( m_curSubDirIndex < m_dir.subDirs.size() )
     {
         NotifyObservers( SubDirProcessingStartedEvent );
         
@@ -270,9 +271,21 @@ CPatchSetDirEngine::OnNotify( CORE::CNotifier* notifier                 ,
         {
             if ( eventid == CPatchSetFileEngine::FileListProcessingCompleteEvent )
             {
-                // The files in this dir have been processed, we can move on to the
-                // sub-directories. The first sub-dir is the current sub-dir.
-                ProcessCurSubDir();
+                if ( m_curSubDirIndex < m_dir.subDirs.size() )
+                {
+                    // The files in this dir have been processed, we can move on to the
+                    // sub-directories. The first sub-dir is the current sub-dir.
+                    ProcessCurSubDir();
+                }
+                else
+                {
+                    // If we get here then we have worked trough our list of sub-dirs
+                    // Since this operation comes after file handling we can now tell
+                    // everyone we are finished
+                    m_stopSignalGiven = false;
+                    m_isActive = false;
+                    NotifyObservers( DirProcessingCompletedEvent );
+                }
                 return;
             }
         }

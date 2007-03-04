@@ -40,7 +40,8 @@ namespace COM {
 //-------------------------------------------------------------------------*/
 
 CHTTPURLHandler::CHTTPURLHandler( void )
-    : m_httpClient()
+    : m_httpClient()              ,
+      m_transferFinished( false )
 {TRACE;
 
     SubscribeTo( &m_httpClient );
@@ -49,7 +50,8 @@ CHTTPURLHandler::CHTTPURLHandler( void )
 /*-------------------------------------------------------------------------*/
         
 CHTTPURLHandler::CHTTPURLHandler( const CHTTPURLHandler& src )
-    : m_httpClient()
+    : m_httpClient()              ,
+      m_transferFinished( false )
 {TRACE;
 
     SubscribeTo( &m_httpClient );
@@ -81,6 +83,7 @@ bool
 CHTTPURLHandler::Activate( CORE::CURL& url )
 {TRACE;
 
+    m_transferFinished = false;
     return m_httpClient.Get( url.GetURL() );
 }
 
@@ -139,6 +142,7 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
         }
         if ( eventid == CHTTPClient::HTTPTransferFinishedEvent )
         {
+            m_transferFinished = true;
             NotifyObservers( CIURLEvents::URLAllDataRecievedEvent );
             return;
         }
@@ -149,7 +153,10 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
         }
         if ( eventid == CHTTPClient::DisconnectedEvent )
         {
-            NotifyObservers( CIURLEvents::URLDeactivateEvent );
+            if ( !m_transferFinished )
+            {
+                NotifyObservers( CIURLEvents::URLDeactivateEvent );
+            }
             return;
         }        
     }

@@ -70,6 +70,7 @@ CPatchSetEngine::CPatchSetEngine( void )
     AddEventForwarding( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( LocalFileHashMismatchEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( LocalFileReplacedEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( FileRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( FileRetrievalCompleteEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( FileRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );

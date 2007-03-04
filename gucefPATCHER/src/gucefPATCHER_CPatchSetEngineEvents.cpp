@@ -38,10 +38,10 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingStartedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::DirProcessingStartedEvent";
-const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingCompletedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::SubDirProcessingStartedEvent";
-const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingAbortedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::SubDirProcessingCompletedEvent";
-const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingFailedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::DirProcessingCompletedEvent";
+const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingStartedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::PatchSetProcessingStartedEvent";
+const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingCompletedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::PatchSetProcessingCompletedEvent";
+const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingAbortedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::PatchSetProcessingAbortedEvent";
+const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingFailedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::PatchSetProcessingFailedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

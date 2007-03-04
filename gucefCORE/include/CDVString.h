@@ -53,17 +53,15 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-class CStringStorage;
 class CStringList;
 
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Refrence counted string class.
  *      This class is meant to save some effort when dealing with strings.
  *      Note that a good number of member functions could be made redundant
- *      because a char* parameter can be converted to a CString object which
- *      would then be the actual parameter. However since this class allocates
+ *      because a char* parameter can be converted to a CString object implicitly 
+ *      which would then be the actual parameter. However since this class allocates
  *      memory we want to keep it as fast as possible thus a minimal of memory
  *      management. And no, I do not want to use the STL implementation. 
  */

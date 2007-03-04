@@ -686,9 +686,16 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
             
             // Notify observers about the HTTP transfer payload contents we received
             CORE::CDynamicBuffer linkBuffer;
-            linkBuffer.LinkTo( data, size );
+            linkBuffer.LinkTo( data, length );
             THTTPDataRecievedEventData cBuffer( &linkBuffer );
             NotifyObservers( HTTPDataRecievedEvent, &cBuffer );
+            
+            // Check if we are finished
+            if ( m_filesize == 0 )
+            {
+                NotifyObservers( HTTPTransferFinishedEvent );
+                m_socket.Close();
+            }            
         }
     }                                    
 }

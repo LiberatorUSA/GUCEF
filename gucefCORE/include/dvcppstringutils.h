@@ -62,6 +62,21 @@ AppendToPath( CString& path           ,
               const CString& addition );
               
 /*-------------------------------------------------------------------------*/
+              
+GUCEFCORE_EXPORT_CPP CString
+StripFilename( const CString& pathPlusFilename );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
+ExtractFilename( const CString& pathPlusFilename );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP bool
+FileExists( const CString& filename );
+
+/*-------------------------------------------------------------------------*/
 
 GUCEFCORE_EXPORT_CPP CString
 VersionToString( const TVersion* version );
@@ -125,19 +140,21 @@ LastSubDir( const CString& path );
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 03-03-2007 :
+        - Dinand: Added StripFilename()
 - 21-09-2005 :
-        - Added StringToInt()
-        - Added IntToString()
-        - Added StringToMD5String()
+        - Dinand: Added StringToInt()
+        - Dinand: Added IntToString()
+        - Dinand: Added StringToMD5String()
 - 24-07-2005 :
-        - Added StringToBool()
+        - Dinand: Added StringToBool()
 - 26-04-2005 :
-        - Fixed RelativePath() so that strings that do not have any tags don't
+        - Dinand: Fixed RelativePath() so that strings that do not have any tags don't
           cause a problem. 
 - 03-04-2005 :
-        - Initial version of this file.
+        - Dinand: Initial version of this file.
           Meant to hold string class utilities that do not belong in the class
           or in the class header itself.
-        - Added RelativePath()  
+        - Dinand: Added RelativePath()  
 
 -----------------------------------------------------------------------------*/

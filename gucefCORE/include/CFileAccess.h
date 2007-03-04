@@ -147,6 +147,8 @@ class GUCEFCORE_EXPORT_CPP CFileAccess : public CIOAccess
         
         virtual CICloneable* Clone( void ) const;
         
+        const CString& GetFilename( void ) const;
+        
         private:
         CFileAccess( void );
 

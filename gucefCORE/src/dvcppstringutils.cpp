@@ -209,6 +209,37 @@ LastSubDir( const CString& path )
     return lastSubDir;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CString
+StripFilename( const CString& pathPlusFilename )
+{TRACE;
+
+    char* buffer = new char[ pathPlusFilename.Length()+1 ];
+    UInt32 length = _Strip_Filename( buffer, pathPlusFilename.C_String() );
+    CString resultStr( buffer, length );
+    delete []buffer;
+    return resultStr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
+ExtractFilename( const CString& pathPlusFilename )
+{TRACE;
+
+    return Extract_Filename( pathPlusFilename.C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+FileExists( const CString& filename )
+{TRACE;
+
+    return 0 != File_Exists( filename.C_String() );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

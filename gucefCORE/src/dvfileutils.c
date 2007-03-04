@@ -496,79 +496,73 @@ Max_Filename_Length( void )
 
 #ifdef GUCEF_MSWIN_BUILD
 /**
- *	Recursive function that creates directorys
+ *	Recursive function that creates directories
  */
 static UInt32
 create_directory( const char *new_dir, UInt32 offset )
 {
-	Int32 idx = _Find_Char( offset, 1, '\\', new_dir, (UInt32)strlen( new_dir ) );
-        if ( idx > 0 )
+    Int32 idx = _Find_Char( offset, 1, '\\', new_dir, (UInt32)strlen( new_dir ) );
+    if ( idx > 0 )
+    {
+        char* dir = NULL;
+        
+        /*
+         *      Check for drive letter.
+         */
+        if ( ( idx > 1 ) && ( !offset ) )
         {
-                /*
-                 *      Check for drive letter.
-                 */
-                UInt32 is_dl = 0; 
-                if ( ( idx > 1 ) && ( !offset ) )
-                {
-                        if ( *(new_dir+1) == ':' ) is_dl = 1;
-                }
+            if ( *(new_dir+1) == ':' )
+            {
+                return create_directory( new_dir, 3 );
+            }
+        }
 
-                if ( !is_dl )
-                {
-                        /*
-                         *	Sub-dir found
-                         */
-                         char *dir = (char*)calloc( idx+2, 1 );
-                         strncpy( dir, new_dir, idx );
-                         dir[ idx+1 ] = '\0';
-                         if ( !CreateDirectory( dir, NULL ) )
-                         {
-                                /*
-                                 *	An error occured.
-                                 *	We will ignore the dir already exists error but
-                                 *	abort on all others
-                                 */
-                                if ( GetLastError() != ERROR_ALREADY_EXISTS )
-                                {
-                                        free( dir );
-                                        return 0;
-                                }
-                         }
-                        free( dir );
-                 }
-                 create_directory( new_dir, idx+1 );    
-                 return 1;
-        }
-        else
+        /*
+         *	Sub-dir found
+         */
+        dir = (char*)calloc( idx+2, 1 );
+        strncpy( dir, new_dir, idx );
+        dir[ idx+1 ] = '\0';
+        if ( !CreateDirectory( dir, NULL ) )
         {
-                 if ( !CreateDirectory( new_dir, NULL ) )
-                 {
-                 	/*
-                         *	An error occured.
-                         *	We will ignore the dir already exists error but
-                         *	abort on all others
-                         */
-                 	if ( GetLastError() != ERROR_ALREADY_EXISTS )
-                        {
-                        	return 0;
-                        }
-                        return 1;
-                 }
-                 else
-                 return 1;
+            /*
+            *	An error occurred.
+            *	We will ignore the dir already exists error but
+            *	abort on all others
+            */
+            if ( GetLastError() != ERROR_ALREADY_EXISTS )
+            {
+                free( dir );
+                return 0;
+            }
         }
+        free( dir );
+        
+        return create_directory( new_dir, idx+1 );
+    }
+    else
+    {
+             if ( !CreateDirectory( new_dir, NULL ) )
+             {
+             	/*
+                     *	An error occured.
+                     *	We will ignore the dir already exists error but
+                     *	abort on all others
+                     */
+             	if ( GetLastError() != ERROR_ALREADY_EXISTS )
+                    {
+                    	return 0;
+                    }
+                    return 1;
+             }
+             else
+             return 1;
+    }
 }
 #endif /* WIN32_BUILD */
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *	Function that attempts to create a directory useing the system default
- *	security attributes. Returns true (1) if successfull and false (0) in
- *	case of an error. Unlike the normal create dir functions for windows
- *	this one will create all dirs in the string given
- *	(Like the Linux functions).
- */
 UInt32
 Create_Directory( const char *new_dir )
 {

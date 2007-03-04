@@ -59,8 +59,20 @@ namespace PATCHER {
 //-------------------------------------------------------------------------*/
 
 CPatchSetFileEngine::CPatchSetFileEngine( void )
+    : CObservingNotifier()        ,
+      CPatchSetFileEngineEvents() ,
+      m_isActive( false )         ,
+      m_stopSignalGiven( false )  ,
+      m_localRoot()               ,
+      m_tempStorageRoot()         ,
+      m_dataRetriever()           ,
+      m_fileAccess( NULL )        ,
+      m_fileList()                ,
+      m_curFileLocIndex( 0 )      ,
+      m_curFileIndex( 0 )
 {TRACE;
 
+    SubscribeTo( &m_dataRetriever );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -112,7 +124,9 @@ bool
 CPatchSetFileEngine::ProcessCurrentFile( void )
 {TRACE;
 
-    if ( !m_stopSignalGiven && m_isActive )
+    if ( !m_stopSignalGiven                 && 
+         m_isActive                         && 
+         m_fileList.size() > m_curFileIndex )
     {
         // Get our current file
         const TFileEntry* curFile = &m_fileList[ m_curFileIndex ];
@@ -122,7 +136,7 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
         CORE::AppendToPath( filePath, curFile->name );
         
         // Check if the file exists
-        if ( 0 != CORE::File_Exists( filePath.C_String() ) )
+        if ( CORE::FileExists( filePath ) )
         {
             // The file exists, let's see if it's up to date
             UInt32 fileSize = CORE::Filesize( filePath.C_String() );
@@ -167,14 +181,31 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
                             return true;
                         }
                     }
+                    else
+                    {
+                        NotifyObservers( LocalFileHashMismatchEvent );
+                    }
                 }  
             }
+            else
+            {
+                NotifyObservers( LocalFileSizeMismatchEvent );
+            }
+        }
+        else
+        {
+            NotifyObservers( LocalFileNotFoundEvent );
         }    
         
         // If we get here then the file was found but it is not up-to-date or
         // the file does not even exist locally, either way,.. we have to update it
         CORE::CString tmpFilePath = m_tempStorageRoot;
-        CORE::AppendToPath( tmpFilePath, curFile->name );            
+        CORE::AppendToPath( tmpFilePath, curFile->name );
+        
+        // make sure the path exists
+        CORE::Create_Directory( CORE::StripFilename( tmpFilePath ).C_String() );
+        
+        // Try to create the file
         m_fileAccess = new CORE::CFileAccess( tmpFilePath, "wb" );
         m_fileAccess->Open();
         if ( m_fileAccess->Opened() && m_fileAccess->IsValid() )
@@ -189,6 +220,7 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
                 {
                     // The data retrieval process has now commenced
                     // This is an a-sync operation, we wait for notification
+                    NotifyObservers( FileRetrievalStartedEvent );
                     return true;
                 }
                 else
@@ -200,6 +232,8 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
                     if ( m_curFileLocIndex+1 < curFile->fileLocations.size() )
                     {
                         // we ran out of options,.. the end
+                        delete m_fileAccess;
+                        m_fileAccess = NULL;
                         NotifyObservers( FileListProcessingAbortedEvent );
                         m_stopSignalGiven = false;
                         m_isActive = false;
@@ -213,6 +247,8 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
         {
             // We failed to obtain writable access to our temp file storage
             // we ran out of options,.. the end
+            delete m_fileAccess;
+            m_fileAccess = NULL;
             NotifyObservers( FileStorageErrorEvent );
             m_stopSignalGiven = false;
             m_isActive = false;                
@@ -221,9 +257,19 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
     }
     else
     {
-        NotifyObservers( FileListProcessingAbortedEvent );
-        m_stopSignalGiven = false;
-        m_isActive = false;
+        if ( m_fileList.size() < m_curFileIndex )
+        {
+            NotifyObservers( FileListProcessingAbortedEvent );
+            m_stopSignalGiven = false;
+            m_isActive = false;
+        }
+        else
+        {
+            // We are finished,.. engine stopping
+            NotifyObservers( FileListProcessingCompleteEvent );
+            m_isActive = false;
+            m_stopSignalGiven = false;        
+        }
     }
     
     return false;
@@ -330,6 +376,45 @@ CPatchSetFileEngine::OnNotify( CORE::CNotifier* notifier                 ,
         {
             if ( eventid == CORE::CURLDataRetriever::URLAllDataRecievedEvent )
             {
+                // Check if we stored the file in an alternate location
+                if ( m_tempStorageRoot != m_localRoot )
+                {
+                    // safety check,.. just in case
+                    assert( m_fileAccess != NULL );
+                    if ( m_fileAccess != NULL )
+                    {
+                        // Create the destination path
+                        CORE::CString destPath( m_localRoot );
+                        CORE::AppendToPath( destPath, CORE::ExtractFilename( m_fileAccess->GetFilename() ) );
+                        
+                        // If a file already exists at the target location attempt to delete it
+                        if ( CORE::FileExists( destPath ) )
+                        {
+                            if ( 0 == CORE::Delete_File( destPath.C_String() ) )
+                            {
+                                // We failed to delete the old file,.. the end
+                                NotifyObservers( FileStorageErrorEvent );
+                                m_stopSignalGiven = false;
+                                m_isActive = false;
+                                return;                            
+                            }
+                        }
+                        
+                        // Move the new file to the desired final location
+                        if ( 0 == CORE::Move_File( destPath.C_String(), m_fileAccess->GetFilename().C_String() ) )
+                        {
+                            // Moving the file failed,.. the end
+                            NotifyObservers( FileStorageErrorEvent );
+                            m_stopSignalGiven = false;
+                            m_isActive = false;
+                            return;                             
+                        }
+                        
+                        // We successfully replaced/patched a local file
+                        NotifyObservers( LocalFileReplacedEvent );
+                    }
+                }
+                
                 ProceedToNextFile();
             }
             else
