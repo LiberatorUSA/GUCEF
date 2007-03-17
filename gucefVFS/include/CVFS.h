@@ -90,12 +90,15 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
                            const char* mode = "rb"      ,
                            const bool overwrite = false );
                                   
-    void GetList( TStringList& outputList          ,
-                  const CORE::CString& location    , 
-                  bool recursive = false           ,
-                  const CORE::CString& filter = "" ) const;
+    void GetList( TStringList& outputList            ,
+                  const CORE::CString& location      , 
+                  bool recursive = false             ,
+                  bool includePathInFilename = false ,
+                  const CORE::CString& filter = ""   ) const;
     
-    bool FileExists( const CORE::CString& file ) const;
+    bool FileExists( const CORE::CString& filePath ) const;
+    
+    UInt32 GetFileSize( const CORE::CString& filePath ) const;
 
     void SetMemloadSize( UInt32 bytesize );
     
@@ -140,7 +143,7 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
     CVFS& operator=( const CVFS& src );
 
     CVFSHandle* LoadFromDisk( const CORE::CString& file, UInt32& errorcode, const char* mode = "rb", const bool overwrite = false );
-    void GetListFromRoot( const CORE::CString& root, bool recursive, const CORE::CString& filter, TStringList& outputList ) const;
+    void GetListFromRoot( const CORE::CString& root, bool recursive, bool includePathInFilename, const CORE::CString& filter, TStringList& outputList ) const;
     bool FilterValidation( const CORE::CString& filename, const CORE::CString& filter ) const; 
 
     private:

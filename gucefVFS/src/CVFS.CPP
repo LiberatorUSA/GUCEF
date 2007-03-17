@@ -546,6 +546,7 @@ CVFS::FilterValidation( const CORE::CString& filename ,
 void 
 CVFS::GetListFromRoot( const CORE::CString& root     ,
                        bool recursive                ,
+                       bool includePathInFilename    ,
                        const CORE::CString& filter   ,
                        TStringList& outputList       ) const
 {TRACE;
@@ -568,7 +569,16 @@ CVFS::GetListFromRoot( const CORE::CString& root     ,
                 if ( FilterValidation( filename ,
                                        filter   ) )
                 {
-                    outputList.push_back( filename );
+                    if ( !includePathInFilename )
+                    {
+                        outputList.push_back( filename );
+                    }
+                    else
+                    {
+                        CORE::CString filePath( root );
+                        CORE::AppendToPath( filePath, filename );
+                        outputList.push_back( filePath );                        
+                    }
                 }                                        
             }
             else
@@ -584,10 +594,11 @@ CVFS::GetListFromRoot( const CORE::CString& root     ,
                     /*
                      *      Recursively process the sub-dir
                      */
-                    GetListFromRoot( subdir     ,
-                                     recursive  ,
-                                     filter     ,
-                                     outputList ); 
+                    GetListFromRoot( subdir                ,
+                                     recursive             ,
+                                     includePathInFilename ,
+                                     filter                ,
+                                     outputList            ); 
                 }
             }        
         }
@@ -600,10 +611,11 @@ CVFS::GetListFromRoot( const CORE::CString& root     ,
 /*-------------------------------------------------------------------------*/
 
 void 
-CVFS::GetList( TStringList& outputList       ,
-               const CORE::CString& location ,
-               bool recursive                ,
-               const CORE::CString& filter   ) const
+CVFS::GetList( TStringList& outputList                  ,
+               const CORE::CString& location            ,
+               bool recursive             /* = false */ ,
+               bool includePathInFilename /* = false */ ,
+               const CORE::CString& filter /* = "" */   ) const
 {TRACE;
         
     m_datalock.Lock();
@@ -627,10 +639,11 @@ CVFS::GetList( TStringList& outputList       ,
         /*
          *      Process the root
          */
-        GetListFromRoot( rootdir    ,
-                         recursive  ,
-                         filter     ,
-                         outputList );        
+        GetListFromRoot( rootdir               ,
+                         recursive             ,
+                         includePathInFilename ,
+                         filter                ,
+                         outputList            );
     }
     
     /*
@@ -639,6 +652,25 @@ CVFS::GetList( TStringList& outputList       ,
      */
                   
     m_datalock.Unlock();          
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CVFS::GetFileSize( const CORE::CString& file ) const
+{TRACE;
+
+    CORE::CString filepath;
+    for ( UInt32 i=0; i<m_rootlist.size(); ++i )
+    {
+        filepath = m_rootlist[ i ].abspath;
+        CORE::AppendToPath( filepath, file );
+        if ( CORE::File_Exists( filepath.C_String() ) != 0 )
+        {
+            return CORE::Filesize( filepath.C_String() );
+        }
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------//
