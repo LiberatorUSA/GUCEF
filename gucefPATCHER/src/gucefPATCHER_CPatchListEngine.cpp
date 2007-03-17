@@ -91,6 +91,7 @@ CPatchListEngine::CPatchListEngine( void )
     
     // Forward file engine events
     AddEventForwarding( FileListProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddEventForwarding( LocalFileIsOKEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( LocalFileHashMismatchEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );

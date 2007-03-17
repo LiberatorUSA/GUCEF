@@ -519,6 +519,11 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
         if ( eventid == PATCHER::CPatchEngine::FileListProcessingAbortedEvent )
         {
             m_listBox->AddString( "Aborted file list processing" );
+        }
+        else
+        if ( eventid == PATCHER::CPatchEngine::LocalFileIsOKEvent )
+        {
+            m_listBox->AddString( "Local file is Ok" );
         }         
         else
         if ( eventid == PATCHER::CPatchEngine::LocalFileSizeMismatchEvent )

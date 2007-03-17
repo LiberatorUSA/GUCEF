@@ -71,7 +71,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="gucefCORE_MVC8_d.lib gucefMT_MVC8_d.lib gucefCOM_MVC8_d.lib gucefCOMCORE_MVC8_d.lib gucefVFS_MVC8_d.lib gucefPATCHER_MVC8_d.lib"
-				OutputFile="$(OutDir)\MFCPatcherGUI_d.exe"
+				OutputFile="$(OutDir)\MFCPatcherGUI_MVC8_d.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\..\..\..\gucefCOM\bin\Debug_MVC8;..\..\..\..\..\gucefCOMCORE\bin\Debug_MVC8;..\..\..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\..\..\gucefMT\bin\Debug_MVC8;..\..\..\..\..\gucefVFS\bin\Debug_MVC8;..\..\..\..\..\gucefPATCHER\bin\Debug_MVC8"
 				GenerateDebugInformation="true"

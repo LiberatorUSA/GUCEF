@@ -39,6 +39,7 @@ namespace PATCHER {
 //-------------------------------------------------------------------------*/
 
 const CORE::CEvent CPatchSetFileEngineEvents::FileListProcessingStartedEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::FileListProcessingStartedEvent";
+const CORE::CEvent CPatchSetFileEngineEvents::LocalFileIsOKEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::LocalFileIsOKEvent";
 const CORE::CEvent CPatchSetFileEngineEvents::LocalFileSizeMismatchEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::LocalFileSizeMismatchEvent";
 const CORE::CEvent CPatchSetFileEngineEvents::LocalFileHashMismatchEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::LocalFileHashMismatchEvent";
 const CORE::CEvent CPatchSetFileEngineEvents::LocalFileNotFoundEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::LocalFileNotFoundEvent";
@@ -76,6 +77,7 @@ CPatchSetFileEngineEvents::RegisterEvents( void )
 {TRACE;
 
     FileListProcessingStartedEvent.Initialize();
+    LocalFileIsOKEvent.Initialize();
     LocalFileSizeMismatchEvent.Initialize();
     LocalFileHashMismatchEvent.Initialize();
     LocalFileNotFoundEvent.Initialize();

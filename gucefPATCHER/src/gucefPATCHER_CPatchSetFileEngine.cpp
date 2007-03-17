@@ -166,6 +166,8 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
                         if ( curFile->hash == md5String )
                         {
                             // Woohoo, this file is already up-to-date
+                            NotifyObservers( LocalFileIsOKEvent );
+                            
                             // We can now proceed to the next file if there is any
                             if ( m_curFileIndex+1 < m_fileList.size() )
                             {

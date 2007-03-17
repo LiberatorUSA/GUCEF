@@ -51,6 +51,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetFileEngineEvents
     public:
     
     static const CORE::CEvent FileListProcessingStartedEvent;
+    static const CORE::CEvent LocalFileIsOKEvent;
     static const CORE::CEvent LocalFileSizeMismatchEvent;
     static const CORE::CEvent LocalFileHashMismatchEvent;
     static const CORE::CEvent LocalFileNotFoundEvent;
