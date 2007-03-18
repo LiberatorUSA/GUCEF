@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef CINPUTPROFILEMANAGER_H
-#define CINPUTPROFILEMANAGER_H
+#ifndef GUCEF_INPUT_CINPUTPROFILEMANAGER_H
+#define GUCEF_INPUT_CINPUTPROFILEMANAGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -211,7 +211,7 @@ class EXPORT_CPP CInputProfileManager : public CORE::CIConfigurable
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CINPUTPROFILEMANAGER_H ? */
+#endif /* GUCEF_INPUT_CINPUTPROFILEMANAGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

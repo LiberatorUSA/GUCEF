@@ -106,6 +106,7 @@ class CProfileData
 //-------------------------------------------------------------------------*/
 
 CInputProfileManager::CInputProfileManager( void )
+    : CIConfigurable( true )
 {TRACE;
 }
 
