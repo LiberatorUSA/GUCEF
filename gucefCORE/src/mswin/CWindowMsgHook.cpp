@@ -54,6 +54,13 @@ CWindowMsgHook::TMappedWindowHookList CWindowMsgHook::s_list;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+// The pointer warnings are always posted even when we know for certain that the code
+// is correct so we disable the warning and keep an eye on this code.
+#pragma warning( disable:4311 ) // pointer truncation from 'type' to 'type'
+#pragma warning( disable:4312 ) // 'type cast' : conversion from 'type' to 'type' of greater size
+
+/*-------------------------------------------------------------------------*/
+
 CWindowMsgHook::CWindowMsgHook( void )
 {TRACE;
 
