@@ -24,6 +24,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <map>
+
 #ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"
 #define GUCEF_MT_CMUTEX_H
@@ -34,7 +36,15 @@
 #define GUCEF_CORE_CSTRINGLIST_H
 #endif /* GUCEF_CORE_CSTRINGLIST_H ? */
 
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
+#ifndef GUCEF_CORE_CISYSCONSOLECMDHANDLER_H
 #include "CISysConsoleCmdHandler.h"
+#define GUCEF_CORE_CISYSCONSOLECMDHANDLER_H
+#endif /* GUCEF_CORE_CISYSCONSOLECMDHANDLER_H ? */
 
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"     /* often used gucef macros */
@@ -73,7 +83,8 @@ class CSysConsoleClient;
  *      Think of it as a DOS-console/Bash but instead of a storage
  *      medium you can move trough a tree of system commands.
  */ 
-class GUCEFCORE_EXPORT_CPP CSysConsole : public CISysConsoleCmdHandler
+class GUCEFCORE_EXPORT_CPP CSysConsole : public CIConfigurable         ,
+                                         public CISysConsoleCmdHandler
 {
         public:
         
@@ -94,6 +105,25 @@ class GUCEFCORE_EXPORT_CPP CSysConsole : public CISysConsoleCmdHandler
         bool UnregisterAlias( const CString& aliasname ,
                               const CString& path      ,
                               const CString& function  );                                                        
+
+        /**
+         *      Attempts to store the given tree in the file
+         *      given according to the method of the codec metadata
+         *
+         *      @param tree the data tree you wish to store
+         *      @return wheter storing the tree was successfull
+         */
+        virtual bool SaveConfig( CDataNode& tree );
+                                    
+        /**
+         *      Attempts to load data from the given file to the 
+         *      root node given. The root data will be replaced 
+         *      and any children the node may already have will be deleted.
+         *
+         *      @param treeroot pointer to the node that is to act as root of the data tree
+         *      @return whether building the tree from the given file was successfull.
+         */                                    
+        virtual bool LoadConfig( const CDataNode& treeroot );
 
         public:
         
@@ -130,6 +160,14 @@ class GUCEFCORE_EXPORT_CPP CSysConsole : public CISysConsoleCmdHandler
         static void Deinstance( void );
         
         private:
+
+        struct SAliasData
+        {
+            CString path;
+            CString function;
+        };
+        typedef struct SAliasData TAliasData;
+        typedef std::map< CString, TAliasData > TAliasList;
         
         CSysConsole( void );
         CSysConsole( const CSysConsole& src );        
@@ -151,7 +189,7 @@ class GUCEFCORE_EXPORT_CPP CSysConsole : public CISysConsoleCmdHandler
         struct SFunctionHook* FindFunction( const struct SCmdChannel* curchannel ,
                                             const CString& functionname          );
                                             
-        struct SFunctionHook* FindAliasFunction( const CString& aliasname );
+        TAliasData* FindAliasFunction( const CString& aliasname );
         
         bool OnSysConsoleCommand( const CString& path     ,
                                   const CString& command  ,
@@ -159,7 +197,7 @@ class GUCEFCORE_EXPORT_CPP CSysConsole : public CISysConsoleCmdHandler
                                   CStringList& resultdata );
         
         struct SCmdChannel* _root;
-        CDynamicArray _aliases;
+        TAliasList _aliases;
         
         static CSysConsole* _instance;
         static MT::CMutex _datalock;

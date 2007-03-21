@@ -685,6 +685,8 @@ CStringList
 CString::ParseElements( char seperator ) const
 {TRACE;
 
+    if ( m_length > 0 )
+    {
         CStringList list;
         CString entry;
         UInt32 last = 0;
@@ -698,11 +700,14 @@ CString::ParseElements( char seperator ) const
                         last = i;                    
                 }  
         }
+     
         /* add last item */
         entry.Set( m_string+last ,
                    m_length-last );        
         list.Append( entry ); 
         return list;        
+    }
+    return CStringList();
 }
 
 /*-------------------------------------------------------------------------*/

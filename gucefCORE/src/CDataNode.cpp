@@ -725,17 +725,25 @@ CDataNode::FindSibling( const CString& name )
 CDataNode* 
 CDataNode::Find( const CString& name )
 {TRACE;    
-        CDataNode* n = FindSibling( name );
-        if ( n ) 
+
+    CDataNode* n = FindSibling( name );
+    if ( n ) 
+    {
+        return n;
+    }                
+
+    n = _pfchild;
+    CDataNode* result = NULL;
+    while ( n != NULL )
+    {
+        result = n->Find( name );
+        if ( NULL != result )
         {
-                return n;
-        }                
-        
-        if ( _pfchild )
-        {
-                return _pfchild->Find( name );
+            return result;
         }
-        return NULL;       
+        n = n->_pnext;
+    }
+    return NULL;       
 }
 
 /*-------------------------------------------------------------------------*/
@@ -743,21 +751,25 @@ CDataNode::Find( const CString& name )
 const CDataNode* 
 CDataNode::Find( const CString& name ) const
 {TRACE;
-        if ( _name == name )
+
+    const CDataNode* n = FindSibling( name );
+    if ( n ) 
+    {
+        return n;
+    }                
+
+    n = _pfchild;
+    const CDataNode* result = NULL;
+    while ( n != NULL )
+    {
+        result = n->Find( name );
+        if ( NULL != result )
         {
-            return this;
-        }        
-        const CDataNode* n = FindSibling( name );
-        if ( n ) 
-        {
-                return n;
-        }                
-        
-        if ( _pfchild )
-        {
-                return _pfchild->Find( name );
+            return result;
         }
-        return NULL;       
+        n = n->_pnext;
+    }
+    return NULL;      
 }
 
 /*-------------------------------------------------------------------------*/
