@@ -380,29 +380,31 @@ CDynamicArray::GetArraySize( void ) const
 void
 CDynamicArray::FillNULLGaps( void )
 {TRACE;
-        Int32 jmp = 1;
-        for ( Int32 i=0; i+jmp<=_last; ++i )
+        
+    Int32 jmp = 0;
+    for ( Int32 i=0; i+jmp<=_last; ++i )
+    {
+        if ( _entrys[ i ] == NULL )
         {
-                if ( !_entrys[ i ] )
+            while ( i+jmp <= _last )
+            {                                
+                _entrys[ i ] = _entrys[ i+jmp ];
+                if ( _entrys[ i ] )
                 {
-                        while ( i+jmp <= _last )
-                        {                                
-                                _entrys[ i ] = _entrys[ i+jmp ];
-                                if ( _entrys[ i ] )
-                                {
-                                        _entrys[ i+jmp ] = NULL;
-                                        break;
-                                }
-                                ++jmp;
-                        }
-                        
-                        if ( !_entrys[ i ] )
-                        {
-                                _last-=jmp;
-                                return;        
-                        }
+                    _entrys[ i+jmp ] = NULL;
+                    break;
                 }
+                ++jmp;
+            }
+            
+            if ( !_entrys[ i ] )
+            {
+                _last-=jmp;
+                return;        
+            }
         }
+    }
+ 
 }
 
 /*-------------------------------------------------------------------------*/
