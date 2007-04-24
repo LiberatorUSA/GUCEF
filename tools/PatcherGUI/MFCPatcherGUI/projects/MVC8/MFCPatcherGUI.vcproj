@@ -101,7 +101,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Debug_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Debug_MVC8&#x0D;&#x0A;copy ..\..\recources\MFCPatcherConfig.xml  ..\..\..\..\..\common\bin\Debug_MVC8"
 			/>
 		</Configuration>
 		<Configuration
