@@ -199,15 +199,15 @@ tspinit( void )
          */
         #ifdef GUCEF_MSWIN_BUILD
           #ifdef GUCEF_CORE_DEBUG_MODE        
-          AllocConsole();
+          //AllocConsole();
           #endif
         
         /* reopen stdin handle as console window input */
-        freopen("CONIN$","rb",stdin);
+       // freopen("CONIN$","rb",stdin);
         /* reopen stout handle as console window output */
-        freopen("CONOUT$","wb",stdout);
+      //  freopen("CONOUT$","wb",stdout);
         /* reopen stderr handle as console window output */
-        freopen("CONOUT$","wb",stderr);
+      //  freopen("CONOUT$","wb",stderr);
         #endif /* GUCEF_MSWIN_BUILD */
                 
         if ( !init )
@@ -232,7 +232,7 @@ tspshutdown( void )
 	if ( init )
         {
                 #ifdef GUCEF_CORE_DEBUG_MODE
-                FreeConsole();
+               // FreeConsole();
                 #endif
                 
         	init = 0;
