@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_CSOCKET_H
-#include "CSocket.h"                   /* socket Base class */
-#define GUCEF_COMCORE_CSOCKET_H
-#endif /* GUCEF_COMCORE_CSOCKET_H */
+#ifndef GUCEF_COMCORE_CTCPCONNECTION_H
+#include "CTCPConnection.h"                     /* TCP connection base class */
+#define GUCEF_COMCORE_CTCPCONNECTION_H
+#endif /* GUCEF_COMCORE_CTCPCONNECTION_H ? */
 
 #ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"  /* GUCEF COMCORE specific macros and build defs */
@@ -52,7 +52,7 @@ namespace COMCORE {
 /**
  *      TCP Client socket class
  */
-class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CSocket
+class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
 {
     public:
     
@@ -71,20 +71,23 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CSocket
     
     virtual ~CTCPClientSocket();
 
-    /**
-     *     
-     */
+
     bool ConnectTo( const CORE::CString& address , 
                     UInt16 port                  ); 
 
+    bool ConnectTo( const TIPAddress& address );
+
     /**
      *      Attempts to reconnect to the server provided with
-     *      Connect_To(). If Connect_To() has not yet been called then this
+     *      Connect_To(). If ConnectTo() has not yet been called then this
      *      member function has no effect.
      */
     bool Reconnect( void );
     
     void Close( void );  /* close the socket connection */
+    
+    virtual bool Send( const void* dataSource , 
+                       const UInt16 dataSize  );    
 
     /**
      *      Attempt to send the data and returns immediately.
@@ -95,7 +98,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CSocket
      */
     bool Send( const void* data   , 
                UInt32 length      ,
-               UInt32 timeout = 0 );
+               UInt32 timeout     );
                    
     bool Send( const CORE::CString& data );
 
@@ -125,12 +128,18 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CSocket
     /** 
      *
      */
-    bool IsActive( void ) const; 
+    virtual bool IsActive( void ) const; 
 
     /**
      *      
      */       
     bool IsBlocking( void ) const;
+
+    virtual const CORE::CString& GetRemoteHostName( void ) const;
+    
+    virtual UInt16 GetRemoteTCPPort( void ) const;
+    
+    virtual TIPAddress GetRemoteIP( void ) const;
 
     virtual CORE::CString GetType( void ) const;
 
@@ -153,6 +162,9 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CSocket
     virtual void UnlockData( void ) const;
 
     private:
+
+    CTCPClientSocket( void );                /* default constructor cannot be used since we need to register the socket */
+    CTCPClientSocket& operator=( const CTCPClientSocket& src ); /* making a copy of a socket doesn't make sense */
     
     void CheckRecieveBuffer( void );               
     
@@ -164,9 +176,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CSocket
     MT::CMutex datalock;
     CORE::CDynamicBuffer m_readbuffer;
     UInt32 m_maxreadbytes;                  /**< max number of bytes to receive before processing it */ 
-
-    CTCPClientSocket( void );                /* default constructor cannot be used since we need to register the socket */
-    CTCPClientSocket& operator=( const CTCPClientSocket& src ); /* making a copy of a socket doesn't make sense */
+    TIPAddress m_ipAddress;                 /**< network order IP address */
 };
 
 /*-------------------------------------------------------------------------//

@@ -306,7 +306,14 @@ CTCPServerSocket::AcceptClients( void )
                                                 /*
                                                  *      Call the on client connect event handler      
                                                  */
-                                                NotifyObservers( ClientConnectedEvent );                                                                                 
+                                                struct SConnectionInfo eData;
+                                                eData.address.netaddr = clientcon->_data->clientaddr.sin_addr.S_un.S_addr;
+                                                eData.address.port = clientcon->_data->clientaddr.sin_port;
+                                                eData.connection = clientcon;
+                                                eData.connectionIndex = i;
+                                                eData.hostName = clientcon->_data->clientip;
+                                                TClientConnectedEventData cloneableEventData( eData );
+                                                NotifyObservers( ClientConnectedEvent, &cloneableEventData );                                                                                 
 
                                                 return;
                                         }                                        

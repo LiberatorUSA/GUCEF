@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CISTREAMABLE_H
-#define GUCEF_CORE_CISTREAMABLE_H
+#ifndef GUCEF_CORE_CSTREAMEREVENTS_H
+#define GUCEF_CORE_CSTREAMEREVENTS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
-#include "CDynamicBuffer.h"
-#define GUCEF_CORE_CDYNAMICBUFFER_H
-#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+#ifndef GUCEF_CORE_CISTREAMABLE_H
+#include "CIStreamable.h"
+#define GUCEF_CORE_CISTREAMABLE_H
+#endif /* GUCEF_CORE_CISTREAMABLE_H ? */
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"       /* module macro's */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CEVENT_H
+#include "CEvent.h"
+#define GUCEF_CORE_CEVENT_H
+#endif /* GUCEF_CORE_CEVENT_H ? */
+
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
+#include "CTCloneableObj.h"
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */ 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,28 +56,30 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CIStreamable
+/**
+ *  Interface class for events relating to streaming
+ */
+class GUCEFCORE_EXPORT_CPP CStreamerEvents
 {
     public:
     
-    CIStreamable( void );
+    static const CEvent StreamEvent;
     
-    CIStreamable( const CIStreamable& src );
+    struct SStreamEventData
+    {
+        CIStreamable* id;       /**< optional ID value to identify the data, can be NULL */
+        CIStreamable* data;     /**< the actual stream-able data */
+    };
+    typedef CTCloneableObj< struct SStreamEventData > TStreamEventData;
     
-    virtual ~CIStreamable();
+    static void RegisterEvents( void );
     
-    CIStreamable& operator=( const CIStreamable& src );
+    public:
     
-    virtual bool StreamTo( void* destBuffer            ,
-                           const UInt32 destBufferSize ) const = 0;
-                    
-    virtual bool StreamFrom( const void* srcBuffer      ,
-                             const UInt32 srcBufferSize ) = 0;
-    
-    virtual UInt32 GetStreamedSize( void ) const = 0;
-    
-    virtual void StreamToBuffer( CDynamicBuffer& buffer ) const = 0;
-        
+    CStreamerEvents( void );
+    CStreamerEvents( const CStreamerEvents& src );
+    virtual ~CStreamerEvents();
+    CStreamerEvents& operator=( const CStreamerEvents& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -86,7 +93,7 @@ class GUCEFCORE_EXPORT_CPP CIStreamable
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CISTREAMABLE_H ? */
+#endif /* GUCEF_CORE_CSTREAMEREVENTS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -95,6 +102,6 @@ class GUCEFCORE_EXPORT_CPP CIStreamable
 //-------------------------------------------------------------------------//
 
 - 02-03-2007 :
-        - Dinand: re-added this class
+        - Dinand: re-added this header
 
 -----------------------------------------------------------------------------*/

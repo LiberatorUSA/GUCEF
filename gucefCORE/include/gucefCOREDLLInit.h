@@ -42,6 +42,8 @@
 
 #ifdef GUCEF_MSWIN_BUILD
   #include <windows.h>
+  #undef min
+  #undef max
 
   #define DLL_INIT_FUNC( ns )                          \
                                                        \

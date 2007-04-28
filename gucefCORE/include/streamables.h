@@ -31,6 +31,11 @@
 #define GUCEF_CORE_CTSTREAMABLEOBJ_H
 #endif /* GUCEF_CORE_CTSTREAMABLEOBJ_H ? */
 
+#ifndef GUCEF_CORE_ESTRUCTS_H
+#include "EStructs.h"
+#define GUCEF_CORE_ESTRUCTS_H
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -64,6 +69,7 @@ typedef CTStreamableObj< Int32 >          TStreamableInt32;
 typedef CTStreamableObj< UInt32 >         TStreamableUInt32;
 typedef CTStreamableObj< Float32 >        TStreamableFloat32;
 typedef CTStreamableObj< Float64 >        TStreamableFloat64;
+typedef CTStreamableObj< TVersion >       TStreamableVersion;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

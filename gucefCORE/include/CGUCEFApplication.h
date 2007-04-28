@@ -33,6 +33,8 @@
 
 #ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>                    /* Micro$oft Windows API */
+#undef min
+#undef max
 #endif /* GUCEF_MSWIN_BUILD ? */
 
 #ifndef GUCEF_CORE_CTSGNOTIFIER_H

@@ -23,6 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <functional>            /* needed here for std::min() */
 #include <stdlib.h>             /* needed here for realloc() */
 #include <string.h>             /* needed for memcpy() */
 
@@ -584,6 +585,24 @@ UInt32
 CDynamicBuffer::GetDataSize( void ) const
 {TRACE;
         return m_dataSize;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDynamicBuffer::operator<( const CDynamicBuffer& other ) const
+{TRACE;
+
+    return memcmp( _buffer, other._buffer, SMALLEST( GetDataSize(), other.GetDataSize() ) ) < 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDynamicBuffer::operator>( const CDynamicBuffer& other ) const
+{TRACE;
+
+    return memcmp( _buffer, other._buffer, SMALLEST( GetDataSize(), other.GetDataSize() ) ) > 0;
 }
 
 /*-------------------------------------------------------------------------*/

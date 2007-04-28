@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#include <string.h>
+#include <string.h>                     /* needed for memcpy() */
 
 #ifndef GUCEF_CORE_CISTREAMABLE_H
-#include "CIStreamable.h"
+#include "CIStreamable.h"               /* interface class for streamable objects */
 #define GUCEF_CORE_CISTREAMABLE_H
 #endif /* GUCEF_CORE_CISTREAMABLE_H ? */
 
@@ -80,7 +80,7 @@ class CTStreamableObj : public CIStreamable
     
     virtual UInt32 GetStreamedSize( void ) const;
     
-    virtual void GetStreamAsBuffer( CDynamicBuffer& buffer ) const;    
+    virtual void StreamToBuffer( CDynamicBuffer& buffer ) const;    
     
     private:
     
@@ -209,10 +209,10 @@ CTStreamableObj< T >::GetStreamedSize( void ) const
     
 template < typename T >
 void
-CTStreamableObj< T >::GetStreamAsBuffer( CDynamicBuffer& buffer ) const
+CTStreamableObj< T >::StreamToBuffer( CDynamicBuffer& buffer ) const
 {TRACE;
 
-    //buffer.LinkTo
+    buffer.LinkTo( &m_data, sizeof( T ) );
 }
 
 /*-------------------------------------------------------------------------//

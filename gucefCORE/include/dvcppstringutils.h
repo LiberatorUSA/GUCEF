@@ -99,6 +99,11 @@ Int32ToString( const Int32 value );
 /*-------------------------------------------------------------------------*/
 
 GUCEFCORE_EXPORT_CPP CString
+PointerToString( const void* value );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
 StringToMD5String( const CString& str );
 
 /*-------------------------------------------------------------------------*/

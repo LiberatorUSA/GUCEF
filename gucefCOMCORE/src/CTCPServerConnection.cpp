@@ -88,25 +88,23 @@ typedef struct STCPServerConData TTCPServerConData;
  */
 CTCPServerConnection::CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
                                             UInt32 connection_idx            )
-        : CSocket()                           ,
+        : CTCPConnection()                    ,
           _active( false )                    ,
           m_keepbytes( 0 )                    ,
           m_maxreadbytes( 0 )                 ,
           m_parentsock( tcp_serversock )      ,
           m_connectionidx( connection_idx )
           
-{TRACE;
+{GUCEF_TRACE;
         
         _data = new TTCPServerConData;        
 }
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *	Decontructor, close connection and cleanup.
- */
 CTCPServerConnection::~CTCPServerConnection()
-{
+{GUCEF_TRACE;
+
         Close();      
         
         delete _data;
@@ -114,12 +112,38 @@ CTCPServerConnection::~CTCPServerConnection()
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Closes the connection with the client
- */
+const CORE::CString&
+CTCPServerConnection::GetRemoteHostName( void ) const
+{GUCEF_TRACE;
+
+    return _data->clientip;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTCPServerConnection::TIPAddress
+CTCPServerConnection::GetRemoteIP( void ) const
+{GUCEF_TRACE;
+
+    TIPAddress ip = { _data->clientaddr.sin_port, _data->clientaddr.sin_addr.S_un.S_addr };
+    return ip;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt16
+CTCPServerConnection::GetRemoteTCPPort( void ) const
+{GUCEF_TRACE;
+
+    return ntohs( _data->clientaddr.sin_port );
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CTCPServerConnection::Close( void )
-{
+{GUCEF_TRACE;
+
         _datalock.Lock();
         
         closesocket( _data->sockid ); 
@@ -133,18 +157,15 @@ CTCPServerConnection::Close( void )
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Write data to socket
- */
 bool
-CTCPServerConnection::Send( const char *data , 
-                            UInt32 length    )
-{TRACE;
+CTCPServerConnection::Send( const void* dataSource , 
+                            const UInt16 length    )
+{GUCEF_TRACE;
         
         _datalock.Lock();
         int error;
         Int32 wbytes = WSTS_send( _data->sockid ,  
-                                  data          , 
+                                  dataSource    , 
                                   length        , 
                                   0             , 
                                   &error        );
@@ -157,33 +178,15 @@ CTCPServerConnection::Send( const char *data ,
         }      */
 
 
-        return false;//( success );
+        return wbytes >= 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Set's the maximum number of bytes to be read from the socket
- *      recieved data buffer. A value of 0 means infinite. Setting this
- *      value to non-zero allows you to avoid the server connection or
- *      even the entire server socket (if the server socket is not using
- *      a seperate thread) from getting stuck reading data. If data is
- *      being sent in such a fast rate that the continues stream will
- *      be considdered to be a single transmission the server will not
- *      be able to stop reading. This is where the max read value comes
- *      in. No matter how much new data is available the reading will
- *      stop at the set number of bytes. If you have a fixed transmission
- *      length then this is easy to deal with by using a factor of the
- *      transmission length as the max read value. Otherwise you will
- *      have to check what data you need and what data should be kept.
- *      The data you think that should be kept will be prefixed to the
- *      next data buffer. You can control this proccess by setting the
- *      keepbytes value in the OnClientRead() event handler.
- *      In short, this helps prevent a DOS attack on the software. 
- */
 void
 CTCPServerConnection::SetMaxRead( UInt32 mr )
-{
+{GUCEF_TRACE;
+
         /*
          *      Although the setting of the int value may be atomic we must
          *      use a mutex lock so that a current read proccess will not be
@@ -199,7 +202,8 @@ CTCPServerConnection::SetMaxRead( UInt32 mr )
 
 UInt32
 CTCPServerConnection::GetMaxRead( void ) const
-{
+{GUCEF_TRACE;
+
         return m_maxreadbytes;
 }
 
@@ -227,7 +231,7 @@ CTCPServerConnection::Read( char *dest     ,
                             UInt32 size    , 
                             UInt32 &wbytes , 
                             Int32 timeout  )
-{TRACE;
+{GUCEF_TRACE;
 
      //   _datalock.Lock();
      //   recv( _data->sockid              ,
@@ -252,7 +256,8 @@ CTCPServerConnection::Read( char *dest     ,
 
 void
 CTCPServerConnection::CheckRecieveBuffer( void )
-{                                 
+{GUCEF_TRACE;
+                                 
         /*
          *      Since this is a non-blocking socket we need to poll for recieved data
          */
@@ -322,7 +327,8 @@ CTCPServerConnection::CheckRecieveBuffer( void )
  */
 void 
 CTCPServerConnection::Update( void )
-{
+{GUCEF_TRACE;
+
         if ( !_blocking && _active )
         {       
                 fd_set readfds;      /* Setup the read variable for the select function */        
@@ -378,7 +384,8 @@ CTCPServerConnection::Update( void )
 
 bool 
 CTCPServerConnection::IsActive( void ) const
-{
+{GUCEF_TRACE;
+
         return _active;
 }
 

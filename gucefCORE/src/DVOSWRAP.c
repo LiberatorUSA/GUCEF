@@ -32,6 +32,8 @@
 /* Do not use WIN32_LEAN_AND_MEAN because it will remove timeBeginPeriod() etc. */
 #undef  WIN32_LEAN_AND_MEAN
 #include <windows.h>                /* Windows API */
+#undef min
+#undef max
 #define MAX_DIR_LENGTH MAX_PATH
 #endif /* GUCEF_MSWIN_BUILD ? */
 

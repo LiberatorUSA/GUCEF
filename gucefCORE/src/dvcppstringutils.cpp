@@ -36,6 +36,8 @@
 #ifdef GUCEF_MSWIN_BUILD
   #define WIN32_LEAN_AND_MEAN
   #include <windows.h>		/* WIN32 API */
+  #undef min
+  #undef max
   #define MAX_DIR_LENGTH MAX_PATH
 #elif GUCEF_LINUX_BUILD
   #include <unistd.h>             /* POSIX utilities */
@@ -137,6 +139,17 @@ Int32ToString( const Int32 value )
         char intBuffer[ 10 ];
         sprintf( intBuffer, "%d", value );
         return CString( intBuffer );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+PointerToString( const void* value )
+{GUCEF_TRACE;
+
+    char addrBuffer[ 10 ];
+    sprintf( addrBuffer, "%p", value );
+    return CString( addrBuffer );    
 }
 
 /*-------------------------------------------------------------------------*/

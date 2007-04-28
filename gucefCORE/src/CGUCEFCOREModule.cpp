@@ -111,6 +111,11 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
+#ifndef GUCEF_CORE_CSTREAMEREVENTS_H
+#include "CStreamerEvents.h"
+#define GUCEF_CORE_CSTREAMEREVENTS_H
+#endif /* GUCEF_CORE_CSTREAMEREVENTS_H ? */
+
 #include "CGUCEFCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef ADD_MEMORY_MANAGER
@@ -209,6 +214,7 @@ CGUCEFCOREModule::Load( void )
          *      Make sure all events are registered from the start
          */
         CNotifier::RegisterEvents();
+        CStreamerEvents::RegisterEvents();
         CTimer::RegisterEvents();
         CPluginManager::RegisterEvents();
         CIURLEvents::RegisterEvents();

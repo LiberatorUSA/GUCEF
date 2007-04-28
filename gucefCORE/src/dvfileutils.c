@@ -34,6 +34,8 @@
 #include "dvstrutils.h"         /* My own string utils */
 #ifdef GUCEF_MSWIN_BUILD
   #include <windows.h>		/* WIN32 API */
+  #undef min
+  #undef max  
   /* #include <dir.h>: obsolete *//* needed for MAXFILE define */
   #include <io.h>                 /* Dir itteration: findfirst ect. */
   #include <direct.h>             /* dir tools */

@@ -134,7 +134,7 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
      *  Adds the given event ID to the forwarding list.
      *
      *  This allows you to forward events from one notifier 
-     *  trough this notifier. This is usefull if you have a
+     *  trough this notifier. This is useful if you have a
      *  notifier who's derived class delegates tasks to 
      *  notifying sub-systems. Using forwarding you can create 
      *  the composite class and make it seem like a single system 
@@ -177,7 +177,8 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
      *  notification events.
      *
      *  Note: Do NOT  forget to call this class's implementation
-     *  from your descending class.
+     *  from your descending class or you will break the event 
+     *  forwarding mechanism.
      *
      *  @param notifier the notifier that sent the notification
      *  @param eventid the unique event id for an event

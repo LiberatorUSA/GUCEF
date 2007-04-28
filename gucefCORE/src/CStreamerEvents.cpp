@@ -17,24 +17,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CISTREAMABLE_H
-#define GUCEF_CORE_CISTREAMABLE_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
-#include "CDynamicBuffer.h"
-#define GUCEF_CORE_CDYNAMICBUFFER_H
-#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
-
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"       /* module macro's */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#include "CStreamerEvents.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,33 +36,55 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CIStreamable
-{
-    public:
-    
-    CIStreamable( void );
-    
-    CIStreamable( const CIStreamable& src );
-    
-    virtual ~CIStreamable();
-    
-    CIStreamable& operator=( const CIStreamable& src );
-    
-    virtual bool StreamTo( void* destBuffer            ,
-                           const UInt32 destBufferSize ) const = 0;
-                    
-    virtual bool StreamFrom( const void* srcBuffer      ,
-                             const UInt32 srcBufferSize ) = 0;
-    
-    virtual UInt32 GetStreamedSize( void ) const = 0;
-    
-    virtual void StreamToBuffer( CDynamicBuffer& buffer ) const = 0;
-        
-};
+const CEvent CStreamerEvents::StreamEvent = "GUCEF::CORE::CStreamerEvents::StreamEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+void
+CStreamerEvents::RegisterEvents( void )
+{TRACE;
+
+    StreamEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CStreamerEvents::CStreamerEvents( void )
+{TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CStreamerEvents::CStreamerEvents( const CStreamerEvents& src )
+{TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CStreamerEvents::~CStreamerEvents()
+{TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CStreamerEvents&
+CStreamerEvents::operator=( const CStreamerEvents& src )
+{TRACE;
+
+    return *this;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -85,16 +96,3 @@ class GUCEFCORE_EXPORT_CPP CIStreamable
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CISTREAMABLE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 02-03-2007 :
-        - Dinand: re-added this class
-
------------------------------------------------------------------------------*/

@@ -35,7 +35,18 @@
 #define DVWINSOCK_H
 #endif /* DVWINSOCK_H ? */
 
-#include <winsock2.h>                   /* windows networking API */
+#ifdef GUCEF_MSWIN_BUILD
+  #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
+  #include <winsock2.h>
+  #include <Ws2tcpip.h>
+  #include <Wspiapi.h>
+#else
+ #ifdef GUCEF_LINUX_BUILD
+    #include <unistd.h>
+    #include <sys/socket.h>
+    #include <sys/types.h>
+ #endif
+#endif
 
 #endif /* GUCEF_MSWIN_BUILD ? */
 
@@ -107,14 +118,14 @@ typedef struct CTCPClientSocket::STCPClientSockData TTCPClientSockData;
 //-------------------------------------------------------------------------//
 
 CTCPClientSocket::CTCPClientSocket( void )
-        : CSocket()
+        : CTCPConnection()
 {TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CTCPClientSocket::CTCPClientSocket( bool blocking ) 
-        : CSocket()                ,
+        : CTCPConnection()         ,
           _blocking( blocking )    ,
           _active( false )         ,
           m_maxreadbytes( 0 )
@@ -242,7 +253,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     NotifyObservers( ConnectingEvent );
     
     int errorcode = 0;
-    if ( CORE::Check_If_IP( remoteaddr.C_String() ) )
+    if ( CORE::Check_If_IP( remoteaddr.C_String() ) == 1 )
     {
             UInt32 addr = inet_addr( remoteaddr.C_String() );
             _data->hostent = WSTS_gethostbyaddr( (char*) &addr , 
@@ -270,7 +281,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
         return false;
     }    
                                         
-    if ( !_data->hostent ) return false;
+    if ( NULL == _data->hostent ) return false;
 
     _data->sockid = WSTS_socket( AF_INET     ,  /* Go over TCP/IP */
                                  SOCK_STREAM ,  /* This is a stream-oriented socket */
@@ -350,6 +361,43 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
 
     UnlockData();        
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTCPClientSocket::ConnectTo( const TIPAddress& address )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+CTCPClientSocket::GetRemoteHostName( void ) const
+{GUCEF_TRACE;
+
+    return _remoteaddr;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+UInt16
+CTCPClientSocket::GetRemoteTCPPort( void ) const
+{GUCEF_TRACE;
+    
+    return ntohs( _data->serverinfo.sin_port );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CTCPClientSocket::TIPAddress
+CTCPClientSocket::GetRemoteIP( void ) const
+{GUCEF_TRACE;
+
+    TIPAddress ip = { _data->serverinfo.sin_port, _data->serverinfo.sin_addr.S_un.S_addr };
+    return ip;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -476,6 +524,18 @@ CTCPClientSocket::Close( void )
                 NotifyObservers( DisconnectedEvent );
         }
         UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTCPClientSocket::Send( const void* dataSource , 
+                        const UInt16 dataSize  )
+{GUCEF_TRACE;
+
+    return Send( dataSource ,
+                 dataSize   ,
+                 0          );
 }
 
 /*-------------------------------------------------------------------------*/

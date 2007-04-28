@@ -2,9 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="gucefDRN"
-	ProjectGUID="{EC85F48F-04B3-469A-882C-E5B07691716D}"
-	RootNamespace="gucefDRN_MVC8"
+	Name="gucefDRN_TestApp"
+	ProjectGUID="{6E873FF1-9945-4893-B14F-ABAB602A00AF}"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -19,8 +18,8 @@
 			Name="Debug|Win32"
 			OutputDirectory="..\..\bin\Debug_MVC8"
 			IntermediateDirectory="..\..\bin\Debug_MVC8"
-			ConfigurationType="2"
-			CharacterSet="1"
+			ConfigurationType="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -40,16 +39,19 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefCOMCORE\include;..\..\..\gucefCORE\include;..\..\..\gucefMT\include;..\..\..\common\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GUCEFDRN_MVC8_EXPORTS;GUCEF_DRN_BUILD_MODULE"
+				AdditionalIncludeDirectories="../../include;../../../gucefCORE/include;../../../gucefMT/include;..\..\..\common\include;../../../gucefDRN/include;../../../gucefCOMCORE/include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				DisableLanguageExtensions="false"
+				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)\vc80.pdb"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="4"
-				DisableSpecificWarnings="4100;4251;4996"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4275;4251"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -62,11 +64,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCOMCORE_MVC8_d.lib gucefCORE_MVC8_d.lib gucefMT_MVC8_d.lib"
-				OutputFile="$(OutDir)\gucefDRN_MVC8_d.dll"
+				AdditionalDependencies="gucefCORE_MVC8_d.lib gucefMT_MVC8_d.lib gucefCOMCORE_MVC8_d.lib gucefDRN_MVC8_d.lib"
+				OutputFile="$(OutDir)/gucefDRN_TestApp_MVC8_d.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\gucefCOMCORE\bin\Debug_MVC8;..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\gucefMT\bin\Debug_MVC8"
+				AdditionalLibraryDirectories="../../../gucefCORE/bin/Debug_MVC8;../../../gucefDRN/bin/Debug_MVC8;../../../gucefMT/bin/Debug_MVC8;../../../gucefCOMCORE/bin/Debug_MVC8"
 				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				SubSystem="2"
 				TargetMachine="1"
 			/>
@@ -98,11 +101,11 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="2"
-			CharacterSet="1"
-			WholeProgramOptimization="1"
+			OutputDirectory="Release"
+			IntermediateDirectory="Release"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -121,8 +124,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GUCEFDRN_MVC8_EXPORTS"
-				RuntimeLibrary="2"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -139,6 +142,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="$(OutDir)/gucefCOMCORE_TestApp.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -177,19 +181,15 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\gucefDRN_CDRNDataGroup.cpp"
+				RelativePath="..\..\src\gucefDRN_TestApp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\gucefDRN_CDRNNode.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\gucefDRN_CDRNPeerLink.cpp"
+				RelativePath="..\..\src\TestCode_PeerToPeer.cpp"
 				>
 			</File>
 		</Filter>
@@ -199,43 +199,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\include\gucefDRN.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefDRN_CDRNDataGroup.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefDRN_CDRNNode.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefDRN_CDRNPeerLink.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefDRN_CIDRNPeerLinkCrypter.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefDRN_CIDRNPeerValidator.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefDRN_config.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefDRN_DRNProtocol.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefDRN_ETypes.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefDRN_macros.h"
+				RelativePath="..\..\include\TestCode_PeerToPeer.h"
 				>
 			</File>
 		</Filter>

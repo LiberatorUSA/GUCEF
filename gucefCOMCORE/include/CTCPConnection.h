@@ -1,5 +1,5 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
+ *  gucefCOMCORE: GUCEF module providing basic communication facilities
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CISTREAMABLE_H
-#define GUCEF_CORE_CISTREAMABLE_H
+#ifndef GUCEF_COMCORE_CTCPCONNECTION_H
+#define GUCEF_COMCORE_CTCPCONNECTION_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
-#include "CDynamicBuffer.h"
-#define GUCEF_CORE_CDYNAMICBUFFER_H
-#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+#ifndef GUCEF_COMCORE_CSOCKET_H
+#include "CSocket.h"
+#define GUCEF_COMCORE_CSOCKET_H
+#endif /* GUCEF_COMCORE_CSOCKET_H ? */
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"       /* module macro's */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_COMCORE_MACROS_H
+#include "gucefCOMCORE_macros.h"
+#define GUCEF_COMCORE_MACROS_H
+#endif /* GUCEF_COMCORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,28 +51,34 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CIStreamable
+/**
+ *  Base class for TCP based socket connections
+ */
+class GUCEF_COMCORE_EXPORT_CPP CTCPConnection : public CSocket
 {
     public:
     
-    CIStreamable( void );
+    CTCPConnection( void );
+
+    virtual ~CTCPConnection();
     
-    CIStreamable( const CIStreamable& src );
+    virtual TIPAddress GetRemoteIP( void ) const = 0;
     
-    virtual ~CIStreamable();
+    virtual const CORE::CString& GetRemoteHostName( void ) const = 0;
     
-    CIStreamable& operator=( const CIStreamable& src );
+    virtual UInt16 GetRemoteTCPPort( void ) const = 0;
     
-    virtual bool StreamTo( void* destBuffer            ,
-                           const UInt32 destBufferSize ) const = 0;
-                    
-    virtual bool StreamFrom( const void* srcBuffer      ,
-                             const UInt32 srcBufferSize ) = 0;
+    virtual bool IsActive( void ) const = 0;
     
-    virtual UInt32 GetStreamedSize( void ) const = 0;
+    virtual void Close( void ) = 0;
     
-    virtual void StreamToBuffer( CDynamicBuffer& buffer ) const = 0;
-        
+    virtual bool Send( const void* dataSource ,
+                       const UInt16 dataSize  ) = 0;
+ 
+    private:
+    
+    CTCPConnection( const CTCPConnection& src );            /**< connections are unique and cannot be copied */
+    CTCPConnection& operator=( const CTCPConnection& src ); /**< connections are unique and cannot be copied */
 };
 
 /*-------------------------------------------------------------------------//
@@ -81,12 +87,12 @@ class GUCEFCORE_EXPORT_CPP CIStreamable
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace COMCORE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CISTREAMABLE_H ? */
+#endif /* GUCEF_COMCORE_CTCPCONNECTION_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -95,6 +101,6 @@ class GUCEFCORE_EXPORT_CPP CIStreamable
 //-------------------------------------------------------------------------//
 
 - 02-03-2007 :
-        - Dinand: re-added this class
+        - Dinand: re-added this header
 
 -----------------------------------------------------------------------------*/

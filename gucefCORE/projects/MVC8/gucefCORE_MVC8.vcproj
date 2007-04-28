@@ -496,6 +496,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CStreamerEvents.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CStringList.cpp"
 				>
 			</File>
@@ -998,6 +1002,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\CStreamerEvents.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\CStringList.h"
 				>
 			</File>
@@ -1235,6 +1243,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\PAFILE.H"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\streamables.h"
 				>
 			</File>
 			<File

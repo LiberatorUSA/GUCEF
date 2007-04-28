@@ -1,5 +1,5 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
+ *  gucefDRN: GUCEF module providing RAD networking trough data replication
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CISTREAMABLE_H
-#define GUCEF_CORE_CISTREAMABLE_H
+#ifndef GUCEF_DRN_CDRNPEERLINK_H
+#define GUCEF_DRN_CDRNPEERLINK_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,23 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
-#include "CDynamicBuffer.h"
-#define GUCEF_CORE_CDYNAMICBUFFER_H
-#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+#ifndef GUCEF_COMCORE_CSOCKET_H
+#include "CSocket.h"
+#define GUCEF_COMCORE_CSOCKET_H
+#endif /* GUCEF_COMCORE_CSOCKET_H ? */
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"       /* module macro's */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_DRN_MACROS_H
+#include "gucefDRN_macros.h"
+#define GUCEF_DRN_MACROS_H
+#endif /* GUCEF_DRN_MACROS_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      CLASSES                                                            //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF { namespace COMCORE { class CTCPConnection; class CUDPSocket; } }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,7 +51,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace DRN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,28 +59,55 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CIStreamable
+class CDRNNode;
+
+/*-------------------------------------------------------------------------*/
+
+class GUCEF_DRN_EXPORT_CPP CDRNPeerLink
 {
     public:
     
-    CIStreamable( void );
+    typedef COMCORE::CSocket::TIPAddress TIPAddress;
     
-    CIStreamable( const CIStreamable& src );
+    TIPAddress GetPeerIP( void ) const;
     
-    virtual ~CIStreamable();
+    const CORE::CString& GetPeerHostName( void ) const;
     
-    CIStreamable& operator=( const CIStreamable& src );
+    UInt16 GetPeerTCPPort( void ) const;
     
-    virtual bool StreamTo( void* destBuffer            ,
-                           const UInt32 destBufferSize ) const = 0;
-                    
-    virtual bool StreamFrom( const void* srcBuffer      ,
-                             const UInt32 srcBufferSize ) = 0;
+    UInt16 GetPeerUDPPort( void ) const;
     
-    virtual UInt32 GetStreamedSize( void ) const = 0;
+    bool IsUDPPossible( void ) const;
+ 
+    private:
+    friend class CDRNNode;
     
-    virtual void StreamToBuffer( CDynamicBuffer& buffer ) const = 0;
-        
+    CDRNPeerLink( void );
+
+    virtual ~CDRNPeerLink();
+
+    COMCORE::CTCPConnection* GetTCPConnection( void );
+    
+    void SetTCPConnection( COMCORE::CTCPConnection& tcpConnection );
+    
+    COMCORE::CUDPSocket* GetUDPSocket( void );
+    
+    void SetUDPSocket( COMCORE::CUDPSocket& socket );
+    
+    bool SendData( const void* dataSource             ,
+                   const UInt16 dataSize              ,
+                   const bool allowUnreliable = false );
+    
+    private:
+    
+    CDRNPeerLink( const CDRNPeerLink& src );            /**< peer links are unique and cannot be copied */
+    CDRNPeerLink& operator=( const CDRNPeerLink& src ); /**< peer links are unique and cannot be copied */
+
+    private:
+    
+    COMCORE::CUDPSocket* m_udpSocket;
+    COMCORE::CTCPConnection* m_tcpConnection;
+    bool m_udpPossible;
 };
 
 /*-------------------------------------------------------------------------//
@@ -81,12 +116,12 @@ class GUCEFCORE_EXPORT_CPP CIStreamable
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace DRN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CISTREAMABLE_H ? */
+#endif /* GUCEF_DRN_CDRNPEERLINK_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -95,6 +130,6 @@ class GUCEFCORE_EXPORT_CPP CIStreamable
 //-------------------------------------------------------------------------//
 
 - 02-03-2007 :
-        - Dinand: re-added this class
+        - Dinand: re-added this header
 
 -----------------------------------------------------------------------------*/

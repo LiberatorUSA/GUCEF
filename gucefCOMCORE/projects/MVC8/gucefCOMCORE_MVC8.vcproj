@@ -224,6 +224,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CTCPConnection.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CTCPServerConnection.cpp"
 				>
 			</File>
@@ -275,6 +279,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CTCPClientSocket.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CTCPConnection.h"
 				>
 			</File>
 			<File

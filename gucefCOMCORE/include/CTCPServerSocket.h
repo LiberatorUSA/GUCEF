@@ -71,6 +71,17 @@ struct STCPServerSockData;
 class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
 {
     public:
+
+    struct SConnectionInfo
+    {
+        TIPAddress address;
+        CORE::CString hostName;
+        CTCPServerConnection* connection;
+        UInt32 connectionIndex;
+    };
+    typedef struct SConnectionInfo TConnectionInfo;
+    
+    public:
     
     static const CORE::CEvent ClientDataRecievedEvent;
     static const CORE::CEvent ClientDataSentEvent;
@@ -84,14 +95,17 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     static const CORE::CEvent ServerSocketMaxConnectionsChangedEvent;
         
     typedef CORE::TCloneableInt32   TServerSocketErrorEventData;
-    typedef CORE::TCloneableInt32   TServerSocketClientErrorEventData;
+    typedef CORE::TCloneableInt32   TServerSocketClientErrorEventData;    
+    typedef CORE::CTCloneableObj< TConnectionInfo > TClientConnectedEventData;
+
+    static void RegisterEvents( void );
     
     public:
     
     CTCPServerSocket( bool blocking );
 
     /*
- *	Obtain pointer to connection data by means of connection index
+     *  Obtain pointer to connection data by means of connection index
      */
     CTCPServerConnection* GetConnection( UInt32 index );
 
@@ -100,7 +114,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     /*
      *      Methods that activate or de-activate the socket
      */
-    bool ListenOnPort( UInt16 port );   /* listen on default nic with port given */
+    bool ListenOnPort( UInt16 port );   /* listen on default NIC with port given */
     
     void Close( void ); /* stop listening for clients, close server socket */
     
@@ -128,8 +142,6 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
      *      Constructor and Destructor
      */
     virtual ~CTCPServerSocket();
-
-    static void RegisterEvents( void );
     
     private:
     friend class CTCPServerConnection;
@@ -186,37 +198,37 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
 - 12-03-2005 :
         - Continuation of conversion to direct winsock instead of sdl_net
 - 13-01-2004 :
-        - Fixed a potention deadlock between the serversocket and a connection
+        - Fixed a potential deadlock between the server socket and a connection
           object which could happen on rare occasions.
-        - Now uses the CDynamicArray class intead of managing it's own heap.  
+        - Now uses the CDynamicArray class instead of managing it's own heap.  
 - 05-01-2004 :
         - Modified server code so that each client connection can now have
           it's own threading method as designed. This means that several
           handler member functions where moved to the CTCPServerConnection
           class.
-        - The server socket will now close if an error occured.
+        - The server socket will now close if an error occurred.
         - Added member functions to control the threading of client connections
               - ClientCon_Threading_Method()   get+set
               - ClientCon_Default_Threading()  get+set
 - 12-11-2003 :
         - Modified the class so that you no longer set a max number of client
-          connections but instead the heap gets automaticly resized. There is
+          connections but instead the heap gets automatically resized. There is
           a define in the .cpp which define the resize amount. This change will
-          make the sockets easyer to use.
+          make the sockets easier to use.
         - CTCPServerConnection objects are now created when there is a connection
-          and not on init of the serversocket.
+          and not on init of the server socket.
 - 30-10-2003 :
-        - Changed contructor to use the new self registering system with the com
+        - Changed constructor to use the new self registering system with the com
           manager.
 - 23-09-2003 :
         - renamed Set_Max_Connections() to Max_Connections()
 - 11-08-2003 :
         - Added mutex locks to Active_Connections().
 - 05-08-2003 :
-	- Added this section.
+        - Added this section.
         - Changed SDL_Event_Handler into Handle_SDL_Event because of the new
           threading implementation and moved it to protected.
-	- Added const keyword here and there.
+        - Added const keyword here and there.
 
 -----------------------------------------------------------------------------*/
 

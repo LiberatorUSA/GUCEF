@@ -90,12 +90,18 @@ class GUCEFCORE_EXPORT_CPP CTracer
  *      Macro that creates a tracer object and fills in the file and line
  *      precompiler directives. This should save you some typing.
  */
-#undef TRACE
+#undef GUCEF_TRACE
 #ifdef GUCEF_CORE_DEBUG_MODE    
-  #define TRACE GUCEF::CORE::CTracer GUCEFStackTracerObject( __FILE__, __LINE__ );
+  #define GUCEF_TRACE GUCEF::CORE::CTracer GUCEFStackTracerObject( __FILE__, __LINE__ );
 #else
-  #define TRACE
+  #define GUCEF_TRACE
 #endif  
+
+/*
+ *  Legacy define
+ */
+#undef TRACE
+#define TRACE GUCEF_TRACE
 
 /*-------------------------------------------------------------------------*/
 

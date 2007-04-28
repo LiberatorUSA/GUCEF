@@ -360,7 +360,7 @@ class CMSWinPingTask : public MT::CActiveObject   ,
             m_maxPings = maxPings;
             m_timeout = timeout;
             m_bytesToSend = bytesToSend;
-            m_replyBufferSize = sizeof( ICMP_ECHO_REPLY ) + max( m_bytesToSend, 8 );
+            m_replyBufferSize = sizeof( ICMP_ECHO_REPLY ) + LARGEST( m_bytesToSend, 8 );
             free( m_replyBuffer );
             m_replyBuffer = NULL;
             free( m_sendBuffer );

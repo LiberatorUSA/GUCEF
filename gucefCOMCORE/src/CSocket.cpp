@@ -154,9 +154,13 @@ CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
         {
             GUCEF_DEBUG_LOG( 1, CORE::CString( "CSocket::ConvertToIPAddress(): gethostbyname(): full name: " ) + retval->h_name );
             char* addrStr = inet_ntoa( *( struct in_addr*)( retval->h_addr_list[0] ) );
-            resolvedDest.netaddr = inet_addr( addrStr );
-            resolvedDest.port = htons( destport );             
-            return true;            
+            Int32 netaddr = inet_addr( addrStr );
+            if ( netaddr >= 0 ) 
+            {   
+                resolvedDest.netaddr = netaddr;
+                resolvedDest.port = htons( destport );             
+                return true;
+            }            
         }
         return false;
         

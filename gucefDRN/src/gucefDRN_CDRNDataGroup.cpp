@@ -1,0 +1,292 @@
+/*
+ *  gucefDRN: GUCEF module providing RAD networking trough data replication
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_CSTREAMEREVENTS_H
+#include "CStreamerEvents.h"
+#define GUCEF_CORE_CSTREAMEREVENTS_H
+#endif /* GUCEF_CORE_CSTREAMEREVENTS_H ? */
+
+#include "gucefDRN_CDRNDataGroup.h"
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF {
+namespace DRN {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CEvent CDRNDataGroup::ItemChanged = "GUCEF::CORE::CDRNDataGroup::ItemChanged";
+    
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+   
+CDRNDataGroup::CDRNDataGroup( void )
+    : CObservingNotifier()            ,
+      m_emitAsGroup( false )          ,
+      m_acceptNewSItems( true )       ,
+      m_acceptStreamerUpdates( true ) ,
+      m_groupName()                   ,
+      m_dataMap()
+{GUCEF_TRACE;
+
+    m_groupName = CORE::PointerToString( this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDRNDataGroup::CDRNDataGroup( const CDRNDataGroup& src )
+    : CObservingNotifier( src )       ,
+      m_emitAsGroup( false )          ,
+      m_acceptNewSItems( true )       ,
+      m_acceptStreamerUpdates( true ) ,
+      m_groupName()                   ,
+      m_dataMap()    
+{GUCEF_TRACE;
+
+    m_groupName = CORE::PointerToString( this );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CDRNDataGroup::~CDRNDataGroup()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CDRNDataGroup&
+CDRNDataGroup::operator=( const CDRNDataGroup& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        CObservingNotifier::operator=( src );
+        
+        m_dataMap = src.m_dataMap;
+        m_emitAsGroup = src.m_emitAsGroup;
+        m_acceptNewSItems = src.m_acceptNewSItems;
+        m_acceptStreamerUpdates = src.m_acceptStreamerUpdates;
+        m_groupName = CORE::PointerToString( this );        
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNDataGroup::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    ItemChanged.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNDataGroup::SetEmitEntireGroupOnChange( const bool emitEntireGroup )
+{GUCEF_TRACE;
+
+    m_emitAsGroup = emitEntireGroup;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNDataGroup::GetEmitEntireGroupOnChange( void ) const
+{GUCEF_TRACE;
+
+    return m_emitAsGroup;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNDataGroup::SetAcceptNewStreamerItems( const bool acceptNewSItems )
+{GUCEF_TRACE;
+
+    m_acceptNewSItems = acceptNewSItems;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNDataGroup::GetAcceptNewStreamerItems( void ) const
+{GUCEF_TRACE;
+
+    return m_acceptNewSItems;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNDataGroup::SetAcceptUpdatesFromStreamers( const bool acceptStreamerUpdates )
+{GUCEF_TRACE;
+
+    m_acceptStreamerUpdates = acceptStreamerUpdates;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNDataGroup::GetAcceptUpdatesFromStreamers( void ) const
+{GUCEF_TRACE;
+
+    return m_acceptStreamerUpdates;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNDataGroup::SetItem( const CORE::CDynamicBuffer& id        ,
+                        const CORE::CDynamicBuffer& data      ,
+                        const bool addIfNotFound /* = true */ )
+{GUCEF_TRACE;
+
+    if ( addIfNotFound )
+    {
+        m_dataMap[ id ] = data;
+        NotifyObservers( ItemChanged );
+        return true;
+    }
+    else
+    {
+        TDataMap::iterator i = m_dataMap.find( id );
+        if ( i != m_dataMap.end() )
+        {
+            (*i).second = data;
+            NotifyObservers( ItemChanged );
+            return true;
+        }
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNDataGroup::GetItem( const CORE::CDynamicBuffer& id ,
+                        CORE::CDynamicBuffer& data     ) const
+{GUCEF_TRACE;
+
+    TDataMap::const_iterator i = m_dataMap.find( id );
+    if ( i != m_dataMap.end() )
+    {
+        data = (*i).second;
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNDataGroup::HasItem( const CORE::CDynamicBuffer& id ) const
+{GUCEF_TRACE;
+
+    return m_dataMap.end() != m_dataMap.find( id );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNDataGroup::OnNotify( CORE::CNotifier* notifier                 ,
+                         const CORE::CEvent& eventid               ,
+                         CORE::CICloneable* eventdata /* = NULL */ )
+{GUCEF_TRACE;
+
+    // Call base-class implementation,.. mandatory
+    CObservingNotifier::OnNotify( notifier  ,
+                                  eventid   ,
+                                  eventdata );
+                                 
+    if ( eventid == CORE::CStreamerEvents::StreamEvent )
+    {
+        // If streamer updates are disabled there is no point in checking anything else
+        if ( m_acceptStreamerUpdates )
+        {
+            const CORE::CStreamerEvents::SStreamEventData& eData = static_cast< CORE::CStreamerEvents::TStreamEventData* >( eventdata )->GetData();
+            
+            // make sure the streamed data has an ID, we do not accept data without an id
+            if ( eData.id != NULL )
+            {
+                CORE::CDynamicBuffer id;
+                eData.id->StreamToBuffer( id );
+                
+                CORE::CDynamicBuffer data;
+                eData.data->StreamToBuffer( data );
+                
+                SetItem( id                ,
+                         data              ,
+                         m_acceptNewSItems );
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNDataGroup::SetName( const CORE::CString& groupName )
+{GUCEF_TRACE;
+
+    m_groupName = groupName;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+const CORE::CString&
+CDRNDataGroup::GetName( void ) const
+{GUCEF_TRACE;
+
+    return m_groupName;
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace DRN */
+}; /* namespace GUCEF */
+
+/*-------------------------------------------------------------------------*/

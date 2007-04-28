@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef CTCPSERVERCONNECTION_H
-#define CTCPSERVERCONNECTION_H
+#ifndef GUCEF_COMCORE_CTCPSERVERCONNECTION_H
+#define GUCEF_COMCORE_CTCPSERVERCONNECTION_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -39,10 +39,10 @@
 #define GUCEF_COMCORE_ETYPES_H
 #endif /* GUCEF_COMCORE_ETYPES_H ? */
 
-#ifndef CSOCKET_H
-#include "CSocket.h"            /* socket base class */
-#define CSOCKET_H
-#endif /* CSOCKET_H ? */
+#ifndef GUCEF_COMCORE_CTCPCONNECTION_H
+#include "CTCPConnection.h"                     /* TCP connection base class */
+#define GUCEF_COMCORE_CTCPCONNECTION_H
+#endif /* GUCEF_COMCORE_CTCPCONNECTION_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -77,7 +77,7 @@ class CTCPServerSocket;
 /**
  *      Class that represents a single connection on a TCP server socket
  */
-class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CSocket
+class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
 {
         public:
 
@@ -87,7 +87,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CSocket
          *      After a call to Close() the object should no longer be accessed
          *      by the user.
          */
-        void Close( void );
+        virtual void Close( void );
 
         /**
          *      Allows you to read data from the socket when using a blocking
@@ -102,22 +102,20 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CSocket
 
         /**
          *      Send data to client.
-         *      Wheter or not the elements of buffer are actually char's doesnt
-         *      matter as long as they are 1 byte in size and stored consecutively
          */
-        bool Send( const char *buffer , 
-                   UInt32 length      );
+        virtual bool Send( const void* dataSource , 
+                           const UInt16 dataSize  );
 
-        bool IsActive( void ) const;
+        virtual bool IsActive( void ) const;
 
         /**
          *      Set's the maximum number of bytes to be read from the socket
-         *      recieved data buffer. A value of 0 means infinite. Setting this
+         *      received data buffer. A value of 0 means infinite. Setting this
          *      value to non-zero allows you to avoid the server connection or
          *      even the entire server socket (if the server socket is not using
-         *      a seperate thread) from getting stuck reading data. If data is
+         *      a separate thread) from getting stuck reading data. If data is
          *      being sent in such a fast rate that the continues stream will
-         *      be considdered to be a single transmission the server will not
+         *      be considered to be a single transmission the server will not
          *      be able to stop reading. This is where the max read value comes
          *      in. No matter how much new data is available the reading will
          *      stop at the set number of bytes. If you have a fixed transmission
@@ -125,7 +123,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CSocket
          *      transmission length as the max read value. Otherwise you will
          *      have to check what data you need and what data should be kept.
          *      The data you think that should be kept will be prefixed to the
-         *      next data buffer. You can control this proccess by setting the
+         *      next data buffer. You can control this process by setting the
          *      keepbytes value in the OnClientRead() event handler.
          *      In short, this helps prevent a DOS attack on the software.
          */
@@ -137,6 +135,12 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CSocket
          *      bytes that will be read from the data buffer.
          */
         UInt32 GetMaxRead( void ) const;
+        
+        virtual const CORE::CString& GetRemoteHostName( void ) const;
+        
+        virtual UInt16 GetRemoteTCPPort( void ) const;
+        
+        virtual TIPAddress GetRemoteIP( void ) const;
 
         /**
          *	Constructor, init vars
@@ -144,9 +148,6 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CSocket
         CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
                               UInt32 connection_idx            );
 
-        /**
-         *	Decontructor, close connection and cleanup.
-         */
         virtual ~CTCPServerConnection();
         
         protected:
@@ -192,7 +193,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CSocket
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* CTCPSERVERCONNECTION_H ? */
+#endif /* GUCEF_COMCORE_CTCPSERVERCONNECTION_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -203,10 +204,10 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CSocket
 - 29-06-2004 :
         - Fixed a bug in the set Max_Read(). An old check that made sure the
           mr value was > 0 was still present causing a problem with the new
-          max read protection and could potentionally cause data to 'drop'. 
+          max read protection and could potentially cause data to 'drop'. 
 - 20-01-2004 :
         - Added the set and get for Max_Read(). This addition is meant to
-          increase the resistance of the server to data spamming.
+          increase the resistance of the server to data spam-ing.
 - 13-01-2004 :
         - This class now overrides the CSocket's mutex lock and unlock member
           functions so we can also lock the server socket. This prevents a
@@ -222,12 +223,12 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CSocket
           connection itself instead of letting the parent server socket do it.
           This means setting the threading method for this connection now has
           an effect as intended.
-        - The socket will now close after an error occured.
+        - The socket will now close after an error occurred.
 - 23-09-2003 :
         - Added this section.
         - Added Wait_Untill_Read() in order to provide a method of operation
           similar to a blocking socket. Also added Read_Data() which will allow
-          a blocking socket impementation to be used. You should only call these
+          a blocking socket implementation to be used. You should only call these
           member functions from a thread other then the main application thread.
 
 -----------------------------------------------------------------------------*/

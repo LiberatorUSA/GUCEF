@@ -144,8 +144,20 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
          *      Does a binary compare between this buffer and the given
          *      buffer.
          */
-        bool operator!=( const CDynamicBuffer& other ) const;                
-
+        bool operator!=( const CDynamicBuffer& other ) const;
+        
+        /**
+         *      Does a binary compare between this buffer and the given
+         *      buffer. Comparable to memcmp()
+         */
+        bool operator<( const CDynamicBuffer& other ) const;
+        
+        /**
+         *      Does a binary compare between this buffer and the given
+         *      buffer. Comparable to memcmp()
+         */
+        bool operator>( const CDynamicBuffer& other ) const;
+        
         /**
          *      Turns the current dynamic buffer into a copy of the source
          *      dynamic buffer and returns the result.
