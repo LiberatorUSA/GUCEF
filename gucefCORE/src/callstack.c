@@ -99,6 +99,7 @@ static FILE* log = NULL;
 static struct SMutex* mutex = NULL;
 static UInt32 logStack = 0;
 static UInt32 isInitialized = 0;
+static TStackCallback callback = NULL;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -116,6 +117,12 @@ Log( const char* logtype ,
     if ( ( logStack == 1 ) && ( log != NULL ) )
     {
         fprintf( log, "Thread %d: %s: %d: %s(%d)%s", threadID, logtype, stackheight, file, line, EOL );
+    }
+    if ( callback != NULL )
+    {
+        callback( file                           ,
+                  line                           ,
+                  strcmp( logtype, "PUSH" ) == 0 );
     }
 }     
 
@@ -361,6 +368,16 @@ GUCEF_LogStackToStdOut( void )
         logFilename = NULL;
         MutexUnlock( mutex );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+GUCEF_SetStackCallback( TStackCallback cBack )
+{
+    MutexLock( mutex );
+    callback = cBack;
+    MutexUnlock( mutex );
 }
 
 /*-------------------------------------------------------------------------*/

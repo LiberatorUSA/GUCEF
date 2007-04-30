@@ -63,6 +63,9 @@ class CDRNNode;
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Class that stores information about a peer link
+ */
 class GUCEF_DRN_EXPORT_CPP CDRNPeerLink
 {
     public:
@@ -78,6 +81,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink
     UInt16 GetPeerUDPPort( void ) const;
     
     bool IsUDPPossible( void ) const;
+    
+    bool IsAuthenticated( void ) const;
  
     private:
     friend class CDRNNode;
@@ -97,6 +102,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink
     bool SendData( const void* dataSource             ,
                    const UInt16 dataSize              ,
                    const bool allowUnreliable = false );
+                   
+    bool SetAuthenticatedFlag( const bool authenticated );
     
     private:
     
@@ -108,6 +115,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink
     COMCORE::CUDPSocket* m_udpSocket;
     COMCORE::CTCPConnection* m_tcpConnection;
     bool m_udpPossible;
+    bool m_isAuthenticated;
 };
 
 /*-------------------------------------------------------------------------//

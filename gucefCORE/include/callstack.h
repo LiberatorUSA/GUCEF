@@ -107,6 +107,15 @@ GUCEF_SetStackLogging( const UInt32 logStackBool );
 
 /*-------------------------------------------------------------------------*/
 
+typedef void (*TStackCallback) ( const char* fileName ,
+                                 const int lineNr     ,
+                                 const char isPush    );
+
+GUCEFCORE_EXPORT_C void
+GUCEF_SetStackCallback( TStackCallback callback );
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  Initializes the call stack utility, should be called before using any of 
  *  the functions.

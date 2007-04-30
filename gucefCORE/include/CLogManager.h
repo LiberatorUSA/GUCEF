@@ -63,14 +63,15 @@ class GUCEFCORE_EXPORT_CPP CLogManager
     
     typedef enum TLogMsgType
     {
-        LOG_ERROR,    /**< I strongly suggest you use this for logging serious errors only */
-        LOG_STANDARD, /**< can be anything */
-        LOG_USER,     /**< typically info that relates to user actions */
-        LOG_SYSTEM,   /**< typically info that relates to the state of of the system */
-        LOG_DEV,      /**< typically info that will be of interest to developers */
-        LOG_DEBUG,    /**< typically info that wont be logged in a release build, just for debugging */
-        LOG_SERVICE,  /**< typically info useful to a service engineer */
-        LOG_PROTECTED /**< typically used for logging info that should be encrypted before being stored */
+        LOG_ERROR,     /**< I strongly suggest you use this for logging serious errors only */
+        LOG_STANDARD,  /**< can be anything */
+        LOG_USER,      /**< typically info that relates to user actions */
+        LOG_SYSTEM,    /**< typically info that relates to the state of of the system */
+        LOG_DEV,       /**< typically info that will be of interest to developers */
+        LOG_DEBUG,     /**< typically info that wont be logged in a release build, just for debugging */
+        LOG_SERVICE,   /**< typically info useful to a service engineer */
+        LOG_PROTECTED, /**< typically used for logging info that should be encrypted before being stored */
+        LOG_CALLSTACK  /**< typically used for logging the call stack of a running application for debugging purposes */
     };
     
     static CLogManager* Instance( void );

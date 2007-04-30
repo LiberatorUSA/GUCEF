@@ -64,9 +64,10 @@ namespace DRN {
 //-------------------------------------------------------------------------*/
 
 CDRNPeerLink::CDRNPeerLink( void )
-    : m_udpSocket( NULL )     ,
-      m_tcpConnection( NULL ) ,
-      m_udpPossible( false )
+    : m_udpSocket( NULL )        ,
+      m_tcpConnection( NULL )    ,
+      m_udpPossible( false )     ,
+      m_isAuthenticated( false )
 {GUCEF_TRACE;
 
 }
@@ -121,6 +122,24 @@ CDRNPeerLink::IsUDPPossible( void ) const
 {GUCEF_TRACE;
 
     return m_udpPossible;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNPeerLink::IsAuthenticated( void ) const
+{GUCEF_TRACE;
+
+    return m_isAuthenticated;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::SetAuthenticatedFlag( const bool authenticated )
+{GUCEF_TRACE;
+
+    m_isAuthenticated = authenticated;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -149,6 +149,10 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             // since we are connecting localhost this should always work
             ERRORHERE;
         }
+        
+        if ( !nodeB.RequestDataGroupList() )
+        {
+        }
     }
       
 };

@@ -57,6 +57,20 @@ namespace COMCORE {
 class GUCEF_COMCORE_EXPORT_CPP CTCPConnection : public CSocket
 {
     public:
+
+    static const CORE::CEvent ConnectedEvent;
+    static const CORE::CEvent DisconnectedEvent;
+    static const CORE::CEvent DataRecievedEvent;
+    static const CORE::CEvent DataSentEvent;
+    static const CORE::CEvent SocketErrorEvent;
+
+    typedef CORE::TLinkedCloneableBuffer TDataRecievedEventData;
+    typedef CORE::TLinkedCloneableBuffer TDataSentEventData;
+    typedef CORE::TCloneableInt32        TSocketErrorEventData;
+    
+    static void RegisterEvents( void );
+    
+    public:
     
     CTCPConnection( void );
 
