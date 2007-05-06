@@ -26,16 +26,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCORE_H
-#include "gucefCORE.h"                /* gucefCORE library API */
-#define GUCEFCORE_H
-#endif /* GUCEFCORE_H ? */
-
-#ifndef GUCEFMT_H
-#include "gucefMT.h"                  /* gucefMT library API */
-#define GUCEFMT_H
-#endif /* GUCEFMT_H ? */
-
 #ifndef GUCEF_CORE_CNOTIFIER_H
 #include "CNotifier.h"
 #define GUCEF_CORE_CNOTIFIER_H

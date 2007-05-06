@@ -31,6 +31,11 @@
 #define GUCEF_COMCORE_CSOCKET_H
 #endif /* GUCEF_COMCORE_CSOCKET_H ? */
 
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
+
 #ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"
 #define GUCEF_COMCORE_MACROS_H

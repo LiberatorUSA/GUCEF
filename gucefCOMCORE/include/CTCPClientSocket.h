@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_COMCORE_CTCPCONNECTION_H
 #include "CTCPConnection.h"                     /* TCP connection base class */
 #define GUCEF_COMCORE_CTCPCONNECTION_H
