@@ -352,6 +352,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CINumericIDGeneratorBase.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CIOAccess.cpp"
 				>
 			</File>
@@ -565,6 +569,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\CTNotifyingMap.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CTNumericID.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CTNumericIDGenerator.cpp"
 				>
 			</File>
 			<File
@@ -842,6 +854,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\CINumericIDGeneratorBase.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\CIOAccess.h"
 				>
 			</File>
@@ -1082,6 +1098,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\CTNumericID.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CTNumericIDGenerator.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\CTObservingNotifierComponent.h"
 				>
 			</File>
@@ -1239,6 +1263,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\MFILE.H"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\NumericIDs.h"
 				>
 			</File>
 			<File

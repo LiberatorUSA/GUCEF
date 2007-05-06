@@ -35,6 +35,11 @@
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */ 
 
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

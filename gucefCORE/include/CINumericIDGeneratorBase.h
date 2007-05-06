@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CILOGGER_H
-#define GUCEF_CORE_CILOGGER_H 
+#ifndef GUCEF_CORE_CINUMERICIDGENERATORBASE_H
+#define GUCEF_CORE_CINUMERICIDGENERATORBASE_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"           /* often used gucef macros */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,28 +46,26 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CString;
-
-/*-------------------------------------------------------------------------*/
-
 /**
- *  Interface class for implementors of logging.
+ *  Interface class that serves as an abstract callback facility
+ *  for numeric ID objects. It is basically a workaround for a circular
+ *  dependency between templates.
  */
-class GUCEFCORE_EXPORT_CPP CILogger
+class GUCEFCORE_EXPORT_CPP CINumericIDGeneratorBase
 {
     public:
     
-    typedef CLogManager::TLogMsgType TLogMsgType;
-                           
-    virtual void Log( const TLogMsgType logMsgType ,
-                      const Int32 logLevel         ,
-                      const CString& logMessage    ) const = 0;
+    /**
+     *  abstract facility for releasing template IDs
+     */
+    virtual void ReleaseID( void* idObj ) = 0;
     
+    protected:
     
-    CILogger( void );                             /**< interface class: no-op */
-    virtual ~CILogger();                          /**< interface class: no-op */
-    CILogger( const CILogger& src );              /**< interface class: no-op */
-    CILogger& operator=( const CILogger& src );   /**< interface class: no-op */
+    CINumericIDGeneratorBase( void );
+    CINumericIDGeneratorBase( const CINumericIDGeneratorBase& src );
+    virtual ~CINumericIDGeneratorBase();
+    CINumericIDGeneratorBase& operator=( const CINumericIDGeneratorBase& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -81,7 +79,7 @@ class GUCEFCORE_EXPORT_CPP CILogger
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CILOGGER_H ? */
+#endif /* GUCEF_CORE_CINUMERICIDGENERATORBASE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -89,7 +87,7 @@ class GUCEFCORE_EXPORT_CPP CILogger
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 16-02-2007 :
-        - Dinand: Added this class
+- 02-03-2007 :
+        - Dinand: re-added this header
 
 -----------------------------------------------------------------------------*/

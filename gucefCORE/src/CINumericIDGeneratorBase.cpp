@@ -17,19 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CILOGGER_H
-#define GUCEF_CORE_CILOGGER_H 
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+#include "CINumericIDGeneratorBase.h"
+
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,33 +41,37 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CString;
+CINumericIDGeneratorBase::CINumericIDGeneratorBase( void )
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *  Interface class for implementors of logging.
- */
-class GUCEFCORE_EXPORT_CPP CILogger
-{
-    public:
-    
-    typedef CLogManager::TLogMsgType TLogMsgType;
-                           
-    virtual void Log( const TLogMsgType logMsgType ,
-                      const Int32 logLevel         ,
-                      const CString& logMessage    ) const = 0;
-    
-    
-    CILogger( void );                             /**< interface class: no-op */
-    virtual ~CILogger();                          /**< interface class: no-op */
-    CILogger( const CILogger& src );              /**< interface class: no-op */
-    CILogger& operator=( const CILogger& src );   /**< interface class: no-op */
-};
+CINumericIDGeneratorBase::CINumericIDGeneratorBase( const CINumericIDGeneratorBase& )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CINumericIDGeneratorBase::~CINumericIDGeneratorBase()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CINumericIDGeneratorBase&
+CINumericIDGeneratorBase::operator=( const CINumericIDGeneratorBase& )
+{GUCEF_TRACE;
+
+    return *this;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -80,16 +83,3 @@ class GUCEFCORE_EXPORT_CPP CILogger
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CILOGGER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 16-02-2007 :
-        - Dinand: Added this class
-
------------------------------------------------------------------------------*/

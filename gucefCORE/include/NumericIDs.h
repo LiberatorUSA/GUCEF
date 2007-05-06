@@ -16,40 +16,30 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
- 
-#ifndef GUCEF_CORE_CLONEABLES_H
-#define GUCEF_CORE_CLONEABLES_H
- 
+
+#ifndef GUCEF_CORE_NUMERICIDS_H
+#define GUCEF_CORE_NUMERICIDS_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/
+//-------------------------------------------------------------------------*/ 
 
 #ifndef GUCEF_CORE_ETYPES_H
-#include "gucefCORE_ETypes.h"      /* gucefCORE basic types */
+#include "gucefCORE_ETypes.h"
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
-#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
-#include "CTCloneableObj.h"        /* templated implementation of a cloneable object */
-#define GUCEF_CORE_CTCLONEABLEOBJ_H
-#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+#ifndef GUCEF_CORE_CTNUMERICID_H
+#include "CTNumericID.h"
+#define GUCEF_CORE_CTNUMERICID_H
+#endif /* GUCEF_CORE_CTNUMERICID_H ? */
 
-#ifndef GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
-#include "CTLinkedCloneableObj.h"        /* templated implementation of a linked cloneable object */
-#define GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
-#endif /* GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H ? */
-
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
-
-#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
-#include "CDynamicBuffer.h"
-#define GUCEF_CORE_CDYNAMICBUFFER_H
-#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+#ifndef GUCEF_CORE_CTNUMERICIDGENERATOR_H
+#include "CTNumericIDGenerator.h"
+#define GUCEF_CORE_CTNUMERICIDGENERATOR_H
+#endif /* GUCEF_CORE_CTNUMERICIDGENERATOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,38 +47,24 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      TYPES                                                              //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CTCloneableObj< CDynamicBuffer > TCloneableBuffer;
-typedef CTCloneableObj< CString >        TCloneableString;
-typedef CTCloneableObj< char >           TCloneableChar;
-typedef CTCloneableObj< unsigned char >  TCloneableUChar;
-typedef CTCloneableObj< short >          TCloneableShort;
-typedef CTCloneableObj< unsigned short > TCloneableUShort;
-typedef CTCloneableObj< int >            TCloneableInt;
-typedef CTCloneableObj< unsigned int >   TCloneableUInt;
-typedef CTCloneableObj< long >           TCloneableLong;
-typedef CTCloneableObj< unsigned int >   TCloneableULong;
-typedef CTCloneableObj< float >          TCloneableFloat;
-typedef CTCloneableObj< double >         TCloneableDouble;
-typedef CTCloneableObj< bool >           TCloneableBool;
-typedef CTCloneableObj< double >         TCloneableDouble;
-typedef CTCloneableObj< float >          TCloneableFloat;
-typedef CTCloneableObj< UInt32 >         TCloneableUInt32;
-typedef CTCloneableObj< Int32 >          TCloneableInt32;
-typedef CTCloneableObj< UInt16 >         TCloneableUInt16;
-typedef CTCloneableObj< Int16 >          TCloneableInt16;
-typedef CTCloneableObj< UInt8 >          TCloneableUInt8;
-typedef CTCloneableObj< Int8 >           TCloneableInt8;
+typedef CTNumericIDGenerator< UInt8 >    T8BitNumericIDGenerator;
+typedef CTNumericIDGenerator< UInt16 >   T16BitNumericIDGenerator;
+typedef CTNumericIDGenerator< UInt32 >   T32BitNumericIDGenerator;
+typedef CTNumericIDGenerator< UInt64 >   T64BitNumericIDGenerator;
 
-typedef CTLinkedCloneableObj< CDynamicBuffer > TLinkedCloneableBuffer;
+typedef CTNumericID< UInt8 >    T8BitNumericID;
+typedef CTNumericID< UInt16 >   T16BitNumericID;
+typedef CTNumericID< UInt32 >   T32BitNumericID;
+typedef CTNumericID< UInt64 >   T64BitNumericID;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -101,4 +77,15 @@ typedef CTLinkedCloneableObj< CDynamicBuffer > TLinkedCloneableBuffer;
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CLONEABLES_H ? */
+#endif /* GUCEF_CORE_NUMERICIDS_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 02-03-2007 :
+        - Dinand: re-added this header
+
+-----------------------------------------------------------------------------*/
