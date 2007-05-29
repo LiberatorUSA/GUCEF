@@ -162,9 +162,10 @@ CDRNNode::OnTCPServerSocketEvent( CORE::CNotifier* notifier    ,
     {
         const COMCORE::CTCPServerSocket::TConnectionInfo& connectionInfo = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata )->GetData();
         
-        // Check if the peer is allowed to connect
+        // Check if a peer validation mechanism has been provided to this node
         if ( m_peerValidator != NULL )
         {            
+            // Check if the peer is allowed to connect
             if ( !m_peerValidator->IsPeerAddressValid( connectionInfo.address  ,
                                                        connectionInfo.hostName ) )
             {
@@ -184,6 +185,13 @@ CDRNNode::OnTCPServerSocketEvent( CORE::CNotifier* notifier    ,
             // Failed to send data, something is very wrong
             connectionInfo.connection->Close();
         }
+        return;
+    }
+    if ( eventid == COMCORE::CTCPServerSocket::ClientDataRecievedEvent )
+    {
+        // Any data we receive in this phase should be a greeting message
+        // nothing else is accepted. If we do get something else then the connection
+        // is considered broken and terminated.
     }
 }
 
@@ -322,7 +330,20 @@ CDRNNode::ConnectToPeer( const CORE::CString& address ,
     GetAvailableTCPClient( &tcpClient  ,
                            socketIndex );
             
-    return tcpClient->ConnectTo( address, port );
+    if ( tcpClient->ConnectTo( address , 
+                               port    ) )
+    {
+        // Send the initial greeting
+        char sendBuffer[ 14 ] = { DRN_PEERCOMM_GREETING, 'D', 'R', 'N', 'N', 'O', 'D', 'E', ' ', ' ', DRN_PROTOCOL_MAYOR_VERION, DRN_PROTOCOL_MINOR_VERION, DRN_PROTOCOL_PATCH_VERION, DRN_TRANSMISSION_SEPERATOR };        
+        if ( tcpClient->Send( sendBuffer, 14 ) )
+        {
+            return true;
+        }
+        
+        // Failed to send data, something is very wrong
+        tcpClient->Close();        
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

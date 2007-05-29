@@ -147,17 +147,23 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             ERRORHERE;
         }
 
+        GUCEF_LOG( 0, "Attempting to listen on port " + GUCEF::CORE::Int32ToString( DRN_PEERCOMM_PORT ) );
         if ( !nodeA.ListenOnPort( DRN_PEERCOMM_PORT ) )
         {
             // the listen actions should succeed for our tests to work
             GUCEF_ERROR_LOG( 0, "Failed to open listening socket on port " + GUCEF::CORE::Int32ToString( DRN_PEERCOMM_PORT ) );
             ERRORHERE;
         }
+        GUCEF_LOG( 0, "Successfully opened listen port" );
+        
+        GUCEF_LOG( 0, "Attempting to connect to node on port " + GUCEF::CORE::Int32ToString( DRN_PEERCOMM_PORT ) );
         if ( !nodeB.ConnectToPeer( "127.0.0.1", DRN_PEERCOMM_PORT ) )
         {
             // since we are connecting localhost this should always work
+            GUCEF_ERROR_LOG( 0, "Failed to connect to peer node on port " + GUCEF::CORE::Int32ToString( DRN_PEERCOMM_PORT ) );
             ERRORHERE;
         }
+        GUCEF_LOG( 0, "Successfully connected to a listen port" );
         
         //if ( !nodeB.RequestDataGroupList() )
         {
