@@ -92,7 +92,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPConnection : public CSocket
     virtual void Close( void ) = 0;
     
     virtual bool Send( const void* dataSource ,
-                       const UInt16 dataSize  ) = 0;
+                       const UInt32 dataSize  ) = 0;
  
     private:
     

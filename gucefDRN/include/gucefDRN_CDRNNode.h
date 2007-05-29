@@ -69,6 +69,9 @@ class CIDRNPeerLinkCrypter;
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Main DRN connectivity class that manages a collection of DRN links.
+ */
 class GUCEF_DRN_EXPORT_CPP CDRNNode : private CORE::CObservingNotifier
 {
     public:
@@ -78,6 +81,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : private CORE::CObservingNotifier
     static const CORE::CEvent PeerListReceivedFromPeerEvent;
     static const CORE::CEvent StreamListReceivedFromPeerEvent;
     static const CORE::CEvent DataGroupListReceivedFromPeerEvent;
+    static const CORE::CEvent LinkEstablishedEvent;
     
     struct SPeerRelatedStringList
     {

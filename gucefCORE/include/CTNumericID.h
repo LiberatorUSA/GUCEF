@@ -101,7 +101,7 @@ CTNumericID< intType >::~CTNumericID()
 
     if ( NULL != m_idGenerator )
     {
-        idGenerator->ReleaseID( this );
+        m_idGenerator->ReleaseID( this );
     }
 }
 

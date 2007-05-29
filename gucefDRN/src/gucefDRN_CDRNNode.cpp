@@ -51,6 +51,17 @@ namespace DRN {
     
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CEvent CDRNNode::PeerListReceivedFromPeerEvent = "GUCEF::CORE::CDRNNode::PeerListReceivedFromPeerEvent";
+const CORE::CEvent CDRNNode::StreamListReceivedFromPeerEvent = "GUCEF::CORE::CDRNNode::StreamListReceivedFromPeerEvent";
+const CORE::CEvent CDRNNode::DataGroupListReceivedFromPeerEvent = "GUCEF::CORE::CDRNNode::DataGroupListReceivedFromPeerEvent";
+const CORE::CEvent CDRNNode::LinkEstablishedEvent = "GUCEF::CORE::CDRNNode::LinkEstablishedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -279,6 +290,7 @@ CDRNNode::GetAvailableTCPClient( COMCORE::CTCPClientSocket** tcpClient ,
     {
         if ( !(*i)->IsActive() )
         {
+            // Assign output values
             *tcpClient = *i;
             socketIndex = index;
             return;
@@ -290,7 +302,10 @@ CDRNNode::GetAvailableTCPClient( COMCORE::CTCPClientSocket** tcpClient ,
     COMCORE::CTCPClientSocket* clientSocket = new COMCORE::CTCPClientSocket( false );
     SubscribeTo( clientSocket );    
     m_tcpClientSockets.push_back( clientSocket );
+    
+    // Assign output values
     socketIndex = (Int32)m_tcpClientSockets.size() - 1;
+    *tcpClient = clientSocket;
 }
 
 /*-------------------------------------------------------------------------*/

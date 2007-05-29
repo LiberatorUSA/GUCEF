@@ -43,6 +43,16 @@
 #define GUCEF_CORE_CURLHANDLERREGISTRY_H
 #endif /* GUCEF_CORE_CURLHANDLERREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_DVSTRUTILS_H
+#include "dvstrutils.h"
+#define GUCEF_CORE_DVSTRUTILS_H
+#endif /* GUCEF_CORE_DVSTRUTILS_H ? */
+
 #include "CHTTPClient.h"
 
 /*-------------------------------------------------------------------------//

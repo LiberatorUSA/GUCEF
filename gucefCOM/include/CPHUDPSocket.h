@@ -34,6 +34,11 @@
 #define CUDPSOCKET_H
 #endif /* CUDPSOCKET_H ? */
 
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
 #ifndef GUCEFCOM_MACROS_H
 #include "gucefCOM_macros.h"      /* gucefCOM build config and macros */
 #define GUCEFCOM_MACROS_H

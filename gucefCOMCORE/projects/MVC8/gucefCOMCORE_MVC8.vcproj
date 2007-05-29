@@ -43,7 +43,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../include;../../../gucefCORE/include;../../../gucefMT/include;..\..\..\common\include"
+				AdditionalIncludeDirectories="../../include;../../../gucefCORE/include;../../../gucefCORE/include/mswin;../../../gucefMT/include;..\..\..\common\include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;GUCEFCOMCORE_BUILD_MODULE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -233,10 +233,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\CTCPServerSocket.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CTCPServerSocketInterface.cpp"
 				>
 			</File>
 			<File

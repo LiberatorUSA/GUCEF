@@ -102,7 +102,7 @@ class CTNumericIDGenerator : public CINumericIDGeneratorBase
 
 template < typename intType >
 CTNumericIDGenerator< intType >::CTNumericIDGenerator( void )
-    : idValue( 0 )      ,
+    : m_lastID( 0 )     ,
       m_maxValue( 256 )
 {GUCEF_TRACE;
 

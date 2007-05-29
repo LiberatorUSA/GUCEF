@@ -106,7 +106,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
          *      Send data to client.
          */
         virtual bool Send( const void* dataSource , 
-                           const UInt16 dataSize  );
+                           const UInt32 dataSize  );
 
         virtual bool IsActive( void ) const;
 

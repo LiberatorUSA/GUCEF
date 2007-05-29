@@ -39,7 +39,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../include;../../../gucefCORE/include;../../../gucefMT/include;..\..\..\common\include;../../../gucefDRN/include;../../../gucefCOMCORE/include"
+				AdditionalIncludeDirectories="../../include;../../../gucefCORE/include;../../../gucefCORE/include/mswin;../../../gucefMT/include;..\..\..\common\include;../../../gucefDRN/include;../../../gucefCOMCORE/include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"

@@ -165,6 +165,11 @@ class GUCEFCORE_EXPORT_CPP CLogManager
 
 /*-------------------------------------------------------------------------*/
 
+#undef GUCEF_CALLSTACK_LOG
+#define GUCEF_CALLSTACK_LOG( logLevel, logMessage ) GUCEF::CORE::CLogManager::Instance()->Log( GUCEF::CORE::CLogManager::LOG_CALLSTACK, logLevel, logMessage );
+
+/*-------------------------------------------------------------------------*/
+
 #undef GUCEF_DEBUG_LOG
 #ifdef GUCEF_CORE_DEBUG_MODE
 #define GUCEF_DEBUG_LOG( logLevel, logMessage ) GUCEF::CORE::CLogManager::Instance()->Log( GUCEF::CORE::CLogManager::LOG_DEBUG, logLevel, logMessage );

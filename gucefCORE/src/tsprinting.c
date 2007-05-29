@@ -197,18 +197,18 @@ tspinit( void )
          *      allow ts functions to work even when this is not a
          *      console application.
          */
-        #ifdef GUCEF_MSWIN_BUILD
-          #ifdef GUCEF_CORE_DEBUG_MODE        
-          //AllocConsole();
-          #endif
-        
-        /* reopen stdin handle as console window input */
-       // freopen("CONIN$","rb",stdin);
-        /* reopen stout handle as console window output */
-      //  freopen("CONOUT$","wb",stdout);
-        /* reopen stderr handle as console window output */
-      //  freopen("CONOUT$","wb",stderr);
-        #endif /* GUCEF_MSWIN_BUILD */
+        //#ifdef GUCEF_MSWIN_BUILD
+        //  #ifdef GUCEF_CORE_DEBUG_MODE        
+        //  AllocConsole();
+        //  #endif
+        //
+        ///* reopen stdin handle as console window input */
+        //freopen("CONIN$","rb",stdin);
+        ///* reopen stout handle as console window output */
+        //freopen("CONOUT$","wb",stdout);
+        ///* reopen stderr handle as console window output */
+        //freopen("CONOUT$","wb",stderr);
+        //#endif /* GUCEF_MSWIN_BUILD */
                 
         if ( !init )
         {
@@ -231,9 +231,9 @@ tspshutdown( void )
 {
 	if ( init )
         {
-                #ifdef GUCEF_CORE_DEBUG_MODE
-               // FreeConsole();
-                #endif
+              //  #ifdef GUCEF_CORE_DEBUG_MODE
+              //  FreeConsole();
+              //  #endif
                 
         	init = 0;
                 #ifdef USE_TSP_MUTEX

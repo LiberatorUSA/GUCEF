@@ -400,6 +400,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\mswin\CMSWinConsoleLogger.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CNode.cpp"
 				>
 			</File>
@@ -903,6 +907,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CMsgException.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\mswin\CMSWinConsoleLogger.h"
 				>
 			</File>
 			<File

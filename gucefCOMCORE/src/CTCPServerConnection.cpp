@@ -26,7 +26,6 @@
 #include "CTCPServerConnection.h"       /* header for this class */
 
 #include "CTCPServerSocket.h"           /* parent server socket */
-#include "CTCPServerSocketInterface.h"  /* interface of parent server socket */
 #include "tsprinting.h"			/* threadsafe printing */
 
 #ifdef GUCEF_MSWIN_BUILD
@@ -161,7 +160,7 @@ CTCPServerConnection::Close( void )
 
 bool
 CTCPServerConnection::Send( const void* dataSource , 
-                            const UInt16 length    )
+                            const UInt32 length    )
 {GUCEF_TRACE;
         
         _datalock.Lock();

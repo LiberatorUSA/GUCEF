@@ -22,6 +22,12 @@
 //-------------------------------------------------------------------------*/
 
 #include "CMFileAccess.h"
+
+#ifndef GUCEF_CORE_CURLHANDLERREGISTRY_H
+#include "CURLHandlerRegistry.h"
+#define GUCEF_CORE_CURLHANDLERREGISTRY_H
+#endif /* GUCEF_CORE_CURLHANDLERREGISTRY_H ? */
+
 #include "CHTTPURLHandler.h"
 
 /*-------------------------------------------------------------------------//

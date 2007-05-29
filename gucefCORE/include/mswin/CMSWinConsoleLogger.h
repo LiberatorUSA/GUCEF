@@ -1,24 +1,22 @@
 /*
- *  gucefDRN: GUCEF module providing RAD networking trough data replication
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ * Copyright (C) Dinand Vanvelzen. 2002 - 2007.  All rights reserved.
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ * All source code herein is the property of Dinand Vanvelzen. You may not sell
+ * or otherwise commercially exploit the source or things you created based on
+ * the source.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
+ * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEF_DRN_CIDRNPEERLINKCRYPTER_H
-#define GUCEF_DRN_CIDRNPEERLINKCRYPTER_H
+#ifndef GUCEF_CORE_CMSWINCONSOLELOGGER_H
+#define GUCEF_CORE_CMSWINCONSOLELOGGER_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,11 +24,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_DRN_MACROS_H
-#include "gucefDRN_macros.h"
-#define GUCEF_DRN_MACROS_H
-#endif /* GUCEF_DRN_MACROS_H ? */
+#ifndef GUCEF_CORE_CILOGGER_H
+#include "CILogger.h"
+#define GUCEF_CORE_CILOGGER_H
+#endif /* GUCEF_CORE_CILOGGER_H ? */
 
+#ifdef GUCEF_MSWIN_BUILD
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -38,7 +37,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace DRN {
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,20 +45,28 @@ namespace DRN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_DRN_EXPORT_CPP CIDRNPeerLinkCrypter
+/**
+ *  GUCEF logger implementation for MS Windows that displays log output
+ *  in a console window.
+ */
+class GUCEFCORE_EXPORT_CPP CMSWinConsoleLogger : public CILogger
 {
     public:
     
-    CIDRNPeerLinkCrypter( void );
+    CMSWinConsoleLogger( void );    
     
-    CIDRNPeerLinkCrypter( const CIDRNPeerLinkCrypter& src );
+    virtual ~CMSWinConsoleLogger();
+
+    virtual void Log( const TLogMsgType logMsgType ,
+                      const Int32 logLevel         ,
+                      const CString& logMessage    ) const;
+
+    CString GetLogMsgTypeString( const TLogMsgType logMsgType ) const;
     
-    virtual ~CIDRNPeerLinkCrypter();
+    private:
     
-    CIDRNPeerLinkCrypter& operator=( const CIDRNPeerLinkCrypter& src );
-    
-        /* @TODO: Interface to be added later */
- 
+    CMSWinConsoleLogger& operator=( const CMSWinConsoleLogger& src );
+    CMSWinConsoleLogger( const CMSWinConsoleLogger& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -68,12 +75,13 @@ class GUCEF_DRN_EXPORT_CPP CIDRNPeerLinkCrypter
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace DRN */
+}; /* namespace CORE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+#endif /* GUCEF_MSWIN_BUILD ? */
 
-#endif /* GUCEF_DRN_CIDRNPEERLINKCRYPTER_H ? */
+#endif /* GUCEF_CORE_CMSWINCONSOLELOGGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -81,7 +89,7 @@ class GUCEF_DRN_EXPORT_CPP CIDRNPeerLinkCrypter
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 02-03-2007 :
-        - Dinand: re-added this header
+- 19-05-2007 :
+        - Dinand: Added this class
 
 -----------------------------------------------------------------------------*/

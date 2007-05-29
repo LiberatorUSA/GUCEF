@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_DRN_CIDRNPEERVALIDATOR_H
-#define GUCEF_DRN_CIDRNPEERVALIDATOR_H
+#ifndef GUCEF_DRN_CDRNDATASTREAM_H
+#define GUCEF_DRN_CDRNDATASTREAM_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,22 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_COMCORE_CSOCKET_H
-#include "CSocket.h"
-#define GUCEF_COMCORE_CSOCKET_H
-#endif /* GUCEF_COMCORE_CSOCKET_H ? */
+#include <map>
 
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+#ifndef GUCEF_CORE_CISTREAMABLE_H
+#include "CIStreamable.h"
+#define GUCEF_CORE_CISTREAMABLE_H
+#endif /* GUCEF_CORE_CISTREAMABLE_H ? */
+
+#ifndef GUCEF_CORE_CEVENT_H
+#include "CEvent.h"
+#define GUCEF_CORE_CEVENT_H
+#endif /* GUCEF_CORE_CEVENT_H ? */
+
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */ 
 
 #ifndef GUCEF_DRN_MACROS_H
 #include "gucefDRN_macros.h"
@@ -56,28 +63,56 @@ namespace DRN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_DRN_EXPORT_CPP CIDRNPeerValidator
+class CDRNPeerLink;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Class representing a DRN data stream
+ */
+class GUCEF_DRN_EXPORT_CPP CDRNDataStream : public CORE::CObservingNotifier
 {
     public:
-    
-    typedef COMCORE::CSocket::TIPAddress TIPAddress;
-    
-    CIDRNPeerValidator( void );
-    
-    CIDRNPeerValidator( const CIDRNPeerValidator& src );
-    
-    virtual ~CIDRNPeerValidator();
-    
-    CIDRNPeerValidator& operator=( const CIDRNPeerValidator& src );
-    
-    virtual bool IsPeerAddressValid( const TIPAddress& address     ,
-                                     const CORE::CString& hostName ) const = 0;
-    
-    virtual bool IsPeerLoginValid( const CORE::CString& accountName ,
-                                   const CORE::CString& password    ) const = 0;
 
-    virtual bool IsPeerServiceValid( const CORE::CString& serviceName     ,
-                                     const CORE::TVersion& serviceVersion ) const = 0;    
+    static const CORE::CEvent DataReceived;
+    static const CORE::CEvent DataTransmitted;
+    
+    static void RegisterEvents( void );
+    
+    public:
+    
+    CDRNDataStream( void );
+    
+    CDRNDataStream( const CDRNDataStream& src );
+    
+    virtual ~CDRNDataStream();
+    
+    CDRNDataStream& operator=( const CDRNDataStream& src );
+    
+    void SetName( const CORE::CString& streamName );
+    
+    const CORE::CString& GetName( void ) const;
+
+    bool SendData( const void* dataSource             ,
+                   const UInt16 dataSize              ,
+                   const bool allowUnreliable = false );
+
+    protected:
+    
+    /**
+     *  @param notifier the notifier that sent the notification
+     *  @param eventid the unique event id for an event
+     *  @param eventdata optional notifier defined userdata
+     */
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );
+    
+    private:
+    
+    CORE::CDynamicBuffer m_sendBuffer;
+    CORE::CString m_streamName;
+    CDRNPeerLink* m_peerLink;
 };
 
 /*-------------------------------------------------------------------------//
@@ -91,7 +126,7 @@ class GUCEF_DRN_EXPORT_CPP CIDRNPeerValidator
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_DRN_CIDRNPEERVALIDATOR_H ? */
+#endif /* GUCEF_DRN_CDRNDATASTREAM_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

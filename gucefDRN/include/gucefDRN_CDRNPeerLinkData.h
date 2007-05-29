@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_DRN_CDRNPEERLINK_H
-#define GUCEF_DRN_CDRNPEERLINK_H
+#ifndef GUCEF_DRN_CDRNPEERLINKDATA_H
+#define GUCEF_DRN_CDRNPEERLINKDATA_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,28 +26,38 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
+#include <vector>
+#include <map>
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
-#ifndef GUCEF_COMCORE_CSOCKET_H
-#include "CSocket.h"
-#define GUCEF_COMCORE_CSOCKET_H
-#endif /* GUCEF_COMCORE_CSOCKET_H ? */
+#ifndef GUCEF_DRN_CDRNDATAGROUP_H
+#include "gucefDRN_CDRNDataGroup.h"
+#define GUCEF_DRN_CDRNDATAGROUP_H
+#endif /* GUCEF_DRN_CDRNDATAGROUP_H ? */
+
+#ifndef GUCEF_DRN_CDRNDATASTREAM_H
+#include "gucefDRN_CDRNDataStream.h"
+#define GUCEF_DRN_CDRNDATASTREAM_H
+#endif /* GUCEF_DRN_CDRNDATASTREAM_H ? */
+
+#ifndef GUCEF_CORE_NUMERICIDS_H
+#include "NumericIDs.h"
+#define GUCEF_CORE_NUMERICIDS_H
+#endif /* GUCEF_CORE_NUMERICIDS_H ? */
 
 #ifndef GUCEF_DRN_MACROS_H
 #include "gucefDRN_macros.h"
 #define GUCEF_DRN_MACROS_H
 #endif /* GUCEF_DRN_MACROS_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      CLASSES                                                            //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-namespace GUCEF { namespace COMCORE { class CTCPConnection; class CUDPSocket; } }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -64,94 +74,112 @@ namespace DRN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CDRNNode;
-class CDRNPeerLinkData;
+class CDRNPeerLink;
 
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Class that coordinates all the DRN functionality for a specific link
- *  once the link has been established.
+ *  Class for managing all data related to a specific DRN link.
  */
-class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
+class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
 {
     public:
     
-    static const CORE::CEvent ConnectedEvent;
-    static const CORE::CEvent DisconnectedEvent;
-    static const CORE::CEvent SocketErrorEvent;
+    typedef CORE::CTSharedPtr< CDRNDataGroup >   TDRNDataGroupPtr;
+    typedef CORE::CTSharedPtr< CDRNDataStream >  TDRNDataStreamPtr;
+    typedef std::vector< TDRNDataGroupPtr >      TDRNDataGroupList;
+    typedef std::vector< TDRNDataStreamPtr >     TDRNDataStreamList;
     
-    static void RegisterEvents( void );
+    void GetSubscribedDataGroups( TDRNDataGroupList& dataGroupList );
     
-    public:
+    void GetSubscribedDataStreams( TDRNDataStreamList& dataGroupList );
+        
+    /**
+     *  Returns a list data groups that are publicized on this link
+     *  The peer connected via this link will be allowed to subscribe to these
+     *  data groups
+     */
+    void GetPublicizedDataGroups( TDRNDataGroupList& dataGroupList );
     
-    typedef COMCORE::CSocket::TIPAddress TIPAddress;
+    /**
+     *  Returns a list data streams that are publicized on this link
+     *  The peer connected via this link will be allowed to subscribe to these
+     *  data streams
+     */
+    void GetPublicizedDataStreams( TDRNDataStreamList& dataGroupList );
     
-    TIPAddress GetPeerIP( void ) const;
+    void PublicizeStream( TDRNDataStreamPtr& dataStream );
     
-    const CORE::CString& GetPeerHostName( void ) const;
-    
-    UInt16 GetPeerTCPPort( void ) const;
-    
-    UInt16 GetPeerUDPPort( void ) const;
-    
-    bool IsUDPPossible( void ) const;
-    
-    bool IsAuthenticated( void ) const;
-    
-    CDRNNode& GetParentNode( void );
-    
-    CDRNPeerLinkData& GetLinkData( void );
-    
-    bool RequestDataGroupSubscription( const CORE::CString& dataGroupName );
+    void StopStreamPublication( TDRNDataStreamPtr& dataStream );
 
-    bool RequestStreamSubscription( const CORE::CString& dataSreamName );
+    void StopStreamPublication( const CORE::CString& dataStreamName );
+    
+    void PublicizeDataGroup( TDRNDataGroupPtr& dataGroup );
+    
+    void StopDataGroupPublication( TDRNDataStreamPtr& dataGroup );
+    
+    void StopDataGroupPublication( const CORE::CString& dataGroupName );
+    
+    /**
+     *  Returns access to the link for which this class maintains data
+     */
+    CDRNPeerLink& GetPeerLink( void );
 
     protected:
     
     /**
      *  @param notifier the notifier that sent the notification
      *  @param eventid the unique event id for an event
-     *  @param eventdata optional notifier defined userdata
+     *  @param eventdata optional notifier defined user data
      */
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
                            CORE::CICloneable* eventdata = NULL );
- 
-    private:
-    friend class CDRNNode;
-    
-    CDRNPeerLink( void );
 
-    virtual ~CDRNPeerLink();
-
-    COMCORE::CTCPConnection* GetTCPConnection( void );
+    private:    
+    friend class CDRNPeerLink;
     
-    void SetTCPConnection( COMCORE::CTCPConnection& tcpConnection );
+    CDRNPeerLinkData( CDRNPeerLink& peerLink );
+        
+    virtual ~CDRNPeerLinkData();
     
-    COMCORE::CUDPSocket* GetUDPSocket( void );
+    TDRNDataGroupPtr GetSubscribedDataGroupWithID( UInt16 dataGroupID );
     
-    void SetUDPSocket( COMCORE::CUDPSocket& socket );
-    
-    bool SendData( const void* dataSource             ,
-                   const UInt16 dataSize              ,
-                   const bool allowUnreliable = false );
-                   
-    void SetAuthenticatedFlag( const bool authenticated );
-    
-    private:
-    
-    CDRNPeerLink( const CDRNPeerLink& src );            /**< peer links are unique and cannot be copied */
-    CDRNPeerLink& operator=( const CDRNPeerLink& src ); /**< peer links are unique and cannot be copied */
+    TDRNDataStreamPtr GetSubscribedDataStreamWithID( UInt16 dataStreamID );
 
     private:
     
-    CDRNNode* m_parentNode;
-    CDRNPeerLinkData* m_linkData;
-    COMCORE::CUDPSocket* m_udpSocket;
-    COMCORE::CTCPConnection* m_tcpConnection;
-    bool m_udpPossible;
-    bool m_isAuthenticated;
+    CDRNPeerLinkData( void );                                   /**< not implemented, makes no sense */
+    CDRNPeerLinkData( const CDRNPeerLinkData& src );            /**< not implemented, makes no sense */
+    CDRNPeerLinkData& operator=( const CDRNPeerLinkData& src ); /**< not implemented, makes no sense */
+    
+    private:
+    
+    struct SDRNDataGroupEntry
+    {
+        TDRNDataGroupPtr ptr;
+        CORE::T16BitNumericID id;
+    };
+    typedef struct SDRNDataGroupEntry TDRNDataGroupEntry;
+    
+    struct SDRNDataStreamEntry
+    {
+        TDRNDataGroupPtr ptr;
+        CORE::T16BitNumericID id;
+    };
+    typedef struct SDRNDataStreamEntry TDRNDataStreamEntry;    
+    
+    typedef std::map< CORE::CString, TDRNDataGroupEntry >  TDataGroupMap;
+    typedef std::map< CORE::CString, TDRNDataStreamEntry > TDataStreamMap;
+    typedef std::map< UInt16, TDRNDataGroupEntry >  TDataGroupIDMap;
+    typedef std::map< UInt16, TDRNDataStreamEntry > TDataStreamIDMap;
+    
+    CORE::T16BitNumericIDGenerator m_idGenerator;
+    TDataGroupMap m_subscribedDataGroups;
+    TDataStreamMap m_subscribedDataStreams;
+    TDataGroupMap m_publicizedDataGroups;
+    TDataStreamMap m_publicizedDataStreams;
+    CDRNPeerLink* m_peerLink;
 };
 
 /*-------------------------------------------------------------------------//
@@ -165,7 +193,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_DRN_CDRNPEERLINK_H ? */
+#endif /* GUCEF_DRN_CDRNPEERLINKDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

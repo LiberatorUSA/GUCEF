@@ -36,6 +36,11 @@
 #define GUCEF_CORE_BASICMACROS_H
 #endif /* GUCEF_CORE_BASICMACROS_H ? */
 
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"       /* core macros */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
+
 #ifndef GUCEF_DRN_ETYPES_H
 #include "gucefDRN_ETypes.h"        /* simple types */
 #define GUCEF_DRN_ETYPES_H

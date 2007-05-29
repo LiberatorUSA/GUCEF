@@ -45,6 +45,14 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#define DRN_PEERCOMM_PORT   50456
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      MACROS                                                             //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -101,7 +109,7 @@ class CTestPeerValidator : public DRN::CIDRNPeerValidator
             correctVersion.patch = 0;
             correctVersion.release = 0;
             
-            return ( memcmp( &serviceVersion, &correctVersion, sizeof( CORE::TVersion ) == 0 ) );
+            return ( memcmp( &serviceVersion, &correctVersion, sizeof( CORE::TVersion ) ) == 0 );
         }        
         return false;
     }    
@@ -139,18 +147,19 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             ERRORHERE;
         }
 
-        if ( !nodeA.ListenOnPort( 50456 ) )
+        if ( !nodeA.ListenOnPort( DRN_PEERCOMM_PORT ) )
         {
             // the listen actions should succeed for our tests to work
+            GUCEF_ERROR_LOG( 0, "Failed to open listening socket on port " + GUCEF::CORE::Int32ToString( DRN_PEERCOMM_PORT ) );
             ERRORHERE;
         }
-        if ( !nodeB.ConnectToPeer( "127.0.0.1", 50456 ) )
+        if ( !nodeB.ConnectToPeer( "127.0.0.1", DRN_PEERCOMM_PORT ) )
         {
             // since we are connecting localhost this should always work
             ERRORHERE;
         }
         
-        if ( !nodeB.RequestDataGroupList() )
+        //if ( !nodeB.RequestDataGroupList() )
         {
         }
     }
@@ -171,6 +180,7 @@ PerformPeerToPeerTest( void )
     {
         GUCEF_LOG( 0, "*** Commencing gucefDRN Peer to peer test ***" );
         
+        CTestPeerToPeerSubSystem testSubSystem;
         CORE::CGUCEFApplication::Instance()->main( 0, NULL, true );
     }
     catch ( ... )

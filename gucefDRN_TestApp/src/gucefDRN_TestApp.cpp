@@ -71,6 +71,11 @@ WinMain( HINSTANCE hinstance     ,
         
         GUCEF::CORE::CStdLogger logger( logFileAccess );
         GUCEF::CORE::CLogManager::Instance()->AddLogger( &logger );
+        
+        #ifdef GUCEF_MSWIN_BUILD
+        GUCEF::CORE::CMSWinConsoleLogger consoleOut;
+        GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
+        #endif /* GUCEF_MSWIN_BUILD ? */
 
         PerformPeerToPeerTest();
         

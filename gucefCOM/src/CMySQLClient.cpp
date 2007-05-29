@@ -34,6 +34,11 @@
 #define CMYSQLCLIENTSOCKETINTERFACE_H
 #endif /* CMYSQLCLIENTSOCKETINTERFACE_H ? */
 
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H ? */
+
 #include "CMySQLClient.h"               /* definition of this class */
 
 /*-------------------------------------------------------------------------//

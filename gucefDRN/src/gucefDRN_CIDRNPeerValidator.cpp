@@ -17,29 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_DRN_CIDRNPEERVALIDATOR_H
-#define GUCEF_DRN_CIDRNPEERVALIDATOR_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_CSOCKET_H
-#include "CSocket.h"
-#define GUCEF_COMCORE_CSOCKET_H
-#endif /* GUCEF_COMCORE_CSOCKET_H ? */
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
-
-#ifndef GUCEF_DRN_MACROS_H
-#include "gucefDRN_macros.h"
-#define GUCEF_DRN_MACROS_H
-#endif /* GUCEF_DRN_MACROS_H ? */
+#include "gucefDRN_CIDRNPeerValidator.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -49,36 +38,40 @@
 
 namespace GUCEF {
 namespace DRN {
-
+    
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+   
+CIDRNPeerValidator::CIDRNPeerValidator( void )
+{GUCEF_TRACE;
 
-class GUCEF_DRN_EXPORT_CPP CIDRNPeerValidator
-{
-    public:
-    
-    typedef COMCORE::CSocket::TIPAddress TIPAddress;
-    
-    CIDRNPeerValidator( void );
-    
-    CIDRNPeerValidator( const CIDRNPeerValidator& src );
-    
-    virtual ~CIDRNPeerValidator();
-    
-    CIDRNPeerValidator& operator=( const CIDRNPeerValidator& src );
-    
-    virtual bool IsPeerAddressValid( const TIPAddress& address     ,
-                                     const CORE::CString& hostName ) const = 0;
-    
-    virtual bool IsPeerLoginValid( const CORE::CString& accountName ,
-                                   const CORE::CString& password    ) const = 0;
+}
 
-    virtual bool IsPeerServiceValid( const CORE::CString& serviceName     ,
-                                     const CORE::TVersion& serviceVersion ) const = 0;    
-};
+/*-------------------------------------------------------------------------*/
+
+CIDRNPeerValidator::CIDRNPeerValidator( const CIDRNPeerValidator& src )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CIDRNPeerValidator::~CIDRNPeerValidator()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CIDRNPeerValidator&
+CIDRNPeerValidator::operator=( const CIDRNPeerValidator& src )
+{GUCEF_TRACE;
+
+    return *this;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -90,16 +83,3 @@ class GUCEF_DRN_EXPORT_CPP CIDRNPeerValidator
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_DRN_CIDRNPEERVALIDATOR_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 02-03-2007 :
-        - Dinand: re-added this header
-
------------------------------------------------------------------------------*/

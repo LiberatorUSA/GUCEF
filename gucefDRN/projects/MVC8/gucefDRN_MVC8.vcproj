@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefCOMCORE\include;..\..\..\gucefCORE\include;..\..\..\gucefMT\include;..\..\..\common\include"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefCOMCORE\include;..\..\..\gucefCORE\include;..\..\..\gucefCORE\include\mswin;..\..\..\gucefMT\include;..\..\..\common\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GUCEFDRN_MVC8_EXPORTS;GUCEF_DRN_BUILD_MODULE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -185,11 +185,27 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefDRN_CDRNDataStream.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefDRN_CDRNNode.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\gucefDRN_CDRNPeerLink.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefDRN_CDRNPeerLinkData.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefDRN_CIDRNPeerLinkCrypter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefDRN_CIDRNPeerValidator.cpp"
 				>
 			</File>
 		</Filter>
@@ -207,11 +223,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefDRN_CDRNDataStream.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefDRN_CDRNNode.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\include\gucefDRN_CDRNPeerLink.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefDRN_CDRNPeerLinkData.h"
 				>
 			</File>
 			<File

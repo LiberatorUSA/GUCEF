@@ -89,7 +89,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     void Close( void );  /* close the socket connection */
     
     virtual bool Send( const void* dataSource , 
-                       const UInt16 dataSize  );    
+                       const UInt32 dataSize  );    
 
     /**
      *      Attempt to send the data and returns immediately.

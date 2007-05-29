@@ -364,6 +364,31 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+/*---------------------------------------------------------------------------/
+
+        C++ MS Windows includes
+
+/---------------------------------------------------------------------------*/
+#ifdef GUCEF_MSWIN_BUILD
+
+/*
+ *  Note that the following includes may require a include path to be added
+ *  to the project since these are O/S specific and not common in the GUCEF
+ *  code-base distribution.
+ */
+
+#ifndef GUCEF_CORE_CMSWINCONSOLELOGGER_H
+#include "CMSWinConsoleLogger.h"
+#define GUCEF_CORE_CMSWINCONSOLELOGGER_H
+#endif /* GUCEF_CORE_CMSWINCONSOLELOGGER_H ? */
+
+#ifndef GUCEF_CORE_CWINDOWMSGHOOK_H
+#include "CWindowMsgHook.h"
+#define GUCEF_CORE_CWINDOWMSGHOOK_H
+#endif /* GUCEF_CORE_CWINDOWMSGHOOK_H ? */
+
+#endif /* GUCEF_MSWIN_BUILD ? */
+
 #endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//

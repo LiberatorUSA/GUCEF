@@ -517,7 +517,7 @@ CTCPClientSocket::Close( void )
 
 bool
 CTCPClientSocket::Send( const void* dataSource , 
-                        const UInt16 dataSize  )
+                        const UInt32 dataSize  )
 {GUCEF_TRACE;
 
     return Send( dataSource ,
