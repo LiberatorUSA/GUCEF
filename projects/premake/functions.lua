@@ -37,10 +37,10 @@ function add_package(package_name)
     package.language = "c"
 
     package.files = {
-        matchrecursive("../../include/*.h", "../../src/*.c", "../../src/*.cpp", "../../dependancy/*.c", "../../dependancy/*.cpp", "../../dependancy/*.h")
+        matchrecursive("../../include/*.h", "../../include/mswin/*.h", "../../src/*.c", "../../src/*.cpp", "../../mswin/src/*.cpp", "../../dependancy/*.c", "../../dependancy/*.cpp", "../../dependancy/*.h")
     }
 
-    package.includepaths = { "../../include", "../../dependancy", "../../../common/include" }
+    package.includepaths = { "../../include", "../../include/mswin", "../../dependancy", "../../../common/include" }
 
     package.config["Debug"].bindir = "../../../"..package_name.."/bin/Debug_"..compiler
     package.config["Debug"].libdir = "../../../"..package_name.."/bin/Debug_"..compiler
