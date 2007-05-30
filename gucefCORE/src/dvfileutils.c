@@ -25,12 +25,13 @@
 #include <stdio.h>              /* standard I/O utils */
 #include <string.h>             /* standard string utils */
 
-#ifndef GUCEF_CORE_GUCEFCORE_CONFIG_H
+#ifndef GUCEF_CORE_CONFIG_H
 #include "gucefCORE_config.h"     /* build defines */
-#define GUCEF_CORE_GUCEFCORE_CONFIG_H
-#endif /* GUCEF_CORE_GUCEFCORE_CONFIG_H ? */
+#define GUCEF_CORE_CONFIG_H
+#endif /* GUCEF_CORE_CONFIG_H ? */
 
 #include "dvfileutils.h"	/* function prototypes */
+
 #include "dvstrutils.h"         /* My own string utils */
 #ifdef GUCEF_MSWIN_BUILD
   #include <windows.h>		/* WIN32 API */
