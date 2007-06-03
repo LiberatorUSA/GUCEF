@@ -137,14 +137,14 @@ CSocket::GetSocketID( void ) const
 bool 
 CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
                              const UInt16 destport            ,  
-                             TIPAddress& resolvedDest         )
+                             CIPAddress& resolvedDest         )
 {TRACE;
 
     if ( CORE::Check_If_IP( destaddrstr.C_String() ) )
     {
-        resolvedDest.netaddr = inet_addr( destaddrstr.C_String() );                
-        if ( resolvedDest.netaddr == INADDR_NONE ) return false;                
-        resolvedDest.port = htons( destport );
+        resolvedDest.SetAddress( inet_addr( destaddrstr.C_String() ) );
+        if ( resolvedDest.GetAddress() == INADDR_NONE ) return false;                
+        resolvedDest.SetPort( destport );
         return true;
     }
     else
@@ -159,8 +159,8 @@ CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
             Int32 netaddr = inet_addr( addrStr );
             if ( netaddr >= 0 ) 
             {   
-                resolvedDest.netaddr = netaddr;
-                resolvedDest.port = htons( destport );             
+                resolvedDest.SetAddress( netaddr );
+                resolvedDest.SetPort( destport );             
                 return true;
             }            
         }
@@ -194,18 +194,18 @@ CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
 /*-------------------------------------------------------------------------*/
 
 bool 
-CSocket::ConvertFromIPAddress( const TIPAddress& src     ,
+CSocket::ConvertFromIPAddress( const CIPAddress& src     ,
                                CORE::CString& srcaddrstr ,
                                UInt16& srcport           )
 {TRACE;                   
 
     in_addr addrStruct;
-    addrStruct.S_un.S_addr = src.netaddr;
+    addrStruct.S_un.S_addr = src.GetAddress();
     const char* addrStr = inet_ntoa( addrStruct );
     if ( addrStr != NULL )
     {
         srcaddrstr = addrStr;
-        srcport = ntohs( src.port );
+        srcport = ntohs( src.GetPort() );
         return true;
     }
     return false;        

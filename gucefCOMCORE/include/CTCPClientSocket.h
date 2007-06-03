@@ -77,7 +77,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     bool ConnectTo( const CORE::CString& address , 
                     UInt16 port                  ); 
 
-    bool ConnectTo( const TIPAddress& address );
+    bool ConnectTo( const CIPAddress& address );
 
     /**
      *      Attempts to reconnect to the server provided with
@@ -141,7 +141,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     
     virtual UInt16 GetRemoteTCPPort( void ) const;
     
-    virtual TIPAddress GetRemoteIP( void ) const;
+    virtual CIPAddress GetRemoteIP( void ) const;
 
     virtual CORE::CString GetType( void ) const;
 
@@ -176,7 +176,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     MT::CMutex datalock;
     CORE::CDynamicBuffer m_readbuffer;
     UInt32 m_maxreadbytes;                  /**< max number of bytes to receive before processing it */ 
-    TIPAddress m_ipAddress;                 /**< network order IP address */
+    CIPAddress m_ipAddress;                 /**< network order IP address */
 };
 
 /*-------------------------------------------------------------------------//

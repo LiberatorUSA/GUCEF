@@ -257,7 +257,7 @@ class CMSWinPingTask : public MT::CActiveObject   ,
             // perform the actual 'ping', this is a blocking call
             DWORD dwRetVal;
             IPAddr ipAddr;
-            ipAddr.S_un.S_addr = m_ip.netaddr;
+            ipAddr.S_un.S_addr = m_ip.GetAddress();
             if ( ( dwRetVal = IcmpSendEcho( (HANDLE)m_icmpHandle    ,
                                             ipAddr                  ,
                                             m_sendBuffer            ,
@@ -385,7 +385,7 @@ class CMSWinPingTask : public MT::CActiveObject   ,
     LPVOID m_replyBuffer;
     LPVOID m_sendBuffer;
     HANDLE m_icmpHandle;
-    CSocket::TIPAddress m_ip;
+    CIPAddress m_ip;
 };
 
 #endif /* GUCEF_MSWIN_BUILD ? */

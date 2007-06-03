@@ -122,12 +122,11 @@ CTCPServerConnection::GetRemoteHostName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CTCPServerConnection::TIPAddress
+CIPAddress
 CTCPServerConnection::GetRemoteIP( void ) const
 {GUCEF_TRACE;
 
-    TIPAddress ip = { _data->clientaddr.sin_port, _data->clientaddr.sin_addr.S_un.S_addr };
-    return ip;
+    return CIPAddress( _data->clientaddr.sin_addr.S_un.S_addr, _data->clientaddr.sin_port );
 }
 
 /*-------------------------------------------------------------------------*/

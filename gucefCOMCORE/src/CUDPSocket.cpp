@@ -93,6 +93,9 @@ CUDPSocket::CUDPSocket( bool blocking )
           _data( NULL )         ,
           m_buffer()
 {TRACE;
+        
+        RegisterEvents();
+        
         _data = new TUDPSockData;
         memset( _data, 0, sizeof( TUDPSockData ) );
         
@@ -124,7 +127,7 @@ CUDPSocket::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/                         
 
 Int32
-CUDPSocket::SendPacketTo( const TIPAddress& dest ,
+CUDPSocket::SendPacketTo( const CIPAddress& dest ,
                           const void* data       , 
                           UInt16 datasize        )
 {TRACE;
@@ -135,8 +138,8 @@ CUDPSocket::SendPacketTo( const TIPAddress& dest ,
         
         struct sockaddr_in remote;
         memset( &remote, 0, sizeof( remote ) ); // should this be CLEAR_ADDR( &remote ); ?
-        remote.sin_addr.s_addr = dest.netaddr;
-        remote.sin_port = dest.port;
+        remote.sin_addr.s_addr = dest.GetAddress();
+        remote.sin_port = dest.GetPort();
         remote.sin_family = AF_INET;
         return sendto( _data->sockid             , 
                        (const char*)data         , 
@@ -154,7 +157,7 @@ CUDPSocket::SendPacketTo( const CORE::CString& dnsname ,
                           const void* data             , 
                           UInt16 datasize              )
 {TRACE;
-        TIPAddress dest;
+        CIPAddress dest;
         if ( ConvertToIPAddress( dnsname, port, dest ) )
         {
                 return SendPacketTo( dest, data, datasize );
@@ -170,7 +173,7 @@ CUDPSocket::Update( void )
 
     if ( !_blocking )
     {
-        TIPAddress src;
+        CIPAddress src;
         while ( IsIncomingDataQueued() )
         {
             Recieve( src  ,
@@ -218,7 +221,7 @@ CUDPSocket::SetRecievedDataBufferSize( const UInt32 newBufferSize )
 /*-------------------------------------------------------------------------*/
 
 Int32
-CUDPSocket::Recieve( TIPAddress& src ,
+CUDPSocket::Recieve( CIPAddress& src ,
                      void* destbuf   , 
                      UInt16 bufsize  )
 {TRACE;        
@@ -246,8 +249,8 @@ CUDPSocket::Recieve( TIPAddress& src ,
     m_buffer.SetDataSize( retval );
                    
     // Copy the data directly to our user
-    src.port = remote.sin_port;
-    src.netaddr = remote.sin_addr.s_addr;
+    src.SetPort( remote.sin_port );
+    src.SetAddress( remote.sin_addr.s_addr );
     
     if ( NULL != destbuf )
     {
@@ -261,8 +264,8 @@ CUDPSocket::Recieve( TIPAddress& src ,
                      
     // Send an event notifying people that the data was recieved
     struct SUDPPacketRecievedEventData infoStruct;
-    infoStruct.sourceAddress.port = remote.sin_port;
-    infoStruct.sourceAddress.netaddr = remote.sin_addr.s_addr;
+    infoStruct.sourceAddress.SetPort( remote.sin_port );
+    infoStruct.sourceAddress.SetAddress( remote.sin_addr.s_addr );
     infoStruct.dataBuffer = CORE::TLinkedCloneableBuffer( &m_buffer );
     
     UDPPacketRecievedEventData eventData( infoStruct );
@@ -278,7 +281,7 @@ CUDPSocket::Recieve( void* destbuf  ,
                      UInt16 bufsize )
 {TRACE;
 
-    TIPAddress src;
+    CIPAddress src;
     return Recieve( src     , 
                     destbuf ,
                     bufsize );

@@ -353,10 +353,11 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CTCPClientSocket::ConnectTo( const TIPAddress& address )
+CTCPClientSocket::ConnectTo( const CIPAddress& address )
 {GUCEF_TRACE;
 
-    return false;
+    return ConnectTo( address.AddressAsString()        ,
+                      address.GetPortInHostByteOrder() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -379,12 +380,11 @@ CTCPClientSocket::GetRemoteTCPPort( void ) const
 
 /*-------------------------------------------------------------------------*/
     
-CTCPClientSocket::TIPAddress
+CIPAddress
 CTCPClientSocket::GetRemoteIP( void ) const
 {GUCEF_TRACE;
 
-    TIPAddress ip = { _data->serverinfo.sin_port, _data->serverinfo.sin_addr.S_un.S_addr };
-    return ip;
+    return CIPAddress( _data->serverinfo.sin_addr.S_un.S_addr, _data->serverinfo.sin_port );
 }
 
 /*-------------------------------------------------------------------------*/

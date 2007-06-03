@@ -128,7 +128,10 @@ StringToBool( const CString& str )
 Int32
 StringToInt32( const CString& str )
 {TRACE;
-        return Str_To_Int( str.C_String() );        
+
+    Int32 value;
+    sscanf( str.C_String(), "%d", &value );
+    return value;        
 }
 
 /*-------------------------------------------------------------------------*/
@@ -136,9 +139,54 @@ StringToInt32( const CString& str )
 CString
 Int32ToString( const Int32 value )
 {TRACE;
-        char intBuffer[ 10 ];
-        sprintf( intBuffer, "%d", value );
-        return CString( intBuffer );
+
+    char intBuffer[ 10 ];
+    sprintf( intBuffer, "%d", value );
+    return CString( intBuffer );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+StringToUInt32( const CString& str )
+{TRACE;
+
+    UInt32 value;
+    sscanf( str.C_String(), "%u", &value );
+    return value;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+UInt32ToString( const UInt32 value )
+{TRACE;
+
+    char intBuffer[ 10 ];
+    sprintf( intBuffer, "%u", value );
+    return CString( intBuffer );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt16
+StringToUInt16( const CString& str )
+{TRACE;
+
+    UInt16 value;
+    sscanf( str.C_String(), "%u", &value );
+    return value;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+UInt16ToString( const UInt16 value )
+{TRACE;
+
+    char intBuffer[ 10 ];
+    sprintf( intBuffer, "%u", value );
+    return CString( intBuffer );
 }
 
 /*-------------------------------------------------------------------------*/

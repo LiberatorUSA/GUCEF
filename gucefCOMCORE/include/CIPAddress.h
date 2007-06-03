@@ -17,27 +17,17 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_COMCORE_CTCPCONNECTION_H
-#define GUCEF_COMCORE_CTCPCONNECTION_H
+#ifndef GUCEF_COMCORE_CIPADDRESS_H
+#define GUCEF_COMCORE_CIPADDRESS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
-
-#ifndef GUCEF_COMCORE_CSOCKET_H
-#include "CSocket.h"
-#define GUCEF_COMCORE_CSOCKET_H
-#endif /* GUCEF_COMCORE_CSOCKET_H ? */
-
-#ifndef GUCEF_CORE_CLONEABLES_H
-#include "cloneables.h"
-#define GUCEF_CORE_CLONEABLES_H
-#endif /* GUCEF_CORE_CLONEABLES_H ? */
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_COMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"
+#include "gucefCOMCORE_macros.h"      /* macros and build config for the COMCORE library */
 #define GUCEF_COMCORE_MACROS_H
 #endif /* GUCEF_COMCORE_MACROS_H ? */
 
@@ -57,47 +47,91 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Base class for TCP based socket connections
+ *  Class representing an IPv4 address with a port number included.
+ *  Note that this class uses network byte order as its default.
  */
-class GUCEF_COMCORE_EXPORT_CPP CTCPConnection : public CSocket
+class GUCEF_COMCORE_EXPORT_CPP CIPAddress
 {
     public:
+    
+    CIPAddress( void );
+    
+    CIPAddress( const CIPAddress& src );
 
-    static const CORE::CEvent ConnectedEvent;
-    static const CORE::CEvent DisconnectedEvent;
-    static const CORE::CEvent DataRecievedEvent;
-    static const CORE::CEvent DataSentEvent;
-    static const CORE::CEvent SocketErrorEvent;
+    /**
+     *  The values are expected to be in network byte order 
+     */
+    CIPAddress( const UInt32 address ,
+                const UInt16 port    );
 
-    typedef CORE::TLinkedCloneableBuffer TDataRecievedEventData;
-    typedef CORE::TLinkedCloneableBuffer TDataSentEventData;
-    typedef CORE::TCloneableInt32        TSocketErrorEventData;
+    CIPAddress( const CORE::CString& address ,
+                const CORE::CString& port    );
     
-    static void RegisterEvents( void );
+    virtual ~CIPAddress();
     
-    public:
+    void SetPort( const UInt16 port );
     
-    CTCPConnection( void );
+    /**
+     *  Port number in network byte order
+     */
+    UInt16 GetPort( void ) const;
+    
+    void SetPortInHostByteOrder( const UInt16 port );
 
-    virtual ~CTCPConnection();
+    /**
+     *  Port number in host byte order
+     */
+    UInt16 GetPortInHostByteOrder( void ) const;
     
-    virtual CIPAddress GetRemoteIP( void ) const = 0;
+    void SetAddress( const UInt32 address );
     
-    virtual const CORE::CString& GetRemoteHostName( void ) const = 0;
+    /**
+     *  Address in network byte order
+     */
+    UInt32 GetAddress( void ) const;
     
-    virtual UInt16 GetRemoteTCPPort( void ) const = 0;
+    void SetAddressInHostByteOrder( const UInt32 address );
     
-    virtual bool IsActive( void ) const = 0;
+    /**
+     *  Address in host byte order
+     */
+    UInt32 GetAddressInHostByteOrder( void ) const;
     
-    virtual void Close( void ) = 0;
+    /**
+     *  Address as a string with the network to host
+     *  conversion applied
+     */
+    CORE::CString AddressAsString( void ) const;
     
-    virtual bool Send( const void* dataSource ,
-                       const UInt32 dataSize  ) = 0;
- 
+    /**
+     *  Port as a string with the network to host
+     *  conversion applied
+     */
+    CORE::CString PortAsString( void ) const;
+    
+    /**
+     *  Address and port as a string with the network to host
+     *  conversion applied
+     */
+    CORE::CString AddressAndPortAsString( void ) const;
+    
+    CIPAddress& operator=( const CIPAddress& src );
+    
+    bool operator==( const CIPAddress& other ) const;
+    
+    bool operator!=( const CIPAddress& other ) const;
+    
+    /**
+     *  This operator is only implemented to facility ordering
+     *  in STL containers. The return value has no real meaning
+     *  except that of a binary data compare.
+     */
+    bool operator<( const CIPAddress& other ) const;
+    
     private:
     
-    CTCPConnection( const CTCPConnection& src );            /**< connections are unique and cannot be copied */
-    CTCPConnection& operator=( const CTCPConnection& src ); /**< connections are unique and cannot be copied */
+    UInt16 m_port;
+    UInt32 m_address;
 };
 
 /*-------------------------------------------------------------------------//
@@ -111,7 +145,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPConnection : public CSocket
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CTCPCONNECTION_H ? */
+#endif /* GUCEF_COMCORE_CIPADDRESS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -119,7 +153,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPConnection : public CSocket
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 02-03-2007 :
-        - Dinand: re-added this header
+- 06-03-2007 :
+        - Initial version, this used to be a struct
 
 -----------------------------------------------------------------------------*/

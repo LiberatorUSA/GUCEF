@@ -17,62 +17,19 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
+#ifndef GUCEF_COMCORE_CUDPCHANNEL_H
+#define GUCEF_COMCORE_CUDPCHANNEL_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef CCOM_H
-#include "CCom.h"      /* header for the main communication manager */
-#define CCOM_H
-#endif /* CCOM_H ? */
-
-#ifndef CTCPCLIENTSOCKET_H
-#include "CTCPClientSocket.h"
-#define CTCPCLIENTSOCKET_H
-#endif /* CTCPCLIENTSOCKET_H ? */
-
 #ifndef GUCEF_COMCORE_CUDPSOCKET_H
 #include "CUDPSocket.h"
 #define GUCEF_COMCORE_CUDPSOCKET_H
 #endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
-
-#ifndef GUCEF_COMCORE_CTCPSERVERSOCKET_H
-#include "CTCPServerSocket.h"
-#define GUCEF_COMCORE_CTCPSERVERSOCKET_H
-#endif /* GUCEF_COMCORE_CTCPSERVERSOCKET_H ? */
-
-#ifndef GUCEF_COMCORE_CPING_H
-#include "CPing.h"
-#define GUCEF_COMCORE_CPING_H
-#endif /* GUCEF_COMCORE_CPING_H ? */
-
-#ifndef GUCEF_COMCORE_CUDPMASTERSOCKET_H
-#include "CUDPMasterSocket.h"
-#define GUCEF_COMCORE_CUDPMASTERSOCKET_H
-#endif /* GUCEF_COMCORE_CUDPMASTERSOCKET_H ? */
-
-#ifndef GUCEF_COMCORE_CUDPCHANNEL_H
-#include "CUDPChannel.h"
-#define GUCEF_COMCORE_CUDPCHANNEL_H
-#endif /* GUCEF_COMCORE_CUDPCHANNEL_H ? */
-
-#include "CGUCEFCOMCOREModule.h"  /* definition of the class implemented here */
-
-#ifdef GUCEF_MSWIN_BUILD
-  #ifndef DVWINSOCK_H
-  #include "dvwinsock.h"
-  #define DVWINSOCK_H
-  #endif /* DVWINSOCK_H */
-#endif
-
-#ifdef ACTIVATE_MEMORY_MANAGER
-  #ifndef GUCEF_NEW_ON_H
-  #include "gucef_new_on.h"   /* Use the GUCEF memory manager instead of the standard manager ? */
-  #define GUCEF_NEW_ON_H
-  #endif /* GUCEF_NEW_ON_H ? */
-#endif /* ACTIVATE_MEMORY_MANAGER ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -89,40 +46,64 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
-CGUCEFCOMCOREModule::Load( void )
-{
-        #ifdef GUCEF_MSWIN_BUILD
-        InitWinsock( 1 );
-        #endif
-        
-        /* simply instantiate our com manager when the module is loaded */
-        //CCom::Instance();
-        
-        CTCPConnection::RegisterEvents();
-        CTCPServerSocket::RegisterEvents();
-        CTCPClientSocket::RegisterEvents();
-        CUDPSocket::RegisterEvents();
-        CPing::RegisterEvents();
-        CUDPMasterSocket::RegisterEvents();
-        CUDPChannel::RegisterEvents();
-        
-        return true;
-}
+class CUDPMasterSocket;
 
 /*-------------------------------------------------------------------------*/
-        
-bool 
-CGUCEFCOMCOREModule::Unload( void )
+
+/**
+ *  Aggregate component of the CUDPMasterSocket.
+ *  Provides a medium to which observers can subscribe and receive
+ *  per peer notification of received data.
+ */
+class GUCEF_COMCORE_EXPORT_CPP CUDPChannel : public CORE::CNotifier
 {
-        CCom::Deinstance();
+    public:
+
+    static const CORE::CEvent UDPPacketReceivedEvent;   
+    
+    static void RegisterEvents( void );
+    
+    typedef CORE::TLinkedCloneableBuffer UDPPacketReceivedEventData;
+    
+    public:  
+    
+    const CIPAddress& GetRemoteAddress( void ) const;
+    
+    CUDPMasterSocket& GetParentSocket( void ) const;
+    
+    /**
+     *      Attempts to send a UDP packet to the peer identified by the channel.
+     *      Note that the data you send must fit within the payload
+     *      space of a UDP packet.
+     *
+     *      @param data pointer to the data you wish to send
+     *      @param datasize size in bytes of the data block pointed to by data
+     *      @return the actual number of bytes that where sent. -1 indicates an error.
+     */
+    Int32 SendPacket( const void* data , 
+                      UInt16 datasize  );
+
+    private:
+    friend class CUDPMasterSocket; 
         
-        #ifdef GUCEF_MSWIN_BUILD
-        ShutdownWinsock();
-        #endif
-                
-        return true;
-}
+    CUDPChannel( CUDPMasterSocket& parentSocket ,
+                 const CIPAddress& remoteAddr   );
+    
+    virtual ~CUDPChannel();
+    
+    bool DoNotifyObservers( const CORE::CEvent& eventid         ,
+                            CORE::CICloneable* eventData = NULL );
+    
+    private:
+    
+    CUDPChannel( const CUDPChannel& src );            /**< not implemented, not possible */
+    CUDPChannel& operator=( const CUDPChannel& src ); /**< not implemented, not possible */
+    
+    private:
+    
+    CIPAddress m_remotePeer;
+    CUDPMasterSocket* m_parentSocket;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -134,3 +115,16 @@ CGUCEFCOMCOREModule::Unload( void )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_COMCORE_CUDPCHANNEL_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 06-03-2007 :
+        - Initial version
+
+-----------------------------------------------------------------------------*/

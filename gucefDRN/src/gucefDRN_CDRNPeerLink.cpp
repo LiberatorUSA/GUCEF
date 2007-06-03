@@ -33,15 +33,25 @@
 #define GUCEF_COMCORE_CTCPCONNECTION_H
 #endif /* GUCEF_COMCORE_CTCPCONNECTION_H ? */
 
-#ifndef GUCEF_COMCORE_CUDPSOCKET_H
-#include "CUDPSocket.h"
-#define GUCEF_COMCORE_CUDPSOCKET_H
-#endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
+#ifndef GUCEF_COMCORE_CUDPCHANNEL_H
+#include "CUDPChannel.h"
+#define GUCEF_COMCORE_CUDPCHANNEL_H
+#endif /* GUCEF_COMCORE_CUDPCHANNEL_H ? */
+
+#ifndef GUCEF_DRN_DRNPROTOCOL_H
+#include "gucefDRN_DRNProtocol.h"
+#define GUCEF_DRN_DRNPROTOCOL_H
+#endif /* GUCEF_DRN_DRNPROTOCOL_H ? */
 
 #ifndef GUCEF_DRN_CDRNPEERLINKDATA_H
 #include "gucefDRN_CDRNPeerLinkData.h"
 #define GUCEF_DRN_CDRNPEERLINKDATA_H
 #endif /* GUCEF_DRN_CDRNPEERLINKDATA_H ? */
+
+#ifndef GUCEF_COMCORE_CUDPMASTERSOCKET_H
+#include "CUDPMasterSocket.h"
+#define GUCEF_COMCORE_CUDPMASTERSOCKET_H
+#endif /* GUCEF_COMCORE_CUDPMASTERSOCKET_H ? */
 
 #include "gucefDRN_CDRNPeerLink.h"
 
@@ -63,6 +73,9 @@ namespace DRN {
 const CORE::CEvent CDRNPeerLink::ConnectedEvent = "GUCEF::DRN::CDRNPeerLink::ConnectedEvent";
 const CORE::CEvent CDRNPeerLink::DisconnectedEvent = "GUCEF::DRN::CDRNPeerLink::DisconnectedEvent";
 const CORE::CEvent CDRNPeerLink::SocketErrorEvent = "GUCEF::DRN::CDRNPeerLink::SocketErrorEvent";
+const CORE::CEvent CDRNPeerLink::PeerListReceivedFromPeerEvent = "GUCEF::CORE::CDRNPeerLink::PeerListReceivedFromPeerEvent";
+const CORE::CEvent CDRNPeerLink::StreamListReceivedFromPeerEvent = "GUCEF::CORE::CDRNPeerLink::StreamListReceivedFromPeerEvent";
+const CORE::CEvent CDRNPeerLink::DataGroupListReceivedFromPeerEvent = "GUCEF::CORE::CDRNPeerLink::DataGroupListReceivedFromPeerEvent";
     
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -70,17 +83,45 @@ const CORE::CEvent CDRNPeerLink::SocketErrorEvent = "GUCEF::DRN::CDRNPeerLink::S
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CDRNPeerLink::CDRNPeerLink( void )
-    : m_udpSocket( NULL )        ,
-      m_tcpConnection( NULL )    ,
-      m_udpPossible( false )     ,
-      m_isAuthenticated( false ) ,
-      m_linkData( NULL )        
+void
+CDRNPeerLink::RegisterEvents( void )
+{GUCEF_TRACE;
+    
+    ConnectedEvent.Initialize();
+    DisconnectedEvent.Initialize();
+    SocketErrorEvent.Initialize();
+    PeerListReceivedFromPeerEvent.Initialize();
+    StreamListReceivedFromPeerEvent.Initialize();
+    DataGroupListReceivedFromPeerEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDRNPeerLink::CDRNPeerLink( CDRNNode& parentNode                   ,
+                            COMCORE::CTCPConnection& tcpConnection ,
+                            COMCORE::CUDPMasterSocket& udpSocket   )
+    : m_udpSocket( &udpSocket )         ,
+      m_tcpConnection( &tcpConnection ) ,
+      m_udpPossible( false )            ,
+      m_isAuthenticated( false )        ,
+      m_linkData( NULL )                ,
+      m_parentNode( &parentNode )
 {GUCEF_TRACE;
 
+    assert( m_udpSocket != NULL );
+    assert( m_parentNode != NULL );
+    assert( m_tcpConnection != NULL );    
     RegisterEvents();
     
     m_linkData = new CDRNPeerLinkData( *this );
+    
+    // Send the initial greeting
+    char sendBuffer[ 14 ] = { DRN_PEERCOMM_GREETING, 'D', 'R', 'N', 'N', 'O', 'D', 'E', ' ', ' ', DRN_PROTOCOL_MAYOR_VERION, DRN_PROTOCOL_MINOR_VERION, DRN_PROTOCOL_PATCH_VERION, DRN_TRANSMISSION_SEPERATOR };        
+    if ( !SendData( sendBuffer, 14, false ) )
+    {
+        // Failed to send data, something is very wrong
+        CloseLink();
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -93,30 +134,39 @@ CDRNPeerLink::~CDRNPeerLink()
 /*-------------------------------------------------------------------------*/
 
 void
-CDRNPeerLink::RegisterEvents( void )
+CDRNPeerLink::CloseLink( void )
 {GUCEF_TRACE;
 
-    ConnectedEvent.Initialize();
-    DisconnectedEvent.Initialize();
-    SocketErrorEvent.Initialize();
+    m_tcpConnection->Close();
+    m_udpPossible = false;
+    m_isAuthenticated = false;
+    m_tcpConnection = NULL;
+    m_udpSocket = NULL;
 }
-
 /*-------------------------------------------------------------------------*/
 
-CDRNPeerLink::TIPAddress
+CDRNPeerLink::CIPAddress
 CDRNPeerLink::GetPeerIP( void ) const
 {GUCEF_TRACE;
 
-    return m_tcpConnection->GetRemoteIP();
+    if ( m_tcpConnection != NULL )
+    {
+        return m_tcpConnection->GetRemoteIP();
+    }
+    return CIPAddress();
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString&
+CORE::CString
 CDRNPeerLink::GetPeerHostName( void ) const
 {GUCEF_TRACE;
 
-    return m_tcpConnection->GetRemoteHostName();
+    if ( NULL != m_tcpConnection )
+    {
+        return m_tcpConnection->GetRemoteHostName();
+    }
+    return CORE::CString();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -125,7 +175,11 @@ UInt16
 CDRNPeerLink::GetPeerTCPPort( void ) const
 {GUCEF_TRACE;    
     
-    return m_tcpConnection->GetRemoteTCPPort();
+    if ( NULL != m_tcpConnection )
+    {
+        return m_tcpConnection->GetRemoteTCPPort();
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -134,7 +188,11 @@ UInt16
 CDRNPeerLink::GetPeerUDPPort( void ) const
 {GUCEF_TRACE;
 
-    return m_tcpConnection->GetRemoteTCPPort();    
+    if ( NULL != m_tcpConnection )
+    {
+        return m_tcpConnection->GetRemoteTCPPort();
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -175,43 +233,15 @@ CDRNPeerLink::GetTCPConnection( void )
 
 /*-------------------------------------------------------------------------*/
 
-void
-CDRNPeerLink::SetTCPConnection( COMCORE::CTCPConnection& tcpConnection )
+bool
+CDRNPeerLink::IsActive( void ) const
 {GUCEF_TRACE;
 
-    assert( &tcpConnection != NULL );
-    
-    if ( m_tcpConnection != NULL )
+    if ( NULL != m_tcpConnection )
     {
-        UnsubscribeFrom( m_tcpConnection );
+        return m_tcpConnection->IsActive();
     }
-    
-    m_tcpConnection = &tcpConnection;
-}
-
-/*-------------------------------------------------------------------------*/
-
-COMCORE::CUDPSocket*
-CDRNPeerLink::GetUDPSocket( void )
-{GUCEF_TRACE;
-
-    return m_udpSocket;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void
-CDRNPeerLink::SetUDPSocket( COMCORE::CUDPSocket& socket )
-{GUCEF_TRACE;
-
-    assert( &socket != NULL );
-    
-    if ( m_udpSocket != NULL )
-    {
-        UnsubscribeFrom( m_udpSocket );
-    }
-    
-    m_udpSocket = &socket;
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -228,7 +258,7 @@ CDRNPeerLink::SendData( const void* dataSource                   ,
         ( m_tcpConnection!= NULL  ) )
     {
         // Send the data using UDP
-        TIPAddress ip( m_tcpConnection->GetRemoteIP() );
+        CIPAddress ip( m_tcpConnection->GetRemoteIP() );
         return m_udpSocket->SendPacketTo( ip         ,
                                           dataSource ,
                                           dataSize   ) >= 0;
@@ -242,7 +272,57 @@ CDRNPeerLink::SendData( const void* dataSource                   ,
                                       dataSize   );
     }
     
+    
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnTCPConnectionEvent( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventid  ,
+                                    CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+        if ( GUCEF::COMCORE::CTCPConnection::ConnectedEvent == eventid )
+        {
+        }
+        else
+        if ( GUCEF::COMCORE::CTCPConnection::DisconnectedEvent == eventid )
+        {
+        }
+        else
+        if ( GUCEF::COMCORE::CTCPConnection::DataRecievedEvent == eventid )
+        {
+        
+        }
+        else
+        if ( GUCEF::COMCORE::CTCPConnection::DataSentEvent == eventid )
+        {
+        
+        }
+        else
+        if ( GUCEF::COMCORE::CTCPConnection::SocketErrorEvent == eventid )
+        {
+        }
+
+    /*        
+        // Send the initial greeting
+        char sendBuffer[ 14 ] = { DRN_PEERCOMM_GREETING, 'D', 'R', 'N', 'N', 'O', 'D', 'E', ' ', ' ', DRN_PROTOCOL_MAYOR_VERION, DRN_PROTOCOL_MINOR_VERION, DRN_PROTOCOL_PATCH_VERION, DRN_TRANSMISSION_SEPERATOR };        
+        if ( !connectionInfo.connection->Send( sendBuffer, 14 ) )
+        {
+            // Failed to send data, something is very wrong
+            connectionInfo.connection->Close();
+        }
+        return;
+    }
+    if ( eventid == COMCORE::CTCPServerSocket::ClientDataRecievedEvent )
+    {
+        // Any data we receive in this phase should be a greeting message
+        // nothing else is accepted. If we do get something else then the connection
+        // is considered broken and terminated.
+    }          */
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -253,6 +333,49 @@ CDRNPeerLink::OnNotify( CORE::CNotifier* notifier                 ,
                         CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
+    if ( notifier == m_tcpConnection )
+    {
+        OnTCPConnectionEvent( notifier  ,
+                              eventid   ,
+                              eventdata );
+    }
+    else
+    if ( notifier == m_udpSocket )
+    {
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNPeerLink::RequestPeerList( void )
+{GUCEF_TRACE;
+
+    // Send a peer-list-request to the given peer node
+    char sendBuffer[ 2 ] = { DRN_PEERCOMM_PEERLIST_REQUEST, DRN_TRANSMISSION_SEPERATOR };
+    return SendData( sendBuffer, 2, false );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CDRNPeerLink::RequestStreamList( void )
+{GUCEF_TRACE;
+
+    // Send a stream-list-request to the given peer node
+    char sendBuffer[ 2 ] = { DRN_PEERCOMM_STREAMLIST_REQUEST, DRN_TRANSMISSION_SEPERATOR };
+    return SendData( sendBuffer, 2, false );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CDRNPeerLink::RequestDataGroupList( void )
+{GUCEF_TRACE;
+
+    // Send a datagroup-list-request to the given peer node
+    char sendBuffer[ 2 ] = { DRN_PEERCOMM_DATAGROUPLIST_REQUEST, DRN_TRANSMISSION_SEPERATOR };
+    return SendData( sendBuffer, 2, false );
 }
 
 /*-------------------------------------------------------------------------//

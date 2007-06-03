@@ -142,7 +142,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
         
         virtual UInt16 GetRemoteTCPPort( void ) const;
         
-        virtual TIPAddress GetRemoteIP( void ) const;
+        virtual CIPAddress GetRemoteIP( void ) const;
 
         /**
          *	Constructor, init vars

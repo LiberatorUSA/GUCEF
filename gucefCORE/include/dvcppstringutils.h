@@ -98,6 +98,26 @@ Int32ToString( const Int32 value );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEFCORE_EXPORT_CPP UInt32
+StringToUInt32( const CString& str );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
+UInt32ToString( const UInt32 value );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP UInt16
+StringToUInt16( const CString& str );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
+UInt16ToString( const UInt16 value );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEFCORE_EXPORT_CPP CString
 PointerToString( const void* value );
 

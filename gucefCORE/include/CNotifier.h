@@ -83,7 +83,7 @@ class CNotifierImplementor;
  *  unnecessary overhead. If you want a threadsafe notifier then simply
  *  implement LockData() and UnlockData() yourself in your descending class.
  *
- *  Note that notification can cause that chain reaction resulting in the destruction
+ *  Note that notification can cause a chain reaction resulting in the destruction
  *  of the object that triggered the notification. If you wish to safely handle this scenario
  *  you will have to check the boolean return value of the member functions. 
  *  The return value is the 'alive' state of the notifier itself, If false then the 
@@ -162,8 +162,8 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      *  Sets a destruction flag that will cause the notifier object to be
      *  destroyed after notification is finished (if not busy the notifier
      *  is destroyed immediately).
-     *  Using this member function is the recommened method for deleting a
-     *  notifier while beeing notified from this notifier.
+     *  Using this member function is the recommenced method for deleting a
+     *  notifier while being notified from this notifier.
      */
     void ScheduleForDestruction( void );
 

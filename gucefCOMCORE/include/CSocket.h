@@ -31,6 +31,11 @@
 #define GUCEF_CORE_CNOTIFIER_H
 #endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
+#ifndef GUCEF_COMCORE_CIPADDRESS_H
+#include "CIPAddress.h"
+#define GUCEF_COMCORE_CIPADDRESS_H
+#endif /* GUCEF_COMCORE_CIPADDRESS_H ? */
+
 #ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"      /* macros and build config for the COMCORE library */
 #define GUCEF_COMCORE_MACROS_H
@@ -64,28 +69,7 @@ class CActiveComPump;
  */
 class GUCEF_COMCORE_EXPORT_CPP CSocket : public CORE::CNotifier
 {
-    public:
-    
-    struct SIPAddress
-    {
-            UInt16 port;            /**< port in network byte order */
-            UInt32 netaddr;         /**< address in network byte order */
-    };
-    typedef struct SIPAddress TIPAddress;        
-    
-    typedef enum ESocketError
-    {
-            SOCKERR_NO_ERROR = 0      ,
-            SOCKERR_INTERNAL_ERROR    ,
-            SOCKERR_INVALID_SOCKET    ,
-            SOCKERR_OUT_OF_MEMORY     ,
-            SOCKERR_UDP_SEND_FAILED   ,
-            SOCKERR_INVALID_ADDRESS   ,
-            SOCKERR_CANT_FIND_ADDRESS ,
-            SOCKERR_CANT_SEND_DATA    ,
-            SOCKERR_CANT_OPEN_SOCKET  
-            
-    } TSocketError;              
+    public:              
     
     UInt32 GetSocketID( void ) const;
     
@@ -104,7 +88,7 @@ class GUCEF_COMCORE_EXPORT_CPP CSocket : public CORE::CNotifier
      */
     static bool ConvertToIPAddress( const CORE::CString& destaddrstr ,
                                     const UInt16 destport            ,  
-                                    TIPAddress& resolvedDest         );
+                                    CIPAddress& resolvedDest         );
                                     
     /**
      *      Attempts to resolve the source information into a more human-friendly
@@ -114,7 +98,7 @@ class GUCEF_COMCORE_EXPORT_CPP CSocket : public CORE::CNotifier
      *      @param srcaddrstr output variable for the source IP/DNS
      *      @param srcport output variable for the source port                     
      */
-    static bool ConvertFromIPAddress( const TIPAddress& src     ,
+    static bool ConvertFromIPAddress( const CIPAddress& src     ,
                                       CORE::CString& srcaddrstr ,
                                       UInt16& srcport           );
         

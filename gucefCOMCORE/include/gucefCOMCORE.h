@@ -103,6 +103,21 @@
 #define GUCEF_COMCORE_CPING_H
 #endif /* GUCEF_COMCORE_CPING_H ? */
 
+#ifndef GUCEF_COMCORE_CUDPMASTERSOCKET_H
+#include "CUDPMasterSocket.h"
+#define GUCEF_COMCORE_CUDPMASTERSOCKET_H
+#endif /* GUCEF_COMCORE_CUDPMASTERSOCKET_H ? */
+
+#ifndef GUCEF_COMCORE_CUDPCHANNEL_H
+#include "CUDPChannel.h"
+#define GUCEF_COMCORE_CUDPCHANNEL_H
+#endif /* GUCEF_COMCORE_CUDPCHANNEL_H ? */
+
+#ifndef GUCEF_COMCORE_CIPADDRESS_H
+#include "CIPAddress.h"
+#define GUCEF_COMCORE_CIPADDRESS_H
+#endif /* GUCEF_COMCORE_CIPADDRESS_H ? */
+
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
 
@@ -114,6 +129,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 03-06-2007 :
+       - Added CUDPMasterSocket
+       - Added CUDPChannel
+       - Added CIPAddress
+       - Added CTCPServerConnection
+       - Removed CIUDPSocketEventHandler
 - 07-05-2005 :
        - Added CUDPSocket
        - Added CIUDPSocketEventHandler

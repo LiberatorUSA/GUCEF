@@ -27,17 +27,6 @@
 #include <map>
 #include "CObservingNotifier.h"
 
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CSTATEMACHINECOMPONENT_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4018 ) // signed/unsigned mismatch
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 ) // return type for operator -> is 'const *' (ie; not a UDT or reference to a UDT).
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -123,12 +112,6 @@ class GUCEFCORE_EXPORT_CPP CStateMachineComponent : public CObservingNotifier
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CSTATEMACHINECOMPONENT_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

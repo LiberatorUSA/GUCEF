@@ -36,6 +36,11 @@
 #define GUCEF_COMCORE_CSOCKET_H
 #endif /* GUCEF_COMCORE_CSOCKET_H ? */
 
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
+#include "CTCloneableObj.h"
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+
 #ifndef GUCEF_DRN_MACROS_H
 #include "gucefDRN_macros.h"
 #define GUCEF_DRN_MACROS_H
@@ -47,7 +52,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { namespace COMCORE { class CTCPConnection; class CUDPSocket; } }
+namespace GUCEF { namespace COMCORE { class CTCPConnection; class CUDPChannel; class CUDPMasterSocket; } }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -80,16 +85,28 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     static const CORE::CEvent ConnectedEvent;
     static const CORE::CEvent DisconnectedEvent;
     static const CORE::CEvent SocketErrorEvent;
+    static const CORE::CEvent PeerListReceivedFromPeerEvent;
+    static const CORE::CEvent StreamListReceivedFromPeerEvent;
+    static const CORE::CEvent DataGroupListReceivedFromPeerEvent;
+    
+    typedef std::vector< CORE::CString >        TStringList;
+    typedef CORE::CTCloneableObj< TStringList > PeerListReceivedFromPeerEventData;   
+    typedef CORE::CTCloneableObj< TStringList > StreamListReceivedFromPeerEventData;
+    typedef CORE::CTCloneableObj< TStringList > DataGroupListReceivedFromPeerEventData;
     
     static void RegisterEvents( void );
     
     public:
     
-    typedef COMCORE::CSocket::TIPAddress TIPAddress;
+    typedef COMCORE::CIPAddress CIPAddress;
     
-    TIPAddress GetPeerIP( void ) const;
+    virtual ~CDRNPeerLink();
     
-    const CORE::CString& GetPeerHostName( void ) const;
+    CIPAddress GetPeerIP( void ) const;
+    
+    CORE::CString GetPeerHostName( void ) const;
+    
+    void CloseLink( void );
     
     UInt16 GetPeerTCPPort( void ) const;
     
@@ -99,6 +116,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     
     bool IsAuthenticated( void ) const;
     
+    bool IsActive( void ) const;
+    
     CDRNNode& GetParentNode( void );
     
     CDRNPeerLinkData& GetLinkData( void );
@@ -107,6 +126,12 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
 
     bool RequestStreamSubscription( const CORE::CString& dataSreamName );
 
+    bool RequestPeerList( void );
+    
+    bool RequestStreamList( void );
+    
+    bool RequestDataGroupList( void );
+    
     protected:
     
     /**
@@ -121,17 +146,11 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     private:
     friend class CDRNNode;
     
-    CDRNPeerLink( void );
+    CDRNPeerLink( CDRNNode& parentNode                   ,
+                  COMCORE::CTCPConnection& tcpConnection ,
+                  COMCORE::CUDPMasterSocket& udpSocket   );
 
-    virtual ~CDRNPeerLink();
-
-    COMCORE::CTCPConnection* GetTCPConnection( void );
-    
-    void SetTCPConnection( COMCORE::CTCPConnection& tcpConnection );
-    
-    COMCORE::CUDPSocket* GetUDPSocket( void );
-    
-    void SetUDPSocket( COMCORE::CUDPSocket& socket );
+    COMCORE::CTCPConnection* GetTCPConnection( void );   
     
     bool SendData( const void* dataSource             ,
                    const UInt16 dataSize              ,
@@ -144,11 +163,16 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     CDRNPeerLink( const CDRNPeerLink& src );            /**< peer links are unique and cannot be copied */
     CDRNPeerLink& operator=( const CDRNPeerLink& src ); /**< peer links are unique and cannot be copied */
 
+    void OnTCPConnectionEvent( CORE::CNotifier* notifier    ,
+                               const CORE::CEvent& eventid  ,
+                               CORE::CICloneable* eventdata );
+
     private:
     
     CDRNNode* m_parentNode;
     CDRNPeerLinkData* m_linkData;
-    COMCORE::CUDPSocket* m_udpSocket;
+    COMCORE::CUDPChannel* m_udpChannel;
+    COMCORE::CUDPMasterSocket* m_udpSocket;
     COMCORE::CTCPConnection* m_tcpConnection;
     bool m_udpPossible;
     bool m_isAuthenticated;

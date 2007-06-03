@@ -60,7 +60,7 @@ class GUCEF_DRN_EXPORT_CPP CIDRNPeerValidator
 {
     public:
     
-    typedef COMCORE::CSocket::TIPAddress TIPAddress;
+    typedef COMCORE::CIPAddress CIPAddress;
     
     CIDRNPeerValidator( void );
     
@@ -70,7 +70,7 @@ class GUCEF_DRN_EXPORT_CPP CIDRNPeerValidator
     
     CIDRNPeerValidator& operator=( const CIDRNPeerValidator& src );
     
-    virtual bool IsPeerAddressValid( const TIPAddress& address     ,
+    virtual bool IsPeerAddressValid( const CIPAddress& address     ,
                                      const CORE::CString& hostName ) const = 0;
     
     virtual bool IsPeerLoginValid( const CORE::CString& accountName ,

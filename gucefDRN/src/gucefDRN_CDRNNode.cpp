@@ -55,9 +55,6 @@ namespace DRN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CDRNNode::PeerListReceivedFromPeerEvent = "GUCEF::CORE::CDRNNode::PeerListReceivedFromPeerEvent";
-const CORE::CEvent CDRNNode::StreamListReceivedFromPeerEvent = "GUCEF::CORE::CDRNNode::StreamListReceivedFromPeerEvent";
-const CORE::CEvent CDRNNode::DataGroupListReceivedFromPeerEvent = "GUCEF::CORE::CDRNNode::DataGroupListReceivedFromPeerEvent";
 const CORE::CEvent CDRNNode::LinkEstablishedEvent = "GUCEF::CORE::CDRNNode::LinkEstablishedEvent";
 
 /*-------------------------------------------------------------------------//
@@ -66,16 +63,26 @@ const CORE::CEvent CDRNNode::LinkEstablishedEvent = "GUCEF::CORE::CDRNNode::Link
 //                                                                         //
 //-------------------------------------------------------------------------*/
    
+void
+CDRNNode::RegisterEvents( void )
+{GUCEF_TRACE;
+    
+    LinkEstablishedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDRNNode::CDRNNode( void )
     : CObservingNotifier()               ,
       m_tcpServerSocket( false )         ,
       m_tcpClientSockets()               ,
-      m_tcpClientToServerSocket( false ) ,
       m_udpSocket( false )               ,
       m_peerValidator( NULL )            ,
       m_peerLinkCrypter( NULL )          ,
       m_serviceName()
 {GUCEF_TRACE;
+    
+    RegisterEvents();
 
     SubscribeTo( &m_tcpServerSocket );
     SubscribeTo( &m_udpSocket );
@@ -98,11 +105,53 @@ CDRNNode::~CDRNNode()
 
 /*-------------------------------------------------------------------------*/
 
-void
+UInt32
+CDRNNode::GetActiveLinkCount( void ) const
+{GUCEF_TRACE;
+
+    UInt32 activeCount = 0;
+    TPeerLinks::const_iterator i = m_peerLinks.begin();
+    while ( i != m_peerLinks.end() )
+    {
+        if ( (*i)->IsActive() )
+        {
+            ++activeCount;
+        }
+        ++i;
+    }
+    return activeCount;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNNode::HasActiveLinks( void ) const
+{GUCEF_TRACE;
+
+    TPeerLinks::const_iterator i = m_peerLinks.begin();
+    while ( i != m_peerLinks.end() )
+    {
+        if ( (*i)->IsActive() )
+        {
+            return true;
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CDRNNode::SetServiceName( const CORE::CString& serviceName )
 {GUCEF_TRACE;
 
-    m_serviceName = serviceName;
+    if ( !HasActiveLinks() )
+    {
+        m_serviceName = serviceName;
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -153,90 +202,43 @@ CDRNNode::GetPeervalidator( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CDRNNode::OnTCPServerSocketEvent( CORE::CNotifier* notifier    ,
-                                  const CORE::CEvent& eventid  ,
-                                  CORE::CICloneable* eventdata )
-{GUCEF_TRACE;
-
-    if ( eventid == COMCORE::CTCPServerSocket::ClientConnectedEvent )
-    {
-        const COMCORE::CTCPServerSocket::TConnectionInfo& connectionInfo = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata )->GetData();
-        
-        // Check if a peer validation mechanism has been provided to this node
-        if ( m_peerValidator != NULL )
-        {            
-            // Check if the peer is allowed to connect
-            if ( !m_peerValidator->IsPeerAddressValid( connectionInfo.address  ,
-                                                       connectionInfo.hostName ) )
-            {
-                // This peer is not allowed to connect,.. terminate the connection
-                char sendBuffer[ 2 ] = { DRN_PEERCOMM_NOT_ALLOWED, DRN_TRANSMISSION_SEPERATOR };
-                connectionInfo.connection->Send( sendBuffer, 2 );
-                connectionInfo.connection->Close();
-                return;
-            }
-        }
-        //else: assume the peer is allowed to connect
-        
-        // Send the initial greeting
-        char sendBuffer[ 14 ] = { DRN_PEERCOMM_GREETING, 'D', 'R', 'N', 'N', 'O', 'D', 'E', ' ', ' ', DRN_PROTOCOL_MAYOR_VERION, DRN_PROTOCOL_MINOR_VERION, DRN_PROTOCOL_PATCH_VERION, DRN_TRANSMISSION_SEPERATOR };        
-        if ( !connectionInfo.connection->Send( sendBuffer, 14 ) )
-        {
-            // Failed to send data, something is very wrong
-            connectionInfo.connection->Close();
-        }
-        return;
-    }
-    if ( eventid == COMCORE::CTCPServerSocket::ClientDataRecievedEvent )
-    {
-        // Any data we receive in this phase should be a greeting message
-        // nothing else is accepted. If we do get something else then the connection
-        // is considered broken and terminated.
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CDRNNode::OnTCPClientPeerSocketEvent( CORE::CNotifier* notifier    ,
-                                      const CORE::CEvent& eventid  ,
-                                      CORE::CICloneable* eventdata )
-{GUCEF_TRACE;
-
-    if ( eventid == COMCORE::CTCPClientSocket::ConnectedEvent )
-    {
-        
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
 CDRNNode::OnNotify( CORE::CNotifier* notifier                 ,
                     const CORE::CEvent& eventid               ,
                     CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
-    if ( notifier == &m_tcpClientToServerSocket )
-    {
-    
-    }
-    else
     if ( notifier == &m_tcpServerSocket )
     {
-        OnTCPServerSocketEvent( notifier  ,
-                                eventid   ,
-                                eventdata );
-    }
-    else
-    if ( notifier == &m_udpSocket )
-    {
-    }
-    else
-    {
-        OnTCPClientPeerSocketEvent( notifier  ,
-                                    eventid   ,
-                                    eventdata );
+        if ( eventid == COMCORE::CTCPServerSocket::ClientConnectedEvent )
+        {
+            const COMCORE::CTCPServerSocket::TConnectionInfo& connectionInfo = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata )->GetData();
+            
+            // Check if a peer validation mechanism has been provided to this node
+            if ( m_peerValidator != NULL )
+            {            
+                // Check if the peer is allowed to connect
+                if ( !m_peerValidator->IsPeerAddressValid( connectionInfo.address  ,
+                                                           connectionInfo.hostName ) )
+                {
+                    // This peer is not allowed to connect,.. terminate the connection
+                    char sendBuffer[ 2 ] = { DRN_PEERCOMM_NOT_ALLOWED, DRN_TRANSMISSION_SEPERATOR };
+                    connectionInfo.connection->Send( sendBuffer, 2 );
+                    connectionInfo.connection->Close();
+                    return;
+                }
+            }
+            //else: assume the peer is allowed to connect
+
+            // create a new link object        
+            CDRNPeerLinkPtr peerLink( new CDRNPeerLink( *this                      ,
+                                                        *connectionInfo.connection ,
+                                                        m_udpSocket                ) );
+            m_peerLinks.push_back( peerLink );
+            
+            // Notify that a new link has been established
+            LinkEstablishedEventData eData( peerLink );
+            NotifyObservers( LinkEstablishedEvent, &eData );
+        }
     }
 }
 
@@ -267,10 +269,10 @@ CDRNNode::Disconnect( void )
     m_tcpServerSocket.Close();
     m_udpSocket.Close();
 
-    TTCPClients::iterator i = m_tcpClientSockets.begin();
-    while ( i != m_tcpClientSockets.end() )
+    TPeerLinks::iterator i = m_peerLinks.begin();
+    while ( i != m_peerLinks.end() )
     {
-        (*i)->Close();        
+        (*i)->CloseLink();        
         ++i;
     }
 }
@@ -344,39 +346,6 @@ CDRNNode::ConnectToPeer( const CORE::CString& address ,
         tcpClient->Close();        
     }
     return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CDRNNode::RequestPeerList( CDRNPeerLink& peerLink )
-{GUCEF_TRACE;
-
-    // Send a peer-list-request to the given peer node
-    char sendBuffer[ 2 ] = { DRN_PEERCOMM_PEERLIST_REQUEST, DRN_TRANSMISSION_SEPERATOR };
-    return peerLink.SendData( sendBuffer, 2, false );
-}
-
-/*-------------------------------------------------------------------------*/
-    
-bool
-CDRNNode::RequestStreamList( CDRNPeerLink& peerLink )
-{GUCEF_TRACE;
-
-    // Send a stream-list-request to the given peer node
-    char sendBuffer[ 2 ] = { DRN_PEERCOMM_STREAMLIST_REQUEST, DRN_TRANSMISSION_SEPERATOR };
-    return peerLink.SendData( sendBuffer, 2, false );
-}
-
-/*-------------------------------------------------------------------------*/
-    
-bool
-CDRNNode::RequestDataGroupList( CDRNPeerLink& peerLink )
-{GUCEF_TRACE;
-
-    // Send a datagroup-list-request to the given peer node
-    char sendBuffer[ 2 ] = { DRN_PEERCOMM_DATAGROUPLIST_REQUEST, DRN_TRANSMISSION_SEPERATOR };
-    return peerLink.SendData( sendBuffer, 2, false );
 }
 
 /*-------------------------------------------------------------------------//

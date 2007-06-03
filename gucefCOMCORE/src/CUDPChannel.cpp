@@ -23,56 +23,14 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef CCOM_H
-#include "CCom.h"      /* header for the main communication manager */
-#define CCOM_H
-#endif /* CCOM_H ? */
-
-#ifndef CTCPCLIENTSOCKET_H
-#include "CTCPClientSocket.h"
-#define CTCPCLIENTSOCKET_H
-#endif /* CTCPCLIENTSOCKET_H ? */
-
-#ifndef GUCEF_COMCORE_CUDPSOCKET_H
-#include "CUDPSocket.h"
-#define GUCEF_COMCORE_CUDPSOCKET_H
-#endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
-
-#ifndef GUCEF_COMCORE_CTCPSERVERSOCKET_H
-#include "CTCPServerSocket.h"
-#define GUCEF_COMCORE_CTCPSERVERSOCKET_H
-#endif /* GUCEF_COMCORE_CTCPSERVERSOCKET_H ? */
-
-#ifndef GUCEF_COMCORE_CPING_H
-#include "CPing.h"
-#define GUCEF_COMCORE_CPING_H
-#endif /* GUCEF_COMCORE_CPING_H ? */
+#include <assert.h>
 
 #ifndef GUCEF_COMCORE_CUDPMASTERSOCKET_H
 #include "CUDPMasterSocket.h"
 #define GUCEF_COMCORE_CUDPMASTERSOCKET_H
 #endif /* GUCEF_COMCORE_CUDPMASTERSOCKET_H ? */
 
-#ifndef GUCEF_COMCORE_CUDPCHANNEL_H
 #include "CUDPChannel.h"
-#define GUCEF_COMCORE_CUDPCHANNEL_H
-#endif /* GUCEF_COMCORE_CUDPCHANNEL_H ? */
-
-#include "CGUCEFCOMCOREModule.h"  /* definition of the class implemented here */
-
-#ifdef GUCEF_MSWIN_BUILD
-  #ifndef DVWINSOCK_H
-  #include "dvwinsock.h"
-  #define DVWINSOCK_H
-  #endif /* DVWINSOCK_H */
-#endif
-
-#ifdef ACTIVATE_MEMORY_MANAGER
-  #ifndef GUCEF_NEW_ON_H
-  #include "gucef_new_on.h"   /* Use the GUCEF memory manager instead of the standard manager ? */
-  #define GUCEF_NEW_ON_H
-  #endif /* GUCEF_NEW_ON_H ? */
-#endif /* ACTIVATE_MEMORY_MANAGER ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -85,43 +43,84 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
-CGUCEFCOMCOREModule::Load( void )
-{
-        #ifdef GUCEF_MSWIN_BUILD
-        InitWinsock( 1 );
-        #endif
-        
-        /* simply instantiate our com manager when the module is loaded */
-        //CCom::Instance();
-        
-        CTCPConnection::RegisterEvents();
-        CTCPServerSocket::RegisterEvents();
-        CTCPClientSocket::RegisterEvents();
-        CUDPSocket::RegisterEvents();
-        CPing::RegisterEvents();
-        CUDPMasterSocket::RegisterEvents();
-        CUDPChannel::RegisterEvents();
-        
-        return true;
+const CORE::CEvent CUDPChannel::UDPPacketReceivedEvent = "GUCEF::COMCORE::CUDPChannel::UDPPacketReceivedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+void
+CUDPChannel::RegisterEvents( void )
+{GUCEF_TRACE;
+    
+    UDPPacketReceivedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
-        
-bool 
-CGUCEFCOMCOREModule::Unload( void )
-{
-        CCom::Deinstance();
-        
-        #ifdef GUCEF_MSWIN_BUILD
-        ShutdownWinsock();
-        #endif
-                
-        return true;
+
+CUDPChannel::CUDPChannel( CUDPMasterSocket& parentSocket ,
+                          const CIPAddress& remoteAddr   )
+    : m_remotePeer( remoteAddr )      ,
+      m_parentSocket( &parentSocket )
+{GUCEF_TRACE;
+
+    assert( m_parentSocket != NULL );
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CUDPChannel::~CUDPChannel()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CIPAddress&
+CUDPChannel::GetRemoteAddress( void ) const
+{GUCEF_TRACE;
+
+    return m_remotePeer;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUDPMasterSocket&
+CUDPChannel::GetParentSocket( void ) const
+{GUCEF_TRACE;
+
+    return *m_parentSocket;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CUDPChannel::SendPacket( const void* data , 
+                         UInt16 datasize  )
+{GUCEF_TRACE;
+
+    // Delegate to the socket while adding our peer address
+    return m_parentSocket->SendPacketTo( m_remotePeer ,
+                                         data         ,
+                                         datasize     );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CUDPChannel::DoNotifyObservers( const CORE::CEvent& eventid               ,
+                                CORE::CICloneable* eventData /* = NULL */ )
+{GUCEF_TRACE;
+    
+    return NotifyObservers( eventid   ,
+                            eventData );
 }
 
 /*-------------------------------------------------------------------------//
