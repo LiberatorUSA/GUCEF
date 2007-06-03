@@ -84,8 +84,7 @@ class GUCEFCOM_EXPORT_CPP CPHUDPSocket : public CORE::CObservingNotifier
     /*
      *      Typedef some shortcut types
      */
-    typedef COMCORE::CUDPSocket::TIPAddress TIPAddress;         
-    typedef COMCORE::CUDPSocket::TIPAddress TIPAddress;
+    typedef COMCORE::CIPAddress CIPAddress;
         
     static const CORE::CEvent PHUDPSocketErrorEvent;
     static const CORE::CEvent PHUDPSocketClosedEvent;
@@ -94,7 +93,7 @@ class GUCEFCOM_EXPORT_CPP CPHUDPSocket : public CORE::CObservingNotifier
     
     struct SPHUDPPacketRecievedEventData
     {
-        COMCORE::CSocket::TIPAddress sourceAddress; /**< the source address of the data */
+        COMCORE::CIPAddress sourceAddress;          /**< the source address of the data */
         CORE::TLinkedCloneableBuffer dataBuffer;    /**< the received packet data's payload */
         UInt32 packetType;                          /**< type of the packet */
         UInt32 packetNumber;                        /**< ordering number of this packet for it's type */
@@ -197,7 +196,7 @@ class GUCEFCOM_EXPORT_CPP CPHUDPSocket : public CORE::CObservingNotifier
      *      @param deliveralways Whether the receiver should drop the packet if it already received a newer packet. false == drop.         
      *      @return the actual number of bytes that where sent. -1 indicates an error.
      */
-    Int32 SendPacketTo( const TIPAddress& dest ,
+    Int32 SendPacketTo( const CIPAddress& dest ,
                         const void* data       , 
                         UInt16 datasize        ,
                         UInt16 packettype      ,
@@ -220,7 +219,7 @@ class GUCEFCOM_EXPORT_CPP CPHUDPSocket : public CORE::CObservingNotifier
                     
     private:
 
-    void OnPacketRecieved( const TIPAddress& sourceAddress                ,
+    void OnPacketRecieved( const CIPAddress& sourceAddress                ,
                            const CORE::TLinkedCloneableBuffer& dataBuffer );
 
     void BufferPacketSendInfo( const void* data         ,

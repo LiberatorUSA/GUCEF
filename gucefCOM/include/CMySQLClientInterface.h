@@ -51,11 +51,10 @@ COM_NAMESPACE_BEGIN
  */
 class GUCEFCOM_EXPORT_CPP CMySQLClientInterface
 {
-        public:
-        typedef COMCORE::CSocket::TSocketError TSocketError;
-
         protected:
         friend class CMySQLClient;
+        
+        typedef int TSocketError; /**< temp hack */
         
         /**
          *      A submitted query has been proccessed and the resulting query

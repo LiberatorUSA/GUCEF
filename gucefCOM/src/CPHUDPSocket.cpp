@@ -129,7 +129,7 @@ CPHUDPSocket::BufferPacketSendInfo( const void* data         ,
 /*-------------------------------------------------------------------------*/                         
 
 Int32
-CPHUDPSocket::SendPacketTo( const TIPAddress& dest ,
+CPHUDPSocket::SendPacketTo( const CIPAddress& dest ,
                             const void* data       , 
                             UInt16 datasize        ,
                             UInt16 packettype      ,
@@ -211,7 +211,7 @@ CPHUDPSocket::OnNotify( CORE::CNotifier* notifier                 ,
 /*-------------------------------------------------------------------------*/
 
 void
-CPHUDPSocket::OnPacketRecieved( const TIPAddress& sourceAddress                ,
+CPHUDPSocket::OnPacketRecieved( const CIPAddress& sourceAddress                ,
                                 const CORE::TLinkedCloneableBuffer& dataBuffer )
 {TRACE;
         /*
