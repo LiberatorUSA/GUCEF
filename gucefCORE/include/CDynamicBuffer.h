@@ -36,6 +36,11 @@
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 #ifndef GUCEF_CORE_EXCEPTIONMACROS_H
 #include "ExceptionMacros.h"    /* macros for dealing with scope typed exceptions */
 #define GUCEF_CORE_EXCEPTIONMACROS_H
@@ -257,9 +262,9 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
          *  Provides mutable access to the buffer as a block of memory
          *  Note that if the buffer is linked this operation will result in the creation of a private copy
          */
-        void* GetBufferPtr( void );
+        void* GetBufferPtr( const UInt32 offset = 0 );
         
-        const void* GetConstBufferPtr( void ) const;
+        const void* GetConstBufferPtr( const UInt32 offset = 0 ) const;
         
         void Clear( const bool logicalClearOnly = true );
         
@@ -320,7 +325,7 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
 template< typename T >
 CDynamicBuffer&
 CDynamicBuffer::operator=( const T& rawData )
-{TRACE;
+{GUCEF_TRACE;
 
     CopyFrom( sizeof( T ), &rawData );
 }
@@ -330,11 +335,11 @@ CDynamicBuffer::operator=( const T& rawData )
 template< typename T >
 T&
 CDynamicBuffer::AsType( const UInt32 byteOffset /* = 0 */ )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( byteOffset + sizeof( T ) <= GetDataSize() )
     {
-        return *static_cast< T* >( GetBufferPtr() + byteOffset );
+        return *reinterpret_cast< T* >( static_cast< const char* >( GetBufferPtr() ) + byteOffset );
     }
     
     GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsType(): Cannot cast to the given type" );
@@ -345,11 +350,11 @@ CDynamicBuffer::AsType( const UInt32 byteOffset /* = 0 */ )
 template< typename T >
 const T&
 CDynamicBuffer::AsConstType( const UInt32 byteOffset /* = 0 */ ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( byteOffset + sizeof( T ) <= GetDataSize() )
     {
-        return *static_cast< const T* >( GetConstBufferPtr() + byteOffset );
+        return *reinterpret_cast< const T* >( static_cast< const char* >( GetConstBufferPtr() ) + byteOffset );
     }
     
     GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstType(): Cannot cast to the given type" );

@@ -26,11 +26,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define DRN_PROTOCOL_MAYOR_VERION               1
-#define DRN_PROTOCOL_MINOR_VERION               0
+#define DRN_PROTOCOL_MAYOR_VERION               0
+#define DRN_PROTOCOL_MINOR_VERION               1
 #define DRN_PROTOCOL_PATCH_VERION               0
 
-#define DRN_TRANSMISSION_SEPERATOR              7
+#define DRN_TRANSMISSION_START                  7
+#define DRN_TRANSMISSION_END                    8
 
 /* The controller system is on the drawing board
 #define DRN_CONTROLLERCOMM_GREETING                         9
@@ -50,21 +51,23 @@
 */
 
 #define DRN_PEERCOMM_GREETING                       100
-#define DRN_PEERCOMM_AUTHENTICATE                   101
-#define DRN_PEERCOMM_AUTHENTICATION_FAILED          102
-#define DRN_PEERCOMM_AUTHENTICATION_SUCCESS         103
-#define DRN_PEERCOMM_EVENT                          104
-#define DRN_PEERCOMM_DATAGROUP_ITEM_UPDATE          105
-#define DRN_PEERCOMM_STREAM_DATA                    106
-#define DRN_PEERCOMM_NOT_ALLOWED                    107
-#define DRN_PEERCOMM_PEERLIST_REQUEST               108
-#define DRN_PEERCOMM_PEERLIST                       109
-#define DRN_PEERCOMM_STREAMLIST_REQUEST             110
-#define DRN_PEERCOMM_STREAMLIST                     111
-#define DRN_PEERCOMM_DATAGROUPLIST_REQUEST          112
-#define DRN_PEERCOMM_DATAGROUPLIST                  113
-#define DRN_PEERCOMM_SUBSCRIBE_TO_DATAGROUP_REQUEST 114
-#define DRN_PEERCOMM_SUBSCRIBE_TO_STREAM_REQUEST    115
+#define DRN_PEERCOMM_SERVICE                        101
+#define DRN_PEERCOMM_INCOMPATIBLE_LINK              102
+#define DRN_PEERCOMM_AUTHENTICATION_REQUIRED        103
+#define DRN_PEERCOMM_AUTHENTICATION_FAILED          104
+#define DRN_PEERCOMM_AUTHENTICATION_SUCCESS         105
+#define DRN_PEERCOMM_LINK_OPERATIONAL               106
+#define DRN_PEERCOMM_DATAGROUP_ITEM_UPDATE          107
+#define DRN_PEERCOMM_STREAM_DATA                    108
+#define DRN_PEERCOMM_NOT_ALLOWED                    109
+#define DRN_PEERCOMM_PEERLIST_REQUEST               110
+#define DRN_PEERCOMM_PEERLIST                       111
+#define DRN_PEERCOMM_STREAMLIST_REQUEST             112
+#define DRN_PEERCOMM_STREAMLIST                     113
+#define DRN_PEERCOMM_DATAGROUPLIST_REQUEST          114
+#define DRN_PEERCOMM_DATAGROUPLIST                  115
+#define DRN_PEERCOMM_SUBSCRIBE_TO_DATAGROUP_REQUEST 116
+#define DRN_PEERCOMM_SUBSCRIBE_TO_STREAM_REQUEST    117
 
 /*-------------------------------------------------------------------------*/
 

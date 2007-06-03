@@ -55,7 +55,7 @@ namespace DRN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CDRNNode::LinkEstablishedEvent = "GUCEF::CORE::CDRNNode::LinkEstablishedEvent";
+const CORE::CEvent CDRNNode::LinkEstablishedEvent = "GUCEF::DRN::CDRNNode::LinkEstablishedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -207,9 +207,10 @@ CDRNNode::OnNotify( CORE::CNotifier* notifier                 ,
                     CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
+    // Check if the message originated from our own TCP server
     if ( notifier == &m_tcpServerSocket )
     {
-        if ( eventid == COMCORE::CTCPServerSocket::ClientConnectedEvent )
+        if ( COMCORE::CTCPServerSocket::ClientConnectedEvent == eventid )
         {
             const COMCORE::CTCPServerSocket::TConnectionInfo& connectionInfo = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata )->GetData();
             
@@ -221,25 +222,41 @@ CDRNNode::OnNotify( CORE::CNotifier* notifier                 ,
                                                            connectionInfo.hostName ) )
                 {
                     // This peer is not allowed to connect,.. terminate the connection
-                    char sendBuffer[ 2 ] = { DRN_PEERCOMM_NOT_ALLOWED, DRN_TRANSMISSION_SEPERATOR };
-                    connectionInfo.connection->Send( sendBuffer, 2 );
+                  /*  char sendBuffer[ 2 ] = { DRN_PEERCOMM_NOT_ALLOWED, DRN_TRANSMISSION_SEPERATOR };
+                    connectionInfo.connection->Send( sendBuffer, 2 );  */
                     connectionInfo.connection->Close();
                     return;
                 }
             }
             //else: assume the peer is allowed to connect
 
-            // create a new link object        
-            CDRNPeerLinkPtr peerLink( new CDRNPeerLink( *this                      ,
-                                                        *connectionInfo.connection ,
-                                                        m_udpSocket                ) );
-            m_peerLinks.push_back( peerLink );
-            
-            // Notify that a new link has been established
-            LinkEstablishedEventData eData( peerLink );
-            NotifyObservers( LinkEstablishedEvent, &eData );
+            CreateLink( *connectionInfo.connection );
         }
     }
+    else
+    if ( COMCORE::CTCPClientSocket::ConnectedEvent == eventid  )
+    {
+        COMCORE::CTCPClientSocket* clientSocket = static_cast< COMCORE::CTCPClientSocket* >( notifier );
+        UnsubscribeFrom( clientSocket );
+        CreateLink( *clientSocket );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNNode::CreateLink( COMCORE::CTCPConnection& tcpConnection )
+{GUCEF_TRACE;
+
+    // create a new link object        
+    CDRNPeerLinkPtr peerLink( new CDRNPeerLink( *this         ,
+                                                tcpConnection ,
+                                                m_udpSocket   ) );
+    m_peerLinks.push_back( peerLink );
+    
+    // Notify that a new link has been established
+    LinkEstablishedEventData eData( peerLink );
+    NotifyObservers( LinkEstablishedEvent, &eData );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -325,27 +342,28 @@ CDRNNode::ConnectToPeer( const CORE::CString& address ,
                          const UInt16 port            )
 {GUCEF_TRACE;
 
+    // Check if a peer validation mechanism has been provided to this node
+    if ( m_peerValidator != NULL )
+    {            
+        // Check if the peer connection is allowed
+        COMCORE::CIPAddress ip( address, port );
+        if ( !m_peerValidator->IsPeerAddressValid( ip      ,
+                                                   address ) )
+        {   
+            return false;
+        }
+    }
+         
+    // Obtain a TCP client socket
     COMCORE::CTCPClientSocket* tcpClient = NULL;
     UInt32 socketIndex = 0;
-    
-    // Obtain a TCP client socket
     GetAvailableTCPClient( &tcpClient  ,
                            socketIndex );
             
-    if ( tcpClient->ConnectTo( address , 
-                               port    ) )
-    {
-        // Send the initial greeting
-        char sendBuffer[ 14 ] = { DRN_PEERCOMM_GREETING, 'D', 'R', 'N', 'N', 'O', 'D', 'E', ' ', ' ', DRN_PROTOCOL_MAYOR_VERION, DRN_PROTOCOL_MINOR_VERION, DRN_PROTOCOL_PATCH_VERION, DRN_TRANSMISSION_SEPERATOR };        
-        if ( tcpClient->Send( sendBuffer, 14 ) )
-        {
-            return true;
-        }
-        
-        // Failed to send data, something is very wrong
-        tcpClient->Close();        
-    }
-    return false;
+    // Attempt the connection
+    SubscribeTo( tcpClient );
+    return tcpClient->ConnectTo( address , 
+                                 port    );
 }
 
 /*-------------------------------------------------------------------------//

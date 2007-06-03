@@ -53,6 +53,16 @@
 #define GUCEF_COMCORE_CUDPMASTERSOCKET_H
 #endif /* GUCEF_COMCORE_CUDPMASTERSOCKET_H ? */
 
+#ifndef GUCEF_DRN_CDRNNODE_H
+#include "gucefDRN_CDRNNode.h"
+#define GUCEF_DRN_CDRNNODE_H
+#endif /* GUCEF_DRN_CDRNNODE_H ? */
+
+#ifndef GUCEF_DRN_CIDRNPEERVALIDATOR_H
+#include "gucefDRN_CIDRNPeerValidator.h"
+#define GUCEF_DRN_CIDRNPEERVALIDATOR_H
+#endif /* GUCEF_DRN_CIDRNPEERVALIDATOR_H ? */
+
 #include "gucefDRN_CDRNPeerLink.h"
 
 /*-------------------------------------------------------------------------//
@@ -73,9 +83,12 @@ namespace DRN {
 const CORE::CEvent CDRNPeerLink::ConnectedEvent = "GUCEF::DRN::CDRNPeerLink::ConnectedEvent";
 const CORE::CEvent CDRNPeerLink::DisconnectedEvent = "GUCEF::DRN::CDRNPeerLink::DisconnectedEvent";
 const CORE::CEvent CDRNPeerLink::SocketErrorEvent = "GUCEF::DRN::CDRNPeerLink::SocketErrorEvent";
-const CORE::CEvent CDRNPeerLink::PeerListReceivedFromPeerEvent = "GUCEF::CORE::CDRNPeerLink::PeerListReceivedFromPeerEvent";
-const CORE::CEvent CDRNPeerLink::StreamListReceivedFromPeerEvent = "GUCEF::CORE::CDRNPeerLink::StreamListReceivedFromPeerEvent";
-const CORE::CEvent CDRNPeerLink::DataGroupListReceivedFromPeerEvent = "GUCEF::CORE::CDRNPeerLink::DataGroupListReceivedFromPeerEvent";
+const CORE::CEvent CDRNPeerLink::LinkCorruptionEvent = "GUCEF::DRN::CDRNPeerLink::LinkCorruptionEvent"; 
+const CORE::CEvent CDRNPeerLink::LinkProtocolMismatchEvent = "GUCEF::DRN::CDRNPeerLink::LinkProtocolMismatchEvent"; 
+const CORE::CEvent CDRNPeerLink::LinkIncompatibleEvent = "GUCEF::DRN::CDRNPeerLink::LinkIncompatibleEvent"; 
+const CORE::CEvent CDRNPeerLink::PeerListReceivedFromPeerEvent = "GUCEF::DRN::CDRNPeerLink::PeerListReceivedFromPeerEvent";
+const CORE::CEvent CDRNPeerLink::StreamListReceivedFromPeerEvent = "GUCEF::DRN::CDRNPeerLink::StreamListReceivedFromPeerEvent";
+const CORE::CEvent CDRNPeerLink::DataGroupListReceivedFromPeerEvent = "GUCEF::DRN::CDRNPeerLink::DataGroupListReceivedFromPeerEvent";
     
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -90,6 +103,9 @@ CDRNPeerLink::RegisterEvents( void )
     ConnectedEvent.Initialize();
     DisconnectedEvent.Initialize();
     SocketErrorEvent.Initialize();
+    LinkCorruptionEvent.Initialize();
+    LinkProtocolMismatchEvent.Initialize();
+    LinkIncompatibleEvent.Initialize();
     PeerListReceivedFromPeerEvent.Initialize();
     StreamListReceivedFromPeerEvent.Initialize();
     DataGroupListReceivedFromPeerEvent.Initialize();
@@ -105,7 +121,10 @@ CDRNPeerLink::CDRNPeerLink( CDRNNode& parentNode                   ,
       m_udpPossible( false )            ,
       m_isAuthenticated( false )        ,
       m_linkData( NULL )                ,
-      m_parentNode( &parentNode )
+      m_parentNode( &parentNode )       ,
+      m_tcpStreamBuffer()               ,
+      m_tcpStreamKeepBytes( 0 )         ,
+      m_linkOperational( false )
 {GUCEF_TRACE;
 
     assert( m_udpSocket != NULL );
@@ -113,15 +132,14 @@ CDRNPeerLink::CDRNPeerLink( CDRNNode& parentNode                   ,
     assert( m_tcpConnection != NULL );    
     RegisterEvents();
     
-    m_linkData = new CDRNPeerLinkData( *this );
-    
-    // Send the initial greeting
-    char sendBuffer[ 14 ] = { DRN_PEERCOMM_GREETING, 'D', 'R', 'N', 'N', 'O', 'D', 'E', ' ', ' ', DRN_PROTOCOL_MAYOR_VERION, DRN_PROTOCOL_MINOR_VERION, DRN_PROTOCOL_PATCH_VERION, DRN_TRANSMISSION_SEPERATOR };        
-    if ( !SendData( sendBuffer, 14, false ) )
+    // Verify that we are connected
+    if ( tcpConnection.IsActive() )
     {
-        // Failed to send data, something is very wrong
-        CloseLink();
-    }    
+        m_linkData = new CDRNPeerLinkData( *this );        
+        SubscribeTo( &tcpConnection );        
+        NotifyObservers( ConnectedEvent );        
+        SendGreetingMessage();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -134,10 +152,29 @@ CDRNPeerLink::~CDRNPeerLink()
 /*-------------------------------------------------------------------------*/
 
 void
+CDRNPeerLink::SendGreetingMessage( void )
+{GUCEF_TRACE;
+
+    // Compose the greeting message
+    char sendBuffer[ 8 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_GREETING, DRN_PROTOCOL_MAYOR_VERION, DRN_PROTOCOL_MINOR_VERION, DRN_PROTOCOL_PATCH_VERION, DRN_TRANSMISSION_END };
+    UInt16 payloadSize = 4;
+    memcpy( sendBuffer+1, &payloadSize, 2 );
+    
+    if ( !SendData( sendBuffer, 8, false ) )
+    {
+        // Failed to send data, something is very wrong
+        CloseLink();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CDRNPeerLink::CloseLink( void )
 {GUCEF_TRACE;
 
     m_tcpConnection->Close();
+    UnsubscribeFrom( m_tcpConnection );
     m_udpPossible = false;
     m_isAuthenticated = false;
     m_tcpConnection = NULL;
@@ -271,9 +308,436 @@ CDRNPeerLink::SendData( const void* dataSource                   ,
         return m_tcpConnection->Send( dataSource ,
                                       dataSize   );
     }
-    
-    
+
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::SendServiceTypeMessage( void )
+{GUCEF_TRACE;
+
+    // Obtain the service name from our parent node
+    const CORE::CString& serviceName = m_parentNode->GetServiceName();
+    
+    // Compose the service type message
+    CORE::CDynamicBuffer sendBuffer( serviceName.Length() + 5 );
+    sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
+    sendBuffer[ 3 ] = DRN_PEERCOMM_SERVICE;
+    sendBuffer[ serviceName.Length() + 3 ] = DRN_TRANSMISSION_END;
+    
+    UInt16 payloadSize = (UInt16)serviceName.Length()+1;
+    sendBuffer.CopyFrom( 2, 2, &payloadSize );
+    sendBuffer.CopyFrom( 4, serviceName.Length(), serviceName.C_String() );    
+    
+    // Send the service name message
+    if ( !SendData( sendBuffer.GetConstBufferPtr()   , 
+                    (UInt16)sendBuffer.GetDataSize() , 
+                    false                            ) )
+    {
+        // Failed to send data, something is very wrong
+        CloseLink();
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerLinkIncompatible( void )
+{GUCEF_TRACE;
+
+    NotifyObservers( LinkIncompatibleEvent );
+    CloseLink();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::SendIncompatibleLinkMessage( void )
+{GUCEF_TRACE;
+    
+    // Compose the greeting message
+    char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_INCOMPATIBLE_LINK, DRN_TRANSMISSION_END };
+    UInt16 payloadSize = 1;
+    memcpy( sendBuffer+1, &payloadSize, 2 );
+    
+    if ( !SendData( sendBuffer, 5, false ) )
+    {
+        // Failed to send data, something is very wrong
+        CloseLink();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::SendLinkOperationalMessage( void )
+{GUCEF_TRACE;
+
+    // Compose the link operational message
+    char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_LINK_OPERATIONAL, DRN_TRANSMISSION_END };
+    UInt16 payloadSize = 1;
+    memcpy( sendBuffer+1, &payloadSize, 2 );
+    
+    if ( !SendData( sendBuffer, 5, false ) )
+    {
+        // Failed to send data, something is very wrong
+        CloseLink();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::SendAuthenticationRequiredMessage( void )
+{GUCEF_TRACE;
+
+    // Compose the link operational message
+    char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_AUTHENTICATION_REQUIRED, DRN_TRANSMISSION_END };
+    UInt16 payloadSize = 1;
+    memcpy( sendBuffer+1, &payloadSize, 2 );
+    
+    if ( !SendData( sendBuffer, 5, false ) )
+    {
+        // Failed to send data, something is very wrong
+        CloseLink();
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerServicesCompatible( void )
+{GUCEF_TRACE;
+
+    // Check if a validator mechanism has been provided to the node
+    CIDRNPeerValidator* validator = m_parentNode->GetPeervalidator();
+    if ( validator != NULL )
+    {
+        // A validator is available for use
+        if ( validator->IsPeerLoginRequired() )
+        {
+            // Peer authentication is mandatory
+            SendAuthenticationRequiredMessage();
+            return;
+        }
+    }
+    
+    // Peer authentication is optional, we can proceed without it
+    SendLinkOperationalMessage();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerServiceType( const char* data      ,
+                                 const UInt32 dataSize )
+{GUCEF_TRACE;
+
+    // Check if the payload contains a service name
+    if ( dataSize > 1 )
+    {
+        // Build the remote service string
+        UInt32 serviceStringSize = dataSize - 1;
+        CORE::CString remoteService( data+1, serviceStringSize );
+        
+        // Compare the service names
+        if ( remoteService == m_parentNode->GetServiceName() )
+        {
+            // The service names match, the link is compatible
+            OnPeerServicesCompatible();
+            return;
+        }
+        else
+        {
+            // Incompatible: the local service does not match the remote service name.
+            // The names have to match for the link to be considered compatible
+            NotifyObservers( LinkIncompatibleEvent );
+            SendIncompatibleLinkMessage();
+            CloseLink();
+            return;
+        }
+    }
+    else
+    if ( m_parentNode->GetServiceName().Length() > 0 )
+    {
+        // Incompatible: the local service is not unnamed
+        // Both have to be unnamed to be considered as compatible
+        NotifyObservers( LinkIncompatibleEvent );
+        SendIncompatibleLinkMessage();
+        CloseLink();
+        return;        
+    }
+    
+    //Both services are without a name: always considered compatible
+    OnPeerServicesCompatible();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerGreeting( const char* data      ,
+                              const UInt32 dataSize )
+{GUCEF_TRACE;
+
+    // First we perform a sanity check on the data size since the
+    // greeting has a fixed transmission length
+    if ( dataSize == 4 )
+    {
+        // data size checks out,.. we now handle the payload
+        char drnProtocolMayorVersion = data[ 1 ];
+        char drnProtocolMinorVersion = data[ 2 ];
+        char drnProtocolPatchVersion = data[ 3 ];
+        
+        if ( ( drnProtocolMayorVersion == DRN_PROTOCOL_MAYOR_VERION ) &&
+             ( drnProtocolMinorVersion == DRN_PROTOCOL_MINOR_VERION ) &&
+             ( drnProtocolPatchVersion == DRN_PROTOCOL_PATCH_VERION )  )
+        {
+            // We now know we have a peer that is using a compatible 
+            // DRN protocol version.
+            SendServiceTypeMessage();
+            return;
+        }
+        else
+        {
+            // The peer is using a different version of the DRN protocol.
+            NotifyObservers( LinkProtocolMismatchEvent );
+            NotifyObservers( LinkIncompatibleEvent );
+            
+            // Notify the peer that we consider the link to be incompatible
+            SendIncompatibleLinkMessage();
+            
+            // Terminate the link
+            CloseLink();
+            return;            
+        }
+    }
+    else
+    {
+        // We should not get here
+        NotifyObservers( LinkCorruptionEvent );
+        
+        // Terminate the link
+        CloseLink();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerDataReceived( const char* data      ,
+                                  const UInt32 dataSize )
+{GUCEF_TRACE;
+
+    switch ( data[ 0 ] )
+    {
+        case DRN_PEERCOMM_GREETING :
+        {
+            OnPeerGreeting( data, dataSize );
+            return;
+        }
+        case DRN_PEERCOMM_SERVICE :
+        {
+            OnPeerServiceType( data, dataSize );
+            return;
+        }
+        case DRN_PEERCOMM_INCOMPATIBLE_LINK :
+        {
+            OnPeerLinkIncompatible();
+            return;
+        }
+        case DRN_PEERCOMM_AUTHENTICATION_REQUIRED :
+        {
+            return;
+        }
+        case DRN_PEERCOMM_AUTHENTICATION_FAILED :
+        {
+            return;
+        }
+        case DRN_PEERCOMM_AUTHENTICATION_SUCCESS :
+        {
+            return;
+        }
+        case DRN_PEERCOMM_LINK_OPERATIONAL :
+        {
+            return;
+        }
+        case DRN_PEERCOMM_DATAGROUP_ITEM_UPDATE :
+        {
+            return;
+        }
+        case DRN_PEERCOMM_STREAM_DATA :
+        {
+            return;
+        }
+        case DRN_PEERCOMM_NOT_ALLOWED :
+        {
+            return;
+        }
+        case DRN_PEERCOMM_PEERLIST_REQUEST :
+        {
+            return;
+        }
+        case DRN_PEERCOMM_PEERLIST :
+        {
+            return;
+        }
+        case DRN_PEERCOMM_STREAMLIST_REQUEST :
+        {
+            return;
+        }
+        case DRN_PEERCOMM_STREAMLIST :        
+        {
+            return;
+        }
+        case DRN_PEERCOMM_DATAGROUPLIST_REQUEST :
+        {
+            return;
+        }
+        case DRN_PEERCOMM_DATAGROUPLIST :
+        {
+            return;
+        }
+        case DRN_PEERCOMM_SUBSCRIBE_TO_DATAGROUP_REQUEST :
+        {
+            return;
+        }
+        case DRN_PEERCOMM_SUBSCRIBE_TO_STREAM_REQUEST :
+        {
+            return;
+        }        
+        default:        
+        {
+            // If we get here then an unexpected value was found as the command
+            // This is not something that should happen or something that is allowed
+            NotifyObservers( LinkCorruptionEvent );
+            
+            // Terminate the link
+            CloseLink();
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnUDPChannelEvent( CORE::CNotifier* notifier    ,
+                                 const CORE::CEvent& eventid  ,
+                                 CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    if ( COMCORE::CUDPChannel::UDPPacketReceivedEvent == eventid )
+    {
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnTCPDataReceived( const GUCEF::CORE::CDynamicBuffer& buffer )
+{GUCEF_TRACE;
+
+    // When using TCP transmissions can get concatenated. We have to separate these
+    // transmissions ourselves using the delimiters specified in our DRN protocol.
+    UInt32 dataSize = buffer.GetDataSize();
+    UInt32 i = m_tcpStreamKeepBytes;
+    if ( i < dataSize )
+    {
+        if ( buffer[ i ] == DRN_TRANSMISSION_START )
+        {
+            // Check if the data we received is a segmented transmission
+            if ( i != 0 )
+            {
+                // perform an end delimiter sanity check on the previous transmission
+                if ( buffer[ i-1 ] == DRN_TRANSMISSION_END )
+                {
+                    // Append the received prefix to what we have in our buffer
+                    // the data segment belongs to an earlier transmission.
+                    m_tcpStreamKeepBytes = 0;
+                    m_tcpStreamBuffer.Append( buffer.GetConstBufferPtr() ,
+                                              i                          ,
+                                              true                       );
+
+                    // We now have a complete transmission in our stream buffer
+                    // We will now process the buffer
+                    OnPeerDataReceived( static_cast< const char* >( m_tcpStreamBuffer.GetConstBufferPtr() ) ,
+                                        m_tcpStreamBuffer.GetDataSize()                                     );
+                                    
+                    // We must now empty the buffer to make room for a new segmented message
+                    // We only perform a logical clear to avoid unnecessary reallocations
+                    m_tcpStreamBuffer.Clear( true );
+                }
+                else
+                {
+                    // We should not get here, the transmission has been corrupted somehow
+                    // Even though we have all the data needed we did not find the end
+                    // delimiter as expected. 
+                    NotifyObservers( LinkCorruptionEvent );
+                    
+                    // Terminate the link
+                    CloseLink();
+                    return;
+                }
+            }
+            
+            // Sanity check on the buffer size versus payload info offset
+            if ( i+2 < dataSize )
+            {
+                // Get the transmission size
+                UInt16 transmissionSize = buffer.AsConstType< UInt16 >( i );
+                
+                // Sanity check on the buffer size versus reported payload size
+                if ( i+2+transmissionSize < dataSize )
+                {
+                    // Additional sanity check on the reported transmission size
+                    if ( buffer[ i+3+transmissionSize ] == DRN_TRANSMISSION_END )
+                    {
+                        // The payload segment seems to be all here and the size checks
+                        // out. We can now proceed with processing the transmission.
+                        OnPeerDataReceived( static_cast< const char* >( buffer.GetConstBufferPtr() )+i+2 ,
+                                            transmissionSize                                             );                            
+                    }
+                    else
+                    {
+                        // We should not get here, the transmission has been corrupted somehow
+                        // Even though we have all the data needed we did not find the end
+                        // delimiter as expected. 
+                        NotifyObservers( LinkCorruptionEvent );
+                        
+                        // Terminate the link
+                        CloseLink();
+                        return;                        
+                    }
+                }
+                else
+                {
+                    // We do not have all the data needed to process the transmission
+                    // We will place the data we have in the stream buffer. The data can
+                    // then be processed when we receive the remainder of the transmission
+                    m_tcpStreamKeepBytes = transmissionSize - ( dataSize-i );
+                    m_tcpStreamBuffer.Append( buffer.GetConstBufferPtr( i ) ,
+                                              dataSize-i                    ,
+                                              true                          );                        
+                }
+            }
+            else
+            {
+                // if the stream split happened here we are screwed
+                // @todo come up with a solution for this
+                assert( false );
+            }
+        }
+    }
+    else
+    {
+        // The entire transmission we received is part of a bigger transmission
+        // We will append the received data to our stream buffer
+        m_tcpStreamKeepBytes -= dataSize;
+        m_tcpStreamBuffer.Append( buffer.GetConstBufferPtr() ,
+                                  dataSize                   ,
+                                  true                       );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -284,45 +748,35 @@ CDRNPeerLink::OnTCPConnectionEvent( CORE::CNotifier* notifier    ,
                                     CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
-        if ( GUCEF::COMCORE::CTCPConnection::ConnectedEvent == eventid )
-        {
-        }
-        else
-        if ( GUCEF::COMCORE::CTCPConnection::DisconnectedEvent == eventid )
-        {
-        }
-        else
-        if ( GUCEF::COMCORE::CTCPConnection::DataRecievedEvent == eventid )
-        {
-        
-        }
-        else
-        if ( GUCEF::COMCORE::CTCPConnection::DataSentEvent == eventid )
-        {
-        
-        }
-        else
-        if ( GUCEF::COMCORE::CTCPConnection::SocketErrorEvent == eventid )
-        {
-        }
 
-    /*        
-        // Send the initial greeting
-        char sendBuffer[ 14 ] = { DRN_PEERCOMM_GREETING, 'D', 'R', 'N', 'N', 'O', 'D', 'E', ' ', ' ', DRN_PROTOCOL_MAYOR_VERION, DRN_PROTOCOL_MINOR_VERION, DRN_PROTOCOL_PATCH_VERION, DRN_TRANSMISSION_SEPERATOR };        
-        if ( !connectionInfo.connection->Send( sendBuffer, 14 ) )
-        {
-            // Failed to send data, something is very wrong
-            connectionInfo.connection->Close();
-        }
+    if ( GUCEF::COMCORE::CTCPConnection::DataRecievedEvent == eventid )
+    {
+        // Prepare access to the data buffer
+        GUCEF::CORE::TLinkedCloneableBuffer* bufferLink = static_cast< GUCEF::CORE::TLinkedCloneableBuffer* >( eventdata );
+        const GUCEF::CORE::CDynamicBuffer& buffer = bufferLink->GetData();
+        
+        // Call the event handler
+        OnTCPDataReceived( buffer );
         return;
     }
-    if ( eventid == COMCORE::CTCPServerSocket::ClientDataRecievedEvent )
+    else
+    if ( GUCEF::COMCORE::CTCPConnection::DataSentEvent == eventid )
     {
-        // Any data we receive in this phase should be a greeting message
-        // nothing else is accepted. If we do get something else then the connection
-        // is considered broken and terminated.
-    }          */
-
+        // No need to do anything
+        return;
+    }
+    else
+    if ( GUCEF::COMCORE::CTCPConnection::SocketErrorEvent == eventid )
+    {
+        NotifyObservers( SocketErrorEvent );
+        return;    
+    }
+    else
+    if ( GUCEF::COMCORE::CTCPConnection::DisconnectedEvent == eventid )
+    {
+        NotifyObservers( DisconnectedEvent );
+        return;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -340,8 +794,11 @@ CDRNPeerLink::OnNotify( CORE::CNotifier* notifier                 ,
                               eventdata );
     }
     else
-    if ( notifier == m_udpSocket )
+    if ( notifier == m_udpChannel )
     {
+        OnUDPChannelEvent( notifier  ,
+                           eventid   ,
+                           eventdata );
     }
 }
 
@@ -352,7 +809,10 @@ CDRNPeerLink::RequestPeerList( void )
 {GUCEF_TRACE;
 
     // Send a peer-list-request to the given peer node
-    char sendBuffer[ 2 ] = { DRN_PEERCOMM_PEERLIST_REQUEST, DRN_TRANSMISSION_SEPERATOR };
+    char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_PEERLIST_REQUEST, DRN_TRANSMISSION_END };
+    UInt16 payloadSize = 1;
+    memcpy( sendBuffer+1, &payloadSize, 2 );
+    
     return SendData( sendBuffer, 2, false );
 }
 
@@ -363,7 +823,10 @@ CDRNPeerLink::RequestStreamList( void )
 {GUCEF_TRACE;
 
     // Send a stream-list-request to the given peer node
-    char sendBuffer[ 2 ] = { DRN_PEERCOMM_STREAMLIST_REQUEST, DRN_TRANSMISSION_SEPERATOR };
+    char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_STREAMLIST_REQUEST, DRN_TRANSMISSION_END };
+    UInt16 payloadSize = 1;
+    memcpy( sendBuffer+1, &payloadSize, 2 );
+        
     return SendData( sendBuffer, 2, false );
 }
 
@@ -374,7 +837,10 @@ CDRNPeerLink::RequestDataGroupList( void )
 {GUCEF_TRACE;
 
     // Send a datagroup-list-request to the given peer node
-    char sendBuffer[ 2 ] = { DRN_PEERCOMM_DATAGROUPLIST_REQUEST, DRN_TRANSMISSION_SEPERATOR };
+    char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_DATAGROUPLIST_REQUEST, DRN_TRANSMISSION_END };
+    UInt16 payloadSize = 1;
+    memcpy( sendBuffer+1, &payloadSize, 2 );
+        
     return SendData( sendBuffer, 2, false );
 }
 

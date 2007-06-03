@@ -64,9 +64,12 @@ class GUCEF_COMCORE_EXPORT_CPP CIPAddress
     CIPAddress( const UInt32 address ,
                 const UInt16 port    );
 
+    /**
+     *  The port value is expected to be in host byte order
+     */
     CIPAddress( const CORE::CString& address ,
-                const CORE::CString& port    );
-    
+                const UInt16 port            );
+                    
     virtual ~CIPAddress();
     
     void SetPort( const UInt16 port );
@@ -127,6 +130,11 @@ class GUCEF_COMCORE_EXPORT_CPP CIPAddress
      *  except that of a binary data compare.
      */
     bool operator<( const CIPAddress& other ) const;
+    
+    private:
+    
+    bool ResolveDNS( const CORE::CString& address ,
+                     const UInt16 port            );
     
     private:
     

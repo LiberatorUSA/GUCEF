@@ -499,19 +499,19 @@ CDynamicBuffer::CopyTo( CDynamicBuffer& dest ) const
 /*-------------------------------------------------------------------------*/
 
 void* 
-CDynamicBuffer::GetBufferPtr( void )
+CDynamicBuffer::GetBufferPtr( const UInt32 offset /* = 0 */ )
 {TRACE;
         SecureLinkBeforeMutation();
         
-        return _buffer;
+        return _buffer + offset;
 }
 
 /*-------------------------------------------------------------------------*/
        
 const void* 
-CDynamicBuffer::GetConstBufferPtr( void ) const
+CDynamicBuffer::GetConstBufferPtr( const UInt32 offset /* = 0 */ ) const
 {TRACE;
-        return _buffer;
+        return _buffer + offset;
 }
 
 /*-------------------------------------------------------------------------*/

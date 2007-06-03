@@ -41,6 +41,11 @@
 #define GUCEF_CORE_CTCLONEABLEOBJ_H
 #endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
 #ifndef GUCEF_DRN_MACROS_H
 #include "gucefDRN_macros.h"
 #define GUCEF_DRN_MACROS_H
@@ -85,6 +90,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     static const CORE::CEvent ConnectedEvent;
     static const CORE::CEvent DisconnectedEvent;
     static const CORE::CEvent SocketErrorEvent;
+    static const CORE::CEvent LinkCorruptionEvent;
+    static const CORE::CEvent LinkProtocolMismatchEvent;
+    static const CORE::CEvent LinkIncompatibleEvent;
     static const CORE::CEvent PeerListReceivedFromPeerEvent;
     static const CORE::CEvent StreamListReceivedFromPeerEvent;
     static const CORE::CEvent DataGroupListReceivedFromPeerEvent;
@@ -167,6 +175,35 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
                                const CORE::CEvent& eventid  ,
                                CORE::CICloneable* eventdata );
 
+    void OnUDPChannelEvent( CORE::CNotifier* notifier    ,
+                            const CORE::CEvent& eventid  ,
+                            CORE::CICloneable* eventdata );
+
+    void OnTCPDataReceived( const GUCEF::CORE::CDynamicBuffer& buffer );
+
+    void OnPeerDataReceived( const char* data      ,
+                             const UInt32 dataSize );
+
+    void OnPeerGreeting( const char* data      ,
+                         const UInt32 dataSize );
+
+    void OnPeerServiceType( const char* data      ,
+                            const UInt32 dataSize );
+
+    void OnPeerLinkIncompatible( void );
+
+    void OnPeerServicesCompatible( void );
+                                    
+    void SendGreetingMessage( void );
+    
+    void SendServiceTypeMessage( void );
+    
+    void SendIncompatibleLinkMessage( void );
+    
+    void SendAuthenticationRequiredMessage( void );
+    
+    void SendLinkOperationalMessage( void );
+                         
     private:
     
     CDRNNode* m_parentNode;
@@ -174,8 +211,11 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     COMCORE::CUDPChannel* m_udpChannel;
     COMCORE::CUDPMasterSocket* m_udpSocket;
     COMCORE::CTCPConnection* m_tcpConnection;
+    GUCEF::CORE::CDynamicBuffer m_tcpStreamBuffer;
+    UInt32 m_tcpStreamKeepBytes;
     bool m_udpPossible;
     bool m_isAuthenticated;
+    bool m_linkOperational;
 };
 
 /*-------------------------------------------------------------------------//

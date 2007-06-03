@@ -86,7 +86,7 @@ class CTestPeerValidator : public DRN::CIDRNPeerValidator
 {
     public:
 
-    virtual bool IsPeerAddressValid( const TIPAddress& address     ,
+    virtual bool IsPeerAddressValid( const CIPAddress& address     ,
                                      const CORE::CString& hostName ) const
     {
         return ( hostName == "localhost" ) || ( hostName == "127.0.0.1" );

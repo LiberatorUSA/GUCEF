@@ -72,12 +72,11 @@ class GUCEF_DRN_EXPORT_CPP CIDRNPeerValidator
     
     virtual bool IsPeerAddressValid( const CIPAddress& address     ,
                                      const CORE::CString& hostName ) const = 0;
+
+    virtual bool IsPeerLoginRequired( void ) const = 0;
     
     virtual bool IsPeerLoginValid( const CORE::CString& accountName ,
-                                   const CORE::CString& password    ) const = 0;
-
-    virtual bool IsPeerServiceValid( const CORE::CString& serviceName     ,
-                                     const CORE::TVersion& serviceVersion ) const = 0;    
+                                   const CORE::CString& password    ) const = 0;    
 };
 
 /*-------------------------------------------------------------------------//

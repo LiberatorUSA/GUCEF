@@ -119,16 +119,6 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : private CORE::CObservingNotifier
     
     CIDRNPeerValidator* GetPeervalidator( void ) const;
     
-/*    
-    void SubscribeLocalGlobalDataGroup( CDRNDataGroup );
-    
-    void SubscribeLocalPeerDataGroup( CDRNDataGroup );
-    
-    void SubscribeRemoteGlobalDataGroup( CDRNDataGroup );
-    
-    void SubscribeRemotePeerDataGroup( CDRNDataGroup );
-  */
-
     protected:
     
     /**
@@ -147,6 +137,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : private CORE::CObservingNotifier
 
     void GetAvailableTCPClient( COMCORE::CTCPClientSocket** tcpClient ,
                                 UInt32& socketIndex                   );
+
+    void CreateLink( COMCORE::CTCPConnection& tcpConnection );
     
     private:
     

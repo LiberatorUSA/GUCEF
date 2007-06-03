@@ -28,10 +28,20 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVSTRUTILS_H
+#include "dvstrutils.h"
+#define GUCEF_CORE_DVSTRUTILS_H
+#endif /* GUCEF_CORE_DVSTRUTILS_H ? */
+
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
+
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
 #include "CIPAddress.h"
 
@@ -92,11 +102,12 @@ CIPAddress::CIPAddress( const UInt32 address ,
 /*-------------------------------------------------------------------------*/
 
 CIPAddress::CIPAddress( const CORE::CString& address ,
-                        const CORE::CString& port    )
-    : m_address( CORE::StringToUInt32( address ) )  ,
-      m_port( CORE::StringToUInt16( port ) )
+                        const UInt16 port            )
+    : m_address( 0 )          ,
+      m_port( htons( port ) )
 {GUCEF_TRACE;
 
+    ResolveDNS( address, port );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -104,6 +115,63 @@ CIPAddress::CIPAddress( const CORE::CString& address ,
 CIPAddress::~CIPAddress()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIPAddress::ResolveDNS( const CORE::CString& address ,
+                        const UInt16 port            )
+{GUCEF_TRACE;
+
+    if ( CORE::Check_If_IP( address.C_String() ) )
+    {
+        m_address = inet_addr( address.C_String() );
+        if ( m_address == INADDR_NONE ) return false;
+        return true;
+    }
+    else
+    {              
+        #if 1
+
+        struct hostent* retval = gethostbyname( address.C_String() );        
+        if ( retval != NULL )
+        {
+            GUCEF_DEBUG_LOG( 1, CORE::CString( "CIPAddress::CIPAddress() DNS resolution: gethostbyname(): full name: " ) + retval->h_name );
+            char* addrStr = inet_ntoa( *( struct in_addr*)( retval->h_addr_list[0] ) );
+            Int32 netaddr = inet_addr( addrStr );
+            if ( netaddr >= 0 ) 
+            {   
+                m_address = netaddr;
+                m_port = port;
+                return true;
+            }            
+        }
+        return false;
+        
+        #else
+        
+        struct addrinfo* info = NULL;
+        CORE::CString portString( CORE::Int32ToString( destport ) );
+        int retval = getaddrinfo( destaddrstr.C_String() ,
+                                  portString.C_String()  ,
+                                  NULL                   ,
+                                  &info                  );
+        if ( retval == 0 )
+        {
+            struct in_addr* addr = (struct in_addr*)info->ai_addr;
+            GUCEF_DEBUG_LOG( "CSocket::ConvertToIPAddress(): resolved DNS name " + destaddrstr + " to " + CORE::CString( inet_ntoa( *addr ) ) );
+            resolvedDest.netaddr = inet_addr( inet_ntoa( *addr ) ); // <- does this actually work ???
+            resolvedDest.port = htons( destport );
+            return true;
+        }
+        #ifdef GUCEF_COMCORE_DEBUG_MODE
+        GUCEF_DEBUG_LOG( "CSocket::ConvertToIPAddress(): gethostbyname() failed with code " CORE::Int32ToString( retval ) );
+        #endif
+        return false;
+        
+        #endif
+    }
 }
 
 /*-------------------------------------------------------------------------*/
