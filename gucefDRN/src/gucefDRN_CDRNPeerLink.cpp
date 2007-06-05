@@ -271,14 +271,10 @@ CDRNPeerLink::GetTCPConnection( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CDRNPeerLink::IsActive( void ) const
+CDRNPeerLink::IsOperational( void ) const
 {GUCEF_TRACE;
 
-    if ( NULL != m_tcpConnection )
-    {
-        return m_tcpConnection->IsActive();
-    }
-    return false;
+    return m_linkOperational;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -477,6 +473,116 @@ CDRNPeerLink::OnPeerServiceType( const char* data      ,
 /*-------------------------------------------------------------------------*/
 
 void
+CDRNPeerLink::OnPeerLinkOperational( void )
+{GUCEF_TRACE;
+    
+    m_linkOperational = true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerDataGroupRequest( void )
+{GUCEF_TRACE;
+
+    if ( m_linkOperational )
+    {
+        // Obtain a list of streams publicized on this link
+        CDRNPeerLinkData::TDRNDataGroupList dataGroupList;
+        m_linkData->GetPublicizedDataGroups( dataGroupList );
+        
+        // Compose the list message 
+        CORE::CDynamicBuffer streamBuffer( 4 );
+        streamBuffer[ 0 ] = DRN_TRANSMISSION_START;
+        streamBuffer[ 3 ] = DRN_PEERCOMM_DATAGROUPLIST;
+        
+        // Copy the list into the buffer
+        CDRNPeerLinkData::TDRNDataGroupList::iterator i = dataGroupList.begin();
+        while ( i != dataGroupList.end() )
+        {
+            // Copy the string into the buffer including the null terminator
+            streamBuffer.Append( (*i)->GetName().C_String(), (*i)->GetName().Length()+1 );
+            ++i;
+        }
+        
+        // Fill in the payload size segment
+        UInt16 payloadSize = (UInt16) streamBuffer.GetDataSize() - 4;
+        streamBuffer.CopyFrom( 1, 2, &payloadSize );
+        
+        // Add the transmission delimiter
+        UInt8 delimiter = DRN_TRANSMISSION_END;
+        streamBuffer.Append( &delimiter, 1 );
+        
+        if ( !SendData( streamBuffer.GetBufferPtr() ,
+                        streamBuffer.GetDataSize()  ,
+                        false                       ) )
+        {
+            // Failed to send data, something is very wrong
+            CloseLink();
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerStreamListRequest( void )
+{GUCEF_TRACE;
+
+    if ( m_linkOperational )
+    {
+        // Obtain a list of streams publicized on this link
+        CDRNPeerLinkData::TDRNDataStreamList dataStreamList;
+        m_linkData->GetPublicizedDataStreams( dataStreamList );
+        
+        // Compose the list message 
+        CORE::CDynamicBuffer streamBuffer( 4 );
+        streamBuffer[ 0 ] = DRN_TRANSMISSION_START;
+        streamBuffer[ 3 ] = DRN_PEERCOMM_STREAMLIST;
+        
+        // Copy the list into the buffer
+        CDRNPeerLinkData::TDRNDataStreamList::iterator i = dataStreamList.begin();
+        while ( i != dataStreamList.end() )
+        {
+            // Copy the string into the buffer including the null terminator
+            streamBuffer.Append( (*i)->GetName().C_String(), (*i)->GetName().Length()+1 );
+            ++i;
+        }
+        
+        // Fill in the payload size segment
+        UInt16 payloadSize = (UInt16) streamBuffer.GetDataSize() - 4;
+        streamBuffer.CopyFrom( 1, 2, &payloadSize );
+        
+        // Add the transmission delimiter
+        UInt8 delimiter = DRN_TRANSMISSION_END;
+        streamBuffer.Append( &delimiter, 1 );
+        
+        if ( !SendData( streamBuffer.GetBufferPtr() ,
+                        streamBuffer.GetDataSize()  ,
+                        false                       ) )
+        {
+            // Failed to send data, something is very wrong
+            CloseLink();
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerDataGroupItemUpdate( const char* data      ,
+                                         const UInt32 dataSize )
+{GUCEF_TRACE;
+
+    if ( m_linkOperational )
+    {
+        
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CDRNPeerLink::OnPeerGreeting( const char* data      ,
                               const UInt32 dataSize )
 {GUCEF_TRACE;
@@ -561,10 +667,12 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         }
         case DRN_PEERCOMM_LINK_OPERATIONAL :
         {
+            OnPeerLinkOperational();
             return;
         }
         case DRN_PEERCOMM_DATAGROUP_ITEM_UPDATE :
         {
+            OnPeerDataGroupItemUpdate( data, dataSize );
             return;
         }
         case DRN_PEERCOMM_STREAM_DATA :
@@ -585,6 +693,7 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         }
         case DRN_PEERCOMM_STREAMLIST_REQUEST :
         {
+            OnPeerStreamListRequest();
             return;
         }
         case DRN_PEERCOMM_STREAMLIST :        
@@ -593,6 +702,7 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         }
         case DRN_PEERCOMM_DATAGROUPLIST_REQUEST :
         {
+            OnPeerDataGroupRequest();
             return;
         }
         case DRN_PEERCOMM_DATAGROUPLIST :

@@ -124,7 +124,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     
     bool IsAuthenticated( void ) const;
     
-    bool IsActive( void ) const;
+    bool IsOperational( void ) const;
     
     CDRNNode& GetParentNode( void );
     
@@ -190,9 +190,20 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     void OnPeerServiceType( const char* data      ,
                             const UInt32 dataSize );
 
+    void OnPeerDataGroupItemUpdate( const char* data      ,
+                                    const UInt32 dataSize );
+    
     void OnPeerLinkIncompatible( void );
 
     void OnPeerServicesCompatible( void );
+    
+    void OnPeerStreamListRequest( void );
+    
+    void OnPeerLinkOperational( void );
+    
+    void OnPeerDataGroupRequest( void );
+    
+    void OnPeerDataGroupItemUpdate( void );
                                     
     void SendGreetingMessage( void );
     

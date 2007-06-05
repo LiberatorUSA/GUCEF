@@ -77,10 +77,9 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
         
         CDynamicBuffer( CIOAccess& ioAccess );
         
-        /**
-         *      Default constructor, initializes to a zero-length buffer.
-         */
-        CDynamicBuffer( bool autoenlarge = true );
+        CDynamicBuffer( void );
+        
+        explicit CDynamicBuffer( bool autoenlarge );
         
         CDynamicBuffer( const char* externalBuffer ,
                         const UInt32 bufferSize    ,
@@ -89,8 +88,8 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
         /**
          *      Initializes the buffer to the given size
          */
-        CDynamicBuffer( UInt32 initialsize      ,
-                        bool autoenlarge = true );
+        CDynamicBuffer( UInt32 initialsize ,
+                        bool autoenlarge   );
 
         /**
          *      Copy constructor, creates a dynamic buffer that is an exact copy

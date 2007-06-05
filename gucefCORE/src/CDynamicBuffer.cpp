@@ -58,6 +58,18 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CDynamicBuffer, EIllegalCast );
 
 /*-------------------------------------------------------------------------*/
 
+CDynamicBuffer::CDynamicBuffer( void )
+        : _buffer( NULL )             , 
+          _bsize( 0 )                 ,
+          _autoenlarge( true )        ,
+          m_dataSize( 0 )             ,
+          m_linked( false )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDynamicBuffer::CDynamicBuffer( bool autoenlarge ) 
         : _buffer( NULL )             , 
           _bsize( 0 )                 ,
