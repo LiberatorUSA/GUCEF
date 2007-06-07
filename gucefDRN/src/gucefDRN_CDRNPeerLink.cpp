@@ -570,14 +570,124 @@ CDRNPeerLink::OnPeerStreamListRequest( void )
 /*-------------------------------------------------------------------------*/
 
 void
+CDRNPeerLink::OnPeerStreamListReceived( const char* data      ,
+                                        const UInt32 dataSize )
+{GUCEF_TRACE;
+
+    if ( m_linkOperational )
+    {
+        TStringList streamNameList;
+        
+        CORE::CString tmpStr;
+        UInt32 i=1;
+        while ( i < dataSize )
+        {                
+            tmpStr.Scan( data+i, dataSize-i );
+            i += tmpStr.Length();
+            
+            if ( tmpStr.Length() > 0 )
+            {
+                streamNameList.push_back( tmpStr );
+            }
+            else
+            {
+                break;
+            }
+        }
+        
+        StreamListReceivedFromPeerEventData eData( &streamNameList );
+        NotifyObservers( StreamListReceivedFromPeerEvent, &eData );
+    }
+    else
+    {
+        // We should not get here
+        NotifyObservers( LinkCorruptionEvent );
+        
+        // Terminate the link
+        CloseLink();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerPeerListReceived( const char* data      ,
+                                      const UInt32 dataSize )
+{GUCEF_TRACE;
+
+    if ( m_linkOperational )
+    {
+        TStringList peerNameList;
+        
+        CORE::CString tmpStr;
+        UInt32 i=1;
+        while ( i < dataSize )
+        {                
+            tmpStr.Scan( data+i, dataSize-i );
+            i += tmpStr.Length();
+            
+            if ( tmpStr.Length() > 0 )
+            {
+                peerNameList.push_back( tmpStr );
+            }
+            else
+            {
+                break;
+            }
+        }
+        
+        PeerListReceivedFromPeerEventData eData( &peerNameList );
+        NotifyObservers( PeerListReceivedFromPeerEvent, &eData );
+    }
+    else
+    {
+        // We should not get here
+        NotifyObservers( LinkCorruptionEvent );
+        
+        // Terminate the link
+        CloseLink();
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CDRNPeerLink::OnPeerDataGroupListReceived( const char* data      ,
                                            const UInt32 dataSize )
 {GUCEF_TRACE;
 
     if ( m_linkOperational )
     {
+        TStringList dataGroupNameList;
         
+        CORE::CString tmpStr;
+        UInt32 i=1;
+        while ( i < dataSize )
+        {                
+            tmpStr.Scan( data+i, dataSize-i );
+            i += tmpStr.Length();
+            
+            if ( tmpStr.Length() > 0 )
+            {
+                dataGroupNameList.push_back( tmpStr );
+            }
+            else
+            {
+                break;
+            }
+        }
+        
+        DataGroupListReceivedFromPeerEventData eData( &dataGroupNameList );
+        NotifyObservers( DataGroupListReceivedFromPeerEvent, &eData );
     }
+    else
+    {
+        // We should not get here
+        NotifyObservers( LinkCorruptionEvent );
+        
+        // Terminate the link
+        CloseLink();
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -702,6 +812,7 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         }
         case DRN_PEERCOMM_PEERLIST :
         {
+            OnPeerPeerListReceived( data, dataSize );
             return;
         }
         case DRN_PEERCOMM_STREAMLIST_REQUEST :
@@ -711,6 +822,7 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         }
         case DRN_PEERCOMM_STREAMLIST :        
         {
+            OnPeerStreamListReceived( data, dataSize );
             return;
         }
         case DRN_PEERCOMM_DATAGROUPLIST_REQUEST :
@@ -932,12 +1044,16 @@ bool
 CDRNPeerLink::RequestPeerList( void )
 {GUCEF_TRACE;
 
-    // Send a peer-list-request to the given peer node
-    char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_PEERLIST_REQUEST, DRN_TRANSMISSION_END };
-    UInt16 payloadSize = 1;
-    memcpy( sendBuffer+1, &payloadSize, 2 );
-    
-    return SendData( sendBuffer, 2, false );
+    if ( m_linkOperational )
+    {
+        // Send a peer-list-request to the given peer node
+        char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_PEERLIST_REQUEST, DRN_TRANSMISSION_END };
+        UInt16 payloadSize = 1;
+        memcpy( sendBuffer+1, &payloadSize, 2 );
+        
+        return SendData( sendBuffer, 2, false );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -946,12 +1062,16 @@ bool
 CDRNPeerLink::RequestStreamList( void )
 {GUCEF_TRACE;
 
-    // Send a stream-list-request to the given peer node
-    char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_STREAMLIST_REQUEST, DRN_TRANSMISSION_END };
-    UInt16 payloadSize = 1;
-    memcpy( sendBuffer+1, &payloadSize, 2 );
-        
-    return SendData( sendBuffer, 2, false );
+    if ( m_linkOperational )
+    {
+        // Send a stream-list-request to the given peer node
+        char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_STREAMLIST_REQUEST, DRN_TRANSMISSION_END };
+        UInt16 payloadSize = 1;
+        memcpy( sendBuffer+1, &payloadSize, 2 );
+            
+        return SendData( sendBuffer, 2, false );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -960,12 +1080,16 @@ bool
 CDRNPeerLink::RequestDataGroupList( void )
 {GUCEF_TRACE;
 
-    // Send a datagroup-list-request to the given peer node
-    char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_DATAGROUPLIST_REQUEST, DRN_TRANSMISSION_END };
-    UInt16 payloadSize = 1;
-    memcpy( sendBuffer+1, &payloadSize, 2 );
-        
-    return SendData( sendBuffer, 2, false );
+    if ( m_linkOperational )
+    {
+        // Send a datagroup-list-request to the given peer node
+        char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_DATAGROUPLIST_REQUEST, DRN_TRANSMISSION_END };
+        UInt16 payloadSize = 1;
+        memcpy( sendBuffer+1, &payloadSize, 2 );
+            
+        return SendData( sendBuffer, 2, false );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

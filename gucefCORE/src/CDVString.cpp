@@ -792,6 +792,33 @@ CString::NotEquals( const CString& otherStr               ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+CString::Scan( const char* newStr     ,
+               const UInt32 maxLength )
+{GUCEF_TRACE;
+
+    if ( newStr != NULL )
+    {
+        for ( UInt32 i=0; i<maxLength; ++i )
+        {
+            if ( newStr[ i ] == '\0' )
+            {
+                // null-terminator found
+                Set( newStr ,
+                     i      );
+                return;                 
+            }
+        }
+        
+        // If we get here then no null-terminator was found in the buffer
+        // before the maximum was reached
+        Set( newStr    ,
+             maxLength );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString 
 CString::operator+( const CString& addition )
 {TRACE;

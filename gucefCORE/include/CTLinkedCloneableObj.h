@@ -36,6 +36,11 @@
 #define GUCEF_CORE_EXCEPTIONMACROS_H
 #endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -95,7 +100,7 @@ template< typename T >
 CTLinkedCloneableObj< T >::CTLinkedCloneableObj( void )
         : m_data( NULL )    ,
           m_linked( false )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -105,7 +110,7 @@ template< typename T >
 CTLinkedCloneableObj< T >::CTLinkedCloneableObj( const T* data )
         : m_data( data )   ,
           m_linked( true )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( NULL == data )
     {
@@ -120,7 +125,7 @@ template< typename T >
 CTLinkedCloneableObj< T >::CTLinkedCloneableObj( const CTLinkedCloneableObj< T >& src )
         : m_data( new T( *src.m_data ) ) ,
           m_linked( false )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -128,7 +133,7 @@ CTLinkedCloneableObj< T >::CTLinkedCloneableObj( const CTLinkedCloneableObj< T >
     
 template< typename T >
 CTLinkedCloneableObj< T >::~CTLinkedCloneableObj()
-{TRACE;
+{GUCEF_TRACE;
     
     if ( !m_linked )
     {
@@ -142,7 +147,7 @@ CTLinkedCloneableObj< T >::~CTLinkedCloneableObj()
 template< typename T >
 CTLinkedCloneableObj< T >& 
 CTLinkedCloneableObj< T >::operator=( const CTLinkedCloneableObj< T >& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( this != &src )
     {
@@ -162,7 +167,7 @@ CTLinkedCloneableObj< T >::operator=( const CTLinkedCloneableObj< T >& src )
 template< typename T >
 CICloneable* 
 CTLinkedCloneableObj< T >::Clone( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return new CTLinkedCloneableObj< T >( *this );
 }
@@ -172,7 +177,7 @@ CTLinkedCloneableObj< T >::Clone( void ) const
 template< typename T >
 const T& 
 CTLinkedCloneableObj< T >::GetData( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( NULL != m_data )
     {

@@ -36,10 +36,10 @@
 #define GUCEF_COMCORE_CSOCKET_H
 #endif /* GUCEF_COMCORE_CSOCKET_H ? */
 
-#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
-#include "CTCloneableObj.h"
-#define GUCEF_CORE_CTCLONEABLEOBJ_H
-#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+#ifndef GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
+#include "CTLinkedCloneableObj.h"
+#define GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H ? */
 
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
@@ -98,9 +98,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     static const CORE::CEvent DataGroupListReceivedFromPeerEvent;
     
     typedef std::vector< CORE::CString >        TStringList;
-    typedef CORE::CTCloneableObj< TStringList > PeerListReceivedFromPeerEventData;   
-    typedef CORE::CTCloneableObj< TStringList > StreamListReceivedFromPeerEventData;
-    typedef CORE::CTCloneableObj< TStringList > DataGroupListReceivedFromPeerEventData;
+    typedef CORE::CTLinkedCloneableObj< TStringList > PeerListReceivedFromPeerEventData;   
+    typedef CORE::CTLinkedCloneableObj< TStringList > StreamListReceivedFromPeerEventData;
+    typedef CORE::CTLinkedCloneableObj< TStringList > DataGroupListReceivedFromPeerEventData;
     
     static void RegisterEvents( void );
     
@@ -193,8 +193,14 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     void OnPeerDataGroupListReceived( const char* data      ,
                                       const UInt32 dataSize );
 
+    void OnPeerPeerListReceived( const char* data      ,
+                                 const UInt32 dataSize );
+    
     void OnPeerDataGroupItemUpdate( const char* data      ,
                                     const UInt32 dataSize );
+
+    void OnPeerStreamListReceived( const char* data      ,
+                                   const UInt32 dataSize );
     
     void OnPeerLinkIncompatible( void );
 

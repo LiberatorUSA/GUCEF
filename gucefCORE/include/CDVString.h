@@ -134,10 +134,20 @@ class GUCEFCORE_EXPORT_CPP CString
         /**
          *      This member functions allows you to set the string using a
          *      non-null-terminated char array as the source. The source will
-         *      be copyed and a null terminator will be added.
+         *      be copied and a null terminator will be added.
          */
         void Set( const char *new_str ,
                   UInt32 len          );
+                  
+        /**
+         *  This member functions allows you to set the string using a
+         *  null-terminated char array as the source while specifying a
+         *  maximum buffer scan length. If no null-terminator is found
+         *  the maximum number of bytes indicated will be used as the string
+         *  and a null-terminator will be added.
+         */
+        void Scan( const char* newStr     ,
+                   const UInt32 maxLength );                  
             
         /**
          *      This member functions allows you to add to the string using a

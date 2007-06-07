@@ -124,7 +124,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : private CORE::CObservingNotifier
     /**
      *  @param notifier the notifier that sent the notification
      *  @param eventid the unique event id for an event
-     *  @param eventdata optional notifier defined userdata
+     *  @param eventdata optional notifier defined user data
      */
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
