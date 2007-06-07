@@ -318,7 +318,7 @@ CDRNPeerLink::SendServiceTypeMessage( void )
     const CORE::CString& serviceName = m_parentNode->GetServiceName();
     
     // Compose the service type message
-    CORE::CDynamicBuffer sendBuffer( serviceName.Length() + 5 );
+    CORE::CDynamicBuffer sendBuffer( serviceName.Length() + 5 , true );
     sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
     sendBuffer[ 3 ] = DRN_PEERCOMM_SERVICE;
     sendBuffer[ serviceName.Length() + 3 ] = DRN_TRANSMISSION_END;
@@ -492,7 +492,7 @@ CDRNPeerLink::OnPeerDataGroupRequest( void )
         m_linkData->GetPublicizedDataGroups( dataGroupList );
         
         // Compose the list message 
-        CORE::CDynamicBuffer streamBuffer( 4 );
+        CORE::CDynamicBuffer streamBuffer( 4, true );
         streamBuffer[ 0 ] = DRN_TRANSMISSION_START;
         streamBuffer[ 3 ] = DRN_PEERCOMM_DATAGROUPLIST;
         
@@ -513,9 +513,9 @@ CDRNPeerLink::OnPeerDataGroupRequest( void )
         UInt8 delimiter = DRN_TRANSMISSION_END;
         streamBuffer.Append( &delimiter, 1 );
         
-        if ( !SendData( streamBuffer.GetBufferPtr() ,
-                        streamBuffer.GetDataSize()  ,
-                        false                       ) )
+        if ( !SendData( streamBuffer.GetBufferPtr()        ,
+                        (UInt16)streamBuffer.GetDataSize() ,
+                        false                              ) )
         {
             // Failed to send data, something is very wrong
             CloseLink();
@@ -536,7 +536,7 @@ CDRNPeerLink::OnPeerStreamListRequest( void )
         m_linkData->GetPublicizedDataStreams( dataStreamList );
         
         // Compose the list message 
-        CORE::CDynamicBuffer streamBuffer( 4 );
+        CORE::CDynamicBuffer streamBuffer( 4, true );
         streamBuffer[ 0 ] = DRN_TRANSMISSION_START;
         streamBuffer[ 3 ] = DRN_PEERCOMM_STREAMLIST;
         
@@ -557,13 +557,26 @@ CDRNPeerLink::OnPeerStreamListRequest( void )
         UInt8 delimiter = DRN_TRANSMISSION_END;
         streamBuffer.Append( &delimiter, 1 );
         
-        if ( !SendData( streamBuffer.GetBufferPtr() ,
-                        streamBuffer.GetDataSize()  ,
-                        false                       ) )
+        if ( !SendData( streamBuffer.GetBufferPtr()        ,
+                        (UInt16)streamBuffer.GetDataSize() ,
+                        false                              ) )
         {
             // Failed to send data, something is very wrong
             CloseLink();
         }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerDataGroupListReceived( const char* data      ,
+                                           const UInt32 dataSize )
+{GUCEF_TRACE;
+
+    if ( m_linkOperational )
+    {
+        
     }
 }
 
@@ -576,7 +589,7 @@ CDRNPeerLink::OnPeerDataGroupItemUpdate( const char* data      ,
 
     if ( m_linkOperational )
     {
-        
+        //m_linkData->
     }
 }
 
@@ -707,6 +720,7 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         }
         case DRN_PEERCOMM_DATAGROUPLIST :
         {
+            OnPeerDataGroupListReceived( data, dataSize );
             return;
         }
         case DRN_PEERCOMM_SUBSCRIBE_TO_DATAGROUP_REQUEST :

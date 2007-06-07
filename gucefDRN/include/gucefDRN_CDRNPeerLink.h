@@ -190,6 +190,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     void OnPeerServiceType( const char* data      ,
                             const UInt32 dataSize );
 
+    void OnPeerDataGroupListReceived( const char* data      ,
+                                      const UInt32 dataSize );
+
     void OnPeerDataGroupItemUpdate( const char* data      ,
                                     const UInt32 dataSize );
     

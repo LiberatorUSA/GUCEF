@@ -185,6 +185,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefDRN_CDRNDataGroupProperties.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefDRN_CDRNDataStream.cpp"
 				>
 			</File>
@@ -220,6 +224,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefDRN_CDRNDataGroup.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefDRN_CDRNDataGroupProperties.h"
 				>
 			</File>
 			<File

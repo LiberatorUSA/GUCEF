@@ -59,11 +59,9 @@ const CORE::CEvent CDRNDataGroup::ItemChanged = "GUCEF::CORE::CDRNDataGroup::Ite
 //-------------------------------------------------------------------------*/
    
 CDRNDataGroup::CDRNDataGroup( void )
-    : CObservingNotifier()            ,
-      m_emitAsGroup( false )          ,
-      m_acceptNewSItems( true )       ,
-      m_acceptStreamerUpdates( true ) ,
-      m_groupName()                   ,
+    : CObservingNotifier()                          ,
+      m_properties( new CDRNDataGroupProperties() ) ,
+      m_groupName()                                 ,
       m_dataMap()
 {GUCEF_TRACE;
 
@@ -75,11 +73,9 @@ CDRNDataGroup::CDRNDataGroup( void )
 /*-------------------------------------------------------------------------*/
 
 CDRNDataGroup::CDRNDataGroup( const CDRNDataGroup& src )
-    : CObservingNotifier( src )       ,
-      m_emitAsGroup( false )          ,
-      m_acceptNewSItems( true )       ,
-      m_acceptStreamerUpdates( true ) ,
-      m_groupName()                   ,
+    : CObservingNotifier( src )        ,
+      m_properties( src.m_properties ) ,
+      m_groupName()                    ,
       m_dataMap()    
 {GUCEF_TRACE;
 
@@ -104,9 +100,7 @@ CDRNDataGroup::operator=( const CDRNDataGroup& src )
         CObservingNotifier::operator=( src );
         
         m_dataMap = src.m_dataMap;
-        m_emitAsGroup = src.m_emitAsGroup;
-        m_acceptNewSItems = src.m_acceptNewSItems;
-        m_acceptStreamerUpdates = src.m_acceptStreamerUpdates;
+        m_properties = src.m_properties;
         m_groupName = CORE::PointerToString( this );        
     }
     return *this;
@@ -119,60 +113,6 @@ CDRNDataGroup::RegisterEvents( void )
 {GUCEF_TRACE;
 
     ItemChanged.Initialize();
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CDRNDataGroup::SetEmitEntireGroupOnChange( const bool emitEntireGroup )
-{GUCEF_TRACE;
-
-    m_emitAsGroup = emitEntireGroup;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CDRNDataGroup::GetEmitEntireGroupOnChange( void ) const
-{GUCEF_TRACE;
-
-    return m_emitAsGroup;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CDRNDataGroup::SetAcceptNewStreamerItems( const bool acceptNewSItems )
-{GUCEF_TRACE;
-
-    m_acceptNewSItems = acceptNewSItems;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CDRNDataGroup::GetAcceptNewStreamerItems( void ) const
-{GUCEF_TRACE;
-
-    return m_acceptNewSItems;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CDRNDataGroup::SetAcceptUpdatesFromStreamers( const bool acceptStreamerUpdates )
-{GUCEF_TRACE;
-
-    m_acceptStreamerUpdates = acceptStreamerUpdates;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CDRNDataGroup::GetAcceptUpdatesFromStreamers( void ) const
-{GUCEF_TRACE;
-
-    return m_acceptStreamerUpdates;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -243,7 +183,7 @@ CDRNDataGroup::OnNotify( CORE::CNotifier* notifier                 ,
     if ( eventid == CORE::CStreamerEvents::StreamEvent )
     {
         // If streamer updates are disabled there is no point in checking anything else
-        if ( m_acceptStreamerUpdates )
+        if ( m_properties->GetAcceptUpdatesFromStreamers() )
         {
             const CORE::CStreamerEvents::SStreamEventData& eData = static_cast< CORE::CStreamerEvents::TStreamEventData* >( eventdata )->GetData();
             
@@ -256,9 +196,9 @@ CDRNDataGroup::OnNotify( CORE::CNotifier* notifier                 ,
                 CORE::CDynamicBuffer data;
                 eData.data->StreamToBuffer( data );
                 
-                SetItem( id                ,
-                         data              ,
-                         m_acceptNewSItems );
+                SetItem( id                                        ,
+                         data                                      ,
+                         m_properties->GetAcceptNewStreamerItems() );
             }
         }
     }
@@ -280,6 +220,24 @@ CDRNDataGroup::GetName( void ) const
 {GUCEF_TRACE;
 
     return m_groupName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNDataGroup::SetGroupProperties( const CDRNDataGroupPropertiesPtr& properties )
+{GUCEF_TRACE;
+    
+    m_properties = properties;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CDRNDataGroup::CDRNDataGroupPropertiesPtr
+CDRNDataGroup::GetGroupProperties( void ) const
+{GUCEF_TRACE;
+
+    return m_properties;
 }
 
 /*-------------------------------------------------------------------------//
