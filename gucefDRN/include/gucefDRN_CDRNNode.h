@@ -48,6 +48,11 @@
 #define GUCEF_DRN_CDRNDATAGROUP_H
 #endif /* GUCEF_DRN_CDRNDATAGROUP_H ? */
 
+#ifndef GUCEF_DRN_CDRNPEERLINK_H
+#include "gucefDRN_CDRNPeerLink.h"
+#define GUCEF_DRN_CDRNPEERLINK_H
+#endif /* GUCEF_DRN_CDRNPEERLINK_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -63,7 +68,6 @@ namespace DRN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CDRNPeerLink;
 class CIDRNPeerValidator;
 class CIDRNPeerLinkCrypter;
 

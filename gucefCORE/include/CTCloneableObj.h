@@ -68,6 +68,8 @@ class CTCloneableObj : public CICloneable
     
     T GetDataCopy( void ) const;
     
+    T& GetData( void );
+    
     const T& GetData( void ) const;
 
     private:
@@ -133,6 +135,15 @@ CTCloneableObj< T >::Clone( void ) const
     return new CTCloneableObj< T >( *this );
 }
 
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+T&
+CTCloneableObj< T >::GetData( void )
+{TRACE;
+
+    return m_data;
+}
 /*-------------------------------------------------------------------------*/
 
 template< typename T >

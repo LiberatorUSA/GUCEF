@@ -86,6 +86,7 @@ const CORE::CEvent CDRNPeerLink::SocketErrorEvent = "GUCEF::DRN::CDRNPeerLink::S
 const CORE::CEvent CDRNPeerLink::LinkCorruptionEvent = "GUCEF::DRN::CDRNPeerLink::LinkCorruptionEvent"; 
 const CORE::CEvent CDRNPeerLink::LinkProtocolMismatchEvent = "GUCEF::DRN::CDRNPeerLink::LinkProtocolMismatchEvent"; 
 const CORE::CEvent CDRNPeerLink::LinkIncompatibleEvent = "GUCEF::DRN::CDRNPeerLink::LinkIncompatibleEvent"; 
+const CORE::CEvent CDRNPeerLink::LinkOperationalEvent = "GUCEF::DRN::CDRNPeerLink::LinkOperationalEvent";
 const CORE::CEvent CDRNPeerLink::PeerListReceivedFromPeerEvent = "GUCEF::DRN::CDRNPeerLink::PeerListReceivedFromPeerEvent";
 const CORE::CEvent CDRNPeerLink::StreamListReceivedFromPeerEvent = "GUCEF::DRN::CDRNPeerLink::StreamListReceivedFromPeerEvent";
 const CORE::CEvent CDRNPeerLink::DataGroupListReceivedFromPeerEvent = "GUCEF::DRN::CDRNPeerLink::DataGroupListReceivedFromPeerEvent";
@@ -106,6 +107,7 @@ CDRNPeerLink::RegisterEvents( void )
     LinkCorruptionEvent.Initialize();
     LinkProtocolMismatchEvent.Initialize();
     LinkIncompatibleEvent.Initialize();
+    LinkOperationalEvent.Initialize();
     PeerListReceivedFromPeerEvent.Initialize();
     StreamListReceivedFromPeerEvent.Initialize();
     DataGroupListReceivedFromPeerEvent.Initialize();
@@ -380,7 +382,10 @@ CDRNPeerLink::SendLinkOperationalMessage( void )
     {
         // Failed to send data, something is very wrong
         CloseLink();
+        return;
     }
+    
+    NotifyObservers( LinkOperationalEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -422,6 +427,7 @@ CDRNPeerLink::OnPeerServicesCompatible( void )
     
     // Peer authentication is optional, we can proceed without it
     SendLinkOperationalMessage();
+    NotifyObservers( LinkOperationalEvent );
 }
 
 /*-------------------------------------------------------------------------*/

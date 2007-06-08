@@ -56,6 +56,8 @@ namespace DRN {
 //-------------------------------------------------------------------------*/
 
 const CORE::CEvent CDRNNode::LinkEstablishedEvent = "GUCEF::DRN::CDRNNode::LinkEstablishedEvent";
+const CORE::CEvent CDRNNode::LinkDisconnectedEvent = "GUCEF::DRN::CDRNNode::LinkDisconnectedEvent";
+const CORE::CEvent CDRNNode::LinkErrorEvent = "GUCEF::DRN::CDRNNode::LinkErrorEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -68,6 +70,8 @@ CDRNNode::RegisterEvents( void )
 {GUCEF_TRACE;
     
     LinkEstablishedEvent.Initialize();
+    LinkDisconnectedEvent.Initialize();
+    LinkErrorEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/

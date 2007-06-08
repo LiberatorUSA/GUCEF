@@ -15,9 +15,6 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
 
-#ifndef GUCEFVFS_H
-#define GUCEFVFS_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -43,5 +40,3 @@
 DLL_INIT_FUNC_BEG_END( GUCEF::VFS::CGUCEFVFSModule )
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEFVFS_H ? */

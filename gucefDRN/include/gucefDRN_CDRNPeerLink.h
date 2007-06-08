@@ -93,6 +93,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     static const CORE::CEvent LinkCorruptionEvent;
     static const CORE::CEvent LinkProtocolMismatchEvent;
     static const CORE::CEvent LinkIncompatibleEvent;
+    static const CORE::CEvent LinkOperationalEvent;
     static const CORE::CEvent PeerListReceivedFromPeerEvent;
     static const CORE::CEvent StreamListReceivedFromPeerEvent;
     static const CORE::CEvent DataGroupListReceivedFromPeerEvent;

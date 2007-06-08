@@ -88,29 +88,34 @@ class CTestPeerValidator : public DRN::CIDRNPeerValidator
 
     virtual bool IsPeerAddressValid( const CIPAddress& address     ,
                                      const CORE::CString& hostName ) const
-    {
+    {GUCEF_TRACE;
+    
         return ( hostName == "localhost" ) || ( hostName == "127.0.0.1" );
     }
     
     virtual bool IsPeerLoginRequired( void ) const
-    {
+    {GUCEF_TRACE;
+    
+        GUCEF_LOG( 0, "Successfully connected to a listen port" );
         return true;
     }
     
     virtual bool IsPeerLoginValid( const CORE::CString& accountName ,
                                    const CORE::CString& password    ) const
-    {
+    {GUCEF_TRACE;
+    
         return  ( ( accountName == "ValidPeer" ) && ( password == "Peer" ) );
     }
 
     virtual bool IsPeerServiceValid( const CORE::CString& serviceName     ,
                                      const CORE::TVersion& serviceVersion ) const
-    {
+    {GUCEF_TRACE;
+    
         if ( serviceName == "TestPeerToPeer" )
         {
             CORE::TVersion correctVersion;
-            correctVersion.mayor = 1;
-            correctVersion.minor = 0;
+            correctVersion.mayor = 0;
+            correctVersion.minor = 1;
             correctVersion.patch = 0;
             correctVersion.release = 0;
             
@@ -134,7 +139,8 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
     
     CTestPeerToPeerSubSystem( void )    
         : CGUCEFAppSubSystem( true )
-    {
+    {GUCEF_TRACE;
+    
         GUCEF_LOG( 0, "Setting Node Peer validators" );
         
         nodeA.SetPeerValidator( &testValidator );
@@ -173,6 +179,53 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
         //if ( !nodeB.RequestDataGroupList() )
         {
         }
+    }
+
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL )
+    {GUCEF_TRACE;
+    
+        if ( DRN::CDRNNode::LinkEstablishedEvent == eventid )
+        {
+            DRN::CDRNNode::LinkEstablishedEventData* eData = static_cast< DRN::CDRNNode::LinkEstablishedEventData* >( eventdata );
+            DRN::CDRNNode::CDRNPeerLinkPtr link = eData->GetData();
+            
+            SubscribeTo( &(*link) );
+        }
+        else
+        if ( DRN::CDRNNode::LinkErrorEvent == eventid )
+        {
+            // We should not get here with our test app
+            GUCEF_ERROR_LOG( 0, "Link error" );
+            ERRORHERE;            
+        }
+        else
+        if ( DRN::CDRNPeerLink::LinkCorruptionEvent == eventid )
+        {
+            // We should not get here with our test app
+            GUCEF_ERROR_LOG( 0, "Link corruption" );
+            ERRORHERE;            
+        }        
+        else
+        if ( DRN::CDRNPeerLink::LinkProtocolMismatchEvent == eventid )
+        {
+            // We should not get here with our test app
+            GUCEF_ERROR_LOG( 0, "Link protocol mismatch" );
+            ERRORHERE;            
+        }
+        else
+        if ( DRN::CDRNPeerLink::LinkIncompatibleEvent == eventid )
+        {
+            // We should not get here with our test app
+            GUCEF_ERROR_LOG( 0, "Link incompatible" );
+            ERRORHERE;
+        }
+        else
+        if ( DRN::CDRNPeerLink::LinkOperationalEvent == eventid )
+        {
+            GUCEF_LOG( 0, "Link operational" );
+        }        
     }
       
 };

@@ -181,6 +181,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\src\gucefDRN.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefDRN_CDRNDataGroup.cpp"
 				>
 			</File>
@@ -202,6 +206,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\gucefDRN_CDRNPeerLinkData.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefDRN_CGUCEFDRNModule.cpp"
 				>
 			</File>
 			<File
@@ -244,6 +252,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefDRN_CDRNPeerLinkData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefDRN_CGUCEFDRNModule.h"
 				>
 			</File>
 			<File
