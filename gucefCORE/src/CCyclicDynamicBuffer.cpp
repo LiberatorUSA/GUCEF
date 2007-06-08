@@ -46,8 +46,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CCyclicDynamicBuffer::CCyclicDynamicBuffer( const UInt32 initialBufferSize /* = 0 */ )
-    : m_buffer( initialBufferSize ) ,
-      m_freeBlocks()                ,
+    : m_buffer( initialBufferSize, true ) ,
+      m_freeBlocks()                      ,
       m_usedBlocks()
 {TRACE;
     
