@@ -92,6 +92,11 @@ class CTestPeerValidator : public DRN::CIDRNPeerValidator
         return ( hostName == "localhost" ) || ( hostName == "127.0.0.1" );
     }
     
+    virtual bool IsPeerLoginRequired( void ) const
+    {
+        return true;
+    }
+    
     virtual bool IsPeerLoginValid( const CORE::CString& accountName ,
                                    const CORE::CString& password    ) const
     {

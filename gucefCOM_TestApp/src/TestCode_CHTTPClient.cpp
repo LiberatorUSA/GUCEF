@@ -51,13 +51,13 @@ using namespace GUCEF::COM;
 
 /*-------------------------------------------------------------------------*/
 
-class CMyHTTPClient : public CHTTPClientInterface
+class CMyHTTPClient : public GUCEF::CORE::CObserver
 {        
         public:
         
         CMyHTTPClient( void )
         {
-                m_client.SetInterface( this );        
+            SubscribeTo( &m_client );
         }
         
         protected:
@@ -122,6 +122,13 @@ class CMyHTTPClient : public CHTTPClientInterface
                 printf( "CMyHTTPClient::OnFinish()\n" );
         }                                              
 
+        virtual void OnNotify( CNotifier* notifier           ,
+                               const CEvent& eventid         ,
+                               CICloneable* eventdata = NULL )
+        {
+            
+        }
+
         public:
         CHTTPClient m_client;
 };
@@ -145,7 +152,7 @@ class CMyPumpClient : public CGUCEFAppSubSystem
     }
 
     virtual void OnNotify( CORE::CNotifier* notifier                 ,
-                           const CORE::UInt32 eventid                ,
+                           const CORE::CEvent& eventid               ,
                            CORE::CICloneable* eventdata /* = NULL */ )
     {
         if ( eventid == GUCEF::CORE::CGUCEFApplication::AppInitEvent )
