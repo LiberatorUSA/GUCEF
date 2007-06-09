@@ -62,6 +62,21 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CNotifierImplementor::CNotifierImplementor( void )
+    : m_isBusy( false )                 ,
+      m_observers()                     ,
+      m_eventobservers()                ,
+      m_eventMailStack()                ,
+      m_cmdMailStack()                  ,
+      m_ownerNotifier( NULL )           ,
+      m_scheduledForDestruction( false )
+{
+    // This constructor should never be used
+    GUCEF_ASSERT_ALWAYS;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CNotifierImplementor::CNotifierImplementor( CNotifier* ownerNotifier )
     : m_isBusy( false )                 ,
       m_observers()                     ,
@@ -114,7 +129,7 @@ CNotifierImplementor::~CNotifierImplementor()
 {TRACE;
    
     /*
-     *  The notifier should no longer be busy with some action if it is beeing destroyed.
+     *  The notifier should no longer be busy with some action if it is being destroyed.
      *  If it is still busy then the code would resume after the object is deleted which
      *  causes undefined behavior possibly resulting in a crash.
      *  If you hit this assert then you have found a bug in the logic of this class
@@ -262,6 +277,7 @@ CNotifierImplementor::Subscribe( CObserver* observer )
             
             ProcessMailbox();            
         }
+        m_isBusy = false;        
     }
     else
     {

@@ -107,15 +107,6 @@ typedef struct CTCPClientSocket::STCPClientSockData TTCPClientSockData;
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-CTCPClientSocket::CTCPClientSocket( void )
-        : CTCPConnection()
-{TRACE;
-
-    RegisterEvents();
-}
-
-/*-------------------------------------------------------------------------*/
-
 CTCPClientSocket::CTCPClientSocket( bool blocking ) 
         : CTCPConnection()         ,
           _blocking( blocking )    ,

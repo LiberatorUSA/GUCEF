@@ -106,6 +106,7 @@ CNotifier::~CNotifier()
 {TRACE;
 
       m_imp->OnDeathOfOwnerNotifier();
+      m_imp = NULL;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -193,6 +193,7 @@ class CNotifierImplementor
 
     private:
     
+    CNotifierImplementor( void );                            /**< should not be implemented */
     CNotifierImplementor( const CNotifierImplementor& src ); /**< should not be implemented */
     
     private:
