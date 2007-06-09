@@ -133,10 +133,6 @@ CDynamicBuffer::CDynamicBuffer( UInt32 initialsize ,
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Copy constructor, creates a dynamic buffer that is an exact copy
- *      of the given src.
- */
 CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src )
         : _buffer( NULL )                  ,
           _bsize( 0 )                      ,
@@ -148,6 +144,7 @@ CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src )
     _buffer = (Int8*) malloc( src._bsize );
     _bsize = src._bsize;
     m_dataSize = src.m_dataSize;
+    memcpy( _buffer, src._buffer, m_dataSize ); 
 }
 
 /*-------------------------------------------------------------------------*/

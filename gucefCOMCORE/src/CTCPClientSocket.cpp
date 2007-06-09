@@ -37,18 +37,10 @@
 #define DVWINSOCK_H
 #endif /* DVWINSOCK_H ? */
 
-#ifdef GUCEF_MSWIN_BUILD
-  #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
-  #include <winsock2.h>
-  #include <Ws2tcpip.h>
-  #include <Wspiapi.h>
-#else
- #ifdef GUCEF_LINUX_BUILD
-    #include <unistd.h>
-    #include <sys/socket.h>
-    #include <sys/types.h>
- #endif
-#endif
+#ifndef GUCEF_COMCORE_SOCKETUTILS_H
+#include "socketutils.h"
+#define GUCEF_COMCORE_SOCKETUTILS_H
+#endif /* GUCEF_COMCORE_SOCKETUTILS_H ? */
 
 #endif /* GUCEF_MSWIN_BUILD ? */
 
@@ -101,6 +93,7 @@ struct CTCPClientSocket::STCPClientSockData
         LPHOSTENT hostent;
         SOCKET sockid;
         SOCKADDR_IN serverinfo;
+        struct timeval timeout;         /* timeout for blocking operations */
         #else
           #ifdef GUCEF_LINUX_BUILD
           #endif
@@ -134,6 +127,7 @@ CTCPClientSocket::CTCPClientSocket( bool blocking )
     
     _data = new TTCPClientSockData;             
     assert( _data != NULL );
+    memset( &_data->timeout, 0, sizeof( struct timeval ) ); 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -203,11 +197,6 @@ CTCPClientSocket::GetMaxRead( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *	Attempts to reconnect to the server provided with
- *      Connect_To(). If Connect_To() has not yet been called then this
- *	member function has no effect.
- */
 bool
 CTCPClientSocket::Reconnect( void )
 {TRACE;
@@ -221,9 +210,6 @@ CTCPClientSocket::Reconnect( void )
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      attempt connection to server given
- */
 bool
 CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr , 
                              UInt16 port                     )
@@ -292,10 +278,8 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     if ( _data->sockid == INVALID_SOCKET ) return false;
     
     /* Set the desired blocking mode */
-    int mode = _blocking;
-    if ( ioctlsocket( _data->sockid      , 
-                      FIONBIO            , 
-                      (u_long FAR*)&mode ) == SOCKET_ERROR )
+    if ( !SetBlockingMode( _data->sockid ,
+                           _blocking     ) )
     {
             _active = false;
             return false;
@@ -324,21 +308,27 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
                        sizeof( struct sockaddr)       ,
                        &errorcode                     ) == SOCKET_ERROR )
     {
-        _active = false;
-        
-        // Check for an error
-        if ( errorcode != 0 )
+        // It is normal for WSAEWOULDBLOCK to be reported as the result from calling 
+        // connect on a nonblocking SOCK_STREAM socket, since some time must elapse 
+        // for the connection to be established.
+        if ( errorcode != WSAEWOULDBLOCK )
         {
-            // Notify our users of the error
-            TSocketErrorEventData eData( errorcode );
-            NotifyObservers( SocketErrorEvent, &eData );
-        }        
-                
-        // After a socket error you must always close the connection.
-        _active = false;
-        
-        UnlockData();
-        return false;
+            _active = false;
+            
+            // Check for an error
+            if ( errorcode != 0 )
+            {
+                // Notify our users of the error
+                TSocketErrorEventData eData( errorcode );
+                NotifyObservers( SocketErrorEvent, &eData );
+            }        
+                    
+            // After a socket error you must always close the connection.
+            _active = false;
+            
+            UnlockData();
+            return false;
+        }
     }
         
     _remoteaddr = remoteaddr;
@@ -419,12 +409,9 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                                    readblocksize                                                                ,
                                    0                                                                            ,
                                    &errorcode                                                                   );
-            
-            // Increase the logical data size delimiter by the amount we just copied into the buffer
-            m_readbuffer.SetDataSize( m_readbuffer.GetDataSize() + bytesrecv );
-                        
+                                  
             // Check for an error
-            if ( ( bytesrecv < 0 ) || ( errorcode != 0 ) )
+            if ( ( bytesrecv == SOCKET_ERROR ) || ( errorcode != 0 ) )
             {
                 // Notify our users of the error
                 TSocketErrorEventData eData( errorcode );
@@ -436,7 +423,8 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                 UnlockData();
                 return;
             }
-            else if ( bytesrecv == 0 )
+            else 
+            if ( bytesrecv == 0 )
             {
                 // The connection has been closed on us
                 Close();
@@ -444,9 +432,14 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                 UnlockData();
                 return;
             }
-
+            
+            // Increase the logical data size delimiter by the amount we just copied into the buffer
+            m_readbuffer.SetDataSize( m_readbuffer.GetDataSize() + bytesrecv );
+            
+            // Is there a limit on the number of bytes we want to read ?            
             if ( m_maxreadbytes > 0 )
             {
+                // Check to make sure we do not exceed the maximum
                 if ( m_maxreadbytes <= m_readbuffer.GetDataSize() )
                 {
                         break;
@@ -474,7 +467,52 @@ void
 CTCPClientSocket::Update( void )
 {TRACE;        
     
-    CheckRecieveBuffer();
+    if ( !_blocking && _active )
+    {       
+        fd_set readfds;      /* Setup the read variable for the select function */        
+        fd_set exceptfds;    /* Setup the except variable for the select function */
+
+        FD_ZERO( &readfds );
+        FD_ZERO( &exceptfds );
+
+        LockData();
+        
+        FD_SET( _data->sockid, &readfds );
+        FD_SET( _data->sockid, &exceptfds );                
+        
+        int errorcode = 0;
+        if ( select( (int)_data->sockid+1 , 
+                     &readfds             , 
+                     NULL                 , // We don't care about socket writes here
+                     &exceptfds           , 
+                     &_data->timeout      ) != SOCKET_ERROR ) 
+        {
+                /* something happened on the socket */
+                
+                if ( FD_ISSET( _data->sockid, &exceptfds ) )
+                {
+                        TSocketErrorEventData eData( errorcode );
+                        NotifyObservers( SocketErrorEvent, &eData );
+                        
+                        Close();
+                        UnlockData();
+                        return;                                                                   
+                }
+                else
+                if ( FD_ISSET( _data->sockid, &readfds ) )
+                {
+                        /* data can be read from the socket */
+                        CheckRecieveBuffer();
+                }                                                
+        }
+        else
+        {
+                /* select call failed */
+                TSocketErrorEventData eData( errorcode );
+                NotifyObservers( SocketErrorEvent, &eData );
+        }
+        UnlockData(); 
+    }
 }                          
 
 /*-------------------------------------------------------------------------*/

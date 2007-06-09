@@ -737,7 +737,14 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
     {
         // This notifier is already busy processing a notification
         // We will store the request until we are done
-        m_eventMailStack.push_back( TEventMailElement( eventid, eventData ) );
+        if ( eventData != NULL )
+        {
+            m_eventMailStack.push_back( TEventMailElement( eventid, eventData->Clone() ) );
+        }
+        else
+        {
+            m_eventMailStack.push_back( TEventMailElement( eventid, NULL ) );
+        }
     }
     
     UnlockData();    
@@ -806,6 +813,8 @@ CNotifierImplementor::ProcessEventMailbox( void )
         // If the mailbox has any more items remaining we will end up back here 
         // for the next mail item
         NotifyObservers( entry.first, entry.second );            
+        
+        delete entry.second;
     }
 }
 

@@ -187,8 +187,8 @@ typedef DWORD ( WINAPI *TIcmpSendEchoPtr)( HANDLE IcmpHandle, IPAddr Destination
 
 #ifdef GUCEF_MSWIN_BUILD
 MT::CMutex globalMutex;
-UInt32 iphlpapiDllRefCount = 0;
-void* iphlpapiDllHandle = NULL;
+UInt32 DllRefCount = 0;
+void* DllHandle = NULL;
 TIcmpCreateFilePtr IcmpCreateFile = NULL;
 TIcmpCloseHandlePtr IcmpCloseHandle = NULL;
 TIcmpSendEchoPtr IcmpSendEcho = NULL;
@@ -399,30 +399,30 @@ class CMSWinPingTask : public MT::CActiveObject   ,
 #ifdef GUCEF_MSWIN_BUILD
 
 bool
-LinkICMPForXPAndHigher( void )
+LinkICMP( const char* moduleName )
 {
     globalMutex.Lock();
-    if ( iphlpapiDllHandle == NULL )
+    if ( DllHandle == NULL )
     {
-        iphlpapiDllHandle = CORE::LoadModuleDynamicly( "iphlpapi.dll" );
-        if ( iphlpapiDllHandle != NULL )
+        DllHandle = CORE::LoadModuleDynamicly( moduleName );
+        if ( DllHandle != NULL )
         {
-            IcmpCreateFile = (TIcmpCreateFilePtr) CORE::GetFunctionAddress( iphlpapiDllHandle ,
+            IcmpCreateFile = (TIcmpCreateFilePtr) CORE::GetFunctionAddress( DllHandle         ,
                                                                             "IcmpCreateFile"  ,
                                                                             0                 );
-            IcmpCloseHandle = (TIcmpCloseHandlePtr) CORE::GetFunctionAddress( iphlpapiDllHandle ,
+            IcmpCloseHandle = (TIcmpCloseHandlePtr) CORE::GetFunctionAddress( DllHandle         ,
                                                                               "IcmpCloseHandle" ,
                                                                               sizeof( HANDLE )  );
-            IcmpSendEcho = (TIcmpSendEchoPtr) CORE::GetFunctionAddress( iphlpapiDllHandle ,
+            IcmpSendEcho = (TIcmpSendEchoPtr) CORE::GetFunctionAddress( DllHandle         ,
                                                                         "IcmpSendEcho"    ,
                                                                         sizeof( HANDLE ) + sizeof( IPAddr ) + 2*sizeof( LPVOID ) + sizeof( WORD ) + sizeof( PIP_OPTION_INFORMATION ) + 2*sizeof( DWORD ) );
                                                      
             bool foundFunctions = ( IcmpCreateFile != NULL ) && ( IcmpCloseHandle != NULL ) && ( IcmpSendEcho != NULL );
             if ( !foundFunctions )
             {
-                CORE::UnloadModuleDynamicly( iphlpapiDllHandle );
-                iphlpapiDllHandle = NULL;
-                iphlpapiDllRefCount = 0;
+                CORE::UnloadModuleDynamicly( DllHandle );
+                DllHandle = NULL;
+                DllRefCount = 0;
                 
                 globalMutex.Unlock();
                 return false;            
@@ -432,15 +432,15 @@ LinkICMPForXPAndHigher( void )
         }
         else
         {
-            iphlpapiDllHandle = NULL;
-            iphlpapiDllRefCount = 0;
+            DllHandle = NULL;
+            DllRefCount = 0;
             
             globalMutex.Unlock();
             return false;            
         }
     }
     
-    ++iphlpapiDllRefCount;
+    ++DllRefCount;
     
     globalMutex.Unlock();
     return true;
@@ -448,17 +448,33 @@ LinkICMPForXPAndHigher( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+LinkICMPOlderThenXP( void )
+{
+    return LinkICMP( "ICMP.dll" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+LinkICMPForXPAndHigher( void )
+{
+    return LinkICMP( "iphlpapi.dll" );
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
-UnlinkICMPForXPAndHigher( void )
+UnlinkICMP( void )
 {
     globalMutex.Lock();    
-    if ( iphlpapiDllHandle != NULL )
+    if ( DllHandle != NULL )
     {
-        if ( iphlpapiDllRefCount == 1 )
+        if ( DllRefCount == 1 )
         {
-            CORE::UnloadModuleDynamicly( iphlpapiDllHandle );
-            iphlpapiDllHandle = NULL;            
-            --iphlpapiDllRefCount;
+            CORE::UnloadModuleDynamicly( DllHandle );
+            DllHandle = NULL;            
+            --DllRefCount;
         }
     }
     globalMutex.Unlock();
@@ -495,7 +511,10 @@ CPing::CPing( void )
     
     #ifdef GUCEF_MSWIN_BUILD
     
-    LinkICMPForXPAndHigher();
+    if ( !LinkICMPForXPAndHigher() )
+    {
+        LinkICMPOlderThenXP();
+    }
     
     AddEventForwarding( PingStartedEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( PingReponseEvent, EVENTORIGINFILTER_TRANSFER );
@@ -513,7 +532,7 @@ CPing::~CPing()
     Stop();
     
     #ifdef GUCEF_MSWIN_BUILD
-    UnlinkICMPForXPAndHigher();
+    UnlinkICMP();
     #endif /* GUCEF_MSWIN_BUILD ? */
 }
 
@@ -540,7 +559,7 @@ CPing::Start( const CORE::CString& remoteHost           ,
         CMSWinPingTask* pingTask = new CMSWinPingTask();
         if ( pingTask != NULL )
         {
-            if ( iphlpapiDllHandle != NULL )
+            if ( DllHandle != NULL )
             {
                 m_isActive = true;
                 

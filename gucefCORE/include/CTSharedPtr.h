@@ -57,17 +57,17 @@ namespace CORE {
  *  Templated implementation of a shared pointer.
  *
  *  A shared pointer adds some safety to pointers that get passed
- *  arround where objects keep a reference to object instances independant
- *  of eachother. In such situations it can become unclear who is responsible 
- *  for destroying the refrenced object instance.
+ *  around where objects keep a reference to object instances independent
+ *  of each other. In such situations it can become unclear who is responsible 
+ *  for destroying the referenced object instance.
  *  The shared pointer will reference count the pointer and ensure that even 
  *  though the original owner has no knowledge of other classes referencing the 
  *  object it can safely manage object destruction as desired.
  *
- *  Note that the default behaviour of this template is to delete the referenced
+ *  Note that the default behavior of this template is to delete the referenced
  *  object instance when the reference count hits zero. This raises some 
  *  "out-of-scope-memory-management" concerns. While this can be the intended 
- *  behaviour, it is advised to alter this behaviour to provide an in-scope mechanism
+ *  behavior, it is advised to alter this behavior to provide an in-scope mechanism
  *  ( ie delegating destruction responsibilities to the original creator of the object ).
  *
  *      Method 1:
@@ -160,11 +160,11 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
 
     CTSharedPtr& operator=( const CTSharedPtr& src );
 
-    bool operator==( const T* other ) const;
+    bool operator==( const void* other ) const;
     
     bool operator==( const CTSharedPtr& other ) const;
  
-    bool operator!=( const T* other ) const;
+    bool operator!=( const void* other ) const;
     
     bool operator!=( const CTSharedPtr& other ) const;
  
@@ -330,7 +330,7 @@ CTSharedPtr< T >::operator==( const CTSharedPtr< T >& other ) const
 
 template< typename T >
 inline bool 
-CTSharedPtr< T >::operator==( const T* other ) const
+CTSharedPtr< T >::operator==( const void* other ) const
 {TRACE;
 
     return static_cast< const CTBasicSharedPtr< T > >( *this ) == other;
@@ -340,7 +340,7 @@ CTSharedPtr< T >::operator==( const T* other ) const
 
 template< typename T >
 inline bool 
-operator==( const T* ptr, const CTSharedPtr< T >& other )
+operator==( const void* ptr, const CTSharedPtr< T >& other )
 {TRACE;
 
     return static_cast< CTBasicSharedPtr< T > >( other ) == ptr;
@@ -373,7 +373,7 @@ CTSharedPtr< T >::operator!=( const CTSharedPtr< T >& other ) const
 
 template< typename T >
 inline bool 
-CTSharedPtr< T >::operator!=( const T* other ) const
+CTSharedPtr< T >::operator!=( const void* other ) const
 {TRACE;
 
     return static_cast< const CTBasicSharedPtr< T > >( *this ) != other;    
@@ -383,7 +383,7 @@ CTSharedPtr< T >::operator!=( const T* other ) const
 
 template< typename T >
 inline bool 
-operator!=( const T* ptr, const CTSharedPtr< T >& other )
+operator!=( const void* ptr, const CTSharedPtr< T >& other )
 {TRACE;
 
     return other != ptr;
@@ -461,14 +461,14 @@ CTSharedPtr< T >::operator->( void ) const
         - Dinand: Fixed and cleaned up the object destruction mechanics
           Instead of using a local object to delete the shared object we now use
           a self-deleting destructor delegator. This allows us to copy the destructor
-          pointer safely in all scenario's since it's garanteed to be kepts alive as
+          pointer safely in all scenario's since it's guaranteed to be kept alive as
           long as the reference count does not hit zero. This could actually cause 
           nasty crashes in the previous implementation because the local destructor
           mechanism broke down when a CTSharedPtr got converted into a CTBasicSharedPtr
-          which could result in an invalid destructor object beeing invoked.
-          This fix has the desireable side-effect of simplifying the code.
+          which could result in an invalid destructor object being invoked.
+          This fix has the desirable side-effect of simplifying the code.
 - 14-12-2005 :
-        - Dinand: Moved code into this new baseclass from CTSharedPtr to allow
+        - Dinand: Moved code into this new base class from CTSharedPtr to allow
           some level of shared pointer usage without actually requiring the type
           to be defined. ie you can create a shared pointer with a forward declaration.
 

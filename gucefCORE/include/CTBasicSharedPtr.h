@@ -64,16 +64,16 @@ namespace CORE {
  *  Templated implementation of a shared pointer.
  *
  *  A shared pointer adds some safety to pointers that get passed
- *  arround where objects keep a reference to object instances independant
- *  of eachother. In such situations it can become unclear who is responsible 
- *  for destroying the refrenced object instance.
+ *  around where objects keep a reference to object instances independent
+ *  of each other. In such situations it can become unclear who is responsible 
+ *  for destroying the referenced object instance.
  *  The shared pointer will reference count the pointer and ensure that even 
  *  though the original owner has no knowledge of other classes referencing the 
  *  object it can safely manage object destruction as desired.
  *
  *  Note that the usage of an external destructor for the shared object by means of the
- *  CTSharedObjectDestructor template is manditory. By passing in a pointer to such a class
- *  you basicly create a callback link for cleanup purposes.
+ *  CTSharedObjectDestructor template is mandatory. By passing in a pointer to such a class
+ *  you basically create a callback link for cleanup purposes.
  *
  *  Note that this shared pointer implementation is by no means threadsafe and should 
  *  never be used across thread-boundries.
@@ -173,11 +173,11 @@ class CTBasicSharedPtr
     
     CTBasicSharedPtr& operator=( int nullValue );
  
-    inline bool operator==( const T* other ) const;
+    inline bool operator==( const void* other ) const;
     
     inline bool operator==( const CTBasicSharedPtr& other ) const;
  
-    inline bool operator!=( const T* other ) const;
+    inline bool operator!=( const void* other ) const;
     
     inline bool operator!=( const CTBasicSharedPtr& other ) const;
  
@@ -429,7 +429,7 @@ CTBasicSharedPtr< T >::operator==( const CTBasicSharedPtr< T >& other ) const
 
 template< typename T >
 inline bool 
-CTBasicSharedPtr< T >::operator==( const T* other ) const
+CTBasicSharedPtr< T >::operator==( const void* other ) const
 {TRACE;
 
     return other == m_ptr;
@@ -473,7 +473,7 @@ CTBasicSharedPtr< T >::operator!=( const CTBasicSharedPtr< T >& other ) const
 
 template< typename T >
 inline bool 
-CTBasicSharedPtr< T >::operator!=( const T* other ) const
+CTBasicSharedPtr< T >::operator!=( const void* other ) const
 {TRACE;
 
     return other != m_ptr;
@@ -662,7 +662,7 @@ CTBasicSharedPtr< T >::SetToNULL( void )
 //-------------------------------------------------------------------------//
 
 - 14-12-2005 :
-        - Dinand: Moved code into this new baseclass from CTSharedPtr to allow
+        - Dinand: Moved code into this new base class from CTSharedPtr to allow
           some level of shared pointer usage without actually requiring the type
           to be defined. ie you can create a shared pointer with a forward declaration.
 

@@ -34,14 +34,17 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_COMCORE_SOCKETUTILS_H
+#include "socketutils.h"
+#define GUCEF_COMCORE_SOCKETUTILS_H
+#endif /* GUCEF_COMCORE_SOCKETUTILS_H ? */
+
 #ifdef GUCEF_MSWIN_BUILD
 
 #ifndef DVWINSOCK_H
 #include "dvwinsock.h"
 #define DVWINSOCK_H
 #endif /* DVWINSOCK_H ? */
-
-#include <winsock2.h>                   /* windows networking API */
 
 #endif /* GUCEF_MSWIN_BUILD ? */
 
@@ -65,7 +68,7 @@ namespace COMCORE {
 /*
  *      This is a value used internally for reading into a buffer between
  *      events. If this value is set to small you will get inefficient code
- *      due to unnessesary memory allocation operations, however if you set it
+ *      due to unnecessary memory allocation operations, however if you set it
  *      to large you will allocate memory that is never used.
  *      So what you need to do is find out what the average length is of your
  *      communication and adapt the value to that
@@ -98,11 +101,18 @@ const CORE::CEvent CTCPServerSocket::ServerSocketMaxConnectionsChangedEvent = "G
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef GUCEF_LINUX_BUILD
+#define SOCKET int
+#endif /* GUCEF_LINUX_BUILD ? */
+
+/*-------------------------------------------------------------------------*/
+
 struct STCPServerConData
 {
         SOCKET sockid;
         CORE::CString clientip;
         struct sockaddr_in clientaddr;
+        struct timeval timeout;         /* timeout for blocking operations */
 };
 typedef struct STCPServerConData TTCPServerConData;
 
@@ -115,7 +125,7 @@ struct STCPServerSockData
         UInt32 connectcount;     /* number of clients connected to the server socket */
         UInt32 maxcon;           /* maximum number of connections for this server socket */
         bool blocking;           /* is this a blocking or non-blocking server ? */
-        SOCKADDR_IN serverinfo;  /* winsock info on the listning socket */
+        SOCKADDR_IN serverinfo;  /* winsock info on the listening socket */
         int threadmethod;        /* threading method used by this socket */
         struct timeval timeout;  /* timeout for blocking operations */
         #endif
@@ -128,15 +138,6 @@ typedef struct STCPServerSockData TTCPServerSockData;
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-CTCPServerSocket::CTCPServerSocket( void )
-        : CSocket() ,
-          m_port(0)
-{TRACE;
-        /* dummy, should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
 
 CTCPServerSocket::CTCPServerSocket( bool blocking ) 
         : CSocket()                               ,
@@ -253,9 +254,15 @@ CTCPServerSocket::AcceptClients( void )
                 s = 0;        
                 if ( !_data->blocking )                        
                 {
+                        /*
+                         *  Because we are in non-blocking mode we must make sure the timeout
+                         *  structure is zero'd or it will block
+                         */
+                        memset( &_data->timeout, 0, sizeof( struct timeval ) );
+                        
                         /* 
                          *      Up the nfds value by one, shouldnt be the same for each
-                         *      client that connects for compatability reasons
+                         *      client that connects for compatibility reasons
                          *      Doing a select first will ensure that we don't block on accept()
                          */
                         nfds = (int)_data->sockid+1;
@@ -288,19 +295,25 @@ CTCPServerSocket::AcceptClients( void )
                                                                 clientip                              );                                                        
                                                 clientcon->_data->clientip = clientip;
                                                 
-	                                        /*
-	                                         *      Set the socket into the desired mode of operation
-	                                         *      ie blocking or non-blocking mode
-	                                         */
-                                                unsigned long blockmode = _blocking;
-                                                if ( ioctlsocket( _data->sockid           , 
-                                                                  FIONBIO                 , 
-                                                                  (u_long FAR*)&blockmode ) == SOCKET_ERROR )
+                                                /*
+                                                 *      Set the socket into the desired mode of operation
+                                                 *      ie blocking or non-blocking mode
+                                                 */
+                                                if ( !SetBlockingMode( _data->sockid ,
+                                                                       _blocking     ) )
                                                 {
                                                         clientcon->_data->sockid = 0;
                                                         return;
                                                 }	                                         
-	                                        clientcon->_blocking = _blocking;             	                                                
+                                                clientcon->_blocking = _blocking;             	                                                
+                                                if ( !_blocking )
+                                                {
+                                                    /*
+                                                     *  Because we are in non-blocking mode we must make sure the timeout
+                                                     *  structure is zero'd or it will block
+                                                     */
+                                                    memset( &clientcon->_data->timeout, 0, sizeof( struct timeval ) );
+                                                }
                                                 
                                                 ++_data->connectcount;
                                                 clientcon->_active = true;
@@ -375,10 +388,8 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
         }
 	
         /* Set the desired blocking mode */
-        int mode = _blocking;
-        if ( ioctlsocket( _data->sockid      , 
-                          FIONBIO            , 
-                          (u_long FAR*)&mode ) == SOCKET_ERROR )
+        if ( !SetBlockingMode( _data->sockid ,
+                               _blocking     ) )
         {
                 NotifyObservers( ServerSocketErrorEvent );
                 return false;
@@ -415,17 +426,6 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 		NotifyObservers( ServerSocketErrorEvent, &eData );		
 		return false;
 	}
-	
-	/*
-	 *      Set the socket into the desired mode of operation
-	 *      ie blocking or non-blocking mode
-	 */
-	unsigned long blockarg;
-	_blocking ? blockarg = 0 : blockarg = 1; 
-	ioctlsocket( _data->sockid ,
-	             FIONBIO       ,
-	             &blockarg     );	               
-	
         /*
          *      Make the socket listen
          *
@@ -509,54 +509,14 @@ CTCPServerSocket::Close( void )
         _datalock.Unlock();
 }
 
-/*-------------------------------------------------------------------------*/
-
-/**
- *	Member function that can be used to set the threading method for
- *	a specific client connection. Returns wheter or not successfull.
- */
-void
-CTCPServerSocket::SetClientThreading( bool thread )
-{TRACE;       
-	/*if ( ( method != TM_THREAD_PER_EVENT ) &&
-             ( method != TM_CONSUMER_THREAD ) &&
-             ( method != TM_NO_THREADING ) ) return false;
-
-	if ( !datalock.Lock_Mutex() ) return false;
-	if ( (Int32)connection <= connections.Last() )
-        {
-        	((CTCPServerConnection*)connections[ connection ])->Threading_Method( method );
-        }
-        datalock.Unlock_Mutex();    */
-        //return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *	Member function that can be used to get the threading method for
- *	a specific client connection. Returns -1 if unsuccessfull.
- */
-bool
-CTCPServerSocket::GetClientThreading( void ) const
-{TRACE;
-/*	if ( !datalock.Lock_Mutex() ) return -1;
-	if ( (Int32)connection <= connections.Last() )
-        {
-        	int method = ((CTCPServerConnection*)connections[ connection ])->Threading_Method();
-                datalock.Unlock_Mutex();
-                return method;
-        }
-        datalock.Unlock_Mutex();  */
-        return false;
-}
 
 /*-------------------------------------------------------------------------*/
 
 UInt16
 CTCPServerSocket::GetPort( void ) const
-{TRACE;
-        return m_port;        
+{GUCEF_TRACE;
+
+    return m_port;        
 }
 
 /*-------------------------------------------------------------------------*/

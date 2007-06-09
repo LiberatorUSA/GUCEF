@@ -35,7 +35,7 @@
 #define DVWINSOCK_H
 #endif /* DVWINSOCK_H ? */
 
-#include <winsock.h>                   /* windows networking API */
+#include <winsock2.h>                   /* windows networking API */
 
 #endif /* GUCEF_MSWIN_BUILD ? */
 
@@ -74,6 +74,7 @@ struct STCPServerConData
         UInt32 sockid;
         CORE::CString clientip;
         struct sockaddr_in clientaddr;
+        struct timeval timeout;         /* timeout for blocking operations */
 };
 typedef struct STCPServerConData TTCPServerConData;
 
@@ -91,10 +92,10 @@ CTCPServerConnection::CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
                                             UInt32 connection_idx            )
         : CTCPConnection()                    ,
           _active( false )                    ,
-          m_keepbytes( 0 )                    ,
           m_maxreadbytes( 0 )                 ,
           m_parentsock( tcp_serversock )      ,
-          m_connectionidx( connection_idx )
+          m_connectionidx( connection_idx )   ,
+          _blocking( false )
           
 {GUCEF_TRACE;
         
@@ -209,23 +210,6 @@ CTCPServerConnection::GetMaxRead( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *	Read data from socket. Using this member function basicly means
- *	that you will wait for data to arrive which will then be written
- *	into the dest buffer provided up to size. Note that the primary
- *	application thread does the initial network messaging so don't
- *	call this function from the main application thread !!!.
- *	timeout is the time in millisecs to wait maximum. if timeout < 0
- *	then no timeout will be used. False is returned if a timeout
- *	occured. True if the wait was successful. It is best to call
- *	this member function from a consumer thread. wbytes is given the
- *	nuber of bytes that where actually written uppon a succesful
- *	read. This member function waits untill data that was recieved
- *	on the socket is processed by the OnRead() event handler before
- *	returning if there is one. Note that if the destination buffer
- *	is not large enough to hold the data then the remaining data
- *	will be lost.
- */
 bool
 CTCPServerConnection::Read( char *dest     , 
                             UInt32 size    , 
@@ -259,7 +243,7 @@ CTCPServerConnection::CheckRecieveBuffer( void )
 {GUCEF_TRACE;
                                  
         /*
-         *      Since this is a non-blocking socket we need to poll for recieved data
+         *      Since this is a non-blocking socket we need to poll for received data
          */
         int bytesrecv;
         UInt16 totalrecieved( 0 );
@@ -268,12 +252,12 @@ CTCPServerConnection::CheckRecieveBuffer( void )
         m_maxreadbytes ? readblocksize = m_maxreadbytes : readblocksize = 1024;
         do
         {                 
-                m_readbuffer.SetDataSize( m_readbuffer.GetDataSize()+readblocksize+m_keepbytes );
-                bytesrecv = WSTS_recv( _data->sockid                                                             , 
-                                       static_cast<char*>(m_readbuffer.GetBufferPtr())+totalrecieved+m_keepbytes ,
-                                       readblocksize                                                             ,
-                                       0                                                                         ,
-                                       &errorcode                                                                );
+                m_readbuffer.SetDataSize( m_readbuffer.GetDataSize()+readblocksize );
+                bytesrecv = WSTS_recv( _data->sockid                                                 , 
+                                       static_cast<char*>(m_readbuffer.GetBufferPtr())+totalrecieved ,
+                                       readblocksize                                                 ,
+                                       0                                                             ,
+                                       &errorcode                                                    );
                                        
                 if ( (  0 == totalrecieved ) &&
                      (  0 == bytesrecv     )  )
@@ -283,13 +267,18 @@ CTCPServerConnection::CheckRecieveBuffer( void )
                          *      This means that the client closed the connection
                          */
                         closesocket( _data->sockid ); 
-                        _active = false;                         
+                        _active = false;
+                        
+                        NotifyObservers( DisconnectedEvent );
+                        
                         m_parentsock->OnClientConnectionClosed( this            ,
                                                                 m_connectionidx ,
                                                                 true            );                         
                         return; 
                 }                     
                 totalrecieved += bytesrecv;
+                m_readbuffer.SetDataSize( totalrecieved );
+                
                 if ( m_maxreadbytes )
                 {
                         if ( m_maxreadbytes <= totalrecieved )
@@ -300,31 +289,17 @@ CTCPServerConnection::CheckRecieveBuffer( void )
         }
         while ( bytesrecv == readblocksize );
         
-        if ( totalrecieved )
+        if ( totalrecieved > 0 )
         {
                 UInt16 keepbytes(0);
-                m_parentsock->OnClientRead( this                                                    ,
-                                            m_connectionidx                                         , 
-                                            static_cast<const char*>( m_readbuffer.GetBufferPtr() ) ,
-                                            totalrecieved + m_keepbytes                             ,
-                                            keepbytes                                               );
-                m_keepbytes = keepbytes;
-        }
-        else
-        {
-                m_keepbytes = 0;
-        }                        
-             
+                
+                TDataRecievedEventData eData( &m_readbuffer );
+                NotifyObservers( DataRecievedEvent, &eData );
+        }                              
 }
 
 /*-------------------------------------------------------------------------*/
 
-/**                 
- *      polls the socket ect. as needed and update stats.
- *
- *      @param tickcount the tick count when the Update process commenced.
- *      @param deltaticks ticks since the last Update process commenced.          
- */
 void 
 CTCPServerConnection::Update( void )
 {GUCEF_TRACE;
@@ -332,34 +307,30 @@ CTCPServerConnection::Update( void )
         if ( !_blocking && _active )
         {       
                 fd_set readfds;      /* Setup the read variable for the select function */        
-                //fd_set writefds;     /* Setup the write variable for the select function */
                 fd_set exceptfds;    /* Setup the except variable for the select function */
 
                 FD_ZERO( &readfds );
-                //FD_ZERO( &writefds );
                 FD_ZERO( &exceptfds );
         
                 _datalock.Lock();
                 
                 FD_SET( _data->sockid, &readfds );
-                //FD_SET( _data->sockid, &writefds );
                 FD_SET( _data->sockid, &exceptfds );                
                 
-                int errorcode;
-                if ( WSTS_select( 0          , 
-                                  &readfds   , 
-                                  NULL       ,  //&writefds  , 
-                                  &exceptfds , 
-                                  0          ,
-                                  &errorcode ) > 0 ) 
+                int errorcode = 0;
+                if ( select( _data->sockid+1   , 
+                             &readfds          , 
+                             NULL              , // We don't care about socket writes here
+                             &exceptfds        , 
+                             &_data->timeout   ) != SOCKET_ERROR ) 
                 {
                         /* something happened on the socket */
                         
                         if ( FD_ISSET( _data->sockid, &exceptfds ) )
                         {
-                               // m_parentsock->OnClientSocketError( this              ,
-                                 //                                  m_connectionidx   , 
-                                 //                                  );
+                                TSocketErrorEventData eData( errorcode );
+                                NotifyObservers( SocketErrorEvent, &eData );
+                                
                                 Close();
                                 _datalock.Unlock();
                                 return;                                                                   
@@ -374,7 +345,8 @@ CTCPServerConnection::Update( void )
                 else
                 {
                         /* select call failed */
-                        //@TODO: handle
+                        TSocketErrorEventData eData( errorcode );
+                        NotifyObservers( SocketErrorEvent, &eData );
                 }
                 _datalock.Unlock(); 
         }               

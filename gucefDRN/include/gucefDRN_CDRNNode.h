@@ -76,7 +76,7 @@ class CIDRNPeerLinkCrypter;
 /**
  *  Main DRN connectivity class that manages a collection of DRN links.
  */
-class GUCEF_DRN_EXPORT_CPP CDRNNode : private CORE::CObservingNotifier
+class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
 {
     public:
     

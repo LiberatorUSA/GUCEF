@@ -177,7 +177,6 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
         CORE::CDynamicBuffer _sendbuffer;
         MT::CMutex _datalock;
         UInt32 m_maxreadbytes;
-        UInt16 m_keepbytes;
         UInt32 m_connectionidx;      
         CTCPServerSocket* m_parentsock;
 
@@ -203,32 +202,36 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 09-06-2007 :
+        - Dinand: Finally got around to fixing this class and make it 
+          compatible with the infrastructure that is also used by the TCP 
+          client socket
 - 29-06-2004 :
-        - Fixed a bug in the set Max_Read(). An old check that made sure the
+        - Dinand: Fixed a bug in the set Max_Read(). An old check that made sure the
           mr value was > 0 was still present causing a problem with the new
           max read protection and could potentially cause data to 'drop'. 
 - 20-01-2004 :
-        - Added the set and get for Max_Read(). This addition is meant to
+        - Dinand: Added the set and get for Max_Read(). This addition is meant to
           increase the resistance of the server to data spam-ing.
 - 13-01-2004 :
-        - This class now overrides the CSocket's mutex lock and unlock member
+        - Dinand: This class now overrides the CSocket's mutex lock and unlock member
           functions so we can also lock the server socket. This prevents a
           deadlock from occurring between the two.
 - 11-01-2004 :
-        - Modified code so that this object also closes the NET2 socket itself.
+        - Dinand: Modified code so that this object also closes the NET2 socket itself.
           All code for manipulating the lower level socket functions for the
           connection is now located in this class. The server socket should
           delete this object in a connection closing member function or a loop
           will occur causing access of a deleted object.
 - 05-01-2004 :
-        - Modified the class code so that it will now process events for this
+        - Dinand: Modified the class code so that it will now process events for this
           connection itself instead of letting the parent server socket do it.
           This means setting the threading method for this connection now has
           an effect as intended.
-        - The socket will now close after an error occurred.
+        - Dinand: The socket will now close after an error occurred.
 - 23-09-2003 :
-        - Added this section.
-        - Added Wait_Untill_Read() in order to provide a method of operation
+        - Dinand: Added this section.
+        - Dinand: Added Wait_Untill_Read() in order to provide a method of operation
           similar to a blocking socket. Also added Read_Data() which will allow
           a blocking socket implementation to be used. You should only call these
           member functions from a thread other then the main application thread.

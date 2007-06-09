@@ -131,10 +131,6 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     
     UInt32 GetMaxConnections( void ) const;
     
-    void SetClientThreading( bool thread );
-    
-    bool GetClientThreading( void ) const;
-    
     /**                 
      *      polls the socket etc. as needed and update stats.        
      */
@@ -143,7 +139,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     /*
      *      Constructor and Destructor
      */
-    virtual ~CTCPServerSocket();
+    virtual ~CTCPServerSocket();   
     
     private:
     friend class CTCPServerConnection;

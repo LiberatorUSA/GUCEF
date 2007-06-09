@@ -23,6 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
+#include <assert.h>
+
 #ifndef GUCEF_MT_MUTEX_H
 #include "gucefMT_mutex.h"
 #define GUCEF_MT_MUTEX_H
@@ -96,6 +98,7 @@ InitWinsock( UInt16 desiredversion )
     if ( _wsinit == 0 )
     {
         _globallock = MutexCreate();
+        assert( _globallock != NULL );
                 
         WSAStartup( desiredversion , 
                     &wsadata       );

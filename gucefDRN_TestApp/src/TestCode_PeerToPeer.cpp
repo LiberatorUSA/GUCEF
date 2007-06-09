@@ -63,9 +63,8 @@
 
 /*-------------------------------------------------------------------------*/
 
-#define ERRORHERE { GUCEF_ERROR_LOG( 0, GUCEF::CORE::CString( "Test failed @ " ) + GUCEF::CORE::CString( __FILE__ ) + GUCEF::CORE::Int32ToString( __LINE__ ) ); \
-                    printf( "Test failed @ %s(%d)\n", __FILE__, __LINE__ );                                                                                      \
-                    DebugBreak();                                                                                                                                \
+#define ERRORHERE { GUCEF_ERROR_LOG( 0, GUCEF::CORE::CString( "Test failed @ " ) + GUCEF::CORE::CString( __FILE__ ) + ':' + GUCEF::CORE::Int32ToString( __LINE__ ) ); \
+                    DebugBreak();                                                                                                                                     \
                   }
 
 /*-------------------------------------------------------------------------//
@@ -134,6 +133,7 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
     CTestPeerValidator testValidator;        
     DRN::CDRNNode nodeA;
     DRN::CDRNNode nodeB; 
+    DRN::CDRNNode::CDRNPeerLinkPtr m_link;
 
     public:
     
@@ -145,6 +145,9 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
         
         nodeA.SetPeerValidator( &testValidator );
         nodeB.SetPeerValidator( &testValidator );
+        
+        SubscribeTo( &nodeA );
+        SubscribeTo( &nodeB );
         
         if ( nodeA.GetPeervalidator() != &testValidator )
         {
@@ -188,10 +191,17 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
     
         if ( DRN::CDRNNode::LinkEstablishedEvent == eventid )
         {
-            DRN::CDRNNode::LinkEstablishedEventData* eData = static_cast< DRN::CDRNNode::LinkEstablishedEventData* >( eventdata );
-            DRN::CDRNNode::CDRNPeerLinkPtr link = eData->GetData();
+            GUCEF_LOG( 0, "Link established" );
             
-            SubscribeTo( &(*link) );
+            DRN::CDRNNode::LinkEstablishedEventData* eData = static_cast< DRN::CDRNNode::LinkEstablishedEventData* >( eventdata );
+            m_link = eData->GetData();
+            
+            SubscribeTo( &(*m_link) );
+        }
+        else
+        if ( DRN::CDRNPeerLink::ConnectedEvent == eventid )
+        {
+            GUCEF_LOG( 0, "Link connected" );
         }
         else
         if ( DRN::CDRNNode::LinkErrorEvent == eventid )
@@ -222,9 +232,34 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             ERRORHERE;
         }
         else
-        if ( DRN::CDRNPeerLink::LinkOperationalEvent == eventid )
+        if ( ( notifier == m_link )                               &&
+             ( DRN::CDRNPeerLink::LinkOperationalEvent == eventid ) )
         {
             GUCEF_LOG( 0, "Link operational" );
+            
+            if ( !m_link->RequestDataGroupList() )
+            {
+                // We should not get here with our test app
+                GUCEF_ERROR_LOG( 0, "Failed to request the peer data group list" );
+                ERRORHERE;                
+            }            
+            GUCEF_LOG( 0, "Requested data group list from peer" );
+
+            if ( !m_link->RequestStreamList() )
+            {
+                // We should not get here with our test app
+                GUCEF_ERROR_LOG( 0, "Failed to request the peer data stream list" );
+                ERRORHERE;                
+            }
+            GUCEF_LOG( 0, "Requested data stream list from peer" );
+
+            if ( !m_link->RequestPeerList() )
+            {
+                // We should not get here with our test app
+                GUCEF_ERROR_LOG( 0, "Failed to request the peer's peer list" );
+                ERRORHERE;                
+            }
+            GUCEF_LOG( 0, "Requested peer list from peer" );
         }        
     }
       

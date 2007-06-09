@@ -259,6 +259,10 @@
 				RelativePath="..\..\src\gucefCOMCORE.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\socketutils.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
