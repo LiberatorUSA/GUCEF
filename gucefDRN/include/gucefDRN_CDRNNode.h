@@ -108,9 +108,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     
     void Disconnect( void );
     
-    bool HasOperationalLinks( void ) const;
+    bool HasOperationalLinksForUs( void ) const;
     
-    UInt32 GetOperationalLinkCount( void ) const;
+    UInt32 GetOperationalLinkForUsCount( void ) const;
     
     bool ConnectToPeer( const CORE::CString& address , 
                         const UInt16 port            );

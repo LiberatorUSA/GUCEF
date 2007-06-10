@@ -148,7 +148,8 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
     CTestPeerValidator testValidator;        
     DRN::CDRNNode nodeA;
     DRN::CDRNNode nodeB; 
-    DRN::CDRNNode::CDRNPeerLinkPtr m_link;
+    DRN::CDRNNode::CDRNPeerLinkPtr m_linkA;
+    DRN::CDRNNode::CDRNPeerLinkPtr m_linkB;
 
     public:
     
@@ -205,6 +206,35 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
         }    
     }
 
+    CORE::CString GetNodeName( CORE::CNotifier* notifier )
+    {GUCEF_TRACE;
+
+        if ( notifier == &nodeA )
+        {
+            return "Node A";
+        }
+        if ( notifier == &nodeB )
+        {
+            return "Node B";
+        }
+        return "Unknown Source";              
+    }
+    
+    CORE::CString GetLinkNodeName( CORE::CNotifier* notifier )
+    {GUCEF_TRACE;
+    
+        DRN::CDRNPeerLink* link = static_cast< DRN::CDRNPeerLink* >( notifier );
+        if ( &link->GetParentNode() == &nodeA )
+        {
+            return "Node A";
+        }
+        if ( &link->GetParentNode() == &nodeB )
+        {
+            return "Node B";
+        }
+        return "Unknown Source";              
+    }
+
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
                            CORE::CICloneable* eventdata = NULL )
@@ -217,101 +247,136 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
         else
         if ( DRN::CDRNNode::LinkEstablishedEvent == eventid )
         {
-            GUCEF_LOG( 0, "Link established" );
+            GUCEF_LOG( 0, GetNodeName( notifier ) + ": Link established" );
             
             DRN::CDRNNode::LinkEstablishedEventData* eData = static_cast< DRN::CDRNNode::LinkEstablishedEventData* >( eventdata );
-            m_link = eData->GetData();
             
-            SubscribeTo( &(*m_link) );
+            if ( notifier == &nodeA )
+            {
+                m_linkA = eData->GetData();            
+                SubscribeTo( &(*m_linkA) );
+            }
+            else
+            if ( notifier == &nodeB )
+            {
+                m_linkB = eData->GetData();            
+                SubscribeTo( &(*m_linkB) );
+            }            
         }
         else
         if ( DRN::CDRNPeerLink::ConnectedEvent == eventid )
         {
-            GUCEF_LOG( 0, "Link connected" );
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Link connected" );
         }
         else
         if ( DRN::CDRNNode::LinkErrorEvent == eventid )
         {
             // We should not get here with our test app
-            GUCEF_ERROR_LOG( 0, "Link error" );
+            GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Link error" );
             ERRORHERE;            
         }
         else
         if ( DRN::CDRNPeerLink::LinkCorruptionEvent == eventid )
         {
             // We should not get here with our test app
-            GUCEF_ERROR_LOG( 0, "Link corruption" );
+            GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Link corruption" );
             ERRORHERE;            
         }        
         else
         if ( DRN::CDRNPeerLink::LinkProtocolMismatchEvent == eventid )
         {
             // We should not get here with our test app
-            GUCEF_ERROR_LOG( 0, "Link protocol mismatch" );
+            GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Link protocol mismatch" );
             ERRORHERE;            
         }
         else
         if ( DRN::CDRNPeerLink::LinkIncompatibleEvent == eventid )
         {
             // We should not get here with our test app
-            GUCEF_ERROR_LOG( 0, "Link incompatible" );
+            GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Link incompatible" );
             ERRORHERE;
         }
         else
         if ( DRN::CDRNPeerLink::AuthenticationSuccessEvent == eventid )
         {
-            GUCEF_LOG( 0, "We successfully authenticated at the peer" );
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": We successfully authenticated at the peer" );
         }
         else
         if ( DRN::CDRNPeerLink::PeerAuthenticationSuccessEvent == eventid )
         {
-            GUCEF_LOG( 0, "A peer successfully authenticated with our node" );
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": A peer successfully authenticated with our node" );
         }        
         else
         if ( DRN::CDRNPeerLink::PeerAuthenticationFailureEvent == eventid )
         {
-            GUCEF_ERROR_LOG( 0, "We failed to authenticate at the peer" );
+            GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": We failed to authenticate at the peer" );
             ERRORHERE;
         }
         else
         if ( DRN::CDRNPeerLink::PeerAuthenticationFailureEvent == eventid )
         {
-            GUCEF_ERROR_LOG( 0, "A peer failed to authenticate with our node" );
+            GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": A peer failed to authenticate with our node" );
             ERRORHERE;
         }        
         else        
-        if ( ( notifier == m_link )                               &&
-             ( DRN::CDRNPeerLink::LinkOperationalEvent == eventid ) )
+        if ( DRN::CDRNPeerLink::CompatibleServiceEvent == eventid )
         {
-            GUCEF_LOG( 0, "Link operational" );
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": The peer is hosting a compatible service" );
+        }
+        else
+        if ( DRN::CDRNPeerLink::IllegalRequestEvent == eventid )
+        {
+            GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": The peer claims we made an illegal request" );
+            ERRORHERE;            
+        }
+        else
+        if ( DRN::CDRNPeerLink::IncompatibleServiceEvent == eventid )
+        {
+            GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": The peer is hosting a Incompatible service" );
+            ERRORHERE;
+        }        
+        else
+        if ( DRN::CDRNPeerLink::LinkProtocolMatchEvent == eventid )
+        {
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": The peer is using a compatible version of the DRN protocol" );
+        }        
+        else
+        if ( DRN::CDRNPeerLink::LinkOperationalForPeerEvent == eventid )
+        {
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": The link is now operational for the peer" );
+        }
+        else        
+        if ( DRN::CDRNPeerLink::LinkOperationalForUsEvent == eventid )
+        {
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": The link is now operational for us" );
             
-            if ( !m_link->RequestDataGroupList() )
+            if ( !m_linkA->RequestDataGroupList() )
             {
                 // We should not get here with our test app
-                GUCEF_ERROR_LOG( 0, "Failed to request the peer data group list" );
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to request the peer data group list" );
                 ERRORHERE;                
             }            
-            GUCEF_LOG( 0, "Requested data group list from peer" );
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Requested data group list from peer" );
 
-            if ( !m_link->RequestStreamList() )
+            if ( !m_linkA->RequestStreamList() )
             {
                 // We should not get here with our test app
-                GUCEF_ERROR_LOG( 0, "Failed to request the peer data stream list" );
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to request the peer data stream list" );
                 ERRORHERE;                
             }
-            GUCEF_LOG( 0, "Requested data stream list from peer" );
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Requested data stream list from peer" );
 
-            if ( !m_link->RequestPeerList() )
+            if ( !m_linkA->RequestPeerList() )
             {
                 // We should not get here with our test app
-                GUCEF_ERROR_LOG( 0, "Failed to request the peer's peer list" );
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to request the peer's peer list" );
                 ERRORHERE;                
             }
-            GUCEF_LOG( 0, "Requested peer list from peer" );
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Requested peer list from peer" );
         }        
         else
         {
-            GUCEF_LOG( 0, "Unhandled event: " + eventid.GetName() );
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Unhandled event: " + eventid.GetName() );
         }        
     }      
 };

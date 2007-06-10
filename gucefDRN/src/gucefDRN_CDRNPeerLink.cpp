@@ -85,8 +85,13 @@ const CORE::CEvent CDRNPeerLink::DisconnectedEvent = "GUCEF::DRN::CDRNPeerLink::
 const CORE::CEvent CDRNPeerLink::SocketErrorEvent = "GUCEF::DRN::CDRNPeerLink::SocketErrorEvent";
 const CORE::CEvent CDRNPeerLink::LinkCorruptionEvent = "GUCEF::DRN::CDRNPeerLink::LinkCorruptionEvent"; 
 const CORE::CEvent CDRNPeerLink::LinkProtocolMismatchEvent = "GUCEF::DRN::CDRNPeerLink::LinkProtocolMismatchEvent"; 
+const CORE::CEvent CDRNPeerLink::LinkProtocolMatchEvent = "GUCEF::DRN::CDRNPeerLink::LinkProtocolMatchEvent"; 
 const CORE::CEvent CDRNPeerLink::LinkIncompatibleEvent = "GUCEF::DRN::CDRNPeerLink::LinkIncompatibleEvent"; 
-const CORE::CEvent CDRNPeerLink::LinkOperationalEvent = "GUCEF::DRN::CDRNPeerLink::LinkOperationalEvent";
+const CORE::CEvent CDRNPeerLink::LinkOperationalForPeerEvent = "GUCEF::DRN::CDRNPeerLink::LinkOperationalForPeerEvent";
+const CORE::CEvent CDRNPeerLink::LinkOperationalForUsEvent = "GUCEF::DRN::CDRNPeerLink::LinkOperationalForUsEvent";
+const CORE::CEvent CDRNPeerLink::IllegalRequestEvent = "GUCEF::DRN::CDRNPeerLink::IllegalRequestEvent";
+const CORE::CEvent CDRNPeerLink::CompatibleServiceEvent = "GUCEF::DRN::CDRNPeerLink::CompatibleServiceEvent";
+const CORE::CEvent CDRNPeerLink::IncompatibleServiceEvent = "GUCEF::DRN::CDRNPeerLink::IncompatibleServiceEvent";
 const CORE::CEvent CDRNPeerLink::PeerAuthenticationSuccessEvent = "GUCEF::DRN::CDRNPeerLink::PeerAuthenticationSuccessEvent";
 const CORE::CEvent CDRNPeerLink::AuthenticationSuccessEvent = "GUCEF::DRN::CDRNPeerLink::AuthenticationSuccessEvent";
 const CORE::CEvent CDRNPeerLink::PeerAuthenticationFailureEvent = "GUCEF::DRN::CDRNPeerLink::PeerAuthenticationFailureEvent";
@@ -110,8 +115,13 @@ CDRNPeerLink::RegisterEvents( void )
     SocketErrorEvent.Initialize();
     LinkCorruptionEvent.Initialize();
     LinkProtocolMismatchEvent.Initialize();
+    LinkProtocolMatchEvent.Initialize();
     LinkIncompatibleEvent.Initialize();
-    LinkOperationalEvent.Initialize();
+    LinkOperationalForPeerEvent.Initialize();
+    LinkOperationalForUsEvent.Initialize();
+    IllegalRequestEvent.Initialize();
+    CompatibleServiceEvent.Initialize();
+    IncompatibleServiceEvent.Initialize();
     PeerAuthenticationSuccessEvent.Initialize();
     AuthenticationSuccessEvent.Initialize();
     PeerAuthenticationFailureEvent.Initialize();
@@ -126,16 +136,17 @@ CDRNPeerLink::RegisterEvents( void )
 CDRNPeerLink::CDRNPeerLink( CDRNNode& parentNode                   ,
                             COMCORE::CTCPConnection& tcpConnection ,
                             COMCORE::CUDPMasterSocket& udpSocket   )
-    : m_udpSocket( &udpSocket )         ,
-      m_tcpConnection( &tcpConnection ) ,
-      m_udpPossible( false )            ,
-      m_isAuthenticated( false )        ,
-      m_isPeerAuthenticated( false )    ,
-      m_linkData( NULL )                ,
-      m_parentNode( &parentNode )       ,
-      m_tcpStreamBuffer()               ,
-      m_tcpStreamKeepBytes( 0 )         ,
-      m_linkOperational( false )
+    : m_udpSocket( &udpSocket )           ,
+      m_tcpConnection( &tcpConnection )   ,
+      m_udpPossible( false )              ,
+      m_isAuthenticated( false )          ,
+      m_isPeerAuthenticated( false )      ,
+      m_linkData( NULL )                  ,
+      m_parentNode( &parentNode )         ,
+      m_tcpStreamBuffer()                 ,
+      m_tcpStreamKeepBytes( 0 )           ,
+      m_isLinkOperationalForPeer( false ) ,
+      m_isLinkOperationalForUs( false )
 {GUCEF_TRACE;
 
     assert( m_udpSocket != NULL );
@@ -282,10 +293,19 @@ CDRNPeerLink::GetTCPConnection( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CDRNPeerLink::IsOperational( void ) const
+CDRNPeerLink::IsOperationalForUs( void ) const
 {GUCEF_TRACE;
 
-    return m_linkOperational;
+    return m_isLinkOperationalForUs;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNPeerLink::IsOperationalForPeer( void ) const
+{GUCEF_TRACE;
+
+    return m_isLinkOperationalForPeer;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -393,8 +413,6 @@ CDRNPeerLink::SendLinkOperationalMessage( void )
         CloseLink();
         return;
     }
-    
-    NotifyObservers( LinkOperationalEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -421,6 +439,8 @@ void
 CDRNPeerLink::OnPeerServicesCompatible( void )
 {GUCEF_TRACE;
 
+    NotifyObservers( CompatibleServiceEvent );
+
     // Check if a validator mechanism has been provided to the node
     CIDRNPeerValidator* validator = m_parentNode->GetPeervalidator();
     if ( validator != NULL )
@@ -435,9 +455,9 @@ CDRNPeerLink::OnPeerServicesCompatible( void )
     }
     
     // Peer authentication is optional, we can proceed without it
-    m_linkOperational = true;
+    m_isLinkOperationalForPeer = true;
     SendLinkOperationalMessage();
-    NotifyObservers( LinkOperationalEvent );
+    NotifyObservers( LinkOperationalForPeerEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -465,6 +485,7 @@ CDRNPeerLink::OnPeerServiceType( const char* data      ,
         {
             // Incompatible: the local service does not match the remote service name.
             // The names have to match for the link to be considered compatible
+            NotifyObservers( IncompatibleServiceEvent );
             NotifyObservers( LinkIncompatibleEvent );
             SendIncompatibleLinkMessage();
             CloseLink();
@@ -476,6 +497,7 @@ CDRNPeerLink::OnPeerServiceType( const char* data      ,
     {
         // Incompatible: the local service is not unnamed
         // Both have to be unnamed to be considered as compatible
+        NotifyObservers( IncompatibleServiceEvent );
         NotifyObservers( LinkIncompatibleEvent );
         SendIncompatibleLinkMessage();
         CloseLink();
@@ -492,7 +514,8 @@ void
 CDRNPeerLink::OnPeerLinkOperational( void )
 {GUCEF_TRACE;
     
-    m_linkOperational = true;
+    m_isLinkOperationalForUs = true;
+    NotifyObservers( LinkOperationalForUsEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -501,7 +524,8 @@ void
 CDRNPeerLink::OnPeerDataGroupRequest( void )
 {GUCEF_TRACE;
 
-    if ( m_linkOperational )
+    // Access rights check
+    if ( m_isLinkOperationalForPeer )
     {
         // Obtain a list of streams publicized on this link
         CDRNPeerLinkData::TDRNDataGroupList dataGroupList;
@@ -537,6 +561,10 @@ CDRNPeerLink::OnPeerDataGroupRequest( void )
             CloseLink();
         }
     }
+    else
+    {
+        SendNotAllowed();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -545,7 +573,8 @@ void
 CDRNPeerLink::OnPeerStreamListRequest( void )
 {GUCEF_TRACE;
 
-    if ( m_linkOperational )
+    // Access rights check
+    if ( m_isLinkOperationalForPeer )
     {
         // Obtain a list of streams publicized on this link
         CDRNPeerLinkData::TDRNDataStreamList dataStreamList;
@@ -581,6 +610,26 @@ CDRNPeerLink::OnPeerStreamListRequest( void )
             CloseLink();
         }
     }
+    else
+    {
+        SendNotAllowed();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerPeerListRequest( void )
+{GUCEF_TRACE;
+
+    // Access rights check
+    if ( m_isLinkOperationalForPeer )
+    {
+    }
+    else
+    {
+        SendNotAllowed();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -590,7 +639,8 @@ CDRNPeerLink::OnPeerStreamListReceived( const char* data      ,
                                         const UInt32 dataSize )
 {GUCEF_TRACE;
 
-    if ( m_linkOperational )
+    // Sanity check on the logic flow
+    if ( m_isLinkOperationalForUs )
     {
         TStringList streamNameList;
         
@@ -631,7 +681,8 @@ CDRNPeerLink::OnPeerPeerListReceived( const char* data      ,
                                       const UInt32 dataSize )
 {GUCEF_TRACE;
 
-    if ( m_linkOperational )
+    // Sanity check on the logic flow
+    if ( m_isLinkOperationalForUs )
     {
         TStringList peerNameList;
         
@@ -672,7 +723,8 @@ CDRNPeerLink::OnPeerDataGroupListReceived( const char* data      ,
                                            const UInt32 dataSize )
 {GUCEF_TRACE;
 
-    if ( m_linkOperational )
+    // Sanity check on the logic flow
+    if ( m_isLinkOperationalForUs )
     {
         TStringList dataGroupNameList;
         
@@ -713,10 +765,19 @@ CDRNPeerLink::OnPeerDataGroupItemUpdate( const char* data      ,
                                          const UInt32 dataSize )
 {GUCEF_TRACE;
 
-    if ( m_linkOperational )
+    // Sanity check on the logic flow
+    if ( m_isLinkOperationalForUs )
     {
         //m_linkData->
     }
+    else
+    {
+        // We should not get here
+        NotifyObservers( LinkCorruptionEvent );
+        
+        // Terminate the link
+        CloseLink();
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -729,7 +790,7 @@ CDRNPeerLink::OnPeerAuthenticationSuccess( void )
     m_isAuthenticated = true;
     NotifyObservers( AuthenticationSuccessEvent );
     
-    if ( !m_linkOperational )
+    if ( !m_isLinkOperationalForPeer )
     {
         // Check if the link is now operational,..    
         if ( !m_isPeerAuthenticated )
@@ -748,9 +809,9 @@ CDRNPeerLink::OnPeerAuthenticationSuccess( void )
             }
         }
         
-        // The link is now operational as far as we are concerned
-        m_linkOperational = true;
-        NotifyObservers( LinkOperationalEvent );
+        // The link is now operational for the peer
+        m_isLinkOperationalForPeer = true;
+        NotifyObservers( LinkOperationalForPeerEvent );
         SendLinkOperationalMessage();
     }
 }
@@ -845,7 +906,7 @@ CDRNPeerLink::OnPeerAuthentication( const char* data      ,
                                     const UInt32 dataSize )
 {GUCEF_TRACE;
 
-    if ( !m_linkOperational )
+    if ( !m_isLinkOperationalForPeer )
     {
         // Check if a validator mechanism has been provided to the node
         CIDRNPeerValidator* validator = m_parentNode->GetPeervalidator();
@@ -870,19 +931,14 @@ CDRNPeerLink::OnPeerAuthentication( const char* data      ,
                                                   peerPassword ) )
                 {
                     // The peer has successfully authenticated
-                    m_isPeerAuthenticated = true;                    
+                    m_isPeerAuthenticated = true;
                     SendAuthenticationSuccess();
-                    NotifyObservers( PeerAuthenticationSuccessEvent );                    
+                    NotifyObservers( PeerAuthenticationSuccessEvent ); 
                     
-                    // Now we have to check if the link has become operational
-                    if ( m_isAuthenticated )
-                    {
-                        // The peer has already successfully authenticated itself with us
-                        // The link is now operational as far as we are concerned
-                        m_linkOperational = true;
-                        NotifyObservers( LinkOperationalEvent );
-                        SendLinkOperationalMessage();                        
-                    }
+                    // The link has now become operational for the peer
+                    m_isLinkOperationalForPeer = true;
+                    SendLinkOperationalMessage();                   
+                    NotifyObservers( LinkOperationalForPeerEvent );
                     return;
                 }
                 else
@@ -912,7 +968,7 @@ void
 CDRNPeerLink::OnPeerAuthenticationRequest( void )
 {GUCEF_TRACE;
 
-    if ( !m_linkOperational )
+    if ( !m_isLinkOperationalForUs )
     {
         // Check if a validator mechanism has been provided to the node
         CIDRNPeerValidator* validator = m_parentNode->GetPeervalidator();
@@ -974,7 +1030,7 @@ CDRNPeerLink::OnPeerSubscribeToDataGroupRequest( const char* data      ,
                                                  const UInt32 dataSize )
 {GUCEF_TRACE;
 
-    if ( m_linkOperational )
+    if ( m_isLinkOperationalForPeer )
     {
         // Sanity check on the payload
         if ( dataSize > 2 )
@@ -1009,7 +1065,7 @@ CDRNPeerLink::OnPeerSubscribeToStreamRequest( const char* data      ,
                                               const UInt32 dataSize )
 {GUCEF_TRACE;
 
-    if ( m_linkOperational )
+    if ( m_isLinkOperationalForPeer )
     {
         // Sanity check on the payload
         if ( dataSize > 2 )
@@ -1059,6 +1115,7 @@ CDRNPeerLink::OnPeerGreeting( const char* data      ,
         {
             // We now know we have a peer that is using a compatible 
             // DRN protocol version.
+            NotifyObservers( LinkProtocolMatchEvent );
             SendServiceTypeMessage();
             return;
         }
@@ -1084,6 +1141,26 @@ CDRNPeerLink::OnPeerGreeting( const char* data      ,
         // Terminate the link
         CloseLink();
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerIllegalRequest( void )
+{GUCEF_TRACE;
+
+    // Simply inform the observers of what has happened
+    NotifyObservers( IllegalRequestEvent );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerStreamDataReceived( const char* data      ,
+                                        const UInt32 dataSize )
+{GUCEF_TRACE;
+
+    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1142,14 +1219,17 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         }
         case DRN_PEERCOMM_STREAM_DATA :
         {
+            OnPeerStreamDataReceived( data, dataSize );
             return;
         }
         case DRN_PEERCOMM_NOT_ALLOWED :
         {
+            OnPeerIllegalRequest();
             return;
         }
         case DRN_PEERCOMM_PEERLIST_REQUEST :
         {
+            OnPeerPeerListRequest();
             return;
         }
         case DRN_PEERCOMM_PEERLIST :
@@ -1276,7 +1356,18 @@ CDRNPeerLink::OnTCPDataReceived( const GUCEF::CORE::CDynamicBuffer& buffer )
                         // The payload segment seems to be all here and the size checks
                         // out. We can now proceed with processing the transmission.
                         OnPeerDataReceived( static_cast< const char* >( buffer.GetConstBufferPtr() )+i+3 ,
-                                            transmissionSize                                             );                            
+                                            transmissionSize                                             );
+                                            
+                        // We must now check to see if there is any data left to be processed.
+                        if ( i+4+transmissionSize < dataSize )
+                        {
+                            // We have more data, it seems multiple transmissions have been 
+                            // concatenated into a single transmission.
+                            GUCEF::CORE::CDynamicBuffer subBuffer;
+                            subBuffer.LinkTo( static_cast< const char* >( buffer.GetConstBufferPtr() )+(i+4+transmissionSize) ,
+                                              dataSize - (i+4+transmissionSize)                                               );
+                            OnTCPDataReceived( subBuffer );
+                        }
                     }
                     else
                     {
@@ -1418,7 +1509,7 @@ bool
 CDRNPeerLink::RequestPeerList( void )
 {GUCEF_TRACE;
 
-    if ( m_linkOperational )
+    if ( m_isLinkOperationalForUs )
     {
         // Send a peer-list-request to the given peer node
         char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_PEERLIST_REQUEST, DRN_TRANSMISSION_END };
@@ -1436,7 +1527,7 @@ bool
 CDRNPeerLink::RequestStreamList( void )
 {GUCEF_TRACE;
 
-    if ( m_linkOperational )
+    if ( m_isLinkOperationalForUs )
     {
         // Send a stream-list-request to the given peer node
         char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_STREAMLIST_REQUEST, DRN_TRANSMISSION_END };
@@ -1454,7 +1545,7 @@ bool
 CDRNPeerLink::RequestDataGroupList( void )
 {GUCEF_TRACE;
 
-    if ( m_linkOperational )
+    if ( m_isLinkOperationalForUs )
     {
         // Send a datagroup-list-request to the given peer node
         char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_DATAGROUPLIST_REQUEST, DRN_TRANSMISSION_END };
@@ -1464,6 +1555,15 @@ CDRNPeerLink::RequestDataGroupList( void )
         return SendData( sendBuffer, 2, false );
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDRNNode&
+CDRNPeerLink::GetParentNode( void )
+{GUCEF_TRACE;
+
+    return *m_parentNode;
 }
 
 /*-------------------------------------------------------------------------//

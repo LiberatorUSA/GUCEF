@@ -110,14 +110,14 @@ CDRNNode::~CDRNNode()
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CDRNNode::GetOperationalLinkCount( void ) const
+CDRNNode::GetOperationalLinkForUsCount( void ) const
 {GUCEF_TRACE;
 
     UInt32 activeCount = 0;
     TPeerLinks::const_iterator i = m_peerLinks.begin();
     while ( i != m_peerLinks.end() )
     {
-        if ( (*i)->IsOperational() )
+        if ( (*i)->IsOperationalForUs() )
         {
             ++activeCount;
         }
@@ -129,13 +129,13 @@ CDRNNode::GetOperationalLinkCount( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CDRNNode::HasOperationalLinks( void ) const
+CDRNNode::HasOperationalLinksForUs( void ) const
 {GUCEF_TRACE;
 
     TPeerLinks::const_iterator i = m_peerLinks.begin();
     while ( i != m_peerLinks.end() )
     {
-        if ( (*i)->IsOperational() )
+        if ( (*i)->IsOperationalForUs() )
         {
             return true;
         }
@@ -150,7 +150,7 @@ bool
 CDRNNode::SetServiceName( const CORE::CString& serviceName )
 {GUCEF_TRACE;
 
-    if ( !HasOperationalLinks() )
+    if ( !HasOperationalLinksForUs() )
     {
         m_serviceName = serviceName;
         return true;
