@@ -89,21 +89,24 @@ class CTestPeerValidator : public DRN::CIDRNPeerValidator
                                      const CORE::CString& hostName ) const
     {GUCEF_TRACE;
     
+        GUCEF_LOG( 0, "Question received: is peer address valid" );
         return ( hostName == "localhost" ) || ( hostName == "127.0.0.1" );
     }
     
-    virtual bool IsPeerLoginRequired( void ) const
+    virtual bool IsPeerLoginRequired( const DRN::CDRNPeerLink& peerLink ) const
     {GUCEF_TRACE;
     
-        GUCEF_LOG( 0, "Successfully connected to a listen port" );
+        GUCEF_LOG( 0, "Question received: is peer login required" );
         return true;
     }
     
-    virtual bool IsPeerLoginValid( const CORE::CString& accountName ,
-                                   const CORE::CString& password    ) const
+    virtual bool IsPeerLoginValid( const DRN::CDRNPeerLink& peerLink ,
+                                   const CORE::CString& accountName  ,
+                                   const CORE::CString& password     ) const
     {GUCEF_TRACE;
     
-        return  ( ( accountName == "ValidPeer" ) && ( password == "Peer" ) );
+        GUCEF_LOG( 0, "Question received: is peer login valid" );
+        return  ( ( accountName == "ValidPeer" ) && ( password == "Password" ) );
     }
 
     virtual bool IsPeerServiceValid( const CORE::CString& serviceName     ,
@@ -122,6 +125,18 @@ class CTestPeerValidator : public DRN::CIDRNPeerValidator
         }        
         return false;
     }    
+    
+    virtual bool GetLoginForPeer( const DRN::CDRNPeerLink& peerLink ,
+                                  CORE::CString& ourAccountName     ,
+                                  CORE::CString& ourPassword        )
+    {GUCEF_TRACE;
+    
+        GUCEF_LOG( 0, "Question received: What is the login for the given peer" );
+        
+        ourAccountName = "ValidPeer";
+        ourPassword = "Password";
+        return true;
+    }
 };
 
 /*-------------------------------------------------------------------------*/
@@ -139,6 +154,12 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
     
     CTestPeerToPeerSubSystem( void )    
         : CGUCEFAppSubSystem( true )
+    {GUCEF_TRACE;
+    
+
+    }
+    
+    void SetupTestUtils( void )
     {GUCEF_TRACE;
     
         GUCEF_LOG( 0, "Setting Node Peer validators" );
@@ -181,7 +202,7 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
         
         //if ( !nodeB.RequestDataGroupList() )
         {
-        }
+        }    
     }
 
     virtual void OnNotify( CORE::CNotifier* notifier           ,
@@ -189,6 +210,11 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
                            CORE::CICloneable* eventdata = NULL )
     {GUCEF_TRACE;
     
+        if ( CORE::CGUCEFApplication::AppInitEvent == eventid )
+        {
+            SetupTestUtils();
+        }
+        else
         if ( DRN::CDRNNode::LinkEstablishedEvent == eventid )
         {
             GUCEF_LOG( 0, "Link established" );
@@ -232,6 +258,28 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             ERRORHERE;
         }
         else
+        if ( DRN::CDRNPeerLink::AuthenticationSuccessEvent == eventid )
+        {
+            GUCEF_LOG( 0, "We successfully authenticated at the peer" );
+        }
+        else
+        if ( DRN::CDRNPeerLink::PeerAuthenticationSuccessEvent == eventid )
+        {
+            GUCEF_LOG( 0, "A peer successfully authenticated with our node" );
+        }        
+        else
+        if ( DRN::CDRNPeerLink::PeerAuthenticationFailureEvent == eventid )
+        {
+            GUCEF_ERROR_LOG( 0, "We failed to authenticate at the peer" );
+            ERRORHERE;
+        }
+        else
+        if ( DRN::CDRNPeerLink::PeerAuthenticationFailureEvent == eventid )
+        {
+            GUCEF_ERROR_LOG( 0, "A peer failed to authenticate with our node" );
+            ERRORHERE;
+        }        
+        else        
         if ( ( notifier == m_link )                               &&
              ( DRN::CDRNPeerLink::LinkOperationalEvent == eventid ) )
         {
@@ -261,8 +309,11 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             }
             GUCEF_LOG( 0, "Requested peer list from peer" );
         }        
-    }
-      
+        else
+        {
+            GUCEF_LOG( 0, "Unhandled event: " + eventid.GetName() );
+        }        
+    }      
 };
 
 /*-------------------------------------------------------------------------//

@@ -36,10 +36,10 @@
 #define GUCEF_CORE_ESTRUCTS_H
 #endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef GUCEF_DRN_MACROS_H
-#include "gucefDRN_macros.h"
-#define GUCEF_DRN_MACROS_H
-#endif /* GUCEF_DRN_MACROS_H ? */
+#ifndef GUCEF_DRN_CDRNNODE_H
+#include "gucefDRN_CDRNNode.h"
+#define GUCEF_DRN_CDRNNODE_H
+#endif /* GUCEF_DRN_CDRNNODE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -73,10 +73,15 @@ class GUCEF_DRN_EXPORT_CPP CIDRNPeerValidator
     virtual bool IsPeerAddressValid( const CIPAddress& address     ,
                                      const CORE::CString& hostName ) const = 0;
 
-    virtual bool IsPeerLoginRequired( void ) const = 0;
+    virtual bool IsPeerLoginRequired( const CDRNPeerLink& peerLink ) const = 0;
     
-    virtual bool IsPeerLoginValid( const CORE::CString& accountName ,
-                                   const CORE::CString& password    ) const = 0;    
+    virtual bool IsPeerLoginValid( const CDRNPeerLink& peerLink     ,
+                                   const CORE::CString& accountName ,
+                                   const CORE::CString& password    ) const = 0;
+                                   
+    virtual bool GetLoginForPeer( const CDRNPeerLink& peerLink  ,
+                                  CORE::CString& ourAccountName ,
+                                  CORE::CString& ourPassword    ) = 0;    
 };
 
 /*-------------------------------------------------------------------------//

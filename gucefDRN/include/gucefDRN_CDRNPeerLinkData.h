@@ -101,12 +101,16 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
      */
     void GetPublicizedDataGroups( TDRNDataGroupList& dataGroupList );
     
+    TDRNDataGroupPtr GetPublicizedDataGroupWithName( const CORE::CString& name );
+    
     /**
      *  Returns a list data streams that are publicized on this link
      *  The peer connected via this link will be allowed to subscribe to these
      *  data streams
      */
     void GetPublicizedDataStreams( TDRNDataStreamList& dataGroupList );
+    
+    TDRNDataStreamPtr GetPublicizedDataStreamWithName( const CORE::CString& name );
     
     void PublicizeStream( TDRNDataStreamPtr& dataStream );
     
@@ -164,7 +168,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     
     struct SDRNDataStreamEntry
     {
-        TDRNDataGroupPtr ptr;
+        TDRNDataStreamPtr ptr;
         CORE::T16BitNumericID id;
     };
     typedef struct SDRNDataStreamEntry TDRNDataStreamEntry;    

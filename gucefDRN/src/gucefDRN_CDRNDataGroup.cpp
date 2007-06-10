@@ -50,7 +50,7 @@ namespace DRN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CDRNDataGroup::ItemChanged = "GUCEF::CORE::CDRNDataGroup::ItemChanged";
+const CORE::CEvent CDRNDataGroup::ItemChangedEvent = "GUCEF::CORE::CDRNDataGroup::ItemChangedEvent";
     
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -112,7 +112,7 @@ void
 CDRNDataGroup::RegisterEvents( void )
 {GUCEF_TRACE;
 
-    ItemChanged.Initialize();
+    ItemChangedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -126,7 +126,7 @@ CDRNDataGroup::SetItem( const CORE::CDynamicBuffer& id        ,
     if ( addIfNotFound )
     {
         m_dataMap[ id ] = data;
-        NotifyObservers( ItemChanged );
+        NotifyObservers( ItemChangedEvent );
         return true;
     }
     else
@@ -135,7 +135,7 @@ CDRNDataGroup::SetItem( const CORE::CDynamicBuffer& id        ,
         if ( i != m_dataMap.end() )
         {
             (*i).second = data;
-            NotifyObservers( ItemChanged );
+            NotifyObservers( ItemChangedEvent );
             return true;
         }
         return false;

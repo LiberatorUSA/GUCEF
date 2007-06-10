@@ -46,10 +46,10 @@
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
-#ifndef GUCEF_DRN_MACROS_H
-#include "gucefDRN_macros.h"
-#define GUCEF_DRN_MACROS_H
-#endif /* GUCEF_DRN_MACROS_H ? */
+#ifndef GUCEF_DRN_CDRNPEERLINKDATA_H
+#include "gucefDRN_CDRNPeerLinkData.h"
+#define GUCEF_DRN_CDRNPEERLINKDATA_H
+#endif /* GUCEF_DRN_CDRNPEERLINKDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -75,7 +75,6 @@ namespace DRN {
 //-------------------------------------------------------------------------*/
 
 class CDRNNode;
-class CDRNPeerLinkData;
 
 /*-------------------------------------------------------------------------*/
 
@@ -87,18 +86,22 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
 {
     public:
     
-    static const CORE::CEvent ConnectedEvent;
-    static const CORE::CEvent DisconnectedEvent;
-    static const CORE::CEvent SocketErrorEvent;
-    static const CORE::CEvent LinkCorruptionEvent;
-    static const CORE::CEvent LinkProtocolMismatchEvent;
-    static const CORE::CEvent LinkIncompatibleEvent;
-    static const CORE::CEvent LinkOperationalEvent;
-    static const CORE::CEvent PeerListReceivedFromPeerEvent;
-    static const CORE::CEvent StreamListReceivedFromPeerEvent;
-    static const CORE::CEvent DataGroupListReceivedFromPeerEvent;
+    static const CORE::CEvent ConnectedEvent;                     /**< We are now connected with the peer */
+    static const CORE::CEvent DisconnectedEvent;                  /**< The link has been disconnected */
+    static const CORE::CEvent SocketErrorEvent;                   /**< fatal error: A low-level socket error occured */
+    static const CORE::CEvent LinkCorruptionEvent;                /**< fatal error: A malformed transmission was detected on the link */
+    static const CORE::CEvent LinkProtocolMismatchEvent;          /**< fatal error: the peer is using a different version of the DRN protocol */
+    static const CORE::CEvent LinkIncompatibleEvent;              /**< fatal error: the link with the peer is incompatible and cannot be used */
+    static const CORE::CEvent LinkOperationalEvent;               /**< the link is operational, you can now setup your subscriptions */
+    static const CORE::CEvent PeerAuthenticationSuccessEvent;     /**< The peer successfully authenticated */
+    static const CORE::CEvent AuthenticationSuccessEvent;         /**< We successfully authenticated at the peer */
+    static const CORE::CEvent PeerAuthenticationFailureEvent;     /**< The peer failed to provide valid authentication */
+    static const CORE::CEvent AuthenticationFailureEvent;         /**< We failed to provide valid authentication for the peer */
+    static const CORE::CEvent PeerListReceivedFromPeerEvent;      /**< We received a list of peers from our peer */
+    static const CORE::CEvent StreamListReceivedFromPeerEvent;    /**< We received a list of streams from our peer */
+    static const CORE::CEvent DataGroupListReceivedFromPeerEvent; /**< We received a list of data groups from our peer */
     
-    typedef std::vector< CORE::CString >        TStringList;
+    typedef std::vector< CORE::CString >              TStringList;
     typedef CORE::CTLinkedCloneableObj< TStringList > PeerListReceivedFromPeerEventData;   
     typedef CORE::CTLinkedCloneableObj< TStringList > StreamListReceivedFromPeerEventData;
     typedef CORE::CTLinkedCloneableObj< TStringList > DataGroupListReceivedFromPeerEventData;
@@ -124,6 +127,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     bool IsUDPPossible( void ) const;
     
     bool IsAuthenticated( void ) const;
+    
+    bool IsPeerAuthenticated( void ) const;
     
     bool IsOperational( void ) const;
     
@@ -164,14 +169,17 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     bool SendData( const void* dataSource             ,
                    const UInt16 dataSize              ,
                    const bool allowUnreliable = false );
-                   
-    void SetAuthenticatedFlag( const bool authenticated );
-    
     private:
     
     CDRNPeerLink( const CDRNPeerLink& src );            /**< peer links are unique and cannot be copied */
     CDRNPeerLink& operator=( const CDRNPeerLink& src ); /**< peer links are unique and cannot be copied */
 
+    void OnPublicizedDataGroupChange( CDRNDataGroup& dataGroup     ,
+                                      CORE::CICloneable* eventdata );
+
+    void OnPublicizedDataStreamSend( CDRNDataStream& dataStream   ,
+                                     CORE::CICloneable* eventdata );
+    
     void OnTCPConnectionEvent( CORE::CNotifier* notifier    ,
                                const CORE::CEvent& eventid  ,
                                CORE::CICloneable* eventdata );
@@ -203,6 +211,19 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     void OnPeerStreamListReceived( const char* data      ,
                                    const UInt32 dataSize );
     
+    void OnPeerAuthentication( const char* data      ,
+                               const UInt32 dataSize );
+                               
+    void OnPeerSubscribeToDataGroupRequest( const char* data      ,
+                                            const UInt32 dataSize );
+    
+    void OnPeerSubscribeToStreamRequest( const char* data      ,
+                                         const UInt32 dataSize );
+    
+    void OnPeerAuthenticationSuccess( void );
+    
+    void OnPeerAuthenticationFailed( void );
+    
     void OnPeerLinkIncompatible( void );
 
     void OnPeerServicesCompatible( void );
@@ -214,6 +235,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     void OnPeerDataGroupRequest( void );
     
     void OnPeerDataGroupItemUpdate( void );
+    
+    void OnPeerAuthenticationRequest( void );
                                     
     void SendGreetingMessage( void );
     
@@ -223,8 +246,17 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     
     void SendAuthenticationRequiredMessage( void );
     
+    void SendAuthenticationSuccess( void );
+    
+    void SendAuthenticationFailed( void );
+    
     void SendLinkOperationalMessage( void );
-                         
+    
+    void SendNotAllowed( void );
+
+    void SendAuthentication( const CORE::CString& ourAccountName ,
+                             const CORE::CString& ourPassword    );
+                                                           
     private:
     
     CDRNNode* m_parentNode;
@@ -236,6 +268,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     UInt32 m_tcpStreamKeepBytes;
     bool m_udpPossible;
     bool m_isAuthenticated;
+    bool m_isPeerAuthenticated;
     bool m_linkOperational;
 };
 

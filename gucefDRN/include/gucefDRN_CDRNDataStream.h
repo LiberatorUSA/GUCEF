@@ -74,8 +74,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataStream : public CORE::CObservingNotifier
 {
     public:
 
-    static const CORE::CEvent DataReceived;
-    static const CORE::CEvent DataTransmitted;
+    static const CORE::CEvent DataReceivedEvent;
+    static const CORE::CEvent DataTransmittedEvent;
     
     static void RegisterEvents( void );
     

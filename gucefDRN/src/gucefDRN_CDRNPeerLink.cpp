@@ -87,6 +87,10 @@ const CORE::CEvent CDRNPeerLink::LinkCorruptionEvent = "GUCEF::DRN::CDRNPeerLink
 const CORE::CEvent CDRNPeerLink::LinkProtocolMismatchEvent = "GUCEF::DRN::CDRNPeerLink::LinkProtocolMismatchEvent"; 
 const CORE::CEvent CDRNPeerLink::LinkIncompatibleEvent = "GUCEF::DRN::CDRNPeerLink::LinkIncompatibleEvent"; 
 const CORE::CEvent CDRNPeerLink::LinkOperationalEvent = "GUCEF::DRN::CDRNPeerLink::LinkOperationalEvent";
+const CORE::CEvent CDRNPeerLink::PeerAuthenticationSuccessEvent = "GUCEF::DRN::CDRNPeerLink::PeerAuthenticationSuccessEvent";
+const CORE::CEvent CDRNPeerLink::AuthenticationSuccessEvent = "GUCEF::DRN::CDRNPeerLink::AuthenticationSuccessEvent";
+const CORE::CEvent CDRNPeerLink::PeerAuthenticationFailureEvent = "GUCEF::DRN::CDRNPeerLink::PeerAuthenticationFailureEvent";
+const CORE::CEvent CDRNPeerLink::AuthenticationFailureEvent = "GUCEF::DRN::CDRNPeerLink::AuthenticationFailureEvent";
 const CORE::CEvent CDRNPeerLink::PeerListReceivedFromPeerEvent = "GUCEF::DRN::CDRNPeerLink::PeerListReceivedFromPeerEvent";
 const CORE::CEvent CDRNPeerLink::StreamListReceivedFromPeerEvent = "GUCEF::DRN::CDRNPeerLink::StreamListReceivedFromPeerEvent";
 const CORE::CEvent CDRNPeerLink::DataGroupListReceivedFromPeerEvent = "GUCEF::DRN::CDRNPeerLink::DataGroupListReceivedFromPeerEvent";
@@ -108,6 +112,10 @@ CDRNPeerLink::RegisterEvents( void )
     LinkProtocolMismatchEvent.Initialize();
     LinkIncompatibleEvent.Initialize();
     LinkOperationalEvent.Initialize();
+    PeerAuthenticationSuccessEvent.Initialize();
+    AuthenticationSuccessEvent.Initialize();
+    PeerAuthenticationFailureEvent.Initialize();
+    AuthenticationFailureEvent.Initialize();
     PeerListReceivedFromPeerEvent.Initialize();
     StreamListReceivedFromPeerEvent.Initialize();
     DataGroupListReceivedFromPeerEvent.Initialize();
@@ -122,6 +130,7 @@ CDRNPeerLink::CDRNPeerLink( CDRNNode& parentNode                   ,
       m_tcpConnection( &tcpConnection ) ,
       m_udpPossible( false )            ,
       m_isAuthenticated( false )        ,
+      m_isPeerAuthenticated( false )    ,
       m_linkData( NULL )                ,
       m_parentNode( &parentNode )       ,
       m_tcpStreamBuffer()               ,
@@ -254,11 +263,11 @@ CDRNPeerLink::IsAuthenticated( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void
-CDRNPeerLink::SetAuthenticatedFlag( const bool authenticated )
+bool
+CDRNPeerLink::IsPeerAuthenticated( void ) const
 {GUCEF_TRACE;
 
-    m_isAuthenticated = authenticated;
+    return m_isPeerAuthenticated;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -323,10 +332,10 @@ CDRNPeerLink::SendServiceTypeMessage( void )
     CORE::CDynamicBuffer sendBuffer( serviceName.Length() + 5 , true );
     sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
     sendBuffer[ 3 ] = DRN_PEERCOMM_SERVICE;
-    sendBuffer[ serviceName.Length() + 3 ] = DRN_TRANSMISSION_END;
+    sendBuffer[ serviceName.Length() + 4 ] = DRN_TRANSMISSION_END;
     
     UInt16 payloadSize = (UInt16)serviceName.Length()+1;
-    sendBuffer.CopyFrom( 2, 2, &payloadSize );
+    sendBuffer.CopyFrom( 1, 2, &payloadSize );
     sendBuffer.CopyFrom( 4, serviceName.Length(), serviceName.C_String() );    
     
     // Send the service name message
@@ -417,7 +426,7 @@ CDRNPeerLink::OnPeerServicesCompatible( void )
     if ( validator != NULL )
     {
         // A validator is available for use
-        if ( validator->IsPeerLoginRequired() )
+        if ( validator->IsPeerLoginRequired( *this ) )
         {
             // Peer authentication is mandatory
             SendAuthenticationRequiredMessage();
@@ -426,6 +435,7 @@ CDRNPeerLink::OnPeerServicesCompatible( void )
     }
     
     // Peer authentication is optional, we can proceed without it
+    m_linkOperational = true;
     SendLinkOperationalMessage();
     NotifyObservers( LinkOperationalEvent );
 }
@@ -712,6 +722,324 @@ CDRNPeerLink::OnPeerDataGroupItemUpdate( const char* data      ,
 /*-------------------------------------------------------------------------*/
 
 void
+CDRNPeerLink::OnPeerAuthenticationSuccess( void )
+{GUCEF_TRACE;
+
+    // We have successfully authenticated with the peer
+    m_isAuthenticated = true;
+    NotifyObservers( AuthenticationSuccessEvent );
+    
+    if ( !m_linkOperational )
+    {
+        // Check if the link is now operational,..    
+        if ( !m_isPeerAuthenticated )
+        {    
+            // Check if a validator mechanism has been provided to the node
+            CIDRNPeerValidator* validator = m_parentNode->GetPeervalidator();
+            if ( validator != NULL )
+            {
+                // A validator is available for use
+                if ( validator->IsPeerLoginRequired( *this ) )
+                {
+                    // It seems the peer still has to authenticate with us
+                    // The link is thus not operational yet
+                    return;
+                }
+            }
+        }
+        
+        // The link is now operational as far as we are concerned
+        m_linkOperational = true;
+        NotifyObservers( LinkOperationalEvent );
+        SendLinkOperationalMessage();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CDRNPeerLink::OnPeerAuthenticationFailed( void )
+{GUCEF_TRACE;
+
+    m_isAuthenticated = false;
+    NotifyObservers( AuthenticationFailureEvent );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::SendAuthenticationSuccess( void )
+{GUCEF_TRACE;
+
+    // Compose the authentication successful message
+    char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_AUTHENTICATION_SUCCESS, DRN_TRANSMISSION_END };
+    UInt16 payloadSize = 1;
+    memcpy( sendBuffer+1, &payloadSize, 2 );
+    
+    if ( !SendData( sendBuffer, 5, false ) )
+    {
+        // Failed to send data, something is very wrong
+        CloseLink();
+        return;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CDRNPeerLink::SendAuthenticationFailed( void )
+{GUCEF_TRACE;
+
+    // Compose the authentication failed message
+    char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_AUTHENTICATION_FAILED, DRN_TRANSMISSION_END };
+    UInt16 payloadSize = 1;
+    memcpy( sendBuffer+1, &payloadSize, 2 );
+    
+    if ( !SendData( sendBuffer, 5, false ) )
+    {
+        // Failed to send data, something is very wrong
+        CloseLink();
+        return;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::SendAuthentication( const CORE::CString& ourAccountName ,
+                                  const CORE::CString& ourPassword    )
+{GUCEF_TRACE;
+
+    // Compose the authentication message
+    CORE::CDynamicBuffer sendBuffer( ourAccountName.Length() + ourPassword.Length() + 6 , true );
+    sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
+    sendBuffer[ 3 ] = DRN_PEERCOMM_AUTHENTICATION;
+    sendBuffer[ ourAccountName.Length() + ourPassword.Length() + 5 ] = DRN_TRANSMISSION_END;
+    
+    UInt16 payloadSize = (UInt16) ( 2 + ourAccountName.Length() + ourPassword.Length() );
+    sendBuffer.CopyFrom( 1, 2, &payloadSize );
+    if ( ourAccountName.Length() > 0 )
+    {
+        sendBuffer.CopyFrom( 4, ourAccountName.Length()+1, ourAccountName.C_String() );    
+    }
+    else
+    {
+        sendBuffer[ 4 ] = '\0';
+    }
+    sendBuffer.CopyFrom( 5 + ourAccountName.Length(), ourPassword.Length(), ourPassword.C_String() );
+    
+    // Send the authentication message
+    if ( !SendData( sendBuffer.GetConstBufferPtr()   , 
+                    (UInt16)sendBuffer.GetDataSize() , 
+                    false                            ) )
+    {
+        // Failed to send data, something is very wrong
+        CloseLink();
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerAuthentication( const char* data      ,
+                                    const UInt32 dataSize )
+{GUCEF_TRACE;
+
+    if ( !m_linkOperational )
+    {
+        // Check if a validator mechanism has been provided to the node
+        CIDRNPeerValidator* validator = m_parentNode->GetPeervalidator();
+        if ( validator != NULL )
+        {
+            // A validator is available for use,..            
+            // Sanity check on the payload size
+            if ( dataSize > 2 )
+            {
+                CORE::CString peerAccount;
+                CORE::CString peerPassword;
+                
+                peerAccount.Scan( data+1, dataSize-1 );
+                if ( peerAccount.Length() < dataSize-1 )
+                {
+                    peerPassword.Set( data+2+peerAccount.Length()     , 
+                                      dataSize-2-peerAccount.Length() );
+                }
+                
+                if ( validator->IsPeerLoginValid( *this        ,
+                                                  peerAccount  ,
+                                                  peerPassword ) )
+                {
+                    // The peer has successfully authenticated
+                    m_isPeerAuthenticated = true;                    
+                    SendAuthenticationSuccess();
+                    NotifyObservers( PeerAuthenticationSuccessEvent );                    
+                    
+                    // Now we have to check if the link has become operational
+                    if ( m_isAuthenticated )
+                    {
+                        // The peer has already successfully authenticated itself with us
+                        // The link is now operational as far as we are concerned
+                        m_linkOperational = true;
+                        NotifyObservers( LinkOperationalEvent );
+                        SendLinkOperationalMessage();                        
+                    }
+                    return;
+                }
+                else
+                {
+                    // Invalid authentication info has been provided by the peer
+                    m_isPeerAuthenticated = false;                    
+                    SendAuthenticationFailed();                    
+                    NotifyObservers( PeerAuthenticationFailureEvent );
+                    return;
+                }                                
+            }            
+        }
+    }
+    else
+    {
+        // We should not get here
+        NotifyObservers( LinkCorruptionEvent );
+        
+        // Terminate the link
+        CloseLink();
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerAuthenticationRequest( void )
+{GUCEF_TRACE;
+
+    if ( !m_linkOperational )
+    {
+        // Check if a validator mechanism has been provided to the node
+        CIDRNPeerValidator* validator = m_parentNode->GetPeervalidator();
+        if ( validator != NULL )
+        {
+            // A validator is available for use
+            CORE::CString ourAccount;
+            CORE::CString ourPassword;
+            if ( validator->GetLoginForPeer( *this       ,
+                                             ourAccount  ,
+                                             ourPassword ) )
+            {
+                SendAuthentication( ourAccount  ,
+                                    ourPassword );
+                return;
+            }
+        }
+
+        // This is a problem,.. we do not have any login info. This means we
+        // cannot send any authentication even though the peer requires it.
+        NotifyObservers( AuthenticationFailureEvent );
+        
+        // Terminate the link
+        CloseLink();     
+    }
+    else
+    {
+        // We should not get here
+        NotifyObservers( LinkCorruptionEvent );
+        
+        // Terminate the link
+        CloseLink();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::SendNotAllowed( void )
+{GUCEF_TRACE;
+
+    // Compose the authentication failed message
+    char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_NOT_ALLOWED, DRN_TRANSMISSION_END };
+    UInt16 payloadSize = 1;
+    memcpy( sendBuffer+1, &payloadSize, 2 );
+    
+    if ( !SendData( sendBuffer, 5, false ) )
+    {
+        // Failed to send data, something is very wrong
+        CloseLink();
+        return;
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPeerSubscribeToDataGroupRequest( const char* data      ,
+                                                 const UInt32 dataSize )
+{GUCEF_TRACE;
+
+    if ( m_linkOperational )
+    {
+        // Sanity check on the payload
+        if ( dataSize > 2 )
+        {
+            // First we extract a name
+            CORE::CString dataGroupName;
+            dataGroupName.Scan( data+1, dataSize-1 );
+            
+            // Sanity check on the name
+            if ( dataGroupName.Length() > 0 )
+            {
+                // Now we try to find the requested item
+                CDRNPeerLinkData::TDRNDataGroupPtr dataPtr = m_linkData->GetPublicizedDataGroupWithName( dataGroupName );
+                if ( dataPtr != NULL )
+                {
+                    SubscribeTo( &(*dataPtr), CDRNDataGroup::ItemChangedEvent );
+                }
+            }
+        }
+    }
+    else
+    {
+        // Tell the peer his action is not allowed at this time
+        SendNotAllowed();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CDRNPeerLink::OnPeerSubscribeToStreamRequest( const char* data      ,
+                                              const UInt32 dataSize )
+{GUCEF_TRACE;
+
+    if ( m_linkOperational )
+    {
+        // Sanity check on the payload
+        if ( dataSize > 2 )
+        {
+            // First we extract a name
+            CORE::CString dataStreamName;
+            dataStreamName.Scan( data+1, dataSize-1 );
+            
+            // Sanity check on the name
+            if ( dataStreamName.Length() > 0 )
+            {
+                // Now we try to find the requested item
+                CDRNPeerLinkData::TDRNDataStreamPtr dataPtr = m_linkData->GetPublicizedDataStreamWithName( dataStreamName );
+                if ( dataPtr != NULL )
+                {
+                    SubscribeTo( &(*dataPtr), CDRNDataStream::DataTransmittedEvent );
+                }
+            }
+        } 
+    }
+    else
+    {
+        // Tell the peer his action is not allowed at this time
+        SendNotAllowed();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CDRNPeerLink::OnPeerGreeting( const char* data      ,
                               const UInt32 dataSize )
 {GUCEF_TRACE;
@@ -782,16 +1110,24 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
             OnPeerLinkIncompatible();
             return;
         }
+        case DRN_PEERCOMM_AUTHENTICATION :
+        {
+            OnPeerAuthentication( data, dataSize );
+            return;        
+        }
         case DRN_PEERCOMM_AUTHENTICATION_REQUIRED :
         {
+            OnPeerAuthenticationRequest();
             return;
         }
         case DRN_PEERCOMM_AUTHENTICATION_FAILED :
         {
+            OnPeerAuthenticationFailed();
             return;
         }
         case DRN_PEERCOMM_AUTHENTICATION_SUCCESS :
         {
+            OnPeerAuthenticationSuccess();
             return;
         }
         case DRN_PEERCOMM_LINK_OPERATIONAL :
@@ -843,10 +1179,12 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         }
         case DRN_PEERCOMM_SUBSCRIBE_TO_DATAGROUP_REQUEST :
         {
+            OnPeerSubscribeToDataGroupRequest( data, dataSize );
             return;
         }
         case DRN_PEERCOMM_SUBSCRIBE_TO_STREAM_REQUEST :
         {
+            OnPeerSubscribeToStreamRequest( data, dataSize );
             return;
         }        
         default:        
@@ -927,7 +1265,7 @@ CDRNPeerLink::OnTCPDataReceived( const GUCEF::CORE::CDynamicBuffer& buffer )
             if ( i+2 < dataSize )
             {
                 // Get the transmission size
-                UInt16 transmissionSize = buffer.AsConstType< UInt16 >( i );
+                UInt16 transmissionSize = buffer.AsConstType< UInt16 >( i+1 );
                 
                 // Sanity check on the buffer size versus reported payload size
                 if ( i+2+transmissionSize < dataSize )
@@ -937,7 +1275,7 @@ CDRNPeerLink::OnTCPDataReceived( const GUCEF::CORE::CDynamicBuffer& buffer )
                     {
                         // The payload segment seems to be all here and the size checks
                         // out. We can now proceed with processing the transmission.
-                        OnPeerDataReceived( static_cast< const char* >( buffer.GetConstBufferPtr() )+i+2 ,
+                        OnPeerDataReceived( static_cast< const char* >( buffer.GetConstBufferPtr() )+i+3 ,
                                             transmissionSize                                             );                            
                     }
                     else
@@ -1024,6 +1362,24 @@ CDRNPeerLink::OnTCPConnectionEvent( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
+CDRNPeerLink::OnPublicizedDataGroupChange( CDRNDataGroup& dataGroup     ,
+                                           CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnPublicizedDataStreamSend( CDRNDataStream& dataStream   ,
+                                          CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CDRNPeerLink::OnNotify( CORE::CNotifier* notifier                 ,
                         const CORE::CEvent& eventid               ,
                         CORE::CICloneable* eventdata /* = NULL */ )
@@ -1042,6 +1398,18 @@ CDRNPeerLink::OnNotify( CORE::CNotifier* notifier                 ,
                            eventid   ,
                            eventdata );
     }
+    else
+    if ( CDRNDataStream::DataTransmittedEvent == eventid )
+    {
+        OnPublicizedDataStreamSend( static_cast< CDRNDataStream& >( *notifier ) ,
+                                    eventdata                                   );    
+    }
+    else
+    if ( CDRNDataGroup::ItemChangedEvent == eventid )
+    {
+        OnPublicizedDataGroupChange( static_cast< CDRNDataGroup& >( *notifier ) ,
+                                     eventdata                                  );
+    }    
 }
 
 /*-------------------------------------------------------------------------*/

@@ -85,7 +85,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataGroup : public CORE::CObservingNotifier
 {
     public:
 
-    static const CORE::CEvent ItemChanged;
+    static const CORE::CEvent ItemChangedEvent;
     
     static void RegisterEvents( void );
     

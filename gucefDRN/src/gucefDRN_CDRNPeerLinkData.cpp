@@ -195,6 +195,34 @@ CDRNPeerLinkData::OnNotify( CORE::CNotifier* notifier                 ,
 
 }
 
+/*-------------------------------------------------------------------------*/
+
+CDRNPeerLinkData::TDRNDataGroupPtr
+CDRNPeerLinkData::GetPublicizedDataGroupWithName( const CORE::CString& name )
+{GUCEF_TRACE;
+
+    TDataGroupMap::iterator i = m_publicizedDataGroups.find( name );
+    if ( i != m_publicizedDataGroups.end() )
+    {
+        return (*i).second.ptr;
+    }
+    return TDRNDataGroupPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDRNPeerLinkData::TDRNDataStreamPtr
+CDRNPeerLinkData::GetPublicizedDataStreamWithName( const CORE::CString& name )
+{GUCEF_TRACE;
+
+    TDataStreamMap::iterator i = m_publicizedDataStreams.find( name );
+    if ( i != m_publicizedDataStreams.end() )
+    {
+        return (*i).second.ptr;
+    }
+    return TDRNDataStreamPtr();
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

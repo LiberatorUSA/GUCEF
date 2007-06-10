@@ -60,8 +60,8 @@ namespace DRN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CDRNDataStream::DataReceived = "GUCEF::CORE::CDRNDataStream::DataReceived";
-const CORE::CEvent CDRNDataStream::DataTransmitted = "GUCEF::CORE::CDRNDataStream::DataTransmitted";
+const CORE::CEvent CDRNDataStream::DataReceivedEvent = "GUCEF::CORE::CDRNDataStream::DataReceivedEvent";
+const CORE::CEvent CDRNDataStream::DataTransmittedEvent = "GUCEF::CORE::CDRNDataStream::DataTransmittedEvent";
     
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -118,8 +118,8 @@ void
 CDRNDataStream::RegisterEvents( void )
 {GUCEF_TRACE;
 
-    DataReceived.Initialize();
-    DataTransmitted.Initialize();
+    DataReceivedEvent.Initialize();
+    DataTransmittedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
