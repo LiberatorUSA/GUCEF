@@ -46,10 +46,11 @@ namespace DRN {
 //-------------------------------------------------------------------------*/
 
 CDRNDataGroupProperties::CDRNDataGroupProperties( void )
-    : m_emitAsGroup( false )           ,
-      m_acceptNewStreamerItems( true ) ,
-      m_acceptStreamerUpdates( true )  ,
-      m_acceptNewPeerItems( false )
+    : m_emitAsGroup( false )                 ,
+      m_acceptNewStreamerItems( true )       ,
+      m_acceptStreamerUpdates( true )        ,
+      m_acceptNewPeerItems( false )          ,
+      m_allowUnreliableTransmission( false )
 {GUCEF_TRACE;
 
 }
@@ -57,10 +58,11 @@ CDRNDataGroupProperties::CDRNDataGroupProperties( void )
 /*-------------------------------------------------------------------------*/
 
 CDRNDataGroupProperties::CDRNDataGroupProperties( const CDRNDataGroupProperties& src )
-    : m_emitAsGroup( src.m_emitAsGroup )                       ,
-      m_acceptNewStreamerItems( src.m_acceptNewStreamerItems ) ,
-      m_acceptStreamerUpdates( src.m_acceptStreamerUpdates )   ,
-      m_acceptNewPeerItems( src.m_acceptNewPeerItems )    
+    : m_emitAsGroup( src.m_emitAsGroup )                                 ,
+      m_acceptNewStreamerItems( src.m_acceptNewStreamerItems )           ,
+      m_acceptStreamerUpdates( src.m_acceptStreamerUpdates )             ,
+      m_acceptNewPeerItems( src.m_acceptNewPeerItems )                   ,
+      m_allowUnreliableTransmission( src.m_allowUnreliableTransmission )
 {GUCEF_TRACE;
 
 }
@@ -83,7 +85,8 @@ CDRNDataGroupProperties::operator=( const CDRNDataGroupProperties& src )
         m_emitAsGroup = src.m_emitAsGroup;
         m_acceptNewStreamerItems = src.m_acceptNewStreamerItems;
         m_acceptStreamerUpdates = src.m_acceptStreamerUpdates;
-        m_acceptNewPeerItems = src.m_acceptNewPeerItems;       
+        m_acceptNewPeerItems = src.m_acceptNewPeerItems;
+        m_allowUnreliableTransmission = src.m_allowUnreliableTransmission;       
     }
     return *this;
 }
@@ -158,6 +161,24 @@ CDRNDataGroupProperties::GetAcceptNewPeerItems( void ) const
 {GUCEF_TRACE;
 
     return m_acceptNewPeerItems;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNDataGroupProperties::SetAllowUnreliableTransmission( const bool allowUnreliableTransmission )
+{GUCEF_TRACE;
+
+    m_allowUnreliableTransmission = allowUnreliableTransmission;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNDataGroupProperties::GetAllowUnreliableTransmission( void ) const
+{GUCEF_TRACE;
+
+    return m_allowUnreliableTransmission;
 }
 
 /*-------------------------------------------------------------------------//

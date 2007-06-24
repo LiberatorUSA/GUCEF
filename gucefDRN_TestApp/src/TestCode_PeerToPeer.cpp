@@ -375,6 +375,21 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Requested peer list from peer" );
         }        
         else
+        if ( DRN::CDRNPeerLink::PeerListReceivedFromPeerEvent == eventid )
+        {
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": received peer list from peer" );
+        }
+        else
+        if ( DRN::CDRNPeerLink::StreamListReceivedFromPeerEvent == eventid )
+        {
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": received data stream list from peer" );
+        }
+        else
+        if ( DRN::CDRNPeerLink::DataGroupListReceivedFromPeerEvent == eventid )
+        {
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": received data group list from peer" );
+        }                
+        else
         {
             GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Unhandled event: " + eventid.GetName() );
         }        

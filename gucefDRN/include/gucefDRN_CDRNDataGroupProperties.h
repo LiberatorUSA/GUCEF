@@ -89,12 +89,20 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataGroupProperties
     
     bool GetAcceptUpdatesFromStreamers( void ) const;
 
+    /**
+     *  Default is false
+     */
+    void SetAllowUnreliableTransmission( const bool allowUnreliableTransmission );
+    
+    bool GetAllowUnreliableTransmission( void ) const;
+
     private:
     
     bool m_emitAsGroup;
     bool m_acceptNewStreamerItems;
     bool m_acceptStreamerUpdates;
     bool m_acceptNewPeerItems;
+    bool m_allowUnreliableTransmission;
     
 };
 
