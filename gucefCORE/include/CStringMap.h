@@ -63,6 +63,8 @@ namespace CORE {
  
 /**
  *      Class that maps string names to a pointer.
+ *
+ *      @deprecated
  */
 class GUCEFCORE_EXPORT_CPP CStringMap
 {

@@ -93,6 +93,8 @@ typedef enum
  *      This class is not threadsafe.
  *      Also note that this class uses the ASCII char set so don't pass buffers
  *      with 8 bit integers, meaning a 0 value in the middle of the buffer ect.
+ *
+ *      @deprecated
  */
 class GUCEFCORE_EXPORT_CPP CStringList
 {
