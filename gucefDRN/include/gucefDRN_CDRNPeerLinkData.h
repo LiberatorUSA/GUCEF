@@ -102,6 +102,15 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     void GetPublicizedDataGroups( TDRNDataGroupList& dataGroupList );
     
     TDRNDataGroupPtr GetPublicizedDataGroupWithName( const CORE::CString& name );
+
+	TDRNDataGroupPtr GetPublicizedDataGroupWithID( const UInt16 id );
+
+	/**
+     *	Allows you to obtain the ID for the given data group
+	 *	if it is publicized. The ID is unique per link.
+	 */
+	bool GetPublicizedDataGroupID( const CORE::CString& name ,
+		                           UInt16& id                );
     
     /**
      *  Returns a list data streams that are publicized on this link
@@ -111,7 +120,16 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     void GetPublicizedDataStreams( TDRNDataStreamList& dataGroupList );
     
     TDRNDataStreamPtr GetPublicizedDataStreamWithName( const CORE::CString& name );
-    
+
+	TDRNDataStreamPtr GetPublicizedDataStreamWithID( const UInt16 id );
+
+	/**
+     *	Allows you to obtain the ID for the given data stream
+	 *	if it is publicized. The ID is unique per link.
+	 */
+	bool GetPublicizedDataStreamID( const CORE::CString& name ,
+		                            UInt16& id                );
+
     void PublicizeStream( TDRNDataStreamPtr& dataStream );
     
     void StopStreamPublication( TDRNDataStreamPtr& dataStream );
@@ -183,6 +201,10 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     TDataStreamMap m_subscribedDataStreams;
     TDataGroupMap m_publicizedDataGroups;
     TDataStreamMap m_publicizedDataStreams;
+    TDataGroupIDMap m_subscribedDataGroupsID;
+    TDataStreamIDMap m_subscribedDataStreamsID;
+    TDataGroupIDMap m_publicizedDataGroupsID;
+    TDataStreamIDMap m_publicizedDataStreamsID;
     CDRNPeerLink* m_peerLink;
 };
 

@@ -147,7 +147,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     CDRNNode& GetParentNode( void );
     
     CDRNPeerLinkData& GetLinkData( void );
-    
+                                    
     bool RequestDataGroupSubscription( const CORE::CString& dataGroupName );
 
     bool RequestStreamSubscription( const CORE::CString& dataSreamName );
@@ -234,7 +234,13 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
 
     void OnPeerStreamDataReceived( const char* data      ,
                                    const UInt32 dataSize );
-        
+
+    void OnSubscribedToPeerDataGroup( const char* data      ,
+                                      const UInt32 dataSize );
+
+    void OnSubscribedToPeerDataStream( const char* data      ,
+                                       const UInt32 dataSize );
+                                                                           
     void OnPeerAuthenticationSuccess( void );
     
     void OnPeerAuthenticationFailed( void );
@@ -256,7 +262,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     void OnPeerAuthenticationRequest( void );
     
     void OnPeerIllegalRequest( void );
-                                    
+    
     void SendGreetingMessage( void );
     
     void SendServiceTypeMessage( void );
@@ -275,6 +281,12 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
 
     void SendAuthentication( const CORE::CString& ourAccountName ,
                              const CORE::CString& ourPassword    );
+
+	void SendSubscribedToDataGroup( const CORE::CString& groupName ,
+	                                const UInt16 id                );
+
+	void SendSubscribedToDataStream( const CORE::CString& groupName ,
+	                                 const UInt16 id                );
                                                            
     private:
     

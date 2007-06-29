@@ -48,11 +48,15 @@ namespace DRN {
 //-------------------------------------------------------------------------*/
 
 CDRNPeerLinkData::CDRNPeerLinkData( CDRNPeerLink& peerLink )
-    : m_peerLink( &peerLink )   ,
-      m_subscribedDataGroups()  ,
-      m_subscribedDataStreams() ,
-      m_publicizedDataGroups()  ,
-      m_publicizedDataStreams()
+    : m_peerLink( &peerLink )     ,
+      m_subscribedDataGroups()    ,
+      m_subscribedDataStreams()   ,
+      m_publicizedDataGroups()    ,
+      m_publicizedDataStreams()   ,
+      m_subscribedDataGroupsID()  ,
+      m_subscribedDataStreamsID() ,
+      m_publicizedDataGroupsID()  ,
+      m_publicizedDataStreamsID()
 {GUCEF_TRACE;
 
     assert( m_peerLink!= NULL );
@@ -211,6 +215,40 @@ CDRNPeerLinkData::GetPublicizedDataGroupWithName( const CORE::CString& name )
 
 /*-------------------------------------------------------------------------*/
 
+CDRNPeerLinkData::TDRNDataGroupPtr
+CDRNPeerLinkData::GetPublicizedDataGroupWithID( const UInt16 id )
+{GUCEF_TRACE;
+
+    TDataGroupIDMap::iterator i = m_publicizedDataGroupsID.find( id );
+    if ( i != m_publicizedDataGroupsID.end() )
+    {
+        return (*i).second.ptr;
+    }
+    return TDRNDataGroupPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNPeerLinkData::GetPublicizedDataGroupID( const CORE::CString& name ,
+										    UInt16& id                )
+{GUCEF_TRACE;
+
+	TDataGroupIDMap::iterator i = m_publicizedDataGroupsID.begin();
+	while ( i != m_publicizedDataGroupsID.end() )
+	{
+		if ( name == (*i).second.ptr->GetName() )
+		{
+			id = (*i).first;
+			return true;
+		}
+		++i;
+	}
+	return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDRNPeerLinkData::TDRNDataStreamPtr
 CDRNPeerLinkData::GetPublicizedDataStreamWithName( const CORE::CString& name )
 {GUCEF_TRACE;
@@ -221,6 +259,40 @@ CDRNPeerLinkData::GetPublicizedDataStreamWithName( const CORE::CString& name )
         return (*i).second.ptr;
     }
     return TDRNDataStreamPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDRNPeerLinkData::TDRNDataStreamPtr
+CDRNPeerLinkData::GetPublicizedDataStreamWithID( const UInt16 id )
+{GUCEF_TRACE;
+
+    TDataStreamIDMap::iterator i = m_publicizedDataStreamsID.find( id );
+    if ( i != m_publicizedDataStreamsID.end() )
+    {
+        return (*i).second.ptr;
+    }
+    return TDRNDataStreamPtr();	
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNPeerLinkData::GetPublicizedDataStreamID( const CORE::CString& name ,
+										     UInt16& id                )
+{GUCEF_TRACE;
+
+	TDataStreamIDMap::iterator i = m_publicizedDataStreamsID.begin();
+	while ( i != m_publicizedDataStreamsID.end() )
+	{
+		if ( name == (*i).second.ptr->GetName() )
+		{
+			id = (*i).first;
+			return true;
+		}
+		++i;
+	}
+	return false;
 }
 
 /*-------------------------------------------------------------------------//

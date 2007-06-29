@@ -1026,6 +1026,80 @@ CDRNPeerLink::SendNotAllowed( void )
 /*-------------------------------------------------------------------------*/
 
 void
+CDRNPeerLink::SendSubscribedToDataGroup( const CORE::CString& groupName ,
+										 const UInt16 id                )
+{GUCEF_TRACE;
+
+	// Compose the message
+    CORE::CDynamicBuffer sendBuffer( groupName.Length() + 7, true );
+    sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
+    sendBuffer[ 3 ] = DRN_PEERCOMM_SUBSCRIBED_TO_DATAGROUP;
+    sendBuffer[ groupName.Length() + 7 ] = DRN_TRANSMISSION_END;
+    sendBuffer.CopyFrom( 3, 2, &id );
+	sendBuffer.CopyFrom( 6, groupName.Length(), groupName.C_String() );
+
+    UInt16 payloadSize = (UInt16) ( 3 + groupName.Length() );
+    sendBuffer.CopyFrom( 1, 2, &payloadSize );
+    
+    // Send the authentication message
+    if ( !SendData( sendBuffer.GetConstBufferPtr()   , 
+                    (UInt16)sendBuffer.GetDataSize() , 
+                    false                            ) )
+    {
+        // Failed to send data, something is very wrong
+        CloseLink();
+    }  
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::SendSubscribedToDataStream( const CORE::CString& streamName ,
+										  const UInt16 id                 )
+{GUCEF_TRACE;
+
+	// Compose the message
+    CORE::CDynamicBuffer sendBuffer( streamName.Length() + 7, true );
+    sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
+    sendBuffer[ 3 ] = DRN_PEERCOMM_SUBSCRIBED_TO_DATASTREAM;
+    sendBuffer[ streamName.Length() + 7 ] = DRN_TRANSMISSION_END;
+    sendBuffer.CopyFrom( 3, 2, &id );
+	sendBuffer.CopyFrom( 6, streamName.Length(), streamName.C_String() );
+
+    UInt16 payloadSize = (UInt16) ( 3 + streamName.Length() );
+    sendBuffer.CopyFrom( 1, 2, &payloadSize );
+    
+    // Send the authentication message
+    if ( !SendData( sendBuffer.GetConstBufferPtr()   , 
+                    (UInt16)sendBuffer.GetDataSize() , 
+                    false                            ) )
+    {
+        // Failed to send data, something is very wrong
+        CloseLink();
+    }  
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnSubscribedToPeerDataGroup( const char* data      ,
+                                           const UInt32 dataSize )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::OnSubscribedToPeerDataStream( const char* data      ,
+                                            const UInt32 dataSize )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CDRNPeerLink::OnPeerSubscribeToDataGroupRequest( const char* data      ,
                                                  const UInt32 dataSize )
 {GUCEF_TRACE;
@@ -1046,7 +1120,15 @@ CDRNPeerLink::OnPeerSubscribeToDataGroupRequest( const char* data      ,
                 CDRNPeerLinkData::TDRNDataGroupPtr dataPtr = m_linkData->GetPublicizedDataGroupWithName( dataGroupName );
                 if ( dataPtr != NULL )
                 {
-                    SubscribeTo( &(*dataPtr), CDRNDataGroup::ItemChangedEvent );
+                    // Subscribe the peer to the data group
+					SubscribeTo( &(*dataPtr), CDRNDataGroup::ItemChangedEvent );
+
+					// Notify the peer that the action has been successfully completed
+					// We also give the peer an ID by which he/she will reference the
+					// data group in the future
+					UInt16 id;
+					m_linkData->GetPublicizedDataGroupID( dataGroupName, id );
+					SendSubscribedToDataGroup( dataGroupName, id );
                 }
             }
         }
@@ -1081,7 +1163,15 @@ CDRNPeerLink::OnPeerSubscribeToStreamRequest( const char* data      ,
                 CDRNPeerLinkData::TDRNDataStreamPtr dataPtr = m_linkData->GetPublicizedDataStreamWithName( dataStreamName );
                 if ( dataPtr != NULL )
                 {
+                    // Subscribe the peer to the data stream
                     SubscribeTo( &(*dataPtr), CDRNDataStream::DataTransmittedEvent );
+
+					// Notify the peer that the action has been successfully completed
+					// We also give the peer an ID by which he/she will reference the
+					// data group in the future
+					UInt16 id;
+					m_linkData->GetPublicizedDataStreamID( dataStreamName, id );
+					SendSubscribedToDataStream( dataStreamName, id );                    
                 }
             }
         } 
@@ -1266,7 +1356,17 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         {
             OnPeerSubscribeToStreamRequest( data, dataSize );
             return;
-        }        
+        } 
+        case DRN_PEERCOMM_SUBSCRIBED_TO_DATAGROUP :
+        {
+            OnSubscribedToPeerDataGroup( data, dataSize );
+            return;
+        }
+        case DRN_PEERCOMM_SUBSCRIBED_TO_DATASTREAM :
+        {
+            OnSubscribedToPeerDataStream( data, dataSize );
+            return;
+        }
         default:        
         {
             // If we get here then an unexpected value was found as the command

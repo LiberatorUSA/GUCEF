@@ -69,6 +69,8 @@
 #define DRN_PEERCOMM_DATAGROUPLIST                  116
 #define DRN_PEERCOMM_SUBSCRIBE_TO_DATAGROUP_REQUEST 117
 #define DRN_PEERCOMM_SUBSCRIBE_TO_STREAM_REQUEST    118
+#define DRN_PEERCOMM_SUBSCRIBED_TO_DATAGROUP        119
+#define DRN_PEERCOMM_SUBSCRIBED_TO_DATASTREAM       120
 
 /*-------------------------------------------------------------------------*/
 
