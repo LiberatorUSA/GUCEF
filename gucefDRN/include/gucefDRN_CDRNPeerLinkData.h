@@ -93,6 +93,10 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     void GetSubscribedDataGroups( TDRNDataGroupList& dataGroupList );
     
     void GetSubscribedDataStreams( TDRNDataStreamList& dataGroupList );
+
+    TDRNDataGroupPtr GetSubscribedDataGroupWithID( UInt16 dataGroupID );
+    
+    TDRNDataStreamPtr GetSubscribedDataStreamWithID( UInt16 dataStreamID );
         
     /**
      *  Returns a list data groups that are publicized on this link
@@ -164,10 +168,16 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     CDRNPeerLinkData( CDRNPeerLink& peerLink );
         
     virtual ~CDRNPeerLinkData();
-    
-    TDRNDataGroupPtr GetSubscribedDataGroupWithID( UInt16 dataGroupID );
-    
-    TDRNDataStreamPtr GetSubscribedDataStreamWithID( UInt16 dataStreamID );
+
+    TDRNDataGroupPtr AddSubscribedDataGroup( const CORE::CString& dataGroupName ,
+                                             const UInt16 dataGroupID           );
+
+    TDRNDataStreamPtr AddSubscribedDataStream( const CORE::CString& dataStreamName ,
+                                               const UInt16 dataStreamID           );
+
+    void RemoveSubscribedDataGroup( const UInt16 dataGroupID );
+
+    void RemoveSubscribedDataStream( const UInt16 dataStreamID );
 
     private:
     
@@ -180,19 +190,19 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     struct SDRNDataGroupEntry
     {
         TDRNDataGroupPtr ptr;
-        CORE::T16BitNumericID id;
+        CORE::T16BitNumericID* id;
     };
     typedef struct SDRNDataGroupEntry TDRNDataGroupEntry;
     
     struct SDRNDataStreamEntry
     {
         TDRNDataStreamPtr ptr;
-        CORE::T16BitNumericID id;
+        CORE::T16BitNumericID* id;
     };
     typedef struct SDRNDataStreamEntry TDRNDataStreamEntry;    
     
-    typedef std::map< CORE::CString, TDRNDataGroupEntry >  TDataGroupMap;
-    typedef std::map< CORE::CString, TDRNDataStreamEntry > TDataStreamMap;
+    typedef std::map< CORE::CString, TDRNDataGroupPtr >  TDataGroupMap;
+    typedef std::map< CORE::CString, TDRNDataStreamPtr > TDataStreamMap;
     typedef std::map< UInt16, TDRNDataGroupEntry >  TDataGroupIDMap;
     typedef std::map< UInt16, TDRNDataStreamEntry > TDataStreamIDMap;
     

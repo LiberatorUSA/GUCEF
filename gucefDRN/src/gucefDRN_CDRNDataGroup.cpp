@@ -58,10 +58,10 @@ const CORE::CEvent CDRNDataGroup::ItemChangedEvent = "GUCEF::CORE::CDRNDataGroup
 //                                                                         //
 //-------------------------------------------------------------------------*/
    
-CDRNDataGroup::CDRNDataGroup( void )
+CDRNDataGroup::CDRNDataGroup( const CORE::CString& groupName )
     : CObservingNotifier()                          ,
       m_properties( new CDRNDataGroupProperties() ) ,
-      m_groupName()                                 ,
+      m_groupName( groupName )                      ,
       m_dataMap()
 {GUCEF_TRACE;
 
@@ -71,39 +71,10 @@ CDRNDataGroup::CDRNDataGroup( void )
 }
 
 /*-------------------------------------------------------------------------*/
-
-CDRNDataGroup::CDRNDataGroup( const CDRNDataGroup& src )
-    : CObservingNotifier( src )        ,
-      m_properties( src.m_properties ) ,
-      m_groupName()                    ,
-      m_dataMap()    
-{GUCEF_TRACE;
-
-    m_groupName = CORE::PointerToString( this );
-}
-
-/*-------------------------------------------------------------------------*/
     
 CDRNDataGroup::~CDRNDataGroup()
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CDRNDataGroup&
-CDRNDataGroup::operator=( const CDRNDataGroup& src )
-{GUCEF_TRACE;
-
-    if ( &src != this )
-    {
-        CObservingNotifier::operator=( src );
-        
-        m_dataMap = src.m_dataMap;
-        m_properties = src.m_properties;
-        m_groupName = CORE::PointerToString( this );        
-    }
-    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -202,15 +173,6 @@ CDRNDataGroup::OnNotify( CORE::CNotifier* notifier                 ,
             }
         }
     }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CDRNDataGroup::SetName( const CORE::CString& groupName )
-{GUCEF_TRACE;
-
-    m_groupName = groupName;
 }
 
 /*-------------------------------------------------------------------------*/

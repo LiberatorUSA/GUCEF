@@ -142,7 +142,7 @@ CTNumericIDGenerator< intType >::GenerateID( const bool releaseIDOnDestruction /
 
     // We ran out of numbers we can dish out in a fast manner.
     // Now we have to do some more work and check which ID is still available
-    T idValue = 0;
+    intType idValue = 0;
     while ( idValue != m_maxValue )
     {
         if ( m_availableIDs.find( idValue ) != m_availableIDs.end() )

@@ -69,27 +69,15 @@ const CORE::CEvent CDRNDataStream::DataTransmittedEvent = "GUCEF::CORE::CDRNData
 //                                                                         //
 //-------------------------------------------------------------------------*/
    
-CDRNDataStream::CDRNDataStream( void )
-    : CObservingNotifier() ,
-      m_streamName()
+CDRNDataStream::CDRNDataStream( const CORE::CString& streamName )
+    : CObservingNotifier()      ,
+      m_streamName( streamName )
 {GUCEF_TRACE;
 
     RegisterEvents();
     
-    m_streamName = CORE::PointerToString( this );
-    
-    m_sendBuffer[ 0 ] = DRN_PEERCOMM_STREAM_DATA;
+    //m_sendBuffer[ 0 ] = DRN_PEERCOMM_STREAM_DATA;
 //    m_sendBuffer.CopyFrom( 1, 2, &m_streamID );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CDRNDataStream::CDRNDataStream( const CDRNDataStream& src )
-    : CObservingNotifier( src ) ,
-      m_streamName()
-{GUCEF_TRACE;
-
-    m_streamName = CORE::PointerToString( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -97,19 +85,6 @@ CDRNDataStream::CDRNDataStream( const CDRNDataStream& src )
 CDRNDataStream::~CDRNDataStream()
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CDRNDataStream&
-CDRNDataStream::operator=( const CDRNDataStream& src )
-{GUCEF_TRACE;
-
-    if ( &src != this )
-    {
-        CObservingNotifier::operator=( src );       
-    }
-    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -175,15 +150,6 @@ CDRNDataStream::SendData( const void* dataSource                   ,
     // Now we actually send the data
     //return m_peerLink->SendData( 
     return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CDRNDataStream::SetName( const CORE::CString& streamName )
-{GUCEF_TRACE;
-
-    m_streamName = streamName;
 }
 
 /*-------------------------------------------------------------------------*/

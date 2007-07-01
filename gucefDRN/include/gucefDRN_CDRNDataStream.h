@@ -81,14 +81,10 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataStream : public CORE::CObservingNotifier
     
     public:
     
-    CDRNDataStream( void );
-    
-    CDRNDataStream( const CDRNDataStream& src );
+    CDRNDataStream( const CORE::CString& streamName );
     
     virtual ~CDRNDataStream();
-    
-    CDRNDataStream& operator=( const CDRNDataStream& src );
-    
+        
     void SetName( const CORE::CString& streamName );
     
     const CORE::CString& GetName( void ) const;
@@ -107,6 +103,12 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataStream : public CORE::CObservingNotifier
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
                            CORE::CICloneable* eventdata = NULL );
+    
+    private:
+    
+    CDRNDataStream( void );
+    CDRNDataStream( const CDRNDataStream& src );
+    CDRNDataStream& operator=( const CDRNDataStream& src );
     
     private:
     

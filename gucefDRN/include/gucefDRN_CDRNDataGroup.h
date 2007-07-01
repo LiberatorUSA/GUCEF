@@ -93,16 +93,10 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataGroup : public CORE::CObservingNotifier
     
     typedef CORE::CTSharedPtr< CDRNDataGroupProperties > CDRNDataGroupPropertiesPtr;
     
-    CDRNDataGroup( void );
-    
-    CDRNDataGroup( const CDRNDataGroup& src );
+    CDRNDataGroup( const CORE::CString& groupName );
     
     virtual ~CDRNDataGroup();
-    
-    CDRNDataGroup& operator=( const CDRNDataGroup& src );
-    
-    void SetName( const CORE::CString& groupName );
-    
+        
     const CORE::CString& GetName( void ) const;
     
     void SetGroupProperties( const CDRNDataGroupPropertiesPtr& properties );
@@ -128,6 +122,12 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataGroup : public CORE::CObservingNotifier
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
                            CORE::CICloneable* eventdata = NULL );
+    
+    private:
+    
+    CDRNDataGroup( void );
+    CDRNDataGroup( const CDRNDataGroup& src );
+    CDRNDataGroup& operator=( const CDRNDataGroup& src );
     
     private:
     typedef std::map< CORE::CDynamicBuffer, CORE::CDynamicBuffer > TDataMap;

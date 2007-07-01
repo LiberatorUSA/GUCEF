@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
+
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
@@ -110,8 +115,16 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     static const CORE::CEvent PeerListReceivedFromPeerEvent;      /**< We received a list of peers from our peer */
     static const CORE::CEvent StreamListReceivedFromPeerEvent;    /**< We received a list of streams from our peer */
     static const CORE::CEvent DataGroupListReceivedFromPeerEvent; /**< We received a list of data groups from our peer */
-    
+    static const CORE::CEvent SubscribedToDataGroupEvent;
+    static const CORE::CEvent SubscribedToDataStreamEvent;
+    static const CORE::CEvent UnsubscribedFromDataGroupEvent;
+    static const CORE::CEvent UnsubscribedFromDataStreamEvent;
+        
     typedef std::vector< CORE::CString >              TStringList;
+    typedef CORE::TCloneableString                    SubscribedToDataGroupEventData;
+    typedef CORE::TCloneableString                    SubscribedToDataStreamEventData;
+    typedef CORE::TCloneableString                    UnsubscribedFromDataGroupEventData;
+    typedef CORE::TCloneableString                    UnsubscribedFromDataStreamEventData;
     typedef CORE::CTLinkedCloneableObj< TStringList > PeerListReceivedFromPeerEventData;   
     typedef CORE::CTLinkedCloneableObj< TStringList > StreamListReceivedFromPeerEventData;
     typedef CORE::CTLinkedCloneableObj< TStringList > DataGroupListReceivedFromPeerEventData;

@@ -99,7 +99,11 @@ const CORE::CEvent CDRNPeerLink::AuthenticationFailureEvent = "GUCEF::DRN::CDRNP
 const CORE::CEvent CDRNPeerLink::PeerListReceivedFromPeerEvent = "GUCEF::DRN::CDRNPeerLink::PeerListReceivedFromPeerEvent";
 const CORE::CEvent CDRNPeerLink::StreamListReceivedFromPeerEvent = "GUCEF::DRN::CDRNPeerLink::StreamListReceivedFromPeerEvent";
 const CORE::CEvent CDRNPeerLink::DataGroupListReceivedFromPeerEvent = "GUCEF::DRN::CDRNPeerLink::DataGroupListReceivedFromPeerEvent";
-    
+const CORE::CEvent CDRNPeerLink::SubscribedToDataGroupEvent = "GUCEF::DRN::CDRNPeerLink::SubscribedToDataGroupEvent";
+const CORE::CEvent CDRNPeerLink::SubscribedToDataStreamEvent = "GUCEF::DRN::CDRNPeerLink::SubscribedToDataStreamEvent";
+const CORE::CEvent CDRNPeerLink::UnsubscribedFromDataGroupEvent = "GUCEF::DRN::CDRNPeerLink::UnsubscribedFromDataGroupEvent";
+const CORE::CEvent CDRNPeerLink::UnsubscribedFromDataStreamEvent = "GUCEF::DRN::CDRNPeerLink::UnsubscribedFromDataStreamEvent";    
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -129,6 +133,10 @@ CDRNPeerLink::RegisterEvents( void )
     PeerListReceivedFromPeerEvent.Initialize();
     StreamListReceivedFromPeerEvent.Initialize();
     DataGroupListReceivedFromPeerEvent.Initialize();
+    SubscribedToDataGroupEvent.Initialize();
+    SubscribedToDataStreamEvent.Initialize();
+    UnsubscribedFromDataGroupEvent.Initialize();
+    UnsubscribedFromDataStreamEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1086,6 +1094,35 @@ CDRNPeerLink::OnSubscribedToPeerDataGroup( const char* data      ,
                                            const UInt32 dataSize )
 {GUCEF_TRACE;
 
+    // Sanity check on the payload size
+    if ( dataSize > 3 )
+    {
+        // Extract the data group ID
+        UInt16 dataGroupID = 0;
+        memcpy( &dataGroupID, data+1, 2 );
+        
+        // Extract the data group name
+        CORE::CString dataGroupName;
+        dataGroupName.Scan( data+3, dataSize-3 );
+
+        if ( dataGroupName.Length() > 0 )
+        {                
+            // Apply the subscription in the administration
+            m_linkData->AddSubscribedDataGroup( dataGroupName ,
+                                                dataGroupID   );
+            
+            SubscribedToDataGroupEventData eData( dataGroupName );
+            NotifyObservers( SubscribedToDataGroupEvent, &eData );
+        }
+    }
+    else
+    {
+        // We should not get here
+        NotifyObservers( LinkCorruptionEvent );
+        
+        // Terminate the link
+        CloseLink();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1095,6 +1132,35 @@ CDRNPeerLink::OnSubscribedToPeerDataStream( const char* data      ,
                                             const UInt32 dataSize )
 {GUCEF_TRACE;
 
+    // Sanity check on the payload size
+    if ( dataSize > 3 )
+    {
+        // Extract the data group ID
+        UInt16 dataStreamID = 0;
+        memcpy( &dataStreamID, data+1, 2 );
+        
+        // Extract the data group name
+        CORE::CString dataStreamName;
+        dataStreamName.Scan( data+3, dataSize-3 );
+        
+        if ( dataStreamName.Length() > 0 )
+        {
+            // Apply the subscription in the administration
+            m_linkData->AddSubscribedDataStream( dataStreamName ,
+                                                 dataStreamID   );
+            
+            SubscribedToDataStreamEventData eData( dataStreamName );
+            NotifyObservers( SubscribedToDataStreamEvent, &eData );
+        }
+    }
+    else
+    {
+        // We should not get here
+        NotifyObservers( LinkCorruptionEvent );
+        
+        // Terminate the link
+        CloseLink();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1664,6 +1730,15 @@ CDRNPeerLink::GetParentNode( void )
 {GUCEF_TRACE;
 
     return *m_parentNode;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDRNPeerLinkData&
+CDRNPeerLink::GetLinkData( void )
+{GUCEF_TRACE;
+    
+    return *m_linkData;
 }
 
 /*-------------------------------------------------------------------------//

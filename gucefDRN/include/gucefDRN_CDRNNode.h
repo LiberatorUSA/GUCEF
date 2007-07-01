@@ -87,6 +87,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     typedef CORE::CTSharedPtr< CDRNPeerLink >       CDRNPeerLinkPtr;
     typedef CORE::CTCloneableObj< CDRNPeerLinkPtr > LinkEstablishedEventData;
     typedef CORE::CTCloneableObj< CDRNPeerLinkPtr > LinkDisconnectedEventData;
+    typedef CDRNPeerLinkData::TDRNDataStreamPtr     TDRNDataStreamPtr;
+    typedef CDRNPeerLinkData::TDRNDataGroupPtr      TDRNDataGroupPtr;
 
     static void RegisterEvents( void );    
     
@@ -147,7 +149,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     private:
     
     typedef std::vector< COMCORE::CTCPClientSocket* > TTCPClients;
-    typedef std::vector< CDRNPeerLinkPtr > TPeerLinks;
+    typedef std::vector< CDRNPeerLinkPtr >            TPeerLinks;
+    typedef std::vector< TDRNDataStreamPtr >          TDataStreamList;
+    typedef std::vector< TDRNDataGroupPtr >           TDataGroupList;
     
     CORE::CString m_serviceName;
     COMCORE::CUDPMasterSocket m_udpSocket;
@@ -156,6 +160,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     CIDRNPeerValidator* m_peerValidator;
     CIDRNPeerLinkCrypter* m_peerLinkCrypter;
     TPeerLinks m_peerLinks;
+    TDataStreamList m_dataStreamList;
+    TDataGroupList m_dataGroupList;
 };
 
 /*-------------------------------------------------------------------------//

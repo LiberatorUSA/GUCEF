@@ -150,11 +150,15 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
     DRN::CDRNNode nodeB; 
     DRN::CDRNNode::CDRNPeerLinkPtr m_linkA;
     DRN::CDRNNode::CDRNPeerLinkPtr m_linkB;
+    DRN::CDRNPeerLinkData::TDRNDataStreamPtr m_streamA;
+    DRN::CDRNPeerLinkData::TDRNDataStreamPtr m_streamB;
 
     public:
     
     CTestPeerToPeerSubSystem( void )    
-        : CGUCEFAppSubSystem( true )
+        : CGUCEFAppSubSystem( true ) ,
+          m_streamA( new DRN::CDRNDataStream( "TestStream" ) ) ,
+          m_streamB( new DRN::CDRNDataStream( "TestStream" ) )
     {GUCEF_TRACE;
     
 
@@ -254,13 +258,15 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             if ( notifier == &nodeA )
             {
                 m_linkA = eData->GetData();            
-                SubscribeTo( &(*m_linkA) );
+                SubscribeTo( &(*m_linkA) );                
+                m_linkA->GetLinkData().PublicizeStream( m_streamA );
             }
             else
             if ( notifier == &nodeB )
             {
                 m_linkB = eData->GetData();            
                 SubscribeTo( &(*m_linkB) );
+                m_linkB->GetLinkData().PublicizeStream( m_streamB );
             }            
         }
         else
