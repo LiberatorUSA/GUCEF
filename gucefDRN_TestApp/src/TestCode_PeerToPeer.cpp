@@ -383,7 +383,9 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
         {
             GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": The link is now operational for us" );
             
-            if ( !m_linkA->RequestDataGroupList() )
+            DRN::CDRNNode::CDRNPeerLinkPtr link = notifier == m_linkA ? m_linkA : m_linkB;
+
+            if ( !link->RequestDataGroupList() )
             {
                 // We should not get here with our test app
                 GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to request the peer data group list" );
@@ -391,7 +393,7 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             }            
             GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Requested data group list from peer" );
 
-            if ( !m_linkA->RequestStreamList() )
+            if ( !link->RequestStreamList() )
             {
                 // We should not get here with our test app
                 GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to request the peer data stream list" );
@@ -399,7 +401,7 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             }
             GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Requested data stream list from peer" );
 
-            if ( !m_linkA->RequestPeerList() )
+            if ( !link->RequestPeerList() )
             {
                 // We should not get here with our test app
                 GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to request the peer's peer list" );
@@ -416,11 +418,29 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
         if ( DRN::CDRNPeerLink::StreamListReceivedFromPeerEvent == eventid )
         {
             GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": received data stream list from peer" );
+            
+            DRN::CDRNNode::CDRNPeerLinkPtr link = notifier == m_linkA ? m_linkA : m_linkB;
+            
+            if ( !link->RequestStreamSubscription( "TestStream" ) )
+            {
+                // We should not get here with our test app
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to request stream subscription" );
+                ERRORHERE;  
+            }
         }
         else
         if ( DRN::CDRNPeerLink::DataGroupListReceivedFromPeerEvent == eventid )
         {
             GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": received data group list from peer" );
+            
+            DRN::CDRNNode::CDRNPeerLinkPtr link = notifier == m_linkA ? m_linkA : m_linkB;
+            
+            if ( !link->RequestDataGroupSubscription( "TestDataGroup" ) )
+            {
+                // We should not get here with our test app
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to request data group subscription" );
+                ERRORHERE;  
+            }            
         }                
         else
         {

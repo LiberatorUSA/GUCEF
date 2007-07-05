@@ -261,6 +261,7 @@ CDynamicBuffer::operator[]( UInt32 index )
         
         if ( index+1 > m_dataSize )
         {
+                SetBufferSize( index+1, false );
                 m_dataSize = index+1;
         }
         return reinterpret_cast< char* >( _buffer )[ index ];

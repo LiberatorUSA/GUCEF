@@ -567,7 +567,7 @@ CDRNPeerLink::OnPeerDataGroupRequest( void )
         }
         
         // Fill in the payload size segment
-        UInt16 payloadSize = (UInt16) streamBuffer.GetDataSize() - 4;
+        UInt16 payloadSize = (UInt16) streamBuffer.GetDataSize() - 3;
         streamBuffer.CopyFrom( 1, 2, &payloadSize );
         
         // Add the transmission delimiter
@@ -616,7 +616,7 @@ CDRNPeerLink::OnPeerStreamListRequest( void )
         }
         
         // Fill in the payload size segment
-        UInt16 payloadSize = (UInt16) streamBuffer.GetDataSize() - 4;
+        UInt16 payloadSize = (UInt16) streamBuffer.GetDataSize() - 3;
         streamBuffer.CopyFrom( 1, 2, &payloadSize );
         
         // Add the transmission delimiter
@@ -1695,7 +1695,7 @@ CDRNPeerLink::RequestPeerList( void )
         UInt16 payloadSize = 1;
         memcpy( sendBuffer+1, &payloadSize, 2 );
         
-        return SendData( sendBuffer, 2, false );
+        return SendData( sendBuffer, 5, false );
     }
     return false;
 }
@@ -1713,7 +1713,7 @@ CDRNPeerLink::RequestStreamList( void )
         UInt16 payloadSize = 1;
         memcpy( sendBuffer+1, &payloadSize, 2 );
             
-        return SendData( sendBuffer, 2, false );
+        return SendData( sendBuffer, 5, false );
     }
     return false;
 }
@@ -1731,7 +1731,73 @@ CDRNPeerLink::RequestDataGroupList( void )
         UInt16 payloadSize = 1;
         memcpy( sendBuffer+1, &payloadSize, 2 );
             
-        return SendData( sendBuffer, 2, false );
+        return SendData( sendBuffer, 5, false );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNPeerLink::RequestDataGroupSubscription( const CORE::CString& dataGroupName )
+{GUCEF_TRACE;
+
+    if ( m_isLinkOperationalForUs )
+    {    
+        // Compose the message
+        CORE::CDynamicBuffer sendBuffer( dataGroupName.Length() + 5, true );
+        sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
+        sendBuffer[ 3 ] = DRN_PEERCOMM_SUBSCRIBE_TO_DATAGROUP_REQUEST;
+        sendBuffer[ dataGroupName.Length() + 5 ] = DRN_TRANSMISSION_END;
+        sendBuffer.CopyFrom( 4, dataGroupName.Length(), dataGroupName.C_String() );
+
+        UInt16 payloadSize = (UInt16) dataGroupName.Length()+1;
+        sendBuffer.CopyFrom( 1, 2, &payloadSize );
+
+        // Send the authentication message
+        if ( SendData( sendBuffer.GetConstBufferPtr()   , 
+                       (UInt16)sendBuffer.GetDataSize() , 
+                       false                            ) )
+        {
+            return true;
+        }
+        
+        // Failed to send data, something is very wrong
+        CloseLink();
+        return false;        
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNPeerLink::RequestStreamSubscription( const CORE::CString& dataStreamName )
+{GUCEF_TRACE;
+
+    if ( m_isLinkOperationalForUs )
+    {    
+        // Compose the message
+        CORE::CDynamicBuffer sendBuffer( dataStreamName.Length() + 5, true );
+        sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
+        sendBuffer[ 3 ] = DRN_PEERCOMM_SUBSCRIBE_TO_STREAM_REQUEST;
+        sendBuffer[ dataStreamName.Length() + 5 ] = DRN_TRANSMISSION_END;
+        sendBuffer.CopyFrom( 4, dataStreamName.Length(), dataStreamName.C_String() );
+
+        UInt16 payloadSize = (UInt16) dataStreamName.Length()+1;
+        sendBuffer.CopyFrom( 1, 2, &payloadSize );
+
+        // Send the authentication message
+        if ( SendData( sendBuffer.GetConstBufferPtr()   , 
+                       (UInt16)sendBuffer.GetDataSize() , 
+                       false                            ) )
+        {
+            return true;
+        }
+        
+        // Failed to send data, something is very wrong
+        CloseLink();
+        return false;        
     }
     return false;
 }
