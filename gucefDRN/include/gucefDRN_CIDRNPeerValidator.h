@@ -78,7 +78,18 @@ class GUCEF_DRN_EXPORT_CPP CIDRNPeerValidator
     virtual bool IsPeerLoginValid( const CDRNPeerLink& peerLink     ,
                                    const CORE::CString& accountName ,
                                    const CORE::CString& password    ) const = 0;
-                                   
+
+    virtual bool IsPeerDataStreamSubscriptionAllowed( const CDRNPeerLink& peerLink        ,
+                                                      const CORE::CString& dataStreamName ) const = 0;
+
+    virtual bool IsPeerDataGroupSubscriptionAllowed( const CDRNPeerLink& peerLink       ,
+                                                      const CORE::CString& dataGroupName ) const = 0;
+
+    virtual bool IsPeerServiceCompatible( const CDRNPeerLink& peerLink         ,
+                                          const CORE::CString& peerServiceName ) const = 0;
+                                                      
+    virtual CORE::CString GetServiceName( const CDRNPeerLink& peerLink ) const = 0;
+                                                                                                 
     virtual bool GetLoginForPeer( const CDRNPeerLink& peerLink  ,
                                   CORE::CString& ourAccountName ,
                                   CORE::CString& ourPassword    ) = 0;    

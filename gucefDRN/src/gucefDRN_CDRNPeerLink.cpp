@@ -354,7 +354,12 @@ CDRNPeerLink::SendServiceTypeMessage( void )
 {GUCEF_TRACE;
 
     // Obtain the service name from our parent node
-    const CORE::CString& serviceName = m_parentNode->GetServiceName();
+    CORE::CString serviceName;
+    CIDRNPeerValidator* validator = m_parentNode->GetPeervalidator();
+    if ( NULL != validator )
+    {
+        serviceName = validator->GetServiceName( *this );
+    }
     
     // Compose the service type message
     CORE::CDynamicBuffer sendBuffer( serviceName.Length() + 5 , true );
@@ -475,6 +480,14 @@ CDRNPeerLink::OnPeerServiceType( const char* data      ,
                                  const UInt32 dataSize )
 {GUCEF_TRACE;
 
+    // Obtain the local service name
+    CORE::CString localService;
+    CIDRNPeerValidator* validator = m_parentNode->GetPeervalidator();        
+    if ( NULL != validator )
+    {
+        localService = validator->GetServiceName( *this );
+    }
+
     // Check if the payload contains a service name
     if ( dataSize > 1 )
     {
@@ -483,7 +496,7 @@ CDRNPeerLink::OnPeerServiceType( const char* data      ,
         CORE::CString remoteService( data+1, serviceStringSize );
         
         // Compare the service names
-        if ( remoteService == m_parentNode->GetServiceName() )
+        if ( remoteService == localService )
         {
             // The service names match, the link is compatible
             OnPeerServicesCompatible();
@@ -501,7 +514,7 @@ CDRNPeerLink::OnPeerServiceType( const char* data      ,
         }
     }
     else
-    if ( m_parentNode->GetServiceName().Length() > 0 )
+    if ( localService.Length() > 0 )
     {
         // Incompatible: the local service is not unnamed
         // Both have to be unnamed to be considered as compatible

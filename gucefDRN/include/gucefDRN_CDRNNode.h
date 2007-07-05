@@ -85,6 +85,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     static const CORE::CEvent LinkErrorEvent;
     
     typedef CORE::CTSharedPtr< CDRNPeerLink >       CDRNPeerLinkPtr;
+    typedef std::vector< CDRNPeerLinkPtr >          TPeerLinkList;
     typedef CORE::CTCloneableObj< CDRNPeerLinkPtr > LinkEstablishedEventData;
     typedef CORE::CTCloneableObj< CDRNPeerLinkPtr > LinkDisconnectedEventData;
     typedef CDRNPeerLinkData::TDRNDataStreamPtr     TDRNDataStreamPtr;
@@ -97,10 +98,6 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     CDRNNode( void );
     
     virtual ~CDRNNode();
-
-    bool SetServiceName( const CORE::CString& serviceName );
-    
-    const CORE::CString& GetServiceName( void ) const;
     
     bool ListenOnPort( const UInt16 port );
     
@@ -124,6 +121,16 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     void SetPeerValidator( CIDRNPeerValidator* peerValidator );
     
     CIDRNPeerValidator* GetPeervalidator( void ) const;
+
+    void PublicizeStream( TDRNDataStreamPtr& dataStream );
+
+    void StopStreamPublication( const CORE::CString& dataStreamName );
+    
+    void PublicizeDataGroup( TDRNDataGroupPtr& dataGroup );
+    
+    void StopDataGroupPublication( const CORE::CString& dataGroupName );
+    
+    void GetPeerLinkList( TPeerLinkList& peerLinkList );
     
     protected:
     
@@ -148,20 +155,18 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     
     private:
     
-    typedef std::vector< COMCORE::CTCPClientSocket* > TTCPClients;
-    typedef std::vector< CDRNPeerLinkPtr >            TPeerLinks;
-    typedef std::vector< TDRNDataStreamPtr >          TDataStreamList;
-    typedef std::vector< TDRNDataGroupPtr >           TDataGroupList;
+    typedef std::vector< COMCORE::CTCPClientSocket* >       TTCPClients;
+    typedef std::map< CORE::CString, TDRNDataStreamPtr >    TDataStreamList;
+    typedef std::map< CORE::CString, TDRNDataGroupPtr >     TDataGroupList;
     
-    CORE::CString m_serviceName;
     COMCORE::CUDPMasterSocket m_udpSocket;
     COMCORE::CTCPServerSocket m_tcpServerSocket;
     TTCPClients m_tcpClientSockets;
     CIDRNPeerValidator* m_peerValidator;
     CIDRNPeerLinkCrypter* m_peerLinkCrypter;
-    TPeerLinks m_peerLinks;
     TDataStreamList m_dataStreamList;
     TDataGroupList m_dataGroupList;
+    TPeerLinkList m_peerLinkList;
 };
 
 /*-------------------------------------------------------------------------//

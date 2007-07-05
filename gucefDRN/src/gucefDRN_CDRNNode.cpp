@@ -38,6 +38,11 @@
 #define GUCEF_DRN_CIDRNPEERVALIDATOR_H
 #endif /* GUCEF_DRN_CIDRNPEERVALIDATOR_H ? */
 
+#ifndef GUCEF_DRN_CDRNPEERLINKDATA_H
+#include "gucefDRN_CDRNPeerLinkData.h"
+#define GUCEF_DRN_CDRNPEERLINKDATA_H
+#endif /* GUCEF_DRN_CDRNPEERLINKDATA_H ? */
+
 #include "gucefDRN_CDRNNode.h"
 
 /*-------------------------------------------------------------------------//
@@ -83,7 +88,9 @@ CDRNNode::CDRNNode( void )
       m_udpSocket( false )               ,
       m_peerValidator( NULL )            ,
       m_peerLinkCrypter( NULL )          ,
-      m_serviceName()
+      m_peerLinkList()                   ,
+      m_dataGroupList()                  ,
+      m_dataStreamList()
 {GUCEF_TRACE;
     
     RegisterEvents();
@@ -114,8 +121,8 @@ CDRNNode::GetOperationalLinkForUsCount( void ) const
 {GUCEF_TRACE;
 
     UInt32 activeCount = 0;
-    TPeerLinks::const_iterator i = m_peerLinks.begin();
-    while ( i != m_peerLinks.end() )
+    TPeerLinkList::const_iterator i = m_peerLinkList.begin();
+    while ( i != m_peerLinkList.end() )
     {
         if ( (*i)->IsOperationalForUs() )
         {
@@ -132,8 +139,8 @@ bool
 CDRNNode::HasOperationalLinksForUs( void ) const
 {GUCEF_TRACE;
 
-    TPeerLinks::const_iterator i = m_peerLinks.begin();
-    while ( i != m_peerLinks.end() )
+    TPeerLinkList::const_iterator i = m_peerLinkList.begin();
+    while ( i != m_peerLinkList.end() )
     {
         if ( (*i)->IsOperationalForUs() )
         {
@@ -142,29 +149,6 @@ CDRNNode::HasOperationalLinksForUs( void ) const
         ++i;
     }
     return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CDRNNode::SetServiceName( const CORE::CString& serviceName )
-{GUCEF_TRACE;
-
-    if ( !HasOperationalLinksForUs() )
-    {
-        m_serviceName = serviceName;
-        return true;
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-const CORE::CString&
-CDRNNode::GetServiceName( void ) const
-{GUCEF_TRACE;
-    
-    return m_serviceName;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -256,8 +240,23 @@ CDRNNode::CreateLink( COMCORE::CTCPConnection& tcpConnection )
     CDRNPeerLinkPtr peerLink( new CDRNPeerLink( *this         ,
                                                 tcpConnection ,
                                                 m_udpSocket   ) );
-    m_peerLinks.push_back( peerLink );
+    m_peerLinkList.push_back( peerLink );
     
+    // Publish our global publicized data groups and streams
+    CDRNPeerLinkData& dataHolder = peerLink->GetLinkData();    
+    TDataGroupList::iterator i = m_dataGroupList.begin();
+    while ( i != m_dataGroupList.end() )
+    {
+        dataHolder.PublicizeDataGroup( (*i).second );
+        ++i;
+    }
+    TDataStreamList::iterator n = m_dataStreamList.begin();
+    while ( n != m_dataStreamList.end() )
+    {
+        dataHolder.PublicizeStream( (*n).second );
+        ++n;
+    }
+        
     // Notify that a new link has been established
     LinkEstablishedEventData eData( peerLink );
     NotifyObservers( LinkEstablishedEvent, &eData );
@@ -290,8 +289,8 @@ CDRNNode::Disconnect( void )
     m_tcpServerSocket.Close();
     m_udpSocket.Close();
 
-    TPeerLinks::iterator i = m_peerLinks.begin();
-    while ( i != m_peerLinks.end() )
+    TPeerLinkList::iterator i = m_peerLinkList.begin();
+    while ( i != m_peerLinkList.end() )
     {
         (*i)->CloseLink();        
         ++i;
@@ -368,6 +367,87 @@ CDRNNode::ConnectToPeer( const CORE::CString& address ,
     SubscribeTo( tcpClient );
     return tcpClient->ConnectTo( address , 
                                  port    );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNNode::PublicizeStream( TDRNDataStreamPtr& dataStream )
+{GUCEF_TRACE;
+
+    // Add the data stream to the global list
+    m_dataStreamList[ dataStream->GetName() ] = dataStream;
+    
+    // Publicize to the existing links
+    TPeerLinkList::iterator i = m_peerLinkList.begin();
+    while ( i != m_peerLinkList.end() )
+    {
+        (*i)->GetLinkData().PublicizeStream( dataStream );
+        ++i;
+    } 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNNode::StopStreamPublication( const CORE::CString& dataStreamName )
+{GUCEF_TRACE;
+
+    // Remove the stream from the global list
+    m_dataStreamList.erase( dataStreamName );
+    
+    // Stop publication for the existing links
+    TPeerLinkList::iterator i = m_peerLinkList.begin();
+    while ( i != m_peerLinkList.end() )
+    {
+        (*i)->GetLinkData().StopStreamPublication( dataStreamName );
+        ++i;
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CDRNNode::PublicizeDataGroup( TDRNDataGroupPtr& dataGroup )
+{GUCEF_TRACE;
+
+    // Add the data group to the global list
+    m_dataGroupList[ dataGroup->GetName() ] = dataGroup;
+    
+    // Publicize to the existing links
+    TPeerLinkList::iterator i = m_peerLinkList.begin();
+    while ( i != m_peerLinkList.end() )
+    {
+        (*i)->GetLinkData().PublicizeDataGroup( dataGroup );
+        ++i;
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNNode::StopDataGroupPublication( const CORE::CString& dataGroupName )
+{GUCEF_TRACE;
+
+    // Remove the data group from the global list
+    m_dataGroupList.erase( dataGroupName );
+    
+    // Stop publication for the existing links
+    TPeerLinkList::iterator i = m_peerLinkList.begin();
+    while ( i != m_peerLinkList.end() )
+    {
+        (*i)->GetLinkData().StopDataGroupPublication( dataGroupName );
+        ++i;
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNNode::GetPeerLinkList( TPeerLinkList& peerLinkList )
+{GUCEF_TRACE;
+
+    peerLinkList = m_peerLinkList;
 }
 
 /*-------------------------------------------------------------------------//

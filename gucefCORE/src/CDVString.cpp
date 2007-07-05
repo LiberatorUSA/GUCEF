@@ -126,7 +126,8 @@ CString::CString( const char *src ,
         m_length = length;
         m_string = new char[ m_length+1 ];
         assert( m_string );                                                                                
-        memcpy( m_string, src, m_length+1 );                                 
+        memcpy( m_string, src, m_length );
+        m_string[ m_length ] = '\0';                                 
     }                                              
 }                  
 

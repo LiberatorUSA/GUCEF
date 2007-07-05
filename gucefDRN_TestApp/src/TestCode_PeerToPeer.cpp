@@ -125,6 +125,33 @@ class CTestPeerValidator : public DRN::CIDRNPeerValidator
         }        
         return false;
     }    
+
+    virtual bool IsPeerDataStreamSubscriptionAllowed( const DRN::CDRNPeerLink& peerLink   ,
+                                                      const CORE::CString& dataStreamName ) const
+    {GUCEF_TRACE;
+    
+        return true;
+    }
+
+    virtual bool IsPeerDataGroupSubscriptionAllowed( const DRN::CDRNPeerLink& peerLink  ,
+                                                     const CORE::CString& dataGroupName ) const
+    {GUCEF_TRACE;
+    
+        return true;
+    }
+
+    virtual bool IsPeerServiceCompatible( const DRN::CDRNPeerLink& peerLink    ,
+                                          const CORE::CString& peerServiceName ) const
+    {GUCEF_TRACE;
+    
+        return peerServiceName == "ValidService";
+    }
+                                                      
+    virtual CORE::CString GetServiceName( const DRN::CDRNPeerLink& peerLink ) const
+    {GUCEF_TRACE;
+    
+        return "ValidService";
+    }
     
     virtual bool GetLoginForPeer( const DRN::CDRNPeerLink& peerLink ,
                                   CORE::CString& ourAccountName     ,
