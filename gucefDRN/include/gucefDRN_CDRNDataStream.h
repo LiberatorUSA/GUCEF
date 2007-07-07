@@ -43,6 +43,11 @@
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */ 
 
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
+
 #ifndef GUCEF_DRN_MACROS_H
 #include "gucefDRN_macros.h"
 #define GUCEF_DRN_MACROS_H
@@ -76,6 +81,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataStream : public CORE::CObservingNotifier
 
     static const CORE::CEvent DataReceivedEvent;
     static const CORE::CEvent DataTransmittedEvent;
+    
+    typedef CORE::TLinkedCloneableBuffer    DataTransmittedEventData; 
+    typedef CORE::TLinkedCloneableBuffer    DataReceivedEventData;
     
     static void RegisterEvents( void );
     

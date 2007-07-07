@@ -1831,6 +1831,15 @@ CDRNPeerLink::GetLinkData( void )
     return *m_linkData;
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::SendStreamDataToPeer( const UInt16 id                  ,
+                                    const CORE::CDynamicBuffer& data )
+{GUCEF_TRACE;
+
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

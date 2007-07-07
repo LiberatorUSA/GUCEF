@@ -135,6 +135,8 @@ CDRNPeerLinkData::PublicizeStream( TDRNDataStreamPtr& dataStream )
     m_publicizedDataStreams[ dataStream->GetName() ] = dataStream;    
     TDRNDataStreamEntry entry = { dataStream, new CORE::T16BitNumericID( m_idGenerator.GenerateID() ) };
     m_publicizedDataStreamsID[ *entry.id ] = entry;
+    
+    SubscribeTo( dataStream.GetPointer(), CDRNDataStream::DataTransmittedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -143,7 +145,12 @@ void
 CDRNPeerLinkData::StopStreamPublication( TDRNDataStreamPtr& dataStream )
 {GUCEF_TRACE;
 
-    m_publicizedDataStreams.erase( dataStream->GetName() );
+    TDataStreamMap::iterator i = m_publicizedDataStreams.find( dataStream->GetName() );
+    if ( i != m_publicizedDataStreams.end() )
+    {
+        UnsubscribeFrom( (*i).second.GetPointer() );
+        m_publicizedDataStreams.erase( i );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -152,7 +159,12 @@ void
 CDRNPeerLinkData::StopStreamPublication( const CORE::CString& dataStreamName )
 {GUCEF_TRACE;
 
-    m_publicizedDataStreams.erase( dataStreamName );
+    TDataStreamMap::iterator i = m_publicizedDataStreams.find( dataStreamName );
+    if ( i != m_publicizedDataStreams.end() )
+    {
+        UnsubscribeFrom( (*i).second.GetPointer() );
+        m_publicizedDataStreams.erase( i );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -201,6 +213,19 @@ CDRNPeerLinkData::OnNotify( CORE::CNotifier* notifier                 ,
                             CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
+    if ( CDRNDataStream::DataTransmittedEvent == eventid )
+    {
+        CDRNDataStream& stream = static_cast< CDRNDataStream& >( *notifier );
+        
+        UInt16 id = 0;
+        if ( GetPublicizedDataStreamID( stream.GetName() ,
+                                        id               ) )
+        {
+            CDRNDataStream::DataTransmittedEventData& eData = static_cast< CDRNDataStream::DataTransmittedEventData& >( *eventdata );
+            m_peerLink->SendStreamDataToPeer( id              ,
+                                              eData.GetData() );
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/

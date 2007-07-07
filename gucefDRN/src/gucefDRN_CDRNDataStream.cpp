@@ -142,14 +142,14 @@ CDRNDataStream::SendData( const void* dataSource                   ,
                           const bool allowUnreliable /* = false */ )
 {GUCEF_TRACE;
 
-    // Make sure the buffer is large enough to hold our stream info + the actual payload
-    m_sendBuffer.SetBufferSize( dataSize + 4, false );
+    // First we link up a buffer for safe emission of the event data
+    CORE::CDynamicBuffer buffer;
+    buffer.LinkTo( dataSource, dataSize );
     
-     
-    
-    // Now we actually send the data
-    //return m_peerLink->SendData( 
-    return false;
+    // Emit the data transmission event
+    DataTransmittedEventData eData( &buffer );    
+    NotifyObservers( DataTransmittedEvent, &eData );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

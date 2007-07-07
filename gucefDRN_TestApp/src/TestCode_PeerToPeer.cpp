@@ -207,6 +207,8 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
         
         m_streamerA.SetID( "StreamerA" );
         m_streamerB.SetID( "StreamerB" );
+        m_streamerA.SetValue( "InitialStringA" );
+        m_streamerB.SetValue( "InitialStringB" );
         
         m_dataGroupA->SubscribeTo( &m_streamerA );
         m_dataGroupB->SubscribeTo( &m_streamerB );
@@ -476,7 +478,7 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             CORE::CString streamName = eData->GetData();
             if ( streamName.Length() == 0 )
             {
-                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain a propper name for the subscribed data stream" );
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain a proper name for the subscribed data stream" );
                 ERRORHERE;             
             }
             
@@ -510,7 +512,7 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             CORE::CString groupName = eData->GetData();
             if ( groupName.Length() == 0 )
             {
-                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain a propper name for the subscribed data stream" );
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain a proper name for the subscribed data group" );
                 ERRORHERE;             
             }
             
@@ -519,20 +521,34 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             
             if ( NULL == dataGroup )
             {
-                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain the subscribed data stream" );
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain the subscribed data group" );
                 ERRORHERE;                 
             }
             
             // Now we subscribe this test object to the subscribed stream 
             SubscribeTo( dataGroup.GetPointer() );                    
             
-            //dataGroup->
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Changing value of a streamer" ); 
+            
+            CORE::TStreamerStringString& streamer = notifier == m_linkA ? m_streamerA : m_streamerB;
+            streamer.SetValue( "ValueChange1" );
         }
         else   
+        if ( DRN::CDRNDataStream::DataTransmittedEvent == eventid )
+        {
+            GUCEF_LOG( 0, "Data was written to a stream" );
+        }
+        else         
         if ( DRN::CDRNPeerLink::DisconnectedEvent == eventid )
         {
+            GUCEF_LOG( 0, GetNodeName( notifier ) + ": The link has been disconnected, shutting down" );
             CORE::CGUCEFApplication::Instance()->Stop();
-        }          
+        }
+        else          
+        if ( CORE::CNotifier::SubscribeEvent == eventid )
+        {
+            // Dont do anything,.. ignore
+        }        
         else
         {
             GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Unhandled event: " + eventid.GetName() );

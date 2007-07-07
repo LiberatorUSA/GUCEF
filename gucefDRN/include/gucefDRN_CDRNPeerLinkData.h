@@ -213,10 +213,10 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     CORE::T16BitNumericIDGenerator m_idGenerator;
     TDataGroupMap m_subscribedDataGroups;
     TDataStreamMap m_subscribedDataStreams;
+    TDataGroupIDMap m_subscribedDataGroupsID;
+    TDataStreamIDMap m_subscribedDataStreamsID;    
     TDataGroupMap m_publicizedDataGroups;
     TDataStreamMap m_publicizedDataStreams;
-    TDataGroupIDMap m_subscribedDataGroupsID;
-    TDataStreamIDMap m_subscribedDataStreamsID;
     TDataGroupIDMap m_publicizedDataGroupsID;
     TDataStreamIDMap m_publicizedDataStreamsID;
     CDRNPeerLink* m_peerLink;
