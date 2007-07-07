@@ -28,6 +28,16 @@
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #include "CMsgException.h"
 
 /*-------------------------------------------------------------------------//
@@ -50,7 +60,7 @@ CMsgException::CMsgException( const char* originFile   ,
                               const char* errorMsg     )
     : CException( originFile, originLineNr )             ,
       m_errorMsg( errorMsg )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -59,14 +69,14 @@ CMsgException::CMsgException( const char* originFile   ,
 CMsgException::CMsgException( const CMsgException& src )
     : CException( src )              ,
       m_errorMsg( src.m_errorMsg )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CMsgException::~CMsgException()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -74,7 +84,7 @@ CMsgException::~CMsgException()
 
 CMsgException& 
 CMsgException::operator=( const CMsgException& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( this != &src )
     {
@@ -87,9 +97,20 @@ CMsgException::operator=( const CMsgException& src )
     
 const char* 
 CMsgException::GetErrorMsg( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_errorMsg;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const char*
+CMsgException::what( void ) const
+{GUCEF_TRACE;
+
+    static CString whatStr;
+    whatStr = "GUCEF message exception: " + CString( m_errorMsg ) + " - thrown from: " + CString( GetOriginFile() ) + ':' + Int32ToString( GetOriginLineNr() );
+    return whatStr.C_String();
 }
 
 /*-------------------------------------------------------------------------//

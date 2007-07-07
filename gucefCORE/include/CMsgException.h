@@ -26,7 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CEXCEPTION_H
 #include "CException.h"
+#define GUCEF_CORE_CEXCEPTION_H
+#endif /* GUCEF_CORE_CEXCEPTION_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,31 +49,36 @@ namespace CORE {
 /**
  *  Generic exception class.
  *  Can be used to throw an exception that does not provide any additional information
- *  asside from the origin of the exception.
- *  Offcourse you can always inherit from this class to create specific exception
+ *  aside from the origin of the exception.
+ *  Off course you can always inherit from this class to create specific exception
  *  sub-sets which may or may not provide additional information.
  */
 class GUCEFCORE_EXPORT_CPP CMsgException : public CException
 {
 	public:
 
-	CMsgException( const char* originFile   ,
-                       const Int32 originLineNr ,
-                       const char* errorMsg     );
+    CMsgException( const char* originFile   ,
+                   const Int32 originLineNr ,
+                   const char* errorMsg     );
 
-	CMsgException( const CMsgException& src );
+    CMsgException( const CMsgException& src );
 
-        virtual ~CMsgException();   
+    virtual ~CMsgException();   
 
-	CMsgException& operator=( const CMsgException& src );
+    CMsgException& operator=( const CMsgException& src );
+
+    const char* GetErrorMsg( void ) const;
     
-        const char* GetErrorMsg( void ) const;
+    virtual const char* what( void ) const;
 
-	private:
-        CMsgException( void );
+    private:
+    
+    CMsgException( void );
+    
+    private:
 
-	const char* m_errorMsg;
-        Int32 m_errorCode;
+    const char* m_errorMsg;
+    Int32 m_errorCode;
 };
 
 /*-------------------------------------------------------------------------//

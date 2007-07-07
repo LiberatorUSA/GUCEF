@@ -26,7 +26,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <exception>            /**< STL base class for all exceptions */
+
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,32 +51,38 @@ namespace CORE {
 /**
  *  Generic exception class.
  *  Can be used to throw an exception that does not provide any additional information
- *  asside from the origin of the exception.
- *  Offcourse you can always inherit from this class to create specific exception
+ *  aside from the origin of the exception.
+ *  Off course you can always inherit from this class to create specific exception
  *  sub-sets which may or may not provide additional information.
  */
-class GUCEFCORE_EXPORT_CPP CException
+class GUCEFCORE_EXPORT_CPP CException : public std::exception
 {
 	public:
 
-        CException( const char* originFile   ,
-                    const Int32 originLineNr );
+    CException( const char* originFile   ,
+                const Int32 originLineNr );
 
-        CException( const CException& src );
+    CException( const CException& src );
 
-        virtual ~CException();   
+    virtual ~CException();   
 
-        CException& operator=( const CException& src );
+    CException& operator=( const CException& src );
 
-        const char* GetOriginFile( void ) const;
+    const char* GetOriginFile( void ) const;
 
-        Int32 GetOriginLineNr( void ) const;
+    Int32 GetOriginLineNr( void ) const;
 
-        private:
-        CException( void );
+    virtual const char* what( void ) const;
+    
+    const char* What( void ) const;
 
-        const char* m_originFile;
-        Int32 m_originLineNr;
+    private:
+    CException( void );
+    
+    private:
+
+    const char* m_originFile;
+    Int32 m_originLineNr;
 };
 
 /*-------------------------------------------------------------------------//

@@ -30,6 +30,16 @@
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #include "CException.h"
 
 /*-------------------------------------------------------------------------//
@@ -47,20 +57,11 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CException::CException( void )
-{TRACE;
-
-    assert( 0 );
-    /* dummy, do not use */
-}
-
-/*-------------------------------------------------------------------------*/
-
 CException::CException( const char* m_originFile   ,
                         const Int32 m_originLineNr )
     : m_originFile( m_originFile )     ,
       m_originLineNr( m_originLineNr )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -69,14 +70,14 @@ CException::CException( const char* m_originFile   ,
 CException::CException( const CException& src )
     : m_originFile( src.m_originFile )     ,
       m_originLineNr( src.m_originLineNr )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CException::~CException()
-{TRACE;
+{GUCEF_TRACE;
     
 }
 
@@ -84,7 +85,7 @@ CException::~CException()
 
 CException&
 CException::operator=( const CException& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( this != &src )
     {
@@ -98,7 +99,7 @@ CException::operator=( const CException& src )
 
 const char* 
 CException::GetOriginFile( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_originFile;
 }
@@ -107,9 +108,29 @@ CException::GetOriginFile( void ) const
 
 Int32 
 CException::GetOriginLineNr( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_originLineNr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const char*
+CException::what( void ) const
+{GUCEF_TRACE;
+
+    static CString whatStr;
+    whatStr = "Basic GUCEF exception thrown from: " + CString( m_originFile ) + ':' + Int32ToString( m_originLineNr );
+    return whatStr.C_String();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const char*
+CException::What( void ) const
+{GUCEF_TRACE;
+
+    return what();
 }
 
 /*-------------------------------------------------------------------------//
