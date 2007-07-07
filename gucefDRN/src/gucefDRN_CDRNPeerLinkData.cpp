@@ -367,6 +367,34 @@ CDRNPeerLinkData::AddSubscribedDataStream( const CORE::CString& dataStreamName ,
     return dataStreamPtr;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CDRNPeerLinkData::TDRNDataGroupPtr
+CDRNPeerLinkData::GetSubscribedDataGroupWithName( const CORE::CString& name )
+{GUCEF_TRACE;
+
+    TDataGroupMap::iterator i = m_subscribedDataGroups.find( name );
+    if ( i != m_subscribedDataGroups.end() )
+    {
+        return (*i).second;
+    }
+    return TDRNDataGroupPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CDRNPeerLinkData::TDRNDataStreamPtr
+CDRNPeerLinkData::GetSubscribedDataStreamWithName( const CORE::CString& name )
+{GUCEF_TRACE;
+
+    TDataStreamMap::iterator i = m_subscribedDataStreams.find( name );
+    if ( i != m_subscribedDataStreams.end() )
+    {
+        return (*i).second;
+    }
+    return TDRNDataStreamPtr();
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

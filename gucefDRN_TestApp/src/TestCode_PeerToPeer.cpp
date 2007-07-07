@@ -179,13 +179,17 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
     DRN::CDRNNode::CDRNPeerLinkPtr m_linkB;
     DRN::CDRNPeerLinkData::TDRNDataStreamPtr m_streamA;
     DRN::CDRNPeerLinkData::TDRNDataStreamPtr m_streamB;
+    DRN::CDRNPeerLinkData::TDRNDataGroupPtr  m_dataGroupA;
+    DRN::CDRNPeerLinkData::TDRNDataGroupPtr  m_dataGroupB;
 
     public:
     
     CTestPeerToPeerSubSystem( void )    
         : CGUCEFAppSubSystem( true ) ,
-          m_streamA( new DRN::CDRNDataStream( "TestStream" ) ) ,
-          m_streamB( new DRN::CDRNDataStream( "TestStream" ) )
+          m_streamA( new DRN::CDRNDataStream( "TestStream" ) )      ,
+          m_streamB( new DRN::CDRNDataStream( "TestStream" ) )      ,
+          m_dataGroupA( new DRN::CDRNDataGroup( "TestDataGroup" ) ) ,
+          m_dataGroupB( new DRN::CDRNDataGroup( "TestDataGroup" ) ) 
     {GUCEF_TRACE;
     
 
@@ -231,10 +235,6 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             ERRORHERE;
         }
         GUCEF_LOG( 0, "Successfully connected to a listen port" );
-        
-        //if ( !nodeB.RequestDataGroupList() )
-        {
-        }    
     }
 
     CORE::CString GetNodeName( CORE::CNotifier* notifier )
@@ -442,6 +442,68 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
                 ERRORHERE;  
             }            
         }                
+        else
+        if ( DRN::CDRNPeerLink::SubscribedToDataStreamEvent == eventid )
+        {
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Successfully subscribed to peer data stream" );
+            
+            DRN::CDRNPeerLink::SubscribedToDataStreamEventData* eData = static_cast< DRN::CDRNPeerLink::SubscribedToDataStreamEventData* >( eventdata );
+            if ( NULL == eData )
+            {
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain name of the subscribed data stream" );
+                ERRORHERE; 
+            }
+            
+            CORE::CString streamName = eData->GetData();
+            if ( streamName.Length() == 0 )
+            {
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain a propper name for the subscribed data stream" );
+                ERRORHERE;             
+            }
+            
+            DRN::CDRNNode::CDRNPeerLinkPtr link = notifier == m_linkA ? m_linkA : m_linkB;
+            DRN::CDRNPeerLinkData::TDRNDataStreamPtr stream = link->GetLinkData().GetSubscribedDataStreamWithName( streamName );
+            
+            if ( NULL == stream )
+            {
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain the subscribed data stream" );
+                ERRORHERE;                 
+            }
+            
+            // Now we subscribe this test object to the subscribed stream 
+            SubscribeTo( stream.GetPointer() );            
+        }        
+        else
+        if ( DRN::CDRNPeerLink::SubscribedToDataGroupEvent == eventid )
+        {
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Successfully subscribed to peer data group" );   
+            
+            DRN::CDRNPeerLink::SubscribedToDataGroupEventData* eData = static_cast< DRN::CDRNPeerLink::SubscribedToDataGroupEventData* >( eventdata );
+            if ( NULL == eData )
+            {
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain name of the subscribed data group" );
+                ERRORHERE; 
+            }
+            
+            CORE::CString groupName = eData->GetData();
+            if ( groupName.Length() == 0 )
+            {
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain a propper name for the subscribed data stream" );
+                ERRORHERE;             
+            }
+            
+            DRN::CDRNNode::CDRNPeerLinkPtr link = notifier == m_linkA ? m_linkA : m_linkB;
+            DRN::CDRNPeerLinkData::TDRNDataStreamPtr dataGroup = link->GetLinkData().GetSubscribedDataStreamWithName( groupName );
+            
+            if ( NULL == dataGroup )
+            {
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain the subscribed data stream" );
+                ERRORHERE;                 
+            }
+            
+            // Now we subscribe this test object to the subscribed stream 
+            SubscribeTo( dataGroup.GetPointer() );                    
+        }        
         else
         {
             GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Unhandled event: " + eventid.GetName() );

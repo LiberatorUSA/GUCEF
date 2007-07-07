@@ -495,8 +495,19 @@ CDRNPeerLink::OnPeerServiceType( const char* data      ,
         UInt32 serviceStringSize = dataSize - 1;
         CORE::CString remoteService( data+1, serviceStringSize );
         
-        // Compare the service names
-        if ( remoteService == localService )
+        bool isValidService = false;
+        if ( NULL != validator )
+        {
+            isValidService = validator->IsPeerServiceCompatible( *this         ,
+                                                                 remoteService );
+        }
+        else
+        {
+            // Simply compare the service names
+            isValidService = remoteService == localService;
+        }
+                
+        if ( isValidService )
         {
             // The service names match, the link is compatible
             OnPeerServicesCompatible();
@@ -1055,9 +1066,9 @@ CDRNPeerLink::SendSubscribedToDataGroup( const CORE::CString& groupName ,
     CORE::CDynamicBuffer sendBuffer( groupName.Length() + 7, true );
     sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
     sendBuffer[ 3 ] = DRN_PEERCOMM_SUBSCRIBED_TO_DATAGROUP;
-    sendBuffer[ groupName.Length() + 7 ] = DRN_TRANSMISSION_END;
-    sendBuffer.CopyFrom( 3, 2, &id );
-	sendBuffer.CopyFrom( 6, groupName.Length(), groupName.C_String() );
+    sendBuffer[ groupName.Length() + 6 ] = DRN_TRANSMISSION_END;
+	sendBuffer.CopyFrom( 6, groupName.Length(), groupName.C_String() );    
+    sendBuffer.CopyFrom( 4, 2, &id );
 
     UInt16 payloadSize = (UInt16) ( 3 + groupName.Length() );
     sendBuffer.CopyFrom( 1, 2, &payloadSize );
@@ -1083,9 +1094,9 @@ CDRNPeerLink::SendSubscribedToDataStream( const CORE::CString& streamName ,
     CORE::CDynamicBuffer sendBuffer( streamName.Length() + 7, true );
     sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
     sendBuffer[ 3 ] = DRN_PEERCOMM_SUBSCRIBED_TO_DATASTREAM;
-    sendBuffer[ streamName.Length() + 7 ] = DRN_TRANSMISSION_END;
-    sendBuffer.CopyFrom( 3, 2, &id );
-	sendBuffer.CopyFrom( 6, streamName.Length(), streamName.C_String() );
+    sendBuffer[ streamName.Length() + 6 ] = DRN_TRANSMISSION_END;
+	sendBuffer.CopyFrom( 6, streamName.Length(), streamName.C_String() );    
+    sendBuffer.CopyFrom( 4, 2, &id );
 
     UInt16 payloadSize = (UInt16) ( 3 + streamName.Length() );
     sendBuffer.CopyFrom( 1, 2, &payloadSize );
@@ -1748,7 +1759,7 @@ CDRNPeerLink::RequestDataGroupSubscription( const CORE::CString& dataGroupName )
         CORE::CDynamicBuffer sendBuffer( dataGroupName.Length() + 5, true );
         sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
         sendBuffer[ 3 ] = DRN_PEERCOMM_SUBSCRIBE_TO_DATAGROUP_REQUEST;
-        sendBuffer[ dataGroupName.Length() + 5 ] = DRN_TRANSMISSION_END;
+        sendBuffer[ dataGroupName.Length() + 4 ] = DRN_TRANSMISSION_END;
         sendBuffer.CopyFrom( 4, dataGroupName.Length(), dataGroupName.C_String() );
 
         UInt16 payloadSize = (UInt16) dataGroupName.Length()+1;
@@ -1781,7 +1792,7 @@ CDRNPeerLink::RequestStreamSubscription( const CORE::CString& dataStreamName )
         CORE::CDynamicBuffer sendBuffer( dataStreamName.Length() + 5, true );
         sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
         sendBuffer[ 3 ] = DRN_PEERCOMM_SUBSCRIBE_TO_STREAM_REQUEST;
-        sendBuffer[ dataStreamName.Length() + 5 ] = DRN_TRANSMISSION_END;
+        sendBuffer[ dataStreamName.Length() + 4 ] = DRN_TRANSMISSION_END;
         sendBuffer.CopyFrom( 4, dataStreamName.Length(), dataStreamName.C_String() );
 
         UInt16 payloadSize = (UInt16) dataStreamName.Length()+1;

@@ -94,6 +94,10 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     
     void GetSubscribedDataStreams( TDRNDataStreamList& dataGroupList );
 
+    TDRNDataGroupPtr GetSubscribedDataGroupWithName( const CORE::CString& name );
+    
+    TDRNDataStreamPtr GetSubscribedDataStreamWithName( const CORE::CString& name );
+
     TDRNDataGroupPtr GetSubscribedDataGroupWithID( UInt16 dataGroupID );
     
     TDRNDataStreamPtr GetSubscribedDataStreamWithID( UInt16 dataStreamID );
