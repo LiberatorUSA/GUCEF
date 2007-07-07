@@ -95,6 +95,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     
     public:
     
+    typedef COMCORE::CIPAddress CIPAddress;
+    
     CDRNNode( void );
     
     virtual ~CDRNNode();
@@ -132,6 +134,16 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     
     void GetPeerLinkList( TPeerLinkList& peerLinkList );
     
+    void SetOverrideConnectBackSettings( const bool overrideSettings );
+    
+    bool GetOverrideConnectBackSettings( void ) const;
+    
+    void SetConnectBackOverride( const CIPAddress& host ,
+                                 const UInt16 udpPort   );
+
+    void GetConnectBackOverride( CIPAddress& host  ,
+                                 UInt16& udpPort   ) const;
+    
     protected:
     
     /**
@@ -167,6 +179,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     TDataStreamList m_dataStreamList;
     TDataGroupList m_dataGroupList;
     TPeerLinkList m_peerLinkList;
+    bool m_overrideConnectBack;
+    CIPAddress m_overrideHost;
+    UInt16 m_overrideUDPPort;
 };
 
 /*-------------------------------------------------------------------------//

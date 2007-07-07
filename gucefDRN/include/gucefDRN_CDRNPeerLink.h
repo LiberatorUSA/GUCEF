@@ -121,8 +121,10 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     static const CORE::CEvent UnsubscribedFromDataStreamEvent;
         
     typedef std::vector< CORE::CString >              TStringList;
-    typedef CORE::TCloneableString                    SubscribedToDataGroupEventData;
-    typedef CORE::TCloneableString                    SubscribedToDataStreamEventData;
+    typedef CDRNPeerLinkData::TDRNDataGroupPtr        TDRNDataGroupPtr;
+    typedef CDRNPeerLinkData::TDRNDataStreamPtr       TDRNDataStreamPtr;
+    typedef CORE::CTCloneableObj< TDRNDataGroupPtr >  SubscribedToDataGroupEventData;
+    typedef CORE::CTCloneableObj< TDRNDataStreamPtr > SubscribedToDataStreamEventData;
     typedef CORE::TCloneableString                    UnsubscribedFromDataGroupEventData;
     typedef CORE::TCloneableString                    UnsubscribedFromDataStreamEventData;
     typedef CORE::CTLinkedCloneableObj< TStringList > PeerListReceivedFromPeerEventData;   
@@ -211,12 +213,6 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     
     CDRNPeerLink( const CDRNPeerLink& src );            /**< peer links are unique and cannot be copied */
     CDRNPeerLink& operator=( const CDRNPeerLink& src ); /**< peer links are unique and cannot be copied */
-
-    void OnPublicizedDataGroupChange( CDRNDataGroup& dataGroup     ,
-                                      CORE::CICloneable* eventdata );
-
-    void OnPublicizedDataStreamSend( CDRNDataStream& dataStream   ,
-                                     CORE::CICloneable* eventdata );
     
     void OnTCPConnectionEvent( CORE::CNotifier* notifier    ,
                                const CORE::CEvent& eventid  ,

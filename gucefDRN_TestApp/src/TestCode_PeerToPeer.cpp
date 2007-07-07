@@ -210,6 +210,20 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
         m_streamerA.SetValue( "InitialStringA" );
         m_streamerB.SetValue( "InitialStringB" );
         
+        CORE::CDynamicBuffer itemName;
+        CORE::CDynamicBuffer itemValue;
+        
+        itemName.CopyFrom( 15, "DataGroupItem1" );
+        itemValue.CopyFrom( 13, "InitialValue" );
+        
+        m_dataGroupA->SetItem( itemName, itemValue );
+        m_dataGroupB->SetItem( itemName, itemValue );
+        
+        itemName.CopyFrom( 15, "DataGroupItem2" );
+
+        m_dataGroupA->SetItem( itemName, itemValue );
+        m_dataGroupB->SetItem( itemName, itemValue );
+        
         m_dataGroupA->SubscribeTo( &m_streamerA );
         m_dataGroupB->SubscribeTo( &m_streamerB );
     }
@@ -305,6 +319,9 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             {
                 m_linkA = eData->GetData();            
                 SubscribeTo( &(*m_linkA) );                
+                
+                // Publicize directly for this link instead of a global publicize
+                // not the standard method/conveinient method but good for testing
                 m_linkA->GetLinkData().PublicizeStream( m_streamA );
                 m_linkA->GetLinkData().PublicizeDataGroup( m_dataGroupA );
             }
@@ -313,6 +330,9 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             {
                 m_linkB = eData->GetData();            
                 SubscribeTo( &(*m_linkB) );
+                
+                // Publicize directly for this link instead of a global publicize
+                // not the standard method/conveinient method but good for testing                
                 m_linkB->GetLinkData().PublicizeStream( m_streamB );
                 m_linkB->GetLinkData().PublicizeDataGroup( m_dataGroupB );
             }            
@@ -475,7 +495,7 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
                 ERRORHERE; 
             }
             
-            CORE::CString streamName = eData->GetData();
+            CORE::CString streamName = eData->GetData()->GetName();
             if ( streamName.Length() == 0 )
             {
                 GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain a proper name for the subscribed data stream" );
@@ -493,9 +513,23 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             
             // Now we subscribe this test object to the subscribed stream 
             SubscribeTo( stream.GetPointer() );            
+
+            CORE::UInt16 streamID = 0;
+            if ( !link->GetLinkData().GetSubscribedDataStreamID( streamName ,
+                                                                 streamID   ) )
+            {
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain the ID for the subscribed data stream " + streamName );
+                ERRORHERE;            
+            }
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": The subscribed data stream has ID " + CORE::UInt16ToString( streamID ) + " and name: " + streamName );
             
-            // Send some data using the stream
-            stream->SendData( "TESTDATA", 8 );
+            // Simulate sending some data from the peer side using the stream
+            DRN::CDRNNode::CDRNPeerLinkPtr peerLink = notifier == m_linkA ? m_linkB : m_linkA;
+            DRN::CDRNPeerLinkData::TDRNDataStreamPtr peerStream = peerLink->GetLinkData().GetSubscribedDataStreamWithName( streamName );
+            if ( NULL != peerStream )
+            {
+                peerStream->SendData( "TESTDATA", 8 );
+            }
         }        
         else
         if ( DRN::CDRNPeerLink::SubscribedToDataGroupEvent == eventid )
@@ -509,7 +543,7 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
                 ERRORHERE; 
             }
             
-            CORE::CString groupName = eData->GetData();
+            CORE::CString groupName = eData->GetData()->GetName();
             if ( groupName.Length() == 0 )
             {
                 GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain a proper name for the subscribed data group" );
@@ -521,9 +555,18 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             
             if ( NULL == dataGroup )
             {
-                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain the subscribed data group" );
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain the subscribed data group " + groupName );
                 ERRORHERE;                 
             }
+            
+            CORE::UInt16 groupID = 0;
+            if ( !link->GetLinkData().GetSubscribedDataGroupID( groupName ,
+                                                                groupID   ) )
+            {
+                GUCEF_ERROR_LOG( 0, GetLinkNodeName( notifier ) + ": Failed to obtain the ID for the subscribed data group " + groupName );
+                ERRORHERE;            
+            }
+            GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": The subscribed data group has ID " + CORE::UInt16ToString( groupID ) + " and name: " + groupName );
             
             // Now we subscribe this test object to the subscribed stream 
             SubscribeTo( dataGroup.GetPointer() );                    
@@ -534,10 +577,23 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             streamer.SetValue( "ValueChange1" );
         }
         else   
+        if ( DRN::CDRNDataGroup::ItemChangedEvent == eventid )
+        {
+            DRN::CDRNDataGroup* dataGroup = static_cast< DRN::CDRNDataGroup* >( notifier );
+            GUCEF_LOG( 0, "Data was written to a data group with name: " + dataGroup->GetName() );
+        }        
+        else   
         if ( DRN::CDRNDataStream::DataTransmittedEvent == eventid )
         {
-            GUCEF_LOG( 0, "Data was written to a stream" );
+            DRN::CDRNDataStream* stream = static_cast< DRN::CDRNDataStream* >( notifier );
+            GUCEF_LOG( 0, "Data was written to a data stream with name: " + stream->GetName() );
         }
+        else   
+        if ( DRN::CDRNDataStream::DataReceivedEvent == eventid )
+        {
+            DRN::CDRNDataStream* stream = static_cast< DRN::CDRNDataStream* >( notifier );
+            GUCEF_LOG( 0, "Data was recieved from a data stream with name: " + stream->GetName() );
+        }        
         else         
         if ( DRN::CDRNPeerLink::DisconnectedEvent == eventid )
         {
@@ -576,6 +632,7 @@ PerformPeerToPeerTest( void )
     catch ( ... )
     {
         GUCEF_ERROR_LOG( 1, "unhandled exception during PerformPeerToPeerTest()" );
+        ERRORHERE;
     } 
     
     GUCEF_LOG( 0, "*** Completed gucefDRN Peer to peer test ***" );

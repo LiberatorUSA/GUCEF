@@ -101,6 +101,20 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     TDRNDataGroupPtr GetSubscribedDataGroupWithID( const UInt16 dataGroupID );
     
     TDRNDataStreamPtr GetSubscribedDataStreamWithID( const UInt16 dataStreamID );
+
+	/**
+     *	Allows you to obtain the ID for the given data group
+	 *	if it is subscribed. The ID is unique per link.
+	 */
+	bool GetSubscribedDataGroupID( const CORE::CString& name ,
+		                           UInt16& id                );
+
+	/**
+     *	Allows you to obtain the ID for the given data stream
+	 *	if it is subscribed. The ID is unique per link.
+	 */
+	bool GetSubscribedDataStreamID( const CORE::CString& name ,
+		                            UInt16& id                );
         
     /**
      *  Returns a list data groups that are publicized on this link
@@ -211,12 +225,14 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     typedef std::map< CORE::CString, TDRNDataStreamPtr > TDataStreamMap;
     typedef std::map< UInt16, TDRNDataGroupEntry >  TDataGroupIDMap;
     typedef std::map< UInt16, TDRNDataStreamEntry > TDataStreamIDMap;
-    
+    typedef std::map< UInt16, TDRNDataGroupPtr >  TIDToDataGroupMap;
+    typedef std::map< UInt16, TDRNDataStreamPtr > TIDToDataStreamMap;
+        
     CORE::T16BitNumericIDGenerator m_idGenerator;
     TDataGroupMap m_subscribedDataGroups;
     TDataStreamMap m_subscribedDataStreams;
-    TDataGroupIDMap m_subscribedDataGroupsID;
-    TDataStreamIDMap m_subscribedDataStreamsID;    
+    TIDToDataGroupMap m_subscribedDataGroupsID;
+    TIDToDataStreamMap m_subscribedDataStreamsID;    
     TDataGroupMap m_publicizedDataGroups;
     TDataStreamMap m_publicizedDataStreams;
     TDataGroupIDMap m_publicizedDataGroupsID;

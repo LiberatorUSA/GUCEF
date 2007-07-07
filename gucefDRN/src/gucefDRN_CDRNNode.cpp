@@ -90,7 +90,11 @@ CDRNNode::CDRNNode( void )
       m_peerLinkCrypter( NULL )          ,
       m_peerLinkList()                   ,
       m_dataGroupList()                  ,
-      m_dataStreamList()
+      m_dataStreamList()                 ,
+      m_overrideConnectBack( false )     ,
+      m_overrideHost( "127.0.0.1" ,
+                      53456       )      ,
+      m_overrideUDPPort( 53457 )
 {GUCEF_TRACE;
     
     RegisterEvents();
@@ -209,9 +213,6 @@ CDRNNode::OnNotify( CORE::CNotifier* notifier                 ,
                 if ( !m_peerValidator->IsPeerAddressValid( connectionInfo.address  ,
                                                            connectionInfo.hostName ) )
                 {
-                    // This peer is not allowed to connect,.. terminate the connection
-                  /*  char sendBuffer[ 2 ] = { DRN_PEERCOMM_NOT_ALLOWED, DRN_TRANSMISSION_SEPERATOR };
-                    connectionInfo.connection->Send( sendBuffer, 2 );  */
                     connectionInfo.connection->Close();
                     return;
                 }
@@ -448,6 +449,46 @@ CDRNNode::GetPeerLinkList( TPeerLinkList& peerLinkList )
 {GUCEF_TRACE;
 
     peerLinkList = m_peerLinkList;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNNode::SetOverrideConnectBackSettings( const bool overrideSettings )
+{GUCEF_TRACE;
+
+    m_overrideConnectBack = overrideSettings;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CDRNNode::GetOverrideConnectBackSettings( void ) const
+{GUCEF_TRACE;
+
+    return m_overrideConnectBack;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNNode::SetConnectBackOverride( const CIPAddress& host ,
+                                  const UInt16 udpPort   )
+{GUCEF_TRACE;
+
+    m_overrideHost = host;
+    m_overrideUDPPort = udpPort;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNNode::GetConnectBackOverride( CIPAddress& host  ,
+                                  UInt16& udpPort   ) const
+{GUCEF_TRACE;
+
+    host = m_overrideHost;
+    udpPort = m_overrideUDPPort;    
 }
 
 /*-------------------------------------------------------------------------//

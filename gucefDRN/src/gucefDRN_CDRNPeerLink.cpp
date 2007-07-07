@@ -1158,10 +1158,10 @@ CDRNPeerLink::OnSubscribedToPeerDataGroup( const char* data      ,
         if ( dataGroupName.Length() > 0 )
         {                
             // Apply the subscription in the administration
-            m_linkData->AddSubscribedDataGroup( dataGroupName ,
-                                                dataGroupID   );
+            TDRNDataGroupPtr dataGroup = m_linkData->AddSubscribedDataGroup( dataGroupName ,
+                                                                             dataGroupID   );
             
-            SubscribedToDataGroupEventData eData( dataGroupName );
+            SubscribedToDataGroupEventData eData( dataGroup );
             NotifyObservers( SubscribedToDataGroupEvent, &eData );
         }
     }
@@ -1196,10 +1196,10 @@ CDRNPeerLink::OnSubscribedToPeerDataStream( const char* data      ,
         if ( dataStreamName.Length() > 0 )
         {
             // Apply the subscription in the administration
-            m_linkData->AddSubscribedDataStream( dataStreamName ,
-                                                 dataStreamID   );
+            TDRNDataStreamPtr dataStream = m_linkData->AddSubscribedDataStream( dataStreamName ,
+                                                                                dataStreamID   );
             
-            SubscribedToDataStreamEventData eData( dataStreamName );
+            SubscribedToDataStreamEventData eData( dataStream );
             NotifyObservers( SubscribedToDataStreamEvent, &eData );
         }
     }
@@ -1245,6 +1245,26 @@ CDRNPeerLink::OnPeerSubscribeToDataGroupRequest( const char* data      ,
 					UInt16 id;
 					m_linkData->GetPublicizedDataGroupID( dataGroupName, id );
 					SendSubscribedToDataGroup( dataGroupName, id );
+					
+					// Send all the current data group values to the peer so the remote
+					// and local data groups are in-sync. This initial dispatch will be send 
+					// in a reliable fashion regardless of the settings
+                    const CORE::CDynamicBuffer* itemID = NULL;
+                    const CORE::CDynamicBuffer* itemData = NULL;
+                    UInt32 items = dataPtr->GetItemCount();
+                    
+                    for ( UInt32 i=0; i<items; ++i )
+                    {
+                        if ( dataPtr->GetIDAndDataAtIndex( i         ,
+                                                           &itemID   ,
+                                                           &itemData ) )
+                        {
+                            SendDataGroupItemUpdateToPeer( id        ,
+                                                           *itemID   ,
+                                                           *itemData ,
+                                                           false     );            
+                        }
+                    }
                 }
             }
         }
@@ -1669,24 +1689,6 @@ CDRNPeerLink::OnTCPConnectionEvent( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CDRNPeerLink::OnPublicizedDataGroupChange( CDRNDataGroup& dataGroup     ,
-                                           CORE::CICloneable* eventdata )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CDRNPeerLink::OnPublicizedDataStreamSend( CDRNDataStream& dataStream   ,
-                                          CORE::CICloneable* eventdata )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
 CDRNPeerLink::OnNotify( CORE::CNotifier* notifier                 ,
                         const CORE::CEvent& eventid               ,
                         CORE::CICloneable* eventdata /* = NULL */ )
@@ -1704,19 +1706,7 @@ CDRNPeerLink::OnNotify( CORE::CNotifier* notifier                 ,
         OnUDPChannelEvent( notifier  ,
                            eventid   ,
                            eventdata );
-    }
-    else
-    if ( CDRNDataStream::DataTransmittedEvent == eventid )
-    {
-        OnPublicizedDataStreamSend( static_cast< CDRNDataStream& >( *notifier ) ,
-                                    eventdata                                   );    
-    }
-    else
-    if ( CDRNDataGroup::ItemChangedEvent == eventid )
-    {
-        OnPublicizedDataGroupChange( static_cast< CDRNDataGroup& >( *notifier ) ,
-                                     eventdata                                  );
-    }    
+    }  
 }
 
 /*-------------------------------------------------------------------------*/

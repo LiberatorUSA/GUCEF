@@ -237,11 +237,11 @@ CDRNDataGroup::GetIDAndDataAtIndex( const UInt32 index                ,
         }
     };
     
-    if ( *id != NULL )
+    if ( id != NULL )
     {
         *id = &(*i).first;
     }
-    if ( *data != NULL )
+    if ( data != NULL )
     {
         *data = &(*i).second;
     }    

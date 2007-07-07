@@ -322,6 +322,46 @@ CDRNPeerLinkData::GetPublicizedDataGroupID( const CORE::CString& name ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CDRNPeerLinkData::GetSubscribedDataGroupID( const CORE::CString& name ,
+		                                    UInt16& id                )
+{GUCEF_TRACE;
+
+	TIDToDataGroupMap::iterator i = m_subscribedDataGroupsID.begin();
+	while ( i != m_subscribedDataGroupsID.end() )
+	{
+		if ( name == (*i).second->GetName() )
+		{
+			id = (*i).first;
+			return true;
+		}
+		++i;
+	}
+	return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNPeerLinkData::GetSubscribedDataStreamID( const CORE::CString& name ,
+		                                     UInt16& id                )
+{GUCEF_TRACE;
+	
+	TIDToDataStreamMap::iterator i = m_subscribedDataStreamsID.begin();
+	while ( i != m_subscribedDataStreamsID.end() )
+	{
+		if ( name == (*i).second->GetName() )
+		{
+			id = (*i).first;
+			return true;
+		}
+		++i;
+	}
+	return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDRNPeerLinkData::TDRNDataStreamPtr
 CDRNPeerLinkData::GetPublicizedDataStreamWithName( const CORE::CString& name )
 {GUCEF_TRACE;
@@ -375,13 +415,11 @@ CDRNPeerLinkData::RemoveSubscribedDataStream( const UInt16 dataStreamID )
 {GUCEF_TRACE;
 
     TDRNDataStreamPtr dataStream;
-    TDataStreamIDMap::iterator i = m_subscribedDataStreamsID.find( dataStreamID );
+    TIDToDataStreamMap::iterator i = m_subscribedDataStreamsID.find( dataStreamID );
     if ( i != m_subscribedDataStreamsID.end() )
     {
-        dataStream = (*i).second.ptr;
-        delete (*i).second.id;
+        dataStream = (*i).second;
         m_subscribedDataStreamsID.erase( i );
-        
         m_subscribedDataStreams.erase( dataStream->GetName() );
     }
 }
@@ -393,13 +431,11 @@ CDRNPeerLinkData::RemoveSubscribedDataGroup( const UInt16 dataGroupID )
 {GUCEF_TRACE;
 
     TDRNDataGroupPtr dataGroup;
-    TDataGroupIDMap::iterator i = m_subscribedDataGroupsID.find( dataGroupID );
+    TIDToDataGroupMap::iterator i = m_subscribedDataGroupsID.find( dataGroupID );
     if ( i != m_subscribedDataGroupsID.end() )
     {
-        dataGroup = (*i).second.ptr;
-        delete (*i).second.id;
+        dataGroup = (*i).second;
         m_subscribedDataGroupsID.erase( i );
-        
         m_subscribedDataGroups.erase( dataGroup->GetName() );
     }
 }
@@ -412,10 +448,8 @@ CDRNPeerLinkData::AddSubscribedDataGroup( const CORE::CString& dataGroupName ,
 {GUCEF_TRACE;
 
     TDRNDataGroupPtr dataGroupPtr( new CDRNDataGroup( dataGroupName ) );
-    m_subscribedDataGroups.insert( std::pair< CORE::CString, TDRNDataGroupPtr >( dataGroupName, dataGroupPtr ) );
-    
-    TDRNDataGroupEntry entry = { dataGroupPtr, new CORE::T16BitNumericID( m_idGenerator.GenerateID() ) };
-    m_subscribedDataGroupsID.insert( std::pair< UInt16, TDRNDataGroupEntry >( *entry.id, entry ) );
+    m_subscribedDataGroups.insert( std::pair< CORE::CString, TDRNDataGroupPtr >( dataGroupName, dataGroupPtr ) );    
+    m_subscribedDataGroupsID.insert( std::pair< UInt16, TDRNDataGroupPtr >( dataGroupID, dataGroupPtr ) );
     
     return dataGroupPtr;
 }
@@ -429,9 +463,7 @@ CDRNPeerLinkData::AddSubscribedDataStream( const CORE::CString& dataStreamName ,
 
     TDRNDataStreamPtr dataStreamPtr( new CDRNDataStream( dataStreamName ) );
     m_subscribedDataStreams.insert( std::pair< CORE::CString, TDRNDataStreamPtr >( dataStreamName, dataStreamPtr ) );
-    
-    TDRNDataStreamEntry entry = { dataStreamPtr, new CORE::T16BitNumericID( m_idGenerator.GenerateID() ) };
-    m_subscribedDataStreamsID.insert( std::pair< UInt16, TDRNDataStreamEntry >( *entry.id, entry ) );
+    m_subscribedDataStreamsID.insert( std::pair< UInt16, TDRNDataStreamPtr >( dataStreamID, dataStreamPtr ) );
     
     return dataStreamPtr;
 }
@@ -470,10 +502,10 @@ CDRNPeerLinkData::TDRNDataGroupPtr
 CDRNPeerLinkData::GetSubscribedDataGroupWithID( const UInt16 dataGroupID )
 {GUCEF_TRACE;
 
-    TDataGroupIDMap::iterator i = m_subscribedDataGroupsID.find( dataGroupID );
+    TIDToDataGroupMap::iterator i = m_subscribedDataGroupsID.find( dataGroupID );
     if ( i != m_subscribedDataGroupsID.end() )
     {
-        return (*i).second.ptr;
+        return (*i).second;
     }
     return TDRNDataGroupPtr();
 }
@@ -484,10 +516,10 @@ CDRNPeerLinkData::TDRNDataStreamPtr
 CDRNPeerLinkData::GetSubscribedDataStreamWithID( const UInt16 dataStreamID )
 {GUCEF_TRACE;
 
-    TDataStreamIDMap::iterator i = m_subscribedDataStreamsID.find( dataStreamID );
+    TIDToDataStreamMap::iterator i = m_subscribedDataStreamsID.find( dataStreamID );
     if ( i != m_subscribedDataStreamsID.end() )
     {
-        return (*i).second.ptr;
+        return (*i).second;
     }
     return TDRNDataStreamPtr();
 }
