@@ -17,24 +17,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CTSTRINGSTREAMABLE_H
-#define GUCEF_CORE_CTSTRINGSTREAMABLE_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CTSTREAMABLEOBJ_H
-#include "CTStreamableObj.h"               /* Template for streamable objects */
-#define GUCEF_CORE_CTSTREAMABLEOBJ_H
-#endif /* GUCEF_CORE_CTSTREAMABLEOBJ_H ? */
-
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#include "CIStreamable.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,62 +36,40 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Template specialization for a stream-able string
- */
-template <>
-class CTStreamableObj< CString > : public CIStreamable
-{
-    public:
-    
-    virtual bool StreamTo( void* destBuffer            ,
-                           const UInt32 destBufferSize ) const
-    {GUCEF_TRACE;
+CIStreamable::CIStreamable( void )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
         
-        if ( destBufferSize >= m_data.Length()+1 )
+CIStreamable::CIStreamable( const CIStreamable& src )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+        
+CIStreamable&
+CIStreamable::operator=( const CIStreamable& src )
+{GUCEF_TRACE;
+
+        if ( &src != this )
         {
-            memcpy( destBuffer, m_data.C_String(), m_data.Length()+1 );
-            return true;
         }
-        return false;
-    }                    
-    
-    virtual bool StreamFrom( const void* srcBuffer      ,
-                             const UInt32 srcBufferSize )
-    {GUCEF_TRACE;
+        return *this;
+}
 
-        m_data.Scan( static_cast< const char* >( srcBuffer ), srcBufferSize );
-        return true;
-    }
-    
-    virtual UInt32 GetStreamedSize( void ) const
-    {GUCEF_TRACE;
+/*-------------------------------------------------------------------------*/
         
-        return m_data.Length()+1;
-    }
-    
-    virtual bool StreamToBuffer( CDynamicBuffer& buffer ) const
-    {GUCEF_TRACE;
+CIStreamable::~CIStreamable()
+{GUCEF_TRACE;
 
-        buffer.Append( m_data.C_String(), m_data.Length()+1 );
-        return true;
-    }
-    
-    virtual bool StreamFromBuffer( const CDynamicBuffer& buffer )
-    {GUCEF_TRACE;
-
-        m_data.Scan( static_cast< const char* >( buffer.GetConstBufferPtr() ), buffer.GetDataSize() );
-        return true;
-    }    
-    
-    private:
-    
-    CString m_data;
-};
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -114,16 +81,3 @@ class CTStreamableObj< CString > : public CIStreamable
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CTSTRINGSTREAMABLE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 07-06-2007 :
-        - Dinand: Added this class
-
------------------------------------------------------------------------------*/

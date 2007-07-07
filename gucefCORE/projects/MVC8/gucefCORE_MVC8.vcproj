@@ -364,6 +364,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CIStreamable.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CITypeNamed.cpp"
 				>
 			</File>
