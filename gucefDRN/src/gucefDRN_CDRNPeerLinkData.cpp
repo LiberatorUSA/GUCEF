@@ -76,8 +76,8 @@ void
 CDRNPeerLinkData::GetSubscribedDataGroups( TDRNDataGroupList& dataGroupList )
 {GUCEF_TRACE;
 
-    TDataGroupMap::iterator i = m_publicizedDataGroups.begin();
-    while ( i != m_publicizedDataGroups.end() )
+    TDataGroupMap::iterator i = m_subscribedDataGroups.begin();
+    while ( i != m_subscribedDataGroups.end() )
     {
         dataGroupList.push_back( (*i).second );
         ++i;
@@ -90,8 +90,8 @@ void
 CDRNPeerLinkData::GetSubscribedDataStreams( TDRNDataStreamList& dataStreamList )
 {GUCEF_TRACE;
 
-    TDataStreamMap::iterator i = m_publicizedDataStreams.begin();
-    while ( i != m_publicizedDataStreams.end() )
+    TDataStreamMap::iterator i = m_subscribedDataStreams.begin();
+    while ( i != m_subscribedDataStreams.end() )
     {
         dataStreamList.push_back( (*i).second );
         ++i;
@@ -176,6 +176,8 @@ CDRNPeerLinkData::PublicizeDataGroup( TDRNDataGroupPtr& dataGroup )
     m_publicizedDataGroups[ dataGroup->GetName() ] = dataGroup;    
     TDRNDataGroupEntry entry = { dataGroup, new CORE::T16BitNumericID( m_idGenerator.GenerateID() ) };
     m_publicizedDataGroupsID[ *entry.id ] = entry;
+    
+    SubscribeTo( dataGroup.GetPointer(), CDRNDataGroup::ItemChangedEvent );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -184,7 +186,12 @@ void
 CDRNPeerLinkData::StopDataGroupPublication( TDRNDataStreamPtr& dataGroup )
 {GUCEF_TRACE;
 
-    m_publicizedDataGroups.erase( dataGroup->GetName() );
+    TDataGroupMap::iterator i = m_publicizedDataGroups.find( dataGroup->GetName() );
+    if ( i != m_publicizedDataGroups.end() )
+    {
+        UnsubscribeFrom( (*i).second.GetPointer() );
+        m_publicizedDataGroups.erase( i );
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -193,7 +200,12 @@ void
 CDRNPeerLinkData::StopDataGroupPublication( const CORE::CString& dataGroupName )
 {GUCEF_TRACE;
 
-    m_publicizedDataGroups.erase( dataGroupName );
+    TDataGroupMap::iterator i = m_publicizedDataGroups.find( dataGroupName );
+    if ( i != m_publicizedDataGroups.end() )
+    {
+        UnsubscribeFrom( (*i).second.GetPointer() );
+        m_publicizedDataGroups.erase( i );
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -223,9 +235,41 @@ CDRNPeerLinkData::OnNotify( CORE::CNotifier* notifier                 ,
         {
             CDRNDataStream::DataTransmittedEventData& eData = static_cast< CDRNDataStream::DataTransmittedEventData& >( *eventdata );
             m_peerLink->SendStreamDataToPeer( id              ,
-                                              eData.GetData() );
+                                              eData.GetData() ,
+                                              false           );
         }
     }
+    else
+    if ( CDRNDataGroup::ItemChangedEvent == eventid )
+    {
+        CDRNDataGroup& dataGroup = static_cast< CDRNDataGroup& >( *notifier );
+        
+        UInt16 id = 0;
+        if ( GetPublicizedDataGroupID( dataGroup.GetName() ,
+                                       id                  ) )
+        {
+            CDRNDataGroup::ItemChangedEventData& eData = static_cast< CDRNDataGroup::ItemChangedEventData& >( *eventdata );
+            m_peerLink->SendDataGroupItemUpdateToPeer( dataGroup             ,
+                                                       id                    ,
+                                                       *eData.GetData().id   ,
+                                                       *eData.GetData().data );
+        }        
+    }
+    else
+    if ( ( CORE::CNotifier::UnsubscribeEvent == eventid ) ||
+         ( CORE::CNotifier::DestructionEvent == eventid )  )
+    {
+        RemoveLinksTo( notifier );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLinkData::RemoveLinksTo( CORE::CNotifier* notifier )
+{GUCEF_TRACE;
+
+    //@TODO
 }
 
 /*-------------------------------------------------------------------------*/
@@ -416,6 +460,34 @@ CDRNPeerLinkData::GetSubscribedDataStreamWithName( const CORE::CString& name )
     if ( i != m_subscribedDataStreams.end() )
     {
         return (*i).second;
+    }
+    return TDRNDataStreamPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDRNPeerLinkData::TDRNDataGroupPtr
+CDRNPeerLinkData::GetSubscribedDataGroupWithID( const UInt16 dataGroupID )
+{GUCEF_TRACE;
+
+    TDataGroupIDMap::iterator i = m_subscribedDataGroupsID.find( dataGroupID );
+    if ( i != m_subscribedDataGroupsID.end() )
+    {
+        return (*i).second.ptr;
+    }
+    return TDRNDataGroupPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDRNPeerLinkData::TDRNDataStreamPtr
+CDRNPeerLinkData::GetSubscribedDataStreamWithID( const UInt16 dataStreamID )
+{GUCEF_TRACE;
+
+    TDataStreamIDMap::iterator i = m_subscribedDataStreamsID.find( dataStreamID );
+    if ( i != m_subscribedDataStreamsID.end() )
+    {
+        return (*i).second.ptr;
     }
     return TDRNDataStreamPtr();
 }

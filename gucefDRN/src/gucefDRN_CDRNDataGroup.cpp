@@ -66,8 +66,6 @@ CDRNDataGroup::CDRNDataGroup( const CORE::CString& groupName )
 {GUCEF_TRACE;
 
     RegisterEvents();
-    
-    m_groupName = CORE::PointerToString( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -94,20 +92,26 @@ CDRNDataGroup::SetItem( const CORE::CDynamicBuffer& id        ,
                         const bool addIfNotFound /* = true */ )
 {GUCEF_TRACE;
 
-    if ( addIfNotFound )
+    TDataMap::iterator i = m_dataMap.find( id );
+    if ( i != m_dataMap.end() )
     {
-        m_dataMap[ id ] = data;
-        NotifyObservers( ItemChangedEvent );
+        (*i).second = data;
+        
+        struct ItemEntry entry = { &(*i).first, &(*i).second };
+        ItemChangedEventData eData( entry );
+        NotifyObservers( ItemChangedEvent, &eData );
+        
         return true;
     }
     else
     {
-        TDataMap::iterator i = m_dataMap.find( id );
-        if ( i != m_dataMap.end() )
+        if ( addIfNotFound )
         {
-            (*i).second = data;
-            NotifyObservers( ItemChangedEvent );
-            return true;
+            i = m_dataMap.insert( std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer >( id, data ) ).first;
+            
+            struct ItemEntry entry = { &(*i).first, &(*i).second };
+            ItemChangedEventData eData( entry );
+            NotifyObservers( ItemChangedEvent, &eData );            
         }
         return false;
     }
@@ -201,6 +205,47 @@ CDRNDataGroup::GetGroupProperties( void ) const
 {GUCEF_TRACE;
 
     return m_properties;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CDRNDataGroup::GetItemCount( void ) const
+{GUCEF_TRACE;
+    
+    return (UInt32) m_dataMap.size();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNDataGroup::GetIDAndDataAtIndex( const UInt32 index                ,
+                                    const CORE::CDynamicBuffer** id   ,
+                                    const CORE::CDynamicBuffer** data ) const
+{GUCEF_TRACE;
+    
+    assert( NULL != id );
+    assert( NULL != data );
+
+    TDataMap::const_iterator i = m_dataMap.begin();
+    for ( UInt32 n=0; n<index; ++n ) 
+    { 
+        ++i;
+        if ( i == m_dataMap.end() )
+        {
+            return false;
+        }
+    };
+    
+    if ( *id != NULL )
+    {
+        *id = &(*i).first;
+    }
+    if ( *data != NULL )
+    {
+        *data = &(*i).second;
+    }    
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

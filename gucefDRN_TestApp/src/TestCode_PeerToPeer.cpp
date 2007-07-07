@@ -517,7 +517,7 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             }
             
             DRN::CDRNNode::CDRNPeerLinkPtr link = notifier == m_linkA ? m_linkA : m_linkB;
-            DRN::CDRNPeerLinkData::TDRNDataStreamPtr dataGroup = link->GetLinkData().GetSubscribedDataStreamWithName( groupName );
+            DRN::CDRNPeerLinkData::TDRNDataGroupPtr dataGroup = link->GetLinkData().GetSubscribedDataGroupWithName( groupName );
             
             if ( NULL == dataGroup )
             {
@@ -547,7 +547,7 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
         else          
         if ( CORE::CNotifier::SubscribeEvent == eventid )
         {
-            // Dont do anything,.. ignore
+            // Don't do anything,.. ignore
         }        
         else
         {

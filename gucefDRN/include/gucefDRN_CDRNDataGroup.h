@@ -48,6 +48,11 @@
 #define GUCEF_CORE_CTSHAREDPTR_H
 #endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
+#include "CTCloneableObj.h"
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+
 #ifndef GUCEF_DRN_CDRNDATAGROUPPROPERTIES_H
 #include "gucefDRN_CDRNDataGroupProperties.h"
 #define GUCEF_DRN_CDRNDATAGROUPPROPERTIES_H
@@ -87,6 +92,13 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataGroup : public CORE::CObservingNotifier
 
     static const CORE::CEvent ItemChangedEvent;
     
+    struct ItemEntry
+    {
+        const CORE::CDynamicBuffer* id;
+        const CORE::CDynamicBuffer* data;
+    };
+    typedef CORE::CTCloneableObj< struct ItemEntry >    ItemChangedEventData;
+    
     static void RegisterEvents( void );
     
     public:
@@ -112,6 +124,12 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataGroup : public CORE::CObservingNotifier
                   
     bool HasItem( const CORE::CDynamicBuffer& id ) const;
 
+    UInt32 GetItemCount( void ) const;
+
+    bool GetIDAndDataAtIndex( const UInt32 index                ,
+                              const CORE::CDynamicBuffer** id   ,
+                              const CORE::CDynamicBuffer** data ) const;
+    
     protected:
     
     /**

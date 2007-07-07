@@ -80,7 +80,6 @@ namespace DRN {
 //-------------------------------------------------------------------------*/
 
 class CDRNNode;
-class CDRNPeerLinkData;
 
 /*-------------------------------------------------------------------------*/
 
@@ -199,9 +198,15 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     private:
     friend class CDRNPeerLinkData;
 
-    void SendStreamDataToPeer( const UInt16 id                  ,
-                               const CORE::CDynamicBuffer& data );
-                   
+    void SendStreamDataToPeer( const UInt16 id                        ,
+                               const CORE::CDynamicBuffer& data       ,
+                               const bool allowUnreliableTransmission );
+
+    void SendDataGroupItemUpdateToPeer( const CDRNDataGroup& dataGroup        ,
+                                        const UInt16 id                       ,
+                                        const CORE::CDynamicBuffer& itemID    ,
+                                        const CORE::CDynamicBuffer& itemValue );
+                       
     private:
     
     CDRNPeerLink( const CDRNPeerLink& src );            /**< peer links are unique and cannot be copied */
@@ -308,6 +313,11 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
 
 	void SendSubscribedToDataStream( const CORE::CString& groupName ,
 	                                 const UInt16 id                );
+
+    void SendDataGroupItemUpdateToPeer( const UInt16 id                        ,
+                                        const CORE::CDynamicBuffer& itemID     ,
+                                        const CORE::CDynamicBuffer& itemValue  ,
+                                        const bool allowUnreliableTransmission );
                                                            
     private:
     

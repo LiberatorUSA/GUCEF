@@ -800,16 +800,42 @@ CDRNPeerLink::OnPeerDataGroupItemUpdate( const char* data      ,
     // Sanity check on the logic flow
     if ( m_isLinkOperationalForUs )
     {
-        //m_linkData->
+        // Sanity check on the data size
+        if ( dataSize >= 9 )
+        {
+            UInt16 dataGroupID = *reinterpret_cast< const UInt16* >( data+1 );
+            UInt16 itemIDSize = *reinterpret_cast< const UInt16* >( data+3 );
+            
+            // Sanity check on the item ID size
+            if ( itemIDSize > 0 )
+            {
+                CORE::CDynamicBuffer itemID;
+                CORE::CDynamicBuffer itemValue;
+                
+                itemID.LinkTo( data+5, itemIDSize );
+                itemValue.LinkTo( data+5+itemIDSize, dataSize-itemIDSize-5 );
+                
+                // Try to find the data group, we should only get this type of
+                // update if we are already subscribed to the given data group
+                CDRNPeerLinkData::TDRNDataGroupPtr dataGroup = m_linkData->GetSubscribedDataGroupWithID( dataGroupID );
+                if ( NULL != dataGroup )
+                {
+                    // Overwrite or add the item to the data group
+                    dataGroup->SetItem( itemID    ,
+                                        itemValue ,
+                                        true      );               
+                    return;
+                }
+            }
+        }
     }
-    else
-    {
-        // We should not get here
-        NotifyObservers( LinkCorruptionEvent );
-        
-        // Terminate the link
-        CloseLink();
-    }    
+
+    // We should not get here
+    NotifyObservers( LinkCorruptionEvent );
+    
+    // Terminate the link
+    CloseLink();
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1765,7 +1791,7 @@ CDRNPeerLink::RequestDataGroupSubscription( const CORE::CString& dataGroupName )
         UInt16 payloadSize = (UInt16) dataGroupName.Length()+1;
         sendBuffer.CopyFrom( 1, 2, &payloadSize );
 
-        // Send the authentication message
+        // Send the subscription request
         if ( SendData( sendBuffer.GetConstBufferPtr()   , 
                        (UInt16)sendBuffer.GetDataSize() , 
                        false                            ) )
@@ -1798,7 +1824,7 @@ CDRNPeerLink::RequestStreamSubscription( const CORE::CString& dataStreamName )
         UInt16 payloadSize = (UInt16) dataStreamName.Length()+1;
         sendBuffer.CopyFrom( 1, 2, &payloadSize );
 
-        // Send the authentication message
+        // Send the subscription request
         if ( SendData( sendBuffer.GetConstBufferPtr()   , 
                        (UInt16)sendBuffer.GetDataSize() , 
                        false                            ) )
@@ -1834,10 +1860,116 @@ CDRNPeerLink::GetLinkData( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CDRNPeerLink::SendStreamDataToPeer( const UInt16 id                  ,
-                                    const CORE::CDynamicBuffer& data )
+CDRNPeerLink::SendStreamDataToPeer( const UInt16 id                        ,
+                                    const CORE::CDynamicBuffer& data       ,
+                                    const bool allowUnreliableTransmission )
 {GUCEF_TRACE;
 
+    if ( m_isLinkOperationalForUs )
+    {    
+        // Compose the message
+        CORE::CDynamicBuffer sendBuffer( data.GetDataSize() + 7, true );
+        sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
+        sendBuffer[ 3 ] = DRN_PEERCOMM_STREAM_DATA;
+        sendBuffer[ data.GetDataSize() + 6 ] = DRN_TRANSMISSION_END;
+        sendBuffer.CopyFrom( 4, 2, &id );
+        sendBuffer.CopyFrom( 6, data.GetDataSize(), data.GetConstBufferPtr() );
+
+        UInt16 payloadSize = (UInt16) data.GetDataSize()+3;
+        sendBuffer.CopyFrom( 1, 2, &payloadSize );
+
+        // Send the stream data
+        if ( SendData( sendBuffer.GetConstBufferPtr()   , 
+                       (UInt16)sendBuffer.GetDataSize() , 
+                       allowUnreliableTransmission      ) )
+        {
+            return;
+        }
+        
+        // Failed to send data, something is very wrong
+        CloseLink();
+        return;        
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::SendDataGroupItemUpdateToPeer( const UInt16 id                        ,
+                                             const CORE::CDynamicBuffer& itemID     ,
+                                             const CORE::CDynamicBuffer& itemValue  ,
+                                             const bool allowUnreliableTransmission )
+{GUCEF_TRACE;
+
+    if ( m_isLinkOperationalForUs )
+    {    
+        // Compose the message
+        UInt16 itemIDSize = (UInt16) itemID.GetDataSize();
+        UInt32 itemValueSize = itemValue.GetDataSize();
+        CORE::CDynamicBuffer sendBuffer( itemIDSize + itemValueSize + 9, true );
+        sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
+        sendBuffer[ 3 ] = DRN_PEERCOMM_DATAGROUP_ITEM_UPDATE;
+        sendBuffer[ itemIDSize + itemValueSize + 8 ] = DRN_TRANSMISSION_END;
+        sendBuffer.CopyFrom( 4, 2, &id );
+        sendBuffer.CopyFrom( 6, 2, &itemIDSize );
+        sendBuffer.CopyFrom( 8, itemIDSize, itemID.GetConstBufferPtr() );
+        sendBuffer.CopyFrom( 8 + itemIDSize, itemValueSize, itemValue.GetConstBufferPtr() );
+
+        UInt16 payloadSize = (UInt16) ( itemIDSize + itemValueSize + 5 );
+        sendBuffer.CopyFrom( 1, 2, &payloadSize );
+
+        // Send the data group item data
+        if ( SendData( sendBuffer.GetConstBufferPtr()   , 
+                       (UInt16)sendBuffer.GetDataSize() , 
+                       allowUnreliableTransmission      ) )
+        {
+            return;
+        }
+        
+        // Failed to send data, something is very wrong
+        CloseLink();
+        return;        
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::SendDataGroupItemUpdateToPeer( const CDRNDataGroup& dataGroup        ,
+                                             const UInt16 id                       ,
+                                             const CORE::CDynamicBuffer& itemID    ,
+                                             const CORE::CDynamicBuffer& itemValue )
+{GUCEF_TRACE;
+
+    CDRNDataGroup::CDRNDataGroupPropertiesPtr settings = dataGroup.GetGroupProperties();
+    bool allowUnreliableTransmission = settings->GetAllowUnreliableTransmission();
+    
+    if ( settings->GetEmitEntireGroupOnChange() )
+    {
+        const CORE::CDynamicBuffer* itemID = NULL;
+        const CORE::CDynamicBuffer* itemData = NULL;
+        UInt32 items = dataGroup.GetItemCount();
+        
+        for ( UInt32 i=0; i<items; ++i )
+        {
+            if ( dataGroup.GetIDAndDataAtIndex( i     ,
+                                                &itemID   ,
+                                                &itemData ) )
+            {
+                SendDataGroupItemUpdateToPeer( id                          ,
+                                               *itemID                     ,
+                                               *itemData                   ,
+                                               allowUnreliableTransmission );            
+            }
+        }
+    }
+    else
+    {
+        SendDataGroupItemUpdateToPeer( id                          ,
+                                       itemID                      ,
+                                       itemValue                   ,
+                                       allowUnreliableTransmission );
+    }
 }
 
 /*-------------------------------------------------------------------------//

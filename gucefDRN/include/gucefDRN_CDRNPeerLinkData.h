@@ -98,9 +98,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     
     TDRNDataStreamPtr GetSubscribedDataStreamWithName( const CORE::CString& name );
 
-    TDRNDataGroupPtr GetSubscribedDataGroupWithID( UInt16 dataGroupID );
+    TDRNDataGroupPtr GetSubscribedDataGroupWithID( const UInt16 dataGroupID );
     
-    TDRNDataStreamPtr GetSubscribedDataStreamWithID( UInt16 dataStreamID );
+    TDRNDataStreamPtr GetSubscribedDataStreamWithID( const UInt16 dataStreamID );
         
     /**
      *  Returns a list data groups that are publicized on this link
@@ -188,6 +188,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     CDRNPeerLinkData( void );                                   /**< not implemented, makes no sense */
     CDRNPeerLinkData( const CDRNPeerLinkData& src );            /**< not implemented, makes no sense */
     CDRNPeerLinkData& operator=( const CDRNPeerLinkData& src ); /**< not implemented, makes no sense */
+    
+    void RemoveLinksTo( CORE::CNotifier* notifier );
     
     private:
     
