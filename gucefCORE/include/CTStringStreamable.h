@@ -98,6 +98,18 @@ class CTStreamableObj< CString > : public CIStreamable
         m_data.Scan( static_cast< const char* >( buffer.GetConstBufferPtr() ), buffer.GetDataSize() );
         return true;
     }    
+
+    CString& GetDataRef( void )
+    {GUCEF_TRACE;
+
+        return m_data;
+    }
+
+    const CString& GetConstDataRef( void ) const
+    {GUCEF_TRACE;
+
+        return m_data;
+    }
     
     private:
     

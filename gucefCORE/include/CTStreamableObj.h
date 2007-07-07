@@ -72,6 +72,10 @@ class CTStreamableObj : public CIStreamable
     
     operator const T& () const;
     
+    T& GetDataRef( void );
+    
+    const T& GetConstDataRef( void ) const;
+    
     virtual bool StreamTo( void* destBuffer            ,
                            const UInt32 destBufferSize ) const;
                     
@@ -235,6 +239,26 @@ CTStreamableObj< T >::StreamFromBuffer( const CDynamicBuffer& buffer )
     }
     return true;
 }
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+T&
+CTStreamableObj< T >::GetDataRef( void )
+{GUCEF_TRACE;
+
+    return m_data;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+template < typename T >
+const T&
+CTStreamableObj< T >::GetConstDataRef( void ) const
+{GUCEF_TRACE;
+
+    return m_data;
+}    
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

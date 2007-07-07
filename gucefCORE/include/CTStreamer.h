@@ -156,8 +156,8 @@ CTStreamer< idType, valueType >::operator=( const CTStreamer& src )
         
         CStreamerEvents::operator=( src );
         
-        m_id = src.m_id;
-        m_value = src.m_value;
+        m_id.GetDataRef() = src.m_id.GetConstDataRef();
+        m_value.GetDataRef() = src.m_value.GetConstDataRef();
         
         struct SStreamEventData dataClamp = { &m_id, &m_value };
         TStreamEventData eData( dataClamp );        
@@ -175,7 +175,7 @@ void
 CTStreamer< idType, valueType >::SetID( const idType& newID )
 {GUCEF_TRACE;
 
-    m_id = newID;
+    m_id.GetDataRef() = newID;
     
     struct SStreamEventData dataClamp = { &m_id, &m_value };
     TStreamEventData eData( dataClamp );
@@ -190,7 +190,7 @@ const idType&
 CTStreamer< idType, valueType >::GetID( void ) const
 {GUCEF_TRACE;
 
-    return m_id;
+    return m_id.GetConstDataRef();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -200,7 +200,7 @@ void
 CTStreamer< idType, valueType >::SetValue( const valueType& newValue )
 {GUCEF_TRACE;
 
-    m_value = newValue;
+    m_value.GetDataRef() = newValue;
     
     struct SStreamEventData dataClamp = { &m_id, &m_value };
     TStreamEventData eData( dataClamp );
@@ -215,7 +215,7 @@ const valueType&
 CTStreamer< idType, valueType >::GetValue( void ) const
 {GUCEF_TRACE;
 
-    return m_value;
+    return m_value.GetConstDataRef();
 }
 
 /*-------------------------------------------------------------------------//

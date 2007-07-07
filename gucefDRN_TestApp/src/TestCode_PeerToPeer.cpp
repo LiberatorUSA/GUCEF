@@ -181,7 +181,10 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
     DRN::CDRNPeerLinkData::TDRNDataStreamPtr m_streamB;
     DRN::CDRNPeerLinkData::TDRNDataGroupPtr  m_dataGroupA;
     DRN::CDRNPeerLinkData::TDRNDataGroupPtr  m_dataGroupB;
-
+    DRN::CDRNDataGroup::CDRNDataGroupPropertiesPtr m_groupProperties;
+    CORE::TStreamerStringString m_streamerA;
+    CORE::TStreamerStringString m_streamerB;
+    
     public:
     
     CTestPeerToPeerSubSystem( void )    
@@ -189,10 +192,24 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
           m_streamA( new DRN::CDRNDataStream( "TestStream" ) )      ,
           m_streamB( new DRN::CDRNDataStream( "TestStream" ) )      ,
           m_dataGroupA( new DRN::CDRNDataGroup( "TestDataGroup" ) ) ,
-          m_dataGroupB( new DRN::CDRNDataGroup( "TestDataGroup" ) ) 
+          m_dataGroupB( new DRN::CDRNDataGroup( "TestDataGroup" ) ) ,
+          m_groupProperties( new DRN::CDRNDataGroupProperties() )
     {GUCEF_TRACE;
     
-
+        m_groupProperties->SetAcceptNewPeerItems( true );
+        m_groupProperties->SetAcceptNewStreamerItems( true );
+        m_groupProperties->SetAcceptUpdatesFromStreamers( true );
+        m_groupProperties->SetAllowUnreliableTransmission( false );
+        m_groupProperties->SetEmitEntireGroupOnChange( false );
+        
+        m_dataGroupA->SetGroupProperties( m_groupProperties );
+        m_dataGroupB->SetGroupProperties( m_groupProperties );
+        
+        m_streamerA.SetID( "StreamerA" );
+        m_streamerB.SetID( "StreamerB" );
+        
+        m_dataGroupA->SubscribeTo( &m_streamerA );
+        m_dataGroupB->SubscribeTo( &m_streamerB );
     }
     
     void SetupTestUtils( void )
@@ -287,6 +304,7 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
                 m_linkA = eData->GetData();            
                 SubscribeTo( &(*m_linkA) );                
                 m_linkA->GetLinkData().PublicizeStream( m_streamA );
+                m_linkA->GetLinkData().PublicizeDataGroup( m_dataGroupA );
             }
             else
             if ( notifier == &nodeB )
@@ -294,6 +312,7 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
                 m_linkB = eData->GetData();            
                 SubscribeTo( &(*m_linkB) );
                 m_linkB->GetLinkData().PublicizeStream( m_streamB );
+                m_linkB->GetLinkData().PublicizeDataGroup( m_dataGroupB );
             }            
         }
         else
@@ -472,6 +491,9 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             
             // Now we subscribe this test object to the subscribed stream 
             SubscribeTo( stream.GetPointer() );            
+            
+            // Send some data using the stream
+            stream->SendData( "TESTDATA", 8 );
         }        
         else
         if ( DRN::CDRNPeerLink::SubscribedToDataGroupEvent == eventid )
@@ -503,7 +525,14 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             
             // Now we subscribe this test object to the subscribed stream 
             SubscribeTo( dataGroup.GetPointer() );                    
-        }        
+            
+            //dataGroup->
+        }
+        else   
+        if ( DRN::CDRNPeerLink::DisconnectedEvent == eventid )
+        {
+            CORE::CGUCEFApplication::Instance()->Stop();
+        }          
         else
         {
             GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Unhandled event: " + eventid.GetName() );

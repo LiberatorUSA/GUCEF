@@ -151,7 +151,8 @@ CDRNDataGroup::OnNotify( CORE::CNotifier* notifier                 ,
                                   eventid   ,
                                   eventdata );
                                  
-    if ( eventid == CORE::CStreamerEvents::StreamEvent )
+    if ( ( eventid == CORE::CStreamerEvents::IDStreamEvent )   ||
+         ( eventid == CORE::CStreamerEvents::DataStreamEvent )  )
     {
         // If streamer updates are disabled there is no point in checking anything else
         if ( m_properties->GetAcceptUpdatesFromStreamers() )
