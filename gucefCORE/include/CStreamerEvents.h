@@ -63,7 +63,8 @@ class GUCEFCORE_EXPORT_CPP CStreamerEvents
 {
     public:
     
-    static const CEvent StreamEvent;
+    static const CEvent IDStreamEvent;
+    static const CEvent DataStreamEvent;
     
     struct SStreamEventData
     {

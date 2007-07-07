@@ -40,7 +40,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CEvent CStreamerEvents::StreamEvent = "GUCEF::CORE::CStreamerEvents::StreamEvent";
+const CEvent CStreamerEvents::IDStreamEvent = "GUCEF::CORE::CStreamerEvents::IDStreamEvent";
+const CEvent CStreamerEvents::DataStreamEvent = "GUCEF::CORE::CStreamerEvents::DataStreamEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,7 +53,8 @@ void
 CStreamerEvents::RegisterEvents( void )
 {TRACE;
 
-    StreamEvent.Initialize();
+    IDStreamEvent.Initialize();
+    DataStreamEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/

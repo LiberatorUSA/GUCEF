@@ -71,7 +71,9 @@ class GUCEFCORE_EXPORT_CPP CIStreamable
     
     virtual UInt32 GetStreamedSize( void ) const = 0;
     
-    virtual void StreamToBuffer( CDynamicBuffer& buffer ) const = 0;
+    virtual bool StreamToBuffer( CDynamicBuffer& buffer ) const = 0;
+    
+    virtual bool StreamFromBuffer( const CDynamicBuffer& buffer ) = 0;
         
 };
 

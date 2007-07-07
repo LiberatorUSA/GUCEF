@@ -106,6 +106,21 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
+
+#ifndef GUCEF_CORE_STREAMERS_H
+#include "streamers.h"
+#define GUCEF_CORE_STREAMERS_H
+#endif /* GUCEF_CORE_STREAMERS_H ? */
+
+#ifndef GUCEF_CORE_STREAMABLES_H
+#include "streamables.h"
+#define GUCEF_CORE_STREAMABLES_H
+#endif /* GUCEF_CORE_STREAMABLES_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -411,6 +426,10 @@ GUCEFCORE_EXPORT_C const char* GUCEF_CORE_ModuleCompileTimeStamp( void );
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 07-06-2007 :
+       - Dinand: Added cloneables
+       - Dinand: Added streamers
+       - Dinand: Added streamables
 - 18-02-2007 :
        - Dinand: Added CLogManager
        - Dinand: Added CILogger

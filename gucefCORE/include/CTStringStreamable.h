@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_STREAMABLES_H
-#define GUCEF_CORE_STREAMABLES_H
+#ifndef GUCEF_CORE_CTSTRINGSTREAMABLE_H
+#define GUCEF_CORE_CTSTRINGSTREAMABLE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,20 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CTSTRINGSTREAMABLE_H
-#include "CTStringStreamable.h"
-#define GUCEF_CORE_CTSTRINGSTREAMABLE_H
-#endif /* GUCEF_CORE_CTSTRINGSTREAMABLE_H ? */
-
 #ifndef GUCEF_CORE_CTSTREAMABLEOBJ_H
-#include "CTStreamableObj.h"
+#include "CTStreamableObj.h"               /* Template for streamable objects */
 #define GUCEF_CORE_CTSTREAMABLEOBJ_H
 #endif /* GUCEF_CORE_CTSTREAMABLEOBJ_H ? */
 
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,26 +51,57 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CTStreamableObj< char >           TStreamableChar;
-typedef CTStreamableObj< unsigned char >  TStreamableUChar;
-typedef CTStreamableObj< short >          TStreamableShort;
-typedef CTStreamableObj< unsigned short > TStreamableUShort;
-typedef CTStreamableObj< int >            TStreamableInt;
-typedef CTStreamableObj< unsigned int >   TStreamableUInt;
-typedef CTStreamableObj< long >           TStreamableLong;
-typedef CTStreamableObj< unsigned int >   TStreamableULong;
-typedef CTStreamableObj< float >          TStreamableFloat;
-typedef CTStreamableObj< double >         TStreamableDouble;
-typedef CTStreamableObj< Int8 >           TStreamableInt8;
-typedef CTStreamableObj< UInt8 >          TStreamableUInt8;
-typedef CTStreamableObj< Int16 >          TStreamableInt16;
-typedef CTStreamableObj< UInt16 >         TStreamableUInt16;
-typedef CTStreamableObj< Int32 >          TStreamableInt32;
-typedef CTStreamableObj< UInt32 >         TStreamableUInt32;
-typedef CTStreamableObj< Float32 >        TStreamableFloat32;
-typedef CTStreamableObj< Float64 >        TStreamableFloat64;
-typedef CTStreamableObj< TVersion >       TStreamableVersion;
-typedef CTStreamableObj< CString >        TStreamableString;
+/**
+ *  Template specialization for a stream-able string
+ */
+template <>
+class CTStreamableObj< CString > : public CIStreamable
+{
+    public:
+    
+    virtual bool StreamTo( void* destBuffer            ,
+                           const UInt32 destBufferSize ) const
+    {GUCEF_TRACE;
+        
+        if ( destBufferSize >= m_data.Length()+1 )
+        {
+            memcpy( destBuffer, m_data.C_String(), m_data.Length()+1 );
+            return true;
+        }
+        return false;
+    }                    
+    
+    virtual bool StreamFrom( const void* srcBuffer      ,
+                             const UInt32 srcBufferSize )
+    {GUCEF_TRACE;
+
+        m_data.Scan( static_cast< const char* >( srcBuffer ), srcBufferSize );
+        return true;
+    }
+    
+    virtual UInt32 GetStreamedSize( void ) const
+    {GUCEF_TRACE;
+        
+        return m_data.Length()+1;
+    }
+    
+    virtual bool StreamToBuffer( CDynamicBuffer& buffer ) const
+    {GUCEF_TRACE;
+
+        buffer.Append( m_data.C_String(), m_data.Length()+1 );
+    }
+    
+    virtual bool StreamFromBuffer( const CDynamicBuffer& buffer )
+    {GUCEF_TRACE;
+
+        m_data.Scan( static_cast< const char* >( buffer.GetConstBufferPtr() ), buffer.GetDataSize() );
+        return true;
+    }    
+    
+    private:
+    
+    CString m_data;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -88,7 +114,7 @@ typedef CTStreamableObj< CString >        TStreamableString;
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_STREAMABLES_H ? */
+#endif /* GUCEF_CORE_CTSTRINGSTREAMABLE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -96,7 +122,7 @@ typedef CTStreamableObj< CString >        TStreamableString;
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 02-03-2007 :
-        - Dinand: re-added this header
+- 07-06-2007 :
+        - Dinand: Added this class
 
 -----------------------------------------------------------------------------*/

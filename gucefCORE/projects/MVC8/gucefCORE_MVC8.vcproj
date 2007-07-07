@@ -700,6 +700,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\streamables.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\streamers.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\tsprinting.c"
 				>
 			</File>
@@ -1154,6 +1162,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\CTStreamer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CTStringStreamable.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\CURL.h"
 				>
 			</File>
@@ -1283,6 +1299,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\streamables.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\streamers.h"
 				>
 			</File>
 			<File
