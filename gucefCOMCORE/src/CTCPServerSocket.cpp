@@ -550,20 +550,25 @@ void
 CTCPServerSocket::OnClientConnectionClosed( CTCPServerConnection* connection ,
                                             const UInt32 connectionid        ,
                                             bool closedbyclient              )
-{TRACE;
+{GUCEF_TRACE;
         _datalock.Lock();
         
         NotifyObservers( ClientDisconnectedEvent );
-        /*
-        if ( _iface )
-        {
-                _iface->OnClientDisconnect( *this          ,
-                                            *connection    ,
-                                            connectionid   ,
-                                            closedbyclient );
-        } */
+
         _datalock.Unlock();        
 }                                            
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTCPServerSocket::GetListenAddress( CHostAddress& listenAddress ) const
+{GUCEF_TRACE;
+
+    _datalock.Lock();
+    listenAddress.SetPortInHostByteOrder( m_port );
+    listenAddress.SetHostname( "localhost" );    
+    _datalock.Unlock();
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

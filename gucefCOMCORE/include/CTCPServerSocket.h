@@ -131,6 +131,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     
     UInt32 GetMaxConnections( void ) const;
     
+    void GetListenAddress( CHostAddress& listenAddress ) const;
+    
     /**                 
      *      polls the socket etc. as needed and update stats.        
      */

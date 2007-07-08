@@ -135,11 +135,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     
     public:
     
-    typedef COMCORE::CIPAddress CIPAddress;
+    typedef COMCORE::CHostAddress CHostAddress;
     
     virtual ~CDRNPeerLink();
-    
-    CIPAddress GetPeerIP( void ) const;
     
     CORE::CString GetPeerHostName( void ) const;
     
@@ -147,7 +145,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     
     UInt16 GetPeerTCPPort( void ) const;
     
-    UInt16 GetPeerUDPPort( void ) const;
+    void GetPeerConnectBackInfo( CHostAddress& peerHostAddress ,
+                                 UInt16& peerUDPPort           ,
+                                 bool& isPeerUDPPortOpened     ) const;
     
     bool IsUDPPossible( void ) const;
     
@@ -192,10 +192,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
                   COMCORE::CUDPMasterSocket& udpSocket   );
 
     COMCORE::CTCPConnection* GetTCPConnection( void );   
-    
-    bool SendData( const void* dataSource             ,
-                   const UInt16 dataSize              ,
-                   const bool allowUnreliable = false );
+
+    void SendConnectBackInfo( void );
                    
     private:
     friend class CDRNPeerLinkData;
@@ -271,6 +269,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
 
     void OnSubscribedToPeerDataStream( const char* data      ,
                                        const UInt32 dataSize );
+                                       
+    void OnPeerConnectBackInfo( const char* data      ,
+                                const UInt32 dataSize );
                                                                            
     void OnPeerAuthenticationSuccess( void );
     
@@ -324,6 +325,10 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
                                         const CORE::CDynamicBuffer& itemValue  ,
                                         const bool allowUnreliableTransmission ,
                                         const TDataGroupDelta deltaChange      );
+                                        
+    bool SendData( const void* dataSource             ,
+                   const UInt16 dataSize              ,
+                   const bool allowUnreliable = false );    
                                                            
     private:
     
@@ -334,7 +339,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     COMCORE::CTCPConnection* m_tcpConnection;
     GUCEF::CORE::CDynamicBuffer m_tcpStreamBuffer;
     UInt32 m_tcpStreamKeepBytes;
-    bool m_udpPossible;
+    CHostAddress m_peerTCPConnectBackInfo;
+    UInt16 m_peerUDPPort;
+    bool m_peerUDPPortOpened;
     bool m_isAuthenticated;
     bool m_isPeerAuthenticated;
     bool m_isLinkOperationalForPeer;

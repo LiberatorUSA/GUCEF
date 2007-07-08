@@ -77,7 +77,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     bool ConnectTo( const CORE::CString& address , 
                     UInt16 port                  ); 
 
-    bool ConnectTo( const CIPAddress& address );
+    bool ConnectTo( const CHostAddress& address );
 
     /**
      *      Attempts to reconnect to the server provided with
@@ -167,16 +167,14 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     CTCPClientSocket& operator=( const CTCPClientSocket& src ); /* making a copy of a socket doesn't make sense */
     
     void CheckRecieveBuffer( void );               
-    
-    CORE::CString _remoteaddr;
-    UInt16 _remoteport;        
+            
     struct STCPClientSockData* _data;
     bool _blocking;
     bool _active;
     MT::CMutex datalock;
     CORE::CDynamicBuffer m_readbuffer;
     UInt32 m_maxreadbytes;                  /**< max number of bytes to receive before processing it */ 
-    CIPAddress m_ipAddress;                 /**< network order IP address */
+    CHostAddress m_hostAddress;             /**< network order IP address */
 };
 
 /*-------------------------------------------------------------------------//

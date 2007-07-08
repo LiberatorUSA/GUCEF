@@ -31,10 +31,10 @@
 #define GUCEF_CORE_CNOTIFIER_H
 #endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
-#ifndef GUCEF_COMCORE_CIPADDRESS_H
-#include "CIPAddress.h"
-#define GUCEF_COMCORE_CIPADDRESS_H
-#endif /* GUCEF_COMCORE_CIPADDRESS_H ? */
+#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
+#include "CHostAddress.h"
+#define GUCEF_COMCORE_CHOSTADDRESS_H
+#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
 #ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"      /* macros and build config for the COMCORE library */

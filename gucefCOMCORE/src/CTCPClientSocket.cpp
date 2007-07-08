@@ -111,7 +111,8 @@ CTCPClientSocket::CTCPClientSocket( bool blocking )
         : CTCPConnection()         ,
           _blocking( blocking )    ,
           _active( false )         ,
-          m_maxreadbytes( 0 )
+          m_maxreadbytes( 0 )      ,
+          m_hostAddress()
 {TRACE;
 
     RegisterEvents();
@@ -129,15 +130,6 @@ CTCPClientSocket::~CTCPClientSocket()
     Close();
     delete _data;
     _data = NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTCPClientSocket&
-CTCPClientSocket::operator=( const CTCPClientSocket& src )
-{TRACE;                    
-        /* dummy, do not use */   
-        return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -193,8 +185,8 @@ CTCPClientSocket::Reconnect( void )
 {TRACE;
 
         LockData();
-        bool retval = ConnectTo( _remoteaddr ,
-                                 _remoteport );
+        bool retval = ConnectTo( m_hostAddress.AddressAsString()        ,
+                                 m_hostAddress.GetPortInHostByteOrder() );
         UnlockData();
         return retval;
 }
@@ -322,8 +314,8 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
         }
     }
         
-    _remoteaddr = remoteaddr;
-    _remoteport = port;
+    m_hostAddress.SetHostname( remoteaddr );
+    m_hostAddress.SetPortInHostByteOrder( port );
     
     NotifyObservers( ConnectedEvent );	                   
 
@@ -334,7 +326,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CTCPClientSocket::ConnectTo( const CIPAddress& address )
+CTCPClientSocket::ConnectTo( const CHostAddress& address )
 {GUCEF_TRACE;
 
     return ConnectTo( address.AddressAsString()        ,
@@ -347,7 +339,7 @@ const CORE::CString&
 CTCPClientSocket::GetRemoteHostName( void ) const
 {GUCEF_TRACE;
 
-    return _remoteaddr;
+    return m_hostAddress.GetHostname();
 }
 
 /*-------------------------------------------------------------------------*/

@@ -119,6 +119,16 @@ CIPAddress::~CIPAddress()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CIPAddress::OnChange( const bool addressChanged ,
+                      const bool portChanged    )
+{GUCEF_TRACE;
+
+    // Dummy to avoid mandatory implementation by descending classes
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CIPAddress::ResolveDNS( const CORE::CString& address ,
                         const UInt16 port            )
@@ -180,7 +190,8 @@ void
 CIPAddress::SetPort( const UInt16 port )
 {GUCEF_TRACE;
 
-    m_port = port;
+    m_port = port;    
+    OnChange( false, true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -198,7 +209,8 @@ void
 CIPAddress::SetPortInHostByteOrder( const UInt16 port )
 {GUCEF_TRACE;
 
-    m_port = htons( port ); 
+    m_port = htons( port );
+    OnChange( false, true ); 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -217,6 +229,7 @@ CIPAddress::SetAddressInHostByteOrder( const UInt32 address )
 {GUCEF_TRACE;
 
     m_address = htonl( address );
+    OnChange( true, false );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -226,6 +239,7 @@ CIPAddress::SetAddress( const UInt32 address )
 {GUCEF_TRACE;
 
     m_address = address;
+    OnChange( true, false );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -457,7 +457,11 @@ void
 CDRNNode::SetOverrideConnectBackSettings( const bool overrideSettings )
 {GUCEF_TRACE;
 
-    m_overrideConnectBack = overrideSettings;
+    if ( m_overrideConnectBack != overrideSettings )
+    {    
+        m_overrideConnectBack = overrideSettings;
+        SendConnectBackInfoToLinks();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -472,23 +476,108 @@ CDRNNode::GetOverrideConnectBackSettings( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CDRNNode::SetConnectBackOverride( const CIPAddress& host ,
-                                  const UInt16 udpPort   )
+CDRNNode::SetConnectBackOverride( const CHostAddress& host ,
+                                  const UInt16 udpPort     )
 {GUCEF_TRACE;
 
-    m_overrideHost = host;
-    m_overrideUDPPort = udpPort;
+    if ( ( m_overrideHost != host )       ||
+         ( m_overrideUDPPort != udpPort )  )
+    {
+        m_overrideHost = host;
+        m_overrideUDPPort = udpPort;
+        
+        if ( m_overrideConnectBack )
+        {
+            SendConnectBackInfoToLinks();
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CDRNNode::GetConnectBackOverride( CIPAddress& host  ,
-                                  UInt16& udpPort   ) const
+CDRNNode::GetConnectBackOverride( CHostAddress& host ,
+                                  UInt16& udpPort    ) const
 {GUCEF_TRACE;
 
     host = m_overrideHost;
     udpPort = m_overrideUDPPort;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNNode::SendConnectBackInfoToLinks( void )
+{GUCEF_TRACE;
+
+    // Notify all peers that our connect back info has changed
+    TPeerLinkList::iterator i = m_peerLinkList.begin();
+    while ( i != m_peerLinkList.end() )
+    {
+        (*i)->SendConnectBackInfo();
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNNode::OpenUDPPort( const UInt16 port )
+{GUCEF_TRACE;
+
+    if ( m_udpSocket.IsActive()        &&
+         m_udpSocket.GetPort() == port )
+    {
+        // The socket is already open at the given port
+        return true;
+    }
+    
+    bool retValue = m_udpSocket.Open( port );
+    SendConnectBackInfoToLinks();
+    return retValue;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CDRNNode::CloseUDPPort( void )
+{GUCEF_TRACE;
+
+    if ( !m_udpSocket.IsActive() )
+    {
+        // No change,.. the socket is already closed
+        return;
+    }
+    
+    m_udpSocket.Close();
+    SendConnectBackInfoToLinks();
+}
+    
+/*-------------------------------------------------------------------------*/
+    
+bool
+CDRNNode::IsUDPPortOpened( void ) const
+{GUCEF_TRACE;
+
+    return m_udpSocket.IsActive();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNNode::GetListenAddress( CHostAddress& listenAddress ) const
+{GUCEF_TRACE;
+
+    m_tcpServerSocket.GetListenAddress( listenAddress );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt16
+CDRNNode::GetUDPPort( void ) const
+{GUCEF_TRACE;
+
+    return m_udpSocket.GetPort();
 }
 
 /*-------------------------------------------------------------------------//

@@ -146,7 +146,6 @@ CDRNPeerLink::CDRNPeerLink( CDRNNode& parentNode                   ,
                             COMCORE::CUDPMasterSocket& udpSocket   )
     : m_udpSocket( &udpSocket )           ,
       m_tcpConnection( &tcpConnection )   ,
-      m_udpPossible( false )              ,
       m_isAuthenticated( false )          ,
       m_isPeerAuthenticated( false )      ,
       m_linkData( NULL )                  ,
@@ -154,7 +153,10 @@ CDRNPeerLink::CDRNPeerLink( CDRNNode& parentNode                   ,
       m_tcpStreamBuffer()                 ,
       m_tcpStreamKeepBytes( 0 )           ,
       m_isLinkOperationalForPeer( false ) ,
-      m_isLinkOperationalForUs( false )
+      m_isLinkOperationalForUs( false )   ,
+      m_peerUDPPortOpened( false )        ,
+      m_peerUDPPort( 53457 )              ,
+      m_peerTCPConnectBackInfo()
 {GUCEF_TRACE;
 
     assert( m_udpSocket != NULL );
@@ -166,7 +168,14 @@ CDRNPeerLink::CDRNPeerLink( CDRNNode& parentNode                   ,
     if ( tcpConnection.IsActive() )
     {
         m_linkData = new CDRNPeerLinkData( *this );        
-        SubscribeTo( &tcpConnection );        
+        SubscribeTo( &tcpConnection );
+        
+        // Init the connect back settings based on what we have available
+        // Small chance these values allow for a connection to be established but it's
+        // the best we have until we get connect back info from the peer itself
+        m_peerTCPConnectBackInfo.SetHostname( tcpConnection.GetRemoteHostName() );
+        m_peerTCPConnectBackInfo.SetPortInHostByteOrder( tcpConnection.GetRemoteTCPPort() );
+                
         NotifyObservers( ConnectedEvent );        
         SendGreetingMessage();
     }
@@ -177,6 +186,19 @@ CDRNPeerLink::CDRNPeerLink( CDRNNode& parentNode                   ,
 CDRNPeerLink::~CDRNPeerLink()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::GetPeerConnectBackInfo( CHostAddress& peerHostAddress ,
+                                      UInt16& peerUDPPort           ,
+                                      bool& isPeerUDPPortOpened     ) const
+{GUCEF_TRACE;
+
+    peerHostAddress = m_peerTCPConnectBackInfo;
+    peerUDPPort = m_peerUDPPort;
+    isPeerUDPPortOpened = m_peerUDPPortOpened;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -208,22 +230,10 @@ CDRNPeerLink::CloseLink( void )
         m_tcpConnection->Close();
         UnsubscribeFrom( m_tcpConnection );
     }
-    m_udpPossible = false;
+    m_peerUDPPortOpened = false;
     m_isAuthenticated = false;
     m_tcpConnection = NULL;
     m_udpSocket = NULL;
-}
-/*-------------------------------------------------------------------------*/
-
-CDRNPeerLink::CIPAddress
-CDRNPeerLink::GetPeerIP( void ) const
-{GUCEF_TRACE;
-
-    if ( m_tcpConnection != NULL )
-    {
-        return m_tcpConnection->GetRemoteIP();
-    }
-    return CIPAddress();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -253,25 +263,14 @@ CDRNPeerLink::GetPeerTCPPort( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-
-UInt16
-CDRNPeerLink::GetPeerUDPPort( void ) const
-{GUCEF_TRACE;
-
-    if ( NULL != m_tcpConnection )
-    {
-        return m_tcpConnection->GetRemoteTCPPort();
-    }
-    return 0;
-}
-
-/*-------------------------------------------------------------------------*/
     
 bool
 CDRNPeerLink::IsUDPPossible( void ) const
 {GUCEF_TRACE;
 
-    return m_udpPossible;
+    return m_peerUDPPortOpened             && 
+           m_parentNode->IsUDPPortOpened() &&
+           m_udpSocket != NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -327,13 +326,12 @@ CDRNPeerLink::SendData( const void* dataSource                   ,
                         const bool allowUnreliable /* = false */ )
 {GUCEF_TRACE;
 
-    if ( allowUnreliable           && 
-         m_udpPossible             && 
-        ( m_udpSocket != NULL )    && 
-        ( m_tcpConnection!= NULL  ) )
+    if ( allowUnreliable && 
+         IsUDPPossible()  )
     {
         // Send the data using UDP
-        CIPAddress ip( m_tcpConnection->GetRemoteIP() );
+        COMCORE::CIPAddress ip( m_peerTCPConnectBackInfo.GetAddress() ,
+                                m_peerUDPPort                         );
         return m_udpSocket->SendPacketTo( ip         ,
                                           dataSource ,
                                           dataSize   ) >= 0;
@@ -397,10 +395,73 @@ CDRNPeerLink::OnPeerLinkIncompatible( void )
 /*-------------------------------------------------------------------------*/
 
 void
+CDRNPeerLink::OnPeerConnectBackInfo( const char* data      ,
+                                     const UInt32 dataSize )
+{GUCEF_TRACE;
+
+    // Sanity check on the data size
+    if ( dataSize > 6 )
+    {
+        m_peerUDPPortOpened = *(data+1) == 1;
+        m_peerUDPPort = *reinterpret_cast< const UInt16* >( data+2 );
+        m_peerTCPConnectBackInfo.SetPortInHostByteOrder( *reinterpret_cast< const UInt16* >( data+4 ) );
+        
+        CORE::CString hostname;
+        hostname.Scan( data+6, dataSize-6 );
+        m_peerTCPConnectBackInfo.SetHostname( hostname );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNPeerLink::SendConnectBackInfo( void )
+{GUCEF_TRACE;
+
+    // Check whether we should use the actual settings or the override
+    // settings. An override may be done to solve connection problems.
+    UInt16 udpPort = 0;
+    char udpPortOpen = m_parentNode->IsUDPPortOpened() ? 1 : 0;
+    CDRNNode::CHostAddress hostAddress;
+    if ( m_parentNode->GetOverrideConnectBackSettings() )
+    {
+        m_parentNode->GetConnectBackOverride( hostAddress ,
+                                              udpPort     );
+    }
+    else
+    {
+        m_parentNode->GetListenAddress( hostAddress );
+        udpPort = m_parentNode->GetUDPPort();
+    }
+    
+    // Compose the message
+    UInt16 tcpPort = hostAddress.GetPortInHostByteOrder();
+    UInt32 hostnameLength = hostAddress.GetHostname().Length();
+    CORE::CDynamicBuffer sendBuffer( hostnameLength + 10, true );
+    sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
+    sendBuffer[ 3 ] = DRN_PEERCOMM_CONNECTBACKINFO;
+    sendBuffer[ 4 ] = udpPortOpen;
+    sendBuffer.CopyFrom( 5, 2, &udpPort );
+    sendBuffer.CopyFrom( 7, 2, &tcpPort );
+    sendBuffer.CopyFrom( 9, hostnameLength, hostAddress.GetHostname().C_String() );
+    sendBuffer[ hostnameLength + 9 ] = DRN_TRANSMISSION_END;
+
+    UInt16 payloadSize = (UInt16) hostnameLength+6;
+    sendBuffer.CopyFrom( 1, 2, &payloadSize );
+
+    // Send the connect back info
+    SendData( sendBuffer.GetConstBufferPtr()  , 
+             (UInt16)sendBuffer.GetDataSize() , 
+             false                            );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CDRNPeerLink::SendIncompatibleLinkMessage( void )
 {GUCEF_TRACE;
     
-    // Compose the greeting message
+    // Compose the message
     char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_INCOMPATIBLE_LINK, DRN_TRANSMISSION_END };
     UInt16 payloadSize = 1;
     memcpy( sendBuffer+1, &payloadSize, 2 );
@@ -548,9 +609,11 @@ CDRNPeerLink::OnPeerServiceType( const char* data      ,
 void
 CDRNPeerLink::OnPeerLinkOperational( void )
 {GUCEF_TRACE;
-    
-    m_isLinkOperationalForUs = true;
-    NotifyObservers( LinkOperationalForUsEvent );
+   
+    m_isLinkOperationalForUs = true;       
+    NotifyObservers( LinkOperationalForUsEvent );       
+
+    SendConnectBackInfo();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -660,6 +723,7 @@ CDRNPeerLink::OnPeerPeerListRequest( void )
     // Access rights check
     if ( m_isLinkOperationalForPeer )
     {
+        // @TODO
     }
     else
     {
@@ -1572,6 +1636,11 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         case DRN_PEERCOMM_SUBSCRIBED_TO_DATASTREAM :
         {
             OnSubscribedToPeerDataStream( data, dataSize );
+            return;
+        }
+        case DRN_PEERCOMM_CONNECTBACKINFO :
+        {
+            OnPeerConnectBackInfo( data, dataSize );
             return;
         }
         default:        

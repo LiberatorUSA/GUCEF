@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_COMCORE_CIPADDRESS_H
-#define GUCEF_COMCORE_CIPADDRESS_H
+#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
+#define GUCEF_COMCORE_CHOSTADDRESS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
-
-#ifndef GUCEF_COMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"      /* macros and build config for the COMCORE library */
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
+#ifndef GUCEF_COMCORE_CIPADDRESS_H
+#include "CIPAddress.h"      /* macros and build config for the COMCORE library */
+#define GUCEF_COMCORE_CIPADDRESS_H
+#endif /* GUCEF_COMCORE_CIPADDRESS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,102 +47,51 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Class representing an IPv4 address with a port number included.
+ *  Class representing an internet address with host name in string form
+ *  plus the IPv4 address with a port number included.
  *  Note that this class uses network byte order as its default.
  */
-class GUCEF_COMCORE_EXPORT_CPP CIPAddress
+class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
 {
     public:
     
-    CIPAddress( void );
+    CHostAddress( void );
     
-    CIPAddress( const CIPAddress& src );
-
-    /**
-     *  The values are expected to be in network byte order 
-     */
-    CIPAddress( const UInt32 address ,
-                const UInt16 port    );
+    CHostAddress( const CHostAddress& src );
 
     /**
      *  The port value is expected to be in host byte order
      */
-    CIPAddress( const CORE::CString& address ,
-                const UInt16 port            );
+    CHostAddress( const CORE::CString& hostname ,
+                  const UInt16 port             );
                     
-    virtual ~CIPAddress();
+    virtual ~CHostAddress();
     
-    void SetPort( const UInt16 port );
-    
-    /**
-     *  Port number in network byte order
-     */
-    UInt16 GetPort( void ) const;
-    
-    void SetPortInHostByteOrder( const UInt16 port );
+    void SetHostname( const CORE::CString& hostName );
 
-    /**
-     *  Port number in host byte order
-     */
-    UInt16 GetPortInHostByteOrder( void ) const;
+    const CORE::CString& GetHostname( void ) const;
     
-    void SetAddress( const UInt32 address );
+    CHostAddress& operator=( const CHostAddress& src );
     
-    /**
-     *  Address in network byte order
-     */
-    UInt32 GetAddress( void ) const;
+    bool operator==( const CHostAddress& other ) const;
     
-    void SetAddressInHostByteOrder( const UInt32 address );
-    
-    /**
-     *  Address in host byte order
-     */
-    UInt32 GetAddressInHostByteOrder( void ) const;
-    
-    /**
-     *  Address as a string with the network to host
-     *  conversion applied
-     */
-    virtual CORE::CString AddressAsString( void ) const;
-    
-    /**
-     *  Port as a string with the network to host
-     *  conversion applied
-     */
-    CORE::CString PortAsString( void ) const;
-    
-    /**
-     *  Address and port as a string with the network to host
-     *  conversion applied
-     */
-    virtual CORE::CString AddressAndPortAsString( void ) const;
-    
-    CIPAddress& operator=( const CIPAddress& src );
-    
-    bool operator==( const CIPAddress& other ) const;
-    
-    bool operator!=( const CIPAddress& other ) const;
+    bool operator!=( const CHostAddress& other ) const;
     
     /**
      *  This operator is only implemented to facilitate ordering
      *  in STL containers. The return value has no real meaning
      *  except that of a binary data compare.
      */
-    bool operator<( const CIPAddress& other ) const;
+    bool operator<( const CHostAddress& other ) const;
     
     protected:
     
-    bool ResolveDNS( const CORE::CString& address ,
-                     const UInt16 port            );
-
     virtual void OnChange( const bool addressChanged ,
                            const bool portChanged    );
-        
+    
     private:
     
-    UInt16 m_port;
-    UInt32 m_address;
+    CORE::CString m_hostname;
 };
 
 /*-------------------------------------------------------------------------//
@@ -161,7 +105,7 @@ class GUCEF_COMCORE_EXPORT_CPP CIPAddress
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CIPADDRESS_H ? */
+#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -169,7 +113,7 @@ class GUCEF_COMCORE_EXPORT_CPP CIPAddress
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 06-03-2007 :
-        - Initial version, this used to be a struct
+- 08-04-2007 :
+        - Initial version
 
 -----------------------------------------------------------------------------*/

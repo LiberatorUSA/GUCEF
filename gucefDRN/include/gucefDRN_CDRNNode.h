@@ -95,7 +95,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     
     public:
     
-    typedef COMCORE::CIPAddress CIPAddress;
+    typedef COMCORE::CHostAddress CHostAddress;
     
     CDRNNode( void );
     
@@ -108,6 +108,16 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     bool IsListening( void ) const;
     
     void Disconnect( void );
+    
+    void GetListenAddress( CHostAddress& listenAddress ) const;
+    
+    bool OpenUDPPort( const UInt16 port );
+    
+    void CloseUDPPort( void );
+    
+    bool IsUDPPortOpened( void ) const;
+    
+    UInt16 GetUDPPort( void ) const;
     
     bool HasOperationalLinksForUs( void ) const;
     
@@ -138,11 +148,11 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     
     bool GetOverrideConnectBackSettings( void ) const;
     
-    void SetConnectBackOverride( const CIPAddress& host ,
-                                 const UInt16 udpPort   );
+    void SetConnectBackOverride( const CHostAddress& host ,
+                                 const UInt16 udpPort     );
 
-    void GetConnectBackOverride( CIPAddress& host  ,
-                                 UInt16& udpPort   ) const;
+    void GetConnectBackOverride( CHostAddress& host ,
+                                 UInt16& udpPort    ) const;
     
     protected:
     
@@ -165,6 +175,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
 
     void CreateLink( COMCORE::CTCPConnection& tcpConnection );
     
+    void SendConnectBackInfoToLinks( void );
+    
     private:
     
     typedef std::vector< COMCORE::CTCPClientSocket* >       TTCPClients;
@@ -180,7 +192,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     TDataGroupList m_dataGroupList;
     TPeerLinkList m_peerLinkList;
     bool m_overrideConnectBack;
-    CIPAddress m_overrideHost;
+    CHostAddress m_overrideHost;
     UInt16 m_overrideUDPPort;
 };
 
