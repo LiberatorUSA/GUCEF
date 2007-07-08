@@ -149,6 +149,9 @@ CTCPServerConnection::Close( void )
         
         closesocket( _data->sockid ); 
         _active = false;
+        
+        NotifyObservers( DisconnectedEvent );
+        
         m_parentsock->OnClientConnectionClosed( this            ,
                                                 m_connectionidx ,
                                                 false           );

@@ -60,8 +60,8 @@ namespace DRN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CDRNDataStream::DataReceivedEvent = "GUCEF::CORE::CDRNDataStream::DataReceivedEvent";
-const CORE::CEvent CDRNDataStream::DataTransmittedEvent = "GUCEF::CORE::CDRNDataStream::DataTransmittedEvent";
+const CORE::CEvent CDRNDataStream::DataReceivedEvent = "GUCEF::DRN::CDRNDataStream::DataReceivedEvent";
+const CORE::CEvent CDRNDataStream::DataTransmittedEvent = "GUCEF::DRN::CDRNDataStream::DataTransmittedEvent";
     
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -75,9 +75,6 @@ CDRNDataStream::CDRNDataStream( const CORE::CString& streamName )
 {GUCEF_TRACE;
 
     RegisterEvents();
-    
-    //m_sendBuffer[ 0 ] = DRN_PEERCOMM_STREAM_DATA;
-//    m_sendBuffer.CopyFrom( 1, 2, &m_streamID );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -109,29 +106,6 @@ CDRNDataStream::OnNotify( CORE::CNotifier* notifier                 ,
     CObservingNotifier::OnNotify( notifier  ,
                                   eventid   ,
                                   eventdata );
-                                 
-  /*  if ( eventid == CORE::CStreamerEvents::StreamEvent )
-    {
-        // If streamer updates are disabled there is no point in checking anything else
-        if ( m_acceptStreamerUpdates )
-        {
-            const CORE::CStreamerEvents::SStreamEventData& eData = static_cast< CORE::CStreamerEvents::TStreamEventData* >( eventdata )->GetData();
-            
-            // make sure the streamed data has an ID, we do not accept data without an id
-            if ( eData.id != NULL )
-            {
-                CORE::CDynamicBuffer id;
-                eData.id->StreamToBuffer( id );
-                
-                CORE::CDynamicBuffer data;
-                eData.data->StreamToBuffer( data );
-                
-                SetItem( id                ,
-                         data              ,
-                         m_acceptNewSItems );
-            }
-        }
-    } */
 }
 
 /*-------------------------------------------------------------------------*/
@@ -159,6 +133,22 @@ CDRNDataStream::GetName( void ) const
 {GUCEF_TRACE;
 
     return m_streamName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDRNDataStream::OnDataReceived( const char* data      ,
+                                const UInt32 dataSize )
+{GUCEF_TRACE;
+
+    // First we link up a buffer for safe emission of the event data
+    CORE::CDynamicBuffer buffer;
+    buffer.LinkTo( data, dataSize );
+    
+    // Emit the data received event
+    DataReceivedEventData eData( &buffer );    
+    NotifyObservers( DataReceivedEvent, &eData );    
 }
 
 /*-------------------------------------------------------------------------//

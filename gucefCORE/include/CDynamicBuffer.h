@@ -269,7 +269,7 @@ class GUCEFCORE_EXPORT_CPP CDynamicBuffer
         
         /**
          *  Utility member function:
-         *  Templated assignment operator for easy assignment of a unit of the given type.
+         *  Template'd assignment operator for easy assignment of a unit of the given type.
          *  The raw data will be copied into the buffer.
          */
         template< typename T >

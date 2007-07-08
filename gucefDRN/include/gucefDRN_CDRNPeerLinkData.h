@@ -205,6 +205,10 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     
     void RemoveLinksTo( CORE::CNotifier* notifier );
     
+    void OnDataGroupMutation( CORE::CNotifier* notifier    ,
+                              CORE::CICloneable* eventdata ,
+                              const Int32 changeType       );
+    
     private:
     
     struct SDRNDataGroupEntry

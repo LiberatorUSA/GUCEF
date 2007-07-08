@@ -179,6 +179,8 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
     DRN::CDRNNode::CDRNPeerLinkPtr m_linkB;
     DRN::CDRNPeerLinkData::TDRNDataStreamPtr m_streamA;
     DRN::CDRNPeerLinkData::TDRNDataStreamPtr m_streamB;
+    std::vector< CORE::CDynamicBuffer > m_streamAOutput;
+    std::vector< CORE::CDynamicBuffer > m_streamBOutput;    
     DRN::CDRNPeerLinkData::TDRNDataGroupPtr  m_dataGroupA;
     DRN::CDRNPeerLinkData::TDRNDataGroupPtr  m_dataGroupB;
     DRN::CDRNDataGroup::CDRNDataGroupPropertiesPtr m_groupProperties;
@@ -193,7 +195,9 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
           m_streamB( new DRN::CDRNDataStream( "TestStream" ) )      ,
           m_dataGroupA( new DRN::CDRNDataGroup( "TestDataGroup" ) ) ,
           m_dataGroupB( new DRN::CDRNDataGroup( "TestDataGroup" ) ) ,
-          m_groupProperties( new DRN::CDRNDataGroupProperties() )
+          m_groupProperties( new DRN::CDRNDataGroupProperties() )   ,
+          m_streamAOutput()                                         ,
+          m_streamBOutput()
     {GUCEF_TRACE;
     
         m_groupProperties->SetAcceptNewPeerItems( true );
@@ -205,10 +209,10 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
         m_dataGroupA->SetGroupProperties( m_groupProperties );
         m_dataGroupB->SetGroupProperties( m_groupProperties );
         
-        m_streamerA.SetID( "StreamerA" );
-        m_streamerB.SetID( "StreamerB" );
-        m_streamerA.SetValue( "InitialStringA" );
-        m_streamerB.SetValue( "InitialStringB" );
+        m_streamerA.SetID( "StreamerID" );
+        m_streamerB.SetID( "StreamerID" );
+        m_streamerA.SetValue( "InitialString" );
+        m_streamerB.SetValue( "InitialString" );
         
         CORE::CDynamicBuffer itemName;
         CORE::CDynamicBuffer itemValue;
@@ -226,6 +230,87 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
         
         m_dataGroupA->SubscribeTo( &m_streamerA );
         m_dataGroupB->SubscribeTo( &m_streamerB );
+    }
+    
+    bool IsDataGroupTestComplete( DRN::CDRNPeerLinkData::TDRNDataGroupPtr& dataGroup )
+    {
+        if ( NULL != dataGroup )
+        {
+            if ( dataGroup->GetItemCount() == 3 )
+            {
+                CORE::CDynamicBuffer itemID;
+                CORE::CDynamicBuffer itemValue;
+                
+                itemID.LinkTo( "DataGroupItem1", 15 );                
+                if ( dataGroup->GetItem( itemID    ,
+                                         itemValue ) )
+                {
+                    CORE::CString valueStr = static_cast< const char* >( itemValue.GetConstBufferPtr() );
+                    if ( valueStr == "InitialValue" )
+                    {
+                        itemID.LinkTo( "DataGroupItem2", 15 );                
+                        if ( dataGroup->GetItem( itemID    ,
+                                                 itemValue ) )
+                        {
+                            valueStr = static_cast< const char* >( itemValue.GetConstBufferPtr() );
+                            if ( valueStr == "InitialValue" )
+                            {
+                                itemID.LinkTo( "StreamerID", 11 );
+                                if ( dataGroup->GetItem( itemID    ,
+                                                         itemValue ) )
+                                {                            
+                                    valueStr = static_cast< const char* >( itemValue.GetConstBufferPtr() );
+                                    if ( valueStr == "ValueChange1" )
+                                    {
+                                        GUCEF_LOG( 0, "The Data group test complete condition is true for the given data group: " + dataGroup->GetName() );
+                                        return true;
+                                    }
+                                }
+                            }
+                        }                                                                        
+                    }
+                }
+            }
+        }
+        return false;    
+    }
+    
+    bool IsStreamTestComplete( std::vector< CORE::CDynamicBuffer >& output )
+    {
+        if ( output.size() > 0 )
+        {
+            CORE::CDynamicBuffer& data = output[ 0 ];
+            CORE::CString valueStr = static_cast< const char* >( data.GetConstBufferPtr() );
+            if ( valueStr == "TESTDATA" )
+            {
+                GUCEF_LOG( 0, "The Data group test complete condition is true for the given data stream" );
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    bool IsTheTestComplete( void )
+    {
+        if ( ( NULL != m_linkA ) &&
+             ( NULL != m_linkB )  )
+        {
+            bool complete = IsDataGroupTestComplete( m_linkA->GetLinkData().GetSubscribedDataGroupWithName( "TestDataGroup" ) ) &&
+                            IsDataGroupTestComplete( m_linkB->GetLinkData().GetSubscribedDataGroupWithName( "TestDataGroup" ) ) &&
+                            IsStreamTestComplete( m_streamAOutput ) &&
+                            IsStreamTestComplete( m_streamBOutput );
+            
+            if ( complete )
+            {
+                GUCEF_LOG( 0, "Yay! The test complete condition has been reached for all tests" );
+            }
+            else
+            {
+                GUCEF_LOG( 0, "The test complete condition has not yet been reached for all tests" );
+            }
+            return complete;                            
+        }
+        return false;                   
     }
     
     void SetupTestUtils( void )
@@ -525,10 +610,10 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             
             // Simulate sending some data from the peer side using the stream
             DRN::CDRNNode::CDRNPeerLinkPtr peerLink = notifier == m_linkA ? m_linkB : m_linkA;
-            DRN::CDRNPeerLinkData::TDRNDataStreamPtr peerStream = peerLink->GetLinkData().GetSubscribedDataStreamWithName( streamName );
+            DRN::CDRNPeerLinkData::TDRNDataStreamPtr peerStream = peerLink->GetLinkData().GetPublicizedDataStreamWithName( streamName );
             if ( NULL != peerStream )
             {
-                peerStream->SendData( "TESTDATA", 8 );
+                peerStream->SendData( "TESTDATA", 9 );
             }
         }        
         else
@@ -573,31 +658,107 @@ class CTestPeerToPeerSubSystem : public CORE::CGUCEFAppSubSystem
             
             GUCEF_LOG( 0, GetLinkNodeName( notifier ) + ": Changing value of a streamer" ); 
             
-            CORE::TStreamerStringString& streamer = notifier == m_linkA ? m_streamerA : m_streamerB;
-            streamer.SetValue( "ValueChange1" );
+            m_streamerA.SetValue( "ValueChange1" );
+            m_streamerB.SetValue( "ValueChange1" );
         }
-        else   
+        else
+        if ( DRN::CDRNDataGroup::ItemAddedEvent == eventid )
+        {
+            DRN::CDRNDataGroup* dataGroup = static_cast< DRN::CDRNDataGroup* >( notifier );
+            GUCEF_LOG( 0, "Data was added to a data group with name: " + dataGroup->GetName() );
+            
+            if ( IsTheTestComplete() )
+            {
+                nodeA.Disconnect();
+                nodeB.Disconnect();
+            }            
+        }
+        else           
         if ( DRN::CDRNDataGroup::ItemChangedEvent == eventid )
         {
             DRN::CDRNDataGroup* dataGroup = static_cast< DRN::CDRNDataGroup* >( notifier );
-            GUCEF_LOG( 0, "Data was written to a data group with name: " + dataGroup->GetName() );
+            GUCEF_LOG( 0, "Data was altered for a data group with name: " + dataGroup->GetName() );
+            
+            if ( IsTheTestComplete() )
+            {
+                nodeA.Disconnect();
+                nodeB.Disconnect();
+            }            
         }        
         else   
+        if ( DRN::CDRNDataGroup::ItemRemovedEvent == eventid )
+        {
+            DRN::CDRNDataGroup* dataGroup = static_cast< DRN::CDRNDataGroup* >( notifier );
+            GUCEF_LOG( 0, "Data was removed from a data group with name: " + dataGroup->GetName() );
+            
+            if ( IsTheTestComplete() )
+            {
+                nodeA.Disconnect();
+                nodeB.Disconnect();
+            }            
+        }        
+        else        
         if ( DRN::CDRNDataStream::DataTransmittedEvent == eventid )
         {
             DRN::CDRNDataStream* stream = static_cast< DRN::CDRNDataStream* >( notifier );
-            GUCEF_LOG( 0, "Data was written to a data stream with name: " + stream->GetName() );
+            GUCEF_LOG( 0, "Data was transmitted on data stream with name: " + stream->GetName() );
         }
         else   
         if ( DRN::CDRNDataStream::DataReceivedEvent == eventid )
         {
             DRN::CDRNDataStream* stream = static_cast< DRN::CDRNDataStream* >( notifier );
             GUCEF_LOG( 0, "Data was recieved from a data stream with name: " + stream->GetName() );
+            
+            // First we test what stream we are dealing with and when we know we also grab the output stream
+            // for so we can send something back
+            std::vector< CORE::CDynamicBuffer >* outputBuffers = NULL;
+            DRN::CDRNPeerLinkData::TDRNDataStreamPtr publicizedStream;
+            DRN::CDRNPeerLinkData::TDRNDataStreamPtr subscribedStream = m_linkA->GetLinkData().GetSubscribedDataStreamWithName( stream->GetName() ); 
+            if ( subscribedStream == (void*)(stream) )
+            {                
+                publicizedStream = m_linkA->GetLinkData().GetPublicizedDataStreamWithName( "TestStream" );
+                outputBuffers = &m_streamAOutput; 
+                
+                GUCEF_LOG( 0, "The subscribed data stream receiving data belongs to node A" );
+            }
+            else
+            {
+                subscribedStream = m_linkB->GetLinkData().GetSubscribedDataStreamWithName( stream->GetName() );
+                if ( subscribedStream != (void*)(stream) )
+                {
+                    GUCEF_ERROR_LOG( 0, "Received data on unknown input stream: " + stream->GetName() );
+                    ERRORHERE;                
+                }
+                
+                publicizedStream = m_linkB->GetLinkData().GetPublicizedDataStreamWithName( "TestStream" );
+                outputBuffers = &m_streamBOutput;
+                
+                GUCEF_LOG( 0, "The subscribed data stream receiving data belongs to node B" );
+            }
+            
+            // Write the stream output to a buffer so we can verify the results later
+            DRN::CDRNDataStream::DataReceivedEventData* eData = static_cast< DRN::CDRNDataStream::DataReceivedEventData* >( eventdata );                        
+            outputBuffers->push_back( eData->GetData() );
+            
+            if ( IsTheTestComplete() )
+            {
+                nodeA.Disconnect();
+                nodeB.Disconnect();
+            }
+            else
+            {
+                // We will dispatch a message back to the peer to complete the circle
+                // required for our test
+                publicizedStream->SendData( "TESTDATA", 9 );
+            }
         }        
         else         
         if ( DRN::CDRNPeerLink::DisconnectedEvent == eventid )
         {
             GUCEF_LOG( 0, GetNodeName( notifier ) + ": The link has been disconnected, shutting down" );
+            
+            // The following should end our test by shutting down the test application system and allowing the test
+            // function to return to the invoker.
             CORE::CGUCEFApplication::Instance()->Stop();
         }
         else          
@@ -624,7 +785,7 @@ PerformPeerToPeerTest( void )
   
     try
     {
-        GUCEF_LOG( 0, "*** Commencing gucefDRN Peer to peer test ***" );
+        GUCEF_LOG( 0, "*** Commencing gucefDRN Peer to Peer test ***" );
         
         CTestPeerToPeerSubSystem testSubSystem;
         CORE::CGUCEFApplication::Instance()->main( 0, NULL, true );
@@ -635,7 +796,7 @@ PerformPeerToPeerTest( void )
         ERRORHERE;
     } 
     
-    GUCEF_LOG( 0, "*** Completed gucefDRN Peer to peer test ***" );
+    GUCEF_LOG( 0, "*** Completed gucefDRN Peer to Peer test ***" );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -51,6 +51,8 @@ namespace DRN {
 //-------------------------------------------------------------------------*/
 
 const CORE::CEvent CDRNDataGroup::ItemChangedEvent = "GUCEF::CORE::CDRNDataGroup::ItemChangedEvent";
+const CORE::CEvent CDRNDataGroup::ItemAddedEvent = "GUCEF::CORE::CDRNDataGroup::ItemAddedEvent";
+const CORE::CEvent CDRNDataGroup::ItemRemovedEvent = "GUCEF::CORE::CDRNDataGroup::ItemRemovedEvent";
     
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -82,6 +84,8 @@ CDRNDataGroup::RegisterEvents( void )
 {GUCEF_TRACE;
 
     ItemChangedEvent.Initialize();
+    ItemAddedEvent.Initialize();
+    ItemRemovedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -92,28 +96,31 @@ CDRNDataGroup::SetItem( const CORE::CDynamicBuffer& id        ,
                         const bool addIfNotFound /* = true */ )
 {GUCEF_TRACE;
 
-    TDataMap::iterator i = m_dataMap.find( id );
-    if ( i != m_dataMap.end() )
-    {
-        (*i).second = data;
-        
-        struct ItemEntry entry = { &(*i).first, &(*i).second };
-        ItemChangedEventData eData( entry );
-        NotifyObservers( ItemChangedEvent, &eData );
-        
-        return true;
-    }
-    else
-    {
-        if ( addIfNotFound )
+    if ( id.GetDataSize() > 0 )
+    { 
+        TDataMap::iterator i = m_dataMap.find( id );
+        if ( i != m_dataMap.end() )
         {
-            i = m_dataMap.insert( std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer >( id, data ) ).first;
+            (*i).second = data;
             
             struct ItemEntry entry = { &(*i).first, &(*i).second };
             ItemChangedEventData eData( entry );
-            NotifyObservers( ItemChangedEvent, &eData );            
+            NotifyObservers( ItemChangedEvent, &eData );
+            
+            return true;
         }
-        return false;
+        else
+        {
+            if ( addIfNotFound )
+            {
+                i = m_dataMap.insert( std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer >( id, data ) ).first;
+                
+                struct ItemEntry entry = { &(*i).first, &(*i).second };
+                ItemChangedEventData eData( entry );
+                NotifyObservers( ItemAddedEvent, &eData );            
+            }
+            return false;
+        }
     }
 }
 
@@ -223,9 +230,6 @@ CDRNDataGroup::GetIDAndDataAtIndex( const UInt32 index                ,
                                     const CORE::CDynamicBuffer** id   ,
                                     const CORE::CDynamicBuffer** data ) const
 {GUCEF_TRACE;
-    
-    assert( NULL != id );
-    assert( NULL != data );
 
     TDataMap::const_iterator i = m_dataMap.begin();
     for ( UInt32 n=0; n<index; ++n ) 
@@ -246,6 +250,30 @@ CDRNDataGroup::GetIDAndDataAtIndex( const UInt32 index                ,
         *data = &(*i).second;
     }    
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNDataGroup::RemoveItem( const CORE::CDynamicBuffer& id )
+{GUCEF_TRACE;
+
+    if ( id.GetDataSize() > 0 )
+    {
+        TDataMap::iterator i = m_dataMap.find( id );
+        if ( i != m_dataMap.end() )
+        {
+            // First notify that the item is to be removed
+            struct ItemEntry entry = { &(*i).first, &(*i).second };
+            ItemChangedEventData eData( entry );
+            NotifyObservers( ItemRemovedEvent, &eData );
+
+            // Now we actually remove the item
+            m_dataMap.erase( i );
+            return true;
+        }
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

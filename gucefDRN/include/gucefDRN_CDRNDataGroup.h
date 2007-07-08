@@ -90,14 +90,19 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataGroup : public CORE::CObservingNotifier
 {
     public:
 
+    static const CORE::CEvent ItemAddedEvent;
     static const CORE::CEvent ItemChangedEvent;
+    static const CORE::CEvent ItemRemovedEvent;
     
     struct ItemEntry
     {
         const CORE::CDynamicBuffer* id;
         const CORE::CDynamicBuffer* data;
     };
+    
+    typedef CORE::CTCloneableObj< struct ItemEntry >    ItemAddedEventData;
     typedef CORE::CTCloneableObj< struct ItemEntry >    ItemChangedEventData;
+    typedef CORE::CTCloneableObj< struct ItemEntry >    ItemRemovedEventData;
     
     static void RegisterEvents( void );
     
@@ -123,6 +128,12 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataGroup : public CORE::CObservingNotifier
                   CORE::CDynamicBuffer& data     ) const;
                   
     bool HasItem( const CORE::CDynamicBuffer& id ) const;
+    
+    /**
+     *  Attempts to locate and then remove the item with the given ID
+     *  if the item is not found false is returned
+     */
+    bool RemoveItem( const CORE::CDynamicBuffer& id );
 
     UInt32 GetItemCount( void ) const;
 
@@ -143,9 +154,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataGroup : public CORE::CObservingNotifier
     
     private:
     
-    CDRNDataGroup( void );
-    CDRNDataGroup( const CDRNDataGroup& src );
-    CDRNDataGroup& operator=( const CDRNDataGroup& src );
+    CDRNDataGroup( void );                                /**< not possible */
+    CDRNDataGroup( const CDRNDataGroup& src );            /**< not allowed at this time */
+    CDRNDataGroup& operator=( const CDRNDataGroup& src ); /**< not allowed at this time */
     
     private:
     typedef std::map< CORE::CDynamicBuffer, CORE::CDynamicBuffer > TDataMap;

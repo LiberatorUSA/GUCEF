@@ -204,10 +204,18 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
                                const CORE::CDynamicBuffer& data       ,
                                const bool allowUnreliableTransmission );
 
+    typedef enum TDataGroupDelta
+    {
+        DATAGROUPDELTA_ADD    ,
+        DATAGROUPDELTA_UPDATE ,
+        DATAGROUPDELTA_REMOVE
+    };
+    
     void SendDataGroupItemUpdateToPeer( const CDRNDataGroup& dataGroup        ,
                                         const UInt16 id                       ,
                                         const CORE::CDynamicBuffer& itemID    ,
-                                        const CORE::CDynamicBuffer& itemValue );
+                                        const CORE::CDynamicBuffer& itemValue ,
+                                        const TDataGroupDelta deltaChange     );
                        
     private:
     
@@ -239,8 +247,9 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     void OnPeerPeerListReceived( const char* data      ,
                                  const UInt32 dataSize );
     
-    void OnPeerDataGroupItemUpdate( const char* data      ,
-                                    const UInt32 dataSize );
+    void OnPeerDataGroupItemMutation( const char* data             ,
+                                      const UInt32 dataSize        ,
+                                      const TDataGroupDelta change );
 
     void OnPeerStreamListReceived( const char* data      ,
                                    const UInt32 dataSize );
@@ -313,7 +322,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
     void SendDataGroupItemUpdateToPeer( const UInt16 id                        ,
                                         const CORE::CDynamicBuffer& itemID     ,
                                         const CORE::CDynamicBuffer& itemValue  ,
-                                        const bool allowUnreliableTransmission );
+                                        const bool allowUnreliableTransmission ,
+                                        const TDataGroupDelta deltaChange      );
                                                            
     private:
     

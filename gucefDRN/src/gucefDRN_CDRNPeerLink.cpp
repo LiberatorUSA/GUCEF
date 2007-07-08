@@ -203,8 +203,11 @@ void
 CDRNPeerLink::CloseLink( void )
 {GUCEF_TRACE;
 
-    m_tcpConnection->Close();
-    UnsubscribeFrom( m_tcpConnection );
+    if ( m_tcpConnection != NULL )
+    {
+        m_tcpConnection->Close();
+        UnsubscribeFrom( m_tcpConnection );
+    }
     m_udpPossible = false;
     m_isAuthenticated = false;
     m_tcpConnection = NULL;
@@ -793,8 +796,9 @@ CDRNPeerLink::OnPeerDataGroupListReceived( const char* data      ,
 /*-------------------------------------------------------------------------*/
 
 void
-CDRNPeerLink::OnPeerDataGroupItemUpdate( const char* data      ,
-                                         const UInt32 dataSize )
+CDRNPeerLink::OnPeerDataGroupItemMutation( const char* data             ,
+                                           const UInt32 dataSize        ,
+                                           const TDataGroupDelta change )
 {GUCEF_TRACE;
 
     // Sanity check on the logic flow
@@ -820,11 +824,45 @@ CDRNPeerLink::OnPeerDataGroupItemUpdate( const char* data      ,
                 CDRNPeerLinkData::TDRNDataGroupPtr dataGroup = m_linkData->GetSubscribedDataGroupWithID( dataGroupID );
                 if ( NULL != dataGroup )
                 {
-                    // Overwrite or add the item to the data group
-                    dataGroup->SetItem( itemID    ,
-                                        itemValue ,
-                                        true      );               
-                    return;
+                    switch ( change )
+                    {
+                        case DATAGROUPDELTA_ADD :
+                        {
+                            // First check to make sure no item has already been added with the given ID
+                            if ( dataGroup->HasItem( itemID ) )
+                            {
+                                // An item with the given ID already exists, we will delete 
+                                // the item first
+                                dataGroup->RemoveItem( itemID );
+                            }    
+                            
+                            // Add the item to the data group
+                            dataGroup->SetItem( itemID    ,
+                                                itemValue ,
+                                                true      );
+                            return;                        
+                        }
+                        case DATAGROUPDELTA_UPDATE :
+                        {
+                            // Overwrite or add the item to the data group
+                            dataGroup->SetItem( itemID    ,
+                                                itemValue ,
+                                                true      );
+                            return;                        
+                        }
+                        case DATAGROUPDELTA_REMOVE :
+                        {
+                            // Overwrite or add the item to the data group
+                            dataGroup->RemoveItem( itemID );
+                            return;                        
+                        }
+                        default :
+                        {
+                            // If we get here you forgot to add support for a new mutation type
+                            GUCEF_ASSERT_ALWAYS;
+                            return;
+                        }                                                
+                    }
                 }
             }
         }
@@ -835,7 +873,6 @@ CDRNPeerLink::OnPeerDataGroupItemUpdate( const char* data      ,
     
     // Terminate the link
     CloseLink();
-
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1259,10 +1296,11 @@ CDRNPeerLink::OnPeerSubscribeToDataGroupRequest( const char* data      ,
                                                            &itemID   ,
                                                            &itemData ) )
                         {
-                            SendDataGroupItemUpdateToPeer( id        ,
-                                                           *itemID   ,
-                                                           *itemData ,
-                                                           false     );            
+                            SendDataGroupItemUpdateToPeer( id                 ,
+                                                           *itemID            ,
+                                                           *itemData          ,
+                                                           false              ,
+                                                           DATAGROUPDELTA_ADD );            
                         }
                     }
                 }
@@ -1386,7 +1424,30 @@ CDRNPeerLink::OnPeerStreamDataReceived( const char* data      ,
                                         const UInt32 dataSize )
 {GUCEF_TRACE;
 
+    // Sanity check on the program flow logic: the link has to be operational
+    // before you can subscribe thus also in order for us to receive stream data
+    if ( m_isLinkOperationalForUs )
+    {
+        // Sanity check on the payload size
+        if ( dataSize > 3 )
+        {
+            // Extract the stream ID
+            UInt16 streamID = *reinterpret_cast< const UInt16* >( data+1 );
+            
+            // Try to find a stream with the given ID among the stream subscriptions
+            TDRNDataStreamPtr dataStream = m_linkData->GetSubscribedDataStreamWithID( streamID );
+            if ( NULL != dataStream )
+            {
+                // Pass the data along to the stream's handler
+                dataStream->OnDataReceived( data+3     ,
+                                            dataSize-3 );
+                return;                     
+            }
+        }
+    }
     
+    // Tell the peer his action is not allowed at this time
+    SendNotAllowed(); 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1438,11 +1499,21 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
             OnPeerLinkOperational();
             return;
         }
+        case DRN_PEERCOMM_DATAGROUP_ITEM_ADDED :
+        {
+            OnPeerDataGroupItemMutation( data, dataSize, DATAGROUPDELTA_ADD );
+            return;
+        }        
         case DRN_PEERCOMM_DATAGROUP_ITEM_UPDATE :
         {
-            OnPeerDataGroupItemUpdate( data, dataSize );
+            OnPeerDataGroupItemMutation( data, dataSize, DATAGROUPDELTA_UPDATE );
             return;
         }
+        case DRN_PEERCOMM_DATAGROUP_ITEM_REMOVED :
+        {
+            OnPeerDataGroupItemMutation( data, dataSize, DATAGROUPDELTA_REMOVE );
+            return;
+        }        
         case DRN_PEERCOMM_STREAM_DATA :
         {
             OnPeerStreamDataReceived( data, dataSize );
@@ -1694,6 +1765,11 @@ CDRNPeerLink::OnNotify( CORE::CNotifier* notifier                 ,
                         CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
+    // Call base-class implementation,.. mandatory
+    CObservingNotifier::OnNotify( notifier  ,
+                                  eventid   ,
+                                  eventdata );
+
     if ( notifier == m_tcpConnection )
     {
         OnTCPConnectionEvent( notifier  ,
@@ -1857,28 +1933,33 @@ CDRNPeerLink::SendStreamDataToPeer( const UInt16 id                        ,
 
     if ( m_isLinkOperationalForUs )
     {    
-        // Compose the message
-        CORE::CDynamicBuffer sendBuffer( data.GetDataSize() + 7, true );
-        sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
-        sendBuffer[ 3 ] = DRN_PEERCOMM_STREAM_DATA;
-        sendBuffer[ data.GetDataSize() + 6 ] = DRN_TRANSMISSION_END;
-        sendBuffer.CopyFrom( 4, 2, &id );
-        sendBuffer.CopyFrom( 6, data.GetDataSize(), data.GetConstBufferPtr() );
-
-        UInt16 payloadSize = (UInt16) data.GetDataSize()+3;
-        sendBuffer.CopyFrom( 1, 2, &payloadSize );
-
-        // Send the stream data
-        if ( SendData( sendBuffer.GetConstBufferPtr()   , 
-                       (UInt16)sendBuffer.GetDataSize() , 
-                       allowUnreliableTransmission      ) )
+        // Sanity check on the data, no need to send anything if there 
+        // is nothing to send
+        if ( data.GetDataSize() > 0 )
         {
+            // Compose the message
+            CORE::CDynamicBuffer sendBuffer( data.GetDataSize() + 7, true );
+            sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
+            sendBuffer[ 3 ] = DRN_PEERCOMM_STREAM_DATA;
+            sendBuffer[ data.GetDataSize() + 6 ] = DRN_TRANSMISSION_END;
+            sendBuffer.CopyFrom( 4, 2, &id );
+            sendBuffer.CopyFrom( 6, data.GetDataSize(), data.GetConstBufferPtr() );
+
+            UInt16 payloadSize = (UInt16) data.GetDataSize()+3;
+            sendBuffer.CopyFrom( 1, 2, &payloadSize );
+
+            // Send the stream data
+            if ( SendData( sendBuffer.GetConstBufferPtr()   , 
+                           (UInt16)sendBuffer.GetDataSize() , 
+                           allowUnreliableTransmission      ) )
+            {
+                return;
+            }
+            
+            // Failed to send data, something is very wrong
+            CloseLink();
             return;
         }
-        
-        // Failed to send data, something is very wrong
-        CloseLink();
-        return;        
     }
 }
 
@@ -1888,37 +1969,72 @@ void
 CDRNPeerLink::SendDataGroupItemUpdateToPeer( const UInt16 id                        ,
                                              const CORE::CDynamicBuffer& itemID     ,
                                              const CORE::CDynamicBuffer& itemValue  ,
-                                             const bool allowUnreliableTransmission )
+                                             const bool allowUnreliableTransmission ,
+                                             const TDataGroupDelta deltaChange      )
 {GUCEF_TRACE;
 
     if ( m_isLinkOperationalForUs )
     {    
-        // Compose the message
+        // Cache some values
         UInt16 itemIDSize = (UInt16) itemID.GetDataSize();
         UInt32 itemValueSize = itemValue.GetDataSize();
-        CORE::CDynamicBuffer sendBuffer( itemIDSize + itemValueSize + 9, true );
-        sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
-        sendBuffer[ 3 ] = DRN_PEERCOMM_DATAGROUP_ITEM_UPDATE;
-        sendBuffer[ itemIDSize + itemValueSize + 8 ] = DRN_TRANSMISSION_END;
-        sendBuffer.CopyFrom( 4, 2, &id );
-        sendBuffer.CopyFrom( 6, 2, &itemIDSize );
-        sendBuffer.CopyFrom( 8, itemIDSize, itemID.GetConstBufferPtr() );
-        sendBuffer.CopyFrom( 8 + itemIDSize, itemValueSize, itemValue.GetConstBufferPtr() );
-
-        UInt16 payloadSize = (UInt16) ( itemIDSize + itemValueSize + 5 );
-        sendBuffer.CopyFrom( 1, 2, &payloadSize );
-
-        // Send the data group item data
-        if ( SendData( sendBuffer.GetConstBufferPtr()   , 
-                       (UInt16)sendBuffer.GetDataSize() , 
-                       allowUnreliableTransmission      ) )
-        {
-            return;
-        }
         
-        // Failed to send data, something is very wrong
-        CloseLink();
-        return;        
+        // Sanity check on the data, we do not send anything if there is nothing to send
+        // Note that an empty itemValue is allowed
+        if ( itemIDSize > 0 )
+        {
+            // Translate the mutation type into a protocol message
+            char protocolCmd = 0;
+            switch ( deltaChange )
+            {
+                case DATAGROUPDELTA_ADD :
+                {
+                    protocolCmd = DRN_PEERCOMM_DATAGROUP_ITEM_ADDED;
+                    break;
+                }
+                case DATAGROUPDELTA_UPDATE :
+                {
+                    protocolCmd = DRN_PEERCOMM_DATAGROUP_ITEM_UPDATE;
+                    break;
+                }
+                case DATAGROUPDELTA_REMOVE :
+                {
+                    protocolCmd = DRN_PEERCOMM_DATAGROUP_ITEM_REMOVED;
+                    break;
+                }
+                default :
+                {
+                    // If we get here you forgot to add support for a new mutation type
+                    GUCEF_ASSERT_ALWAYS;
+                    return;
+                }                                
+            }
+            
+            // Compose the message
+            CORE::CDynamicBuffer sendBuffer( itemIDSize + itemValueSize + 9, true );
+            sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
+            sendBuffer[ 3 ] = protocolCmd;
+            sendBuffer[ itemIDSize + itemValueSize + 8 ] = DRN_TRANSMISSION_END;
+            sendBuffer.CopyFrom( 4, 2, &id );
+            sendBuffer.CopyFrom( 6, 2, &itemIDSize );
+            sendBuffer.CopyFrom( 8, itemIDSize, itemID.GetConstBufferPtr() );
+            sendBuffer.CopyFrom( 8 + itemIDSize, itemValueSize, itemValue.GetConstBufferPtr() );
+
+            UInt16 payloadSize = (UInt16) ( itemIDSize + itemValueSize + 5 );
+            sendBuffer.CopyFrom( 1, 2, &payloadSize );
+
+            // Send the data group item data
+            if ( SendData( sendBuffer.GetConstBufferPtr()   , 
+                           (UInt16)sendBuffer.GetDataSize() , 
+                           allowUnreliableTransmission      ) )
+            {
+                return;
+            }
+            
+            // Failed to send data, something is very wrong
+            CloseLink();
+            return;
+        }        
     }
 }
 
@@ -1928,7 +2044,8 @@ void
 CDRNPeerLink::SendDataGroupItemUpdateToPeer( const CDRNDataGroup& dataGroup        ,
                                              const UInt16 id                       ,
                                              const CORE::CDynamicBuffer& itemID    ,
-                                             const CORE::CDynamicBuffer& itemValue )
+                                             const CORE::CDynamicBuffer& itemValue ,
+                                             const TDataGroupDelta deltaChange     )
 {GUCEF_TRACE;
 
     CDRNDataGroup::CDRNDataGroupPropertiesPtr settings = dataGroup.GetGroupProperties();
@@ -1936,20 +2053,22 @@ CDRNPeerLink::SendDataGroupItemUpdateToPeer( const CDRNDataGroup& dataGroup     
     
     if ( settings->GetEmitEntireGroupOnChange() )
     {
-        const CORE::CDynamicBuffer* itemID = NULL;
-        const CORE::CDynamicBuffer* itemData = NULL;
+        const CORE::CDynamicBuffer* itemIDValue = NULL;
+        const CORE::CDynamicBuffer* itemDataValue = NULL;
         UInt32 items = dataGroup.GetItemCount();
         
         for ( UInt32 i=0; i<items; ++i )
         {
-            if ( dataGroup.GetIDAndDataAtIndex( i     ,
-                                                &itemID   ,
-                                                &itemData ) )
+            if ( dataGroup.GetIDAndDataAtIndex( i              ,
+                                                &itemIDValue   ,
+                                                &itemDataValue ) )
             {
+                TDataGroupDelta change = *itemIDValue == itemID ? deltaChange : DATAGROUPDELTA_UPDATE;                
                 SendDataGroupItemUpdateToPeer( id                          ,
-                                               *itemID                     ,
-                                               *itemData                   ,
-                                               allowUnreliableTransmission );            
+                                               *itemIDValue                ,
+                                               *itemDataValue              ,
+                                               allowUnreliableTransmission ,
+                                               change                      );            
             }
         }
     }
@@ -1958,7 +2077,8 @@ CDRNPeerLink::SendDataGroupItemUpdateToPeer( const CDRNDataGroup& dataGroup     
         SendDataGroupItemUpdateToPeer( id                          ,
                                        itemID                      ,
                                        itemValue                   ,
-                                       allowUnreliableTransmission );
+                                       allowUnreliableTransmission ,
+                                       deltaChange                 );
     }
 }
 

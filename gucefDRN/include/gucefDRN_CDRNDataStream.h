@@ -92,8 +92,6 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataStream : public CORE::CObservingNotifier
     CDRNDataStream( const CORE::CString& streamName );
     
     virtual ~CDRNDataStream();
-        
-    void SetName( const CORE::CString& streamName );
     
     const CORE::CString& GetName( void ) const;
 
@@ -113,6 +111,12 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataStream : public CORE::CObservingNotifier
                            CORE::CICloneable* eventdata = NULL );
     
     private:
+    friend class CDRNPeerLink;
+    
+    void OnDataReceived( const char* data      ,
+                         const UInt32 dataSize );
+    
+    private:
     
     CDRNDataStream( void );
     CDRNDataStream( const CDRNDataStream& src );
@@ -120,9 +124,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataStream : public CORE::CObservingNotifier
     
     private:
     
-    CORE::CDynamicBuffer m_sendBuffer;
     CORE::CString m_streamName;
-    CDRNPeerLink* m_peerLink;
 };
 
 /*-------------------------------------------------------------------------//

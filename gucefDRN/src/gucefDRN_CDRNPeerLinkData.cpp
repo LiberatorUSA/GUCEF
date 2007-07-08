@@ -177,7 +177,7 @@ CDRNPeerLinkData::PublicizeDataGroup( TDRNDataGroupPtr& dataGroup )
     TDRNDataGroupEntry entry = { dataGroup, new CORE::T16BitNumericID( m_idGenerator.GenerateID() ) };
     m_publicizedDataGroupsID[ *entry.id ] = entry;
     
-    SubscribeTo( dataGroup.GetPointer(), CDRNDataGroup::ItemChangedEvent );    
+    SubscribeTo( dataGroup.GetPointer() );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -220,10 +220,38 @@ CDRNPeerLinkData::GetPeerLink( void )
 /*-------------------------------------------------------------------------*/
 
 void
+CDRNPeerLinkData::OnDataGroupMutation( CORE::CNotifier* notifier    ,
+                                       CORE::CICloneable* eventdata ,
+                                       const Int32 changeType       )
+{GUCEF_TRACE;
+
+    CDRNDataGroup& dataGroup = static_cast< CDRNDataGroup& >( *notifier );
+    
+    UInt16 id = 0;
+    if ( GetPublicizedDataGroupID( dataGroup.GetName() ,
+                                   id                  ) )
+    {
+        CDRNDataGroup::ItemChangedEventData& eData = static_cast< CDRNDataGroup::ItemChangedEventData& >( *eventdata );
+        m_peerLink->SendDataGroupItemUpdateToPeer( dataGroup             ,
+                                                   id                    ,
+                                                   *eData.GetData().id   ,
+                                                   *eData.GetData().data ,
+                                                   static_cast< CDRNPeerLink::TDataGroupDelta >( changeType ) );
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CDRNPeerLinkData::OnNotify( CORE::CNotifier* notifier                 ,
                             const CORE::CEvent& eventid               ,
                             CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
+
+    // Call base-class implementation,.. mandatory
+    CObservingNotifier::OnNotify( notifier  ,
+                                  eventid   ,
+                                  eventdata );
 
     if ( CDRNDataStream::DataTransmittedEvent == eventid )
     {
@@ -240,21 +268,26 @@ CDRNPeerLinkData::OnNotify( CORE::CNotifier* notifier                 ,
         }
     }
     else
+    if ( CDRNDataGroup::ItemAddedEvent == eventid )
+    {
+        OnDataGroupMutation( notifier                            ,
+                             eventdata                           ,
+                             CDRNPeerLink::DATAGROUPDELTA_ADD );
+    }
+    else
     if ( CDRNDataGroup::ItemChangedEvent == eventid )
     {
-        CDRNDataGroup& dataGroup = static_cast< CDRNDataGroup& >( *notifier );
-        
-        UInt16 id = 0;
-        if ( GetPublicizedDataGroupID( dataGroup.GetName() ,
-                                       id                  ) )
-        {
-            CDRNDataGroup::ItemChangedEventData& eData = static_cast< CDRNDataGroup::ItemChangedEventData& >( *eventdata );
-            m_peerLink->SendDataGroupItemUpdateToPeer( dataGroup             ,
-                                                       id                    ,
-                                                       *eData.GetData().id   ,
-                                                       *eData.GetData().data );
-        }        
+        OnDataGroupMutation( notifier                            ,
+                             eventdata                           ,
+                             CDRNPeerLink::DATAGROUPDELTA_UPDATE );
     }
+    else
+    if ( CDRNDataGroup::ItemRemovedEvent == eventid )
+    {
+        OnDataGroupMutation( notifier                            ,
+                             eventdata                           ,
+                             CDRNPeerLink::DATAGROUPDELTA_REMOVE );
+    }        
     else
     if ( ( CORE::CNotifier::UnsubscribeEvent == eventid ) ||
          ( CORE::CNotifier::DestructionEvent == eventid )  )
