@@ -122,6 +122,7 @@ CDRNDataGroup::SetItem( const CORE::CDynamicBuffer& id        ,
             return false;
         }
     }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
