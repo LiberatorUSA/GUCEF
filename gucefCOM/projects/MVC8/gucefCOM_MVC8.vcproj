@@ -290,10 +290,6 @@
 				RelativePath="..\..\include\gucefCOMDLLInit.h"
 				>
 			</File>
-			<File
-				RelativePath="..\..\include\tcp_basicprotocol.h"
-				>
-			</File>
 		</Filter>
 	</Files>
 	<Globals>

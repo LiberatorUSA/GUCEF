@@ -412,21 +412,14 @@ go right.
       OO Info Sources </a>
 </li><li> <a href="http://doc.trolltech.com/qq/qq13-apis.html">
      Designing Qt-Style C++ APIs </a> - A good paper on API I design for C++. I don't agree with everything, but it is good.
-</li><li> <a href="http://www.rational.com/uml/index.jtmpl">
-          Unified Modeling Language (UML) </a>
-</li><li> <a href="http://www.cyberdyne-object-sys.com/">
-          OO FAQ - All You Wanted to Know About OO </a>
 </li><li> <a href="http://www.parashift.com/c++-faq-lite/"> 
           C++ FAQ LITE </a> 
 </li><li> <a href="http://www.desy.de/user/projects/C++/Projects.html">
           C++ Source Libraries </a>
 </li><li> <a href="http://www.desy.de/user/projects/C++/Learning.html">
           C++ Tutorials </a>
-</li><li> <a href="http://www.cs.wustl.edu/%7Eschmidt/ACE-overview.html"> ACE C++ Library </a>
 </li><li> <a href="http://www.cs.umd.edu/users/cml/cstyle"> Collection of Other Standards </a>
 </li><li> <a href="http://www.eiffel.com/doc/manuals/technology/contract/"> Design by Contract from Eiffle </a>
-</li><li> <a href="http://www.progsoc.uts.edu.au/%7Egeldridg/cpp/cppcv3.html"> 
-             C++ isn't Perfect, Here are Some Reasons Why </a>
 </li><li> <a href="http://www.doxygen.org/">Doxygen</a> -
           is a 'javadoc' like utility that extracts comments and
           relevant information from your C++/C programs and generates HTML
@@ -516,7 +509,7 @@ Suffixes are sometimes useful:
      </a></li><li><a name="descriptive"> <i>Cnt</i> - the current count of a running count variable.
      </a></li><li><a name="descriptive"> <i>Key</i> - key value.
      </a></li></ul><p>
-<a name="descriptive">     For example: RetryMax to mean the maximum number of retries, RetryCnt to
+<a name="descriptive">     For example: retryMax to mean the maximum number of retries, retryCnt to
      mean the current retry count. 
 </a></p><p>
 
@@ -528,7 +521,7 @@ Prefixes are sometimes useful:
      </a></li><li><a name="descriptive"> <i>Get</i> - get a value.
      </a></li><li><a name="descriptive"> <i>Set</i> - set a value.
      </a></li></ul><p>
-<a name="descriptive">     For example: IsHitRetryLimit. 
+<a name="descriptive">     For example: IsRetryLimitReached.
 </a></p><p>
 </p></li></ul>
 
@@ -539,8 +532,8 @@ Prefixes are sometimes useful:
 <a name="units">If a variable represents time, weight, or some other unit then include the 
 unit in the name so developers can more easily spot problems.
 For example:
-</a><pre><a name="units">uint32 mTimeoutMsecs;
-uint32 mMyWeightLbs;
+</a><pre><a name="units">UInt32 m_timeoutMsecs;
+UInt32 m_myWeightLbs;
 </a></pre>
 
 <a name="units">Better yet is to make a variable into a class so bad conversions
@@ -570,8 +563,8 @@ can be caught.
 </a></p></li></ul>
 
 <h3><a name="noabbrev"> Example </a></h3>
-<pre><a name="noabbrev">   class FluidOz             // NOT FluidOZ
-   class NetworkAbcKey       // NOT NetworkABCKey
+<pre><a name="noabbrev">   class CFluidOz             // NOT CFluidOZ
+   class CNetworkAbcKey       // NOT CNetworkABCKey
 </a></pre>
 
 
@@ -582,6 +575,7 @@ can be caught.
 <li> Use upper case letters as word separators, lower case for the rest of a word
 </li><li> First character in a name is upper case
 </li><li> No underbars ('_')
+</li><li> All classes should start with a 'C' followed by a type indicator if needed. An interface class for example should be CIMyInterface
 </li></ul>
 
 <h3> Justification </h3>
@@ -592,9 +586,9 @@ can be caught.
 </li></ul>
 
 <h3> Example </h3>
-<pre>   class NameOneTwo
+<pre>   class CNameOneTwo
   
-   class Name
+   class CName
 </pre>
 
 
@@ -604,27 +598,32 @@ can be caught.
 <ul>
 <li><a name="classlnames"> Now that name spaces are becoming more widely implemented, name spaces
      should be used to prevent class name conflicts among libraries
-	 from different vendors and groups.
-</a></li><li><a name="classlnames"> When not using name spaces, it's common to prevent class name clashes by
-     prefixing class names with a unique string. Two characters is sufficient,
-     but a longer length is fine. 
+	 from different vendors and groups. You should use name spacing at all times. 
+	 The namespaces encompassing the classes should reflect the hierarchy of the project. Classes in a math library in combined in folder math should be in namespace MATH and so on and so forth.
+	 If the project contains multiple packages/modules thats have a clearly defined relationship to eachother then the project name should be included in the namespace-ing trough nesting
+	 
+<h3> Example </h3>
+<pre>   
+namespace GUCEF {
+namespace MATH {
+        
+        class CMatrix
+        {
+        };
+  
+} /* namespace MATH ? */
+} /* namespace GUCEF ? */
+
+</pre>
+	 
 </a></li></ul>
-
-<h3><a name="classlnames"> Example </a></h3>
-
-<a name="classlnames">John Johnson's complete data structure library could use <i>JJ</i>
-as a prefix, so classes would be:
-</a><pre><a name="classlnames">   class JjLinkList
-   {
-   }
-</a></pre>
 
 
 <p></p><hr><a name="methodsnames">
 </a><h1><a name="methodsnames"> Method Names </a></h1>
 
 <ul>
-<li><a name="methodsnames"> Use the same rule as for class names.
+<li><a name="methodsnames"> Use the same rule as for class names without the prefix rule. Methods aka member functions should have 'void' as a parameter when they have no parameter
 </a></li></ul>
 
 <h3><a name="methodsnames"> Justification </a></h3>
@@ -635,11 +634,12 @@ as a prefix, so classes would be:
 </a></li></ul>
 
 <h3><a name="methodsnames"> Example </a></h3>
-<pre><a name="methodsnames">   class NameOneTwo
+<pre><a name="methodsnames">   class CNameOneTwo
    {
-   public:
-      int                   DoIt();
-      void                  HandleError();
+        public:
+        
+        Int32 DoIt( void );
+        void HandleError( void );
    }
 </a></pre>
 
@@ -648,29 +648,32 @@ as a prefix, so classes would be:
 <h1> Class Attribute Names </h1>
 
 <ul>
-<li> Attribute names should be prepended with the character 'm'. 
-</li><li> After the 'm' use the same rules as for class names.
-</li><li> 'm' always precedes other name modifiers like 'p' for pointer.
+<li> Attribute names should be prepended with 'm_'. 
+</li><li> After the 'm_' use the same rules as other variables, start with a lowercase letter and then use an uppercase letter at the beginning of each new word
 </li></ul>
 
 <h3> Justification </h3>
 
 <ul>
-<li> Prepending 'm' prevents any conflict with method names. Often your
-     methods and attribute names will be similar, especially for
+<li> Prepending 'm_' prevents any conflict with local variables. Often your
+     local variable names will be similar, especially for
      accessors.
 </li></ul>
 
 <h3> Example </h3>
-<pre>   class NameOneTwo
+<pre>   class CNameOneTwo
    {
-   public:
-      int                   VarAbc();
-      int                   ErrorNumber();
-   private:
-      int                   mVarAbc;
-      int                   mErrorNumber;
-      String*               mpName;
+        public:
+        
+        Int32 VarAbc( void );
+        
+        Int32 ErrorNumber( void );
+        
+        private:
+        
+        Int32 m_varAbc;
+        Int32 m_errorNumber;
+        CString* m_name;
    }
 </pre>
 
@@ -679,26 +682,19 @@ as a prefix, so classes would be:
 <h1> Method Argument Names </h1>
 
 <ul>
-<li> The first character should be lower case.
-</li><li> All word beginnings after the first letter should be upper case
-     as with class names.
-</li></ul>
-
-<h3> Justification </h3>
-
-<ul>
-<li> You can always tell which variables are passed in variables.
-</li><li> You can use names similar to class names without conflicting with class names.
+<li> Use the same rules as for class attribute names without the prefix
+</li><li> Always list the argument list as an actual list by aligning the arguments below each other 
+</li><li> Always preserve the alignment of the ',' character between list entries to preserve the structured look of the code making it easy to read
 </li></ul>
 
 <h3> Example </h3>
-<pre>   class NameOneTwo
-   {
-   public:
-      int                   StartYourEngines(
-                               Engine&amp; rSomeEngine, 
-                               Engine&amp; rAnotherEngine);
-   }
+<pre>   class CNameOneTwo
+    {
+        public:
+        
+        Int32 StartYourEngines( Engine&amp; someEngine    , 
+                                Engine&amp; anotherEngine );
+    }
 </pre>
 
 
@@ -706,45 +702,30 @@ as a prefix, so classes would be:
 </a><h1><a name="stacknames"> Variable Names on the Stack </a></h1>
 
 <ul>
-<li><a name="stacknames"> use all lower case letters 
-</a></li><li><a name="stacknames"> use '_' as the word separator.
+<li><a name="stacknames"> Use the same rules as with class member variables aka class attributes with the 'm_' prefix rule
 </a></li></ul>
 
-<h3><a name="stacknames"> Justification </a></h3>
-
-<ul>
-<li><a name="stacknames"> With this approach the scope of the variable is clear in
-     the code.
-</a></li><li><a name="stacknames"> Now all variables look different and are identifiable in the code.
-</a></li></ul>
 
 <h3><a name="stacknames"> Example </a></h3>
-<pre><a name="stacknames">   int
-   NameOneTwo::HandleError(int errorNumber)
+<pre><a name="stacknames">   Int32
+   CNameOneTwo::HandleError( Int32 errorNumber )
    {
-      int            error= OsErr();
-      Time           time_of_error;
-      ErrorProcessor error_processor;
-      Time*          p_out_of_time= 0;
+      Int32 error = OsErr();
+      Time timeOfError;
+      ErrorProcessor errorProcessor;
+      Time* outOfTime = NULL;
    }
 </a></pre>
 <p>
 
-<a name="stacknames">The standard pointer notation is not entirely satisfactory because it doesn't look quite
-right, but it is consistent.
-</a></p><p>
-
-<a name="stacknames">How do you handle statics? There's never a reason to have a static local to
-a function so there's no reason to invent a syntax for it.
-</a></p><p>
+</p><p>
 
 
 </p><p></p><hr><a name="pnames"></a>
 <h1> Pointer Variables </h1>
 
 <ul>
-<li> pointers should be prepended by a 'p' in most cases
-</li><li> place the <i>*</i> close to the pointer type not the variable name
+<li> place the <i>*</i> close to the pointer type not the variable name
 </li></ul>
 
 <h3> Justification </h3>
@@ -765,9 +746,9 @@ so you can document each variable.
 </li></ul>
 
 <h3> Example </h3>
-<pre>  String* pName= new String;
+<pre>  CString* name = new CString();
 
-  String* pName, name, address; // note, only pName is a pointer.
+  CString* nameA, nameB, address; // note, only nameA is a pointer.
 </pre>
 
 
