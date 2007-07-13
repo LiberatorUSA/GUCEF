@@ -181,6 +181,9 @@ CCom::CCom()
     memset( &_stats, 0, sizeof(TSocketStats) );   
     
     #ifdef GUCEF_MSWIN_BUILD
+
+// @TODO use InternetQueryOption
+// http://msdn2.microsoft.com/en-us/library/aa385101.aspx
     
     /*
      *  Read the O/S proxy server settings 
