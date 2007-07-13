@@ -70,14 +70,14 @@ CGUCEFAppWin32MFCDriver::CGUCEFAppWin32MFCDriver( void )
       m_frequency( 10 )                                      ,
       m_initialized( false )                                 ,
       m_useTimer( false )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CGUCEFAppWin32MFCDriver::~CGUCEFAppWin32MFCDriver()
-{TRACE;
+{GUCEF_TRACE;
 
     if ( GetSafeHwnd() )
     {
@@ -91,7 +91,7 @@ CGUCEFAppWin32MFCDriver::~CGUCEFAppWin32MFCDriver()
 
 bool
 CGUCEFAppWin32MFCDriver::Init( CWnd* pParentWnd )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_initialized )
     {
@@ -118,7 +118,7 @@ CGUCEFAppWin32MFCDriver::Init( CWnd* pParentWnd )
 
 void 
 CGUCEFAppWin32MFCDriver::OnRequestNewMinimalUpdateFreq( const GUCEF::CORE::Float64 updateDeltaInMilliSecs )
-{TRACE;
+{GUCEF_TRACE;
 
     m_frequency = updateDeltaInMilliSecs;
     if ( m_appPtr->GetRequiresPeriodicUpdate() )
@@ -138,7 +138,7 @@ CGUCEFAppWin32MFCDriver::OnRequestNewMinimalUpdateFreq( const GUCEF::CORE::Float
 
 void 
 CGUCEFAppWin32MFCDriver::OnRequestNewUpdateCycle( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( GetSafeHwnd() )
     {
@@ -151,7 +151,7 @@ CGUCEFAppWin32MFCDriver::OnRequestNewUpdateCycle( void )
 afx_msg LRESULT
 CGUCEFAppWin32MFCDriver::OnGUCEFUpdateRequestMsg( WPARAM wParam , 
                                                   LPARAM lParam )
-{TRACE;
+{GUCEF_TRACE;
 
     GUCEF::CORE::CGUCEFApplication::Instance()->Update();
     return 0;
@@ -162,7 +162,7 @@ CGUCEFAppWin32MFCDriver::OnGUCEFUpdateRequestMsg( WPARAM wParam ,
 afx_msg LRESULT 
 CGUCEFAppWin32MFCDriver::OnStartUpdateTimer( WPARAM wParam , 
                                              LPARAM lParam )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( GetSafeHwnd() )
     {
@@ -180,7 +180,7 @@ CGUCEFAppWin32MFCDriver::OnStartUpdateTimer( WPARAM wParam ,
 afx_msg LRESULT 
 CGUCEFAppWin32MFCDriver::OnStopUpdateTimer( WPARAM wParam , 
                                             LPARAM lParam )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( GetSafeHwnd() )
     {    
@@ -198,7 +198,7 @@ CGUCEFAppWin32MFCDriver::OnStopUpdateTimer( WPARAM wParam ,
 
 void
 CGUCEFAppWin32MFCDriver::OnClose()
-{TRACE;
+{GUCEF_TRACE;
 
     if ( GetSafeHwnd() )
     {
@@ -212,7 +212,7 @@ CGUCEFAppWin32MFCDriver::OnClose()
 
 afx_msg void
 CGUCEFAppWin32MFCDriver::OnTimer( UINT nIDEvent ) 
-{TRACE;
+{GUCEF_TRACE;
 
     if ( nIDEvent == GUCEFWIN32DRIVERMSG_UPDATE )
     {
@@ -228,7 +228,7 @@ CGUCEFAppWin32MFCDriver::OnTimer( UINT nIDEvent )
 
 void 
 CGUCEFAppWin32MFCDriver::OnSwitchUpdateMethod( const bool periodic )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( periodic )
     {

@@ -66,7 +66,7 @@ CChildView::CChildView()
       m_patchEngine()            ,
       m_gucefDriver( NULL )      ,
       m_closeAppWhenDone( false )
-{TRACE;
+{GUCEF_TRACE;
 
     // Subscribe to all patch engine events
     m_patchEngine.Subscribe( this );
@@ -84,7 +84,7 @@ CChildView::CChildView()
 /*-------------------------------------------------------------------------*/
 
 CChildView::~CChildView()
-{TRACE;
+{GUCEF_TRACE;
 
     UnsubscribeFromAll();
 }
@@ -106,7 +106,7 @@ END_MESSAGE_MAP()
 // CChildView message handlers
 
 BOOL CChildView::PreCreateWindow(CREATESTRUCT& cs) 
-{TRACE;
+{GUCEF_TRACE;
 
 	if (!CWnd::PreCreateWindow(cs))
 		return FALSE;
@@ -122,7 +122,7 @@ BOOL CChildView::PreCreateWindow(CREATESTRUCT& cs)
 /*-------------------------------------------------------------------------*/
 
 void CChildView::DoDataExchange( CDataExchange* pDX )
-{TRACE;
+{GUCEF_TRACE;
 
 	CWnd::DoDataExchange( pDX );
 
@@ -137,7 +137,7 @@ void CChildView::DoDataExchange( CDataExchange* pDX )
 /*-------------------------------------------------------------------------*/
 
 void CChildView::OnPaint() 
-{TRACE;
+{GUCEF_TRACE;
 
 	CPaintDC dc(this); // device context for painting
 	
@@ -150,7 +150,7 @@ void CChildView::OnPaint()
 
 bool
 CChildView::LoadPatchEngineConfig( void )
-{TRACE;
+{GUCEF_TRACE;
 
     // Check for mandatory command line params
     if ( !theApp.GetCommandLineParams().HasKey( "ConfigFile" ) )
@@ -203,7 +203,7 @@ CChildView::LoadPatchEngineConfig( void )
 /*-------------------------------------------------------------------------*/
 
 int CChildView::OnCreate(LPCREATESTRUCT lpcs)
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !LoadPatchEngineConfig() )
     {
@@ -266,7 +266,7 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
 /*-------------------------------------------------------------------------*/
 
 void CChildView::OnSize(UINT nType, int cx, int cy)
-{TRACE;
+{GUCEF_TRACE;
 
   //  MoveWindow( 0, 0, 480, 160 );
   //  m_listBox->MoveWindow(0, 0, cx, 100);
@@ -276,7 +276,7 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 //
 //void
 //CChildView::OnPatchSetStart( const CORE::CString& patchSetName )
-//{TRACE;
+//{GUCEF_TRACE;
 //    
 //    CORE::CString infoStr( ">>> start patchset: " );
 //    infoStr += patchSetName;
@@ -287,7 +287,7 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 //    
 //void
 //CChildView::OnEnterLocalDir( const CORE::CString& localPath )
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    CORE::CString infoStr( "entering local directory: " );
 //    infoStr += localPath;
@@ -299,7 +299,7 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 //void
 //CChildView::OnLocalFileOK( const CORE::CString& localPath ,
 //                           const CORE::CString& localFile )
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    CORE::CString infoStr( "local file \"" );
 //    infoStr += localFile;
@@ -313,7 +313,7 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 //void
 //CChildView::OnLocalFileNotFound( const CORE::CString& localPath ,
 //                                 const CORE::CString& localFile )
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    CORE::CString infoStr( "local file \"" );
 //    infoStr += localFile;
@@ -327,7 +327,7 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 //void
 //CChildView::OnLocalFileDifference( const CORE::CString& localPath ,
 //                                   const CORE::CString& localFile )
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    CORE::CString infoStr( "local file \"" );
 //    infoStr += localFile;
@@ -340,7 +340,7 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 //
 //void
 //CChildView::OnNewSourceRequired( const TSourceInfo& sourceInfo )
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    CORE::CString infoStr( "new source required" );
 //    m_listBox->AddString( infoStr.C_String() );
@@ -350,7 +350,7 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 //    
 //void
 //CChildView::OnLeaveLocalDir( const CORE::CString& localPath )
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    CORE::CString infoStr( "leaving local directory: " );
 //    infoStr += localPath;
@@ -361,7 +361,7 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 //    
 //void
 //CChildView::OnPatchSetEnd( const CORE::CString& patchSetName )
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    CORE::CString infoStr( ">>> end patchset: " );
 //    infoStr += patchSetName;
@@ -372,7 +372,7 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 //
 //void
 //CChildView::OnParserError( void )
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    CORE::CString infoStr( ">>> parser error" );
 //    m_listBox->AddString( infoStr.C_String() );
@@ -384,7 +384,7 @@ void
 CChildView::OnNotify( CORE::CNotifier* notifier                 ,
                       const CORE::CEvent& eventid               ,
                       CORE::CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( notifier == &m_patchEngine )
     {

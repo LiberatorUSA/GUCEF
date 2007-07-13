@@ -64,7 +64,7 @@ CWindowMsgHook::TMappedWindowHookList CWindowMsgHook::s_list;
 /*-------------------------------------------------------------------------*/
 
 CWindowMsgHook::CWindowMsgHook( void )
-{TRACE;
+{GUCEF_TRACE;
 
     
 }
@@ -72,7 +72,7 @@ CWindowMsgHook::CWindowMsgHook( void )
 /*-------------------------------------------------------------------------*/
 
 CWindowMsgHook::~CWindowMsgHook()
-{TRACE;
+{GUCEF_TRACE;
 
     s_globalDataLock.Lock();
 
@@ -103,7 +103,7 @@ CWindowMsgHook::~CWindowMsgHook()
 void
 CWindowMsgHook::Hook( const HWND hWnd              ,
                       void* userData /* = NULL  */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( hWnd && ::IsWindow( hWnd ) )
     {
@@ -138,7 +138,7 @@ CWindowMsgHook::Hook( const HWND hWnd              ,
 
 void
 CWindowMsgHook::Unhook( const HWND hWnd )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( hWnd && ::IsWindow( hWnd ) )
     {
@@ -175,7 +175,7 @@ CWindowMsgHook::WindowProc( const HWND hWnd                  ,
                             const LPARAM lParam              ,
                             void* /* userData *//* = NULL */ ,
                             bool& /* consumeMsg */           )
-{TRACE;
+{GUCEF_TRACE;
 
     //  We don't deal with it, let somebody else do it
     return DefWindowProc( hWnd    , 
@@ -191,7 +191,7 @@ CWindowMsgHook::HookProc( HWND hWnd     ,
                           UINT nMsg     ,
                           WPARAM wParam ,
                           LPARAM lParam )
-{TRACE;
+{GUCEF_TRACE;
 
     s_globalDataLock.Lock();
 

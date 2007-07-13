@@ -1,5 +1,5 @@
 /*
- *  gucefVFS: GUCEF module providing file resource management
+ *  gucefVFS: GUCEF module implementing a Virtual File System
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -48,14 +48,14 @@ CVFSHandle::CVFSHandle( CORE::CIOAccess* fileAccess   ,
       m_filename( filename )     ,
       m_bufferPtr( bufferPtr )   ,
       m_filePath( filePath )
-{TRACE;
+{GUCEF_TRACE;
                   
 }
 
 /*-------------------------------------------------------------------------*/
 
 CVFSHandle::~CVFSHandle()
-{TRACE;
+{GUCEF_TRACE;
     
     /* dont do anything here, this is just a storage / encapsulation class */
 }
@@ -64,7 +64,7 @@ CVFSHandle::~CVFSHandle()
 
 const CORE::CString&
 CVFSHandle::GetFilename( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_filename;
 }
@@ -73,7 +73,7 @@ CVFSHandle::GetFilename( void ) const
 
 const CORE::CString&
 CVFSHandle::GetFilePath( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_filePath;
 }
@@ -82,7 +82,7 @@ CVFSHandle::GetFilePath( void ) const
 
 CORE::CIOAccess* 
 CVFSHandle::GetAccess( void )
-{TRACE;
+{GUCEF_TRACE;
     
     return m_fileAccess;
 }
@@ -91,7 +91,7 @@ CVFSHandle::GetAccess( void )
 
 bool
 CVFSHandle::IsLoadedInMemory( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_bufferPtr != NULL;
 }

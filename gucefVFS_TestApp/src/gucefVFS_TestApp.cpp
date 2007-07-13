@@ -54,7 +54,7 @@ WinMain( HINSTANCE hinstance     ,
          HINSTANCE hprevinstance ,
          LPSTR lpcmdline         ,
          int ncmdshow            )
-{TRACE;
+{GUCEF_TRACE;
                
     try 
     {                               

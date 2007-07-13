@@ -55,7 +55,7 @@ CGUCEFAppSubSystem::CGUCEFAppSubSystem( const bool registerSubSystem /* = false 
       m_updateInterval( 0 )               ,
       m_inNeedOfAnUpdate( false )         ,
       m_requiresPeriodicUpdates( false )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( registerSubSystem )
     {
@@ -66,7 +66,7 @@ CGUCEFAppSubSystem::CGUCEFAppSubSystem( const bool registerSubSystem /* = false 
 /*--------------------------------------------------------------------------*/
 
 CGUCEFAppSubSystem::~CGUCEFAppSubSystem()
-{TRACE;
+{GUCEF_TRACE;
     
     UnregisterSubSystem();
 }
@@ -75,7 +75,7 @@ CGUCEFAppSubSystem::~CGUCEFAppSubSystem()
 
 void
 CGUCEFAppSubSystem::RegisterSubSystem( void )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( !m_isRegistered )
     {
@@ -93,7 +93,7 @@ CGUCEFAppSubSystem::RegisterSubSystem( void )
     
 void
 CGUCEFAppSubSystem::UnregisterSubSystem( void )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( m_isRegistered )
     {
@@ -106,7 +106,7 @@ CGUCEFAppSubSystem::UnregisterSubSystem( void )
 
 bool
 CGUCEFAppSubSystem::IsSubSystemRegistered( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return m_isRegistered;
 }
@@ -115,7 +115,7 @@ CGUCEFAppSubSystem::IsSubSystemRegistered( void ) const
 
 bool
 CGUCEFAppSubSystem::IsInNeedOfAnUpdate( void ) const
-{TRACE;
+{GUCEF_TRACE;
     return m_inNeedOfAnUpdate;
 }
 
@@ -123,7 +123,7 @@ CGUCEFAppSubSystem::IsInNeedOfAnUpdate( void ) const
     
 bool
 CGUCEFAppSubSystem::ArePeriodicUpdatesRequired( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return m_requiresPeriodicUpdates;
 }
@@ -132,7 +132,7 @@ CGUCEFAppSubSystem::ArePeriodicUpdatesRequired( void ) const
 
 void
 CGUCEFAppSubSystem::SetPeriodicUpdateRequirement( const bool requiresPeriodicUpdates )
-{TRACE;
+{GUCEF_TRACE;
     
     m_requiresPeriodicUpdates = requiresPeriodicUpdates;
     CGUCEFApplication::Instance()->RefreshPeriodicUpdateRequirement();
@@ -142,7 +142,7 @@ CGUCEFAppSubSystem::SetPeriodicUpdateRequirement( const bool requiresPeriodicUpd
 
 void
 CGUCEFAppSubSystem::RequestUpdate( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_inNeedOfAnUpdate )
     {
@@ -162,7 +162,7 @@ CGUCEFAppSubSystem::RequestUpdate( void )
     
 void
 CGUCEFAppSubSystem::RequestUpdateInterval( const UInt32 updateDeltaInMilliSecs )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( updateDeltaInMilliSecs != m_updateInterval )
     {
@@ -175,7 +175,7 @@ CGUCEFAppSubSystem::RequestUpdateInterval( const UInt32 updateDeltaInMilliSecs )
 
 UInt32
 CGUCEFAppSubSystem::GetDesiredUpdateInterval( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_updateInterval;
 }
@@ -185,7 +185,7 @@ CGUCEFAppSubSystem::GetDesiredUpdateInterval( void ) const
 void
 CGUCEFAppSubSystem::OnUpdate( const UInt64 tickCount               ,
                               const Float64 updateDeltaInMilliSecs )
-{TRACE;
+{GUCEF_TRACE;
 
     /* dummy to avoid mandatory implementation by descending classes */
 }
@@ -196,7 +196,7 @@ void
 CGUCEFAppSubSystem::OnNotify( CNotifier* notifier                 ,
                               const CEvent& eventid               ,
                               CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     /* dummy to avoid mandatory implementation by descending classes */
 }

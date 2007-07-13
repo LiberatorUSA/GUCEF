@@ -61,7 +61,7 @@ namespace CORE {
 CString::CString( void )
         : m_string( NULL ) ,
           m_length( 0 )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -70,7 +70,7 @@ CString::CString( void )
 CString::CString( const CString &src )
         : m_string( NULL ) ,
           m_length( 0 )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( src.m_length > 0 )
     {
@@ -86,7 +86,7 @@ CString::CString( const CString &src )
 CString::CString( const std::string& src )
         : m_string( NULL ) ,
           m_length( 0 )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( src.size() > 0 )
     {
@@ -102,7 +102,7 @@ CString::CString( const std::string& src )
 CString::CString( const char *src )
         : m_string( NULL ) ,
           m_length( 0 )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( src != NULL )
     {
@@ -119,7 +119,7 @@ CString::CString( const char *src ,
                   UInt32 length   )
         : m_string( NULL ) ,
           m_length( 0 )           
-{TRACE;
+{GUCEF_TRACE;
     
     if ( src && length )
     {
@@ -136,7 +136,7 @@ CString::CString( const char *src ,
 CString::CString( const char src )
     : m_string( NULL ) ,
       m_length( 0 ) 
-{TRACE;
+{GUCEF_TRACE;
     
     Set( &src, 1 );    
 }
@@ -146,14 +146,14 @@ CString::CString( const char src )
 CString::CString( const int NULLvalue )
     : m_string( NULL ) ,
       m_length( 0 )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( NULLvalue == NULL );
 }
 /*-------------------------------------------------------------------------*/
 
 CString::~CString()
-{TRACE;
+{GUCEF_TRACE;
     
     delete []m_string;
     m_string = NULL;
@@ -164,7 +164,7 @@ CString::~CString()
 
 CString&
 CString::operator=( const CString &src )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( &src != this )
     {
@@ -186,7 +186,7 @@ CString::operator=( const CString &src )
 
 CString&
 CString::operator=( const char *src )
-{TRACE;
+{GUCEF_TRACE;
     
     // protect against self-assignment
     if ( src != m_string )
@@ -213,7 +213,7 @@ CString::operator=( const char *src )
 
 bool
 CString::operator==( const char *other ) const
-{TRACE;
+{GUCEF_TRACE;
         if ( !m_string || !other )
         {
                 return false;        
@@ -226,7 +226,7 @@ CString::operator==( const char *other ) const
 
 bool
 CString::operator==( const CString &other ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_string || !other.m_string )
     {
@@ -240,7 +240,7 @@ CString::operator==( const CString &other ) const
 
 bool
 CString::operator!=( const CString &other ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_string || !other.m_string )
     {
@@ -254,7 +254,7 @@ CString::operator!=( const CString &other ) const
 
 bool
 CString::operator!=( const char *other ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_string || !other )
     {
@@ -268,7 +268,7 @@ CString::operator!=( const char *other ) const
 
 char
 CString::operator[]( const UInt32 index ) const
-{TRACE;
+{GUCEF_TRACE;
 
     assert( index < m_length );
     return m_string[ index ];
@@ -278,7 +278,7 @@ CString::operator[]( const UInt32 index ) const
 
 bool 
 CString::operator<( const CString& other ) const
-{TRACE;
+{GUCEF_TRACE;
     
     if ( m_string && other.m_string )
     {
@@ -290,7 +290,7 @@ CString::operator<( const CString& other ) const
 /*-------------------------------------------------------------------------*/
 
 CString::operator std::string() const
-{TRACE;
+{GUCEF_TRACE;
     
     if ( m_length > 0 )
     {
@@ -304,7 +304,7 @@ CString::operator std::string() const
      Disabled in favor of std::string() conversion
 
 CString::operator const char*() const
-{TRACE;
+{GUCEF_TRACE;
         return m_string;
 }
 */
@@ -313,7 +313,7 @@ CString::operator const char*() const
 void
 CString::Set( const char *new_str ,
               UInt32 len          )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( new_str != m_string )
     {
@@ -338,7 +338,7 @@ CString::Set( const char *new_str ,
 void 
 CString::Append( const char *appendstr ,
                  UInt32 len            )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( ( appendstr != m_string ) &&
          ( appendstr != NULL )     && 
@@ -369,7 +369,7 @@ CString::Append( const char *appendstr ,
 
 CString&
 CString::operator+=( const CString &other )
-{TRACE;
+{GUCEF_TRACE;
     
     Append( other.m_string, other.m_length );                                                          
     return *this;
@@ -379,7 +379,7 @@ CString::operator+=( const CString &other )
 
 CString&
 CString::operator+=( const char *other )
-{TRACE;
+{GUCEF_TRACE;
 
     Append( other, UInt32( strlen( other ) ) );
     return *this;
@@ -389,7 +389,7 @@ CString::operator+=( const char *other )
 
 CString&
 CString::operator+=( char lastchar )
-{TRACE;
+{GUCEF_TRACE;
     
     Append( &lastchar, 1 );                                                     
     return *this;        
@@ -399,7 +399,7 @@ CString::operator+=( char lastchar )
 
 const char*
 CString::C_String( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_string;
 }
 
@@ -407,7 +407,7 @@ CString::C_String( void ) const
 
 std::string 
 CString::STL_String( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_string > 0 )
     {
@@ -420,7 +420,7 @@ CString::STL_String( void ) const
 
 UInt32
 CString::Length( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_length;
 }
 
@@ -429,7 +429,7 @@ CString::Length( void ) const
 CString 
 CString::ReplaceChar( char oldchar ,
                       char newchar ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_length > 0 )
     {
@@ -455,7 +455,7 @@ CString::ReplaceChar( char oldchar ,
 void 
 CString::ReplaceSubstr( const CString& substr      ,
                         const CString& replacement )
-{TRACE;
+{GUCEF_TRACE;
     
     //@TODO @MAKEME
     assert( 0 );      
@@ -465,7 +465,7 @@ CString::ReplaceSubstr( const CString& substr      ,
 
 void 
 CString::Clear( void )
-{TRACE;            
+{GUCEF_TRACE;            
 
     m_length = 0;
     delete []m_string;
@@ -477,7 +477,7 @@ CString::Clear( void )
 CString 
 CString::SubstrToChar( char searchchar ,
                        bool startfront ) const
-{TRACE;
+{GUCEF_TRACE;
 
         if ( startfront )
         {
@@ -514,7 +514,7 @@ CString::SubstrToChar( char searchchar ,
 CString
 CString::SubstrToSubstr( const CString& searchstr ,
                          bool startfront          ) const
-{TRACE;
+{GUCEF_TRACE;
 
         UInt32 slen = searchstr.Length();
         
@@ -561,7 +561,7 @@ CString::SubstrToSubstr( const CString& searchstr ,
 CString 
 CString::CutChars( UInt32 charcount ,
                    bool startfront  ) const
-{TRACE;
+{GUCEF_TRACE;
         if ( startfront )
         {
                 if ( charcount < m_length )                
@@ -591,7 +591,7 @@ CString::CutChars( UInt32 charcount ,
 
 void 
 CString::SetInt( Int32 value )                   
-{TRACE;
+{GUCEF_TRACE;
     
     char intval[ 10 ];
     sprintf( intval, "%d", value );        
@@ -602,7 +602,7 @@ CString::SetInt( Int32 value )
 
 Int32 
 CString::GetInt( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_string )
     {
@@ -616,7 +616,7 @@ CString::GetInt( void ) const
 
 CString 
 CString::Lowercase( void ) const
-{TRACE;
+{GUCEF_TRACE;
         
     char* lcstr = new char[ m_length+1 ];
     memcpy( lcstr, m_string, m_length+1 );
@@ -637,7 +637,7 @@ CString::Lowercase( void ) const
         
 CString 
 CString::Uppercase( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     char* ucstr = new char[ m_length+1 ];
     memcpy( ucstr, m_string, m_length+1 );
@@ -659,7 +659,7 @@ CString::Uppercase( void ) const
 Int32 
 CString::HasChar( char searchchar  ,
                   bool startfront  ) const
-{TRACE;
+{GUCEF_TRACE;
         if ( startfront )
         {
                 for ( UInt32 i=0; i<m_length; ++i )
@@ -686,7 +686,7 @@ CString::HasChar( char searchchar  ,
 
 CStringList 
 CString::ParseElements( char seperator ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_length > 0 )
     {
@@ -718,7 +718,7 @@ CString::ParseElements( char seperator ) const
 Int32 
 CString::HasSubstr( const CString& substr ,
                     bool startfront       ) const
-{TRACE;
+{GUCEF_TRACE;
         UInt32 slen = substr.Length();
         
         if ( slen > m_length )
@@ -764,7 +764,7 @@ CString::HasSubstr( const CString& substr ,
 bool
 CString::Equals( const CString& otherStr               ,
                  const bool caseSensitive /* = true */ ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( caseSensitive )
     {
@@ -781,7 +781,7 @@ CString::Equals( const CString& otherStr               ,
 bool
 CString::NotEquals( const CString& otherStr               ,
                     const bool caseSensitive /* = true */ ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( caseSensitive )
     {
@@ -824,7 +824,7 @@ CString::Scan( const char* newStr     ,
 
 CString 
 CString::operator+( const CString& addition )
-{TRACE;
+{GUCEF_TRACE;
         CString tmp( *this );
         tmp += addition;
         return tmp;        
@@ -834,7 +834,7 @@ CString::operator+( const CString& addition )
         
 CString 
 CString::operator+( const char* addition )
-{TRACE;
+{GUCEF_TRACE;
         CString tmp( *this );
         tmp += addition;
         return tmp;        
@@ -845,7 +845,7 @@ CString::operator+( const char* addition )
 CString
 operator+( const CString& lhs ,
            const CString& rhs )
-{TRACE;
+{GUCEF_TRACE;
         CString tmp( lhs );
         tmp += rhs;
         return tmp;
@@ -856,7 +856,7 @@ operator+( const CString& lhs ,
 CString
 operator+( const CString& lhs ,
            const char* rhs    )
-{TRACE;
+{GUCEF_TRACE;
         CString tmp( lhs );
         tmp += rhs;
         return tmp;
@@ -867,7 +867,7 @@ operator+( const CString& lhs ,
 CString 
 operator+( const char* lhs    ,  
            const CString& rhs )
-{TRACE;
+{GUCEF_TRACE;
         CString tmp( lhs );
         tmp += rhs;
         return tmp;        
@@ -878,7 +878,7 @@ operator+( const char* lhs    ,
 bool 
 operator==( const char* lhs    , 
             const CString& rhs )
-{TRACE;
+{GUCEF_TRACE;
         return rhs == lhs;
 }
 
@@ -887,7 +887,7 @@ operator==( const char* lhs    ,
 bool 
 operator!=( const char* lhs    , 
             const CString& rhs )
-{TRACE;
+{GUCEF_TRACE;
         return rhs != lhs;
 }
 
@@ -896,7 +896,7 @@ operator!=( const char* lhs    ,
 CString
 operator+( const char lhs     , 
            const CString& rhs )
-{TRACE;
+{GUCEF_TRACE;
 
     return CString( &lhs, 1 ) + rhs;
 }

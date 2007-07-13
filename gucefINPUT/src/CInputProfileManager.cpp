@@ -30,6 +30,21 @@
 #define CDATANODE_H
 #endif /* CDATANODE_H ? */
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef CINPUTPROFILE_H
 #include "CInputProfile.h"
 #define CINPUTPROFILE_H
@@ -86,12 +101,12 @@ class CProfileData
         
         CProfileData( const CORE::CString& profilename )
                 : profile( profilename )
-        {TRACE;
+        {GUCEF_TRACE;
         }
         
         CProfileData( const CInputProfile& otherprofile )
                 : profile( otherprofile )
-        {TRACE;
+        {GUCEF_TRACE;
         }        
         
         CInputProfile profile;
@@ -109,20 +124,20 @@ class CProfileData
 
 CInputProfileManager::CInputProfileManager( void )
     : CIConfigurable( true )
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CInputProfileManager::~CInputProfileManager()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CInputProfileManager* 
 CInputProfileManager::Instance( void )
-{TRACE;
+{GUCEF_TRACE;
         if ( !m_instance )
         {
                 m_instance = new CInputProfileManager();
@@ -134,7 +149,7 @@ CInputProfileManager::Instance( void )
 
 void
 CInputProfileManager::Deinstance( void )
-{TRACE;
+{GUCEF_TRACE;
         delete m_instance;
         m_instance = NULL;
 }
@@ -143,7 +158,7 @@ CInputProfileManager::Deinstance( void )
         
 void 
 CInputProfileManager::SetProfile( const CInputProfile& profile )
-{TRACE;
+{GUCEF_TRACE;
         if ( !profile.GetName().Length() ) return;
         
         UInt32 index;
@@ -167,7 +182,7 @@ CInputProfileManager::SetProfile( const CInputProfile& profile )
         
 bool 
 CInputProfileManager::AddProfile( const CInputProfile& profile )
-{TRACE;
+{GUCEF_TRACE;
         if ( !profile.GetName().Length() ) return false;
 
         CProfileData* data( static_cast<CProfileData*>( m_profiles[ profile.GetName() ] ) );
@@ -189,7 +204,7 @@ CInputProfileManager::AddProfile( const CInputProfile& profile )
         
 const CInputProfile* 
 CInputProfileManager::GetProfile( const GUCEF::CORE::CString& profilename )
-{TRACE;
+{GUCEF_TRACE;
         CProfileData* data( static_cast<CProfileData*>( m_profiles[ profilename ] ) );
         if ( data )
         {
@@ -202,7 +217,7 @@ CInputProfileManager::GetProfile( const GUCEF::CORE::CString& profilename )
         
 CIInputHandler* 
 CInputProfileManager::GetProfileHandler( const GUCEF::CORE::CString& profilename )
-{TRACE;
+{GUCEF_TRACE;
         CProfileData* data( static_cast<CProfileData*>( m_profiles[ profilename ] ) );
         if ( data )
         {
@@ -215,7 +230,7 @@ CInputProfileManager::GetProfileHandler( const GUCEF::CORE::CString& profilename
         
 bool 
 CInputProfileManager::AddActionMap( const CInputActionMap& actionmap )
-{TRACE;
+{GUCEF_TRACE;
         CInputActionMap* a = static_cast<CInputActionMap*>( m_actionmaps[ actionmap.GetName() ] );
         if ( !a )
         {
@@ -231,7 +246,7 @@ CInputProfileManager::AddActionMap( const CInputActionMap& actionmap )
         
 void 
 CInputProfileManager::SetActionMap( const CInputActionMap& actionmap )
-{TRACE;
+{GUCEF_TRACE;
         CInputActionMap* a = static_cast<CInputActionMap*>( m_actionmaps[ actionmap.GetName() ] );
         if ( !a )
         {
@@ -249,7 +264,7 @@ CInputProfileManager::SetActionMap( const CInputActionMap& actionmap )
         
 CInputActionMap* 
 CInputProfileManager::GetActionMap( const GUCEF::CORE::CString& actionmapname )
-{TRACE;
+{GUCEF_TRACE;
         return static_cast<CInputActionMap*>( m_actionmaps[ actionmapname ] );
 }
 
@@ -257,7 +272,7 @@ CInputProfileManager::GetActionMap( const GUCEF::CORE::CString& actionmapname )
 
 CORE::CStringList 
 CInputProfileManager::GetProfileList( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_profiles.GetKeyList();
 }
 
@@ -265,7 +280,7 @@ CInputProfileManager::GetProfileList( void ) const
         
 void 
 CInputProfileManager::RegisterManipulator( CInputBasedManipulator* manipulator )
-{TRACE;
+{GUCEF_TRACE;
         assert( manipulator );
         
         CORE::CDynamicArray* list( static_cast<CORE::CDynamicArray*>( m_manipulators[ manipulator->GetName() ] ) );
@@ -286,7 +301,7 @@ CInputProfileManager::RegisterManipulator( CInputBasedManipulator* manipulator )
         
 void 
 CInputProfileManager::UnregisterManipulator( CInputBasedManipulator* manipulator )
-{TRACE;
+{GUCEF_TRACE;
         assert( manipulator );
         
         CORE::CDynamicArray* list( static_cast<CORE::CDynamicArray*>( m_manipulators[ manipulator->GetName() ] ) );
@@ -304,7 +319,7 @@ CInputProfileManager::UnregisterManipulator( CInputBasedManipulator* manipulator
 
 CORE::CStringList 
 CInputProfileManager::GetManipulatorList( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_manipulators.GetKeyList();
 }
 
@@ -312,7 +327,7 @@ CInputProfileManager::GetManipulatorList( void ) const
 
 CORE::CStringList 
 CInputProfileManager::GetRefrencedManipulatorsList( void ) const
-{TRACE;
+{GUCEF_TRACE;
         CORE::CStringList list;
         CProfileData* data( NULL );
         for ( UInt32 i=0; i<m_profiles.GetCount(); ++i )
@@ -331,7 +346,7 @@ CInputProfileManager::GetRefrencedManipulatorsList( void ) const
 
 CORE::CStringList 
 CInputProfileManager::GetActionMapList( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_actionmaps.GetKeyList();        
 }
 
@@ -339,7 +354,7 @@ CInputProfileManager::GetActionMapList( void ) const
 
 void
 CInputProfileManager::UpdateAllMappings( void)
-{TRACE;        
+{GUCEF_TRACE;        
         for ( UInt32 i=0; i<m_profiles.GetCount(); ++i )
         {
                 UpdateProfileMapping( i );
@@ -350,8 +365,9 @@ CInputProfileManager::UpdateAllMappings( void)
 
 void 
 CInputProfileManager::UpdateProfileMapping( const UInt32 index )
-{TRACE;
-        DEBUGOUTPUTsi( "Updating input profile mapping nr.", index );
+{GUCEF_TRACE;
+        
+        GUCEF_DEBUG_LOG( 0, "Updating input profile mapping nr." + CORE::UInt32ToString( index ) );
         CProfileData* data( static_cast<CProfileData*>( m_profiles[ index ] ) );
         
         /*
@@ -372,7 +388,7 @@ CInputProfileManager::UpdateProfileMapping( const UInt32 index )
          */
         CInputActionMap* actionmap( NULL ); 
         CORE::CStringList actionmaplist( data->profile.GetActionMapList() );
-        DEBUGOUTPUTsi( " Action map count: ", actionmaplist.GetCount() );
+        GUCEF_DEBUG_LOG( 0, " Action map count: " + CORE::UInt32ToString( actionmaplist.GetCount() ) );
         for ( UInt32 i=0; i<actionmaplist.GetCount(); ++i )
         {
                 actionmap = static_cast<CInputActionMap*>( m_actionmaps[ actionmaplist[ i ] ] );
@@ -391,13 +407,13 @@ CInputProfileManager::UpdateProfileMapping( const UInt32 index )
                          *      We attempt to link up as many manipulators as we can find as specified
                          *      in the profile for the current action map.
                          */
-                        DEBUGOUTPUTsss( " Mapping action map \"", actionmap->GetName().C_String(), "\" to manipulators" );
+                        GUCEF_DEBUG_LOG( 0, " Mapping action map " + actionmap->GetName() + " to manipulators" );
                         const CORE::CStringList* actionMapManipulators( data->profile.GetActionMapManipulators( actionmap->GetName() ) );  
                         if ( actionMapManipulators )
                         {
                                 CInputBasedManipulator* manipulator( NULL );
                                 CORE::CDynamicArray* manipulatorSet( NULL );
-                                DEBUGOUTPUTsi( "  Manipulator count: ", actionMapManipulators->GetCount() ); 
+                                GUCEF_DEBUG_LOG( 0, "  Manipulator count: " + CORE::UInt32ToString( actionMapManipulators->GetCount() ) ); 
                                 for ( UInt32 n=0; n<actionMapManipulators->GetCount(); ++n )
                                 {
                                         /*
@@ -408,7 +424,7 @@ CInputProfileManager::UpdateProfileMapping( const UInt32 index )
                                         manipulatorSet = static_cast<CORE::CDynamicArray*>( m_manipulators[ (*actionMapManipulators)[ n ] ] );
                                         if ( manipulatorSet )
                                         {
-                                                DEBUGOUTPUTsi( "   Manipulators in name-set: ", manipulatorSet->GetCount() );
+                                                GUCEF_DEBUG_LOG( 0, "   Manipulators in name-set: " + CORE::UInt32ToString( manipulatorSet->GetCount() ) );
                                                 for ( UInt32 m=0; m<manipulatorSet->GetCount(); ++m )
                                                 {
                                                         manipulator = static_cast<CInputBasedManipulator*>( (*manipulatorSet)[ i ] );
@@ -418,10 +434,10 @@ CInputProfileManager::UpdateProfileMapping( const UInt32 index )
                                                         }
                                                 }
                                         }
-                                        #ifdef DEBUG_MODE
+                                        #ifdef GUCEF_INPUT_DEBUG_MODE
                                         else
                                         {
-                                                DEBUGOUTPUTsss( "   No manipulators instances registered with name \"", ((*actionMapManipulators)[ n ]).C_String(), "\"" );
+                                                GUCEF_DEBUG_LOG( "   No manipulators instances registered with name " + ((*actionMapManipulators)[ n ]) );
                                         }
                                         #endif                                                
                                 }
@@ -434,7 +450,7 @@ CInputProfileManager::UpdateProfileMapping( const UInt32 index )
 
 bool 
 CInputProfileManager::LoadConfig( const CORE::CDataNode& node )
-{TRACE;
+{GUCEF_TRACE;
         //Clear();
         
         const CORE::CDataNode* n = node.Search( "GUCEF%INPUT%CInputProfileManager" ,
@@ -488,7 +504,7 @@ CInputProfileManager::LoadConfig( const CORE::CDataNode& node )
         
 bool 
 CInputProfileManager::SaveConfig( CORE::CDataNode& node )
-{TRACE;
+{GUCEF_TRACE;
         CORE::CDataNode* n = node.Structure( "GUCEF%INPUT%CInputProfileManager" ,
                                              '%'                                );
                                              

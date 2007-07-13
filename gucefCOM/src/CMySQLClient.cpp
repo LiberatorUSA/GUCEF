@@ -42,6 +42,11 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #include "CMySQLClient.h"               /* definition of this class */
 
 /*-------------------------------------------------------------------------//
@@ -127,7 +132,7 @@ COM_NAMESPACE_BEGIN
  */
 CMySQLClient::CMySQLClient( bool blocking ) 
         : socket( blocking )
-{TRACE;
+{GUCEF_TRACE;
         #ifdef DEBUG_MODE
         CORE::tsprintf( "CMySQLClient::Constructor()\n" );
         #endif /* DEBUG_MODE */
@@ -144,7 +149,7 @@ CMySQLClient::CMySQLClient( bool blocking )
  *	Destructor, cleanup any allocated storage space
  */
 CMySQLClient::~CMySQLClient( void )
-{TRACE;
+{GUCEF_TRACE;
         #ifdef DEBUG_MODE
         CORE::tsprintf( "CMySQLClient::Destructor()\n" );
         #endif /* DEBUG_MODE */
@@ -167,7 +172,7 @@ CMySQLClient::ConnectTo( const GUCEF::CORE::CString& address  ,
                          const GUCEF::CORE::CString& username ,
                          const GUCEF::CORE::CString& password ,
                          const GUCEF::CORE::CString& database )
-{TRACE;
+{GUCEF_TRACE;
         #ifdef DEBUG_MODE
         CORE::tsprintf( "CMySQLClient::Connect_To()\n" );
         #endif /* DEBUG_MODE */
@@ -212,7 +217,7 @@ CMySQLClient::ConnectTo( const GUCEF::CORE::CString& address  ,
  */
 void
 CMySQLClient::Disconnect( void )
-{TRACE;
+{GUCEF_TRACE;
         #ifdef DEBUG_MODE
         CORE::tsprintf( "CMySQLClient::Disconnect()\n" );
         #endif /* DEBUG_MODE */
@@ -238,7 +243,7 @@ CMySQLClient::OnRead( COMCORE::CTCPClientSocket &socket ,
                       const char *data                  ,
                       UInt32 length                     ,
                       UInt32 &keepbytes                 )
-{TRACE;
+{GUCEF_TRACE;
         #ifdef DEBUG_MODE
         CORE::tsprintf( "CMySQLClient::OnRead()\n" );
         #endif /* DEBUG_MODE */
@@ -416,7 +421,7 @@ CMySQLClient::OnRead( COMCORE::CTCPClientSocket &socket ,
 
 bool
 CMySQLClient::Login( const char *data, UInt32 length )
-{TRACE;
+{GUCEF_TRACE;
         #ifdef DEBUG_MODE
         CORE::tsprintf( "CMySQLClient::Login()\n" );
         #endif /* DEBUG_MODE */
@@ -534,16 +539,10 @@ CMySQLClient::Login( const char *data, UInt32 length )
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Send a MySQL query to the server. The resulting data will be
- *      written into cdbquery when it is recieved. Note that if need
- *      the data after calling a query instead of delta T later then
- *      you should use Query_And_Wait().
- */
 bool
 CMySQLClient::Query( CDBQuery &cdbquery                   ,
                      const GUCEF::CORE::CString& sqlquery )
-{TRACE;
+{GUCEF_TRACE;
         #ifdef DEBUG_MODE
         CORE::tsprintf( "CMySQLClient::Query()\n" );
         #endif /* DEBUG_MODE */
@@ -571,21 +570,11 @@ CMySQLClient::Query( CDBQuery &cdbquery                   ,
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Send a MySQL query to the server. The resulting data will be
- *      written into cdbquery when it is recieved. Note that this member
- *      fuction will not return untill data is recieved from the server
- *      or the given timeout is reached.
- *      Note that the primary application thread does the
- *      initial network messaging so don't call this member function
- *      from the main application thread !!!. if timeout < 0 then no
- *      timeout will be used.
- */
 bool
 CMySQLClient::QueryAndWait( CDBQuery &cdbquery   ,
                             const GUCEF::CORE::CString& sqlquery ,
                             Int32 timeout        )
-{TRACE;
+{GUCEF_TRACE;
         #ifdef DEBUG_MODE
         CORE::tsprintf( "CMySQLClient::Query_And_Wait()\n" );
         #endif /* DEBUG_MODE */
@@ -603,9 +592,7 @@ CMySQLClient::QueryAndWait( CDBQuery &cdbquery   ,
         }
         if ( timeout < 0 )
         {
-                #ifndef DEBUG_BUILD
-                CORE::tsprintf( "CMySQLClient: Timeout waiting for an existing query to finish\n" );
-                #endif /* DEBUG_BUILD ? */
+                GUCEF_DEBUG_LOG( 0, "CMySQLClient: Timeout waiting for an existing query to finish" );
                 lock.Unlock();
                 return false;
         }
@@ -624,7 +611,7 @@ CMySQLClient::QueryAndWait( CDBQuery &cdbquery   ,
         query = &cdbquery;
         query->state = CDB_GETTING_DATA;
 
-        #ifndef DEBUG_BUILD
+        #ifndef GUCEF_COM_DEBUG_BUILD
         bool retval = socket.Send( data    ,
                                    length  ,
                                    timeout );
@@ -642,7 +629,7 @@ CMySQLClient::QueryAndWait( CDBQuery &cdbquery   ,
         tsprintf( "CMySQLClient: Timeout waiting for data after submitting query\n" );
         lock.Unlock();
         return false;
-        #endif /* DEBUG_BUILD ? */
+        #endif /* GUCEF_COM_DEBUG_BUILD ? */
 }
 
 /*--------------------------------------------------------------------------*/
@@ -652,7 +639,7 @@ CMySQLClient::QueryAndWait( CDBQuery &cdbquery   ,
  */
 void
 CMySQLClient::OnConnecting( COMCORE::CTCPClientSocket &socket )
-{TRACE;
+{GUCEF_TRACE;
         if ( iface ) iface->OnConnecting( *this );
 }
 
@@ -664,7 +651,7 @@ CMySQLClient::OnConnecting( COMCORE::CTCPClientSocket &socket )
  */
 void
 CMySQLClient::OnConnected( COMCORE::CTCPClientSocket &socket )
-{TRACE;
+{GUCEF_TRACE;
         if ( iface ) iface->OnConnected( *this );
 }
 
@@ -676,7 +663,7 @@ CMySQLClient::OnConnected( COMCORE::CTCPClientSocket &socket )
  */
 void
 CMySQLClient::OnDisconnect( COMCORE::CTCPClientSocket &socket )
-{TRACE;
+{GUCEF_TRACE;
         query_busy = false;
         if ( iface ) iface->OnDisconnect( *this );
 }
@@ -688,7 +675,7 @@ CMySQLClient::OnDisconnect( COMCORE::CTCPClientSocket &socket )
  */
 void
 CMySQLClient::OnError( COMCORE::CTCPClientSocket &socket )
-{TRACE;
+{GUCEF_TRACE;
         query_busy = false;
 //        if ( iface ) iface->OnSocketError( *this, errorcode );
 }
@@ -702,7 +689,7 @@ CMySQLClient::OnError( COMCORE::CTCPClientSocket &socket )
  */
 bool
 CMySQLClient::SetInterface( CMySQLClientInterface *new_iface )
-{TRACE;
+{GUCEF_TRACE;
         lock.Lock();
         iface = new_iface;
         lock.Unlock();
@@ -713,7 +700,7 @@ CMySQLClient::SetInterface( CMySQLClientInterface *new_iface )
 
 CMySQLClientInterface* 
 CMySQLClient::GetInterface( void ) const
-{TRACE; 
+{GUCEF_TRACE; 
         return iface; 
 }
 
@@ -721,7 +708,7 @@ CMySQLClient::GetInterface( void ) const
 
 bool 
 CMySQLClient::Query_Busy( void ) const 
-{TRACE; 
+{GUCEF_TRACE; 
         return query_busy; 
 }
 
@@ -729,7 +716,7 @@ CMySQLClient::Query_Busy( void ) const
 
 CORE::CString 
 CMySQLClient::GetError( void ) const 
-{TRACE; 
+{GUCEF_TRACE; 
         return mysql_error; 
 }
 

@@ -51,6 +51,11 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_DVSTRUTILS_H
 #include "dvstrutils.h"
 #define GUCEF_CORE_DVSTRUTILS_H
@@ -97,7 +102,7 @@ CHTTPClient::CHTTPClient( void )
           m_filesize( 0 )        ,
           m_proxyHost()          ,
           m_proxyPort( 80 )                
-{TRACE;
+{GUCEF_TRACE;
 
         SubscribeTo( &m_socket );
 }
@@ -105,14 +110,14 @@ CHTTPClient::CHTTPClient( void )
 /*-------------------------------------------------------------------------*/
         
 CHTTPClient::~CHTTPClient()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void 
 CHTTPClient::Close( void )
-{TRACE;
+{GUCEF_TRACE;
         m_socket.Close();
 }
         
@@ -123,7 +128,7 @@ CHTTPClient::Post( const CORE::CString& host                      ,
                    UInt16 port                                    ,
                    const CORE::CString& path                      , 
                    const CORE::CValueList* valuelist /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
         m_socket.Close();
         
         // reset our counters because we are beginning a new transfer
@@ -177,7 +182,7 @@ CHTTPClient::Post( const CORE::CString& host                      ,
 bool 
 CHTTPClient::Post( const CORE::CString& urlstring                 ,
                    const CORE::CValueList* valuelist /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
         CORE::CString host;
         UInt16 port;
         CORE::CString path;
@@ -203,7 +208,7 @@ CHTTPClient::Get( const CORE::CString& host                      ,
                   const CORE::CString& path                      ,
                   const UInt32 byteoffset /* = 0 */              ,
                   const CORE::CValueList* valuelist /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
         m_socket.Close();
         
         // reset our counters because we are beginning a new transfer
@@ -323,7 +328,7 @@ bool
 CHTTPClient::Get( const CORE::CString& urlstring                 ,
                   const UInt32 byteoffset /* = 0 */              ,
                   const CORE::CValueList* valuelist /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
         
         CORE::CString host;
         UInt16 port;
@@ -350,7 +355,7 @@ CHTTPClient::ParseURL( const CORE::CString& urlstring ,
                        CORE::CString& host            ,
                        UInt16& port                   ,
                        CORE::CString& path            )
-{TRACE;
+{GUCEF_TRACE;
         if ( urlstring.Length() < 10 ) return false;
         
         CORE::CString urlStr = urlstring.ReplaceChar( '\\', '/' );
@@ -394,7 +399,7 @@ CHTTPClient::ParseURL( const CORE::CString& urlstring ,
 
 UInt32
 CHTTPClient::GetBytesRecieved( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_recieved;
 }
 
@@ -404,19 +409,19 @@ void
 CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
                      const char* data                     ,
                      const UInt32 bufferLength            )
-{TRACE;       
+{GUCEF_TRACE;       
 
     THTTPCODE http_code = HTTPCODE_DEFAULT;
     UInt32 size( 0 ), length( bufferLength );
     bool resumeable( false );
     
-    DEBUGOUTPUTsi( "CHTTPClient::OnRead(): bytes: ", length );
+    GUCEF_DEBUG_LOG( 0, "CHTTPClient::OnRead(): bytes: " + CORE::Int32ToString( length ) );
     
     if( !m_downloading )
     {
         if ( length < 13 )
         {
-            DEBUGOUTPUT( "Invalid HTTP header received" );
+            GUCEF_DEBUG_LOG( 0, "Invalid HTTP header received" );
             return;
         }                
         
@@ -429,7 +434,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
         if( ( strncmp( data, "HTTP/1.1", 8 ) != 0 ) &&
             ( strncmp( data, "HTTP/1.0", 8 ) != 0 ) )
         {
-            DEBUGOUTPUT("Doesn't look like HTTP protocol");
+            GUCEF_DEBUG_LOG( 0, "Doesn't look like HTTP protocol" );
             return;
         }
             
@@ -449,7 +454,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
          */
         if( http_code >= 400 )
         {
-            DEBUGOUTPUTsi( "CHTTPClient: HTTP Error: ", http_code );
+            GUCEF_DEBUG_LOG( 0, "CHTTPClient: HTTP Error: " + CORE::Int32ToString( http_code ) );
             
             THTTPErrorEventData eventData( http_code );
             NotifyObservers( HTTPErrorEvent, &eventData );                        
@@ -471,8 +476,8 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
         strncpy(headers, data, i);
         headers[i] = '\0';
         
-        DEBUGOUTPUTsi( "header size: ", i );
-        DEBUGOUTPUT( headers );                
+        GUCEF_DEBUG_LOG( 0, "header size: " + CORE::Int32ToString( i ) );
+        GUCEF_DEBUG_LOG( 0, headers );                
             
         /*
          *      Check whether we are being told to look somewhere else for
@@ -616,7 +621,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
                     sscanf(tempChar, "%x", &m_filesize);
                     delete[] tempChar;
 
-                    DEBUGOUTPUTi( m_filesize );
+                    GUCEF_DEBUG_LOG( 0, CORE::UInt32ToString( m_filesize ) );
 
                     if( m_filesize == 0 ) 
                     {
@@ -717,7 +722,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
 
 void 
 CHTTPClient::OnDisconnect( COMCORE::CTCPClientSocket &socket )
-{TRACE;
+{GUCEF_TRACE;
 
         m_downloading = false;
         m_filesize = 0;
@@ -729,7 +734,7 @@ CHTTPClient::OnDisconnect( COMCORE::CTCPClientSocket &socket )
 void 
 CHTTPClient::OnWrite( COMCORE::CTCPClientSocket &socket                   ,
                       COMCORE::CTCPClientSocket::TDataSentEventData& data )
-{TRACE;
+{GUCEF_TRACE;
         
     // Notify observers about the data dispatch
     NotifyObservers( HTTPDataSendEvent, &data );
@@ -739,7 +744,7 @@ CHTTPClient::OnWrite( COMCORE::CTCPClientSocket &socket                   ,
 
 bool
 CHTTPClient::IsConnected( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return m_socket.IsActive();
 }
@@ -749,7 +754,7 @@ CHTTPClient::IsConnected( void ) const
 bool
 CHTTPClient::SetHTTPProxy( const CORE::CString& proxyHost ,
                            const UInt16 port /* = 80 */   )
-{TRACE;
+{GUCEF_TRACE;
     if ( !IsConnected() )
     {
         m_proxyHost = proxyHost;
@@ -764,7 +769,7 @@ CHTTPClient::SetHTTPProxy( const CORE::CString& proxyHost ,
 void
 CHTTPClient::GetHTTPProxy( CORE::CString& proxyHost ,
                            UInt16& port             )
-{TRACE;
+{GUCEF_TRACE;
 
     proxyHost = m_proxyHost;
     port = m_proxyPort;
@@ -774,7 +779,7 @@ CHTTPClient::GetHTTPProxy( CORE::CString& proxyHost ,
 
 void
 CHTTPClient::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
 
     ConnectingEvent.Initialize();
     ConnectedEvent.Initialize();
@@ -794,7 +799,7 @@ void
 CHTTPClient::OnNotify( CORE::CNotifier* notifier                 ,
                        const CORE::CEvent& eventid               ,
                        CORE::CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( notifier == &m_socket )
     {

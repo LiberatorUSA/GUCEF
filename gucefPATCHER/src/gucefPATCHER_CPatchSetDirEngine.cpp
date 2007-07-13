@@ -1,18 +1,20 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
+ *  gucefPATCHER: GUCEF RAD module providing a patch delivery system
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
- * All source code herein is the property of Dinand Vanvelzen. You may not sell
- * or otherwise commercially exploit the source or things you created based on
- * the source.
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
  
 /*-------------------------------------------------------------------------//
@@ -64,7 +66,7 @@ CPatchSetDirEngine::CPatchSetDirEngine( void )
       m_stopSignalGiven( false )  ,
       m_localRoot()               ,
       m_tempStorageRoot()
-{TRACE;
+{GUCEF_TRACE;
 
     // Forward events from child sub-dir engines
     AddEventForwarding( SubDirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
@@ -88,7 +90,7 @@ CPatchSetDirEngine::CPatchSetDirEngine( void )
 /*-------------------------------------------------------------------------*/
 
 CPatchSetDirEngine::~CPatchSetDirEngine()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -96,7 +98,7 @@ CPatchSetDirEngine::~CPatchSetDirEngine()
 
 bool
 CPatchSetDirEngine::ProcessFilesInDir( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_dir.files.size() > 0 )
     {
@@ -120,7 +122,7 @@ CPatchSetDirEngine::ProcessFilesInDir( void )
 
 bool
 CPatchSetDirEngine::ProcessCurSubDir( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_curSubDirIndex < m_dir.subDirs.size() )
     {
@@ -158,7 +160,7 @@ bool
 CPatchSetDirEngine::Start( const TDirEntry& startingDir         ,
                            const CORE::CString& localRoot       ,
                            const CORE::CString& tempStorageRoot )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( &startingDir != NULL );
     
@@ -198,7 +200,7 @@ CPatchSetDirEngine::Start( const TDirEntry& startingDir         ,
 
 void
 CPatchSetDirEngine::Stop( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_isActive )
     {
@@ -225,7 +227,7 @@ CPatchSetDirEngine::Stop( void )
 
 bool
 CPatchSetDirEngine::IsActive( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_isActive;
 }
@@ -234,7 +236,7 @@ CPatchSetDirEngine::IsActive( void ) const
 
 bool
 CPatchSetDirEngine::ProcessNextSubDir( void )
-{TRACE;
+{GUCEF_TRACE;
 
     // Move on to the next sub-dir (if any exists)
     if ( m_curSubDirIndex+1 < m_dir.subDirs.size() )
@@ -259,7 +261,7 @@ void
 CPatchSetDirEngine::OnNotify( CORE::CNotifier* notifier                 ,
                               const CORE::CEvent& eventid               ,
                               CORE::CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_stopSignalGiven && m_isActive )
     {

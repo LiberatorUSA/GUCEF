@@ -101,7 +101,7 @@ CTestTCPClientServer* CTestTCPClientServer::s_instance = NULL;
 
 CTestTCPClientServer*
 CTestTCPClientServer::Instance( bool block /* = false */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( NULL == s_instance )
     {
@@ -116,7 +116,7 @@ CTestTCPClientServer::CTestTCPClientServer( bool block /* = false */ )
         : CGUCEFAppSubSystem( true ) ,
           m_serverSock( block )      ,
           m_clientSock( block )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -126,7 +126,7 @@ void
 CTestTCPClientServer::OnNotify( CORE::CNotifier* notifier                 ,
                                 const CORE::CEvent& eventid               ,
                                 CORE::CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( eventid == CGUCEFApplication::AppInitEvent )
     {
@@ -170,7 +170,7 @@ CTestTCPClientServer::OnNotify( CORE::CNotifier* notifier                 ,
 void
 CTestTCPClientServer::OnUpdate( const CORE::UInt64 tickcount               ,
                                 const CORE::Float64 updateDeltaInMilliSecs )
-{TRACE;
+{GUCEF_TRACE;
         /* don't hogg the CPU */
        // ThreadDelay( 10 );
 }
@@ -179,7 +179,7 @@ CTestTCPClientServer::OnUpdate( const CORE::UInt64 tickcount               ,
 
 void
 CTestTCPClientServer::Deinstance( void )
-{TRACE;
+{GUCEF_TRACE;
     
     delete s_instance;
     s_instance = NULL;
@@ -189,7 +189,7 @@ CTestTCPClientServer::Deinstance( void )
 
 void
 SetupClientServerTest( void )
-{TRACE;
+{GUCEF_TRACE;
 
     // Create our test application sub-system
     CTestTCPClientServer::Instance();

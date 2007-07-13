@@ -139,7 +139,7 @@ class CTNotifyingMap : public CNotifier           ,
 template< class indexType, class mappedType >
 CTNotifyingMap< indexType, mappedType >::CTNotifyingMap( void )
     : m_map()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -147,14 +147,14 @@ CTNotifyingMap< indexType, mappedType >::CTNotifyingMap( void )
 template< class indexType, class mappedType >
 CTNotifyingMap< indexType, mappedType >::CTNotifyingMap( const CTNotifyingMap< indexType, mappedType >& src )
     : m_map( src.m_map )   
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< class indexType, class mappedType >
 CTNotifyingMap< indexType, mappedType >::~CTNotifyingMap()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -162,7 +162,7 @@ CTNotifyingMap< indexType, mappedType >::~CTNotifyingMap()
 template< class indexType, class mappedType >
 typename CTNotifyingMap< indexType, mappedType >::const_iterator
 CTNotifyingMap< indexType, mappedType >::find( const key_type& indexValue ) const
-{TRACE;
+{GUCEF_TRACE;
     return m_map.find( indexValue );
 }
 
@@ -171,7 +171,7 @@ CTNotifyingMap< indexType, mappedType >::find( const key_type& indexValue ) cons
 template< class indexType, class mappedType >
 typename CTNotifyingMap< indexType, mappedType >::const_iterator
 CTNotifyingMap< indexType, mappedType >::operator[]( const key_type& indexValue ) const
-{TRACE;
+{GUCEF_TRACE;
     return m_map.find( indexValue );
 }
 
@@ -180,7 +180,7 @@ CTNotifyingMap< indexType, mappedType >::operator[]( const key_type& indexValue 
 template< class indexType, class mappedType >
 typename CTNotifyingMap< indexType, mappedType >::size_type
 CTNotifyingMap< indexType, mappedType >::count( const key_type& k )
-{TRACE;
+{GUCEF_TRACE;
     return m_map.count( k );
 }
 
@@ -189,7 +189,7 @@ CTNotifyingMap< indexType, mappedType >::count( const key_type& k )
 template< class indexType, class mappedType >
 void
 CTNotifyingMap< indexType, mappedType >::erase( const key_type& indexValue )
-{TRACE;
+{GUCEF_TRACE;
     
     m_map.erase( indexValue );
     NotifyObservers( ItemErasedEvent );
@@ -200,7 +200,7 @@ CTNotifyingMap< indexType, mappedType >::erase( const key_type& indexValue )
 template< class indexType, class mappedType >
 void
 CTNotifyingMap< indexType, mappedType >::erase( const const_iterator& itemPos )
-{TRACE;
+{GUCEF_TRACE;
     
     m_map.erase( itemPos );    
     NotifyObservers( ItemErasedEvent );
@@ -213,7 +213,7 @@ void
 CTNotifyingMap< indexType, mappedType >::insert( const const_iterator& itemPos ,
                                                  const key_type& indexValue    ,
                                                  const data_type& dataValue    )
-{TRACE;
+{GUCEF_TRACE;
     
     m_map.insert( itemPos, _Pairib( indexValue, dataValue ) );    
     NotifyObservers( ItemAddedEvent );
@@ -225,7 +225,7 @@ template< class indexType, class mappedType >
 void
 CTNotifyingMap< indexType, mappedType >::insert( const key_type& indexValue ,
                                                  const data_type& dataValue )
-{TRACE;
+{GUCEF_TRACE;
 
     const_iterator i( m_map.find( indexValue ) );
     if ( i != m_map.end() )
@@ -246,7 +246,7 @@ template< class indexType, class mappedType >
 bool
 CTNotifyingMap< indexType, mappedType >::modify( const key_type& indexValue ,
                                                  const data_type& dataValue )
-{TRACE;
+{GUCEF_TRACE;
 
     const_iterator i( m_map.find( indexValue ) );
     if ( i != m_map.end() )
@@ -264,7 +264,7 @@ CTNotifyingMap< indexType, mappedType >::modify( const key_type& indexValue ,
 template< class indexType, class mappedType >
 typename CTNotifyingMap< indexType, mappedType >::const_iterator
 CTNotifyingMap< indexType, mappedType >::begin( void ) const
-{TRACE;
+{GUCEF_TRACE;
     return m_map.begin();
 }
 
@@ -273,7 +273,7 @@ CTNotifyingMap< indexType, mappedType >::begin( void ) const
 template< class indexType, class mappedType >
 typename CTNotifyingMap< indexType, mappedType >::const_iterator
 CTNotifyingMap< indexType, mappedType >::end( void ) const
-{TRACE;
+{GUCEF_TRACE;
     return m_map.end();
 }
 
@@ -282,7 +282,7 @@ CTNotifyingMap< indexType, mappedType >::end( void ) const
 template< class indexType, class mappedType >
 typename CTNotifyingMap< indexType, mappedType >::const_reverse_iterator
 CTNotifyingMap< indexType, mappedType >::rbegin( void ) const
-{TRACE;
+{GUCEF_TRACE;
     return m_map.rbegin();
 }
 
@@ -291,7 +291,7 @@ CTNotifyingMap< indexType, mappedType >::rbegin( void ) const
 template< class indexType, class mappedType >
 typename CTNotifyingMap< indexType, mappedType >::const_reverse_iterator
 CTNotifyingMap< indexType, mappedType >::rend( void ) const
-{TRACE;
+{GUCEF_TRACE;
     return m_map.rend();
 }
 
@@ -300,7 +300,7 @@ CTNotifyingMap< indexType, mappedType >::rend( void ) const
 template< class indexType, class mappedType >
 bool
 CTNotifyingMap< indexType, mappedType >::empty( void ) const
-{TRACE;
+{GUCEF_TRACE;
     return m_map.empty();
 }
 
@@ -309,7 +309,7 @@ CTNotifyingMap< indexType, mappedType >::empty( void ) const
 template< class indexType, class mappedType >
 void
 CTNotifyingMap< indexType, mappedType >::clear( void )
-{TRACE;
+{GUCEF_TRACE;
     m_map.clear();
 }
 
@@ -318,7 +318,7 @@ CTNotifyingMap< indexType, mappedType >::clear( void )
 template< class indexType, class mappedType >
 typename CTNotifyingMap< indexType, mappedType >::size_type
 CTNotifyingMap< indexType, mappedType >::max_size( void ) const
-{TRACE;
+{GUCEF_TRACE;
     return m_map.max_size();
 }
 

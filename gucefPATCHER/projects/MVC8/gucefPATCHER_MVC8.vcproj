@@ -107,8 +107,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			OutputDirectory="..\..\bin\Release_MVC8"
+			IntermediateDirectory="..\..\bin\Release_MVC8"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
@@ -133,13 +133,15 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefCORE\include;..\..\..\gucefMT\include;..\..\..\common\include"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;GUCEFPATCHER_BUILD_MODULE"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4251"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -155,9 +157,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/gucefPATCHER.dll"
+				AdditionalDependencies="gucefCORE_MVC8.lib gucefMT_MVC8.lib gucefCOMCORE_MVC8.lib gucefVFS_MVC8.lib gucefCOM_MVC8.lib"
+				OutputFile="$(OutDir)/gucefPATCHER_MVC8.dll"
 				LinkIncremental="1"
-				ModuleDefinitionFile=".\gucefPATCHER.def"
+				AdditionalLibraryDirectories="..\..\..\gucefCOM\bin\Release_MVC8;..\..\..\gucefCOMCORE\bin\Release_MVC8;..\..\..\gucefMT\bin\Release_MVC8;..\..\..\gucefVFS\bin\Release_MVC8;..\..\..\gucefCORE\bin\Release_MVC8"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -188,6 +192,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Release_MVC8"
 			/>
 		</Configuration>
 	</Configurations>

@@ -1,18 +1,20 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2003.  All rights reserved.
+ *  gucefPATCHER: GUCEF RAD module providing a patch delivery system
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
- * All source code herein is the property of Dinand Vanvelzen. You may not sell
- * or otherwise commercially exploit the source or things you created based on
- * the source.
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
 /*-------------------------------------------------------------------------//
@@ -87,7 +89,7 @@ CPatchEngine::CPatchEngine( void )
       m_patchListURL()                            ,
       m_patchListCodec()
       
-{TRACE;
+{GUCEF_TRACE;
 
     assert( m_patchListEngine != NULL );
     
@@ -139,7 +141,7 @@ CPatchEngine::CPatchEngine( void )
 /*-------------------------------------------------------------------------*/
 
 CPatchEngine::~CPatchEngine()
-{TRACE;
+{GUCEF_TRACE;
 
     Stop();
     
@@ -151,7 +153,7 @@ CPatchEngine::~CPatchEngine()
 
 void
 CPatchEngine::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
     
     PatchProcessStartedEvent.Initialize();
     PatchProcessCompletedEvent.Initialize();
@@ -169,7 +171,7 @@ CPatchEngine::RegisterEvents( void )
 
 bool
 CPatchEngine::SaveConfig( CORE::CDataNode& tree )
-{TRACE;
+{GUCEF_TRACE;
     
     return false;
 }
@@ -178,7 +180,7 @@ CPatchEngine::SaveConfig( CORE::CDataNode& tree )
                                    
 bool
 CPatchEngine::LoadConfig( const CORE::CDataNode& treeroot )
-{TRACE;
+{GUCEF_TRACE;
 
     const CORE::CDataNode* infoNode = treeroot.Find( "CPatchEngine" );
     if ( infoNode != NULL )
@@ -234,7 +236,7 @@ CPatchEngine::LoadConfig( const CORE::CDataNode& treeroot )
     
 bool
 CPatchEngine::AddEngineStartTriggerEvent( const CORE::CEvent& triggerEvent )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_isActive )
     {
@@ -248,7 +250,7 @@ CPatchEngine::AddEngineStartTriggerEvent( const CORE::CEvent& triggerEvent )
     
 bool
 CPatchEngine::RemoveEngineStartTriggerEvent( const CORE::CEvent& triggerEvent )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_isActive )
     {
@@ -262,7 +264,7 @@ CPatchEngine::RemoveEngineStartTriggerEvent( const CORE::CEvent& triggerEvent )
     
 bool
 CPatchEngine::AddEngineStopTriggerEvent( const CORE::CEvent& triggerEvent )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_isActive )
     {
@@ -276,7 +278,7 @@ CPatchEngine::AddEngineStopTriggerEvent( const CORE::CEvent& triggerEvent )
     
 bool
 CPatchEngine::RemoveEngineStopTriggerEvent( const CORE::CEvent& triggerEvent )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_isActive )
     {
@@ -290,7 +292,7 @@ CPatchEngine::RemoveEngineStopTriggerEvent( const CORE::CEvent& triggerEvent )
 
 bool
 CPatchEngine::SetLocalRootDir( const CORE::CString& localRoot )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_isActive )
     {
@@ -304,7 +306,7 @@ CPatchEngine::SetLocalRootDir( const CORE::CString& localRoot )
     
 const CORE::CString&
 CPatchEngine::GetLocalRootDir( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_localRoot;
 }
@@ -313,7 +315,7 @@ CPatchEngine::GetLocalRootDir( void ) const
     
 bool
 CPatchEngine::SetLocalTempStorageRootDir( const CORE::CString& tempStorageRoot )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_isActive )
     {
@@ -327,7 +329,7 @@ CPatchEngine::SetLocalTempStorageRootDir( const CORE::CString& tempStorageRoot )
     
 const CORE::CString&
 CPatchEngine::GetLocalTempStorageRootDir( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_tempStorageRoot;
 }
@@ -336,7 +338,7 @@ CPatchEngine::GetLocalTempStorageRootDir( void ) const
     
 bool
 CPatchEngine::SetPatchListURL( const CORE::CString& patchListURL )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_isActive )
     {
@@ -350,7 +352,7 @@ CPatchEngine::SetPatchListURL( const CORE::CString& patchListURL )
     
 const CORE::CString&
 CPatchEngine::GetPatchListURL( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_patchListURL;
 }
@@ -359,7 +361,7 @@ CPatchEngine::GetPatchListURL( void ) const
 
 bool
 CPatchEngine::SetPatchListCodec( const CORE::CString& patchListCodec )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_isActive )
     {
@@ -373,7 +375,7 @@ CPatchEngine::SetPatchListCodec( const CORE::CString& patchListCodec )
 
 const CORE::CString&
 CPatchEngine::GetPatchListCodec( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_patchListCodec;
 }
@@ -382,7 +384,7 @@ CPatchEngine::GetPatchListCodec( void ) const
 
 bool
 CPatchEngine::Start( void )
-{TRACE;
+{GUCEF_TRACE;
 
     // The user should explicitly stop first if we are already busy
     if ( !m_isActive )
@@ -424,7 +426,7 @@ CPatchEngine::Start( void )
 
 void
 CPatchEngine::Stop( void )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( !m_stopSignalGiven && m_isActive )
     {
@@ -439,7 +441,7 @@ CPatchEngine::Stop( void )
     
 bool
 CPatchEngine::IsActive( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return m_isActive;
 }
@@ -448,7 +450,7 @@ CPatchEngine::IsActive( void ) const
 
 bool
 CPatchEngine::ProcessRecievedPatchList( void )
-{TRACE;
+{GUCEF_TRACE;
 
     // Now we must process the raw patch set data to turn it into something we can use
     // Get the required codec for the current raw patch set data type
@@ -489,7 +491,7 @@ void
 CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
                         const CORE::CEvent& eventid               ,
                         CORE::CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_stopSignalGiven && m_isActive )
     {

@@ -52,7 +52,7 @@ namespace CORE {
 
 UInt32 GUCEF_CALLSPEC_PREFIX 
 fa_open( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
+{GUCEF_TRACE;
         ( (CIOAccess*) access->privdata )->Open();
         return 0;
 }
@@ -61,7 +61,7 @@ fa_open( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 UInt32 GUCEF_CALLSPEC_PREFIX 
 fa_opened( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
+{GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->Opened();
 }
 
@@ -69,7 +69,7 @@ fa_opened( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 UInt32 GUCEF_CALLSPEC_PREFIX
 fa_close( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
+{GUCEF_TRACE;
         ( (CIOAccess*) access->privdata )->Close();
         return 0;
 }
@@ -79,7 +79,7 @@ fa_close( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 UInt32 GUCEF_CALLSPEC_PREFIX 
 fa_readl( struct SIOAccess* access , 
           char **dest              ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
+{GUCEF_TRACE;
         CString str = ( (CIOAccess*) access->privdata )->ReadLine();
         *dest = new char[ str.Length()+1 ];
         memcpy( *dest, str.C_String(), str.Length() );
@@ -91,7 +91,7 @@ fa_readl( struct SIOAccess* access ,
 UInt32 GUCEF_CALLSPEC_PREFIX 
 fa_reads( struct SIOAccess* access , 
           char **dest              ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
+{GUCEF_TRACE;
         CString str = ( (CIOAccess*) access->privdata )->ReadString();
         *dest = new char[ str.Length()+1 ];
         memcpy( *dest, str.C_String(), str.Length() );        
@@ -105,7 +105,7 @@ fa_write( struct SIOAccess* access ,
           const void *srcData      , 
           UInt32 esize             , 
           UInt32 elements          ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
+{GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->Write( srcData  ,
                                                          esize    ,
                                                          elements );
@@ -118,7 +118,7 @@ fa_read( struct SIOAccess* access ,
          void *dest               , 
          UInt32 esize             , 
          UInt32 elements          ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
+{GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->Read( dest     ,
                                                         esize    ,
                                                         elements );
@@ -128,7 +128,7 @@ fa_read( struct SIOAccess* access ,
           
 UInt32 GUCEF_CALLSPEC_PREFIX
 fa_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
+{GUCEF_TRACE;
 
         return ( (CIOAccess*) access->privdata )->Tell();
 }
@@ -139,7 +139,7 @@ Int32 GUCEF_CALLSPEC_PREFIX
 fa_seek( struct SIOAccess* access , 
          Int32 offset             , 
          Int32 origin             ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
+{GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->Seek( offset ,
                                                         origin );
 }
@@ -149,7 +149,7 @@ fa_seek( struct SIOAccess* access ,
 UInt32 GUCEF_CALLSPEC_PREFIX 
 fa_setpos( struct SIOAccess* access , 
            UInt32 pos               ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
+{GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->Setpos( pos );
 }
 
@@ -157,7 +157,7 @@ fa_setpos( struct SIOAccess* access ,
             
 Int32 GUCEF_CALLSPEC_PREFIX 
 fa_getc( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
+{GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->GetChar();
 }
 
@@ -165,7 +165,7 @@ fa_getc( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 Int32 GUCEF_CALLSPEC_PREFIX
 fa_eof( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
+{GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->Eof();
 }
 
@@ -173,14 +173,14 @@ fa_eof( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 void GUCEF_CALLSPEC_PREFIX 
 fa_free( void* mem ) GUCEF_CALLSPEC_SUFFIX
-{TRACE;
+{GUCEF_TRACE;
         delete []((char*)mem);
 }
 
 /*-------------------------------------------------------------------------*/
 
 CIOAccess::CIOAccess( void )
-{TRACE;
+{GUCEF_TRACE;
 
     LinkCStyleAccess();
 }
@@ -188,7 +188,7 @@ CIOAccess::CIOAccess( void )
 /*-------------------------------------------------------------------------*/
 
 CIOAccess::CIOAccess( const CIOAccess& src )
-{TRACE;
+{GUCEF_TRACE;
 
     LinkCStyleAccess();
 }
@@ -196,7 +196,7 @@ CIOAccess::CIOAccess( const CIOAccess& src )
 /*-------------------------------------------------------------------------*/
 
 CIOAccess::~CIOAccess()
-{TRACE;
+{GUCEF_TRACE;
 
     memset( &m_cStyleAccess, 0, sizeof( TIOAccess ) );
 }
@@ -217,7 +217,7 @@ CIOAccess::operator=( const CIOAccess& src )
 
 void
 CIOAccess::LinkCStyleAccess( void )
-{TRACE;
+{GUCEF_TRACE;
 
     memset( &m_cStyleAccess, 0, sizeof( TIOAccess ) );
     
@@ -377,7 +377,7 @@ UInt32
 CIOAccess::Read( CDynamicBuffer& dest ,
                  UInt32 esize         ,
                  UInt32 elements      )
-{TRACE;
+{GUCEF_TRACE;
 
     // First we ensure that we have enough space in the buffer to copy our data 
     // into the buffer manually
@@ -399,7 +399,7 @@ CIOAccess::Read( CDynamicBuffer& dest ,
 
 TIOAccess*
 CIOAccess::CStyleAccess( void )
-{TRACE;
+{GUCEF_TRACE;
 
     return &m_cStyleAccess;
 }
@@ -410,7 +410,7 @@ UInt32
 CIOAccess::Write( const void* srcdata ,
                   UInt32 esize        ,
                   UInt32 elements     )
-{TRACE;
+{GUCEF_TRACE;
 
     // Dummy at this level, override to implement
     return 0;
@@ -420,7 +420,7 @@ CIOAccess::Write( const void* srcdata ,
 
 UInt32
 CIOAccess::Write( CIOAccess& sourceData )
-{TRACE;
+{GUCEF_TRACE;
 
     UInt32 byteCount=0, totalByteCount=0;
     CDynamicBuffer readBuffer( 1024, true );

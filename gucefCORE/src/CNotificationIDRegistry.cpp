@@ -67,7 +67,7 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CNotificationIDRegistry, EInvalidEventID );
 
 CNotificationIDRegistry::CNotificationIDRegistry( void )
     : m_lastid( 1 )
-{TRACE;
+{GUCEF_TRACE;
 
     /* nothing to do here */
 }
@@ -75,7 +75,7 @@ CNotificationIDRegistry::CNotificationIDRegistry( void )
 /*-------------------------------------------------------------------------*/
 
 CNotificationIDRegistry::CNotificationIDRegistry( const CNotificationIDRegistry& src )
-{TRACE;
+{GUCEF_TRACE;
 
     /* dummy, do not use */
 }
@@ -83,7 +83,7 @@ CNotificationIDRegistry::CNotificationIDRegistry( const CNotificationIDRegistry&
 /*-------------------------------------------------------------------------*/
 
 CNotificationIDRegistry::~CNotificationIDRegistry()
-{TRACE;
+{GUCEF_TRACE;
 
     /* nothing to do here */    
 }
@@ -92,7 +92,7 @@ CNotificationIDRegistry::~CNotificationIDRegistry()
 
 CNotificationIDRegistry&
 CNotificationIDRegistry::operator=( const CNotificationIDRegistry& src )
-{TRACE;
+{GUCEF_TRACE;
 
     /* dummy, do not use */
 
@@ -106,7 +106,7 @@ CNotificationIDRegistry::operator=( const CNotificationIDRegistry& src )
 
 CNotificationIDRegistry* 
 CNotificationIDRegistry::Instance( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_dataLock.Lock();
 
@@ -123,7 +123,7 @@ CNotificationIDRegistry::Instance( void )
 
 void 
 CNotificationIDRegistry::Deinstance( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_dataLock.Lock();
 
@@ -138,7 +138,7 @@ CNotificationIDRegistry::Deinstance( void )
 CEvent 
 CNotificationIDRegistry::Register( const CString& keyvalue                       ,
                                    const bool okIfAlreadyRegisterd /* = false */ )
-{TRACE;
+{GUCEF_TRACE;
     
     m_dataLock.Lock();
     
@@ -205,7 +205,7 @@ CNotificationIDRegistry::Register( const CString& keyvalue                      
 void 
 CNotificationIDRegistry::Unregister( const CString& keyvalue                      ,
                                      const bool okIfUnknownKeyGiven /* = false */ )
-{TRACE;
+{GUCEF_TRACE;
 
     m_dataLock.Lock();
 
@@ -236,7 +236,7 @@ CNotificationIDRegistry::Unregister( const CString& keyvalue                    
 CEvent 
 CNotificationIDRegistry::Lookup( const CString& keyvalue     ,
                                  const bool registerUnknown  )
-{TRACE;
+{GUCEF_TRACE;
 
     m_dataLock.Unlock();
 
@@ -263,7 +263,7 @@ CNotificationIDRegistry::Lookup( const CString& keyvalue     ,
 
 CString 
 CNotificationIDRegistry::Lookup( const CEvent& eventID ) const
-{TRACE;
+{GUCEF_TRACE;
 
     m_dataLock.Lock();
     
@@ -292,7 +292,7 @@ CNotificationIDRegistry::Lookup( const CEvent& eventID ) const
 
 bool
 CNotificationIDRegistry::IsRegistered( const CString& keyvalue ) const
-{TRACE;
+{GUCEF_TRACE;
 
     m_dataLock.Lock();
 

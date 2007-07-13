@@ -118,6 +118,11 @@
 #define GUCEF_CORE_CSTREAMEREVENTS_H
 #endif /* GUCEF_CORE_CSTREAMEREVENTS_H ? */
 
+#ifndef GUCEF_CORE_TSPRINTING_H
+#include "tsprinting.h"
+#define GUCEF_CORE_TSPRINTING_H
+#endif /* GUCEF_CORE_TSPRINTING_H ? */
+
 #include "CGUCEFCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef ADD_MEMORY_MANAGER
@@ -228,6 +233,8 @@ CGUCEFCOREModule::Load( void )
          */
         CURLHandlerRegistry::Instance()->Register( "file", new CFileURLHandler() );
         
+        GUCEF_SYSTEM_LOG( 0, "gucefCORE module initialized" );
+        
         return true;
 }
 
@@ -236,7 +243,7 @@ CGUCEFCOREModule::Load( void )
 bool 
 CGUCEFCOREModule::Unload( void )
 {         
-        DEBUGOUTPUT( "CGUCEFCOREModule::Unload( void )" );
+        GUCEF_SYSTEM_LOG( 0, "Unloading gucefCORE module" );
                
         /*
          *      cleanup all singletons

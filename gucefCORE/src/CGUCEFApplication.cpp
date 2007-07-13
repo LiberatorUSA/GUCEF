@@ -111,7 +111,7 @@ MT::CMutex CGUCEFApplication::m_mutex;
 
 CGUCEFApplication*
 CGUCEFApplication::Instance( void )
-{TRACE;
+{GUCEF_TRACE;
         m_mutex.Lock();
         if ( !_instance )
         {                
@@ -139,7 +139,7 @@ CGUCEFApplication::Instance( void )
 
 void 
 CGUCEFApplication::Deinstance( void )
-{TRACE;
+{GUCEF_TRACE;
         m_mutex.Lock();
         CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
         delete _instance;
@@ -161,7 +161,7 @@ CGUCEFApplication::CGUCEFApplication( void )
           m_appTickCount( MT::PrecisionTickCount() )             ,
           m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 ) ,
           m_appDriver( NULL )
-{TRACE;
+{GUCEF_TRACE;
                                            
         /*
          *      Set an initial app dir just in case we have trouble getting one 
@@ -192,7 +192,7 @@ CGUCEFApplication::CGUCEFApplication( void )
 /*-------------------------------------------------------------------------*/
 
 CGUCEFApplication::~CGUCEFApplication()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -280,7 +280,7 @@ int
 CGUCEFApplication::main( int argc    ,
                          char** argv ,
                          bool run    )
-{TRACE;
+{GUCEF_TRACE;
         
         /*
          *      ensure that we have an instance of this class
@@ -336,7 +336,7 @@ CGUCEFApplication::main( int argc    ,
 
 void
 CGUCEFApplication::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
     
     AppInitEvent.Initialize();
     AppShutdownEvent.Initialize();
@@ -346,7 +346,7 @@ CGUCEFApplication::RegisterEvents( void )
 
 void
 CGUCEFApplication::Update( void )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -365,7 +365,7 @@ CGUCEFApplication::Update( void )
 void
 CGUCEFApplication::SingleUpdate( const UInt64 tickCount               ,
                                  const Float64 updateDeltaInMilliSecs )
-{TRACE;
+{GUCEF_TRACE;
 
     OnUpdate( tickCount              ,
               updateDeltaInMilliSecs );
@@ -383,7 +383,7 @@ CGUCEFApplication::SingleUpdate( const UInt64 tickCount               ,
 
 void
 CGUCEFApplication::SetApplicationDriver( CIGUCEFApplicationDriver* appDriver )
-{TRACE;
+{GUCEF_TRACE;
 
     m_appDriver = appDriver;
     RefreshPeriodicUpdateRequirement();
@@ -393,7 +393,7 @@ CGUCEFApplication::SetApplicationDriver( CIGUCEFApplicationDriver* appDriver )
         
 CIGUCEFApplicationDriver*
 CGUCEFApplication::GetApplicationDriver( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return m_appDriver;
 }
@@ -402,7 +402,7 @@ CGUCEFApplication::GetApplicationDriver( void ) const
 
 bool
 CGUCEFApplication::GetRequiresPeriodicUpdate( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_requiresPeriodicUpdates;
 }
@@ -411,7 +411,7 @@ CGUCEFApplication::GetRequiresPeriodicUpdate( void ) const
 
 Float64
 CGUCEFApplication::GetMinimalReqUpdateResolution( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_minimalUpdateDelta;
 }
@@ -420,7 +420,7 @@ CGUCEFApplication::GetMinimalReqUpdateResolution( void ) const
 
 UInt64
 CGUCEFApplication::GetLastUpdateTickCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_appTickCount;    
 }
@@ -429,7 +429,7 @@ CGUCEFApplication::GetLastUpdateTickCount( void ) const
 
 void
 CGUCEFApplication::Run( void )
-{TRACE;
+{GUCEF_TRACE;
 
     _active = true;
     UInt64 newTickCount = 0;
@@ -453,7 +453,7 @@ CGUCEFApplication::Run( void )
 
 void
 CGUCEFApplication::Stop( void )
-{TRACE;
+{GUCEF_TRACE;
     
     LockData();
     
@@ -470,7 +470,7 @@ CGUCEFApplication::Stop( void )
 
 void 
 CGUCEFApplication::SetPluginDir( const CString& plugindir )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -485,7 +485,7 @@ CGUCEFApplication::SetPluginDir( const CString& plugindir )
                        
 CString 
 CGUCEFApplication::GetPluginDir( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return CPluginControl::Instance()->GetPluginDir();
 }
 
@@ -493,7 +493,7 @@ CGUCEFApplication::GetPluginDir( void ) const
         
 CString 
 CGUCEFApplication::GetApplicationDir( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _appdir;
 }
 
@@ -501,7 +501,7 @@ CGUCEFApplication::GetApplicationDir( void ) const
 
 bool 
 CGUCEFApplication::SaveConfig( CDataNode& tree )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -518,7 +518,7 @@ CGUCEFApplication::SaveConfig( CDataNode& tree )
 
 bool 
 CGUCEFApplication::LoadConfig( const CDataNode& tree )
-{TRACE;
+{GUCEF_TRACE;
         return true;
 }
 
@@ -529,7 +529,7 @@ CGUCEFApplication::OnSysConsoleCommand( const CString& path     ,
                                         const CString& command  ,
                                         const CStringList& args ,
                                         CStringList& resultdata )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -555,7 +555,7 @@ CGUCEFApplication::OnSysConsoleCommand( const CString& path     ,
 void 
 CGUCEFApplication::OnUpdate( const UInt64 tickcount               ,
                              const Float64 updateDeltaInMilliSecs )
-{TRACE;
+{GUCEF_TRACE;
         
         #ifdef GUCEF_MSWIN_BUILD
     	MSG  msg;
@@ -581,7 +581,7 @@ CGUCEFApplication::OnUpdate( const UInt64 tickcount               ,
 void 
 CGUCEFApplication::SetCycleDelay( const Float64 minimalCycleDeltaInMilliSecs ,
                                   const UInt32 cycleDelayInMilliSecs         )
-{TRACE;
+{GUCEF_TRACE;
     m_minimalCycleDeltaInMilliSecs = minimalCycleDeltaInMilliSecs;
     m_cycleDelayInMilliSecs = cycleDelayInMilliSecs;
 }
@@ -591,7 +591,7 @@ CGUCEFApplication::SetCycleDelay( const Float64 minimalCycleDeltaInMilliSecs ,
 void 
 CGUCEFApplication::GetCycleDelay( Float64& minimalCycleDeltaInMilliSecs ,
                                   UInt32& cycleDelayInMilliSecs         ) const
-{TRACE;
+{GUCEF_TRACE;
     minimalCycleDeltaInMilliSecs = m_minimalCycleDeltaInMilliSecs;
     cycleDelayInMilliSecs = m_cycleDelayInMilliSecs;
 }                                  
@@ -600,7 +600,7 @@ CGUCEFApplication::GetCycleDelay( Float64& minimalCycleDeltaInMilliSecs ,
 
 void
 CGUCEFApplication::LockData( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_mutex.Lock();
 }
@@ -609,7 +609,7 @@ CGUCEFApplication::LockData( void )
         
 void
 CGUCEFApplication::UnlockData( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_mutex.Unlock();
 }
@@ -618,7 +618,7 @@ CGUCEFApplication::UnlockData( void )
 
 void
 CGUCEFApplication::RegisterSubSystem( CGUCEFAppSubSystem* subSystem )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( NULL != subSystem );
     LockData();
@@ -632,7 +632,7 @@ CGUCEFApplication::RegisterSubSystem( CGUCEFAppSubSystem* subSystem )
         
 void
 CGUCEFApplication::UnregisterSubSystem( CGUCEFAppSubSystem* subSystem )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( NULL != subSystem );
     LockData();
@@ -645,7 +645,7 @@ CGUCEFApplication::UnregisterSubSystem( CGUCEFAppSubSystem* subSystem )
         
 void
 CGUCEFApplication::RefreshMinimalSubSysInterval( void )
-{TRACE;
+{GUCEF_TRACE;
     
     LockData();
     
@@ -674,7 +674,7 @@ CGUCEFApplication::RefreshMinimalSubSysInterval( void )
         
 void
 CGUCEFApplication::RefreshPeriodicUpdateRequirement( void )
-{TRACE;
+{GUCEF_TRACE;
     
     LockData();
     
@@ -719,7 +719,7 @@ CGUCEFApplication::RefreshPeriodicUpdateRequirement( void )
         
 void
 CGUCEFApplication::DoRequestSubSysUpdate( void )
-{TRACE;
+{GUCEF_TRACE;
     
     LockData();
     
@@ -745,7 +745,7 @@ void
 CGUCEFApplication::OnPumpedNotify( CNotifier* notifier                 ,
                                    const CEvent& eventid               ,
                                    CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
     // nothing to do here atm
 }
 

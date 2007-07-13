@@ -52,7 +52,7 @@ namespace IMAGE {
 
 bool 
 CGUCEFIMAGEModule::Load( void )
-{TRACE;
+{GUCEF_TRACE;
         
         CORE::CCodecRegistry* codecRegistry = CORE::CCodecRegistry::Instance();
         CORE::CCodecRegistry::TCodecFamilyRegistryPtr registry; 
@@ -77,7 +77,7 @@ CGUCEFIMAGEModule::Load( void )
         
 bool 
 CGUCEFIMAGEModule::Unload( void )
-{TRACE;
+{GUCEF_TRACE;
 
     CORE::CCodecRegistry* codecRegistry = CORE::CCodecRegistry::Instance();
     CORE::CCodecRegistry::TCodecFamilyRegistryPtr registry;

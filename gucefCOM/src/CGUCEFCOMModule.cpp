@@ -57,21 +57,21 @@ COM_NAMESPACE_BEGIN
 //-------------------------------------------------------------------------*/
 
 CGUCEFCOMModule::CGUCEFCOMModule( void )
-{TRACE;
+{GUCEF_TRACE;
         /* dummy, should never be used */
 }
 
 /*-------------------------------------------------------------------------*/
 
 CGUCEFCOMModule::CGUCEFCOMModule( const CGUCEFCOMModule& src )
-{TRACE;
+{GUCEF_TRACE;
         /* dummy, should never be used */
 }
 
 /*-------------------------------------------------------------------------*/
 
 CGUCEFCOMModule::~CGUCEFCOMModule()
-{TRACE;
+{GUCEF_TRACE;
         /* dummy, should never be used */
 }
 
@@ -79,7 +79,7 @@ CGUCEFCOMModule::~CGUCEFCOMModule()
 
 CGUCEFCOMModule&
 CGUCEFCOMModule::operator=( const CGUCEFCOMModule& src )
-{TRACE;
+{GUCEF_TRACE;
         /* dummy, should never be used */
         return *this;
 }
@@ -88,7 +88,7 @@ CGUCEFCOMModule::operator=( const CGUCEFCOMModule& src )
 
 bool 
 CGUCEFCOMModule::Load( void )
-{TRACE;
+{GUCEF_TRACE;
         /* simply instantiate our com manager when the module is loaded */
         //CCom::Instance();
         
@@ -102,7 +102,7 @@ CGUCEFCOMModule::Load( void )
         
 bool 
 CGUCEFCOMModule::Unload( void )
-{TRACE;
+{GUCEF_TRACE;
         //CCom::Deinstance();
         return true;
 }

@@ -98,8 +98,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="..\..\bin\Release_MVC8"
+			IntermediateDirectory="..\..\bin\Release_MVC8"
 			ConfigurationType="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -121,12 +121,14 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GUCEFDRN_MVC8_EXPORTS"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefCOMCORE\include;..\..\..\gucefCORE\include;..\..\..\gucefCORE\include\mswin;..\..\..\gucefMT\include;..\..\..\common\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GUCEFDRN_MVC8_EXPORTS;GUCEF_DRN_BUILD_MODULE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4100;4251;4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -139,7 +141,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="gucefCOMCORE_MVC8.lib gucefCORE_MVC8.lib gucefMT_MVC8.lib"
+				OutputFile="$(OutDir)\gucefDRN_MVC8.dll"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\..\gucefCOMCORE\bin\Release_MVC8;..\..\..\gucefCORE\bin\Release_MVC8;..\..\..\gucefMT\bin\Release_MVC8"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -169,6 +174,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Release_MVC8"
 			/>
 		</Configuration>
 	</Configurations>

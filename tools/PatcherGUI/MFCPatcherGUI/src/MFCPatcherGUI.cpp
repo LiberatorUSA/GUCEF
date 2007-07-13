@@ -73,7 +73,7 @@ CMFCPatcherGUIApp theApp;
 
 CFrameWnd*
 CMFCPatcherGUIApp::GetMainFrame( void )
-{TRACE;
+{GUCEF_TRACE;
 
     return static_cast< CFrameWnd* >( m_pMainWnd );
 }
@@ -152,7 +152,7 @@ BOOL CMFCPatcherGUIApp::InitInstance()
 
 const GUCEF::CORE::CValueList&
 CMFCPatcherGUIApp::GetCommandLineParams( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return m_cmdLineParamList;
 }

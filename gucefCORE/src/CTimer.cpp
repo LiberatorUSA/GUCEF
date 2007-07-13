@@ -63,7 +63,7 @@ CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 10 */ )
       m_tickCount( 0 )                                         ,
       m_timerPump( CTimerPump::Instance() )                    ,
       m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )
-{TRACE;
+{GUCEF_TRACE;
 
     RegisterEvents();
     
@@ -81,7 +81,7 @@ CTimer::CTimer( const CTimer& src )
        m_tickCount( 0 )                                         ,
        m_timerPump( CTimerPump::Instance() )                    ,
        m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )
-{TRACE;
+{GUCEF_TRACE;
 
     RegisterEvents();
     
@@ -92,7 +92,7 @@ CTimer::CTimer( const CTimer& src )
 /*-------------------------------------------------------------------------*/
 
 CTimer::~CTimer()
-{TRACE;
+{GUCEF_TRACE;
 
     m_timerPump->UnregisterTimer( this );
 }
@@ -101,7 +101,7 @@ CTimer::~CTimer()
 
 CTimer& 
 CTimer::operator=( const CTimer& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( this != &src )
     {
@@ -117,7 +117,7 @@ CTimer::operator=( const CTimer& src )
 
 void
 CTimer::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
 
     TimerStartedEvent.Initialize();
     TimerUpdateEvent.Initialize();
@@ -129,7 +129,7 @@ CTimer::RegisterEvents( void )
     
 void 
 CTimer::SetInterval( const UInt32 updateDeltaInMilliSecs )
-{TRACE;
+{GUCEF_TRACE;
 
     m_updateDeltaInMilliSecs = updateDeltaInMilliSecs;
     
@@ -141,7 +141,7 @@ CTimer::SetInterval( const UInt32 updateDeltaInMilliSecs )
     
 UInt32 
 CTimer::GetInterval( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_updateDeltaInMilliSecs;
 }
@@ -150,7 +150,7 @@ CTimer::GetInterval( void ) const
 
 void
 CTimer::SetEnabled( const bool enabled )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_enabled != enabled )
     {
@@ -182,7 +182,7 @@ CTimer::SetEnabled( const bool enabled )
 
 bool
 CTimer::GetEnabled( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_enabled;
 } 
@@ -191,7 +191,7 @@ CTimer::GetEnabled( void ) const
 
 void 
 CTimer::OnUpdate( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_enabled )
     {
@@ -216,7 +216,7 @@ CTimer::OnUpdate( void )
 
 UInt64 
 CTimer::GetRunTicks( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_enabled )
     {
@@ -232,7 +232,7 @@ CTimer::GetRunTicks( void ) const
 
 Float64
 CTimer::GetRunTimeInMilliSecs( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return GetRunTicks() / m_timerFreq;
 }
@@ -241,7 +241,7 @@ CTimer::GetRunTimeInMilliSecs( void ) const
 
 UInt64
 CTimer::GetTickCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_tickCount;
 }
@@ -250,7 +250,7 @@ CTimer::GetTickCount( void ) const
 
 Float64
 CTimer::GetTimeInMilliSecs( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_tickCount / m_timerFreq;
 }
@@ -259,7 +259,7 @@ CTimer::GetTimeInMilliSecs( void ) const
 
 void
 CTimer::Reset( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_lastTimerCycle = MT::PrecisionTickCount();
     m_tickCount = 0;
@@ -269,7 +269,7 @@ CTimer::Reset( void )
 
 Float64
 CTimer::GetApproxMaxTimerResolutionInMilliSecs( void )
-{TRACE;
+{GUCEF_TRACE;
 
     return MT::PrecisionTimerResolution() / 1000.0;
 }

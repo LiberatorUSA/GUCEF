@@ -52,7 +52,7 @@ namespace IMAGE {
 
 CGUIImageCodec::CGUIImageCodec( void )
     : CICodec()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -60,7 +60,7 @@ CGUIImageCodec::CGUIImageCodec( void )
     
 CGUIImageCodec::CGUIImageCodec( const CGUIImageCodec& src )
     : CICodec( src )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -68,7 +68,7 @@ CGUIImageCodec::CGUIImageCodec( const CGUIImageCodec& src )
     
 CGUIImageCodec&
 CGUIImageCodec::operator=( const CGUIImageCodec& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( &src != this )
     {
@@ -80,7 +80,7 @@ CGUIImageCodec::operator=( const CGUIImageCodec& src )
 /*-------------------------------------------------------------------------*/
     
 CGUIImageCodec::~CGUIImageCodec()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -89,7 +89,7 @@ CGUIImageCodec::~CGUIImageCodec()
 bool
 CGUIImageCodec::Encode( CORE::CIOAccess& source ,
                         CORE::CIOAccess& dest   )
-{TRACE;
+{GUCEF_TRACE;
 
     // Since we are encoding from the native format to the native format nothing has to
     // be altered and we can simply copy the data
@@ -102,7 +102,7 @@ CGUIImageCodec::Encode( CORE::CIOAccess& source ,
 bool
 CGUIImageCodec::Decode( CORE::CIOAccess& source ,
                         CORE::CIOAccess& dest   )
-{TRACE;
+{GUCEF_TRACE;
 
     // Since we are decoding from the native format to the native format nothing has to
     // be altered and we can simply copy the data
@@ -114,7 +114,7 @@ CGUIImageCodec::Decode( CORE::CIOAccess& source ,
                          
 CORE::CString
 CGUIImageCodec::GetFamilyName( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return "ImageCodec";
 }
@@ -123,7 +123,7 @@ CGUIImageCodec::GetFamilyName( void ) const
     
 CORE::CString
 CGUIImageCodec::GetType( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return "gui";
 }
@@ -132,7 +132,7 @@ CGUIImageCodec::GetType( void ) const
     
 CORE::CICloneable*
 CGUIImageCodec::Clone( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return new CGUIImageCodec( *this );
 }

@@ -1,18 +1,20 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ *  gucefVFS: GUCEF module implementing a Virtual File System
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
- * All source code herein is the property of Dinand Vanvelzen. You may not sell
- * or otherwise commercially exploit the source or things you created based on
- * the source.
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
  
 /*-------------------------------------------------------------------------//
@@ -103,22 +105,21 @@ CVFS::CVFS( void )
         : CIConfigurable( true ) ,
           _maxmemloadsize( 1024 ) ,
           m_rootlist()
-{TRACE;
+{GUCEF_TRACE;
        
 }
        
 /*-------------------------------------------------------------------------*/
         
 CVFS::~CVFS()
-{TRACE;        
+{GUCEF_TRACE;        
 }
 
 /*-------------------------------------------------------------------------*/
 
 CVFS* 
 CVFS::Instance( void )
-{TRACE;
-        DEBUGOUTPUT( "CVFS::Instance( void ) const" );
+{GUCEF_TRACE;
         
         m_datalock.Lock();
         if ( !_instance ) 
@@ -133,8 +134,7 @@ CVFS::Instance( void )
 
 void 
 CVFS::Deinstance( void )
-{TRACE;
-        DEBUGOUTPUT( "CVFS::Deinstance( void )" );
+{GUCEF_TRACE;
         
         m_datalock.Lock();
         delete _instance;
@@ -149,10 +149,8 @@ CVFS::LoadFromDisk( const CORE::CString& file          ,
                     UInt32& errorcode                  ,
                     const char* mode /* = "rb" */      , 
                     const bool overwrite /* = false */ )
-{TRACE;
+{GUCEF_TRACE;
 
-    DEBUGOUTPUT( "CVFS::LoadFromDisk( const CORE::CString& file )" );
-    
     CORE::CString filepath;
     const TRootDir* entry = NULL;                
     bool needwriteable( ( strchr( mode, 'a' ) != NULL ) || ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, '+' ) != NULL )); 
@@ -263,9 +261,7 @@ CVFS::GetFile( const CORE::CString& file          ,
                UInt32& errorcode                  ,
                const char* mode /* = "rb" */      ,
                const bool overwrite /* = false */ )
-{TRACE;
-        DEBUGOUTPUT( "CVFS::GetFile( const CORE::CString& file, UInt32& errorcode )" );
-        DEBUGOUTPUTss( "CVFS: Attempting to load file: ", file.C_String() );
+{GUCEF_TRACE;
         
         CORE::CString filepath( file.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );
         
@@ -291,7 +287,6 @@ CVFS::GetFile( const CORE::CString& file          ,
          *      If we get here then the file was not found in one 
          *      of the rootdirs. or in any of the packfiles
          */
-        DEBUGOUTPUTss( "Cannot locate file: ", file.C_String() ); 
         return CVFSHandlePtr();                                
 }
 
@@ -299,10 +294,8 @@ CVFS::GetFile( const CORE::CString& file          ,
 
 void
 CVFS::DestroyObject( CVFSHandle* vfshandle )
-{TRACE;
+{GUCEF_TRACE;
 
-    DEBUGOUTPUT( "CVFS::Unload( CVFSHandle* vfshandle )" );
-    
     if ( vfshandle != NULL )
     {
         m_datalock.Lock();
@@ -334,7 +327,7 @@ CVFS::DestroyObject( CVFSHandle* vfshandle )
 
 bool
 CVFS::FileExists( const CORE::CString& file ) const
-{TRACE;       
+{GUCEF_TRACE;       
 
     /*
      *      Attempt to find the file on disk
@@ -358,10 +351,8 @@ CVFS::FileExists( const CORE::CString& file ) const
 void
 CVFS::AddRoot( const CORE::CString& rootpath ,
                const bool writeable          )
-{TRACE;
+{GUCEF_TRACE;
 
-    DEBUGOUTPUT( "CVFS::AddRoot( const CORE::CString& rootpath )" );
-    
     if ( rootpath.Length() > 0 )
     {        
         m_datalock.Lock();
@@ -390,9 +381,7 @@ CVFS::AddRoot( const CORE::CString& rootpath ,
             }
         }
         
-        m_rootlist.push_back( newroot );
-        DEBUGOUTPUTss( "CVFS: VFS root added: ", rootpath.C_String() );
-                            
+        m_rootlist.push_back( newroot );       
         m_datalock.Unlock();
     }                
 }
@@ -401,10 +390,8 @@ CVFS::AddRoot( const CORE::CString& rootpath ,
 
 void 
 CVFS::SetMemloadSize( UInt32 bytesize )
-{TRACE;
-    
-    DEBUGOUTPUT( "CVFS::SetMemloadSize( UInt32 bytesize )" );
-    
+{GUCEF_TRACE;
+
     m_datalock.Lock();
     _maxmemloadsize = bytesize;
     m_datalock.Unlock();
@@ -414,10 +401,8 @@ CVFS::SetMemloadSize( UInt32 bytesize )
         
 UInt32 
 CVFS::GetMemloadSize( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
-    DEBUGOUTPUT( "CVFS::GetMemloadSize( void ) const" );
-    
     return _maxmemloadsize;
 }
 
@@ -425,10 +410,8 @@ CVFS::GetMemloadSize( void ) const
 
 bool 
 CVFS::SaveConfig( CORE::CDataNode& tree )
-{TRACE;
+{GUCEF_TRACE;
 
-    DEBUGOUTPUT( "CVFS::SaveConfig( CORE::CDataNode* tree )" );
-    
     CORE::CDataNode* n = tree.Structure( "GUCEF%VFS%CVFS" ,
                                          '%'              );
     CORE::CString maxmem;
@@ -460,10 +443,8 @@ CVFS::SaveConfig( CORE::CDataNode& tree )
 
 bool 
 CVFS::LoadConfig( const CORE::CDataNode& tree )
-{TRACE;
+{GUCEF_TRACE;
 
-    DEBUGOUTPUT( "CVFS::LoadConfig( const CORE::CDataNode* tree )" );
-    
     const CORE::CDataNode* n = tree.Search( "GUCEF%VFS%CVFS" ,
                                             '%'              ,
                                             false            );
@@ -510,7 +491,7 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
 bool 
 CVFS::FilterValidation( const CORE::CString& filename , 
                         const CORE::CString& filter   ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( filter.Length() > 0 )
     {
@@ -549,9 +530,7 @@ CVFS::GetListFromRoot( const CORE::CString& root     ,
                        bool includePathInFilename    ,
                        const CORE::CString& filter   ,
                        TStringList& outputList       ) const
-{TRACE;
-
-    DEBUGOUTPUTssss( "Getting file list with filter ", filter.C_String(), " for dir: ", root.C_String() );
+{GUCEF_TRACE;
 
     CORE::CString filename;
     struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( root.C_String() );
@@ -616,7 +595,7 @@ CVFS::GetList( TStringList& outputList                  ,
                bool recursive             /* = false */ ,
                bool includePathInFilename /* = false */ ,
                const CORE::CString& filter /* = "" */   ) const
-{TRACE;
+{GUCEF_TRACE;
         
     m_datalock.Lock();
     
@@ -658,7 +637,7 @@ CVFS::GetList( TStringList& outputList                  ,
 
 UInt32
 CVFS::GetFileSize( const CORE::CString& file ) const
-{TRACE;
+{GUCEF_TRACE;
 
     CORE::CString filepath;
     for ( UInt32 i=0; i<m_rootlist.size(); ++i )

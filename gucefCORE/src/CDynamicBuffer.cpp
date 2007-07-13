@@ -76,7 +76,7 @@ CDynamicBuffer::CDynamicBuffer( bool autoenlarge )
           _autoenlarge( autoenlarge ) ,
           m_dataSize( 0 )             ,
           m_linked( false )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -88,7 +88,7 @@ CDynamicBuffer::CDynamicBuffer( CIOAccess& ioAccess )
           _autoenlarge( true )        ,
           m_dataSize( 0 )             ,
           m_linked( false )
-{TRACE;
+{GUCEF_TRACE;
     
     Int32 inputSize = ioAccess.GetSize();
     if ( inputSize > -1 )
@@ -125,7 +125,7 @@ CDynamicBuffer::CDynamicBuffer( UInt32 initialsize ,
           _bsize( 0 )                 ,
           m_dataSize( 0 )             ,
           m_linked( false )
-{TRACE;
+{GUCEF_TRACE;
 
     _buffer = (Int8*) malloc( initialsize );
     _bsize = initialsize;               
@@ -139,7 +139,7 @@ CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src )
           m_dataSize( 0 )                  ,
           _autoenlarge( src._autoenlarge ) ,
           m_linked( false )
-{TRACE;
+{GUCEF_TRACE;
 
     _buffer = (Int8*) malloc( src._bsize );
     _bsize = src._bsize;
@@ -157,7 +157,7 @@ CDynamicBuffer::CDynamicBuffer( const char* externalBuffer    ,
           m_dataSize( 0 )      ,
           _autoenlarge( true ) ,
           m_linked( false )
-{TRACE;
+{GUCEF_TRACE;
 
     CopyFrom( bufferSize     ,
               externalBuffer );
@@ -170,7 +170,7 @@ CDynamicBuffer::CDynamicBuffer( const char* externalBuffer    ,
  *      Destructor, de-alloctes the buffer.
  */
 CDynamicBuffer::~CDynamicBuffer()
-{TRACE;
+{GUCEF_TRACE;
         
         Clear( false );
 }
@@ -182,7 +182,7 @@ CDynamicBuffer::~CDynamicBuffer()
  */
 UInt8&
 CDynamicBuffer::GetUByte( UInt32 index )
-{TRACE;
+{GUCEF_TRACE;
 
     SecureLinkBeforeMutation();
     
@@ -201,7 +201,7 @@ CDynamicBuffer::GetUByte( UInt32 index )
 void
 CDynamicBuffer::SetUByte( UInt32 index ,
                           UInt8 data   )
-{TRACE;
+{GUCEF_TRACE;
         
     SecureLinkBeforeMutation();
     
@@ -219,7 +219,7 @@ CDynamicBuffer::SetUByte( UInt32 index ,
  */
 char&
 CDynamicBuffer::GetChar( UInt32 index )
-{TRACE;
+{GUCEF_TRACE;
 
     SecureLinkBeforeMutation();
     
@@ -238,7 +238,7 @@ CDynamicBuffer::GetChar( UInt32 index )
 void
 CDynamicBuffer::SetChar( UInt32 index ,
                          char data    )
-{TRACE;
+{GUCEF_TRACE;
 
     SecureLinkBeforeMutation();
     
@@ -256,7 +256,7 @@ CDynamicBuffer::SetChar( UInt32 index ,
  */
 char&
 CDynamicBuffer::operator[]( UInt32 index )
-{TRACE;
+{GUCEF_TRACE;
         SecureLinkBeforeMutation();
         
         if ( index+1 > m_dataSize )
@@ -273,7 +273,7 @@ CDynamicBuffer::operator[]( UInt32 index )
  */
 char
 CDynamicBuffer::operator[]( UInt32 index ) const
-{TRACE;
+{GUCEF_TRACE;
         return _buffer[ index ];
 }
 
@@ -281,7 +281,7 @@ CDynamicBuffer::operator[]( UInt32 index ) const
 
 bool
 CDynamicBuffer::operator==( const CDynamicBuffer& other ) const
-{TRACE;
+{GUCEF_TRACE;
         if ( m_dataSize == other.m_dataSize )
         {
                 return memcmp( _buffer, other._buffer, m_dataSize ) == 0;
@@ -293,7 +293,7 @@ CDynamicBuffer::operator==( const CDynamicBuffer& other ) const
 
 bool
 CDynamicBuffer::operator!=( const CDynamicBuffer& other ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_dataSize == other.m_dataSize )
     {
@@ -310,7 +310,7 @@ CDynamicBuffer::operator!=( const CDynamicBuffer& other ) const
  */
 CDynamicBuffer&
 CDynamicBuffer::operator=( const CDynamicBuffer &src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( this != &src )
     {
@@ -333,7 +333,7 @@ CDynamicBuffer::operator=( const CDynamicBuffer &src )
 void
 CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
                                const bool allowreduction )
-{TRACE;
+{GUCEF_TRACE;
 
     SecureLinkBeforeMutation();
     
@@ -371,7 +371,7 @@ CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
 
 UInt32
 CDynamicBuffer::GetBufferSize( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _bsize;
 }
 
@@ -379,7 +379,7 @@ CDynamicBuffer::GetBufferSize( void ) const
 
 void 
 CDynamicBuffer::SetAutoEnlarge( bool autoenlarge )
-{TRACE;
+{GUCEF_TRACE;
         _autoenlarge = autoenlarge;
 }
 
@@ -387,7 +387,7 @@ CDynamicBuffer::SetAutoEnlarge( bool autoenlarge )
         
 bool 
 CDynamicBuffer::GetAutoEnlarge( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _autoenlarge;
 }
 
@@ -397,7 +397,7 @@ UInt32
 CDynamicBuffer::CopyFrom( UInt32 offset   ,
                           UInt32 size     ,
                           const void* src )
-{TRACE;
+{GUCEF_TRACE;
 
     SecureLinkBeforeMutation();
 
@@ -431,7 +431,7 @@ CDynamicBuffer::CopyFrom( UInt32 offset   ,
 UInt32 
 CDynamicBuffer::CopyFrom( UInt32 size     ,
                           const void* src )
-{TRACE;
+{GUCEF_TRACE;
     
     SecureLinkBeforeMutation();
     
@@ -467,7 +467,7 @@ UInt32
 CDynamicBuffer::CopyTo( UInt32 offset ,
                         UInt32 size   ,
                         void *dest    ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( offset+size > m_dataSize )
     {
@@ -490,7 +490,7 @@ CDynamicBuffer::CopyTo( UInt32 offset ,
  */
 UInt32 
 CDynamicBuffer::CopyTo( void *dest ) const
-{TRACE;
+{GUCEF_TRACE;
 
     memcpy( dest, _buffer, m_dataSize );
     return m_dataSize;
@@ -500,7 +500,7 @@ CDynamicBuffer::CopyTo( void *dest ) const
 
 UInt32 
 CDynamicBuffer::CopyTo( CDynamicBuffer& dest ) const
-{TRACE;
+{GUCEF_TRACE;
 
     dest.CopyFrom( m_dataSize, _buffer );
     return m_dataSize;        
@@ -510,7 +510,7 @@ CDynamicBuffer::CopyTo( CDynamicBuffer& dest ) const
 
 void* 
 CDynamicBuffer::GetBufferPtr( const UInt32 offset /* = 0 */ )
-{TRACE;
+{GUCEF_TRACE;
         SecureLinkBeforeMutation();
         
         return _buffer + offset;
@@ -520,7 +520,7 @@ CDynamicBuffer::GetBufferPtr( const UInt32 offset /* = 0 */ )
        
 const void* 
 CDynamicBuffer::GetConstBufferPtr( const UInt32 offset /* = 0 */ ) const
-{TRACE;
+{GUCEF_TRACE;
         return _buffer + offset;
 }
 
@@ -530,7 +530,7 @@ void
 CDynamicBuffer::Append( const void* data                            ,
                         const UInt32 size                           ,
                         const bool appendToLogicalData /* = true */ )
-{TRACE;
+{GUCEF_TRACE;
 
     SecureLinkBeforeMutation();
 
@@ -553,7 +553,7 @@ CDynamicBuffer::Append( const void* data                            ,
 
 void 
 CDynamicBuffer::Clear( const bool logicalClearOnly /* = true */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_linked )
     {
@@ -582,7 +582,7 @@ CDynamicBuffer::Clear( const bool logicalClearOnly /* = true */ )
 
 void
 CDynamicBuffer::SetDataSize( const UInt32 newSize )
-{TRACE;
+{GUCEF_TRACE;
         SecureLinkBeforeMutation();
         
         SetBufferSize( newSize, false );
@@ -593,7 +593,7 @@ CDynamicBuffer::SetDataSize( const UInt32 newSize )
 
 UInt32
 CDynamicBuffer::GetDataSize( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_dataSize;
 }
 
@@ -601,7 +601,7 @@ CDynamicBuffer::GetDataSize( void ) const
 
 bool
 CDynamicBuffer::operator<( const CDynamicBuffer& other ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return memcmp( _buffer, other._buffer, SMALLEST( GetDataSize(), other.GetDataSize() ) ) < 0;
 }
@@ -610,7 +610,7 @@ CDynamicBuffer::operator<( const CDynamicBuffer& other ) const
 
 bool
 CDynamicBuffer::operator>( const CDynamicBuffer& other ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return memcmp( _buffer, other._buffer, SMALLEST( GetDataSize(), other.GetDataSize() ) ) > 0;
 }
@@ -620,7 +620,7 @@ CDynamicBuffer::operator>( const CDynamicBuffer& other ) const
 void
 CDynamicBuffer::LinkTo( const void* externalBuffer ,
                         UInt32 bufferSize          )
-{TRACE;
+{GUCEF_TRACE;
 
     // Always clear first for safety,.. we don't want memory leaks or invalid pointers
     Clear( false );
@@ -640,7 +640,7 @@ CDynamicBuffer::LinkTo( const void* externalBuffer ,
 
 bool
 CDynamicBuffer::IsLinked( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return m_linked;
 }
@@ -649,7 +649,7 @@ CDynamicBuffer::IsLinked( void ) const
 
 void
 CDynamicBuffer::SecureLinkBeforeMutation( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_linked )
     {

@@ -62,7 +62,7 @@ namespace CORE {
 //          m_bufferA()   ,
 //          m_bufferB()   ,
 //          m_bufferC()
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //}
 //
@@ -73,7 +73,7 @@ namespace CORE {
 //          m_bufferA( src.m_bufferA ) ,
 //          m_bufferB( src.m_bufferB ) ,
 //          m_bufferC( src.m_bufferC )
-//{TRACE;
+//{GUCEF_TRACE;
 //        TCodecList::const_iterator i = src.m_codecList.begin();
 //        while ( i != src.m_codecList.end() )
 //        {
@@ -85,7 +85,7 @@ namespace CORE {
 ///*-------------------------------------------------------------------------*/
 //
 //CCodecChain::~CCodecChain()
-//{TRACE;
+//{GUCEF_TRACE;
 //        Clear();
 //}
 //
@@ -93,7 +93,7 @@ namespace CORE {
 //
 //CCodecChain&
 //CCodecChain::operator=( const CCodecChain& src )
-//{TRACE;
+//{GUCEF_TRACE;
 //        if ( &src != this )
 //        {
 //                Clear();                
@@ -105,7 +105,7 @@ namespace CORE {
 //
 //void
 //CCodecChain::Clear( void )
-//{TRACE;
+//{GUCEF_TRACE;
 //        TCodecList::iterator i = m_codecList.begin();
 //        while ( i != m_codecList.end() )
 //        {
@@ -124,7 +124,7 @@ namespace CORE {
 //bool
 //CCodecChain::AddCodec( const CICodec& codec   ,
 //                       const UInt32 codecSlot )
-//{TRACE;
+//{GUCEF_TRACE;
 //        // Set our iterator at the requested slot
 //        TCodecList::iterator i = m_codecList.begin();
 //        i += codecSlot;
@@ -142,7 +142,7 @@ namespace CORE {
 //
 //void
 //CCodecChain::AppendCodec( const CICodec& codec )
-//{TRACE;
+//{GUCEF_TRACE;
 //        m_codecList.push_back( static_cast< CICodec* >( codec.Clone() ) );
 //}
 //
@@ -150,7 +150,7 @@ namespace CORE {
 //
 //bool
 //CCodecChain::RemoveCodec( const UInt32 codecSlot )
-//{TRACE;
+//{GUCEF_TRACE;
 //        // Set our iterator at the requested slot
 //        TCodecList::iterator i = m_codecList.begin();
 //        i += codecSlot;
@@ -169,7 +169,7 @@ namespace CORE {
 //        
 //void
 //CCodecChain::RemoveCodec( const CString& typeName )
-//{TRACE;
+//{GUCEF_TRACE;
 //        TCodecList::iterator i = m_codecList.begin();
 //        while ( i != m_codecList.end() )
 //        {
@@ -193,7 +193,7 @@ namespace CORE {
 //        
 //bool
 //CCodecChain::HasCodec( const CString& typeName ) const
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //        TCodecList::const_iterator i = m_codecList.begin();
 //        while ( i != m_codecList.end() )
@@ -211,7 +211,7 @@ namespace CORE {
 //
 //void
 //CCodecChain::GetList( CStringList& list ) const
-//{TRACE;
+//{GUCEF_TRACE;
 //        list.Clear();
 //        
 //        TCodecList::const_iterator i = m_codecList.begin();
@@ -226,7 +226,7 @@ namespace CORE {
 //
 //void
 //CCodecChain::SetCodecOrder( const CStringList& codecOrder )
-//{TRACE;
+//{GUCEF_TRACE;
 //        // @TODO
 //        assert( 0 );
 //}
@@ -240,7 +240,7 @@ namespace CORE {
 //                            UInt32& destBuffsUsed           ,
 //                            TDynamicBufferList& swapBuffers ,
 //                            CICodec* codec                  ) const
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    assert( NULL != codec );
 //    
@@ -290,7 +290,7 @@ namespace CORE {
 //                     const UInt32 sourceBuffersUsed ,
 //                     TDynamicBufferList& dest       ,
 //                     UInt32& destBuffersUsed        )
-//{TRACE;       
+//{GUCEF_TRACE;       
 //
 //    if ( 0 != m_codecList.size() )
 //    {
@@ -345,7 +345,7 @@ namespace CORE {
 //                     const UInt32 sourceBuffersUsed ,
 //                     TDynamicBufferList& dest       ,
 //                     UInt32& destBuffersUsed        )
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    if ( 0 != m_codecList.size() )
 //    {
@@ -402,7 +402,7 @@ namespace CORE {
 //                            UInt32& destBuffsUsed           ,
 //                            TDynamicBufferList& swapBuffers ,
 //                            CICodec* codec                  ) const
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    assert( NULL != codec );
 //    

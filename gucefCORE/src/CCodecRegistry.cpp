@@ -50,14 +50,14 @@ CCodecRegistry* CCodecRegistry::m_instance = NULL;
 
 CCodecRegistry::CCodecRegistry( void )
     : CTONRegistry< CTONRegistry< CICodec > >()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CCodecRegistry::~CCodecRegistry()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -65,7 +65,7 @@ CCodecRegistry::~CCodecRegistry()
 
 CCodecRegistry*
 CCodecRegistry::Instance( void )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( m_instance == NULL )
     {
@@ -79,7 +79,7 @@ CCodecRegistry::Instance( void )
 
 void
 CCodecRegistry::Deinstance( void )
-{TRACE;
+{GUCEF_TRACE;
 
     delete m_instance;
     m_instance = NULL;

@@ -24,6 +24,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"       /* build configuration */

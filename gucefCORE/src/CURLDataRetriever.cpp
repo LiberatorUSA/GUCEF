@@ -47,7 +47,7 @@ namespace CORE {
 
 CURLDataRetriever::CURLDataRetriever( void )
     : m_url()
-{TRACE;
+{GUCEF_TRACE;
 
     AddEventForwarding( URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
@@ -61,7 +61,7 @@ CURLDataRetriever::CURLDataRetriever( void )
 /*-------------------------------------------------------------------------*/
 
 CURLDataRetriever::~CURLDataRetriever()
-{TRACE;
+{GUCEF_TRACE;
 
     UnsubscribeFrom( &m_url );
 }
@@ -70,7 +70,7 @@ CURLDataRetriever::~CURLDataRetriever()
     
 CURL&
 CURLDataRetriever::GetURL( void )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_url;
 }
@@ -79,7 +79,7 @@ CURLDataRetriever::GetURL( void )
 
 void
 CURLDataRetriever::SetIOAccess( CIOAccess* ioAccess )
-{TRACE;
+{GUCEF_TRACE;
 
     m_ioAccess = ioAccess;
 }
@@ -88,7 +88,7 @@ CURLDataRetriever::SetIOAccess( CIOAccess* ioAccess )
     
 CIOAccess*
 CURLDataRetriever::GetIOAccess( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_ioAccess;
 }
@@ -99,7 +99,7 @@ void
 CURLDataRetriever::OnNotify( CNotifier* notifier                 ,
                              const CEvent& eventid               ,
                              CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_ioAccess != NULL )
     {

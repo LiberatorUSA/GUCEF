@@ -106,7 +106,7 @@ CStdCodecPlugin::CStdCodecPlugin( void )
       m_pluginData()     ,
       m_codecSet()       ,
       m_codecList()
-{TRACE;
+{GUCEF_TRACE;
 
     memset( m_fpTable, 0, STDCODEC_FUNCTIONTABLESIZE );
 }
@@ -114,7 +114,7 @@ CStdCodecPlugin::CStdCodecPlugin( void )
 /*-------------------------------------------------------------------------*/
     
 CStdCodecPlugin::~CStdCodecPlugin()
-{TRACE;
+{GUCEF_TRACE;
 
     Unload();
 }
@@ -123,7 +123,7 @@ CStdCodecPlugin::~CStdCodecPlugin()
 
 void
 CStdCodecPlugin::LinkCodecSet( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( IsLoaded() )
     {
@@ -175,7 +175,7 @@ CStdCodecPlugin::LinkCodecSet( void )
 
 void
 CStdCodecPlugin::UnlinkCodecSet( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( IsLoaded() )
     {
@@ -223,7 +223,7 @@ CStdCodecPlugin::UnlinkCodecSet( void )
     
 bool
 CStdCodecPlugin::GetCodecs( CCodecSet& codecSet )
-{TRACE;
+{GUCEF_TRACE;
     
     codecSet = m_codecSet;
     return true;
@@ -233,7 +233,7 @@ CStdCodecPlugin::GetCodecs( CCodecSet& codecSet )
     
 bool
 CStdCodecPlugin::GetCodecList( CCodecList& codecList )
-{TRACE;
+{GUCEF_TRACE;
     
     codecList = m_codecList;
     return true;
@@ -246,7 +246,7 @@ CStdCodecPlugin::Encode( CIOAccess& source         ,
                          CIOAccess& dest           ,
                          const CString& familyName ,
                          const CString& typeName   )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( IsLoaded() )
     {
@@ -274,7 +274,7 @@ CStdCodecPlugin::Decode( CIOAccess& source         ,
                          CIOAccess& dest           ,
                          const CString& familyName ,
                          const CString& typeName   )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( IsLoaded() )
     {
@@ -299,7 +299,7 @@ CStdCodecPlugin::Decode( CIOAccess& source         ,
 
 CString
 CStdCodecPlugin::GetDescription( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( IsLoaded() )
     {
@@ -313,7 +313,7 @@ CStdCodecPlugin::GetDescription( void ) const
 
 CString
 CStdCodecPlugin::GetCopyright( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     if ( IsLoaded() )
     {
@@ -327,7 +327,7 @@ CStdCodecPlugin::GetCopyright( void ) const
     
 TVersion
 CStdCodecPlugin::GetVersion( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     if ( IsLoaded() )
     {
@@ -341,7 +341,7 @@ CStdCodecPlugin::GetVersion( void ) const
     
 CString
 CStdCodecPlugin::GetModulePath( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     if ( IsLoaded() )
     {
@@ -355,7 +355,7 @@ CStdCodecPlugin::GetModulePath( void ) const
     
 bool
 CStdCodecPlugin::IsLoaded( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_soHandle != NULL;
 }
@@ -364,7 +364,7 @@ CStdCodecPlugin::IsLoaded( void ) const
     
 bool
 CStdCodecPlugin::Load( const CString& pluginPath )
-{TRACE;
+{GUCEF_TRACE;
 
     // make sure no module is already loaded
     if ( m_soHandle != NULL ) return false;
@@ -454,7 +454,7 @@ CStdCodecPlugin::Load( const CString& pluginPath )
     
 bool
 CStdCodecPlugin::Unload( void )
-{TRACE;
+{GUCEF_TRACE;
 
     // Check if we have something to unload
     if ( m_soHandle == NULL ) return true;

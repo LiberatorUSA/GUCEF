@@ -83,7 +83,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
     /*---------------------------------------------------------------------*/
     
     static CPingTester* Instance( void )
-    {TRACE;
+    {GUCEF_TRACE;
         
         if ( NULL == m_instance )
         {
@@ -99,7 +99,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
     /*---------------------------------------------------------------------*/
     
     static void Deinstance( void )
-    {TRACE;
+    {GUCEF_TRACE;
     
         delete m_instance;
         m_instance = NULL;
@@ -111,7 +111,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
         : CORE::CGUCEFAppSubSystem( true ) ,
           m_pingCount( 0 )                 ,
           m_ping()
-    {TRACE;
+    {GUCEF_TRACE;
     
         printf( "**** STARTING THE PING TEST ****\n" );
         
@@ -121,7 +121,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
     /*---------------------------------------------------------------------*/
     
     virtual ~CPingTester()
-    {TRACE;
+    {GUCEF_TRACE;
     
     }
     
@@ -134,7 +134,7 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
                            CORE::CICloneable* eventdata = NULL )
-    {TRACE;
+    {GUCEF_TRACE;
     
         if ( eventid == CORE::CGUCEFApplication::AppInitEvent )
         {   

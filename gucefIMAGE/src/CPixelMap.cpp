@@ -55,7 +55,7 @@ CPixelMap::CPixelMap( const void* pixelMapData                      ,
       m_heightInPixels( 0 )                              ,
       m_widthInPixels( 0 )                               ,
       m_pixelMapData( NULL )
-{TRACE;
+{GUCEF_TRACE;
 
     Assign( pixelMapData           ,
             widthInPixels          ,
@@ -72,7 +72,7 @@ CPixelMap::CPixelMap( const CPixelMap& src )
       m_heightInPixels( 0 )                                    ,
       m_widthInPixels( 0 )                                     ,
       m_pixelMapData( NULL )
-{TRACE;
+{GUCEF_TRACE;
 
     Assign( src.m_pixelMapData           ,
             src.m_widthInPixels          ,
@@ -84,7 +84,7 @@ CPixelMap::CPixelMap( const CPixelMap& src )
 /*--------------------------------------------------------------------------*/
 
 CPixelMap::~CPixelMap()
-{TRACE;
+{GUCEF_TRACE;
 
     Clear();
 }
@@ -93,7 +93,7 @@ CPixelMap::~CPixelMap()
 
 CPixelMap&
 CPixelMap::operator=( const CPixelMap& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( &src != this )
     {
@@ -115,7 +115,7 @@ CPixelMap::Assign( const void* pixelMapData                      ,
                    const UInt32 heightInPixels                   ,
                    const TPixelStorageFormat pixelStorageFormat  ,
                    const TBuildinDataType pixelComponentDataType )
-{TRACE;
+{GUCEF_TRACE;
 
     // First we clean up whatever may already be allocated
     Clear();
@@ -145,7 +145,7 @@ CPixelMap::Assign( const void* pixelMapData                      ,
     
 UInt32
 CPixelMap::GetWidthInBytes( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return GetSizeOfPixelComponentInBytes() * GetWidthInPixels();
 }
@@ -154,7 +154,7 @@ CPixelMap::GetWidthInBytes( void ) const
     
 UInt32
 CPixelMap::GetHeightInBytes( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return GetSizeOfPixelComponentInBytes() * GetHeightInPixels();
 }
@@ -163,7 +163,7 @@ CPixelMap::GetHeightInBytes( void ) const
 
 UInt32
 CPixelMap::GetWidthInPixels( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_widthInPixels;
 }
@@ -172,7 +172,7 @@ CPixelMap::GetWidthInPixels( void ) const
     
 UInt32
 CPixelMap::GetHeightInPixels( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_heightInPixels;
 }
@@ -181,7 +181,7 @@ CPixelMap::GetHeightInPixels( void ) const
     
 TPixelStorageFormat
 CPixelMap::GetPixelStorageFormat( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_pixelStorageFormat;
 }
@@ -190,7 +190,7 @@ CPixelMap::GetPixelStorageFormat( void ) const
     
 void*
 CPixelMap::GetDataPtr( const UInt32 pixelOffset /* = 0 */ )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_pixelMapData + ( GetSizeOfPixelInBytes() * pixelOffset );
 }
@@ -199,7 +199,7 @@ CPixelMap::GetDataPtr( const UInt32 pixelOffset /* = 0 */ )
     
 const void*
 CPixelMap::GetDataPtr( const UInt32 pixelOffset /* = 0 */ ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_pixelMapData + ( GetSizeOfPixelInBytes() * pixelOffset );
 }
@@ -208,7 +208,7 @@ CPixelMap::GetDataPtr( const UInt32 pixelOffset /* = 0 */ ) const
 
 TBuildinDataType
 CPixelMap::GetPixelComponentDataType( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_pixelComponentDataType;
 }
@@ -217,7 +217,7 @@ CPixelMap::GetPixelComponentDataType( void ) const
 
 void*
 CPixelMap::GetDataAtScanLine( const UInt32 scanLineIndex )
-{TRACE;
+{GUCEF_TRACE;
     
     return m_pixelMapData + ( scanLineIndex * GetWidthInBytes() );
 }
@@ -226,7 +226,7 @@ CPixelMap::GetDataAtScanLine( const UInt32 scanLineIndex )
 
 const void*
 CPixelMap::GetDataAtScanLine( const UInt32 scanLineIndex ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_pixelMapData + ( scanLineIndex * GetWidthInBytes() );
 }
@@ -235,7 +235,7 @@ CPixelMap::GetDataAtScanLine( const UInt32 scanLineIndex ) const
 
 UInt32
 CPixelMap::GetSizeOfPixelComponentInBytes( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     switch ( m_pixelComponentDataType )
     {
@@ -274,7 +274,7 @@ CPixelMap::GetSizeOfPixelComponentInBytes( void ) const
 
 UInt32
 CPixelMap::GetNumberOfChannelsPerPixel( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     switch ( m_pixelStorageFormat )
     {
@@ -309,7 +309,7 @@ CPixelMap::GetNumberOfChannelsPerPixel( void ) const
 
 UInt32
 CPixelMap::GetSizeOfPixelInBytes( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return GetNumberOfChannelsPerPixel() * GetSizeOfPixelComponentInBytes();
 }
@@ -318,7 +318,7 @@ CPixelMap::GetSizeOfPixelInBytes( void ) const
 
 UInt32
 CPixelMap::GetPixelCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_widthInPixels * m_heightInPixels;
 }
@@ -327,7 +327,7 @@ CPixelMap::GetPixelCount( void ) const
 
 UInt32
 CPixelMap::GetTotalSizeInBytes( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return GetPixelCount() * GetSizeOfPixelInBytes();
 }
@@ -336,7 +336,7 @@ CPixelMap::GetTotalSizeInBytes( void ) const
 
 bool
 CPixelMap::FlipVertical( void )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( 0 ); // @TODO makeme
     return false;
@@ -346,7 +346,7 @@ CPixelMap::FlipVertical( void )
 
 bool
 CPixelMap::FlipHorizontal( void )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( 0 ); // @TODO makeme
     return false;
@@ -358,7 +358,7 @@ bool
 CPixelMap::ApplyMaskColor( Float32 r ,
                            Float32 g ,
                            Float32 b )
-{TRACE;
+{GUCEF_TRACE;
 
     ConvertPixelStorageFormatTo( PSF_RGBA );
     
@@ -370,7 +370,7 @@ CPixelMap::ApplyMaskColor( Float32 r ,
 
 bool
 CPixelMap::GetHasAlpha( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return ( m_pixelStorageFormat == PSF_RGBA ) || ( m_pixelStorageFormat == PSF_SINGLE_CHANNEL_ALPHA );
 }
@@ -379,7 +379,7 @@ CPixelMap::GetHasAlpha( void ) const
 
 void
 CPixelMap::Clear( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_widthInPixels = 0;
     m_heightInPixels = 0;
@@ -392,7 +392,7 @@ CPixelMap::Clear( void )
 
 void
 CPixelMap::ConvertPixelComponentDataTypeTo( const TBuildinDataType pixelComponentDataType )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_pixelComponentDataType != pixelComponentDataType )
     {
@@ -404,7 +404,7 @@ CPixelMap::ConvertPixelComponentDataTypeTo( const TBuildinDataType pixelComponen
 
 void
 CPixelMap::ConvertPixelStorageFormatTo( const TPixelStorageFormat pixelStorageFormat )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_pixelStorageFormat != pixelStorageFormat )
     {

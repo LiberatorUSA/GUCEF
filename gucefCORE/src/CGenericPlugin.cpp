@@ -75,7 +75,7 @@ enum TGenericPluginFuncPtrType
 CGenericPlugin::CGenericPlugin( void )
     : m_moduleHandle( NULL ) ,
       m_modulePath()
-{TRACE;
+{GUCEF_TRACE;
     
     memset( m_funcPointers, 0, GPLUGINFUNCPTR_COUNT );
 }
@@ -83,7 +83,7 @@ CGenericPlugin::CGenericPlugin( void )
 /*-------------------------------------------------------------------------*/
 
 CGenericPlugin::~CGenericPlugin()
-{TRACE;
+{GUCEF_TRACE;
 
     Unload();
 }
@@ -92,7 +92,7 @@ CGenericPlugin::~CGenericPlugin()
 
 bool
 CGenericPlugin::Load( const CString& pluginPath )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( !IsLoaded() )
     {
@@ -148,7 +148,7 @@ CGenericPlugin::Load( const CString& pluginPath )
 
 bool
 CGenericPlugin::Unload( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( IsLoaded() )
     {
@@ -168,7 +168,7 @@ CGenericPlugin::Unload( void )
     
 bool
 CGenericPlugin::IsLoaded( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return NULL != m_moduleHandle;
 }
@@ -177,7 +177,7 @@ CGenericPlugin::IsLoaded( void ) const
     
 CString
 CGenericPlugin::GetDescription( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( IsLoaded() )
     {
@@ -191,7 +191,7 @@ CGenericPlugin::GetDescription( void ) const
 
 CString
 CGenericPlugin::GetCopyright( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( IsLoaded() )
     {
@@ -205,7 +205,7 @@ CGenericPlugin::GetCopyright( void ) const
     
 TVersion
 CGenericPlugin::GetVersion( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( IsLoaded() )
     {
@@ -222,7 +222,7 @@ CGenericPlugin::GetVersion( void ) const
 
 CString
 CGenericPlugin::GetModulePath( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     if ( IsLoaded() )
     {

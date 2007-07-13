@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 #ifndef CINPUTPROFILEMANAGER_H
 #include "CInputProfileManager.h"
 #define CINPUTPROFILEMANAGER_H
@@ -48,14 +53,14 @@ namespace INPUT {
 CInputBasedManipulator::CInputBasedManipulator( const CORE::CString& name )
         : m_name( name ) ,
           m_enabled( true )
-{TRACE;
+{GUCEF_TRACE;
         CInputProfileManager::Instance()->RegisterManipulator( this );        
 }
 
 /*-------------------------------------------------------------------------*/
 
 CInputBasedManipulator::~CInputBasedManipulator()
-{TRACE;
+{GUCEF_TRACE;
         CInputProfileManager::Instance()->UnregisterManipulator( this );
 }
 
@@ -63,7 +68,7 @@ CInputBasedManipulator::~CInputBasedManipulator()
 
 const CORE::CString&
 CInputBasedManipulator::GetName( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_name;
 }
 
@@ -71,7 +76,7 @@ CInputBasedManipulator::GetName( void ) const
 
 void 
 CInputBasedManipulator::SetInputEnabled( const bool enabled )
-{TRACE;
+{GUCEF_TRACE;
         m_enabled = enabled;
 }
 
@@ -79,7 +84,7 @@ CInputBasedManipulator::SetInputEnabled( const bool enabled )
         
 bool 
 CInputBasedManipulator::IsInputEnabled( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_enabled;
 }
 
@@ -87,7 +92,7 @@ CInputBasedManipulator::IsInputEnabled( void ) const
 
 void 
 CInputBasedManipulator::SetHandlingOrder( const UInt32 handlingOrder )
-{TRACE;
+{GUCEF_TRACE;
     m_handlingOrder = handlingOrder;
 }
 
@@ -95,7 +100,7 @@ CInputBasedManipulator::SetHandlingOrder( const UInt32 handlingOrder )
 
 UInt32 
 CInputBasedManipulator::GetHandlingOrder( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_handlingOrder;
 }
 

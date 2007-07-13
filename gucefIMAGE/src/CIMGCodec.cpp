@@ -79,7 +79,7 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CIMGCodec, EInvalidCodec );
 
 CIMGCodec::CIMGCodec( const CCodecPtr& codecPtr )
     : m_codecPtr( codecPtr )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_codecPtr->GetFamilyName() != "ImageCodec" )
     {
@@ -92,20 +92,20 @@ CIMGCodec::CIMGCodec( const CCodecPtr& codecPtr )
     
 CIMGCodec::CIMGCodec( const CIMGCodec& src )
     : m_codecPtr( src.m_codecPtr )
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/    
 
 CIMGCodec::~CIMGCodec()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
     
 CIMGCodec&
 CIMGCodec::operator=( const CIMGCodec& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( &src != this )
     {        
@@ -120,7 +120,7 @@ CIMGCodec::operator=( const CIMGCodec& src )
 bool
 CIMGCodec::Encode( CORE::CIOAccess& source ,
                    CORE::CIOAccess& dest   )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_codecPtr->Encode( source ,
                                dest   );
@@ -131,7 +131,7 @@ CIMGCodec::Encode( CORE::CIOAccess& source ,
 bool
 CIMGCodec::Decode( CORE::CIOAccess& source ,
                    CORE::CIOAccess& dest   )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_codecPtr->Decode( source ,
                                dest   );
@@ -142,7 +142,7 @@ CIMGCodec::Decode( CORE::CIOAccess& source ,
 bool
 CIMGCodec::Encode( const CImage& inputImage       ,
                    CORE::CIOAccess& encodedOutput )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( inputImage.HasFrames() )
     {    
@@ -210,7 +210,7 @@ CIMGCodec::Encode( const CImage& inputImage       ,
 bool
 CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
                    CImage& outputImage           )
-{TRACE;
+{GUCEF_TRACE;
 
     CORE::CDynamicBuffer outputBuffer( 102400, true );
     CORE::CDynamicBufferAccess bufferAccess( &outputBuffer, false );
@@ -330,7 +330,7 @@ CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
 
 CORE::CString
 CIMGCodec::GetFamilyName( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return m_codecPtr->GetFamilyName();
 }
@@ -339,7 +339,7 @@ CIMGCodec::GetFamilyName( void ) const
 
 CORE::CString
 CIMGCodec::GetType( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_codecPtr->GetType();
 }

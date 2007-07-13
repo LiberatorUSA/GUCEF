@@ -248,7 +248,7 @@ CDataNode::SetName( const CString& name )
         
 const CString&
 CDataNode::GetName( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
         return _name;
 }
@@ -349,7 +349,7 @@ CDataNode::operator[]( const CString& name )
 
 void
 CDataNode::ClearAttributes( void )
-{TRACE;
+{GUCEF_TRACE;
 
     // erase all current attributes
     UInt32 count = _atts.GetCount();                                        
@@ -413,7 +413,7 @@ CDataNode::GetAttribute( const CString& name ) const
         
 CDataNode::TNodeAtt* 
 CDataNode::GetAttribute( const CString& name )
-{TRACE;
+{GUCEF_TRACE;
         TNodeAtt* att;
         UInt32 count = _atts.GetLast()+1;
         for ( UInt32 i=0; i<count; ++i )
@@ -471,7 +471,7 @@ CDataNode::AddAttribute( const CString& name  ,
 bool 
 CDataNode::SetAttribute( const CString& name  ,
                          const CString& value )
-{TRACE;
+{GUCEF_TRACE;
         if ( name.Length() && value.Length() )
         {
                 TNodeAtt* att = GetAttribute( name );
@@ -489,7 +489,7 @@ CDataNode::SetAttribute( const CString& name  ,
         
 UInt32 
 CDataNode::GetAttCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _atts.GetCount();
 }
 
@@ -497,7 +497,7 @@ CDataNode::GetAttCount( void ) const
 
 void 
 CDataNode::CopySubTree( const CDataNode& root )
-{TRACE;
+{GUCEF_TRACE;
 
         CDataNode* n = root._pfchild;
         while ( n )
@@ -580,7 +580,7 @@ CDataNode::FindChild( const CString& name ) const
 bool
 CDataNode::Compare( const CDataNode& other         ,
                     const CStringList& excludeList ) const
-{TRACE;
+{GUCEF_TRACE;
 
     // identical nodes should offcourse have identical names
     if ( _name == other._name )
@@ -626,7 +626,7 @@ CDataNode::Compare( const CDataNode& other         ,
 const CDataNode* 
 CDataNode::CompareChild( const CDataNode& other         ,
                          const CStringList& excludeList ) const
-{TRACE;
+{GUCEF_TRACE;
 
     const_iterator i( ConstBegin() );
     while ( i != ConstEnd() )
@@ -646,7 +646,7 @@ CDataNode::CompareChild( const CDataNode& other         ,
 
 bool 
 CDataNode::operator==( const CDataNode& other ) const
-{TRACE;
+{GUCEF_TRACE;
     
     CStringList excludeList;
     return Compare( other, excludeList );
@@ -656,7 +656,7 @@ CDataNode::operator==( const CDataNode& other ) const
 
 bool 
 CDataNode::operator!=( const CDataNode& other ) const
-{TRACE;
+{GUCEF_TRACE;
     return !( (*this) == other );
 }
 
@@ -664,7 +664,7 @@ CDataNode::operator!=( const CDataNode& other ) const
 
 const CDataNode* 
 CDataNode::FindSibling( const CString& name ) const
-{TRACE;
+{GUCEF_TRACE;
         if ( name == _name )
         {
                 return this;
@@ -695,7 +695,7 @@ CDataNode::FindSibling( const CString& name ) const
 
 CDataNode* 
 CDataNode::FindSibling( const CString& name )
-{TRACE;
+{GUCEF_TRACE;
         if ( name == _name )
         {
                 return this;
@@ -726,7 +726,7 @@ CDataNode::FindSibling( const CString& name )
 
 CDataNode* 
 CDataNode::Find( const CString& name )
-{TRACE;    
+{GUCEF_TRACE;    
 
     CDataNode* n = FindSibling( name );
     if ( n ) 
@@ -752,7 +752,7 @@ CDataNode::Find( const CString& name )
 
 const CDataNode* 
 CDataNode::Find( const CString& name ) const
-{TRACE;
+{GUCEF_TRACE;
 
     const CDataNode* n = FindSibling( name );
     if ( n ) 
@@ -838,7 +838,7 @@ CDataNode::WalkTree( const CString& sequence ,
 CDataNode*
 CDataNode::WalkTreeImp( CString& sleftover ,
                         char seperator     ) const
-{TRACE;
+{GUCEF_TRACE;
         if ( _pfchild )
         {
                 CDataNode* sn = (CDataNode*) this;

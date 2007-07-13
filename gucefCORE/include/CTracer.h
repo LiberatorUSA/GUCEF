@@ -99,12 +99,6 @@ class GUCEFCORE_EXPORT_CPP CTracer
   #define GUCEF_TRACE
 #endif  
 
-/*
- *  Legacy define
- */
-#undef TRACE
-#define TRACE GUCEF_TRACE
-
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CTRACER_H ? */

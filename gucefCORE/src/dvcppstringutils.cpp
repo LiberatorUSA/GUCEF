@@ -76,7 +76,7 @@ namespace CORE {
 
 CString
 RelativePath( const CString& relpath )
-{TRACE;        
+{GUCEF_TRACE;        
         if ( relpath.Length() )
         {
                 char buffer[ MAX_DIR_LENGTH ];
@@ -95,7 +95,7 @@ RelativePath( const CString& relpath )
 void
 AppendToPath( CString& path           ,
               const CString& addition )
-{TRACE;
+{GUCEF_TRACE;
         char buffer[ MAX_DIR_LENGTH ];
         
         strncpy( buffer          , 
@@ -110,7 +110,7 @@ AppendToPath( CString& path           ,
 
 CString
 VersionToString( const TVersion* version )
-{TRACE;
+{GUCEF_TRACE;
         char verstr[ 25 ];
         sprintf( verstr, "%d.%d.%d.%d", version->mayor, version->minor, version->patch, version->release );
         return verstr;        
@@ -120,7 +120,7 @@ VersionToString( const TVersion* version )
 
 bool
 StringToBool( const CString& str )
-{TRACE;
+{GUCEF_TRACE;
         UInt32 boolint = String_To_Boolint( str.C_String() );
         return boolint > 0;
 }
@@ -129,7 +129,7 @@ StringToBool( const CString& str )
 
 Int32
 StringToInt32( const CString& str )
-{TRACE;
+{GUCEF_TRACE;
 
     Int32 value;
     sscanf( str.C_String(), "%d", &value );
@@ -140,7 +140,7 @@ StringToInt32( const CString& str )
 
 CString
 Int32ToString( const Int32 value )
-{TRACE;
+{GUCEF_TRACE;
 
     char intBuffer[ 10 ];
     sprintf( intBuffer, "%d", value );
@@ -151,7 +151,7 @@ Int32ToString( const Int32 value )
 
 UInt32
 StringToUInt32( const CString& str )
-{TRACE;
+{GUCEF_TRACE;
 
     UInt32 value;
     sscanf( str.C_String(), "%u", &value );
@@ -162,7 +162,7 @@ StringToUInt32( const CString& str )
 
 CString
 UInt32ToString( const UInt32 value )
-{TRACE;
+{GUCEF_TRACE;
 
     char intBuffer[ 10 ];
     sprintf( intBuffer, "%u", value );
@@ -173,7 +173,7 @@ UInt32ToString( const UInt32 value )
 
 UInt16
 StringToUInt16( const CString& str )
-{TRACE;
+{GUCEF_TRACE;
 
     UInt16 value;
     sscanf( str.C_String(), "%u", &value );
@@ -184,7 +184,7 @@ StringToUInt16( const CString& str )
 
 CString
 UInt16ToString( const UInt16 value )
-{TRACE;
+{GUCEF_TRACE;
 
     char intBuffer[ 10 ];
     sprintf( intBuffer, "%u", value );
@@ -206,7 +206,7 @@ PointerToString( const void* value )
 
 CString
 StringToMD5String( const CString& str )
-{TRACE;
+{GUCEF_TRACE;
         UInt8 md5digest[ 16 ];        
         
         md5fromstring( str.C_String() ,
@@ -235,7 +235,7 @@ MD5ToString( const UInt8 md5Digest[ 16 ] )
 
 CString
 FloatToString( const float value )
-{TRACE;
+{GUCEF_TRACE;
         char floatChars[ 16 ];
         sprintf( floatChars, "%f", value );
         
@@ -246,7 +246,7 @@ FloatToString( const float value )
 
 CString
 DoubleToString( const double value )
-{TRACE;
+{GUCEF_TRACE;
         char doubleChars[ 16 ];
         sprintf( doubleChars, "%f", value );
         
@@ -257,7 +257,7 @@ DoubleToString( const double value )
 
 CString
 LastSubDir( const CString& path )
-{TRACE;
+{GUCEF_TRACE;
 
     CString lastSubDir;
     UInt32 offset = Last_Subdir( path.C_String() );
@@ -276,7 +276,7 @@ LastSubDir( const CString& path )
 
 CString
 StripFilename( const CString& pathPlusFilename )
-{TRACE;
+{GUCEF_TRACE;
 
     char* buffer = new char[ pathPlusFilename.Length()+1 ];
     UInt32 length = _Strip_Filename( buffer, pathPlusFilename.C_String() );
@@ -289,7 +289,7 @@ StripFilename( const CString& pathPlusFilename )
 
 GUCEFCORE_EXPORT_CPP CString
 ExtractFilename( const CString& pathPlusFilename )
-{TRACE;
+{GUCEF_TRACE;
 
     return Extract_Filename( pathPlusFilename.C_String() );
 }
@@ -298,7 +298,7 @@ ExtractFilename( const CString& pathPlusFilename )
 
 bool
 FileExists( const CString& filename )
-{TRACE;
+{GUCEF_TRACE;
 
     return 0 != File_Exists( filename.C_String() );
 }

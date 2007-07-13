@@ -145,7 +145,7 @@ CTCPServerSocket::CTCPServerSocket( bool blocking )
           _active( false )                        ,
           _blocking( blocking )                   ,
           m_port( 0 )
-{TRACE;
+{GUCEF_TRACE;
         
         _data = new TTCPServerSockData;
         _data->blocking = blocking;
@@ -166,7 +166,7 @@ CTCPServerSocket::CTCPServerSocket( bool blocking )
 /*-------------------------------------------------------------------------*/
 
 CTCPServerSocket::~CTCPServerSocket()
-{TRACE;
+{GUCEF_TRACE;
         /*
          *      Clean everything up
          */
@@ -185,7 +185,7 @@ CTCPServerSocket::~CTCPServerSocket()
 
 void
 CTCPServerSocket::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
 
     ClientDataRecievedEvent.Initialize();
     ClientDataSentEvent.Initialize();
@@ -206,7 +206,7 @@ CTCPServerSocket::RegisterEvents( void )
  */
 CTCPServerConnection* 
 CTCPServerSocket::GetConnection( UInt32 index )
- {TRACE;
+ {GUCEF_TRACE;
 
 	return (CTCPServerConnection*)_connections[ index ];
 }
@@ -215,7 +215,7 @@ CTCPServerSocket::GetConnection( UInt32 index )
 
 void 
 CTCPServerSocket::Update( void )
-{TRACE;
+{GUCEF_TRACE;
         if ( _active )//&& ( _data->threadmethod == TM_NO_THREADING ) )
         {
                 /*
@@ -240,7 +240,7 @@ CTCPServerSocket::Update( void )
 
 void
 CTCPServerSocket::AcceptClients( void )
-{TRACE;
+{GUCEF_TRACE;
         int s;          /* s is where the data is stored from the select function */
         int nfds;       /* This is used for Compatibility */
         fd_set conn;    /* Setup the read variable for the Select function */
@@ -342,7 +342,7 @@ CTCPServerSocket::AcceptClients( void )
 
 bool
 CTCPServerSocket::IsActive( void ) const 
-{TRACE;
+{GUCEF_TRACE;
         return _active;
 }
 
@@ -350,7 +350,7 @@ CTCPServerSocket::IsActive( void ) const
 
 bool 
 CTCPServerSocket::IsBlocking( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _blocking;
 }
                         
@@ -358,7 +358,7 @@ CTCPServerSocket::IsBlocking( void ) const
 
 bool
 CTCPServerSocket::ListenOnPort( UInt16 servport )
-{TRACE;
+{GUCEF_TRACE;
 
         /*
          *      Close all existing connections
@@ -469,7 +469,7 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 
 UInt32 
 CTCPServerSocket::GetMaxConnections( void ) const
-{TRACE; 
+{GUCEF_TRACE; 
         return _connections.GetCount(); 
 }
 
@@ -477,7 +477,7 @@ CTCPServerSocket::GetMaxConnections( void ) const
 
 UInt32 
 CTCPServerSocket::GetActiveCount( void ) const
-{TRACE; 
+{GUCEF_TRACE; 
         return _acount; 
 }
 
@@ -485,7 +485,7 @@ CTCPServerSocket::GetActiveCount( void ) const
 
 void
 CTCPServerSocket::Close( void )
-{TRACE;
+{GUCEF_TRACE;
 
         /*
          *      Close the socket
@@ -527,7 +527,7 @@ CTCPServerSocket::OnClientRead( CTCPServerConnection* connection ,
                                 const char* data                 ,
                                 const UInt16 recieved            ,
                                 UInt16& keepbytes                )
-{TRACE;
+{GUCEF_TRACE;
         _datalock.Lock();
         
         NotifyObservers( ClientDataRecievedEvent );

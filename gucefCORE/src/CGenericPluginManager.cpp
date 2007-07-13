@@ -75,20 +75,20 @@ CGenericPluginManager* CGenericPluginManager::m_instance = NULL;
 
 CGenericPluginManager::CGenericPluginManager( void )
     : CPluginManager()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CGenericPluginManager::~CGenericPluginManager()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CGenericPluginManager*
 CGenericPluginManager::Instance( void )
-{TRACE;
+{GUCEF_TRACE;
     if ( !m_instance )
     {
         m_instance = new CGenericPluginManager();
@@ -101,7 +101,7 @@ CGenericPluginManager::Instance( void )
 
 void
 CGenericPluginManager::Deinstance( void )
-{TRACE;
+{GUCEF_TRACE;
     delete m_instance;
     m_instance = NULL;
 }
@@ -110,7 +110,7 @@ CGenericPluginManager::Deinstance( void )
 
 void
 CGenericPluginManager::LoadAll( void )
-{TRACE;
+{GUCEF_TRACE;
 
     CString pluginDir( GetPluginDir() );
     CString pluginPath( pluginDir );
@@ -143,7 +143,7 @@ CGenericPluginManager::LoadAll( void )
     
 void
 CGenericPluginManager::UnloadAll( void )
-{TRACE;
+{GUCEF_TRACE;
     
     TPluginList::iterator i = m_pluginList.begin();
     while ( i != m_pluginList.end() )
@@ -166,7 +166,7 @@ CGenericPluginManager::UnloadAll( void )
     
 bool
 CGenericPluginManager::IsLoaded( const CString& pluginPath )
-{TRACE;
+{GUCEF_TRACE;
 
     TPluginList::iterator i = m_pluginList.begin();
     while ( i != m_pluginList.end() )
@@ -186,7 +186,7 @@ CGenericPluginManager::IsLoaded( const CString& pluginPath )
 
 bool
 CGenericPluginManager::Load( const CString& pluginPath )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( !IsLoaded( pluginPath ) )
     {
@@ -218,7 +218,7 @@ CGenericPluginManager::Load( const CString& pluginPath )
     
 bool
 CGenericPluginManager::Unload( const CString& pluginPath )
-{TRACE;
+{GUCEF_TRACE;
 
     TPluginList::iterator i = m_pluginList.begin();
     while ( i != m_pluginList.end() )

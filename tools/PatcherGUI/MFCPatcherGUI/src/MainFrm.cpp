@@ -79,7 +79,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 /*-------------------------------------------------------------------------*/
 
 void CMainFrame::OnSize(UINT nType, int cx, int cy)
-{TRACE;
+{GUCEF_TRACE;
 
    // MoveWindow( 0, 0, 220, 160 );
   //  m_listBox->MoveWindow(0, 0, cx, 100);

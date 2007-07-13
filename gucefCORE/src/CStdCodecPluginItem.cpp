@@ -57,7 +57,7 @@ CStdCodecPluginItem::CStdCodecPluginItem( void* pluginData            ,
     : CICodec()                  ,
       m_codecLink( codecLink )   ,
       m_pluginData( pluginData )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( m_codecLink != NULL );
 }
@@ -68,7 +68,7 @@ CStdCodecPluginItem::CStdCodecPluginItem( const CStdCodecPluginItem& src )
     : CICodec()                        ,
       m_codecLink( src.m_codecLink )   ,
       m_pluginData( src.m_pluginData )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -76,7 +76,7 @@ CStdCodecPluginItem::CStdCodecPluginItem( const CStdCodecPluginItem& src )
     
 CStdCodecPluginItem&
 CStdCodecPluginItem::operator=( const CStdCodecPluginItem& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( &src != this )
     {
@@ -91,7 +91,7 @@ CStdCodecPluginItem::operator=( const CStdCodecPluginItem& src )
 /*-------------------------------------------------------------------------*/
 
 CStdCodecPluginItem::~CStdCodecPluginItem()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -99,7 +99,7 @@ CStdCodecPluginItem::~CStdCodecPluginItem()
 
 TCodecPluginLink*
 CStdCodecPluginItem::GetCodecPluginLink( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_codecLink;
 }
@@ -108,7 +108,7 @@ CStdCodecPluginItem::GetCodecPluginLink( void ) const
 
 void*
 CStdCodecPluginItem::GetPluginData( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_pluginData;
 }
@@ -118,7 +118,7 @@ CStdCodecPluginItem::GetPluginData( void ) const
 bool
 CStdCodecPluginItem::Encode( CIOAccess& source ,
                              CIOAccess& dest   )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_codecLink->encode( m_pluginData             , 
                                 m_codecLink->codecData   , 
@@ -133,7 +133,7 @@ CStdCodecPluginItem::Encode( CIOAccess& source ,
 bool
 CStdCodecPluginItem::Decode( CIOAccess& source ,
                              CIOAccess& dest   )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_codecLink->decode( m_pluginData             , 
                                 m_codecLink->codecData   , 
@@ -147,7 +147,7 @@ CStdCodecPluginItem::Decode( CIOAccess& source ,
 
 CICloneable*
 CStdCodecPluginItem::Clone( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return new CStdCodecPluginItem( *this );
 }
@@ -156,7 +156,7 @@ CStdCodecPluginItem::Clone( void ) const
     
 CString
 CStdCodecPluginItem::GetType( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_codecLink->codecType;
 }
@@ -165,7 +165,7 @@ CStdCodecPluginItem::GetType( void ) const
     
 CString
 CStdCodecPluginItem::GetFamilyName( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_codecLink->codecFamily;
 }

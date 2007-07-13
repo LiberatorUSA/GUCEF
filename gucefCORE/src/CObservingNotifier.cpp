@@ -53,7 +53,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CObservingNotifier::CObservingNotifier( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_observer.SetOwner( this );
 }
@@ -62,7 +62,7 @@ CObservingNotifier::CObservingNotifier( void )
     
 CObservingNotifier::CObservingNotifier( const CObservingNotifier& src )
     : m_observer( src.m_observer )
-{TRACE;
+{GUCEF_TRACE;
 
     m_observer.SetOwner( this );
 }
@@ -70,7 +70,7 @@ CObservingNotifier::CObservingNotifier( const CObservingNotifier& src )
 /*-------------------------------------------------------------------------*/
     
 CObservingNotifier::~CObservingNotifier()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -78,7 +78,7 @@ CObservingNotifier::~CObservingNotifier()
     
 CObservingNotifier& 
 CObservingNotifier::operator=( const CObservingNotifier& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( this != &src )
     {
@@ -90,7 +90,7 @@ CObservingNotifier::operator=( const CObservingNotifier& src )
     
 void 
 CObservingNotifier::UnsubscribeAllFromObserver( void )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     m_observer.UnsubscribeFromAll();
@@ -101,7 +101,7 @@ CObservingNotifier::UnsubscribeAllFromObserver( void )
 
 UInt32 
 CObservingNotifier::GetObserverSubscriptionCount( void )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     UInt32 retval( m_observer.GetSubscriptionCount() );
@@ -113,7 +113,7 @@ CObservingNotifier::GetObserverSubscriptionCount( void )
 
 UInt32 
 CObservingNotifier::GetObserverNotifierCount( void )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     UInt32 retval( m_observer.GetNotifierCount() );
@@ -125,7 +125,7 @@ CObservingNotifier::GetObserverNotifierCount( void )
 
 void 
 CObservingNotifier::SubscribeTo( CNotifier* notifier )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     notifier->Subscribe( &m_observer );
@@ -137,7 +137,7 @@ CObservingNotifier::SubscribeTo( CNotifier* notifier )
 void 
 CObservingNotifier::SubscribeTo( CNotifier* notifier   ,
                                  const CEvent& eventid )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     notifier->Subscribe( &m_observer ,
@@ -149,7 +149,7 @@ CObservingNotifier::SubscribeTo( CNotifier* notifier   ,
 
 void 
 CObservingNotifier::UnsubscribeFrom( CNotifier* notifier )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     notifier->Unsubscribe( &m_observer );
@@ -161,7 +161,7 @@ CObservingNotifier::UnsubscribeFrom( CNotifier* notifier )
 void 
 CObservingNotifier::UnsubscribeFrom( CNotifier* notifier   ,
                                      const CEvent& eventid )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     notifier->Unsubscribe( &m_observer ,
@@ -173,7 +173,7 @@ CObservingNotifier::UnsubscribeFrom( CNotifier* notifier   ,
 
 CObserver& 
 CObservingNotifier::AsObserver( void )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_observer;
 }
@@ -182,7 +182,7 @@ CObservingNotifier::AsObserver( void )
 
 const CObserver& 
 CObservingNotifier::AsObserver( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_observer;
 }
@@ -193,7 +193,7 @@ void
 CObservingNotifier::AddEventForwarding( const CEvent& eventid                 ,
                                         const TEventOriginFilter originFilter ,
                                         CNotifier* notifier /* = NULL */      )
-{TRACE;
+{GUCEF_TRACE;
         //@TODO: store the originFilter setting and apply it later on
     if ( NULL != notifier )
     {
@@ -215,7 +215,7 @@ CObservingNotifier::AddEventForwarding( const CEvent& eventid                 ,
 void
 CObservingNotifier::RemoveEventForwarding( const CEvent& eventid            ,
                                            CNotifier* notifier /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( NULL != notifier )
     {
@@ -240,7 +240,7 @@ CObservingNotifier::RemoveEventForwarding( const CEvent& eventid            ,
 
 void
 CObservingNotifier::RemoveEventForwarding( CNotifier& notifier )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( &notifier );
     
@@ -266,7 +266,7 @@ void
 CObservingNotifier::OnNotify( CNotifier* notifier                 ,
                               const CEvent& eventid               ,
                               CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( NULL != notifier );
     

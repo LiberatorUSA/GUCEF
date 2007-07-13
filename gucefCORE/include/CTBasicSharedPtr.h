@@ -262,7 +262,7 @@ CTBasicSharedPtr< T >::CTBasicSharedPtr( void )
         : m_ptr( NULL )                          ,
           m_refCounter( NULL )                   ,
           m_objectDestructor( NULL )
-{TRACE;
+{GUCEF_TRACE;
     // Note that if this constructor is used an assignment is required at
     // a later time to initialize the shared pointer
 }
@@ -275,7 +275,7 @@ CTBasicSharedPtr< T >::CTBasicSharedPtr( T* ptr                        ,
         : m_ptr( ptr )                           ,
           m_refCounter( NULL )                   ,
           m_objectDestructor( objectDestructor )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( ptr )
     {
@@ -291,7 +291,7 @@ CTBasicSharedPtr< T >::CTBasicSharedPtr( T& ptr                        ,
         : m_ptr( &ptr )                         ,
           m_refCounter( new UInt32( 1UL ) )     ,
           m_objectDestructor( objectDestructor )          
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -302,7 +302,7 @@ CTBasicSharedPtr< T >::CTBasicSharedPtr( const CTBasicSharedPtr< T >& src )
         : m_ptr( src.m_ptr )                           ,
           m_refCounter( src.m_refCounter )             ,
           m_objectDestructor( src.m_objectDestructor )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_refCounter )
     {        
@@ -314,7 +314,7 @@ CTBasicSharedPtr< T >::CTBasicSharedPtr( const CTBasicSharedPtr< T >& src )
    
 template< typename T >
 CTBasicSharedPtr< T >::~CTBasicSharedPtr()
-{TRACE;
+{GUCEF_TRACE;
 
     Unlink();
 }
@@ -325,7 +325,7 @@ template< typename T >
 void
 CTBasicSharedPtr< T >::Initialize( T* ptr                        ,
                                    TDestructor* objectDestructor )
-{TRACE;
+{GUCEF_TRACE;
 
     // If you get an assert here:
     //    You have an error in your decending class: you cannot initialize twice
@@ -341,7 +341,7 @@ CTBasicSharedPtr< T >::Initialize( T* ptr                        ,
 template< typename T >
 void 
 CTBasicSharedPtr< T >::OverrideDestructor( TDestructor* newObjectDestructor )
-{TRACE;
+{GUCEF_TRACE;
 
     m_objectDestructor = newObjectDestructor;
 }
@@ -351,7 +351,7 @@ CTBasicSharedPtr< T >::OverrideDestructor( TDestructor* newObjectDestructor )
 template< typename T >
 typename CTBasicSharedPtr< T >::TDestructor*
 CTBasicSharedPtr< T >::GetDestructor( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_objectDestructor;
 }
@@ -361,7 +361,7 @@ CTBasicSharedPtr< T >::GetDestructor( void ) const
 template< typename T >
 bool
 CTBasicSharedPtr< T >::IsNULL( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return NULL == m_ptr;
 }
@@ -371,7 +371,7 @@ CTBasicSharedPtr< T >::IsNULL( void ) const
 template< typename T >
 UInt32 
 CTBasicSharedPtr< T >::GetReferenceCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_refCounter )
     {
@@ -385,7 +385,7 @@ CTBasicSharedPtr< T >::GetReferenceCount( void ) const
 template< typename T >
 CTBasicSharedPtr< T >&
 CTBasicSharedPtr< T >::operator=( int nullValue )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( nullValue == NULL );
     Unlink();
@@ -397,7 +397,7 @@ CTBasicSharedPtr< T >::operator=( int nullValue )
 template< typename T >
 CTBasicSharedPtr< T >& 
 CTBasicSharedPtr< T >::operator=( const CTBasicSharedPtr< T >& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( this != &src )
     {
@@ -420,7 +420,7 @@ CTBasicSharedPtr< T >::operator=( const CTBasicSharedPtr< T >& src )
 template< typename T >
 inline bool 
 CTBasicSharedPtr< T >::operator==( const CTBasicSharedPtr< T >& other ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return m_ptr == other.m_ptr;
 }
@@ -430,7 +430,7 @@ CTBasicSharedPtr< T >::operator==( const CTBasicSharedPtr< T >& other ) const
 template< typename T >
 inline bool 
 CTBasicSharedPtr< T >::operator==( const void* other ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return other == m_ptr;
 }
@@ -440,7 +440,7 @@ CTBasicSharedPtr< T >::operator==( const void* other ) const
 template< typename T >
 inline bool 
 operator==( const T* ptr, const CTBasicSharedPtr< T >& other )
-{TRACE;
+{GUCEF_TRACE;
 
     return other == ptr;
 }
@@ -453,7 +453,7 @@ operator==( const T* ptr, const CTBasicSharedPtr< T >& other )
 template< typename T >
 inline bool 
 operator==( const int ptr, const CTBasicSharedPtr< T >& other )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( NULL == ptr );
     return static_cast< const T* >( NULL ) == other;
@@ -464,7 +464,7 @@ operator==( const int ptr, const CTBasicSharedPtr< T >& other )
 template< typename T >
 inline bool 
 CTBasicSharedPtr< T >::operator!=( const CTBasicSharedPtr< T >& other ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_ptr != other.m_ptr;    
 }
@@ -474,7 +474,7 @@ CTBasicSharedPtr< T >::operator!=( const CTBasicSharedPtr< T >& other ) const
 template< typename T >
 inline bool 
 CTBasicSharedPtr< T >::operator!=( const void* other ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return other != m_ptr;
 }
@@ -484,7 +484,7 @@ CTBasicSharedPtr< T >::operator!=( const void* other ) const
 template< typename T >
 inline bool 
 operator!=( const T* ptr, const CTBasicSharedPtr< T >& other )
-{TRACE;
+{GUCEF_TRACE;
 
     return other != ptr;
 }
@@ -497,7 +497,7 @@ operator!=( const T* ptr, const CTBasicSharedPtr< T >& other )
 template< typename T >
 inline bool 
 operator!=( const int ptr, const CTBasicSharedPtr< T >& other )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( NULL == ptr );
     return static_cast< const T* >( NULL ) != other;
@@ -508,7 +508,7 @@ operator!=( const int ptr, const CTBasicSharedPtr< T >& other )
 template< typename T >
 inline T& 
 CTBasicSharedPtr< T >::operator*( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_ptr )
     {
@@ -524,7 +524,7 @@ CTBasicSharedPtr< T >::operator*( void )
 template< typename T >
 inline const T& 
 CTBasicSharedPtr< T >::operator*( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_ptr )
     {
@@ -541,7 +541,7 @@ CTBasicSharedPtr< T >::operator*( void ) const
 template< typename T >
 inline T*
 CTBasicSharedPtr< T >::operator->( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_ptr )
     {
@@ -557,7 +557,7 @@ CTBasicSharedPtr< T >::operator->( void )
 template< typename T >
 inline const T* 
 CTBasicSharedPtr< T >::operator->( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_ptr )
     {
@@ -573,7 +573,7 @@ CTBasicSharedPtr< T >::operator->( void ) const
 template< typename T >
 inline T* 
 CTBasicSharedPtr< T >::GetPointer( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_ptr )
     {
@@ -589,7 +589,7 @@ CTBasicSharedPtr< T >::GetPointer( void )
 template< typename T >
 inline const T* 
 CTBasicSharedPtr< T >::GetPointer( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_ptr )
     {
@@ -605,7 +605,7 @@ CTBasicSharedPtr< T >::GetPointer( void ) const
 template< typename T >
 void 
 CTBasicSharedPtr< T >::Unlink( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_ptr )
     {

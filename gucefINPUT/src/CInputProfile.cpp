@@ -30,6 +30,11 @@
 #define CDATANODE_H
 #endif /* CDATANODE_H ? */
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 #include "CInputProfile.h"
 
 /*-------------------------------------------------------------------------//
@@ -48,7 +53,7 @@ namespace INPUT {
 //-------------------------------------------------------------------------*/
         
 CInputProfile::CInputProfile( void )
-{TRACE;
+{GUCEF_TRACE;
         assert( 0 );
 }
 
@@ -56,14 +61,14 @@ CInputProfile::CInputProfile( void )
         
 CInputProfile::CInputProfile( const CORE::CString& profilename )
         : m_name( profilename )
-{TRACE;
+{GUCEF_TRACE;
         m_manipulators.SetAllowDuplicates( false );
 }
 
 /*-------------------------------------------------------------------------*/
         
 CInputProfile::CInputProfile( const CInputProfile& src )
-{TRACE;
+{GUCEF_TRACE;
         for ( UInt32 i=0; i<src.m_map.GetCount(); ++i )
         {
                 m_map.Add( src.m_map.GetKey( i )                                                       ,
@@ -74,7 +79,7 @@ CInputProfile::CInputProfile( const CInputProfile& src )
 /*-------------------------------------------------------------------------*/
         
 CInputProfile::~CInputProfile()
-{TRACE;
+{GUCEF_TRACE;
         Clear();
 }
 
@@ -82,7 +87,7 @@ CInputProfile::~CInputProfile()
         
 CInputProfile& 
 CInputProfile::operator=( const CInputProfile& src )
-{TRACE;
+{GUCEF_TRACE;
         if ( this != &src )
         {
                 Clear();
@@ -101,7 +106,7 @@ CInputProfile::operator=( const CInputProfile& src )
 bool 
 CInputProfile::SetActionMapLink( const CORE::CString& actionmapname   ,
                                  const CORE::CString& manipulatorname )
-{TRACE;
+{GUCEF_TRACE;
         /*
          *      check for valid input
          */
@@ -154,7 +159,7 @@ CInputProfile::SetActionMapLink( const CORE::CString& actionmapname   ,
                                
 CORE::CStringList 
 CInputProfile::GetActionMapList( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_map.GetKeyList();
 }
 
@@ -162,7 +167,7 @@ CInputProfile::GetActionMapList( void ) const
         
 const CORE::CString& 
 CInputProfile::GetName( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_name;
 }
 
@@ -170,7 +175,7 @@ CInputProfile::GetName( void ) const
         
 CORE::CString 
 CInputProfile::GetManipulatorActionMap( const CORE::CString& manipulatorname ) const
-{TRACE;
+{GUCEF_TRACE;
         CORE::CStringList* list;
         for ( UInt32 i=0; i<m_map.GetCount(); ++i )
         {
@@ -188,7 +193,7 @@ CInputProfile::GetManipulatorActionMap( const CORE::CString& manipulatorname ) c
         
 const CORE::CStringList* 
 CInputProfile::GetActionMapManipulators( const CORE::CString& actionmapname ) const
-{TRACE;
+{GUCEF_TRACE;
         return static_cast<CORE::CStringList*>( m_map.Get( actionmapname ) );
 }
 
@@ -196,7 +201,7 @@ CInputProfile::GetActionMapManipulators( const CORE::CString& actionmapname ) co
 
 void 
 CInputProfile::Clear( void )
-{TRACE;
+{GUCEF_TRACE;
         for ( UInt32 i=0; i<m_map.GetCount(); ++i )
         {
                 delete static_cast<CORE::CStringList*>( m_map[ i ] );
@@ -208,7 +213,7 @@ CInputProfile::Clear( void )
 
 UInt32 
 CInputProfile::GetActionMapCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_map.GetCount();
 }
 
@@ -216,7 +221,7 @@ CInputProfile::GetActionMapCount( void ) const
         
 UInt32 
 CInputProfile::GetManipulatorCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_manipulators.GetCount();
 }
 
@@ -224,7 +229,7 @@ CInputProfile::GetManipulatorCount( void ) const
 
 const CORE::CStringList& 
 CInputProfile::GetManipulatorList( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_manipulators;
 }
 
@@ -232,7 +237,7 @@ CInputProfile::GetManipulatorList( void ) const
 
 bool 
 CInputProfile::UsesActionMap( const CORE::CString& actionmapname ) const
-{TRACE;
+{GUCEF_TRACE;
         return NULL != m_map[ actionmapname ];
 }
 
@@ -240,7 +245,7 @@ CInputProfile::UsesActionMap( const CORE::CString& actionmapname ) const
 
 bool 
 CInputProfile::LoadConfig( const CORE::CDataNode& node )
-{TRACE;        
+{GUCEF_TRACE;        
         Clear();
         
         const CORE::CDataNode* n = node.Search( "InputProfile" ,
@@ -294,7 +299,7 @@ CInputProfile::LoadConfig( const CORE::CDataNode& node )
 
 bool 
 CInputProfile::SaveConfig( CORE::CDataNode& node )
-{TRACE;
+{GUCEF_TRACE;
         CORE::CDataNode* n = node.Structure( "InputProfile" ,
                                              '%'            );                     
         n->SetAttribute( "name", m_name );

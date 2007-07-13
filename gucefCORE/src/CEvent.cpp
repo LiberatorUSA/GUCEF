@@ -55,7 +55,7 @@ namespace CORE {
 CEvent::CEvent( void )
     : m_eventID( 0 ) ,
       m_eventName()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -63,7 +63,7 @@ CEvent::CEvent( void )
 CEvent::CEvent( const CORE::CString& eventName )
     : m_eventID( 0 )           ,
       m_eventName( eventName )
-{TRACE;
+{GUCEF_TRACE;
     
     // Wait for delayed initialization
 }
@@ -74,7 +74,7 @@ CEvent::CEvent( const UInt32 eventID     ,
                 const CString& eventName )
     : m_eventID( eventID )     ,
       m_eventName( eventName )
-{TRACE;
+{GUCEF_TRACE;
     
 }
 
@@ -83,14 +83,14 @@ CEvent::CEvent( const UInt32 eventID     ,
 CEvent::CEvent( const CEvent& src )
     : m_eventID( src.m_eventID )     ,
       m_eventName( src.m_eventName )
-{TRACE;
+{GUCEF_TRACE;
     
 }
 
 /*-------------------------------------------------------------------------*/
 
 CEvent::~CEvent()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -98,7 +98,7 @@ CEvent::~CEvent()
 
 CEvent&
 CEvent::operator=( const CEvent& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( &src != this )
     {        
@@ -112,7 +112,7 @@ CEvent::operator=( const CEvent& src )
 
 CEvent&
 CEvent::operator=( const CORE::CString& eventName )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( eventName != m_eventName )
     {
@@ -126,7 +126,7 @@ CEvent::operator=( const CORE::CString& eventName )
 
 bool
 CEvent::operator==( const CEvent& other ) const
-{TRACE;
+{GUCEF_TRACE;
     
     assert( m_eventID > 0 );
     assert( other.m_eventID > 0 );
@@ -137,7 +137,7 @@ CEvent::operator==( const CEvent& other ) const
     
 bool
 CEvent::operator!=( const CEvent& other ) const
-{TRACE;
+{GUCEF_TRACE;
     
     assert( m_eventID > 0 );
     assert( other.m_eventID > 0 );
@@ -148,7 +148,7 @@ CEvent::operator!=( const CEvent& other ) const
 
 bool
 CEvent::operator<( const CEvent& other ) const
-{TRACE;
+{GUCEF_TRACE;
     
     assert( m_eventID > 0 );
     assert( other.m_eventID > 0 );
@@ -159,7 +159,7 @@ CEvent::operator<( const CEvent& other ) const
 
 UInt32
 CEvent::GetID( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     assert( m_eventID > 0 );
     return m_eventID;
@@ -169,7 +169,7 @@ CEvent::GetID( void ) const
 
 CORE::CString
 CEvent::GetName( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return m_eventName;
 }
@@ -178,7 +178,7 @@ CEvent::GetName( void ) const
 
 void
 CEvent::Initialize( void ) const
-{TRACE;
+{GUCEF_TRACE;
     /*
      *  In this rare occasion a const_cast is legit since we are preforming 
      *  an action that has conceptually already occurred,.. initialization.
@@ -193,7 +193,7 @@ CEvent::Initialize( void ) const
 
 bool
 CEvent::IsInitialized( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_eventID > 0;
 }

@@ -46,7 +46,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CIGUCEFApplicationDriver::~CIGUCEFApplicationDriver()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 

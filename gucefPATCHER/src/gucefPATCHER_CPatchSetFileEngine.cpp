@@ -1,18 +1,20 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
+ *  gucefPATCHER: GUCEF RAD module providing a patch delivery system
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
- * All source code herein is the property of Dinand Vanvelzen. You may not sell
- * or otherwise commercially exploit the source or things you created based on
- * the source.
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
  
 /*-------------------------------------------------------------------------//
@@ -70,7 +72,7 @@ CPatchSetFileEngine::CPatchSetFileEngine( void )
       m_fileList()                ,
       m_curFileLocIndex( 0 )      ,
       m_curFileIndex( 0 )
-{TRACE;
+{GUCEF_TRACE;
 
     SubscribeTo( &m_dataRetriever );
 }
@@ -78,7 +80,7 @@ CPatchSetFileEngine::CPatchSetFileEngine( void )
 /*-------------------------------------------------------------------------*/
 
 CPatchSetFileEngine::~CPatchSetFileEngine()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -89,7 +91,7 @@ CPatchSetFileEngine::Start( const TFileList& fileList            ,
                             const CORE::CString& localRoot       ,
                             const CORE::CString& tempStorageRoot )
 
-{TRACE;
+{GUCEF_TRACE;
 
     // The user should explicitly stop first if we are already busy
     if ( !IsActive() )
@@ -122,7 +124,7 @@ CPatchSetFileEngine::Start( const TFileList& fileList            ,
 
 bool
 CPatchSetFileEngine::ProcessCurrentFile( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_stopSignalGiven                 && 
          m_isActive                         && 
@@ -281,7 +283,7 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
     
 void
 CPatchSetFileEngine::Stop( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_isActive )
     {
@@ -298,7 +300,7 @@ CPatchSetFileEngine::Stop( void )
 
 bool
 CPatchSetFileEngine::IsActive( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_isActive;
 }
@@ -307,7 +309,7 @@ CPatchSetFileEngine::IsActive( void ) const
 
 bool
 CPatchSetFileEngine::TryNextFileLocation( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_fileAccess->Close();
 
@@ -343,7 +345,7 @@ CPatchSetFileEngine::TryNextFileLocation( void )
 
 bool
 CPatchSetFileEngine::ProceedToNextFile( void )
-{TRACE;
+{GUCEF_TRACE;
 
     // Close the last file if it is still opened
     if ( m_fileAccess != NULL )
@@ -365,7 +367,7 @@ void
 CPatchSetFileEngine::OnNotify( CORE::CNotifier* notifier                 ,
                                const CORE::CEvent& eventid               ,
                                CORE::CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_stopSignalGiven && m_isActive )
     {

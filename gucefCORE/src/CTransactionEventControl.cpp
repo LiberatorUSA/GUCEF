@@ -131,7 +131,7 @@ CTransactionEventControl::CTransactionEventControl( void )
 /*-------------------------------------------------------------------------*/
 
 CTransactionEventControl::~CTransactionEventControl()
-{TRACE;
+{GUCEF_TRACE;
     
     ClearAllFilters();
 }
@@ -140,7 +140,7 @@ CTransactionEventControl::~CTransactionEventControl()
 
 void
 CTransactionEventControl::ClearAllFilters( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_mutex.Lock();
     m_filterMap.clear();
@@ -152,7 +152,7 @@ CTransactionEventControl::ClearAllFilters( void )
 
 void
 CTransactionEventControl::StartTransaction( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_mutex.Lock();
     m_transactionBusy = true;
@@ -163,7 +163,7 @@ CTransactionEventControl::StartTransaction( void )
     
 void
 CTransactionEventControl::FinishTransaction( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_mutex.Lock();
     
@@ -183,7 +183,7 @@ CTransactionEventControl::FinishTransaction( void )
 
 bool
 CTransactionEventControl::IsTransactionActive( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_transactionBusy;
 }
@@ -196,7 +196,7 @@ CTransactionEventControl::AddEventFilter( const CEvent& eventID                 
                                           const TEventOriginFilter originFilter ,
                                           const bool preserveEventData          ,
                                           const CNotifier* sender /* = NULL */  )
-{TRACE;
+{GUCEF_TRACE;
     
     m_mutex.Lock();
     
@@ -231,7 +231,7 @@ CTransactionEventControl::AddEventFilter( const CEvent& eventID                 
 bool
 CTransactionEventControl::RemoveEventFilter( const CEvent& eventID                ,
                                              const CNotifier* sender /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     bool retValue = false;
 
@@ -267,7 +267,7 @@ CTransactionEventControl::RemoveEventFilter( const CEvent& eventID              
 bool
 CTransactionEventControl::IsEventFiltered( const CEvent& eventID   ,
                                            const CNotifier* sender ) const
-{TRACE;
+{GUCEF_TRACE;
 
     bool retValue = false;
 
@@ -306,7 +306,7 @@ CTransactionEventControl::GetFilterInfo( const CEvent& eventID            ,
                                          TEventFilterAction& filterAction ,
                                          TEventOriginFilter& originFilter ,
                                          bool& preserveEventData          ) const
-{TRACE;
+{GUCEF_TRACE;
 
     bool retValue = false;
 
@@ -354,7 +354,7 @@ CTransactionEventControl::ApplyFilter( const TFilterMap& filterMap ,
                                        CNotifier* notifier         ,
                                        const CEvent& eventID       ,
                                        CICloneable* eventData      )
-{TRACE;
+{GUCEF_TRACE;
 
     TFilterMap::const_iterator i = filterMap.find( eventID );
     if ( i != filterMap.end() )
@@ -434,7 +434,7 @@ void
 CTransactionEventControl::OnNotify( CNotifier* notifier                 ,
                                     const CEvent& eventID               ,
                                     CICloneable* eventData /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     m_mutex.Lock();
     

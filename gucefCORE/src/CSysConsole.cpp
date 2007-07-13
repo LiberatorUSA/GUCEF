@@ -108,7 +108,7 @@ typedef struct CSysConsole::SFunctionHook TFunctionHook;
 CSysConsole::CSysConsole( void )
     : CIConfigurable( true )   ,
       CISysConsoleCmdHandler()
-{TRACE;
+{GUCEF_TRACE;
 
         _root = new TCmdChannel;
         _root->name = "root";
@@ -138,7 +138,7 @@ CSysConsole::CSysConsole( void )
 /*-------------------------------------------------------------------------*/
 
 CSysConsole::CSysConsole( const CSysConsole& src )
-{TRACE;
+{GUCEF_TRACE;
 
         /* dummy, do not use */
 }
@@ -146,7 +146,7 @@ CSysConsole::CSysConsole( const CSysConsole& src )
 /*-------------------------------------------------------------------------*/
 
 CSysConsole::~CSysConsole()
-{TRACE;
+{GUCEF_TRACE;
 
         DelTree( _root );
 }
@@ -155,7 +155,7 @@ CSysConsole::~CSysConsole()
 
 CSysConsole&
 CSysConsole::operator=( const CSysConsole& src )
-{TRACE;
+{GUCEF_TRACE;
 
         /* dummy, do not use */
         return *this;
@@ -165,7 +165,7 @@ CSysConsole::operator=( const CSysConsole& src )
 
 CSysConsole* 
 CSysConsole::Instance( void )
-{TRACE;
+{GUCEF_TRACE;
 
         _datalock.Lock();
         if ( !_instance )
@@ -180,7 +180,7 @@ CSysConsole::Instance( void )
 
 void 
 CSysConsole::Deinstance( void )
-{TRACE;
+{GUCEF_TRACE;
        
         _datalock.Lock();
         delete _instance;
@@ -192,7 +192,7 @@ CSysConsole::Deinstance( void )
 
 void
 CSysConsole::DelTree( TCmdChannel* tree )
-{TRACE;
+{GUCEF_TRACE;
 
         CDynamicArray* array = &tree->channels;
         TCmdChannel* chentry;
@@ -220,7 +220,7 @@ CSysConsole::DelTree( TCmdChannel* tree )
 struct CSysConsole::SCmdChannel* 
 CSysConsole::FindChannel( struct SCmdChannel* curchannel ,
                           const CString& name            ) 
-{TRACE;
+{GUCEF_TRACE;
 
         const CDynamicArray* channels = &curchannel->channels;
         TCmdChannel* chentry;
@@ -241,7 +241,7 @@ struct CSysConsole::SCmdChannel*
 CSysConsole::WalkTree( struct SCmdChannel* curchannel ,
                        const CString& path            ,
                        CString& leftover              ) 
-{TRACE;
+{GUCEF_TRACE;
 
         CString chname( path.SubstrToChar( '\\', true ) );        
         TCmdChannel* channel = FindChannel( curchannel, chname );
@@ -269,7 +269,7 @@ CSysConsole::WalkTree( struct SCmdChannel* curchannel ,
 struct CSysConsole::SCmdChannel* 
 CSysConsole::BuildTree( struct SCmdChannel* curchannel ,
                         const CString& path            )
-{TRACE;
+{GUCEF_TRACE;
 
         CString leftover;
         TCmdChannel* channel = WalkTree( curchannel ,
@@ -301,7 +301,7 @@ CSysConsole::BuildTree( struct SCmdChannel* curchannel ,
 struct CSysConsole::SFunctionHook*
 CSysConsole::FindFunction( const struct SCmdChannel* curchannel ,
                            const CString& funcname              ) 
-{TRACE;
+{GUCEF_TRACE;
 
         const CDynamicArray* commands = &curchannel->functions;
         TFunctionHook* cmdentry;        
@@ -323,7 +323,7 @@ CSysConsole::RegisterCmd( const CString& path                ,
                           const CString& functionname        ,
                           const CStringList& args            ,
                           CISysConsoleCmdHandler* cmdhandler )
-{TRACE;
+{GUCEF_TRACE;
 
         if ( functionname.HasChar( ' ', true ) < 0 )
         {
@@ -357,7 +357,7 @@ CSysConsole::RegisterCmd( const CString& path                ,
 void 
 CSysConsole::UnregisterCmd( const CString& path         ,
                             const CString& functionname )
-{TRACE;
+{GUCEF_TRACE;
                         
 }
 
@@ -365,7 +365,7 @@ CSysConsole::UnregisterCmd( const CString& path         ,
 
 void
 CSysConsole::InitClient( CSysConsoleClient* client )
-{TRACE;
+{GUCEF_TRACE;
 
         _datalock.Lock();
         client->channel = _root;
@@ -377,7 +377,7 @@ CSysConsole::InitClient( CSysConsoleClient* client )
 
 void 
 CSysConsole::UnregClient( CSysConsoleClient* client )
-{TRACE;
+{GUCEF_TRACE;
 
         _datalock.Lock();
         TCmdChannel* channel = static_cast< TCmdChannel* >( client->channel );
@@ -392,7 +392,7 @@ CSysConsole::UnregClient( CSysConsoleClient* client )
 
 void 
 CSysConsole::LeaveDir( CSysConsoleClient* client )
-{TRACE;
+{GUCEF_TRACE;
 
         _datalock.Lock();
         TCmdChannel* curchannel = static_cast< TCmdChannel* >( client->channel );
@@ -409,7 +409,7 @@ CSysConsole::LeaveDir( CSysConsoleClient* client )
 bool 
 CSysConsole::EnterDir( CSysConsoleClient* client ,
                        const CString& dirname    )
-{TRACE;
+{GUCEF_TRACE;
 
         _datalock.Lock();
         TCmdChannel* channel = FindChannel( static_cast< TCmdChannel* >( client->channel ) , 
@@ -433,7 +433,7 @@ CSysConsole::EnterDir( CSysConsoleClient* client ,
 bool 
 CSysConsole::JumpTo( CSysConsoleClient* client ,
                      const CString& path       )
-{TRACE;
+{GUCEF_TRACE;
     
     // sanity check on the input
     if ( client == NULL || path.Length() == 0 ) return false;
@@ -511,7 +511,7 @@ CSysConsole::JumpTo( CSysConsoleClient* client ,
 
 CSysConsole::TAliasData* 
 CSysConsole::FindAliasFunction( const CString& aliasname )
-{TRACE;
+{GUCEF_TRACE;
 
     TAliasList::iterator i = _aliases.find( aliasname );
     if ( i != _aliases.end() )
@@ -528,7 +528,7 @@ CSysConsole::Execute( CSysConsoleClient* client  ,
                       const CString& funcname    ,
                       const CStringList& arglist ,
                       CStringList& resultdata    )
-{TRACE;
+{GUCEF_TRACE;
 
         _datalock.Lock();
         
@@ -596,7 +596,7 @@ CSysConsole::Execute( CSysConsoleClient* client  ,
 
 CStringList 
 CSysConsole::GetDirList( const CSysConsoleClient* client ) const
-{TRACE;
+{GUCEF_TRACE;
 
         _datalock.Lock();
         CDynamicArray* channels = &(static_cast< TCmdChannel* >( client->channel )->channels);
@@ -613,7 +613,7 @@ CSysConsole::GetDirList( const CSysConsoleClient* client ) const
 
 CStringList 
 CSysConsole::GetCmdList( const CSysConsoleClient* client ) const
-{TRACE;
+{GUCEF_TRACE;
 
         _datalock.Lock();
         CDynamicArray* functions = &(static_cast< TCmdChannel* >( client->channel )->functions);
@@ -632,7 +632,7 @@ bool
 CSysConsole::RegisterAlias( const CString& aliasname ,
                             const CString& path      ,
                             const CString& function  )
-{TRACE;       
+{GUCEF_TRACE;       
         
     _datalock.Lock(); 
                 
@@ -661,7 +661,7 @@ bool
 CSysConsole::UnregisterAlias( const CString& aliasname ,
                               const CString& path      ,
                               const CString& function  )
-{TRACE;
+{GUCEF_TRACE;
 
     _datalock.Lock(); 
                 
@@ -687,7 +687,7 @@ CSysConsole::OnSysConsoleCommand( const CString& path     ,
                                   const CString& command  ,
                                   const CStringList& args ,
                                   CStringList& resultdata )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( command == "RegisterAlias" )
     {
@@ -716,7 +716,7 @@ CSysConsole::OnSysConsoleCommand( const CString& path     ,
 
 bool
 CSysConsole::SaveConfig( CDataNode& tree )
-{TRACE;
+{GUCEF_TRACE;
 
     return true;
 }
@@ -725,7 +725,7 @@ CSysConsole::SaveConfig( CDataNode& tree )
 
 bool
 CSysConsole::LoadConfig( const CDataNode& treeroot )
-{TRACE;
+{GUCEF_TRACE;
 
     const GUCEF::CORE::CDataNode* n = treeroot.Find( "ConsoleAliasList" );
     if ( n != NULL )

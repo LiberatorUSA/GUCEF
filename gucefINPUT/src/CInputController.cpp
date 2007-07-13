@@ -85,7 +85,7 @@ CInputController::CInputController( void )
           ,
           m_hinstance(0UL)
           #endif
-{TRACE;
+{GUCEF_TRACE;
 
         RegisterEvents();
         CORE::CGUCEFApplication::Instance();    
@@ -94,7 +94,7 @@ CInputController::CInputController( void )
 /*-------------------------------------------------------------------------*/
 
 CInputController::CInputController( const CInputController& src )
-{TRACE;
+{GUCEF_TRACE;
         assert( 0 );
         /* dummy, do not use */
 }
@@ -102,14 +102,14 @@ CInputController::CInputController( const CInputController& src )
 /*-------------------------------------------------------------------------*/
 
 CInputController::~CInputController()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CInputController&
 CInputController::operator=( const CInputController& src )
-{TRACE;
+{GUCEF_TRACE;
         assert( 0 );
         /* dummy, do not use */
         
@@ -120,7 +120,7 @@ CInputController::operator=( const CInputController& src )
 
 CInputController* 
 CInputController::Instance( void )
-{TRACE;
+{GUCEF_TRACE;
         if ( !m_instance )
         {
                 m_instance = new CInputController();
@@ -132,7 +132,7 @@ CInputController::Instance( void )
         
 void 
 CInputController::Deinstance( void )
-{TRACE;
+{GUCEF_TRACE;
         delete m_instance;
         m_instance = NULL;
 }
@@ -142,7 +142,7 @@ CInputController::Deinstance( void )
 CInputContext* 
 CInputController::CreateContext( const CORE::CValueList& params       ,
                                  CIInputHandler* handler /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
         if ( m_driver )
         {
                 #ifdef GUCEF_MSWIN_BUILD
@@ -173,7 +173,7 @@ CInputController::CreateContext( const CORE::CValueList& params       ,
         
 void 
 CInputController::DestroyContext( CInputContext* context )
-{TRACE;
+{GUCEF_TRACE;
         if ( m_driver )
         {
                 m_contextlist.RemoveEntry( context->GetID() );
@@ -187,7 +187,7 @@ CInputController::DestroyContext( CInputContext* context )
         
 UInt32 
 CInputController::GetContextCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_contextlist.GetCount();
 }
 
@@ -195,7 +195,7 @@ CInputController::GetContextCount( void ) const
         
 bool 
 CInputController::SetDriver( CIInputDriver* driver )
-{TRACE;
+{GUCEF_TRACE;
         if ( 0 == m_contextlist.GetCount() )
         {
                 UnloadDriverModule();
@@ -212,7 +212,7 @@ CInputController::SetDriver( CIInputDriver* driver )
 
 const CIInputDriver* 
 CInputController::GetDriver( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_driver;
 }
                 
@@ -221,7 +221,7 @@ CInputController::GetDriver( void ) const
 bool 
 CInputController::LoadDriverModule( const CORE::CString& filename  ,
                                     const CORE::CValueList& params )
-{TRACE;
+{GUCEF_TRACE;
         CORE::CString path = CORE::RelativePath( filename );
         
         CInputDriverPlugin* plugin = new CInputDriverPlugin();
@@ -242,7 +242,7 @@ CInputController::LoadDriverModule( const CORE::CString& filename  ,
 
 void 
 CInputController::UnloadDriverModule( void )
-{TRACE;
+{GUCEF_TRACE;
         if ( m_driverisplugin && m_driver )
         {
                 CInputDriverPlugin* plugin = static_cast<CInputDriverPlugin*>( m_driver );
@@ -260,7 +260,7 @@ CInputController::UnloadDriverModule( void )
 void 
 CInputController::OnUpdate( const UInt64 tickcount               ,
                             const Float64 updateDeltaInMilliSecs )
-{TRACE;
+{GUCEF_TRACE;
         for ( UInt32 i=0; i<m_contextlist.GetCount(); ++i )
         {
                 #ifdef DEBUG_MODE
@@ -288,7 +288,7 @@ void
 CInputController::OnNotify( CORE::CNotifier* notifier                 ,
                             const CORE::CEvent& eventid               ,
                             CORE::CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
         #ifdef GUCEF_MSWIN_BUILD
         if ( eventid == CORE::CGUCEFApplication::AppInitEvent )
         {
@@ -303,7 +303,7 @@ CInputController::OnNotify( CORE::CNotifier* notifier                 ,
 
 void
 CInputController::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
     
     InputDriverLoadedEvent.Initialize();
     InputDriverUnloadedEvent.Initialize();

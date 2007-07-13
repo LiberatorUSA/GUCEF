@@ -52,7 +52,7 @@ void
 CNotifierObservingComponent::OnNotify( CNotifier* notifier                 ,
                                        const CEvent& eventid               ,
                                        CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     m_owner->OnNotify( notifier  ,
                        eventid   ,
@@ -63,7 +63,7 @@ CNotifierObservingComponent::OnNotify( CNotifier* notifier                 ,
 
 void 
 CNotifierObservingComponent::LockData( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_owner->LockData();
 }
@@ -72,7 +72,7 @@ CNotifierObservingComponent::LockData( void )
     
 void 
 CNotifierObservingComponent::UnlockData( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_owner->UnlockData();
 }
@@ -80,21 +80,21 @@ CNotifierObservingComponent::UnlockData( void )
 /*-------------------------------------------------------------------------*/
 
 CNotifierObservingComponent::CNotifierObservingComponent( void )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
     
 CNotifierObservingComponent::CNotifierObservingComponent( const CNotifierObservingComponent& src )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
     
 CNotifierObservingComponent::~CNotifierObservingComponent()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -102,7 +102,7 @@ CNotifierObservingComponent::~CNotifierObservingComponent()
     
 CNotifierObservingComponent& 
 CNotifierObservingComponent::operator=( const CNotifierObservingComponent& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( this != &src )
     {
@@ -114,7 +114,7 @@ CNotifierObservingComponent::operator=( const CNotifierObservingComponent& src )
 
 void 
 CNotifierObservingComponent::SetOwner( CObservingNotifier* owner )
-{TRACE;
+{GUCEF_TRACE;
 
     m_owner = owner;
 }

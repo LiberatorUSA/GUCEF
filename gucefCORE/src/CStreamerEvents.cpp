@@ -51,7 +51,7 @@ const CEvent CStreamerEvents::DataStreamEvent = "GUCEF::CORE::CStreamerEvents::D
 
 void
 CStreamerEvents::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
 
     IDStreamEvent.Initialize();
     DataStreamEvent.Initialize();
@@ -60,7 +60,7 @@ CStreamerEvents::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CStreamerEvents::CStreamerEvents( void )
-{TRACE;
+{GUCEF_TRACE;
 
     RegisterEvents();
 }
@@ -68,14 +68,14 @@ CStreamerEvents::CStreamerEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CStreamerEvents::CStreamerEvents( const CStreamerEvents& src )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CStreamerEvents::~CStreamerEvents()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -83,7 +83,7 @@ CStreamerEvents::~CStreamerEvents()
 
 CStreamerEvents&
 CStreamerEvents::operator=( const CStreamerEvents& src )
-{TRACE;
+{GUCEF_TRACE;
 
     return *this;
 }

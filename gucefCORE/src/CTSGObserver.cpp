@@ -50,7 +50,7 @@ namespace CORE {
 
 CTSGObserver::CTSGObserver( void )
     : m_parentNotifier( NULL )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -58,7 +58,7 @@ CTSGObserver::CTSGObserver( void )
 
 CTSGObserver::CTSGObserver( const CTSGObserver& src )
     : m_parentNotifier( src.m_parentNotifier )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( 0 );
     /* @TODO: makeme */
@@ -67,7 +67,7 @@ CTSGObserver::CTSGObserver( const CTSGObserver& src )
 /*-------------------------------------------------------------------------*/
 
 CTSGObserver::~CTSGObserver()
-{TRACE;
+{GUCEF_TRACE;
 
     UnsubscribeFromAll();
 }
@@ -76,7 +76,7 @@ CTSGObserver::~CTSGObserver()
 
 CTSGObserver&
 CTSGObserver::operator=( const CTSGObserver& src )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( 0 );
     /* @TODO: makeme */
@@ -91,7 +91,7 @@ CTSGObserver::operator=( const CTSGObserver& src )
 
 void 
 CTSGObserver::SetParent( CTSGNotifier* parentNotifier )
-{TRACE;
+{GUCEF_TRACE;
 
     m_parentNotifier = parentNotifier;
 }
@@ -102,7 +102,7 @@ void
 CTSGObserver::OnNotify( CNotifier* notifier                  ,
                         const CEvent& eventid                ,
                         CICloneable* eventdata /* = NULL  */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_parentNotifier != NULL )
     {
@@ -118,7 +118,7 @@ void
 CTSGObserver::OnPumpedNotify( CNotifier* notifier                  ,
                               const CEvent& eventid                ,
                               CICloneable* eventdata /* = NULL  */ )
-{TRACE;
+{GUCEF_TRACE;
 
     // Make sure we still have a parent
     if ( m_parentNotifier != NULL )
@@ -136,7 +136,7 @@ void
 CTSGObserver::AddEventToMailbox( CNotifier* notifier                 ,
                                  const CEvent& eventid               ,
                                  CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     OnNotify( notifier  ,
               eventid   ,

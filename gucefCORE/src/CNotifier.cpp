@@ -66,7 +66,7 @@ const CEvent CNotifier::DestructionEvent = "GUCEF::CORE::CNotifier::DestructionE
 CNotifier::CNotifier( void )
     : CITypeNamed() ,
       m_imp( NULL )
-{TRACE;
+{GUCEF_TRACE;
 
     RegisterEvents();
     
@@ -79,7 +79,7 @@ CNotifier::CNotifier( void )
 CNotifier::CNotifier( const CNotifier& src )
     : CITypeNamed() ,
       m_imp( NULL )
-{TRACE;
+{GUCEF_TRACE;
 
     RegisterEvents();
    
@@ -91,7 +91,7 @@ CNotifier::CNotifier( const CNotifier& src )
 
 CNotifier&
 CNotifier::operator=( const CNotifier& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( this != &src )
     {
@@ -103,7 +103,7 @@ CNotifier::operator=( const CNotifier& src )
 /*-------------------------------------------------------------------------*/
 
 CNotifier::~CNotifier()
-{TRACE;
+{GUCEF_TRACE;
 
       m_imp->OnDeathOfOwnerNotifier();
       m_imp = NULL;
@@ -113,7 +113,7 @@ CNotifier::~CNotifier()
 
 void 
 CNotifier::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
 
     ModifyEvent.Initialize();
     DestructionEvent.Initialize();
@@ -125,7 +125,7 @@ CNotifier::RegisterEvents( void )
 
 void 
 CNotifier::Subscribe( CObserver* observer )
-{TRACE;
+{GUCEF_TRACE;
 
     m_imp->Subscribe( observer );  
 }
@@ -135,7 +135,7 @@ CNotifier::Subscribe( CObserver* observer )
 void 
 CNotifier::Subscribe( CObserver* observer   ,
                       const CEvent& eventid )
-{TRACE;
+{GUCEF_TRACE;
 
     m_imp->Subscribe( observer ,
                       eventid  );
@@ -145,7 +145,7 @@ CNotifier::Subscribe( CObserver* observer   ,
 
 void
 CNotifier::Unsubscribe( CObserver* observer )
-{TRACE;
+{GUCEF_TRACE;
 
     m_imp->Unsubscribe( observer );                                  
 }
@@ -155,7 +155,7 @@ CNotifier::Unsubscribe( CObserver* observer )
 void 
 CNotifier::Unsubscribe( CObserver* observer   ,
                         const CEvent& eventid )
-{TRACE;
+{GUCEF_TRACE;
 
     m_imp->Unsubscribe( observer ,
                         eventid  );
@@ -165,7 +165,7 @@ CNotifier::Unsubscribe( CObserver* observer   ,
 
 bool 
 CNotifier::NotifyObservers( void )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_imp->NotifyObservers();
 }
@@ -175,7 +175,7 @@ CNotifier::NotifyObservers( void )
 bool 
 CNotifier::NotifyObservers( const CEvent& eventid  ,
                             CICloneable* eventData )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_imp->NotifyObservers( eventid   ,
                                    eventData );   
@@ -187,7 +187,7 @@ bool
 CNotifier::NotifyObservers( CNotifier& sender                   ,
                             const CEvent& eventid               ,
                             CICloneable* eventData /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_imp->NotifyObservers( sender    ,
                                    eventid   ,
@@ -198,7 +198,7 @@ CNotifier::NotifyObservers( CNotifier& sender                   ,
 
 void 
 CNotifier::OnObserverDestroy( CObserver* observer )
-{TRACE;
+{GUCEF_TRACE;
 
     m_imp->OnObserverDestroy( observer );                                 
 }
@@ -207,7 +207,7 @@ CNotifier::OnObserverDestroy( CObserver* observer )
 
 CString 
 CNotifier::GetType( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return "GUCEF::CORE::CNotifier";
 }
@@ -216,7 +216,7 @@ CNotifier::GetType( void ) const
 
 void
 CNotifier::ScheduleForDestruction( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_imp->ScheduleForDestruction();
 }
@@ -225,7 +225,7 @@ CNotifier::ScheduleForDestruction( void )
 
 void 
 CNotifier::LockData( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     /* can be implemented in a descending class to add thread-safety */
 }
@@ -234,7 +234,7 @@ CNotifier::LockData( void ) const
     
 void 
 CNotifier::UnlockData( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     /* can be implemented in a descending class to add thread-safety */
 }

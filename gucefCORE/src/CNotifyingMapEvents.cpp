@@ -56,7 +56,7 @@ const CEvent CNotifyingMapEvents::ItemModifiedEvent = "GUCEF::CORE::CNotifyingMa
 //-------------------------------------------------------------------------*/
 
 CNotifyingMapEvents::CNotifyingMapEvents( void )
-{TRACE;
+{GUCEF_TRACE;
     
     RegisterEvents();
 }
@@ -64,7 +64,7 @@ CNotifyingMapEvents::CNotifyingMapEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CNotifyingMapEvents::CNotifyingMapEvents( const CNotifyingMapEvents& src )
-{TRACE;
+{GUCEF_TRACE;
     
     RegisterEvents();
 }
@@ -72,7 +72,7 @@ CNotifyingMapEvents::CNotifyingMapEvents( const CNotifyingMapEvents& src )
 /*-------------------------------------------------------------------------*/
 
 CNotifyingMapEvents::~CNotifyingMapEvents()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -80,7 +80,7 @@ CNotifyingMapEvents::~CNotifyingMapEvents()
 
 CNotifyingMapEvents&
 CNotifyingMapEvents::operator=( const CNotifyingMapEvents& src )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( &src != this )
     {
@@ -93,7 +93,7 @@ CNotifyingMapEvents::operator=( const CNotifyingMapEvents& src )
 
 void
 CNotifyingMapEvents::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
 
     ItemErasedEvent.Initialize();
     ItemAddedEvent.Initialize();

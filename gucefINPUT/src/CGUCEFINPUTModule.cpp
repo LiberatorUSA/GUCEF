@@ -25,6 +25,11 @@
 
 #include <assert.h>
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 #ifndef CINPUTCONTROLLER_H
 #include "CInputController.h"
 #define CINPUTCONTROLLER_H
@@ -49,7 +54,7 @@ namespace INPUT {
 
 bool 
 CGUCEFINPUTModule::Load( void )
-{TRACE;
+{GUCEF_TRACE;
         CInputController::RegisterEvents();
         CInputController::Instance();
         return true;
@@ -59,7 +64,7 @@ CGUCEFINPUTModule::Load( void )
         
 bool 
 CGUCEFINPUTModule::Unload( void )
-{TRACE;
+{GUCEF_TRACE;
         CInputController::Deinstance();        
         return true;
 }
@@ -67,7 +72,7 @@ CGUCEFINPUTModule::Unload( void )
 /*-------------------------------------------------------------------------*/
         
 CGUCEFINPUTModule::CGUCEFINPUTModule( void )
-{TRACE;
+{GUCEF_TRACE;
         /* dummy, do not use */
         assert( 0 );
 }
@@ -75,7 +80,7 @@ CGUCEFINPUTModule::CGUCEFINPUTModule( void )
 /*-------------------------------------------------------------------------*/
 
 CGUCEFINPUTModule::CGUCEFINPUTModule( const CGUCEFINPUTModule& src )
-{TRACE;
+{GUCEF_TRACE;
         /* dummy, do not use */
         assert( 0 );
 }
@@ -83,7 +88,7 @@ CGUCEFINPUTModule::CGUCEFINPUTModule( const CGUCEFINPUTModule& src )
 /*-------------------------------------------------------------------------*/
 
 CGUCEFINPUTModule::~CGUCEFINPUTModule()
-{TRACE;
+{GUCEF_TRACE;
         /* dummy, do not use */
         assert( 0 );
 }
@@ -92,7 +97,7 @@ CGUCEFINPUTModule::~CGUCEFINPUTModule()
 
 CGUCEFINPUTModule& 
 CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
-{TRACE;
+{GUCEF_TRACE;
         /* dummy, do not use */
         assert( 0 );
         

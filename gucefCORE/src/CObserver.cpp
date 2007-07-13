@@ -50,14 +50,14 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CObserver::CObserver( void )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CObserver::CObserver( const CObserver& src )
-{TRACE;
+{GUCEF_TRACE;
 
     //@TODO: makeme
     assert( 0 );
@@ -66,7 +66,7 @@ CObserver::CObserver( const CObserver& src )
 /*-------------------------------------------------------------------------*/
 
 CObserver::~CObserver()
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -86,7 +86,7 @@ CObserver::~CObserver()
 
 CObserver&
 CObserver::operator=( const CObserver& src )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( 0 );
     if ( this != &src )
@@ -99,7 +99,7 @@ CObserver::operator=( const CObserver& src )
 
 void 
 CObserver::UnsubscribeFromAll( void )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -126,7 +126,7 @@ CObserver::UnsubscribeFromAll( void )
 
 void
 CObserver::SubscribeTo( CNotifier* notifier )
-{TRACE;
+{GUCEF_TRACE;
 
     notifier->Subscribe( this );
 }
@@ -136,7 +136,7 @@ CObserver::SubscribeTo( CNotifier* notifier )
 void
 CObserver::SubscribeTo( CNotifier* notifier   ,
                         const CEvent& eventid )
-{TRACE;
+{GUCEF_TRACE;
 
     notifier->Subscribe( this    ,
                          eventid );
@@ -146,7 +146,7 @@ CObserver::SubscribeTo( CNotifier* notifier   ,
                    
 void 
 CObserver::LinkTo( CNotifier* notifier )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -182,7 +182,7 @@ CObserver::LinkTo( CNotifier* notifier )
 void          
 CObserver::UnlinkFrom( CNotifier* notifier                   ,
                        const bool forAllEvents /* = false */ )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -223,7 +223,7 @@ CObserver::UnlinkFrom( CNotifier* notifier                   ,
 
 UInt32 
 CObserver::GetSubscriptionCount( void )
-{TRACE;
+{GUCEF_TRACE;
     
     UInt32 subscriptionCount( 0 );
     LockData();
@@ -241,7 +241,7 @@ CObserver::GetSubscriptionCount( void )
 
 UInt32 
 CObserver::GetNotifierCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return (UInt32) m_notifiers.size();
 }
@@ -250,7 +250,7 @@ CObserver::GetNotifierCount( void ) const
 
 void
 CObserver::UnsubscribeFrom( CNotifier& notifier )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( &notifier );
     notifier.Unsubscribe( this );
@@ -260,7 +260,7 @@ CObserver::UnsubscribeFrom( CNotifier& notifier )
 
 void 
 CObserver::LockData( void )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -268,7 +268,7 @@ CObserver::LockData( void )
     
 void 
 CObserver::UnlockData( void )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 

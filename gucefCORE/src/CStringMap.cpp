@@ -174,7 +174,7 @@ CStringMap::DeleteAll( void )
  */
 void* 
 CStringMap::Get( const CString& name ) const
-{TRACE;
+{GUCEF_TRACE;
         return this->operator[]( name );
 }
 
@@ -213,7 +213,7 @@ CStringMap::operator[]( const CString& name ) const
  */        
 void* 
 CStringMap::operator[]( const UInt32 index ) const
-{TRACE;
+{GUCEF_TRACE;
         TStringLink* sl = (TStringLink*)_items[ index ];        
         if ( sl )
         {
@@ -257,7 +257,7 @@ CStringMap::operator[]( const void* data ) const
 
 UInt32 
 CStringMap::GetCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _items.GetCount();
 }
 
@@ -266,7 +266,7 @@ CStringMap::GetCount( void ) const
 Int32 
 CStringMap::Add( const CString& name ,
                  void* linkeddata    )
-{TRACE;
+{GUCEF_TRACE;
         if ( Get( name ) == NULL )
         {
                 TStringLink* sl = new TStringLink;
@@ -281,7 +281,7 @@ CStringMap::Add( const CString& name ,
         
 void 
 CStringMap::Delete( const CString& name )
-{TRACE;
+{GUCEF_TRACE;
         TStringLink* sl;
         for ( Int32 i=0; i<=_items.GetLast(); ++i )
         {
@@ -301,7 +301,7 @@ CStringMap::Delete( const CString& name )
 
 CString 
 CStringMap::GetKey( const UInt32 index ) const
-{TRACE;
+{GUCEF_TRACE;
         TStringLink* sl = (TStringLink*)_items[ index ];        
         if ( sl )
         {
@@ -316,7 +316,7 @@ CStringMap::GetKey( const UInt32 index ) const
 
 CStringList 
 CStringMap::GetKeyList( void ) const
-{TRACE;
+{GUCEF_TRACE;
         CStringList list;
         TStringLink* sl( NULL );
         for ( Int32 i=0; i<=_items.GetLast(); ++i )

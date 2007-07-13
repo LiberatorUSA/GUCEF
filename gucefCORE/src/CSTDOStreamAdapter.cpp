@@ -90,7 +90,7 @@ class CSTDOStreamAdapterBuffer : public std::ostream::_Mysb
 CSTDOStreamAdapterBuffer::CSTDOStreamAdapterBuffer( CIOAccess& access )
         : base( std::_Noinit ) ,
           m_access( &access )
-{TRACE;
+{GUCEF_TRACE;
         assert( m_access );
 }
 
@@ -98,7 +98,7 @@ CSTDOStreamAdapterBuffer::CSTDOStreamAdapterBuffer( CIOAccess& access )
 
 CSTDOStreamAdapterBuffer::int_type 
 CSTDOStreamAdapterBuffer::overflow( int_type value )
-{TRACE;
+{GUCEF_TRACE;
         // put a character to stream
         if ( m_access->Write( &value, 1, 1 ) == 1 )
         {
@@ -115,14 +115,14 @@ CSTDOStreamAdapterBuffer::overflow( int_type value )
 CSTDOStreamAdapter::CSTDOStreamAdapter( CIOAccess& access )
         : std::ostream( std::_Noinit )                     ,
           m_buffer( new CSTDOStreamAdapterBuffer( access ) )
-{TRACE;        
+{GUCEF_TRACE;        
         std::ostream::_Myios::init( m_buffer, false ); 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CSTDOStreamAdapter::~CSTDOStreamAdapter()
-{TRACE;
+{GUCEF_TRACE;
         delete m_buffer;
 }
 

@@ -35,14 +35,14 @@ CMFCCommandLineInfo::CMFCCommandLineInfo( void )
     : CCommandLineInfo() ,
       m_paramList()      ,
       m_singleString()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CMFCCommandLineInfo::~CMFCCommandLineInfo()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -52,7 +52,7 @@ void
 CMFCCommandLineInfo::ParseParam( const char* pszParam , 
                                  BOOL bFlag           , 
                                  BOOL bLast           )
-{TRACE;
+{GUCEF_TRACE;
 
     m_paramList.push_back( pszParam );
     m_singleString += pszParam;
@@ -62,7 +62,7 @@ CMFCCommandLineInfo::ParseParam( const char* pszParam ,
 
 const CMFCCommandLineInfo::TParamList&
 CMFCCommandLineInfo::GetParamList( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_paramList;
 }
@@ -71,7 +71,7 @@ CMFCCommandLineInfo::GetParamList( void ) const
 
 const GUCEF::CORE::CString&
 CMFCCommandLineInfo::GetParamString( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_singleString;
 }

@@ -56,7 +56,7 @@ CFileAccess::CFileAccess( const CString& file           ,
                           const char* mode /* = "rb" */ )
         : _filename( file ) ,
           m_mode( mode )
-{TRACE;
+{GUCEF_TRACE;
         
         _readable = ( strchr( mode, 'r' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
         _writeable = ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
@@ -69,7 +69,7 @@ CFileAccess::CFileAccess( const CString& file           ,
 /*-------------------------------------------------------------------------*/
 
 CFileAccess::~CFileAccess()
-{TRACE;
+{GUCEF_TRACE;
         Close();    
 }
 
@@ -77,7 +77,7 @@ CFileAccess::~CFileAccess()
 
 void 
 CFileAccess::Open( void )
-{TRACE;
+{GUCEF_TRACE;
         Close();
         
         _file = fopen( _filename.C_String() ,
@@ -88,7 +88,7 @@ CFileAccess::Open( void )
 
 void 
 CFileAccess::Close( void )
-{TRACE;
+{GUCEF_TRACE;
         if ( _file )
         { 
                 fclose( _file );
@@ -100,7 +100,7 @@ CFileAccess::Close( void )
 
 bool 
 CFileAccess::Opened( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _file != NULL;
 }
 
@@ -108,7 +108,7 @@ CFileAccess::Opened( void ) const
 
 CString 
 CFileAccess::ReadLine( void )
-{TRACE;
+{GUCEF_TRACE;
 
  /*       char* str;
         UInt32 length = mfreadl( &str    , 
@@ -128,7 +128,7 @@ CFileAccess::ReadLine( void )
 
 CString 
 CFileAccess::ReadString( void )
-{TRACE;
+{GUCEF_TRACE;
  /*       char* str;
         UInt32 length = mfreads( &str    , 
                                  &_mfile );
@@ -149,7 +149,7 @@ UInt32
 CFileAccess::Read( void *dest      ,
                     UInt32 esize    ,
                     UInt32 elements )
-{TRACE;
+{GUCEF_TRACE;
         return (UInt32) fread( dest     ,
                                esize    ,
                                elements ,
@@ -160,7 +160,7 @@ CFileAccess::Read( void *dest      ,
 
 UInt32 
 CFileAccess::Tell( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return ftell( _file );
 }
 
@@ -169,7 +169,7 @@ CFileAccess::Tell( void ) const
 Int32 
 CFileAccess::Seek( Int32 offset ,
                    Int32 origin )
-{TRACE;
+{GUCEF_TRACE;
         return fseek( _file     ,
                       offset    ,
                       origin    );
@@ -179,7 +179,7 @@ CFileAccess::Seek( Int32 offset ,
 
 UInt32 
 CFileAccess::Setpos( UInt32 position )
-{TRACE;
+{GUCEF_TRACE;
         return fseek( _file     ,
                       position  ,
                       SEEK_SET  );
@@ -189,7 +189,7 @@ CFileAccess::Setpos( UInt32 position )
 
 char 
 CFileAccess::GetChar( void )
-{TRACE;
+{GUCEF_TRACE;
         return (char) fgetc( _file );
 }
 
@@ -197,7 +197,7 @@ CFileAccess::GetChar( void )
 
 bool 
 CFileAccess::Eof( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return feof( _file ) != 0;
 }
@@ -206,7 +206,7 @@ CFileAccess::Eof( void ) const
 
 bool 
 CFileAccess::IsReadOnly( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _readable;
 }
 
@@ -214,7 +214,7 @@ CFileAccess::IsReadOnly( void ) const
 
 bool 
 CFileAccess::IsWriteOnly( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _writeable;
 }
 
@@ -222,7 +222,7 @@ CFileAccess::IsWriteOnly( void ) const
         
 bool 
 CFileAccess::IsReadAndWrite( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _readable && _writeable;
 }
 
@@ -232,7 +232,7 @@ UInt32
 CFileAccess::Write( const void* srcdata ,
                     UInt32 esize        ,
                     UInt32 elements     )
-{TRACE;
+{GUCEF_TRACE;
         return (UInt32) fwrite( srcdata  , 
                                 esize    , 
                                 elements , 
@@ -247,7 +247,7 @@ CFileAccess::Write( const void* srcdata ,
  */
 bool 
 CFileAccess::IsValid( void )
-{TRACE;
+{GUCEF_TRACE;
         return File_Exists( _filename.C_String() ) == 1;
 }
 
@@ -255,7 +255,7 @@ CFileAccess::IsValid( void )
 
 Int32 
 CFileAccess::GetSize( void ) const
-{TRACE;
+{GUCEF_TRACE;
         if ( _file && _writeable )
         {
                 fflush( _file );       
@@ -267,7 +267,7 @@ CFileAccess::GetSize( void ) const
 
 CICloneable* 
 CFileAccess::Clone( void ) const
-{TRACE;
+{GUCEF_TRACE;
         if ( IsReadOnly() )
         {
                 return new CFileAccess( _filename, "rb" );
@@ -281,7 +281,7 @@ CFileAccess::Clone( void ) const
 
 const CString&
 CFileAccess::GetFilename( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return _filename; 
 }

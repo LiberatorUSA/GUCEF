@@ -43,10 +43,6 @@
 
 #include "callstack.h"
 
-/*-------------------------------------------------------------------------*/
-
-#ifdef GUCEF_CORE_DEBUG_MODE
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -97,7 +93,7 @@ typedef struct SCallStack TCallStack;
 static TCallStack* _stacks = NULL;
 static UInt32 stackcount = 0;
 static char* logFilename = NULL;
-static FILE* log = NULL;
+static FILE* logFile = NULL;
 static struct SMutex* mutex = NULL;
 static UInt32 logStack = 0;
 static UInt32 isInitialized = 0;
@@ -116,9 +112,9 @@ Log( const char* logtype ,
      const char* file    ,
      int line            )
 {
-    if ( ( logStack == 1 ) && ( log != NULL ) )
+    if ( ( logStack == 1 ) && ( logFile != NULL ) )
     {
-        fprintf( log, "Thread %d: %s: %d: %s(%d)%s", threadID, logtype, stackheight, file, line, EOL );
+        fprintf( logFile, "Thread %d: %s: %d: %s(%d)%s", threadID, logtype, stackheight, file, line, EOL );
     }
     if ( callback != NULL )
     {
@@ -304,9 +300,9 @@ GUCEF_ShutdowntCallstackUtility( void )
     if ( isInitialized == 1 )
     {
         MutexLock( mutex );
-        if ( ( log != stdout ) && ( log != NULL ) )
+        if ( ( logFile != stdout ) && ( logFile != NULL ) )
         {
-            fclose( log );
+            fclose( logFile );
         }
         free( logFilename );
         logFilename = NULL;
@@ -330,7 +326,7 @@ GUCEF_SetStackLogging( const UInt32 logStackBool )
             if ( ( logFilename != NULL ) &&
                  ( log == NULL )          )
             {
-                log = fopen( logFilename, "ab" );
+                logFile = fopen( logFilename, "ab" );
             }
             else
             {
@@ -341,11 +337,11 @@ GUCEF_SetStackLogging( const UInt32 logStackBool )
         }
         else
         {
-            if ( ( log != NULL )  &&
-                 ( log != stdout ) )
+            if ( ( logFile != NULL )  &&
+                 ( logFile != stdout ) )
             {
-                fclose( log );
-                log = NULL;
+                fclose( logFile );
+                logFile = NULL;
             }
         }
         MutexUnlock( mutex );
@@ -360,12 +356,12 @@ GUCEF_LogStackToStdOut( void )
     if ( isInitialized == 1 )
     {    
         MutexLock( mutex );
-        if ( ( log != NULL )  &&
-             ( log != stdout ) )
+        if ( ( logFile != NULL )  &&
+             ( logFile != stdout ) )
         {
-            fclose( log );
+            fclose( logFile );
         }
-        log = stdout;
+        logFile = stdout;
         free( logFilename );
         logFilename = NULL;
         MutexUnlock( mutex );
@@ -392,9 +388,9 @@ GUCEF_LogStackTo( const char* filename )
         UInt32 strLen;
         
         MutexLock( mutex );
-        if ( ( log != stdout ) && ( log != NULL ) )
+        if ( ( logFile != stdout ) && ( logFile != NULL ) )
         {
-            fclose( log );
+            fclose( logFile );
         }
         free( logFilename );
         logFilename = NULL;
@@ -402,7 +398,7 @@ GUCEF_LogStackTo( const char* filename )
         strLen = (UInt32) strlen( filename )+1;
         logFilename = (char*) malloc( strLen );
         memcpy( logFilename, filename, strLen );
-        log = fopen( logFilename, "ab" );
+        logFile = fopen( logFilename, "ab" );
         
         MutexUnlock( mutex );
     }   
@@ -420,5 +416,3 @@ GUCEF_LogStackTo( const char* filename )
 #endif /* __cplusplus ? */
 
 /*--------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_DEBUG_MODE ? */

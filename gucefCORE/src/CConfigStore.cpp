@@ -77,14 +77,14 @@ MT::CMutex CConfigStore::_datalock;
 CConfigStore::CConfigStore( void )
         : _codectype()  ,
           _configfile()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CConfigStore::CConfigStore( const CConfigStore& src )
-{TRACE;
+{GUCEF_TRACE;
        
         /* dummy, should not be used */
 }
@@ -92,7 +92,7 @@ CConfigStore::CConfigStore( const CConfigStore& src )
 /*-------------------------------------------------------------------------*/
 
 CConfigStore::~CConfigStore()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -100,7 +100,7 @@ CConfigStore::~CConfigStore()
 
 CConfigStore& 
 CConfigStore::operator=( const CConfigStore& src )
-{TRACE;       
+{GUCEF_TRACE;       
         /* dummy, should not be used */
         return *this;
 }
@@ -109,7 +109,7 @@ CConfigStore::operator=( const CConfigStore& src )
 
 CConfigStore*
 CConfigStore::Instance( void )
-{TRACE;              
+{GUCEF_TRACE;              
         _datalock.Lock();
         if ( !_instance )
         {
@@ -124,7 +124,7 @@ CConfigStore::Instance( void )
 
 void
 CConfigStore::Deinstance( void )
-{TRACE;        
+{GUCEF_TRACE;        
         _datalock.Lock();
         delete _instance;
         _instance = NULL;
@@ -135,7 +135,7 @@ CConfigStore::Deinstance( void )
 
 void 
 CConfigStore::SetConfigFile( const CString& filepath )
-{TRACE;
+{GUCEF_TRACE;
         _datalock.Lock();
         _configfile = RelativePath( filepath );        
         _datalock.Unlock();
@@ -145,7 +145,7 @@ CConfigStore::SetConfigFile( const CString& filepath )
         
 CString 
 CConfigStore::GetConfigFile( void ) const
-{TRACE;        
+{GUCEF_TRACE;        
         _datalock.Lock();
         CString file( _configfile );
         _datalock.Unlock();
@@ -156,7 +156,7 @@ CConfigStore::GetConfigFile( void ) const
 
 void 
 CConfigStore::Register( CIConfigurable* configobj )
-{TRACE;
+{GUCEF_TRACE;
         _datalock.Lock();
         configobj->_configid = _configobjs.AddEntry( configobj );
         _datalock.Unlock();
@@ -166,7 +166,7 @@ CConfigStore::Register( CIConfigurable* configobj )
         
 void 
 CConfigStore::Unregister( CIConfigurable* configobj )
-{TRACE;
+{GUCEF_TRACE;
         _datalock.Lock();
         _configobjs.SetEntry( configobj->_configid, NULL );
         _datalock.Unlock();
@@ -177,7 +177,7 @@ CConfigStore::Unregister( CIConfigurable* configobj )
 bool 
 CConfigStore::SaveConfig( const CString& name ,
                           bool preserve       )
-{TRACE;
+{GUCEF_TRACE;
         _datalock.Lock();
         
         /*
@@ -245,7 +245,7 @@ CConfigStore::SaveConfig( const CString& name ,
         
 bool 
 CConfigStore::LoadConfig( void )
-{TRACE;        
+{GUCEF_TRACE;        
         _datalock.Lock();        
         
         if ( _codectype.Length() == 0 )
@@ -290,7 +290,7 @@ CConfigStore::LoadConfig( void )
 
 void 
 CConfigStore::SetCodec( const CString& codectype )
-{TRACE;        
+{GUCEF_TRACE;        
         _codectype = codectype;
 }
 
@@ -298,7 +298,7 @@ CConfigStore::SetCodec( const CString& codectype )
         
 CString 
 CConfigStore::GetCodec( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _codectype;
 }
 

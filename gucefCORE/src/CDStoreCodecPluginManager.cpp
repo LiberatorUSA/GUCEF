@@ -43,6 +43,11 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #include "CDStoreCodecPluginManager.h"  /* definition of the class implemented here */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -76,21 +81,21 @@ CDStoreCodecPluginManager* CDStoreCodecPluginManager::_instance;
 
 CDStoreCodecPluginManager::CDStoreCodecPluginManager( void )
         : CIConfigurable( true )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDStoreCodecPluginManager::CDStoreCodecPluginManager( const CDStoreCodecPluginManager& src )
-{TRACE;        
+{GUCEF_TRACE;        
         /* dummy, do not use */
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDStoreCodecPluginManager::~CDStoreCodecPluginManager()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -98,7 +103,7 @@ CDStoreCodecPluginManager::~CDStoreCodecPluginManager()
 
 CDStoreCodecPluginManager&
 CDStoreCodecPluginManager::operator=( const CDStoreCodecPluginManager& src )
-{TRACE;
+{GUCEF_TRACE;
         /* dummy, do not use */
         return *this;        
 }
@@ -107,7 +112,7 @@ CDStoreCodecPluginManager::operator=( const CDStoreCodecPluginManager& src )
 
 bool 
 CDStoreCodecPluginManager::IsPluginLoaded( const CString& path )
-{TRACE;
+{GUCEF_TRACE;
         UInt32 count = _codecs.GetCount();
         CDStoreCodecPlugin* cp;
         for ( UInt32 i=0; i<count; ++i )
@@ -125,7 +130,7 @@ CDStoreCodecPluginManager::IsPluginLoaded( const CString& path )
 
 void 
 CDStoreCodecPluginManager::LoadAll( void )
-{TRACE;
+{GUCEF_TRACE;
         _datalock.Lock();        
         
         CORE::CString file;
@@ -139,7 +144,7 @@ CDStoreCodecPluginManager::LoadAll( void )
                 {                
                         if ( DI_Is_It_A_File( did ) )
                         {
-                                DEBUGOUTPUTsss( "Attempt to load ", DI_Name( did ), " as an DSTORE Codec plugin" );
+                                GUCEF_SYSTEM_LOG( 0, "Attempt to load " + CString( DI_Name( did ) ) + " as an DSTORE Codec plugin" );
                                 
                                 filepath = path; 
                                 file = DI_Name( did );
@@ -159,7 +164,7 @@ CDStoreCodecPluginManager::LoadAll( void )
         
 void 
 CDStoreCodecPluginManager::UnloadAll( void )
-{TRACE;
+{GUCEF_TRACE;
 
 }
         
@@ -167,7 +172,7 @@ CDStoreCodecPluginManager::UnloadAll( void )
         
 void 
 CDStoreCodecPluginManager::OnSetPluginDir( const CString& path )
-{TRACE;
+{GUCEF_TRACE;
       
 }
 
@@ -175,7 +180,7 @@ CDStoreCodecPluginManager::OnSetPluginDir( const CString& path )
 
 CDStoreCodecPluginManager*
 CDStoreCodecPluginManager::Instance( void )
-{TRACE;
+{GUCEF_TRACE;
         _datalock.Lock();
         if ( !_instance )
         {
@@ -190,7 +195,7 @@ CDStoreCodecPluginManager::Instance( void )
 
 void 
 CDStoreCodecPluginManager::Deinstance( void )
-{TRACE;
+{GUCEF_TRACE;
         _datalock.Lock();
         CHECKMEM( _instance, sizeof(CDStoreCodecPluginManager) );
         delete _instance;
@@ -202,7 +207,7 @@ CDStoreCodecPluginManager::Deinstance( void )
 
 CDStoreCodecPlugin* 
 CDStoreCodecPluginManager::LoadCodecPlugin( const CString& filename )
-{TRACE;
+{GUCEF_TRACE;
         CString path = RelativePath( filename );
         if ( !IsPluginLoaded( path ) )
         {
@@ -226,7 +231,7 @@ CDStoreCodecPluginManager::LoadCodecPlugin( const CString& filename )
         
 void 
 CDStoreCodecPluginManager::UnloadCodecPlugin( CDStoreCodecPlugin* plugin )
-{TRACE;
+{GUCEF_TRACE;
         if ( plugin )
         {
                 _datalock.Lock();
@@ -242,7 +247,7 @@ CDStoreCodecPluginManager::UnloadCodecPlugin( CDStoreCodecPlugin* plugin )
         
 CDStoreCodecPlugin* 
 CDStoreCodecPluginManager::GetCodec( const CString& codectype ) const
-{TRACE;
+{GUCEF_TRACE;
         _datalock.Lock();
         UInt32 count = _codecs.GetCount();
         CDStoreCodecPlugin* cp;
@@ -264,7 +269,7 @@ CDStoreCodecPluginManager::GetCodec( const CString& codectype ) const
 
 bool 
 CDStoreCodecPluginManager::SaveConfig( CDataNode& tree )
-{TRACE;
+{GUCEF_TRACE;
         _datalock.Lock();
         CDataNode* n = tree.Structure( "GUCEF%CORE%CDStoreCodecPluginManager" ,
                                        '%'                                    );
@@ -296,7 +301,7 @@ CDStoreCodecPluginManager::SaveConfig( CDataNode& tree )
                    
 bool 
 CDStoreCodecPluginManager::LoadConfig( const CDataNode& tree )
-{TRACE;
+{GUCEF_TRACE;
         _datalock.Lock();
         CDataNode* n = tree.Search( "GUCEF%CORE%CDStoreCodecPluginManager", 
                                     '%'                                   ,

@@ -55,14 +55,14 @@ CTimerPump::CTimerPump( void )
       m_isATimerActive( false )                  ,
       m_timerList()                              ,
       m_minimalResolution( GUCEFCORE_UINT32MAX )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CTimerPump::~CTimerPump()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -70,7 +70,7 @@ CTimerPump::~CTimerPump()
 
 CTimerPump*
 CTimerPump::Instance( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_instance )
     {
@@ -83,7 +83,7 @@ CTimerPump::Instance( void )
 
 void
 CTimerPump::Deinstance( void )
-{TRACE;
+{GUCEF_TRACE;
 
     delete m_instance;
     m_instance = NULL;
@@ -93,7 +93,7 @@ CTimerPump::Deinstance( void )
 
 void 
 CTimerPump::RegisterTimer( CTimer* timer )
-{TRACE;
+{GUCEF_TRACE;
 
     m_timerList.insert( std::pair< CTimer*, bool >( timer, false ) );
     RegisterSubSystem();
@@ -103,7 +103,7 @@ CTimerPump::RegisterTimer( CTimer* timer )
     
 void 
 CTimerPump::UnregisterTimer( CTimer* timer )
-{TRACE;
+{GUCEF_TRACE;
 
     m_timerList.erase( timer );
     if ( m_timerList.empty() )
@@ -117,7 +117,7 @@ CTimerPump::UnregisterTimer( CTimer* timer )
 void 
 CTimerPump::OnUpdate( const UInt64 tickCount               ,
                       const Float64 updateDeltaInMilliSecs )
-{TRACE;
+{GUCEF_TRACE;
 
     TTimerList::iterator i( m_timerList.begin() );
     while ( i != m_timerList.end() )
@@ -132,7 +132,7 @@ CTimerPump::OnUpdate( const UInt64 tickCount               ,
 void
 CTimerPump::TimerSetRequiresUpdates( CTimer* timer              ,
                                      const bool requiresUpdates )
-{TRACE;
+{GUCEF_TRACE;
 
     // First we determine if we still have a periodic update requirement
     if ( requiresUpdates )

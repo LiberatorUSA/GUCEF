@@ -83,22 +83,6 @@
 /*-------------------------------------------------------------------------*/
 
 /*
- *      In debug mode we will include the core module's tracer
- */
-#ifdef __cplusplus
-  #ifdef DEBUG_MODE
-    #ifndef CTRACER_H
-      #include "CTracer.h"
-      #define CTRACER_H
-    #endif /* CTRACER_H ? */
-  #else
-    #define TRACE
-  #endif
-#endif /* __cplusplus ? */
-
-/*-------------------------------------------------------------------------*/
-
-/*
  *      Macro for enabling/disabling the GUCEF namespace
  */
 #undef GUCEF_NAMESPACE_BEGIN

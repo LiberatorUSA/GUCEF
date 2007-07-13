@@ -54,7 +54,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CDynamicArray::CDynamicArray( UInt32 initial_size )
-{TRACE;
+{GUCEF_TRACE;
 
         /*
          *	Constructor, initialize array to size given
@@ -69,7 +69,7 @@ CDynamicArray::CDynamicArray( UInt32 initial_size )
 /*-------------------------------------------------------------------------*/
 
 CDynamicArray::CDynamicArray( void )
-{TRACE;
+{GUCEF_TRACE;
 
         /*
          *	creates an array with size 0
@@ -98,7 +98,7 @@ CDynamicArray::~CDynamicArray()
 void
 CDynamicArray::SetEntry( UInt32 index    ,
                          void *new_value )
-{TRACE;
+{GUCEF_TRACE;
 
         /*
          *	Set's the pointer of the entry with the index given to
@@ -125,7 +125,7 @@ CDynamicArray::SetEntry( UInt32 index    ,
  */                       
 void* 
 CDynamicArray::GetEntry( UInt32 index ) const
-{TRACE;
+{GUCEF_TRACE;
         return _entrys[ index ];        
 }
 
@@ -138,7 +138,7 @@ CDynamicArray::GetEntry( UInt32 index ) const
  */
 void
 CDynamicArray::PrefixEntry( void* entry )
-{TRACE;
+{GUCEF_TRACE;
         if ( !_max || ( _last >= ((Int32)_max)-1 ) )
         {
                 _max += _resize_change;
@@ -157,7 +157,7 @@ CDynamicArray::PrefixEntry( void* entry )
 
 UInt32
 CDynamicArray::AppendEntry( void* entry )
-{TRACE;
+{GUCEF_TRACE;
         
         /*
          *	Adds an entry to the array at the back. If there are no free
@@ -182,7 +182,7 @@ CDynamicArray::AppendEntry( void* entry )
 
 void
 CDynamicArray::SetArraySize( UInt32 size )
-{TRACE;
+{GUCEF_TRACE;
 
         /*
          *	Resize array to the size given
@@ -217,7 +217,7 @@ CDynamicArray::SetArraySize( UInt32 size )
 
 void 
 CDynamicArray::ShiftDown( UInt32 startpos )
-{TRACE;
+{GUCEF_TRACE;
         for ( Int32 i=startpos; i<=_last; ++i )
         {
                 _entrys[ i ] = _entrys[ i+1 ];       
@@ -229,7 +229,7 @@ CDynamicArray::ShiftDown( UInt32 startpos )
         
 void 
 CDynamicArray::ShiftUp( UInt32 startpos )
-{TRACE;
+{GUCEF_TRACE;
         
         if ( _last+1 >= (Int32)_max )
         {
@@ -246,7 +246,7 @@ CDynamicArray::ShiftUp( UInt32 startpos )
 
 Int32
 CDynamicArray::FindNULLEntry( void ) const
-{TRACE;
+{GUCEF_TRACE;
         
         /*
          *	Searches for first entry that is NULL is can find.
@@ -266,7 +266,7 @@ CDynamicArray::FindNULLEntry( void ) const
 
 void
 CDynamicArray::SetResizeChange( UInt32 new_rcs )
-{TRACE;
+{GUCEF_TRACE;
         if ( new_rcs >= 1 )
         {
                 _resize_change = new_rcs;
@@ -277,7 +277,7 @@ CDynamicArray::SetResizeChange( UInt32 new_rcs )
 
 void*
 CDynamicArray::operator[]( UInt32 index ) const
-{TRACE;
+{GUCEF_TRACE;
         CHECKMEMSEG( _entrys, (const void*)(((INTPTR)_entrys)+(index*sizeof(void*))), sizeof(void*) ); 
 
         return _entrys[ index ];
@@ -287,7 +287,7 @@ CDynamicArray::operator[]( UInt32 index ) const
 
 void*& 
 CDynamicArray::operator[]( UInt32 index )
-{TRACE;
+{GUCEF_TRACE;
         return _entrys[ index ];
 }
 
@@ -299,7 +299,7 @@ CDynamicArray::operator[]( UInt32 index )
  */
 void
 CDynamicArray::RemoveEntry( UInt32 index )
-{TRACE;
+{GUCEF_TRACE;
         for ( UInt32 i=index; i<_max-1; ++i )
         {
                 _entrys[ i ] = _entrys[ i+1 ];
@@ -322,7 +322,7 @@ CDynamicArray::RemoveEntry( UInt32 index )
  */
 UInt32
 CDynamicArray::AddEntry( void *entry )
-{TRACE;        
+{GUCEF_TRACE;        
         Int32 idx = FindNULLEntry();
         if ( idx >= 0 )
         {
@@ -336,7 +336,7 @@ CDynamicArray::AddEntry( void *entry )
 
 UInt32
 CDynamicArray::GetNonNULLCount( void ) const
-{TRACE;        
+{GUCEF_TRACE;        
         UInt32 c( 0 );
         for ( Int32 i=0; i<=_last; ++i )
         {
@@ -349,7 +349,7 @@ CDynamicArray::GetNonNULLCount( void ) const
 
 UInt32
 CDynamicArray::GetResizeChange( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _resize_change;
 }
 
@@ -357,7 +357,7 @@ CDynamicArray::GetResizeChange( void ) const
 
 Int32
 CDynamicArray::GetLast( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _last;
 }
 
@@ -365,7 +365,7 @@ CDynamicArray::GetLast( void ) const
 
 UInt32 
 CDynamicArray::GetCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _last+1;
 }
 
@@ -373,7 +373,7 @@ CDynamicArray::GetCount( void ) const
 
 UInt32
 CDynamicArray::GetArraySize( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _max;
 }
 
@@ -381,7 +381,7 @@ CDynamicArray::GetArraySize( void ) const
 
 void
 CDynamicArray::FillNULLGaps( void )
-{TRACE;
+{GUCEF_TRACE;
         
     Int32 jmp = 0;
     for ( Int32 i=0; i+jmp<=_last; ++i )
@@ -413,7 +413,7 @@ CDynamicArray::FillNULLGaps( void )
 
 void
 CDynamicArray::Clear( void )
-{TRACE;
+{GUCEF_TRACE;
         memset( _entrys, 0, _max*sizeof(void*) );
         _last = -1;      
 }
@@ -422,7 +422,7 @@ CDynamicArray::Clear( void )
 
 Int32 
 CDynamicArray::Find( const void* ptr ) const
-{TRACE;
+{GUCEF_TRACE;
         for ( Int32 i=0; i<=_last; ++i )
         {
                 if ( _entrys[ i ] == ptr )
@@ -438,7 +438,7 @@ CDynamicArray::Find( const void* ptr ) const
 bool 
 CDynamicArray::Insert( const UInt32 index , 
                        void* value        )
-{TRACE;
+{GUCEF_TRACE;
         if ( (Int32)index <= _last )
         {
                 ShiftUp( index );
@@ -452,7 +452,7 @@ CDynamicArray::Insert( const UInt32 index ,
 
 bool 
 CDynamicArray::RemoveEntry( void* entry )
-{TRACE;
+{GUCEF_TRACE;
         Int32 index( Find( entry ) );
         if ( index > 0 )
         {

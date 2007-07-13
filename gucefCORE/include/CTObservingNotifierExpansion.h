@@ -157,7 +157,7 @@ template < class BaseClass >
 CTObservingNotifierExpansion< BaseClass >::CTObservingNotifierExpansion( void )
     : BaseClass()               ,
       m_notificationComponent()
-{TRACE;
+{GUCEF_TRACE;
 
     m_notificationComponent.SetOwner( this );
 }
@@ -168,7 +168,7 @@ template < class BaseClass >
 CTObservingNotifierExpansion< BaseClass >::CTObservingNotifierExpansion( const CTObservingNotifierExpansion& src )
     : BaseClass( src )          ,
       m_notificationComponent()
-{TRACE;
+{GUCEF_TRACE;
 
     m_notificationComponent.SetOwner( this );
 }
@@ -177,7 +177,7 @@ CTObservingNotifierExpansion< BaseClass >::CTObservingNotifierExpansion( const C
 
 template < class BaseClass >
 CTObservingNotifierExpansion< BaseClass >::~CTObservingNotifierExpansion()
-{TRACE;
+{GUCEF_TRACE;
 
     m_notificationComponent.UnsubscribeAllFromObserver();
 }
@@ -187,7 +187,7 @@ CTObservingNotifierExpansion< BaseClass >::~CTObservingNotifierExpansion()
 template < class BaseClass >
 CTObservingNotifierExpansion< BaseClass >&
 CTObservingNotifierExpansion< BaseClass >::operator=( const CTObservingNotifierExpansion< BaseClass >& src )
-{TRACE;
+{GUCEF_TRACE;
 
     BaseClass::operator=( src );
 
@@ -203,7 +203,7 @@ CTObservingNotifierExpansion< BaseClass >::operator=( const CTObservingNotifierE
 template < class BaseClass >
 CObserver& 
 CTObservingNotifierExpansion< BaseClass >::AsObserver( void )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_notificationComponent.AsObserver();
 }
@@ -213,7 +213,7 @@ CTObservingNotifierExpansion< BaseClass >::AsObserver( void )
 template < class BaseClass >
 const CObserver& 
 CTObservingNotifierExpansion< BaseClass >::AsObserver( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_notificationComponent.AsObserver();
 }
@@ -223,7 +223,7 @@ CTObservingNotifierExpansion< BaseClass >::AsObserver( void ) const
 template < class BaseClass >
 CNotifier& 
 CTObservingNotifierExpansion< BaseClass >::AsNotifier( void )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_notificationComponent;
 }
@@ -233,7 +233,7 @@ CTObservingNotifierExpansion< BaseClass >::AsNotifier( void )
 template < class BaseClass >
 const CNotifier& 
 CTObservingNotifierExpansion< BaseClass >::AsNotifier( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_notificationComponent;
 }
@@ -243,7 +243,7 @@ CTObservingNotifierExpansion< BaseClass >::AsNotifier( void ) const
 template < class BaseClass >
 bool
 CTObservingNotifierExpansion< BaseClass >::NotifyObservers( void )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_notificationComponent.DoNotifyObservers();
 }
@@ -254,7 +254,7 @@ template < class BaseClass >
 bool
 CTObservingNotifierExpansion< BaseClass >::NotifyObservers( const CEvent& eventid               ,
                                                             CICloneable* eventData /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_notificationComponent.DoNotifyObservers( eventid   ,
                                                       eventData );
@@ -267,7 +267,7 @@ bool
 CTObservingNotifierExpansion< BaseClass >::NotifyObservers( CNotifier& sender                   ,
                                                             const CEvent& eventid               ,
                                                             CICloneable* eventData /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_notificationComponent.DoNotifyObservers( sender    ,
                                                       eventid   ,
@@ -281,7 +281,7 @@ void
 CTObservingNotifierExpansion< BaseClass >::OnNotify( CNotifier* /* notifier */                ,
                                                      const UInt32 /* eventid */               ,
                                                      CICloneable* /* eventdata *//* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     /* implemented to avoid mandatory implementation by descending classes */
 }

@@ -159,7 +159,7 @@ template < class TOwnerClass >
 CTObservingNotifierComponent< TOwnerClass >::CTObservingNotifierComponent( void )
     : CObservingNotifier()     ,
       m_componentOwner( NULL )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -169,7 +169,7 @@ template < class TOwnerClass >
 CTObservingNotifierComponent< TOwnerClass >::CTObservingNotifierComponent( const CTObservingNotifierComponent& src )
     : CObservingNotifier( src ) ,
       m_componentOwner( NULL )
-{TRACE;
+{GUCEF_TRACE;
     
 }
 
@@ -177,7 +177,7 @@ CTObservingNotifierComponent< TOwnerClass >::CTObservingNotifierComponent( const
 
 template < class TOwnerClass >
 CTObservingNotifierComponent< TOwnerClass >::~CTObservingNotifierComponent( void )
-{TRACE;
+{GUCEF_TRACE;
 
     UnsubscribeAllFromObserver();
 }
@@ -187,7 +187,7 @@ CTObservingNotifierComponent< TOwnerClass >::~CTObservingNotifierComponent( void
 template < class TOwnerClass >
 CTObservingNotifierComponent< TOwnerClass >&
 CTObservingNotifierComponent< TOwnerClass >::operator=( const CTObservingNotifierComponent& src )
-{TRACE;
+{GUCEF_TRACE;
 
     CObservingNotifier::operator=( src );
     
@@ -203,7 +203,7 @@ CTObservingNotifierComponent< TOwnerClass >::operator=( const CTObservingNotifie
 template < class TOwnerClass >
 void 
 CTObservingNotifierComponent< TOwnerClass >::SetOwner( TOwnerClass* ownerInstance )
-{TRACE;
+{GUCEF_TRACE;
 
     m_componentOwner = ownerInstance;
 }
@@ -213,7 +213,7 @@ CTObservingNotifierComponent< TOwnerClass >::SetOwner( TOwnerClass* ownerInstanc
 template < class TOwnerClass >
 bool
 CTObservingNotifierComponent< TOwnerClass >::DoNotifyObservers( void )
-{TRACE;
+{GUCEF_TRACE;
 
     return NotifyObservers();
 }
@@ -224,7 +224,7 @@ template < class TOwnerClass >
 bool
 CTObservingNotifierComponent< TOwnerClass >::DoNotifyObservers( const CEvent& eventid               ,
                                                                 CICloneable* eventData /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     return NotifyObservers( eventid   ,
                             eventData );
@@ -237,7 +237,7 @@ bool
 CTObservingNotifierComponent< TOwnerClass >::DoNotifyObservers( CNotifier& sender                   ,
                                                                 const CEvent& eventid               ,
                                                                 CICloneable* eventData /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     return NotifyObservers( sender    ,
                             eventid   ,
@@ -251,7 +251,7 @@ void
 CTObservingNotifierComponent< TOwnerClass >::OnNotify( CNotifier* notifier                 ,
                                                        const UInt32 eventid                ,
                                                        CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     /*
      *  If you crash here then you forgot to call SetOwner() in your

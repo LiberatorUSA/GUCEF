@@ -46,21 +46,21 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CILogger::CILogger( void )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CILogger::~CILogger()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CILogger::CILogger( const CILogger& src )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -68,7 +68,7 @@ CILogger::CILogger( const CILogger& src )
 
 CILogger&
 CILogger::operator=( const CILogger& src )
-{TRACE;
+{GUCEF_TRACE;
     
     return *this;
 }

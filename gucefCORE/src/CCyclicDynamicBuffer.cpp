@@ -49,7 +49,7 @@ CCyclicDynamicBuffer::CCyclicDynamicBuffer( const UInt32 initialBufferSize /* = 
     : m_buffer( initialBufferSize, true ) ,
       m_freeBlocks()                      ,
       m_usedBlocks()
-{TRACE;
+{GUCEF_TRACE;
     
     if ( initialBufferSize > 0 )
     {
@@ -63,7 +63,7 @@ CCyclicDynamicBuffer::CCyclicDynamicBuffer( const UInt32 initialBufferSize /* = 
 /*-------------------------------------------------------------------------*/
     
 CCyclicDynamicBuffer::~CCyclicDynamicBuffer()
-{TRACE;
+{GUCEF_TRACE;
 
     Clear();
 }
@@ -74,7 +74,7 @@ CCyclicDynamicBuffer::CCyclicDynamicBuffer( const CCyclicDynamicBuffer& src )
     : m_buffer( src.m_buffer )         ,
       m_freeBlocks( src.m_freeBlocks ) ,
       m_usedBlocks( src.m_usedBlocks )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -82,7 +82,7 @@ CCyclicDynamicBuffer::CCyclicDynamicBuffer( const CCyclicDynamicBuffer& src )
     
 CCyclicDynamicBuffer&
 CCyclicDynamicBuffer::operator=( const CCyclicDynamicBuffer& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( &src != this )
     {
@@ -107,7 +107,7 @@ UInt32
 CCyclicDynamicBuffer::Read( void* destBuffer             ,
                             const UInt32 bytesPerElement ,
                             const UInt32 elementsToRead  )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -160,7 +160,7 @@ UInt32
 CCyclicDynamicBuffer::Write( void* srcBuffer              ,
                              const UInt32 bytesPerElement ,
                              const UInt32 elementsToWrite )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -239,7 +239,7 @@ CCyclicDynamicBuffer::Write( void* srcBuffer              ,
 
 void
 CCyclicDynamicBuffer::TidyFreeBlocks( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_freeBlocks.empty() )
     {        
@@ -304,7 +304,7 @@ CCyclicDynamicBuffer::TidyFreeBlocks( void )
 
 void
 CCyclicDynamicBuffer::Clear( const bool logicalClearOnly /* = false */ )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -319,7 +319,7 @@ CCyclicDynamicBuffer::Clear( const bool logicalClearOnly /* = false */ )
 
 UInt32
 CCyclicDynamicBuffer::GetBufferedDataSizeInBytes( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -338,7 +338,7 @@ CCyclicDynamicBuffer::GetBufferedDataSizeInBytes( void ) const
 
 Float32
 CCyclicDynamicBuffer::GetBufferUsagePercentage( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     LockData();
     
@@ -353,7 +353,7 @@ CCyclicDynamicBuffer::GetBufferUsagePercentage( void ) const
     
 void
 CCyclicDynamicBuffer::LockData( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     // non-operation, implement in descending class for threadsafety if desired
 }
@@ -362,7 +362,7 @@ CCyclicDynamicBuffer::LockData( void ) const
     
 void
 CCyclicDynamicBuffer::UnlockData( void ) const
-{TRACE;
+{GUCEF_TRACE;
     // non-operation, implement in descending class for threadsafety if desired
 }
 

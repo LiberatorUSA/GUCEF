@@ -60,7 +60,7 @@ namespace CORE {
 CStdLogger::CStdLogger( void )
     : CILogger()       ,
       m_output( NULL )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -69,7 +69,7 @@ CStdLogger::CStdLogger( void )
 CStdLogger::CStdLogger( CIOAccess& output )
     : CILogger()          ,
       m_output( &output )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( &m_output != NULL );
     assert( m_output != NULL );
@@ -78,7 +78,7 @@ CStdLogger::CStdLogger( CIOAccess& output )
 /*-------------------------------------------------------------------------*/
 
 CStdLogger::~CStdLogger()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -86,7 +86,7 @@ CStdLogger::~CStdLogger()
 
 void
 CStdLogger::SetOutput( CIOAccess& output )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( &m_output != NULL );
     m_output = &output;
@@ -97,7 +97,7 @@ CStdLogger::SetOutput( CIOAccess& output )
 
 CString
 CStdLogger::GetLogMsgTypeString( const TLogMsgType logMsgType ) const
-{TRACE;
+{GUCEF_TRACE;
 
     switch ( logMsgType )
     {
@@ -120,7 +120,7 @@ void
 CStdLogger::Log( const TLogMsgType logMsgType ,
                  const Int32 logLevel         ,
                  const CString& logMessage    ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_output != NULL )
     {

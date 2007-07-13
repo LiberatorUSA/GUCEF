@@ -40,6 +40,11 @@
 
 #include "CPluginManager.h"    /* definition of the class implemented here */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -74,7 +79,7 @@ const CEvent CPluginManager::PluginUnloadedEvent = "GUCEF::CORE::CPluginManager:
  */
 CPluginManager::CPluginManager( void )
     : CObservingNotifier()
-{TRACE;
+{GUCEF_TRACE;
 
     RegisterEvents();
     
@@ -85,7 +90,7 @@ CPluginManager::CPluginManager( void )
 
 CPluginManager::CPluginManager( const CPluginManager& src )
     : CObservingNotifier( src )
-{TRACE;
+{GUCEF_TRACE;
 
     RegisterEvents();
     
@@ -95,7 +100,7 @@ CPluginManager::CPluginManager( const CPluginManager& src )
 /*-------------------------------------------------------------------------*/
         
 CPluginManager::~CPluginManager()
-{TRACE;
+{GUCEF_TRACE;
     
     CPluginControl::Instance()->Unregister( this );
 }
@@ -104,7 +109,7 @@ CPluginManager::~CPluginManager()
 
 CString
 CPluginManager::GetPluginDir( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return CPluginControl::Instance()->GetPluginDir();
 }
@@ -113,7 +118,7 @@ CPluginManager::GetPluginDir( void ) const
 
 void 
 CPluginManager::OnSetPluginDir( const CString& path )
-{TRACE;
+{GUCEF_TRACE;
       
 }
 
@@ -121,7 +126,7 @@ CPluginManager::OnSetPluginDir( const CString& path )
 
 void
 CPluginManager::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
         
     PluginLoadedEvent.Initialize();
     PluginUnloadedEvent.Initialize();
@@ -133,7 +138,7 @@ void
 CPluginManager::OnNotify( CNotifier* notifier                 ,
                           const UInt32 eventid                ,
                           CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     /* dummy to avoid mandatory implementation in the descending class */
 }
@@ -141,7 +146,7 @@ CPluginManager::OnNotify( CNotifier* notifier                 ,
 
 CPluginManager::TPluginPtr
 CPluginManager::LoadPlugin( const CString& pluginPath )
-{TRACE;
+{GUCEF_TRACE;
 
     // return a NULL pointer
     return TPluginPtr();
@@ -151,7 +156,7 @@ CPluginManager::LoadPlugin( const CString& pluginPath )
 
 void 
 CPluginManager::LoadAll( void )
-{TRACE;
+{GUCEF_TRACE;
 
     CString file;
     CString filepath; 
@@ -164,7 +169,7 @@ CPluginManager::LoadAll( void )
         {                
             if ( DI_Is_It_A_File( did ) == 1 )
             {
-                DEBUGOUTPUTsss( "Attempt to load ", DI_Name( did ), " as a plugin" );
+                GUCEF_SYSTEM_LOG( 0, "Attempt to load " + CString( DI_Name( did ) ) + " as a plugin" );
                 
                 filepath = path; 
                 file = DI_Name( did );

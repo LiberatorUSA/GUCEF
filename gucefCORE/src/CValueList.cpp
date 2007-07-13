@@ -48,13 +48,13 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CValueList::CValueList( void )
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CValueList::CValueList( const CValueList& src )
-{TRACE;
+{GUCEF_TRACE;
 
         CORE::CString value, key;
         for ( UInt32 i=0; i<src.GetCount(); ++i )
@@ -70,14 +70,14 @@ CValueList::CValueList( const CValueList& src )
 /*-------------------------------------------------------------------------*/
 
 CValueList::~CValueList()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CValueList&
 CValueList::operator=( const CValueList& src )
-{TRACE;
+{GUCEF_TRACE;
         if ( this != &src )
         {
                 DeleteAll();
@@ -99,7 +99,7 @@ CValueList::operator=( const CValueList& src )
 
 CString
 CValueList::operator[]( const CString& key ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return GetValue( key );
 }
@@ -109,7 +109,7 @@ CValueList::operator[]( const CString& key ) const
 void
 CValueList::SetMultiple( const CString& keyandvalue ,
                          const char seperator       )
-{TRACE;
+{GUCEF_TRACE;
 
     CString remnant = keyandvalue;
     while ( remnant.Length() > 0 )
@@ -142,7 +142,7 @@ CValueList::SetMultiple( const CString& keyandvalue ,
 
 void 
 CValueList::Set( const CString& keyandvalue )
-{TRACE;
+{GUCEF_TRACE;
         CString key( keyandvalue.SubstrToChar( '=', true ) );
         CString value( keyandvalue.SubstrToChar( '=', false ) );
         
@@ -155,7 +155,7 @@ CValueList::Set( const CString& keyandvalue )
 void 
 CValueList::Set( const CString& key   ,
                  const CString& value )
-{TRACE;
+{GUCEF_TRACE;
         
     if ( key.Length() > 0 )
     {
@@ -175,7 +175,7 @@ CValueList::Set( const CString& key   ,
         
 CString
 CValueList::GetValue( const CString& key ) const
-{TRACE;
+{GUCEF_TRACE;
         const CString* thevalue = static_cast<const CString*>( m_list[ key ] );
         if ( thevalue )
         {
@@ -190,7 +190,7 @@ CValueList::GetValue( const CString& key ) const
 
 CString 
 CValueList::GetValue( const UInt32 index ) const
-{TRACE;
+{GUCEF_TRACE;
         const CString* thevalue = static_cast<const CString*>( m_list[ index ] );
         if ( thevalue )
         {
@@ -205,7 +205,7 @@ CValueList::GetValue( const UInt32 index ) const
 
 CString 
 CValueList::GetPair( const UInt32 index ) const
-{TRACE;
+{GUCEF_TRACE;
         const CString* thevalue = static_cast<const CString*>( m_list[ index ] );
         if ( thevalue )
         {
@@ -223,7 +223,7 @@ CValueList::GetPair( const UInt32 index ) const
 
 CString 
 CValueList::GetPair( const CString& key ) const
-{TRACE;
+{GUCEF_TRACE;
         const CString* thevalue = static_cast<const CString*>( m_list.Get( key ) );
         if ( thevalue )
         {
@@ -241,7 +241,7 @@ CValueList::GetPair( const CString& key ) const
 
 CString 
 CValueList::GetKey( const UInt32 index ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_list.GetKey( index );
 }
 
@@ -249,7 +249,7 @@ CValueList::GetKey( const UInt32 index ) const
 
 bool 
 CValueList::HasKey( const CString& key ) const
-{TRACE;
+{GUCEF_TRACE;
         return NULL != static_cast<const CString*>( m_list.Get( key ) );
 }
 
@@ -257,7 +257,7 @@ CValueList::HasKey( const CString& key ) const
         
 void 
 CValueList::Delete( const CString& key )
-{TRACE;
+{GUCEF_TRACE;
         CString* thevalue = static_cast<CString*>( m_list.Get( key ) );
         if ( thevalue )
         {
@@ -270,7 +270,7 @@ CValueList::Delete( const CString& key )
 
 void 
 CValueList::DeleteAll( void )
-{TRACE;
+{GUCEF_TRACE;
         for ( UInt32 i=0; i<m_list.GetCount(); ++i )
         {
                 delete static_cast<CString*>( m_list[ i ] );
@@ -282,7 +282,7 @@ CValueList::DeleteAll( void )
 
 UInt32 
 CValueList::GetCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_list.GetCount();
 }
 

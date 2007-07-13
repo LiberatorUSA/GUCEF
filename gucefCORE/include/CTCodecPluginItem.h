@@ -113,7 +113,7 @@ namespace CORE {
 //    : TCodecType( src )                  ,
 //      m_codecPlugin( src.m_codecPlugin ) ,
 //      m_typeName( src.m_typeName )
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    assert( NULL != &m_codecPlugin );
 //    assert( m_typeName.Length() > 0 );
@@ -127,7 +127,7 @@ namespace CORE {
 //    : TCodecType()             ,
 //      m_codecPlugin( &plugin ) ,
 //      m_typeName( typeName )
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    assert( NULL != &plugin );
 //    assert( m_typeName.Length() > 0 );
@@ -144,7 +144,7 @@ namespace CORE {
 //
 //template < class TCodecType >
 //CTCodecPluginItem< TCodecType >::~CTCodecPluginItem()
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //}
 //
@@ -153,7 +153,7 @@ namespace CORE {
 //template < class TCodecType >
 //CICloneable*
 //CTCodecPluginItem< TCodecType >::Clone( void ) const
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    return new CTCodecPluginItem< TCodecType >( *this );
 //}
@@ -163,7 +163,7 @@ namespace CORE {
 //template < class TCodecType >
 //CString
 //CTCodecPluginItem< TCodecType >::GetType( void ) const
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    return m_typeName;
 //}
@@ -176,7 +176,7 @@ namespace CORE {
 //                                         const UInt32 sourceBuffersSize ,
 //                                         TDynamicBufferList& dest       ,
 //                                         UInt32& destBuffersUsed        )
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    return m_codecPlugin->Encode( sourceData        ,
 //                                  sourceBuffersSize ,
@@ -194,7 +194,7 @@ namespace CORE {
 //                                         const UInt32 sourceBuffersSize ,
 //                                         TDynamicBufferList& dest       ,
 //                                         UInt32& destBuffersUsed        )
-//{TRACE;
+//{GUCEF_TRACE;
 //
 //    return m_codecPlugin->Decode( sourceData        ,
 //                                  sourceBuffersSize ,

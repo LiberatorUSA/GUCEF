@@ -167,7 +167,7 @@ CDStoreCodecPluginRef::GetVersion( void ) const
         
 CICloneable* 
 CDStoreCodecPluginRef::Clone( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return new CDStoreCodecPluginRef( *this );
 }
 

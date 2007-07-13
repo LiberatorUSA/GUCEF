@@ -63,7 +63,7 @@ CLogManager::CLogManager( void )
     : m_loggers()                         ,
       m_msgTypeEnablers()                 ,
       m_maxLogLevel( GUCEFCORE_INT32MAX )
-{TRACE;
+{GUCEF_TRACE;
 
     m_msgTypeEnablers[ LOG_ERROR ] = true;
     m_msgTypeEnablers[ LOG_STANDARD ] = true;
@@ -78,7 +78,7 @@ CLogManager::CLogManager( void )
 /*-------------------------------------------------------------------------*/
 
 CLogManager::~CLogManager()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -86,7 +86,7 @@ CLogManager::~CLogManager()
 
 CLogManager*
 CLogManager::Instance( void )
-{TRACE;
+{GUCEF_TRACE;
     
     g_dataLock.Lock();
     
@@ -104,7 +104,7 @@ CLogManager::Instance( void )
 
 void
 CLogManager::Deinstance( void )
-{TRACE;
+{GUCEF_TRACE;
 
     g_dataLock.Lock();
     
@@ -118,7 +118,7 @@ CLogManager::Deinstance( void )
 
 void
 CLogManager::AddLogger( CILogger* loggerImp )
-{TRACE;
+{GUCEF_TRACE;
 
     g_dataLock.Lock();
     m_loggers.insert( loggerImp );
@@ -129,7 +129,7 @@ CLogManager::AddLogger( CILogger* loggerImp )
     
 void
 CLogManager::RemoveLogger( CILogger* loggerImp )
-{TRACE;
+{GUCEF_TRACE;
 
     g_dataLock.Lock();
     m_loggers.erase( loggerImp );
@@ -140,7 +140,7 @@ CLogManager::RemoveLogger( CILogger* loggerImp )
     
 void
 CLogManager::ClearLoggers( void )
-{TRACE;
+{GUCEF_TRACE;
 
     g_dataLock.Lock();
     m_loggers.clear();
@@ -152,7 +152,7 @@ CLogManager::ClearLoggers( void )
  bool
  CLogManager::IsLoggingEnabled( const TLogMsgType logMsgType ,
                                 const Int32 logLevel         ) const
-{TRACE;
+{GUCEF_TRACE;
 
     g_dataLock.Lock();
     
@@ -172,7 +172,7 @@ void
 CLogManager::Log( const TLogMsgType logMsgType ,
                   const Int32 logLevel         ,
                   const CString& logMessage    ) const
-{TRACE;
+{GUCEF_TRACE;
 
     g_dataLock.Lock();
     

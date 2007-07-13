@@ -85,7 +85,7 @@ CNotifierImplementor::CNotifierImplementor( CNotifier* ownerNotifier )
       m_cmdMailStack()                  ,
       m_ownerNotifier( ownerNotifier )  ,
       m_scheduledForDestruction( false )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( m_ownerNotifier != NULL );
 }
@@ -101,7 +101,7 @@ CNotifierImplementor::CNotifierImplementor( CNotifier* ownerNotifier ,
       m_cmdMailStack()                  ,
       m_ownerNotifier( ownerNotifier )  ,
       m_scheduledForDestruction( false )
-{TRACE;
+{GUCEF_TRACE;
 
     //@TODO: makeme
     assert( 0 );
@@ -113,7 +113,7 @@ CNotifierImplementor::CNotifierImplementor( CNotifier* ownerNotifier ,
 
 CNotifierImplementor&
 CNotifierImplementor::operator=( const CNotifierImplementor& src )
-{TRACE;
+{GUCEF_TRACE;
 
     assert( 0 ); //@TODO: makeme
 
@@ -126,7 +126,7 @@ CNotifierImplementor::operator=( const CNotifierImplementor& src )
 /*-------------------------------------------------------------------------*/
 
 CNotifierImplementor::~CNotifierImplementor()
-{TRACE;
+{GUCEF_TRACE;
    
     /*
      *  The notifier should no longer be busy with some action if it is being destroyed.
@@ -141,7 +141,7 @@ CNotifierImplementor::~CNotifierImplementor()
 
 CNotifierImplementor*
 CNotifierImplementor::Create( CNotifier* ownerNotifier )
-{TRACE;
+{GUCEF_TRACE;
 
     // perform in-scope creation
     return new CNotifierImplementor( ownerNotifier );
@@ -152,7 +152,7 @@ CNotifierImplementor::Create( CNotifier* ownerNotifier )
 CNotifierImplementor*
 CNotifierImplementor::Create( CNotifier* ownerNotifier ,
                               const CNotifier& src     )
-{TRACE;
+{GUCEF_TRACE;
 
     // perform in-scope creation
     return new CNotifierImplementor( ownerNotifier ,
@@ -163,7 +163,7 @@ CNotifierImplementor::Create( CNotifier* ownerNotifier ,
 
 void
 CNotifierImplementor::Destroy( CNotifierImplementor* obj )
-{TRACE;
+{GUCEF_TRACE;
     
     // perform an in-scope destruction
     delete obj;
@@ -174,7 +174,7 @@ CNotifierImplementor::Destroy( CNotifierImplementor* obj )
 bool
 CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid , 
                                                 CICloneable* data     )
-{TRACE;
+{GUCEF_TRACE;
 
     m_isBusy = true;
     
@@ -236,7 +236,7 @@ CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid ,
 
 void 
 CNotifierImplementor::Subscribe( CObserver* observer )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -296,7 +296,7 @@ CNotifierImplementor::Subscribe( CObserver* observer )
 void 
 CNotifierImplementor::Subscribe( CObserver* observer   ,
                                  const CEvent& eventid )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -430,7 +430,7 @@ CNotifierImplementor::Subscribe( CObserver* observer   ,
 
 void
 CNotifierImplementor::Unsubscribe( CObserver* observer )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     UnsubscribeFromAllEvents( observer ,
@@ -443,7 +443,7 @@ CNotifierImplementor::Unsubscribe( CObserver* observer )
 void 
 CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer       ,
                                                 const bool notifyObserver )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( !m_isBusy )
     {
@@ -520,7 +520,7 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer       ,
 void 
 CNotifierImplementor::Unsubscribe( CObserver* observer   ,
                                    const CEvent& eventid )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -592,7 +592,7 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
 
 bool 
 CNotifierImplementor::NotifyObservers( void )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     bool aliveState = ForceNotifyObserversOnce( CNotifier::ModifyEvent );
@@ -605,7 +605,7 @@ CNotifierImplementor::NotifyObservers( void )
 bool 
 CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
                                        CICloneable* eventData )
-{TRACE;
+{GUCEF_TRACE;
 
     /*
      *  We will use the flag 'm_isBusy' to indicate whether
@@ -772,7 +772,7 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
 
 void
 CNotifierImplementor::ProcessCmdMailbox( void )
-{TRACE;
+{GUCEF_TRACE;
 
     // Now we check if any command requests where received while we where busy
     while ( !m_cmdMailStack.empty() )
@@ -817,7 +817,7 @@ CNotifierImplementor::ProcessCmdMailbox( void )
 
 void
 CNotifierImplementor::ProcessEventMailbox( void )
-{TRACE;
+{GUCEF_TRACE;
     
     // Now we check if any notifications requests where received while we where busy
     if ( !m_eventMailStack.empty() )
@@ -838,7 +838,7 @@ CNotifierImplementor::ProcessEventMailbox( void )
 
 void
 CNotifierImplementor::ProcessMailbox( void )
-{TRACE;
+{GUCEF_TRACE;
 
     ProcessCmdMailbox();
     ProcessEventMailbox();
@@ -850,7 +850,7 @@ bool
 CNotifierImplementor::NotifyObservers( CNotifier& sender                   ,
                                        const CEvent& eventid               ,
                                        CICloneable* eventData /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     // Use the friend relationship to access the NotifyObservers()
     // member function of the given notifier.
@@ -861,7 +861,7 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender                   ,
 
 void 
 CNotifierImplementor::OnObserverDestroy( CObserver* observer )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
 
@@ -875,7 +875,7 @@ CNotifierImplementor::OnObserverDestroy( CObserver* observer )
 
 void
 CNotifierImplementor::OnDeathOfOwnerNotifier( void )
-{TRACE;
+{GUCEF_TRACE;
 
     /*
      *  Notify observers that the notifier is die-ing
@@ -942,7 +942,7 @@ CNotifierImplementor::ScheduleForDestruction( void )
 
 void 
 CNotifierImplementor::LockData( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_ownerNotifier != NULL )
     {
@@ -954,7 +954,7 @@ CNotifierImplementor::LockData( void ) const
     
 void 
 CNotifierImplementor::UnlockData( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_ownerNotifier != NULL )
     {

@@ -56,14 +56,14 @@ CStdCodecPluginManager* CStdCodecPluginManager::m_instance = NULL;
 CStdCodecPluginManager::CStdCodecPluginManager( void )
     : CPluginManager() ,
       m_plugins()
-{TRACE;
+{GUCEF_TRACE;
     
 }
 
 /*-------------------------------------------------------------------------*/
 
 CStdCodecPluginManager::~CStdCodecPluginManager()
-{TRACE;
+{GUCEF_TRACE;
 
     UnloadAll();
 }
@@ -72,7 +72,7 @@ CStdCodecPluginManager::~CStdCodecPluginManager()
 
 CStdCodecPluginManager*
 CStdCodecPluginManager::Instance( void )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( NULL == m_instance )
     {
@@ -85,7 +85,7 @@ CStdCodecPluginManager::Instance( void )
 
 void
 CStdCodecPluginManager::Deinstance( void )
-{TRACE;
+{GUCEF_TRACE;
 
     delete m_instance;
     m_instance = NULL;
@@ -95,7 +95,7 @@ CStdCodecPluginManager::Deinstance( void )
 
 CStdCodecPluginManager::TPluginPtr
 CStdCodecPluginManager::LoadPlugin( const CString& pluginPath )
-{TRACE;
+{GUCEF_TRACE;
 
     CStdCodecPlugin* plugin = new CStdCodecPlugin();
     if ( plugin->Load( pluginPath ) )
@@ -113,7 +113,7 @@ CStdCodecPluginManager::LoadPlugin( const CString& pluginPath )
 
 void
 CStdCodecPluginManager::UnloadAll( void )
-{TRACE;
+{GUCEF_TRACE;
 
     while ( !m_plugins.empty() )
     {

@@ -64,7 +64,7 @@ const CEvent CIURLEvents::URLDataRetrievalErrorEvent = "GUCEF::CORE::CIURLEvents
 //-------------------------------------------------------------------------*/
 
 CIURLEvents::CIURLEvents( void )
-{TRACE;
+{GUCEF_TRACE;
 
     RegisterEvents();
 }
@@ -72,7 +72,7 @@ CIURLEvents::CIURLEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CIURLEvents::CIURLEvents( const CIURLEvents& src )
-{TRACE;
+{GUCEF_TRACE;
 
     RegisterEvents();
 }
@@ -80,14 +80,14 @@ CIURLEvents::CIURLEvents( const CIURLEvents& src )
 /*-------------------------------------------------------------------------*/
 
 CIURLEvents::~CIURLEvents()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CIURLEvents::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
 
     URLActivateEvent.Initialize();
     URLDeactivateEvent.Initialize();

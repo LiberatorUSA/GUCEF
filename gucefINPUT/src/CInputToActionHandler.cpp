@@ -33,6 +33,11 @@
 #define CIINPUTACTIONHANDLER_H
 #endif /* CIINPUTACTIONHANDLER_H ? */
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 #include "CInputToActionHandler.h"
 
 /*-------------------------------------------------------------------------//
@@ -54,20 +59,20 @@ CInputToActionHandler::CInputToActionHandler( CInputActionMap& actionmap        
                                               CIInputActionHandler* handler /* = NULL */ )
         : m_actionmap( actionmap ) ,
           m_handler( handler )
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
         
 CInputToActionHandler::~CInputToActionHandler()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
         
 void 
 CInputToActionHandler::SetActionHandler( CIInputActionHandler* handler )
-{TRACE;
+{GUCEF_TRACE;
         m_handler = handler;
 }
 
@@ -75,7 +80,7 @@ CInputToActionHandler::SetActionHandler( CIInputActionHandler* handler )
 
 CIInputActionHandler* 
 CInputToActionHandler::GetActionHandler( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_handler;
 }
 
@@ -84,7 +89,7 @@ CInputToActionHandler::GetActionHandler( void ) const
 void 
 CInputToActionHandler::OnMouseButtonDown( CInputContext& context   ,
                                           const UInt32 buttonindex )
-{TRACE;
+{GUCEF_TRACE;
         if ( m_handler )
         {
                 m_handler->OnMappedMouseButtonDown( context                                          ,
@@ -98,7 +103,7 @@ CInputToActionHandler::OnMouseButtonDown( CInputContext& context   ,
 void 
 CInputToActionHandler::OnMouseButtonUp( CInputContext& context   ,
                                         const UInt32 buttonindex )
-{TRACE;
+{GUCEF_TRACE;
         if ( m_handler )
         {
                 m_handler->OnMappedMouseButtonUp( context                                        ,
@@ -115,7 +120,7 @@ CInputToActionHandler::OnMouseMove( CInputContext& context   ,
                                     const Int32 yPos         ,
                                     const Int32 xDelta       ,
                                     const Int32 yDelta       )
-{TRACE;
+{GUCEF_TRACE;
         if ( m_handler )
         {
                 m_handler->OnMappedMouseMove( context ,
@@ -134,7 +139,7 @@ CInputToActionHandler::OnMouseVariableChanged( CInputContext& context ,
                                                const UInt32 varindex  ,
                                                const Int32 value      ,
                                                const Int32 valueDelta )
-{TRACE;
+{GUCEF_TRACE;
         if ( m_handler )
         {
                 m_handler->OnMappedMouseVariableChanged( context    ,
@@ -151,7 +156,7 @@ void
 CInputToActionHandler::OnKeyboardKeyDown( CInputContext& context   ,
                                           const UInt32 keyindex    ,
                                           const UInt32 keyModState )
-{TRACE;
+{GUCEF_TRACE;
         if ( m_handler )
         {
                 m_handler->OnMappedKeyboardKeyDown( context                                       ,
@@ -167,7 +172,7 @@ void
 CInputToActionHandler::OnKeyboardKeyUp( CInputContext& context   , 
                                         const UInt32 keyindex    ,
                                         const UInt32 keyModState )
-{TRACE;
+{GUCEF_TRACE;
         if ( m_handler )
         {
                 m_handler->OnMappedKeyboardKeyUp( context                                     ,
@@ -183,7 +188,7 @@ void
 CInputToActionHandler::OnDeviceBooleanOn( CInputContext& context  ,
                                           const UInt32 deviceid   ,
                                           const UInt32 stateindex )
-{TRACE;
+{GUCEF_TRACE;
         if ( m_handler )
         {
                 m_handler->OnMappedDeviceBooleanOn( context                                        ,
@@ -200,7 +205,7 @@ void
 CInputToActionHandler::OnDeviceBooleanOff( CInputContext& context  ,
                                            const UInt32 deviceid   ,
                                            const UInt32 stateindex )
-{TRACE;
+{GUCEF_TRACE;
         if ( m_handler )
         {
                 m_handler->OnMappedDeviceBooleanOff( context                                          ,
@@ -218,7 +223,7 @@ CInputToActionHandler::OnDeviceVariableChanged( CInputContext& context  ,
                                                 const UInt32 deviceid   ,
                                                 const UInt32 stateindex ,
                                                 const Float32 value     )
-{TRACE;
+{GUCEF_TRACE;
         if ( m_handler )
         {
                 m_handler->OnMappedDeviceVariableChanged( context                                               ,

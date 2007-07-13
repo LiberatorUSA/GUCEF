@@ -48,8 +48,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_CORE_DEBUG_MODE
-
 #ifdef __cplusplus
    extern "C" {
 #endif   /* __cplusplus */
@@ -135,8 +133,6 @@ GUCEF_ShutdowntCallstackUtility( void );
 #ifdef __cplusplus
    }
 #endif /* __cplusplus */
-
-#endif /* GUCEF_CORE_DEBUG_MODE ? */
                       
 /*-------------------------------------------------------------------------//
 //                                                                         //

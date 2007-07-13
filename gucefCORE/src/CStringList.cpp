@@ -47,7 +47,7 @@ namespace CORE {
 
 CStringList::CStringList( void )
         : _allowmultiple( true )
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -55,7 +55,7 @@ CStringList::CStringList( void )
 CStringList::CStringList( const CStringList& src )
         : _entrys( src._entrys.GetArraySize() ) ,
           _allowmultiple( src._allowmultiple )
-{TRACE;
+{GUCEF_TRACE;
         UInt32 count = src._entrys.GetCount();
         for ( UInt32 i=0; i<count; ++i )
         {       
@@ -67,7 +67,7 @@ CStringList::CStringList( const CStringList& src )
 /*-------------------------------------------------------------------------*/
 
 CStringList::~CStringList()
-{TRACE;
+{GUCEF_TRACE;
         for ( Int32 i=0; i<=_entrys.GetLast(); ++i )
         {       
                 CHECKMEM( _entrys[ i ], sizeof( CString ) );
@@ -79,7 +79,7 @@ CStringList::~CStringList()
 
 Int32 
 CStringList::Find( const CString& string ) const
-{TRACE;
+{GUCEF_TRACE;
         for ( Int32 i=0; i<=_entrys.GetLast(); ++i )
         {       
                 CHECKMEM( _entrys[ i ], sizeof(CString) );
@@ -95,7 +95,7 @@ CStringList::Find( const CString& string ) const
 
 bool 
 CStringList::Delete( UInt32 index )
-{TRACE;
+{GUCEF_TRACE;
         if ( index < _entrys.GetCount() )
         {
                 delete static_cast<CString*>( _entrys[ index ] );                
@@ -110,7 +110,7 @@ CStringList::Delete( UInt32 index )
 
 void 
 CStringList::Clear( void )
-{TRACE;
+{GUCEF_TRACE;
         for ( UInt32 i=0; i<_entrys.GetCount(); ++i )
         {
                 delete static_cast<CString*>( _entrys[ i ] );
@@ -123,7 +123,7 @@ CStringList::Clear( void )
 void 
 CStringList::AddAtIndex( const CString& string ,
                          const UInt32 index    )
-{TRACE;
+{GUCEF_TRACE;
         UInt32 oldMax( _entrys.GetArraySize() );
         
         _entrys.SetEntry( index, new CString( string ) );
@@ -142,7 +142,7 @@ CStringList::AddAtIndex( const CString& string ,
 
 void
 CStringList::SetAllowDuplicates( bool allow )
-{TRACE;
+{GUCEF_TRACE;
         _allowmultiple = allow;
 }
 
@@ -150,7 +150,7 @@ CStringList::SetAllowDuplicates( bool allow )
 
 bool
 CStringList::GetAllowDuplicates( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _allowmultiple;        
 }
 
@@ -159,7 +159,7 @@ CStringList::GetAllowDuplicates( void ) const
 void 
 CStringList::Merge( const CStringList& other ,
                     bool allow_duplicates    )
-{TRACE;
+{GUCEF_TRACE;
         if ( allow_duplicates )
         {
                 const_iterator n = other.ConstBegin();
@@ -185,7 +185,7 @@ CStringList::Merge( const CStringList& other ,
 
 CString& 
 CStringList::operator[]( UInt32 index )
-{TRACE;
+{GUCEF_TRACE;
         CHECKMEM( _entrys[ index ], sizeof(CString) );
         return *( static_cast< CString* >( _entrys[ index ] ) );
 }
@@ -194,7 +194,7 @@ CStringList::operator[]( UInt32 index )
 
 CString 
 CStringList::operator[]( UInt32 index ) const
-{TRACE;
+{GUCEF_TRACE;
         CHECKMEM( _entrys[ index ], sizeof(CString) );
         return *( (CString*)_entrys[ index ] );
 }
@@ -203,7 +203,7 @@ CStringList::operator[]( UInt32 index ) const
 
 UInt32
 CStringList::GetCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return (_entrys.GetLast()+1);
 }
 
@@ -211,7 +211,7 @@ CStringList::GetCount( void ) const
 
 CStringList&
 CStringList::operator=( const CStringList& src )
-{TRACE;
+{GUCEF_TRACE;
         const_iterator i = src.ConstBegin();
         while ( i != src.ConstEnd() )
         {
@@ -225,7 +225,7 @@ CStringList::operator=( const CStringList& src )
 
 CStringList::iterator
 CStringList::Begin( void )
-{TRACE;
+{GUCEF_TRACE;
         iterator i( this );
         return i;
 }
@@ -234,7 +234,7 @@ CStringList::Begin( void )
 
 CStringList::iterator
 CStringList::End( void ) 
-{TRACE;
+{GUCEF_TRACE;
         iterator i( this, GetCount() );
         return i;
 }
@@ -243,7 +243,7 @@ CStringList::End( void )
 
 CStringList::const_iterator
 CStringList::Begin( void ) const
-{TRACE;
+{GUCEF_TRACE;
         const_iterator i( this );
         return i;
 }
@@ -252,7 +252,7 @@ CStringList::Begin( void ) const
 
 CStringList::const_iterator
 CStringList::End( void ) const
-{TRACE;
+{GUCEF_TRACE;
         const_iterator i( this, GetCount() );
         return i;
 }
@@ -261,7 +261,7 @@ CStringList::End( void ) const
 
 CStringList::const_iterator
 CStringList::ConstBegin( void ) const
-{TRACE;
+{GUCEF_TRACE;
         const_iterator i( this );
         return i;
 }
@@ -270,7 +270,7 @@ CStringList::ConstBegin( void ) const
 
 CStringList::const_iterator
 CStringList::ConstEnd( void ) const
-{TRACE;
+{GUCEF_TRACE;
         const_iterator i( this, GetCount() );
         return i;
 }
@@ -279,7 +279,7 @@ CStringList::ConstEnd( void ) const
 
 UInt32
 CStringList::Append( const CString& string )
-{TRACE;
+{GUCEF_TRACE;
         if ( _allowmultiple )
         {
                 return _entrys.AppendEntry( new CString( string ) );
@@ -296,7 +296,7 @@ CStringList::Append( const CString& string )
 
 bool
 CStringList::LoadFromFile( const CString& filename )
-{TRACE;
+{GUCEF_TRACE;
         FILE* fptr = fopen( filename.C_String(), "rb" );
         fseek( fptr, 0, SEEK_END );
         UInt32 fsize = ftell( fptr );
@@ -327,7 +327,7 @@ CStringList::LoadFromFile( const CString& filename )
 
 bool 
 CStringList::LoadFromFile( CIOAccess* file )
-{TRACE;
+{GUCEF_TRACE;
         while ( !file->Eof() )
         {
                 Append( file->ReadLine() );
@@ -339,7 +339,7 @@ CStringList::LoadFromFile( CIOAccess* file )
 
 void
 CStringList::SaveToFile( const CString& filename )
-{TRACE;
+{GUCEF_TRACE;
         FILE* fptr = fopen( filename.C_String(), "wb" );
         if ( fptr )
         {
@@ -356,7 +356,7 @@ CStringList::SaveToFile( const CString& filename )
 CStringList::iterator::iterator( CStringList* list )
         : _list( list ) ,
           _pos( 0 )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -366,20 +366,20 @@ CStringList::iterator::iterator( CStringList* list ,
                                  UInt32 position   )
         : _pos( position ) ,
           _list( list )
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CStringList::iterator::iterator( const iterator& src )
-{TRACE;
+{GUCEF_TRACE;
         *this = src;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CStringList::iterator::~iterator()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -387,7 +387,7 @@ CStringList::iterator::~iterator()
 
 CStringList::iterator&
 CStringList::iterator::operator=( const iterator& src )
-{TRACE;
+{GUCEF_TRACE;
         _list = src._list;
         _pos = src._pos;
         return *this;
@@ -397,7 +397,7 @@ CStringList::iterator::operator=( const iterator& src )
 
 CString&
 CStringList::iterator::operator*( void )
-{TRACE;
+{GUCEF_TRACE;
         return *(CString*)(_list->_entrys[ _pos ]);
 }
 
@@ -405,7 +405,7 @@ CStringList::iterator::operator*( void )
 
 CString&
 CStringList::iterator::operator[]( UInt32 offset )
-{TRACE;
+{GUCEF_TRACE;
         if ( _list->_entrys.GetCount() )
         {  
                 if ( offset >= _list->_entrys.GetCount() )
@@ -424,7 +424,7 @@ CStringList::iterator::operator[]( UInt32 offset )
 
 CStringList::iterator&
 CStringList::iterator::operator+=( Int32 offset )
-{TRACE;
+{GUCEF_TRACE;
         if ( _pos + offset < _list->_entrys.GetCount() )
         {
                 _pos += offset;
@@ -436,7 +436,7 @@ CStringList::iterator::operator+=( Int32 offset )
 
 CStringList::iterator&
 CStringList::iterator::operator-=( Int32 offset )
-{TRACE;
+{GUCEF_TRACE;
         if ( _pos - offset >= 0 )
         {
                 _pos -= offset;
@@ -448,7 +448,7 @@ CStringList::iterator::operator-=( Int32 offset )
 
 CStringList::iterator&
 CStringList::iterator::operator++( void )
-{TRACE;
+{GUCEF_TRACE;
         if ( _pos+1 < _list->_entrys.GetCount() )
         {
                 ++_pos;
@@ -460,7 +460,7 @@ CStringList::iterator::operator++( void )
 
 CStringList::iterator&
 CStringList::iterator::operator--( void )
-{TRACE;
+{GUCEF_TRACE;
         if ( _pos > 0 )
         {
                 --_pos;
@@ -472,7 +472,7 @@ CStringList::iterator::operator--( void )
 
 bool
 CStringList::iterator::operator!=( const iterator& src ) const
-{TRACE;
+{GUCEF_TRACE;
         return _pos != src._pos;        
 }
 
@@ -480,7 +480,7 @@ CStringList::iterator::operator!=( const iterator& src ) const
 
 void
 CStringList::iterator::Insert( const CString& string )
-{TRACE;
+{GUCEF_TRACE;
         if ( _list->_allowmultiple )
         {
                 _list->_entrys.ShiftUp( _pos );
@@ -500,7 +500,7 @@ CStringList::iterator::Insert( const CString& string )
 
 void
 CStringList::iterator::Delete( void )
-{TRACE;
+{GUCEF_TRACE;
         CHECKMEM( _list->_entrys[ _pos ], sizeof(CString) );
         delete (CString*) _list->_entrys[ _pos ];
         _list->_entrys.ShiftDown( _pos );
@@ -511,7 +511,7 @@ CStringList::iterator::Delete( void )
 CStringList::const_iterator::const_iterator( const CStringList* list )
         : _list( list ) ,
           _pos( 0 )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -521,20 +521,20 @@ CStringList::const_iterator::const_iterator( const CStringList* list ,
                                                    UInt32 position         )
         : _pos( position ) ,
           _list( list )
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CStringList::const_iterator::const_iterator( const const_iterator& src )
-{TRACE;
+{GUCEF_TRACE;
         *this = src;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CStringList::const_iterator::~const_iterator()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -542,7 +542,7 @@ CStringList::const_iterator::~const_iterator()
 
 CStringList::const_iterator&
 CStringList::const_iterator::operator=( const const_iterator& src )
-{TRACE;
+{GUCEF_TRACE;
         _pos = src._pos;
         _list = src._list;
         return *this;
@@ -552,7 +552,7 @@ CStringList::const_iterator::operator=( const const_iterator& src )
 
 const CString&
 CStringList::const_iterator::operator*( void ) const
-{TRACE;
+{GUCEF_TRACE;
         CHECKMEM( _list->_entrys[ _pos ], sizeof(CString) );
         return *(CString*)(_list->_entrys[ _pos ]);
 }
@@ -561,7 +561,7 @@ CStringList::const_iterator::operator*( void ) const
 
 const CString&
 CStringList::const_iterator::operator[]( UInt32 offset )
-{TRACE;
+{GUCEF_TRACE;
         _pos = offset;
         CHECKMEM( _list->_entrys[ offset ], sizeof(CString) );
         return *(CString*)(_list->_entrys[ offset ]);        
@@ -571,7 +571,7 @@ CStringList::const_iterator::operator[]( UInt32 offset )
 
 CStringList::const_iterator&
 CStringList::const_iterator::operator+=( Int32 offset )
-{TRACE;
+{GUCEF_TRACE;
         _pos += offset;
         return *this;
 }
@@ -580,7 +580,7 @@ CStringList::const_iterator::operator+=( Int32 offset )
 
 CStringList::const_iterator&
 CStringList::const_iterator::operator-=( Int32 offset )
-{TRACE;
+{GUCEF_TRACE;
         _pos -= offset;
         return *this;
 }
@@ -589,7 +589,7 @@ CStringList::const_iterator::operator-=( Int32 offset )
 
 CStringList::const_iterator&
 CStringList::const_iterator::operator++( void )
-{TRACE;
+{GUCEF_TRACE;
         ++_pos;
         return *this;
 }
@@ -598,7 +598,7 @@ CStringList::const_iterator::operator++( void )
 
 CStringList::const_iterator&
 CStringList::const_iterator::operator--( void )
-{TRACE;
+{GUCEF_TRACE;
         --_pos;
         return *this;
 }
@@ -607,7 +607,7 @@ CStringList::const_iterator::operator--( void )
 
 bool
 CStringList::const_iterator::operator!=( const const_iterator& src ) const
-{TRACE;
+{GUCEF_TRACE;
         return _pos != src._pos;        
 }
 

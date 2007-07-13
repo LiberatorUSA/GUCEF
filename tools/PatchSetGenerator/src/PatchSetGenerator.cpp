@@ -79,7 +79,7 @@
 #ifdef GUCEF_MSWIN_BUILD
 
 void cls( void )
-{TRACE;
+{GUCEF_TRACE;
 
     COORD coordScreen = { 0, 0 }; /* here's where we'll home the cursor */
     DWORD cCharsWritten;
@@ -115,7 +115,7 @@ void cls( void )
 
 void
 PrintHeader( void )
-{TRACE;
+{GUCEF_TRACE;
 
     cls();
     printf( "*****************************************\n" );
@@ -134,7 +134,7 @@ PrintHeader( void )
 
 void
 PrintHelp( void )
-{TRACE;
+{GUCEF_TRACE;
 
     printf( "\n" );
     printf( " - Program arguments:\n" );
@@ -154,7 +154,7 @@ void
 ParseParams( const int argc                        , 
              char* argv[]                          ,
              GUCEF::CORE::CValueList& keyValueList )
-{TRACE;
+{GUCEF_TRACE;
     
     keyValueList.DeleteAll();
     GUCEF::CORE::CString argString;
@@ -196,7 +196,7 @@ WinMain( HINSTANCE hinstance     ,
 
 int
 main( int argc , char* argv[] )
-{TRACE;
+{GUCEF_TRACE;
 
 #endif
 

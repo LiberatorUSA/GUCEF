@@ -113,7 +113,7 @@ CTCPClientSocket::CTCPClientSocket( bool blocking )
           _active( false )         ,
           m_maxreadbytes( 0 )      ,
           m_hostAddress()
-{TRACE;
+{GUCEF_TRACE;
 
     RegisterEvents();
     
@@ -125,7 +125,7 @@ CTCPClientSocket::CTCPClientSocket( bool blocking )
 /*-------------------------------------------------------------------------*/
 
 CTCPClientSocket::~CTCPClientSocket()
-{TRACE;
+{GUCEF_TRACE;
 
     Close();
     delete _data;
@@ -136,7 +136,7 @@ CTCPClientSocket::~CTCPClientSocket()
 
 bool
 CTCPClientSocket::IsActive( void ) const
-{TRACE;
+{GUCEF_TRACE;
         
         return _active;
 }
@@ -145,7 +145,7 @@ CTCPClientSocket::IsActive( void ) const
 
 void
 CTCPClientSocket::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
     
     ConnectingEvent.Initialize();
 }
@@ -154,7 +154,7 @@ CTCPClientSocket::RegisterEvents( void )
 
 bool 
 CTCPClientSocket::IsBlocking( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return _blocking;
 }
@@ -163,7 +163,7 @@ CTCPClientSocket::IsBlocking( void ) const
 
 void
 CTCPClientSocket::SetMaxRead( UInt32 mr )
-{TRACE;
+{GUCEF_TRACE;
         
     LockData();        
     m_maxreadbytes = mr;
@@ -174,7 +174,7 @@ CTCPClientSocket::SetMaxRead( UInt32 mr )
 
 UInt32
 CTCPClientSocket::GetMaxRead( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_maxreadbytes;
 }
 
@@ -182,7 +182,7 @@ CTCPClientSocket::GetMaxRead( void ) const
 
 bool
 CTCPClientSocket::Reconnect( void )
-{TRACE;
+{GUCEF_TRACE;
 
         LockData();
         bool retval = ConnectTo( m_hostAddress.AddressAsString()        ,
@@ -196,7 +196,7 @@ CTCPClientSocket::Reconnect( void )
 bool
 CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr , 
                              UInt16 port                     )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( remoteaddr.Length() == 0 ) return false;  
 
@@ -364,7 +364,7 @@ CTCPClientSocket::GetRemoteIP( void ) const
 
 void
 CTCPClientSocket::CheckRecieveBuffer( void )
-{TRACE;        
+{GUCEF_TRACE;        
 
     if ( !_blocking && _active )
     {       
@@ -448,7 +448,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
 
 void 
 CTCPClientSocket::Update( void )
-{TRACE;        
+{GUCEF_TRACE;        
     
     if ( !_blocking && _active )
     {       
@@ -502,7 +502,7 @@ CTCPClientSocket::Update( void )
 
 void
 CTCPClientSocket::Close( void )
-{TRACE;
+{GUCEF_TRACE;
 
         /*
          *      close the socket connection
@@ -552,7 +552,7 @@ bool
 CTCPClientSocket::Send( const void* data ,
                         UInt32 length    ,
                         UInt32 timeout   )
-{TRACE;
+{GUCEF_TRACE;
 
         /*
          *      Write data to socket
@@ -583,7 +583,7 @@ CTCPClientSocket::Send( const void* data ,
 
 bool
 CTCPClientSocket::Send( const CORE::CString& data )
-{TRACE;
+{GUCEF_TRACE;
 
         return Send( data.C_String() ,
                      data.Length()   ,
@@ -594,7 +594,7 @@ CTCPClientSocket::Send( const CORE::CString& data )
 
 void
 CTCPClientSocket::LockData( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     datalock.Lock();
 }
@@ -603,7 +603,7 @@ CTCPClientSocket::LockData( void ) const
     
 void
 CTCPClientSocket::UnlockData( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     datalock.Unlock();
 }
@@ -612,7 +612,7 @@ CTCPClientSocket::UnlockData( void ) const
 
 CORE::CString
 CTCPClientSocket::GetType( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return "GUCEF::COMCORE::CTCPClientSocket";
 }

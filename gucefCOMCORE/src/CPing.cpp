@@ -213,7 +213,7 @@ class CMSWinPingTask : public MT::CActiveObject   ,
     /*---------------------------------------------------------------------*/
     
     virtual bool OnTaskStart( void* taskdata )
-    {TRACE;
+    {GUCEF_TRACE;
     
         if ( m_replyBuffer == NULL )
         {
@@ -249,7 +249,7 @@ class CMSWinPingTask : public MT::CActiveObject   ,
     /*---------------------------------------------------------------------*/
 
     virtual bool OnTaskCycle( void* taskdata )
-    {TRACE;
+    {GUCEF_TRACE;
     
         if ( ( m_maxPings == 0 )              ||
              ( m_pingsCompleted < m_maxPings ) )
@@ -308,7 +308,7 @@ class CMSWinPingTask : public MT::CActiveObject   ,
     /*---------------------------------------------------------------------*/
 
     virtual void OnTaskEnd( void* taskdata )
-    {TRACE;
+    {GUCEF_TRACE;
 
         IcmpCloseHandle( m_icmpHandle );
         
@@ -339,13 +339,13 @@ class CMSWinPingTask : public MT::CActiveObject   ,
           m_replyBufferSize( 0 )    ,
           m_timeout( 1000 )         ,
           m_pingsCompleted( 0 )
-    {TRACE;
+    {GUCEF_TRACE;
     }
     
     /*---------------------------------------------------------------------*/
     
     virtual ~CMSWinPingTask()
-    {TRACE;
+    {GUCEF_TRACE;
     }
 
     /*---------------------------------------------------------------------*/
@@ -354,7 +354,7 @@ class CMSWinPingTask : public MT::CActiveObject   ,
                       const UInt32 maxPings = 0           ,
                       const UInt32 bytesToSend = 32       ,
                       const UInt32 timeout = 1000         )
-    {TRACE;
+    {GUCEF_TRACE;
     
         if ( !IsActive() )
         {
@@ -486,7 +486,7 @@ UnlinkICMP( void )
 
 void
 CPing::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
     
     PingStartedEvent.Initialize();
     PingReponseEvent.Initialize();
@@ -505,7 +505,7 @@ CPing::CPing( void )
       m_bytesToSend( 32 )      ,
       m_timeout( 1000 )        ,
       m_minimalPingDelta( 500 )
-{TRACE;
+{GUCEF_TRACE;
 
     RegisterEvents();    
     
@@ -527,7 +527,7 @@ CPing::CPing( void )
 /*-------------------------------------------------------------------------*/
     
 CPing::~CPing()
-{TRACE;
+{GUCEF_TRACE;
 
     Stop();
     
@@ -544,7 +544,7 @@ CPing::Start( const CORE::CString& remoteHost           ,
               const UInt32 bytesToSend /* = 32 */       ,
               const UInt32 timeout /* = 1000 */         ,
               const UInt32 minimalPingDelta /* = 500 */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !m_isActive && ( remoteHost.Length() > 0 ) )
     {
@@ -603,7 +603,7 @@ CPing::Start( const CORE::CString& remoteHost           ,
 
 void
 CPing::Stop( void )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( m_isActive )
     {
@@ -620,7 +620,7 @@ CPing::Stop( void )
     
 bool
 CPing::IsActive( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return m_isActive;
 }
@@ -629,7 +629,7 @@ CPing::IsActive( void ) const
     
 const CORE::CString&
 CPing::GetRemoteHost( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_remoteHost;
 }
@@ -638,7 +638,7 @@ CPing::GetRemoteHost( void ) const
     
 UInt32
 CPing::GetMaxPings( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_maxPings;
 }

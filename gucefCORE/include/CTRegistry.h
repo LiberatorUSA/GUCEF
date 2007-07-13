@@ -112,7 +112,7 @@ class CTRegistry
 template< class T >
 CTRegistry< T >::CTRegistry( void )
     : m_list()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -121,7 +121,7 @@ CTRegistry< T >::CTRegistry( void )
 template< class T >
 CTRegistry< T >::CTRegistry( const CTRegistry& src )
     : m_list()
-{TRACE;
+{GUCEF_TRACE;
         TRegisteredObjList::const_iterator i = src.m_list.begin();
         while ( i != src.m_list.end() )
         {
@@ -134,7 +134,7 @@ CTRegistry< T >::CTRegistry( const CTRegistry& src )
     
 template< class T >
 CTRegistry< T >::~CTRegistry()
-{TRACE;
+{GUCEF_TRACE;
     UnregisterAll();
 }
 
@@ -143,7 +143,7 @@ CTRegistry< T >::~CTRegistry()
 template< class T >
 CTRegistry< T >& 
 CTRegistry< T >::operator=( const CTRegistry& src )
-{TRACE;
+{GUCEF_TRACE;
     if ( &src != this )
     {
         UnregisterAll();
@@ -163,7 +163,7 @@ CTRegistry< T >::operator=( const CTRegistry& src )
 template< class T >
 bool 
 CTRegistry< T >::IsRegistered( const CString& name ) const
-{TRACE;
+{GUCEF_TRACE;
     return m_list.find( name ) != m_list.end();
 }
 
@@ -172,7 +172,7 @@ CTRegistry< T >::IsRegistered( const CString& name ) const
 template< class T >
 CTSharedPtr< T >
 CTRegistry< T >::Lookup( const CString& name ) const
-{TRACE;
+{GUCEF_TRACE;
     TRegisteredObjList::const_iterator i = m_list.find( name );
     if ( i != m_list.end() )
     {
@@ -189,7 +189,7 @@ template< class T >
 void 
 CTRegistry< T >::Register( const CString& name                ,
                            const TRegisteredObjPtr& sharedPtr )
-{TRACE;
+{GUCEF_TRACE;
     TRegisteredObjList::iterator i = m_list.find( name );
     if ( i == m_list.end() )
     {
@@ -205,7 +205,7 @@ CTRegistry< T >::Register( const CString& name                ,
 template< class T >
 void 
 CTRegistry< T >::Unregister( const CString& name )
-{TRACE;
+{GUCEF_TRACE;
     TRegisteredObjList::iterator i = m_list.find( name );
     if ( i != m_list.end() )
     {
@@ -222,7 +222,7 @@ CTRegistry< T >::Unregister( const CString& name )
 template< class T >
 void
 CTRegistry< T >::UnregisterAll( void )
-{TRACE;
+{GUCEF_TRACE;
     TRegisteredObjList::iterator i = m_list.begin();
     while ( i != m_list.end() )
     {
@@ -237,7 +237,7 @@ CTRegistry< T >::UnregisterAll( void )
 template< class T >
 UInt32 
 CTRegistry< T >::GetCount( void ) const 
-{TRACE;
+{GUCEF_TRACE;
     return static_cast< UInt32 >( m_list.size() );
 }
 
@@ -246,7 +246,7 @@ CTRegistry< T >::GetCount( void ) const
 template< class T >
 void 
 CTRegistry< T >::GetList( TStringList& destList ) const
-{TRACE;
+{GUCEF_TRACE;
     TRegisteredObjList::const_iterator i = m_list.begin();
     while ( i != m_list.end() )
     {
@@ -260,7 +260,7 @@ CTRegistry< T >::GetList( TStringList& destList ) const
 template< class T >
 void 
 CTRegistry< T >::LockData( void )
-{TRACE;
+{GUCEF_TRACE;
         /* implemented to avoid manditory implementation by decending classes */
 }
 
@@ -269,7 +269,7 @@ CTRegistry< T >::LockData( void )
 template< class T >
 void 
 CTRegistry< T >::UnlockData( void )
-{TRACE;
+{GUCEF_TRACE;
         /* implemented to avoid manditory implementation by decending classes */
 }
 

@@ -51,7 +51,7 @@ namespace COM {
 CHTTPURLHandler::CHTTPURLHandler( void )
     : m_httpClient()              ,
       m_transferFinished( false )
-{TRACE;
+{GUCEF_TRACE;
 
     SubscribeTo( &m_httpClient );
 }
@@ -61,7 +61,7 @@ CHTTPURLHandler::CHTTPURLHandler( void )
 CHTTPURLHandler::CHTTPURLHandler( const CHTTPURLHandler& src )
     : m_httpClient()              ,
       m_transferFinished( false )
-{TRACE;
+{GUCEF_TRACE;
 
     SubscribeTo( &m_httpClient );
 }
@@ -69,7 +69,7 @@ CHTTPURLHandler::CHTTPURLHandler( const CHTTPURLHandler& src )
 /*-------------------------------------------------------------------------*/
         
 CHTTPURLHandler::~CHTTPURLHandler()
-{TRACE;
+{GUCEF_TRACE;
 
     UnsubscribeFrom( &m_httpClient );
 }
@@ -78,7 +78,7 @@ CHTTPURLHandler::~CHTTPURLHandler()
         
 CHTTPURLHandler&
 CHTTPURLHandler::operator=( const CHTTPURLHandler& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( &src != this )
     {
@@ -90,7 +90,7 @@ CHTTPURLHandler::operator=( const CHTTPURLHandler& src )
 
 bool
 CHTTPURLHandler::Activate( CORE::CURL& url )
-{TRACE;
+{GUCEF_TRACE;
 
     m_transferFinished = false;
     return m_httpClient.Get( url.GetURL() );
@@ -100,7 +100,7 @@ CHTTPURLHandler::Activate( CORE::CURL& url )
         
 void
 CHTTPURLHandler::Deactivate( CORE::CURL& url )
-{TRACE;
+{GUCEF_TRACE;
 
     m_httpClient.Close();
 }
@@ -109,7 +109,7 @@ CHTTPURLHandler::Deactivate( CORE::CURL& url )
                          
 bool
 CHTTPURLHandler::IsActive( const CORE::CURL& url ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_httpClient.IsConnected();
 }
@@ -118,7 +118,7 @@ CHTTPURLHandler::IsActive( const CORE::CURL& url ) const
         
 CORE::CICloneable*
 CHTTPURLHandler::Clone( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return new CHTTPURLHandler( *this );
 }
@@ -129,7 +129,7 @@ void
 CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
                            const CORE::CEvent& eventid               ,
                            CORE::CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     // We only accept events from our own HTTP client
     if ( notifier == &m_httpClient )
@@ -175,7 +175,7 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
 
 void 
 CHTTPURLHandler::Register( void )
-{TRACE;
+{GUCEF_TRACE;
         CORE::CURLHandlerRegistry* registry = CORE::CURLHandlerRegistry::Instance();
         if ( !registry->IsRegistered( "http" ) )
         {

@@ -120,7 +120,7 @@ class CTONRegistry : public CTObservingNotifierExpansion< CTRegistry< T > > ,
 template< class T >
 CTONRegistry< T >::CTONRegistry( void )
     : CTObservingNotifierExpansion< CTRegistry< T > >()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -129,7 +129,7 @@ CTONRegistry< T >::CTONRegistry( void )
 template< class T >
 CTONRegistry< T >::CTONRegistry( const CTONRegistry& src )
     : CTObservingNotifierExpansion< CTRegistry< T > >( src )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -137,7 +137,7 @@ CTONRegistry< T >::CTONRegistry( const CTONRegistry& src )
     
 template< class T >
 CTONRegistry< T >::~CTONRegistry()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -146,7 +146,7 @@ CTONRegistry< T >::~CTONRegistry()
 template< class T >
 CTONRegistry< T >& 
 CTONRegistry< T >::operator=( const CTONRegistry& src )
-{TRACE;
+{GUCEF_TRACE;
     if ( &src != this )
     {
         CTObservingNotifierExpansion< CTRegistry< T > >::operator=( src );
@@ -160,7 +160,7 @@ template< class T >
 void 
 CTONRegistry< T >::Register( const CString& name                ,
                              const TRegisteredObjPtr& sharedPtr )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -176,7 +176,7 @@ CTONRegistry< T >::Register( const CString& name                ,
 template< class T >
 void 
 CTONRegistry< T >::Unregister( const CString& name )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     
@@ -192,7 +192,7 @@ CTONRegistry< T >::Unregister( const CString& name )
 template< class T >
 void
 CTONRegistry< T >::UnregisterAll( void )
-{TRACE;
+{GUCEF_TRACE;
 
     LockData();
     

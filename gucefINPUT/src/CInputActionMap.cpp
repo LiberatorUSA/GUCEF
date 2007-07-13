@@ -36,6 +36,11 @@
 #define CDATANODE_H
 #endif /* CDATANODE_H ? */
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 #include "CInputActionMap.h"
 
 /*-------------------------------------------------------------------------//
@@ -73,7 +78,7 @@ CInputActionMap::CInputActionMap( const CORE::CString& name       ,
           m_devicebooloffmap( NULL )                 ,
           m_devicevarchangemap( NULL )
           
-{TRACE;
+{GUCEF_TRACE;
         m_mousebupmap = (UInt32*) malloc( mousemapcount * sizeof(UInt32) );
         m_mousebdownmap = (UInt32*) malloc( mousemapcount * sizeof(UInt32) );
         m_keyboardkupmap = (UInt32*) malloc( keyboardmapcount * sizeof(UInt32) );
@@ -109,7 +114,7 @@ CInputActionMap::CInputActionMap( const CInputActionMap& src )
           m_devicebooloffmap( NULL )                       ,
           m_devicevarchangemap( NULL )                     ,
           m_name( src.m_name )
-{TRACE;
+{GUCEF_TRACE;
         m_mousebupmap = (UInt32*) malloc( m_mousemapcount * sizeof(UInt32) );
         m_mousebdownmap = (UInt32*) malloc( m_mousemapcount * sizeof(UInt32) );
         m_keyboardkupmap = (UInt32*) malloc( m_keyboardmapcount * sizeof(UInt32) );
@@ -132,7 +137,7 @@ CInputActionMap::CInputActionMap( const CInputActionMap& src )
 /*-------------------------------------------------------------------------*/
 
 CInputActionMap::~CInputActionMap()
-{TRACE;
+{GUCEF_TRACE;
         Clear();
 }
 
@@ -140,7 +145,7 @@ CInputActionMap::~CInputActionMap()
 
 CInputActionMap&
 CInputActionMap::operator=( const CInputActionMap& src )
-{TRACE;
+{GUCEF_TRACE;
         if ( &src != this )
         {       
                 m_name = src.m_name;
@@ -176,7 +181,7 @@ void
 CInputActionMap::SetMouseButtonDownMap( const UInt32 buttonindex        ,
                                         const UInt32 actionindex        ,
                                         const CORE::CString& actionName )
-{TRACE;
+{GUCEF_TRACE;
         if ( buttonindex >= m_mousemapcount )
         {
                 UInt32 oldmax( m_mousemapcount );
@@ -195,7 +200,7 @@ CInputActionMap::SetMouseButtonDownMap( const UInt32 buttonindex        ,
                                     
 UInt32 
 CInputActionMap::GetMouseButtonDownMap( const UInt32 buttonindex )
-{TRACE;
+{GUCEF_TRACE;
         return m_mousebdownmap[ buttonindex ];
 }
 
@@ -205,7 +210,7 @@ void
 CInputActionMap::SetMouseButtonUpMap( const UInt32 buttonindex        ,
                                       const UInt32 actionindex        ,
                                       const CORE::CString& actionName )
-{TRACE;
+{GUCEF_TRACE;
         if ( buttonindex >= m_mousemapcount )
         {
                 UInt32 oldmax( m_mousemapcount );
@@ -224,7 +229,7 @@ CInputActionMap::SetMouseButtonUpMap( const UInt32 buttonindex        ,
                                     
 UInt32 
 CInputActionMap::GetMouseButtonUpMap( const UInt32 buttonindex )
-{TRACE;
+{GUCEF_TRACE;
         return m_mousebupmap[ buttonindex ];
 }
 
@@ -234,7 +239,7 @@ void
 CInputActionMap::SetKeyboardKeyDownMap( const UInt32 keyindex           ,
                                         const UInt32 actionindex        ,
                                         const CORE::CString& actionName )
-{TRACE;
+{GUCEF_TRACE;
         if ( keyindex >= m_keyboardmapcount )
         {
                 UInt32 oldmax( m_keyboardmapcount );
@@ -253,7 +258,7 @@ CInputActionMap::SetKeyboardKeyDownMap( const UInt32 keyindex           ,
                                     
 UInt32 
 CInputActionMap::GetKeyboardKeyDownMap( const UInt32 keyindex )
-{TRACE;
+{GUCEF_TRACE;
         return m_keyboardkdownmap[ keyindex ];
 }
 
@@ -263,7 +268,7 @@ void
 CInputActionMap::SetKeyboardKeyUpMap( const UInt32 keyindex           ,
                                       const UInt32 actionindex        ,
                                       const CORE::CString& actionName )
-{TRACE;
+{GUCEF_TRACE;
         if ( keyindex >= m_keyboardmapcount )
         {
                 UInt32 oldmax( m_keyboardmapcount );
@@ -282,7 +287,7 @@ CInputActionMap::SetKeyboardKeyUpMap( const UInt32 keyindex           ,
                                     
 UInt32 
 CInputActionMap::GetKeyboardKeyUpMap( const UInt32 keyindex )
-{TRACE;
+{GUCEF_TRACE;
         return m_keyboardkupmap[ keyindex ];
 }
 
@@ -290,7 +295,7 @@ CInputActionMap::GetKeyboardKeyUpMap( const UInt32 keyindex )
 
 bool
 CInputActionMap::EnsureDeviceMaxCapacity( const UInt32 devicemax )
-{TRACE;
+{GUCEF_TRACE;
         if ( devicemax >= m_devicecount )
         {
                 UInt32 oldmax( m_devicecount );
@@ -318,7 +323,7 @@ CInputActionMap::EnsureDeviceMaxCapacity( const UInt32 devicemax )
 void
 CInputActionMap::EnsureDeviceBoolStateMaxCapacity( const UInt32 deviceindex ,
                                                    const UInt32 statemax    )
-{TRACE;
+{GUCEF_TRACE;
         if ( !EnsureDeviceMaxCapacity( deviceindex+1 ) )
         {
                 if ( statemax >= m_deviceboolmapcount )
@@ -338,7 +343,7 @@ CInputActionMap::EnsureDeviceBoolStateMaxCapacity( const UInt32 deviceindex ,
 void
 CInputActionMap::EnsureDeviceVarStateMaxCapacity( const UInt32 deviceindex ,
                                                   const UInt32 statemax    )
-{TRACE;
+{GUCEF_TRACE;
         if ( !EnsureDeviceMaxCapacity( deviceindex+1 ) )
         {
                 if ( statemax >= m_devicevarmapcount )
@@ -357,7 +362,7 @@ void
 CInputActionMap::SetDeviceBooleanOnMap( const UInt32 deviceindex ,
                                         const UInt32 stateindex  ,
                                         const UInt32 actionindex )
-{TRACE;
+{GUCEF_TRACE;
         EnsureDeviceBoolStateMaxCapacity( deviceindex, stateindex+1 );
         
         m_deviceboolonmap[ deviceindex ][ stateindex ] = actionindex;
@@ -368,7 +373,7 @@ CInputActionMap::SetDeviceBooleanOnMap( const UInt32 deviceindex ,
 UInt32 
 CInputActionMap::GetDeviceBooleanOnMap( const UInt32 deviceindex ,
                                         const UInt32 stateindex  )
-{TRACE;
+{GUCEF_TRACE;
         return m_deviceboolonmap[ deviceindex ][ stateindex ];
 }                                        
 
@@ -378,7 +383,7 @@ void
 CInputActionMap::SetDeviceBooleanOffMap( const UInt32 deviceindex ,
                                          const UInt32 stateindex  ,
                                          const UInt32 actionindex )
-{TRACE;
+{GUCEF_TRACE;
         EnsureDeviceBoolStateMaxCapacity( deviceindex, stateindex+1 );
         
         m_devicebooloffmap[ deviceindex ][ stateindex ] = actionindex;
@@ -389,7 +394,7 @@ CInputActionMap::SetDeviceBooleanOffMap( const UInt32 deviceindex ,
 UInt32 
 CInputActionMap::GetDeviceBooleanOffMap( const UInt32 deviceindex ,
                                          const UInt32 stateindex  )
-{TRACE;
+{GUCEF_TRACE;
         return m_devicebooloffmap[ deviceindex ][ stateindex ];
 }                                         
 
@@ -399,7 +404,7 @@ void
 CInputActionMap::SetDeviceVariableChangedMap( const UInt32 deviceindex ,
                                               const UInt32 stateindex  ,
                                               const UInt32 actionindex )
-{TRACE;
+{GUCEF_TRACE;
         EnsureDeviceVarStateMaxCapacity( deviceindex, stateindex+1 );
         
         m_deviceboolonmap[ deviceindex ][ stateindex ] = actionindex;
@@ -410,7 +415,7 @@ CInputActionMap::SetDeviceVariableChangedMap( const UInt32 deviceindex ,
 UInt32 
 CInputActionMap::GetDeviceVariableChangedMap( const UInt32 deviceid    ,
                                               const UInt32 stateindex  )
-{TRACE;
+{GUCEF_TRACE;
         return m_devicevarchangemap[ deviceid ][ stateindex ];
 }                                              
 
@@ -418,7 +423,7 @@ CInputActionMap::GetDeviceVariableChangedMap( const UInt32 deviceid    ,
 
 void
 CInputActionMap::Reset( void )
-{TRACE;
+{GUCEF_TRACE;
         memset( m_mousebupmap, 0, m_mousemapcount * sizeof(UInt32) );
         memset( m_mousebdownmap, 0, m_mousemapcount * sizeof(UInt32) );
         memset( m_keyboardkupmap, 0, m_keyboardmapcount * sizeof(UInt32) );
@@ -439,7 +444,7 @@ CInputActionMap::Reset( void )
 
 void
 CInputActionMap::Clear( void )
-{TRACE;
+{GUCEF_TRACE;
         free( m_mousebupmap );
         m_mousebupmap = NULL;
         free( m_mousebdownmap );
@@ -480,7 +485,7 @@ CInputActionMap::Clear( void )
                                             
 bool 
 CInputActionMap::SaveConfig( CORE::CDataNode& tree )
-{TRACE;
+{GUCEF_TRACE;
         CORE::CString intstr;
         CORE::CDataNode newnode( "InputActionMap" );
         
@@ -550,7 +555,7 @@ CInputActionMap::SaveConfig( CORE::CDataNode& tree )
                                                                
 bool
 CInputActionMap::LoadConfig( const CORE::CDataNode& treeroot )
-{TRACE;
+{GUCEF_TRACE;
         Clear();
         
         if ( treeroot.GetName() == "InputActionMap" )
@@ -697,7 +702,7 @@ CInputActionMap::LoadConfig( const CORE::CDataNode& treeroot )
 
 UInt32 
 CInputActionMap::GetMouseButtonMaxMapCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_mousemapcount;
 }
 
@@ -705,7 +710,7 @@ CInputActionMap::GetMouseButtonMaxMapCount( void ) const
         
 UInt32 
 CInputActionMap::GetKeyboardKeyMaxMapCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_keyboardmapcount;
 }
 
@@ -713,7 +718,7 @@ CInputActionMap::GetKeyboardKeyMaxMapCount( void ) const
 
 UInt32 
 CInputActionMap::GetDeviceMaxMapCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_devicecount;
 }
 
@@ -721,7 +726,7 @@ CInputActionMap::GetDeviceMaxMapCount( void ) const
         
 UInt32 
 CInputActionMap::GetDeviceMaxBoolMapCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_deviceboolmapcount;
 }
         
@@ -729,7 +734,7 @@ CInputActionMap::GetDeviceMaxBoolMapCount( void ) const
 
 UInt32 
 CInputActionMap::GetDeviceMaxVarMapCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_devicevarmapcount;
 }
 
@@ -737,7 +742,7 @@ CInputActionMap::GetDeviceMaxVarMapCount( void ) const
 
 const CORE::CString&
 CInputActionMap::GetName( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_name;
 }
 
@@ -745,7 +750,7 @@ CInputActionMap::GetName( void ) const
 
 CORE::CStringList 
 CInputActionMap::GetMouseButtonDownActionNames( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_mouseBDownActionNames;
 }
 
@@ -753,7 +758,7 @@ CInputActionMap::GetMouseButtonDownActionNames( void ) const
 
 CORE::CStringList 
 CInputActionMap::GetMouseButtonUpActionNames( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_mouseBUpActionNames;
 }
 
@@ -761,7 +766,7 @@ CInputActionMap::GetMouseButtonUpActionNames( void ) const
 
 CORE::CStringList 
 CInputActionMap::GetKeyboardKeyUpActionNames( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_keyboardKUpActionNames;
 }
 
@@ -769,7 +774,7 @@ CInputActionMap::GetKeyboardKeyUpActionNames( void ) const
 
 CORE::CStringList 
 CInputActionMap::GetKeyboardKeyDownActionNames( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_keyboardKDownActionNames;
 }
 

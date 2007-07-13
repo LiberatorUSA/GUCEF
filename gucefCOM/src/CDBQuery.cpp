@@ -34,6 +34,11 @@
 #define GUCEF_MT_DVMTOSWRAP_H
 #endif /* GUCEF_MT_DVMTOSWRAP_H */
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 #include "CDBQuery.h"   /* definition of this class */
 
 /*-------------------------------------------------------------------------//
@@ -52,7 +57,7 @@ COM_NAMESPACE_BEGIN
 //-------------------------------------------------------------------------*/
 
 CDBQuery::CDBQuery(void)
-{TRACE;
+{GUCEF_TRACE;
         column = NULL;
         field = NULL;
 
@@ -64,7 +69,7 @@ CDBQuery::CDBQuery(void)
 
 void
 CDBQuery::Columns(UInt32 amount)
-{TRACE;        
+{GUCEF_TRACE;        
         columns = amount;
 
         column = new CDBColumn[amount];
@@ -74,7 +79,7 @@ CDBQuery::Columns(UInt32 amount)
 
 void
 CDBQuery::Rows(UInt32 amount)
-{TRACE;
+{GUCEF_TRACE;
         rows = amount;
 
         field = new CDBField[rows * columns];
@@ -84,7 +89,7 @@ CDBQuery::Rows(UInt32 amount)
 
 void
 CDBQuery::FreeColumns(void)
-{TRACE;
+{GUCEF_TRACE;
 
         if(column != NULL) {
                 delete[] column;
@@ -98,7 +103,7 @@ CDBQuery::FreeColumns(void)
 
 void
 CDBQuery::FreeRows(void)
-{TRACE;
+{GUCEF_TRACE;
 
         if(field != NULL) {
                 delete[] field;
@@ -112,7 +117,7 @@ CDBQuery::FreeRows(void)
 
 void
 CDBQuery::Wait_Untill_Done( UInt32 timeout )
-{TRACE;
+{GUCEF_TRACE;
 
         UInt32 time = CORE::GUCEFGetTickCount();
         

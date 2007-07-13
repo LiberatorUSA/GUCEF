@@ -58,7 +58,7 @@ CDynamicBufferAccess::CDynamicBufferAccess( CDynamicBuffer* buffer              
           m_buffer( buffer )                                           ,
           m_carat( 0 )                                                 ,
           m_deleteBufferUponDestruction( deleteBufferUponDestruction )
-{TRACE;
+{GUCEF_TRACE;
         
     assert( m_buffer != NULL );                    
 }
@@ -66,7 +66,7 @@ CDynamicBufferAccess::CDynamicBufferAccess( CDynamicBuffer* buffer              
 /*-------------------------------------------------------------------------*/
 
 CDynamicBufferAccess::~CDynamicBufferAccess()
-{TRACE;
+{GUCEF_TRACE;
 
     Close();
 
@@ -81,7 +81,7 @@ CDynamicBufferAccess::~CDynamicBufferAccess()
 
 void 
 CDynamicBufferAccess::Open( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_carat = 0;
 }
@@ -90,7 +90,7 @@ CDynamicBufferAccess::Open( void )
 
 void 
 CDynamicBufferAccess::Close( void )
-{TRACE;
+{GUCEF_TRACE;
 
     m_carat = 0;
 }
@@ -99,7 +99,7 @@ CDynamicBufferAccess::Close( void )
 
 bool 
 CDynamicBufferAccess::Opened( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return true;
 }
@@ -108,7 +108,7 @@ CDynamicBufferAccess::Opened( void ) const
 
 CString 
 CDynamicBufferAccess::ReadLine( void )
-{TRACE;
+{GUCEF_TRACE;
 
     // makeme
     CString emptystr;
@@ -119,7 +119,7 @@ CDynamicBufferAccess::ReadLine( void )
 
 CString 
 CDynamicBufferAccess::ReadString( void )
-{TRACE;
+{GUCEF_TRACE;
 
     // makeme
     CString emptystr;
@@ -132,7 +132,7 @@ UInt32
 CDynamicBufferAccess::Read( void *dest      ,
                             UInt32 esize    ,
                             UInt32 elements )
-{TRACE;
+{GUCEF_TRACE;
 
     UInt32 bytesCopied = m_buffer->CopyTo( m_carat        , 
                                            esize*elements , 
@@ -145,7 +145,7 @@ CDynamicBufferAccess::Read( void *dest      ,
 
 UInt32 
 CDynamicBufferAccess::Tell( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_carat;
 }
@@ -155,7 +155,7 @@ CDynamicBufferAccess::Tell( void ) const
 Int32 
 CDynamicBufferAccess::Seek( Int32 offset ,
                             Int32 origin )
-{TRACE;
+{GUCEF_TRACE;
 
     switch ( origin )
     {
@@ -195,7 +195,7 @@ CDynamicBufferAccess::Seek( Int32 offset ,
 
 UInt32 
 CDynamicBufferAccess::Setpos( UInt32 position )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( position < m_buffer->GetDataSize() )
     {
@@ -212,7 +212,7 @@ CDynamicBufferAccess::Setpos( UInt32 position )
 
 char 
 CDynamicBufferAccess::GetChar( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_carat < m_buffer->GetDataSize() )
     {       
@@ -227,7 +227,7 @@ CDynamicBufferAccess::GetChar( void )
 
 bool 
 CDynamicBufferAccess::Eof( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_carat >= m_buffer->GetDataSize();
 }
@@ -236,7 +236,7 @@ CDynamicBufferAccess::Eof( void ) const
 
 bool 
 CDynamicBufferAccess::IsReadOnly( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return false;
 }
@@ -245,7 +245,7 @@ CDynamicBufferAccess::IsReadOnly( void ) const
 
 bool 
 CDynamicBufferAccess::IsWriteOnly( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return false;
 }
@@ -254,7 +254,7 @@ CDynamicBufferAccess::IsWriteOnly( void ) const
         
 bool 
 CDynamicBufferAccess::IsReadAndWrite( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return true;
 }
@@ -265,7 +265,7 @@ UInt32
 CDynamicBufferAccess::Write( const void* srcdata ,
                              UInt32 esize        ,
                              UInt32 elements     )
-{TRACE;
+{GUCEF_TRACE;
 
     UInt32 bytesWritten = m_buffer->CopyFrom( m_carat        , 
                                               esize*elements ,
@@ -282,7 +282,7 @@ CDynamicBufferAccess::Write( const void* srcdata ,
  */
 bool 
 CDynamicBufferAccess::IsValid( void )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_buffer != NULL;
 }
@@ -291,7 +291,7 @@ CDynamicBufferAccess::IsValid( void )
 
 Int32 
 CDynamicBufferAccess::GetSize( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_buffer->GetDataSize();          
 }
@@ -300,7 +300,7 @@ CDynamicBufferAccess::GetSize( void ) const
 
 CICloneable* 
 CDynamicBufferAccess::Clone( void ) const
-{TRACE;
+{GUCEF_TRACE;
         
     // Cannot be cloned
     return NULL;

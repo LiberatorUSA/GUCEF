@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 #include "CInputActionMultiMapHandler.h"
 
 /*-------------------------------------------------------------------------//
@@ -41,14 +46,14 @@ namespace INPUT {
 //-------------------------------------------------------------------------*/
 
 CInputActionMultiMapHandler::CInputActionMultiMapHandler( void )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
         
 CInputActionMultiMapHandler::~CInputActionMultiMapHandler()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -64,7 +69,7 @@ CInputActionMultiMapHandler::GetTypeName( void ) const
         
 void 
 CInputActionMultiMapHandler::RegisterActionHandler( CIInputActionHandler* handler )
-{TRACE;
+{GUCEF_TRACE;
         if ( m_list.Find( handler ) < 0 )
         {
                 m_list.AddEntry( handler );        
@@ -75,7 +80,7 @@ CInputActionMultiMapHandler::RegisterActionHandler( CIInputActionHandler* handle
         
 bool 
 CInputActionMultiMapHandler::UnregisterActionHandler( CIInputActionHandler* handler )
-{TRACE;
+{GUCEF_TRACE;
         return m_list.RemoveEntry( handler );
 }
 
@@ -83,7 +88,7 @@ CInputActionMultiMapHandler::UnregisterActionHandler( CIInputActionHandler* hand
 
 void 
 CInputActionMultiMapHandler::Clear( void )
-{TRACE;
+{GUCEF_TRACE;
         m_list.Clear();        
 }
 
@@ -91,7 +96,7 @@ CInputActionMultiMapHandler::Clear( void )
 
 bool 
 CInputActionMultiMapHandler::IsInputEnabled( void ) const
-{TRACE;
+{GUCEF_TRACE;
         CIInputActionHandler* handler;
         for ( UInt32 i=0; i<m_list.GetCount(); ++i )
         {
@@ -113,7 +118,7 @@ void
 CInputActionMultiMapHandler::OnMappedMouseButtonDown( CInputContext& context   ,
                                                       const UInt32 actionindex ,
                                                       const UInt32 buttonindex )
-{TRACE;
+{GUCEF_TRACE;
         CIInputActionHandler* handler;
         for ( UInt32 i=0; i<m_list.GetCount(); ++i )
         {
@@ -136,7 +141,7 @@ void
 CInputActionMultiMapHandler::OnMappedMouseButtonUp( CInputContext& context   ,
                                                     const UInt32 actionindex ,
                                                     const UInt32 buttonindex )
-{TRACE;
+{GUCEF_TRACE;
         CIInputActionHandler* handler( NULL );
         for ( UInt32 i=0; i<m_list.GetCount(); ++i )
         {
@@ -162,7 +167,7 @@ CInputActionMultiMapHandler::OnMappedMouseMove( CInputContext& context   ,
                                                 const Int32 yPos         ,
                                                 const Int32 xDelta       ,
                                                 const Int32 yDelta       )
-{TRACE;
+{GUCEF_TRACE;
         CIInputActionHandler* handler( NULL );
         for ( UInt32 i=0; i<m_list.GetCount(); ++i )
         {
@@ -190,7 +195,7 @@ CInputActionMultiMapHandler::OnMappedMouseVariableChanged( CInputContext& contex
                                                            const UInt32 varindex    ,
                                                            const Int32 value        ,
                                                            const Int32 valueDelta   )
-{TRACE;
+{GUCEF_TRACE;
         CIInputActionHandler* handler;
         for ( UInt32 i=0; i<m_list.GetCount(); ++i )
         {
@@ -216,7 +221,7 @@ CInputActionMultiMapHandler::OnMappedKeyboardKeyDown( CInputContext& context   ,
                                                       const UInt32 actionindex ,
                                                       const UInt32 keyindex    ,
                                                       const UInt32 keyModState )
-{TRACE;
+{GUCEF_TRACE;
         CIInputActionHandler* handler;
         for ( UInt32 i=0; i<m_list.GetCount(); ++i )
         {
@@ -241,7 +246,7 @@ CInputActionMultiMapHandler::OnMappedKeyboardKeyUp( CInputContext& context   ,
                                                     const UInt32 actionindex ,
                                                     const UInt32 keyindex    ,
                                                     const UInt32 keyModState )
-{TRACE;
+{GUCEF_TRACE;
         CIInputActionHandler* handler;
         for ( UInt32 i=0; i<m_list.GetCount(); ++i )
         {
@@ -266,7 +271,7 @@ CInputActionMultiMapHandler::OnMappedDeviceBooleanOn( CInputContext& context   ,
                                                       const UInt32 actionindex ,
                                                       const UInt32 deviceid    ,
                                                       const UInt32 stateindex  )
-{TRACE;
+{GUCEF_TRACE;
         CIInputActionHandler* handler;
         for ( UInt32 i=0; i<m_list.GetCount(); ++i )
         {
@@ -291,7 +296,7 @@ CInputActionMultiMapHandler::OnMappedDeviceBooleanOff( CInputContext& context   
                                                        const UInt32 actionindex ,
                                                        const UInt32 deviceid    ,
                                                        const UInt32 stateindex  )
-{TRACE;
+{GUCEF_TRACE;
         CIInputActionHandler* handler;
         for ( UInt32 i=0; i<m_list.GetCount(); ++i )
         {
@@ -317,7 +322,7 @@ CInputActionMultiMapHandler::OnMappedDeviceVariableChanged( CInputContext& conte
                                                             const UInt32 deviceid    ,
                                                             const UInt32 stateindex  ,
                                                             const Float32 value      )
-{TRACE;
+{GUCEF_TRACE;
         CIInputActionHandler* handler;
         for ( UInt32 i=0; i<m_list.GetCount(); ++i )
         {

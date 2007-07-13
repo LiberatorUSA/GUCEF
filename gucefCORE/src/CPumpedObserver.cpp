@@ -62,24 +62,24 @@ class CMailElement : public CICloneable
                   CICloneable* eventdata )
         : m_notifier( notifier )  ,
           m_eventdata( eventdata )                 
-    {TRACE;
+    {GUCEF_TRACE;
     
     }
     
     CMailElement( const CMailElement& src )
         : m_notifier( src.m_notifier )  ,
           m_eventdata( src.m_eventdata )       
-    {TRACE;
+    {GUCEF_TRACE;
         
     }
     
     virtual ~CMailElement()    
-    {TRACE;
+    {GUCEF_TRACE;
     
     }
     
     CMailElement& operator=( const CMailElement& src )
-    {TRACE;
+    {GUCEF_TRACE;
     
         if ( this != &src )
         {
@@ -90,19 +90,19 @@ class CMailElement : public CICloneable
     }
     
     inline CNotifier* GetNotifier( void ) const
-    {TRACE;
+    {GUCEF_TRACE;
     
         return m_notifier;
     }
     
     inline CICloneable* GetData( void ) const
-    {TRACE;
+    {GUCEF_TRACE;
     
         return m_eventdata;
     }
     
     virtual CICloneable* Clone( void ) const
-    {TRACE;
+    {GUCEF_TRACE;
     
         return new CMailElement( *this );
     }
@@ -110,7 +110,7 @@ class CMailElement : public CICloneable
     private:
     
     CMailElement( void )
-    {TRACE;
+    {GUCEF_TRACE;
     
         assert( 0 );
         /* dummy, do not use */
@@ -127,7 +127,7 @@ class CMailElement : public CICloneable
 //-------------------------------------------------------------------------*/
 
 CPumpedObserver::CPumpedObserver( void )
-{TRACE;
+{GUCEF_TRACE;
 
     CObserverPump::Instance()->RegisterObserver( this );
 }
@@ -135,7 +135,7 @@ CPumpedObserver::CPumpedObserver( void )
 /*-------------------------------------------------------------------------*/
 
 CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
-{TRACE;
+{GUCEF_TRACE;
 
     CObserverPump::Instance()->RegisterObserver( this );
 }
@@ -143,7 +143,7 @@ CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
 /*-------------------------------------------------------------------------*/
 
 CPumpedObserver::~CPumpedObserver()
-{TRACE;
+{GUCEF_TRACE;
 
     CObserverPump::Instance()->UnregisterObserver( this );
 }
@@ -152,7 +152,7 @@ CPumpedObserver::~CPumpedObserver()
 
 CPumpedObserver&
 CPumpedObserver::operator=( const CPumpedObserver& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( this != &src )
     {
@@ -166,7 +166,7 @@ void
 CPumpedObserver::OnNotify( CNotifier* notifier                 ,
                            const CEvent& eventid               ,
                            CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( eventdata )
     {
@@ -184,7 +184,7 @@ CPumpedObserver::OnNotify( CNotifier* notifier                 ,
 
 void 
 CPumpedObserver::OnUpdate( void )
-{TRACE;
+{GUCEF_TRACE;
 
     CEvent eventid;
     CICloneable* dataptr( NULL );

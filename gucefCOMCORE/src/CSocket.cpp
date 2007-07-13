@@ -76,7 +76,7 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 CSocket::CSocket( void )
-{TRACE;
+{GUCEF_TRACE;
 
         /*
          *      Register the socket object so that it's capable of 
@@ -88,7 +88,7 @@ CSocket::CSocket( void )
 /*-------------------------------------------------------------------------*/
 
 CSocket::CSocket( const CSocket& src )
-{TRACE;
+{GUCEF_TRACE;
 
         /* dummy, do not use */
 }
@@ -96,7 +96,7 @@ CSocket::CSocket( const CSocket& src )
 /*-------------------------------------------------------------------------*/
 
 CSocket::~CSocket()
-{TRACE;
+{GUCEF_TRACE;
 
         /*
          *      Unregister the socket object so that it's removed
@@ -109,7 +109,7 @@ CSocket::~CSocket()
 
 CSocket&
 CSocket::operator=( const CSocket& src )
-{TRACE;
+{GUCEF_TRACE;
        
         /* dummy, do not use */ 
         return *this;       
@@ -119,7 +119,7 @@ CSocket::operator=( const CSocket& src )
 
 void 
 CSocket::SetSocketID( UInt32 sid )
-{TRACE;
+{GUCEF_TRACE;
         _sid = sid; 
 }
 
@@ -127,7 +127,7 @@ CSocket::SetSocketID( UInt32 sid )
 
 UInt32 
 CSocket::GetSocketID( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
         return _sid;
 }
@@ -138,7 +138,7 @@ bool
 CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
                              const UInt16 destport            ,  
                              CIPAddress& resolvedDest         )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( CORE::Check_If_IP( destaddrstr.C_String() ) )
     {
@@ -197,7 +197,7 @@ bool
 CSocket::ConvertFromIPAddress( const CIPAddress& src     ,
                                CORE::CString& srcaddrstr ,
                                UInt16& srcport           )
-{TRACE;                   
+{GUCEF_TRACE;                   
 
     in_addr addrStruct;
     addrStruct.S_un.S_addr = src.GetAddress();

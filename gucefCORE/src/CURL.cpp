@@ -60,7 +60,7 @@ namespace CORE {
 CURL::CURL( void )
         : m_handler( NULL ) ,
           m_url()       
-{TRACE;
+{GUCEF_TRACE;
         
     AddEventForwarding( URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
@@ -74,7 +74,7 @@ CURL::CURL( void )
 CURL::CURL( const CString& url )
         : m_handler( GetHandlerForURL( url ) ) ,
           m_url( url )           
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_handler == NULL )
     {
@@ -91,7 +91,7 @@ CURL::CURL( const CString& url )
 /*-------------------------------------------------------------------------*/
 
 CURL::~CURL()
-{TRACE;        
+{GUCEF_TRACE;        
 
     if ( m_handler )
     {
@@ -104,7 +104,7 @@ CURL::~CURL()
 
 CURL& 
 CURL::operator=( const CURL& src )
-{TRACE;
+{GUCEF_TRACE;
         if ( &src != this )
         {
                 delete m_handler;
@@ -124,7 +124,7 @@ CURL::operator=( const CURL& src )
 
 bool
 CURL::operator==( const CURL& other ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_url == other.m_url;
 }
 
@@ -132,7 +132,7 @@ CURL::operator==( const CURL& other ) const
         
 bool
 CURL::operator!=( const CURL& other ) const
-{TRACE;
+{GUCEF_TRACE;
         return !( (*this) == other );
 }
         
@@ -140,7 +140,7 @@ CURL::operator!=( const CURL& other ) const
 
 bool 
 CURL::SetURL( const CString& url )
-{TRACE; 
+{GUCEF_TRACE; 
 
     CORE::CString lowerCaseURL( url.Lowercase() );
     lowerCaseURL = lowerCaseURL.ReplaceChar( '\\', '/' );
@@ -170,7 +170,7 @@ CURL::SetURL( const CString& url )
         
 CString 
 CURL::GetURL( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_url;
 }
 
@@ -178,7 +178,7 @@ CURL::GetURL( void ) const
 
 bool
 CURL::Activate( void )
-{TRACE;
+{GUCEF_TRACE;
         
     if ( m_handler != NULL )
     {
@@ -191,7 +191,7 @@ CURL::Activate( void )
         
 void
 CURL::Deactivate( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_handler != NULL )
     {
@@ -203,7 +203,7 @@ CURL::Deactivate( void )
 
 bool
 CURL::IsActive( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_handler != NULL )
     {
@@ -216,7 +216,7 @@ CURL::IsActive( void ) const
 
 CURLHandler* 
 CURL::GetHandlerForURL( const CString& url ) const
-{TRACE;
+{GUCEF_TRACE;
 
     CORE::CString protocolName( url.SubstrToSubstr( "://" ) );
     if ( protocolName.Length() )
@@ -238,7 +238,7 @@ void
 CURL::OnNotify( CNotifier* notifier                 ,
                 const CEvent& eventid               ,
                 CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
     
     // Mandatory: call the base-class implementation
     CObservingNotifier::OnNotify( notifier  ,

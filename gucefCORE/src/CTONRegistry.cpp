@@ -51,7 +51,7 @@ const CEvent CTONRegistryEvents::ItemUnregisteredEvent = "GUCEF::CORE::CTONRegis
 
 void
 CTONRegistryEvents::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
 
     ItemRegisteredEvent.Initialize();
     ItemUnregisteredEvent.Initialize();
@@ -60,7 +60,7 @@ CTONRegistryEvents::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CTONRegistryEvents::CTONRegistryEvents( void )
-{TRACE;
+{GUCEF_TRACE;
 
     RegisterEvents();
 }
@@ -68,7 +68,7 @@ CTONRegistryEvents::CTONRegistryEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CTONRegistryEvents::CTONRegistryEvents( const CTONRegistryEvents& src )
-{TRACE;
+{GUCEF_TRACE;
 
     RegisterEvents();
 }
@@ -76,7 +76,7 @@ CTONRegistryEvents::CTONRegistryEvents( const CTONRegistryEvents& src )
 /*-------------------------------------------------------------------------*/
 
 CTONRegistryEvents::~CTONRegistryEvents()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -84,7 +84,7 @@ CTONRegistryEvents::~CTONRegistryEvents()
 
 CTONRegistryEvents&
 CTONRegistryEvents::operator=( const CTONRegistryEvents& src )
-{TRACE;
+{GUCEF_TRACE;
 
     return *this;
 }

@@ -92,7 +92,7 @@ CUDPSocket::CUDPSocket( bool blocking )
           m_port( 0 )           ,
           _data( NULL )         ,
           m_buffer()
-{TRACE;
+{GUCEF_TRACE;
         
         RegisterEvents();
         
@@ -105,7 +105,7 @@ CUDPSocket::CUDPSocket( bool blocking )
 /*-------------------------------------------------------------------------*/
 
 CUDPSocket::~CUDPSocket()
-{TRACE;
+{GUCEF_TRACE;
         Close( true );
         
         delete _data;
@@ -116,7 +116,7 @@ CUDPSocket::~CUDPSocket()
 
 void
 CUDPSocket::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
 
     UDPSocketErrorEvent.Initialize();
     UDPSocketClosedEvent.Initialize();
@@ -130,7 +130,7 @@ Int32
 CUDPSocket::SendPacketTo( const CIPAddress& dest ,
                           const void* data       , 
                           UInt16 datasize        )
-{TRACE;
+{GUCEF_TRACE;
         if ( !_data->sockid )
         {
                 Open();
@@ -156,7 +156,7 @@ CUDPSocket::SendPacketTo( const CORE::CString& dnsname ,
                           UInt16 port                  ,
                           const void* data             , 
                           UInt16 datasize              )
-{TRACE;
+{GUCEF_TRACE;
         CIPAddress dest;
         if ( ConvertToIPAddress( dnsname, port, dest ) )
         {
@@ -169,7 +169,7 @@ CUDPSocket::SendPacketTo( const CORE::CString& dnsname ,
 
 void 
 CUDPSocket::Update( void )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( !_blocking )
     {
@@ -187,7 +187,7 @@ CUDPSocket::Update( void )
 
 bool
 CUDPSocket::IsIncomingDataQueued( void ) const
-{TRACE;
+{GUCEF_TRACE;
         TIMEVAL time = { 0, 0 };
         fd_set sockset;
         FD_ZERO( &sockset );
@@ -204,7 +204,7 @@ CUDPSocket::IsIncomingDataQueued( void ) const
 
 UInt32
 CUDPSocket::GetRecievedDataBufferSize( void ) const
-{TRACE;
+{GUCEF_TRACE;
     
     return m_buffer.GetBufferSize();
 }
@@ -213,7 +213,7 @@ CUDPSocket::GetRecievedDataBufferSize( void ) const
     
 void
 CUDPSocket::SetRecievedDataBufferSize( const UInt32 newBufferSize )
-{TRACE;
+{GUCEF_TRACE;
     
     m_buffer.SetBufferSize( newBufferSize );
 }
@@ -224,7 +224,7 @@ Int32
 CUDPSocket::Recieve( CIPAddress& src ,
                      void* destbuf   , 
                      UInt16 bufsize  )
-{TRACE;        
+{GUCEF_TRACE;        
 
     struct sockaddr_in remote;        
     int structsize( sizeof( remote ) );
@@ -279,7 +279,7 @@ CUDPSocket::Recieve( CIPAddress& src ,
 Int32 
 CUDPSocket::Recieve( void* destbuf  ,
                      UInt16 bufsize )
-{TRACE;
+{GUCEF_TRACE;
 
     CIPAddress src;
     return Recieve( src     , 
@@ -291,7 +291,7 @@ CUDPSocket::Recieve( void* destbuf  ,
        
 bool 
 CUDPSocket::Open( void )
-{TRACE;
+{GUCEF_TRACE;
         GUCEF_ASSERT_ALWAYS;
         
         Close( true );           
@@ -325,7 +325,7 @@ CUDPSocket::Open( void )
         
 bool 
 CUDPSocket::Open( UInt16 port )
-{TRACE;
+{GUCEF_TRACE;
         Close( true );
         
         //----------- BEGIN MS WINDOWS IMPLEMENTATION
@@ -367,7 +367,7 @@ CUDPSocket::Open( UInt16 port )
 bool 
 CUDPSocket::Open( const CORE::CString& localaddr ,
                   UInt16 port                    )
-{TRACE;
+{GUCEF_TRACE;
         Close( true );
         
         //----------- BEGIN MS WINDOWS IMPLEMENTATION
@@ -408,7 +408,7 @@ CUDPSocket::Open( const CORE::CString& localaddr ,
         
 void 
 CUDPSocket::Close( bool force )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( IsActive() )
     {
@@ -422,7 +422,7 @@ CUDPSocket::Close( bool force )
  
 bool 
 CUDPSocket::IsBlocking( void ) const
-{TRACE;
+{GUCEF_TRACE;
        return _blocking;
 }
 
@@ -430,7 +430,7 @@ CUDPSocket::IsBlocking( void ) const
 
 bool 
 CUDPSocket::IsActive( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _data->sockid > 0;
 }
 
@@ -438,7 +438,7 @@ CUDPSocket::IsActive( void ) const
 
 UInt16 
 CUDPSocket::GetPort( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return m_port;
 }
  

@@ -52,7 +52,7 @@ namespace CORE {
 
 CURLHandler::CURLHandler( void )
         : CICloneable()
-{TRACE;
+{GUCEF_TRACE;
         
     CIURLEvents::RegisterEvents();
 }
@@ -61,7 +61,7 @@ CURLHandler::CURLHandler( void )
         
 CURLHandler::CURLHandler( const CURLHandler& src )
         : CICloneable( src )
-{TRACE;    
+{GUCEF_TRACE;    
 
     CIURLEvents::RegisterEvents();
 }
@@ -69,14 +69,14 @@ CURLHandler::CURLHandler( const CURLHandler& src )
 /*-------------------------------------------------------------------------*/
 
 CURLHandler::~CURLHandler()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CURLHandler& 
 CURLHandler::operator=( const CURLHandler& src )
-{TRACE;
+{GUCEF_TRACE;
         return *this;
 }
 

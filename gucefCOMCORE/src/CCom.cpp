@@ -92,7 +92,7 @@ bool
 GetMSWinInternetProxyFromRegistry( CORE::CString& remoteHost ,
                                    UInt16& port              ,
                                    bool& active              )
-{TRACE;
+{GUCEF_TRACE;
 
     char lszValue[ 255 ];
     HKEY hKey;
@@ -145,7 +145,7 @@ GetMSWinInternetProxyFromRegistry( CORE::CString& remoteHost ,
 
 CCom*
 CCom::Instance( void )
-{TRACE;
+{GUCEF_TRACE;
         _mutex.Lock();
         if ( !_instance ) 
         {
@@ -159,7 +159,7 @@ CCom::Instance( void )
 
 void 
 CCom::Deinstance( void )
-{TRACE;
+{GUCEF_TRACE;
         _mutex.Lock();
         delete _instance;
         _instance = NULL;
@@ -175,7 +175,7 @@ CCom::CCom()
           _pumpthread( false )                 ,
           _threadedpump( NULL )                ,
           m_timerPump()
-{TRACE;
+{GUCEF_TRACE;
 
     _sockets.SetResizeChange( HEAP_RESIZE_AMOUNT );
     memset( &_stats, 0, sizeof(TSocketStats) );   
@@ -211,7 +211,7 @@ CCom::CCom()
 /*-------------------------------------------------------------------------*/
 
 CCom::~CCom()
-{TRACE;
+{GUCEF_TRACE;
 
         SetPumpThreading( false );                     
 }
@@ -220,7 +220,7 @@ CCom::~CCom()
 
 void                       
 CCom::RegisterSocketObject( CSocket* socket )
-{TRACE;
+{GUCEF_TRACE;
 
         _mutex.Lock();
         socket->SetSocketID( _sockets.AddEntry( socket ) );        
@@ -239,7 +239,7 @@ CCom::RegisterSocketObject( CSocket* socket )
 
 void
 CCom::UnregisterSocketObject( const CSocket* socket )
-{TRACE;
+{GUCEF_TRACE;
         _mutex.Lock();
         _sockets.SetEntry( socket->GetSocketID(), NULL );        
         --_scount;
@@ -281,7 +281,7 @@ CCom::OnNotify( CORE::CNotifier* notifier                 ,
 void 
 CCom::OnUpdate( const UInt64 tickcount               ,
                 const Float64 updateDeltaInMilliSecs )
-{TRACE;    
+{GUCEF_TRACE;    
 
     _mutex.Lock();
     for ( Int32 i=0; i <= _sockets.GetLast(); ++i )
@@ -298,7 +298,7 @@ CCom::OnUpdate( const UInt64 tickcount               ,
 
 UInt32 
 CCom::GetSocketCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return _scount;
 }
@@ -307,7 +307,7 @@ CCom::GetSocketCount( void ) const
 
 void 
 CCom::SetUseGlobalStats( bool keep_gstats )
-{TRACE;
+{GUCEF_TRACE;
 
     _keep_gstats = keep_gstats;
 }
@@ -316,7 +316,7 @@ CCom::SetUseGlobalStats( bool keep_gstats )
         
 bool 
 CCom::GetUseGlobalStats( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return _keep_gstats;
 }
@@ -325,14 +325,14 @@ CCom::GetUseGlobalStats( void ) const
         
 void 
 CCom::ResetGlobalStats( void )
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
         
 const CCom::TSocketStats& 
 CCom::GetGlobalStats( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
         return _stats;
 }
@@ -341,7 +341,7 @@ CCom::GetGlobalStats( void ) const
 
 void 
 CCom::SetPumpThreading( bool thread )
-{TRACE;
+{GUCEF_TRACE;
         _mutex.Lock();
         
         if ( _pumpthread == thread )
@@ -370,7 +370,7 @@ CCom::SetPumpThreading( bool thread )
 
 bool 
 CCom::GetPumpThreading( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
         return _pumpthread;        
 }
@@ -380,7 +380,7 @@ CCom::GetPumpThreading( void ) const
 bool
 CCom::SetSystemWideProxyServer( const CORE::CString& protocol ,
                                 const bool active             )
-{TRACE;
+{GUCEF_TRACE;
     
     TProxyList::iterator i = m_proxyList.find( protocol );
     if ( i != m_proxyList.end() )
@@ -398,7 +398,7 @@ CCom::SetSystemWideProxyServer( const CORE::CString& protocol   ,
                                 const CORE::CString& remoteHost ,
                                 const UInt16 remotePort         ,
                                 const bool active               )
-{TRACE;
+{GUCEF_TRACE;
     
     TProxyServer& proxyServer = m_proxyList[ protocol ];
     proxyServer.host = remoteHost;
@@ -414,7 +414,7 @@ CCom::GetSystemWideProxyServer( const CORE::CString& protocol ,
                                 CORE::CString& remoteHost     ,
                                 UInt16& remotePort            ,
                                 bool& active                  ) const
-{TRACE;
+{GUCEF_TRACE;
 
     TProxyList::const_iterator i = m_proxyList.find( protocol );
     if ( i != m_proxyList.end() )
@@ -432,7 +432,7 @@ CCom::GetSystemWideProxyServer( const CORE::CString& protocol ,
 
 bool
 CCom::IsSystemWideProxyServerActive( const CORE::CString& protocol ) const
-{TRACE;
+{GUCEF_TRACE;
 
     TProxyList::const_iterator i = m_proxyList.find( protocol );
     if ( i != m_proxyList.end() )

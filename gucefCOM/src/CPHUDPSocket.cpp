@@ -82,13 +82,14 @@ const CORE::CEvent CPHUDPSocket::PHUDPPacketRecievedEvent = "GUCEF::COM::CPHUDPS
 CPHUDPSocket::CPHUDPSocket( UInt32 minpayloadsize  ,
                             UInt16 sendpackettypes ,
                             UInt16 rcvpackettypes  )
-        : _sock( false )                                  ,
-          _buffer( GUPACKETHDRSIZE + minpayloadsize )     ,
-          _sendpackettypes( sendpackettypes )             ,
-          _rcvpackettypes( rcvpackettypes )               ,
-          _sendpcounters( new UInt32[ sendpackettypes ] ) ,
+        : _sock( false )                                    ,
+          _buffer( GUPACKETHDRSIZE + minpayloadsize, true ) ,
+          _sendpackettypes( sendpackettypes )               ,
+          _rcvpackettypes( rcvpackettypes )                 ,
+          _sendpcounters( new UInt32[ sendpackettypes ] )   ,
           _rcvpcounters( new UInt32[ rcvpackettypes ] )
-{TRACE;
+{GUCEF_TRACE;
+
         memset( _sendpcounters, 0, sendpackettypes*4 );
         memset( _rcvpcounters, 0, rcvpackettypes*4 );
         
@@ -98,7 +99,7 @@ CPHUDPSocket::CPHUDPSocket( UInt32 minpayloadsize  ,
 /*-------------------------------------------------------------------------*/
 
 CPHUDPSocket::~CPHUDPSocket()
-{TRACE;
+{GUCEF_TRACE;
         delete []_sendpcounters;
         delete []_rcvpcounters;
 }
@@ -110,7 +111,7 @@ CPHUDPSocket::BufferPacketSendInfo( const void* data         ,
                                     const UInt16 datasize    ,
                                     const UInt16 packettype  ,
                                     const bool deliveralways )
-{TRACE;
+{GUCEF_TRACE;
         _buffer.SetDataSize( GUPACKETHDRSIZE + datasize );
         char* buffer = static_cast<char*>( _buffer.GetBufferPtr() );
         
@@ -137,7 +138,7 @@ CPHUDPSocket::SendPacketTo( const CIPAddress& dest ,
                             UInt16 datasize        ,
                             UInt16 packettype      ,
                             bool deliveralways     )
-{TRACE;
+{GUCEF_TRACE;
         if ( packettype >= _sendpackettypes ) return -1;
         
         BufferPacketSendInfo( data          ,
@@ -159,7 +160,7 @@ CPHUDPSocket::SendPacketTo( const GUCEF::CORE::CString& dnsname ,
                             UInt16 datasize                     ,
                             UInt16 packettype                   ,
                             bool deliveralways                  )
-{TRACE;
+{GUCEF_TRACE;
         if ( packettype >= _sendpackettypes ) return -1;        
         
         BufferPacketSendInfo( data          ,
@@ -179,7 +180,7 @@ void
 CPHUDPSocket::OnNotify( CORE::CNotifier* notifier                 ,
                         const CORE::CEvent& eventid               ,
                         CORE::CICloneable* eventdata /* = NULL */ )
-{TRACE;
+{GUCEF_TRACE;
         
     // We only accept events from our local socket
     if ( notifier == &_sock )
@@ -216,7 +217,7 @@ CPHUDPSocket::OnNotify( CORE::CNotifier* notifier                 ,
 void
 CPHUDPSocket::OnPacketRecieved( const CIPAddress& sourceAddress                ,
                                 const CORE::TLinkedCloneableBuffer& dataBuffer )
-{TRACE;
+{GUCEF_TRACE;
         /*
          *  Begin various checks before parsing packet info
          *  First we check if the data is even large enough to hold our header info
@@ -286,14 +287,14 @@ CPHUDPSocket::OnPacketRecieved( const CIPAddress& sourceAddress                ,
                         }                                                        
                 }                                                
         }
-        DEBUGOUTPUT( "CPHUDPSocket: dropped packet" );
+       // DEBUGOUTPUT( "CPHUDPSocket: dropped packet" );
 }                                       
 
 /*-------------------------------------------------------------------------*/
        
 bool 
 CPHUDPSocket::Open( void )
-{TRACE;
+{GUCEF_TRACE;
         return _sock.Open();
 }       
 
@@ -301,7 +302,7 @@ CPHUDPSocket::Open( void )
         
 bool 
 CPHUDPSocket::Open( UInt16 port )
-{TRACE;
+{GUCEF_TRACE;
         return _sock.Open( port );
 }
 
@@ -310,7 +311,7 @@ CPHUDPSocket::Open( UInt16 port )
 bool 
 CPHUDPSocket::Open( const GUCEF::CORE::CString& localaddr ,
                     UInt16 port                           )
-{TRACE;
+{GUCEF_TRACE;
         return _sock.Open( localaddr ,
                            port      );
 }
@@ -319,7 +320,7 @@ CPHUDPSocket::Open( const GUCEF::CORE::CString& localaddr ,
         
 void 
 CPHUDPSocket::Close( bool force )
-{TRACE;
+{GUCEF_TRACE;
         return _sock.Close( force );               
 }
 
@@ -327,7 +328,7 @@ CPHUDPSocket::Close( bool force )
 
 bool 
 CPHUDPSocket::IsActive( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _sock.IsActive();
 }
 
@@ -335,7 +336,7 @@ CPHUDPSocket::IsActive( void ) const
 
 UInt16 
 CPHUDPSocket::GetPort( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return _sock.GetPort();
 }
 
@@ -343,7 +344,7 @@ CPHUDPSocket::GetPort( void ) const
 
 void
 CPHUDPSocket::RegisterEvents( void )
-{TRACE;
+{GUCEF_TRACE;
 
     PHUDPSocketErrorEvent.Initialize();
     PHUDPSocketClosedEvent.Initialize();

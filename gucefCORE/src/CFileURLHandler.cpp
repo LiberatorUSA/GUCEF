@@ -52,27 +52,27 @@ namespace CORE {
 
 CFileURLHandler::CFileURLHandler( void )
         : CURLHandler()
-{TRACE;
+{GUCEF_TRACE;
 }
         
 /*-------------------------------------------------------------------------*/        
         
 CFileURLHandler::CFileURLHandler( const CFileURLHandler& src )
         : CURLHandler( src )
-{TRACE;    
+{GUCEF_TRACE;    
 }
 
 /*-------------------------------------------------------------------------*/
 
 CFileURLHandler::~CFileURLHandler()
-{TRACE;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CFileURLHandler& 
 CFileURLHandler::operator=( const CFileURLHandler& src )
-{TRACE;
+{GUCEF_TRACE;
         if ( &src != this )
         {
         }
@@ -83,7 +83,7 @@ CFileURLHandler::operator=( const CFileURLHandler& src )
 
 CICloneable*
 CFileURLHandler::Clone( void ) const
-{TRACE;
+{GUCEF_TRACE;
         return new CFileURLHandler( *this );
 }
 
@@ -91,7 +91,7 @@ CFileURLHandler::Clone( void ) const
 
 bool
 CFileURLHandler::Activate( CURL& url )
-{TRACE;
+{GUCEF_TRACE;
 
     // Tell the data handlers we have been activated
     NotifyObservers( URLActivateEvent );
@@ -120,7 +120,7 @@ CFileURLHandler::Activate( CURL& url )
         
 void
 CFileURLHandler::Deactivate( CURL& url )
-{TRACE;
+{GUCEF_TRACE;
         // no need to do anything, this handler works instantly instead of over time
 }
 
@@ -128,7 +128,7 @@ CFileURLHandler::Deactivate( CURL& url )
                          
 bool
 CFileURLHandler::IsActive( const CURL& url ) const
-{TRACE;
+{GUCEF_TRACE;
         return false;
 }
 

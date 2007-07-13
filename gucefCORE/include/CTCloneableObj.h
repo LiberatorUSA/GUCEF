@@ -89,7 +89,7 @@ class CTCloneableObj : public CICloneable
 template< typename T >
 CTCloneableObj< T >::CTCloneableObj( const T& data )
         : m_data( data )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -99,7 +99,7 @@ CTCloneableObj< T >::CTCloneableObj( const T& data )
 template< typename T >
 CTCloneableObj< T >::CTCloneableObj( const CTCloneableObj< T >& src )
         : m_data( src.m_data )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -107,7 +107,7 @@ CTCloneableObj< T >::CTCloneableObj( const CTCloneableObj< T >& src )
     
 template< typename T >
 CTCloneableObj< T >::~CTCloneableObj()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -116,7 +116,7 @@ CTCloneableObj< T >::~CTCloneableObj()
 template< typename T >
 CTCloneableObj< T >& 
 CTCloneableObj< T >::operator=( const CTCloneableObj< T >& src )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( this != &src )
     {
@@ -130,7 +130,7 @@ CTCloneableObj< T >::operator=( const CTCloneableObj< T >& src )
 template< typename T >
 CICloneable* 
 CTCloneableObj< T >::Clone( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return new CTCloneableObj< T >( *this );
 }
@@ -140,7 +140,7 @@ CTCloneableObj< T >::Clone( void ) const
 template< typename T >
 T&
 CTCloneableObj< T >::GetData( void )
-{TRACE;
+{GUCEF_TRACE;
 
     return m_data;
 }
@@ -149,7 +149,7 @@ CTCloneableObj< T >::GetData( void )
 template< typename T >
 const T& 
 CTCloneableObj< T >::GetData( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_data;
 }
@@ -159,7 +159,7 @@ CTCloneableObj< T >::GetData( void ) const
 template< typename T >
 T 
 CTCloneableObj< T >::GetDataCopy( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return m_data;
 }

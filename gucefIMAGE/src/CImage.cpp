@@ -46,7 +46,7 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CImage, EInvalidIndex );
 
 CImage::CImage( void )
     : m_frameList()
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -54,7 +54,7 @@ CImage::CImage( void )
 
 CImage::CImage( const TFrameList& frameList )
     : m_frameList( frameList )
-{TRACE;
+{GUCEF_TRACE;
 
 }
 
@@ -62,7 +62,7 @@ CImage::CImage( const TFrameList& frameList )
     
 CImage::CImage( const TMipMapList& mipmapList )
     : m_frameList()
-{TRACE;
+{GUCEF_TRACE;
 
     m_frameList.push_back( mipmapList );
 }
@@ -71,7 +71,7 @@ CImage::CImage( const TMipMapList& mipmapList )
     
 CImage::CImage( const TPixelMapPtr& pixelMapPtr )
     : m_frameList()
-{TRACE;
+{GUCEF_TRACE;
 
     TMipMapList mipmapList;
     mipmapList.push_back( pixelMapPtr );
@@ -82,7 +82,7 @@ CImage::CImage( const TPixelMapPtr& pixelMapPtr )
 
 void
 CImage::Assign( const TFrameList& frameList )
-{TRACE;
+{GUCEF_TRACE;
 
     // First we clean up our toys
     Clear();
@@ -95,7 +95,7 @@ CImage::Assign( const TFrameList& frameList )
     
 void
 CImage::Assign( const TMipMapList& mipmapList )
-{TRACE;
+{GUCEF_TRACE;
 
     // First we clean up our toys
     Clear();
@@ -108,7 +108,7 @@ CImage::Assign( const TMipMapList& mipmapList )
     
 void
 CImage::Assign( const TPixelMapPtr& pixelMapPtr )
-{TRACE;
+{GUCEF_TRACE;
 
     // First we clean up our toys
     Clear();
@@ -123,7 +123,7 @@ CImage::Assign( const TPixelMapPtr& pixelMapPtr )
 
 void
 CImage::AddFrame( TMipMapList& imageFrame )
-{TRACE;
+{GUCEF_TRACE;
 
     m_frameList.push_back( imageFrame );
 }
@@ -132,7 +132,7 @@ CImage::AddFrame( TMipMapList& imageFrame )
 
 void
 CImage::AddFrame( TPixelMapPtr& imageFrame )
-{TRACE;
+{GUCEF_TRACE;
 
     TMipMapList mipMapList;
     mipMapList.push_back( imageFrame );
@@ -144,7 +144,7 @@ CImage::AddFrame( TPixelMapPtr& imageFrame )
 void
 CImage::SetFrame( TPixelMapPtr& imageFrame          ,
                   const UInt32 frameIndex /* = 0 */ )
-{TRACE;
+{GUCEF_TRACE;
 
     TMipMapList mipMapList;
     mipMapList.push_back( imageFrame );
@@ -156,7 +156,7 @@ CImage::SetFrame( TPixelMapPtr& imageFrame          ,
 void
 CImage::SetFrame( TMipMapList& imageFrame           ,
                   const UInt32 frameIndex /* = 0 */ )
-{TRACE;
+{GUCEF_TRACE;
     
     if ( frameIndex < m_frameList.size() )
     {
@@ -176,7 +176,7 @@ CImage::SetFrame( TMipMapList& imageFrame           ,
 /*--------------------------------------------------------------------------*/
 
 CImage::~CImage()
-{TRACE;
+{GUCEF_TRACE;
         Clear();
 }
 
@@ -184,7 +184,7 @@ CImage::~CImage()
 
 UInt32
 CImage::GetFrameCount( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return static_cast< UInt32 >( m_frameList.size() );
 }
@@ -193,7 +193,7 @@ CImage::GetFrameCount( void ) const
 
 UInt32
 CImage::GetMipmapLevels( const UInt32 frameIndex /* = 0 */ ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_frameList.size() > frameIndex )
     {
@@ -218,7 +218,7 @@ CImage::Clear( void )
 CImage::TPixelMapPtr
 CImage::GetPixelMap( const UInt32 frameIndex /* = 0 */  ,
                      const UInt32 mipMapLevel /* = 0 */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_frameList.size() > frameIndex )
     {
@@ -236,7 +236,7 @@ CImage::GetPixelMap( const UInt32 frameIndex /* = 0 */  ,
 
 CImage::TMipMapList&
 CImage::GetFrame( const UInt32 frameIndex /* = 0 */ )
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_frameList.size() > frameIndex )
     {
@@ -250,7 +250,7 @@ CImage::GetFrame( const UInt32 frameIndex /* = 0 */ )
 
 const CImage::TMipMapList&
 CImage::GetFrame( const UInt32 frameIndex /* = 0 */ ) const
-{TRACE;
+{GUCEF_TRACE;
 
     if ( m_frameList.size() > frameIndex )
     {
@@ -264,7 +264,7 @@ CImage::GetFrame( const UInt32 frameIndex /* = 0 */ ) const
 
 bool
 CImage::HasFrames( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     return !m_frameList.empty();
 }
@@ -273,7 +273,7 @@ CImage::HasFrames( void ) const
 
 UInt32
 CImage::GetTotalPixelStorageSize( void ) const
-{TRACE;
+{GUCEF_TRACE;
 
     UInt32 totalBytes = 0;
     TFrameList::const_iterator i = m_frameList.begin();
