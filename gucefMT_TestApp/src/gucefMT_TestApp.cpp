@@ -1,6 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication 
- *  implementations for standardized protocols.
+ *  gucefMT: GUCEF module providing multithreading solutions
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -26,30 +25,16 @@
 
 #include <windows.h>
 
-#ifndef GUCEFCORE_H
-#include "gucefCORE.h"
-#define GUCEFCORE_H
-#endif /* GUCEFCORE_H ? */
-
-#ifndef GUCEFCOMCORE_H
-#include "gucefCOMCORE.h"
-#define GUCEFCOMCORE_H
-#endif /* GUCEFCOMCORE_H ? */
-
-#ifndef GUCEFCOM_H
-#include "gucefCOM.h"
-#define GUCEFCOM_H
-#endif /* GUCEFCOM_H ? */
-
-#include "TestCode_CHTTPClient.h"
+#ifndef GUCEF_MT_H
+#include "gucefMT.h"
+#define GUCEF_MT_H
+#endif /* GUCEF_MT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-
           
 /*
  *      Application entry point
@@ -59,34 +44,28 @@ WinMain( HINSTANCE hinstance     ,
          HINSTANCE hprevinstance ,
          LPSTR lpcmdline         ,
          int ncmdshow            )
-{
-        using namespace GUCEF::CORE;
-        using namespace GUCEF::COMCORE;
-        using namespace GUCEF::COM;
-                
-        try 
-        {                               
-                SetupHTTPClientTest();
+{               
+    try 
+    {                               
+        
+        // @TODO add tests here
 
-                CGUCEFApplication::Instance()->Main( hinstance     ,
-                                                     lpcmdline     ,
-                                                     ncmdshow      ,
-                                                     true          );
-                
-                return 1;                                                                            
-        }
-        catch ( ... )
-        {
-                #ifdef DEBUG_MODE
-                GUCEF_PrintCallstack();
-                GUCEF_DumpCallstack( "GUCEFCallstack.txt" );
-                #endif
-                
-                ShowErrorMessage( "Unknown exception"                                                                 ,
-                                  "Unhandled exception during program execution, the application will now terminate"  );                                                         
-        }
-        GUCEF_END;
-        return 1;                                                                                                                              
+        return 1;                                                                            
+    }
+    catch ( ... )
+    {
+        return -1;                                                      
+    }
+    return 1;                                                                                                                              
 }
 
-/*-------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 10-12-2006
+        - Dinand: Added this comment section
+
+-----------------------------------------------------------------------------*/
