@@ -92,7 +92,7 @@ WinMain( HINSTANCE hinstance     ,
                 
                 //cs->LoadConfig();
 
-                //PerformSharedPtrTests();
+                PerformSharedPtrTests();
                 
                 PerformNotifierObserverTests();
         
