@@ -60,7 +60,7 @@ CPassiveURLServerListProvider::CPassiveURLServerListProvider( void )
       m_url()               ,
       m_isBusy( false )     ,
       m_buffer( true )      ,
-      m_codecType()
+      m_codecType( "xml" )
 {GUCEF_TRACE;
 
 }
