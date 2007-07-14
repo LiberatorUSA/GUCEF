@@ -109,6 +109,32 @@ void cls( void )
     return;
 }
 
+/*---------------------------------------------------------------------------*/
+
+class CMSWin32ConsoleWindow
+{
+    public:
+    
+    CMSWin32ConsoleWindow( void )
+    {
+        AllocConsole();
+        
+        /* reopen stdin handle as console window input */
+        freopen( "CONIN$", "rb", stdin );
+        
+        /* reopen stout handle as console window output */
+        freopen( "CONOUT$", "wb", stdout );
+        
+        /* reopen stderr handle as console window output */
+        freopen( "CONOUT$", "wb", stderr );        
+    }
+    
+    ~CMSWin32ConsoleWindow()
+    {
+        FreeConsole();
+    }
+};
+
 #endif /* GUCEF_MSWIN_BUILD ? */
 
 /*---------------------------------------------------------------------------*/
@@ -202,6 +228,10 @@ main( int argc , char* argv[] )
 
 	if ( 0 == argc )
 	{
+	    #ifdef GUCEF_MSWIN_BUILD
+	    CMSWin32ConsoleWindow console;
+	    #endif
+	    
 	    PrintHeader();
 	    PrintHelp();
 	    getchar();
