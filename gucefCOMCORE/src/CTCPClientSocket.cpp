@@ -495,7 +495,8 @@ CTCPClientSocket::Update( void )
                 {
                     // Check if the socket is now ready for writing
                     if ( FD_ISSET( _data->sockid, &writefds ) )
-                    {
+                    {   
+                        // We are now connected
                         m_isConnecting = false;
                         NotifyObservers( ConnectedEvent );
                     }
@@ -506,6 +507,7 @@ CTCPClientSocket::Update( void )
                 /* select call failed */
                 TSocketErrorEventData eData( errorcode );
                 NotifyObservers( SocketErrorEvent, &eData );
+                Close();
         }
         UnlockData(); 
     }

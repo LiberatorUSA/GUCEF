@@ -1,5 +1,5 @@
 /*
- *  gucefCOMCORE: GUCEF module providing basic communication facilities
+ *  gucefMULTIPLAY: GUCEF module providing multiplayer RAD functionality
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_COMCORE_CPING_H
-#define GUCEF_COMCORE_CPING_H
+#ifndef GUCEF_MULTIPLAY_CSERVERLISTPROVIDER_H
+#define GUCEF_MULTIPLAY_CSERVERLISTPROVIDER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,25 +26,35 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"       /* build defines */
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
-
 #ifndef GUCEF_CORE_CEVENT_H
-#include "CEvent.h"                    /* our event class */
+#include "CEvent.h"
 #define GUCEF_CORE_CEVENT_H
 #endif /* GUCEF_CORE_CEVENT_H ? */
+
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
+
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
+#include "CTCloneableObj.h"
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
 
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
-#ifndef GUCEF_CORE_CLONEABLES_H
-#include "cloneables.h"
-#define GUCEF_CORE_CLONEABLES_H
-#endif /* GUCEF_CORE_CLONEABLES_H ? */
+#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
+#include "CHostAddress.h"
+#define GUCEF_COMCORE_CHOSTADDRESS_H
+#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
+
+#ifndef GUCEF_MULTIPLAY_MACROS_H
+#include "gucefMULTIPLAY_macros.h"
+#define GUCE_MULTIPLAY_MACROS_H
+#endif /* GUCEF_MULTIPLAY_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,7 +63,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace MULTIPLAY {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -61,67 +71,44 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Class that implements ping functionality for the target platform
- *  You can ping a remote host and an event will be emitted when a response is
- *  received. If no response is received a timeout will occur.
- */
-class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CObservingNotifier
+class GUCEF_MULTIPLAY_EXPORT_CPP CServerListProvider : public CORE::CObservingNotifier
 {
     public:
     
-    static const CORE::CEvent PingStartedEvent;
-    static const CORE::CEvent PingReponseEvent;
-    static const CORE::CEvent PingTimeoutEvent;
-    static const CORE::CEvent PingFailedEvent;
-    static const CORE::CEvent PingStoppedEvent;
-
-    typedef CORE::TCloneableUInt32  TPingReponseEventData;
+    struct SServerInfo
+    {
+        CORE::CString name;                /**< name of the server */
+        COMCORE::CHostAddress hostAddress; /**< remote address of the server, either hostname or an IP */
+        CORE::CValueList extra;            /**< additional info regarding the server entry */
+    };
+    typedef struct SServerInfo TServerInfo;
     
+    static const CORE::CEvent ServerListProviderStartEvent;    /**< event indicating that the list provider has started */
+    static const CORE::CEvent ServerInfoEvent;                 /**< event indicating that a list entry has been obtained, event data is included */
+    static const CORE::CEvent ServerListProviderAbortEvent;    /**< event indicating that the list provider operation was aborted */
+    static const CORE::CEvent ServerListProviderErrorEvent;    /**< event indicating that the list provider operation encountered an error */
+    static const CORE::CEvent ServerListProviderFinisedEvent;  /**< event indicating that the list provider operation is finished */
+    
+    typedef CORE::CTCloneableObj< TServerInfo > ServerInfoEventData;   
+   
     static void RegisterEvents( void );
-    
+
     public:
     
-    CPing( void );
+    CServerListProvider( void );
     
-    virtual ~CPing();
-
-    /**
-     *  
-     */
-    bool Start( const CORE::CString& remoteHost     ,
-                const UInt32 maxPings = 0           ,
-                const UInt32 bytesToSend = 32       ,
-                const UInt32 timeout = 1000         ,
-                const UInt32 minimalPingDelta = 500 );
-
-    void Stop( void );
+    CServerListProvider( const CServerListProvider& src );
     
-    bool IsActive( void ) const;
+    virtual ~CServerListProvider();
     
-    const CORE::CString& GetRemoteHost( void ) const;
+    CServerListProvider& operator=( const CServerListProvider& src );
     
-    UInt32 GetMaxPings( void ) const;
+    virtual bool Start( const CORE::CValueList& params ) = 0;
     
-    void SetUserData( void* userData );
+    virtual bool IsBusy( void ) = 0;
     
-    void* GetUserData( void ) const;
+    virtual void Stop( void ) = 0;
     
-    private:
-    
-    CPing( const CPing& src );
-    CPing& operator=( const CPing& src );
-    
-    private:
-    
-    bool m_isActive;
-    CORE::CString m_remoteHost;
-    UInt32 m_maxPings;
-    UInt32 m_bytesToSend;
-    UInt32 m_timeout;
-    UInt32 m_minimalPingDelta;
-    void* m_osData;
-    void* m_userData;
 };
 
 /*-------------------------------------------------------------------------//
@@ -130,12 +117,12 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CObservingNotifier
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace MULTIPLAY */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPING_H ? */
+#endif /* GUCEF_MULTIPLAY_CSERVERLISTPROVIDER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -143,5 +130,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CObservingNotifier
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 07-04-2007 :
+       - Initial implementation.
 
 ---------------------------------------------------------------------------*/

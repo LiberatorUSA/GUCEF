@@ -643,6 +643,22 @@ CPing::GetMaxPings( void ) const
     return m_maxPings;
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CPing::SetUserData( void* userData )
+{
+    m_userData = userData; 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void*
+CPing::GetUserData( void ) const
+{
+    return m_userData;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

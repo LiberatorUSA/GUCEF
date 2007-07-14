@@ -168,7 +168,7 @@ CURL::SetURL( const CString& url )
 
 /*-------------------------------------------------------------------------*/
         
-CString 
+const CString&
 CURL::GetURL( void ) const
 {GUCEF_TRACE;
         return m_url;

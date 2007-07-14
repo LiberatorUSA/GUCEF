@@ -74,61 +74,61 @@ namespace CORE {
 class GUCEFCORE_EXPORT_CPP CDStoreCodecPluginManager : public CPluginManager ,
                                                        public CIConfigurable
 {
-        public:
-        
-        static CDStoreCodecPluginManager* Instance( void );
-        
-        CDStoreCodecPlugin* LoadCodecPlugin( const CString& filename );
-        
-        void UnloadCodecPlugin( CDStoreCodecPlugin* plugin );
-        
-        CDStoreCodecPlugin* GetCodec( const CString& codectype ) const;
-        
-        virtual void LoadAll( void );
-        
-        virtual void UnloadAll( void );
-        
-        /**
-         *      Attempts to store the given tree in the file
-         *      given according to the method of the codec metadata
-         *
-         *      @param tree the data tree you wish to store
-         *      @return wheter storing the tree was successfull
-         */
-        virtual bool SaveConfig( CDataNode& tree );
-                                    
-        /**
-         *      Attempts to load data from the given file to the 
-         *      root node given. The root data will be replaced 
-         *      and any children the node may already have will be deleted.
-         *
-         *      @param treeroot pointer to the node that is to act as root of the data tree
-         *      @return whether building the tree from the given file was successfull.
-         */                                    
-        virtual bool LoadConfig( const CDataNode& treeroot );        
-        
-        protected:
-        
-        virtual void OnSetPluginDir( const CString& path );        
+    public:
+    
+    static CDStoreCodecPluginManager* Instance( void );
+    
+    CDStoreCodecPlugin* LoadCodecPlugin( const CString& filename );
+    
+    void UnloadCodecPlugin( CDStoreCodecPlugin* plugin );
+    
+    CDStoreCodecPlugin* GetCodec( const CString& codectype ) const;
+    
+    virtual void LoadAll( void );
+    
+    virtual void UnloadAll( void );
+    
+    /**
+     *      Attempts to store the given tree in the file
+     *      given according to the method of the codec metadata
+     *
+     *      @param tree the data tree you wish to store
+     *      @return wheter storing the tree was successfull
+     */
+    virtual bool SaveConfig( CDataNode& tree );
+                                
+    /**
+     *      Attempts to load data from the given file to the 
+     *      root node given. The root data will be replaced 
+     *      and any children the node may already have will be deleted.
+     *
+     *      @param treeroot pointer to the node that is to act as root of the data tree
+     *      @return whether building the tree from the given file was successfull.
+     */                                    
+    virtual bool LoadConfig( const CDataNode& treeroot );        
+    
+    protected:
+    
+    virtual void OnSetPluginDir( const CString& path );        
 
-        private:
-        friend class CGUCEFCOREModule;
-        
-        static void Deinstance( void );
-        
-        private:
-        
-        static MT::CMutex _datalock;
-        static CDStoreCodecPluginManager* _instance;
-        
-        bool IsPluginLoaded( const CString& path );
-        
-        CDStoreCodecPluginManager( void );
-        CDStoreCodecPluginManager( const CDStoreCodecPluginManager& src );        
-        ~CDStoreCodecPluginManager();
-        CDStoreCodecPluginManager& operator=( const CDStoreCodecPluginManager& src );
-        
-        CDynamicArray _codecs;        
+    private:
+    friend class CGUCEFCOREModule;
+    
+    static void Deinstance( void );
+    
+    private:
+    
+    static MT::CMutex _datalock;
+    static CDStoreCodecPluginManager* _instance;
+    
+    bool IsPluginLoaded( const CString& path );
+    
+    CDStoreCodecPluginManager( void );
+    CDStoreCodecPluginManager( const CDStoreCodecPluginManager& src );        
+    ~CDStoreCodecPluginManager();
+    CDStoreCodecPluginManager& operator=( const CDStoreCodecPluginManager& src );
+    
+    CDynamicArray _codecs;        
 };
 
 /*-------------------------------------------------------------------------//

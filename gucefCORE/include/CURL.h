@@ -89,7 +89,7 @@ class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
         
         bool SetURL( const CString& newurl );
         
-        CString GetURL( void ) const;
+        const CString& GetURL( void ) const;
         
         bool Activate( void );
         

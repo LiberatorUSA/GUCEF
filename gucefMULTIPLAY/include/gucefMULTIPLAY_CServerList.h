@@ -1,5 +1,5 @@
 /*
- *  gucefCOMCORE: GUCEF module providing basic communication facilities
+ *  gucefMULTIPLAY: GUCEF module providing multiplayer RAD functionality
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_COMCORE_CPING_H
-#define GUCEF_COMCORE_CPING_H
+#ifndef GUCEF_MULTIPLAY_CSERVERLIST_H
+#define GUCEF_MULTIPLAY_CSERVERLIST_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,25 +26,45 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"       /* build defines */
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
-
 #ifndef GUCEF_CORE_CEVENT_H
-#include "CEvent.h"                    /* our event class */
+#include "CEvent.h"
 #define GUCEF_CORE_CEVENT_H
 #endif /* GUCEF_CORE_CEVENT_H ? */
+
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
+
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
+#include "CTCloneableObj.h"
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
 
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
-#ifndef GUCEF_CORE_CLONEABLES_H
-#include "cloneables.h"
-#define GUCEF_CORE_CLONEABLES_H
-#endif /* GUCEF_CORE_CLONEABLES_H ? */
+#ifndef GUCEF_COMCORE_CPING_H
+#include "CPing.h"
+#define GUCEF_COMCORE_CPING_H
+#endif /* GUCEF_COMCORE_CPING_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
+#ifndef GUCEF_MULTIPLAY_CSERVERLISTPROVIDER_H
+#include "gucefMULTIPLAY_CServerListProvider.h"
+#define GUCEF_MULTIPLAY_CSERVERLISTPROVIDER_H
+#endif /* GUCEF_MULTIPLAY_CSERVERLISTPROVIDER_H ? */
+
+#ifndef GUCEF_MULTIPLAY_MACROS_H
+#include "gucefMULTIPLAY_macros.h"
+#define GUCEF_MULTIPLAY_MACROS_H
+#endif /* GUCEF_MULTIPLAY_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,7 +73,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace MULTIPLAY {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -61,67 +81,69 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Class that implements ping functionality for the target platform
- *  You can ping a remote host and an event will be emitted when a response is
- *  received. If no response is received a timeout will occur.
- */
-class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CObservingNotifier
+class GUCEF_MULTIPLAY_EXPORT_CPP CServerList : public CORE::CObservingNotifier
 {
     public:
     
-    static const CORE::CEvent PingStartedEvent;
-    static const CORE::CEvent PingReponseEvent;
-    static const CORE::CEvent PingTimeoutEvent;
-    static const CORE::CEvent PingFailedEvent;
-    static const CORE::CEvent PingStoppedEvent;
-
-    typedef CORE::TCloneableUInt32  TPingReponseEventData;
-    
+    typedef CServerListProvider::TServerInfo TServerInfo;
+    struct SServerListEntry
+    {
+        TServerInfo serverInfo;            /**< server information */
+        Int32 ping;                        /**< ping to the server in milliseconds */
+    };
+    typedef struct SServerListEntry TServerListEntry;
+    typedef CORE::CTSharedPtr< TServerListEntry > TServerListEntryPtr;
+    typedef std::vector< TServerListEntryPtr > TServerInfoList;
+    typedef std::vector< CORE::CString > TStringList;
+        
+    static const CORE::CEvent ServerListChangedEvent;    /**< event indicating that the list has changed */  
+   
     static void RegisterEvents( void );
-    
+
     public:
     
-    CPing( void );
+    CServerList( void );
     
-    virtual ~CPing();
+    CServerList( const CServerList& src );
+    
+    virtual ~CServerList();
+    
+    CServerList& operator=( const CServerList& src );
+    
+    void SetList( const TServerInfoList& newList );
 
-    /**
-     *  
-     */
-    bool Start( const CORE::CString& remoteHost     ,
-                const UInt32 maxPings = 0           ,
-                const UInt32 bytesToSend = 32       ,
-                const UInt32 timeout = 1000         ,
-                const UInt32 minimalPingDelta = 500 );
-
-    void Stop( void );
+    const TServerInfoList& GetList( void ) const;
     
-    bool IsActive( void ) const;
+    void GetServerHostnameList( TStringList& list ) const;
     
-    const CORE::CString& GetRemoteHost( void ) const;
+    void GetServerAddressList( TStringList& list ) const;
     
-    UInt32 GetMaxPings( void ) const;
+    void GetServerNameList( TStringList& list ) const;
     
-    void SetUserData( void* userData );
+    void Clear( void );
     
-    void* GetUserData( void ) const;
+    void RefreshPings( void );
+    
+    void StopRefreshingPings( void );
+    
+    bool SetParallelPingMax( const UInt32 max );
+    
+    UInt32 GetParallelPingMax( void ) const;
+    
+    bool IsBusyWithPing( void ) const;
+    
+    protected:
+    
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );    
     
     private:
+    typedef std::vector< COMCORE::CPing* > TPingers;
     
-    CPing( const CPing& src );
-    CPing& operator=( const CPing& src );
-    
-    private:
-    
-    bool m_isActive;
-    CORE::CString m_remoteHost;
-    UInt32 m_maxPings;
-    UInt32 m_bytesToSend;
-    UInt32 m_timeout;
-    UInt32 m_minimalPingDelta;
-    void* m_osData;
-    void* m_userData;
+    TServerInfoList m_serverList;
+    TServerInfoList m_toBePingedList;
+    TPingers m_pingers;    
 };
 
 /*-------------------------------------------------------------------------//
@@ -130,12 +152,12 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CObservingNotifier
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace MULTIPLAY */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPING_H ? */
+#endif /* GUCEF_MULTIPLAY_CSERVERLIST_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -143,5 +165,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CObservingNotifier
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 07-04-2007 :
+       - Initial implementation.
 
 ---------------------------------------------------------------------------*/
