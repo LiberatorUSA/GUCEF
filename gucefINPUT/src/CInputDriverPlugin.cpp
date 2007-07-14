@@ -413,7 +413,7 @@ CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
                 memset( m_fptable, NULL, sizeof(void*) * INPUTDRIVERPLUG_LASTPTR );
                 m_sohandle = NULL;
                 
-                GUCEF_DEBUG_LOG( "Invalid codec module" );
+                GUCEF_DEBUG_LOG( 0, "Invalid codec module" );
                 return false;        
         }
         

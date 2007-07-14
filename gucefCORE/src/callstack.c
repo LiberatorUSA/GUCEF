@@ -324,7 +324,7 @@ GUCEF_SetStackLogging( const UInt32 logStackBool )
         if ( logStack == 1 )
         {
             if ( ( logFilename != NULL ) &&
-                 ( log == NULL )          )
+                 ( logFile == NULL )      )
             {
                 logFile = fopen( logFilename, "ab" );
             }
