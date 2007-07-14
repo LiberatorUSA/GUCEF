@@ -101,7 +101,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Debug_MVC8&#x0D;&#x0A;copy ..\..\recources\MFCPatcherConfig.xml  ..\..\..\..\..\common\bin\Debug_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Debug_MVC8&#x0D;&#x0A;copy ..\..\recources\MFCPatcherConfig.xml  ..\..\..\..\..\common\bin\Debug_MVC8&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -133,13 +133,15 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\..\..\common\include;..\..\..\..\..\gucefCORE\include;..\..\..\..\..\gucefMT\include;..\..\..\..\..\gucefCOM\include;..\..\..\..\..\gucefCOMCORE\include;..\..\..\..\..\gucefVFS\include;..\..\..\..\..\gucefPATCHER\include;res"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4251"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -155,7 +157,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="gucefCORE_MVC8.lib gucefMT_MVC8.lib gucefCOM_MVC8.lib gucefCOMCORE_MVC8.lib gucefVFS_MVC8.lib gucefPATCHER_MVC8.lib"
+				OutputFile="$(OutDir)\MFCPatcherGUI_MVC8.exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\..\..\..\gucefCOM\bin\Release_MVC8;..\..\..\..\..\gucefCOMCORE\bin\Release_MVC8;..\..\..\..\..\gucefCORE\bin\Release_MVC8;..\..\..\..\..\gucefMT\bin\Release_MVC8;..\..\..\..\..\gucefVFS\bin\Release_MVC8;..\..\..\..\..\gucefPATCHER\bin\Release_MVC8"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -185,6 +190,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Release_MVC8&#x0D;&#x0A;copy ..\..\recources\MFCPatcherConfig.xml  ..\..\..\..\..\common\bin\Release_MVC8&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>

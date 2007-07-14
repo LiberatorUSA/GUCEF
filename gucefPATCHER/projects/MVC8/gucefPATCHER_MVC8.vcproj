@@ -166,7 +166,7 @@
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)/gucefPATCHER.lib"
+				ImportLibrary="$(OutDir)/gucefPATCHER_MVC8.lib"
 				TargetMachine="1"
 			/>
 			<Tool

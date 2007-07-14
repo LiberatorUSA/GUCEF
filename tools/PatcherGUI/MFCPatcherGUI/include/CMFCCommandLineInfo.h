@@ -27,7 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <vector>
-#include <afxwin.h>
+#include <afxwin.h> /* needed for CCommandLineInfo */
 
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"

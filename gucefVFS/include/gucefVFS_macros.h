@@ -86,13 +86,13 @@
  *      In debug mode we will include the core module's tracer
  */
 #ifdef __cplusplus
-  #ifdef DEBUG_MODE
-    #ifndef CTRACER_H
+  #ifdef GUCEF_VFS_DEBUG_MODE
+    #ifndef GUCEF_CORE_CTRACER_H
       #include "CTracer.h"
-      #define CTRACER_H
-    #endif /* CTRACER_H ? */
+      #define GUCEF_CORE_CTRACER_H
+    #endif /* GUCEF_CORE_CTRACER_H ? */
   #else
-    #define TRACE
+    #define GUCEF_TRACE
   #endif
 #endif /* __cplusplus ? */
 
