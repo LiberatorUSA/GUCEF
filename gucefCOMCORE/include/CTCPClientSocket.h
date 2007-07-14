@@ -170,6 +170,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
             
     struct STCPClientSockData* _data;
     bool _blocking;
+    bool m_isConnecting;
     bool _active;
     MT::CMutex datalock;
     CORE::CDynamicBuffer m_readbuffer;

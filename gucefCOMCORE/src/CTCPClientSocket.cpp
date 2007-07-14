@@ -112,7 +112,8 @@ CTCPClientSocket::CTCPClientSocket( bool blocking )
           _blocking( blocking )    ,
           _active( false )         ,
           m_maxreadbytes( 0 )      ,
-          m_hostAddress()
+          m_hostAddress()          ,
+          m_isConnecting( false )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -205,8 +206,6 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     Close();        
     
     _active = true;
-    
-    NotifyObservers( ConnectingEvent );
     
     int errorcode = 0;
     if ( CORE::Check_If_IP( remoteaddr.C_String() ) == 1 )
@@ -313,13 +312,14 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
             return false;
         }
     }
-        
-    m_hostAddress.SetHostname( remoteaddr );
-    m_hostAddress.SetPortInHostByteOrder( port );
     
-    NotifyObservers( ConnectedEvent );	                   
+    m_isConnecting = true;        
+    m_hostAddress.SetHostname( remoteaddr );
+    m_hostAddress.SetPortInHostByteOrder( port );	                   
 
     UnlockData();        
+    
+    NotifyObservers( ConnectingEvent );
     return true;
 }
 
@@ -452,21 +452,24 @@ CTCPClientSocket::Update( void )
     
     if ( !_blocking && _active )
     {       
+        fd_set writefds;     /* Setup the write variable for the select function */
         fd_set readfds;      /* Setup the read variable for the select function */        
         fd_set exceptfds;    /* Setup the except variable for the select function */
 
+        FD_ZERO( &writefds );
         FD_ZERO( &readfds );
         FD_ZERO( &exceptfds );
 
         LockData();
         
+        FD_SET( _data->sockid, &writefds );
         FD_SET( _data->sockid, &readfds );
         FD_SET( _data->sockid, &exceptfds );                
         
         int errorcode = 0;
         if ( select( (int)_data->sockid+1 , 
                      &readfds             , 
-                     NULL                 , // We don't care about socket writes here
+                     &writefds            ,
                      &exceptfds           , 
                      &_data->timeout      ) != SOCKET_ERROR ) 
         {
@@ -486,6 +489,16 @@ CTCPClientSocket::Update( void )
                 {
                         /* data can be read from the socket */
                         CheckRecieveBuffer();
+                }
+                else
+                if ( m_isConnecting )
+                {
+                    // Check if the socket is now ready for writing
+                    if ( FD_ISSET( _data->sockid, &writefds ) )
+                    {
+                        m_isConnecting = false;
+                        NotifyObservers( ConnectedEvent );
+                    }
                 }                                                
         }
         else
@@ -513,21 +526,11 @@ CTCPClientSocket::Close( void )
                 /* prevent any further sends on the socket */
                 shutdown( _data->sockid , 
                           1             );
-                        
-                /* check if there is any data still in the buffer */
-        //        fd_set readset;
-        //        FD_SET( readset,           
-          //      select( 0, /* ignored parameter for compatibility */ 
-            //             ,
-              //           NULL,
-                //         NULL,
-                  //       );
-                                          
-                //recv( _data->sockid );
                                           
                 /* close the socket, this de-allocates the winsock buffers for the socket */          
                 closesocket( _data->sockid );
                 _active = false;
+                m_isConnecting = false;
                 
                 NotifyObservers( DisconnectedEvent );
         }
@@ -574,7 +577,14 @@ CTCPClientSocket::Send( const void* data ,
                                           &error        );
                 
                 UnlockData();
-                return wbytes == length;
+                
+                if ( wbytes == SOCKET_ERROR )
+                {
+                    TSocketErrorEventData eData( error );
+                    NotifyObservers( SocketErrorEvent, &eData );
+                    return false;
+                }
+                return true;
         } 
         return false;
 }

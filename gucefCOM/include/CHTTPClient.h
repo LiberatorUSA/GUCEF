@@ -257,6 +257,7 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     
     private:
     
+    CORE::CDynamicBuffer m_sendBuffer;
     COMCORE::CTCPClientSocket m_socket;
     bool m_downloading;
     UInt32 m_recieved;

@@ -273,110 +273,19 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 }
 
 /*-------------------------------------------------------------------------*/
-//
-//void
-//CChildView::OnPatchSetStart( const CORE::CString& patchSetName )
-//{GUCEF_TRACE;
-//    
-//    CORE::CString infoStr( ">>> start patchset: " );
-//    infoStr += patchSetName;
-//    m_listBox->AddString( infoStr.C_String() );
-//}
-//
-///*-------------------------------------------------------------------------*/
-//    
-//void
-//CChildView::OnEnterLocalDir( const CORE::CString& localPath )
-//{GUCEF_TRACE;
-//
-//    CORE::CString infoStr( "entering local directory: " );
-//    infoStr += localPath;
-//    m_listBox->AddString( infoStr.C_String() );
-//}
-//
-///*-------------------------------------------------------------------------*/
-//    
-//void
-//CChildView::OnLocalFileOK( const CORE::CString& localPath ,
-//                           const CORE::CString& localFile )
-//{GUCEF_TRACE;
-//
-//    CORE::CString infoStr( "local file \"" );
-//    infoStr += localFile;
-//    infoStr += "\" is up-to-date. Path: ";
-//    infoStr += localPath;
-//    m_listBox->AddString( infoStr.C_String() );
-//}
-//
-///*-------------------------------------------------------------------------*/
-//
-//void
-//CChildView::OnLocalFileNotFound( const CORE::CString& localPath ,
-//                                 const CORE::CString& localFile )
-//{GUCEF_TRACE;
-//
-//    CORE::CString infoStr( "local file \"" );
-//    infoStr += localFile;
-//    infoStr += "\" is not found. Path: ";
-//    infoStr += localPath;
-//    m_listBox->AddString( infoStr.C_String() );
-//}
-//
-///*-------------------------------------------------------------------------*/
-//
-//void
-//CChildView::OnLocalFileDifference( const CORE::CString& localPath ,
-//                                   const CORE::CString& localFile )
-//{GUCEF_TRACE;
-//
-//    CORE::CString infoStr( "local file \"" );
-//    infoStr += localFile;
-//    infoStr += "\" differs from the master file. Path: ";
-//    infoStr += localPath;
-//    m_listBox->AddString( infoStr.C_String() );
-//}
-//
-///*-------------------------------------------------------------------------*/
-//
-//void
-//CChildView::OnNewSourceRequired( const TSourceInfo& sourceInfo )
-//{GUCEF_TRACE;
-//
-//    CORE::CString infoStr( "new source required" );
-//    m_listBox->AddString( infoStr.C_String() );
-//}
-//
-///*-------------------------------------------------------------------------*/
-//    
-//void
-//CChildView::OnLeaveLocalDir( const CORE::CString& localPath )
-//{GUCEF_TRACE;
-//
-//    CORE::CString infoStr( "leaving local directory: " );
-//    infoStr += localPath;
-//    m_listBox->AddString( infoStr.C_String() );
-//}
-//
-///*-------------------------------------------------------------------------*/
-//    
-//void
-//CChildView::OnPatchSetEnd( const CORE::CString& patchSetName )
-//{GUCEF_TRACE;
-//
-//    CORE::CString infoStr( ">>> end patchset: " );
-//    infoStr += patchSetName;
-//    m_listBox->AddString( infoStr.C_String() );
-//}
-//
-///*-------------------------------------------------------------------------*/
-//
-//void
-//CChildView::OnParserError( void )
-//{GUCEF_TRACE;
-//
-//    CORE::CString infoStr( ">>> parser error" );
-//    m_listBox->AddString( infoStr.C_String() );
-//}
+
+void
+CChildView::PrintOutput( const GUCEF::CORE::CString& output )
+{
+    if ( m_listBox->GetCount() == 0 )
+    {
+        m_listBox->AddString( output.C_String() );
+    }  
+    else
+    {
+        m_listBox->InsertString( m_listBox->GetCount(), output.C_String() );
+    }
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -390,17 +299,17 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
     {
         if ( eventid == PATCHER::CPatchEngine::PatchProcessStartedEvent )
         {
-            m_listBox->AddString( "Patch process starting..." );
+            PrintOutput( "Patch process starting..." );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::PatchProcessFailedEvent )
         {
-            m_listBox->AddString( "ERROR: Patch process failed" );
+            PrintOutput( "ERROR: Patch process failed" );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::PatchProcessCompletedEvent )
         {
-            m_listBox->AddString( "Completed the patch process" );
+            PrintOutput( "Completed the patch process" );
             
             if ( m_closeAppWhenDone )
             {
@@ -410,142 +319,142 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
         else
         if ( eventid == PATCHER::CPatchEngine::PatchListRetrievalStartedEvent )
         {
-            m_listBox->AddString( "Retrieving patch list..." );
+            PrintOutput( "Retrieving patch list..." );
         }
         else        
         if ( eventid == PATCHER::CPatchEngine::PatchListRetrievalFailedEvent )
         {
-            m_listBox->AddString( "ERROR: Failed to retrieve the patch list" );
+            PrintOutput( "ERROR: Failed to retrieve the patch list" );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::PatchListRetrievalCompletedEvent )
         {
-            m_listBox->AddString( "Completed patch list retrieval" );
+            PrintOutput( "Completed patch list retrieval" );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::PatchListProcessingStartedEvent )
         {
-            m_listBox->AddString( "Patch list processing started..." );
+            PrintOutput( "Patch list processing started..." );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::PatchListProcessingCompletedEvent )
         {
-            m_listBox->AddString( "Completed processing the patch list" );
+            PrintOutput( "Completed processing the patch list" );
         }        
         else        
         if ( eventid == PATCHER::CPatchEngine::PatchListDataReceivedEvent )
         {
-            m_listBox->AddString( "Received patch list data" );
+            PrintOutput( "Received patch list data" );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::PatchListRetrievalAbortedEvent )
         {
-            m_listBox->AddString( "Aborted patch list retrieval" );
+            PrintOutput( "Aborted patch list retrieval" );
         } 
         else
         if ( eventid == PATCHER::CPatchEngine::PatchListDecodingFailedEvent )
         {
-            m_listBox->AddString( "ERROR: Failed to decode the patch list" );
+            PrintOutput( "ERROR: Failed to decode the patch list" );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::PatchSetProcessingStartedEvent )
         {
-            m_listBox->AddString( "Started processing patch set..." );
+            PrintOutput( "Started processing patch set..." );
         }        
         else
         if ( eventid == PATCHER::CPatchEngine::PatchSetRetrievalFailedEvent )
         {
-            m_listBox->AddString( "ERROR: Failed to retrieve the patch set" );
+            PrintOutput( "ERROR: Failed to retrieve the patch set" );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::PatchSetDataRecievedEvent )
         {
-            m_listBox->AddString( "Received patch set data" );
+            PrintOutput( "Received patch set data" );
         }
         else        
         if ( eventid == PATCHER::CPatchEngine::PatchSetRetrievalAbortedEvent )
         {
-            m_listBox->AddString( "Aborted patch set retrieval" );
+            PrintOutput( "Aborted patch set retrieval" );
         }  
         else        
         if ( eventid == PATCHER::CPatchEngine::PatchSetRetrievalStartedEvent )
         {
-            m_listBox->AddString( "Retrieving patch set..." );
+            PrintOutput( "Retrieving patch set..." );
         }  
         else        
         if ( eventid == PATCHER::CPatchEngine::PatchSetRetrievalCompletedEvent )
         {
-            m_listBox->AddString( "Completed patch set retrieval" );
+            PrintOutput( "Completed patch set retrieval" );
         }  
         else        
         if ( eventid == PATCHER::CPatchEngine::PatchSetProcessingCompletedEvent )
         {
-            m_listBox->AddString( "Completed processing the patch set" );
+            PrintOutput( "Completed processing the patch set" );
         }        
         else
         if ( eventid == PATCHER::CPatchEngine::PatchSetDecodingFailedEvent )
         {
-            m_listBox->AddString( "ERROR: Failed to decode a patch set" );
+            PrintOutput( "ERROR: Failed to decode a patch set" );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::PatchProcessAbortedEvent )
         {
-            m_listBox->AddString( "The patching process has been aborted" );
+            PrintOutput( "The patching process has been aborted" );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::DirProcessingStartedEvent )
         {
-            m_listBox->AddString( "Started processing directory..." );
+            PrintOutput( "Started processing directory..." );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::SubDirProcessingCompletedEvent )
         {
-            m_listBox->AddString( "Completed processing sub directories" );
+            PrintOutput( "Completed processing sub directories" );
         }        
         else        
         if ( eventid == PATCHER::CPatchEngine::FileRetrievalStartedEvent )
         {
-            m_listBox->AddString( "Retrieving file..." );
+            PrintOutput( "Retrieving file..." );
         }                 
         else        
         if ( eventid == PATCHER::CPatchEngine::FileListProcessingStartedEvent )
         {
-            m_listBox->AddString( "Started processing file list..." );
+            PrintOutput( "Started processing file list..." );
         }
         else        
         if ( eventid == PATCHER::CPatchEngine::FileListProcessingCompleteEvent )
         {
-            m_listBox->AddString( "Completed file list processing" );
+            PrintOutput( "Completed file list processing" );
         }                 
         else
         if ( eventid == PATCHER::CPatchEngine::FileListProcessingAbortedEvent )
         {
-            m_listBox->AddString( "Aborted file list processing" );
+            PrintOutput( "Aborted file list processing" );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::LocalFileIsOKEvent )
         {
-            m_listBox->AddString( "Local file is Ok" );
+            PrintOutput( "Local file is Ok" );
         }         
         else
         if ( eventid == PATCHER::CPatchEngine::LocalFileSizeMismatchEvent )
         {
-            m_listBox->AddString( "Local file size mismatch" );
+            PrintOutput( "Local file size mismatch" );
         }         
         else
         if ( eventid == PATCHER::CPatchEngine::LocalFileHashMismatchEvent )
         {
-            m_listBox->AddString( "Local file hash mismatch" );
+            PrintOutput( "Local file hash mismatch" );
         }        
         else
         if ( eventid == PATCHER::CPatchEngine::LocalFileNotFoundEvent )
         {
-            m_listBox->AddString( "Local file not found" );
+            PrintOutput( "Local file not found" );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::LocalFileReplacedEvent )
         {
-            m_listBox->AddString( "Local file replaced" );
+            PrintOutput( "Local file replaced" );
         }
         else
         {
@@ -553,9 +462,7 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
                  ( eventid != CORE::CNotifier::DestructionEvent ) &&
                  ( eventid != CORE::CNotifier::UnsubscribeEvent )  )
             {
-                CORE::CString eventStr( "Event: " );
-                eventStr += eventid.GetName();
-                m_listBox->AddString( eventStr.C_String() );
+                PrintOutput( "Event: " + eventid.GetName() );
             }
         }
     }

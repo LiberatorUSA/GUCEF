@@ -76,29 +76,6 @@ class CChildView : public CWnd                    ,
     afx_msg void OnPaint();
     DECLARE_MESSAGE_MAP()
 
-    private:
-    /*
-    virtual void OnPatchSetStart( const GUCEF::CORE::CString& patchSetName );
-
-    virtual void OnEnterLocalDir( const GUCEF::CORE::CString& localPath );
-
-    virtual void OnLocalFileOK( const GUCEF::CORE::CString& localPath ,
-                                const GUCEF::CORE::CString& localFile );
-
-    virtual void OnLocalFileNotFound( const GUCEF::CORE::CString& localPath ,
-                                      const GUCEF::CORE::CString& localFile );
-
-    virtual void OnLocalFileDifference( const GUCEF::CORE::CString& localPath ,
-                                        const GUCEF::CORE::CString& localFile );
-
-    virtual void OnNewSourceRequired( const TSourceInfo& sourceInfo );
-
-    virtual void OnLeaveLocalDir( const GUCEF::CORE::CString& localPath );
-
-    virtual void OnPatchSetEnd( const GUCEF::CORE::CString& patchSetName );
-
-    virtual void OnParserError( void );   */
-
     protected:
 
     virtual void OnNotify( GUCEF::CORE::CNotifier* notifier           ,
@@ -108,6 +85,8 @@ class CChildView : public CWnd                    ,
     private:
     
     bool LoadPatchEngineConfig( void );
+    
+    void PrintOutput( const GUCEF::CORE::CString& output );
     
     private:
 

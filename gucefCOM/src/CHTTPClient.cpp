@@ -101,7 +101,8 @@ CHTTPClient::CHTTPClient( void )
           m_recieved( 0 )        ,
           m_filesize( 0 )        ,
           m_proxyHost()          ,
-          m_proxyPort( 80 )                
+          m_proxyPort( 80 )      ,
+          m_sendBuffer( true )          
 {GUCEF_TRACE;
 
         SubscribeTo( &m_socket );
@@ -168,11 +169,9 @@ CHTTPClient::Post( const CORE::CString& host                      ,
         if ( m_socket.ConnectTo( host ,
                                  port ) )
         {                                         
-                bool success = m_socket.Send( sendbuffer, mainmsglength + contentsize );
-                
-                delete []sendbuffer;
-                
-                return success;
+            m_sendBuffer.Append( sendbuffer, mainmsglength + contentsize );
+            delete []sendbuffer;
+            return true;
         }
         return false;                
 }
@@ -285,11 +284,9 @@ CHTTPClient::Get( const CORE::CString& host                      ,
             if ( m_socket.ConnectTo( proxyHost ,
                                      proxyPort ) )
             {                                         
-                    bool success = m_socket.Send( buffer, (UInt32)strlen( buffer ) );
-                    
+                    m_sendBuffer.Append( buffer, (UInt32)strlen( buffer ) );
                     delete []buffer;
-                    
-                    return success;
+                    return true;
             }            
         }
         else
@@ -297,7 +294,7 @@ CHTTPClient::Get( const CORE::CString& host                      ,
             if ( byteoffset == 0 )
             {
                     buffer = new char[ 100 + valuepath.Length() + host.Length() ];
-                    sprintf( buffer, "GET %s HTTP/1.1\r\nHost: %s\r\nAccept: */*\r\nUser-Agent: gucefCOM-HTTP/1.0 (Windows;)\r\n\r\n", valuepath.C_String(), host.C_String() );
+                    sprintf( buffer, "GET %s HTTP/1.1\r\nHost: %s\r\nAccept: */*\r\nUser-Agent: gucefCOM-HTTP/1.0 (Linux;)\r\n\r\n", valuepath.C_String(), host.C_String() );
             }
             else
             {
@@ -311,11 +308,9 @@ CHTTPClient::Get( const CORE::CString& host                      ,
             if ( m_socket.ConnectTo( host ,
                                      port ) )
             {                                         
-                    bool success = m_socket.Send( buffer, (UInt32)strlen( buffer ) );
-                    
+                    m_sendBuffer.Append( buffer, (UInt32)strlen( buffer ) );
                     delete []buffer;
-                    
-                    return success;
+                    return true;
             }            
         }
 
@@ -806,6 +801,10 @@ CHTTPClient::OnNotify( CORE::CNotifier* notifier                 ,
         if ( eventid == COMCORE::CTCPClientSocket::ConnectedEvent )
         {
             NotifyObservers( ConnectedEvent );
+            
+            // Transmit data we have queued for transmission
+            m_socket.Send( m_sendBuffer.GetConstBufferPtr(), m_sendBuffer.GetDataSize() );
+            m_sendBuffer.Clear( true );
         }
         else
         if ( eventid == COMCORE::CTCPClientSocket::ConnectingEvent )

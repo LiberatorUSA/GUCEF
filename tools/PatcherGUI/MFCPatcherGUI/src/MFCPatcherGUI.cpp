@@ -57,7 +57,7 @@ CMFCPatcherGUIApp::CMFCPatcherGUIApp()
 {
     // We have to call some code in several modules as a hacky method for those modules to actually
     // be linked and loaded. Those modules can auto-register functionality.
-    // Some compilers/linkers attempt to optimize by removing dependancies on modules that have to 
+    // Some compilers/linkers attempt to optimize by removing dependencies on modules that have no 
     // direct calls from this app.
     GUCEF::VFS::CVFS::Instance();
     GUCEF::COMCORE::CCom::Instance();

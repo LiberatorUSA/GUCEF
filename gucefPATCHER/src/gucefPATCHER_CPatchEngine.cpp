@@ -402,19 +402,20 @@ CPatchEngine::Start( void )
             
             // We must obtain the patch list before we can use it,..
             // Set the URL for the list location        
-            m_url.SetURL( m_patchListURL );
-        
-            // Now we try and obtain it
-            NotifyObservers( PatchListRetrievalStartedEvent );
-            if ( !m_url.Activate() )
+            if ( m_url.SetURL( m_patchListURL ) )
             {
-                NotifyObservers( PatchListRetrievalFailedEvent );
-                NotifyObservers( PatchProcessFailedEvent );
-                return false;
-            }
-            
-            // Now we wait
-            return true;                 
+                // Now we try and obtain it
+                NotifyObservers( PatchListRetrievalStartedEvent );
+                if ( !m_url.Activate() )
+                {
+                    NotifyObservers( PatchListRetrievalFailedEvent );
+                    NotifyObservers( PatchProcessFailedEvent );
+                    return false;
+                }
+                
+                // Now we wait
+                return true;
+            }                                 
         }
     }
     

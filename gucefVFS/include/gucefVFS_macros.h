@@ -92,7 +92,9 @@
       #define GUCEF_CORE_CTRACER_H
     #endif /* GUCEF_CORE_CTRACER_H ? */
   #else
-    #define GUCEF_TRACE
+    #ifndef GUCEF_TRACE
+      #define GUCEF_TRACE
+    #endif /* GUCEF_TRACE ? */
   #endif
 #endif /* __cplusplus ? */
 
