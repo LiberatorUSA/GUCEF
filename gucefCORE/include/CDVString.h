@@ -75,16 +75,16 @@ class GUCEFCORE_EXPORT_CPP CString
 
         CString( const CString& src );
         
-        CString( const std::string& src );
+        explicit CString( const std::string& src );
 
         CString( const char *src );
         
         CString( const char *src ,
                  UInt32 length   );
 
-        CString( const char src );
+        explicit CString( const char src );
         
-        CString( const int NULLvalue );
+        explicit CString( const int NULLvalue );
         
         ~CString();
                 

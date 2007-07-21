@@ -346,18 +346,27 @@ CDRNNode::ConnectToPeer( const CORE::CString& address ,
                          const UInt16 port            )
 {GUCEF_TRACE;
 
+    COMCORE::CHostAddress hostAddress( address, port );     
+    return ConnectToPeer( hostAddress );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDRNNode::ConnectToPeer( const COMCORE::CHostAddress& hostAddress )
+{GUCEF_TRACE;
+
     // Check if a peer validation mechanism has been provided to this node
     if ( m_peerValidator != NULL )
     {            
         // Check if the peer connection is allowed
-        COMCORE::CIPAddress ip( address, port );
-        if ( !m_peerValidator->IsPeerAddressValid( ip      ,
-                                                   address ) )
+        if ( !m_peerValidator->IsPeerAddressValid( hostAddress ,
+                                                   address     ) )
         {   
             return false;
         }
     }
-         
+
     // Obtain a TCP client socket
     COMCORE::CTCPClientSocket* tcpClient = NULL;
     UInt32 socketIndex = 0;

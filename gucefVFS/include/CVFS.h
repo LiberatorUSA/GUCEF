@@ -97,10 +97,18 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
                   bool recursive = false             ,
                   bool includePathInFilename = false ,
                   const CORE::CString& filter = ""   ) const;
+
+    void GetList( CORE::CDataNode& outputDataTree    ,
+                  const CORE::CString& location      , 
+                  bool recursive = false             ,
+                  const CORE::CString& filter = ""   ,
+                  const bool addHash = false         ) const;
     
     bool FileExists( const CORE::CString& filePath ) const;
     
     UInt32 GetFileSize( const CORE::CString& filePath ) const;
+    
+    CORE::CString GetFileHash( const CORE::CString& file ) const;
 
     void SetMemloadSize( UInt32 bytesize );
     

@@ -62,7 +62,7 @@ namespace CORE {
  *  Abstract factory template for the selection and utilization of concrete 
  *  factories based on a criteria.
  *
- *  Note that when using this template it is manditory for BaseClassType 
+ *  Note that when using this template it is mandatory for BaseClassType 
  *  classes to define the following member function:
  *      SelectionCriteriaType GetType( void ) const;
  *

@@ -63,6 +63,11 @@
 #define DVCPPSTRINGUTILS_H
 #endif /* DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVMD5UTILS_H
+#include "dvmd5utils.h"
+#define GUCEF_CORE_DVMD5UTILS_H
+#endif /* GUCEF_CORE_DVMD5UTILS_H ? */
+
 #ifndef GUCEFVFS_MACROS_H
 #include "gucefVFS_macros.h"         /* often used gucefVFS macros */
 #define GUCEFVFS_MACROS_H
@@ -635,10 +640,63 @@ CVFS::GetList( TStringList& outputList                  ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
-CVFS::GetFileSize( const CORE::CString& file ) const
+void
+CVFS::GetList( CORE::CDataNode& outputDataTree        ,
+               const CORE::CString& location          , 
+               bool recursive  /* = false */          ,
+               const CORE::CString& filter /* = "" */ ,
+               const bool addHash /* = false */       ) const
 {GUCEF_TRACE;
 
+    // First we get a list of files and their path
+    TStringList outputList;
+    GetList( outputList ,
+             location   ,
+             recursive  ,
+             true       ,
+             filter     );
+             
+    // First we clear the tree
+    outputDataTree.Clear();
+    
+    // Now we build our data tree using the list we obtained
+    TStringList::iterator i = outputList.begin();
+    while ( i != outputList.end() )
+    {
+        // First we build the path structure in the data tree
+        CORE::CString path = (*i).SubstrToChar( DIRSEPCHAR, false );
+        CORE::CDataNode* pathRootNode = outputDataTree.Structure( "DIR", "Name", path, DIRSEPCHAR );
+        
+        // Extract the filename from the path
+        CORE::CString filename( (*i).C_String() + path.Length() , 
+                                (*i).Length() - path.Length()   );
+        
+        // Create the file node and set all the attributes
+        CORE::CDataNode fileNode( "FILE" );
+        fileNode.SetAttribute( "Name", filename );
+        fileNode.SetAttribute( "Size", CORE::UInt32ToString( GetFileSize( (*i) ) ) );
+        
+        if ( addHash )
+        {
+            // Obtain the hash for the file, this can be a lengthy operation
+            fileNode.SetAttribute( "Hash", GetFileHash( (*i) ) );
+        }
+        
+        // Create a copy child node thus storing the file properties in the tree
+        pathRootNode->AddChild( fileNode );
+        
+        ++i;
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+CVFS::GetFileHash( const CORE::CString& file ) const
+{GUCEF_TRACE;
+
+    m_datalock.Lock();
+    
     CORE::CString filepath;
     for ( UInt32 i=0; i<m_rootlist.size(); ++i )
     {
@@ -646,9 +704,43 @@ CVFS::GetFileSize( const CORE::CString& file ) const
         CORE::AppendToPath( filepath, file );
         if ( CORE::File_Exists( filepath.C_String() ) != 0 )
         {
+            CORE::CFileAccess fileAccess( filepath );
+            
+            UInt8 md5Hash[ 16 ];
+            if ( CORE::md5frommfile( fileAccess.CStyleAccess() , 
+                                     md5Hash                   ) == 1 )
+            {
+                m_datalock.Unlock();
+                return CORE::MD5ToString( md5Hash );
+            }
+        }
+    }
+    
+    m_datalock.Unlock();
+    return CORE::CString();
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CVFS::GetFileSize( const CORE::CString& file ) const
+{GUCEF_TRACE;
+
+    m_datalock.Lock();
+    
+    CORE::CString filepath;
+    for ( UInt32 i=0; i<m_rootlist.size(); ++i )
+    {
+        filepath = m_rootlist[ i ].abspath;
+        CORE::AppendToPath( filepath, file );
+        if ( CORE::File_Exists( filepath.C_String() ) != 0 )
+        {
+            m_datalock.Unlock();
             return CORE::Filesize( filepath.C_String() );
         }
     }
+    
+    m_datalock.Unlock();
     return 0;
 }
 

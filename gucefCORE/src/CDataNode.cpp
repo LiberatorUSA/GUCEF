@@ -124,6 +124,17 @@ CDataNode::~CDataNode()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CDataNode::Clear( void )
+{GUCEF_TRACE;
+
+    SetName( "" );
+    DelSubTree();
+    ClearAttributes();
+}
+
+/*-------------------------------------------------------------------------*/
+
 void       
 CDataNode::Detach( void )
 {
@@ -577,12 +588,48 @@ CDataNode::FindChild( const CString& name ) const
 
 /*-------------------------------------------------------------------------*/
 
+CDataNode*
+CDataNode::FindChild( const CString& name        ,
+                      const CString& attribName  ,
+                      const CString& attribValue )
+{GUCEF_TRACE;
+
+    if ( _pfchild != NULL )
+    {
+        CDataNode* node = _pfchild;
+        do
+        {
+            // Check if the name matches
+            if ( node->_name == name )
+            {
+                // See if the node has the attribute we want
+                TNodeAtt* att = node->GetAttribute( attribName );
+                if ( att != NULL )
+                {
+                    // See if the node attribute has the value we want
+                    if ( att->value == attribValue )
+                    {
+                        return node;
+                    }
+                }
+            }
+            
+            // Move to the next node
+            node = node->_pnext;
+            
+        } while ( node != _pfchild );
+    }
+    return NULL;    
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CDataNode::Compare( const CDataNode& other         ,
                     const CStringList& excludeList ) const
 {GUCEF_TRACE;
 
-    // identical nodes should offcourse have identical names
+    // identical nodes should of course have identical names
     if ( _name == other._name )
     {
         const TNodeAtt* att;
@@ -917,6 +964,58 @@ CDataNode::Structure( const CString& sequence ,
         GUCEF_END;
         return sn;        
 }                      
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode*
+CDataNode::Structure( const CString& nodeName       ,
+                      const CString& attribName     ,
+                      const CString& attribSequence ,
+                      const char seperator          )
+{GUCEF_TRACE;
+
+    // Prepare some variables for the first loop iteration
+    CDataNode* node = this;
+    CString attSeqRemnant = attribSequence;
+    CString attValue = attSeqRemnant.SubstrToChar( seperator );
+    bool childExists = true;
+    CDataNode* childNode = NULL;
+    
+    do
+    {
+        // First we check if we can skip the search for a child node
+        // This is a minor optimization        
+        if ( childExists )
+        {
+            // See if there already is a node of the given type
+            childNode = node->FindChild( nodeName   ,
+                                         attribName ,
+                                         attValue   );
+            if ( childNode == NULL )
+            {
+                childExists = false;
+            }
+        }
+        
+        // Check if we have to create a new node
+        if ( childNode == NULL )
+        {
+            // No such node exists, we will create it
+            CDataNode newChild( nodeName );
+            newChild.AddAttribute( attribName, attValue );
+            childNode = node->AddChild( newChild );
+        }
+        
+        node = childNode;
+        
+        // Get the next segment
+        attSeqRemnant = attSeqRemnant.CutChars( attValue.Length()+1, true );
+        attValue = attSeqRemnant.SubstrToChar( seperator );
+        
+    } while ( attSeqRemnant.Length() > 0 );
+    
+    return childNode;
+}
 
 /*-------------------------------------------------------------------------*/
 

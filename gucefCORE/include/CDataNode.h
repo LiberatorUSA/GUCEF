@@ -113,7 +113,7 @@ class GUCEFCORE_EXPORT_CPP CDataNode
                       const CStringList& excludeList ) const;
                       
         /**
-         *  Checks the imediate children using Compare()
+         *  Checks the immediate children using Compare()
          *  If no "identical" child node can be found NULL
          *  will be returned.
          */
@@ -159,11 +159,17 @@ class GUCEFCORE_EXPORT_CPP CDataNode
 
         void ClearAttributes( void );
         
+        void Clear( void );
+        
         UInt32 GetAttCount( void ) const;
         
         CDataNode* FindRoot( void ) const;
         
         CDataNode* FindChild( const CString& name ) const;
+        
+        CDataNode* FindChild( const CString& name        ,
+                              const CString& attribName  ,
+                              const CString& attribValue );
         
         CDataNode* FindSibling( const CString& name );
         
@@ -194,7 +200,25 @@ class GUCEFCORE_EXPORT_CPP CDataNode
          */
         CDataNode* Structure( const CString& sequence ,
                               char seperator          );        
-        
+
+        /**
+         *      Builds a structure if where each node is named
+         *      according to 'nodeName' and where each of those nodes is given
+         *      an attribute with 'attribName' using a section from 'attribSequence'
+         *      as the value for the attribute with 'seperator' used to separate
+         *      the segments
+         *
+         *      @param nodeName name used for all the nodes in the structure
+         *      @param attribName name of the attribute you want to use to store the attrib value
+         *      @param attribSequence the attribute values you wish to set
+         *      @param seperator the char you used to separate attribute values
+         *      @return last node in the structure
+         */
+        CDataNode* Structure( const CString& nodeName       ,
+                              const CString& attribName     ,
+                              const CString& attribSequence ,
+                              const char seperator          );
+                                      
         /**
          *      Searches for the structure provided in the query.
          *      If the structure is found a pointer to the last node

@@ -126,6 +126,8 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     bool ConnectToPeer( const CORE::CString& address , 
                         const UInt16 port            );
 
+    bool ConnectToPeer( const COMCORE::CHostAddress& hostAddress );
+
     void SetPeerLinkCrypter( CIDRNPeerLinkCrypter* peerLinkCrypter );
     
     CIDRNPeerLinkCrypter* GetPeerLinkCrypter( void ) const;
