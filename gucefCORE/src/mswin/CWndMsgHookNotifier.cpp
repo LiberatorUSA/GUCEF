@@ -54,6 +54,7 @@ namespace CORE {
 
 const CEvent CWndMsgHookNotifier::WindowActivationEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowActivationEvent";
 const CEvent CWndMsgHookNotifier::WindowSizeEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowSizeEvent";
+const CEvent CWndMsgHookNotifier::WindowDestroyEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowDestroyEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,6 +68,7 @@ CWndMsgHookNotifier::RegisterEvents( void )
 
     WindowActivationEvent.Initialize();
     WindowSizeEvent.Initialize();
+    WindowDestroyEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -119,13 +121,15 @@ CWndMsgHookNotifier::WindowProc( const HWND hWnd     ,
             NotifyObservers( WindowSizeEvent, &eData );
             return 0;
         }
+        case WM_DESTROY :
+        {
+            TWindowDestroyEventData eData( userData );
+            NotifyObservers( WindowDestroyEvent, &eData );
+            return 0;
+        }
         default : 
         {
-            //  We don't deal with it, let somebody else do it
-            return DefWindowProc( hWnd    , 
-                                  nMsg    , 
-                                  wParam  , 
-                                  lParam  );
+            return 0;
         }
     }
 }

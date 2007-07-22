@@ -74,6 +74,7 @@ class GUCEFCORE_EXPORT_CPP CWndMsgHookNotifier : public CNotifier      ,
     
     static const CEvent WindowActivationEvent;
     static const CEvent WindowSizeEvent;
+    static const CEvent WindowDestroyEvent;
     
     static void RegisterEvents( void );
     
@@ -92,6 +93,8 @@ class GUCEFCORE_EXPORT_CPP CWndMsgHookNotifier : public CNotifier      ,
         void* userData;          /**< user data pointer */
     };
     typedef CTCloneableObj< struct SWindowActivationEventData > TWindowActivationEventData; 
+
+    typedef CTCloneableObj< void* > TWindowDestroyEventData; /**< the user data (if any) */
     
     public:
     
