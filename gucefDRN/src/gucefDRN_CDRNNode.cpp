@@ -210,8 +210,7 @@ CDRNNode::OnNotify( CORE::CNotifier* notifier                 ,
             if ( m_peerValidator != NULL )
             {            
                 // Check if the peer is allowed to connect
-                if ( !m_peerValidator->IsPeerAddressValid( connectionInfo.address  ,
-                                                           connectionInfo.hostName ) )
+                if ( !m_peerValidator->IsPeerAddressValid( connectionInfo.hostAddress ) )
                 {
                     connectionInfo.connection->Close();
                     return;
@@ -360,8 +359,7 @@ CDRNNode::ConnectToPeer( const COMCORE::CHostAddress& hostAddress )
     if ( m_peerValidator != NULL )
     {            
         // Check if the peer connection is allowed
-        if ( !m_peerValidator->IsPeerAddressValid( hostAddress ,
-                                                   address     ) )
+        if ( !m_peerValidator->IsPeerAddressValid( hostAddress ) )
         {   
             return false;
         }
@@ -375,8 +373,7 @@ CDRNNode::ConnectToPeer( const COMCORE::CHostAddress& hostAddress )
             
     // Attempt the connection
     SubscribeTo( tcpClient );
-    return tcpClient->ConnectTo( address , 
-                                 port    );
+    return tcpClient->ConnectTo( hostAddress );
 }
 
 /*-------------------------------------------------------------------------*/

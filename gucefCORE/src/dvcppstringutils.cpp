@@ -142,7 +142,7 @@ CString
 Int32ToString( const Int32 value )
 {GUCEF_TRACE;
 
-    char intBuffer[ 10 ];
+    char intBuffer[ 12 ];
     sprintf( intBuffer, "%d", value );
     return CString( intBuffer );
 }
@@ -164,7 +164,7 @@ CString
 UInt32ToString( const UInt32 value )
 {GUCEF_TRACE;
 
-    char intBuffer[ 10 ];
+    char intBuffer[ 12 ];
     sprintf( intBuffer, "%u", value );
     return CString( intBuffer );
 }
@@ -186,7 +186,7 @@ CString
 UInt16ToString( const UInt16 value )
 {GUCEF_TRACE;
 
-    char intBuffer[ 10 ];
+    char intBuffer[ 12 ];
     sprintf( intBuffer, "%u", value );
     return CString( intBuffer );
 }
@@ -197,7 +197,7 @@ CString
 PointerToString( const void* value )
 {GUCEF_TRACE;
 
-    char addrBuffer[ 10 ];
+    char addrBuffer[ 12 ];
     sprintf( addrBuffer, "%p", value );
     return CString( addrBuffer );    
 }

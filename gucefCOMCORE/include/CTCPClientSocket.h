@@ -143,7 +143,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     
     virtual CIPAddress GetRemoteIP( void ) const;
 
-    virtual CORE::CString GetType( void ) const;
+    virtual const CORE::CString& GetType( void ) const;
 
     public:
     

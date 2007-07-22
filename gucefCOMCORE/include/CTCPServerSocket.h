@@ -76,8 +76,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
 
     struct SConnectionInfo
     {
-        CIPAddress address;
-        CORE::CString hostName;
+        CHostAddress hostAddress;
         CTCPServerConnection* connection;
         UInt32 connectionIndex;
     };

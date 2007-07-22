@@ -75,7 +75,7 @@ CPatchSetGenerator::CPatchSetGenerator( void )
 /*-------------------------------------------------------------------------*/
 
 CPatchSetGenerator::~CPatchSetGenerator()
-{
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/

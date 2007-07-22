@@ -205,11 +205,12 @@ CNotifier::OnObserverDestroy( CObserver* observer )
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+const CString&
 CNotifier::GetType( void ) const
 {GUCEF_TRACE;
 
-    return "GUCEF::CORE::CNotifier";
+    static CString typeName = "GUCEF::CORE::CNotifier";
+    return typeName;
 }
 
 /*-------------------------------------------------------------------------*/

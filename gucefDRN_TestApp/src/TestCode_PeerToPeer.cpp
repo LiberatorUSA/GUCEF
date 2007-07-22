@@ -85,12 +85,11 @@ class CTestPeerValidator : public DRN::CIDRNPeerValidator
 {
     public:
 
-    virtual bool IsPeerAddressValid( const CIPAddress& address     ,
-                                     const CORE::CString& hostName ) const
+    virtual bool IsPeerAddressValid( const CHostAddress& hostAddress ) const
     {GUCEF_TRACE;
     
         GUCEF_LOG( 0, "Question received: is peer address valid" );
-        return ( hostName == "localhost" ) || ( hostName == "127.0.0.1" );
+        return ( hostAddress.GetHostname() == "localhost" ) || ( hostAddress.GetHostname() == "127.0.0.1" );
     }
     
     virtual bool IsPeerLoginRequired( const DRN::CDRNPeerLink& peerLink ) const

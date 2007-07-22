@@ -322,11 +322,11 @@ CTCPServerSocket::AcceptClients( void )
                                                  *      Call the on client connect event handler      
                                                  */
                                                 struct SConnectionInfo eData;
-                                                eData.address.SetAddress( clientcon->_data->clientaddr.sin_addr.S_un.S_addr );
-                                                eData.address.SetPort( clientcon->_data->clientaddr.sin_port );
+                                                eData.hostAddress.SetHostname( clientcon->_data->clientip );
+                                                eData.hostAddress.SetAddress( clientcon->_data->clientaddr.sin_addr.S_un.S_addr );
+                                                eData.hostAddress.SetPort( clientcon->_data->clientaddr.sin_port );
                                                 eData.connection = clientcon;
                                                 eData.connectionIndex = i;
-                                                eData.hostName = clientcon->_data->clientip;
                                                 TClientConnectedEventData cloneableEventData( eData );
                                                 NotifyObservers( ClientConnectedEvent, &cloneableEventData );                                                                                 
 

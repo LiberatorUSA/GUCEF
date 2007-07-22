@@ -18,9 +18,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEFCOM_H
-#define GUCEFCOM_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -37,10 +34,10 @@
 #define CGUCEFCOMMODULE_H
 #endif /* CGUCEFCOMMODULE_H ? */
 
-#ifndef GUCEFCOM_H
+#ifndef GUCEF_COM_H
 #include "gucefCOM.h"
-#define GUCEFCOM_H
-#endif /* GUCEFCOM_H ? */
+#define GUCEF_COM_H
+#endif /* GUCEF_COM_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,5 +48,3 @@
 DLL_INIT_FUNC_BEG_END( GUCEF::COM::CGUCEFCOMModule );
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEFCOM_H ? */

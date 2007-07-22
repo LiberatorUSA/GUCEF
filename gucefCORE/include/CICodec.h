@@ -33,10 +33,10 @@
 #define GUCEF_CORE_CICLONEABLE_H
 #endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
-#ifndef GUCEF_CORE_CITYPENAMED_H
-#include "CITypeNamed.h"
-#define GUCEF_CORE_CITYPENAMED_H
-#endif /* GUCEF_CORE_CITYPENAMED_H ? */
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,8 +57,7 @@ class CIOAccess;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable ,
-                                     public CITypeNamed
+class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable
 {
     public:
     
@@ -75,6 +74,8 @@ class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable ,
 
     virtual bool Decode( CIOAccess& source ,
                          CIOAccess& dest   ) = 0;
+
+    virtual CString GetType( void ) const = 0;
                          
     virtual CString GetFamilyName( void ) const = 0;
 };

@@ -30,9 +30,21 @@
 #include <set>
 #include <vector>
 #include <map>
+
+#ifndef GUCEF_CORE_ETYPES_H
 #include "gucefCORE_ETypes.h"
+#define GUCEF_CORE_ETYPES_H
+#endif /* GUCEF_CORE_ETYPES_H ? */
+
+#ifndef GUCEF_CORE_CICLONEABLE_H
 #include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+
+#ifndef GUCEF_CORE_CITYPENAMED_H
 #include "CITypeNamed.h"
+#define GUCEF_CORE_CITYPENAMED_H
+#endif /* GUCEF_CORE_CITYPENAMED_H ? */
 
 #ifndef GUCEF_CORE_CEVENT_H
 #include "CEvent.h"
@@ -158,7 +170,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      *  functionality like this are limited or even non-existent 
      *  we chose to use this approach.
      */
-    virtual CString GetType( void ) const;
+    virtual const CString& GetType( void ) const;
     
     /**
      *  Sets a destruction flag that will cause the notifier object to be

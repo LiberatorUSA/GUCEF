@@ -622,11 +622,12 @@ CTCPClientSocket::UnlockData( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CString
+const CORE::CString&
 CTCPClientSocket::GetType( void ) const
 {GUCEF_TRACE;
 
-    return "GUCEF::COMCORE::CTCPClientSocket";
+    static CORE::CString typeName = "GUCEF::COMCORE::CTCPClientSocket";
+    return typeName;
 }
 
 /*-------------------------------------------------------------------------//

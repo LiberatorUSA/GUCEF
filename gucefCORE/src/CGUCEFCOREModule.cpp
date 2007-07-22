@@ -125,6 +125,13 @@
 
 #include "CGUCEFCOREModule.h"  /* definition of the class implemented here */
 
+#ifdef GUCEF_MSWIN_BUILD
+  #ifndef GUCEF_CORE_CWNDMSGHOOKNOTIFIER_H
+  #include "CWndMsgHookNotifier.h"
+  #define GUCEF_CORE_CWNDMSGHOOKNOTIFIER_H
+  #endif /* GUCEF_CORE_CWNDMSGHOOKNOTIFIER_H ? */
+#endif /* GUCEF_MSWIN_BUILD ? */  
+
 #ifdef ADD_MEMORY_MANAGER
   #ifndef GUCEF_CORE_MEMORYMANAGER_H
   #include "MemoryManager.h"    /* memory manager API */
@@ -146,36 +153,6 @@ namespace CORE {
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-CGUCEFCOREModule::CGUCEFCOREModule( void )
-{
-        /* dummy, should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFCOREModule::CGUCEFCOREModule( const CGUCEFCOREModule& src )
-{
-        /* dummy, should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFCOREModule::~CGUCEFCOREModule()
-{
-        /* dummy, should never be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFCOREModule&
-CGUCEFCOREModule::operator=( const CGUCEFCOREModule& src )
-{
-        /* dummy, should never be used */
-        return *this;
-}
-        
-/*-------------------------------------------------------------------------*/        
 
 bool 
 CGUCEFCOREModule::Load( void )
@@ -227,6 +204,10 @@ CGUCEFCOREModule::Load( void )
         CIURLEvents::RegisterEvents();
         CNotifyingMapEvents::RegisterEvents();
         CGUCEFApplication::RegisterEvents();
+
+        #ifdef GUCEF_MSWIN_BUILD
+        CWndMsgHookNotifier::RegisterEvents();
+        #endif /* GUCEF_MSWIN_BUILD ? */ 
         
         /*
          *      Register some default codecs/handlers 

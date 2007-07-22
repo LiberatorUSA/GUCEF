@@ -115,7 +115,7 @@
 			IntermediateDirectory="..\..\bin\Release_MVC8"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			CharacterSet="2"
 			>
 			<Tool
@@ -653,6 +653,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\mswin\CWindowMsgHook.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\mswin\CWndMsgHookNotifier.cpp"
 				>
 			</File>
 			<File
@@ -1199,6 +1203,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\mswin\CWindowMsgHook.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\mswin\CWndMsgHookNotifier.h"
 				>
 			</File>
 			<File
