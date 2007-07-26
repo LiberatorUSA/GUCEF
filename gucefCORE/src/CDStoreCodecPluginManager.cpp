@@ -220,6 +220,8 @@ CDStoreCodecPluginManager::LoadCodecPlugin( const CString& filename )
                         _datalock.Unlock();
                         CDStoreCodecRegistry::Instance()->Register( cp->GetTypeName().C_String() , 
                                                                     &cp->_ref                    );
+                        
+                        GUCEF_SYSTEM_LOG( 0, "Loaded Data Storage codec plugin with name: " + cp->GetTypeName() );
                         return cp;
                 }
                 delete cp;

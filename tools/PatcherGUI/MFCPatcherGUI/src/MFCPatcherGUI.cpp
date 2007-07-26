@@ -24,6 +24,16 @@
 #define GUCEF_CORE_CPLUGINCONTROL_H
 #endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_CFILEACCESS_H
+#include "CFileAccess.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
+
 #ifndef GUCEF_VFS_CVFS_H
 #include "CVFS.h"
 #define GUCEF_VFS_CVFS_H
@@ -55,6 +65,18 @@ END_MESSAGE_MAP()
 CMFCPatcherGUIApp::CMFCPatcherGUIApp()
     : m_cmdLineParamList()
 {
+
+    // Make sure that logging is up and running before we do anything else
+    GUCEF::CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
+    GUCEF::CORE::AppendToPath( logFilename, "gucefDRN_TestApp_Log.txt" );
+    GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
+    
+    GUCEF::CORE::CLogManager::Instance()->AddLogger( &m_logger );
+    
+    #if defined( GUCEF_MSWIN_BUILD ) && defined( GUCEF_PATCHER_DEBUG_MODE )
+    GUCEF::CORE::CLogManager::Instance()->AddLogger( &m_consoleOut );
+    #endif /* GUCEF_MSWIN_BUILD && GUCEF_PATCHER_DEBUG_MODE ? */    
+    
     // We have to call some code in several modules as a hacky method for those modules to actually
     // be linked and loaded. Those modules can auto-register functionality.
     // Some compilers/linkers attempt to optimize by removing dependencies on modules that have no 
@@ -62,7 +84,7 @@ CMFCPatcherGUIApp::CMFCPatcherGUIApp()
     GUCEF::VFS::CVFS::Instance();
     GUCEF::COMCORE::CCom::Instance();
     GUCEF::COM::CHTTPClient::RegisterEvents();
-
+        
 	// Place all significant initialization in InitInstance
 }
 
@@ -91,7 +113,7 @@ BOOL CMFCPatcherGUIApp::InitInstance()
     GUCEF::CORE::CString pluginDir = m_cmdLineParamList.GetValue( "PluginDir" );
     if ( pluginDir.Length() == 0 )
     {
-        pluginDir = "$CURWORKDIR$\\plugins";
+        pluginDir = "$MODULEDIR$\\plugins";
     }
     
     // Load all plugins

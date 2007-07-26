@@ -57,9 +57,9 @@
  */
 #ifndef MANUAL_DEBUG_MODE_DEFINE
   #if defined( _DEBUG )
-    #define GUCEFPATCHER_DEBUG_MODE
+    #define GUCEF_PATCHER_DEBUG_MODE
   #else
-    #undef DEBUG_MODE
+    #undef GUCEF_PATCHER_DEBUG_MODE
   #endif /* compiler DEBUG switches */
 #endif /* MANUAL_DEBUG_MODE_DEFINE ? */
 

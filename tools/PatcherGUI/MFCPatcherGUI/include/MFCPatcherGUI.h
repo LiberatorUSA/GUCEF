@@ -25,6 +25,20 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
+#ifndef GUCEF_CORE_CSTDLOGGER_H
+#include "CStdLogger.h"
+#define GUCEF_CORE_CSTDLOGGER_H
+#endif /* GUCEF_CORE_CSTDLOGGER_H ? */
+
+#ifndef GUCEF_PATCHER_MACROS_H
+#include "gucefPATCHER_macros.h"
+#define GUCEF_PATCHER_MACROS_H
+#endif /* GUCEF_PATCHER_MACROS_H ? */
+
+#if defined( GUCEF_MSWIN_BUILD ) && defined( GUCEF_PATCHER_DEBUG_MODE )
+#include "CMSWinConsoleLogger.h"
+#endif /* GUCEF_MSWIN_BUILD && GUCEF_PATCHER_DEBUG_MODE ? */
+
 #include "resource.h"       // main symbols
 
 // CMFCPatcherGUIApp:
@@ -51,6 +65,10 @@ class CMFCPatcherGUIApp : public CWinApp
     private:
     
     GUCEF::CORE::CValueList m_cmdLineParamList;
+    GUCEF::CORE::CStdLogger m_logger;
+    #if defined( GUCEF_MSWIN_BUILD ) && defined( GUCEF_PATCHER_DEBUG_MODE )
+    GUCEF::CORE::CMSWinConsoleLogger m_consoleOut;
+    #endif /* GUCEF_MSWIN_BUILD && GUCEF_PATCHER_DEBUG_MODE ? */
 };
 
 extern CMFCPatcherGUIApp theApp;
