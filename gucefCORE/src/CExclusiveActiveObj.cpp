@@ -23,12 +23,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CEXCLUSIVEACTIVATIONMANAGER_H
 #include "CExclusiveActivationManager.h"
+#define GUCEF_CORE_CEXCLUSIVEACTIVATIONMANAGER_H
+#endif /* GUCEF_CORE_CEXCLUSIVEACTIVATIONMANAGER_H ? */
+
 #include "CExclusiveActiveObj.h"
 
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 )
+#ifndef GUCEF_CORE_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_ESSENTIALS_H
+#endif /* GUCEF_CORE_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,18 +50,18 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CExclusiveActiveObj::CExclusiveActiveObj( const std::string& objTypeName )
+CExclusiveActiveObj::CExclusiveActiveObj( const CString& objTypeName )
     : m_objTypeName( objTypeName ) ,
       m_active( false )            ,
       m_registered( false )
-{
+{GUCEF_TRACE;
     
 }
 
 /*-------------------------------------------------------------------------*/
     
 CExclusiveActiveObj::~CExclusiveActiveObj()
-{
+{GUCEF_TRACE;
 
 }
 
@@ -64,7 +69,8 @@ CExclusiveActiveObj::~CExclusiveActiveObj()
 
 bool 
 CExclusiveActiveObj::Activate( void )
-{
+{GUCEF_TRACE;
+
     if ( m_registered )
     {
         return CExclusiveActivationManager::Instance()->SetActivateObj( m_objTypeName ,
@@ -77,7 +83,8 @@ CExclusiveActiveObj::Activate( void )
 
 bool 
 CExclusiveActiveObj::Deactivate( void )
-{
+{GUCEF_TRACE;
+
     if ( m_registered && m_active )
     {
         return CExclusiveActivationManager::Instance()->DisableActivateObj( m_objTypeName );
@@ -89,15 +96,17 @@ CExclusiveActiveObj::Deactivate( void )
     
 bool 
 CExclusiveActiveObj::IsActive( void ) const
-{
+{GUCEF_TRACE;
+
     return m_active;
 }
 
 /*-------------------------------------------------------------------------*/
     
-const std::string&
+const CString&
 CExclusiveActiveObj::GetObjTypeName( void ) const
-{
+{GUCEF_TRACE;
+
     return m_objTypeName;
 }
 
@@ -105,7 +114,8 @@ CExclusiveActiveObj::GetObjTypeName( void ) const
 
 void 
 CExclusiveActiveObj::SetActiveState( const bool active )
-{
+{GUCEF_TRACE;
+
     m_active = active;
 }
 
@@ -113,7 +123,8 @@ CExclusiveActiveObj::SetActiveState( const bool active )
 
 void
 CExclusiveActiveObj::RegisterAsExclusiveActiveObj( void )
-{
+{GUCEF_TRACE;
+
     CExclusiveActivationManager::Instance()->RegisterObj( this );
     m_registered = true;
 }
@@ -122,7 +133,8 @@ CExclusiveActiveObj::RegisterAsExclusiveActiveObj( void )
     
 void 
 CExclusiveActiveObj::UnregisterAsExclusiveActiveObj( void )
-{
+{GUCEF_TRACE;
+
     CExclusiveActivationManager::Instance()->UnregisterObj( this );
     m_registered = false;
 }
@@ -131,7 +143,8 @@ CExclusiveActiveObj::UnregisterAsExclusiveActiveObj( void )
 
 bool
 CExclusiveActiveObj::IsRegistered( void ) const
-{
+{GUCEF_TRACE;
+
     return m_registered;
 }
 
@@ -139,7 +152,8 @@ CExclusiveActiveObj::IsRegistered( void ) const
 
 bool 
 CExclusiveActiveObj::SetAsDefault( void )
-{
+{GUCEF_TRACE;
+
     if ( m_registered )
     {
         return CExclusiveActivationManager::Instance()->SetDefaultObjForType( m_objTypeName ,
@@ -152,10 +166,11 @@ CExclusiveActiveObj::SetAsDefault( void )
 
 bool 
 CExclusiveActiveObj::IsTheDefault( void ) const
-{
+{GUCEF_TRACE;
+
     if ( m_registered )
     {
-        std::string defaultObj;
+        CString defaultObj;
         CExclusiveActivationManager::Instance()->GetDefaultObjForType( m_objTypeName ,
                                                                        defaultObj    );
         return defaultObj == GetObjName();
@@ -167,7 +182,8 @@ CExclusiveActiveObj::IsTheDefault( void ) const
 
 void 
 CExclusiveActiveObj::OnPostActivate( const bool /* activationSuccessfull */ )
-{
+{GUCEF_TRACE;
+
     /*
      *  Don't do anything,.. only implemented here to avoid making implementation
      *  manditory for decending classes.
@@ -178,7 +194,8 @@ CExclusiveActiveObj::OnPostActivate( const bool /* activationSuccessfull */ )
 
 void
 CExclusiveActiveObj::OnPostDeactivate( const bool /* deactivationSuccessful */ )
-{
+{GUCEF_TRACE;
+
     /*
      *  Don't do anything,.. only implemented here to avoid making implementation
      *  manditory for decending classes.

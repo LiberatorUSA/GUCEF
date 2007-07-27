@@ -86,14 +86,14 @@ CExclusiveActivationManager::Instance( void )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CExclusiveActivationManager::SetActivateObj( const std::string& objTypeName ,
-                                             const std::string& objName     )
+CExclusiveActivationManager::SetActivateObj( const CString& objTypeName ,
+                                             const CString& objName     )
 {GUCEF_TRACE;
 
     /*
      *  Validate the input
      */
-    if ( !objTypeName.size() || !objName.size() ) return false;
+    if ( 0 == objTypeName.Length() || 0 == objName.Length() ) return false;
     
     /*
      *  Make sure the requested type is valid
@@ -191,10 +191,10 @@ CExclusiveActivationManager::SetActivateObj( const std::string& objTypeName ,
 /*-------------------------------------------------------------------------*/
 
 bool 
-CExclusiveActivationManager::DisableActivateObj( const std::string& objTypeName )    
+CExclusiveActivationManager::DisableActivateObj( const CString& objTypeName )    
 {GUCEF_TRACE;
 
-    std::string defaultObj;
+    CString defaultObj;
     if ( GetDefaultObjForType( objTypeName , 
                                defaultObj  ) )
     {                                
@@ -207,7 +207,7 @@ CExclusiveActivationManager::DisableActivateObj( const std::string& objTypeName 
 /*-------------------------------------------------------------------------*/
 
 CExclusiveActiveObj* 
-CExclusiveActivationManager::GetActiveObject( const std::string& objTypeName ) const
+CExclusiveActivationManager::GetActiveObject( const CString& objTypeName ) const
 {GUCEF_TRACE;
 
     TObjTypeList::const_iterator typeItterator( m_typeList.find( objTypeName ) ); 
@@ -312,8 +312,8 @@ CExclusiveActivationManager::GetRegisteredTypeCount( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CExclusiveActivationManager::SetDefaultObjForType( const std::string& objTypeName ,
-                                                   const std::string& objName     )
+CExclusiveActivationManager::SetDefaultObjForType( const CString& objTypeName ,
+                                                   const CString& objName     )
 {GUCEF_TRACE;
 
     TObjTypeList::iterator typeItterator( m_typeList.find( objTypeName ) ); 
@@ -328,8 +328,8 @@ CExclusiveActivationManager::SetDefaultObjForType( const std::string& objTypeNam
 /*-------------------------------------------------------------------------*/
 
 bool
-CExclusiveActivationManager::GetDefaultObjForType( const std::string& objTypeName ,
-                                                   std::string& objName           )
+CExclusiveActivationManager::GetDefaultObjForType( const CString& objTypeName ,
+                                                   CString& objName           )
 {GUCEF_TRACE;
 
     TObjTypeList::const_iterator typeItterator( m_typeList.find( objTypeName ) ); 

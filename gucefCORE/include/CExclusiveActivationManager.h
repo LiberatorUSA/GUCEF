@@ -28,8 +28,11 @@
 
 #include <string>
 #include <map>
-#include "gucefCORE_macros.h"
-#include "gucefCORE_ETypes.h"
+
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,18 +59,18 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActivationManager
     
     static CExclusiveActivationManager* Instance( void );
     
-    bool SetActivateObj( const std::string& objTypeName ,
-                         const std::string& objName     );
+    bool SetActivateObj( const CString& objTypeName ,
+                         const CString& objName     );
     
-    bool DisableActivateObj( const std::string& objTypeName );
+    bool DisableActivateObj( const CString& objTypeName );
 
-    CExclusiveActiveObj* GetActiveObject( const std::string& objTypeName ) const;
+    CExclusiveActiveObj* GetActiveObject( const CString& objTypeName ) const;
     
-    bool SetDefaultObjForType( const std::string& objTypeName ,
-                               const std::string& objName     );
+    bool SetDefaultObjForType( const CString& objTypeName ,
+                               const CString& objName     );
 
-    bool GetDefaultObjForType( const std::string& objTypeName ,
-                               std::string& objName           );
+    bool GetDefaultObjForType( const CString& objTypeName ,
+                               CString& objName           );
     
     UInt32 GetRegisteredTypeCount( void ) const;    
 
@@ -79,7 +82,7 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActivationManager
     void UnregisterObj( CExclusiveActiveObj* theObj );
     
     private:
-    friend class CXBGeneralModule;
+    friend class CGUCEFCOREModule;
     
     static void Deinstance( void );
 
@@ -91,15 +94,15 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActivationManager
     CExclusiveActivationManager& operator=( const CExclusiveActivationManager& src );
     
     private:
-    typedef std::map< std::string, CExclusiveActiveObj* >   TTypedObjList;
+    typedef std::map< CString, CExclusiveActiveObj* >   TTypedObjList;
     struct SExclusiveObjList
     {
         TTypedObjList objList;
-        std::string defaultObj;
+        CString defaultObj;
         CExclusiveActiveObj* activeObj;
     };
-    typedef struct SExclusiveObjList                        TExclusiveObjList;
-    typedef std::map< std::string, TExclusiveObjList >      TObjTypeList;
+    typedef struct SExclusiveObjList                    TExclusiveObjList;
+    typedef std::map< CString, TExclusiveObjList >      TObjTypeList;
     
     TObjTypeList m_typeList;
 

@@ -27,18 +27,11 @@
 //-------------------------------------------------------------------------*/
 
 #include <string>
-#include "gucefCORE_macros.h"
-#include "gucefCORE_ETypes.h"
 
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CEXCLUSIVEACTIVEOBJ_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 ) // return type for operator -> is 'const *' (ie; not a UDT or reference to a UDT).
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -74,7 +67,7 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
      *
      *  @param objTypeName the type name of the mutual exclusive activation family
      */
-    explicit CExclusiveActiveObj( const std::string& objTypeName );        
+    explicit CExclusiveActiveObj( const CString& objTypeName );        
     
     /**
      *  Destructs the object and unregisters the object at the manager
@@ -144,7 +137,7 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
      *
      *  @return the name of the derived class instance
      */
-    virtual std::string GetObjName( void ) const = 0;
+    virtual CString GetObjName( void ) const = 0;
     
     /**
      *  Returns the name of the mutual exclusive activation family of which
@@ -152,7 +145,7 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
      *
      *  @return the type name of the mutual exclusive activation family  
      */
-    const std::string& GetObjTypeName( void ) const;
+    const CString& GetObjTypeName( void ) const;
     
     protected:
     
@@ -218,7 +211,7 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
     
     private:
     
-    std::string m_objTypeName;
+    CString m_objTypeName;
     bool m_active;    
     bool m_registered;
 };
@@ -231,12 +224,6 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CEXCLUSIVEACTIVEOBJ_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 
