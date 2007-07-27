@@ -186,6 +186,7 @@ CDStoreCodecPluginManager::Instance( void )
         {
                 _instance = new CDStoreCodecPluginManager();
                 CHECKMEM( _instance, sizeof(CDStoreCodecPluginManager) );
+                GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CDStoreCodecPluginManager Singleton created" );
         }
         _datalock.Unlock();
         return _instance;
@@ -200,6 +201,7 @@ CDStoreCodecPluginManager::Deinstance( void )
         CHECKMEM( _instance, sizeof(CDStoreCodecPluginManager) );
         delete _instance;
         _instance = NULL;
+        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CDStoreCodecPluginManager Singleton destroyed" );
         _datalock.Unlock();
 }
 

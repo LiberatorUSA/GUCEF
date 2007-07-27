@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_CCODECREGISTRY_H
 #include "CCodecRegistry.h"
 #define GUCEF_CORE_CCODECREGISTRY_H
@@ -59,6 +64,8 @@ bool
 CGUCEFVFSModule::Load( void )
 {GUCEF_TRACE;
 
+        GUCEF_SYSTEM_LOG( 0, "gucefVFS Module loaded" );
+        
         try
         {
             CORE::CCodecRegistry::Instance()->Register( "VFSPackCodec", new CORE::CCodecRegistry::TCodecFamilyRegistry() );
@@ -85,6 +92,8 @@ bool
 CGUCEFVFSModule::Unload( void )
 {GUCEF_TRACE;
 
+        GUCEF_SYSTEM_LOG( 0, "gucefVFS Module unloading" );
+        
         CVFSURLHandler::Unregister();
         
         CVFS::Deinstance();

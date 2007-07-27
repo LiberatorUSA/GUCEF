@@ -28,6 +28,11 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -92,6 +97,7 @@ CGenericPluginManager::Instance( void )
     if ( !m_instance )
     {
         m_instance = new CGenericPluginManager();
+        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CGenericPluginManager Singleton created" );
     }
     
     return m_instance;
@@ -102,8 +108,10 @@ CGenericPluginManager::Instance( void )
 void
 CGenericPluginManager::Deinstance( void )
 {GUCEF_TRACE;
+    
     delete m_instance;
     m_instance = NULL;
+    GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CGenericPluginManager Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/

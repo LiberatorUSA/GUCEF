@@ -55,6 +55,9 @@ namespace INPUT {
 bool 
 CGUCEFINPUTModule::Load( void )
 {GUCEF_TRACE;
+        
+        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module loaded" );
+        
         CInputController::RegisterEvents();
         CInputController::Instance();
         return true;
@@ -65,6 +68,9 @@ CGUCEFINPUTModule::Load( void )
 bool 
 CGUCEFINPUTModule::Unload( void )
 {GUCEF_TRACE;
+        
+        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module unloading" );
+        
         CInputController::Deinstance();        
         return true;
 }

@@ -64,6 +64,8 @@ bool
 CGUCEFDRNModule::Load( void )
 {GUCEF_TRACE;
 
+    GUCEF_SYSTEM_LOG( 0, "gucefDRN Module loaded" );
+
     CDRNNode::RegisterEvents();
     CDRNPeerLink::RegisterEvents();
     CDRNDataGroup::RegisterEvents();
@@ -78,6 +80,8 @@ bool
 CGUCEFDRNModule::Unload( void )
 {GUCEF_TRACE;
 
+    GUCEF_SYSTEM_LOG( 0, "gucefDRN Module unloading" );
+    
     return true;
 }
 

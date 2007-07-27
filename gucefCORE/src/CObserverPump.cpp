@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #define GUCEF_CORE_COBSERVERPUMP_CPP
 #include "CObserverPump.h"
 
@@ -88,6 +93,7 @@ CObserverPump::Instance( void )
     if ( !m_instance )
     {
         m_instance = new CObserverPump();
+        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CObserverPump Singleton created" );
     }
     return m_instance;
 }
@@ -99,6 +105,7 @@ CObserverPump::Deinstance( void )
 {
     delete m_instance;
     m_instance = NULL;
+    GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CObserverPump Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -149,7 +149,8 @@ CCom::Instance( void )
         _mutex.Lock();
         if ( !_instance ) 
         {
-                _instance = new CCom();                          
+                _instance = new CCom();
+                GUCEF_SYSTEM_LOG( 0, "GUCEF::COMCORE::CCom Singleton created" );
         }
         _mutex.Unlock();
         return _instance;
@@ -163,6 +164,7 @@ CCom::Deinstance( void )
         _mutex.Lock();
         delete _instance;
         _instance = NULL;
+        GUCEF_SYSTEM_LOG( 0, "GUCEF::COMCORE::CCom Singleton destroyed" );
         _mutex.Unlock();                
 }
 

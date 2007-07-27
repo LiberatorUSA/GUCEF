@@ -30,6 +30,11 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"   /* Additional utilities for manipulating string class objects */ 
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -129,7 +134,9 @@ CGUCEFApplication::Instance( void )
                  *  This is solved by doing it manually here
                  */
                 CObserverPump::Instance()->RegisterSubSystem();
-                RegisterEvents();                 
+                RegisterEvents();
+                
+                GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CGUCEFApplication Singleton created" );
         }
         m_mutex.Unlock();
         return _instance;
@@ -144,6 +151,7 @@ CGUCEFApplication::Deinstance( void )
         CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
         delete _instance;
         _instance = NULL;
+        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CGUCEFApplication Singleton destroyed" );
         m_mutex.Unlock();
 }
 

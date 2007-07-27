@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #include "CDStoreCodecRegistry.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -98,7 +103,8 @@ CDStoreCodecRegistry::Instance( void )
         if ( !_instance )        
         {
                 _instance = new CDStoreCodecRegistry();
-                CHECKMEM( _instance, sizeof(CDStoreCodecRegistry) ); 
+                CHECKMEM( _instance, sizeof(CDStoreCodecRegistry) );
+                GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CDStoreCodecRegistry Singleton created" );
         }
         _datalock.Unlock();
         GUCEF_END;
@@ -115,6 +121,7 @@ CDStoreCodecRegistry::Deinstance( void )
         CHECKMEM( _instance, sizeof(CDStoreCodecRegistry) );
         delete _instance;
         _instance = NULL;
+        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CDStoreCodecRegistry Singleton destroyed" );
         _datalock.Unlock();
         GUCEF_END;
 }

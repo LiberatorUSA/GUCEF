@@ -24,6 +24,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_COM_CHTTPCLIENT_H
 #include "CHTTPClient.h"
 #define GUCEF_COM_CHTTPCLIENT_H
@@ -89,6 +94,9 @@ CGUCEFCOMModule::operator=( const CGUCEFCOMModule& src )
 bool 
 CGUCEFCOMModule::Load( void )
 {GUCEF_TRACE;
+        
+        GUCEF_SYSTEM_LOG( 0, "gucefCOM Module loaded" );
+        
         /* simply instantiate our com manager when the module is loaded */
         //CCom::Instance();
         
@@ -103,6 +111,9 @@ CGUCEFCOMModule::Load( void )
 bool 
 CGUCEFCOMModule::Unload( void )
 {GUCEF_TRACE;
+        
+        GUCEF_SYSTEM_LOG( 0, "gucefCOMCORE Module unloading" );
+        
         //CCom::Deinstance();
         return true;
 }

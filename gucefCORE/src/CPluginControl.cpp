@@ -25,6 +25,11 @@
 
 #include <stdio.h>              /* standard I/O utils */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_DVFILEUTILS_H
 #include "dvfileutils.h"        /* my verry own file handling utils */
 #define GUCEF_CORE_DVFILEUTILS_H
@@ -90,6 +95,7 @@ CPluginControl::Instance( void )
         {
                 _instance = new CPluginControl();
                 CHECKMEM( _instance, sizeof(CPluginControl) );
+                GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CPluginControl Singleton created" );
         }
         _mutex.Unlock();
         GUCEF_END;
@@ -106,6 +112,7 @@ CPluginControl::Deinstance( void )
         CHECKMEM( _instance, sizeof(CPluginControl) );
         delete _instance;
         _instance = NULL;
+        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CPluginControl Singleton destroyed" );
         _mutex.Unlock();
         GUCEF_END;
 }

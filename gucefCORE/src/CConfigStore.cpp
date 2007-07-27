@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"                  /* node for building data trees */
 #define GUCEF_CORE_CDATANODE_H
@@ -115,6 +120,7 @@ CConfigStore::Instance( void )
         {
                 _instance = new CConfigStore();
                 CHECKMEM( _instance, sizeof(CConfigStore) );
+                GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CConfigStore Singleton created" );
         }
         _datalock.Unlock();
         return _instance;
@@ -128,6 +134,7 @@ CConfigStore::Deinstance( void )
         _datalock.Lock();
         delete _instance;
         _instance = NULL;
+        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CConfigStore Singleton destroyed" );
         _datalock.Unlock();
 }        
 

@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_CSTDCODECPLUGIN_H
 #include "CStdCodecPlugin.h"
 #define GUCEF_CORE_CSTDCODECPLUGIN_H
@@ -77,6 +82,7 @@ CStdCodecPluginManager::Instance( void )
     if ( NULL == m_instance )
     {
         m_instance = new CStdCodecPluginManager();
+        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CStdCodecPluginManager Singleton created" );
     }
     return m_instance;
 }
@@ -89,6 +95,8 @@ CStdCodecPluginManager::Deinstance( void )
 
     delete m_instance;
     m_instance = NULL;
+    
+    GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CStdCodecPluginManager Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/

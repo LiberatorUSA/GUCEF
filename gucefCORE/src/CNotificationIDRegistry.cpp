@@ -24,6 +24,12 @@
 //-------------------------------------------------------------------------*/
 
 #include <limits.h>
+
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #include "CMsgException.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -113,6 +119,7 @@ CNotificationIDRegistry::Instance( void )
     if ( m_instance == NULL )
     {
         m_instance = new CNotificationIDRegistry();
+        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CNotificationIDRegistry Singleton created" );
     }
 
     m_dataLock.Unlock();
@@ -129,6 +136,8 @@ CNotificationIDRegistry::Deinstance( void )
 
     delete m_instance;
     m_instance = NULL;
+
+    GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CNotificationIDRegistry Singleton destroyed" );
 
     m_dataLock.Unlock();
 }

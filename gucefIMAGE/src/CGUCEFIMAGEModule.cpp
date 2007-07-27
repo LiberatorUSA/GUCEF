@@ -54,6 +54,8 @@ bool
 CGUCEFIMAGEModule::Load( void )
 {GUCEF_TRACE;
         
+        GUCEF_SYSTEM_LOG( 0, "gucefIMAGE Module loaded" );
+        
         CORE::CCodecRegistry* codecRegistry = CORE::CCodecRegistry::Instance();
         CORE::CCodecRegistry::TCodecFamilyRegistryPtr registry; 
         
@@ -79,6 +81,8 @@ bool
 CGUCEFIMAGEModule::Unload( void )
 {GUCEF_TRACE;
 
+    GUCEF_SYSTEM_LOG( 0, "gucefIMAGE Module unloading" );
+    
     CORE::CCodecRegistry* codecRegistry = CORE::CCodecRegistry::Instance();
     CORE::CCodecRegistry::TCodecFamilyRegistryPtr registry;
     

@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #include "CCodecRegistry.h"
 
 /*-------------------------------------------------------------------------//
@@ -70,6 +75,7 @@ CCodecRegistry::Instance( void )
     if ( m_instance == NULL )
     {
         m_instance = new CCodecRegistry();
+        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CCodecRegistry Singleton created" );
     }
     
     return m_instance;
@@ -83,6 +89,8 @@ CCodecRegistry::Deinstance( void )
 
     delete m_instance;
     m_instance = NULL;
+    
+    GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CCodecRegistry Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------//

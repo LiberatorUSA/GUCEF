@@ -24,14 +24,14 @@
 //-------------------------------------------------------------------------*/
 
 #include <assert.h>
+
 #include "CExclusiveActiveObj.h"
 
-#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#ifndef GUCEF_CORE_ESSENTIALS_H
 #include "gucef_essentials.h"
-#define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
+#define GUCEF_CORE_ESSENTIALS_H
+#endif /* GUCEF_CORE_ESSENTIALS_H ? */
 
-#define GUCEF_CORE_CEXCLUSIVEACTIVATIONMANAGER_CPP
 #include "CExclusiveActivationManager.h"
 
 /*-------------------------------------------------------------------------//
@@ -78,6 +78,7 @@ CExclusiveActivationManager::Instance( void )
     if ( !m_instance )
     {
         m_instance = new CExclusiveActivationManager();
+        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CExclusiveActivationManager Singleton created" );
     }
     return m_instance;
 }
@@ -225,6 +226,7 @@ CExclusiveActivationManager::Deinstance( void )
 
     delete m_instance;
     m_instance = NULL;
+    GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CExclusiveActivationManager Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/

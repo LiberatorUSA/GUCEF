@@ -68,7 +68,7 @@ CMFCPatcherGUIApp::CMFCPatcherGUIApp()
 
     // Make sure that logging is up and running before we do anything else
     GUCEF::CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
-    GUCEF::CORE::AppendToPath( logFilename, "gucefDRN_TestApp_Log.txt" );
+    GUCEF::CORE::AppendToPath( logFilename, "MFCPatcherGUI_Log.txt" );
     GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
     
     GUCEF::CORE::CLogManager::Instance()->AddLogger( &m_logger );

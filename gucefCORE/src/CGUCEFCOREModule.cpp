@@ -180,7 +180,9 @@ CGUCEFCOREModule::Load( void )
         #endif
         
         /*
-         *      Instantiate all the singletons
+         *  Instantiate all the singletons
+         *  We start with the log manager so that it is possible to log everything from that point on
+         *  if a logger is registered at an early stage      
          */
         CLogManager::Instance();
         CNotificationIDRegistry::Instance();        
