@@ -107,7 +107,7 @@ BOOL CMFCPatcherGUIApp::InitInstance()
     // Parse the command line params	
     CMFCCommandLineInfo oInfo;
     ParseCommandLine( oInfo );
-    m_cmdLineParamList.SetMultiple( oInfo.GetParamString(), '"' );
+    m_cmdLineParamList.SetMultiple( oInfo.GetParamString(), '\'' );
 
     // Obtain the plugin dir path
     GUCEF::CORE::CString pluginDir = m_cmdLineParamList.GetValue( "PluginDir" );
