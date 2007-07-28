@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -51,10 +51,12 @@ struct SMutex
         UInt8 locked;
         #ifdef GUCEF_MSWIN_BUILD
         HANDLE id;
-        #elif GUCEF_LINUX_BUILD
+        #else
+        #ifdef GUCEF_LINUX_BUILD
         pthread_mutex_t id;
         #else
         #error Unsuported target platform
+        #endif
         #endif
 };
 
@@ -82,10 +84,11 @@ MutexCreate( void )
                 return NULL;
         }
         return mutex;
-        #elif GUCEF_LINUX_BUILD
+        #else
+        #ifdef GUCEF_LINUX_BUILD
         pthread_mutexattr_t attr;
         pthread_mutexattr_init( &attr );
-        pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
+        pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE_NP );
 
         TMutex* mutex = malloc( sizeof( TMutex ) );
         mutex->locked = 0;
@@ -96,6 +99,7 @@ MutexCreate( void )
                 return NULL;
         }
         return mutex;
+        #endif
         #endif
 }
 
@@ -110,9 +114,11 @@ MutexDestroy( struct SMutex* mutex )
         #ifdef GUCEF_MSWIN_BUILD
         CloseHandle( mutex->id );
         free( mutex );
-        #elif GUCEF_LINUX_BUILD
+        #else
+        #ifdef GUCEF_LINUX_BUILD
         pthread_mutex_destroy( &mutex->id );
         free( mutex );
+        #endif
         #endif
 }
 
@@ -131,10 +137,12 @@ MutexLock( struct SMutex* mutex )
                                   INFINITE  ) == WAIT_FAILED ) return 0;
         mutex->locked = 1;
         return 1;
-        #elif GUCEF_LINUX_BUILD
+        #else
+        #ifdef GUCEF_LINUX_BUILD
         if ( pthread_mutex_lock( &mutex->id ) < 0 ) return 0;
         mutex->locked = 1;
         return 1;
+        #endif
         #endif
 }
 
@@ -152,10 +160,12 @@ MutexUnlock( struct SMutex* mutex )
         if ( ReleaseMutex( mutex->id ) == FALSE ) return 0;
         mutex->locked = 0;
         return 1;
-        #elif GUCEF_LINUX_BUILD
+        #else
+        #ifdef GUCEF_LINUX_BUILD
         if ( pthread_mutex_unlock( &mutex->id ) < 0 ) return 0;
         mutex->locked = 0;
         return 1;
+        #endif
         #endif
 }
 

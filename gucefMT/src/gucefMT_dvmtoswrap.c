@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -30,6 +30,13 @@
 
 #ifdef GUCEF_MSWIN_BUILD
   #include <Mmsystem.h>  /* needed for timeBeginPeriod() etc */
+#else
+#ifdef GUCEF_LINUX_BUILD
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <unistd.h>
+  #include <pthread.h>
+#endif
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -37,16 +44,20 @@
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-               
+
 struct SThreadData
 {
         #ifdef GUCEF_MSWIN_BUILD
         DWORD threadid;
         HANDLE threadhandle;
         LPTHREAD_START_ROUTINE func;
-        void *data;
-        #elif GUCEF_LINUX_BUILD
-
+        void* data;
+        #else
+        #ifdef GUCEF_LINUX_BUILD
+        pthread_t thread;
+        void* func;
+        void* data;
+        #endif
         #endif
 };
 typedef struct SThreadData TThreadData;
@@ -59,7 +70,7 @@ typedef struct SThreadData TThreadData;
 
 /*
  *      needed for PrecisionDelay() and PrecisionTickCount()
- *      Initialized in PrecisionTimerInit() 
+ *      Initialized in PrecisionTimerInit()
  */
 #ifdef GUCEF_MSWIN_BUILD
 static LARGE_INTEGER m_high_perf_timer_freq = { 0 };
@@ -71,19 +82,16 @@ static LARGE_INTEGER m_high_perf_timer_freq = { 0 };
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *      Delays the caller thread for a minimum of 'delay' number of milliseconds
- *
- *      @param delay the minimum delay in miliseconds
- */
 void
 ThreadDelay( UInt32 delay )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        Sleep( delay );
-        #elif GUCEF_LINUX_BUILD
-
-        #endif
+    #ifdef GUCEF_MSWIN_BUILD
+    Sleep( delay );
+    #else
+    #ifdef GUCEF_LINUX_BUILD
+    sleep( delay );
+    #endif
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -99,14 +107,6 @@ ThreadMain( void* tdvptr ) GUCEF_CALLSPEC_STD_SUFFIX
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Creates a thread that uses the given function with the given data
- *      parameter.
- *
- *      @param func pointer to the function that is to serve as the main thread routine
- *      @param data data argument for the thread function
- *      @return structure containing O/S specific thread data.
- */
 TThreadData*
 ThreadCreate( void* func ,
               void* data )
@@ -128,7 +128,21 @@ ThreadCreate( void* func ,
         }
         return td;
         #else
+        #ifdef GUCEF_LINUX_BUILD
+        TThreadData* td = malloc( sizeof( TThreadData ) );
+        td->data = data;
+        if ( 0 != pthread_create( &td->thread         ,
+                                  NULL                ,
+                                  (void*) ThreadMain  ,
+                                  (void*) td          ) )
+        {
+            free( td );
+            return NULL;
+        }
+        return td;
+        #else
         #error unsupported target platform
+        #endif
         #endif
 };
 
@@ -210,12 +224,12 @@ GetCurrentTaskID( void )
 
 UInt64
 PrecisionTickCount( void )
-{         
+{
     #ifdef GUCEF_MSWIN_BUILD
     LARGE_INTEGER t;
-    
+
     assert( sizeof( LARGE_INTEGER ) <= sizeof( UInt64 ) );
-    
+
     if ( QueryPerformanceCounter( &t ) == TRUE )
     {
         return t.QuadPart;
@@ -226,7 +240,7 @@ PrecisionTickCount( void )
     }
     #else
     #error unsupported target platform
-    #endif    
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -246,7 +260,7 @@ PrecisionTimerResolution( void )
     }
     #else
     #error unsupported target platform
-    #endif 
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -255,28 +269,28 @@ void
 PrecisionDelay( UInt32 delay )
 {
         #ifdef GUCEF_MSWIN_BUILD
-        
+
         /*
          *      Original code obtained from http://www.geisswerks.com/ryan/FAQS/timing.html
          */
-        
+
         /*
          *      note: Possible problem in some cases:
          *              http://support.microsoft.com/default.aspx?scid=KB;EN-US;Q274323&
          *              Performance counter value may unexpectedly leap forward
          */
-        
+
         /*
          *      note: BE SURE YOU CALL timeBeginPeriod(1) at program startup!!!
          *      note: BE SURE YOU CALL timeEndPeriod(1) at program exit!!!
-         *      note: that this code will require linking to winmm.lib !!!        
-         */         
-         
-        Int32 ticks_passed; 
+         *      note: that this code will require linking to winmm.lib !!!
+         */
+
+        Int32 ticks_passed;
         Int32 ticks_left;
-        Int32 i; 
-         
-        static LARGE_INTEGER m_prev_end_of_frame = { 0 };  
+        Int32 i;
+
+        static LARGE_INTEGER m_prev_end_of_frame = { 0 };
 
         LARGE_INTEGER t;
         QueryPerformanceCounter(&t);
@@ -295,16 +309,16 @@ PrecisionDelay( UInt32 delay )
                         if ( t.QuadPart < m_prev_end_of_frame.QuadPart )    /* time wrap */
                         {
                                 done = 1;
-                        }        
+                        }
                         if (ticks_passed >= ticks_to_wait)
                         {
                                 done = 1;
-                        }                                
+                        }
 
                         if ( !done )
                         {
-                                /*   
-                                 *      if > 0.002s left, do Sleep(1), which will actually sleep some 
+                                /*
+                                 *      if > 0.002s left, do Sleep(1), which will actually sleep some
                                  *      steady amount, probably 1-2 ms,
                                  *      and do so in a nice way (cpu meter drops; laptop battery spared).
                                  *      otherwise, do a few Sleep(0)'s, which just give up the time slice,
@@ -314,24 +328,24 @@ PrecisionDelay( UInt32 delay )
                                 if ( ticks_left > (Int32)m_high_perf_timer_freq.QuadPart*2/1000)
                                 {
                                         Sleep(1);
-                                }                                        
-                                else                        
+                                }
+                                else
                                 {
                                         for ( i=0; i<10; ++i )
                                         {
                                                 Sleep(0);  /* causes thread to give up its time slice */
-                                        }                                                
+                                        }
                                 }
-                        }                                
+                        }
                 }
-                while (!done);            
+                while (!done);
         }
 
         m_prev_end_of_frame = t;
-        
+
         #else
         #error unsupported target platform
-        #endif        
+        #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -339,24 +353,24 @@ PrecisionDelay( UInt32 delay )
 void
 PrecisionTimerInit( void )
 {
-    #ifdef GUCEF_MSWIN_BUILD        
+    #ifdef GUCEF_MSWIN_BUILD
     if ( m_high_perf_timer_freq.QuadPart == 0 )
     {
         /*
          *      Change Sleep() resolution to 1-2 milliseconds
          *
          *      Note that calling timeBeginPeriod() also affects the granularity of some
-         *      other timing calls, such as CreateWaitableTimer() and WaitForSingleObject(); 
+         *      other timing calls, such as CreateWaitableTimer() and WaitForSingleObject();
          *      however, some functions are still unaffected, such as _ftime().
          */
         timeBeginPeriod( 1 );
 
         /*
          *      Initialize the timer frequency structure for use
-         */        
+         */
         QueryPerformanceFrequency( &m_high_perf_timer_freq );
     }
-    #endif         
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -372,7 +386,7 @@ PrecisionTimerShutdown( void )
              */
             timeEndPeriod( 1 );
         }
-        #endif 
+        #endif
 }
 
 /*--------------------------------------------------------------------------*/

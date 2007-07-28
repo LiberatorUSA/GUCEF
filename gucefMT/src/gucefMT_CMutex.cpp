@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -45,10 +45,12 @@ struct SMutexData
 {
         #ifdef GUCEF_MSWIN_BUILD
         HANDLE id;
-        #elif GUCEF_LINUX_BUILD
+        #else
+        #ifdef GUCEF_LINUX_BUILD
         pthread_mutex_t id;
         #else
         #error Unsuported target platform
+        #endif
         #endif
 };
 
@@ -84,7 +86,8 @@ CMutex::CMutex( void )
                 return;
         }
         _mutexdata = md;
-        #elif GUCEF_LINUX_BUILD
+        #else
+        #ifdef GUCEF_LINUX_BUILD
         TMutexData* md = new TMutexData;
         pthread_mutexattr_t attr;
 
@@ -98,6 +101,7 @@ CMutex::CMutex( void )
         }
         _mutexdata = md;
         #endif
+        #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -110,9 +114,11 @@ CMutex::~CMutex()
         #ifdef GUCEF_MSWIN_BUILD
         CloseHandle( ((TMutexData*)_mutexdata)->id );
         delete (TMutexData*)_mutexdata;
-        #elif GUCEF_LINUX_BUILD
+        #else
+        #ifdef GUCEF_LINUX_BUILD
         pthread_mutex_destroy( &((TMutexData*)_mutexdata)->id );
         delete (TMutexData*)_mutexdata;
+        #endif
         #endif
 }
 
@@ -130,9 +136,11 @@ CMutex::Lock( void ) const
         if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id ,
                                   INFINITE                      ) == WAIT_FAILED ) return false;
         return true;
-        #elif GUCEF_LINUX_BUILD
+        #else
+        #ifdef GUCEF_LINUX_BUILD
         if ( pthread_mutex_lock( &((TMutexData*)_mutexdata)->id ) < 0 ) return false;
         return true;
+        #endif
         #endif
 }
 
@@ -149,9 +157,11 @@ CMutex::Unlock( void ) const
         #ifdef GUCEF_MSWIN_BUILD
         if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE ) return false;
         return true;
-        #elif GUCEF_LINUX_BUILD
-        if ( pthread_mutex_unlock( &mutex->id ) < 0 ) return false;
+        #else
+        #ifdef GUCEF_LINUX_BUILD
+        if ( pthread_mutex_unlock( &((TMutexData*)_mutexdata)->id ) < 0 ) return false;
         return true;
+        #endif
         #endif
 }
 

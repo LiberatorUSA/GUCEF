@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -48,8 +48,8 @@ namespace MT {
 CActiveObject::CActiveObject( void )
         : _taskdata( NULL ) ,
           _delay( 10 )      ,
-          _active( false )  ,
-          _suspend( false )
+          _suspend( false ) ,
+          _active( false )
 {
 
 }
@@ -59,8 +59,8 @@ CActiveObject::CActiveObject( void )
 CActiveObject::CActiveObject( const CActiveObject& src )
         : _taskdata( src._taskdata ) ,
           _delay( src._delay )       ,
-          _active( false )           ,
-          _suspend( false )
+          _suspend( false )          ,
+          _active( false )
 {
         if ( src.IsActive() )
         {

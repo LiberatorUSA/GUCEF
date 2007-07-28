@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -24,7 +24,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_MT_DVRWLOCK_H
-#include "gucefMT_dvrwlock.h"           /* my C implementation of an RW lock */
+#include "gucefMT_DVRWLOCK.h"           /* my C implementation of an RW lock */
 #define GUCEF_MT_DVRWLOCK_H
 #endif /* GUCEF_MT_DVRWLOCK_H ? */
 
