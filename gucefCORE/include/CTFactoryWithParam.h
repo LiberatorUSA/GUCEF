@@ -28,17 +28,6 @@
 
 #include "CTFactoryBaseWithParam.h"
 
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTFACTORYWITHPARAM_CPP
-    #pragma warning( push )
-#endif
-
-#pragma warning( disable: 4786 ) // identifier was truncated to 'number' characters
-#pragma warning( disable: 4251 ) // 'classname' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning( disable: 4284 )  
-#pragma warning( disable: 4146 ) // unary minus operator applied to unsigned type, result still unsigned
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -64,13 +53,13 @@ class CTFactoryWithParam : public CTFactoryBaseWithParam< BaseClassType, Constru
     public:
     
     /**
-     *  Default contructor which acts as a no-op since factories are
+     *  Default constructor which acts as a no-op since factories are
      *  meta-data classes
      */
     CTFactoryWithParam( void );
     
     /**
-     *  Copy contructor which acts as a no-op since factories are
+     *  Copy constructor which acts as a no-op since factories are
      *  meta-data classes
      */
     CTFactoryWithParam( const CTFactoryWithParam& src );
@@ -195,12 +184,6 @@ CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::C
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTFACTORYWITHPARAM_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

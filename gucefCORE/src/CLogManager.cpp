@@ -30,6 +30,11 @@
 
 #include "CLogManager.h"
 
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+
 #ifndef GUCEF_CORE_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_ESSENTIALS_H
@@ -123,6 +128,8 @@ CLogManager::AddLogger( CILogger* loggerImp )
     g_dataLock.Lock();
     m_loggers.insert( loggerImp );
     g_dataLock.Unlock();
+    
+    GUCEF_SYSTEM_LOG( 0, "Added logger" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -131,6 +138,8 @@ void
 CLogManager::RemoveLogger( CILogger* loggerImp )
 {GUCEF_TRACE;
 
+    GUCEF_SYSTEM_LOG( 0, "Removing logger" );
+    
     g_dataLock.Lock();
     m_loggers.erase( loggerImp );
     g_dataLock.Unlock();

@@ -105,7 +105,7 @@ typedef struct SSize3D TSize3D;
 
 struct SVersion
 {
-        UInt16 mayor;
+        UInt16 major;
         UInt16 minor;
         UInt16 patch;
         UInt16 release;

@@ -216,7 +216,7 @@ CODECPLUGIN_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     TVersion version;
     
-    version.mayor = IMGPLUGIN_FREEIMAGE_MAYOR_VERSION;
+    version.major = IMGPLUGIN_FREEIMAGE_MAYOR_VERSION;
     version.minor = IMGPLUGIN_FREEIMAGE_MINOR_VERSION;
     version.patch = IMGPLUGIN_FREEIMAGE_PATCH_VERSION;
     version.release = IMGPLUGIN_FREEIMAGE_RELEASE_VERSION;

@@ -109,7 +109,7 @@ CGenericPlugin::Load( const CString& pluginPath )
                                                                           0                    );            
             m_funcPointers[ GPLUGINFUNCPTR_VERSION ] = GetFunctionAddress( m_moduleHandle           ,
                                                                            "GUCEFPlugin_GetVersion" ,
-                                                                           sizeof( TVersion )       );            
+                                                                           sizeof( TVersion* )      );            
             m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] = GetFunctionAddress( m_moduleHandle               ,
                                                                                "GUCEFPlugin_GetDescription" ,
                                                                                0                            );            

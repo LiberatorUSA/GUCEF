@@ -198,9 +198,13 @@ CGenericPluginManager::Load( const CString& pluginPath )
     
     if ( !IsLoaded( pluginPath ) )
     {
+        GUCEF_SYSTEM_LOG( 0, "Attempting to load generic plugin: " + pluginPath );
+        
         CGenericPlugin* plugin = new CGenericPlugin();
         if ( plugin->Load( pluginPath ) )
         {
+            GUCEF_SYSTEM_LOG( 0, "Generic plugin loaded: " + pluginPath );
+            
             // The file has been successfully loaded as a generic plugin module
             m_pluginList.push_back( plugin );
             
@@ -211,6 +215,8 @@ CGenericPluginManager::Load( const CString& pluginPath )
         }
         else
         {
+            GUCEF_SYSTEM_LOG( 0, "Failed to load module as a generic plugin: " + pluginPath );
+            
             // Failed to load the file as a generic plugin
             delete plugin;
             return false;
@@ -233,12 +239,18 @@ CGenericPluginManager::Unload( const CString& pluginPath )
     {
         if ( pluginPath == (*i)->GetModulePath() )
         {
-            // notify observers that we are about to unload the module
-            NotifyObservers( PluginUnloadedEvent );
+            GUCEF_SYSTEM_LOG( 0, "Attempting to unload generic plugin: " + pluginPath );
 
             // Perform the actual unload
-            (*i)->Unload();
-            m_pluginList.erase( i );
+            if ( (*i)->Unload() )
+            {
+                GUCEF_SYSTEM_LOG( 0, "Generic plugin unloaded: " + pluginPath );
+                
+                // notify observers that we unloaded the module
+                NotifyObservers( PluginUnloadedEvent );
+                            
+                m_pluginList.erase( i );
+            }
             return true;
         }
         

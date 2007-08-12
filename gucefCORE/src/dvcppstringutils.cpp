@@ -112,7 +112,7 @@ CString
 VersionToString( const TVersion* version )
 {GUCEF_TRACE;
         char verstr[ 25 ];
-        sprintf( verstr, "%d.%d.%d.%d", version->mayor, version->minor, version->patch, version->release );
+        sprintf( verstr, "%d.%d.%d.%d", version->major, version->minor, version->patch, version->release );
         return verstr;        
 }
 
