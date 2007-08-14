@@ -303,6 +303,15 @@ FileExists( const CString& filename )
     return 0 != File_Exists( filename.C_String() );
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+IsPathValid( const CString& path  )
+{GUCEF_TRACE;
+
+    return 0 != Is_Path_Valid( path.C_String() ); 
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

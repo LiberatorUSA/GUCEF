@@ -114,6 +114,12 @@ BOOL CMFCPatcherGUIApp::InitInstance()
     if ( pluginDir.Length() == 0 )
     {
         pluginDir = "$MODULEDIR$\\plugins";
+        pluginDir = GUCEF::CORE::RelativePath( pluginDir );
+        if ( !GUCEF::CORE::IsPathValid( pluginDir ) )
+        {
+            pluginDir = "$CURWORKDIR$\\plugins";
+            pluginDir = GUCEF::CORE::RelativePath( pluginDir );    
+        }
     }
     
     // Load all plugins

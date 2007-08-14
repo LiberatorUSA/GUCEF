@@ -148,6 +148,11 @@ DoubleToString( const double value );
 GUCEFCORE_EXPORT_CPP CString
 LastSubDir( const CString& path );
 
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP bool
+IsPathValid( const CString& path  );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

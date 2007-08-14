@@ -1034,6 +1034,20 @@ Relative_Path( const char *pathstr ,
         return i;
 }
 
+/*-------------------------------------------------------------------------*/
+
+UInt32
+Is_Path_Valid( const char* path )
+{
+    #ifdef GUCEF_MSWIN_BUILD
+    return GetFileAttributes( path ) != INVALID_FILE_ATTRIBUTES;
+    #else
+    #ifdef GUCEF_LINUX_BUILD
+    // @TODO
+    #endif
+    #endif
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

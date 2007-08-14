@@ -82,6 +82,15 @@ extern "C" {
 /*-------------------------------------------------------------------------*/
 
 /**
+ *  Function that checks if the given path points to a valid item
+ *  the item can be either a directory or a file
+ */
+GUCEFCORE_EXPORT_C UInt32
+Is_Path_Valid( const char* path );
+
+/*-------------------------------------------------------------------------*/
+
+/**
  *      Function that attempts to create a directory using the system default
  *      security attributes. Returns true (1) if successful and false (0) in
  *      case of an error. Unlike the normal create dir functions for windows
