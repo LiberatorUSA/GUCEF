@@ -17,24 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CWIDGETFACTORY_H
-#define GUCEF_GUI_CWIDGETFACTORY_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
-#include "CTAbstractFactory.h"
-#define GUCEF_CORE_CTABSTRACTFACTORY_H
-#endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
-#ifndef GUCEF_GUI_CWIDGET_H
-#include "gucefGUI_CWidget.h"
-#define GUCEF_GUI_CWIDGET_H
-#endif /* GUCEF_GUI_CWIDGET_H ? */
+#include "gucefGUI_CUDim.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,11 +41,100 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef GUCEF::CORE::CTAbstractFactory< CString, CWidget >  CWidgetFactory;
+CUDim::CUDim( void )
+    : m_relativeValue( 0.0 ) ,
+      m_pixelValue( 0 )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUDim::CUDim( const CUDim& src )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUDim::~CUDim()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUDim&
+CUDim::operator=( const CUDim& src )
+{GUCEF_TRACE;
+    
+    if ( this == &src )
+    {
+        m_relativeValue = src.m_relativeValue;
+        m_pixelValue = src.m_pixelValue;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUDim::operator==( const CUDim& other ) const
+{GUCEF_TRACE;
+
+    return m_relativeValue == other.m_relativeValue &&
+           m_pixelValue == other.m_pixelValue;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUDim::operator!=( const CUDim& other ) const
+{GUCEF_TRACE;
+
+    return m_relativeValue != other.m_relativeValue ||
+           m_pixelValue != other.m_pixelValue;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CUDim::SetRelativeValue( const Float32 relativeValue ) 
+{GUCEF_TRACE;
+
+    m_relativeValue = relativeValue;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Float32
+CUDim::GetRelativeValue( void ) const
+{GUCEF_TRACE;
+
+    return m_relativeValue;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CUDim::SetPixelValue( const UInt32 pixelValue )
+{GUCEF_TRACE;
+
+    m_pixelValue = pixelValue;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+UInt32
+CUDim::GetPixelValue( void ) const
+{GUCEF_TRACE;
+
+    return m_pixelValue;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,16 +146,3 @@ typedef GUCEF::CORE::CTAbstractFactory< CString, CWidget >  CWidgetFactory;
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_GUI_CWIDGETFACTORY_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

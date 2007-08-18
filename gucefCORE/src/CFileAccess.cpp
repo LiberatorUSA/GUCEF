@@ -241,10 +241,6 @@ CFileAccess::Write( const void* srcdata ,
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Is the access to the resource a valid one or
- *      has something gone wrong ?
- */
 bool 
 CFileAccess::IsValid( void )
 {GUCEF_TRACE;
@@ -261,6 +257,15 @@ CFileAccess::GetSize( void ) const
                 fflush( _file );       
         }
         return Filesize( _filename.C_String() );           
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CFileAccess::Flush( void )
+{GUCEF_TRACE;
+
+    fflush( _file );
 }
 
 /*-------------------------------------------------------------------------*/

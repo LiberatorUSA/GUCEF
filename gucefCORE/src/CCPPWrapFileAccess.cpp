@@ -281,6 +281,15 @@ CCPPWrapFileAccess::Clone( void ) const
         return new CCPPWrapFileAccess( _access );
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CCPPWrapFileAccess::Flush( void )
+{GUCEF_TRACE;
+
+    // no-op, not supported on the C-Style interface at this time
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

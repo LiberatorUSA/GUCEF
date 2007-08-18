@@ -276,15 +276,20 @@ CDynamicBufferAccess::Write( const void* srcdata ,
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Is the access to the resource a valid one or
- *      has something gone wrong ?
- */
 bool 
 CDynamicBufferAccess::IsValid( void )
 {GUCEF_TRACE;
 
     return m_buffer != NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDynamicBufferAccess::Flush( void )
+{GUCEF_TRACE;
+
+    // no-op
 }
 
 /*-------------------------------------------------------------------------*/

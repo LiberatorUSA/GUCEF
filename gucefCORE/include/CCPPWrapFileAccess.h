@@ -143,6 +143,8 @@ class GUCEFCORE_EXPORT_CPP CCPPWrapFileAccess : public CIOAccess
          *      has something gone wrong ?
          */
         virtual bool IsValid( void );
+        
+        virtual void Flush( void );
 
         virtual TIOAccess* CStyleAccess( void );
         

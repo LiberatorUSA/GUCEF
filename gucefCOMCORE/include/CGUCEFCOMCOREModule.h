@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef CGUCEFCOMCOREMODULE_H
-#define CGUCEFCOMCOREMODULE_H
+#ifndef GUCEF_COMCORE_CGUCEFCOMCOREMODULE_H
+#define GUCEF_COMCORE_CGUCEFCOMCOREMODULE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCOMCORE_MACROS_H
+#ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
-#define GUCEFCOMCORE_MACROS_H
-#endif /* GUCEFCOMCORE_MACROS_H ? */
+#define GUCEF_COMCORE_MACROS_H
+#endif /* GUCEF_COMCORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,17 +48,17 @@ namespace COMCORE {
 
 class CGUCEFCOMCOREModule
 {
-        public:
-        
-        static bool Load( void );
-        
-        static bool Unload( void );
-        
-        private:
-        CGUCEFCOMCOREModule( void );
-        CGUCEFCOMCOREModule( const CGUCEFCOMCOREModule& src );
-        ~CGUCEFCOMCOREModule();
-        CGUCEFCOMCOREModule& operator=( const CGUCEFCOMCOREModule& src );
+    public:
+    
+    static bool Load( void );
+    
+    static bool Unload( void );
+    
+    private:
+    CGUCEFCOMCOREModule( void );
+    CGUCEFCOMCOREModule( const CGUCEFCOMCOREModule& src );
+    ~CGUCEFCOMCOREModule();
+    CGUCEFCOMCOREModule& operator=( const CGUCEFCOMCOREModule& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -72,7 +72,7 @@ class CGUCEFCOMCOREModule
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CGUCEFCOMCOREMODULE_H ? */
+#endif /* GUCEF_COMCORE_CGUCEFCOMCOREMODULE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

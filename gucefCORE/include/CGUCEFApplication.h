@@ -90,7 +90,7 @@ class CIGUCEFApplicationDriver;
  *       - AppInitEvent:
  *              Indicates that the application is now initialized
  *              at the GUCEF level. All higher level code should
- *              now be initialized.
+ *              now begin initialization.
  *       - AppShutdownEvent
  *              Signals that the application is shutting down at the
  *              GUCEF level. All higher level code should shutdown as well 

@@ -1,5 +1,5 @@
 /*
- *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
+ *  gucefMULTIPLAY: GUCEF module providing multiplayer RAD functionality
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -9,7 +9,7 @@
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CWIDGETFACTORY_H
-#define GUCEF_GUI_CWIDGETFACTORY_H
+#ifndef GUCEF_MULTIPLAY_CMULTIPLAYCONTROL_H
+#define GUCEF_MULTIPLAY_CMULTIPLAYCONTROL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
-#include "CTAbstractFactory.h"
-#define GUCEF_CORE_CTABSTRACTFACTORY_H
-#endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
+#ifndef GUCEF_PATCHER_CPATCHENGINE_H
+#include "gucefPATCHER_CPatchEngine.h"
+#define GUCEF_PATCHER_CPATCHENGINE_H
+#endif /* GUCEF_PATCHER_CPATCHENGINE_H ? */
 
-#ifndef GUCEF_GUI_CWIDGET_H
-#include "gucefGUI_CWidget.h"
-#define GUCEF_GUI_CWIDGET_H
-#endif /* GUCEF_GUI_CWIDGET_H ? */
+#ifndef GUCEF_DRN_CDRNNODE_H
+#include "gucefDRN_CDRNNode.h"
+#define GUCEF_DRN_CDRNNODE_H
+#endif /* GUCEF_DRN_CDRNNODE_H ? */
+
+#ifndef GUCEF_MULTIPLAY_CSERVERLIST_H
+#include "gucefMULTIPLAY_CServerList.h"
+#define GUCEF_MULTIPLAY_CSERVERLIST_H
+#endif /* GUCEF_MULTIPLAY_CSERVERLIST_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,7 +48,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUI {
+namespace MULTIPLAY {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,7 +56,45 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef GUCEF::CORE::CTAbstractFactory< CString, CWidget >  CWidgetFactory;
+/**
+ *  If you choose to use it this class can give you all the multiplayer functionality
+ *  in one sweep for true RAD of multiplayer products
+ */
+class GUCEF_MULTIPLAY_EXPORT_CPP CMultiPlayControl : public CORE::CIConfigurable
+{
+    public:
+    
+    CMultiPlayControl( void );
+    
+    virtual ~CMultiPlayControl();
+    
+    CServerList& GetServerList( void );
+    
+    const CServerList& GetServerList( void ) const;
+    
+    void SetServerListProvider( CServerListProvider* serverListProvider );
+    
+    CServerListProvider* GetServerListProvider( void );
+    
+    const CServerListProvider* GetServerListProvider( void ) const;
+
+    protected:
+    
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );    
+    
+    private:
+    
+    CMultiPlayControl( const CMultiPlayControl& src );  /**< not implemented */
+    CMultiPlayControl& operator=( const CMultiPlayControl& src ); /**< not implemented */
+
+    private:
+    
+    CServerList m_serverList;
+    CServerListProvider* m_serverListProvider;
+    PATCHER::CPatchEngine m_patchEngine;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,12 +102,12 @@ typedef GUCEF::CORE::CTAbstractFactory< CString, CWidget >  CWidgetFactory;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUI */
+}; /* namespace MULTIPLAY */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_GUI_CWIDGETFACTORY_H ? */
+
+#endif /* GUCEF_MULTIPLAY_CMULTIPLAYCONTROL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,7 +115,7 @@ typedef GUCEF::CORE::CTAbstractFactory< CString, CWidget >  CWidgetFactory;
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 18-08-2007 :
-        - Dinand: Initial implementation
+- 07-06-2007 :
+       - Initial implementation.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

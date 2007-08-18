@@ -17,24 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CWIDGETFACTORY_H
-#define GUCEF_GUI_CWIDGETFACTORY_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
-#include "CTAbstractFactory.h"
-#define GUCEF_CORE_CTABSTRACTFACTORY_H
-#endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
-#ifndef GUCEF_GUI_CWIDGET_H
-#include "gucefGUI_CWidget.h"
-#define GUCEF_GUI_CWIDGET_H
-#endif /* GUCEF_GUI_CWIDGET_H ? */
+#include "gucefGUI_CButton.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,11 +41,59 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef GUCEF::CORE::CTAbstractFactory< CString, CWidget >  CWidgetFactory;
+const CORE::CEvent CButton::ButtonDownEvent = "GUCEF::GUI::CButton::ButtonDownEvent";
+const CORE::CEvent CButton::ButtonUpEvent = "GUCEF::GUI::CButton::ButtonUpEvent";
+const CORE::CEvent CButton::ButtonClickedEvent = "GUCEF::GUI::CButton::ButtonClickedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+    
+void
+CButton::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    ButtonDownEvent.Initialize();
+    ButtonUpEvent.Initialize();
+    ButtonClickedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CButton::CButton( void )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CButton::~CButton()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CButton::SetButtonText( const CString& newText )
+{
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CButton::GetButtonText( CString& text ) const
+{
+    return false;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,16 +105,3 @@ typedef GUCEF::CORE::CTAbstractFactory< CString, CWidget >  CWidgetFactory;
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_GUI_CWIDGETFACTORY_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

@@ -17,24 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CWIDGETFACTORY_H
-#define GUCEF_GUI_CWIDGETFACTORY_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
-#include "CTAbstractFactory.h"
-#define GUCEF_CORE_CTABSTRACTFACTORY_H
-#endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
-#ifndef GUCEF_GUI_CWIDGET_H
-#include "gucefGUI_CWidget.h"
-#define GUCEF_GUI_CWIDGET_H
-#endif /* GUCEF_GUI_CWIDGET_H ? */
+#include "gucefGUI_CUVector.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,11 +41,102 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef GUCEF::CORE::CTAbstractFactory< CString, CWidget >  CWidgetFactory;
+CUVector::CUVector( void )
+    : m_x() ,
+      m_y()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUVector::CUVector( const CUVector& src )
+    : m_x( src.m_x ) ,
+      m_y( src.m_y )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUVector::~CUVector()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUVector&
+CUVector::operator=( const CUVector& src )
+{GUCEF_TRACE;
+    
+    if ( this == &src )
+    {
+        m_x = src.m_x;
+        m_y = src.m_y;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUVector::operator==( const CUVector& other ) const
+{GUCEF_TRACE;
+
+    return m_x == other.m_x &&
+           m_y == other.m_y;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUVector::operator!=( const CUVector& other ) const
+{GUCEF_TRACE;
+
+    return m_x != other.m_x ||
+           m_y != other.m_y;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CUVector::SetX( const CUDim& newX )
+{GUCEF_TRACE;
+
+    m_x = newX;
+}
+    
+/*-------------------------------------------------------------------------*/
+    
+const CUDim&
+CUVector::GetX( void ) const
+{GUCEF_TRACE;
+
+    return m_x;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CUVector::SetY( const CUDim& newY )
+{GUCEF_TRACE;
+
+    m_y = newY;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+const CUDim&
+CUVector::GetY( void ) const
+{GUCEF_TRACE;
+
+    return m_y;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,16 +148,3 @@ typedef GUCEF::CORE::CTAbstractFactory< CString, CWidget >  CWidgetFactory;
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_GUI_CWIDGETFACTORY_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

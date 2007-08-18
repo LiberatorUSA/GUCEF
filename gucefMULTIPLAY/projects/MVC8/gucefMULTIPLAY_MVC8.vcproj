@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="gucefMULTIPLAY"
-	ProjectGUID="{A4742C22-77EC-4951-BC7F-2425F11B4E9C}"
+	ProjectGUID="{D0808007-C395-499E-9827-4AB78985ACA2}"
 	RootNamespace="gucefMULTIPLAY_MVC8"
 	Keyword="Win32Proj"
 	>
@@ -149,6 +149,7 @@
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				ImportLibrary="$(OutDir)/gucefMULTIPLAY_MVC8.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -187,6 +188,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\src\gucefMULTIPLAY_CMultiPlayControl.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefMULTIPLAY_CPassiveURLServerListProvider.cpp"
 				>
 			</File>
@@ -206,6 +211,10 @@
 			>
 			<File
 				RelativePath="..\..\include\gucefMULTIPLAY.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefMULTIPLAY_CMultiPlayControl.h"
 				>
 			</File>
 			<File

@@ -61,7 +61,9 @@ class GUCEFCORE_EXPORT_CPP CMSWinConsoleLogger : public CILogger
 
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
-                      const CString& logMessage    ) const;
+                      const CString& logMessage    );
+
+    virtual void FlushLog( void );
 
     CString GetLogMsgTypeString( const TLogMsgType logMsgType ) const;
     

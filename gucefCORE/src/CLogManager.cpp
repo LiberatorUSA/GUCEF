@@ -180,7 +180,7 @@ CLogManager::ClearLoggers( void )
 void
 CLogManager::Log( const TLogMsgType logMsgType ,
                   const Int32 logLevel         ,
-                  const CString& logMessage    ) const
+                  const CString& logMessage    )
 {GUCEF_TRACE;
 
     g_dataLock.Lock();
@@ -199,6 +199,32 @@ CLogManager::Log( const TLogMsgType logMsgType ,
                 ++i;
             }
         }
+    }
+    
+    // We want to make certain that errors are always in the log file.
+    // We might crash moments later which might cause some loggers not
+    // to write the error entry to their respective output media
+    if ( LOG_ERROR == logMsgType )
+    {
+        FlushLogs();
+    }
+    
+    g_dataLock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogManager::FlushLogs( void )
+{GUCEF_TRACE;
+    
+    g_dataLock.Lock();
+    
+    TLoggerList::const_iterator i = m_loggers.begin();
+    while ( i != m_loggers.end() )
+    {
+        (*i)->FlushLog();
+        ++i;
     }
     
     g_dataLock.Unlock();

@@ -207,6 +207,11 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
          *  @return returns the size of the resource if possible. returns -1 if the size cannot be determined
          */
         virtual Int32 GetSize( void ) const = 0;
+        
+        /** 
+         *  Flushes all outstanding mutations on the I/O device
+         */
+        virtual void Flush( void ) = 0;
 
         virtual TIOAccess* CStyleAccess( void );
         

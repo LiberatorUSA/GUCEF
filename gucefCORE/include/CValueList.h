@@ -26,10 +26,18 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CSTRINGMAP_H
-#include "CStringMap.h"          /* string container */
-#define GUCEF_CORE_CSTRINGMAP_H
-#endif /* GUCEF_CORE_CSTRINGMAP_H ? */
+#include <map>
+#include <vector>
+
+#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
+#include "ExceptionMacros.h"
+#define GUCEF_CORE_EXCEPTIONMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
+
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
 
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"     /* often used gucef macros */
@@ -53,47 +61,127 @@ namespace CORE {
 
 class GUCEFCORE_EXPORT_CPP CValueList
 {
-        public:
-        
-        CValueList( void );
-        
-        CValueList( const CValueList& src );
-        
-        CValueList& operator=( const CValueList& src );        
-        
-        virtual ~CValueList();
-               
-        CString operator[]( const CString& key ) const;
-        
-        void SetMultiple( const CString& keyandvalue ,
-                          const char seperator       );
-        
-        void Set( const CString& keyandvalue );
-        
-        void Set( const CString& key   ,
-                  const CString& value );
-        
-        CString GetValue( const CString& key ) const;                
-        
-        CString GetValue( const UInt32 index ) const;
-        
-        CString GetPair( const CString& key ) const;
-        
-        CString GetPair( const UInt32 index ) const;
-        
-        CString GetKey( const UInt32 index ) const;                
-        
-        bool HasKey( const CString& key ) const;
-        
-        void Delete( const CString& key );
-        
-        void DeleteAll( void );
-        
-        UInt32 GetCount( void ) const;
-        
-        private:                
-                
-        CStringMap m_list;     
+    public:
+    
+    typedef std::vector< CString > TStringVector;
+    
+    CValueList( void );
+    
+    CValueList( const CValueList& src );
+    
+    CValueList& operator=( const CValueList& src );        
+    
+    virtual ~CValueList();
+    
+    /**
+     *  Returns the first value associated with the
+     *  given key.
+     *
+     *  @exception EUnknownKey thrown if the given key is unknown
+     */
+    CString& operator[]( const CString& key );
+           
+    /**
+     *  Returns the first value associated with the
+     *  given key.
+     *
+     *  @exception EUnknownKey thrown if the given key is unknown
+     */
+    const CString& operator[]( const CString& key ) const;
+    
+    void SetMultiple( const CString& keyandvalue ,
+                      const char seperator       );
+    
+    void Set( const CString& keyAndValue );
+    
+    void Set( const CString& key   ,
+              const CString& value );
+    
+    /**
+     *  Returns the first value associated with the
+     *  given key.
+     *
+     *  @exception EUnknownKey thrown if the given key is unknown
+     */
+    CString& GetValue( const CString& key );
+
+    /**
+     *  Returns the first value associated with the
+     *  given key.
+     *
+     *  @exception EUnknownKey thrown if the given key is unknown
+     */
+    const CString& GetValue( const CString& key ) const;
+
+    /**
+     *  Returns the first value associated with the
+     *  given key index.
+     *
+     *  @exception EIndexOutOfRange thrown if the given key index is invalid
+     */
+    CString& GetValue( const UInt32 index );
+    
+    /**
+     *  Returns the first value associated with the
+     *  given key index.
+     *
+     *  @exception EIndexOutOfRange thrown if the given key index is invalid
+     */
+    const CString& GetValue( const UInt32 index ) const;
+    
+    /**
+     *  Returns the value vector associated with the
+     *  given key.
+     *
+     *  @exception EUnknownKey thrown if the given key is unknown
+     */
+    TStringVector& GetValueVector( const CString& key );
+    
+    /**
+     *  Returns the value vector associated with the
+     *  given key.
+     *
+     *  @exception EUnknownKey thrown if the given key is unknown
+     */
+    const TStringVector& GetValueVector( const CString& key ) const;
+
+    CString GetPair( const CString& key ) const;
+    
+    CString GetPair( const UInt32 index ) const;
+
+    /**
+     *  Returns the key associated with the given index.
+     *
+     *  @exception EIndexOutOfRange thrown if the given key index is invalid
+     */
+    const CString& GetKey( const UInt32 index ) const;                
+    
+    bool HasKey( const CString& key ) const;
+    
+    void Delete( const CString& key );
+    
+    void DeleteAll( void );
+    
+    UInt32 GetCount( void ) const;
+    
+    void SetAllowDuplicates( const bool allowDuplicates );
+    
+    bool GetAllowDuplicates( void ) const;
+    
+    void SetAllowMultipleValues( const bool allowMultipleValues );
+    
+    bool GetAllowMultipleValues( void ) const;
+    
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EUnknownKey );    
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EIndexOutOfRange );
+    
+    private:                       
+    
+    typedef std::map< CString, TStringVector > TValueMap;
+            
+    TValueMap m_list;
+    bool m_allowDuplicates;
+    bool m_allowMultipleValues;
 };
 
 /*-------------------------------------------------------------------------//
@@ -115,6 +203,11 @@ class GUCEFCORE_EXPORT_CPP CValueList
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 18-08-2007 :
+        - Updated to use STL containers and added the ability to map multiple
+          values to a single key.
+        - Instead of empty strings an exception will now be thrown if an invalid
+          key name or index is used to access an entry.  
 - 21-09-2005 :
         - initial version
 

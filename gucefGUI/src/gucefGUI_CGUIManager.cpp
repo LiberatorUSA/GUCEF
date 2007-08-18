@@ -17,24 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CWIDGETFACTORY_H
-#define GUCEF_GUI_CWIDGETFACTORY_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
-#include "CTAbstractFactory.h"
-#define GUCEF_CORE_CTABSTRACTFACTORY_H
-#endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
-#ifndef GUCEF_GUI_CWIDGET_H
-#include "gucefGUI_CWidget.h"
-#define GUCEF_GUI_CWIDGET_H
-#endif /* GUCEF_GUI_CWIDGET_H ? */
+#include "gucefGUI_CGUIManager.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,11 +41,73 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef GUCEF::CORE::CTAbstractFactory< CString, CWidget >  CWidgetFactory;
+CGUIManager* CGUIManager::g_instance = NULL;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CGUIManager*
+CGUIManager::Instance( void )
+{GUCEF_TRACE;
+
+    if ( g_instance == NULL )
+    {
+        g_instance = new CGUIManager();
+    }
+    return g_instance;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUIManager::Deinstance( void )
+{GUCEF_TRACE;
+
+    delete g_instance;
+    g_instance = NULL; 
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGUIManager::CGUIManager( void )
+    : m_widgetFactory() ,
+      m_formFactory()
+{GUCEF_TRACE;
+
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGUIManager::~CGUIManager()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CWidgetFactory&
+CGUIManager::GetWidgetFactory( void )
+{GUCEF_TRACE;
+
+    return m_widgetFactory;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CFormFactory&
+CGUIManager::GetFormFactory( void )
+{GUCEF_TRACE;
+
+    return m_formFactory;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,16 +119,3 @@ typedef GUCEF::CORE::CTAbstractFactory< CString, CWidget >  CWidgetFactory;
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_GUI_CWIDGETFACTORY_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

@@ -151,6 +151,8 @@ class GUCEFCORE_EXPORT_CPP CDynamicBufferAccess : public CIOAccess
      */
     virtual bool IsValid( void );
     
+    virtual void Flush( void );
+    
     virtual CICloneable* Clone( void ) const;
     
     private:

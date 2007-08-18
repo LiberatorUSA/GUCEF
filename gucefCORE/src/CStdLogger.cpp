@@ -119,7 +119,7 @@ CStdLogger::GetLogMsgTypeString( const TLogMsgType logMsgType ) const
 void
 CStdLogger::Log( const TLogMsgType logMsgType ,
                  const Int32 logLevel         ,
-                 const CString& logMessage    ) const
+                 const CString& logMessage    )
 {GUCEF_TRACE;
 
     if ( m_output != NULL )
@@ -129,6 +129,15 @@ CStdLogger::Log( const TLogMsgType logMsgType ,
                          actualLogMsg.Length()   ,
                          1                       );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStdLogger::FlushLog( void )
+{GUCEF_TRACE;
+    
+    m_output->Flush();
 }
 
 /*-------------------------------------------------------------------------//

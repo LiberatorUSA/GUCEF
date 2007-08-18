@@ -17,24 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CWIDGETFACTORY_H
-#define GUCEF_GUI_CWIDGETFACTORY_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
-#include "CTAbstractFactory.h"
-#define GUCEF_CORE_CTABSTRACTFACTORY_H
-#endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
-#ifndef GUCEF_GUI_CWIDGET_H
-#include "gucefGUI_CWidget.h"
-#define GUCEF_GUI_CWIDGET_H
-#endif /* GUCEF_GUI_CWIDGET_H ? */
+#include "gucefGUI_CEditbox.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,11 +41,78 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef GUCEF::CORE::CTAbstractFactory< CString, CWidget >  CWidgetFactory;
+const CORE::CEvent CEditbox::SelectionChangedEvent = "GUCEF::GUI::CEditbox::SelectionChangedEvent";
+const CORE::CEvent CEditbox::CaratPositionChangedEvent = "GUCEF::GUI::CEditbox::CaratPositionChangedEvent";
+const CORE::CEvent CEditbox::TextChangedEvent = "GUCEF::GUI::CEditbox::TextChangedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+    
+void
+CEditbox::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    SelectionChangedEvent.Initialize();
+    CaratPositionChangedEvent.Initialize();
+    TextChangedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEditbox::CEditbox( void )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEditbox::~CEditbox()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CEditbox::SetText( const CString& text )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CEditbox::GetText( CString& text )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CEditbox::SetSelectedText( const CString& text )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CEditbox::GetSelectedText( CString& text )
+{GUCEF_TRACE;
+
+    return false;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,16 +124,3 @@ typedef GUCEF::CORE::CTAbstractFactory< CString, CWidget >  CWidgetFactory;
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_GUI_CWIDGETFACTORY_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

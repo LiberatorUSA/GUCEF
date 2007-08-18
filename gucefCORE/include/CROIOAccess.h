@@ -89,6 +89,8 @@ class GUCEFCORE_EXPORT_CPP CROIOAccess : public CIOAccess
                               UInt32 esize        ,
                               UInt32 elements     );
                               
+        virtual void Flush( void );
+        
         protected:
         
         TIOAccess _access;                                                             

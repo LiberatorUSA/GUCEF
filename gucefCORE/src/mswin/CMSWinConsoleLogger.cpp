@@ -114,11 +114,20 @@ CMSWinConsoleLogger::GetLogMsgTypeString( const TLogMsgType logMsgType ) const
 void
 CMSWinConsoleLogger::Log( const TLogMsgType logMsgType ,
                           const Int32 logLevel         ,
-                          const CString& logMessage    ) const
+                          const CString& logMessage    )
 {GUCEF_TRACE;
 
     CString actualLogMsg( "[" + GetLogMsgTypeString( logMsgType ) + "] [LVL " + Int32ToString( logLevel ) + "] " + logMessage + "\n" );
     fprintf( stdout, actualLogMsg.C_String() ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMSWinConsoleLogger::FlushLog( void )
+{GUCEF_TRACE;
+
+    fflush( stdout );
 }
 
 /*-------------------------------------------------------------------------//

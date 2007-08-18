@@ -61,7 +61,9 @@ class GUCEFCORE_EXPORT_CPP CILogger
                            
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
-                      const CString& logMessage    ) const = 0;
+                      const CString& logMessage    ) = 0;
+    
+    virtual void FlushLog( void ) = 0;
     
     
     CILogger( void );                             /**< interface class: no-op */

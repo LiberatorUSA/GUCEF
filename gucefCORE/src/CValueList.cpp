@@ -47,30 +47,33 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+GUCEF_IMPLEMENT_MSGEXCEPTION( CValueList, EUnknownKey );
+GUCEF_IMPLEMENT_MSGEXCEPTION( CValueList, EIndexOutOfRange );
+
+/*-------------------------------------------------------------------------*/
+
 CValueList::CValueList( void )
+    : m_list()                      ,
+      m_allowDuplicates( false )    ,
+      m_allowMultipleValues( true )
 {GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CValueList::CValueList( const CValueList& src )
+    : m_list( src.m_list )                               ,
+      m_allowDuplicates( src.m_allowDuplicates )         ,
+      m_allowMultipleValues( src.m_allowMultipleValues )
 {GUCEF_TRACE;
-
-        CORE::CString value, key;
-        for ( UInt32 i=0; i<src.GetCount(); ++i )
-        {
-                value = src.GetValue( i );
-                key = src.GetKey( i );
-                
-                Set( key   ,
-                     value );
-        }                
+               
 }
 
 /*-------------------------------------------------------------------------*/
 
 CValueList::~CValueList()
 {GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -78,26 +81,28 @@ CValueList::~CValueList()
 CValueList&
 CValueList::operator=( const CValueList& src )
 {GUCEF_TRACE;
-        if ( this != &src )
-        {
-                DeleteAll();
 
-                CORE::CString value, key;
-                for ( UInt32 i=0; i<src.GetCount(); ++i )
-                {
-                        value = src.GetValue( i );
-                        key = src.GetKey( i );
-                        
-                        Set( key   ,
-                             value );
-                }              
-        }
-        return *this;
+     if ( this != &src )
+     {
+        m_list = src.m_list;
+        m_allowDuplicates = src.m_allowDuplicates;
+        m_allowMultipleValues = src.m_allowMultipleValues;
+     }
+     return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CString
+CString&
+CValueList::operator[]( const CString& key )
+{GUCEF_TRACE;
+
+    return GetValue( key );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
 CValueList::operator[]( const CString& key ) const
 {GUCEF_TRACE;
 
@@ -140,14 +145,51 @@ CValueList::SetMultiple( const CString& keyandvalue ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CValueList::Set( const CString& keyandvalue )
+void
+CValueList::SetAllowDuplicates( const bool allowDuplicates )
 {GUCEF_TRACE;
-        CString key( keyandvalue.SubstrToChar( '=', true ) );
-        CString value( keyandvalue.SubstrToChar( '=', false ) );
-        
-        Set( key   ,
-             value );
+
+    m_allowDuplicates = allowDuplicates;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CValueList::GetAllowDuplicates( void ) const
+{GUCEF_TRACE;
+
+    return m_allowDuplicates;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CValueList::SetAllowMultipleValues( const bool allowMultipleValues )
+{GUCEF_TRACE;
+
+    m_allowMultipleValues = allowMultipleValues;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CValueList::GetAllowMultipleValues( void ) const
+{GUCEF_TRACE;
+
+    return m_allowMultipleValues;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CValueList::Set( const CString& keyAndValue )
+{GUCEF_TRACE;
+
+    CString key( keyAndValue.SubstrToChar( '=', true ) );
+    CString value( keyAndValue.SubstrToChar( '=', false ) );
+    
+    Set( key   ,
+         value );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -159,46 +201,127 @@ CValueList::Set( const CString& key   ,
         
     if ( key.Length() > 0 )
     {
-        CString* thevalue = static_cast<CString*>( m_list.Get( key ) );
-        if ( thevalue )
+        TStringVector& values = m_list[ key ];
+        if ( m_allowDuplicates )
         {
-                *thevalue = value;
-                return;
+            values.push_back( value );
         }
-        
-        m_list.Add( key                  ,
-                    new CString( value ) );
+        else
+        {
+            // Duplicates are not allowed so if an identical
+            // value is already in the list we should not add it
+            TStringVector::iterator n = values.begin();
+            while ( n != values.end() )
+            {
+                if ( (*n) == value )
+                {
+                    // The given value is already in the list
+                    return;
+                }
+                ++n;
+            }
+            
+            if ( !m_allowMultipleValues )
+            {
+                values.clear();
+            }
+            values.push_back( value );
+        }    
     }
 }
 
 /*-------------------------------------------------------------------------*/                
         
-CString
+const CString&
 CValueList::GetValue( const CString& key ) const
 {GUCEF_TRACE;
-        const CString* thevalue = static_cast<const CString*>( m_list[ key ] );
-        if ( thevalue )
-        {
-                return *thevalue;
-        }
+
+    TValueMap::const_iterator i = m_list.find( key );
+    if ( i != m_list.end() )
+    {
+        return (*i).second[ 0 ];
+    }
+
+    GUCEF_EMSGTHROW( EUnknownKey, "CValueList::GetValue(): The given key is not found" );
+}
+
+/*-------------------------------------------------------------------------*/                
         
-        CString emptystr;
-        return emptystr;       
+CString&
+CValueList::GetValue( const CString& key )
+{GUCEF_TRACE;
+
+    TValueMap::iterator i = m_list.find( key );
+    if ( i != m_list.end() )
+    {
+        return (*i).second[ 0 ];
+    }
+
+    GUCEF_EMSGTHROW( EUnknownKey, "CValueList::GetValue(): The given key is not found" );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CValueList::TStringVector&
+CValueList::GetValueVector( const CString& key )
+{GUCEF_TRACE;
+
+    TValueMap::iterator i = m_list.find( key );
+    if ( i != m_list.end() )
+    {
+        return (*i).second;
+    }
+
+    GUCEF_EMSGTHROW( EUnknownKey, "CValueList::GetValue(): The given key is not found" );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CValueList::TStringVector&
+CValueList::GetValueVector( const CString& key ) const
+{GUCEF_TRACE;
+
+    TValueMap::const_iterator i = m_list.find( key );
+    if ( i != m_list.end() )
+    {
+        return (*i).second;
+    }
+
+    GUCEF_EMSGTHROW( EUnknownKey, "CValueList::GetValue(): The given key is not found" );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
 CValueList::GetValue( const UInt32 index ) const
 {GUCEF_TRACE;
-        const CString* thevalue = static_cast<const CString*>( m_list[ index ] );
-        if ( thevalue )
-        {
-                return *thevalue;
-        }
+
+    if ( index < m_list.size() )
+    {
+        TValueMap::const_iterator i = m_list.begin();
+        for ( UInt32 n=0; n<index; ++n ) { ++i; }
         
-        CString emptystr;
-        return emptystr;        
+        return (*i).second[ 0 ];
+    }
+    
+    GUCEF_EMSGTHROW( EIndexOutOfRange, "CValueList::GetValue( index ): The given index is invalid" );        
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString&
+CValueList::GetValue( const UInt32 index )
+{GUCEF_TRACE;
+
+    if ( index < m_list.size() )
+    {
+        TValueMap::iterator i = m_list.begin();
+        for ( UInt32 n=0; n<index; ++n ) { ++i; }
+        
+        return (*i).second[ 0 ];
+    }
+    
+    GUCEF_EMSGTHROW( EIndexOutOfRange, "CValueList::GetValue( index ): The given index is invalid" );        
 }
 
 /*-------------------------------------------------------------------------*/
@@ -206,17 +329,13 @@ CValueList::GetValue( const UInt32 index ) const
 CString 
 CValueList::GetPair( const UInt32 index ) const
 {GUCEF_TRACE;
-        const CString* thevalue = static_cast<const CString*>( m_list[ index ] );
-        if ( thevalue )
-        {
-                CString pair( m_list.GetKey( index ) );
-                pair += '=';
-                pair += *thevalue;
-                return pair;
-        }
-        
-        CString emptypair( "=" );
-        return emptypair;
+    
+    const CString& key = GetKey( index );
+    const CString& value = GetValue( index );
+
+    // if no exception was thrown we can now proceed to build the pair
+    CString pair = key + '=' + value;
+    return pair;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -224,25 +343,29 @@ CValueList::GetPair( const UInt32 index ) const
 CString 
 CValueList::GetPair( const CString& key ) const
 {GUCEF_TRACE;
-        const CString* thevalue = static_cast<const CString*>( m_list.Get( key ) );
-        if ( thevalue )
-        {
-                CString pair( key );
-                pair += '=';
-                pair += *thevalue;
-                return pair;
-        }
-        
-        CString emptypair( "=" );
-        return emptypair; 
+
+    const CString& value = GetValue( key );
+
+    // if no exception was thrown we can now proceed to build the pair
+    CString pair = key + '=' + value;
+    return pair;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+const CString&
 CValueList::GetKey( const UInt32 index ) const
 {GUCEF_TRACE;
-        return m_list.GetKey( index );
+
+    if ( index < m_list.size() )
+    {
+        TValueMap::const_iterator i = m_list.begin();
+        for ( UInt32 n=0; n<index; ++n ) { ++i; }
+        
+        return (*i).first;
+    }
+    
+    GUCEF_EMSGTHROW( EIndexOutOfRange, "CValueList::GetKey( index ): The given index is invalid" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -250,7 +373,8 @@ CValueList::GetKey( const UInt32 index ) const
 bool 
 CValueList::HasKey( const CString& key ) const
 {GUCEF_TRACE;
-        return NULL != static_cast<const CString*>( m_list.Get( key ) );
+
+    return m_list.end() != m_list.find( key );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -258,12 +382,8 @@ CValueList::HasKey( const CString& key ) const
 void 
 CValueList::Delete( const CString& key )
 {GUCEF_TRACE;
-        CString* thevalue = static_cast<CString*>( m_list.Get( key ) );
-        if ( thevalue )
-        {
-                delete thevalue;
-                m_list.Delete( key );
-        }
+    
+    m_list.erase( key );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -271,11 +391,8 @@ CValueList::Delete( const CString& key )
 void 
 CValueList::DeleteAll( void )
 {GUCEF_TRACE;
-        for ( UInt32 i=0; i<m_list.GetCount(); ++i )
-        {
-                delete static_cast<CString*>( m_list[ i ] );
-        }
-        m_list.DeleteAll();
+
+    m_list.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -283,7 +400,8 @@ CValueList::DeleteAll( void )
 UInt32 
 CValueList::GetCount( void ) const
 {GUCEF_TRACE;
-        return m_list.GetCount();
+
+    return (UInt32) m_list.size();
 }
 
 /*-------------------------------------------------------------------------//
