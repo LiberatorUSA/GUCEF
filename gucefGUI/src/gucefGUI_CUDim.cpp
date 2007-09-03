@@ -54,6 +54,16 @@ CUDim::CUDim( void )
 
 /*-------------------------------------------------------------------------*/
 
+CUDim::CUDim( const Float32 relativeValue ,
+              const UInt32 pixelValue     )
+    : m_relativeValue( relativeValue ) ,
+      m_pixelValue( pixelValue )
+{GUCEF_TRACE;
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
 CUDim::CUDim( const CUDim& src )
 {GUCEF_TRACE;
 

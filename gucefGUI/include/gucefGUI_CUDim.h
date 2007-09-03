@@ -52,6 +52,9 @@ class GUCEF_GUI_EXPORT_CPP CUDim
     
     CUDim( void );
     
+    CUDim( const Float32 relativeValue ,
+           const UInt32 pixelValue     );
+    
     CUDim( const CUDim& src );
     
     ~CUDim();

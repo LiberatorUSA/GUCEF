@@ -250,27 +250,38 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
                 }                        
         }                
 
-        /*
-         *      We now know we have an instance of this singleton and can begin
-         *      our main() code. We will send the application initialization
-         *      event to all event clients. The following code segment is a
-         *      special case since it may be followed by the main application
-         *      loop which would keep anything statically allocated here in memory
-         *      Thus we turn the following into a compound statement.
-         */
+        struct SAppInitEventData data;
+        
+        // Copy the MSWIN params
+        data.hinstance = hinstance;
+        data.lpcmdline = lpcmdline;
+        data.ncmdshow = ncmdshow;
+        
+        // Parse the MSWIN param into the old style param list
+        CStringList argList;
+        if ( NULL != lpcmdline )
         {
-                struct SAppInitEventData data;
-                
-                data.hinstance = hinstance;
-                data.lpcmdline = lpcmdline;
-                data.ncmdshow = ncmdshow;
-
-                data.argc = 0;
-                data.argv = NULL;
-                
-                TAppInitEventData cloneableData( data );                
-                if ( !NotifyObservers( AppInitEvent, &cloneableData ) ) return 0;
+            argList = CString( lpcmdline ).ParseElements( ' ' );
         }
+        
+        data.argc = argList.GetCount();
+        if ( data.argc > 0 )
+        {
+            data.argv = new char*[ data.argc ];
+            for ( Int32 i=0; i<data.argc; ++i )
+            {
+                data.argv[ i ] = const_cast< char* >( argList[ i ].C_String() );
+            }
+        }
+        else
+        {
+            data.argv = NULL;
+        }
+        
+        // Dispatch the initialization event
+        TAppInitEventData cloneableData( data );                
+        if ( !NotifyObservers( AppInitEvent, &cloneableData ) ) return 0;
+
 
         _initialized = true;
         m_mutex.Unlock();
@@ -278,6 +289,8 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         {
                 Run();
         }
+        
+        delete []data.argv; 
         return 0;      
 }
 #endif

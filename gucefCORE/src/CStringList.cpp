@@ -212,10 +212,13 @@ CStringList::GetCount( void ) const
 CStringList&
 CStringList::operator=( const CStringList& src )
 {GUCEF_TRACE;
+        
+        Clear();
+        
         const_iterator i = src.ConstBegin();
         while ( i != src.ConstEnd() )
         {
-                
+                Append( (*i) );
                 ++i;
         }
         return *this;
