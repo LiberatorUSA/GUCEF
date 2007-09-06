@@ -43,9 +43,10 @@ Section "GUCEF Full Source SDK" Section1
 	File "GUCEF_FULL_SOURCE.zip"
 	File "..\..\..\..\tools\InfoZip\MSWIN\WIN32\unzip.exe"
 	
-	CreateDirectory "$SMPROGRAMS\GUCEF Full Source SDK\GUCEF\"
-	CreateShortCut "$SMPROGRAMS\GUCEF Full Source SDK\GUCEF\API.lnk" "$INSTDIR\GUALL\GUCEF\docs\API\html\index.html"
-	CreateShortCut "$SMPROGRAMS\GUCEF Full Source SDK\uninstall.lnk" "$INSTDIR\uninstall.exe"
+	CreateDirectory "$SMPROGRAMS\VanvelzenSoftware\GUCEF\Full Source SDK"
+	CreateShortCut "$SMPROGRAMS\VanvelzenSoftware\GUCEF\Full Source SDK\API.lnk" "$INSTDIR\GUALL\GUCEF\docs\API\html\index.html"
+	CreateShortCut "$SMPROGRAMS\VanvelzenSoftware\GUCEF\Full Source SDK\Generate API docs.lnk" "$INSTDIR\GUALL\GUCEF\docs\doxygen\MSWIN_MakeDocs.bat"
+	CreateShortCut "$SMPROGRAMS\VanvelzenSoftware\GUCEF\Full Source SDK\uninstall.lnk" "$INSTDIR\uninstall.exe"
 	
 SectionEnd
 
@@ -61,11 +62,12 @@ Section -FinishSection
 	;Call WriteEnvStr
 	
 	; Now we can extract the archive
-	ExecWait "'$INSTDIR\unzip.exe' $INSTDIR\GUCEF_FULL_SOURCE.zip -d $INSTDIR"
+	ExecWait '"$INSTDIR\unzip.exe" "$INSTDIR\GUCEF_FULL_SOURCE.zip" -d "$INSTDIR"'
 	Delete "$INSTDIR\unzip.exe"
 	Delete "$INSTDIR\GUCEF_FULL_SOURCE.zip"
 	
 	; Now we can generate the API docs
+	ExecWait '"$INSTDIR\GUALL\GUCEF\tools\Doxygen\MSWIN\WIN32\doxygen.exe" "$INSTDIR\GUALL\GUCEF\docs\doxygen\GUCEF_API.dox"'
 	
 SectionEnd
 
@@ -85,8 +87,7 @@ Section Uninstall
 	Delete "$INSTDIR\uninstall.exe"
 
 	; Delete Shortcuts
-	RMDir "$SMPROGRAMS\GUCE Full Source SDK\GUCEF"
-  RMDir "$SMPROGRAMS\GUCE Full Source SDK"
+	RMDir "$SMPROGRAMS\VanvelzenSoftware\GUCEF\Full Source SDK"
 	
 	; Remove remaining directories
 	RMDir "$INSTDIR\GUALL\GUCEF"

@@ -1,4 +1,8 @@
 
+:: *** Get rid of an existing package ***
+
+del GUCEF_FULL_SOURCE.zip
+
 :: *** Set some environment variables ***
 
 SET ZIPOUTPUTDIR=%CD%
