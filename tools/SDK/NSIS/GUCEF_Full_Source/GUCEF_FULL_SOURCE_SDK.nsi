@@ -57,9 +57,9 @@ Section -FinishSection
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$INSTDIR\uninstall.exe"
 	WriteUninstaller "$INSTDIR\uninstall.exe"
 
-	;Push "GUCEF_HOME"
-	;Push "$INSTDIR\GUALL\GUCEF"
-	;Call WriteEnvStr
+	Push "GUCEF_HOME"
+	Push "$INSTDIR\GUALL\GUCEF"
+	Call WriteEnvStr
 	
 	; Now we can extract the archive
 	ExecWait '"$INSTDIR\unzip.exe" "$INSTDIR\GUCEF_FULL_SOURCE.zip" -d "$INSTDIR"'
@@ -87,10 +87,10 @@ Section Uninstall
 	Delete "$INSTDIR\uninstall.exe"
 
 	; Delete Shortcuts
-	RMDir "$SMPROGRAMS\VanvelzenSoftware\GUCEF\Full Source SDK"
+	RMDir /r "$SMPROGRAMS\VanvelzenSoftware\GUCEF\Full Source SDK"
 	
 	; Remove remaining directories
-	RMDir "$INSTDIR\GUALL\GUCEF"
+	RMDir /r "$INSTDIR\GUALL\GUCEF"
 
 	; Remove our environment settings
 	Push "GUCEF_HOME"
