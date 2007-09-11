@@ -36,3 +36,12 @@ add_package_dependancy("gucefCORE")
 add_package_dependancy("gucefVFS")
 add_package_dependancy("gucefCOMCORE")
 add_package_dependancy("gucefCOM")
+
+add_package("gucefDRN")
+add_package_dependancy("gucefMT")
+add_package_dependancy("gucefCORE")
+add_package_dependancy("gucefCOMCORE")
+
+add_package("gucefGUI")
+add_package_dependancy("gucefMT")
+add_package_dependancy("gucefCORE")
