@@ -119,6 +119,11 @@
 #define GUCEF_GUI_CLABEL_H
 #endif /* GUCEF_GUI_CLABEL_H ? */
 
+#ifndef GUCEF_GUI_CIFILESYSTEMINFOPROVIDER_H
+#include "gucefGUI_CIFileSystemInfoProvider.h"
+#define GUCEF_GUI_CIFILESYSTEMINFOPROVIDER_H
+#endif /* GUCEF_GUI_CIFILESYSTEMINFOPROVIDER_H ? */
+
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
 

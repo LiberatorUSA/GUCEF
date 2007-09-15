@@ -265,10 +265,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\mswin\dynload_wininetAPI.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\gucefCOMCORE.cpp"
 				>
 			</File>

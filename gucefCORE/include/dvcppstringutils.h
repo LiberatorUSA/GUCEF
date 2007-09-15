@@ -71,6 +71,11 @@ StripFilename( const CString& pathPlusFilename );
 /*-------------------------------------------------------------------------*/
 
 GUCEFCORE_EXPORT_CPP CString
+StripLastSubDir( const CString& completePath );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
 ExtractFilename( const CString& pathPlusFilename );
 
 /*-------------------------------------------------------------------------*/

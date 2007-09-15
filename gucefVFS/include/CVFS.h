@@ -27,6 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <map>
+#include <set>
 
 #include "CIConfigurable.h"
 #include "CDVString.h"
@@ -81,6 +82,7 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
     
     typedef CORE::CTBasicSharedPtr< CVFSHandle > CVFSHandlePtr;
     typedef std::vector< CORE::CString >         TStringList;
+    typedef std::set< CORE::CString >            TStringSet;
     
     static CVFS* Instance( void );
     
@@ -92,11 +94,13 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
                            const char* mode = "rb"      ,
                            const bool overwrite = false );
                                   
-    void GetList( TStringList& outputList            ,
+    void GetList( TStringSet& outputList             ,
                   const CORE::CString& location      , 
                   bool recursive = false             ,
                   bool includePathInFilename = false ,
-                  const CORE::CString& filter = ""   ) const;
+                  const CORE::CString& filter = ""   ,
+                  bool addFiles = true               ,
+                  bool addDirs  = false              ) const;
 
     void GetList( CORE::CDataNode& outputDataTree    ,
                   const CORE::CString& location      , 
@@ -152,8 +156,19 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
     virtual ~CVFS();
     CVFS& operator=( const CVFS& src );
 
-    CVFSHandle* LoadFromDisk( const CORE::CString& file, UInt32& errorcode, const char* mode = "rb", const bool overwrite = false );
-    void GetListFromRoot( const CORE::CString& root, bool recursive, bool includePathInFilename, const CORE::CString& filter, TStringList& outputList ) const;
+    CVFSHandle* LoadFromDisk( const CORE::CString& file    , 
+                              UInt32& errorcode            ,
+                              const char* mode = "rb"      ,
+                              const bool overwrite = false );
+
+    void GetListFromRoot( const CORE::CString& root   , 
+                          bool recursive              , 
+                          bool includePathInFilename  , 
+                          const CORE::CString& filter , 
+                          TStringSet& outputList      , 
+                          bool addFiles               ,
+                          bool addDirs                ) const;
+
     bool FilterValidation( const CORE::CString& filename, const CORE::CString& filter ) const; 
 
     private:

@@ -41,10 +41,14 @@
   #undef min
   #undef max
   #define MAX_DIR_LENGTH MAX_PATH
+  #define DIRSEPCHAROPPOSITE '/'
+  #define DIRSEPCHAR '\\'
 #elif GUCEF_LINUX_BUILD
   #include <unistd.h>             /* POSIX utilities */
   #include <limits.h>             /* Linux OS limits */
   #define MAX_DIR_LENGTH PATH_MAX
+  #define DIRSEPCHAROPPOSITE '\\'
+  #define DIRSEPCHAR '/'  
 #else
   #error Unsupported OS
 #endif
@@ -96,14 +100,21 @@ void
 AppendToPath( CString& path           ,
               const CString& addition )
 {GUCEF_TRACE;
-        char buffer[ MAX_DIR_LENGTH ];
-        
-        strncpy( buffer          , 
-                 path.C_String() ,
-                 path.Length()+1 );       
-        Append_To_Path( buffer              ,
-                        addition.C_String() );                        
-        path = buffer;                                
+
+    if ( path.Length() == 0 )
+    {
+        path = addition;
+        return;
+    }
+    
+    char buffer[ MAX_DIR_LENGTH ];
+    
+    strncpy( buffer          , 
+             path.C_String() ,
+             path.Length()+1 );       
+    Append_To_Path( buffer              ,
+                    addition.C_String() );                        
+    path = buffer;                                
 }
 
 /*-------------------------------------------------------------------------*/
@@ -270,6 +281,23 @@ LastSubDir( const CString& path )
         lastSubDir = path;
     }
     return lastSubDir;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+StripLastSubDir( const CString& completePath )
+{GUCEF_TRACE;
+
+    CString path = completePath.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR );
+    CString remnamt = path.SubstrToChar( DIRSEPCHAR, false );
+    
+    if ( remnamt.Length() > 0 )
+    {
+        return path.CutChars( remnamt.Length()+1, false );
+    }
+    
+    return completePath;
 }
 
 /*-------------------------------------------------------------------------*/

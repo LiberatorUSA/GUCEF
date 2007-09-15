@@ -534,7 +534,9 @@ CVFS::GetListFromRoot( const CORE::CString& root     ,
                        bool recursive                ,
                        bool includePathInFilename    ,
                        const CORE::CString& filter   ,
-                       TStringList& outputList       ) const
+                       TStringSet& outputList        ,
+                       bool addFiles                 ,
+                       bool addDirs                  ) const
 {GUCEF_TRACE;
 
     CORE::CString filename;
@@ -549,24 +551,39 @@ CVFS::GetListFromRoot( const CORE::CString& root     ,
         {
             if ( CORE::DI_Is_It_A_File( did ) != 0 )
             {                           
-                filename = CORE::DI_Name( did );     
-                if ( FilterValidation( filename ,
-                                       filter   ) )
+                if ( addFiles )
                 {
-                    if ( !includePathInFilename )
+                    filename = CORE::DI_Name( did );     
+                    if ( filename != '.' && filename != ".." )
                     {
-                        outputList.push_back( filename );
-                    }
-                    else
-                    {
-                        CORE::CString filePath( root );
-                        CORE::AppendToPath( filePath, filename );
-                        outputList.push_back( filePath );                        
+                        if ( FilterValidation( filename ,
+                                               filter   ) )
+                        {
+                            if ( !includePathInFilename )
+                            {
+                                outputList.insert( filename );
+                            }
+                            else
+                            {
+                                CORE::CString filePath( root );
+                                CORE::AppendToPath( filePath, filename );
+                                outputList.insert( filePath );                        
+                            }
+                        }
                     }
                 }                                        
             }
             else
             {
+                if ( addDirs )
+                {
+                    CORE::CString dirName = CORE::DI_Name( did );
+                    if ( dirName != '.' && dirName != ".." )
+                    {
+                        outputList.insert( dirName );
+                    }
+                }
+                
                 if ( recursive )
                 {
                     /*
@@ -582,7 +599,9 @@ CVFS::GetListFromRoot( const CORE::CString& root     ,
                                      recursive             ,
                                      includePathInFilename ,
                                      filter                ,
-                                     outputList            ); 
+                                     outputList            ,
+                                     true                  ,
+                                     false                 ); 
                 }
             }        
         }
@@ -595,17 +614,19 @@ CVFS::GetListFromRoot( const CORE::CString& root     ,
 /*-------------------------------------------------------------------------*/
 
 void 
-CVFS::GetList( TStringList& outputList                  ,
+CVFS::GetList( TStringSet& outputList                   ,
                const CORE::CString& location            ,
                bool recursive             /* = false */ ,
                bool includePathInFilename /* = false */ ,
-               const CORE::CString& filter /* = "" */   ) const
+               const CORE::CString& filter /* = "" */   ,
+               bool addFiles /* = true */               ,
+               bool addDirs /* = false */               ) const
 {GUCEF_TRACE;
         
     m_datalock.Lock();
     
     /*
-     *      Switch dir seperator chars if needed
+     *      Switch dir separator chars if needed
      */
     CORE::CString loc( location.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );              
     
@@ -627,7 +648,9 @@ CVFS::GetList( TStringList& outputList                  ,
                          recursive             ,
                          includePathInFilename ,
                          filter                ,
-                         outputList            );
+                         outputList            ,
+                         addFiles              ,
+                         addDirs               );
     }
     
     /*
@@ -649,18 +672,20 @@ CVFS::GetList( CORE::CDataNode& outputDataTree        ,
 {GUCEF_TRACE;
 
     // First we get a list of files and their path
-    TStringList outputList;
+    TStringSet outputList;
     GetList( outputList ,
              location   ,
              recursive  ,
              true       ,
-             filter     );
+             filter     ,
+             true       ,
+             false      );
              
     // First we clear the tree
     outputDataTree.Clear();
     
     // Now we build our data tree using the list we obtained
-    TStringList::iterator i = outputList.begin();
+    TStringSet::iterator i = outputList.begin();
     while ( i != outputList.end() )
     {
         // First we build the path structure in the data tree
