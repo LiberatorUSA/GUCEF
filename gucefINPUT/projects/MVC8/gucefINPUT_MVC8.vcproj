@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="gucefINPUT"
 	ProjectGUID="{0664F429-30EE-4A2E-953C-40E14362D2C9}"
+	RootNamespace="gucefINPUT"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -66,6 +67,7 @@
 				OutputFile="$(OutDir)/gucefINPUT_MVC8_d.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\gucefMT\bin\Debug_MVC8"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/gucefINPUT_MVC8.pdb"
 				SubSystem="2"
@@ -147,6 +149,7 @@
 				OutputFile="$(OutDir)/gucefINPUT_MVC8.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\..\gucefCORE\bin\Release_MVC8;..\..\..\gucefMT\bin\Release_MVC8"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"

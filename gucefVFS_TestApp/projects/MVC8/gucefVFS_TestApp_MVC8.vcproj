@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="gucefVFS_TestApp"
 	ProjectGUID="{6E7A8603-81AD-4F7F-82F2-15953F73A179}"
+	RootNamespace="gucefVFS_TestApp"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -68,6 +69,7 @@
 				OutputFile="$(OutDir)/gucefVFS_TestApp_MVC8_d.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="../../../gucefCORE/bin/Debug_MVC8;../../../gucefVFS/bin/Debug_MVC8;../../../gucefMT/bin/Debug_MVC8"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				SubSystem="2"
@@ -148,6 +150,7 @@
 				OutputFile="$(OutDir)/gucefVFS_TestApp_MVC8.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="../../../gucefCORE/bin/Release_MVC8;../../../gucefVFS/bin/Release_MVC8;../../../gucefMT/bin/Release_MVC8"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"

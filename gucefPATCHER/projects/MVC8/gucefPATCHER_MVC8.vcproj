@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="gucefPATCHER"
 	ProjectGUID="{9E366264-2A1E-4418-A386-6DEC95A7B573}"
+	RootNamespace="gucefPATCHER"
 	Keyword="MFCDLLProj"
 	>
 	<Platforms>
@@ -73,6 +74,7 @@
 				OutputFile="$(OutDir)/gucefPATCHER_MVC8_d.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\..\gucefCOM\bin\Debug_MVC8;..\..\..\gucefCOMCORE\bin\Debug_MVC8;..\..\..\gucefMT\bin\Debug_MVC8;..\..\..\gucefVFS\bin\Debug_MVC8;..\..\..\gucefCORE\bin\Debug_MVC8"
+				GenerateManifest="true"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -161,6 +163,7 @@
 				OutputFile="$(OutDir)/gucefPATCHER_MVC8.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\..\gucefCOM\bin\Release_MVC8;..\..\..\gucefCOMCORE\bin\Release_MVC8;..\..\..\gucefMT\bin\Release_MVC8;..\..\..\gucefVFS\bin\Release_MVC8;..\..\..\gucefCORE\bin\Release_MVC8"
+				GenerateManifest="true"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"

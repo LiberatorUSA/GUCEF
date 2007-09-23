@@ -115,7 +115,7 @@ class CTestPeerValidator : public DRN::CIDRNPeerValidator
         if ( serviceName == "TestPeerToPeer" )
         {
             CORE::TVersion correctVersion;
-            correctVersion.mayor = 0;
+            correctVersion.major = 0;
             correctVersion.minor = 1;
             correctVersion.patch = 0;
             correctVersion.release = 0;

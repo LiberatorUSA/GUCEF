@@ -65,6 +65,7 @@
 				OutputFile="$(OutDir)\imgpluginFreeImage_MVC8_d.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\dependancy\Freeimage\Debug"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -92,7 +93,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Debug_MVC8\plugins&#x0D;&#x0A;copy ..\..\dependancy\FreeImage\Dist\Freeimaged.dll ..\..\..\..\..\common\bin\Debug_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Debug_MVC8\plugins&#x0D;&#x0A;copy ..\..\dependancy\FreeImage\Dist\Freeimaged.dll ..\..\..\..\..\common\bin\Debug_MVC8&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -139,6 +140,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="1"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"

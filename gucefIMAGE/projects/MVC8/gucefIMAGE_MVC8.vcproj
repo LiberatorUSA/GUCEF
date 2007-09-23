@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="gucefIMAGE"
 	ProjectGUID="{E9DF8BF0-E6C7-4725-864D-91397DC50BFA}"
+	RootNamespace="gucefIMAGE"
 	Keyword="MFCDLLProj"
 	>
 	<Platforms>
@@ -73,6 +74,7 @@
 				OutputFile="$(OutDir)/gucefIMAGE_MVC8_d.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\gucefMT\bin\Debug_MVC8"
+				GenerateManifest="true"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -160,6 +162,7 @@
 				OutputFile="$(OutDir)/gucefIMAGE_MVC8.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\..\gucefCORE\bin\Release_MVC8;..\..\..\gucefMT\bin\Release_MVC8"
+				GenerateManifest="true"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"

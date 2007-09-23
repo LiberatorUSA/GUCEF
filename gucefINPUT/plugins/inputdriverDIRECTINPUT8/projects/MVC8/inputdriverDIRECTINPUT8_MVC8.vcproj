@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="inputdriverDIRECTINPUT8"
 	ProjectGUID="{48F853BB-007F-455D-8C04-CCB5533EC30E}"
+	RootNamespace="inputdriverDIRECTINPUT8"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -65,6 +66,7 @@
 				AdditionalDependencies="Dinput8.lib dxguid.lib"
 				OutputFile="$(OutDir)/inputdriverDIRECTINPUT8.dll"
 				LinkIncremental="2"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/inputdriverDIRECTINPUT8.pdb"
 				SubSystem="2"
@@ -142,6 +144,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/inputdriverDIRECTINPUT8.dll"
 				LinkIncremental="1"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"

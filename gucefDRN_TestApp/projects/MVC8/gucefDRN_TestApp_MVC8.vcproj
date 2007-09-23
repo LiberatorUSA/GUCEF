@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="gucefDRN_TestApp"
 	ProjectGUID="{6E873FF1-9945-4893-B14F-ABAB602A00AF}"
+	RootNamespace="gucefDRN_TestApp"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -68,6 +69,7 @@
 				OutputFile="$(OutDir)/gucefDRN_TestApp_MVC8_d.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="../../../gucefCORE/bin/Debug_MVC8;../../../gucefDRN/bin/Debug_MVC8;../../../gucefMT/bin/Debug_MVC8;../../../gucefCOMCORE/bin/Debug_MVC8"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				SubSystem="2"
@@ -78,6 +80,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				EmbedManifest="true"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -148,6 +151,7 @@
 				OutputFile="$(OutDir)/gucefDRN_TestApp_MVC8.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="../../../gucefCORE/bin/Release_MVC8;../../../gucefDRN/bin/Release_MVC8;../../../gucefMT/bin/Release_MVC8;../../../gucefCOMCORE/bin/Release_MVC8"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"

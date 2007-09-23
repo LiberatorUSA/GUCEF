@@ -164,6 +164,7 @@
 				OutputFile="$(OutDir)/gucefCORE_MVC8.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\..\gucefMT\bin\Release_MVC8"
+				GenerateManifest="true"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"

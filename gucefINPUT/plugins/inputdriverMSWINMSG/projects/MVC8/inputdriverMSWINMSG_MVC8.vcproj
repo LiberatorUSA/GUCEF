@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="inputdriverMSWINMSG"
 	ProjectGUID="{800D00D2-1D03-431B-B7AA-BDD3BDCD304B}"
+	RootNamespace="inputdriverMSWINMSG"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -65,6 +66,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/inputdriverMSWINMSG.dll"
 				LinkIncremental="2"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/inputdriverMSWINMSG.pdb"
 				SubSystem="2"
@@ -142,6 +144,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/inputdriverMSWINMSG.dll"
 				LinkIncremental="1"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"

@@ -66,6 +66,7 @@
 				OutputFile="$(OutDir)/PatchSetGenerator_MVC8_d.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\..\gucefMT\bin\Debug_MVC8;..\..\..\..\gucefPATCHER\bin\Debug_MVC8"
+				GenerateManifest="true"
 				AddModuleNamesToAssembly=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="..\..\bin\Debug_MVC8\PatchSetGenerator_MVC8_d.pdb"
@@ -142,6 +143,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="1"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
