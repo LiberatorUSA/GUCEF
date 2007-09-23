@@ -137,7 +137,10 @@ void
 CStdLogger::FlushLog( void )
 {GUCEF_TRACE;
     
-    m_output->Flush();
+    if ( m_output != NULL )
+    {
+        m_output->Flush();
+    }
 }
 
 /*-------------------------------------------------------------------------//

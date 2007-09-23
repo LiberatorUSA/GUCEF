@@ -23,6 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <assert.h>
+
 #ifndef GUCEF_CORE_CILOGGER_H
 #include "CILogger.h"
 #define GUCEF_CORE_CILOGGER_H
@@ -78,6 +80,7 @@ CLogManager::CLogManager( void )
     m_msgTypeEnablers[ LOG_DEBUG ] = true;
     m_msgTypeEnablers[ LOG_SERVICE ] = true;
     m_msgTypeEnablers[ LOG_PROTECTED ] = true;
+    m_msgTypeEnablers[ LOG_CALLSTACK ] = true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -125,6 +128,9 @@ void
 CLogManager::AddLogger( CILogger* loggerImp )
 {GUCEF_TRACE;
 
+    // Do not add bogus loggers
+    assert( NULL != loggerImp );
+    
     g_dataLock.Lock();
     m_loggers.insert( loggerImp );
     g_dataLock.Unlock();
@@ -137,6 +143,9 @@ CLogManager::AddLogger( CILogger* loggerImp )
 void
 CLogManager::RemoveLogger( CILogger* loggerImp )
 {GUCEF_TRACE;
+
+    // Do not pass in bogus pointers
+    assert( NULL != loggerImp );
 
     GUCEF_SYSTEM_LOG( 0, "Removing logger" );
     
@@ -192,10 +201,13 @@ CLogManager::Log( const TLogMsgType logMsgType ,
             TLoggerList::const_iterator i = m_loggers.begin();
             while ( i != m_loggers.end() )
             {
-                (*i)->Log( logMsgType ,
-                           logLevel   ,
-                           logMessage );
-                
+                CILogger* logger = (*i);
+                if ( NULL != logger )
+                {
+                    logger->Log( logMsgType ,
+                                 logLevel   ,
+                                 logMessage );
+                }
                 ++i;
             }
         }
@@ -223,7 +235,11 @@ CLogManager::FlushLogs( void )
     TLoggerList::const_iterator i = m_loggers.begin();
     while ( i != m_loggers.end() )
     {
-        (*i)->FlushLog();
+        CILogger* logger = (*i);
+        if ( NULL != logger )
+        {
+            logger->FlushLog();
+        }
         ++i;
     }
     
