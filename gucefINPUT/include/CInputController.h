@@ -31,20 +31,30 @@
 #define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
 #endif /* GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H ? */
 
-#ifndef CDYNAMICARRAY_H
+#ifndef GUCEF_CORE_CDYNAMICARRAY_H
 #include "CDynamicArray.h"
-#define CDYNAMICARRAY_H
-#endif /* CDYNAMICARRAY_H ? */
+#define GUCEF_CORE_CDYNAMICARRAY_H
+#endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
 
-#ifndef CVALUELIST_H
+#ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
-#define CVALUELIST_H
-#endif /* CVALUELIST_H ? */
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
 
-#ifndef GUCEFINPUT_MACROS_H
-#include "gucefINPUT_macros.h"
-#define GUCEFINPUT_MACROS_H
-#endif /* GUCEFINPUT_MACROS_H ? */
+#ifndef GUCEF_CORE_NUMERICIDS_H
+#include "NumericIDs.h"
+#define GUCEF_CORE_NUMERICIDS_H
+#endif /* GUCEF_CORE_NUMERICIDS_H ? */
+
+#ifndef GUCEF_INPUT_CKEYBOARD_H
+#include "gucefINPUT_CKeyboard.h"
+#define GUCEF_INPUT_CKEYBOARD_H
+#endif /* GUCEF_INPUT_CKEYBOARD_H ? */
+
+#ifndef GUCEF_INPUT_CMOUSE_H
+#include "gucefINPUT_CMouse.h"
+#define GUCEF_INPUT_CMOUSE_H
+#endif /* GUCEF_INPUT_CMOUSE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,7 +77,7 @@ class CIInputHandler;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
+class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
 {
     public:                
 
@@ -93,6 +103,10 @@ class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
             
     bool LoadDriverModule( const CORE::CString& filename  ,
                            const CORE::CValueList& params );
+
+    CKeyboard& GetKeyboard( void ) const;
+    
+    CMouse& GetMouse( const UInt32 index = 0 ) const;
     
     protected:
         
@@ -128,6 +142,8 @@ class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     
     private:
     
+    typedef std::map< UInt32, CMouse* > TMouseMap;  
+    
     CIInputDriver* m_driver;
     bool m_driverisplugin;        
     CORE::CDynamicArray m_contextlist;
@@ -137,6 +153,10 @@ class EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     #endif
     
     static CInputController* m_instance;
+    
+    CKeyboard m_keyboard;
+    TMouseMap m_mouseMap;
+    CORE::T16BitNumericIDGenerator m_deviceIDGenerator; 
 };
 
 /*-------------------------------------------------------------------------//

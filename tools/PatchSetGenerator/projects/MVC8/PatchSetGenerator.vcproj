@@ -78,6 +78,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				UseFAT32Workaround="true"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -155,6 +156,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				UseFAT32Workaround="true"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"

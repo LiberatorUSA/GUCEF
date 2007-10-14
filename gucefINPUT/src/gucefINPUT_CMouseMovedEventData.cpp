@@ -23,29 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <assert.h>
-
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-#ifndef CINPUTCONTROLLER_H
-#include "CInputController.h"
-#define CINPUTCONTROLLER_H
-#endif /* CINPUTCONTROLLER_H ? */
-
-#ifndef GUCEF_INPUT_CKEYBOARD_H
-#include "gucefINPUT_CKeyboard.h"
-#define GUCEF_INPUT_CKEYBOARD_H
-#endif /* GUCEF_INPUT_CKEYBOARD_H ? */
-
-#include "CGUCEFINPUTModule.h"
+#include "gucefINPUT_CMouseMovedEventData.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,65 +40,117 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
-CGUCEFINPUTModule::Load( void )
+CMouseMovedEventData::CMouseMovedEventData( const UInt32 deviceID ,
+                                            const UInt32 xPos     ,
+                                            const UInt32 yPos     ,
+                                            const UInt32 prevXPos ,
+                                            const UInt32 prevYPos )
+    : CICloneable()          ,
+      m_deviceID( deviceID ) ,
+      m_xPos( xPos )         ,
+      m_yPos( yPos )         ,
+      m_prevXPos( prevXPos ) ,
+      m_prevYPos( prevYPos )
 {GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module loaded" );
-        
-        CKeyboard::RegisterEvents();
-        CInputController::RegisterEvents();
-        CInputController::Instance();
-        return true;
-}
 
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CGUCEFINPUTModule::Unload( void )
-{GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module unloading" );
-        
-        CInputController::Deinstance();        
-        return true;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-CGUCEFINPUTModule::CGUCEFINPUTModule( void )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule::CGUCEFINPUTModule( const CGUCEFINPUTModule& src )
+CMouseMovedEventData::CMouseMovedEventData( const CMouseMovedEventData& src )
+    : CICloneable( src )           ,
+      m_deviceID( src.m_deviceID ) ,
+      m_xPos( m_xPos )             ,
+      m_yPos( m_yPos )             ,
+      m_prevXPos( m_prevXPos )     ,
+      m_prevYPos( m_prevYPos )
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
+
+}
+
+/*-------------------------------------------------------------------------*/
+                        
+CMouseMovedEventData::~CMouseMovedEventData()
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule::~CGUCEFINPUTModule()
+UInt32
+CMouseMovedEventData::GetDeviceID( void ) const
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
+
+    return m_deviceID;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule& 
-CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
+void
+CMouseMovedEventData::GetPos( UInt32& xPos ,
+                              UInt32& yPos ) const
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-        
-        return *this;
+
+    xPos = m_xPos;
+    yPos = m_yPos;
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CMouseMovedEventData::GetPrevPos( UInt32& xPos ,
+                                  UInt32& yPos ) const
+{GUCEF_TRACE;
+
+    xPos = m_prevXPos;
+    yPos = m_prevYPos;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+UInt32
+CMouseMovedEventData::GetXPos( void ) const
+{GUCEF_TRACE;
+
+    return m_xPos;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+UInt32
+CMouseMovedEventData::GetYPos( void ) const
+{GUCEF_TRACE;
+
+    return m_yPos;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CMouseMovedEventData::GetPrevXPos( void ) const
+{GUCEF_TRACE;
+    
+    return m_prevXPos;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+UInt32
+CMouseMovedEventData::GetPrevYPos( void ) const
+{GUCEF_TRACE;
+
+    return m_prevYPos;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable*
+CMouseMovedEventData::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CMouseMovedEventData( *this );
+}
+    
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

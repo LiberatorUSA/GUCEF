@@ -50,7 +50,7 @@ namespace INPUT {
  *      Class that connects the input driver interface to a plugin mechanism so
  *      that plugins can be used as an input driver.
  */
-class EXPORT_CPP CInputDriverPlugin : public CIInputDriver
+class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CIInputDriver
 {
         public:
         

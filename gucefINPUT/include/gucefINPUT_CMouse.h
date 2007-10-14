@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef CIINPUTDRIVER_H
-#define CIINPUTDRIVER_H
+#ifndef GUCEF_INPUT_CMOUSE_H
+#define GUCEF_INPUT_CMOUSE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,23 +26,27 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef ESTRUCTS_H
-#include "EStructs.h"
-#define ESTRUCTS_H
-#endif /* ESTRUCTS_H ? */
+#include <map>
 
-#ifndef CINPUTCONTEXT_H
-#include "CInputContext.h"
-#define CINPUTCONTEXT_H
-#endif /* CINPUTCONTEXT_H ? */
+#ifndef GUCEF_CORE_NUMERICIDS_H
+#include "NumericIDs.h"
+#define GUCEF_CORE_NUMERICIDS_H
+#endif /* GUCEF_CORE_NUMERICIDS_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      CLASSES                                                            //
-//                                                                         //
-//-------------------------------------------------------------------------*/
+#ifndef GUCEF_CORE_CNOTIFIER_H
+#include "CNotifier.h"
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
-namespace GUCEF{ namespace CORE { class CValueList; } }
+#ifndef GUCEF_INPUT_CMOUSEBUTTONEVENTDATA_H
+#include "gucefINPUT_CMouseButtonEventData.h"
+#define GUCEF_INPUT_CMOUSEBUTTONEVENTDATA_H
+#endif /* GUCEF_INPUT_CMOUSEBUTTONEVENTDATA_H ? */
+
+#ifndef GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H
+#include "gucefINPUT_CMouseMovedEventData.h"
+#define GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H
+#endif /* GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,48 +63,65 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CInputContext;
-
-/*-------------------------------------------------------------------------*/
-
-class GUCEF_INPUT_EXPORT_CPP CIInputDriver
+/**
+ *  In-software representation of a mouse hardware input device
+ */
+class GUCEF_INPUT_EXPORT_CPP CMouse : public CORE::CNotifier
 {
-        public:
-        
-        virtual const CORE::TVersion* GetVersion( void ) = 0;
+    public:
+    
+    static const CORE::CEvent MouseButtonEvent;         /**< send when a mouse button is pressed or released, data = CMouseButtonEventData */
+    static const CORE::CEvent MouseMovedEvent;          /**< send when the mouse moved, data = CMouseMovedEventData */
+    static const CORE::CEvent MouseClickedEvent;        /**< send when a mouse button is clicked and released within a set interval */
+    static const CORE::CEvent MouseDoubleClickedEvent;  /**< send when a mouse button is clicked and released twice within a set interval */
+    static const CORE::CEvent MouseTrippleClickedEvent; /**< send when a mouse button is clicked and released three times within a set interval */
+    
+    static void RegisterEvents( void );
+    
+    public:
+    
+    typedef std::vector< bool > TButtonStates;
+    
+    bool IsButtonPressed( const UInt32 buttonIndex ) const;
 
-        virtual void GetMousePos( CInputContext* context ,
-                                  UInt32* xpos           ,
-                                  UInt32* ypos           ) = 0;
-        
-        virtual const UInt8* GetKeyboardKeyStates( CInputContext* context ) = 0;
-        
-        virtual bool GetMouseButtonPressedState( CInputContext* context   ,
-                                                 const UInt32 buttonindex ) = 0;
-        
-        virtual bool GetKeyboardKeyPressedState( CInputContext* context ,
-                                                 const UInt32 keyindex  ) = 0;
-        
-        virtual bool GetDeviceBooleanState( CInputContext* context  ,
-                                            const UInt32 deviceid   ,
-                                            const UInt32 stateindex ) = 0;  
-        
-        virtual bool GetDeviceVariableState( CInputContext* context  ,
-                                             const UInt32 deviceid   ,
-                                             const UInt32 stateindex ,
-                                             Float32& varstate       ) = 0;
-        
-        protected:
-        friend class CInputController;
-        
-        virtual bool OnUpdate( const UInt64 tickcount               ,
-                               const Float64 updateDeltaInMilliSecs ,
-                               CInputContext* context               ) = 0;        
-        
-        virtual CInputContext* CreateContext( const CORE::CValueList& params ,
-                                              CIInputHandler* handler = NULL ) = 0;
-        
-        virtual void DeleteContext( CInputContext* context ) = 0;                                      
+    void GetMousePos( UInt32& xPos ,
+                      UInt32& yPos ) const;
+
+    void GetPrevMousePos( UInt32& xPos ,
+                          UInt32& yPos ) const;
+                      
+    const TButtonStates& GetButtonStates( void ) const;
+    
+    virtual const CString& GetType( void ) const;
+
+    private:
+    friend class CInputController;
+    
+    CMouse( CORE::T16BitNumericID& deviceID );
+    
+    virtual ~CMouse();
+    
+    void SetButtonState( const UInt32 buttonIndex , 
+                         const bool pressedState );
+
+    void SetMousePos( const UInt32 xPos ,
+                      const UInt32 yPos );
+                         
+    void ResetMouseStates( void );
+       
+    private:
+    
+    CMouse( const CMouse& src );            /**< cannot be used */
+    CMouse& operator=( const CMouse& src ); /**< cannot be used */
+    
+    private:
+ 
+    UInt32 m_xPos;
+    UInt32 m_yPos;
+    UInt32 m_prevXPos;
+    UInt32 m_prevYPos;    
+    TButtonStates m_buttonStates;
+    CORE::T16BitNumericID m_deviceID;
 };
 
 /*-------------------------------------------------------------------------//
@@ -114,7 +135,7 @@ class GUCEF_INPUT_EXPORT_CPP CIInputDriver
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CIINPUTDRIVER_H ? */
+#endif /* GUCEF_INPUT_CMOUSE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -122,7 +143,7 @@ class GUCEF_INPUT_EXPORT_CPP CIInputDriver
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 13-09-2005 :
+- 28-09-2007 :
         - Initial implementation
 
 -----------------------------------------------------------------------------*/

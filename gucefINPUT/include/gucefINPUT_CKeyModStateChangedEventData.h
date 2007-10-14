@@ -17,35 +17,26 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
+#ifndef GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H
+#define GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <assert.h>
+#include <map>
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
+#ifndef GUCEF_CORE_CICLONEABLE_H
+#include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-#ifndef CINPUTCONTROLLER_H
-#include "CInputController.h"
-#define CINPUTCONTROLLER_H
-#endif /* CINPUTCONTROLLER_H ? */
-
-#ifndef GUCEF_INPUT_CKEYBOARD_H
-#include "gucefINPUT_CKeyboard.h"
-#define GUCEF_INPUT_CKEYBOARD_H
-#endif /* GUCEF_INPUT_CKEYBOARD_H ? */
-
-#include "CGUCEFINPUTModule.h"
+#ifndef GUCEF_INPUT_KEYBOARD_H
+#include "gucefINPUT_keyboard.h"
+#define GUCEF_INPUT_KEYBOARD_H
+#endif /* GUCEF_INPUT_KEYBOARD_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,68 +49,37 @@ namespace INPUT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
-CGUCEFINPUTModule::Load( void )
-{GUCEF_TRACE;
+class GUCEF_INPUT_EXPORT_CPP CKeyModStateChangedEventData : public CORE::CICloneable
+{
+    public:
+    
+    CKeyModStateChangedEventData( const KeyModifier keyMod ,
+                                  bool pressedState        );
+
+    CKeyModStateChangedEventData( const CKeyModStateChangedEventData& src );
+                        
+    virtual ~CKeyModStateChangedEventData();
         
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module loaded" );
-        
-        CKeyboard::RegisterEvents();
-        CInputController::RegisterEvents();
-        CInputController::Instance();
-        return true;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CGUCEFINPUTModule::Unload( void )
-{GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module unloading" );
-        
-        CInputController::Deinstance();        
-        return true;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-CGUCEFINPUTModule::CGUCEFINPUTModule( void )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFINPUTModule::CGUCEFINPUTModule( const CGUCEFINPUTModule& src )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFINPUTModule::~CGUCEFINPUTModule()
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFINPUTModule& 
-CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-        
-        return *this;
-}
+    KeyModifier GetModifier( void ) const;
+    
+    bool GetPressedState( void ) const;
+    
+    virtual CORE::CICloneable* Clone( void ) const;
+    
+    private:
+    
+    CKeyModStateChangedEventData( void );                                                /**< not implemented, can't use */
+    CKeyModStateChangedEventData& operator=( const CKeyModStateChangedEventData& src );  /**< not implemented, no need */
+    
+    private:
+    
+    KeyModifier m_keyMod;
+    bool m_pressedState;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -131,3 +91,16 @@ CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+          
+#endif /* GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 28-09-2007 :
+        - Initial implementation
+
+-----------------------------------------------------------------------------*/

@@ -17,35 +17,24 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
+#ifndef GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H
+#define GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <assert.h>
+#ifndef GUCEF_CORE_CICLONEABLE_H
+#include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-#ifndef CINPUTCONTROLLER_H
-#include "CInputController.h"
-#define CINPUTCONTROLLER_H
-#endif /* CINPUTCONTROLLER_H ? */
-
-#ifndef GUCEF_INPUT_CKEYBOARD_H
-#include "gucefINPUT_CKeyboard.h"
-#define GUCEF_INPUT_CKEYBOARD_H
-#endif /* GUCEF_INPUT_CKEYBOARD_H ? */
-
-#include "CGUCEFINPUTModule.h"
+#ifndef GUCEF_INPUT_MACROS_H
+#include "gucefINPUT_macros.h"
+#define GUCEF_INPUT_MACROS_H
+#endif /* GUCEF_INPUT_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,68 +47,53 @@ namespace INPUT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
-CGUCEFINPUTModule::Load( void )
-{GUCEF_TRACE;
+class GUCEF_INPUT_EXPORT_CPP CMouseMovedEventData : public CORE::CICloneable
+{
+    public:
+    
+    CMouseMovedEventData( const UInt32 deviceID ,
+                          const UInt32 xPos     ,
+                          const UInt32 yPos     ,
+                          const UInt32 prevXPos ,
+                          const UInt32 prevYPos );
+    
+    CMouseMovedEventData( const CMouseMovedEventData& src );
+                        
+    virtual ~CMouseMovedEventData();
+    
+    UInt32 GetDeviceID( void ) const;
         
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module loaded" );
-        
-        CKeyboard::RegisterEvents();
-        CInputController::RegisterEvents();
-        CInputController::Instance();
-        return true;
-}
+    void GetPos( UInt32& xPos, UInt32& yPos ) const;
+    
+    void GetPrevPos( UInt32& xPos, UInt32& yPos ) const;
+    
+    UInt32 GetXPos( void ) const;
+    
+    UInt32 GetYPos( void ) const;
 
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CGUCEFINPUTModule::Unload( void )
-{GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module unloading" );
-        
-        CInputController::Deinstance();        
-        return true;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-CGUCEFINPUTModule::CGUCEFINPUTModule( void )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFINPUTModule::CGUCEFINPUTModule( const CGUCEFINPUTModule& src )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFINPUTModule::~CGUCEFINPUTModule()
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFINPUTModule& 
-CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-        
-        return *this;
-}
+    UInt32 GetPrevXPos( void ) const;
+    
+    UInt32 GetPrevYPos( void ) const;
+    
+    virtual CORE::CICloneable* Clone( void ) const;
+    
+    private:
+    
+    CMouseMovedEventData( void );                                        /**< not implemented, can't use */
+    CMouseMovedEventData& operator=( const CMouseMovedEventData& src );  /**< not implemented, no need */
+    
+    private:
+    
+    UInt32 m_deviceID;
+    UInt32 m_xPos;
+    UInt32 m_yPos;
+    UInt32 m_prevXPos;
+    UInt32 m_prevYPos;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -131,3 +105,16 @@ CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+          
+#endif /* GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 28-09-2007 :
+        - Initial implementation
+
+-----------------------------------------------------------------------------*/

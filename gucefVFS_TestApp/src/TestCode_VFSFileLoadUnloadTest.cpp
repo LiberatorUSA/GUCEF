@@ -90,7 +90,7 @@ PerformVFSFileLoadUnloadTest( void )
 
         // We will use the root directory itself and ask for a list with no recursive
         // dir iteration and no filter.
-        VFS::CVFS::TStringList fileList;
+        VFS::CVFS::TStringSet fileList;
         vfs->GetList( fileList, "", false, "" );
                      fileList.pop_back();
         if ( fileList.size() == 0 )

@@ -55,7 +55,7 @@ class CIInputHandler;
 
 /*-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CInputContext
+class GUCEF_INPUT_EXPORT_CPP CInputContext
 {
         public:
                         

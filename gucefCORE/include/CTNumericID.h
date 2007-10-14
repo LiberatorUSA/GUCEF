@@ -36,6 +36,11 @@
 #define GUCEF_CORE_EXCEPTIONMACROS_H
 #endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -117,7 +122,7 @@ CTNumericID< intType >::CTNumericID( CTNumericID& src )
     // Assume ownership of the ID and invalidate the source ID
     src.m_initialized = false;
     src.m_idGenerator = NULL;
-    m_id = 0;
+    src.m_id = 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -163,7 +168,7 @@ CTNumericID< intType >::operator=( CTNumericID& src )
             // Assume ownership of the ID and invalidate the source ID
             src.m_initialized = false;
             src.m_idGenerator = NULL;
-            m_id = 0;        
+            src.m_id = 0;        
         }
         else
         {

@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef CINPUTACTIONMAP_H
-#define CINPUTACTIONMAP_H
+#ifndef GUCEF_INPUT_CINPUTACTIONMAP_H
+#define GUCEF_INPUT_CINPUTACTIONMAP_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,20 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef CDVSTRING_H
-#include "CDVString.h"
-#define CDVSTRING_H
-#endif /* CDVSTRING_H ? */
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
-#ifndef CSTRINGLIST_H
-#include "CStringList.h"
-#define CSTRINGLIST_H
-#endif /* CSTRINGLIST_H ? */
-
-#ifndef GUCEFINPUT_MACROS_H
-#include "gucefINPUT_macros.h"
-#define GUCEFINPUT_MACROS_H
-#endif /* GUCEFINPUT_MACROS_H ? */
+#ifndef GUCEF_INPUT_KEYBOARD_H
+#include "gucefINPUT_keyboard.h"
+#define GUCEF_INPUT_KEYBOARD_H
+#endif /* GUCEF_INPUT_KEYBOARD_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -65,126 +60,80 @@ namespace INPUT {
 //-------------------------------------------------------------------------*/
 
 /**
- *
+ *  Class for easy mapping of various input events to generic action ID's
+ *  If you build your clients to be triggered by actions rather then specific
+ *  input device events you will be able to customize the mappings with ease.
  */
-class EXPORT_CPP CInputActionMap
+class GUCEF_INPUT_EXPORT_CPP CInputActionMap : public CORE::CObservingNotifier
 {
-        public:
-        
-        CInputActionMap( const CORE::CString& name       = ""  , 
-                         const UInt32 mousemapcount      = 16  ,
-                         const UInt32 keyboardmapcount   = 128 ,
-                         const UInt32 deviceboolmapcount = 16  ,
-                         const UInt32 devicevarmapcount  = 16  ,
-                         const UInt32 devicecount        = 4   );
+    public:
+    
+    static const CORE::CEvent ActionEvent;
+    
+    static void RegisterEvents( void );
+    
+    public:
+    
+    typedef std::map< UInt32, UInt32 >                      TKeyStateModMapActionMap;
+    typedef std::map< KeyCode, TKeyStateModMapActionMap >   TKeyStateActionMap;
+    typedef std::map< UInt32, UInt32 >                      TStateActionMap;
+    typedef std::map< UInt32, TStateActionMap >             TStateActionDeviceMap;
+    
+    public:
+    
+    CInputActionMap( const CORE::CString& name = "" );
 
-        CInputActionMap( const CInputActionMap& src );
-        
-        ~CInputActionMap();
-        
-        CInputActionMap& operator=( const CInputActionMap& src );
-        
-        void SetMouseButtonDownMap( const UInt32 buttonindex        ,
-                                    const UInt32 actionindex        ,
-                                    const CORE::CString& actionName );
-                                    
-        UInt32 GetMouseButtonDownMap( const UInt32 buttonindex );
-                                    
-        void SetMouseButtonUpMap( const UInt32 buttonindex        ,
-                                  const UInt32 actionindex        ,
-                                  const CORE::CString& actionName );
-                                    
-        UInt32 GetMouseButtonUpMap( const UInt32 buttonindex );
+    CInputActionMap( const CInputActionMap& src );
+    
+    virtual ~CInputActionMap();
+    
+    CInputActionMap& operator=( const CInputActionMap& src );
+    
+    TKeyStateActionMap& GetKeyboardKeyDownMap( void );
 
-        void SetKeyboardKeyDownMap( const UInt32 buttonindex        ,
-                                    const UInt32 actionindex        ,
-                                    const CORE::CString& actionName );
-                                    
-        UInt32 GetKeyboardKeyDownMap( const UInt32 buttonindex );
-        
-        void SetKeyboardKeyUpMap( const UInt32 keyindex           ,
-                                  const UInt32 actionindex        ,
-                                  const CORE::CString& actionName );
-                                    
-        UInt32 GetKeyboardKeyUpMap( const UInt32 keyindex );
-                
-        void SetDeviceBooleanOnMap( const UInt32 deviceindex ,
-                                    const UInt32 stateindex  ,
-                                    const UInt32 actionindex );
-                                    
-        UInt32 GetDeviceBooleanOnMap( const UInt32 deviceindex ,
-                                      const UInt32 stateindex  );
-                                      
-        void SetDeviceBooleanOffMap( const UInt32 deviceindex ,
-                                     const UInt32 stateindex  ,
-                                     const UInt32 actionindex );
-                                    
-        UInt32 GetDeviceBooleanOffMap( const UInt32 deviceindex ,
-                                       const UInt32 stateindex  );
-                                       
-        void SetDeviceVariableChangedMap( const UInt32 deviceid    ,
-                                          const UInt32 stateindex  ,
-                                          const UInt32 actionindex );
-                                          
-        UInt32 GetDeviceVariableChangedMap( const UInt32 deviceid    ,
-                                            const UInt32 stateindex  );
+    TKeyStateActionMap& GetKeyboardKeyUpMap( void );
+    
+    TStateActionMap& GetMouseButtonDownMap( const UInt32 mouseIndex );
 
-        UInt32 GetMouseButtonMaxMapCount( void ) const;
-        
-        UInt32 GetKeyboardKeyMaxMapCount( void ) const;
+    TStateActionMap& GetMouseButtonUpMap( const UInt32 mouseIndex );
+    
+    TStateActionMap& GetDeviceBoolOnMap( const UInt32 deviceIndex );
+    
+    TStateActionMap& GetDeviceBoolOffMap( const UInt32 deviceIndex );
+    
+    TStateActionMap& GetDeviceVarChanged( const UInt32 deviceIndex );
+                                        
+    bool SaveConfig( CORE::CDataNode& tree );
+                                                           
+    bool LoadConfig( const CORE::CDataNode& treeroot );
+    
+    void Clear( void );
+    
+    const CORE::CString& GetName( void ) const;
+    
+    protected:
 
-        UInt32 GetDeviceMaxMapCount( void ) const;
-        
-        UInt32 GetDeviceMaxBoolMapCount( void ) const;
-        
-        UInt32 GetDeviceMaxVarMapCount( void ) const;
-        
-        CORE::CStringList GetMouseButtonDownActionNames( void ) const;
+    /**
+     *  Event callback member function.
+     *
+     *  @param notifier the notifier that sent the notification
+     *  @param eventid the unique event id for an event
+     *  @param eventdata optional notifier defined userdata
+     */
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );
 
-        CORE::CStringList GetMouseButtonUpActionNames( void ) const;
-        
-        CORE::CStringList GetKeyboardKeyUpActionNames( void ) const;
-        
-        CORE::CStringList GetKeyboardKeyDownActionNames( void ) const;
-                                            
-        bool SaveConfig( CORE::CDataNode& tree );
-                                                               
-        bool LoadConfig( const CORE::CDataNode& treeroot );
-        
-        void Clear( void );
-        
-        void Reset( void );
-        
-        const CORE::CString& GetName( void ) const;
-        
-        private:
-        
-        bool EnsureDeviceMaxCapacity( const UInt32 devicemax );
-        void EnsureDeviceBoolStateMaxCapacity( const UInt32 deviceindex, const UInt32 statemax );
-        void EnsureDeviceVarStateMaxCapacity( const UInt32 deviceindex, const UInt32 statemax );
-        
-        private:
-        
-        UInt32* m_mousebupmap;
-        UInt32* m_mousebdownmap;
-        UInt32* m_keyboardkupmap;
-        UInt32* m_keyboardkdownmap;
-        UInt32** m_deviceboolonmap; 
-        UInt32** m_devicebooloffmap;
-        UInt32** m_devicevarchangemap;
-
-        CORE::CStringList m_mouseBUpActionNames;
-        CORE::CStringList m_mouseBDownActionNames;
-        CORE::CStringList m_keyboardKUpActionNames;
-        CORE::CStringList m_keyboardKDownActionNames;
-        
-        UInt32 m_mousemapcount;
-        UInt32 m_keyboardmapcount;
-        UInt32 m_deviceboolmapcount;
-        UInt32 m_devicevarmapcount;
-        UInt32 m_devicecount;
-        
-        CORE::CString m_name;
+    private:
+    
+    TKeyStateActionMap m_keyUpMap;
+    TKeyStateActionMap m_keyDownMap;
+    TStateActionDeviceMap m_mouseButtonUpMap;
+    TStateActionDeviceMap m_mouseButtonDownMap;    
+    TStateActionDeviceMap m_deviceBoolOnMap; 
+    TStateActionDeviceMap m_deviceBoolOffMap;
+    TStateActionDeviceMap m_deviceVarChangeMap;    
+    CORE::CString m_name;
 };
 
 /*-------------------------------------------------------------------------//
@@ -198,7 +147,7 @@ class EXPORT_CPP CInputActionMap
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CINPUTACTIONMAP_H ? */
+#endif /* GUCEF_INPUT_CINPUTACTIONMAP_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

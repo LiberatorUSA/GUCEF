@@ -23,29 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <assert.h>
-
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-#ifndef CINPUTCONTROLLER_H
-#include "CInputController.h"
-#define CINPUTCONTROLLER_H
-#endif /* CINPUTCONTROLLER_H ? */
-
-#ifndef GUCEF_INPUT_CKEYBOARD_H
-#include "gucefINPUT_CKeyboard.h"
-#define GUCEF_INPUT_CKEYBOARD_H
-#endif /* GUCEF_INPUT_CKEYBOARD_H ? */
-
-#include "CGUCEFINPUTModule.h"
+#include "gucefINPUT_CKeyStateChangedEventData.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,65 +40,80 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
-CGUCEFINPUTModule::Load( void )
+CKeyStateChangedEventData::CKeyStateChangedEventData( const KeyCode keyCode     ,
+                                                      const bool pressedState   ,
+                                                      const UInt32 keyModStates )
+    : CICloneable()                  ,
+      m_keyCode( keyCode )           ,
+      m_pressedState( pressedState ) ,
+      m_modStates( keyModStates )
 {GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module loaded" );
-        
-        CKeyboard::RegisterEvents();
-        CInputController::RegisterEvents();
-        CInputController::Instance();
-        return true;
-}
 
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CGUCEFINPUTModule::Unload( void )
-{GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module unloading" );
-        
-        CInputController::Deinstance();        
-        return true;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-CGUCEFINPUTModule::CGUCEFINPUTModule( void )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule::CGUCEFINPUTModule( const CGUCEFINPUTModule& src )
+CKeyStateChangedEventData::CKeyStateChangedEventData( const CKeyStateChangedEventData& src )
+    : CICloneable( src )                   ,
+      m_keyCode( src.m_keyCode )           ,
+      m_pressedState( src.m_pressedState ) ,
+      m_modStates( src.m_modStates )
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
+
+}
+
+/*-------------------------------------------------------------------------*/
+                        
+CKeyStateChangedEventData::~CKeyStateChangedEventData()
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule::~CGUCEFINPUTModule()
+KeyCode
+CKeyStateChangedEventData::GetKeyCode( void ) const
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
+
+    return m_keyCode;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CKeyStateChangedEventData::GetKeyPressedState( void ) const
+{GUCEF_TRACE;
+
+    return m_pressedState;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CKeyStateChangedEventData::GetKeyModPressedState( const KeyModifier keyModifier ) const
+{GUCEF_TRACE;
+
+    return ( m_modStates & keyModifier ) > 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule& 
-CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
+UInt32
+CKeyStateChangedEventData::GetKeyModPressedStates( void ) const
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-        
-        return *this;
+
+    return m_modStates;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable*
+CKeyStateChangedEventData::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CKeyStateChangedEventData( *this );
+}
+    
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

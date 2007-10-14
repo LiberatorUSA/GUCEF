@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef CINPUTPROFILE_H
-#define CINPUTPROFILE_H
+#ifndef GUCEF_INPUT_ACTIONEVENTDATA_H
+#define GUCEF_INPUT_ACTIONEVENTDATA_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,30 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef CSTRINGMAP_H
-#include "CStringMap.h"
-#define CSTRINGMAP_H
-#endif /* CSTRINGMAP_H ? */
+#ifndef GUCEF_INPUT_CMOUSEBUTTONEVENTDATA_H
+#include "gucefINPUT_CMouseButtonEventData.h"
+#define GUCEF_INPUT_CMOUSEBUTTONEVENTDATA_H
+#endif /* GUCEF_INPUT_CMOUSEBUTTONEVENTDATA_H ? */
 
-#ifndef GUCEFINPUT_MACROS_H
-#include "gucefINPUT_macros.h"
-#define GUCEFINPUT_MACROS_H
-#endif /* GUCEFINPUT_MACROS_H ? */
+#ifndef GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H
+#include "gucefINPUT_CMouseMovedEventData.h"
+#define GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H
+#endif /* GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H ? */
+
+#ifndef GUCEF_INPUT_CKEYSTATECHANGEDEVENTDATA_H
+#include "gucefINPUT_CKeyStateChangedEventData.h"
+#define GUCEF_INPUT_CKEYSTATECHANGEDEVENTDATA_H
+#endif /* GUCEF_INPUT_CKEYSTATECHANGEDEVENTDATA_H ? */
+
+#ifndef GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H
+#include "gucefINPUT_CKeyModStateChangedEventData.h"
+#define GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H
+#endif /* GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H ? */
+
+#ifndef GUCEF_INPUT_CTCONCRETEACTIONEVENTDATA_H
+#include "gucefINPUT_CTConcreteActionEventData.h"
+#define GUCEF_INPUT_CTCONCRETEACTIONEVENTDATA_H
+#endif /* GUCEF_INPUT_CTCONCRETEACTIONEVENTDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,62 +62,14 @@ namespace INPUT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *      Class that defines an input mapping profile.
- *      It maps a number of named action maps to a manipulator.
- *      A manipulator is that which takes action based on input.
- */
-class EXPORT_CPP CInputProfile
-{
-        public:
-
-        CInputProfile( const CORE::CString& profilename );
-        
-        CInputProfile( const CInputProfile& src );        
-        
-        ~CInputProfile();
-        
-        CInputProfile& operator=( const CInputProfile& src );
-        
-        bool SetActionMapLink( const CORE::CString& actionmapname   ,
-                               const CORE::CString& manipulatorname );
-                               
-        CORE::CStringList GetActionMapList( void ) const;
-        
-        const CORE::CString& GetName( void ) const;
-        
-        CORE::CString GetManipulatorActionMap( const CORE::CString& manipulatorname ) const;
-        
-        const CORE::CStringList* GetActionMapManipulators( const CORE::CString& actionmapname ) const;
-        
-        const CORE::CStringList& GetManipulatorList( void ) const; 
-        
-        void Clear( void );
-        
-        UInt32 GetActionMapCount( void ) const;
-        
-        UInt32 GetManipulatorCount( void ) const;
-        
-        bool UsesActionMap( const CORE::CString& actionmapname ) const;
-        
-        bool LoadConfig( const CORE::CDataNode& node );
-        
-        bool SaveConfig( CORE::CDataNode& node );
-        
-        private:
-        
-        CInputProfile( void );
-        
-        private:
-        
-        CORE::CString m_name;
-        CORE::CStringMap m_map;
-        CORE::CStringList m_manipulators;
-};
+typedef CTConcreteActionEventData< CMouseButtonEventData >          TMouseButtonActionEventData;
+typedef CTConcreteActionEventData< CMouseMovedEventData >           TMouseMovedActionEventData;
+typedef CTConcreteActionEventData< CKeyStateChangedEventData >      TKeyStateChangedActionEventData;
+typedef CTConcreteActionEventData< CKeyModStateChangedEventData >   TKeyModStateChangedActionEventData;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -115,7 +82,7 @@ class EXPORT_CPP CInputProfile
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CINPUTPROFILE_H ? */
+#endif /* GUCEF_INPUT_ACTIONEVENTDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -123,7 +90,7 @@ class EXPORT_CPP CInputProfile
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 08-10-2005 :
+- 28-09-2007 :
         - Initial implementation
 
 -----------------------------------------------------------------------------*/

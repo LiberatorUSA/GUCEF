@@ -79,6 +79,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				UseFAT32Workaround="true"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -162,6 +163,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				UseFAT32Workaround="true"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -197,27 +199,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CIInputActionHandler.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\CIInputDriver.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CInputActionHandler.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\CInputActionMap.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CInputActionMultiMapHandler.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CInputBasedManipulator.cpp"
 				>
 			</File>
 			<File
@@ -233,19 +219,35 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CInputHandlerMultiMap.cpp"
+				RelativePath="..\..\src\gucefINPUT_CActionEventData.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CInputProfile.cpp"
+				RelativePath="..\..\src\gucefINPUT_CKeyboard.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CInputProfileManager.cpp"
+				RelativePath="..\..\src\gucefINPUT_CKeyModStateChangedEventData.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CInputToActionHandler.cpp"
+				RelativePath="..\..\src\gucefINPUT_CKeyStateChangedEventData.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefINPUT_CMouse.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefINPUT_CMouseButtonEventData.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefINPUT_CMouseMovedEventData.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefINPUT_keyboard.cpp"
 				>
 			</File>
 		</Filter>
@@ -259,31 +261,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CIInputActionHandler.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\CIInputDriver.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CIInputHandler.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CInputActionHandler.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\CInputActionMap.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CInputActionMultiMapHandler.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CInputBasedManipulator.h"
 				>
 			</File>
 			<File
@@ -299,23 +281,39 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CInputHandlerMultiMap.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CInputProfile.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CInputProfileManager.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CInputToActionHandler.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\gucefINPUT.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefINPUT_ActionEventData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefINPUT_CActionEventData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefINPUT_CKeyboard.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefINPUT_CKeyModStateChangedEventData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefINPUT_CKeyStateChangedEventData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefINPUT_CMouse.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefINPUT_CMouseButtonEventData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefINPUT_CMouseMovedEventData.h"
 				>
 			</File>
 			<File
@@ -323,7 +321,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefINPUT_CTConcreteActionEventData.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefINPUT_ETypes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefINPUT_keyboard.h"
 				>
 			</File>
 			<File

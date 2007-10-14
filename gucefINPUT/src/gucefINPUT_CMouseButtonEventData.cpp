@@ -23,29 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <assert.h>
-
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-#ifndef CINPUTCONTROLLER_H
-#include "CInputController.h"
-#define CINPUTCONTROLLER_H
-#endif /* CINPUTCONTROLLER_H ? */
-
-#ifndef GUCEF_INPUT_CKEYBOARD_H
-#include "gucefINPUT_CKeyboard.h"
-#define GUCEF_INPUT_CKEYBOARD_H
-#endif /* GUCEF_INPUT_CKEYBOARD_H ? */
-
-#include "CGUCEFINPUTModule.h"
+#include "gucefINPUT_CMouseButtonEventData.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,65 +40,71 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
-CGUCEFINPUTModule::Load( void )
+CMouseButtonEventData::CMouseButtonEventData( const UInt32 deviceID    ,
+                                              const UInt32 buttonIndex ,
+                                              const bool pressedState  )
+    : CICloneable()                  ,
+      m_deviceID( deviceID )         ,
+      m_buttonIndex( buttonIndex )   ,
+      m_pressedState( pressedState ) 
 {GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module loaded" );
-        
-        CKeyboard::RegisterEvents();
-        CInputController::RegisterEvents();
-        CInputController::Instance();
-        return true;
-}
 
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CGUCEFINPUTModule::Unload( void )
-{GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module unloading" );
-        
-        CInputController::Deinstance();        
-        return true;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-CGUCEFINPUTModule::CGUCEFINPUTModule( void )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule::CGUCEFINPUTModule( const CGUCEFINPUTModule& src )
+CMouseButtonEventData::CMouseButtonEventData( const CMouseButtonEventData& src )
+    : CICloneable( src )                   ,
+      m_deviceID( src.m_deviceID )         ,
+      m_buttonIndex( src.m_buttonIndex )   ,
+      m_pressedState( src.m_pressedState )
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
+
+}
+
+/*-------------------------------------------------------------------------*/
+                        
+CMouseButtonEventData::~CMouseButtonEventData()
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule::~CGUCEFINPUTModule()
+UInt32
+CMouseButtonEventData::GetDeviceID( void ) const
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
+
+    return m_deviceID;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule& 
-CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
+UInt32
+CMouseButtonEventData::GetButtonIndex( void ) const
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-        
-        return *this;
+
+    return m_buttonIndex;
 }
 
+/*-------------------------------------------------------------------------*/
+    
+bool
+CMouseButtonEventData::GetPressedState( void ) const
+{GUCEF_TRACE;
+
+    return m_pressedState;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable*
+CMouseButtonEventData::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CMouseButtonEventData( *this );
+}
+    
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

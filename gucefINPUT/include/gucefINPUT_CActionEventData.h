@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef CINPUTBASEDMANIPULATOR_H
-#define CINPUTBASEDMANIPULATOR_H
+#ifndef GUCEF_INPUT_CACTIONEVENTDATA_H
+#define GUCEF_INPUT_CACTIONEVENTDATA_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef CDVSTRING_H
-#include "CDVString.h"                /* platform string implementation */
-#define CDVSTRING_H
-#endif /* CDVSTRING_H ? */
+#ifndef GUCEF_CORE_CICLONEABLE_H
+#include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
-#ifndef CIINPUTACTIONHANDLER_H
-#include "CIInputActionHandler.h"     /* interface class for action mapped input handlers */
-#define CIINPUTACTIONHANDLER_H
-#endif /* CIINPUTACTIONHANDLER_H ? */
+#ifndef GUCEF_CORE_CEVENT_H
+#include "CEvent.h"
+#define GUCEF_CORE_CEVENT_H
+#endif /* GUCEF_CORE_CEVENT_H ? */
+
+#ifndef GUCEF_INPUT_MACROS_H
+#include "gucefINPUT_macros.h"
+#define GUCEF_INPUT_MACROS_H
+#endif /* GUCEF_INPUT_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,45 +56,32 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *      Abstract base class for input based manipulators.
- *      instances automaticly register with the profile manager
- */
-class EXPORT_CPP CInputBasedManipulator : public CIInputActionHandler
+class GUCEF_INPUT_EXPORT_CPP CActionEventData : public CORE::CICloneable
 {
-        public:
+    public:
+    
+    CActionEventData( const UInt32 actionID        ,
+                      const CORE::CEvent& orgEvent );
+    
+    CActionEventData( const CActionEventData& src );
+                        
+    virtual ~CActionEventData();
         
-        CInputBasedManipulator( const CORE::CString& name );
-        
-        virtual ~CInputBasedManipulator();
-        
-        const CORE::CString& GetName( void ) const;
-        
-        void SetInputEnabled( const bool enabled );
-        
-        /**
-         *      implements IsInputEnabled() of CIInputActionHandler
-         *      returns whether this manipulator is active and ie
-         *      is recieving/processing input events.
-         */
-        virtual bool IsInputEnabled( void ) const;
-        
-        void SetHandlingOrder( const UInt32 handlingOrder );
-        
-        UInt32 GetHandlingOrder( void ) const;
-        
-        private:
-        
-        CInputBasedManipulator( void );
-        CInputBasedManipulator( const CInputBasedManipulator& src );
-        CInputBasedManipulator& operator=( const CInputBasedManipulator& src );
-        
-        private:
-        
-        
-        CORE::CString m_name;
-        bool m_enabled;
-        UInt32 m_handlingOrder;
+    UInt32 GetActionID( void ) const;
+    
+    const CORE::CEvent& GetEvent( void ) const;
+    
+    virtual const CORE::CICloneable* GetEventData( void ) const = 0;
+    
+    private:
+    
+    CActionEventData( void );                                    /**< not implemented, can't use */
+    CActionEventData& operator=( const CActionEventData& src );  /**< not implemented, no need */
+    
+    private:
+    
+    UInt32 m_actionID;
+    CORE::CEvent m_orgEvent;
 };
 
 /*-------------------------------------------------------------------------//
@@ -103,7 +95,7 @@ class EXPORT_CPP CInputBasedManipulator : public CIInputActionHandler
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CINPUTBASEDMANIPULATOR_H ? */
+#endif /* GUCEF_INPUT_CACTIONEVENTDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -111,7 +103,7 @@ class EXPORT_CPP CInputBasedManipulator : public CIInputActionHandler
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 13-09-2005 :
+- 28-09-2007 :
         - Initial implementation
 
 -----------------------------------------------------------------------------*/

@@ -17,35 +17,24 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
+#ifndef GUCEF_INPUT_CTCONCRETEACTIONEVENTDATA_H
+#define GUCEF_INPUT_CTCONCRETEACTIONEVENTDATA_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <assert.h>
-
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-#ifndef CINPUTCONTROLLER_H
-#include "CInputController.h"
-#define CINPUTCONTROLLER_H
-#endif /* CINPUTCONTROLLER_H ? */
-
-#ifndef GUCEF_INPUT_CKEYBOARD_H
-#include "gucefINPUT_CKeyboard.h"
-#define GUCEF_INPUT_CKEYBOARD_H
-#endif /* GUCEF_INPUT_CKEYBOARD_H ? */
-
-#include "CGUCEFINPUTModule.h"
+#ifndef GUCEF_INPUT_CACTIONEVENTDATA_H
+#include "gucefINPUT_CActionEventData.h"
+#define GUCEF_INPUT_CACTIONEVENTDATA_H
+#endif /* GUCEF_INPUT_CACTIONEVENTDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,67 +47,96 @@ namespace INPUT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      CLASSES                                                            //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+/**
+ *  Because input events tend to happen rather frequently this class was created
+ *  to allow the event data to be copied without dynamic allocation on a per-event basis
+ *  It is an optimization.
+ */
+template < class T >
+class CTConcreteActionEventData : public CActionEventData
+{
+    public:
+    
+    CTConcreteActionEventData( const UInt32 actionID        ,
+                               const CORE::CEvent& orgEvent ,
+                               const T& data                );
+    
+    CTConcreteActionEventData( const CTConcreteActionEventData& src );
+    
+    virtual ~CTConcreteActionEventData();
+    
+    virtual const CORE::CICloneable* GetEventData( void ) const;
+    
+    virtual CORE::CICloneable* Clone( void ) const;
+    
+    private:
+    
+    CTConcreteActionEventData( void );
+    CTConcreteActionEventData& operator=( const CTConcreteActionEventData& src );
+    
+    private:
+    
+    T m_data;
+};
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
-CGUCEFINPUTModule::Load( void )
+template < class T >
+CTConcreteActionEventData< T >::CTConcreteActionEventData( const UInt32 actionID        ,
+                                                           const CORE::CEvent& orgEvent ,
+                                                           const T& data                )
+    : CActionEventData( actionID ,
+                        orgEvent ) ,
+      m_data( data )
 {GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module loaded" );
-        
-        CKeyboard::RegisterEvents();
-        CInputController::RegisterEvents();
-        CInputController::Instance();
-        return true;
-}
 
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CGUCEFINPUTModule::Unload( void )
-{GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module unloading" );
-        
-        CInputController::Deinstance();        
-        return true;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-CGUCEFINPUTModule::CGUCEFINPUTModule( void )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
+    
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule::CGUCEFINPUTModule( const CGUCEFINPUTModule& src )
+template < class T >
+CTConcreteActionEventData< T >::CTConcreteActionEventData( const CTConcreteActionEventData& src )
+    : CActionEventData( src ) ,
+      m_data( src.m_data )
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
+    
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule::~CGUCEFINPUTModule()
+template < class T >
+CTConcreteActionEventData< T >::~CTConcreteActionEventData()
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
+
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule& 
-CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
+template < class T >
+const CORE::CICloneable*
+CTConcreteActionEventData< T >::GetEventData( void ) const
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-        
-        return *this;
+    
+    return &m_data;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < class T >
+CORE::CICloneable*
+CTConcreteActionEventData< T >::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CTConcreteActionEventData< T >( *this );
 }
 
 /*-------------------------------------------------------------------------//
@@ -131,3 +149,16 @@ CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+          
+#endif /* GUCEF_INPUT_CTCONCRETEACTIONEVENTDATA_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 08-10-2007 :
+        - Initial implementation
+
+-----------------------------------------------------------------------------*/

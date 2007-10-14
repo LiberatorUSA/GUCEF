@@ -23,17 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
-#ifndef CINPUTPROFILEMANAGER_H
-#include "CInputProfileManager.h"
-#define CINPUTPROFILEMANAGER_H
-#endif /* CINPUTPROFILEMANAGER_H ? */
-
-#include "CInputBasedManipulator.h"
+#include "gucefINPUT_CKeyModStateChangedEventData.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,64 +36,63 @@ namespace INPUT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CInputBasedManipulator::CInputBasedManipulator( const CORE::CString& name )
-        : m_name( name ) ,
-          m_enabled( true )
+CKeyModStateChangedEventData::CKeyModStateChangedEventData( const KeyModifier keyMod ,
+                                                            const bool pressedState  )
+    : CICloneable()                  ,
+      m_keyMod( keyMod )             ,
+      m_pressedState( pressedState ) 
 {GUCEF_TRACE;
-        CInputProfileManager::Instance()->RegisterManipulator( this );        
+
 }
 
 /*-------------------------------------------------------------------------*/
 
-CInputBasedManipulator::~CInputBasedManipulator()
+CKeyModStateChangedEventData::CKeyModStateChangedEventData( const CKeyModStateChangedEventData& src )
+    : CICloneable( src )                 ,
+      m_keyMod( src.m_keyMod )           ,
+      m_pressedState( src.m_pressedState )
 {GUCEF_TRACE;
-        CInputProfileManager::Instance()->UnregisterManipulator( this );
+
+}
+
+/*-------------------------------------------------------------------------*/
+                        
+CKeyModStateChangedEventData::~CKeyModStateChangedEventData()
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString&
-CInputBasedManipulator::GetName( void ) const
+KeyModifier
+CKeyModStateChangedEventData::GetModifier( void ) const
 {GUCEF_TRACE;
-        return m_name;
+
+    return m_keyMod;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CKeyModStateChangedEventData::GetPressedState( void ) const
+{GUCEF_TRACE;
+
+    return m_pressedState;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CInputBasedManipulator::SetInputEnabled( const bool enabled )
+CORE::CICloneable*
+CKeyModStateChangedEventData::Clone( void ) const
 {GUCEF_TRACE;
-        m_enabled = enabled;
+
+    return new CKeyModStateChangedEventData( *this );
 }
-
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CInputBasedManipulator::IsInputEnabled( void ) const
-{GUCEF_TRACE;
-        return m_enabled;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CInputBasedManipulator::SetHandlingOrder( const UInt32 handlingOrder )
-{GUCEF_TRACE;
-    m_handlingOrder = handlingOrder;
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt32 
-CInputBasedManipulator::GetHandlingOrder( void ) const
-{GUCEF_TRACE;
-        return m_handlingOrder;
-}
-
+    
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

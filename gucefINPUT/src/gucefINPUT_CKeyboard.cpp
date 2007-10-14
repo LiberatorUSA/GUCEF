@@ -23,29 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <assert.h>
+#ifndef GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H
+#include "gucefINPUT_CKeyModStateChangedEventData.h"
+#define GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H
+#endif /* GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H ? */
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-#ifndef CINPUTCONTROLLER_H
-#include "CInputController.h"
-#define CINPUTCONTROLLER_H
-#endif /* CINPUTCONTROLLER_H ? */
-
-#ifndef GUCEF_INPUT_CKEYBOARD_H
 #include "gucefINPUT_CKeyboard.h"
-#define GUCEF_INPUT_CKEYBOARD_H
-#endif /* GUCEF_INPUT_CKEYBOARD_H ? */
-
-#include "CGUCEFINPUTModule.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,69 +41,131 @@ namespace INPUT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CEvent CKeyboard::KeyStateChangedEvent = "GUCEF::INPUT::CKeyboard::KeyStateChangedEvent";
+const CORE::CEvent CKeyboard::KeyModStateChangedEvent = "GUCEF::INPUT::CKeyboard::KeyModStateChangedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
-CGUCEFINPUTModule::Load( void )
+void
+CKeyboard::RegisterEvents( void )
 {GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module loaded" );
-        
-        CKeyboard::RegisterEvents();
-        CInputController::RegisterEvents();
-        CInputController::Instance();
-        return true;
-}
 
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CGUCEFINPUTModule::Unload( void )
-{GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module unloading" );
-        
-        CInputController::Deinstance();        
-        return true;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-CGUCEFINPUTModule::CGUCEFINPUTModule( void )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
+    KeyStateChangedEvent.Initialize();
+    KeyModStateChangedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule::CGUCEFINPUTModule( const CGUCEFINPUTModule& src )
+CKeyboard::CKeyboard( void )
+    : CORE::CNotifier() ,
+      m_keyState()      ,
+      m_keyModStates()
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
+    
+    RegisterEvents();
+    ResetKeyboardState();
+}
+
+/*-------------------------------------------------------------------------*/
+                        
+CKeyboard::~CKeyboard()
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule::~CGUCEFINPUTModule()
+bool
+CKeyboard::IsKeyDown( const KeyCode key ) const
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
+
+    TKeyStates::const_iterator i = m_keyState.find( key );
+    return (*i).second;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CKeyboard::IsKeyModifierActive( const KeyModifier keyMod ) const
+{GUCEF_TRACE;
+
+    return ( m_keyModStates & keyMod ) > 0;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+const CKeyboard::TKeyStates&
+CKeyboard::GetKeyStates( void ) const
+{GUCEF_TRACE;
+
+    return m_keyState;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+UInt32
+CKeyboard::GetKeyModStates( void ) const
+{GUCEF_TRACE;
+
+    return m_keyModStates;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUCEFINPUTModule& 
-CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
+void
+CKeyboard::SetKeyState( const KeyCode key       , 
+                        const bool pressedState )
 {GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-        
-        return *this;
+
+    m_keyState[ key ] = pressedState;
+    CKeyStateChangedEventData eventData( key, pressedState, m_keyModStates );
+    NotifyObservers( KeyStateChangedEvent, &eventData );
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CKeyboard::SetKeyModState( const KeyModifier keyMod , 
+                           const bool pressedState  )
+{GUCEF_TRACE;
+
+    m_keyModStates = m_keyModStates | keyMod;
+    CKeyModStateChangedEventData eventData( keyMod, pressedState );
+    NotifyObservers( KeyStateChangedEvent, &eventData );
+}
+
+/*-------------------------------------------------------------------------*/
+                         
+void
+CKeyboard::ResetKeyboardState( void )
+{GUCEF_TRACE;
+
+    for ( int i=0; i<KEYCODE_MAX; ++i )
+    {
+        m_keyState[ (KeyCode) i ] = false;
+    }
+    
+    m_keyModStates = 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CKeyboard::GetType( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::INPUT::CKeyboard";
+    return typeName;
+}
+    
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

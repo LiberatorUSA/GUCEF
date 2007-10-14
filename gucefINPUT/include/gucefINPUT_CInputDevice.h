@@ -17,35 +17,21 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
+#ifndef GUCEF_INPUT_CINPUTDEVICE_H
+#define GUCEF_INPUT_CINPUTDEVICE_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <assert.h>
+#include <map>
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-#ifndef CINPUTCONTROLLER_H
-#include "CInputController.h"
-#define CINPUTCONTROLLER_H
-#endif /* CINPUTCONTROLLER_H ? */
-
-#ifndef GUCEF_INPUT_CKEYBOARD_H
-#include "gucefINPUT_CKeyboard.h"
-#define GUCEF_INPUT_CKEYBOARD_H
-#endif /* GUCEF_INPUT_CKEYBOARD_H ? */
-
-#include "CGUCEFINPUTModule.h"
+#ifndef GUCEF_CORE_CNOTIFIER_H
+#include "CNotifier.h"
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,68 +44,47 @@ namespace INPUT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
-CGUCEFINPUTModule::Load( void )
-{GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module loaded" );
-        
-        CKeyboard::RegisterEvents();
-        CInputController::RegisterEvents();
-        CInputController::Instance();
-        return true;
-}
+/**
+ *  In-software representation of a hardware input device
+ *  This representation will typically be used for things like joysticks
+ */
+class GUCEF_INPUT_EXPORT_CPP CInputDevice : public CORE::CNotifier
+{
+    public:
+    
+    static const CORE::CEvent BoolStateChangedEvent; /**< send when a device boolean state changes, data = CInputDeviceBoolStateChangedEventData */
+    static const CORE::CEvent VarStateChangedEvent;  /**< send when a device variable state changes, data = CInputDeviceVarStateChangedEventData */
+    
+    static void RegisterEvents( void );
+    
+    public:
+    
+    typedef std::map< UInt32, bool > TBooleanStates;
+    
+    bool GetBoolState( const UInt32 index ) const;
+    
+    virtual const CString& GetType( void ) const;
 
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CGUCEFINPUTModule::Unload( void )
-{GUCEF_TRACE;
-        
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module unloading" );
-        
-        CInputController::Deinstance();        
-        return true;
-}
+    private:
+    friend class CInputController;
+    
+    CInputDevice( void );
+    
+    virtual ~CInputDevice();
 
-/*-------------------------------------------------------------------------*/
-        
-CGUCEFINPUTModule::CGUCEFINPUTModule( void )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFINPUTModule::CGUCEFINPUTModule( const CGUCEFINPUTModule& src )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFINPUTModule::~CGUCEFINPUTModule()
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFINPUTModule& 
-CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-        
-        return *this;
-}
+       
+    private:
+    
+    CInputDevice( const CInputDevice& src );            /**< cannot be used */
+    CInputDevice& operator=( const CInputDevice& src ); /**< cannot be used */
+    
+    private:
+ 
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -131,3 +96,16 @@ CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+          
+#endif /* GUCEF_INPUT_CINPUTDEVICE_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 28-09-2007 :
+        - Initial implementation
+
+-----------------------------------------------------------------------------*/
