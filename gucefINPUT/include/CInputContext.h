@@ -51,30 +51,17 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIInputHandler;
-
-/*-------------------------------------------------------------------------*/
-
 class GUCEF_INPUT_EXPORT_CPP CInputContext
 {
         public:
                         
-        const CORE::CValueList& GetContextParams( void ) const;
+        const CORE::CValueList& GetContextParams( void ) const;      
         
-        void SetInputHandler( CIInputHandler* handler );
-        
-        const CIInputHandler* GetInputHandler( void ) const;       
-        
-        CInputContext( const CORE::CValueList& params ,
-                       CIInputHandler* handler = NULL );                
+        CInputContext( const CORE::CValueList& params );                
         
         virtual ~CInputContext();       
                 
         UInt32 GetID( void ) const;
-        
-        protected:
-        
-        CIInputHandler* GetMutableHandler( void );
         
         private:
         friend class CInputController;
@@ -89,7 +76,6 @@ class GUCEF_INPUT_EXPORT_CPP CInputContext
         
         private:
         
-        CIInputHandler* m_handler;
         CORE::CValueList m_valuelist;
         UInt32 m_id;
 };

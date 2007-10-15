@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef CINPUTCONTROLLER_H
-#define CINPUTCONTROLLER_H
+#ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
+#define GUCEF_INPUT_CINPUTCONTROLLER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,11 +40,6 @@
 #include "CValueList.h"
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
-
-#ifndef GUCEF_CORE_NUMERICIDS_H
-#include "NumericIDs.h"
-#define GUCEF_CORE_NUMERICIDS_H
-#endif /* GUCEF_CORE_NUMERICIDS_H ? */
 
 #ifndef GUCEF_INPUT_CKEYBOARD_H
 #include "gucefINPUT_CKeyboard.h"
@@ -72,8 +67,7 @@ namespace INPUT {
 //-------------------------------------------------------------------------*/
 
 class CInputContext;
-class CIInputDriver;
-class CIInputHandler;
+class CInputDriver;
 
 /*-------------------------------------------------------------------------*/
 
@@ -90,16 +84,15 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     
     static CInputController* Instance( void );                
     
-    CInputContext* CreateContext( const CORE::CValueList& params ,
-                                  CIInputHandler* handler = NULL );
+    CInputContext* CreateContext( const CORE::CValueList& params );
     
     void DestroyContext( CInputContext* context );
     
     UInt32 GetContextCount( void ) const;
     
-    bool SetDriver( CIInputDriver* driver );
+    bool SetDriver( CInputDriver* driver );
     
-    const CIInputDriver* GetDriver( void ) const;
+    const CInputDriver* GetDriver( void ) const;
             
     bool LoadDriverModule( const CORE::CString& filename  ,
                            const CORE::CValueList& params );
@@ -107,6 +100,10 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     CKeyboard& GetKeyboard( void ) const;
     
     CMouse& GetMouse( const UInt32 index = 0 ) const;
+    
+    UInt32 GetMouseCount( void ) const;
+    
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_INPUT_EXPORT_CPP, EInvalidIndex );
     
     protected:
         
@@ -130,6 +127,24 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     friend class CGUCEFINPUTModule;
     
     static void Deinstance( void );        
+
+    private:
+    friend class CInputDriver;
+    
+    void SetMouseButtonState( const UInt32 deviceIndex ,
+                              const UInt32 buttonIndex , 
+                              const bool pressedState  );
+
+    void SetMousePos( const UInt32 deviceIndex ,
+                      const UInt32 xPos        ,
+                      const UInt32 yPos        ,
+                      const Int32 xDelta       ,
+                      const Int32 yDelta       );
+                         
+    void ResetMouseStates( const UInt32 deviceIndex );    
+
+    void SetKeyboardKeyState( const KeyCode keyCode  ,
+                              const bool keyPressed  );
     
     private:
     
@@ -142,9 +157,9 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     
     private:
     
-    typedef std::map< UInt32, CMouse* > TMouseMap;  
+    typedef std::vector< CMouse* > TMouseVector;  
     
-    CIInputDriver* m_driver;
+    CInputDriver* m_driver;
     bool m_driverisplugin;        
     CORE::CDynamicArray m_contextlist;
     
@@ -154,9 +169,8 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     
     static CInputController* m_instance;
     
-    CKeyboard m_keyboard;
-    TMouseMap m_mouseMap;
-    CORE::T16BitNumericIDGenerator m_deviceIDGenerator; 
+    CKeyboard* m_keyboard;
+    TMouseVector m_mouseVector;
 };
 
 /*-------------------------------------------------------------------------//
@@ -170,7 +184,7 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CINPUTCONTROLLER_H ? */
+#endif /* GUCEF_INPUT_CINPUTCONTROLLER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

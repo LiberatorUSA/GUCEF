@@ -320,8 +320,8 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
                                         break;
                                 }
                         }                        
-                        data->keyStateBuffer[ wparam ] = 0;                        
-                        data->callbacks.onKeyboardKeyUp( data->callbacks.userData, (UInt32)wparam, data->keyModState );
+                        data->keyStateBuffer[ wparam ] = 0;                          /* , data->keyModState <- modifiers */
+                        data->callbacks.onKeyboardKeyUp( data->callbacks.userData, (KeyCode)wparam );
                         break;
                 }
                 case WM_KEYDOWN :
@@ -357,8 +357,8 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
                                         break;
                                 }
                         }                        
-                        data->keyStateBuffer[ wparam ] = 1;                        
-                        data->callbacks.onKeyboardKeyDown( data->callbacks.userData, (UInt32)wparam, data->keyModState ); 
+                        data->keyStateBuffer[ wparam ] = 1;                           /* , data->keyModState <- modifiers */
+                        data->callbacks.onKeyboardKeyDown( data->callbacks.userData, (KeyCode)wparam ); 
                         break;               
                 }
                 case WM_MOUSEMOVE :

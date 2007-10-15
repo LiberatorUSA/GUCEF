@@ -28,6 +28,16 @@
 #define GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H
 #endif /* GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H ? */
 
+#ifndef GUCEF_INPUT_CINPUTDRIVER_H
+#include "gucefINPUT_CInputDriver.h"
+#define GUCEF_INPUT_CINPUTDRIVER_H
+#endif /* GUCEF_INPUT_CINPUTDRIVER_H ? */
+
+#ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
+#include "CInputController.h"
+#define GUCEF_INPUT_CINPUTCONTROLLER_H
+#endif /* GUCEF_INPUT_CINPUTCONTROLLER_H ? */
+
 #include "gucefINPUT_CKeyboard.h"
 
 /*-------------------------------------------------------------------------//
@@ -64,10 +74,11 @@ CKeyboard::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CKeyboard::CKeyboard( void )
-    : CORE::CNotifier() ,
-      m_keyState()      ,
-      m_keyModStates()
+CKeyboard::CKeyboard( CInputController* controller )
+    : CORE::CNotifier()         ,
+      m_keyState()              ,
+      m_keyModStates()          ,
+      m_controller( controller )
 {GUCEF_TRACE;
     
     RegisterEvents();
@@ -154,6 +165,24 @@ CKeyboard::ResetKeyboardState( void )
     }
     
     m_keyModStates = 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKeyboard::GetUnicodeForKeyCode( const KeyCode keyCode     ,
+                                 const UInt32 keyModifiers ,
+                                 UInt32& unicode           ) const
+{GUCEF_TRACE;
+
+    const CInputDriver* driver = m_controller->GetDriver();
+    if ( NULL != driver )
+    {
+        return driver->GetUnicodeForKeyCode( keyCode      ,
+                                             keyModifiers ,
+                                             unicode      );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -40,10 +40,10 @@
 #define CGUCEFAPPLICATION_H
 #endif /* CGUCEFAPPLICATION_H ? */
 
-#ifndef CIINPUTDRIVER_H
-#include "CIInputDriver.h"
-#define CIINPUTDRIVER_H
-#endif /* CIINPUTDRIVER_H ? */
+#ifndef GUCEF_INPUT_CINPUTDRIVER_H
+#include "gucefINPUT_CInputDriver.h"
+#define GUCEF_INPUT_CINPUTDRIVER_H
+#endif /* GUCEF_INPUT_CINPUTDRIVER_H ? */
 
 #ifndef CINPUTDRIVERPLUGIN_H
 #include "CInputDriverPlugin.h"
@@ -77,9 +77,15 @@ CInputController* CInputController::m_instance = NULL;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+GUCEF_IMPLEMENT_MSGEXCEPTION( CInputController, EInvalidIndex );
+
+/*-------------------------------------------------------------------------*/
+
 CInputController::CInputController( void )
         : m_driverisplugin( false ) ,
-          m_driver( NULL )
+          m_driver( NULL )          ,
+          m_keyboard( NULL )        ,
+          m_mouseVector()
           
           #ifdef GUCEF_MSWIN_BUILD
           ,
@@ -87,33 +93,22 @@ CInputController::CInputController( void )
           #endif
 {GUCEF_TRACE;
 
-        RegisterEvents();
-        CORE::CGUCEFApplication::Instance();    
-}
-
-/*-------------------------------------------------------------------------*/
-
-CInputController::CInputController( const CInputController& src )
-{GUCEF_TRACE;
-        assert( 0 );
-        /* dummy, do not use */
+    RegisterEvents();
+    
+    m_keyboard = new CKeyboard( this );
+    
+    m_mouseVector.reserve( 2 );
+    m_mouseVector.push_back( new CMouse( 0 ) );
+    m_mouseVector.push_back( new CMouse( 1 ) );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CInputController::~CInputController()
 {GUCEF_TRACE;
-}
 
-/*-------------------------------------------------------------------------*/
-
-CInputController&
-CInputController::operator=( const CInputController& src )
-{GUCEF_TRACE;
-        assert( 0 );
-        /* dummy, do not use */
-        
-        return *this;
+    delete m_keyboard;
+    m_keyboard = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -121,11 +116,12 @@ CInputController::operator=( const CInputController& src )
 CInputController* 
 CInputController::Instance( void )
 {GUCEF_TRACE;
-        if ( !m_instance )
-        {
-                m_instance = new CInputController();
-        }
-        return m_instance;
+
+    if ( !m_instance )
+    {
+        m_instance = new CInputController();
+    }
+    return m_instance;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -133,40 +129,40 @@ CInputController::Instance( void )
 void 
 CInputController::Deinstance( void )
 {GUCEF_TRACE;
-        delete m_instance;
-        m_instance = NULL;
+    
+    delete m_instance;
+    m_instance = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
         
 CInputContext* 
-CInputController::CreateContext( const CORE::CValueList& params       ,
-                                 CIInputHandler* handler /* = NULL */ )
+CInputController::CreateContext( const CORE::CValueList& params )
 {GUCEF_TRACE;
-        if ( m_driver )
+    if ( m_driver )
+    {
+        #ifdef GUCEF_MSWIN_BUILD
+        
+        CORE::CValueList extraparams( params );
+        CORE::CString hinststr;
+        hinststr.SetInt( m_hinstance );
+        extraparams.Set( "HINSTANCE", hinststr );
+        
+        CInputContext* context = m_driver->CreateContext( extraparams );
+        
+        #else
+        
+        CInputContext* context = m_driver->CreateContext( params );
+        
+        #endif
+        
+        if ( context )
         {
-                #ifdef GUCEF_MSWIN_BUILD
-                
-                CORE::CValueList extraparams( params );
-                CORE::CString hinststr;
-                hinststr.SetInt( m_hinstance );
-                extraparams.Set( "HINSTANCE", hinststr );
-                
-                CInputContext* context = m_driver->CreateContext( extraparams, handler );
-                
-                #else
-                
-                CInputContext* context = m_driver->CreateContext( params, handler );
-                
-                #endif
-                
-                if ( context )
-                {
-                        context->SetID( m_contextlist.AddEntry( context ) );
-                        return context;
-                }
+            context->SetID( m_contextlist.AddEntry( context ) );
+            return context;
         }
-        return NULL;
+    }
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -194,7 +190,7 @@ CInputController::GetContextCount( void ) const
 /*-------------------------------------------------------------------------*/
         
 bool 
-CInputController::SetDriver( CIInputDriver* driver )
+CInputController::SetDriver( CInputDriver* driver )
 {GUCEF_TRACE;
         if ( 0 == m_contextlist.GetCount() )
         {
@@ -210,7 +206,7 @@ CInputController::SetDriver( CIInputDriver* driver )
         
 /*-------------------------------------------------------------------------*/
 
-const CIInputDriver* 
+const CInputDriver* 
 CInputController::GetDriver( void ) const
 {GUCEF_TRACE;
         return m_driver;
@@ -307,6 +303,92 @@ CInputController::RegisterEvents( void )
     
     InputDriverLoadedEvent.Initialize();
     InputDriverUnloadedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CInputController::SetMouseButtonState( const UInt32 deviceIndex ,
+                                       const UInt32 buttonIndex , 
+                                       const bool pressedState  )
+{GUCEF_TRACE;
+
+    if ( m_mouseVector.size() > deviceIndex )
+    {
+        m_mouseVector[ deviceIndex ]->SetButtonState( buttonIndex  ,
+                                                      pressedState );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CInputController::SetMousePos( const UInt32 deviceIndex ,
+                               const UInt32 xPos        ,
+                               const UInt32 yPos        ,
+                               const Int32 xDelta       ,
+                               const Int32 yDelta       )
+{GUCEF_TRACE;
+
+    if ( m_mouseVector.size() > deviceIndex )
+    {
+        m_mouseVector[ deviceIndex ]->SetMousePos( xPos  ,
+                                                   yPos );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+                         
+void
+CInputController::ResetMouseStates( const UInt32 deviceIndex )
+{GUCEF_TRACE;
+
+    if ( m_mouseVector.size() > deviceIndex )
+    {
+        m_mouseVector[ deviceIndex ]->ResetMouseStates();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CInputController::SetKeyboardKeyState( const KeyCode keyCode ,
+                                       const bool keyPressed )
+{GUCEF_TRACE;
+
+    m_keyboard->SetKeyState( keyCode    ,
+                             keyPressed );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CKeyboard&
+CInputController::GetKeyboard( void ) const
+{GUCEF_TRACE;
+    
+    return *m_keyboard;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CMouse&
+CInputController::GetMouse( const UInt32 index /* = 0 */ ) const
+{GUCEF_TRACE;
+
+    if ( m_mouseVector.size() > index )
+    {
+        return *(m_mouseVector[ index ]);
+    }
+    GUCEF_EMSGTHROW( EInvalidIndex, "CInputController::GetMouse(): Invalid device index given" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CInputController::GetMouseCount( void ) const
+{GUCEF_TRACE;
+
+    return (UInt32) m_mouseVector.size();
 }
 
 /*-------------------------------------------------------------------------//

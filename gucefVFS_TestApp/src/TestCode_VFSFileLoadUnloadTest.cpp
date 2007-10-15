@@ -92,7 +92,7 @@ PerformVFSFileLoadUnloadTest( void )
         // dir iteration and no filter.
         VFS::CVFS::TStringSet fileList;
         vfs->GetList( fileList, "", false, "" );
-                     fileList.pop_back();
+
         if ( fileList.size() == 0 )
         {
             // We should have at least 1 file in that dir

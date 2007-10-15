@@ -37,8 +37,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
 namespace GUCEF {
 namespace INPUT {
+#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,7 +48,9 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-//! Keyboard scan codes
+/**
+ *  Keyboard scan codes 
+ */
 enum KeyCode
 {
 	KEYCODE_UNASSIGNED  = 0x00,
@@ -61,9 +65,9 @@ enum KeyCode
 	KEYCODE_8           = 0x09,
 	KEYCODE_9           = 0x0A,
 	KEYCODE_0           = 0x0B,
-	KEYCODE_MINUS       = 0x0C,    // - on main keyboard
+	KEYCODE_MINUS       = 0x0C,    /* - on main keyboard */
 	KEYCODE_EQUALS      = 0x0D,
-	KEYCODE_BACK        = 0x0E,    // backspace
+	KEYCODE_BACK        = 0x0E,    /* backspace */
 	KEYCODE_TAB         = 0x0F,
 	KEYCODE_Q           = 0x10,
 	KEYCODE_W           = 0x11,
@@ -77,7 +81,7 @@ enum KeyCode
 	KEYCODE_P           = 0x19,
 	KEYCODE_LBRACKET    = 0x1A,
 	KEYCODE_RBRACKET    = 0x1B,
-	KEYCODE_RETURN      = 0x1C,    // Enter on main keyboard
+	KEYCODE_RETURN      = 0x1C,    /* Enter on main keyboard */
 	KEYCODE_LCONTROL    = 0x1D,
 	KEYCODE_A           = 0x1E,
 	KEYCODE_S           = 0x1F,
@@ -90,7 +94,7 @@ enum KeyCode
 	KEYCODE_L           = 0x26,
 	KEYCODE_SEMICOLON   = 0x27,
 	KEYCODE_APOSTROPHE  = 0x28,
-	KEYCODE_GRAVE       = 0x29,    // accent
+	KEYCODE_GRAVE       = 0x29,    /* accent */
 	KEYCODE_LSHIFT      = 0x2A,
 	KEYCODE_BACKSLASH   = 0x2B,
 	KEYCODE_Z           = 0x2C,
@@ -101,11 +105,11 @@ enum KeyCode
 	KEYCODE_N           = 0x31,
 	KEYCODE_M           = 0x32,
 	KEYCODE_COMMA       = 0x33,
-	KEYCODE_PERIOD      = 0x34,    // . on main keyboard
-	KEYCODE_SLASH       = 0x35,    // / on main keyboard
+	KEYCODE_PERIOD      = 0x34,    /* . on main keyboard */
+	KEYCODE_SLASH       = 0x35,    /* / on main keyboard */
 	KEYCODE_RSHIFT      = 0x36,
-	KEYCODE_MULTIPLY    = 0x37,    // * on numeric keypad
-	KEYCODE_LMENU       = 0x38,    // left Alt
+	KEYCODE_MULTIPLY    = 0x37,    /* * on numeric keypad */
+	KEYCODE_LMENU       = 0x38,    /* left Alt */
 	KEYCODE_SPACE       = 0x39,
 	KEYCODE_CAPITAL     = 0x3A,
 	KEYCODE_F1          = 0x3B,
@@ -119,88 +123,91 @@ enum KeyCode
 	KEYCODE_F9          = 0x43,
 	KEYCODE_F10         = 0x44,
 	KEYCODE_NUMLOCK     = 0x45,
-	KEYCODE_SCROLL      = 0x46,    // Scroll Lock
+	KEYCODE_SCROLL      = 0x46,    /* Scroll Lock */
 	KEYCODE_NUMPAD7     = 0x47,
 	KEYCODE_NUMPAD8     = 0x48,
 	KEYCODE_NUMPAD9     = 0x49,
-	KEYCODE_SUBTRACT    = 0x4A,    // - on numeric keypad
+	KEYCODE_SUBTRACT    = 0x4A,    /* - on numeric keypad */
 	KEYCODE_NUMPAD4     = 0x4B,
 	KEYCODE_NUMPAD5     = 0x4C,
 	KEYCODE_NUMPAD6     = 0x4D,
-	KEYCODE_ADD         = 0x4E,    // + on numeric keypad
+	KEYCODE_ADD         = 0x4E,    /* + on numeric keypad */
 	KEYCODE_NUMPAD1     = 0x4F,
 	KEYCODE_NUMPAD2     = 0x50,
 	KEYCODE_NUMPAD3     = 0x51,
 	KEYCODE_NUMPAD0     = 0x52,
-	KEYCODE_DECIMAL     = 0x53,    // . on numeric keypad
-	KEYCODE_OEM_102     = 0x56,    // < > | on UK/Germany keyboards
+	KEYCODE_DECIMAL     = 0x53,    /* . on numeric keypad */
+	KEYCODE_OEM_102     = 0x56,    /* < > | on UK/Germany keyboards */
 	KEYCODE_F11         = 0x57,
 	KEYCODE_F12         = 0x58,
-	KEYCODE_F13         = 0x64,    //                     (NEC PC98)
-	KEYCODE_F14         = 0x65,    //                     (NEC PC98)
-	KEYCODE_F15         = 0x66,    //                     (NEC PC98)
-	KEYCODE_KANA        = 0x70,    // (Japanese keyboard)
-	KEYCODE_ABNT_C1     = 0x73,    // / ? on Portugese (Brazilian) keyboards
-	KEYCODE_CONVERT     = 0x79,    // (Japanese keyboard)
-	KEYCODE_NOCONVERT   = 0x7B,    // (Japanese keyboard)
-	KEYCODE_YEN         = 0x7D,    // (Japanese keyboard)
-	KEYCODE_ABNT_C2     = 0x7E,    // Numpad . on Portugese (Brazilian) keyboards
-	KEYCODE_NUMPADEQUALS= 0x8D,    // = on numeric keypad (NEC PC98)
-	KEYCODE_PREVTRACK   = 0x90,    // Previous Track (KEYCODE_CIRCUMFLEX on Japanese keyboard)
-	KEYCODE_AT          = 0x91,    //                     (NEC PC98)
-	KEYCODE_COLON       = 0x92,    //                     (NEC PC98)
-	KEYCODE_UNDERLINE   = 0x93,    //                     (NEC PC98)
-	KEYCODE_KANJI       = 0x94,    // (Japanese keyboard)
-	KEYCODE_STOP        = 0x95,    //                     (NEC PC98)
-	KEYCODE_AX          = 0x96,    //                     (Japan AX)
-	KEYCODE_UNLABELED   = 0x97,    //                        (J3100)
-	KEYCODE_NEXTTRACK   = 0x99,    // Next Track
-	KEYCODE_NUMPADENTER = 0x9C,    // Enter on numeric keypad
+	KEYCODE_F13         = 0x64,    /*                     (NEC PC98) */
+	KEYCODE_F14         = 0x65,    /*                     (NEC PC98) */
+	KEYCODE_F15         = 0x66,    /*                     (NEC PC98) */
+	KEYCODE_KANA        = 0x70,    /* (Japanese keyboard) */
+	KEYCODE_ABNT_C1     = 0x73,    /* / ? on Portugese (Brazilian) keyboards */
+	KEYCODE_CONVERT     = 0x79,    /* (Japanese keyboard) */
+	KEYCODE_NOCONVERT   = 0x7B,    /* (Japanese keyboard) */
+	KEYCODE_YEN         = 0x7D,    /* (Japanese keyboard) */
+	KEYCODE_ABNT_C2     = 0x7E,    /* Numpad . on Portugese (Brazilian) keyboards */
+	KEYCODE_NUMPADEQUALS= 0x8D,    /* = on numeric keypad (NEC PC98) */
+	KEYCODE_PREVTRACK   = 0x90,    /* Previous Track (KEYCODE_CIRCUMFLEX on Japanese keyboard) */
+	KEYCODE_AT          = 0x91,    /*                     (NEC PC98) */
+	KEYCODE_COLON       = 0x92,    /*                     (NEC PC98) */
+	KEYCODE_UNDERLINE   = 0x93,    /*                     (NEC PC98) */
+	KEYCODE_KANJI       = 0x94,    /* (Japanese keyboard) */
+	KEYCODE_STOP        = 0x95,    /*                     (NEC PC98) */
+	KEYCODE_AX          = 0x96,    /*                     (Japan AX) */
+	KEYCODE_UNLABELED   = 0x97,    /*                        (J3100) */
+	KEYCODE_NEXTTRACK   = 0x99,    /* Next Track */
+	KEYCODE_NUMPADENTER = 0x9C,    /* Enter on numeric keypad */
 	KEYCODE_RCONTROL    = 0x9D,
-	KEYCODE_MUTE        = 0xA0,    // Mute
-	KEYCODE_CALCULATOR  = 0xA1,    // Calculator
-	KEYCODE_PLAYPAUSE   = 0xA2,    // Play / Pause
-	KEYCODE_MEDIASTOP   = 0xA4,    // Media Stop
-	KEYCODE_VOLUMEDOWN  = 0xAE,    // Volume -
-	KEYCODE_VOLUMEUP    = 0xB0,    // Volume +
-	KEYCODE_WEBHOME     = 0xB2,    // Web home
-	KEYCODE_NUMPADCOMMA = 0xB3,    // , on numeric keypad (NEC PC98)
-	KEYCODE_DIVIDE      = 0xB5,    // / on numeric keypad
+	KEYCODE_MUTE        = 0xA0,    /* Mute */
+	KEYCODE_CALCULATOR  = 0xA1,    /* Calculator */
+	KEYCODE_PLAYPAUSE   = 0xA2,    /* Play / Pause */
+	KEYCODE_MEDIASTOP   = 0xA4,    /* Media Stop */
+	KEYCODE_VOLUMEDOWN  = 0xAE,    /* Volume - */
+	KEYCODE_VOLUMEUP    = 0xB0,    /* Volume + */
+	KEYCODE_WEBHOME     = 0xB2,    /* Web home */
+	KEYCODE_NUMPADCOMMA = 0xB3,    /* , on numeric keypad (NEC PC98) */
+	KEYCODE_DIVIDE      = 0xB5,    /* / on numeric keypad */
 	KEYCODE_SYSRQ       = 0xB7,
-	KEYCODE_RMENU       = 0xB8,    // right Alt
-	KEYCODE_PAUSE       = 0xC5,    // Pause
-	KEYCODE_HOME        = 0xC7,    // Home on arrow keypad
-	KEYCODE_UP          = 0xC8,    // UpArrow on arrow keypad
-	KEYCODE_PGUP        = 0xC9,    // PgUp on arrow keypad
-	KEYCODE_LEFT        = 0xCB,    // LeftArrow on arrow keypad
-	KEYCODE_RIGHT       = 0xCD,    // RightArrow on arrow keypad
-	KEYCODE_END         = 0xCF,    // End on arrow keypad
-	KEYCODE_DOWN        = 0xD0,    // DownArrow on arrow keypad
-	KEYCODE_PGDOWN      = 0xD1,    // PgDn on arrow keypad
-	KEYCODE_INSERT      = 0xD2,    // Insert on arrow keypad
-	KEYCODE_DELETE      = 0xD3,    // Delete on arrow keypad
-	KEYCODE_LWIN        = 0xDB,    // Left Windows key
-	KEYCODE_RWIN        = 0xDC,    // Right Windows key
-	KEYCODE_APPS        = 0xDD,    // AppMenu key
-	KEYCODE_POWER       = 0xDE,    // System Power
-	KEYCODE_SLEEP       = 0xDF,    // System Sleep
-	KEYCODE_WAKE        = 0xE3,    // System Wake
-	KEYCODE_WEBSEARCH   = 0xE5,    // Web Search
-	KEYCODE_WEBFAVORITES= 0xE6,    // Web Favorites
-	KEYCODE_WEBREFRESH  = 0xE7,    // Web Refresh
-	KEYCODE_WEBSTOP     = 0xE8,    // Web Stop
-	KEYCODE_WEBFORWARD  = 0xE9,    // Web Forward
-	KEYCODE_WEBBACK     = 0xEA,    // Web Back
-	KEYCODE_MYCOMPUTER  = 0xEB,    // My Computer
-	KEYCODE_MAIL        = 0xEC,    // Mail
-	KEYCODE_MEDIASELECT = 0xED,    // Media Select
+	KEYCODE_RMENU       = 0xB8,    /* right Alt */
+	KEYCODE_PAUSE       = 0xC5,    /* Pause */
+	KEYCODE_HOME        = 0xC7,    /* Home on arrow keypad */
+	KEYCODE_UP          = 0xC8,    /* UpArrow on arrow keypad */
+	KEYCODE_PGUP        = 0xC9,    /* PgUp on arrow keypad */
+	KEYCODE_LEFT        = 0xCB,    /* LeftArrow on arrow keypad */
+	KEYCODE_RIGHT       = 0xCD,    /* RightArrow on arrow keypad */
+	KEYCODE_END         = 0xCF,    /* End on arrow keypad */
+	KEYCODE_DOWN        = 0xD0,    /* DownArrow on arrow keypad */
+	KEYCODE_PGDOWN      = 0xD1,    /* PgDn on arrow keypad */
+	KEYCODE_INSERT      = 0xD2,    /* Insert on arrow keypad */
+	KEYCODE_DELETE      = 0xD3,    /* Delete on arrow keypad */
+	KEYCODE_LWIN        = 0xDB,    /* Left Windows key */
+	KEYCODE_RWIN        = 0xDC,    /* Right Windows key */
+	KEYCODE_APPS        = 0xDD,    /* AppMenu key */
+	KEYCODE_POWER       = 0xDE,    /* System Power */
+	KEYCODE_SLEEP       = 0xDF,    /* System Sleep */
+	KEYCODE_WAKE        = 0xE3,    /* System Wake */
+	KEYCODE_WEBSEARCH   = 0xE5,    /* Web Search */
+	KEYCODE_WEBFAVORITES= 0xE6,    /* Web Favorites */
+	KEYCODE_WEBREFRESH  = 0xE7,    /* Web Refresh */
+	KEYCODE_WEBSTOP     = 0xE8,    /* Web Stop */
+	KEYCODE_WEBFORWARD  = 0xE9,    /* Web Forward */
+	KEYCODE_WEBBACK     = 0xEA,    /* Web Back */
+	KEYCODE_MYCOMPUTER  = 0xEB,    /* My Computer */
+	KEYCODE_MAIL        = 0xEC,    /* Mail */
+	KEYCODE_MEDIASELECT = 0xED,    /* Media Select */
 	
-	KEYCODE_MAX         = 0xEE     // for iteration only, not a real key code
+	KEYCODE_MAX         = 0xEE     /* for iteration only, not a real key code */
 };
+typedef enum KeyCode KeyCode;
 
 /*-------------------------------------------------------------------------*/
 
-//! Enum of bit position of modifier
+/**
+ *  Enum of bit position of modifier
+ */
 enum KeyModifier
 {
 	KEYMOD_SHIFT = 0x0000001 ,
@@ -209,12 +216,16 @@ enum KeyModifier
 	
 	KEYMOD_NONE  = 0x0000000
 };
+typedef enum KeyModifier KeyModifier;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+/*-------------------------------------------------------------------------*/
 
 CString GUCEF_INPUT_EXPORT_CPP KeyModifierToString( const KeyModifier keyModifier );
 
@@ -230,14 +241,19 @@ CString GUCEF_INPUT_EXPORT_CPP KeyCodeToString( const KeyCode keyCode );
 
 KeyCode GUCEF_INPUT_EXPORT_CPP StringToKeyCode( const CString& keyCodeStr );
 
+/*-------------------------------------------------------------------------*/
+#endif /* __cplusplus ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
 }; /* namespace INPUT */
 }; /* namespace GUCEF */
+#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------*/
           

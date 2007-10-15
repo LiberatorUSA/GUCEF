@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef CIINPUTDRIVER_H
-#define CIINPUTDRIVER_H
+#ifndef GUCEF_INPUT_CINPUTDRIVER_H
+#define GUCEF_INPUT_CINPUTDRIVER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -35,6 +35,11 @@
 #include "CInputContext.h"
 #define CINPUTCONTEXT_H
 #endif /* CINPUTCONTEXT_H ? */
+
+#ifndef GUCEF_INPUT_KEYBOARD_H
+#include "gucefINPUT_keyboard.h"
+#define GUCEF_INPUT_KEYBOARD_H
+#endif /* GUCEF_INPUT_KEYBOARD_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,47 +65,83 @@ namespace INPUT {
 //-------------------------------------------------------------------------*/
 
 class CInputContext;
+class CInputController;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_INPUT_EXPORT_CPP CIInputDriver
+class GUCEF_INPUT_EXPORT_CPP CInputDriver
 {
-        public:
-        
-        virtual const CORE::TVersion* GetVersion( void ) = 0;
+    public:
+    
+    CInputDriver( void );
 
-        virtual void GetMousePos( CInputContext* context ,
-                                  UInt32* xpos           ,
-                                  UInt32* ypos           ) = 0;
-        
-        virtual const UInt8* GetKeyboardKeyStates( CInputContext* context ) = 0;
-        
-        virtual bool GetMouseButtonPressedState( CInputContext* context   ,
-                                                 const UInt32 buttonindex ) = 0;
-        
-        virtual bool GetKeyboardKeyPressedState( CInputContext* context ,
-                                                 const UInt32 keyindex  ) = 0;
-        
-        virtual bool GetDeviceBooleanState( CInputContext* context  ,
-                                            const UInt32 deviceid   ,
-                                            const UInt32 stateindex ) = 0;  
-        
-        virtual bool GetDeviceVariableState( CInputContext* context  ,
-                                             const UInt32 deviceid   ,
-                                             const UInt32 stateindex ,
-                                             Float32& varstate       ) = 0;
-        
-        protected:
-        friend class CInputController;
-        
-        virtual bool OnUpdate( const UInt64 tickcount               ,
-                               const Float64 updateDeltaInMilliSecs ,
-                               CInputContext* context               ) = 0;        
-        
-        virtual CInputContext* CreateContext( const CORE::CValueList& params ,
-                                              CIInputHandler* handler = NULL ) = 0;
-        
-        virtual void DeleteContext( CInputContext* context ) = 0;                                      
+    virtual ~CInputDriver();        
+    
+    virtual const CORE::TVersion* GetVersion( void ) = 0;
+
+    virtual void GetMousePos( CInputContext* context ,
+                              UInt32* xpos           ,
+                              UInt32* ypos           ) = 0;
+    
+    virtual const UInt8* GetKeyboardKeyStates( CInputContext* context ) = 0;
+    
+    virtual bool GetMouseButtonPressedState( CInputContext* context   ,
+                                             const UInt32 buttonindex ) = 0;
+    
+    virtual bool GetKeyboardKeyPressedState( CInputContext* context ,
+                                             const UInt32 keyindex  ) = 0;
+    
+    virtual bool GetDeviceBooleanState( CInputContext* context  ,
+                                        const UInt32 deviceid   ,
+                                        const UInt32 stateindex ) = 0;  
+    
+    virtual bool GetDeviceVariableState( CInputContext* context  ,
+                                         const UInt32 deviceid   ,
+                                         const UInt32 stateindex ,
+                                         Float32& varstate       ) = 0;
+
+    /**
+     *  Attempts to convert the given KeyCode into a unicode 
+     *  compatible value.
+     *
+     *  @param keyCode the keyCode to translate into unicode
+     *  @param keyModifiers placeholder for the key modifier flags
+     *  @param unicode the output variable for the unicode translation
+     *  @return whether the KeyCode could be converted 
+     */
+    virtual bool GetUnicodeForKeyCode( const KeyCode keyCode     ,
+                                       const UInt32 keyModifiers ,
+                                       UInt32& unicode           ) const;
+    
+    protected:
+    friend class CInputController;
+    
+    virtual bool OnUpdate( const UInt64 tickcount               ,
+                           const Float64 updateDeltaInMilliSecs ,
+                           CInputContext* context               ) = 0;        
+    
+    virtual CInputContext* CreateContext( const CORE::CValueList& params ) = 0;
+    
+    virtual void DeleteContext( CInputContext* context ) = 0;
+
+    protected:
+    
+    void InjectMouseButtonChange( const UInt32 deviceIndex ,
+                                  const UInt32 buttonIndex ,
+                                  const bool buttonPressed );
+
+    void InjectMouseMove( const UInt32 deviceIndex ,
+                          const Int32 xPos         ,
+                          const Int32 yPos         ,
+                          const Int32 xDelta       ,
+                          const Int32 yDelta       );
+
+    void InjectKeyboardKeyChange( const KeyCode keyCode ,
+                                  const bool keyPressed );
+                          
+    private:
+    
+    CInputController* m_controller;                              
 };
 
 /*-------------------------------------------------------------------------//
@@ -114,7 +155,7 @@ class GUCEF_INPUT_EXPORT_CPP CIInputDriver
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CIINPUTDRIVER_H ? */
+#endif /* GUCEF_INPUT_CINPUTDRIVER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -122,6 +163,8 @@ class GUCEF_INPUT_EXPORT_CPP CIInputDriver
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 15-10-2007 :
+        - Reworked class into a base class that interfaces with the controller
 - 13-09-2005 :
         - Initial implementation
 

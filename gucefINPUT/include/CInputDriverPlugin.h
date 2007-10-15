@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef CINPUTDRIVERPLUGIN_H
-#define CINPUTDRIVERPLUGIN_H
+#ifndef GUCEF_INPUT_CINPUTDRIVERPLUGIN_H
+#define GUCEF_INPUT_CINPUTDRIVERPLUGIN_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef CIINPUTDRIVER_H
-#include "CIInputDriver.h"         /* base class fo input driver implementations */
-#define CIINPUTDRIVER_H
-#endif /* CIINPUTDRIVER_H ? */
+#ifndef GUCEF_INPUT_CINPUTDRIVER_H
+#include "gucefINPUT_CInputDriver.h"
+#define GUCEF_INPUT_CINPUTDRIVER_H
+#endif /* GUCEF_INPUT_CINPUTDRIVER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,9 +48,9 @@ namespace INPUT {
 
 /**
  *      Class that connects the input driver interface to a plugin mechanism so
- *      that plugins can be used as an input driver.
+ *      that C-style plugins can be used as an input driver.
  */
-class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CIInputDriver
+class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CInputDriver
 {
         public:
         
@@ -92,8 +92,7 @@ class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CIInputDriver
                                const Float64 updateDeltaInMilliSecs ,
                                CInputContext* context               );
 
-        virtual CInputContext* CreateContext( const CORE::CValueList& params ,
-                                              CIInputHandler* handler = NULL );
+        virtual CInputContext* CreateContext( const CORE::CValueList& params );
         
         virtual void DeleteContext( CInputContext* context );
 
@@ -101,6 +100,51 @@ class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CIInputDriver
         
         static char*** CreateArgMatrix( const CORE::CValueList& params );
         static void DestroyArgMatrix( char*** argmatrix );
+
+        static void GUCEF_PLUGIN_CALLSPEC_PREFIX
+        OnMouseButtonDown( void* userData           , 
+                           const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+        static void GUCEF_PLUGIN_CALLSPEC_PREFIX
+        OnMouseButtonUp( void* userData           , 
+                         const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+        static void GUCEF_PLUGIN_CALLSPEC_PREFIX
+        OnMouseMove( void* userData     , 
+                     const Int32 xPos   ,
+                     const Int32 yPos   ,
+                     const Int32 xDelta ,
+                     const Int32 yDelta ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+        static void GUCEF_PLUGIN_CALLSPEC_PREFIX
+        OnMouseVarChanged( void* userData         , 
+                           const UInt32 varIndex  ,
+                           const Int32 value      ,
+                           const Int32 valueDelta ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+        static void GUCEF_PLUGIN_CALLSPEC_PREFIX
+        OnKeyboardKeyDown( void* userData        , 
+                           const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+        static void GUCEF_PLUGIN_CALLSPEC_PREFIX
+        OnKeyboardKeyUp( void* userData        , 
+                         const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+        static void GUCEF_PLUGIN_CALLSPEC_PREFIX
+        OnDeviceBooleanOff( void* userData          , 
+                            const UInt32 deviceid   , 
+                            const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+        static void GUCEF_PLUGIN_CALLSPEC_PREFIX
+        OnDeviceBooleanOn( void* userData          , 
+                           const UInt32 deviceid   , 
+                           const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+        static void GUCEF_PLUGIN_CALLSPEC_PREFIX
+        OnDeviceVarChanged( void* userData          , 
+                            const UInt32 deviceid   , 
+                            const UInt32 stateindex , 
+                            const Float32 value     ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
         
         CInputDriverPlugin( const CInputDriverPlugin& src );            /**< dummy, do not use */ 
         CInputDriverPlugin& operator=( const CInputDriverPlugin& src ); /**< dummy, do not use */ 
@@ -123,7 +167,7 @@ class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CIInputDriver
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CINPUTDRIVERPLUGIN_H ? */
+#endif /* GUCEF_INPUT_CINPUTDRIVERPLUGIN_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

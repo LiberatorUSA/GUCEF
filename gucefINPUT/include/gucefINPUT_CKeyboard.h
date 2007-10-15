@@ -58,6 +58,10 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CInputController;
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  In-software representation of a keyboard hardware input device
  */
@@ -82,12 +86,25 @@ class GUCEF_INPUT_EXPORT_CPP CKeyboard : public CORE::CNotifier
     
     UInt32 GetKeyModStates( void ) const;
     
+    /**
+     *  Attempts to convert the given KeyCode into a unicode 
+     *  compatible value.
+     *
+     *  @param keyCode the keyCode to translate into unicode
+     *  @param keyModifiers placeholder for the key modifier flags
+     *  @param unicode the output variable for the unicode translation
+     *  @return whether the KeyCode could be converted 
+     */
+    virtual bool GetUnicodeForKeyCode( const KeyCode keyCode     ,
+                                       const UInt32 keyModifiers ,
+                                       UInt32& unicode           ) const;
+
     virtual const CString& GetType( void ) const;
     
     private:
     friend class CInputController;
     
-    CKeyboard( void );
+    CKeyboard( CInputController* controller );
     
     virtual ~CKeyboard();
     
@@ -108,6 +125,7 @@ class GUCEF_INPUT_EXPORT_CPP CKeyboard : public CORE::CNotifier
     
     TKeyStates m_keyState;
     UInt32 m_keyModStates;
+    CInputController* m_controller;
 };
 
 /*-------------------------------------------------------------------------//

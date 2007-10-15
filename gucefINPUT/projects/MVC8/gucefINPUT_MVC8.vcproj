@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefCORE\include;..\..\..\gucefMT\include;..\..\..\common\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GUCEFINPUT_EXPORTS;BUILD_GUCEFINPUT_DLL"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GUCEFINPUT_EXPORTS;BUILD_GUCEF_INPUT_DLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -199,10 +199,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CIInputDriver.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\CInputActionMap.cpp"
 				>
 			</File>
@@ -220,6 +216,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\gucefINPUT_CActionEventData.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefINPUT_CInputDriver.cpp"
 				>
 			</File>
 			<File
@@ -261,10 +261,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CIInputDriver.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\CInputActionMap.h"
 				>
 			</File>
@@ -290,6 +286,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefINPUT_CActionEventData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefINPUT_CInputDriver.h"
 				>
 			</File>
 			<File

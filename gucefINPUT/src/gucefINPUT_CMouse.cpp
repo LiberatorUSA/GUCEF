@@ -109,7 +109,7 @@ CMouse::GetButtonStates( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CMouse::CMouse( CORE::T16BitNumericID& deviceID )
+CMouse::CMouse( const UInt32 deviceID )
     : CORE::CNotifier()      ,
       m_xPos( 0 )            ,
       m_yPos( 0 )            ,

@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef INPUTDRIVERPLUGINSTRUCTS_H
-#define INPUTDRIVERPLUGINSTRUCTS_H
+#ifndef GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H
+#define GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -30,6 +30,11 @@
 #include "gucefINPUT_macros.h"
 #define GUCEF_INPUT_MACROS_H
 #endif /* GUCEF_INPUT_MACROS_H ? */
+
+#ifndef GUCEF_INPUT_KEYBOARD_H
+#include "gucefINPUT_keyboard.h"
+#define GUCEF_INPUT_KEYBOARD_H
+#endif /* GUCEF_INPUT_KEYBOARD_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,8 +57,8 @@ typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnMouseButtonDown ) 
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnMouseButtonUp )    ( void* userData, const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnMouseMove )        ( void* userData, const Int32 xPos, const Int32 yPos, const Int32 xDelta, const Int32 yDelta ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnMouseVarChanged )  ( void* userData, const UInt32 varIndex, const Int32 value, const Int32 valueDelta ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnKeyboardKeyDown )  ( void* userData, const UInt32 keyindex, const UInt32 keyModState ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnKeyboardKeyUp )    ( void* userData, const UInt32 keyindex, const UInt32 keyModState ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnKeyboardKeyDown )  ( void* userData, const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnKeyboardKeyUp )    ( void* userData, const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnDeviceBooleanOn )  ( void* userData, const UInt32 deviceid, const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnDeviceBooleanOff ) ( void* userData, const UInt32 deviceid, const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnDeviceVarChanged ) ( void* userData, const UInt32 deviceid, const UInt32 stateindex, const Float32 value ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
@@ -88,7 +93,7 @@ typedef struct SInputCallbacks TInputCallbacks;
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* INPUTDRIVERPLUGINSTRUCTS_H ? */
+#endif /* GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

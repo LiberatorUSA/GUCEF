@@ -54,8 +54,7 @@
  */
 #undef GUCEF_INPUT_BUILD_DLL      /* do not change this line */  
 #undef GUCEF_INPUT_USE_DLL        /* do not change this line */   
-#define GUCEF_INPUT_BUILD_DLL                 
-/*#define GUCEF_INPUT_USE_DLL */
+/* #define GUCEF_INPUT_BUILD_DLL */
 
 /*-------------------------------------------------------------------------*/
 
@@ -68,16 +67,6 @@
 #undef GUCEF_INPUT_EXPORT_C_CODE          /* do not change this line */  
 #define GUCEF_INPUT_EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
 #define GUCEF_INPUT_EXPORT_C_CODE   /* do you want to enable the C exports ? */
-
-/*-------------------------------------------------------------------------*/
-
-/*
- *      Wheter or not to determine if we are building in debug mode automaticly.
- *      If you enable this manual setting of debug mode then the next setting
- *      is the one that determines wheter we are in debug mode or not.
- */
-#undef GUCEF_INPUT_MANUAL_DEBUG_MODE_DEFINE      /* do not change this line */  
-/* #define GUCEF_INPUT_MANUAL_DEBUG_MODE_DEFINE */
 
 /*-------------------------------------------------------------------------*/
 

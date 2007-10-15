@@ -28,11 +28,6 @@
 
 #include <map>
 
-#ifndef GUCEF_CORE_NUMERICIDS_H
-#include "NumericIDs.h"
-#define GUCEF_CORE_NUMERICIDS_H
-#endif /* GUCEF_CORE_NUMERICIDS_H ? */
-
 #ifndef GUCEF_CORE_CNOTIFIER_H
 #include "CNotifier.h"
 #define GUCEF_CORE_CNOTIFIER_H
@@ -97,7 +92,7 @@ class GUCEF_INPUT_EXPORT_CPP CMouse : public CORE::CNotifier
     private:
     friend class CInputController;
     
-    CMouse( CORE::T16BitNumericID& deviceID );
+    CMouse( const UInt32 deviceID );
     
     virtual ~CMouse();
     
@@ -121,7 +116,7 @@ class GUCEF_INPUT_EXPORT_CPP CMouse : public CORE::CNotifier
     UInt32 m_prevXPos;
     UInt32 m_prevYPos;    
     TButtonStates m_buttonStates;
-    CORE::T16BitNumericID m_deviceID;
+    UInt32 m_deviceID;
 };
 
 /*-------------------------------------------------------------------------//

@@ -23,8 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <assert.h>
-
 #include "CInputContext.h"
 
 /*-------------------------------------------------------------------------//
@@ -42,95 +40,45 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CInputContext::CInputContext( void )
-        : m_id( 0UL )       ,
-          m_handler( NULL )
-{
-        assert( 0 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CInputContext::CInputContext( const CORE::CValueList& params       ,
-                              CIInputHandler* handler /* = NULL */ )
+CInputContext::CInputContext( const CORE::CValueList& params )
         : m_valuelist( params ) ,
-          m_id( 0UL )           ,
-          m_handler( handler ) 
-{
+          m_id( 0UL )          
+{GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-CInputContext::CInputContext( const CInputContext& src )
-        : m_valuelist( src.m_valuelist ) ,
-          m_id( 0UL )                    ,
-          m_handler( src.m_handler )
-{
-        assert( 0 ); 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CInputContext::~CInputContext()
-{
-}
+{GUCEF_TRACE;
 
-/*-------------------------------------------------------------------------*/
-
-CInputContext&
-CInputContext::operator=( const CInputContext& src )
-{
-        assert( 0 );
-        return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
 const CORE::CValueList&
 CInputContext::GetContextParams( void ) const
-{
-        return m_valuelist;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-void 
-CInputContext::SetInputHandler( CIInputHandler* handler )
-{
-        m_handler = handler;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-const CIInputHandler* 
-CInputContext::GetInputHandler( void ) const
-{
-        return m_handler;
+{GUCEF_TRACE;
+    
+    return m_valuelist;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void 
 CInputContext::SetID( const UInt32 id )
-{
-        m_id = id;
+{GUCEF_TRACE;
+    
+    m_id = id;
 }
 
 /*-------------------------------------------------------------------------*/
 
 UInt32 
 CInputContext::GetID( void ) const
-{
-        return m_id;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CIInputHandler*
-CInputContext::GetMutableHandler( void )
-{
-        return m_handler;
+{GUCEF_TRACE;
+    
+    return m_id;
 }
        
 /*-------------------------------------------------------------------------//
