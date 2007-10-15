@@ -153,6 +153,25 @@ myWriteProc( void *buffer     ,
 
 /*---------------------------------------------------------------------------*/
 
+FREE_IMAGE_FORMAT
+GetFileTypeFromExt( const char* ext )
+{
+    if ( ext != NULL )
+    {
+        if ( strcmp( "tga", ext ) == 0 )
+        {
+            return FIF_TARGA;
+        }
+        if ( strcmp( "ppm", ext ) == 0 )
+        {
+            return FIF_PPM;
+        }
+    }
+    return FIF_UNKNOWN;
+}
+
+/*---------------------------------------------------------------------------*/
+
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 CODECPLUGIN_Init( void** plugdata    , 
                   const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
@@ -259,6 +278,11 @@ CODECPLUGIN_Decode( void* plugdata         ,
     if ( ( NULL == familyType ) || ( NULL == codecType ) || ( NULL == input ) || ( NULL == output ) ) return 0;
 
     fif = FreeImage_GetFileTypeFromHandle( &io, (fi_handle) input, 0 );
+    if ( fif == FIF_UNKNOWN )
+    {
+        fif = GetFileTypeFromExt( codecType );
+    }
+    
     if( fif != FIF_UNKNOWN )
     {      
         dib = FreeImage_LoadFromHandle( fif, &io, (fi_handle) input, 0 );
