@@ -165,7 +165,7 @@ CODECPLUGIN_Init( void** plugdata    ,
     #endif /* FREEIMAGE_LIB ? */
 
     /* make sure that the linked back-end library is the same as the one we compiled against */
-    sscanf( FreeImage_GetVersion(), "%d %*s %d %*s %d", &fiMayorVersion, &fiMinorVersion, &fiReleaseVersion ); 
+    sscanf( FreeImage_GetVersion(), "%d %*c %d %*c %d", &fiMayorVersion, &fiMinorVersion, &fiReleaseVersion ); 
     if ( fiMayorVersion != FREEIMAGE_MAJOR_VERSION   ||
          fiMinorVersion != FREEIMAGE_MINOR_VERSION   ||
          fiReleaseVersion != FREEIMAGE_RELEASE_SERIAL ) return 0;    
