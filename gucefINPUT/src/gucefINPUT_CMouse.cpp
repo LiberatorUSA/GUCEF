@@ -166,7 +166,7 @@ CMouse::ResetMouseStates( void )
 {GUCEF_TRACE;
 
     UInt32 buttonCount = m_buttonStates.size() > 8 ? (UInt32) m_buttonStates.size() : 8;
-    m_buttonStates.reserve( 8 );
+    m_buttonStates.resize( 8 );
     for ( UInt32 i=0; i<buttonCount; ++i )
     {
         m_buttonStates[ i ] = false;

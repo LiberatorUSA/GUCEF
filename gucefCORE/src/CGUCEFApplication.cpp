@@ -168,7 +168,8 @@ CGUCEFApplication::CGUCEFApplication( void )
           m_inNeedOfAnUpdate( false )                            ,
           m_appTickCount( MT::PrecisionTickCount() )             ,
           m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 ) ,
-          m_appDriver( NULL )
+          m_appDriver( NULL )                                    ,
+          m_shutdownRequested( false )
 {GUCEF_TRACE;
                                            
         /*
@@ -459,7 +460,7 @@ CGUCEFApplication::Run( void )
     // Cache the precision timer resolution in time slices per millisecond
     m_timerFreq = ( MT::PrecisionTimerResolution() / 1000.0 ); 
         
-    while ( _active )
+    while ( !m_shutdownRequested )
     {
         newTickCount = MT::PrecisionTickCount();
         deltaMilliSecs = ( ( m_appTickCount - newTickCount ) / m_timerFreq );
@@ -477,10 +478,10 @@ CGUCEFApplication::Stop( void )
 {GUCEF_TRACE;
     
     LockData();
-    
-    if ( _active )
+
+    if ( !m_shutdownRequested )
     {
-        _active = false;
+        m_shutdownRequested = true;
         if ( !NotifyObservers( AppShutdownEvent ) ) return;
     }
     

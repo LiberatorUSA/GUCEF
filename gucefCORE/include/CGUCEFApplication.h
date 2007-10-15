@@ -271,6 +271,7 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          ,
         
         bool _initialized;
         bool _active;
+        bool m_shutdownRequested;
         CString _appdir;
         Float64 m_minimalCycleDeltaInMilliSecs;
         UInt32 m_cycleDelayInMilliSecs;
