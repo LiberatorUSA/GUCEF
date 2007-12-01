@@ -64,27 +64,6 @@ class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CInputDriver
         void UnloadModule( void );
                 
         virtual const CORE::TVersion* GetVersion( void );
-        
-        virtual void GetMousePos( CInputContext* context ,
-                                  UInt32* xpos           ,
-                                  UInt32* ypos           );
-        
-        virtual const UInt8* GetKeyboardKeyStates( CInputContext* context );
-        
-        virtual bool GetMouseButtonPressedState( CInputContext* context   ,
-                                                 const UInt32 buttonindex );
-        
-        virtual bool GetKeyboardKeyPressedState( CInputContext* context ,
-                                                 const UInt32 keyindex  );
-        
-        virtual bool GetDeviceBooleanState( CInputContext* context  ,
-                                            const UInt32 deviceid   ,
-                                            const UInt32 stateindex );  
-        
-        virtual bool GetDeviceVariableState( CInputContext* context  ,
-                                             const UInt32 deviceid   ,
-                                             const UInt32 stateindex ,
-                                             Float32& varstate       );
                                                 
         protected:
         
@@ -153,7 +132,7 @@ class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CInputDriver
         
         void* m_sohandle;
         void* m_plugdata;
-        void* m_fptable[ 14 ];
+        void* m_fptable[ 8 ];
 };
 
 /*-------------------------------------------------------------------------//

@@ -79,27 +79,6 @@ class GUCEF_INPUT_EXPORT_CPP CInputDriver
     
     virtual const CORE::TVersion* GetVersion( void ) = 0;
 
-    virtual void GetMousePos( CInputContext* context ,
-                              UInt32* xpos           ,
-                              UInt32* ypos           ) = 0;
-    
-    virtual const UInt8* GetKeyboardKeyStates( CInputContext* context ) = 0;
-    
-    virtual bool GetMouseButtonPressedState( CInputContext* context   ,
-                                             const UInt32 buttonindex ) = 0;
-    
-    virtual bool GetKeyboardKeyPressedState( CInputContext* context ,
-                                             const UInt32 keyindex  ) = 0;
-    
-    virtual bool GetDeviceBooleanState( CInputContext* context  ,
-                                        const UInt32 deviceid   ,
-                                        const UInt32 stateindex ) = 0;  
-    
-    virtual bool GetDeviceVariableState( CInputContext* context  ,
-                                         const UInt32 deviceid   ,
-                                         const UInt32 stateindex ,
-                                         Float32& varstate       ) = 0;
-
     /**
      *  Attempts to convert the given KeyCode into a unicode 
      *  compatible value.

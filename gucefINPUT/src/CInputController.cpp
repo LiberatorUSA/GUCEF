@@ -30,15 +30,20 @@
 #define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
 #endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
 
-#ifndef DVCPPSTRINGUTILS_H
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"           /* C++ string utils */ 
-#define DVCPPSTRINGUTILS_H
-#endif /* DVCPPSTRINGUTILS_H ? */
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
-#ifndef CGUCEFAPPLICATION_H
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
-#define CGUCEFAPPLICATION_H
-#endif /* CGUCEFAPPLICATION_H ? */
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
 #ifndef GUCEF_INPUT_CINPUTDRIVER_H
 #include "gucefINPUT_CInputDriver.h"
@@ -158,10 +163,15 @@ CInputController::CreateContext( const CORE::CValueList& params )
         
         if ( context )
         {
+            GUCEF_SYSTEM_LOG( 0, "Created input context" );
+            
             context->SetID( m_contextlist.AddEntry( context ) );
             return context;
         }
     }
+    
+    GUCEF_ERROR_LOG( 0, "Failed to created input context" );
+    
     return NULL;
 }
 
@@ -173,9 +183,12 @@ CInputController::DestroyContext( CInputContext* context )
         if ( m_driver )
         {
                 m_contextlist.RemoveEntry( context->GetID() );
-                
                 m_driver->DeleteContext( context );
+                
+                GUCEF_SYSTEM_LOG( 0, "Destroyed input context" );
         }
+        
+        GUCEF_ERROR_LOG( 0, "Attempting to destroy an input context without an input driver" );
         assert( 0 );
 }
 
@@ -198,9 +211,14 @@ CInputController::SetDriver( CInputDriver* driver )
                 
                 m_driver = driver;
                 m_driverisplugin = false;
+                
+                GUCEF_SYSTEM_LOG( 0, "Input driver has been set" );
+                
                 NotifyObservers( InputDriverLoadedEvent );
                 return true;
         }
+        
+        GUCEF_ERROR_LOG( 0, "Failed to set input driver because there are input context objects remaining" );
         return false;
 }
         
@@ -220,9 +238,13 @@ CInputController::LoadDriverModule( const CORE::CString& filename  ,
 {GUCEF_TRACE;
         CORE::CString path = CORE::RelativePath( filename );
         
+        GUCEF_SYSTEM_LOG( 0, "Attempting to load an input driver from module: \"" + filename + "\"" );
+        
         CInputDriverPlugin* plugin = new CInputDriverPlugin();
         if ( plugin->LoadModule( path, params ) )
         {
+                GUCEF_SYSTEM_LOG( 0, "Successfully loaded an input driver from module: \"" + filename + "\"" );
+                
                 if ( SetDriver( plugin ) )
                 {
                         m_driverisplugin = true;
@@ -247,6 +269,8 @@ CInputController::UnloadDriverModule( void )
                 m_driver = NULL;
                 delete plugin;
                 
+                GUCEF_SYSTEM_LOG( 0, "Input driver has unloaded" );
+                
                 NotifyObservers( InputDriverUnloadedEvent );
         }
 }
@@ -265,7 +289,7 @@ CInputController::OnUpdate( const UInt64 tickcount               ,
                                           updateDeltaInMilliSecs                            ,
                                           static_cast<CInputContext*>( m_contextlist[ i ] ) ) )
                 {
-                        DEBUGOUTPUTsi( "CInputController::OnUpdate() Failed on context ", i );
+                    GUCEF_ERROR_LOG( 0, "Failed to perform an update cycle on the input driver" );
                 }                                          
                 
                 #else

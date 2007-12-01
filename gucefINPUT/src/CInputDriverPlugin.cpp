@@ -73,13 +73,6 @@ enum
         INPUTDRIVERPLUG_CREATECONTEXT              ,
         INPUTDRIVERPLUG_DESTROYCONTEXT             ,
         
-        INPUTDRIVERPLUG_GETMOUSEPOS                ,
-        INPUTDRIVERPLUG_GETKEYBOARDKEYSTATES       ,
-        INPUTDRIVERPLUG_GETMOUSEBUTTONPRESSEDSTATE ,
-        INPUTDRIVERPLUG_GETKEYBOARDKEYPRESSEDSTATE ,
-        INPUTDRIVERPLUG_GETDEVICEBOOLSTATE         ,
-        INPUTDRIVERPLUG_GETDEVICEVARSTATE          ,
-        
         INPUTDRIVERPLUG_LASTPTR
 };
 
@@ -95,13 +88,6 @@ typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Update )    
 
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_CreateContext )  ( void* plugdata, void** contextdata, const char*** args, const TInputCallbacks* callbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_DestroyContext ) ( void* plugdata, void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetMousePos ) ( void* plugdata, void* contextdata, UInt32* xpos, UInt32* ypos ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt8* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetKeyBoardKeyStates ) ( void* plugdata, void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetMouseButtonPressedState ) ( void* plugdata, void* contextdata, const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetKeyboardKeyPressedState ) ( void* plugdata, void* contextdata, const UInt32 keyindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetDeviceBoolState ) ( void* plugdata, void* contextdata, const UInt32 deviceid, const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_GetDeviceVarState ) ( void* plugdata, void* contextdata, const UInt32 deviceid, const UInt32 stateindex, Float32* varstate ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -349,26 +335,6 @@ CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
         m_fptable[ INPUTDRIVERPLUG_DESTROYCONTEXT ] = CORE::GetFunctionAddress( m_sohandle                       ,
                                                                                 "INPUTDRIVERPLUG_DestroyContext" ,
                                                                                 2*sizeof(void*)                  );
-
-
-        m_fptable[ INPUTDRIVERPLUG_GETMOUSEPOS ] = CORE::GetFunctionAddress( m_sohandle                    ,
-                                                                             "INPUTDRIVERPLUG_GetMousePos" ,
-                                                                             4*sizeof(void*)               );
-        m_fptable[ INPUTDRIVERPLUG_GETKEYBOARDKEYSTATES ] = CORE::GetFunctionAddress( m_sohandle                             ,
-                                                                                      "INPUTDRIVERPLUG_GetKeyBoardKeyStates" ,
-                                                                                      2*sizeof(void*)                        );
-        m_fptable[ INPUTDRIVERPLUG_GETMOUSEBUTTONPRESSEDSTATE ] = CORE::GetFunctionAddress( m_sohandle                                   ,
-                                                                                            "INPUTDRIVERPLUG_GetMouseButtonPressedState" ,
-                                                                                            2*sizeof(void*) + 4                          );
-        m_fptable[ INPUTDRIVERPLUG_GETKEYBOARDKEYPRESSEDSTATE ] = CORE::GetFunctionAddress( m_sohandle                                   ,
-                                                                                            "INPUTDRIVERPLUG_GetKeyboardKeyPressedState" ,
-                                                                                            2*sizeof(void*) + 4                          );
-        m_fptable[ INPUTDRIVERPLUG_GETDEVICEBOOLSTATE ] = CORE::GetFunctionAddress( m_sohandle                           ,
-                                                                                    "INPUTDRIVERPLUG_GetDeviceBoolState" ,
-                                                                                    2*sizeof(void*) + 8                  );
-        m_fptable[ INPUTDRIVERPLUG_GETDEVICEVARSTATE ] = CORE::GetFunctionAddress( m_sohandle                          ,
-                                                                                   "INPUTDRIVERPLUG_GetDeviceVarState" ,
-                                                                                   2*sizeof(void*) + 8                 );
                                                                                                                        
         
         if ( ( !m_fptable[ INPUTDRIVERPLUG_INIT ] ) ||
@@ -378,13 +344,7 @@ CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
              ( !m_fptable[ INPUTDRIVERPLUG_VERSION ] ) ||
              ( !m_fptable[ INPUTDRIVERPLUG_UPDATE ] ) ||
              ( !m_fptable[ INPUTDRIVERPLUG_CREATECONTEXT ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_DESTROYCONTEXT ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_GETMOUSEPOS ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_GETKEYBOARDKEYSTATES ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_GETMOUSEBUTTONPRESSEDSTATE ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_GETKEYBOARDKEYPRESSEDSTATE ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_GETDEVICEBOOLSTATE ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_GETDEVICEVARSTATE ] ) )
+             ( !m_fptable[ INPUTDRIVERPLUG_DESTROYCONTEXT ] ) )
         {
                 CORE::UnloadModuleDynamicly( m_sohandle );
                 memset( m_fptable, NULL, sizeof(void*) * INPUTDRIVERPLUG_LASTPTR );
@@ -414,78 +374,6 @@ CInputDriverPlugin::UnloadModule( void )
         memset( m_fptable, NULL, sizeof(void*) * INPUTDRIVERPLUG_LASTPTR );
         m_sohandle = NULL;
 }
-
-/*-------------------------------------------------------------------------*/
-
-void
-CInputDriverPlugin::GetMousePos( CInputContext* context ,
-                                 UInt32* xpos           ,
-                                 UInt32* ypos           )
-{GUCEF_TRACE;
-        ( (TINPUTDRIVERPLUGFPTR_GetMousePos) m_fptable[ INPUTDRIVERPLUG_GETMOUSEPOS ] )( m_plugdata                                                  , 
-                                                                                         static_cast<CPluginInputContext*>( context )->m_contextdata ,
-                                                                                         xpos                                                        ,
-                                                                                         ypos                                                        );
-}
-
-/*-------------------------------------------------------------------------*/
-        
-const UInt8* 
-CInputDriverPlugin::GetKeyboardKeyStates( CInputContext* context )
-{GUCEF_TRACE;
-        return ( (TINPUTDRIVERPLUGFPTR_GetKeyBoardKeyStates) m_fptable[ INPUTDRIVERPLUG_GETKEYBOARDKEYSTATES ] )( &m_plugdata                                                 , 
-                                                                                                                  static_cast<CPluginInputContext*>( context )->m_contextdata );
-}
-
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CInputDriverPlugin::GetMouseButtonPressedState( CInputContext* context   ,
-                                                const UInt32 buttonindex )
-{GUCEF_TRACE;
-        return ( (TINPUTDRIVERPLUGFPTR_GetMouseButtonPressedState) m_fptable[ INPUTDRIVERPLUG_GETMOUSEBUTTONPRESSEDSTATE ] )( m_plugdata                                                  ,
-                                                                                                                              static_cast<CPluginInputContext*>( context )->m_contextdata ,
-                                                                                                                              buttonindex                                                 ) > 0;
-}        
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CInputDriverPlugin::GetKeyboardKeyPressedState( CInputContext* context ,
-                                                const UInt32 keyindex  )
-{GUCEF_TRACE;
-        return ( (TINPUTDRIVERPLUGFPTR_GetKeyboardKeyPressedState) m_fptable[ INPUTDRIVERPLUG_GETKEYBOARDKEYPRESSEDSTATE ] )( m_plugdata                                                  ,
-                                                                                                                              static_cast<CPluginInputContext*>( context )->m_contextdata ,
-                                                                                                                              keyindex                                                    ) > 0;
-}
-
-/*-------------------------------------------------------------------------*/                                                
-        
-bool 
-CInputDriverPlugin::GetDeviceBooleanState( CInputContext* context  ,
-                                           const UInt32 deviceid   ,
-                                           const UInt32 stateindex )
-{GUCEF_TRACE;
-        return ( (TINPUTDRIVERPLUGFPTR_GetDeviceBoolState) m_fptable[ INPUTDRIVERPLUG_GETDEVICEBOOLSTATE ] )( m_plugdata                                                  ,
-                                                                                                              static_cast<CPluginInputContext*>( context )->m_contextdata ,
-                                                                                                              deviceid                                                    ,
-                                                                                                              stateindex                                                  ) > 0;
-}                                           
-        
-/*-------------------------------------------------------------------------*/
-
-bool 
-CInputDriverPlugin::GetDeviceVariableState( CInputContext* context  ,
-                                            const UInt32 deviceid   ,
-                                            const UInt32 stateindex ,
-                                            Float32& varstate       )
-{GUCEF_TRACE;
-        return ( (TINPUTDRIVERPLUGFPTR_GetDeviceVarState) m_fptable[ INPUTDRIVERPLUG_GETDEVICEVARSTATE ] )( m_plugdata                                                  ,
-                                                                                                            static_cast<CPluginInputContext*>( context )->m_contextdata ,
-                                                                                                            deviceid                                                    ,
-                                                                                                            stateindex                                                  ,
-                                                                                                            &varstate                                                   ) > 0;
-}                                            
 
 /*-------------------------------------------------------------------------*/
 
