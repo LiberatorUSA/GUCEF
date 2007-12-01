@@ -30,9 +30,20 @@
 #define OIS_OISALL_H
 #endif /* OIS_OISALL_H ? */
 
+#ifndef GUCEF_INPUT_OISMOUSELISTENER_H
 #include "gucefINPUT_OISMouseListener.h"
+#define GUCEF_INPUT_OISMOUSELISTENER_H
+#endif /* GUCEF_INPUT_OISMOUSELISTENER_H ? */
+
+#ifndef GUCEF_INPUT_OISKEYBOARDLISTENER_H
 #include "gucefINPUT_OISKeyboardListener.h"
+#define GUCEF_INPUT_OISKEYBOARDLISTENER_H
+#endif /* GUCEF_INPUT_OISKEYBOARDLISTENER_H ? */
+
+#ifndef GUCEF_INPUT_OISJOYSTICKLISTENER_H
 #include "gucefINPUT_OISJoystickListener.h"
+#define GUCEF_INPUT_OISJOYSTICKLISTENER_H
+#endif /* GUCEF_INPUT_OISJOYSTICKLISTENER_H ? */
 
 #include "DLLMainInputDriverOIS.h"
 
@@ -168,7 +179,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
 
         try
         {
-            OIS::InputManager* inputManager = OIS::InputManager::createInputSystem( handle );
+            data->inputManager = OIS::InputManager::createInputSystem( handle );
         }            
         catch ( OIS::Exception& )
         {
@@ -176,16 +187,16 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
             return 0;
         }
         
-        data->joystickListener = new CJoyStickListener();
-        data->mouseListener = new CMouseListener();
-        data->keyboardListener = new CKeyboardListener();
+        data->joystickListener = new CJoyStickListener( callbacks );
+        data->mouseListener = new CMouseListener( callbacks );
+        data->keyboardListener = new CKeyboardListener( callbacks );
 
-        UInt32 keyboardCount = (UInt32) inputManager->numKeyBoards();
+        UInt32 keyboardCount = (UInt32) data->inputManager->numKeyBoards();
         for ( UInt32 i=0; i<keyboardCount; ++i )
         {
             try
             {
-                OIS::Keyboard* keyboard = static_cast< OIS::Keyboard* >( inputManager->createInputObject( OIS::OISKeyboard, true ) );
+                OIS::Keyboard* keyboard = static_cast< OIS::Keyboard* >( data->inputManager->createInputObject( OIS::OISKeyboard, true ) );
                 keyboard->setEventCallback( data->keyboardListener );
                 data->keyboards.push_back( keyboard );
             }
@@ -193,12 +204,12 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
             {
             }
         }
-        UInt32 miceCount = (UInt32) inputManager->numMice();
+        UInt32 miceCount = (UInt32) data->inputManager->numMice();
         for ( UInt32 i=0; i<miceCount; ++i )
         {
             try
             {
-                OIS::Mouse* mouse = static_cast< OIS::Mouse* >( inputManager->createInputObject( OIS::OISMouse, true ) );
+                OIS::Mouse* mouse = static_cast< OIS::Mouse* >( data->inputManager->createInputObject( OIS::OISMouse, true ) );
                 mouse->setEventCallback( data->mouseListener );
                 data->mice.push_back( mouse );
             }
@@ -206,12 +217,12 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
             {
             }
         }
-        UInt32 joystickCount = (UInt32) inputManager->numJoysticks();
+        UInt32 joystickCount = (UInt32) data->inputManager->numJoysticks();
         for ( UInt32 i=0; i<joystickCount; ++i )
         {
             try
             {
-                OIS::JoyStick* joystick = static_cast< OIS::JoyStick* >( inputManager->createInputObject( OIS::OISJoyStick, true ) );
+                OIS::JoyStick* joystick = static_cast< OIS::JoyStick* >( data->inputManager->createInputObject( OIS::OISJoyStick, true ) );
                 joystick->setEventCallback( data->joystickListener );
                 data->joysticks.push_back( joystick );
             }
@@ -219,8 +230,6 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
             {
             }
         }
-                    
-        data->inputManager = inputManager;
 
         return 1;
     }

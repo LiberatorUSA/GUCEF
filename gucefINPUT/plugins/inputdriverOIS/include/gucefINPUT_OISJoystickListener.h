@@ -55,8 +55,7 @@ class CJoyStickListener : public OIS::JoyStickListener
 {
     public:
     
-    CJoyStickListener( TInputCallbacks* callbacks ,
-                       void* userData             );
+    CJoyStickListener( const TInputCallbacks* callbacks );
     
     virtual ~CJoyStickListener();
     
@@ -78,8 +77,7 @@ class CJoyStickListener : public OIS::JoyStickListener
 
     private:
     
-    TInputCallbacks* m_callbacks;
-    void* m_userData;
+    const TInputCallbacks* m_callbacks;
 };
 
 /*-------------------------------------------------------------------------//

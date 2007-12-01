@@ -105,6 +105,15 @@
 
 /*-------------------------------------------------------------------------*/
 
+#undef GUCEF_INPUT_PLUGIN_EXPORT
+#ifdef BUILD_GUCEF_INPUT_PLUGIN_DLL
+  #define GUCEF_INPUT_PLUGIN_EXPORT GUCEF_EXPORT
+#else
+  #define GUCEF_INPUT_PLUGIN_EXPORT GUCEF_IMPORT
+#endif
+
+/*-------------------------------------------------------------------------*/
+
 #undef GUCEF_INPUT_EXPORT_CPP
 #ifdef GUCEF_INPUT_EXPORT_CPP_CODE
   #define GUCEF_INPUT_EXPORT_CPP GUCEF_INPUT_EXPORT
@@ -118,6 +127,11 @@
 #else
   #define GUCEF_INPUT_EXPORT_C
 #endif /* GUCEF_INPUT_EXPORT_C_CODE */
+
+/*-------------------------------------------------------------------------*/
+
+#define GUCEF_INPUT_PLUGIN_EXPORT_C GUCEF_INPUT_PLUGIN_EXPORT
+#define GUCEF_INPUT_PLUGIN_EXPORT_CPP GUCEF_INPUT_PLUGIN_EXPORT
 
 /*-------------------------------------------------------------------------*/
 

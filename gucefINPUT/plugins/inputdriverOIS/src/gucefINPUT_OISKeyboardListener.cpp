@@ -40,11 +40,9 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CKeyboardListener::CKeyboardListener( TInputCallbacks* callbacks ,
-                                      void* userData             )
+CKeyboardListener::CKeyboardListener( const TInputCallbacks* callbacks )
     : OIS::KeyListener()       ,
-      m_callbacks( callbacks ) ,
-      m_userData( userData )
+      m_callbacks( callbacks )
 {
 
 }
@@ -61,8 +59,8 @@ CKeyboardListener::~CKeyboardListener()
 bool
 CKeyboardListener::keyPressed( const OIS::KeyEvent &arg )
 {
-    m_callbacks->onKeyboardKeyDown( m_userData        ,
-                                    (KeyCode) arg.key );
+    m_callbacks->onKeyboardKeyDown( m_callbacks->userData ,
+                                    (KeyCode) arg.key     );
     return true;
 }
 
@@ -71,8 +69,8 @@ CKeyboardListener::keyPressed( const OIS::KeyEvent &arg )
 bool
 CKeyboardListener::keyReleased( const OIS::KeyEvent &arg )
 {
-     m_callbacks->onKeyboardKeyUp( m_userData        ,
-                                   (KeyCode) arg.key );
+     m_callbacks->onKeyboardKeyUp( m_callbacks->userData ,
+                                   (KeyCode) arg.key     );
     return true;   
 }
     

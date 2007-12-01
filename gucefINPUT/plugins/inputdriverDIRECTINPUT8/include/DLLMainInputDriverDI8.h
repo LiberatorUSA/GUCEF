@@ -38,10 +38,10 @@
 #define INPUTDRIVERPLUGINSTRUCTS_H
 #endif /* INPUTDRIVERPLUGINSTRUCTS_H ? */
 
-#ifndef GUCEFINPUT_MACROS_H
+#ifndef GUCEF_INPUT_MACROS_H
 #include "gucefINPUT_macros.h"          /* gucefINPUT macros, used here for the export and callspec macros */
-#define GUCEFINPUT_MACROS_H
-#endif /* GUCEFINPUT_MACROS_H ? */ 
+#define GUCEF_INPUT_MACROS_H
+#endif /* GUCEF_INPUT_MACROS_H ? */ 
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,9 +53,7 @@
 namespace GUCEF {
 namespace INPUT {
 
-/*
- *      Temp hack: import structs into namespace
- */
+// import struct into namespace for C API compatibility
 typedef CORE::TVersion TVersion; 
 
 #endif /* __cplusplus */
@@ -75,39 +73,39 @@ extern "C" {
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Init( void** plugdata    , 
                       const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Name( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Update( void* plugdata    , 
                         void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                                void** contextdata               ,
                                const char*** args               ,
@@ -115,13 +113,13 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_DestroyContext( void* plugdata    , 
                                 void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetMousePos( void* plugdata    , 
                              void* contextdata , 
                              UInt32* xpos      , 
@@ -129,27 +127,27 @@ INPUTDRIVERPLUG_GetMousePos( void* plugdata    ,
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt8* GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C UInt8* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetKeyBoardKeyStates( void* plugdata    , 
                                       void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetMouseButtonPressedState( void* plugdata           , 
                                             void* contextdata        , 
                                             const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetKeyboardKeyPressedState( void* plugdata        , 
                                             void* contextdata     , 
                                             const UInt32 keyindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetDeviceBoolState( void* plugdata          , 
                                     void* contextdata       , 
                                     const UInt32 deviceid   , 
@@ -157,7 +155,7 @@ INPUTDRIVERPLUG_GetDeviceBoolState( void* plugdata          ,
 
 /*---------------------------------------------------------------------------*/
 
-EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetDeviceVarState( void* plugdata          , 
                                    void* contextdata       , 
                                    const UInt32 deviceid   , 

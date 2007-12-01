@@ -40,11 +40,9 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CJoyStickListener::CJoyStickListener( TInputCallbacks* callbacks ,
-                                      void* userData             )
+CJoyStickListener::CJoyStickListener( const TInputCallbacks* callbacks )
     : OIS::JoyStickListener()  ,
-      m_callbacks( callbacks ) ,
-      m_userData( userData )
+      m_callbacks( callbacks )
 {
 
 }
@@ -62,9 +60,9 @@ bool
 CJoyStickListener::buttonPressed( const OIS::JoyStickEvent& arg , 
                                   int button                    )
 {
-    m_callbacks->onDeviceBooleanOn( m_userData ,
-                                    0          ,
-                                    button     );
+    m_callbacks->onDeviceBooleanOn( m_callbacks->userData ,
+                                    0                     ,
+                                    button                );
     return true;
 }
 
@@ -74,9 +72,9 @@ bool
 CJoyStickListener::buttonReleased( const OIS::JoyStickEvent& arg , 
                                    int button                    )
 {
-    m_callbacks->onDeviceBooleanOff( m_userData          ,
-                                     arg.device->getID() ,
-                                     button              );
+    m_callbacks->onDeviceBooleanOff( m_callbacks->userData ,
+                                     arg.device->getID()   ,
+                                     button                );
     return true;
 }
     
@@ -86,7 +84,7 @@ bool
 CJoyStickListener::axisMoved( const OIS::JoyStickEvent& arg , 
                               int axis                      )
 {
-    m_callbacks->onDeviceVarChanged( m_userData                  ,
+    m_callbacks->onDeviceVarChanged( m_callbacks->userData       ,
                                      arg.device->getID()         ,
                                      axis                        ,
                                      arg.state.mAxes[ axis ].abs );
@@ -99,7 +97,7 @@ bool
 CJoyStickListener::sliderMoved( const OIS::JoyStickEvent& arg , 
                                 int id                        )
 {
-    m_callbacks->onDeviceVarChanged( m_userData                   ,
+    m_callbacks->onDeviceVarChanged( m_callbacks->userData        ,
                                      arg.device->getID()          ,
                                      arg.state.mAxes.size() + id  ,
                                      arg.state.mSliders[ id ].abX );
@@ -112,7 +110,7 @@ bool
 CJoyStickListener::povMoved( const OIS::JoyStickEvent& arg , 
                              int id                        )
 {
-    m_callbacks->onDeviceVarChanged( m_userData                      ,
+    m_callbacks->onDeviceVarChanged( m_callbacks->userData           ,
                                      arg.device->getID()             ,
                                      arg.state.mAxes.size() + 4 + id ,
                                      arg.state.mPOV[ id ].direction  );

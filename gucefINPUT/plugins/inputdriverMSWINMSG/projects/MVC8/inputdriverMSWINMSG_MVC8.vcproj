@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\include;..\..\..\..\..\gucefCORE\include;..\..\..\..\..\gucefINPUT\include;..\..\..\..\..\gucefMT\include;..\..\..\..\..\common\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;INPUTDRIVERMSWINMSG_EXPORTS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;INPUTDRIVERMSWINMSG_EXPORTS;BUILD_GUCEF_INPUT_PLUGIN_DLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -125,7 +125,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;INPUTDRIVERMSWINMSG_EXPORTS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;INPUTDRIVERMSWINMSG_EXPORTS;BUILD_GUCEF_INPUT_PLUGIN_DLL"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"

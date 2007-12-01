@@ -40,11 +40,9 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CMouseListener::CMouseListener( TInputCallbacks* callbacks ,
-                                void* userData             )
+CMouseListener::CMouseListener( const TInputCallbacks* callbacks )
     : OIS::MouseListener()     ,
-      m_callbacks( callbacks ) ,
-      m_userData( userData )
+      m_callbacks( callbacks )
 {
 
 }
@@ -61,11 +59,11 @@ CMouseListener::~CMouseListener()
 bool
 CMouseListener::mouseMoved( const OIS::MouseEvent &arg )
 {
-    m_callbacks->onMouseMove( m_userData      ,
-                              arg.state.X.abs ,
-                              arg.state.Y.abs ,
-                              arg.state.X.rel ,
-                              arg.state.Y.rel );
+    m_callbacks->onMouseMove( m_callbacks->userData ,
+                              arg.state.X.abs       ,
+                              arg.state.Y.abs       ,
+                              arg.state.X.rel       ,
+                              arg.state.Y.rel       );
     return true;
 }
 
@@ -75,8 +73,8 @@ bool
 CMouseListener::mousePressed( const OIS::MouseEvent& arg , 
                               OIS::MouseButtonID id      )
 {
-    m_callbacks->onMouseButtonDown( m_userData ,
-                                   (UInt32) id );
+    m_callbacks->onMouseButtonDown( m_callbacks->userData ,
+                                   (UInt32) id            );
     return true;
 }
 
@@ -86,8 +84,8 @@ bool
 CMouseListener::mouseReleased( const OIS::MouseEvent& arg , 
                                OIS::MouseButtonID id      )
 {
-    m_callbacks->onMouseButtonUp( m_userData ,
-                                 (UInt32) id );
+    m_callbacks->onMouseButtonUp( m_callbacks->userData ,
+                                 (UInt32) id            );
     return true;
 }
     
