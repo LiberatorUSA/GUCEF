@@ -158,7 +158,23 @@ UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Update( void* plugdata    , 
                         void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    // This plugin does not require pumping
+    TContextData* data = static_cast< TContextData* >( contextdata );
+
+    UInt32 miceCount = (UInt32) data->mice.size();
+    for ( UInt32 i=0; i<miceCount; ++i )
+    {
+        data->mice[ i ]->capture();
+    }    
+    UInt32 keyboardCount = (UInt32) data->keyboards.size();
+    for ( UInt32 i=0; i<keyboardCount; ++i )
+    {
+        data->keyboards[ i ]->capture();
+    }
+    UInt32 joystickCount = (UInt32) data->joysticks.size();
+    for ( UInt32 i=0; i<joystickCount; ++i )
+    {
+        data->joysticks[ i ]->capture();
+    }    
     return 1;
 }
 
@@ -231,6 +247,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
             }
         }
 
+        *contextdata = data;
         return 1;
     }
     return 0;

@@ -159,6 +159,15 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
                  const UInt32 heightInPixels                   ,
                  const TPixelStorageFormat pixelStorageFormat  ,
                  const TBuildinDataType pixelComponentDataType );
+
+    /**
+     *  Returns the expected size of a pixel map given the width and height and pixel
+     *  properties. If the size cannot be determined 0 will be returned.
+     */
+    static UInt32 GetExpectedPixelMapSize( const UInt32 widthInPixels                    ,
+                                           const UInt32 heightInPixels                   ,
+                                           const TPixelStorageFormat pixelStorageFormat  ,
+                                           const TBuildinDataType pixelComponentDataType );
     
     private:
     

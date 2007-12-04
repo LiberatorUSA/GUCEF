@@ -87,9 +87,10 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CInputController, EInvalidIndex );
 /*-------------------------------------------------------------------------*/
 
 CInputController::CInputController( void )
-        : m_driverisplugin( false ) ,
-          m_driver( NULL )          ,
-          m_keyboard( NULL )        ,
+        : CGUCEFAppSubSystem( true ) ,
+          m_driverisplugin( false )  ,
+          m_driver( NULL )           ,
+          m_keyboard( NULL )         ,
           m_mouseVector()
           
           #ifdef GUCEF_MSWIN_BUILD
@@ -105,6 +106,9 @@ CInputController::CInputController( void )
     m_mouseVector.reserve( 2 );
     m_mouseVector.push_back( new CMouse( 0 ) );
     m_mouseVector.push_back( new CMouse( 1 ) );
+    
+    SetPeriodicUpdateRequirement( true );
+    RequestUpdateInterval( 5 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -309,14 +313,17 @@ CInputController::OnNotify( CORE::CNotifier* notifier                 ,
                             const CORE::CEvent& eventid               ,
                             CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
+        
+    if ( eventid == CORE::CGUCEFApplication::AppInitEvent )
+    {
         #ifdef GUCEF_MSWIN_BUILD
-        if ( eventid == CORE::CGUCEFApplication::AppInitEvent )
-        {
-                CORE::CGUCEFApplication::TAppInitEventData* initData = static_cast< CORE::CGUCEFApplication::TAppInitEventData* >( eventdata );
-                #pragma warning( disable: 4311 ) // pointer truncation warning
-                m_hinstance = reinterpret_cast<UInt32>( initData->GetData().hinstance );
-        }
+        CORE::CGUCEFApplication::TAppInitEventData* initData = static_cast< CORE::CGUCEFApplication::TAppInitEventData* >( eventdata );
+        #pragma warning( disable: 4311 ) // pointer truncation warning
+        m_hinstance = reinterpret_cast<UInt32>( initData->GetData().hinstance );
         #endif /* GUCEF_MSWIN_BUILD ? */
+        
+        RequestUpdate();
+    }
 }
 
 /*-------------------------------------------------------------------------*/

@@ -278,32 +278,53 @@ CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
             {
                 // Create a pixelmap using the information we obtained + out pixelBuffer pointer
                 TImageMipMapLevelInfo* mipMapLevel = &imageFrameInfo[ i ].mipmapLevel[ n ].mipLevelInfo;
-                CPixelMap* pixelMap = new CPixelMap( pixelBuffer                                             ,
-                                                     mipMapLevel->frameWidth                                 ,
-                                                     mipMapLevel->frameHeight                                ,
-                                                     TPixelStorageFormat( mipMapLevel->pixelStorageFormat )  ,
-                                                     TBuildinDataType( mipMapLevel->pixelComponentDataType ) );
-
-                // Add this mipmap level to the frame
-                mipMapList.push_back( CImage::TPixelMapPtr( pixelMap ) );
                 
-                if ( i+1 < imageInfo.nrOfFramesInImage )
+                // Obtain the expected pixel map size in bytes
+                TPixelStorageFormat pixelStorageFormat = (TPixelStorageFormat) mipMapLevel->pixelStorageFormat;
+                TBuildinDataType pixelComponentDataType = (TBuildinDataType) mipMapLevel->pixelComponentDataType;
+                UInt32 pixelMapSize = CPixelMap::GetExpectedPixelMapSize( mipMapLevel->frameWidth  ,
+                                                                          mipMapLevel->frameHeight ,
+                                                                          pixelStorageFormat       ,
+                                                                          pixelComponentDataType   );
+                
+                // Check to make sure the buffer is large enough for the data we expect
+                if ( pixelMapSize <= outputBuffer.GetDataSize() - bufferOffset )
                 {
-                    // Jump to the next image component in the buffer
-                    UInt32 pixelBlockSize = ( mipMapLevel->frameWidth * mipMapLevel->frameHeight ) * ( mipMapLevel->channelComponentSize * mipMapLevel->channelCountPerPixel );
-                    bufferOffset += pixelBlockSize;
-                    if ( bufferOffset < outputBuffer.GetDataSize() )
+                    CPixelMap* pixelMap = new CPixelMap( pixelBuffer              ,
+                                                         mipMapLevel->frameWidth  ,
+                                                         mipMapLevel->frameHeight ,
+                                                         pixelStorageFormat       ,
+                                                         pixelComponentDataType   );
+
+                    // Add this mipmap level to the frame
+                    mipMapList.push_back( CImage::TPixelMapPtr( pixelMap ) );
+                    
+                    if ( i+1 < imageInfo.nrOfFramesInImage )
                     {
-                        pixelBuffer += pixelBlockSize;
+                        // Jump to the next image component in the buffer
+                        UInt32 pixelBlockSize = ( mipMapLevel->frameWidth * mipMapLevel->frameHeight ) * ( mipMapLevel->channelComponentSize * mipMapLevel->channelCountPerPixel );
+                        bufferOffset += pixelBlockSize;
+                        if ( bufferOffset < outputBuffer.GetDataSize() )
+                        {
+                            pixelBuffer += pixelBlockSize;
+                        }
+                        else
+                        {
+                            // oh oh,.. we ran out of pixels in our buffer even though our image info
+                            // suggests we should have more pixels
+                            for ( UInt32 m=n; m<currentFrame->nrOfMipmapLevels; ++m ) delete []imageFrameInfo[ m ].mipmapLevel;
+                            delete []imageFrameInfo;
+                            return false;
+                        }
                     }
-                    else
-                    {
-                        // oh oh,.. we ran out of pixels in our buffer even though our image info
-                        // suggests we should have more pixels
-                        for ( UInt32 m=n; m<currentFrame->nrOfMipmapLevels; ++m ) delete []imageFrameInfo[ m ].mipmapLevel;
-                        delete []imageFrameInfo;
-                        return false;
-                    }
+                }
+                else
+                {
+                    // oh oh,.. we ran out of pixels in our buffer even though our image info
+                    // suggests we should have more pixels
+                    for ( UInt32 m=n; m<currentFrame->nrOfMipmapLevels; ++m ) delete []imageFrameInfo[ m ].mipmapLevel;
+                    delete []imageFrameInfo;
+                    return false;
                 }
             }
             

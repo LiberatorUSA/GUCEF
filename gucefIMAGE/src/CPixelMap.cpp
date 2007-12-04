@@ -412,6 +412,75 @@ CPixelMap::ConvertPixelStorageFormatTo( const TPixelStorageFormat pixelStorageFo
     }
 }
 
+/*--------------------------------------------------------------------------*/
+
+UInt32
+CPixelMap::GetExpectedPixelMapSize( const UInt32 widthInPixels                    ,
+                                    const UInt32 heightInPixels                   ,
+                                    const TPixelStorageFormat pixelStorageFormat  ,
+                                    const TBuildinDataType pixelComponentDataType )
+{
+    UInt32 pixelCount = widthInPixels * heightInPixels;
+    
+    switch ( pixelComponentDataType )
+    {
+        case GUCEF::MT::DT_INT8 :
+        case GUCEF::MT::DT_UINT8 :
+        {
+            switch ( pixelStorageFormat )
+            {
+                case GUCEF::IMAGE::PSF_RGB : return 1 * 3 * pixelCount;
+                case GUCEF::IMAGE::PSF_RGBA : return 1 * 4 * pixelCount;
+                case GUCEF::IMAGE::PSF_BGR : return 1 * 3 * pixelCount;
+                case GUCEF::IMAGE::PSF_BGRA : return 1 * 4 * pixelCount;
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_RED : return 1 * 1 * pixelCount;
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_GREEN : return 1 * 1 * pixelCount;
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_BLUE : return 1 * 1 * pixelCount;
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_LUMINANCE : return 1 * 1 * pixelCount;
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_ALPHA : return 1 * 1 * pixelCount;
+                default : return 0;
+            }
+        }
+        case GUCEF::MT::DT_INT16 :
+        case GUCEF::MT::DT_UINT16 :
+        {
+            switch ( pixelStorageFormat )
+            {
+                case GUCEF::IMAGE::PSF_RGB : return 2 * 3 * pixelCount;
+                case GUCEF::IMAGE::PSF_RGBA : return 2 * 4 * pixelCount;
+                case GUCEF::IMAGE::PSF_BGR : return 2 * 3 * pixelCount;
+                case GUCEF::IMAGE::PSF_BGRA : return 2 * 4 * pixelCount;                
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_RED : return 2 * 1 * pixelCount;
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_GREEN : return 2 * 1 * pixelCount;
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_BLUE : return 2 * 1 * pixelCount;
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_LUMINANCE : return 2 * 1 * pixelCount;
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_ALPHA : return 2 * 1 * pixelCount;
+                default : return 0;
+            }
+        }        
+        case GUCEF::MT::DT_INT32 :
+        case GUCEF::MT::DT_UINT32 :
+        case GUCEF::MT::DT_FLOAT32 :
+        {
+            switch ( pixelStorageFormat )
+            {
+                case GUCEF::IMAGE::PSF_RGB : return 4 * 3 * pixelCount;
+                case GUCEF::IMAGE::PSF_RGBA : return 4 * 4 * pixelCount;
+                case GUCEF::IMAGE::PSF_BGR : return 4 * 3 * pixelCount;
+                case GUCEF::IMAGE::PSF_BGRA : return 4 * 4 * pixelCount;                
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_RED : return 4 * 1 * pixelCount;
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_GREEN : return 4 * 1 * pixelCount;
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_BLUE : return 4 * 1 * pixelCount;
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_LUMINANCE : return 4 * 1 * pixelCount;
+                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_ALPHA : return 4 * 1 * pixelCount;
+                default : return 0;
+            }
+        }
+        
+        default : return 0;
+    }
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
