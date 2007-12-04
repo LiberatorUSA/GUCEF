@@ -55,7 +55,7 @@ class CMouseListener : public OIS::MouseListener
 {
     public:
     
-    CMouseListener( const TInputCallbacks* callbacks );
+    CMouseListener( const TInputCallbacks& callbacks );
     
     virtual ~CMouseListener();
     
@@ -73,7 +73,7 @@ class CMouseListener : public OIS::MouseListener
 
     private:
     
-    const TInputCallbacks* m_callbacks;
+    TInputCallbacks m_callbacks;
 };
 
 /*-------------------------------------------------------------------------//

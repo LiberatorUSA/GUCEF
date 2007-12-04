@@ -203,9 +203,9 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
             return 0;
         }
         
-        data->joystickListener = new CJoyStickListener( callbacks );
-        data->mouseListener = new CMouseListener( callbacks );
-        data->keyboardListener = new CKeyboardListener( callbacks );
+        data->joystickListener = new CJoyStickListener( *callbacks );
+        data->mouseListener = new CMouseListener( *callbacks );
+        data->keyboardListener = new CKeyboardListener( *callbacks );
 
         UInt32 keyboardCount = (UInt32) data->inputManager->numKeyBoards();
         for ( UInt32 i=0; i<keyboardCount; ++i )

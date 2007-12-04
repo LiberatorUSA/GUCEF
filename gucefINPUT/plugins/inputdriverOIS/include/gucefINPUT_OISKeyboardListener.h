@@ -55,7 +55,7 @@ class CKeyboardListener : public OIS::KeyListener
 {
     public:
     
-    CKeyboardListener( const TInputCallbacks* callbacks );
+    CKeyboardListener( const TInputCallbacks& callbacks );
     
     virtual ~CKeyboardListener();
     
@@ -71,7 +71,7 @@ class CKeyboardListener : public OIS::KeyListener
 
     private:
     
-    const TInputCallbacks* m_callbacks;
+    TInputCallbacks m_callbacks;
 };
 
 /*-------------------------------------------------------------------------//
