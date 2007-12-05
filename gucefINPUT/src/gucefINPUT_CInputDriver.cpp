@@ -91,12 +91,68 @@ CInputDriver::InjectMouseMove( const UInt32 deviceIndex ,
 /*-------------------------------------------------------------------------*/
 
 void
-CInputDriver::InjectKeyboardKeyChange( const KeyCode keyCode  ,
-                                       const bool keyPressed  )
+CInputDriver::InjectKeyboardKeyChange( const UInt32 deviceIndex ,
+                                       const KeyCode keyCode    ,
+                                       const bool keyPressed    )
 {GUCEF_TRACE;
 
-    m_controller->SetKeyboardKeyState( keyCode    ,
-                                       keyPressed );    
+    m_controller->SetKeyboardKeyState( deviceIndex ,
+                                       keyCode     ,
+                                       keyPressed  );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CInputDriver::AddMouse( const UInt32 deviceID )
+{GUCEF_TRACE;
+
+    m_controller->AddMouse( deviceID );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CInputDriver::RemoveMouse( const UInt32 deviceID )
+{GUCEF_TRACE;
+
+    m_controller->RemoveMouse( deviceID );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CInputDriver::AddKeyboard( const UInt32 deviceID )
+{GUCEF_TRACE;
+
+    m_controller->AddKeyboard( deviceID );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CInputDriver::RemoveKeyboard( const UInt32 deviceID )
+{GUCEF_TRACE;
+
+    m_controller->RemoveKeyboard( deviceID );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CInputDriver::AddDevice( const UInt32 deviceID )
+{GUCEF_TRACE;
+
+    m_controller->AddDevice( deviceID );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CInputDriver::RemoveDevice( const UInt32 deviceID )
+{GUCEF_TRACE;
+
+    m_controller->RemoveDevice( deviceID );
 }
 
 /*-------------------------------------------------------------------------*/

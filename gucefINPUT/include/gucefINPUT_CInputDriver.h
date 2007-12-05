@@ -115,8 +115,21 @@ class GUCEF_INPUT_EXPORT_CPP CInputDriver
                           const Int32 xDelta       ,
                           const Int32 yDelta       );
 
-    void InjectKeyboardKeyChange( const KeyCode keyCode ,
-                                  const bool keyPressed );
+    void InjectKeyboardKeyChange( const UInt32 deviceIndex ,
+                                  const KeyCode keyCode    ,
+                                  const bool keyPressed    );
+
+    void AddMouse( const UInt32 deviceID );
+    
+    void RemoveMouse( const UInt32 deviceID );
+    
+    void AddKeyboard( const UInt32 deviceID );
+    
+    void RemoveKeyboard( const UInt32 deviceID );
+    
+    void AddDevice( const UInt32 deviceID );
+    
+    void RemoveDevice( const UInt32 deviceID );
                           
     private:
     

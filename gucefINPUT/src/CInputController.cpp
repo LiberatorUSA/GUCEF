@@ -90,8 +90,8 @@ CInputController::CInputController( void )
         : CGUCEFAppSubSystem( true ) ,
           m_driverisplugin( false )  ,
           m_driver( NULL )           ,
-          m_keyboard( NULL )         ,
-          m_mouseVector()
+          m_keyboardMap()            ,
+          m_mouseMap()
           
           #ifdef GUCEF_MSWIN_BUILD
           ,
@@ -100,12 +100,6 @@ CInputController::CInputController( void )
 {GUCEF_TRACE;
 
     RegisterEvents();
-    
-    m_keyboard = new CKeyboard( this );
-    
-    m_mouseVector.reserve( 2 );
-    m_mouseVector.push_back( new CMouse( 0 ) );
-    m_mouseVector.push_back( new CMouse( 1 ) );
     
     SetPeriodicUpdateRequirement( true );
     RequestUpdateInterval( 5 );
@@ -116,8 +110,6 @@ CInputController::CInputController( void )
 CInputController::~CInputController()
 {GUCEF_TRACE;
 
-    delete m_keyboard;
-    m_keyboard = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -344,10 +336,10 @@ CInputController::SetMouseButtonState( const UInt32 deviceIndex ,
                                        const bool pressedState  )
 {GUCEF_TRACE;
 
-    if ( m_mouseVector.size() > deviceIndex )
+    if ( m_mouseMap.size() > deviceIndex )
     {
-        m_mouseVector[ deviceIndex ]->SetButtonState( buttonIndex  ,
-                                                      pressedState );
+        m_mouseMap[ deviceIndex ]->SetButtonState( buttonIndex  ,
+                                                   pressedState );
     }
 }
 
@@ -361,10 +353,10 @@ CInputController::SetMousePos( const UInt32 deviceIndex ,
                                const Int32 yDelta       )
 {GUCEF_TRACE;
 
-    if ( m_mouseVector.size() > deviceIndex )
+    if ( m_mouseMap.size() > deviceIndex )
     {
-        m_mouseVector[ deviceIndex ]->SetMousePos( xPos  ,
-                                                   yPos );
+        m_mouseMap[ deviceIndex ]->SetMousePos( xPos  ,
+                                                yPos );
     }
 }
 
@@ -374,21 +366,22 @@ void
 CInputController::ResetMouseStates( const UInt32 deviceIndex )
 {GUCEF_TRACE;
 
-    if ( m_mouseVector.size() > deviceIndex )
+    if ( m_mouseMap.size() > deviceIndex )
     {
-        m_mouseVector[ deviceIndex ]->ResetMouseStates();
+        m_mouseMap[ deviceIndex ]->ResetMouseStates();
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CInputController::SetKeyboardKeyState( const KeyCode keyCode ,
+CInputController::SetKeyboardKeyState( const UInt32 deviceID ,
+                                       const KeyCode keyCode ,
                                        const bool keyPressed )
 {GUCEF_TRACE;
 
-    m_keyboard->SetKeyState( keyCode    ,
-                             keyPressed );
+    m_keyboardMap[ deviceID ]->SetKeyState( keyCode    ,
+                                            keyPressed );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -397,7 +390,7 @@ CKeyboard&
 CInputController::GetKeyboard( void ) const
 {GUCEF_TRACE;
     
-    return *m_keyboard;
+    return *( m_keyboardMap[ 0 ] );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -406,9 +399,9 @@ CMouse&
 CInputController::GetMouse( const UInt32 index /* = 0 */ ) const
 {GUCEF_TRACE;
 
-    if ( m_mouseVector.size() > index )
+    if ( m_mouseMap.size() > index )
     {
-        return *(m_mouseVector[ index ]);
+        return *(m_mouseMap[ index ]);
     }
     GUCEF_EMSGTHROW( EInvalidIndex, "CInputController::GetMouse(): Invalid device index given" );
 }
@@ -419,7 +412,75 @@ UInt32
 CInputController::GetMouseCount( void ) const
 {GUCEF_TRACE;
 
-    return (UInt32) m_mouseVector.size();
+    return (UInt32) m_mouseMap.size();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CInputController::AddMouse( const UInt32 deviceID )
+{GUCEF_TRACE;
+
+    CMouse* mouse = new CMouse( deviceID );
+    m_mouseMap.insert( std::pair< UInt32, CMouse* >( deviceID, mouse ) );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CInputController::RemoveMouse( const UInt32 deviceID )
+{GUCEF_TRACE;
+
+    TMouseMap::iterator i = m_mouseMap.find( deviceID ); 
+    if ( i != m_mouseMap.end() )
+    {
+        CMouse* mouse = (*i).second;
+        delete mouse;
+        m_mouseMap.erase( i );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CInputController::AddKeyboard( const UInt32 deviceID )
+{GUCEF_TRACE;
+
+    CKeyboard* keyboard = new CKeyboard( deviceID );
+    m_keyboardMap.insert( std::pair< UInt32, CKeyboard* >( deviceID, keyboard ) );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CInputController::RemoveKeyboard( const UInt32 deviceID )
+{GUCEF_TRACE;
+
+    TKeyboardMap::iterator i = m_keyboardMap.find( deviceID ); 
+    if ( i != m_keyboardMap.end() )
+    {
+        CKeyboard* keyboard = (*i).second;
+        delete keyboard;
+        m_keyboardMap.erase( i );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CInputController::AddDevice( const UInt32 deviceID )
+{GUCEF_TRACE;
+
+    // @TODO
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CInputController::RemoveDevice( const UInt32 deviceID )
+{GUCEF_TRACE;
+
+    // @TODO
 }
 
 /*-------------------------------------------------------------------------//

@@ -60,6 +60,7 @@ bool
 CKeyboardListener::keyPressed( const OIS::KeyEvent &arg )
 {
     m_callbacks.onKeyboardKeyDown( m_callbacks.userData ,
+                                   arg.device->getID()  ,
                                    (KeyCode) arg.key    );
     return true;
 }
@@ -70,6 +71,7 @@ bool
 CKeyboardListener::keyReleased( const OIS::KeyEvent &arg )
 {
      m_callbacks.onKeyboardKeyUp( m_callbacks.userData ,
+                                  arg.device->getID()  ,
                                   (KeyCode) arg.key    );
     return true;   
 }

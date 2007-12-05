@@ -95,9 +95,9 @@ class GUCEF_INPUT_EXPORT_CPP CKeyboard : public CORE::CNotifier
      *  @param unicode the output variable for the unicode translation
      *  @return whether the KeyCode could be converted 
      */
-    virtual bool GetUnicodeForKeyCode( const KeyCode keyCode     ,
-                                       const UInt32 keyModifiers ,
-                                       UInt32& unicode           ) const;
+    bool GetUnicodeForKeyCode( const KeyCode keyCode     ,
+                               const UInt32 keyModifiers ,
+                               UInt32& unicode           ) const;
 
     virtual const CString& GetType( void ) const;
     

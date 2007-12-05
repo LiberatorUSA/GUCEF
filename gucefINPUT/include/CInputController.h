@@ -26,6 +26,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <map>
+
 #ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
 #include "CGUCEFAppSubSystem.h"
 #define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
@@ -143,8 +145,21 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
                          
     void ResetMouseStates( const UInt32 deviceIndex );    
 
-    void SetKeyboardKeyState( const KeyCode keyCode  ,
-                              const bool keyPressed  );
+    void SetKeyboardKeyState( const UInt32 deviceIndex ,
+                              const KeyCode keyCode    ,
+                              const bool keyPressed    );
+
+    void AddMouse( const UInt32 deviceID );
+    
+    void RemoveMouse( const UInt32 deviceID );
+    
+    void AddKeyboard( const UInt32 deviceID );
+    
+    void RemoveKeyboard( const UInt32 deviceID );
+    
+    void AddDevice( const UInt32 deviceID );
+    
+    void RemoveDevice( const UInt32 deviceID );
     
     private:
     
@@ -157,7 +172,8 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     
     private:
     
-    typedef std::vector< CMouse* > TMouseVector;  
+    typedef std::map< UInt32, CMouse* > TMouseMap;  
+    typedef std::map< UInt32, CKeyboard* > TKeyboardMap;
     
     CInputDriver* m_driver;
     bool m_driverisplugin;        
@@ -169,8 +185,8 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     
     static CInputController* m_instance;
     
-    CKeyboard* m_keyboard;
-    TMouseVector m_mouseVector;
+    TKeyboardMap m_keyboardMap;
+    TMouseMap m_mouseMap;
 };
 
 /*-------------------------------------------------------------------------//

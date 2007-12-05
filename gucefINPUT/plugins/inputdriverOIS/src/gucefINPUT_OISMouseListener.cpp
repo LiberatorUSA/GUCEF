@@ -60,6 +60,7 @@ bool
 CMouseListener::mouseMoved( const OIS::MouseEvent &arg )
 {
     m_callbacks.onMouseMove( m_callbacks.userData ,
+                             arg.device->getID()  ,
                              arg.state.X.abs      ,
                              arg.state.Y.abs      ,
                              arg.state.X.rel      ,
@@ -74,7 +75,8 @@ CMouseListener::mousePressed( const OIS::MouseEvent& arg ,
                               OIS::MouseButtonID id      )
 {
     m_callbacks.onMouseButtonDown( m_callbacks.userData ,
-                                  (UInt32) id           );
+                                   arg.device->getID()  ,
+                                   (UInt32) id          );
     return true;
 }
 
@@ -85,7 +87,8 @@ CMouseListener::mouseReleased( const OIS::MouseEvent& arg ,
                                OIS::MouseButtonID id      )
 {
     m_callbacks.onMouseButtonUp( m_callbacks.userData ,
-                                (UInt32) id           );
+                                 arg.device->getID()  ,
+                                 (UInt32) id          );
     return true;
 }
     

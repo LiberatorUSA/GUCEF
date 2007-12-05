@@ -215,6 +215,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                 OIS::Keyboard* keyboard = static_cast< OIS::Keyboard* >( data->inputManager->createInputObject( OIS::OISKeyboard, true ) );
                 keyboard->setEventCallback( data->keyboardListener );
                 data->keyboards.push_back( keyboard );
+                data->callbacks.onKeyboardAttached( data->callbacks.userData, keyboard->getID() );
             }
             catch ( OIS::Exception& )
             {
@@ -228,6 +229,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                 OIS::Mouse* mouse = static_cast< OIS::Mouse* >( data->inputManager->createInputObject( OIS::OISMouse, true ) );
                 mouse->setEventCallback( data->mouseListener );
                 data->mice.push_back( mouse );
+                data->callbacks.onMouseAttached( data->callbacks.userData, mouse->getID() );
             }
             catch ( OIS::Exception& )
             {
@@ -241,6 +243,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                 OIS::JoyStick* joystick = static_cast< OIS::JoyStick* >( data->inputManager->createInputObject( OIS::OISJoyStick, true ) );
                 joystick->setEventCallback( data->joystickListener );
                 data->joysticks.push_back( joystick );
+                data->callbacks.onDeviceAttached( data->callbacks.userData, joystick->getID() );
             }
             catch ( OIS::Exception& )
             {
@@ -266,19 +269,25 @@ INPUTDRIVERPLUG_DestroyContext( void* plugdata    ,
         {   
             for ( UInt32 i=0; i<data->keyboards.size(); ++i )
             {
-                data->inputManager->destroyInputObject( data->keyboards[ i ] );
+                OIS::Keyboard* keyboard = data->keyboards[ i ];
+                data->callbacks.onKeyboardDetached( data->callbacks.userData, keyboard->getID() );
+                data->inputManager->destroyInputObject( keyboard );
             }
             data->keyboards.clear();
             
             for ( UInt32 i=0; i<data->mice.size(); ++i )
             {
-                data->inputManager->destroyInputObject( data->mice[ i ] );
+                OIS::Mouse* mouse = data->mice[ i ];
+                data->callbacks.onMouseDetached( data->callbacks.userData, mouse->getID() );
+                data->inputManager->destroyInputObject( mouse );
             }
             data->mice.clear();
             
             for ( UInt32 i=0; i<data->joysticks.size(); ++i )
             {
-                data->inputManager->destroyInputObject( data->joysticks[ i ] );
+                OIS::JoyStick* joystick = data->joysticks[ i ];
+                data->callbacks.onDeviceDetached( data->callbacks.userData, joystick->getID() );
+                data->inputManager->destroyInputObject( joystick );
             }
             data->joysticks.clear();
             
