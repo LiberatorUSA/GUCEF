@@ -88,7 +88,8 @@ class GUCEF_INPUT_EXPORT_CPP CKeyboard : public CORE::CNotifier
     
     /**
      *  Attempts to convert the given KeyCode into a unicode 
-     *  compatible value.
+     *  compatible value. Note that the conversion method is
+     *  determined by the input driver used.
      *
      *  @param keyCode the keyCode to translate into unicode
      *  @param keyModifiers placeholder for the key modifier flags
@@ -104,7 +105,8 @@ class GUCEF_INPUT_EXPORT_CPP CKeyboard : public CORE::CNotifier
     private:
     friend class CInputController;
     
-    CKeyboard( CInputController* controller );
+    CKeyboard( const UInt32 deviceID        ,
+               CInputController* controller );
     
     virtual ~CKeyboard();
     

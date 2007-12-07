@@ -72,6 +72,10 @@ class CTNumericID
     
     CTNumericID& operator=( CTNumericID& src );
     
+    bool operator<( const CTNumericID& other ) const;
+    
+    bool operator>( const CTNumericID& other ) const;
+
     bool operator==( const CTNumericID& other ) const;
     
     bool operator!=( const CTNumericID& other ) const;
@@ -176,6 +180,34 @@ CTNumericID< intType >::operator=( CTNumericID& src )
         }
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename intType >
+bool
+CTNumericID< intType >::operator<( const CTNumericID& other ) const
+{GUCEF_TRACE;
+    
+    if ( m_initialized )
+    {
+        return m_id < other.m_id;
+    }
+    GUCEF_EMSGTHROW( ENotInitialized, "CTNumericID<>::operator<(): the ID is not initialized" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename intType >
+bool
+CTNumericID< intType >::operator>( const CTNumericID& other ) const
+{GUCEF_TRACE;
+    
+    if ( m_initialized )
+    {
+        return m_id > other.m_id;
+    }
+    GUCEF_EMSGTHROW( ENotInitialized, "CTNumericID<>::operator<(): the ID is not initialized" );
 }
 
 /*-------------------------------------------------------------------------*/

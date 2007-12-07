@@ -74,7 +74,8 @@ CKeyboard::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CKeyboard::CKeyboard( CInputController* controller )
+CKeyboard::CKeyboard( const UInt32 deviceID        ,
+                      CInputController* controller )
     : CORE::CNotifier()         ,
       m_keyState()              ,
       m_keyModStates()          ,
@@ -150,7 +151,7 @@ CKeyboard::SetKeyModState( const KeyModifier keyMod ,
 
     m_keyModStates = m_keyModStates | keyMod;
     CKeyModStateChangedEventData eventData( keyMod, pressedState );
-    NotifyObservers( KeyStateChangedEvent, &eventData );
+    NotifyObservers( KeyModStateChangedEvent, &eventData );
 }
 
 /*-------------------------------------------------------------------------*/

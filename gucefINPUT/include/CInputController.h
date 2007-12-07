@@ -79,7 +79,13 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
 
     static const CORE::CEvent InputDriverLoadedEvent;
     static const CORE::CEvent InputDriverUnloadedEvent;
-
+    static const CORE::CEvent MouseAttachedEvent;
+    static const CORE::CEvent MouseDetachedEvent;
+    static const CORE::CEvent KeyboardAttachedEvent;
+    static const CORE::CEvent KeyboardDetachedEvent;
+    static const CORE::CEvent JoystickAttachedEvent;
+    static const CORE::CEvent JoystickDetachedEvent;
+    
     static void RegisterEvents( void );
     
     public:
@@ -99,9 +105,9 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     bool LoadDriverModule( const CORE::CString& filename  ,
                            const CORE::CValueList& params );
 
-    CKeyboard& GetKeyboard( void ) const;
+    CKeyboard& GetKeyboard( const UInt32 deviceID );
     
-    CMouse& GetMouse( const UInt32 index = 0 ) const;
+    CMouse& GetMouse( const UInt32 deviceID );
     
     UInt32 GetMouseCount( void ) const;
     

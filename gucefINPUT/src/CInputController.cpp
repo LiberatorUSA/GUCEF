@@ -74,6 +74,12 @@ namespace INPUT {
 
 const CORE::CEvent CInputController::InputDriverLoadedEvent = "GUCEF::INPUT::InputDriverLoadedEvent";
 const CORE::CEvent CInputController::InputDriverUnloadedEvent = "GUCEF::INPUT::InputDriverUnloadedEvent";
+const CORE::CEvent CInputController::MouseAttachedEvent = "GUCEF::INPUT::MouseAttachedEvent";
+const CORE::CEvent CInputController::MouseDetachedEvent = "GUCEF::INPUT::MouseDetachedEvent";
+const CORE::CEvent CInputController::KeyboardAttachedEvent = "GUCEF::INPUT::KeyboardAttachedEvent";
+const CORE::CEvent CInputController::KeyboardDetachedEvent = "GUCEF::INPUT::KeyboardDetachedEvent";
+const CORE::CEvent CInputController::JoystickAttachedEvent = "GUCEF::INPUT::JoystickAttachedEvent";
+const CORE::CEvent CInputController::JoystickDetachedEvent = "GUCEF::INPUT::JoystickDetachedEvent";
 CInputController* CInputController::m_instance = NULL;
 
 /*-------------------------------------------------------------------------//
@@ -326,6 +332,12 @@ CInputController::RegisterEvents( void )
     
     InputDriverLoadedEvent.Initialize();
     InputDriverUnloadedEvent.Initialize();
+    MouseAttachedEvent.Initialize();
+    MouseDetachedEvent.Initialize();
+    KeyboardAttachedEvent.Initialize();
+    KeyboardDetachedEvent.Initialize();
+    JoystickAttachedEvent.Initialize();
+    JoystickDetachedEvent.Initialize();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -387,23 +399,28 @@ CInputController::SetKeyboardKeyState( const UInt32 deviceID ,
 /*-------------------------------------------------------------------------*/
 
 CKeyboard&
-CInputController::GetKeyboard( void ) const
+CInputController::GetKeyboard( const UInt32 deviceID )
 {GUCEF_TRACE;
     
-    return *( m_keyboardMap[ 0 ] );
+    if ( m_keyboardMap.size() > deviceID )
+    {
+        return *( m_keyboardMap[ deviceID ] );
+    }
+
+    GUCEF_EMSGTHROW( EInvalidIndex, "CInputController::GetMouse(): Invalid device ID given" );
 }
 
 /*-------------------------------------------------------------------------*/
     
 CMouse&
-CInputController::GetMouse( const UInt32 index /* = 0 */ ) const
+CInputController::GetMouse( const UInt32 deviceID )
 {GUCEF_TRACE;
 
-    if ( m_mouseMap.size() > index )
+    if ( m_mouseMap.size() > deviceID )
     {
-        return *(m_mouseMap[ index ]);
+        return *( m_mouseMap[ deviceID ] );
     }
-    GUCEF_EMSGTHROW( EInvalidIndex, "CInputController::GetMouse(): Invalid device index given" );
+    GUCEF_EMSGTHROW( EInvalidIndex, "CInputController::GetMouse(): Invalid device ID given" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -423,6 +440,8 @@ CInputController::AddMouse( const UInt32 deviceID )
 
     CMouse* mouse = new CMouse( deviceID );
     m_mouseMap.insert( std::pair< UInt32, CMouse* >( deviceID, mouse ) );
+    
+    NotifyObservers( MouseAttachedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -437,6 +456,8 @@ CInputController::RemoveMouse( const UInt32 deviceID )
         CMouse* mouse = (*i).second;
         delete mouse;
         m_mouseMap.erase( i );
+        
+        NotifyObservers( MouseDetachedEvent );
     }
 }
 
@@ -446,8 +467,10 @@ void
 CInputController::AddKeyboard( const UInt32 deviceID )
 {GUCEF_TRACE;
 
-    CKeyboard* keyboard = new CKeyboard( deviceID );
+    CKeyboard* keyboard = new CKeyboard( deviceID, this );
     m_keyboardMap.insert( std::pair< UInt32, CKeyboard* >( deviceID, keyboard ) );
+    
+    NotifyObservers( KeyboardAttachedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -462,6 +485,8 @@ CInputController::RemoveKeyboard( const UInt32 deviceID )
         CKeyboard* keyboard = (*i).second;
         delete keyboard;
         m_keyboardMap.erase( i );
+        
+        NotifyObservers( KeyboardDetachedEvent );
     }
 }
 
