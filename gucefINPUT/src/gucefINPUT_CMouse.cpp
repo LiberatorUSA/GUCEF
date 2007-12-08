@@ -23,6 +23,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"           /* C++ string utils */ 
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #include "gucefINPUT_CMouse.h"
 
 /*-------------------------------------------------------------------------//
@@ -138,6 +148,9 @@ CMouse::SetButtonState( const UInt32 buttonIndex ,
 {GUCEF_TRACE;
 
     m_buttonStates[ buttonIndex ] = pressedState;
+    
+    GUCEF_DEBUG_LOG( 0, "Setting state of button " + CORE::Int32ToString( buttonIndex ) + " to " + CORE::BoolToString( pressedState ) + " on mouse " + CORE::Int32ToString( m_deviceID ) );
+    
     CMouseButtonEventData eData( m_deviceID, buttonIndex, pressedState );
     NotifyObservers( MouseButtonEvent, &eData );
 }

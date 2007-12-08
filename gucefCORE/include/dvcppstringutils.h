@@ -90,6 +90,11 @@ VersionToString( const TVersion* version );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEFCORE_EXPORT_CPP CString
+BoolToString( const bool value );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEFCORE_EXPORT_CPP bool
 StringToBool( const CString& str );
 

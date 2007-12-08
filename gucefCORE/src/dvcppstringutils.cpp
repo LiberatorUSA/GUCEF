@@ -129,6 +129,15 @@ VersionToString( const TVersion* version )
 
 /*-------------------------------------------------------------------------*/
 
+GUCEFCORE_EXPORT_CPP CString
+BoolToString( const bool value )
+{GUCEF_TRACE;
+    
+    return Boolint_To_String( value ? 1 : 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 StringToBool( const CString& str )
 {GUCEF_TRACE;

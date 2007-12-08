@@ -23,6 +23,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"           /* C++ string utils */ 
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H
 #include "gucefINPUT_CKeyModStateChangedEventData.h"
 #define GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H
@@ -139,6 +149,9 @@ CKeyboard::SetKeyState( const KeyCode key       ,
 {GUCEF_TRACE;
 
     m_keyState[ key ] = pressedState;
+    
+    GUCEF_DEBUG_LOG( 0, "Setting state of key [" + KeyCodeToString( key ) + "] to " + CORE::BoolToString( pressedState ) + " on keyboard " + CORE::Int32ToString(  m_deviceID ) );
+    
     CKeyStateChangedEventData eventData( m_deviceID, key, pressedState, m_keyModStates );
     NotifyObservers( KeyStateChangedEvent, &eventData );
 }
@@ -151,6 +164,9 @@ CKeyboard::SetKeyModState( const KeyModifier keyMod ,
 {GUCEF_TRACE;
 
     m_keyModStates = m_keyModStates | keyMod;
+    
+    GUCEF_DEBUG_LOG( 0, "Setting state of key mod [" + KeyModifierToString( keyMod ) + "] to " + CORE::BoolToString( pressedState ) + " on keyboard " + CORE::Int32ToString(  m_deviceID ) );
+    
     CKeyModStateChangedEventData eventData( keyMod, pressedState );
     NotifyObservers( KeyModStateChangedEvent, &eventData );
 }
