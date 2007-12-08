@@ -106,7 +106,6 @@ CInputController::CInputController( void )
 {GUCEF_TRACE;
 
     RegisterEvents();
-    m_keyboardMap[ 0 ] = NULL;
     SetPeriodicUpdateRequirement( true );
     RequestUpdateInterval( 5 );
 }
@@ -307,7 +306,9 @@ CInputController::OnUpdate( const UInt64 tickcount               ,
                             updateDeltaInMilliSecs ,
                             (*i)                   );
 
-        #endif                                    
+        #endif
+        
+        ++i;                                    
     }                                                                
 }
 
