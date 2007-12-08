@@ -30,7 +30,15 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_CORE_CMSGEXCEPTION_H
 #include "CMsgException.h"
+#define GUCEF_CORE_CMSGEXCEPTION_H
+#endif /* GUCEF_CORE_CMSGEXCEPTION_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
@@ -161,6 +169,9 @@ CNotificationIDRegistry::Register( const CString& keyvalue                      
                 m_list[ keyvalue ] = m_lastid;
                 ++m_lastid;
                 m_dataLock.Unlock();
+                
+                GUCEF_SYSTEM_LOG( 0, "Event registered with ID " + UInt32ToString( m_lastid-1 ) + " and name \"" + keyvalue + "\"" );
+                
                 return CEvent( m_lastid-1, keyvalue );
             }
         

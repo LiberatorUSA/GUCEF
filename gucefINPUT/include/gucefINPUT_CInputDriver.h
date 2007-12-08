@@ -105,31 +105,31 @@ class GUCEF_INPUT_EXPORT_CPP CInputDriver
 
     protected:
     
-    void InjectMouseButtonChange( const UInt32 deviceIndex ,
+    void InjectMouseButtonChange( const Int32 deviceIndex  ,
                                   const UInt32 buttonIndex ,
                                   const bool buttonPressed );
 
-    void InjectMouseMove( const UInt32 deviceIndex ,
-                          const Int32 xPos         ,
-                          const Int32 yPos         ,
-                          const Int32 xDelta       ,
-                          const Int32 yDelta       );
+    void InjectMouseMove( const Int32 deviceIndex ,
+                          const Int32 xPos        ,
+                          const Int32 yPos        ,
+                          const Int32 xDelta      ,
+                          const Int32 yDelta      );
 
-    void InjectKeyboardKeyChange( const UInt32 deviceIndex ,
-                                  const KeyCode keyCode    ,
-                                  const bool keyPressed    );
+    void InjectKeyboardKeyChange( const Int32 deviceIndex ,
+                                  const KeyCode keyCode   ,
+                                  const bool keyPressed   );
 
-    void AddMouse( const UInt32 deviceID );
+    void AddMouse( const Int32 deviceID );
     
-    void RemoveMouse( const UInt32 deviceID );
+    void RemoveMouse( const Int32 deviceID );
     
-    void AddKeyboard( const UInt32 deviceID );
+    void AddKeyboard( const Int32 deviceID );
     
-    void RemoveKeyboard( const UInt32 deviceID );
+    void RemoveKeyboard( const Int32 deviceID );
     
-    void AddDevice( const UInt32 deviceID );
+    void AddDevice( const Int32 deviceID );
     
-    void RemoveDevice( const UInt32 deviceID );
+    void RemoveDevice( const Int32 deviceID );
                           
     private:
     

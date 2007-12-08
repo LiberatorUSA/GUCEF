@@ -61,7 +61,7 @@ CInputDriver::~CInputDriver()
 /*-------------------------------------------------------------------------*/
 
 void
-CInputDriver::InjectMouseButtonChange( const UInt32 deviceIndex ,
+CInputDriver::InjectMouseButtonChange( const Int32 deviceIndex  ,
                                        const UInt32 buttonIndex ,
                                        const bool buttonPressed )
 {GUCEF_TRACE;
@@ -74,11 +74,11 @@ CInputDriver::InjectMouseButtonChange( const UInt32 deviceIndex ,
 /*-------------------------------------------------------------------------*/
 
 void
-CInputDriver::InjectMouseMove( const UInt32 deviceIndex ,
-                               const Int32 xPos         ,
-                               const Int32 yPos         ,
-                               const Int32 xDelta       ,
-                               const Int32 yDelta       )
+CInputDriver::InjectMouseMove( const Int32 deviceIndex ,
+                               const Int32 xPos        ,
+                               const Int32 yPos        ,
+                               const Int32 xDelta      ,
+                               const Int32 yDelta      )
 {GUCEF_TRACE;
 
     m_controller->SetMousePos( deviceIndex ,
@@ -91,9 +91,9 @@ CInputDriver::InjectMouseMove( const UInt32 deviceIndex ,
 /*-------------------------------------------------------------------------*/
 
 void
-CInputDriver::InjectKeyboardKeyChange( const UInt32 deviceIndex ,
-                                       const KeyCode keyCode    ,
-                                       const bool keyPressed    )
+CInputDriver::InjectKeyboardKeyChange( const Int32 deviceIndex ,
+                                       const KeyCode keyCode   ,
+                                       const bool keyPressed   )
 {GUCEF_TRACE;
 
     m_controller->SetKeyboardKeyState( deviceIndex ,
@@ -104,7 +104,7 @@ CInputDriver::InjectKeyboardKeyChange( const UInt32 deviceIndex ,
 /*-------------------------------------------------------------------------*/
 
 void
-CInputDriver::AddMouse( const UInt32 deviceID )
+CInputDriver::AddMouse( const Int32 deviceID )
 {GUCEF_TRACE;
 
     m_controller->AddMouse( deviceID );
@@ -113,7 +113,7 @@ CInputDriver::AddMouse( const UInt32 deviceID )
 /*-------------------------------------------------------------------------*/
     
 void
-CInputDriver::RemoveMouse( const UInt32 deviceID )
+CInputDriver::RemoveMouse( const Int32 deviceID )
 {GUCEF_TRACE;
 
     m_controller->RemoveMouse( deviceID );
@@ -122,7 +122,7 @@ CInputDriver::RemoveMouse( const UInt32 deviceID )
 /*-------------------------------------------------------------------------*/
     
 void
-CInputDriver::AddKeyboard( const UInt32 deviceID )
+CInputDriver::AddKeyboard( const Int32 deviceID )
 {GUCEF_TRACE;
 
     m_controller->AddKeyboard( deviceID );
@@ -131,7 +131,7 @@ CInputDriver::AddKeyboard( const UInt32 deviceID )
 /*-------------------------------------------------------------------------*/
     
 void
-CInputDriver::RemoveKeyboard( const UInt32 deviceID )
+CInputDriver::RemoveKeyboard( const Int32 deviceID )
 {GUCEF_TRACE;
 
     m_controller->RemoveKeyboard( deviceID );
@@ -140,7 +140,7 @@ CInputDriver::RemoveKeyboard( const UInt32 deviceID )
 /*-------------------------------------------------------------------------*/
     
 void
-CInputDriver::AddDevice( const UInt32 deviceID )
+CInputDriver::AddDevice( const Int32 deviceID )
 {GUCEF_TRACE;
 
     m_controller->AddDevice( deviceID );
@@ -149,7 +149,7 @@ CInputDriver::AddDevice( const UInt32 deviceID )
 /*-------------------------------------------------------------------------*/
     
 void
-CInputDriver::RemoveDevice( const UInt32 deviceID )
+CInputDriver::RemoveDevice( const Int32 deviceID )
 {GUCEF_TRACE;
 
     m_controller->RemoveDevice( deviceID );

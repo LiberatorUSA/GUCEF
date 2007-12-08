@@ -124,8 +124,8 @@ class CPluginInputContext : public CInputContext
 //-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnMouseAttached( void* userData        , 
-                                     const UInt32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CInputDriverPlugin::OnMouseAttached( void* userData       , 
+                                     const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     static_cast<CInputDriverPlugin*>( userData )->AddMouse( deviceID ); 
@@ -134,8 +134,8 @@ CInputDriverPlugin::OnMouseAttached( void* userData        ,
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnMouseDetached( void* userData        , 
-                                     const UInt32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CInputDriverPlugin::OnMouseDetached( void* userData       , 
+                                     const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     static_cast<CInputDriverPlugin*>( userData )->RemoveMouse( deviceID ); 
@@ -144,8 +144,8 @@ CInputDriverPlugin::OnMouseDetached( void* userData        ,
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnKeyboardAttached( void* userData        , 
-                                        const UInt32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CInputDriverPlugin::OnKeyboardAttached( void* userData       , 
+                                        const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     static_cast<CInputDriverPlugin*>( userData )->AddKeyboard( deviceID ); 
@@ -154,8 +154,8 @@ CInputDriverPlugin::OnKeyboardAttached( void* userData        ,
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnKeyboardDetached( void* userData        , 
-                                        const UInt32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CInputDriverPlugin::OnKeyboardDetached( void* userData       , 
+                                        const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     static_cast<CInputDriverPlugin*>( userData )->RemoveKeyboard( deviceID ); 
@@ -164,8 +164,8 @@ CInputDriverPlugin::OnKeyboardDetached( void* userData        ,
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnDeviceAttached( void* userData        , 
-                                      const UInt32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CInputDriverPlugin::OnDeviceAttached( void* userData       , 
+                                      const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     static_cast<CInputDriverPlugin*>( userData )->AddDevice( deviceID ); 
@@ -174,8 +174,8 @@ CInputDriverPlugin::OnDeviceAttached( void* userData        ,
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnDeviceDetached( void* userData        , 
-                                      const UInt32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CInputDriverPlugin::OnDeviceDetached( void* userData       , 
+                                      const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     static_cast<CInputDriverPlugin*>( userData )->RemoveDevice( deviceID ); 
@@ -185,7 +185,7 @@ CInputDriverPlugin::OnDeviceDetached( void* userData        ,
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
 CInputDriverPlugin::OnMouseButtonDown( void* userData           , 
-                                       const UInt32 deviceID    ,
+                                       const Int32 deviceID     ,
                                        const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
@@ -198,7 +198,7 @@ CInputDriverPlugin::OnMouseButtonDown( void* userData           ,
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
 CInputDriverPlugin::OnMouseButtonUp( void* userData           , 
-                                     const UInt32 deviceID    ,
+                                     const Int32 deviceID     ,
                                      const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
@@ -211,7 +211,7 @@ CInputDriverPlugin::OnMouseButtonUp( void* userData           ,
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
 CInputDriverPlugin::OnMouseMove( void* userData        , 
-                                 const UInt32 deviceID ,
+                                 const Int32 deviceID  ,
                                  const Int32 xPos      ,
                                  const Int32 yPos      ,
                                  const Int32 xDelta    ,
@@ -229,7 +229,7 @@ CInputDriverPlugin::OnMouseMove( void* userData        ,
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
 CInputDriverPlugin::OnMouseVarChanged( void* userData         , 
-                                       const UInt32 deviceID  ,
+                                       const Int32 deviceID   ,
                                        const UInt32 varIndex  ,
                                        const Int32 value      ,
                                        const Int32 valueDelta ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
@@ -248,7 +248,7 @@ CInputDriverPlugin::OnMouseVarChanged( void* userData         ,
         
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
 CInputDriverPlugin::OnKeyboardKeyDown( void* userData        , 
-                                       const UInt32 deviceID ,
+                                       const Int32 deviceID  ,
                                        const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
@@ -261,7 +261,7 @@ CInputDriverPlugin::OnKeyboardKeyDown( void* userData        ,
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
 CInputDriverPlugin::OnKeyboardKeyUp( void* userData        , 
-                                     const UInt32 deviceID ,
+                                     const Int32 deviceID  ,
                                      const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
@@ -274,7 +274,7 @@ CInputDriverPlugin::OnKeyboardKeyUp( void* userData        ,
         
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
 CInputDriverPlugin::OnDeviceBooleanOff( void* userData          , 
-                                        const UInt32 deviceid   , 
+                                        const Int32 deviceid    , 
                                         const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         //CPluginInputContext* context( static_cast<CPluginInputContext*>( userData ) );
@@ -290,7 +290,7 @@ CInputDriverPlugin::OnDeviceBooleanOff( void* userData          ,
         
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
 CInputDriverPlugin::OnDeviceBooleanOn( void* userData          , 
-                                       const UInt32 deviceid   , 
+                                       const Int32 deviceid    , 
                                        const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         //CPluginInputContext* context( static_cast<CPluginInputContext*>( userData ) );
@@ -306,7 +306,7 @@ CInputDriverPlugin::OnDeviceBooleanOn( void* userData          ,
         
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
 CInputDriverPlugin::OnDeviceVarChanged( void* userData          , 
-                                        const UInt32 deviceid   , 
+                                        const Int32 deviceid    , 
                                         const UInt32 stateindex , 
                                         const Float32 value     ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
@@ -320,16 +320,15 @@ CInputDriverPlugin::OnDeviceVarChanged( void* userData          ,
         //}
 }
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      UTILITIES                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 CInputDriverPlugin::CInputDriverPlugin( void )
-        : m_sohandle( NULL )
+        : CInputDriver()     ,
+          m_sohandle( NULL ) ,
+          m_plugdata( NULL ) 
 {GUCEF_TRACE;    
 
+    memset( m_fptable, NULL, sizeof( m_fptable ) );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -82,17 +82,17 @@ class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CInputDriver
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
         OnMouseButtonDown( void* userData           , 
-                           const UInt32 deviceID    ,
+                           const Int32 deviceID     ,
                            const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
         OnMouseButtonUp( void* userData           , 
-                         const UInt32 deviceID    ,
+                         const Int32 deviceID     ,
                          const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
         OnMouseMove( void* userData        , 
-                     const UInt32 deviceID ,
+                     const Int32 deviceID  ,
                      const Int32 xPos      ,
                      const Int32 yPos      ,
                      const Int32 xDelta    ,
@@ -100,60 +100,60 @@ class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CInputDriver
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
         OnMouseVarChanged( void* userData         , 
-                           const UInt32 deviceID  ,
+                           const Int32 deviceID   ,
                            const UInt32 varIndex  ,
                            const Int32 value      ,
                            const Int32 valueDelta ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
         OnKeyboardKeyDown( void* userData        , 
-                           const UInt32 deviceID ,
+                           const Int32 deviceID  ,
                            const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
         OnKeyboardKeyUp( void* userData        , 
-                         const UInt32 deviceID ,
+                         const Int32 deviceID  ,
                          const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
         OnDeviceBooleanOff( void* userData          , 
-                            const UInt32 deviceID   , 
+                            const Int32 deviceID    ,
                             const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
         OnDeviceBooleanOn( void* userData          , 
-                           const UInt32 deviceID   , 
+                           const Int32 deviceID    ,
                            const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
         OnDeviceVarChanged( void* userData          , 
-                            const UInt32 deviceID   , 
+                            const Int32 deviceID    , 
                             const UInt32 stateindex , 
                             const Float32 value     ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnMouseAttached( void* userData        , 
-                         const UInt32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+        OnMouseAttached( void* userData       , 
+                         const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
                          
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnMouseDetached( void* userData        , 
-                         const UInt32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+        OnMouseDetached( void* userData       , 
+                         const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnKeyboardAttached( void* userData        , 
-                            const UInt32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+        OnKeyboardAttached( void* userData       , 
+                            const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnKeyboardDetached( void* userData        , 
-                            const UInt32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+        OnKeyboardDetached( void* userData       , 
+                            const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnDeviceAttached( void* userData        , 
-                          const UInt32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+        OnDeviceAttached( void* userData       , 
+                          const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
         OnDeviceDetached( void* userData        , 
-                          const UInt32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+                          const Int32 deviceID  ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
         
         CInputDriverPlugin( const CInputDriverPlugin& src );            /**< dummy, do not use */ 
         CInputDriverPlugin& operator=( const CInputDriverPlugin& src ); /**< dummy, do not use */ 

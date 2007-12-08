@@ -125,6 +125,7 @@ class GUCEF_INPUT_EXPORT_CPP CKeyboard : public CORE::CNotifier
     
     private:
     
+    UInt32 m_deviceID;
     TKeyStates m_keyState;
     UInt32 m_keyModStates;
     CInputController* m_controller;

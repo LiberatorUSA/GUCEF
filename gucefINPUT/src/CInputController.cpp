@@ -106,7 +106,7 @@ CInputController::CInputController( void )
 {GUCEF_TRACE;
 
     RegisterEvents();
-    
+    m_keyboardMap[ 0 ] = NULL;
     SetPeriodicUpdateRequirement( true );
     RequestUpdateInterval( 5 );
 }
@@ -167,7 +167,7 @@ CInputController::CreateContext( const CORE::CValueList& params )
         {
             GUCEF_SYSTEM_LOG( 0, "Created input context" );
             
-            context->SetID( m_contextlist.AddEntry( context ) );
+            m_contextSet.insert( context );
             return context;
         }
     }
@@ -182,16 +182,16 @@ CInputController::CreateContext( const CORE::CValueList& params )
 void 
 CInputController::DestroyContext( CInputContext* context )
 {GUCEF_TRACE;
-        if ( m_driver )
-        {
-                m_contextlist.RemoveEntry( context->GetID() );
-                m_driver->DeleteContext( context );
-                
-                GUCEF_SYSTEM_LOG( 0, "Destroyed input context" );
-        }
+
+    if ( m_driver )
+    {
+        m_contextSet.erase( context );
+        m_driver->DeleteContext( context );
         
-        GUCEF_ERROR_LOG( 0, "Attempting to destroy an input context without an input driver" );
-        assert( 0 );
+        GUCEF_SYSTEM_LOG( 0, "Destroyed input context" );
+    }
+    
+    GUCEF_ERROR_LOG( 0, "Attempting to destroy an input context without an input driver" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -199,7 +199,8 @@ CInputController::DestroyContext( CInputContext* context )
 UInt32 
 CInputController::GetContextCount( void ) const
 {GUCEF_TRACE;
-        return m_contextlist.GetCount();
+
+    return (UInt32) m_contextSet.size();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -207,21 +208,22 @@ CInputController::GetContextCount( void ) const
 bool 
 CInputController::SetDriver( CInputDriver* driver )
 {GUCEF_TRACE;
-        if ( 0 == m_contextlist.GetCount() )
-        {
-                UnloadDriverModule();
-                
-                m_driver = driver;
-                m_driverisplugin = false;
-                
-                GUCEF_SYSTEM_LOG( 0, "Input driver has been set" );
-                
-                NotifyObservers( InputDriverLoadedEvent );
-                return true;
-        }
+
+    if ( 0 == GetContextCount() )
+    {
+        UnloadDriverModule();
         
-        GUCEF_ERROR_LOG( 0, "Failed to set input driver because there are input context objects remaining" );
-        return false;
+        m_driver = driver;
+        m_driverisplugin = false;
+        
+        GUCEF_SYSTEM_LOG( 0, "Input driver has been set" );
+        
+        NotifyObservers( InputDriverLoadedEvent );
+        return true;
+    }
+    
+    GUCEF_ERROR_LOG( 0, "Failed to set input driver because there are input context objects remaining" );
+    return false;
 }
         
 /*-------------------------------------------------------------------------*/
@@ -254,6 +256,8 @@ CInputController::LoadDriverModule( const CORE::CString& filename  ,
                         return true;
                 }
         }
+        
+        GUCEF_ERROR_LOG( 0, "Failed to load an input driver from module: \"" + filename + "\"" );
         delete plugin;
         return false;
 }
@@ -263,18 +267,19 @@ CInputController::LoadDriverModule( const CORE::CString& filename  ,
 void 
 CInputController::UnloadDriverModule( void )
 {GUCEF_TRACE;
-        if ( m_driverisplugin && m_driver )
-        {
-                CInputDriverPlugin* plugin = static_cast<CInputDriverPlugin*>( m_driver );
-                plugin->UnloadModule();
-                
-                m_driver = NULL;
-                delete plugin;
-                
-                GUCEF_SYSTEM_LOG( 0, "Input driver has unloaded" );
-                
-                NotifyObservers( InputDriverUnloadedEvent );
-        }
+
+    if ( m_driverisplugin && m_driver )
+    {
+        CInputDriverPlugin* plugin = static_cast<CInputDriverPlugin*>( m_driver );
+        plugin->UnloadModule();
+        
+        m_driver = NULL;
+        delete plugin;
+        
+        GUCEF_SYSTEM_LOG( 0, "Input driver has unloaded" );
+        
+        NotifyObservers( InputDriverUnloadedEvent );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -283,25 +288,27 @@ void
 CInputController::OnUpdate( const UInt64 tickcount               ,
                             const Float64 updateDeltaInMilliSecs )
 {GUCEF_TRACE;
-        for ( UInt32 i=0; i<m_contextlist.GetCount(); ++i )
+
+    TContextSet::iterator i = m_contextSet.begin();
+    while( i != m_contextSet.end() )
+    {
+        #ifdef GUCEF_INPUT_DEBUG_MODE
+
+        if ( !m_driver->OnUpdate( tickcount              ,
+                                  updateDeltaInMilliSecs ,
+                                  (*i)                   ) )
         {
-                #ifdef DEBUG_MODE
+            GUCEF_ERROR_LOG( 0, "Failed to perform an update cycle on the input driver" );
+        }                                          
+        
+        #else
+        
+        m_driver->OnUpdate( tickcount              ,
+                            updateDeltaInMilliSecs ,
+                            (*i)                   );
 
-                if ( !m_driver->OnUpdate( tickcount                                         ,
-                                          updateDeltaInMilliSecs                            ,
-                                          static_cast<CInputContext*>( m_contextlist[ i ] ) ) )
-                {
-                    GUCEF_ERROR_LOG( 0, "Failed to perform an update cycle on the input driver" );
-                }                                          
-                
-                #else
-                
-                m_driver->OnUpdate( tickcount                                         ,
-                                    updateDeltaInMilliSecs                            ,
-                                    static_cast<CInputContext*>( m_contextlist[ i ] ) );
-
-                #endif                                    
-        }                                                                
+        #endif                                    
+    }                                                                
 }
 
 /*-------------------------------------------------------------------------*/
@@ -343,82 +350,125 @@ CInputController::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CInputController::SetMouseButtonState( const UInt32 deviceIndex ,
+CInputController::SetMouseButtonState( const Int32 deviceID     ,
                                        const UInt32 buttonIndex , 
                                        const bool pressedState  )
 {GUCEF_TRACE;
 
-    if ( m_mouseMap.size() > deviceIndex )
+    TMouseMap::iterator i = m_mouseMap.find( deviceID );
+    if ( i != m_mouseMap.end() )
     {
-        m_mouseMap[ deviceIndex ]->SetButtonState( buttonIndex  ,
-                                                   pressedState );
+        (*i).second->SetButtonState( buttonIndex  ,
+                                     pressedState );
     }
+    else
+    {
+        GUCEF_ERROR_LOG( 0, "Invalid input device ID given: " + CORE::Int32ToString( deviceID ) );
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CInputController::SetMousePos( const UInt32 deviceIndex ,
-                               const UInt32 xPos        ,
-                               const UInt32 yPos        ,
-                               const Int32 xDelta       ,
-                               const Int32 yDelta       )
+CInputController::SetMousePos( const Int32 deviceID ,
+                               const UInt32 xPos    ,
+                               const UInt32 yPos    ,
+                               const Int32 xDelta   ,
+                               const Int32 yDelta   )
 {GUCEF_TRACE;
 
-    if ( m_mouseMap.size() > deviceIndex )
+    TMouseMap::iterator i = m_mouseMap.find( deviceID );
+    if ( i != m_mouseMap.end() )
     {
-        m_mouseMap[ deviceIndex ]->SetMousePos( xPos  ,
-                                                yPos );
+        (*i).second->SetMousePos( xPos  ,
+                                  yPos );
     }
+    else
+    {
+        GUCEF_ERROR_LOG( 0, "Invalid input device ID given: " + CORE::Int32ToString( deviceID ) );
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
                          
 void
-CInputController::ResetMouseStates( const UInt32 deviceIndex )
+CInputController::ResetMouseStates( const Int32 deviceID )
 {GUCEF_TRACE;
 
-    if ( m_mouseMap.size() > deviceIndex )
+    TMouseMap::iterator i = m_mouseMap.find( deviceID );
+    if ( i != m_mouseMap.end() )
     {
-        m_mouseMap[ deviceIndex ]->ResetMouseStates();
+        (*i).second->ResetMouseStates();
     }
+    else
+    {
+        GUCEF_ERROR_LOG( 0, "Invalid input device ID given: " + CORE::Int32ToString( deviceID ) );
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CInputController::SetKeyboardKeyState( const UInt32 deviceID ,
+CInputController::SetKeyboardKeyState( const Int32 deviceID  ,
                                        const KeyCode keyCode ,
                                        const bool keyPressed )
 {GUCEF_TRACE;
 
-    m_keyboardMap[ deviceID ]->SetKeyState( keyCode    ,
-                                            keyPressed );
+    TKeyboardMap::iterator i = m_keyboardMap.find( deviceID ); 
+    if ( i != m_keyboardMap.end() )
+    {
+        (*i).second->SetKeyState( keyCode    ,
+                                  keyPressed );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( 0, "Invalid input device ID given: " + CORE::Int32ToString( deviceID ) );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 CKeyboard&
-CInputController::GetKeyboard( const UInt32 deviceID )
+CInputController::GetKeyboard( const Int32 deviceID )
 {GUCEF_TRACE;
     
-    if ( m_keyboardMap.size() > deviceID )
+    TKeyboardMap::iterator i = m_keyboardMap.find( deviceID ); 
+    if ( i != m_keyboardMap.end() )
     {
-        return *( m_keyboardMap[ deviceID ] );
+        return *(*i).second;
     }
 
-    GUCEF_EMSGTHROW( EInvalidIndex, "CInputController::GetMouse(): Invalid device ID given" );
+    GUCEF_EMSGTHROW( EInvalidIndex, "CInputController::GetKeyboard(): Invalid device ID given" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CInputController::GetKeyboardCount( void ) const
+{GUCEF_TRACE;
+
+    return (UInt32) m_keyboardMap.size();
+}
+
+/*-------------------------------------------------------------------------*/
+    
+const CInputController::TKeyboardMap&
+CInputController::GetKeyboardMap( void ) const
+{GUCEF_TRACE;
+
+    return m_keyboardMap;
 }
 
 /*-------------------------------------------------------------------------*/
     
 CMouse&
-CInputController::GetMouse( const UInt32 deviceID )
+CInputController::GetMouse( const Int32 deviceID )
 {GUCEF_TRACE;
 
-    if ( m_mouseMap.size() > deviceID )
+    TMouseMap::iterator i = m_mouseMap.find( deviceID ); 
+    if ( i != m_mouseMap.end() )
     {
-        return *( m_mouseMap[ deviceID ] );
+        return *(*i).second;
     }
     GUCEF_EMSGTHROW( EInvalidIndex, "CInputController::GetMouse(): Invalid device ID given" );
 }
@@ -433,21 +483,31 @@ CInputController::GetMouseCount( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
+    
+const CInputController::TMouseMap&
+CInputController::GetMouseMap( void ) const
+{GUCEF_TRACE;
+
+    return m_mouseMap;
+}
+
+/*-------------------------------------------------------------------------*/
 
 void
-CInputController::AddMouse( const UInt32 deviceID )
+CInputController::AddMouse( const Int32 deviceID )
 {GUCEF_TRACE;
 
     CMouse* mouse = new CMouse( deviceID );
     m_mouseMap.insert( std::pair< UInt32, CMouse* >( deviceID, mouse ) );
     
-    NotifyObservers( MouseAttachedEvent );
+    GUCEF_SYSTEM_LOG( 0, "Mouse input device added with device ID " + CORE::Int32ToString( deviceID ) );
+    NotifyObservers( MouseAttachedEvent, &TMouseAttachedEventData( deviceID ) );
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
-CInputController::RemoveMouse( const UInt32 deviceID )
+CInputController::RemoveMouse( const Int32 deviceID )
 {GUCEF_TRACE;
 
     TMouseMap::iterator i = m_mouseMap.find( deviceID ); 
@@ -457,26 +517,28 @@ CInputController::RemoveMouse( const UInt32 deviceID )
         delete mouse;
         m_mouseMap.erase( i );
         
-        NotifyObservers( MouseDetachedEvent );
+        GUCEF_SYSTEM_LOG( 0, "Mouse input device removed with device ID " + CORE::Int32ToString( deviceID ) );
+        NotifyObservers( MouseDetachedEvent, &TMouseDetachedEventData( deviceID ) );
     }
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
-CInputController::AddKeyboard( const UInt32 deviceID )
+CInputController::AddKeyboard( const Int32 deviceID )
 {GUCEF_TRACE;
 
     CKeyboard* keyboard = new CKeyboard( deviceID, this );
     m_keyboardMap.insert( std::pair< UInt32, CKeyboard* >( deviceID, keyboard ) );
     
-    NotifyObservers( KeyboardAttachedEvent );
+    GUCEF_SYSTEM_LOG( 0, "Keyboard input device added with device ID " + CORE::Int32ToString( deviceID ) );
+    NotifyObservers( KeyboardAttachedEvent, &TKeyboardAttachedEventData( deviceID ) );
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
-CInputController::RemoveKeyboard( const UInt32 deviceID )
+CInputController::RemoveKeyboard( const Int32 deviceID )
 {GUCEF_TRACE;
 
     TKeyboardMap::iterator i = m_keyboardMap.find( deviceID ); 
@@ -486,14 +548,15 @@ CInputController::RemoveKeyboard( const UInt32 deviceID )
         delete keyboard;
         m_keyboardMap.erase( i );
         
-        NotifyObservers( KeyboardDetachedEvent );
+        GUCEF_SYSTEM_LOG( 0, "Keyboard input device removed with device ID " + CORE::Int32ToString( deviceID ) );
+        NotifyObservers( KeyboardDetachedEvent, &TKeyboardDetachedEventData( deviceID ) );
     }
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
-CInputController::AddDevice( const UInt32 deviceID )
+CInputController::AddDevice( const Int32 deviceID )
 {GUCEF_TRACE;
 
     // @TODO
@@ -502,7 +565,7 @@ CInputController::AddDevice( const UInt32 deviceID )
 /*-------------------------------------------------------------------------*/
     
 void
-CInputController::RemoveDevice( const UInt32 deviceID )
+CInputController::RemoveDevice( const Int32 deviceID )
 {GUCEF_TRACE;
 
     // @TODO

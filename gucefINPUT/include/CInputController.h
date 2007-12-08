@@ -27,21 +27,22 @@
 //-------------------------------------------------------------------------*/
 
 #include <map>
+#include <set>
 
 #ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
 #include "CGUCEFAppSubSystem.h"
 #define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
 #endif /* GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H ? */
 
-#ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"
-#define GUCEF_CORE_CDYNAMICARRAY_H
-#endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
-
 #ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
+
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
 
 #ifndef GUCEF_INPUT_CKEYBOARD_H
 #include "gucefINPUT_CKeyboard.h"
@@ -85,10 +86,20 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     static const CORE::CEvent KeyboardDetachedEvent;
     static const CORE::CEvent JoystickAttachedEvent;
     static const CORE::CEvent JoystickDetachedEvent;
+
+    typedef CORE::TCloneableInt32 TMouseAttachedEventData; 
+    typedef CORE::TCloneableInt32 TMouseDetachedEventData;
+    typedef CORE::TCloneableInt32 TKeyboardAttachedEventData; 
+    typedef CORE::TCloneableInt32 TKeyboardDetachedEventData;
+    typedef CORE::TCloneableInt32 TJoystickAttachedEventData;
+    typedef CORE::TCloneableInt32 TJoystickDetachedEventData;
     
     static void RegisterEvents( void );
     
     public:
+
+    typedef std::map< Int32, CMouse* > TMouseMap;  
+    typedef std::map< Int32, CKeyboard* > TKeyboardMap;
     
     static CInputController* Instance( void );                
     
@@ -105,11 +116,17 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     bool LoadDriverModule( const CORE::CString& filename  ,
                            const CORE::CValueList& params );
 
-    CKeyboard& GetKeyboard( const UInt32 deviceID );
+    CKeyboard& GetKeyboard( const Int32 deviceID );
     
-    CMouse& GetMouse( const UInt32 deviceID );
+    UInt32 GetKeyboardCount( void ) const;
+    
+    const TKeyboardMap& GetKeyboardMap( void ) const;
+    
+    CMouse& GetMouse( const Int32 deviceID );
     
     UInt32 GetMouseCount( void ) const;
+    
+    const TMouseMap& GetMouseMap( void ) const;
     
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_INPUT_EXPORT_CPP, EInvalidIndex );
     
@@ -117,7 +134,7 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
         
     /**
      *  Event callback member function.
-     *  Implement this in your decending class to handle
+     *  Implement this in your descending class to handle
      *  notification events.
      *
      *  @param notifier the notifier that sent the notification
@@ -139,33 +156,33 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     private:
     friend class CInputDriver;
     
-    void SetMouseButtonState( const UInt32 deviceIndex ,
+    void SetMouseButtonState( const Int32 deviceID     ,
                               const UInt32 buttonIndex , 
                               const bool pressedState  );
 
-    void SetMousePos( const UInt32 deviceIndex ,
-                      const UInt32 xPos        ,
-                      const UInt32 yPos        ,
-                      const Int32 xDelta       ,
-                      const Int32 yDelta       );
+    void SetMousePos( const Int32 deviceID ,
+                      const UInt32 xPos    ,
+                      const UInt32 yPos    ,
+                      const Int32 xDelta   ,
+                      const Int32 yDelta   );
                          
-    void ResetMouseStates( const UInt32 deviceIndex );    
+    void ResetMouseStates( const Int32 deviceID );    
 
-    void SetKeyboardKeyState( const UInt32 deviceIndex ,
-                              const KeyCode keyCode    ,
-                              const bool keyPressed    );
+    void SetKeyboardKeyState( const Int32 deviceID ,
+                              const KeyCode keyCode ,
+                              const bool keyPressed );
 
-    void AddMouse( const UInt32 deviceID );
+    void AddMouse( const Int32 deviceID );
     
-    void RemoveMouse( const UInt32 deviceID );
+    void RemoveMouse( const Int32 deviceID );
     
-    void AddKeyboard( const UInt32 deviceID );
+    void AddKeyboard( const Int32 deviceID );
     
-    void RemoveKeyboard( const UInt32 deviceID );
+    void RemoveKeyboard( const Int32 deviceID );
     
-    void AddDevice( const UInt32 deviceID );
+    void AddDevice( const Int32 deviceID );
     
-    void RemoveDevice( const UInt32 deviceID );
+    void RemoveDevice( const Int32 deviceID );
     
     private:
     
@@ -177,13 +194,11 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     void UnloadDriverModule( void );
     
     private:
-    
-    typedef std::map< UInt32, CMouse* > TMouseMap;  
-    typedef std::map< UInt32, CKeyboard* > TKeyboardMap;
+    typedef std::set< CInputContext* > TContextSet;
     
     CInputDriver* m_driver;
     bool m_driverisplugin;        
-    CORE::CDynamicArray m_contextlist;
+    TContextSet m_contextSet;
     
     #ifdef GUCEF_MSWIN_BUILD
     UInt32 m_hinstance;

@@ -59,7 +59,8 @@ class GUCEF_INPUT_EXPORT_CPP CKeyStateChangedEventData : public CORE::CICloneabl
     
     typedef std::map< KeyModifier, bool > TKeyModStates;
     
-    CKeyStateChangedEventData( const KeyCode keyCode     ,
+    CKeyStateChangedEventData( const UInt32 deviceID     ,
+                               const KeyCode keyCode     ,
                                const bool pressedState   ,
                                const UInt32 keyModStates );
     
@@ -67,6 +68,8 @@ class GUCEF_INPUT_EXPORT_CPP CKeyStateChangedEventData : public CORE::CICloneabl
                         
     virtual ~CKeyStateChangedEventData();
         
+    UInt32 GetDeviceID( void ) const;
+    
     KeyCode GetKeyCode( void ) const;
     
     bool GetKeyPressedState( void ) const;
@@ -84,6 +87,7 @@ class GUCEF_INPUT_EXPORT_CPP CKeyStateChangedEventData : public CORE::CICloneabl
     
     private:
     
+    UInt32 m_deviceID;
     KeyCode m_keyCode;
     bool m_pressedState;
     UInt32 m_modStates;

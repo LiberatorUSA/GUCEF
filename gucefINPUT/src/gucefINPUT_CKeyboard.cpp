@@ -76,14 +76,15 @@ CKeyboard::RegisterEvents( void )
 
 CKeyboard::CKeyboard( const UInt32 deviceID        ,
                       CInputController* controller )
-    : CORE::CNotifier()         ,
-      m_keyState()              ,
-      m_keyModStates()          ,
+    : CORE::CNotifier()          ,
+      m_deviceID( deviceID )     ,
+      m_keyState()               ,
+      m_keyModStates( 0 )        ,
       m_controller( controller )
 {GUCEF_TRACE;
     
     RegisterEvents();
-    ResetKeyboardState();
+    //ResetKeyboardState();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -138,7 +139,7 @@ CKeyboard::SetKeyState( const KeyCode key       ,
 {GUCEF_TRACE;
 
     m_keyState[ key ] = pressedState;
-    CKeyStateChangedEventData eventData( key, pressedState, m_keyModStates );
+    CKeyStateChangedEventData eventData( m_deviceID, key, pressedState, m_keyModStates );
     NotifyObservers( KeyStateChangedEvent, &eventData );
 }
 
