@@ -497,11 +497,15 @@ void
 CInputController::AddMouse( const Int32 deviceID )
 {GUCEF_TRACE;
 
-    CMouse* mouse = new CMouse( deviceID );
-    m_mouseMap.insert( std::pair< UInt32, CMouse* >( deviceID, mouse ) );
-    
-    GUCEF_SYSTEM_LOG( 0, "Mouse input device added with device ID " + CORE::Int32ToString( deviceID ) );
-    NotifyObservers( MouseAttachedEvent, &TMouseAttachedEventData( deviceID ) );
+    TMouseMap::iterator i = m_mouseMap.find( deviceID ); 
+    if ( i == m_mouseMap.end() )
+    {
+        CMouse* mouse = new CMouse( deviceID );
+        m_mouseMap.insert( std::pair< UInt32, CMouse* >( deviceID, mouse ) );
+        
+        GUCEF_SYSTEM_LOG( 0, "Mouse input device added with device ID " + CORE::Int32ToString( deviceID ) );
+        NotifyObservers( MouseAttachedEvent, &TMouseAttachedEventData( deviceID ) );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -528,11 +532,15 @@ void
 CInputController::AddKeyboard( const Int32 deviceID )
 {GUCEF_TRACE;
 
-    CKeyboard* keyboard = new CKeyboard( deviceID, this );
-    m_keyboardMap.insert( std::pair< UInt32, CKeyboard* >( deviceID, keyboard ) );
-    
-    GUCEF_SYSTEM_LOG( 0, "Keyboard input device added with device ID " + CORE::Int32ToString( deviceID ) );
-    NotifyObservers( KeyboardAttachedEvent, &TKeyboardAttachedEventData( deviceID ) );
+    TKeyboardMap::iterator i = m_keyboardMap.find( deviceID ); 
+    if ( i == m_keyboardMap.end() )
+    {
+        CKeyboard* keyboard = new CKeyboard( deviceID, this );
+        m_keyboardMap.insert( std::pair< UInt32, CKeyboard* >( deviceID, keyboard ) );
+        
+        GUCEF_SYSTEM_LOG( 0, "Keyboard input device added with device ID " + CORE::Int32ToString( deviceID ) );
+        NotifyObservers( KeyboardAttachedEvent, &TKeyboardAttachedEventData( deviceID ) );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

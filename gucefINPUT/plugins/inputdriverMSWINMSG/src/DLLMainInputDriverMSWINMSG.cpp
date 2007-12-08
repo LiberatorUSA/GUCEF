@@ -57,6 +57,8 @@ static const TVersion version = { 1, 0, 0, 0 };
 #define DRIVER_COPYRIGHT  "Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.\0"
 
 #define MAX_NR_OF_CONTEXTS      32
+#define KEYBOARD_DEVICEID       0
+#define MOUSE_DEVICEID          1
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -240,7 +242,7 @@ GrabWindowCursorInput( TContextData* data ,
 		                                        /*
 		                                         *      Send an event to the user so he can adjust for the cursor warp
 		                                         */
-		                                        data->callbacks.onMouseMove( data->callbacks.userData, cursorPos.x, cursorPos.y, cursorPos.x - data->mouseXPos, cursorPos.y - data->mouseYPos );
+		                                        data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, cursorPos.x, cursorPos.y, cursorPos.x - data->mouseXPos, cursorPos.y - data->mouseYPos );
                                                         data->mouseXPos = cursorPos.x;
                                                         data->mouseYPos = cursorPos.y;
                                                         
@@ -321,7 +323,7 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
                                 }
                         }                        
                         data->keyStateBuffer[ wparam ] = 0;                          /* , data->keyModState <- modifiers */
-                        data->callbacks.onKeyboardKeyUp( data->callbacks.userData, (KeyCode)wparam );
+                        data->callbacks.onKeyboardKeyUp( data->callbacks.userData, KEYBOARD_DEVICEID, (KeyCode)wparam );
                         break;
                 }
                 case WM_KEYDOWN :
@@ -358,14 +360,14 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
                                 }
                         }                        
                         data->keyStateBuffer[ wparam ] = 1;                           /* , data->keyModState <- modifiers */
-                        data->callbacks.onKeyboardKeyDown( data->callbacks.userData, (KeyCode)wparam ); 
+                        data->callbacks.onKeyboardKeyDown( data->callbacks.userData, KEYBOARD_DEVICEID, (KeyCode)wparam ); 
                         break;               
                 }
                 case WM_MOUSEMOVE :
                 {
                         UInt32 xPos = GET_X_LPARAM( lparam );
                         UInt32 yPos = GET_Y_LPARAM( lparam );
-                        data->callbacks.onMouseMove( data->callbacks.userData, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                        data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
                         data->mouseXPos = xPos;
                         data->mouseYPos = yPos;  
                         break;
@@ -376,12 +378,12 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
                         
                         UInt32 xPos = GET_X_LPARAM( lparam );
                         UInt32 yPos = GET_Y_LPARAM( lparam );
-                        data->callbacks.onMouseMove( data->callbacks.userData, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                        data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
                         data->mouseXPos = xPos;
                         data->mouseYPos = yPos;  
 
                         //zDelta = GET_WHEEL_DELTA_WPARAM( wParam ); // macro in MSDN but unknown                        
-                        data->callbacks.onMouseVarChanged( data->callbacks.userData, 0, data->mouseWheelPos, zDelta );
+                        data->callbacks.onMouseVarChanged( data->callbacks.userData, MOUSE_DEVICEID, 0, data->mouseWheelPos, zDelta );
                         data->mouseWheelPos += zDelta;
                         break;
                 }
@@ -389,66 +391,66 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
                 {
                         UInt32 xPos = GET_X_LPARAM( lparam );
                         UInt32 yPos = GET_Y_LPARAM( lparam );
-                        data->callbacks.onMouseMove( data->callbacks.userData, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                        data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
                         data->mouseXPos = xPos;
                         data->mouseYPos = yPos;  
                         
-                        data->callbacks.onMouseButtonDown( data->callbacks.userData, 0 );
+                        data->callbacks.onMouseButtonDown( data->callbacks.userData, MOUSE_DEVICEID, 0 );
                         break;
                 }
                 case WM_LBUTTONUP :
                 {
                         WORD xPos = GET_X_LPARAM( lparam );
                         WORD yPos = GET_Y_LPARAM( lparam );
-                        data->callbacks.onMouseMove( data->callbacks.userData, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                        data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
                         data->mouseXPos = xPos;
                         data->mouseYPos = yPos;  
                         
-                        data->callbacks.onMouseButtonUp( data->callbacks.userData, 0 );
+                        data->callbacks.onMouseButtonUp( data->callbacks.userData, MOUSE_DEVICEID, 0 );
                         break;
                 }                
                 case WM_MBUTTONDOWN :
                 {
                         WORD xPos = GET_X_LPARAM( lparam );
                         WORD yPos = GET_Y_LPARAM( lparam );
-                        data->callbacks.onMouseMove( data->callbacks.userData, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                        data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
                         data->mouseXPos = xPos;
                         data->mouseYPos = yPos;  
                         
-                        data->callbacks.onMouseButtonDown( data->callbacks.userData, 1 );
+                        data->callbacks.onMouseButtonDown( data->callbacks.userData, MOUSE_DEVICEID, 1 );
                         break;
                 }
                 case WM_MBUTTONUP :
                 {
                         WORD xPos = GET_X_LPARAM( lparam );
                         WORD yPos = GET_Y_LPARAM( lparam );
-                        data->callbacks.onMouseMove( data->callbacks.userData, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                        data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
                         data->mouseXPos = xPos;
                         data->mouseYPos = yPos; 
                         
-                        data->callbacks.onMouseButtonUp( data->callbacks.userData, 1 );
+                        data->callbacks.onMouseButtonUp( data->callbacks.userData, MOUSE_DEVICEID, 1 );
                         break;
                 }                                 
                 case WM_RBUTTONDOWN :
                 {
                         WORD xPos = GET_X_LPARAM( lparam );
                         WORD yPos = GET_Y_LPARAM( lparam );
-                        data->callbacks.onMouseMove( data->callbacks.userData, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                        data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
                         data->mouseXPos = xPos;
                         data->mouseYPos = yPos;  
                         
-                        data->callbacks.onMouseButtonDown( data->callbacks.userData, 2 );
+                        data->callbacks.onMouseButtonDown( data->callbacks.userData, MOUSE_DEVICEID, 2 );
                         break;
                 }
                 case WM_RBUTTONUP :
                 {
                         WORD xPos = GET_X_LPARAM( lparam );
                         WORD yPos = GET_Y_LPARAM( lparam );
-                        data->callbacks.onMouseMove( data->callbacks.userData, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                        data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
                         data->mouseXPos = xPos;
                         data->mouseYPos = yPos; 
                         
-                        data->callbacks.onMouseButtonUp( data->callbacks.userData, 2 );
+                        data->callbacks.onMouseButtonUp( data->callbacks.userData, MOUSE_DEVICEID, 2 );
                         break;   
                 }                
                 default : 
@@ -470,7 +472,7 @@ UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Init( void** plugdata    ,
                       const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        if ( driverData )
+        if ( NULL != driverData )
         {
                 /* we should not get here, init called more then once ? */
                 return 1;
@@ -541,7 +543,7 @@ INPUTDRIVERPLUG_Update( void* plugdata    ,
                                 if ( ( cursorPos.x != data->mouseXPos ) ||
                                      ( cursorPos.y != data->mouseYPos )  )
                                 {                             
-                                        data->callbacks.onMouseMove( data->callbacks.userData, cursorPos.x, cursorPos.y, cursorPos.x - data->mouseXPos, cursorPos.y - data->mouseYPos );
+                                        data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, cursorPos.x, cursorPos.y, cursorPos.x - data->mouseXPos, cursorPos.y - data->mouseYPos );
                                         data->mouseXPos = cursorPos.x;
                                         data->mouseYPos = cursorPos.y;                        
                                 }
@@ -574,11 +576,11 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
          *      get the window handle, this is always passed for MSWIN input drivers 
          */
         #pragma warning( disable: 4312 )
-        data->hWnd = (HWND) ParseArgListItemUInt32( args   ,
-                                                    "HWND" );
+        data->hWnd = (HWND) ParseArgListItemUInt32( args     ,
+                                                    "WINDOW" );
                 
         /*
-         *      Retrieve a pointer to the current window messgae handler
+         *      Retrieve a pointer to the current window message handler
          *      we will have to restore this link if the context is destroyed !!!
          */
         data->PrevWindowProcedurePtr = (WNDPROC) GetWindowLongPtr( data->hWnd  ,
@@ -598,6 +600,9 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
          *      Confine the mouse to the window and hide the windows cursor
          */
         GrabWindowCursorInput( data, 1 ); 
+        
+        callbacks->onKeyboardAttached( callbacks->userData, KEYBOARD_DEVICEID );
+        callbacks->onMouseAttached( callbacks->userData, MOUSE_DEVICEID );
                                
         return 1;
 }
@@ -620,6 +625,9 @@ INPUTDRIVERPLUG_DestroyContext( void* plugdata    ,
                                         
         /* make sure we release our grab on the cursor */
         GrabWindowCursorInput( data, 0 );
+
+        data->callbacks.onKeyboardDetached( data->callbacks.userData, KEYBOARD_DEVICEID );
+        data->callbacks.onMouseDetached( data->callbacks.userData, MOUSE_DEVICEID );
         
         return 1;
 }
