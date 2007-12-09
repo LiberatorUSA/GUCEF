@@ -97,6 +97,8 @@ class GUCEFCORE_EXPORT_CPP CFileAccess : public CIOAccess
                               UInt32 esize        ,
                               UInt32 elements     );                             
 
+        virtual UInt32 Write( CIOAccess& sourceData );
+
         /**
          *      Get the current offset in bytes
          */

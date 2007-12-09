@@ -278,8 +278,9 @@ CODECPLUGIN_Decode( void* plugdata         ,
     if ( ( NULL == familyType ) || ( NULL == codecType ) || ( NULL == input ) || ( NULL == output ) ) return 0;
 
     fif = FreeImage_GetFileTypeFromHandle( &io, (fi_handle) input, 0 );
+
     if ( fif == FIF_UNKNOWN )
-    {
+    {   
         fif = GetFileTypeFromExt( codecType );
     }
     
@@ -324,15 +325,20 @@ CODECPLUGIN_Decode( void* plugdata         ,
                 output->write( output, FreeImage_GetBits( dib ), FreeImage_GetDIBSize( dib ), 1 );
             }            
         }
+
+        /*
+         *  the image has been loaded into our GUCEF structures so we have no need for
+         *  FreeImage to store the data any more 
+         */
+        FreeImage_Unload( dib );
+        return 1;
     }
     
     /*
-     *  the image has been loaded into our GUCEF structures so we have no need for
-     *  FreeImage to store the data any more 
+     *  the image load failed, no need for FreeImage to store the data any more 
      */
-    FreeImage_Unload( dib );
-    
-    return 1;
+    FreeImage_Unload( dib );    
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
