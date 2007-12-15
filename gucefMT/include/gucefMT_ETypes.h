@@ -115,7 +115,9 @@ typedef enum TBuildinDataType
         DT_UINT32      ,
         DT_INT32       ,
         DT_UINT64      ,
-        DT_INT64
+        DT_INT64       ,
+        
+        DT_UNKNOWN
 };
 
 /*-------------------------------------------------------------------------//

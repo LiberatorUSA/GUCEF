@@ -42,7 +42,7 @@
 #include "CImage.h"
 #define GUCEF_IMAGE_CIMAGE_H
 #endif /* GUCEF_IMAGE_CIMAGE_H ? */
-
+#include "CFileAccess.h"
 #include "CIMGCodec.h"
 
 /*-------------------------------------------------------------------------//
@@ -178,8 +178,6 @@ CIMGCodec::Encode( const CImage& inputImage       ,
                 mipMapInfo.frameHeight = (*pixelMap)->GetHeightInPixels();
                 mipMapInfo.pixelStorageFormat = (*pixelMap)->GetPixelStorageFormat();
                 mipMapInfo.pixelComponentDataType = (*pixelMap)->GetPixelComponentDataType();
-                mipMapInfo.channelCountPerPixel = (*pixelMap)->GetNumberOfChannelsPerPixel();
-                mipMapInfo.channelComponentSize = (*pixelMap)->GetSizeOfPixelComponentInBytes();
                 
                 bufferAccess.Write( &mipMapInfo, sizeof( TImageMipMapLevelInfo ), 1 );
             }
@@ -218,6 +216,7 @@ CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
     if ( Decode( encodedInput  ,
                  bufferAccess  ) )
     {
+        bufferAccess.Setpos( 0 );
         UInt32 bytesRead = 0;
         bufferAccess.Setpos( 0 );
         
@@ -294,15 +293,15 @@ CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
                                                          mipMapLevel->frameWidth  ,
                                                          mipMapLevel->frameHeight ,
                                                          pixelStorageFormat       ,
-                                                         pixelComponentDataType   );
-
+                                                         pixelComponentDataType   );                    
+                    
                     // Add this mipmap level to the frame
                     mipMapList.push_back( CImage::TPixelMapPtr( pixelMap ) );
                     
                     if ( i+1 < imageInfo.nrOfFramesInImage )
                     {
                         // Jump to the next image component in the buffer
-                        UInt32 pixelBlockSize = ( mipMapLevel->frameWidth * mipMapLevel->frameHeight ) * ( mipMapLevel->channelComponentSize * mipMapLevel->channelCountPerPixel );
+                        UInt32 pixelBlockSize = ( mipMapLevel->frameWidth * mipMapLevel->frameHeight ) * pixelMap->GetSizeOfPixelInBytes();
                         bufferOffset += pixelBlockSize;
                         if ( bufferOffset < outputBuffer.GetDataSize() )
                         {

@@ -38,6 +38,15 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      CLASSES                                                            //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+// Forward declarations of classes used
+namespace GUCEF { namespace CORE  { class CIOAccess; } }
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -77,7 +86,7 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
     
     UInt32 GetPixelCount( void ) const;
     
-    UInt32 GetSizeOfPixelComponentInBytes( void ) const;
+    UInt32 GetPixelChannelSize( void ) const;
     
     UInt32 GetSizeOfPixelInBytes( void ) const;
     
@@ -159,6 +168,21 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
                  const UInt32 heightInPixels                   ,
                  const TPixelStorageFormat pixelStorageFormat  ,
                  const TBuildinDataType pixelComponentDataType );
+                 
+    /**
+     *  Copy the pixel map data to the resource given.
+     *  No meta data is added, just the pixel map itself
+     *
+     *  @param resource the resource to which the pixel map will be written
+     */
+    bool CopyTo( CORE::CIOAccess& resource );
+    
+    static UInt32 GetChannelCountForFormat( const TPixelStorageFormat pixelStorageFormat );
+    
+    static UInt32 GetPixelChannelSize( const TBuildinDataType pixelComponentDataType );
+    
+    static UInt32 GetPixelSize( const TPixelStorageFormat pixelStorageFormat  ,
+                                const TBuildinDataType pixelComponentDataType );
 
     /**
      *  Returns the expected size of a pixel map given the width and height and pixel

@@ -172,6 +172,197 @@ GetFileTypeFromExt( const char* ext )
 
 /*---------------------------------------------------------------------------*/
 
+int
+ConvertToPCDT( const FREE_IMAGE_TYPE imageType )
+{
+    switch( imageType )
+    {
+        case FIT_BITMAP :
+        {
+            return DT_UINT8;
+        }
+        case FIT_COMPLEX :
+        case FIT_UNKNOWN :
+        {
+            return DT_UNKNOWN;
+        }
+        case FIT_UINT32 :
+        {
+            return DT_UINT32;
+        }        
+        case FIT_INT32 :
+        {
+            return DT_INT32;
+        }        
+        case FIT_FLOAT :
+        {
+            return DT_FLOAT32;
+        }
+        case FIT_DOUBLE :
+        {
+            return DT_FLOAT64;
+        }        
+        case FIT_UINT16 :
+        {
+            return DT_UINT16;
+        }        
+        case FIT_INT16 :
+        {
+            return DT_INT16;
+        }
+        case FIT_RGBF :
+        {
+            return DT_FLOAT32;
+        }        
+        case FIT_RGB16 :
+        {
+            return DT_UINT16;
+        }
+        case FIT_RGBAF :
+        {
+            return DT_FLOAT32;
+        }        
+        case FIT_RGBA16 :
+        {
+            return DT_UINT16;
+        }
+        default :
+        {
+            return DT_UNKNOWN;
+        }
+    }    
+}
+
+/*---------------------------------------------------------------------------*/
+
+int
+ConvertToPSF( const FREE_IMAGE_TYPE imageType       ,
+              const FREE_IMAGE_COLOR_TYPE colorType )
+{
+    switch( imageType )
+    {
+        case FIT_BITMAP :
+        {
+            switch ( colorType )
+            {
+                case FIC_RGB :
+                {
+                    return PSF_RGB;
+                }
+                case FIC_RGBALPHA :
+                {
+                    return PSF_RGBA;
+                }
+                default :
+                {
+                    return PSF_UNKNOWN;
+                }                
+            }
+        }
+        case FIT_UNKNOWN :
+        {
+            return PSF_UNKNOWN;
+        }
+        case FIT_COMPLEX :
+        case FIT_UINT32 :
+        case FIT_INT32 :
+        case FIT_FLOAT :
+        case FIT_DOUBLE :
+        case FIT_UINT16 :
+        case FIT_INT16 :
+        {
+            return PSF_SINGLE_CHANNEL;
+        }
+        case FIT_RGBF :
+        case FIT_RGB16 :
+        {
+            return PSF_RGB;
+        }
+        case FIT_RGBAF :
+        case FIT_RGBA16 :
+        {
+            return PSF_RGBA;
+        }
+        default :
+        {
+            return PSF_UNKNOWN;
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+UInt32
+GetChannelCountForFormat( const int pixelStorageFormat )
+{
+    switch ( pixelStorageFormat )
+    {
+        case PSF_BGR :
+        case PSF_RGB :
+        {
+            return 3;
+        }
+        case PSF_BGRA :
+        case PSF_RGBA :
+        {
+            return 4;
+        }
+        case PSF_SINGLE_CHANNEL_RED :
+        case PSF_SINGLE_CHANNEL_GREEN :
+        case PSF_SINGLE_CHANNEL_BLUE :
+        case PSF_SINGLE_CHANNEL_LUMINANCE :
+        case PSF_SINGLE_CHANNEL_ALPHA :
+        {
+            return 1;
+        }
+        default :
+        {
+            return 0;
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+UInt32
+GetPixelChannelSize( const int pixelComponentDataType )
+{
+    switch ( pixelComponentDataType )
+    {
+        case DT_INT8 :
+        case DT_UINT8 :
+        {
+            return 1;
+        }
+        case DT_INT16 :
+        case DT_UINT16 :
+        {
+            return 2;
+        }        
+        case DT_INT32 :
+        case DT_UINT32 :
+        case DT_FLOAT32 :
+        {
+            return 4;
+        }
+        default :
+        {
+            return 0;
+        }        
+    }            
+}
+
+/*---------------------------------------------------------------------------*/
+
+UInt32
+GetPixelSize( const int pixelStorageFormat     ,
+              const int pixelComponentDataType )
+{    
+    return GetChannelCountForFormat( pixelStorageFormat ) * GetPixelChannelSize( pixelComponentDataType );
+}
+
+/*---------------------------------------------------------------------------*/
+
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 CODECPLUGIN_Init( void** plugdata    , 
                   const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
@@ -271,7 +462,8 @@ CODECPLUGIN_Decode( void* plugdata         ,
     TImageInfo imageInfo;
     TImageFrameInfo imageFrameInfo;
     TImageMipMapLevelInfo imageMMInfo;
-    FREE_IMAGE_FORMAT fif;
+    FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+    FREE_IMAGE_TYPE fit = FIT_UNKNOWN;
     FIBITMAP* dib = NULL;
     
     /* input sanity check */
@@ -289,6 +481,50 @@ CODECPLUGIN_Decode( void* plugdata         ,
         dib = FreeImage_LoadFromHandle( fif, &io, (fi_handle) input, 0 );
         if ( dib != NULL )
         {        
+            /* First we get convert image types we cannot handle */
+            UInt32 bpp = FreeImage_GetBPP( dib );
+            FREE_IMAGE_COLOR_TYPE colourType = FreeImage_GetColorType( dib );            
+            fit = FreeImage_GetImageType( dib );
+            
+            if ( FIT_BITMAP == fit )
+            {
+                if ( bpp < 8 )
+                {
+				    /* we do not support a format that has less that 8 bits per pixel */
+				    FIBITMAP* newDIB = FreeImage_ConvertTo8Bits( dib );
+				    FreeImage_Unload( newDIB );
+				    dib = newDIB;
+				    colourType = FreeImage_GetColorType( dib );
+				    bpp = FreeImage_GetBPP( dib );       
+                }            
+    			
+			    /* Now that we know the BPP is always >= 8 we can check the color format */
+			    if ( ( colourType == FIC_MINISWHITE ) || 
+			         ( colourType == FIC_MINISBLACK )  )
+			    {
+				    /* custom color ranges are not supported */
+				    FIBITMAP* newDIB = FreeImage_ConvertToGreyscale( dib );
+				    FreeImage_Unload( newDIB );
+				    dib = newDIB;
+				    colourType = FreeImage_GetColorType( dib );
+				    bpp = FreeImage_GetBPP( dib );
+                }
+                else
+			    if ( ( colourType == FIC_PALETTE ) ||
+			         ( colourType == FIC_CMYK )     )
+			    {
+				    /* palettes are not supported */
+				    FIBITMAP* newDIB = FreeImage_ConvertTo24Bits( dib );
+				    FreeImage_Unload( newDIB );
+				    dib = newDIB;
+				    colourType = FreeImage_GetColorType( dib );
+				    bpp = FreeImage_GetBPP( dib );
+			    }
+			    
+			    /* At this point images are always greyscale or RGB or RGBA and BBP is always >= 8 */
+            }
+			
+
             /* write the TImageInfo section */
             imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
             frameCount = imageInfo.nrOfFramesInImage = (UInt32) 1; /* multiple frames are not supported atm */
@@ -305,12 +541,10 @@ CODECPLUGIN_Decode( void* plugdata         ,
                 {
                     /* write the TImageMipMapLevelInfo section */
                     imageMMInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
-                    imageMMInfo.channelComponentSize = 8; /* FreeImage only supports UInt8 when using the default flags */
-                    imageMMInfo.channelCountPerPixel = FreeImage_GetBPP(dib );
                     imageMMInfo.frameHeight = FreeImage_GetHeight( dib );
                     imageMMInfo.frameWidth = FreeImage_GetWidth( dib );
-                    imageMMInfo.pixelComponentDataType = DT_UINT8; /* FreeImage only supports this type when using the default flags */
-                    imageMMInfo.pixelStorageFormat = PSF_RGB;  /* FreeImage only supports this type when using the default flags */
+                    imageMMInfo.pixelComponentDataType = ConvertToPCDT( fit );
+                    imageMMInfo.pixelStorageFormat = ConvertToPSF( fit, colourType );
                     output->write( output, &imageMMInfo, sizeof( imageMMInfo ), 1 );
                 }
             }
@@ -320,9 +554,28 @@ CODECPLUGIN_Decode( void* plugdata         ,
         for ( i=0; i<frameCount; ++i )
         {
             for ( n=0; n<mipmapCount; ++n )
-            {   
+            {            
                 /* write the pixel data */
-                output->write( output, FreeImage_GetBits( dib ), FreeImage_GetDIBSize( dib ), 1 );
+           
+                unsigned char* srcData = FreeImage_GetBits( dib );
+                unsigned char* pSrc = NULL;
+                UInt32 dstPitch = imageMMInfo.frameWidth * GetPixelSize( imageMMInfo.pixelStorageFormat, imageMMInfo.pixelComponentDataType );
+                UInt32 srcPitch = FreeImage_GetPitch( dib );
+                UInt32 y = 0;
+                
+                for ( y = 0; y < imageMMInfo.frameHeight; ++y )
+                {
+                    pSrc = srcData + ( imageMMInfo.frameHeight - y - 1 ) * srcPitch;
+                    if ( dstPitch != output->write( output, pSrc, dstPitch, 1 ) )
+                    {
+                        /*
+                         *  we where unable to write all the data to the output resource
+                         *  Image loading has failed
+                         */
+                        FreeImage_Unload( dib );    
+                        return 0;                         
+                    }
+                }
             }            
         }
 

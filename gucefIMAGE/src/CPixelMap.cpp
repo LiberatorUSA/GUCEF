@@ -26,7 +26,15 @@
 #include <string.h> /* <- for memset() */
 #include <assert.h>
 
+#ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
+#ifndef GUCEF_CORE_CMFILEACCESS_H
+#include "CMFileAccess.h"
+#define GUCEF_CORE_CMFILEACCESS_H
+#endif /* GUCEF_CORE_CMFILEACCESS_H ? */
 
 #include "CPixelMap.h"
 
@@ -147,7 +155,7 @@ UInt32
 CPixelMap::GetWidthInBytes( void ) const
 {GUCEF_TRACE;
     
-    return GetSizeOfPixelComponentInBytes() * GetWidthInPixels();
+    return GetSizeOfPixelInBytes() * GetWidthInPixels();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -156,7 +164,7 @@ UInt32
 CPixelMap::GetHeightInBytes( void ) const
 {GUCEF_TRACE;
 
-    return GetSizeOfPixelComponentInBytes() * GetHeightInPixels();
+    return GetSizeOfPixelInBytes() * GetHeightInPixels();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -234,40 +242,10 @@ CPixelMap::GetDataAtScanLine( const UInt32 scanLineIndex ) const
 /*--------------------------------------------------------------------------*/
 
 UInt32
-CPixelMap::GetSizeOfPixelComponentInBytes( void ) const
+CPixelMap::GetPixelChannelSize( void ) const
 {GUCEF_TRACE;
 
-    switch ( m_pixelComponentDataType )
-    {
-        case MT::DT_UINT8 :
-        case MT::DT_INT8  :
-        {
-            return 1;
-        }
-        case MT::DT_UINT16 :
-        case MT::DT_INT16  :
-        {
-            return 2;
-        }
-        case MT::DT_FLOAT32 :
-        case MT::DT_UINT32  :
-        case MT::DT_INT32   :
-        {
-            return 4;
-        }
-        case MT::DT_FLOAT64 :
-        case MT::DT_UINT64  :
-        case MT::DT_INT64   :
-        {
-            return 8;
-        }
-        default :
-        {
-            // We should never get here
-            GUCEF_UNREACHABLE;
-            return 0;
-        }
-    }    
+    return GetPixelChannelSize( m_pixelComponentDataType );  
 }
 
 /*--------------------------------------------------------------------------*/
@@ -276,33 +254,7 @@ UInt32
 CPixelMap::GetNumberOfChannelsPerPixel( void ) const
 {GUCEF_TRACE;
     
-    switch ( m_pixelStorageFormat )
-    {
-        case PSF_BGR :
-        case PSF_RGB :
-        {
-            return 3;
-        }
-        case PSF_BGRA :
-        case PSF_RGBA :
-        {
-            return 4;
-        }        
-        case PSF_SINGLE_CHANNEL_RED :
-        case PSF_SINGLE_CHANNEL_GREEN :
-        case PSF_SINGLE_CHANNEL_BLUE :
-        case PSF_SINGLE_CHANNEL_ALPHA :
-        case PSF_SINGLE_CHANNEL_LUMINANCE :
-        {
-            return 1;
-        }
-        default :
-        {
-            // We should never get here
-            GUCEF_UNREACHABLE;
-            return 0;
-        }                
-    }    
+    return GetChannelCountForFormat( m_pixelStorageFormat );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -311,7 +263,7 @@ UInt32
 CPixelMap::GetSizeOfPixelInBytes( void ) const
 {GUCEF_TRACE;
 
-    return GetNumberOfChannelsPerPixel() * GetSizeOfPixelComponentInBytes();
+    return GetNumberOfChannelsPerPixel() * GetPixelChannelSize();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -415,70 +367,98 @@ CPixelMap::ConvertPixelStorageFormatTo( const TPixelStorageFormat pixelStorageFo
 /*--------------------------------------------------------------------------*/
 
 UInt32
-CPixelMap::GetExpectedPixelMapSize( const UInt32 widthInPixels                    ,
-                                    const UInt32 heightInPixels                   ,
-                                    const TPixelStorageFormat pixelStorageFormat  ,
-                                    const TBuildinDataType pixelComponentDataType )
-{
-    UInt32 pixelCount = widthInPixels * heightInPixels;
-    
+CPixelMap::GetChannelCountForFormat( const TPixelStorageFormat pixelStorageFormat )
+{GUCEF_TRACE;
+
+    switch ( pixelStorageFormat )
+    {
+        case PSF_BGR :
+        case PSF_RGB :
+        {
+            return 3;
+        }
+        case PSF_BGRA :
+        case PSF_RGBA :
+        {
+            return 4;
+        }
+        case PSF_SINGLE_CHANNEL_RED :
+        case PSF_SINGLE_CHANNEL_GREEN :
+        case PSF_SINGLE_CHANNEL_BLUE :
+        case PSF_SINGLE_CHANNEL_LUMINANCE :
+        case PSF_SINGLE_CHANNEL_ALPHA :
+        {
+            return 1;
+        }
+        default :
+        {
+            return 0;
+        }
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+CPixelMap::GetPixelChannelSize( const TBuildinDataType pixelComponentDataType )
+{GUCEF_TRACE;
+
     switch ( pixelComponentDataType )
     {
         case GUCEF::MT::DT_INT8 :
         case GUCEF::MT::DT_UINT8 :
         {
-            switch ( pixelStorageFormat )
-            {
-                case GUCEF::IMAGE::PSF_RGB : return 1 * 3 * pixelCount;
-                case GUCEF::IMAGE::PSF_RGBA : return 1 * 4 * pixelCount;
-                case GUCEF::IMAGE::PSF_BGR : return 1 * 3 * pixelCount;
-                case GUCEF::IMAGE::PSF_BGRA : return 1 * 4 * pixelCount;
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_RED : return 1 * 1 * pixelCount;
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_GREEN : return 1 * 1 * pixelCount;
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_BLUE : return 1 * 1 * pixelCount;
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_LUMINANCE : return 1 * 1 * pixelCount;
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_ALPHA : return 1 * 1 * pixelCount;
-                default : return 0;
-            }
+            return 1;
         }
         case GUCEF::MT::DT_INT16 :
         case GUCEF::MT::DT_UINT16 :
         {
-            switch ( pixelStorageFormat )
-            {
-                case GUCEF::IMAGE::PSF_RGB : return 2 * 3 * pixelCount;
-                case GUCEF::IMAGE::PSF_RGBA : return 2 * 4 * pixelCount;
-                case GUCEF::IMAGE::PSF_BGR : return 2 * 3 * pixelCount;
-                case GUCEF::IMAGE::PSF_BGRA : return 2 * 4 * pixelCount;                
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_RED : return 2 * 1 * pixelCount;
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_GREEN : return 2 * 1 * pixelCount;
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_BLUE : return 2 * 1 * pixelCount;
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_LUMINANCE : return 2 * 1 * pixelCount;
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_ALPHA : return 2 * 1 * pixelCount;
-                default : return 0;
-            }
+            return 2;
         }        
         case GUCEF::MT::DT_INT32 :
         case GUCEF::MT::DT_UINT32 :
         case GUCEF::MT::DT_FLOAT32 :
         {
-            switch ( pixelStorageFormat )
-            {
-                case GUCEF::IMAGE::PSF_RGB : return 4 * 3 * pixelCount;
-                case GUCEF::IMAGE::PSF_RGBA : return 4 * 4 * pixelCount;
-                case GUCEF::IMAGE::PSF_BGR : return 4 * 3 * pixelCount;
-                case GUCEF::IMAGE::PSF_BGRA : return 4 * 4 * pixelCount;                
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_RED : return 4 * 1 * pixelCount;
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_GREEN : return 4 * 1 * pixelCount;
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_BLUE : return 4 * 1 * pixelCount;
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_LUMINANCE : return 4 * 1 * pixelCount;
-                case GUCEF::IMAGE::PSF_SINGLE_CHANNEL_ALPHA : return 4 * 1 * pixelCount;
-                default : return 0;
-            }
+            return 4;
         }
-        
-        default : return 0;
-    }
+        default :
+        {
+            return 0;
+        }        
+    }            
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+CPixelMap::GetPixelSize( const TPixelStorageFormat pixelStorageFormat  ,
+                         const TBuildinDataType pixelComponentDataType )
+{GUCEF_TRACE;
+    
+    return GetChannelCountForFormat( pixelStorageFormat ) * GetPixelChannelSize( pixelComponentDataType );
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+CPixelMap::GetExpectedPixelMapSize( const UInt32 widthInPixels                    ,
+                                    const UInt32 heightInPixels                   ,
+                                    const TPixelStorageFormat pixelStorageFormat  ,
+                                    const TBuildinDataType pixelComponentDataType )
+{GUCEF_TRACE;
+
+    return widthInPixels * heightInPixels * GetPixelSize( pixelStorageFormat, pixelComponentDataType );
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::CopyTo( CORE::CIOAccess& resource )
+{GUCEF_TRACE;
+
+    UInt32 dataSize = GetTotalSizeInBytes();
+    CORE::CMFileAccess memoryFile( m_pixelMapData, dataSize );
+    return resource.Write( memoryFile ) == dataSize;
 }
 
 /*-------------------------------------------------------------------------//
