@@ -111,6 +111,24 @@ ParseArgListItemUInt32( const char*** args ,
 
 /*---------------------------------------------------------------------------*/
 
+void
+SetWindowSizeForMice( TContextData* data ,
+                      UInt32 width       ,
+                      UInt32 height      )
+{
+    UInt32 miceCount = (UInt32) data->mice.size();
+    std::vector< OIS::Mouse* >::iterator i = data->mice.begin();
+    while ( i != data->mice.end() )
+    {
+        const OIS::MouseState& mouseState = (*i)->getMouseState();
+        mouseState.width = width;
+        mouseState.height = height;
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Init( void** plugdata    ,
                       const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
@@ -221,13 +239,19 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
             {
             }
         }
+        UInt32 windowWidth = ParseArgListItemUInt32( args, "WINDOW_WIDTH" );
+        UInt32 windowHeight = ParseArgListItemUInt32( args, "WINDOW_HEIGHT" );
         UInt32 miceCount = (UInt32) data->inputManager->numMice();
         for ( UInt32 i=0; i<miceCount; ++i )
         {
             try
             {
                 OIS::Mouse* mouse = static_cast< OIS::Mouse* >( data->inputManager->createInputObject( OIS::OISMouse, true ) );
+                const OIS::MouseState& mouseState = mouse->getMouseState();
+                
                 mouse->setEventCallback( data->mouseListener );
+                mouseState.width = windowWidth;
+                mouseState.height = windowHeight;
                 data->mice.push_back( mouse );
                 data->callbacks.onMouseAttached( data->callbacks.userData, mouse->getID() );
             }
