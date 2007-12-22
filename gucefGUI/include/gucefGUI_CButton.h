@@ -60,7 +60,7 @@ class GUCEF_GUI_EXPORT_CPP CButton : public CWidget
     
     CButton( void );
     
-    ~CButton();
+    virtual ~CButton();
     
     virtual bool SetButtonText( const CString& newText );
     

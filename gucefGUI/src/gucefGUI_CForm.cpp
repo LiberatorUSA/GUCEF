@@ -97,11 +97,62 @@ CForm::SaveLayout( CORE::CIOAccess& layoutStorage )
 
 /*-------------------------------------------------------------------------*/
     
-CWidget*
+const CWidget*
 CForm::GetRootWidget( void ) const
 {GUCEF_TRACE;
 
     return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CWidget*
+CForm::GetRootWidget( void )
+{GUCEF_TRACE;
+
+    return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CForm::SetVisibility( const bool isVisible )
+{GUCEF_TRACE;
+
+    CWidget* widget = GetRootWidget();
+    if ( NULL != widget )
+    {
+        return widget->SetVisibility( isVisible );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CForm::Show( void )
+{GUCEF_TRACE;
+
+    CWidget* widget = GetRootWidget();
+    if ( NULL != widget )
+    {
+        return widget->SetVisibility( true );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CForm::Hide( void )
+{GUCEF_TRACE;
+
+    CWidget* widget = GetRootWidget();
+    if ( NULL != widget )
+    {
+        return widget->SetVisibility( false );
+    }
+    return false;    
 }
 
 /*-------------------------------------------------------------------------//

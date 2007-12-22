@@ -85,7 +85,15 @@ class GUCEF_GUI_EXPORT_CPP CForm : public GUCEF::CORE::CObservingNotifier
     
     virtual bool SaveLayout( CORE::CIOAccess& layoutStorage );
     
-    virtual CWidget* GetRootWidget( void ) const;
+    virtual const CWidget* GetRootWidget( void ) const;
+    
+    virtual CWidget* GetRootWidget( void );
+    
+    virtual bool SetVisibility( const bool isVisible );
+    
+    virtual bool Show( void );
+    
+    virtual bool Hide( void );
     
     private:
     

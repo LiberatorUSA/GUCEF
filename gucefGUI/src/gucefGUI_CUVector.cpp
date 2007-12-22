@@ -54,6 +54,17 @@ CUVector::CUVector( void )
 
 /*-------------------------------------------------------------------------*/
 
+CUVector::CUVector( const CUDim& x ,
+                    const CUDim& y )
+    : m_x( x ) ,
+      m_y( y )
+{GUCEF_TRACE;
+
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
 CUVector::CUVector( const CUVector& src )
     : m_x( src.m_x ) ,
       m_y( src.m_y )

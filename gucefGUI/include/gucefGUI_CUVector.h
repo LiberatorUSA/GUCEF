@@ -52,6 +52,9 @@ class GUCEF_GUI_EXPORT_CPP CUVector
     
     CUVector( void );
     
+    CUVector( const CUDim& x ,
+              const CUDim& y );
+    
     CUVector( const CUVector& src );
     
     ~CUVector();
