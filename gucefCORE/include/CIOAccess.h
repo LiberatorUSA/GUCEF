@@ -204,9 +204,9 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
         virtual bool IsValid( void ) = 0;
         
         /**
-         *  @return returns the size of the resource if possible. returns -1 if the size cannot be determined
+         *  @return returns the size of the resource if possible.
          */
-        virtual Int32 GetSize( void ) const = 0;
+        virtual UInt32 GetSize( void ) const;
         
         /** 
          *  Flushes all outstanding mutations on the I/O device

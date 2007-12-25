@@ -258,7 +258,7 @@ CFileAccess::IsValid( void )
 
 /*-------------------------------------------------------------------------*/
 
-Int32 
+UInt32 
 CFileAccess::GetSize( void ) const
 {GUCEF_TRACE;
         if ( _file && _writeable )

@@ -191,7 +191,7 @@ CInputDriver::GetUnicodeForKeyCode( const KeyCode keyCode     ,
             case KEYCODE_O : { if ( isUppercase ) unicode = 0x4F; else unicode = 0x6F; return true; }
             case KEYCODE_P : { if ( isUppercase ) unicode = 0x50; else unicode = 0x70; return true; }
             case KEYCODE_A : { if ( isUppercase ) unicode = 0x41; else unicode = 0x61; return true; }
-            case KEYCODE_S : { if ( isUppercase ) unicode = 0x53; else unicode = 0x63; return true; }
+            case KEYCODE_S : { if ( isUppercase ) unicode = 0x53; else unicode = 0x73; return true; }
             case KEYCODE_D : { if ( isUppercase ) unicode = 0x44; else unicode = 0x64; return true; }
             case KEYCODE_F : { if ( isUppercase ) unicode = 0x46; else unicode = 0x66; return true; }
             case KEYCODE_G : { if ( isUppercase ) unicode = 0x47; else unicode = 0x67; return true; }
@@ -210,8 +210,23 @@ CInputDriver::GetUnicodeForKeyCode( const KeyCode keyCode     ,
         }
     }
     
-    unicode = 0;
-    return false;
+    // Try the symbols
+    // Note that the unicode values used come from the 'Basic-Latin' character set
+    switch ( keyCode )
+    {
+        case KEYCODE_0 : unicode = 0x30; return true;
+        case KEYCODE_1 : unicode = 0x31; return true;
+        case KEYCODE_2 : unicode = 0x32; return true;
+        case KEYCODE_3 : unicode = 0x33; return true;
+        case KEYCODE_4 : unicode = 0x34; return true;
+        case KEYCODE_5 : unicode = 0x35; return true;
+        case KEYCODE_6 : unicode = 0x36; return true;
+        case KEYCODE_7 : unicode = 0x37; return true;
+        case KEYCODE_8 : unicode = 0x38; return true;
+        case KEYCODE_9 : unicode = 0x39; return true;
+        case KEYCODE_SPACE : unicode = 0x20; return true;
+        default: { unicode = 0; return false; }
+    }
 }
 
 /*-------------------------------------------------------------------------//

@@ -443,6 +443,19 @@ CIOAccess::Write( CIOAccess& sourceData )
     return totalByteCount;
 }
 
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CIOAccess::GetSize( void ) const
+{GUCEF_TRACE;
+    
+    UInt32 pos = Tell();
+    const_cast< CIOAccess* >( this )->Seek( 0, SEEK_END );
+    UInt32 size = Tell();
+    const_cast< CIOAccess* >( this )->Seek( pos, SEEK_SET );
+    return size;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

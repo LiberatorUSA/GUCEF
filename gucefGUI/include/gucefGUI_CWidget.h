@@ -123,7 +123,11 @@ class GUCEF_GUI_EXPORT_CPP CWidget : public CORE::CObservingNotifier
     
     virtual bool GetParentWidget( CWidget** parentWidget );
     
+    virtual CWidget* GetChildWidget( const CString& widgetName );
+    
     virtual bool GetChildWidgetSet( TWidgetSet& childSet );
+    
+    virtual CString GetName( void ) const;
     
     virtual bool SetPropertyValue( const CString& widgetProperty ,
                                    const CString& propertyValue  );

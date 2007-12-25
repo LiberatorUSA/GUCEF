@@ -17,24 +17,16 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CFORM_H
-#define GUCEF_GUI_CFORM_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CIOACCESS_H
-#include "CIOAccess.h"
-#define GUCEF_CORE_CIOACCESS_H
-#endif /* GUCEF_CORE_CIOACCESS_H ? */
-
-#ifndef GUCEF_GUI_CWIDGET_H
-#include "gucefGUI_CWidget.h"
-#define GUCEF_GUI_CWIDGET_H
-#endif /* GUCEF_GUI_CWIDGET_H ? */
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
 #include "gucefGUI_CFormBackend.h"
 
@@ -49,52 +41,21 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+    
+CFormBackend::CFormBackend( void )
+{GUCEF_TRACE;
 
-class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
-{
-    public:    
-    
-    static const CORE::CEvent LayoutLoadedEvent;
-    static const CORE::CEvent LayoutSavedEvent;
-    
-    static void RegisterEvents( void );
-    
-    public:
-    
-    CForm( void );
-    
-    virtual ~CForm();
-    
-    virtual bool LoadLayout( CORE::CIOAccess& layoutStorage );
-    
-    virtual bool SaveLayout( CORE::CIOAccess& layoutStorage );
-    
-    virtual const CWidget* GetRootWidget( void ) const;
-    
-    virtual CWidget* GetRootWidget( void );
-    
-    virtual CWidget* GetWidget( const CString& widgetName );
+}
 
-    virtual bool IsVisible( void ) const;
-    
-    virtual bool SetVisibility( const bool isVisible );
-    
-    virtual bool Show( void );
-    
-    virtual bool Hide( void );
-    
-    private:
-    
-    CForm( const CForm& src );
-    CForm& operator=( const CForm& src );
-    
-    private:
-    
-    CFormBackend* m_backend;
-};
+/*-------------------------------------------------------------------------*/
+
+CFormBackend::~CFormBackend()
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -106,16 +67,3 @@ class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_GUI_CFORM_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

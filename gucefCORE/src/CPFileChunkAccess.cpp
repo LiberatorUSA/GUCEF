@@ -317,7 +317,7 @@ CPFileChunkAccess::Setpos( UInt32 position )
 
 /*-------------------------------------------------------------------------*/
 
-Int32
+UInt32
 CPFileChunkAccess::GetSize( void ) const
 {
         return pafsize( _pafile );

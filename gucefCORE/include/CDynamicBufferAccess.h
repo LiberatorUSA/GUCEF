@@ -109,7 +109,7 @@ class GUCEFCORE_EXPORT_CPP CDynamicBufferAccess : public CIOAccess
     /**
      *      Get the size of the resource in bytes
      */        
-    virtual Int32 GetSize( void ) const;
+    virtual UInt32 GetSize( void ) const;
 
     /**
      *      jump to a different part of the resource

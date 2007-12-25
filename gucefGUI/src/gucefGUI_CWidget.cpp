@@ -102,6 +102,24 @@ CWidget::~CWidget()
 
 /*-------------------------------------------------------------------------*/
 
+CWidget*
+CWidget::GetChildWidget( const CString& widgetName )
+{GUCEF_TRACE;
+
+    return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CWidget::GetName( void ) const
+{GUCEF_TRACE;
+    
+    return CString(); 
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CWidget::SetVisibility( const bool isVisible )
 {GUCEF_TRACE;

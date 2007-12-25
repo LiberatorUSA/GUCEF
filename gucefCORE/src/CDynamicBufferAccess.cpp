@@ -294,7 +294,7 @@ CDynamicBufferAccess::Flush( void )
 
 /*-------------------------------------------------------------------------*/
 
-Int32 
+UInt32 
 CDynamicBufferAccess::GetSize( void ) const
 {GUCEF_TRACE;
 

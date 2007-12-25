@@ -28,12 +28,6 @@
 
 #include "CTFactoryBase.h"
 
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTFACTORY_CPP
-    #pragma warning( push )
-#endif
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -174,12 +168,6 @@ CTFactory< BaseClassType, ConcreteClassType >::Clone( void ) const
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_CTFACTORY_CPP
-    #pragma warning( pop )
-#endif
 
 /*-------------------------------------------------------------------------*/
 

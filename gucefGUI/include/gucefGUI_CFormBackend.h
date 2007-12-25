@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CFORM_H
-#define GUCEF_GUI_CFORM_H
+#ifndef GUCEF_GUI_CFORMBACKEND_H
+#define GUCEF_GUI_CFORMBACKEND_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -31,12 +31,15 @@
 #define GUCEF_CORE_CIOACCESS_H
 #endif /* GUCEF_CORE_CIOACCESS_H ? */
 
+#ifndef GUCEF_CORE_CTFACTORYBASE_H
+#include "CTFactoryBase.h"
+#define GUCEF_CORE_CTFACTORYBASE_H
+#endif /* GUCEF_CORE_CTFACTORYBASE_H ? */
+
 #ifndef GUCEF_GUI_CWIDGET_H
 #include "gucefGUI_CWidget.h"
 #define GUCEF_GUI_CWIDGET_H
 #endif /* GUCEF_GUI_CWIDGET_H ? */
-
-#include "gucefGUI_CFormBackend.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,48 +56,43 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
+/**
+ *  Abstract base class used by the form class to abstract from the backend
+ *  This allows you to descend from the CForm class as you wish without having
+ *  to create a matching backend implementation for every form type.
+ */
+class GUCEF_GUI_EXPORT_CPP CFormBackend
 {
-    public:    
-    
-    static const CORE::CEvent LayoutLoadedEvent;
-    static const CORE::CEvent LayoutSavedEvent;
-    
-    static void RegisterEvents( void );
-    
     public:
     
-    CForm( void );
+    typedef std::vector< CWidget* > TWidgetVector;
     
-    virtual ~CForm();
+    CFormBackend( void );
     
-    virtual bool LoadLayout( CORE::CIOAccess& layoutStorage );
-    
-    virtual bool SaveLayout( CORE::CIOAccess& layoutStorage );
-    
-    virtual const CWidget* GetRootWidget( void ) const;
-    
-    virtual CWidget* GetRootWidget( void );
-    
-    virtual CWidget* GetWidget( const CString& widgetName );
+    virtual ~CFormBackend();
 
-    virtual bool IsVisible( void ) const;
+    virtual bool LoadLayout( CORE::CIOAccess& layoutStorage ) = 0;
     
-    virtual bool SetVisibility( const bool isVisible );
+    virtual bool SaveLayout( CORE::CIOAccess& layoutStorage ) = 0;
     
-    virtual bool Show( void );
+    virtual CWidget* GetRootWidget( void ) = 0;
     
-    virtual bool Hide( void );
+    virtual const CWidget* GetRootWidget( void ) const = 0;
     
+    virtual CWidget* GetWidget( const CString& widgetName ) = 0;
+    
+    virtual void GetWidgetVector( const CString& widgetName   ,
+                                  TWidgetVector& widgetVector ) = 0;
+                                  
     private:
     
-    CForm( const CForm& src );
-    CForm& operator=( const CForm& src );
-    
-    private:
-    
-    CFormBackend* m_backend;
+    CFormBackend( const CFormBackend& src );
+    CFormBackend& operator=( const CFormBackend& other );
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTFactoryBase< CFormBackend > CFormBackendFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -107,7 +105,7 @@ class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_GUI_CFORM_H ? */
+#endif /* GUCEF_GUI_CFORMBACKEND_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

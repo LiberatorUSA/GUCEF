@@ -28,6 +28,11 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
+#ifndef GUCEF_GUI_CGUIMANAGER_H
+#include "gucefGUI_CGUIManager.h"
+#define GUCEF_GUI_CGUIMANAGER_H
+#endif /* GUCEF_GUI_CGUIMANAGER_H ? */
+
 #include "gucefGUI_CForm.h"
 
 /*-------------------------------------------------------------------------//
@@ -65,6 +70,8 @@ CForm::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CForm::CForm( void )
+    : CORE::CObservingNotifier() ,
+      m_backend( NULL )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -75,6 +82,8 @@ CForm::CForm( void )
 CForm::~CForm()
 {GUCEF_TRACE;
 
+    delete m_backend;
+    m_backend = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -83,6 +92,23 @@ bool
 CForm::LoadLayout( CORE::CIOAccess& layoutStorage )
 {GUCEF_TRACE;
 
+    if ( NULL == m_backend )
+    {
+        CFormBackendFactory* beFactory = CGUIManager::Instance()->GetFormBackendFactory();
+        if ( NULL != beFactory )
+        {
+            m_backend = beFactory->Create();
+        }
+    }
+    
+    if ( NULL != m_backend )
+    {
+        if ( m_backend->LoadLayout( layoutStorage ) )
+        {
+            NotifyObservers( LayoutLoadedEvent );
+            return true;
+        }
+    }
     return false;
 }
 
@@ -92,6 +118,14 @@ bool
 CForm::SaveLayout( CORE::CIOAccess& layoutStorage )
 {GUCEF_TRACE;
 
+    if ( NULL != m_backend )
+    {
+        if ( m_backend->SaveLayout( layoutStorage ) )
+        {
+            NotifyObservers( LayoutSavedEvent );
+            return true;
+        }
+    }
     return false;
 }
 
@@ -101,6 +135,10 @@ const CWidget*
 CForm::GetRootWidget( void ) const
 {GUCEF_TRACE;
 
+    if ( NULL != m_backend )
+    {
+        return m_backend->GetRootWidget();
+    }
     return NULL;
 }
 
@@ -110,7 +148,24 @@ CWidget*
 CForm::GetRootWidget( void )
 {GUCEF_TRACE;
 
+    if ( NULL != m_backend )
+    {
+        return m_backend->GetRootWidget();
+    }
     return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CWidget*
+CForm::GetWidget( const CString& widgetName )
+{GUCEF_TRACE;
+
+    if ( NULL != m_backend )
+    {
+        return m_backend->GetWidget( widgetName );
+    }
+    return NULL;    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -123,6 +178,20 @@ CForm::SetVisibility( const bool isVisible )
     if ( NULL != widget )
     {
         return widget->SetVisibility( isVisible );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CForm::IsVisible( void ) const
+{GUCEF_TRACE;
+
+    const CWidget* widget = GetRootWidget();
+    if ( NULL != widget )
+    {
+        return widget->IsVisible();
     }
     return false;
 }

@@ -51,7 +51,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUIManager
+class GUCEF_GUI_EXPORT_CPP CGUIManager
 {
     public:
     
@@ -60,6 +60,10 @@ class CGUIManager
     CWidgetFactory& GetWidgetFactory( void );
     
     CFormFactory& GetFormFactory( void );
+    
+    void SetFormBackendFactory( CFormBackendFactory* backendFactory );
+
+    CFormBackendFactory* GetFormBackendFactory( void );
     
     private:
     friend class CGUCEFGUIModule;    
@@ -77,6 +81,8 @@ class CGUIManager
     
     CWidgetFactory m_widgetFactory;
     CFormFactory m_formFactory;
+    CFormBackendFactory* m_formBackendFactory;
+    
     static CGUIManager* g_instance;
 };
 

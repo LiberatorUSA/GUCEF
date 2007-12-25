@@ -77,8 +77,9 @@ CGUIManager::Deinstance( void )
 /*-------------------------------------------------------------------------*/
 
 CGUIManager::CGUIManager( void )
-    : m_widgetFactory() ,
-      m_formFactory()
+    : m_widgetFactory()            ,
+      m_formFactory()              ,
+      m_formBackendFactory( NULL )
 {GUCEF_TRACE;
 
     
@@ -107,6 +108,24 @@ CGUIManager::GetFormFactory( void )
 {GUCEF_TRACE;
 
     return m_formFactory;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUIManager::SetFormBackendFactory( CFormBackendFactory* backendFactory )
+{GUCEF_TRACE;
+
+    m_formBackendFactory = backendFactory;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CFormBackendFactory*
+CGUIManager::GetFormBackendFactory( void )
+{GUCEF_TRACE;
+
+    return m_formBackendFactory;
 }
 
 /*-------------------------------------------------------------------------//
