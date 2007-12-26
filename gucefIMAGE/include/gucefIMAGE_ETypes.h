@@ -31,6 +31,13 @@
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
+#ifdef __cplusplus
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#endif /* __cplusplus ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      CONSTANTS                                                          //
@@ -92,6 +99,7 @@ typedef CORE::UInt64 UInt64;   /* 8 bytes, unsigned */
 typedef CORE::Float32 Float32;  /* 4 bytes, signed, decimal */
 typedef CORE::Float64 Float64;  /* 8 bytes, signed, decimal */
 
+typedef CORE::CString          CString;
 typedef CORE::TBuildinDataType TBuildinDataType;
 
 /*-------------------------------------------------------------------------//

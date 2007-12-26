@@ -103,8 +103,10 @@ CForm::LoadLayout( CORE::CIOAccess& layoutStorage )
     
     if ( NULL != m_backend )
     {
+        OnPreLayoutLoad();
         if ( m_backend->LoadLayout( layoutStorage ) )
         {
+            OnPostLayoutLoad();
             NotifyObservers( LayoutLoadedEvent );
             return true;
         }
@@ -223,6 +225,24 @@ CForm::Hide( void )
     }
     return false;    
 }
+
+/*-------------------------------------------------------------------------*/
+
+ void
+ CForm::OnPreLayoutLoad( void )
+ {GUCEF_TRACE;
+ 
+    // no need to do anything
+ }
+ 
+ /*-------------------------------------------------------------------------*/
+    
+ void
+ CForm::OnPostLayoutLoad( void )
+ {GUCEF_TRACE;
+ 
+    // no need to do anything
+ }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

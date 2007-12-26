@@ -94,6 +94,9 @@ class GUCEF_IMAGE_EXPORT_CPP CImage
     
     void Assign( const TPixelMapPtr& pixelMapPtr );
     
+    bool Load( CORE::CIOAccess& data         ,
+               const CORE::CString& dataType );
+    
     UInt32 GetFrameCount( void ) const;
 
     UInt32 GetTotalPixelStorageSize( void ) const;
@@ -110,7 +113,7 @@ class GUCEF_IMAGE_EXPORT_CPP CImage
      *  @throw EInvalidIndex is thrown if an invalid index is given
      */
     TPixelMapPtr GetPixelMap( const UInt32 frameIndex = 0  ,
-                              const UInt32 mipMapLevel = 0 );
+                              const UInt32 mipMapLevel = 0 ) const;
 
     void AddFrame( TPixelMapPtr& imageFrame );
 

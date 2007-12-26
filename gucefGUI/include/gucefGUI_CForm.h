@@ -86,6 +86,12 @@ class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
     
     virtual bool Hide( void );
     
+    protected:
+    
+    virtual void OnPreLayoutLoad( void );
+    
+    virtual void OnPostLayoutLoad( void );
+    
     private:
     
     CForm( const CForm& src );

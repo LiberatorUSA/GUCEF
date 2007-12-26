@@ -23,6 +23,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CCODECREGISTRY_H
+#include "CCodecRegistry.h"
+#define GUCEF_CORE_CCODECREGISTRY_H
+#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
+
+#ifndef GUCEF_IMAGE_CIMGCODEC_H
+#include "CIMGCodec.h"
+#define GUCEF_IMAGE_CIMGCODEC_H
+#endif /* GUCEF_IMAGE_CIMGCODEC_H ? */
+
 #include "CImage.h"       /* Header for this class */
 
 /*-------------------------------------------------------------------------//
@@ -217,12 +227,12 @@ CImage::Clear( void )
 
 CImage::TPixelMapPtr
 CImage::GetPixelMap( const UInt32 frameIndex /* = 0 */  ,
-                     const UInt32 mipMapLevel /* = 0 */ )
+                     const UInt32 mipMapLevel /* = 0 */ ) const
 {GUCEF_TRACE;
 
     if ( m_frameList.size() > frameIndex )
     {
-        TMipMapList& mipmapList = m_frameList[ frameIndex ];
+        const TMipMapList& mipmapList = m_frameList[ frameIndex ];
         if ( mipmapList.size() > mipMapLevel )
         {
             return mipmapList[ mipMapLevel ];
@@ -290,6 +300,29 @@ CImage::GetTotalPixelStorageSize( void ) const
     }
     
     return totalBytes;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CImage::Load( CORE::CIOAccess& data         ,
+              const CORE::CString& dataType )
+{GUCEF_TRACE;
+
+    // Find an image codec using the file extension       
+    CORE::CCodecRegistry::TCodecFamilyRegistryPtr codecRegistry = CORE::CCodecRegistry::Instance()->Lookup( "ImageCodec" );
+    if ( NULL != codecRegistry )
+    {
+        CORE::CCodecRegistry::TICodecPtr codec = codecRegistry->Lookup( dataType );
+        if ( NULL != codec )
+        {
+            // We have found a codec we can use, now try to load the data
+            CIMGCodec codecUtil( codec );
+            return codecUtil.Decode( data  ,
+                                     *this );
+        }
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

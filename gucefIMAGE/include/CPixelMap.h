@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFIMAGE_MACROS_H
+#ifndef GUCEF_IMAGE_MACROS_H
 #include "gucefIMAGE_macros.h"       /* module macro's */
-#define GUCEFIMAGE_MACROS_H
-#endif /* GUCEFIMAGE_MACROS_H ? */
+#define GUCEF_IMAGE_MACROS_H
+#endif /* GUCEF_IMAGE_MACROS_H ? */
 
 #ifndef IMAGEDATA_H
 #include "imagedata.h"               /* C-style shared header for image related types */
