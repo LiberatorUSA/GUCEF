@@ -67,6 +67,7 @@ CPushButton::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CPushButton::CPushButton( void )
+    : CWidget( "PushButton" )
 {GUCEF_TRACE;
 
     RegisterEvents();

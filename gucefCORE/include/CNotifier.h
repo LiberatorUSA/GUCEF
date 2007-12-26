@@ -170,7 +170,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      *  functionality like this are limited or even non-existent 
      *  we chose to use this approach.
      */
-    virtual const CString& GetType( void ) const;
+    virtual const CString& GetClassTypeName( void ) const;
     
     /**
      *  Sets a destruction flag that will cause the notifier object to be

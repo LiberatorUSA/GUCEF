@@ -46,6 +46,7 @@ namespace GUI {
 //-------------------------------------------------------------------------*/
 
 CWindow::CWindow( void )
+    : CWidget( "Window" )
 {GUCEF_TRACE;
 
 }

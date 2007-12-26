@@ -87,7 +87,20 @@ CWidget::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CWidget::CWidget( void )
-    : CObservingNotifier()
+    : CObservingNotifier()          ,
+      m_impPtr( NULL )              ,
+      m_widgetTypeName( "CWidget" )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CWidget::CWidget( const CString& widgetTypeName )
+    : CObservingNotifier()               ,
+      m_impPtr( NULL )                   ,
+      m_widgetTypeName( widgetTypeName )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -229,10 +242,19 @@ CWidget::GetHeight( CUDim& width )
 /*-------------------------------------------------------------------------*/
     
 bool
-CWidget::GetParentWidget( CWidget** parentWidget )
+CWidget::SetParentWidget( CWidget* parentWidget )
 {GUCEF_TRACE;
 
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CWidget*
+CWidget::GetParentWidget( void )
+{GUCEF_TRACE;
+
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -307,6 +329,43 @@ CWidget::SaveProperties( CORE::CIOAccess& propertyStorage ) const
 {GUCEF_TRACE;
 
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWidget::SetImplementationPtr( void* impPtr )
+{GUCEF_TRACE;
+
+    m_impPtr = impPtr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void*
+CWidget::GetImplementationPtr( void ) const
+{GUCEF_TRACE;
+
+    return m_impPtr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CWidget::GetType( void ) const
+{GUCEF_TRACE;
+
+    return m_widgetTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CWidget::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::GUI::CWidget";
+    return typeName;
 }
 
 /*-------------------------------------------------------------------------//

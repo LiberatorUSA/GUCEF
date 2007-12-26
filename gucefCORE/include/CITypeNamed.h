@@ -58,7 +58,7 @@ class GUCEFCORE_EXPORT_CPP CITypeNamed
     
     virtual ~CITypeNamed();
     
-    virtual const CString& GetType( void ) const = 0;                            
+    virtual const CString& GetClassTypeName( void ) const = 0;                            
 };
 
 /*-------------------------------------------------------------------------//

@@ -67,6 +67,7 @@ CEditbox::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CEditbox::CEditbox( void )
+    : CWidget( "Editbox" )
 {GUCEF_TRACE;
 
 }

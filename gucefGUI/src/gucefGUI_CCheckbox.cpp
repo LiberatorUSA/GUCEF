@@ -28,7 +28,7 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
-#include "gucefGUI_CImageFrame.h"
+#include "gucefGUI_CCheckbox.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,7 +45,8 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CImageFrame::ImageChangedEvent = "GUCEF::GUI::CImageFrame::ImageChangedEvent";
+const CORE::CEvent CCheckbox::BoxCheckedEvent = "GUCEF::GUI::CCombobox::BoxCheckedEvent";
+const CORE::CEvent CCheckbox::BoxUncheckedEvent = "GUCEF::GUI::CCombobox::BoxUncheckedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,23 +54,53 @@ const CORE::CEvent CImageFrame::ImageChangedEvent = "GUCEF::GUI::CImageFrame::Im
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CImageFrame::CImageFrame( void )
-    : CWidget( "ImageFrame" )
+void
+CCheckbox::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    BoxCheckedEvent.Initialize();
+    BoxUncheckedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CCheckbox::CCheckbox( void )
+    : CWidget( "Checkbox" )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CCheckbox::~CCheckbox()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
-    
-CImageFrame::~CImageFrame()
+
+const CString&
+CCheckbox::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
+    static CString typeName = "GUCEF::GUI::CCheckbox";
+    return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CCheckbox::SetCheckedState( const bool isChecked )
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
     
 bool
-CImageFrame::SetImage( const GUCEF::IMAGE::CImage& srcImage )
+CCheckbox::GetCheckedState( void ) const
 {GUCEF_TRACE;
 
     return false;
@@ -81,7 +112,7 @@ CImageFrame::SetImage( const GUCEF::IMAGE::CImage& srcImage )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUI */
-} /* namespace GUCEF */
+}; /* namespace GUI */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

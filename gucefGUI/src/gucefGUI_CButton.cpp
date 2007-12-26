@@ -67,6 +67,7 @@ CButton::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CButton::CButton( void )
+    : CWidget( "CButton" )
 {GUCEF_TRACE;
 
     RegisterEvents();

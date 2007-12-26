@@ -62,7 +62,9 @@ class GUCEF_GUI_EXPORT_CPP CLabel : public CWidget
     
     virtual bool SetText( const CString& text );
     
-    virtual bool GetText( CString& text );
+    virtual bool GetText( CString& text ) const;
+    
+    virtual const CString& GetClassTypeName( void ) const;
     
     private:
     

@@ -95,6 +95,8 @@ class GUCEF_GUI_EXPORT_CPP CWidget : public CORE::CObservingNotifier
     
     CWidget( void );
     
+    CWidget( const CString& widgetTypeName );
+    
     virtual ~CWidget();
     
     virtual bool SetVisibility( const bool isVisible );
@@ -121,7 +123,9 @@ class GUCEF_GUI_EXPORT_CPP CWidget : public CORE::CObservingNotifier
     
     virtual bool GetHeight( CUDim& width );    
     
-    virtual bool GetParentWidget( CWidget** parentWidget );
+    virtual bool SetParentWidget( CWidget* parentWidget );
+    
+    virtual CWidget* GetParentWidget( void );
     
     virtual CWidget* GetChildWidget( const CString& widgetName );
     
@@ -145,10 +149,23 @@ class GUCEF_GUI_EXPORT_CPP CWidget : public CORE::CObservingNotifier
     
     virtual bool SaveProperties( CORE::CIOAccess& propertyStorage ) const;
     
-    private:
+    virtual void* GetImplementationPtr( void ) const;
+
+    virtual void SetImplementationPtr( void* impPtr );
     
+    virtual const CString& GetType( void ) const;
+
+    virtual const CString& GetClassTypeName( void ) const;
+
+    private:
+
     CWidget( const CWidget& src );
     CWidget& operator=( const CWidget& src );
+    
+    private:
+    
+    CString m_widgetTypeName;
+    void* m_impPtr;
 };
 
 /*-------------------------------------------------------------------------//

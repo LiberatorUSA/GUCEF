@@ -170,6 +170,9 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
     void RemoveEventForwarding( const CEvent& eventid      , 
                                 CNotifier* notifier = NULL );
                              
+    
+    virtual const CString& GetClassTypeName( void ) const;
+    
     protected:
     friend class CNotifierObservingComponent;
     

@@ -72,6 +72,12 @@ class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
     
     virtual bool SaveLayout( CORE::CIOAccess& layoutStorage );
     
+    virtual bool SetParent( CForm* parentForm );
+    
+    virtual bool SetParent( CWidget* parentWidget );
+    
+    virtual CWidget* GetParent( void );
+
     virtual const CWidget* GetRootWidget( void ) const;
     
     virtual CWidget* GetRootWidget( void );
@@ -85,6 +91,8 @@ class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
     virtual bool Show( void );
     
     virtual bool Hide( void );
+
+    virtual const CString& GetClassTypeName( void ) const;
     
     protected:
     
@@ -100,6 +108,7 @@ class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
     private:
     
     CFormBackend* m_backend;
+    CWidget* m_parentWidget;
 };
 
 /*-------------------------------------------------------------------------//

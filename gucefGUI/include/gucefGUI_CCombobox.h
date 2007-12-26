@@ -17,18 +17,19 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
+#ifndef GUCEF_GUI_CCOMBOBOX_H
+#define GUCEF_GUI_CCOMBOBOX_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
-#include "gucefGUI_CImageFrame.h"
+#ifndef GUCEF_GUI_CWIDGET_H
+#include "gucefGUI_CWidget.h"
+#define GUCEF_GUI_CWIDGET_H
+#endif /* GUCEF_GUI_CWIDGET_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,39 +42,41 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CImageFrame::ImageChangedEvent = "GUCEF::GUI::CImageFrame::ImageChangedEvent";
+class GUCEF_GUI_EXPORT_CPP CCombobox : public CWidget
+{
+    public:
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      UTILITIES                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-CImageFrame::CImageFrame( void )
-    : CWidget( "ImageFrame" )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
+    static const CORE::CEvent TextChangedEvent;
     
-CImageFrame::~CImageFrame()
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
+    static void RegisterEvents( void );
     
-bool
-CImageFrame::SetImage( const GUCEF::IMAGE::CImage& srcImage )
-{GUCEF_TRACE;
+    public:
 
-    return false;
-}
+    typedef std::vector< CString >  TStringVector;
+    
+    CCombobox( void );
+    
+    virtual ~CCombobox();
+    
+    virtual bool SetText( const CString& text );
+    
+    virtual bool GetText( CString& text ) const;
+    
+    virtual bool SetListItems( const TStringVector& items );
+    
+    virtual bool GetListItems( TStringVector& items ) const;
+    
+    virtual const CString& GetClassTypeName( void ) const;
+    
+    private:
+    
+    CCombobox( const CCombobox& src );
+    CCombobox& operator=( const CCombobox& src );
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -81,7 +84,20 @@ CImageFrame::SetImage( const GUCEF::IMAGE::CImage& srcImage )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUI */
-} /* namespace GUCEF */
+}; /* namespace GUI */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+          
+#endif /* GUCEF_GUI_CCOMBOBOX_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 18-08-2007 :
+        - Dinand: Initial implementation
+
+-----------------------------------------------------------------------------*/

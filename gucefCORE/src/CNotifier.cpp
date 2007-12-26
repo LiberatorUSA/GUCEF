@@ -206,7 +206,7 @@ CNotifier::OnObserverDestroy( CObserver* observer )
 /*-------------------------------------------------------------------------*/
 
 const CString&
-CNotifier::GetType( void ) const
+CNotifier::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
     static CString typeName = "GUCEF::CORE::CNotifier";

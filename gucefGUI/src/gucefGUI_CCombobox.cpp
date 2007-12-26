@@ -28,7 +28,7 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
-#include "gucefGUI_CImageFrame.h"
+#include "gucefGUI_CCombobox.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,7 +45,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CImageFrame::ImageChangedEvent = "GUCEF::GUI::CImageFrame::ImageChangedEvent";
+const CORE::CEvent CCombobox::TextChangedEvent = "GUCEF::GUI::CCombobox::TextChangedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,23 +53,70 @@ const CORE::CEvent CImageFrame::ImageChangedEvent = "GUCEF::GUI::CImageFrame::Im
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CImageFrame::CImageFrame( void )
-    : CWidget( "ImageFrame" )
+void
+CCombobox::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    TextChangedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CCombobox::CCombobox( void )
+    : CWidget( "Combobox" )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CCombobox::~CCombobox()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
-    
-CImageFrame::~CImageFrame()
+
+const CString&
+CCombobox::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
+    static CString typeName = "GUCEF::GUI::CCombobox";
+    return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CCombobox::SetText( const CString& text )
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
     
 bool
-CImageFrame::SetImage( const GUCEF::IMAGE::CImage& srcImage )
+CCombobox::GetText( CString& text ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CCombobox::SetListItems( const TStringVector& items )
+{GUCEF_TRACE;
+    
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CCombobox::GetListItems( TStringVector& items ) const
 {GUCEF_TRACE;
 
     return false;
@@ -81,7 +128,7 @@ CImageFrame::SetImage( const GUCEF::IMAGE::CImage& srcImage )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUI */
-} /* namespace GUCEF */
+}; /* namespace GUI */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

@@ -71,7 +71,8 @@ CForm::RegisterEvents( void )
 
 CForm::CForm( void )
     : CORE::CObservingNotifier() ,
-      m_backend( NULL )
+      m_backend( NULL )          ,
+      m_parentWidget( NULL )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -106,6 +107,10 @@ CForm::LoadLayout( CORE::CIOAccess& layoutStorage )
         OnPreLayoutLoad();
         if ( m_backend->LoadLayout( layoutStorage ) )
         {
+            if ( NULL != m_parentWidget )
+            {
+                SetParent( m_parentWidget );
+            }
             OnPostLayoutLoad();
             NotifyObservers( LayoutLoadedEvent );
             return true;
@@ -228,6 +233,64 @@ CForm::Hide( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CForm::SetParent( CForm* parentForm )
+{GUCEF_TRACE;
+
+    CWidget* widget = GetRootWidget();
+    if ( NULL != widget )
+    {
+        m_parentWidget = parentForm->GetRootWidget();
+        if ( NULL != parentForm )
+        {
+            return widget->SetParentWidget( parentForm->GetRootWidget() );
+        }
+        else
+        {
+            return widget->SetParentWidget( NULL );
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CForm::SetParent( CWidget* parentWidget )
+{GUCEF_TRACE;
+
+    CWidget* widget = GetRootWidget();
+    if ( NULL != widget )
+    {
+        m_parentWidget = parentWidget;
+        if ( NULL != parentWidget )
+        {
+            return widget->SetParentWidget( parentWidget );
+        }
+        else
+        {
+            return widget->SetParentWidget( NULL );
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CWidget*
+CForm::GetParent( void )
+{GUCEF_TRACE;
+
+    CWidget* widget = GetRootWidget();
+    if ( NULL != widget )
+    {
+        return widget->GetParentWidget();
+    }
+    return m_parentWidget;
+}
+
+/*-------------------------------------------------------------------------*/
+
  void
  CForm::OnPreLayoutLoad( void )
  {GUCEF_TRACE;
@@ -243,6 +306,15 @@ CForm::Hide( void )
  
     // no need to do anything
  }
+ 
+ /*-------------------------------------------------------------------------*/
+
+const CString&
+CForm::GetClassTypeName( void ) const
+{
+    static CString typeName = "GUCEF::GUI::CForm";
+    return typeName;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
