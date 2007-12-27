@@ -122,6 +122,15 @@ CCombobox::GetListItems( TStringVector& items ) const
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CCombobox::ClearList( void ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

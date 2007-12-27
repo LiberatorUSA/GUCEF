@@ -70,6 +70,8 @@ class GUCEF_GUI_EXPORT_CPP CCombobox : public CWidget
     
     virtual bool GetListItems( TStringVector& items ) const;
     
+    virtual bool ClearList( void ) const;
+    
     virtual const CString& GetClassTypeName( void ) const;
     
     private:
