@@ -65,7 +65,7 @@ class GUCEF_GUI_EXPORT_CPP CImageFrame : public CWidget
     
     virtual ~CImageFrame();
     
-    bool SetImage( const IMAGE::CImage& srcImage );
+    virtual bool SetImage( const IMAGE::CImage& srcImage );
     
     private:
     
