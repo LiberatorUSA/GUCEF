@@ -21,7 +21,7 @@
  *      This is the main include header for the gucefGUI library.
  *      It is part of a framework called GUCEF.
  *      All classes in this library have to do with providing a unified and 
- *      uniform GUI interface indpeendant of the chosen GUI backend
+ *      uniform GUI interface independant of the chosen GUI backend
  */
 
 #ifndef GUCEF_GUI_H
@@ -124,6 +124,26 @@
 #define GUCEF_GUI_CIFILESYSTEMINFOPROVIDER_H
 #endif /* GUCEF_GUI_CIFILESYSTEMINFOPROVIDER_H ? */
 
+#ifndef GUCEF_GUI_CTABCONTENTPANE_H
+#include "gucefGUI_CTabContentPane.h"
+#define GUCEF_GUI_CTABCONTENTPANE_H
+#endif /* GUCEF_GUI_CTABCONTENTPANE_H ? */
+
+#ifndef GUCEF_GUI_CTABCONTROL_H
+#include "gucefGUI_CTabControl.h"
+#define GUCEF_GUI_CTABCONTROL_H
+#endif /* GUCEF_GUI_CTABCONTROL_H ? */
+
+#ifndef GUCEF_GUI_CCHECKBOX_H
+#include "gucefGUI_CCheckbox.h"
+#define GUCEF_GUI_CCHECKBOX_H
+#endif /* GUCEF_GUI_CCHECKBOX_H ? */
+
+#ifndef GUCEF_GUI_CCOMBOBOX_H
+#include "gucefGUI_CCombobox.h"
+#define GUCEF_GUI_CCOMBOBOX_H
+#endif /* GUCEF_GUI_CCOMBOBOX_H ? */
+
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
 
@@ -138,4 +158,4 @@
 - 21-04-2007 :
        - Made the initial version of the library header.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

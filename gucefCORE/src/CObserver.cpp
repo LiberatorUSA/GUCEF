@@ -262,6 +262,7 @@ void
 CObserver::LockData( void )
 {GUCEF_TRACE;
 
+    // dummy to avoid mandatory implementation by descending classes
 }
 
 /*-------------------------------------------------------------------------*/
@@ -270,6 +271,18 @@ void
 CObserver::UnlockData( void )
 {GUCEF_TRACE;
 
+    // dummy to avoid mandatory implementation by descending classes
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CObserver::OnNotify( CNotifier* notifier                 ,
+                     const CEvent& eventid               ,
+                     CICloneable* eventdata /* = NULL */ )
+{GUCEF_TRACE;
+
+    // dummy to avoid mandatory implementation by descending classes
 }
 
 /*-------------------------------------------------------------------------//

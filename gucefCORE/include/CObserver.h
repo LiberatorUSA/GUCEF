@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CEVENT_H
 #endif /* GUCEF_CORE_CEVENT_H ? */
 
+#ifndef GUCEF_CORE_CIOBSERVER_H
+#include "gucefCORE_CIObserver.h"
+#define GUCEF_CORE_CIOBSERVER_H
+#endif /* GUCEF_CORE_CIOBSERVER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -59,19 +64,19 @@ class CNotifierImplementor;
  *  Implementation of the observation component in the notifier-observer 
  *  design pattern.
  *
- *  Note that you should unsubscribe the decending class before deallocating it.
+ *  Note that you should unsubscribe the descending class before deallocating it.
  *  This can be done by calling UnsubscribeAll() from the destructor of your 
- *  decending class. Failure to do this will not cause any problems but should be 
- *  considdered to be dirty coding.
+ *  descending class. Failure to do this will not cause any problems but should be 
+ *  considered to be dirty coding.
  *
- *  Note that in general it is recommened not to delete a notifier while a 
- *  notification is beeing handled, ie during the OnNotify() callback. It is
+ *  Note that in general it is recommended not to delete a notifier while a 
+ *  notification is being handled, ie during the OnNotify() callback. It is
  *  possible to do this but it is a rather involved process for both the observer
- *  and the notifier. The recommened method for deleting a notifier that is
- *  notififying you is to schedule the notifier for deletion after the notification
+ *  and the notifier. The recommended method for deleting a notifier that is
+ *  notifying you is to schedule the notifier for deletion after the notification
  *  finishes. 
  */
-class GUCEFCORE_EXPORT_CPP CObserver
+class GUCEFCORE_EXPORT_CPP CObserver : public CIObserver
 {
     public:
 
@@ -89,14 +94,14 @@ class GUCEFCORE_EXPORT_CPP CObserver
                       const CEvent& eventid );
                                
     /**
-     *  Unsubscribes the observer from all notifiers.
+     *  Unsubscribe's the observer from all notifiers.
      */
     void UnsubscribeFromAll( void );
     
     /**
      *  Detaches from the given notifier.
      *  All the observers subscriptions will be cancelled
-     *  This includes both standard notifier events aswell 
+     *  This includes both standard notifier events as well 
      *  as custom events.
      */    
     void UnsubscribeFrom( CNotifier& notifier );    
@@ -110,7 +115,7 @@ class GUCEFCORE_EXPORT_CPP CObserver
     
     /**
      *  Event callback member function.
-     *  Implement this in your decending class to handle
+     *  Implement this in your descending class to handle
      *  notification events.
      *
      *  @param notifier the notifier that sent the notification
@@ -119,7 +124,7 @@ class GUCEFCORE_EXPORT_CPP CObserver
      */
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL ) = 0;
+                           CICloneable* eventdata = NULL );
 
     virtual void LockData( void );
     

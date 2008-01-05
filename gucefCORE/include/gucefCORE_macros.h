@@ -99,6 +99,10 @@
   #define GUCEFCORE_EXPORT_C
 #endif /* GUCEFCORE_EXPORT_C_CODE ? */
 
+/* legacy define */
+#define GUCEF_CORE_EXPORT_CPP GUCEFCORE_EXPORT_CPP 
+#define GUCEF_CORE_EXPORT_C GUCEFCORE_EXPORT_C 
+
 /*-------------------------------------------------------------------------*/
 
 #ifdef GUCEF_CORE_DEBUG_MODE

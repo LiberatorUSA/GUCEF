@@ -29,8 +29,20 @@
 #include <set>
 #include <map>
 
+#ifndef GUCEF_CORE_CNOTIFIEROBSERVINGCOMPONENT_H
 #include "CNotifierObservingComponent.h"
+#define GUCEF_CORE_CNOTIFIEROBSERVINGCOMPONENT_H
+#endif /* GUCEF_CORE_CNOTIFIEROBSERVINGCOMPONENT_H ? */
+
+#ifndef GUCEF_CORE_CNOTIFIER_H
 #include "CNotifier.h"
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+
+#ifndef GUCEF_CORE_CIOBSERVER_H
+#include "gucefCORE_CIObserver.h"
+#define GUCEF_CORE_CIOBSERVER_H
+#endif /* GUCEF_CORE_CIOBSERVER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,7 +64,8 @@ namespace CORE {
  *  Mainly to be used for node objects in your chain-of-events
  *  tree
  */
-class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier
+class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier ,
+                                                public CIObserver
 {
     public:
 

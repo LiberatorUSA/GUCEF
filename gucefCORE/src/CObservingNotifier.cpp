@@ -36,7 +36,7 @@
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
-
+#include "gucefCORE_CTEventHandlerFunctor.h"
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -54,7 +54,7 @@ namespace CORE {
 
 CObservingNotifier::CObservingNotifier( void )
 {GUCEF_TRACE;
-
+CTEventHandlerFunctor< CObservingNotifier > test( this, &CObservingNotifier::OnNotify );
     m_observer.SetOwner( this );
 }
 
@@ -127,9 +127,12 @@ void
 CObservingNotifier::SubscribeTo( CNotifier* notifier )
 {GUCEF_TRACE;
 
-    LockData();
-    notifier->Subscribe( &m_observer );
-    UnlockData();
+    if ( NULL != notifier )
+    {
+        LockData();
+        notifier->Subscribe( &m_observer );
+        UnlockData();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -138,11 +141,14 @@ void
 CObservingNotifier::SubscribeTo( CNotifier* notifier   ,
                                  const CEvent& eventid )
 {GUCEF_TRACE;
-
-    LockData();
-    notifier->Subscribe( &m_observer ,
-                         eventid     );
-    UnlockData();
+    
+    if ( NULL != notifier )
+    {
+        LockData();
+        notifier->Subscribe( &m_observer ,
+                             eventid     );
+        UnlockData();
+    }
 }                                   
 
 /*-------------------------------------------------------------------------*/
@@ -151,9 +157,12 @@ void
 CObservingNotifier::UnsubscribeFrom( CNotifier* notifier )
 {GUCEF_TRACE;
 
-    LockData();
-    notifier->Unsubscribe( &m_observer );
-    UnlockData();
+    if ( NULL != notifier )
+    {
+        LockData();
+        notifier->Unsubscribe( &m_observer );
+        UnlockData();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -163,10 +172,13 @@ CObservingNotifier::UnsubscribeFrom( CNotifier* notifier   ,
                                      const CEvent& eventid )
 {GUCEF_TRACE;
 
-    LockData();
-    notifier->Unsubscribe( &m_observer ,
-                           eventid     );
-    UnlockData();
+    if ( NULL != notifier )
+    {
+        LockData();
+        notifier->Unsubscribe( &m_observer ,
+                               eventid     );
+        UnlockData();
+    }
 }
 
 /*-------------------------------------------------------------------------*/

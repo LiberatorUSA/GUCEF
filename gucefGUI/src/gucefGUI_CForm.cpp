@@ -240,15 +240,15 @@ CForm::SetParent( CForm* parentForm )
     CWidget* widget = GetRootWidget();
     if ( NULL != widget )
     {
-        m_parentWidget = parentForm->GetRootWidget();
         if ( NULL != parentForm )
         {
-            return widget->SetParentWidget( parentForm->GetRootWidget() );
+            m_parentWidget = parentForm->GetRootWidget();
+            if ( NULL != m_parentWidget )
+            {
+                return widget->SetParentWidget( m_parentWidget );
+            }
         }
-        else
-        {
-            return widget->SetParentWidget( NULL );
-        }
+        return widget->SetParentWidget( NULL );
     }
     return false;
 }
@@ -263,14 +263,7 @@ CForm::SetParent( CWidget* parentWidget )
     if ( NULL != widget )
     {
         m_parentWidget = parentWidget;
-        if ( NULL != parentWidget )
-        {
-            return widget->SetParentWidget( parentWidget );
-        }
-        else
-        {
-            return widget->SetParentWidget( NULL );
-        }
+        return widget->SetParentWidget( m_parentWidget );
     }
     return false;
 }
