@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CIOBSERVER_H
-#define GUCEF_CORE_CIOBSERVER_H 
+#ifndef GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
+#define GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
-
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"    
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CIOBSERVER_H
+#include "gucefCORE_CIObserver.h"
+#define GUCEF_CORE_CIOBSERVER_H
+#endif /* GUCEF_CORE_CIOBSERVER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,39 +46,23 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CNotifier;
-class CEvent;
-
-/*-------------------------------------------------------------------------*/
-
 /**
- *  Interface for observers.
- *  Observer based classes should implement OnNotify()
+ *  Interface class for all instantiations of the CTEventHandlerFunctor template
+ *  It provides an identifier and the combined observer and cloneable interface
  */
-class GUCEF_CORE_EXPORT_CPP CIObserver
+class GUCEF_CORE_EXPORT_CPP CIEventHandlerFunctorBase : public CIObserver  ,
+                                                        public CICloneable
 {
     public:
-    
-    CIObserver( void );
-    
-    CIObserver( const CIObserver& src );
-    
-    virtual ~CIObserver();
-    
-    CIObserver& operator=( const CIObserver& src );
 
-    /**
-     *  Event callback member function.
-     *  Implement this in your descending class to handle
-     *  notification events.
-     *
-     *  @param notifier the notifier that sent the notification
-     *  @param eventid the unique event id for an event
-     *  @param eventdata optional notifier defined user data
-     */    
-    virtual void OnNotify( CNotifier* notifier          ,
-                           const CEvent& eventID        ,
-                           CICloneable* evenData = NULL ) = 0;  
+    CIEventHandlerFunctorBase( void );
+    
+    CIEventHandlerFunctorBase( const CIEventHandlerFunctorBase& src );
+    
+    virtual ~CIEventHandlerFunctorBase();
+    
+    CIEventHandlerFunctorBase& operator=( const CIEventHandlerFunctorBase& src );
+    
 };
 
 /*-------------------------------------------------------------------------//
@@ -97,7 +76,7 @@ class GUCEF_CORE_EXPORT_CPP CIObserver
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CIOBSERVER_H ? */
+#endif /* GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

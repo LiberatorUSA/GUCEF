@@ -133,12 +133,14 @@ CNotifier::Subscribe( CObserver* observer )
 /*-------------------------------------------------------------------------*/
 
 void 
-CNotifier::Subscribe( CObserver* observer   ,
-                      const CEvent& eventid )
+CNotifier::Subscribe( CObserver* observer                              ,
+                      const CEvent& eventid                            ,
+                      CIEventHandlerFunctorBase* callback /* = NULL */ )
 {GUCEF_TRACE;
 
     m_imp->Subscribe( observer ,
-                      eventid  );
+                      eventid  ,
+                      callback );
 }
 
 /*-------------------------------------------------------------------------*/

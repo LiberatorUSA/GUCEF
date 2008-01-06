@@ -17,24 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CIOBSERVER_H
-#define GUCEF_CORE_CIOBSERVER_H 
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"    
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#include "gucefCORE_CIEventHandlerFunctorBase.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,44 +41,47 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CNotifier;
-class CEvent;
+
+CIEventHandlerFunctorBase::CIEventHandlerFunctorBase( void )
+    : CIObserver()  ,
+      CICloneable()
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------*/
+    
+CIEventHandlerFunctorBase::CIEventHandlerFunctorBase( const CIEventHandlerFunctorBase& src )
+    : CIObserver( src )  ,
+      CICloneable( src )
+{GUCEF_TRACE;
 
-/**
- *  Interface for observers.
- *  Observer based classes should implement OnNotify()
- */
-class GUCEF_CORE_EXPORT_CPP CIObserver
-{
-    public:
-    
-    CIObserver( void );
-    
-    CIObserver( const CIObserver& src );
-    
-    virtual ~CIObserver();
-    
-    CIObserver& operator=( const CIObserver& src );
+}
 
-    /**
-     *  Event callback member function.
-     *  Implement this in your descending class to handle
-     *  notification events.
-     *
-     *  @param notifier the notifier that sent the notification
-     *  @param eventid the unique event id for an event
-     *  @param eventdata optional notifier defined user data
-     */    
-    virtual void OnNotify( CNotifier* notifier          ,
-                           const CEvent& eventID        ,
-                           CICloneable* evenData = NULL ) = 0;  
-};
+/*-------------------------------------------------------------------------*/
+    
+CIEventHandlerFunctorBase::~CIEventHandlerFunctorBase()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CIEventHandlerFunctorBase&
+CIEventHandlerFunctorBase::operator=( const CIEventHandlerFunctorBase& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        CIObserver::operator=( src );
+        CICloneable::operator=( src );
+    }
+    return *this;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -96,16 +93,3 @@ class GUCEF_CORE_EXPORT_CPP CIObserver
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CIOBSERVER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 26-03-2005 :
-        - Dinand: Designed and implemented this class.
-
------------------------------------------------------------------------------*/

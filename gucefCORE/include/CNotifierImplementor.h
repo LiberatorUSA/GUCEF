@@ -30,9 +30,16 @@
 #include <set>
 #include <vector>
 #include <map>
-#include "gucefCORE_ETypes.h"
+
+#ifndef GUCEF_CORE_CICLONEABLE_H
 #include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+
+#ifndef GUCEF_CORE_CITYPENAMED_H
 #include "CITypeNamed.h"
+#define GUCEF_CORE_CITYPENAMED_H
+#endif /* GUCEF_CORE_CITYPENAMED_H ? */
 
 #ifndef GUCEF_CORE_CEVENT_H
 #include "CEvent.h"
@@ -43,6 +50,11 @@
 #include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
+#include "gucefCORE_CIEventHandlerFunctorBase.h"
+#define GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
+#endif /* GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,7 +78,7 @@ class CNotifier;
 
 /**
  *  Internally used class.
- *  This class houses the actual notification mechamism. The reason for a seperate
+ *  This class houses the actual notification mechanism. The reason for a separate
  *  class is simple, robustness. Since you can use notification for all your dynamic
  *  communication links it has to be able to handle all kinds of exotic scenarios.
  *  One of those scenarios is destruction of the notifier as a result of it's notification.
@@ -105,13 +117,14 @@ class CNotifierImplementor
      *  notifier events if it is not yet subscribed plus
      *  subscribes to the given custom event.
      */    
-    void Subscribe( CObserver* observer   ,
-                    const CEvent& eventid );
+    void Subscribe( CObserver* observer                        ,
+                    const CEvent& eventid                      ,
+                    CIEventHandlerFunctorBase* callback = NULL );
 
     /**
      *  Detaches the given observer from the notifier.
      *  All the observers subscriptions will be cancelled
-     *  This includes both standard notifier events aswell 
+     *  This includes both standard notifier events as well 
      *  as custom events.
      */    
     void Unsubscribe( CObserver* observer );
@@ -198,8 +211,11 @@ class CNotifierImplementor
     
     private:
     
+    typedef std::pair< CObserver*, CIEventHandlerFunctorBase* > TEventNotificationMapEntry;
+    typedef std::map< CObserver*, CIEventHandlerFunctorBase* > TEventNotificationMap;
+    
     typedef std::set<CObserver*> TObserverSet;
-    typedef std::map<CEvent,TObserverSet> TNotificationList;
+    typedef std::map< CEvent, TEventNotificationMap > TNotificationList;
     typedef std::map<CObserver*,bool> TObserverList;
     
     typedef std::pair< CEvent, CICloneable* > TEventMailElement;
@@ -213,6 +229,7 @@ class CNotifierImplementor
     {
         TCmdType cmdType;
         CObserver* observer;
+        CIEventHandlerFunctorBase* callback;
         CEvent eventID;
         bool notify;
     };

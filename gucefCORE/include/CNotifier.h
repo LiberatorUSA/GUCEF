@@ -31,15 +31,10 @@
 #include <vector>
 #include <map>
 
-#ifndef GUCEF_CORE_ETYPES_H
-#include "gucefCORE_ETypes.h"
-#define GUCEF_CORE_ETYPES_H
-#endif /* GUCEF_CORE_ETYPES_H ? */
-
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+#ifndef GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
+#include "gucefCORE_CIEventHandlerFunctorBase.h"
+#define GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
+#endif /* GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H ? */
 
 #ifndef GUCEF_CORE_CITYPENAMED_H
 #include "CITypeNamed.h"
@@ -50,11 +45,6 @@
 #include "CEvent.h"
 #define GUCEF_CORE_CEVENT_H
 #endif /* GUCEF_CORE_CEVENT_H ? */
-
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -103,7 +93,7 @@ class CNotifierImplementor;
  *  The return value is the 'alive' state of the notifier itself, If false then the 
  *  notifier has been destroyed. Any attempt to access data in that object will result 
  *  in invalid memory access. If the notifier has been destroyed you should exit the code
- *  that called the member function with accessing any data members.
+ *  that called the member function without accessing any data members.
  */
 class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
 {
@@ -138,8 +128,9 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      *  notifier events if it is not yet subscribed plus
      *  subscribes to the given custom event.
      */    
-    void Subscribe( CObserver* observer   ,
-                    const CEvent& eventid );
+    void Subscribe( CObserver* observer                        ,
+                    const CEvent& eventid                      ,
+                    CIEventHandlerFunctorBase* callback = NULL );
 
     /**
      *  Detaches the given observer from the notifier.

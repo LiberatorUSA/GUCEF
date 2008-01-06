@@ -691,6 +691,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefCORE_CIEventHandlerFunctorBase.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefCORE_CIObserver.cpp"
 				>
 			</File>
@@ -1273,7 +1277,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefCORE_CEventHandlerFunctor.h"
+				RelativePath="..\..\include\gucefCORE_CIEventHandlerFunctorBase.h"
 				>
 			</File>
 			<File

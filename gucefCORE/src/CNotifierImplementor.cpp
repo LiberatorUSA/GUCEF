@@ -62,21 +62,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CNotifierImplementor::CNotifierImplementor( void )
-    : m_isBusy( false )                 ,
-      m_observers()                     ,
-      m_eventobservers()                ,
-      m_eventMailStack()                ,
-      m_cmdMailStack()                  ,
-      m_ownerNotifier( NULL )           ,
-      m_scheduledForDestruction( false )
-{
-    // This constructor should never be used
-    GUCEF_ASSERT_ALWAYS;
-}
-
-/*-------------------------------------------------------------------------*/
-
 CNotifierImplementor::CNotifierImplementor( CNotifier* ownerNotifier )
     : m_isBusy( false )                 ,
       m_observers()                     ,
@@ -248,6 +233,9 @@ CNotifierImplementor::Subscribe( CObserver* observer )
          *  Add the observer to our list of observers as needed.
          *  This will automatically subscribe the observer to 
          *  all notification events.
+         *
+         *  Note that the boolean value indicates whether the observer is
+         *  subscribed to all events
          */
         TObserverList::iterator i = m_observers.find( observer );
         m_observers[ observer ] = true;
@@ -283,8 +271,9 @@ CNotifierImplementor::Subscribe( CObserver* observer )
     {
         TCmdMailElement cmdMailElement;
         cmdMailElement.cmdType = REQUEST_SUBSCRIBE;
-        cmdMailElement.eventID = CEvent();
+        cmdMailElement.eventID = CEvent();     // <- not used in this context
         cmdMailElement.observer = observer;
+        cmdMailElement.callback = NULL;
         cmdMailElement.notify = true;
         m_cmdMailStack.push_back( cmdMailElement );        
     }
@@ -294,8 +283,9 @@ CNotifierImplementor::Subscribe( CObserver* observer )
 /*-------------------------------------------------------------------------*/
 
 void 
-CNotifierImplementor::Subscribe( CObserver* observer   ,
-                                 const CEvent& eventid )
+CNotifierImplementor::Subscribe( CObserver* observer                              ,
+                                 const CEvent& eventid                            ,
+                                 CIEventHandlerFunctorBase* callback /* = NULL */ )
 {GUCEF_TRACE;
 
     LockData();
@@ -314,38 +304,34 @@ CNotifierImplementor::Subscribe( CObserver* observer   ,
              ( eventid != CNotifier::SubscribeEvent )   &&
              ( eventid != CNotifier::UnsubscribeEvent )  ) 
         {
+            // Get a list of all observers that listen to this specific event
             TNotificationList::iterator n( m_eventobservers.find( eventid ) );
             if ( n != m_eventobservers.end() )
             { 
-                TObserverSet& eventObservers = (*n).second;
-                TObserverSet::iterator i( eventObservers.find( observer ) );
+                // Check if a subscription is already present for the given observer
+                TEventNotificationMap& eventObservers = (*n).second;
+                TEventNotificationMap::iterator i( eventObservers.find( observer ) );
                 if ( i != eventObservers.end() )
                 {
-                    /*
-                     *  The observer is already subscribed to this event
-                     */
+                    // The observer is already subscribed to this event
+                    // All we have to do is make sure the callback is up-todate
+                    delete (*i).second;
+                    (*i).second = NULL;
+                    if ( NULL != callback )
+                    { 
+                        (*i).second = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
+                    }
+                    
                     m_isBusy = false; 
                     UnlockData(); 
                     return;     
                 }
-
+            
                 /*
                  *  If we get here then we have a new observer on our hands for the given 
                  *  known event, as such we need to update our administration.
                  */
-                eventObservers.insert( observer );
-
-                /*
-                 *  Establish our bi-directional communication path for the given event
-                 */
-                observer->LinkTo( m_ownerNotifier );
-
-                /*
-                 *  Send the standard subscription event
-                 */
-                observer->OnNotify( m_ownerNotifier            ,
-                                    CNotifier::SubscribeEvent  ,
-                                    NULL                       );
+                eventObservers[ observer ] = callback;
             }
             else
             {
@@ -353,23 +339,19 @@ CNotifierImplementor::Subscribe( CObserver* observer   ,
                  *  If we get here then the event is unknown to us at this time.
                  *  We will add an entry to the list for this event and hook up the
                  *  subscriber.
-                 *  Adding the entry is accomplished by using the index operator on the map
+                 *  Adding the event entry is accomplished by using the index operator on the map
                  */
-                TObserverSet& eventObservers = m_eventobservers[ eventid ];
-                eventObservers.insert( observer );
-
-                /*
-                 *  Establish our bi-directional communication path for the given event
-                 */
-                observer->LinkTo( m_ownerNotifier );
-
-                /*
-                 *  Send the standard subscription event
-                 */
-                observer->OnNotify( m_ownerNotifier            ,
-                                    CNotifier::SubscribeEvent  ,
-                                    NULL                       );
+                TEventNotificationMap& eventObservers = m_eventobservers[ eventid ];
+                eventObservers[ observer ] = callback;
             }
+            
+            // Establish our bi-directional communication path for the given event
+            observer->LinkTo( m_ownerNotifier );
+
+            // Send the standard subscription event
+            observer->OnNotify( m_ownerNotifier            ,
+                                CNotifier::SubscribeEvent  ,
+                                NULL                       );
         }
         else
         {
@@ -384,11 +366,11 @@ CNotifierImplementor::Subscribe( CObserver* observer   ,
         TObserverList::iterator i = m_observers.find( observer );
         if ( i == m_observers.end() )
         {
+            // Because the observer is not yet in the list we can add it as an observer
+            // that only listens to specific events
             m_observers[ observer ] = false;
             
-            /*
-             *  Establish our bi-directional communication path for standard events
-             */
+            // Establish our bi-directional communication path for standard events
             observer->LinkTo( m_ownerNotifier );
 
             if ( notifyAboutSubscription )
@@ -420,6 +402,14 @@ CNotifierImplementor::Subscribe( CObserver* observer   ,
         cmdMailElement.eventID = eventid;
         cmdMailElement.observer = observer;
         cmdMailElement.notify = true;
+        if ( callback != NULL )
+        {
+            cmdMailElement.callback = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
+        }
+        else
+        {
+            cmdMailElement.callback = NULL;
+        }        
         m_cmdMailStack.push_back( cmdMailElement );    
     }
     
@@ -465,8 +455,8 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer       ,
         TNotificationList::iterator n( m_eventobservers.begin() );
         while ( n != m_eventobservers.end() )
         {        
-            TObserverSet& eventObservers = (*n).second;    
-            TObserverSet::iterator i( eventObservers.find( observer ) );
+            TEventNotificationMap& eventObservers = (*n).second;    
+            TEventNotificationMap::iterator i( eventObservers.find( observer ) );
             if ( i != eventObservers.end() )
             {
                 /*
@@ -508,8 +498,9 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer       ,
     {
         TCmdMailElement cmdMailElement;
         cmdMailElement.cmdType = REQUEST_UNSUBSCRIBE;
-        cmdMailElement.eventID = CEvent();
+        cmdMailElement.eventID = CEvent();    // <- not used in this context
         cmdMailElement.observer = observer;
+        cmdMailElement.callback = NULL;
         cmdMailElement.notify = notifyObserver;
         m_cmdMailStack.push_back( cmdMailElement );
     }    
@@ -533,11 +524,11 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
              ( eventid != CNotifier::UnsubscribeEvent ) &&
              ( eventid != CNotifier::ModifyEvent )       )
         {
-            TObserverSet& eventObservers = m_eventobservers[ eventid ];    
-            TObserverSet::iterator i( eventObservers.begin() );
+            TEventNotificationMap& eventObservers = m_eventobservers[ eventid ];    
+            TEventNotificationMap::iterator i( eventObservers.begin() );
             while ( i != eventObservers.end() )
             {
-                if ( (*i) == observer )
+                if ( (*i).first == observer )
                 {
                     /*
                      *  We found the observer and we will remove it from
@@ -582,6 +573,7 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
         cmdMailElement.cmdType = REQUEST_UNSUBSCRIBE;
         cmdMailElement.eventID = eventid;
         cmdMailElement.observer = observer;
+        cmdMailElement.callback = NULL;    // <- not used in this context
         cmdMailElement.notify = true;
         m_cmdMailStack.push_back( cmdMailElement );    
     }    
@@ -624,7 +616,8 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
         
         CObserver* oPtr = NULL;
         TObserverSet notifiedObservers;
-        
+
+        // First we process observers that are subscribed to all events        
         TObserverList::iterator i = m_observers.begin();
         while ( i != m_observers.end() )
         {
@@ -635,6 +628,8 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
                 if ( notifiedObservers.find( oPtr ) == notifiedObservers.end() )
                 {
                     // Perform the notification
+                    // If an observer is subscribed to all events we never used specialized callbacks
+                    // instead we always use the standard OnNotify()
                     oPtr->OnNotify( m_ownerNotifier ,
                                     eventid         ,
                                     eventData       );
@@ -669,39 +664,55 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
             ++i;    
         }
         
-        /*
-         *  Notify observers that are subscribed to this specific event
-         */
+        // Notify observers that are subscribed to this specific event
         bool notified = false;
-        TObserverSet& observers = m_eventobservers[ eventid ];
+        TEventNotificationMap& observers = m_eventobservers[ eventid ];
         notifiedObservers.clear();
 
-        TObserverSet::iterator n = observers.begin();
+        TEventNotificationMap::iterator n = observers.begin();
         while ( n != observers.end() )
         {
             // Check if we have not already notified this observer
             notified = false;
-            oPtr = (*n);
+            oPtr = (*n).first;
             if ( notifiedObservers.find( oPtr ) == notifiedObservers.end() )
             {
                 // Perform the notification
                 i = m_observers.find( oPtr );
-                if ( i == m_observers.end() )
+                if ( i != m_observers.end() )
                 {
+                    // Check if this observer is also registered as interested in all
+                    // events. In such a case we don't have to notify this observer
+                    // any more because it has already been notified in the generic
+                    // event notification section above this one.
+                    if ( !(*i).second )
+                    {
+                        // Check if we should perform notification using the generic
+                        // handler or a user specified callback.
+                        CIEventHandlerFunctorBase* callback = (*n).second;
+                        if ( NULL != callback )
+                        {
+                            callback->OnNotify( m_ownerNotifier ,
+                                                eventid         ,
+                                                eventData       );
+                        }
+                        else
+                        {
+                            oPtr->OnNotify( m_ownerNotifier ,
+                                            eventid         ,
+                                            eventData       );
+                        }
+                        notified = true;
+                    }                    
+                }
+                else
+                {
+                    // We should not get here, but we will pass on the event anyway
+                    GUCEF_ASSERT_ALWAYS;
                     oPtr->OnNotify( m_ownerNotifier  ,
                                     eventid          ,
                                     eventData        );
                     notified = true;
-                }
-                else
-                {
-                    if ( !(*i).second )
-                    {
-                        oPtr->OnNotify( m_ownerNotifier ,
-                                        eventid         ,
-                                        eventData       );
-                        notified = true;
-                    }
                 }
                 
                 if ( notified )
@@ -787,7 +798,8 @@ CNotifierImplementor::ProcessCmdMailbox( void )
                 if ( cmdMailElement.eventID.IsInitialized() )
                 {
                     Subscribe( cmdMailElement.observer ,
-                               cmdMailElement.eventID  ); 
+                               cmdMailElement.eventID  ,
+                               cmdMailElement.callback ); 
                 }
                 else
                 {
@@ -930,7 +942,7 @@ CNotifierImplementor::ScheduleForDestruction( void )
     {
         /*
          *  We are busy and the user has opted to perform a delayed delete
-         *  We will simply set a flag signalling that the notifier should be deleted
+         *  We will simply set a flag signaling that the notifier should be deleted
          *  once it finishes it's current operation
          */
         m_scheduledForDestruction = true;

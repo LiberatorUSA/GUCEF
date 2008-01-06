@@ -26,9 +26,8 @@
 //-------------------------------------------------------------------------*/
 
 #include <vector>
-#include "gucefCORE_macros.h"
+
 #include "CICloneable.h"
-#include "gucefCORE_ETypes.h"
 
 #ifndef GUCEF_CORE_CEVENT_H
 #include "CEvent.h"

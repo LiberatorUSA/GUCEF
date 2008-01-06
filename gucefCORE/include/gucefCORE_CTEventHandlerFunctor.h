@@ -36,6 +36,11 @@
 #define GUCEF_CORE_COBSERVER_H
 #endif /* GUCEF_CORE_COBSERVER_H ? */
 
+#ifndef GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
+#include "gucefCORE_CIEventHandlerFunctorBase.h"
+#define GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
+#endif /* GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -52,7 +57,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 template < class IObserverDerived >
-class CTEventHandlerFunctor : public CIObserver
+class CTEventHandlerFunctor : public CIEventHandlerFunctorBase
 {
     public:
 
@@ -73,6 +78,8 @@ class CTEventHandlerFunctor : public CIObserver
     virtual void OnNotify( CNotifier* notifier   , 
                            const CEvent& eventID ,
                            CICloneable* evenData );
+
+    virtual CICloneable* Clone( void ) const;
 
     private:
     
@@ -144,6 +151,16 @@ CTEventHandlerFunctor< IObserverDerived >::OnNotify( CNotifier* notifier   ,
     (m_observer->*m_functor)( notifier ,
                               eventID  ,
                               evenData );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class IObserverDerived >
+CICloneable*
+CTEventHandlerFunctor< IObserverDerived >::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CTEventHandlerFunctor< IObserverDerived >( *this );
 }
 
 /*-------------------------------------------------------------------------//
