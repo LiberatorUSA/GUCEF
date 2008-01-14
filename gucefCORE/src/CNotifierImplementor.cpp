@@ -219,6 +219,41 @@ CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+CNotifierImplementor::UnsubscribeAllFromNotifier( void )
+{GUCEF_TRACE;
+    
+    LockData();
+
+    if ( !m_isBusy )
+    {
+        // Now we will remove references to the notifier at the observers  
+        TObserverList::iterator i = m_observers.begin();
+        while ( i != m_observers.end() )
+        {
+            (*i).first->UnlinkFrom( m_ownerNotifier, true );
+            ++i;
+        }
+
+        m_observers.clear();
+        m_eventobservers.clear();
+    }
+    else
+    {
+        TCmdMailElement cmdMailElement;
+        cmdMailElement.cmdType = REQUEST_UNSUBSCRIBE_ALL;
+        cmdMailElement.eventID = CEvent();     // <- not used in this context
+        cmdMailElement.observer = NULL;        // <- not used in this context
+        cmdMailElement.callback = NULL;        // <- not used in this context
+        cmdMailElement.notify = true;          // <- not used in this context
+        m_cmdMailStack.push_back( cmdMailElement );
+    }
+    
+    UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CNotifierImplementor::Subscribe( CObserver* observer )
 {GUCEF_TRACE;
@@ -331,7 +366,14 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                  *  If we get here then we have a new observer on our hands for the given 
                  *  known event, as such we need to update our administration.
                  */
-                eventObservers[ observer ] = callback;
+                if ( NULL != callback )
+                { 
+                    eventObservers[ observer ] = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
+                }
+                else
+                { 
+                    eventObservers[ observer ] = NULL;
+                }
             }
             else
             {
@@ -342,7 +384,14 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                  *  Adding the event entry is accomplished by using the index operator on the map
                  */
                 TEventNotificationMap& eventObservers = m_eventobservers[ eventid ];
-                eventObservers[ observer ] = callback;
+                if ( NULL != callback )
+                { 
+                    eventObservers[ observer ] = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
+                }
+                else
+                { 
+                    eventObservers[ observer ] = NULL;
+                }
             }
             
             // Establish our bi-directional communication path for the given event
@@ -821,6 +870,16 @@ CNotifierImplementor::ProcessCmdMailbox( void )
                 }
                 break;                    
             }
+            case REQUEST_UNSUBSCRIBE_ALL :
+            {
+                UnsubscribeAllFromNotifier();
+                break;
+            }
+            default :
+            {
+                // We should not get here
+                GUCEF_UNREACHABLE;
+            }
         }
     }
 }
@@ -897,12 +956,7 @@ CNotifierImplementor::OnDeathOfOwnerNotifier( void )
     /*
      *  Now we will remove references to the notifier at the observers
      */   
-    TObserverList::iterator i = m_observers.begin();
-    while ( i != m_observers.end() )
-    {
-        (*i).first->UnlinkFrom( m_ownerNotifier, true );
-        ++i;
-    }
+    UnsubscribeAllFromNotifier();
 
     /*
      *  This is an important step,..

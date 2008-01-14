@@ -98,7 +98,7 @@ CObserver::operator=( const CObserver& src )
 /*-------------------------------------------------------------------------*/
 
 void 
-CObserver::UnsubscribeFromAll( void )
+CObserver::UnsubscribeAllFromObserver( void )
 {GUCEF_TRACE;
 
     LockData();

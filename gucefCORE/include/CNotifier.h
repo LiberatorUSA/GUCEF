@@ -148,6 +148,11 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      */    
     void Unsubscribe( CObserver* observer   ,
                       const CEvent& eventid );
+                      
+    /**
+     *  Cancels the subscription of all observers subscribed to this notifier
+     */
+    void UnsubscribeAllFromNotifier( void );
 
     /**
      *  descending classes should override this with the class name
@@ -228,7 +233,7 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
      *  able to handle notification messages due to the deallocation 
      *  chain of events (descending class is already deallocated).
      *
-     *  Note that if you code neatly you will want to call UnsubscribeAll()
+     *  Note that if you code neatly you will want to call UnsubscribeAllFromObserver()
      *  from your class destructor that descends from CObserver and implements
      *  OnNotify()
      */

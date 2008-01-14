@@ -62,25 +62,6 @@ class GUCEF_CORE_EXPORT_CPP CIEventHandlerFunctorBase : public CIObserver  ,
     virtual ~CIEventHandlerFunctorBase();
     
     CIEventHandlerFunctorBase& operator=( const CIEventHandlerFunctorBase& src );
-    
-    virtual CICloneable* Clone( void ) const = 0;
-    
-    protected:
-    friend class CNotifierImplementor;
-    
-    /**
-     *  Event callback member function.
-     *  Implement this in your descending class to handle
-     *  notification events.
-     *
-     *  @param notifier the notifier that sent the notification
-     *  @param eventid the unique event id for an event
-     *  @param eventdata optional notifier defined user data
-     */    
-    virtual void OnNotify( CNotifier* notifier          ,
-                           const CEvent& eventID        ,
-                           CICloneable* evenData = NULL ) = 0;
-
 };
 
 /*-------------------------------------------------------------------------//

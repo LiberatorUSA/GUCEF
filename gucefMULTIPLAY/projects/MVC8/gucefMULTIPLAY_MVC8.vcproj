@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="gucefMULTIPLAY"
-	ProjectGUID="{A4742C22-77EC-4951-BC7F-2425F11B4E9C}"
+	ProjectGUID="{D0808007-C395-499E-9827-4AB78985ACA2}"
 	RootNamespace="gucefMULTIPLAY_MVC8"
 	Keyword="Win32Proj"
 	>

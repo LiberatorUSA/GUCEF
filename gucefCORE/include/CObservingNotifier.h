@@ -105,8 +105,9 @@ class GUCEFCORE_EXPORT_CPP CObservingNotifier : public CNotifier ,
      *  notifier events if it is not yet subscribed plus
      *  subscribes to the given custom event.
      */    
-    void SubscribeTo( CNotifier* notifier   ,
-                      const CEvent& eventid );
+    void SubscribeTo( CNotifier* notifier                        ,
+                      const CEvent& eventid                      ,
+                      CIEventHandlerFunctorBase* callback = NULL );
 
     /**
      *  Detaches the observer component from the notifier.

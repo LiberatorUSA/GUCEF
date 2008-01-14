@@ -93,7 +93,7 @@ CObservingNotifier::UnsubscribeAllFromObserver( void )
 {GUCEF_TRACE;
 
     LockData();
-    m_observer.UnsubscribeFromAll();
+    m_observer.UnsubscribeAllFromObserver();
     UnlockData();
 }
     
@@ -138,15 +138,17 @@ CObservingNotifier::SubscribeTo( CNotifier* notifier )
 /*-------------------------------------------------------------------------*/
     
 void 
-CObservingNotifier::SubscribeTo( CNotifier* notifier   ,
-                                 const CEvent& eventid )
+CObservingNotifier::SubscribeTo( CNotifier* notifier                              ,
+                                 const CEvent& eventid                            ,
+                                 CIEventHandlerFunctorBase* callback /* = NULL */ )
 {GUCEF_TRACE;
     
     if ( NULL != notifier )
     {
         LockData();
         notifier->Subscribe( &m_observer ,
-                             eventid     );
+                             eventid     ,
+                             callback    );
         UnlockData();
     }
 }                                   

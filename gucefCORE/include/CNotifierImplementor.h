@@ -139,6 +139,11 @@ class CNotifierImplementor
                       const CEvent& eventid );
     
     /**
+     *  Cancels the subscription of all observers subscribed to this notifier
+     */
+    void UnsubscribeAllFromNotifier( void );
+
+    /**
      *  Dispatches the standard CNotifier::ModifyEvent
      *  Useful for a notification system where you only care if
      *  a mutation is performed on an object.
@@ -221,8 +226,9 @@ class CNotifierImplementor
     typedef std::pair< CEvent, CICloneable* > TEventMailElement;
     typedef enum TCmdType
     {
-        REQUEST_SUBSCRIBE   ,
-        REQUEST_UNSUBSCRIBE
+        REQUEST_SUBSCRIBE       ,
+        REQUEST_UNSUBSCRIBE     ,
+        REQUEST_UNSUBSCRIBE_ALL
     };
     
     struct SCmdMailElement

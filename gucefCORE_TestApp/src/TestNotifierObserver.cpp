@@ -461,7 +461,7 @@ PerformNotifierObserverTests( void )
          */
         for ( i=0; i<100; ++i )
         {
-            observers[ i ]->UnsubscribeFromAll();
+            observers[ i ]->UnsubscribeAllFromObserver();
             if ( observers[ i ]->GetNotifierCount() != 0 )
             {
                 ERRORHERE;
@@ -528,16 +528,36 @@ PerformNotifierObserverTests( void )
                 ERRORHERE;
             }
         }
-
+        notifierA.UnsubscribeAllFromNotifier();
+        notifierB->UnsubscribeAllFromNotifier();
+        
         printf( "Completed custom event test\n" );     
         printf( "Performing custom event handler callback test\n" );
-
-        for ( i=0; i<30; ++i )
+        
+        // Setup subscriptions for the test
+        for ( i=0; i<100; ++i )
         {
+            // Clear the test output storage
+            observerECache[ i ] = CEvent();
+            
+            // Setup the callback
             CTEventHandlerFunctor< CMyObserver > callback( observers[ i ], &CMyObserver::OnMyCallback );
+            observers[ i ]->UnsubscribeAllFromObserver();
             notifierA.Subscribe( observers[ i ], myEventB, &callback );
         }
+        
+        // Send the test event
         notifierA.DoNotifyObservers( myEventB );
+        
+        // Check whether it was processed correctly
+        for ( i=0; i<100; ++i )
+        {
+            if ( observerECache[ i ] != myEventB )
+            {
+                // For some reason the output is not as expected
+                ERRORHERE;
+            }
+        }        
 
         printf( "Completed custom event handler callback test\n" );
         

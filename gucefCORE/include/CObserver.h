@@ -95,7 +95,7 @@ class GUCEFCORE_EXPORT_CPP CObserver : public CIObserver
     /**
      *  Unsubscribe's the observer from all notifiers.
      */
-    void UnsubscribeFromAll( void );
+    void UnsubscribeAllFromObserver( void );
     
     /**
      *  Detaches from the given notifier.

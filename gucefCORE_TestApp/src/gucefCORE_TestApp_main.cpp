@@ -55,60 +55,43 @@ WinMain( HINSTANCE hinstance     ,
            LPSTR lpcmdline         ,
            int ncmdshow            )
 {GUCEF_TRACE;
-        using namespace GUCEF::CORE;
-                
-        try 
-        {       
-                CString* x = new CString( "x" );
-                CString w("w");
-                w = NULL;
-                w = "aap";
-                
-                std::string* stlStr = new std::string( "stlStr" );
-                w = *stlStr;
-                *stlStr = "1234567";
-                delete stlStr;
-                stlStr = new std::string( *x );
-                delete x;
-                delete stlStr;
-                
-                CString a("a"), b("b"), c("c"), d, e, f;
-        
-                d = a;
-                d = NULL;
-                e = "e";
-                f = e;
-                e = NULL;
-                f = NULL;
-        
-               // CPluginControl::Instance()->SetPluginDir( "$MODULEDIR$\\plugins" );
-               // CPluginControl::Instance()->LoadAll();
-        
-              //  CConfigStore* cs = CConfigStore::Instance();
-                
-                //cs->SetConfigFile( "GUC_cfg.xml" );
-                //cs->SaveConfig( "GUCCONFIG" );
-                
-                
-                //cs->LoadConfig();
+   
+    #ifdef GUCEF_CORE_DEBUG_MODE
+    //GUCEF::CORE::GUCEF_LogStackToStdOut();
+    //GUCEF::CORE::GUCEF_SetStackLogging( 1 );
+    #endif /* GUCE_CORE_DEBUG_MODE ? */
 
-                PerformSharedPtrTests();
-                
-                PerformNotifierObserverTests();
+    try 
+    {                               
+        GUCEF::CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
+        GUCEF::CORE::AppendToPath( logFilename, "gucefCORE_TestApp_Log.txt" );
+        GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
         
-               // cs->SaveConfig( "GUCCONFIG" ); 
-                
-                return 1;                                                                            
-        }
-        catch ( ... )
-        {
-                GUCEF_PrintCallstack();
-                GUCEF_DumpCallstack( "GUCEFCallstack.txt" );
-                
-                ShowErrorMessage( "Unknown exception"                                                                 ,
-                                  "Unhandled exception during program execution, the application will now terminate"  );                                                         
-        }
-        return 1;                                                                                                                              
+        GUCEF::CORE::CStdLogger logger( logFileAccess );
+        GUCEF::CORE::CLogManager::Instance()->AddLogger( &logger );
+        
+        #ifdef GUCEF_MSWIN_BUILD
+        GUCEF::CORE::CMSWinConsoleLogger consoleOut;
+        GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
+        #endif /* GUCEF_MSWIN_BUILD ? */
+
+        PerformSharedPtrTests();
+        
+        PerformNotifierObserverTests();
+        
+        return 1;                                                                            
+    }
+    catch ( ... )
+    {
+        #ifdef GUCEF_CORE_DEBUG_MODE
+        GUCEF::CORE::GUCEF_PrintCallstack();
+        GUCEF::CORE::GUCEF_DumpCallstack( "gucefCORE_TestApp_callstack.txt" );
+        #endif /* GUCEF_CORE_DEBUG_MODE ? */
+        
+        GUCEF::CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
+                                       "Unhandled exception during program execution, the application will now terminate"  );                                                         
+    }
+    return 1;                                                                                                                              
 }
 
 /*-------------------------------------------------------------------------*/

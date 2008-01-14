@@ -163,6 +163,15 @@ CNotifier::Unsubscribe( CObserver* observer   ,
                         eventid  );
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CNotifier::UnsubscribeAllFromNotifier( void )
+{GUCEF_TRACE;
+
+    m_imp->UnsubscribeAllFromNotifier();
+}
+
 /*-------------------------------------------------------------------------*/                        
 
 bool 

@@ -69,7 +69,7 @@ CTSGObserver::CTSGObserver( const CTSGObserver& src )
 CTSGObserver::~CTSGObserver()
 {GUCEF_TRACE;
 
-    UnsubscribeFromAll();
+    UnsubscribeAllFromObserver();
 }
 
 /*-------------------------------------------------------------------------*/

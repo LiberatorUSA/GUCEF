@@ -67,9 +67,9 @@ class CTEventHandlerFunctor : public CIEventHandlerFunctorBase
     public:
 
     // Member function pointer type definition.
-    typedef void (IObserverDerived::*TMemberFunctionType)( CNotifier* notifier   , 
-                                                           const CEvent& event   , 
-                                                           CICloneable* evenData );
+    typedef typename void (IObserverDerived::*TMemberFunctionType)( CNotifier* notifier   , 
+                                                                    const CEvent& event   , 
+                                                                    CICloneable* evenData );
     
     CTEventHandlerFunctor( IObserverDerived* observer  ,
                            TMemberFunctionType functor );
@@ -87,6 +87,8 @@ class CTEventHandlerFunctor : public CIEventHandlerFunctorBase
     virtual void OnNotify( CNotifier* notifier          , 
                            const CEvent& eventID        ,
                            CICloneable* evenData = NULL );
+    
+    void SetMemberFunctionPointer( TMemberFunctionType functor );
 
     private:
     
@@ -172,6 +174,16 @@ CTEventHandlerFunctor< IObserverDerived >::Clone( void ) const
 {GUCEF_TRACE;
 
     return new CTEventHandlerFunctor< IObserverDerived >( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class IObserverDerived >
+void
+CTEventHandlerFunctor< IObserverDerived >::SetMemberFunctionPointer( TMemberFunctionType functor )
+{GUCEF_TRACE;
+
+    m_functor = functor;
 }
 
 /*-------------------------------------------------------------------------//
