@@ -72,6 +72,15 @@ CTabControl::~CTabControl()
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CTabControl::SetActiveTab( const UInt32 tabIndex )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CTabContentPane*
 CTabControl::GetTabContentPane( const UInt32 tabIndex )
 {GUCEF_TRACE;
