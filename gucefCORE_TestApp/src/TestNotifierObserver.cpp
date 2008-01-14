@@ -45,6 +45,11 @@
 #define GUCEF_CORE_CICLONEABLE_H
 #endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
+#ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#include "gucefCORE_CTEventHandlerFunctor.h"
+#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
+
 #include "TestNotifierObserver.h"
 
 /*-------------------------------------------------------------------------//
@@ -98,6 +103,14 @@ public:
     virtual ~CMyObserver()
     {
         printf( "This is the end,.. observer %d signing off\n", m_index );
+    }
+    
+    virtual void OnMyCallback( CNotifier* notifier           ,
+                               const CEvent& eventid         ,
+                               CICloneable* eventdata = NULL )
+    {
+        printf( "This is observer %d calling: I have received an event in my custom callback\n", m_index );
+        m_eventCache[ m_index ] = eventid;
     }    
 
     protected:
@@ -139,7 +152,7 @@ public:
             printf( "This is observer %d calling: Recieved event \"%s\" with id %d\n", m_index, CNotificationIDRegistry::Instance()->Lookup(eventid).C_String(), eventid );
             m_eventCache[ m_index ] = eventid;        
         }            
-    }
+    }   
     
     private:
     CEvent* m_eventCache;
@@ -516,7 +529,17 @@ PerformNotifierObserverTests( void )
             }
         }
 
-        printf( "Completed custom event test\n" );        
+        printf( "Completed custom event test\n" );     
+        printf( "Performing custom event handler callback test\n" );
+
+        for ( i=0; i<30; ++i )
+        {
+            CTEventHandlerFunctor< CMyObserver > callback( observers[ i ], &CMyObserver::OnMyCallback );
+            notifierA.Subscribe( observers[ i ], myEventB, &callback );
+        }
+        notifierA.DoNotifyObservers( myEventB );
+
+        printf( "Completed custom event handler callback test\n" );
         
         /*
          *  Cleanup our toys

@@ -36,6 +36,11 @@
 #define GUCEF_CORE_COBSERVER_H
 #endif /* GUCEF_CORE_COBSERVER_H ? */
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 #ifndef GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
 #include "gucefCORE_CIEventHandlerFunctorBase.h"
 #define GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
@@ -75,11 +80,13 @@ class CTEventHandlerFunctor : public CIEventHandlerFunctorBase
     
     CTEventHandlerFunctor& operator=( const CTEventHandlerFunctor& src );
     
-    virtual void OnNotify( CNotifier* notifier   , 
-                           const CEvent& eventID ,
-                           CICloneable* evenData );
-
-    virtual CICloneable* Clone( void ) const;
+    virtual CICloneable* Clone( void ) const;    
+    
+    protected:
+    
+    virtual void OnNotify( CNotifier* notifier          , 
+                           const CEvent& eventID        ,
+                           CICloneable* evenData = NULL );
 
     private:
     
@@ -100,7 +107,8 @@ class CTEventHandlerFunctor : public CIEventHandlerFunctorBase
 template< class IObserverDerived >
 CTEventHandlerFunctor< IObserverDerived >::CTEventHandlerFunctor( IObserverDerived* observer  ,
                                                                   TMemberFunctionType functor )
-    : m_observer( observer )   ,
+    : CIEventHandlerFunctorBase() ,
+      m_observer( observer )      ,
       m_functor( functor )
 {GUCEF_TRACE;
 
@@ -110,7 +118,8 @@ CTEventHandlerFunctor< IObserverDerived >::CTEventHandlerFunctor( IObserverDeriv
 
 template< class IObserverDerived >
 CTEventHandlerFunctor< IObserverDerived >::CTEventHandlerFunctor( const CTEventHandlerFunctor& src )
-    :  m_observer( src.m_observer ) ,
+    :  CIEventHandlerFunctorBase( src ) ,
+       m_observer( src.m_observer )     ,
        m_functor( src.m_functor )
 {GUCEF_TRACE;
 
@@ -133,6 +142,8 @@ CTEventHandlerFunctor< IObserverDerived >::operator=( const CTEventHandlerFuncto
 
     if ( &src != this )
     {
+        CIEventHandlerFunctorBase::operator=( src );
+        
         m_observer = src.m_observer;
         m_functor = src.m_functor;
     }

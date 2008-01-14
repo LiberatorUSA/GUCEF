@@ -77,7 +77,7 @@ CIEventHandlerFunctorBase::operator=( const CIEventHandlerFunctorBase& src )
 
     if ( this != &src )
     {
-        CIObserver::operator=( src );
+        //CIObserver::operator=( src );
         CICloneable::operator=( src );
     }
     return *this;

@@ -51,6 +51,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CNotifierImplementor;
 class CNotifier;
 class CEvent;
 
@@ -71,6 +72,9 @@ class GUCEF_CORE_EXPORT_CPP CIObserver
     virtual ~CIObserver();
     
     CIObserver& operator=( const CIObserver& src );
+    
+    protected:
+    friend class CNotifierImplementor;
 
     /**
      *  Event callback member function.
