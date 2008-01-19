@@ -562,29 +562,25 @@ CString
 CString::CutChars( UInt32 charcount ,
                    bool startfront  ) const
 {GUCEF_TRACE;
-        if ( startfront )
+
+    if ( startfront )
+    {
+        if ( charcount < m_length )                
         {
-                if ( charcount < m_length )                
-                {
-                        CString substr( m_string+charcount ,
-                                        m_length-charcount );
-                        return substr;                                        
-                }
-                
-                CString emptystr;
-                return emptystr;
+            return CString( m_string+charcount ,
+                            m_length-charcount );                                        
         }
         
-        if ( charcount < m_length )        
-        {
-                CString substr;
-                substr.Set( m_string+m_length-charcount ,
-                            charcount                 );                            
-                return substr;                                    
-        }
-        
-        CString emptystr;
-        return emptystr;        
+        return CString();
+    }
+    
+    if ( charcount < m_length )        
+    {
+        return CString( m_string           ,
+                        m_length-charcount );                                                            
+    }
+    
+    return CString();        
 }
 
 /*-------------------------------------------------------------------------*/

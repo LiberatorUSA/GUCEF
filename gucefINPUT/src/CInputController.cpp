@@ -188,6 +188,7 @@ CInputController::DestroyContext( CInputContext* context )
         m_driver->DeleteContext( context );
         
         GUCEF_SYSTEM_LOG( 0, "Destroyed input context" );
+        return;
     }
     
     GUCEF_ERROR_LOG( 0, "Attempting to destroy an input context without an input driver" );
