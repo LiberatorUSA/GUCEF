@@ -680,13 +680,13 @@ CString::HasChar( char searchchar  ,
 
 /*-------------------------------------------------------------------------*/
 
-CStringList 
+std::vector< CString > 
 CString::ParseElements( char seperator ) const
 {GUCEF_TRACE;
 
     if ( m_length > 0 )
     {
-        CStringList list;
+        std::vector< CString > list;
         CString entry;
         UInt32 last = 0;
         for ( UInt32 i=0; i<m_length; ++i )
@@ -695,7 +695,7 @@ CString::ParseElements( char seperator ) const
                 {
                         entry.Set( m_string+last ,
                                    i-last       );
-                        list.Append( entry );
+                        list.push_back( entry );
                         last = i;                    
                 }  
         }
@@ -703,10 +703,10 @@ CString::ParseElements( char seperator ) const
         /* add last item */
         entry.Set( m_string+last ,
                    m_length-last );        
-        list.Append( entry ); 
+        list.push_back( entry ); 
         return list;        
     }
-    return CStringList();
+    return std::vector< CString >();
 }
 
 /*-------------------------------------------------------------------------*/

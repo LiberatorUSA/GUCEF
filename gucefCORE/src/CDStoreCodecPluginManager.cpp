@@ -71,7 +71,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 MT::CMutex CDStoreCodecPluginManager::_datalock;
-CDStoreCodecPluginManager* CDStoreCodecPluginManager::_instance;
+CDStoreCodecPluginManager* CDStoreCodecPluginManager::_instance = NULL;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -87,25 +87,8 @@ CDStoreCodecPluginManager::CDStoreCodecPluginManager( void )
 
 /*-------------------------------------------------------------------------*/
 
-CDStoreCodecPluginManager::CDStoreCodecPluginManager( const CDStoreCodecPluginManager& src )
-{GUCEF_TRACE;        
-        /* dummy, do not use */
-}
-
-/*-------------------------------------------------------------------------*/
-
 CDStoreCodecPluginManager::~CDStoreCodecPluginManager()
 {GUCEF_TRACE;
-}
-
-/*-------------------------------------------------------------------------*/
-
-
-CDStoreCodecPluginManager&
-CDStoreCodecPluginManager::operator=( const CDStoreCodecPluginManager& src )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        return *this;        
 }
 
 /*-------------------------------------------------------------------------*/
@@ -292,7 +275,7 @@ CDStoreCodecPluginManager::SaveConfig( CDataNode& tree )
                 cp = static_cast<CDStoreCodecPlugin*>(_codecs[ i ]);
                 plugin.SetAttribute( "name", cp->GetName() );
                 plugin.SetAttribute( "type", cp->GetTypeName() );
-                plugin.SetAttribute( "version", VersionToString( cp->GetVersion() ) );
+                plugin.SetAttribute( "version", VersionToString( *cp->GetVersion() ) );
                 plugin.SetAttribute( "path", cp->GetLocation() );
                 plugin.SetAttribute( "copyright", cp->GetCopyright() );
                 n->AddChild( plugin );

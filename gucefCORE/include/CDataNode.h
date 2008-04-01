@@ -31,6 +31,11 @@
 #define GUCEF_CORE_CDYNAMICARRAY_H
 #endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
 
+#ifndef GUCEF_CORE_CSTRINGLIST_H
+#include "CStringList.h"
+#define GUCEF_CORE_CSTRINGLIST_H
+#endif /* GUCEF_CORE_CSTRINGLIST_H ? */
+
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"          /* framework ref-counted string implementation */
 #define GUCEF_CORE_CDVSTRING_H

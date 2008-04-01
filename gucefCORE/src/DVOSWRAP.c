@@ -479,7 +479,59 @@ ShowErrorMessage( const char* message     ,
         #else
         fprintf( stderr, "%s : %s\n", message, description );
         #endif                    
-}                  
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32 
+GetCPUCountPerPackage( void )
+{
+    /* Number of Logical Cores per Physical Processor */
+    UInt32 coreCount = 1;
+    
+    /* Initialize to 1 to support older processors. */
+    _asm 
+    {
+        mov		eax, 1
+        cpuid
+        /* Test for HTT bit */
+        test	edx, 0x10000000
+        jz		Unp
+        /* Multi-core or Hyperthreading supported...
+        // Read the "# of Logical Processors per Physical Processor" field: */
+        mov		eax, ebx
+        and		eax, 0x00FF0000 /* Mask the "logical core counter" byte */
+        shr		eax, 16 // Shift byte to be least-significant
+        mov		coreCount, eax
+        /* Uniprocessor (i.e. Pentium III or any AMD CPU excluding their new 
+        dual-core A64)  */
+        Unp:
+        /* coreCount will contain 1. */
+    }
+    return coreCount;
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+GetPhysicalCPUCount( void )
+{
+    return GetLogicalCPUCount() / GetCPUCountPerPackage();
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+GetLogicalCPUCount( void )
+{
+    #ifdef GUCEF_MSWIN_BUILD
+    SYSTEM_INFO systemInfo;
+    GetSystemInfo( &systemInfo );
+    return systemInfo.dwNumberOfProcessors;
+    #else
+    return 1;
+    #endif    
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

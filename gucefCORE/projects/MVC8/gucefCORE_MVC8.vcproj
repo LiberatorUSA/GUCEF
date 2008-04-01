@@ -699,6 +699,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefCORE_CITaskConsumer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefCORE_CTaskDelegator.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefCORE_CTaskManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefCORE_CTEventHandlerFunctor.cpp"
 				>
 			</File>
@@ -1277,6 +1289,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefCORE_CEventBasedTaskConsumer.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefCORE_CIEventHandlerFunctorBase.h"
 				>
 			</File>
@@ -1285,7 +1301,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefCORE_CITaskConsumer.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefCORE_config.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefCORE_CTaskDelegator.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefCORE_CTaskManager.h"
 				>
 			</File>
 			<File

@@ -177,6 +177,16 @@ ShowErrorMessage( const char* message     ,
 
 /*--------------------------------------------------------------------------*/
 
+GUCEF_CORE_EXPORT_C UInt32
+GetPhysicalCPUCount( void );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_EXPORT_C UInt32
+GetLogicalCPUCount( void );
+
+/*--------------------------------------------------------------------------*/
+
 #ifdef __cplusplus
    }
 #endif /* __cplusplus */

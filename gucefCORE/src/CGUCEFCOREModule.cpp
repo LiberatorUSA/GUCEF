@@ -118,6 +118,11 @@
 #define GUCEF_CORE_CSTREAMEREVENTS_H
 #endif /* GUCEF_CORE_CSTREAMEREVENTS_H ? */
 
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
 #ifndef GUCEF_CORE_TSPRINTING_H
 #include "tsprinting.h"
 #define GUCEF_CORE_TSPRINTING_H
@@ -190,6 +195,7 @@ CGUCEFCOREModule::Load( void )
         CDStoreCodecRegistry::Instance();
         CDStoreCodecPluginManager::Instance();
         CConfigStore::Instance();
+        CTaskManager::Instance();
         CURLHandlerRegistry::Instance();
         CGUCEFApplication::Instance();
         CSysConsole::Instance();
@@ -232,6 +238,7 @@ CGUCEFCOREModule::Unload( void )
          *      cleanup all singletons
          *      Take care to deinstance them in the correct order !!!
          */
+        CTaskManager::Deinstance();
         CStdCodecPluginManager::Deinstance();
         CGenericPluginManager::Deinstance(); 
         CSysConsole::Deinstance(); 

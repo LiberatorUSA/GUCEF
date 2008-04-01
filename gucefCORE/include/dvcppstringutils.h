@@ -85,8 +85,13 @@ FileExists( const CString& filename );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEFCORE_EXPORT_CPP const TVersion
+StringToVersion( const CString& version );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEFCORE_EXPORT_CPP CString
-VersionToString( const TVersion* version );
+VersionToString( const TVersion& version );
 
 /*-------------------------------------------------------------------------*/
 

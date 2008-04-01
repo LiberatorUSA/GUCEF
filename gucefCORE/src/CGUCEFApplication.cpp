@@ -259,13 +259,13 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         data.ncmdshow = ncmdshow;
         
         // Parse the MSWIN param into the old style param list
-        CStringList argList;
+        std::vector< CString > argList;
         if ( NULL != lpcmdline )
         {
             argList = CString( lpcmdline ).ParseElements( ' ' );
         }
         
-        data.argc = argList.GetCount();
+        data.argc = (int)argList.size();
         if ( data.argc > 0 )
         {
             data.argv = new char*[ data.argc ];

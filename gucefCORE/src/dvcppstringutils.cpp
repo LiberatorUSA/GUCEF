@@ -119,12 +119,40 @@ AppendToPath( CString& path           ,
 
 /*-------------------------------------------------------------------------*/
 
-CString
-VersionToString( const TVersion* version )
+const TVersion
+StringToVersion( const CString& versionStr )
 {GUCEF_TRACE;
-        char verstr[ 25 ];
-        sprintf( verstr, "%d.%d.%d.%d", version->major, version->minor, version->patch, version->release );
-        return verstr;        
+
+    TVersion version = { 0, 0, 0, 0 };
+    std::vector< CString > elements = versionStr.ParseElements( '.' );
+    if ( elements.size() > 0 )
+    {
+        version.major = StringToUInt16( elements[ 0 ] );
+        if ( elements.size() > 1 )
+        {
+            version.minor = StringToUInt16( elements[ 1 ] );
+            if ( elements.size() > 2 )
+            {
+                version.patch = StringToUInt16( elements[ 2 ] );
+                if ( elements.size() > 3 )
+                {
+                    version.release = StringToUInt16( elements[ 3 ] );
+                }
+            }
+        }
+    }
+    return version;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+VersionToString( const TVersion& version )
+{GUCEF_TRACE;
+
+    char verstr[ 25 ];
+    sprintf( verstr, "%d.%d.%d.%d", version.major, version.minor, version.patch, version.release );
+    return verstr;        
 }
 
 /*-------------------------------------------------------------------------*/
