@@ -79,7 +79,7 @@ CSysConsoleClient::operator=( const CSysConsoleClient& src )
 bool 
 CSysConsoleClient::RegisterCmd( const CString& path                ,
                                 const CString& command             ,
-                                const CStringList& args            ,
+                                const std::vector< CString >& args ,
                                 CISysConsoleCmdHandler* cmdhandler )
 {                                          
         return _system->RegisterCmd( path       ,
@@ -134,9 +134,9 @@ CSysConsoleClient::GetPath( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CSysConsoleClient::Execute( const CString& functionname ,
-                            const CStringList& arglist  ,
-                            CStringList& resultdata     )
+CSysConsoleClient::Execute( const CString& functionname            ,
+                            const std::vector< CString >& arglist  ,
+                            std::vector< CString >& resultdata     )
 {
         return _system->Execute( this         , 
                                  functionname ,
@@ -146,7 +146,7 @@ CSysConsoleClient::Execute( const CString& functionname ,
 
 /*-------------------------------------------------------------------------*/                      
 
-CStringList 
+std::vector< CString > 
 CSysConsoleClient::GetDirList( void ) const
 {
         return _system->GetDirList( this );
@@ -154,7 +154,7 @@ CSysConsoleClient::GetDirList( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CStringList 
+std::vector< CString > 
 CSysConsoleClient::GetCmdList( void ) const
 {
         return _system->GetCmdList( this );
@@ -163,9 +163,9 @@ CSysConsoleClient::GetCmdList( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CSysConsoleClient::OnReturnData( const CStringList& data )
+CSysConsoleClient::OnReturnData( const std::vector< CString >& data )
 {
-        /* dummy, to avoid manditory implementation for decending classes */        
+        /* dummy, to avoid mandatory implementation for descending classes */        
 }
 
 /*-------------------------------------------------------------------------//

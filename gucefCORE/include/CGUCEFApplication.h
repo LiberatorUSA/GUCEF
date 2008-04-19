@@ -180,10 +180,10 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CNotifier             ,
     
     protected:
 
-    virtual bool OnSysConsoleCommand( const CString& path     ,
-                                      const CString& command  ,
-                                      const CStringList& args ,
-                                      CStringList& resultdata );
+    virtual bool OnSysConsoleCommand( const CString& path                ,
+                                      const CString& command             ,
+                                      const std::vector< CString >& args ,
+                                      std::vector< CString >& resultdata );
                            
     virtual void LockData( void );
     

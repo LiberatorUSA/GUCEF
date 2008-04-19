@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CSTRINGLIST_H
-#include "CStringList.h"          /* string container */
-#define GUCEF_CORE_CSTRINGLIST_H
-#endif /* GUCEF_CORE_CSTRINGLIST_H ? */
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h" 
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,10 +55,10 @@ class GUCEFCORE_EXPORT_CPP CISysConsoleCmdHandler
         protected:
         friend class CSysConsole;
         
-        virtual bool OnSysConsoleCommand( const CString& path     ,
-                                          const CString& command  ,
-                                          const CStringList& args ,
-                                          CStringList& resultdata ) = 0;
+        virtual bool OnSysConsoleCommand( const CString& path                ,
+                                          const CString& command             ,
+                                          const std::vector< CString >& args ,
+                                          std::vector< CString >& resultdata ) = 0;
 
 };
 

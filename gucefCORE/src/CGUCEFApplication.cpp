@@ -164,7 +164,7 @@ CGUCEFApplication::CGUCEFApplication( void )
      *      Register some functionality at the system console
      */
     CSysConsole* sysconsole = CSysConsole::Instance();
-    CStringList args;
+    std::vector< CString > args;
     sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
                              "Stop"                           ,
                              args                             ,
@@ -462,10 +462,10 @@ CGUCEFApplication::LoadConfig( const CDataNode& tree )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CGUCEFApplication::OnSysConsoleCommand( const CString& path     ,
-                                        const CString& command  ,
-                                        const CStringList& args ,
-                                        CStringList& resultdata )
+CGUCEFApplication::OnSysConsoleCommand( const CString& path                ,
+                                        const CString& command             ,
+                                        const std::vector< CString >& args ,
+                                        std::vector< CString >& resultdata )
 {GUCEF_TRACE;
 
     LockData();
@@ -479,7 +479,7 @@ CGUCEFApplication::OnSysConsoleCommand( const CString& path     ,
     else
     if ( command == "GetApplicationDir" )
     {
-            resultdata.Append( GetApplicationDir() );
+            resultdata.push_back( GetApplicationDir() );
             UnlockData();
             return true;
     }

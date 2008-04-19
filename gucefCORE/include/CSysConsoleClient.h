@@ -36,11 +36,6 @@
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
-#ifndef GUCEF_CORE_CSTRINGLIST_H
-#include "CStringList.h"          /* string container */
-#define GUCEF_CORE_CSTRINGLIST_H
-#endif /* GUCEF_CORE_CSTRINGLIST_H ? */
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -79,10 +74,10 @@ class GUCEFCORE_EXPORT_CPP CSysConsoleClient
         
         CSysConsoleClient& operator=( const CSysConsoleClient& src );
         
-        bool RegisterCmd( const CString& path                ,
-                          const CString& command             ,
-                          const CStringList& args            ,
-                          CISysConsoleCmdHandler* cmdhandler );                        
+        bool RegisterCmd( const CString& path                   ,
+                          const CString& command                ,
+                          const std::vector< CString >& arglist ,
+                          CISysConsoleCmdHandler* cmdhandler    );                        
 
         void UnregisterCmd( const CString& path    ,
                             const CString& command );
@@ -95,15 +90,15 @@ class GUCEFCORE_EXPORT_CPP CSysConsoleClient
         
         const CString& GetPath( void ) const;
         
-        bool Execute( const CString& funcname    ,
-                      const CStringList& arglist ,
-                      CStringList& resultdata    );
+        bool Execute( const CString& funcname               ,
+                      const std::vector< CString >& arglist ,
+                      std::vector< CString >& resultdata    );
         
-        CStringList GetDirList( void ) const;
+        std::vector< CString > GetDirList( void ) const;
         
-        CStringList GetCmdList( void ) const;
+        std::vector< CString > GetCmdList( void ) const;
         
-        virtual void OnReturnData( const CStringList& data );
+        virtual void OnReturnData( const std::vector< CString >& data );
         
         private:
         friend class CSysConsole;

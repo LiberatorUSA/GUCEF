@@ -33,11 +33,6 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_CORE_CSTRINGLIST_H
-#include "CStringList.h"          /* string container */
-#define GUCEF_CORE_CSTRINGLIST_H
-#endif /* GUCEF_CORE_CSTRINGLIST_H ? */
-
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
@@ -94,7 +89,7 @@ class GUCEFCORE_EXPORT_CPP CSysConsole : public CIConfigurable         ,
                                     
         bool RegisterCmd( const CString& path                ,
                           const CString& command             ,
-                          const CStringList& args            ,
+                          const std::vector< CString >& args ,
                           CISysConsoleCmdHandler* cmdhandler );                             
 
         void UnregisterCmd( const CString& path    ,
@@ -143,14 +138,14 @@ class GUCEFCORE_EXPORT_CPP CSysConsole : public CIConfigurable         ,
         bool JumpTo( CSysConsoleClient* client ,
                      const CString& path );
         
-        bool Execute( CSysConsoleClient* client  ,
-                      const CString& funcname    ,
-                      const CStringList& arglist ,
-                      CStringList& resultdata    );
+        bool Execute( CSysConsoleClient* client             ,
+                      const CString& funcname               ,
+                      const std::vector< CString >& arglist ,
+                      std::vector< CString >& resultdata    );
         
-        CStringList GetDirList( const CSysConsoleClient* client ) const;
+        std::vector< CString > GetDirList( const CSysConsoleClient* client ) const;
         
-        CStringList GetCmdList( const CSysConsoleClient* client ) const;
+        std::vector< CString > GetCmdList( const CSysConsoleClient* client ) const;
         
         void InitClient( CSysConsoleClient* client );
         
@@ -193,10 +188,10 @@ class GUCEFCORE_EXPORT_CPP CSysConsole : public CIConfigurable         ,
                                             
         TAliasData* FindAliasFunction( const CString& aliasname );
         
-        bool OnSysConsoleCommand( const CString& path     ,
-                                  const CString& command  ,
-                                  const CStringList& args ,
-                                  CStringList& resultdata );
+        bool OnSysConsoleCommand( const CString& path                ,
+                                  const CString& command             ,
+                                  const std::vector< CString >& args ,
+                                  std::vector< CString >& resultdata );
         
         struct SCmdChannel* _root;
         TAliasList _aliases;

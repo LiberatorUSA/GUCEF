@@ -94,7 +94,7 @@ typedef struct CSysConsole::SCmdChannel TCmdChannel;
 struct CSysConsole::SFunctionHook
 {
         CString name;
-        CStringList argdefs;
+        std::vector< CString > argdefs;
         CISysConsoleCmdHandler* handler;                
 };
 typedef struct CSysConsole::SFunctionHook TFunctionHook;
@@ -119,16 +119,16 @@ CSysConsole::CSysConsole( void )
          *      itself. The functions allow you to register aliases
          *      using the console.
          */
-        CStringList args;
-        args.Append( "aliasname" );
-        args.Append( "path" );
-        args.Append( "function" );
+        std::vector< CString > args;
+        args.push_back( "aliasname" );
+        args.push_back( "path" );
+        args.push_back( "function" );
         RegisterCmd( "GUCEF\\CORE\\CSysConsole" ,
                      "RegisterAlias"            ,
                      args                       ,
                      this                       );
-        args.Clear();
-        args.Append( "aliasname" );             
+        args.clear();
+        args.push_back( "aliasname" );             
         RegisterCmd( "GUCEF\\CORE\\CSysConsole" ,
                      "UnregisterAlias"          ,
                      args                       ,
@@ -321,7 +321,7 @@ CSysConsole::FindFunction( const struct SCmdChannel* curchannel ,
 bool 
 CSysConsole::RegisterCmd( const CString& path                ,
                           const CString& functionname        ,
-                          const CStringList& args            ,
+                          const std::vector< CString >& args ,
                           CISysConsoleCmdHandler* cmdhandler )
 {GUCEF_TRACE;
 
@@ -524,10 +524,10 @@ CSysConsole::FindAliasFunction( const CString& aliasname )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CSysConsole::Execute( CSysConsoleClient* client  ,
-                      const CString& funcname    ,
-                      const CStringList& arglist ,
-                      CStringList& resultdata    )
+CSysConsole::Execute( CSysConsoleClient* client             ,
+                      const CString& funcname               ,
+                      const std::vector< CString >& arglist ,
+                      std::vector< CString >& resultdata    )
 {GUCEF_TRACE;
 
         _datalock.Lock();
@@ -562,7 +562,7 @@ CSysConsole::Execute( CSysConsoleClient* client  ,
                                              
         if ( func )
         {                                            
-            if ( arglist.GetCount() == func->argdefs.GetCount() )
+            if ( arglist.size() == func->argdefs.size() )
             {
                 if ( func->handler->OnSysConsoleCommand( client->_path ,
                                                          funcname      ,
@@ -575,15 +575,15 @@ CSysConsole::Execute( CSysConsoleClient* client  ,
             }
             else
             {
-                resultdata.Append( "ERROR> Expected " + Int32ToString( func->argdefs.GetCount() ) + " values" );
-                resultdata.Append( Int32ToString( arglist.GetCount() ) + " values where entered" );
+                resultdata.push_back( "ERROR> Expected " + UInt32ToString( (UInt32) func->argdefs.size() ) + " values" );
+                resultdata.push_back( UInt32ToString( (UInt32) arglist.size() ) + " values where entered" );
                 
-                if ( func->argdefs.GetCount() > 0 )
+                if ( func->argdefs.size() > 0 )
                 {
-                    resultdata.Append( "Expected values are:" );
-                    for ( UInt32 i=0; i<func->argdefs.GetCount(); ++i )
+                    resultdata.push_back( "Expected values are:" );
+                    for ( UInt32 i=0; i<func->argdefs.size(); ++i )
                     {
-                        resultdata.Append( "   " + func->argdefs[ i ] );
+                        resultdata.push_back( "   " + func->argdefs[ i ] );
                     }
                 }
             }
@@ -594,16 +594,16 @@ CSysConsole::Execute( CSysConsoleClient* client  ,
 
 /*-------------------------------------------------------------------------*/                      
 
-CStringList 
+std::vector< CString > 
 CSysConsole::GetDirList( const CSysConsoleClient* client ) const
 {GUCEF_TRACE;
 
         _datalock.Lock();
         CDynamicArray* channels = &(static_cast< TCmdChannel* >( client->channel )->channels);
-        CStringList list;
+        std::vector< CString > list;
         for ( UInt32 i=0; i<channels->GetCount(); ++i )
         {
-                list.Append( static_cast<TCmdChannel*>( (*channels)[ i ] )->name );                
+                list.push_back( static_cast<TCmdChannel*>( (*channels)[ i ] )->name );                
         }
         _datalock.Unlock();
         return list;        
@@ -611,16 +611,16 @@ CSysConsole::GetDirList( const CSysConsoleClient* client ) const
 
 /*-------------------------------------------------------------------------*/
 
-CStringList 
+std::vector< CString > 
 CSysConsole::GetCmdList( const CSysConsoleClient* client ) const
 {GUCEF_TRACE;
 
         _datalock.Lock();
         CDynamicArray* functions = &(static_cast< TCmdChannel* >( client->channel )->functions);
-        CStringList list;
+        std::vector< CString > list;
         for ( UInt32 i=0; i<functions->GetCount(); ++i )
         {
-                list.Append( static_cast<TFunctionHook*>( (*functions)[ i ] )->name );                
+                list.push_back( static_cast<TFunctionHook*>( (*functions)[ i ] )->name );                
         }
         _datalock.Unlock();
         return list; 
@@ -683,15 +683,15 @@ CSysConsole::UnregisterAlias( const CString& aliasname ,
 /*-------------------------------------------------------------------------*/
 
 bool 
-CSysConsole::OnSysConsoleCommand( const CString& path     ,
-                                  const CString& command  ,
-                                  const CStringList& args ,
-                                  CStringList& resultdata )
+CSysConsole::OnSysConsoleCommand( const CString& path                ,
+                                  const CString& command             ,
+                                  const std::vector< CString >& args ,
+                                  std::vector< CString >& resultdata )
 {GUCEF_TRACE;
 
     if ( command == "RegisterAlias" )
     {
-        if ( args.GetCount() >= 3 )
+        if ( args.size() >= 3 )
         { 
             return RegisterAlias( args[ 0 ] ,
                                   args[ 1 ] ,
@@ -701,7 +701,7 @@ CSysConsole::OnSysConsoleCommand( const CString& path     ,
     }        
     if ( command == "UnregisterAlias" )
     {               
-        if ( args.GetCount() >= 3 )
+        if ( args.size() >= 3 )
         { 
             return UnregisterAlias( args[ 0 ] ,
                                     args[ 1 ] ,
