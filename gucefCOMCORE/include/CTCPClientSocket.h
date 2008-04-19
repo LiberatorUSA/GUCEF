@@ -31,6 +31,11 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
+#ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#include "gucefCORE_CTEventHandlerFunctor.h"
+#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
+
 #ifndef GUCEF_COMCORE_CTCPCONNECTION_H
 #include "CTCPConnection.h"                     /* TCP connection base class */
 #define GUCEF_COMCORE_CTCPCONNECTION_H
@@ -69,6 +74,9 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     
     public:
         
+    CTCPClientSocket( CORE::CPulseGenerator& pulseGenerator ,
+                      bool blocking                         );
+    
     CTCPClientSocket( bool blocking );
     
     virtual ~CTCPClientSocket();
@@ -143,30 +151,31 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     
     virtual CIPAddress GetRemoteIP( void ) const;
 
-    virtual const CORE::CString& GetType( void ) const;
+    virtual const CORE::CString& GetClassTypeName( void ) const;
 
     public:
     
     struct STCPClientSockData;
     
     protected:
-    
-    /** 
-     *      polls the socket etc. as needed and update stats.        
-     */
-    virtual void Update( void );        
-    
-    
+
     virtual void LockData( void ) const;
     
     virtual void UnlockData( void ) const;
 
-    private:
+    private:    
+    typedef CORE::CTEventHandlerFunctor< CTCPClientSocket > TEventCallback;
+    
+    void OnPulse( CORE::CNotifier* notifier           ,
+                  const CORE::CEvent& eventid         ,
+                  CORE::CICloneable* eventdata = NULL );
 
     CTCPClientSocket( void );                /* default constructor cannot be used since we need to register the socket */
     CTCPClientSocket& operator=( const CTCPClientSocket& src ); /* making a copy of a socket doesn't make sense */
     
     void CheckRecieveBuffer( void );               
+    
+    private:
             
     struct STCPClientSockData* _data;
     bool _blocking;
@@ -176,6 +185,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     CORE::CDynamicBuffer m_readbuffer;
     UInt32 m_maxreadbytes;                  /**< max number of bytes to receive before processing it */ 
     CHostAddress m_hostAddress;             /**< network order IP address */
+    CORE::CPulseGenerator* m_pulseGenerator;
 };
 
 /*-------------------------------------------------------------------------//

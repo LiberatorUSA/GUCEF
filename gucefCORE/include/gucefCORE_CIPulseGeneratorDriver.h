@@ -1,6 +1,6 @@
 /*
- *  gucefCOMCORE: GUCEF module providing basic communication facilities
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,13 +17,19 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
+#ifndef GUCEF_CORE_CIPULSEGENERATORDRIVER_H
+#define GUCEF_CORE_CIPULSEGENERATORDRIVER_H
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
-#include "CTCPConnection.h"
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -31,63 +37,45 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF {
-namespace COMCORE {
+namespace GUCEF { 
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CTCPConnection::ConnectedEvent = "GUCEF::COMCORE::CTCPConnection::ConnectedEvent";
-const CORE::CEvent CTCPConnection::DisconnectedEvent = "GUCEF::COMCORE::CTCPConnection::DisconnectedEvent";
-const CORE::CEvent CTCPConnection::DataRecievedEvent = "GUCEF::COMCORE::CTCPConnection::DataRecievedEvent";
-const CORE::CEvent CTCPConnection::DataSentEvent = "GUCEF::COMCORE::CTCPConnection::DataSentEvent";
-const CORE::CEvent CTCPConnection::SocketErrorEvent = "GUCEF::COMCORE::CTCPConnection::SocketErrorEvent";
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      UTILITIES                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-CTCPConnection::CTCPConnection( void )
-    : CSocket()
-{GUCEF_TRACE;
-
-    RegisterEvents();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTCPConnection::~CTCPConnection()
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTCPConnection::RegisterEvents( void )
-{GUCEF_TRACE;
+class GUCEF_CORE_EXPORT_CPP CIPulseGeneratorDriver
+{
+    public:
     
-    ConnectedEvent.Initialize();
-    DisconnectedEvent.Initialize();
-    DataRecievedEvent.Initialize();
-    DataSentEvent.Initialize();
-    SocketErrorEvent.Initialize();    
-}
+    CIPulseGeneratorDriver( void );
+    
+    CIPulseGeneratorDriver( const CIPulseGeneratorDriver& src );
+    
+    virtual ~CIPulseGeneratorDriver();
+    
+    CIPulseGeneratorDriver& operator=( const CIPulseGeneratorDriver& src );
+    
+    virtual void RequestPulse( CPulseGenerator& pulseGenerator ) = 0;
+    
+    virtual void RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
+                                        const UInt32 pulseDeltaInMilliSecs ) = 0;
 
-/*-------------------------------------------------------------------------*/
-
-const CORE::CString&
-CTCPConnection::GetClassTypeName( void ) const
-{GUCEF_TRACE;
-
-    static CORE::CString typeName = "GUCEF::COMCORE::CTCPConnection";
-    return typeName;
-}
+    virtual void RequestPulseInterval( CPulseGenerator& pulseGenerator    ,
+                                       const UInt32 pulseDeltaInMilliSecs ) = 0;
+    
+    virtual void RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator ) = 0;
+    
+    protected:
+    
+    /**
+     *  Simply proxy to the generator intended to force the implementation of a proper
+     *  pulse generator driver
+     */
+    void SendDriverPulse( CPulseGenerator& pulseGenerator );
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -95,7 +83,20 @@ CTCPConnection::GetClassTypeName( void ) const
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace CORE */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+
+#endif /* GUCEF_CORE_CIPULSEGENERATORDRIVER_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 12-11-2004 :
+        - Designed and implemented this class.
+
+-----------------------------------------------------------------------------*/

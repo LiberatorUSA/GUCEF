@@ -24,9 +24,27 @@
 //-------------------------------------------------------------------------*/
 
 #include <assert.h>
+
+#ifndef GUCEF_MT_DVMTOSWRAP_H
 #include "gucefMT_dvmtoswrap.h"  /* needed for the precision timer */
-#include "CTimerPump.h"
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
+
+#ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
+
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
 #include "CTimer.h"
 
 /*-------------------------------------------------------------------------//
@@ -61,15 +79,53 @@ CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 10 */ )
       m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )       ,
       m_activationTickCount( 0 )                               ,
       m_tickCount( 0 )                                         ,
-      m_timerPump( CTimerPump::Instance() )                    ,
-      m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )
+      m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   ,
+      m_pulseGenerator( &CGUCEFApplication::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
 
     RegisterEvents();
     
-    assert( m_timerFreq != 0 );
-    m_timerPump->RegisterTimer( this );
+    if ( 0 == m_updateDeltaInMilliSecs )
+    {
+        m_updateDeltaInMilliSecs = 1;
+    }
+    
+    SubscribeTo( m_pulseGenerator                          , 
+                 CPulseGenerator::PulseEvent               ,
+                 &TEventCallback( this, &CTimer::OnPulse ) );
+    SubscribeTo( m_pulseGenerator                                              , 
+                 CPulseGenerator::DestructionEvent                             ,
+                 &TEventCallback( this, &CTimer::OnPulseGeneratorDestruction ) );
+    
 }          
+
+/*-------------------------------------------------------------------------*/
+
+CTimer::CTimer( CPulseGenerator& pulseGenerator                ,
+                const UInt32 updateDeltaInMilliSecs /* = 10 */ )
+    : m_lastTimerCycle( 0 )                                    ,
+      m_enabled( false )                                       ,
+      m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )       ,
+      m_activationTickCount( 0 )                               ,
+      m_tickCount( 0 )                                         ,
+      m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   ,
+      m_pulseGenerator( &pulseGenerator )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+    
+    if ( 0 == m_updateDeltaInMilliSecs )
+    {
+        m_updateDeltaInMilliSecs = 1;
+    }    
+    
+    SubscribeTo( m_pulseGenerator                          , 
+                 CPulseGenerator::PulseEvent               ,
+                 &TEventCallback( this, &CTimer::OnPulse ) );
+    SubscribeTo( m_pulseGenerator                                              , 
+                 CPulseGenerator::DestructionEvent                             ,
+                 &TEventCallback( this, &CTimer::OnPulseGeneratorDestruction ) );
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -79,14 +135,23 @@ CTimer::CTimer( const CTimer& src )
        m_enabled( false )                                       ,
        m_activationTickCount( 0 )                               ,
        m_tickCount( 0 )                                         ,
-       m_timerPump( CTimerPump::Instance() )                    ,
-       m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )
+       m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   ,
+       m_pulseGenerator( src.m_pulseGenerator )
 {GUCEF_TRACE;
 
     RegisterEvents();
     
-    assert( m_timerFreq != 0 );
-    m_timerPump->RegisterTimer( this );
+    if ( 0 == m_updateDeltaInMilliSecs )
+    {
+        m_updateDeltaInMilliSecs = 1;
+    }
+    
+    SubscribeTo( m_pulseGenerator                          , 
+                 CPulseGenerator::PulseEvent               ,
+                 &TEventCallback( this, &CTimer::OnPulse ) );
+    SubscribeTo( m_pulseGenerator                                              , 
+                 CPulseGenerator::DestructionEvent                             ,
+                 &TEventCallback( this, &CTimer::OnPulseGeneratorDestruction ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -94,7 +159,11 @@ CTimer::CTimer( const CTimer& src )
 CTimer::~CTimer()
 {GUCEF_TRACE;
 
-    m_timerPump->UnregisterTimer( this );
+    if ( NULL != m_pulseGenerator )
+    {
+        // Make sure this object is not still registered as requiring periodic updates
+        m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -164,14 +233,15 @@ CTimer::SetEnabled( const bool enabled )
             m_tickCount = 0;
             
             // Make sure we get an update and tell the pump about our update requirement
-            m_timerPump->TimerSetRequiresUpdates( this, true );
+            assert( NULL != m_pulseGenerator );
+            m_pulseGenerator->RequestPeriodicPulses( this, m_updateDeltaInMilliSecs );
             
             NotifyObservers( TimerStartedEvent );
         }
         else
         {
             // we don't need periodic updates anymore 
-            m_timerPump->TimerSetRequiresUpdates( this, false );
+            m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
             
             NotifyObservers( TimerStoppedEvent );
         }
@@ -189,8 +259,25 @@ CTimer::GetEnabled( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CTimer::OnPulseGeneratorDestruction( CNotifier* notifier                 ,
+                                     const CEvent& eventid               ,
+                                     CICloneable* eventdata /* = NULL */ )
+
+{GUCEF_TRACE;
+
+    if ( notifier == m_pulseGenerator )
+    {
+        m_pulseGenerator = NULL;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
-CTimer::OnUpdate( void )
+CTimer::OnPulse( CNotifier* notifier                 ,
+                 const CEvent& eventid               ,
+                 CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
     if ( m_enabled )
@@ -272,6 +359,16 @@ CTimer::GetApproxMaxTimerResolutionInMilliSecs( void )
 {GUCEF_TRACE;
 
     return MT::PrecisionTimerResolution() / 1000.0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CTimer::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::CORE::CTimer";
+    return typeName;
 }
 
 /*-------------------------------------------------------------------------//

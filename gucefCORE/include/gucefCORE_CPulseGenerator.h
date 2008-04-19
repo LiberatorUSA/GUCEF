@@ -1,6 +1,6 @@
 /*
  *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
-#define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#define GUCEF_CORE_CPULSEGENERATOR_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,20 +26,22 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#include <map>
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_CORE_ETYPES_H
-#include "gucefCORE_ETypes.h"
-#define GUCEF_CORE_ETYPES_H
-#endif /* GUCEF_CORE_ETYPES_H ? */
+#ifndef GUCEF_CORE_CNOTIFIER_H
+#include "CNotifier.h"
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+
+#ifndef GUCEF_CORE_CPULSEDATA_H
+#include "gucefCORE_CPulseData.h"
+#define GUCEF_CORE_CPULSEDATA_H
+#endif /* GUCEF_CORE_CPULSEDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,77 +58,90 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUCEFApplication;
+class CIPulseGeneratorDriver;
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *  Application sub-systems can derive from this class to receive update
- *  pulses from the main application 'engine'.
- *
- *  This class can automatically register at the CGUCEFApplication singleton if
- *  you wish. You can also register at a later time depending on your needs.
- *  Registering the sub-system causes you to subscribes the sub-system to application 
- *  update pulses and subscribes to notifications
- */
-class GUCEFCORE_EXPORT_CPP CGUCEFAppSubSystem : public CObservingNotifier
+class GUCEF_CORE_EXPORT_CPP CPulseGenerator : public CNotifier
 {
     public:
     
-    CGUCEFAppSubSystem( const bool registerSubSystem = false );
+    static const CEvent PulseEvent;
     
-    virtual ~CGUCEFAppSubSystem();
-        
-    bool IsInNeedOfAnUpdate( void ) const;
+    static void RegisterEvents( void );
     
-    bool ArePeriodicUpdatesRequired( void ) const;
+    typedef CPulseData TPulseEventData;
     
-    UInt32 GetDesiredUpdateInterval( void ) const;
+    public:
     
-    void RegisterSubSystem( void );
+    CPulseGenerator( void );
     
-    void UnregisterSubSystem( void );
+    virtual ~CPulseGenerator();
     
-    bool IsSubSystemRegistered( void ) const;
-    
-    protected:
-    
-    void RequestUpdate( void );
-    
-    void RequestUpdateInterval( const UInt32 updateDeltaInMilliSecs );
-    
-    void SetPeriodicUpdateRequirement( const bool requiresPeriodicUpdates );
-    
-    protected:
-    friend class CGUCEFApplication;
-    
-    virtual void OnUpdate( const UInt64 tickCount               ,
-                           const Float64 updateDeltaInMilliSecs );
+    void RequestPulse( void );
 
+    void RequestPeriodicPulses( void* requestor );
+    
+    void RequestPeriodicPulses( void* requestor                           ,
+                                const UInt32 minimalPulseDeltaInMilliSecs );
+
+    void RequestPeriodicPulses( void );
+
+    void RequestStopOfPeriodicUpdates( void* requestor );
+    
+    void RequestPulseInterval( const UInt32 minimalPulseDeltaInMilliSecs );
+    
+    bool IsPulsingPeriodicly( void ) const;
+    
+    UInt32 GetRequiredPulseDeltaInMilliSecs( void ) const;
+    
+    Float64 GetActualPulseDeltaInMilliSecs( void ) const;
+    
+    UInt64 GetTickCountAtLastPulse( void ) const;
+    
+    void SetPulseGeneratorDriver( CIPulseGeneratorDriver* driver );
+    
+    CIPulseGeneratorDriver* GetPulseGeneratorDriver( void ) const;
+    
+    bool IsForcedStopOfPeriodicPulsesRequested( void ) const;
+    
+    void ForceStopOfPeriodicPulses( void );
+    
+    void AllowPeriodicPulses( void );
+
+    protected:
+    
+    virtual void LockData( void ) const;
+    
+    virtual void UnlockData( void ) const;
+    
+    private:    
+    friend class CIPulseGeneratorDriver;
+    
+    void OnDriverPulse( void );    
+    
+    private:
+    
     /**
-     *  Event callback member function.
-     *  Implement this in your descending class to handle
-     *  notification events.
+     *  returns the minimal required resolution for the application
+     *  update interval in milliseconds as requested by the application
+     *  sub systems.
      *
-     *  @param notifier the notifier that sent the notification
-     *  @param eventid the unique event id for an event
-     *  @param eventdata optional notifier defined user data
+     *  @return the minimal required update frequency in milliseconds
      */
-    virtual void OnNotify( CNotifier* notifier           ,
-                           const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );
+    UInt32 DetermineRequiredPulseInterval( void ) const;
+    
+    private:
+    
+    typedef std::map< void*, UInt32 > TPeriodicPulseRequestorMap;
    
-    private:
-    
-    CGUCEFAppSubSystem( const CGUCEFAppSubSystem& src );
-    CGUCEFAppSubSystem& operator=( const CGUCEFAppSubSystem& src );
-    
-    private:
-    
-    UInt32 m_updateInterval;
-    bool m_inNeedOfAnUpdate;
-    bool m_requiresPeriodicUpdates;
-    bool m_isRegistered;
+    UInt64 m_lastCycleTickCount;
+    UInt32 m_updateDeltaInMilliSecs;
+    Float64 m_timerFreq;
+    bool m_forcedStopOfPeriodPulses;
+    TPeriodicPulseRequestorMap m_periodicUpdateRequestors;
+    CIPulseGeneratorDriver* m_driver;
+    MT::CMutex m_mutex;
 };
 
 /*-------------------------------------------------------------------------//
@@ -140,7 +155,7 @@ class GUCEFCORE_EXPORT_CPP CGUCEFAppSubSystem : public CObservingNotifier
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H ? */
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

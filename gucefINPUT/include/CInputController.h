@@ -29,15 +29,25 @@
 #include <map>
 #include <set>
 
-#ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
-#include "CGUCEFAppSubSystem.h"
-#define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
-#endif /* GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H ? */
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
+#ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#include "gucefCORE_CTEventHandlerFunctor.h"
+#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
 
 #ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
+
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
 
 #ifndef GUCEF_CORE_CLONEABLES_H
 #include "cloneables.h"
@@ -74,7 +84,7 @@ class CInputDriver;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
+class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CObservingNotifier
 {
     public:                
 
@@ -145,8 +155,11 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
                            const CORE::CEvent& eventid         ,
                            CORE::CICloneable* eventdata = NULL );
         
-    virtual void OnUpdate( const UInt64 applicationTicks        ,
-                           const Float64 updateDeltaInMilliSecs );
+    typedef CORE::CTEventHandlerFunctor< CInputController > TEventCallback;
+    
+    void OnPulse( CORE::CNotifier* notifier           ,
+                  const CORE::CEvent& eventid         ,
+                  CORE::CICloneable* eventdata = NULL );
 
     private:
     friend class CGUCEFINPUTModule;
@@ -200,14 +213,15 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CGUCEFAppSubSystem
     bool m_driverisplugin;        
     TContextSet m_contextSet;
     
-    #ifdef GUCEF_MSWIN_BUILD
-    UInt32 m_hinstance;
-    #endif
-    
     static CInputController* m_instance;
     
     TKeyboardMap m_keyboardMap;
-    TMouseMap m_mouseMap;
+    TMouseMap m_mouseMap;    
+    CORE::CPulseGenerator* m_pulseGenerator;
+    
+    #ifdef GUCEF_MSWIN_BUILD
+    UInt32 m_hinstance;
+    #endif    
 };
 
 /*-------------------------------------------------------------------------//

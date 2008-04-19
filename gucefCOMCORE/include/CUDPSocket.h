@@ -41,6 +41,11 @@
 #define GUCEF_CORE_CLONEABLES_H
 #endif /* GUCEF_CORE_CLONEABLES_H ? */
 
+#ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#include "gucefCORE_CTEventHandlerFunctor.h"
+#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
+
 #ifndef GUCEF_COMCORE_CSOCKET_H 
 #include "CSocket.h"      /* base class for all TCP and UDP related socket classes */
 #define GUCEF_COMCORE_CSOCKET_H
@@ -86,6 +91,15 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     typedef CORE::CTCloneableObj< struct SUDPPacketRecievedEventData > UDPPacketRecievedEventData;
     
     public:
+    
+    /**
+     *      Creates a UDP socket object initialized to be either blocking
+     *      or non-blocking. Choosing either type is a design decision.
+     *
+     *      @param blocking whether to construct the socket as a blocking socket
+     */        
+    CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
+                bool blocking                         );
 
     /**
      *      Creates a UDP socket object initialized to be either blocking
@@ -234,17 +248,17 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     void SetRecievedDataBufferSize( const UInt32 newBufferSize );
 
     bool IsIncomingDataQueued( void ) const;
+        
+    private:    
+    typedef CORE::CTEventHandlerFunctor< CUDPSocket > TEventCallback;
     
-    protected:
-    
-    /**
-     *      Polls the socket if the polling flag is set this update cycle
-     *      If any data is known to be queued after a poll then the
-     *      PACKET_RECIEVED event will be sent. 
-     */
-    virtual void Update( void );
-    
-    private:
+    void OnPulse( CORE::CNotifier* notifier           ,
+                  const CORE::CEvent& eventid         ,
+                  CORE::CICloneable* eventdata = NULL );
+
+    void OnPulseGeneratorDestruction( CORE::CNotifier* notifier           ,
+                                      const CORE::CEvent& eventid         ,
+                                      CORE::CICloneable* eventdata = NULL );
     
     void CheckForData( void );                     /**< checks the socket for queued incoming data */
 
@@ -259,6 +273,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     UInt16 m_port;
     MT::CMutex _datalock;           /**< mutex for thread-safety when manipulating the socket */
     CORE::CDynamicBuffer m_buffer;
+    CORE::CPulseGenerator* m_pulseGenerator;
 };
 
 /*-------------------------------------------------------------------------//

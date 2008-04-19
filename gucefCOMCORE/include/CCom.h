@@ -31,11 +31,6 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
-#include "CGUCEFAppSubSystem.h"
-#define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
-#endif /* GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H ? */
-
 #ifndef GUCEF_CORE_CTIMER_H
 #include "CTimer.h"
 #define GUCEF_CORE_CTIMER_H
@@ -75,7 +70,7 @@ class CGUCEFCOMCOREModule;
  *      Singleton communication manager for sockets. 
  *      Provides a global control point for all sockets.
  */
-class GUCEF_COMCORE_EXPORT_CPP CCom : public CORE::CGUCEFAppSubSystem
+class GUCEF_COMCORE_EXPORT_CPP CCom
 {
     public:
     
@@ -96,10 +91,6 @@ class GUCEF_COMCORE_EXPORT_CPP CCom : public CORE::CGUCEFAppSubSystem
      *      @return the global CCom manager object        
      */
     static CCom* Instance( void );
-    
-    void SetPumpThreading( bool thread );
-    
-    bool GetPumpThreading( void ) const;
 
     /**
      *	returns the total number of sockets that are currently registered
@@ -168,30 +159,6 @@ class GUCEF_COMCORE_EXPORT_CPP CCom : public CORE::CGUCEFAppSubSystem
      *  @return the active state for the given protocol proxy, false if no proxy is defined
      */
     bool IsSystemWideProxyServerActive( const CORE::CString& protocol ) const;
-    
-    protected:
-    
-    /**
-     *      Calls Update() for all registered socket objects.
-     *
-     *      @param tickcount the tick count when the Update process commenced.
-     *      @param deltaticks ticks since the last Update process commenced.         
-     */
-    virtual void OnUpdate( const UInt64 tickcount               ,
-                           const Float64 updateDeltaInMilliSecs );
-                         
-    /**
-     *  Event callback member function.
-     *  Implement this in your descending class to handle
-     *  notification events.
-     *
-     *  @param notifier the notifier that sent the notification
-     *  @param eventid the unique event id for an event
-     *  @param eventdata optional notifier defined user data
-     */
-    virtual void OnNotify( CORE::CNotifier* notifier           ,
-                           const CORE::CEvent& eventid         ,
-                           CORE::CICloneable* eventdata = NULL );
                                                     
     private:
     friend class CGUCEFCOMCOREModule;
@@ -242,9 +209,6 @@ class GUCEF_COMCORE_EXPORT_CPP CCom : public CORE::CGUCEFAppSubSystem
     TSocketStats _stats;                /** global socket traffic stats */
     bool _keep_gstats;                  /** whether or not to keep track of global stats */
     UInt32 _scount;                     /** current number of registered sockets */
-    bool _pumpthread;                   /** use a thread to update the sockets ? */
-    CActiveComPump* _threadedpump;      /** threading based update pump */
-    CORE::CTimer m_timerPump;           /** timer based update pump */
             
     TProxyList m_proxyList;
 };

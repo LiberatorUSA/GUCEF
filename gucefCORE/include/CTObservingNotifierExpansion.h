@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CIOBSERVER_H
+#include "gucefCORE_CIObserver.h"
+#define GUCEF_CORE_CIOBSERVER_H
+#endif /* GUCEF_CORE_CIOBSERVER_H ? */
+
 #include "CTObservingNotifierComponent.h"
 
 /*-------------------------------------------------------------------------//
@@ -45,11 +50,14 @@ namespace CORE {
 
 /**
  *  Class that allows you to add notification to any class with ease.
+ *  Creates a compound class relationship for you that gives you the notification system
+ *  combined with the chosen base class without having to resort to multiple inheritance
  *  The template argument is a base-class that will be expanded with
  *  notification capabilities.
  */
 template < class BaseClass >
-class CTObservingNotifierExpansion : public BaseClass
+class CTObservingNotifierExpansion : public BaseClass  ,
+                                     public CIObserver
 {
     public:
     
@@ -97,7 +105,7 @@ class CTObservingNotifierExpansion : public BaseClass
      *  @param eventdata optional notifier defined userdata
      */
     virtual void OnNotify( CNotifier* notifier           ,
-                           const UInt32 eventid          ,
+                           const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
 
     /**
@@ -279,7 +287,7 @@ CTObservingNotifierExpansion< BaseClass >::NotifyObservers( CNotifier& sender   
 template < class BaseClass >
 void
 CTObservingNotifierExpansion< BaseClass >::OnNotify( CNotifier* /* notifier */                ,
-                                                     const UInt32 /* eventid */               ,
+                                                     const CEvent& /* eventid */              ,
                                                      CICloneable* /* eventdata *//* = NULL */ )
 {GUCEF_TRACE;
 

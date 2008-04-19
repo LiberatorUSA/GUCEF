@@ -66,15 +66,11 @@ class GUCEFCORE_EXPORT_CPP CTSGObserver : public CPumpedObserver
     virtual void OnPumpedNotify( CNotifier* notifier           ,
                                  const CEvent& eventid         ,
                                  CICloneable* eventdata = NULL );
-                           
-    virtual void OnNotify( CNotifier* notifier           ,
-                           const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );
 
     private:
     friend class CTSGNotifier;
     
-    CTSGObserver( void );                           
+    CTSGObserver( CPulseGenerator& pulsGenerator );                           
     
     virtual ~CTSGObserver();
     
@@ -85,6 +81,8 @@ class GUCEFCORE_EXPORT_CPP CTSGObserver : public CPumpedObserver
                             CICloneable* eventdata = NULL );    
     
     private:
+    
+    CTSGObserver( void );
     
     CTSGObserver( const CTSGObserver& src );
     

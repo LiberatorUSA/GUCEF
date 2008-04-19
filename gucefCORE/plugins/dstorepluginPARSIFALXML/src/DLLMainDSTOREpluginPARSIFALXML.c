@@ -49,7 +49,7 @@
 #define NODE_STORE_INDENT       1
 #define INDENT_CHAR             9  /* horizontal tab */
 
-#define VERSION_MAYOR_FIELD     1
+#define VERSION_MAJOR_FIELD     1
 #define VERSION_MINOR_FIELD     1
 #define VERSION_PATCH_FIELD     0
 #define VERSION_RELEASE_FIELD   0
@@ -205,7 +205,7 @@ DSTOREPLUG_Dest_File_Open( void** plugdata    ,
                 
                 sprintf( outBuffer, "<?xml version=\"1.0\"?>\r\n" );
                 outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
-                sprintf( outBuffer, "<!-- Generated using dstorepluginXMLPARSIFAL (v%d.%d.%d.%d) for the GUCEF platform - Copyright (C) Dinand Vanvelzen. All rights reserved -->\r\n", VERSION_MAYOR_FIELD, VERSION_MINOR_FIELD, VERSION_PATCH_FIELD, VERSION_RELEASE_FIELD );
+                sprintf( outBuffer, "<!-- Generated using dstorepluginXMLPARSIFAL (v%d.%d.%d.%d) for the GUCEF platform - Copyright (C) Dinand Vanvelzen. All rights reserved -->\r\n", VERSION_MAJOR_FIELD, VERSION_MINOR_FIELD, VERSION_PATCH_FIELD, VERSION_RELEASE_FIELD );
                 outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
                 return 1;
         }
@@ -468,7 +468,7 @@ const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
 DSTOREPLUG_Version( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
         static TVersion version;
-        version.mayor = VERSION_MAYOR_FIELD;
+        version.major = VERSION_MAJOR_FIELD;
         version.minor = VERSION_MINOR_FIELD;
         version.patch = VERSION_PATCH_FIELD;
         version.release = VERSION_RELEASE_FIELD;

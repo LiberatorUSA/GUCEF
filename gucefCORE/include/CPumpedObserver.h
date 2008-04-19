@@ -26,8 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CTMAILBOX_H
 #include "gucefMT_CTMailBox.h"
+#define GUCEF_MT_CTMAILBOX_H
+#endif /* GUCEF_MT_CTMAILBOX_H ? */
+
+#ifndef GUCEF_CORE_COBSERVER_H
 #include "CObserver.h"
+#define GUCEF_CORE_COBSERVER_H
+#endif /* GUCEF_CORE_COBSERVER_H ? */
+
+#ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#include "gucefCORE_CTEventHandlerFunctor.h"
+#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,7 +56,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CObserverPump;
+class CPulseGenerator;
 
 /*-------------------------------------------------------------------------*/
 
@@ -53,6 +65,8 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
     public:
     
     CPumpedObserver( void );
+
+    CPumpedObserver( CPulseGenerator& pulsGenerator );
     
     CPumpedObserver( const CPumpedObserver& src );
     
@@ -64,13 +78,13 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
     
     /**
      *  Event callback member function.
-     *  Implement this in your decending class to handle
+     *  Implement this in your descending class to handle
      *  notification events. 
      *
      *  Note that in contrast to OnNotify, which is performed in
      *  the calling thread, this call is always made in the main
      *  application thread. As such it is well suited for linking
-     *  non-treadsafe code via an observer to a notifier that 
+     *  non-tread safe code via an observer to a notifier that 
      *  operates from within another thread.
      *
      *  @param notifier the notifier that sent the notification
@@ -80,11 +94,6 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
     virtual void OnPumpedNotify( CNotifier* notifier           ,
                                  const CEvent& eventid         ,
                                  CICloneable* eventdata = NULL ) = 0;
-    
-    protected:
-    friend class CObserverPump;
-    
-    void OnUpdate( void );
     
     protected:
     
@@ -103,8 +112,20 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
 
+    private:    
+    typedef CTEventHandlerFunctor< CPumpedObserver > TEventCallback;
+    
+    void OnPulse( CNotifier* notifier           ,
+                  const CEvent& eventid         ,
+                  CICloneable* eventdata = NULL );
+
+    void OnPulseGeneratorDestruction( CNotifier* notifier           ,
+                                      const CEvent& eventid         ,
+                                      CICloneable* eventdata = NULL );
+    
     private:   
     
+    CPulseGenerator* m_pulsGenerator;
     MT::CTMailBox< CEvent > m_mailbox;
 };
 

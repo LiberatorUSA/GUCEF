@@ -129,13 +129,13 @@ StringToClipboard( const char *str );
  *      The actual number of bytes written into the destination buffer is
  *      written into wbytes. If you wish to retrieve all text on the clipboard
  *      you might want to continue calling this function as long as wbytes
- *      equals size. Do note that any other proccess can empty the clipboard
+ *      equals size. Do note that any other process can empty the clipboard
  *      in between calls.
  *
  *      wbytes must be initialized to 0 !!!
  *
  *      For MS windows:
- *              The handle to the primairy window is needed for propper operation
+ *              The handle to the primary window is needed for proper operation
  *              various attempts will be made to obtain it including getting the
  *              "HWND" environment variable. If these attempts fail an attempts will
  *              be made to use the previous clipboard owner HWND. You should set the

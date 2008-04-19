@@ -1,6 +1,6 @@
 /*
  *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -16,22 +16,24 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
-
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <cassert>
-#include "CTSGNotifier.h"
+#ifndef GUCEF_MT_DVMTOSWRAP_H
+#include "gucefMT_dvmtoswrap.h"
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
-#include "CTSGObserver.h"
+#include "gucefCORE_CBusyWaitPulseGeneratorDriver.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,77 +50,81 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CTSGObserver::CTSGObserver( CPulseGenerator& pulsGenerator )
-    : CPumpedObserver( pulsGenerator ) ,  
-      m_parentNotifier( NULL )
+CBusyWaitPulseGeneratorDriver::CBusyWaitPulseGeneratorDriver( void )
+    : CIPulseGeneratorDriver()  ,
+      m_loop( false )           ,
+      m_desiredPulseDelta( 10 )
 {GUCEF_TRACE;
 
 }
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-CTSGObserver::CTSGObserver( const CTSGObserver& src )
-    : CPumpedObserver( src )                   ,
-      m_parentNotifier( src.m_parentNotifier )
+CBusyWaitPulseGeneratorDriver::CBusyWaitPulseGeneratorDriver( const CBusyWaitPulseGeneratorDriver& src )
+    : CIPulseGeneratorDriver( src ) ,
+      m_loop( false )               ,
+      m_desiredPulseDelta( 10 )
 {GUCEF_TRACE;
 
 }
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-CTSGObserver::~CTSGObserver()
+CBusyWaitPulseGeneratorDriver::~CBusyWaitPulseGeneratorDriver()
 {GUCEF_TRACE;
 
-    UnsubscribeAllFromObserver();
 }
 
-/*-------------------------------------------------------------------------*/
-
-CTSGObserver&
-CTSGObserver::operator=( const CTSGObserver& src )
-{GUCEF_TRACE;
-
-    return *this;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CTSGObserver::SetParent( CTSGNotifier* parentNotifier )
-{GUCEF_TRACE;
-
-    m_parentNotifier = parentNotifier;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CTSGObserver::OnPumpedNotify( CNotifier* notifier                  ,
-                              const CEvent& eventid                ,
-                              CICloneable* eventdata /* = NULL  */ )
-{GUCEF_TRACE;
-
-    // Make sure we still have a parent
-    if ( m_parentNotifier != NULL )
-    {
-        // Pass on the message
-        m_parentNotifier->OnPumpedNotify( notifier  ,
-                                          eventid   ,
-                                          eventdata );
-    }
-}
-
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
 void
-CTSGObserver::AddEventToMailbox( CNotifier* notifier                 ,
-                                 const CEvent& eventid               ,
-                                 CICloneable* eventdata /* = NULL */ )
+CBusyWaitPulseGeneratorDriver::RequestPulse( CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
 
-    OnNotify( notifier  ,
-              eventid   ,
-              eventdata );
+    SendDriverPulse( pulseGenerator );
+}
+
+/*--------------------------------------------------------------------------*/
+    
+void
+CBusyWaitPulseGeneratorDriver::RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
+                                                      const UInt32 pulseDeltaInMilliSecs )
+{GUCEF_TRACE;
+
+    m_loop = true;
+    m_desiredPulseDelta = pulseDeltaInMilliSecs;
+    Float64 remainingDelta;
+    while ( m_loop )
+    {
+        remainingDelta = m_desiredPulseDelta - pulseGenerator.GetActualPulseDeltaInMilliSecs();
+        if ( remainingDelta <= 0.0 )
+        {
+            SendDriverPulse( pulseGenerator );
+        }
+        else
+        {
+            MT::PrecisionDelay( (UInt32)remainingDelta ); 
+        }
+    }                                                      
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CBusyWaitPulseGeneratorDriver::RequestPulseInterval( CPulseGenerator& pulseGenerator    ,
+                                                     const UInt32 pulseDeltaInMilliSecs )
+{GUCEF_TRACE;
+
+    m_desiredPulseDelta = pulseDeltaInMilliSecs;
+}
+
+/*--------------------------------------------------------------------------*/
+    
+void
+CBusyWaitPulseGeneratorDriver::RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator )
+{GUCEF_TRACE;
+
+    m_loop = false;
 }
 
 /*-------------------------------------------------------------------------//
@@ -130,5 +136,4 @@ CTSGObserver::AddEventToMailbox( CNotifier* notifier                 ,
 }; /* namespace CORE */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
-                        
+/*--------------------------------------------------------------------------*/

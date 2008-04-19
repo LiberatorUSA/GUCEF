@@ -123,6 +123,11 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H ? */
 
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
+
 #ifndef GUCEF_CORE_TSPRINTING_H
 #include "tsprinting.h"
 #define GUCEF_CORE_TSPRINTING_H
@@ -206,6 +211,7 @@ CGUCEFCOREModule::Load( void )
          *      Make sure all events are registered from the start
          */
         CNotifier::RegisterEvents();
+        CPulseGenerator::RegisterEvents();
         CStreamerEvents::RegisterEvents();
         CTimer::RegisterEvents();
         CPluginManager::RegisterEvents();

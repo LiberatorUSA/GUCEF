@@ -40,6 +40,11 @@
 #define GUCEF_CORE_CIOBSERVER_H
 #endif /* GUCEF_CORE_CIOBSERVER_H ? */
 
+#ifndef GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
+#include "gucefCORE_CIEventHandlerFunctorBase.h"
+#define GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
+#endif /* GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -90,8 +95,9 @@ class GUCEFCORE_EXPORT_CPP CObserver : public CIObserver
     
     void SubscribeTo( CNotifier* notifier );
     
-    void SubscribeTo( CNotifier* notifier   ,
-                      const CEvent& eventid );
+    void SubscribeTo( CNotifier* notifier                        ,
+                      const CEvent& eventid                      ,
+                      CIEventHandlerFunctorBase* callback = NULL );
                                
     /**
      *  Unsubscribe's the observer from all notifiers.

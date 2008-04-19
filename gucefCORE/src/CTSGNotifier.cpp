@@ -47,8 +47,9 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CTSGNotifier::CTSGNotifier( void )
-    : m_tsgObserver()
+CTSGNotifier::CTSGNotifier( CPulseGenerator& pulsGenerator )
+    : CNotifier()                    ,
+      m_tsgObserver( pulsGenerator )
 {GUCEF_TRACE;
 
     m_tsgObserver.SetParent( this );
@@ -57,13 +58,11 @@ CTSGNotifier::CTSGNotifier( void )
 /*-------------------------------------------------------------------------*/
 
 CTSGNotifier::CTSGNotifier( const CTSGNotifier& src )
-    : m_tsgObserver()
+    : CNotifier( src )                   ,
+      m_tsgObserver( src.m_tsgObserver )
 {GUCEF_TRACE;
 
     m_tsgObserver.SetParent( this );
-    
-    assert(0);
-    /* @TODO: makeme */
 }
 
 /*-------------------------------------------------------------------------*/

@@ -91,6 +91,12 @@ class CTMailBox
     void Delete( const T& eventid );
 
     bool HasMail( void ) const;
+    
+    protected:
+    
+    void LockData() const;
+    
+    void UnlockData() const;
 
     private:
 
@@ -267,6 +273,24 @@ bool
 CTMailBox< T >::HasMail( void ) const
 {
     return m_mailStack.size() > 0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
+void
+CTMailBox< T >::LockData( void ) const
+{
+    m_datalock.Lock();
+}    
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
+void
+CTMailBox< T >::UnlockData( void ) const
+{
+    m_datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

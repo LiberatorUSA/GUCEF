@@ -319,10 +319,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CGUCEFAppSubSystem.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\CGUCEFCOREModule.cpp"
 				>
 			</File>
@@ -440,10 +436,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\CObserver.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\CObserverPump.cpp"
 				>
 			</File>
 			<File
@@ -579,10 +571,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CTimerPump.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\CTNotifyingMap.cpp"
 				>
 			</File>
@@ -691,6 +679,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefCORE_CBusyWaitPulseGeneratorDriver.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefCORE_CIEventHandlerFunctorBase.cpp"
 				>
 			</File>
@@ -699,7 +691,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefCORE_CIPulseGeneratorDriver.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefCORE_CITaskConsumer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefCORE_CPulseData.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefCORE_CPulseGenerator.cpp"
 				>
 			</File>
 			<File
@@ -865,10 +869,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CGUCEFAppSubSystem.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\CGUCEFCOREModule.h"
 				>
 			</File>
@@ -986,10 +986,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CObserver.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CObserverPump.h"
 				>
 			</File>
 			<File
@@ -1145,10 +1141,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\CTimerPump.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\CTNotifyingMap.h"
 				>
 			</File>
@@ -1289,6 +1281,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefCORE_CBusyWaitPulseGeneratorDriver.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefCORE_CEventBasedTaskConsumer.h"
 				>
 			</File>
@@ -1301,11 +1297,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefCORE_CIPulseGeneratorDriver.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefCORE_CITaskConsumer.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\include\gucefCORE_config.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefCORE_CPulseGenerator.h"
 				>
 			</File>
 			<File
@@ -1318,6 +1322,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefCORE_CTEventHandlerFunctor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefCORE_CTPolledMailbox.h"
 				>
 			</File>
 			<File

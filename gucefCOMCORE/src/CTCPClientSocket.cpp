@@ -30,6 +30,11 @@
 #define DVSTRUTILS_H
 #endif /* DVSTRUTILS_H ? */
 
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
 #ifdef GUCEF_MSWIN_BUILD
 
 #ifndef DVWINSOCK_H
@@ -107,13 +112,15 @@ typedef struct CTCPClientSocket::STCPClientSockData TTCPClientSockData;
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-CTCPClientSocket::CTCPClientSocket( bool blocking ) 
-        : CTCPConnection()         ,
-          _blocking( blocking )    ,
-          _active( false )         ,
-          m_maxreadbytes( 0 )      ,
-          m_hostAddress()          ,
-          m_isConnecting( false )
+CTCPClientSocket::CTCPClientSocket( CORE::CPulseGenerator& pulseGenerator ,
+                                    bool blocking                         ) 
+        : CTCPConnection()                    ,
+          _blocking( blocking )               ,
+          _active( false )                    ,
+          m_maxreadbytes( 0 )                 ,
+          m_hostAddress()                     ,
+          m_isConnecting( false )             ,
+          m_pulseGenerator( &pulseGenerator )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -121,6 +128,33 @@ CTCPClientSocket::CTCPClientSocket( bool blocking )
     _data = new TTCPClientSockData;             
     assert( _data != NULL );
     memset( &_data->timeout, 0, sizeof( struct timeval ) ); 
+    
+    SubscribeTo( m_pulseGenerator                                    , 
+                 CORE::CPulseGenerator::PulseEvent                   ,
+                 &TEventCallback( this, &CTCPClientSocket::OnPulse ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTCPClientSocket::CTCPClientSocket( bool blocking ) 
+        : CTCPConnection()         ,
+          _blocking( blocking )    ,
+          _active( false )         ,
+          m_maxreadbytes( 0 )      ,
+          m_hostAddress()          ,
+          m_isConnecting( false )  ,
+          m_pulseGenerator( &CORE::CGUCEFApplication::Instance()->GetPulseGenerator() )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+    
+    _data = new TTCPClientSockData;             
+    assert( _data != NULL );
+    memset( &_data->timeout, 0, sizeof( struct timeval ) ); 
+    
+    SubscribeTo( m_pulseGenerator                                    , 
+                 CORE::CPulseGenerator::PulseEvent                   ,
+                 &TEventCallback( this, &CTCPClientSocket::OnPulse ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -447,7 +481,9 @@ CTCPClientSocket::CheckRecieveBuffer( void )
 /*-------------------------------------------------------------------------*/
 
 void 
-CTCPClientSocket::Update( void )
+CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
+                           const CORE::CEvent& eventid               ,
+                           CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;        
     
     if ( !_blocking && _active )
@@ -623,7 +659,7 @@ CTCPClientSocket::UnlockData( void ) const
 /*-------------------------------------------------------------------------*/
 
 const CORE::CString&
-CTCPClientSocket::GetType( void ) const
+CTCPClientSocket::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
     static CORE::CString typeName = "GUCEF::COMCORE::CTCPClientSocket";

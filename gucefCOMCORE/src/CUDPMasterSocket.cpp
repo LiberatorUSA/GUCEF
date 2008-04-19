@@ -65,8 +65,23 @@ CUDPMasterSocket::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
     
+CUDPMasterSocket::CUDPMasterSocket( CORE::CPulseGenerator& pulseGenerator ,
+                                    bool blocking                         )
+    : CObservingNotifier()          ,
+      m_udpSocket( pulseGenerator , 
+                   blocking       ) ,
+      m_channelMap()
+{GUCEF_TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+    
 CUDPMasterSocket::CUDPMasterSocket( bool blocking )
-    : m_udpSocket( blocking )
+    : CObservingNotifier()    ,
+      m_udpSocket( blocking ) ,
+      m_channelMap()
 {GUCEF_TRACE;
 
     RegisterEvents();

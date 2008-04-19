@@ -24,13 +24,26 @@
 //-------------------------------------------------------------------------*/
 
 #include <assert.h>
-#include "CObserverPump.h"
+
+#ifndef GUCEF_CORE_CICLONEABLE_H
 #include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
+
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
+
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
 #include "CPumpedObserver.h"
 
@@ -127,17 +140,53 @@ class CMailElement : public CICloneable
 //-------------------------------------------------------------------------*/
 
 CPumpedObserver::CPumpedObserver( void )
+    : CObserver()                                                            ,
+      m_pulsGenerator( &CGUCEFApplication::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
 
-    CObserverPump::Instance()->RegisterObserver( this );
+    SubscribeTo( m_pulsGenerator                                    , 
+                 CPulseGenerator::PulseEvent                        ,
+                 &TEventCallback( this, &CPumpedObserver::OnPulse ) );
+    SubscribeTo( m_pulsGenerator                                                        , 
+                 CPulseGenerator::DestructionEvent                                      ,
+                 &TEventCallback( this, &CPumpedObserver::OnPulseGeneratorDestruction ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPumpedObserver::CPumpedObserver( CPulseGenerator& pulsGenerator )
+    : CObserver()                       ,
+      m_pulsGenerator( &pulsGenerator )
+{GUCEF_TRACE;
+
+    SubscribeTo( m_pulsGenerator                                    , 
+                 CPulseGenerator::PulseEvent                        ,
+                 &TEventCallback( this, &CPumpedObserver::OnPulse ) );
+    SubscribeTo( m_pulsGenerator                                                        , 
+                 CPulseGenerator::DestructionEvent                                      ,
+                 &TEventCallback( this, &CPumpedObserver::OnPulseGeneratorDestruction ) );                 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
+    : CObserver( src )        ,
+      m_pulsGenerator( NULL )
 {GUCEF_TRACE;
 
-    CObserverPump::Instance()->RegisterObserver( this );
+    // This is an aggregate relationship that does not affect the source object
+    // thus a const cast is acceptable.
+    m_pulsGenerator = const_cast< CPumpedObserver& >( src ).m_pulsGenerator;
+    
+    // The source should not be in a state of destruction causing this
+    assert( NULL != m_pulsGenerator );
+    
+    SubscribeTo( m_pulsGenerator                                    , 
+                 CPulseGenerator::PulseEvent                        ,
+                 &TEventCallback( this, &CPumpedObserver::OnPulse ) );
+    SubscribeTo( m_pulsGenerator                                                        , 
+                 CPulseGenerator::DestructionEvent                                      ,
+                 &TEventCallback( this, &CPumpedObserver::OnPulseGeneratorDestruction ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -145,7 +194,6 @@ CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
 CPumpedObserver::~CPumpedObserver()
 {GUCEF_TRACE;
 
-    CObserverPump::Instance()->UnregisterObserver( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -154,10 +202,47 @@ CPumpedObserver&
 CPumpedObserver::operator=( const CPumpedObserver& src )
 {GUCEF_TRACE;
 
-    if ( this != &src )
-    {
-    }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPumpedObserver::OnPulse( CNotifier* notifier                 ,
+                          const CEvent& eventid               ,
+                          CICloneable* eventdata /* = NULL */ )
+
+{GUCEF_TRACE;
+
+    CEvent mailEventID;
+    CICloneable* dataptr( NULL );
+    CMailElement* maildata( NULL );
+    while ( m_mailbox.GetMail( mailEventID ,
+                               &dataptr    ) )
+    {        
+        maildata = static_cast< CMailElement* >( dataptr );
+        OnPumpedNotify( maildata->GetNotifier() ,
+                        mailEventID             ,
+                        maildata->GetData()     );
+                        
+        delete maildata->GetData();
+        delete maildata;                        
+    }                          
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPumpedObserver::OnPulseGeneratorDestruction( CNotifier* notifier                 ,
+                                              const CEvent& eventid               ,
+                                              CICloneable* eventdata /* = NULL */ )
+
+{GUCEF_TRACE;
+
+    if ( notifier == m_pulsGenerator )
+    {
+        m_pulsGenerator = NULL;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -178,27 +263,10 @@ CPumpedObserver::OnNotify( CNotifier* notifier                 ,
 
     m_mailbox.AddMail( eventid   ,
                        &maildata );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CPumpedObserver::OnUpdate( void )
-{GUCEF_TRACE;
-
-    CEvent eventid;
-    CICloneable* dataptr( NULL );
-    CMailElement* maildata( NULL );
-    while ( m_mailbox.GetMail( eventid  ,
-                               &dataptr ) )
-    {        
-        maildata = static_cast< CMailElement* >( dataptr );
-        OnPumpedNotify( maildata->GetNotifier() ,
-                        eventid                 ,
-                        maildata->GetData()     );
-                        
-        delete maildata->GetData();
-        delete maildata;                        
+                       
+    if ( NULL != m_pulsGenerator )
+    {
+        m_pulsGenerator->RequestPulse();
     }
 }
 

@@ -26,7 +26,7 @@
 #include <assert.h>
 
 #ifndef GUCEF_CORE_DVOSWRAP_H
-#include "dvoswrap.h"           /* needed for GUCEFPrecisionTimerInit() ect. */
+#include "dvoswrap.h" 
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
@@ -60,11 +60,6 @@
 #define GUCEF_CORE_CSYSCONSOLE_H
 #endif /* GUCEF_CORE_CSYSCONSOLE_H ? */
 
-#ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
-#include "CGUCEFAppSubSystem.h"
-#define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
-#endif /* GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H ? */
-
 #ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
 #include "CNotificationIDRegistry.h"
 #define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
@@ -74,11 +69,6 @@
 #include "CIGUCEFApplicationDriver.h"
 #define GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H
 #endif /* GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H ? */
-
-#ifndef GUCEF_CORE_COBSERVERPUMP_H
-#include "CObserverPump.h"
-#define GUCEF_CORE_COBSERVERPUMP_H
-#endif /* GUCEF_CORE_COBSERVERPUMP_H ? */
 
 #include "CGUCEFApplication.h"
 
@@ -117,29 +107,20 @@ MT::CMutex CGUCEFApplication::m_mutex;
 CGUCEFApplication*
 CGUCEFApplication::Instance( void )
 {GUCEF_TRACE;
-        m_mutex.Lock();
-        if ( !_instance )
-        {                
-                 /*
-                  *     Instantiate the GUCEF application class
-                  */
-                _instance = new CGUCEFApplication();
-                CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
-                
-                /*
-                 *  We now register some sub-systems on purpose here.
-                 *  These are normally always registered but cannot auto-register
-                 *  because they are part of the construction of classes used in the
-                 *  CGUCEFApplication as well. This would cause a endless recursive loop.
-                 *  This is solved by doing it manually here
-                 */
-                CObserverPump::Instance()->RegisterSubSystem();
-                RegisterEvents();
-                
-                GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CGUCEFApplication Singleton created" );
-        }
-        m_mutex.Unlock();
-        return _instance;
+
+    m_mutex.Lock();
+    if ( !_instance )
+    {                
+             /*
+              *     Instantiate the GUCEF application class
+              */
+            _instance = new CGUCEFApplication();
+            CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
+            
+            GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CGUCEFApplication Singleton created" );
+    }
+    m_mutex.Unlock();
+    return _instance;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -147,55 +128,55 @@ CGUCEFApplication::Instance( void )
 void 
 CGUCEFApplication::Deinstance( void )
 {GUCEF_TRACE;
-        m_mutex.Lock();
-        CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
-        delete _instance;
-        _instance = NULL;
-        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CGUCEFApplication Singleton destroyed" );
-        m_mutex.Unlock();
+
+    m_mutex.Lock();
+    CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
+    delete _instance;
+    _instance = NULL;
+    GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CGUCEFApplication Singleton destroyed" );
+    m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
 
 CGUCEFApplication::CGUCEFApplication( void )
-        : CIConfigurable( true )                                 ,
-          _active( false )                                       ,
-          _initialized( false )                                  ,
-          m_minimalCycleDeltaInMilliSecs( 0.0 )                  ,
-          m_cycleDelayInMilliSecs( 10 )                          ,
-          m_minimalUpdateDelta( GUCEFCORE_UINT32MAX )            ,
-          m_requiresPeriodicUpdates( false )                     ,
-          m_inNeedOfAnUpdate( false )                            ,
-          m_appTickCount( MT::PrecisionTickCount() )             ,
-          m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 ) ,
-          m_appDriver( NULL )                                    ,
-          m_shutdownRequested( false )
+    : CIConfigurable( true )                                 ,
+      _initialized( false )                                  ,
+      m_shutdownRequested( false )                           ,
+      m_pulseGenerator()                                     ,
+      m_busyWaitPulseDriver()
 {GUCEF_TRACE;
                                            
-        /*
-         *      Set an initial app dir just in case we have trouble getting one 
-         *      at a later stage
-         */
-        _appdir = RelativePath( "$MODULEDIR$" );                                                    
-                                            
-        /*
-         *      Initialize our plugin control center
-         */                                      
-        CPluginControl::Instance();
-        
-        /*
-         *      Register some functionality at the system console
-         */
-        CSysConsole* sysconsole = CSysConsole::Instance();
-        CStringList args;
-        sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
-                                 "Stop"                           ,
-                                 args                             ,
-                                 this                             );
-        sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
-                                 "GetApplicationDir"              ,
-                                 args                             ,
-                                 this                             );                                                  
+    RegisterEvents();
+    
+    /*
+     *      Set an initial app dir just in case we have trouble getting one 
+     *      at a later stage
+     */
+    _appdir = RelativePath( "$MODULEDIR$" );                                                    
+                                        
+    /*
+     *      Initialize our plugin control center
+     */                                      
+    CPluginControl::Instance();
+    
+    /*
+     *      Register some functionality at the system console
+     */
+    CSysConsole* sysconsole = CSysConsole::Instance();
+    CStringList args;
+    sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
+                             "Stop"                           ,
+                             args                             ,
+                             this                             );
+    sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
+                             "GetApplicationDir"              ,
+                             args                             ,
+                             this                             );
+                             
+    // Set the busy wait pulse driver as the default driver for the
+    // pulse generator
+    m_pulseGenerator.SetPulseGeneratorDriver( &m_busyWaitPulseDriver );                                                  
 }
 
 /*-------------------------------------------------------------------------*/
@@ -207,92 +188,116 @@ CGUCEFApplication::~CGUCEFApplication()
 
 /*-------------------------------------------------------------------------*/
 
+CPulseGenerator&
+CGUCEFApplication::GetPulseGenerator( void )
+{GUCEF_TRACE;
+
+    return m_pulseGenerator;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CBusyWaitPulseGeneratorDriver&
+CGUCEFApplication::GetBusyWaitPulseGeneratorDriver( void )
+{GUCEF_TRACE;
+
+    return m_busyWaitPulseDriver;
+}
+
+/*-------------------------------------------------------------------------*/
+
 #ifdef GUCEF_MSWIN_BUILD
 int
 CGUCEFApplication::Main( HINSTANCE hinstance     ,
                          LPSTR lpcmdline         ,
                          int ncmdshow            ,
                          bool run                )
-{
-        GUCEF_BEGIN;
+{GUCEF_TRACE;
         
-        /*
-         *      ensure that we have an instance of this class
-         */
-        m_mutex.Lock(); 
-        if ( !_instance )
-        {
-                int retval = Instance()->Main( hinstance     ,
-                                               lpcmdline     ,
-                                               ncmdshow      ,
-                                               run           );
-                m_mutex.Unlock();
-                return retval;
-        }        
-        
-        /*
-         *      Set the application dir
-         *      This is pure MSWIN code and is not portable !!!
-         */
-        {
-                /*
-                 *      Set the given values as environment vars
-                 */
-                #pragma warning( disable: 4311 ) 
-                char intstr[ 10 ];
-                sprintf( intstr, "%d", (UInt32)hinstance );  
-                GUCEFSetEnv( "HINSTANCE", intstr );                 
-
-                char apppath[ MAX_PATH ];
-
-                if ( GetModuleFileNameA( hinstance, apppath, MAX_PATH ) )
-                {
-                        _appdir = apppath;
-                }                        
-        }                
-
-        struct SAppInitEventData data;
-        
-        // Copy the MSWIN params
-        data.hinstance = hinstance;
-        data.lpcmdline = lpcmdline;
-        data.ncmdshow = ncmdshow;
-        
-        // Parse the MSWIN param into the old style param list
-        std::vector< CString > argList;
-        if ( NULL != lpcmdline )
-        {
-            argList = CString( lpcmdline ).ParseElements( ' ' );
-        }
-        
-        data.argc = (int)argList.size();
-        if ( data.argc > 0 )
-        {
-            data.argv = new char*[ data.argc ];
-            for ( Int32 i=0; i<data.argc; ++i )
-            {
-                data.argv[ i ] = const_cast< char* >( argList[ i ].C_String() );
-            }
-        }
-        else
-        {
-            data.argv = NULL;
-        }
-        
-        // Dispatch the initialization event
-        TAppInitEventData cloneableData( data );                
-        if ( !NotifyObservers( AppInitEvent, &cloneableData ) ) return 0;
-
-
-        _initialized = true;
+    /*
+     *      ensure that we have an instance of this class
+     */
+    m_mutex.Lock(); 
+    if ( !_instance )
+    {
+        int retval = Instance()->Main( hinstance     ,
+                                       lpcmdline     ,
+                                       ncmdshow      ,
+                                       run           );
         m_mutex.Unlock();
-        if ( run )
+        return retval;
+    }        
+    
+    /*
+     *      Set the application dir
+     *      This is pure MSWIN code and is not portable !!!
+     */
+    {
+        /*
+         *      Set the given values as environment vars
+         */
+        #pragma warning( disable: 4311 ) 
+        char intstr[ 10 ];
+        sprintf( intstr, "%d", (UInt32)hinstance );  
+        GUCEFSetEnv( "HINSTANCE", intstr );                 
+
+        char apppath[ MAX_PATH ];
+
+        if ( GetModuleFileNameA( hinstance, apppath, MAX_PATH ) )
         {
-                Run();
+                _appdir = apppath;
+        }                        
+    }                
+
+    struct SAppInitEventData data;
+    
+    // Copy the MSWIN params
+    data.hinstance = hinstance;
+    data.lpcmdline = lpcmdline;
+    data.ncmdshow = ncmdshow;
+    
+    // Parse the MSWIN param into the old style param list
+    std::vector< CString > argList;
+    if ( NULL != lpcmdline )
+    {
+        argList = CString( lpcmdline ).ParseElements( ' ' );
+    }
+    
+    data.argc = (int)argList.size();
+    if ( data.argc > 0 )
+    {
+        data.argv = new char*[ data.argc ];
+        for ( Int32 i=0; i<data.argc; ++i )
+        {
+            data.argv[ i ] = const_cast< char* >( argList[ i ].C_String() );
         }
+    }
+    else
+    {
+        data.argv = NULL;
+    }
+    
+    // Dispatch the initialization event
+    TAppInitEventData cloneableData( data );                
+    if ( !NotifyObservers( AppInitEvent, &cloneableData ) ) return 0;
+
+
+    _initialized = true;
+    
+    if ( run )
+    {
+        m_shutdownRequested = false;
+        m_pulseGenerator.AllowPeriodicPulses();
+        m_mutex.Unlock();
         
-        delete []data.argv; 
-        return 0;      
+        m_pulseGenerator.RequestPeriodicPulses();
+    }
+    else
+    {
+        m_mutex.Unlock();
+    }
+    delete []data.argv; 
+    return 0;      
 }
 #endif
 
@@ -304,54 +309,61 @@ CGUCEFApplication::main( int argc    ,
                          bool run    )
 {GUCEF_TRACE;
         
-        /*
-         *      ensure that we have an instance of this class
-         */
-        m_mutex.Lock(); 
-        if ( !_instance )
-        {
-                int retval = Instance()->main( argc ,
-                                               argv ,
-                                               run  );                                               
-                return retval;
-        }
+    /*
+     *      ensure that we have an instance of this class
+     */
+    m_mutex.Lock(); 
+    if ( !_instance )
+    {
+        int retval = Instance()->main( argc ,
+                                       argv ,
+                                       run  );                                               
+        return retval;
+    }
+    
+    /*
+     *      Set the given values as environment vars
+     */
+    if ( argc > 0 )
+    { 
+        char intstr[ 10 ];
+        sprintf( intstr, "%d", argc );  
+        GUCEFSetEnv( "argc", intstr );
+        GUCEFSetEnv( "argv", (char*)argv );                 
+    }
+
+    /*
+     *      We now know we have an instance of this singleton and can begin
+     *      our main() code. We will send the application initialization
+     *      event to all event clients. The following code segment is a
+     *      special case since it may be followed by the main application
+     *      loop which would keep anything statically allocated here in memory
+     *      Thus we turn the following into a compound statement.
+     */
+    {
+        struct SAppInitEventData data;
         
-        /*
-         *      Set the given values as environment vars
-         */
-        if ( argc > 0 )
-        { 
-            char intstr[ 10 ];
-            sprintf( intstr, "%d", argc );  
-            GUCEFSetEnv( "argc", intstr );
-            GUCEFSetEnv( "argv", (char*)argv );                 
-        }
+        data.argc = argc;
+        data.argv = argv;
+        
+        TAppInitEventData cloneableData( data );
+        if ( !NotifyObservers( AppInitEvent, &cloneableData ) ) return 0;
+    }
 
-        /*
-         *      We now know we have an instance of this singleton and can begin
-         *      our main() code. We will send the application initialization
-         *      event to all event clients. The following code segment is a
-         *      special case since it may be followed by the main application
-         *      loop which would keep anything statically allocated here in memory
-         *      Thus we turn the following into a compound statement.
-         */
-        {
-                struct SAppInitEventData data;
-                
-                data.argc = argc;
-                data.argv = argv;
-                
-                TAppInitEventData cloneableData( data );
-                if ( !NotifyObservers( AppInitEvent, &cloneableData ) ) return 0;
-        }
-
-        _initialized = true;
+    _initialized = true;
+        
+    if ( run )
+    {
+        m_shutdownRequested = false;
+        m_pulseGenerator.AllowPeriodicPulses();
         m_mutex.Unlock();
-        if ( run )
-        {
-                Run();
-        }
-        return 0;      
+        m_pulseGenerator.RequestPeriodicPulses();
+    }
+    else
+    {
+        m_mutex.Unlock();
+    }
+    return 0;      
 }                        
 
 /*-------------------------------------------------------------------------*/
@@ -370,105 +382,7 @@ void
 CGUCEFApplication::Update( void )
 {GUCEF_TRACE;
 
-    LockData();
-    
-    UInt64 newTickCount = MT::PrecisionTickCount();    
-    Float64 deltaMilliSecs = ( ( m_appTickCount - newTickCount ) / m_timerFreq ) ;
-    m_appTickCount = newTickCount;
-    
-    SingleUpdate( newTickCount   ,
-                  deltaMilliSecs );
-    
-    UnlockData();
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CGUCEFApplication::SingleUpdate( const UInt64 tickCount               ,
-                                 const Float64 updateDeltaInMilliSecs )
-{GUCEF_TRACE;
-
-    OnUpdate( tickCount              ,
-              updateDeltaInMilliSecs );
-    
-    TSubSystemList::iterator i = m_subSysList.begin();
-    while ( i != m_subSysList.end() )
-    {
-        (*i)->OnUpdate( tickCount              ,
-                        updateDeltaInMilliSecs );
-        ++i;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CGUCEFApplication::SetApplicationDriver( CIGUCEFApplicationDriver* appDriver )
-{GUCEF_TRACE;
-
-    m_appDriver = appDriver;
-    RefreshPeriodicUpdateRequirement();
-}
-
-/*-------------------------------------------------------------------------*/
-        
-CIGUCEFApplicationDriver*
-CGUCEFApplication::GetApplicationDriver( void ) const
-{GUCEF_TRACE;
-    
-    return m_appDriver;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CGUCEFApplication::GetRequiresPeriodicUpdate( void ) const
-{GUCEF_TRACE;
-
-    return m_requiresPeriodicUpdates;
-}
-
-/*-------------------------------------------------------------------------*/
-
-Float64
-CGUCEFApplication::GetMinimalReqUpdateResolution( void ) const
-{GUCEF_TRACE;
-
-    return m_minimalUpdateDelta;
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt64
-CGUCEFApplication::GetLastUpdateTickCount( void ) const
-{GUCEF_TRACE;
-
-    return m_appTickCount;    
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CGUCEFApplication::Run( void )
-{GUCEF_TRACE;
-
-    _active = true;
-    UInt64 newTickCount = 0;
-    Float64 deltaMilliSecs = 0;
-    
-    // Cache the precision timer resolution in time slices per millisecond
-    m_timerFreq = ( MT::PrecisionTimerResolution() / 1000.0 ); 
-        
-    while ( !m_shutdownRequested )
-    {
-        newTickCount = MT::PrecisionTickCount();
-        deltaMilliSecs = ( ( m_appTickCount - newTickCount ) / m_timerFreq );
-        m_appTickCount = newTickCount;
-
-        SingleUpdate( newTickCount   ,
-                      deltaMilliSecs );
-    }
+    m_pulseGenerator.RequestPulse();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -482,6 +396,7 @@ CGUCEFApplication::Stop( void )
     if ( !m_shutdownRequested )
     {
         m_shutdownRequested = true;
+        m_pulseGenerator.ForceStopOfPeriodicPulses();
         if ( !NotifyObservers( AppShutdownEvent ) ) return;
     }
     
@@ -573,7 +488,7 @@ CGUCEFApplication::OnSysConsoleCommand( const CString& path     ,
 }
 
 /*-------------------------------------------------------------------------*/
-
+  /*
 void 
 CGUCEFApplication::OnUpdate( const UInt64 tickcount               ,
                              const Float64 updateDeltaInMilliSecs )
@@ -586,37 +501,17 @@ CGUCEFApplication::OnUpdate( const UInt64 tickcount               ,
                 ::TranslateMessage( &msg );
                 ::DispatchMessage( &msg );
         }
-        #endif /* GUCEF_MSWIN_BUILD ? */        
+        #endif /* GUCEF_MSWIN_BUILD ? *//*        
         
         if ( updateDeltaInMilliSecs <= m_minimalCycleDeltaInMilliSecs )
         {
                 /*
                  *      Not much action ATM, so we should
                  *      avoid hogging the system resources 
-                 */
+                 *
                 MT::PrecisionDelay( m_cycleDelayInMilliSecs );                
         }
-}
-
-/*-------------------------------------------------------------------------*/                             
-
-void 
-CGUCEFApplication::SetCycleDelay( const Float64 minimalCycleDeltaInMilliSecs ,
-                                  const UInt32 cycleDelayInMilliSecs         )
-{GUCEF_TRACE;
-    m_minimalCycleDeltaInMilliSecs = minimalCycleDeltaInMilliSecs;
-    m_cycleDelayInMilliSecs = cycleDelayInMilliSecs;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CGUCEFApplication::GetCycleDelay( Float64& minimalCycleDeltaInMilliSecs ,
-                                  UInt32& cycleDelayInMilliSecs         ) const
-{GUCEF_TRACE;
-    minimalCycleDeltaInMilliSecs = m_minimalCycleDeltaInMilliSecs;
-    cycleDelayInMilliSecs = m_cycleDelayInMilliSecs;
-}                                  
+}                                
 
 /*-------------------------------------------------------------------------*/
 
@@ -634,141 +529,6 @@ CGUCEFApplication::UnlockData( void )
 {GUCEF_TRACE;
 
     m_mutex.Unlock();
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CGUCEFApplication::RegisterSubSystem( CGUCEFAppSubSystem* subSystem )
-{GUCEF_TRACE;
-
-    assert( NULL != subSystem );
-    LockData();
-    m_subSysList.insert( subSystem );    
-    Subscribe( &subSystem->AsObserver() );
-    UnlockData();
-    
-}
-
-/*-------------------------------------------------------------------------*/
-        
-void
-CGUCEFApplication::UnregisterSubSystem( CGUCEFAppSubSystem* subSystem )
-{GUCEF_TRACE;
-
-    assert( NULL != subSystem );
-    LockData();
-    m_subSysList.erase( subSystem );    
-    Unsubscribe( &subSystem->AsObserver() );
-    UnlockData();
-}
-
-/*-------------------------------------------------------------------------*/
-        
-void
-CGUCEFApplication::RefreshMinimalSubSysInterval( void )
-{GUCEF_TRACE;
-    
-    LockData();
-    
-    Float64 temp( 0 );
-    
-    TSubSystemList::iterator i = m_subSysList.begin();
-    while ( i != m_subSysList.end() )
-    {
-        temp = (*i)->GetDesiredUpdateInterval();
-        if ( temp < m_minimalUpdateDelta )
-        {
-            m_minimalUpdateDelta = temp;
-        }
-        ++i;
-    }
-
-    // request new update minimum from driver    
-    if ( NULL != m_appDriver )
-    {
-        m_appDriver->OnRequestNewMinimalUpdateFreq( m_minimalUpdateDelta );
-    }
-    UnlockData();    
-}
-
-/*-------------------------------------------------------------------------*/
-        
-void
-CGUCEFApplication::RefreshPeriodicUpdateRequirement( void )
-{GUCEF_TRACE;
-    
-    LockData();
-    
-    TSubSystemList::iterator i = m_subSysList.begin();
-    while ( i != m_subSysList.end() )
-    {
-        if ( (*i)->ArePeriodicUpdatesRequired() )
-        {
-            m_requiresPeriodicUpdates = true;
-            
-            // Make sure we have the correct update frequency before we get started
-            RefreshMinimalSubSysInterval();
-                                
-            // notify driver of change                
-            if ( NULL != m_appDriver )
-            {
-                m_appDriver->OnSwitchUpdateMethod( true );
-            }
-            
-            UnlockData();
-            return;
-        }
-        ++i;
-    }
-    
-    if ( m_requiresPeriodicUpdates )
-    {
-        // This is not true anymore
-        m_requiresPeriodicUpdates = false;
-        
-        // notify driver of change                
-        if ( NULL != m_appDriver )
-        {
-            m_appDriver->OnSwitchUpdateMethod( false );
-        }        
-    }
-
-    UnlockData();
-}
-
-/*-------------------------------------------------------------------------*/
-        
-void
-CGUCEFApplication::DoRequestSubSysUpdate( void )
-{GUCEF_TRACE;
-    
-    LockData();
-    
-    if ( !m_inNeedOfAnUpdate )
-    {
-        m_inNeedOfAnUpdate = true;
-        UnlockData();
-        
-        // ask driver for update
-        if ( NULL != m_appDriver )
-        {
-            m_appDriver->OnRequestNewUpdateCycle();
-        }        
-        return;
-    }
-    
-    UnlockData();
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CGUCEFApplication::OnPumpedNotify( CNotifier* notifier                 ,
-                                   const CEvent& eventid               ,
-                                   CICloneable* eventdata /* = NULL */ )
-{GUCEF_TRACE;
-    // nothing to do here atm
 }
 
 /*-------------------------------------------------------------------------//

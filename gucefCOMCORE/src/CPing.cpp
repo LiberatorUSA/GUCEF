@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
 #include "CPing.h"           /* declaration of the class */
 
 #ifdef GUCEF_MSWIN_BUILD
@@ -328,9 +333,9 @@ class CMSWinPingTask : public MT::CActiveObject   ,
     /*---------------------------------------------------------------------*/
     
     CMSWinPingTask( void )
-        : CActiveObject()           ,
-          CTSGNotifier()            ,
-          m_replyBuffer( NULL )     ,
+        : CActiveObject()                                                          ,
+          CTSGNotifier( CORE::CGUCEFApplication::Instance()->GetPulseGenerator() ) ,
+          m_replyBuffer( NULL )                                                    ,
           m_sendBuffer( NULL )      ,
           m_icmpHandle( NULL )      ,
           m_remoteHost()            ,

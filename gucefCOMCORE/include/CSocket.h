@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CNOTIFIER_H
-#include "CNotifier.h"
-#define GUCEF_CORE_CNOTIFIER_H
-#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
+
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
 #ifndef GUCEF_COMCORE_CHOSTADDRESS_H
 #include "CHostAddress.h"
@@ -67,7 +72,7 @@ class CActiveComPump;
 /**
  *  Base class for all our socket classes.
  */
-class GUCEF_COMCORE_EXPORT_CPP CSocket : public CORE::CNotifier
+class GUCEF_COMCORE_EXPORT_CPP CSocket : public CORE::CObservingNotifier
 {
     public:              
     
@@ -112,7 +117,7 @@ class GUCEF_COMCORE_EXPORT_CPP CSocket : public CORE::CNotifier
     friend class CCom;               
     friend class CActiveComPump;
     
-    virtual void Update( void ) = 0;
+    virtual void Update( void ) {};
                                                               
     private:
     friend class CCom;

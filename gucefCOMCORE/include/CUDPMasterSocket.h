@@ -89,6 +89,15 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPMasterSocket : public CORE::CObservingNotifie
     typedef CORE::CTCloneableObj< CUDPChannel* > UDPChannelToBeDestroyedEventData;
     
     public:
+
+    /**
+     *      Creates a UDP socket object initialized to be either blocking
+     *      or non-blocking. Choosing either type is a design decision.
+     *
+     *      @param blocking whether to construct the socket as a blocking socket
+     */        
+    CUDPMasterSocket( CORE::CPulseGenerator& pulseGenerator ,
+                      bool blocking                         );
     
     /**
      *      Creates a UDP socket object initialized to be either blocking

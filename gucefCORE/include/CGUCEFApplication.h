@@ -64,6 +64,16 @@
 #define GUCEF_CORE_CTCLONEABLEOBJ_H
 #endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
 
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
+
+#ifndef GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H
+#include "gucefCORE_CBusyWaitPulseGeneratorDriver.h"
+#define GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H
+#endif /* GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -95,189 +105,112 @@ class CIGUCEFApplicationDriver;
  *              Signals that the application is shutting down at the
  *              GUCEF level. All higher level code should shutdown as well 
  */
-class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CTSGNotifier          , 
+class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CNotifier             , 
                                                public CIConfigurable        ,
                                                public CISysConsoleCmdHandler
 {
-        public:
+    public:
 
-        static const CEvent AppInitEvent;
-        static const CEvent AppShutdownEvent;
+    static const CEvent AppInitEvent;
+    static const CEvent AppShutdownEvent;
 
-        static void RegisterEvents( void );
-               
-        struct SAppInitEventData
-        {
-                #ifdef GUCEF_MSWIN_BUILD
-                HINSTANCE hinstance;
-                LPSTR lpcmdline;
-                int ncmdshow;
-                #endif 
-                
-                int argc;
-                char** argv;                
-        };
-        typedef CTCloneableObj< struct SAppInitEventData > TAppInitEventData;
-
-        public:        
-        
-        static CGUCEFApplication* Instance( void );
-
+    static void RegisterEvents( void );
+           
+    struct SAppInitEventData
+    {
         #ifdef GUCEF_MSWIN_BUILD
-        int Main( HINSTANCE hinstance     ,
-                  LPSTR lpcmdline         ,
-                  int ncmdshow            ,
-                  bool run                );
-        #endif
+        HINSTANCE hinstance;
+        LPSTR lpcmdline;
+        int ncmdshow;
+        #endif 
         
-        int main( int argc    ,
-                  char** argv ,
-                  bool run    );
-        
+        int argc;
+        char** argv;                
+    };
+    typedef CTCloneableObj< struct SAppInitEventData > TAppInitEventData;
 
-        void Update( void );
+    public:        
+    
+    static CGUCEFApplication* Instance( void );
 
-        void Stop( void );
-                
-        void SetPluginDir( const CString& plugindir );        
-                       
-        CString GetPluginDir( void ) const;
-        
-        CString GetApplicationDir( void ) const;
-        
-        UInt64 GetLastUpdateTickCount( void ) const;
-        
-        /**
-         *  If you want to make sure your application does not cycle
-         *  to fast (perhaps to prevent the application from hogging the
-         *  system resources), you can use this member function to limit
-         *  the cycle rate.
-         */
-        void SetCycleDelay( const Float64 minimalCycleDeltaInMilliSecs ,
-                            const UInt32 cycleDelayInMilliSecs         );
-                            
-        void GetCycleDelay( Float64& minimalCycleDeltaInMilliSecs ,
-                            UInt32& cycleDelayInMilliSecs         ) const;                            
-        
-        /**
-         *      Attempts to store the given tree in the file
-         *      given according to the method of the codec meta data
-         *
-         *      @param tree the data tree you wish to store
-         *      @return whether storing the tree was successfull
-         */
-        virtual bool SaveConfig( CDataNode& tree );
-                                    
-        /**
-         *      Attempts to load data from the given file to the 
-         *      root node given. The root data will be replaced 
-         *      and any children the node may already have will be deleted.
-         *
-         *      @param treeroot pointer to the node that is to act as root of the data tree
-         *      @return whether building the tree from the given file was successfull.
-         */                                    
-        virtual bool LoadConfig( const CDataNode& treeroot );
-        
-        void SetApplicationDriver( CIGUCEFApplicationDriver* appDriver );
-        
-        CIGUCEFApplicationDriver* GetApplicationDriver( void ) const;
-        
-        bool GetRequiresPeriodicUpdate( void ) const;
-        
-        /**
-         *  returns the minimal required resolution for the application
-         *  update interval in milliseconds as requested by the application
-         *  sub systems.
-         *
-         *  @return the minimal required update frequency in milliseconds
-         */
-        Float64 GetMinimalReqUpdateResolution( void ) const;
-        
-        protected:
-        
-        /**
-         *  Event callback member function.
-         *
-         *  @param notifier the notifier that sent the notification
-         *  @param eventid the unique event id for an event
-         *  @param eventdata optional notifier defined user data
-         */
-        virtual void OnPumpedNotify( CNotifier* notifier           ,
-                                     const CEvent& eventid         ,
-                                     CICloneable* eventdata = NULL );
+    #ifdef GUCEF_MSWIN_BUILD
+    int Main( HINSTANCE hinstance     ,
+              LPSTR lpcmdline         ,
+              int ncmdshow            ,
+              bool run                );
+    #endif
+    
+    int main( int argc    ,
+              char** argv ,
+              bool run    );
+    
 
-        virtual bool OnSysConsoleCommand( const CString& path     ,
-                                          const CString& command  ,
-                                          const CStringList& args ,
-                                          CStringList& resultdata );
-                                          
-        virtual void OnUpdate( const UInt64 tickCount               ,
-                               const Float64 updateDeltaInMilliSecs );
-                               
-        virtual void LockData( void );
-        
-        virtual void UnlockData( void );                                                                                 
-        
-        private:
-        friend class CGUCEFCOREModule;
-        
-        static void Deinstance( void );
-        
-        private:
-        friend class CGUCEFAppSubSystem;
-        
-        void RegisterSubSystem( CGUCEFAppSubSystem* subSystem );
-        
-        void UnregisterSubSystem( CGUCEFAppSubSystem* subSystem );
-        
-        /**
-         *  Ask all sub systems what their desired sub system update 
-         *  interval is. This is combined to form the desired application
-         *  update interval in milliseconds
-         */
-        void RefreshMinimalSubSysInterval( void );
-        
-        /**
-         *  Ask all sub systems if they require periodic updates without
-         *  explicit update requests. This determines the applications
-         *  periodic update requirement
-         */
-        void RefreshPeriodicUpdateRequirement( void );
-        
-        void DoRequestSubSysUpdate( void );
+    void Update( void );
 
-        private:
+    void Stop( void );
+            
+    void SetPluginDir( const CString& plugindir );        
+                   
+    CString GetPluginDir( void ) const;
+    
+    CString GetApplicationDir( void ) const;                          
+    
+    /**
+     *      Attempts to store the given tree in the file
+     *      given according to the method of the codec meta data
+     *
+     *      @param tree the data tree you wish to store
+     *      @return whether storing the tree was successful
+     */
+    virtual bool SaveConfig( CDataNode& tree );
+                                
+    /**
+     *      Attempts to load data from the given file to the 
+     *      root node given. The root data will be replaced 
+     *      and any children the node may already have will be deleted.
+     *
+     *      @param treeroot pointer to the node that is to act as root of the data tree
+     *      @return whether building the tree from the given file was successful
+     */                                    
+    virtual bool LoadConfig( const CDataNode& treeroot );
+    
+    CPulseGenerator& GetPulseGenerator( void );
+    
+    CBusyWaitPulseGeneratorDriver& GetBusyWaitPulseGeneratorDriver( void );
+    
+    protected:
 
-        void Run( void );
-        
-        void SingleUpdate( const UInt64 tickCount               ,
-                           const Float64 updateDeltaInMilliSecs );
+    virtual bool OnSysConsoleCommand( const CString& path     ,
+                                      const CString& command  ,
+                                      const CStringList& args ,
+                                      CStringList& resultdata );
                            
-        CGUCEFApplication( void );
-        CGUCEFApplication( const CGUCEFApplication& src );
-        virtual ~CGUCEFApplication();
-        CGUCEFApplication& operator=( const CGUCEFApplication& src ); /**< not implemented */
-        
-        private:
-        typedef std::set< CGUCEFAppSubSystem* > TSubSystemList;
-        
-        TSubSystemList m_subSysList;
-        bool m_requiresPeriodicUpdates;
-        bool m_inNeedOfAnUpdate;
-        Float64 m_minimalUpdateDelta;
-        UInt64 m_appTickCount;
-        Float64 m_timerFreq;
-        CIGUCEFApplicationDriver* m_appDriver;
-        
-        bool _initialized;
-        bool _active;
-        bool m_shutdownRequested;
-        CString _appdir;
-        Float64 m_minimalCycleDeltaInMilliSecs;
-        UInt32 m_cycleDelayInMilliSecs;
-        
-        static CGUCEFApplication* _instance;
-        static MT::CMutex m_mutex;
+    virtual void LockData( void );
+    
+    virtual void UnlockData( void );                                                                                 
+    
+    private:
+    friend class CGUCEFCOREModule;
+    
+    static void Deinstance( void );
+
+    private:
+                               
+    CGUCEFApplication( void );
+    CGUCEFApplication( const CGUCEFApplication& src );
+    virtual ~CGUCEFApplication();
+    CGUCEFApplication& operator=( const CGUCEFApplication& src ); /**< not implemented */
+    
+    private:
+            
+    bool _initialized;
+    bool m_shutdownRequested;
+    CString _appdir;
+    CPulseGenerator m_pulseGenerator;
+    CBusyWaitPulseGeneratorDriver m_busyWaitPulseDriver;
+    
+    static CGUCEFApplication* _instance;
+    static MT::CMutex m_mutex;
 };
 
 

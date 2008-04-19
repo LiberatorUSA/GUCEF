@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CNOTIFIER_H
-#include "CNotifier.h"
-#define GUCEF_CORE_CNOTIFIER_H
-#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
+#ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#include "gucefCORE_CTEventHandlerFunctor.h"
+#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
 
 #ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
 #include "CTCloneableObj.h"
@@ -56,7 +61,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CTimerPump;
+class CPulseGenerator;
 
 /*-------------------------------------------------------------------------*/
 
@@ -73,7 +78,7 @@ class CTimerPump;
  *  Note that the timer resolution is NOT guaranteed. An attempt is made to
  *  provide the theoretical minimum resolution of 1 millisecond. 
  */
-class GUCEFCORE_EXPORT_CPP CTimer : public CNotifier
+class GUCEFCORE_EXPORT_CPP CTimer : public CObservingNotifier
 {
     public:
     
@@ -95,7 +100,10 @@ class GUCEFCORE_EXPORT_CPP CTimer : public CNotifier
     
     public:
     
-    explicit CTimer( const UInt32 updateDeltaInMilliSecs = 10 );        
+    CTimer( CPulseGenerator& pulseGenerator          ,
+            const UInt32 updateDeltaInMilliSecs = 10 );
+
+    CTimer( const UInt32 updateDeltaInMilliSecs = 10 );        
     
     CTimer( const CTimer& src );
     
@@ -133,6 +141,8 @@ class GUCEFCORE_EXPORT_CPP CTimer : public CNotifier
 	
 	void Reset( void );
 	
+	const CString& GetClassTypeName( void ) const;
+	
 	/**
 	 *  Returns the approximated maximum timer resolution in milliseconds
 	 *
@@ -143,20 +153,26 @@ class GUCEFCORE_EXPORT_CPP CTimer : public CNotifier
 	 */
 	static Float64 GetApproxMaxTimerResolutionInMilliSecs( void );
     
-    private:
-    friend class CTimerPump;
+    private:    
+    typedef CTEventHandlerFunctor< CTimer > TEventCallback;
 
-    void OnUpdate( void );
+    void OnPulse( CNotifier* notifier           ,
+                  const CEvent& eventid         ,
+                  CICloneable* eventdata = NULL );
+
+    void OnPulseGeneratorDestruction( CNotifier* notifier           ,
+                                      const CEvent& eventid         ,
+                                      CICloneable* eventdata = NULL );
     
     private:
 
-    CTimerPump* m_timerPump;
     Float64 m_timerFreq;
     UInt64 m_lastTimerCycle;
     UInt64 m_tickCount;
     UInt32 m_updateDeltaInMilliSecs;
     UInt64 m_activationTickCount;
     bool m_enabled;
+    CPulseGenerator* m_pulseGenerator;
 };
 
 /*-------------------------------------------------------------------------//

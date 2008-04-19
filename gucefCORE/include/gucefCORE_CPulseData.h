@@ -1,5 +1,5 @@
 /*
- *  gucefCOMCORE: GUCEF module providing basic communication facilities
+ *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,29 +17,19 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef CACTIVECOMPUMP_H
-#define CACTIVECOMPUMP_H
-
+#ifndef GUCEF_CORE_CPULSEDATA_H
+#define GUCEF_CORE_CPULSEDATA_H
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCORE_H
-#include "gucefCORE.h"                /* gucefCORE library API */
-#define GUCEFCORE_H
-#endif /* GUCEFCORE_H ? */
-
-#ifndef GUCEFMT_H
-#include "gucefMT.h"                  /* gucefMT library API */
-#define GUCEFMT_H
-#endif /* GUCEFMT_H ? */
-
-#ifndef GUCEFCOMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"      /* build switches and macros */
-#define GUCEFCOMCORE_MACROS_H
-#endif /* GUCEFCOMCORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CICLONEABLE_H
+#include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,8 +37,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF {
-namespace COMCORE {
+namespace GUCEF { 
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,31 +46,36 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CActiveComPump : public MT::CActiveObject
+class GUCEF_CORE_EXPORT_CPP CPulseData : public CICloneable
 {
-        public:                
-        
-        virtual ~CActiveComPump();
-
-        protected:
-        
-        virtual bool OnTaskStart( void* taskdata );
-        
-        virtual bool OnTaskCycle( void* taskdata );
-        
-        virtual void OnTaskEnd( void* taskdata );
-        
-        private:
-        friend class CCom;
-        
-        CActiveComPump( void );
-        
-        private:        
-        CActiveComPump( const CActiveComPump& src );
-        CActiveComPump& operator=( const CActiveComPump& src );
-        
-        MT::CMutex* _datalock;
-        CORE::CDynamicArray* _sockets;
+    public:
+    
+    CPulseData( const UInt64 tickCount               ,
+                const UInt64 deltaTicks              ,
+                const Float64 updateDeltaInMilliSecs );
+    
+    CPulseData( const CPulseData& src );
+    
+    virtual ~CPulseData();
+    
+    UInt64 GetTickCount( void ) const;
+    
+    UInt64 GetTickDelta( void ) const;
+    
+    Float64 GetUpdateDeltaInMilliSecs( void ) const;
+    
+    virtual CICloneable* Clone( void ) const;
+    
+    private:
+    
+    CPulseData( void );
+    CPulseData& operator=( const CPulseData& src );
+    
+    private:
+    
+    UInt64 m_tickCount;
+    UInt64 m_tickDelta;
+    Float64 m_updateDeltaInMilliSecs;    
 };
 
 /*-------------------------------------------------------------------------//
@@ -89,12 +84,12 @@ class CActiveComPump : public MT::CActiveObject
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace CORE */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-#endif /* CACTIVECOMPUMP_H ? */
+#endif /* GUCEF_CORE_CPULSEDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -102,7 +97,7 @@ class CActiveComPump : public MT::CActiveObject
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 07-02-2005 :
-        - Initial version
+- 12-11-2004 :
+        - Designed and implemented this class.
 
 -----------------------------------------------------------------------------*/

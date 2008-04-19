@@ -1,6 +1,6 @@
 /*
  *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CTIMERPUMP_H
-#define GUCEF_CORE_CTIMERPUMP_H
+#ifndef GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H
+#define GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,12 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <map>
-
-#ifndef GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
-#include "CGUCEFAppSubSystem.h"
-#define GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H
-#endif /* GUCEF_CORE_CGUCEFAPPSUBSYSTEM_H ? */
+#ifndef GUCEF_CORE_CIPULSEGENERATORDRIVER_H
+#include "gucefCORE_CIPulseGeneratorDriver.h"
+#define GUCEF_CORE_CIPULSEGENERATORDRIVER_H
+#endif /* GUCEF_CORE_CIPULSEGENERATORDRIVER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -39,7 +37,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF {
+namespace GUCEF { 
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -48,58 +46,32 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CTimer;
-class CGUCEFCOREModule;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *  Internally used class for updating timers
- */
-class GUCEFCORE_EXPORT_CPP CTimerPump : public CGUCEFAppSubSystem
+class GUCEF_CORE_EXPORT_CPP CBusyWaitPulseGeneratorDriver : public CIPulseGeneratorDriver
 {
     public:
     
-    static CTimerPump* Instance( void );
+    CBusyWaitPulseGeneratorDriver( void );
     
-    protected:
+    CBusyWaitPulseGeneratorDriver( const CBusyWaitPulseGeneratorDriver& src );
     
-    virtual void OnUpdate( const UInt64 tickCount               ,
-                           const Float64 updateDeltaInMilliSecs );
+    virtual ~CBusyWaitPulseGeneratorDriver();
     
-    private:
-    friend class CTimer;
+    CBusyWaitPulseGeneratorDriver& operator=( const CIPulseGeneratorDriver& src );
     
-    void RegisterTimer( CTimer* timer );
+    virtual void RequestPulse( CPulseGenerator& pulseGenerator );
     
-    void UnregisterTimer( CTimer* timer );
+    virtual void RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
+                                        const UInt32 pulseDeltaInMilliSecs );
+
+    virtual void RequestPulseInterval( CPulseGenerator& pulseGenerator    ,
+                                       const UInt32 pulseDeltaInMilliSecs );
     
-    void TimerSetRequiresUpdates( CTimer* timer              ,
-                                  const bool requiresUpdates );
-    
-    private:
-    friend class CGUCEFCOREModule;
-    
-    static void Deinstance( void );   
-    
+    virtual void RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator );
+
     private:
     
-    CTimerPump( void );
-    
-    CTimerPump( const CTimerPump& src );
-    
-    CTimerPump& operator=( const CTimerPump& src );
-    
-    virtual ~CTimerPump();
-    
-    private:
-    typedef std::map< CTimer*, bool > TTimerList;
-    
-    static CTimerPump* m_instance;
-    
-    TTimerList m_timerList;
-    UInt32 m_minimalResolution;
-    bool m_isATimerActive;
+    bool m_loop;
+    Float64 m_desiredPulseDelta;
 };
 
 /*-------------------------------------------------------------------------//
@@ -111,6 +83,17 @@ class GUCEFCORE_EXPORT_CPP CTimerPump : public CGUCEFAppSubSystem
 }; /* namespace CORE */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CTIMERPUMP_H  ? */
+#endif /* GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 12-11-2004 :
+        - Designed and implemented this class.
+
+-----------------------------------------------------------------------------*/

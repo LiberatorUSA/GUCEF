@@ -25,10 +25,15 @@
 
 #include <string.h>             /* needed for memset() */
 
-#ifndef CACTIVECOMPUMP_H
-#include "CActiveComPump.h"     /* threaded com poller */
-#define CACTIVECOMPUMP_H
-#endif /* CACTIVECOMPUMP_H ? */
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
 #ifndef DVWINSOCK_H
 #include "dvwinsock.h"          /* socket API for ms windows */
@@ -171,12 +176,8 @@ CCom::Deinstance( void )
 /*-------------------------------------------------------------------------*/
 
 CCom::CCom()
-        : CGUCEFAppSubSystem( true )           ,
-          _keep_gstats( false )                ,
-          _scount( 0 )                         ,
-          _pumpthread( false )                 ,
-          _threadedpump( NULL )                ,
-          m_timerPump()
+    : _keep_gstats( false )                ,
+      _scount( 0 )
 {GUCEF_TRACE;
 
     _sockets.SetResizeChange( HEAP_RESIZE_AMOUNT );
@@ -206,16 +207,13 @@ CCom::CCom()
     }
     
     #endif /* GUCEF_MSWIN_BUILD ? */
-    
-    SubscribeTo( &m_timerPump, CORE::CTimer::TimerUpdateEvent );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CCom::~CCom()
 {GUCEF_TRACE;
-
-        SetPumpThreading( false );                     
+                     
 }
 
 /*-------------------------------------------------------------------------*/
@@ -224,17 +222,10 @@ void
 CCom::RegisterSocketObject( CSocket* socket )
 {GUCEF_TRACE;
 
-        _mutex.Lock();
-        socket->SetSocketID( _sockets.AddEntry( socket ) );        
-        ++_scount;
-        
-        if ( !m_timerPump.GetEnabled() )
-        {
-            m_timerPump.SetInterval( 10 );
-            m_timerPump.SetEnabled( true );
-        }
-        
-        _mutex.Unlock();
+    _mutex.Lock();
+    socket->SetSocketID( _sockets.AddEntry( socket ) );        
+    ++_scount;        
+    _mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -242,59 +233,12 @@ CCom::RegisterSocketObject( CSocket* socket )
 void
 CCom::UnregisterSocketObject( const CSocket* socket )
 {GUCEF_TRACE;
-        _mutex.Lock();
-        _sockets.SetEntry( socket->GetSocketID(), NULL );        
-        --_scount;
-        
-        if ( _scount == 0 )
-        {
-            m_timerPump.SetEnabled( false );
-        }
-        
-        _mutex.Unlock();
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CCom::OnNotify( CORE::CNotifier* notifier                 ,
-                const CORE::CEvent& eventid               ,
-                CORE::CICloneable* eventdata /* = NULL */ )
-{
-    if ( notifier == &m_timerPump )
-    {
-        if ( eventid == CORE::CTimer::TimerUpdateEvent )
-        {
-            _mutex.Lock();
-            for ( Int32 i=0; i <= _sockets.GetLast(); ++i )
-            {
-                if ( _sockets[ i ] )
-                {
-                    ( (CSocket*)_sockets[ i ] )->Update();
-                }
-            }
-            _mutex.Unlock();            
-        }
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CCom::OnUpdate( const UInt64 tickcount               ,
-                const Float64 updateDeltaInMilliSecs )
-{GUCEF_TRACE;    
 
     _mutex.Lock();
-    for ( Int32 i=0; i <= _sockets.GetLast(); ++i )
-    {
-            if ( _sockets[ i ] )
-            {
-                    ( (CSocket*)_sockets[ i ] )->Update();
-            }
-    }
-    _mutex.Unlock();   
-}              
+    _sockets.SetEntry( socket->GetSocketID(), NULL );        
+    --_scount;
+    _mutex.Unlock();
+}            
 
 /*-------------------------------------------------------------------------*/
 
@@ -341,44 +285,6 @@ CCom::GetGlobalStats( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CCom::SetPumpThreading( bool thread )
-{GUCEF_TRACE;
-        _mutex.Lock();
-        
-        if ( _pumpthread == thread )
-        {
-                _mutex.Unlock();
-                return;
-        } 
-        
-        if ( thread )
-        {
-                _pumpthread = true;
-                _threadedpump = new CActiveComPump();
-                _threadedpump->Activate();
-                _mutex.Unlock();
-                return;
-        }
-        
-        _threadedpump->Deactivate( true );
-        delete _threadedpump;
-        _threadedpump = NULL;
-        _pumpthread = false;
-        _mutex.Unlock();
-}        
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CCom::GetPumpThreading( void ) const
-{GUCEF_TRACE;
-
-        return _pumpthread;        
-}
-
-/*-------------------------------------------------------------------------*/
-
 bool
 CCom::SetSystemWideProxyServer( const CORE::CString& protocol ,
                                 const bool active             )
@@ -401,6 +307,9 @@ CCom::SetSystemWideProxyServer( const CORE::CString& protocol   ,
                                 const UInt16 remotePort         ,
                                 const bool active               )
 {GUCEF_TRACE;
+    
+    GUCEF_SYSTEM_LOG( 0, "Setting system wide proxy server for protocol " + protocol + 
+                          " to " + remoteHost + ":" + CORE::UInt16ToString( remotePort ) + " and active state " + CORE::BoolToString( active ) );
     
     TProxyServer& proxyServer = m_proxyList[ protocol ];
     proxyServer.host = remoteHost;

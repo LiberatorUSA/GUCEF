@@ -1,5 +1,5 @@
 /*
- *  gucefCOMCORE: GUCEF module providing basic communication facilities
+ *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -23,24 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef CSOCKET_H
-#include "CSocket.h"
-#define CSOCKET_H
-#endif /* CSOCKET_H ? */
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
-#ifndef CCOM_H
-#include "CCom.h"
-#define CCOM_H
-#endif /* CCOM_H ? */
-
-#include "CActiveComPump.h"
-
-#ifdef ACTIVATE_MEMORY_MANAGER
-  #ifndef GUCEF_NEW_ON_H
-  #include "gucef_new_on.h"   /* Use the GUCEF memory manager instead of the standard manager ? */
-  #define GUCEF_NEW_ON_H
-  #endif /* GUCEF_NEW_ON_H ? */
-#endif /* ACTIVATE_MEMORY_MANAGER ? */
+#include "gucefCORE_CPulseData.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,8 +36,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF {
-namespace COMCORE {
+namespace GUCEF { 
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,65 +45,68 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CActiveComPump::CActiveComPump( void )
-        : CActiveObject()                         ,
-          _sockets( &CCom::Instance()->_sockets ) ,
-          _datalock( &CCom::Instance()->_mutex )
-{
+CPulseData::CPulseData( const UInt64 tickCount               ,
+                        const UInt64 deltaTicks              ,
+                        const Float64 updateDeltaInMilliSecs )
+    : CICloneable()                                      ,
+      m_tickCount( tickCount )                           ,
+      m_tickDelta( deltaTicks )                          ,
+      m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )
+{GUCEF_TRACE;
+                        
 }
 
-/*-------------------------------------------------------------------------*/
-
-CActiveComPump::CActiveComPump( const CActiveComPump& src )
-{
-        /* dummy, do not use */
+/*--------------------------------------------------------------------------*/
+    
+CPulseData::CPulseData( const CPulseData& src )
+    : CICloneable( src )                                       ,
+      m_tickCount( src.m_tickCount )                           ,
+      m_tickDelta( src.m_tickDelta )                           ,
+      m_updateDeltaInMilliSecs( src.m_updateDeltaInMilliSecs )
+{GUCEF_TRACE;
 }
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+    
+CPulseData::~CPulseData()
+{GUCEF_TRACE;
 
-CActiveComPump::~CActiveComPump()
-{
 }
 
-/*-------------------------------------------------------------------------*/
-
-CActiveComPump&
-CActiveComPump::operator=( const CActiveComPump& src )
-{
-        /* dummy, do not use */
-        return *this;
+/*--------------------------------------------------------------------------*/
+    
+UInt64
+CPulseData::GetTickCount( void ) const
+{GUCEF_TRACE;
+    
+    return m_tickCount;
 }
 
-/*-------------------------------------------------------------------------*/                      
+/*--------------------------------------------------------------------------*/
+    
+UInt64
+CPulseData::GetTickDelta( void ) const
+{GUCEF_TRACE;
 
-bool 
-CActiveComPump::OnTaskStart( void* taskdata )
-{
-        return true;
+    return m_tickDelta;
 }
 
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CActiveComPump::OnTaskCycle( void* taskdata )
-{
-        _datalock->Lock();        
-        for ( Int32 i=0; i<=_sockets->GetLast(); ++i )
-        {
-                if ( _sockets->operator[]( i ) )
-                {
-                        ( (CSocket*)((*_sockets)[ i ]) )->Update();
-                }
-        }
-        _datalock->Unlock();
-        return true;
+/*--------------------------------------------------------------------------*/
+
+Float64
+CPulseData::GetUpdateDeltaInMilliSecs( void ) const
+{GUCEF_TRACE;
+
+    return m_updateDeltaInMilliSecs;
 }
- 
-/*-------------------------------------------------------------------------*/ 
-        
-void 
-CActiveComPump::OnTaskEnd( void* taskdata )
-{
+
+/*--------------------------------------------------------------------------*/
+    
+CICloneable*
+CPulseData::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CPulseData( *this );
 }
 
 /*-------------------------------------------------------------------------//
@@ -124,7 +115,7 @@ CActiveComPump::OnTaskEnd( void* taskdata )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace CORE */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/

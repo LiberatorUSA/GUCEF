@@ -30,6 +30,11 @@
 #define DVSTRUTILS_H
 #endif /* DVSTRUTILS_H ? */ 
 
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
 #include "CUDPSocket.h" /* definition of the class implemented here */
 
 #ifdef GUCEF_MSWIN_BUILD
@@ -63,6 +68,8 @@ const CORE::CEvent CUDPSocket::UDPSocketClosedEvent = "GUCEF::COMCORE::CUDPSocke
 const CORE::CEvent CUDPSocket::UDPSocketOpenedEvent = "GUCEF::COMCORE::CUDPSocket::UDPSocketOpenedEvent";
 const CORE::CEvent CUDPSocket::UDPPacketRecievedEvent = "GUCEF::COMCORE::CUDPSocket::UDPPacketRecievedEvent";
 
+#define PULSEUPDATEINTERVAL 10
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      TYPES                                                              //
@@ -86,20 +93,55 @@ struct CUDPSocket::SUDPSockData
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CUDPSocket::CUDPSocket( bool blocking )
-        : CSocket()             ,
-          _blocking( blocking ) ,
-          m_port( 0 )           ,
-          _data( NULL )         ,
-          m_buffer()
+CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
+                        bool blocking                         )
+    : CSocket()                           ,
+      _blocking( blocking )               ,
+      m_port( 0 )                         ,
+      _data( NULL )                       ,
+      m_buffer()                          ,
+      m_pulseGenerator( &pulseGenerator )
 {GUCEF_TRACE;
         
-        RegisterEvents();
+    RegisterEvents();
+    
+    _data = new TUDPSockData;
+    memset( _data, 0, sizeof( TUDPSockData ) );
+    
+    m_buffer.SetBufferSize( 1024 );
+    
+    SubscribeTo( m_pulseGenerator                              , 
+                 CORE::CPulseGenerator::PulseEvent             ,
+                 &TEventCallback( this, &CUDPSocket::OnPulse ) );
+    SubscribeTo( m_pulseGenerator                                                  , 
+                 CORE::CPulseGenerator::DestructionEvent                           ,
+                 &TEventCallback( this, &CUDPSocket::OnPulseGeneratorDestruction ) );                            
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUDPSocket::CUDPSocket( bool blocking )
+    : CSocket()             ,
+      _blocking( blocking ) ,
+      m_port( 0 )           ,
+      _data( NULL )         ,
+      m_buffer()            ,
+      m_pulseGenerator( &CORE::CGUCEFApplication::Instance()->GetPulseGenerator() )
+{GUCEF_TRACE;
         
-        _data = new TUDPSockData;
-        memset( _data, 0, sizeof( TUDPSockData ) );
-        
-        m_buffer.SetBufferSize( 1024 );
+    RegisterEvents();
+    
+    _data = new TUDPSockData;
+    memset( _data, 0, sizeof( TUDPSockData ) );
+    
+    m_buffer.SetBufferSize( 1024 );
+    
+    SubscribeTo( m_pulseGenerator                              , 
+                 CORE::CPulseGenerator::PulseEvent             ,
+                 &TEventCallback( this, &CUDPSocket::OnPulse ) );
+    SubscribeTo( m_pulseGenerator                                                  , 
+                 CORE::CPulseGenerator::DestructionEvent                           ,
+                 &TEventCallback( this, &CUDPSocket::OnPulseGeneratorDestruction ) );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -168,7 +210,9 @@ CUDPSocket::SendPacketTo( const CORE::CString& dnsname ,
 /*-------------------------------------------------------------------------*/
 
 void 
-CUDPSocket::Update( void )
+CUDPSocket::OnPulse( CORE::CNotifier* notifier                 ,
+                     const CORE::CEvent& eventid               ,
+                     CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
     if ( !_blocking )
@@ -182,6 +226,21 @@ CUDPSocket::Update( void )
         }
     }
 }                    
+
+/*-------------------------------------------------------------------------*/
+
+void
+CUDPSocket::OnPulseGeneratorDestruction( CORE::CNotifier* notifier                 ,
+                                         const CORE::CEvent& eventid               ,
+                                         CORE::CICloneable* eventdata /* = NULL */ )
+
+{GUCEF_TRACE;
+
+    if ( notifier == m_pulseGenerator )
+    {
+        m_pulseGenerator = NULL;
+    }
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -315,6 +374,10 @@ CUDPSocket::Open( void )
         getsockname( _data->sockid, (struct sockaddr*)&_data->localaddress, &size );
         NotifyObservers( UDPSocketOpenedEvent );
         //m_port = ;  @MAKEME
+        
+        // We will now be requiring periodic updates to poll for data
+        m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
+        
         return true;
         
         #endif /* GUCEF_MSWIN_BUILD ? */
@@ -354,6 +417,10 @@ CUDPSocket::Open( UInt16 port )
         {
                 m_port = port;
                 NotifyObservers( UDPSocketOpenedEvent );
+                
+                // We will now be requiring periodic updates to poll for data
+                m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
+                
                 return true;
         }
         return false;
@@ -396,6 +463,10 @@ CUDPSocket::Open( const CORE::CString& localaddr ,
         {
                 m_port = port;
                 NotifyObservers( UDPSocketOpenedEvent );
+                
+                // We will now be requiring periodic updates to poll for data
+                m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
+                                
                 return true;
         }
         return false;
@@ -413,6 +484,9 @@ CUDPSocket::Close( bool force )
     if ( IsActive() )
     {
         force ? closesocket( _data->sockid ) : shutdown( _data->sockid, 1 );
+        
+        // We now no longer require periodic updates to poll for data
+        m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
 
         NotifyObservers( UDPSocketClosedEvent );
     }                

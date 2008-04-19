@@ -141,7 +141,7 @@ class CTObservingNotifierComponent : public CObservingNotifier
      *  @param eventdata optional notifier defined userdata
      */
     virtual void OnNotify( CNotifier* notifier           ,
-                           const UInt32 eventid          ,
+                           const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
     
     private:
@@ -249,7 +249,7 @@ CTObservingNotifierComponent< TOwnerClass >::DoNotifyObservers( CNotifier& sende
 template < class TOwnerClass >
 void
 CTObservingNotifierComponent< TOwnerClass >::OnNotify( CNotifier* notifier                 ,
-                                                       const UInt32 eventid                ,
+                                                       const CEvent& eventid               ,
                                                        CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 

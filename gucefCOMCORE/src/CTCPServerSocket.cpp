@@ -126,7 +126,6 @@ struct STCPServerSockData
         UInt32 maxcon;           /* maximum number of connections for this server socket */
         bool blocking;           /* is this a blocking or non-blocking server ? */
         SOCKADDR_IN serverinfo;  /* winsock info on the listening socket */
-        int threadmethod;        /* threading method used by this socket */
         struct timeval timeout;  /* timeout for blocking operations */
         #endif
                 
@@ -139,28 +138,63 @@ typedef struct STCPServerSockData TTCPServerSockData;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
+                                    bool blocking                         ) 
+        : CSocket()                               ,
+          _connections( DEFAULT_MAX_CONNECTIONS ) ,
+          _active( false )                        ,
+          _blocking( blocking )                   ,
+          m_port( 0 )                             ,
+          m_pulseGenerator( &pulseGenerator )
+{GUCEF_TRACE;
+        
+    _data = new TTCPServerSockData;
+    _data->blocking = blocking;
+    _data->sockid = 0;
+    _data->connectcount = 0;
+    _data->maxcon = DEFAULT_MAX_CONNECTIONS;
+            
+    _connections.SetResizeChange( HEAP_RESIZE_AMOUNT );
+    for ( UInt32 i=0; i<_connections.GetArraySize(); i++ )
+    {
+        _connections.SetEntry( i                                , 
+                               new CTCPServerConnection( this , 
+                                                         i    ) );
+    }
+        
+    SubscribeTo( m_pulseGenerator                                    , 
+                 CORE::CPulseGenerator::PulseEvent                   ,
+                 &TEventCallback( this, &CTCPServerSocket::OnPulse ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CTCPServerSocket::CTCPServerSocket( bool blocking ) 
         : CSocket()                               ,
           _connections( DEFAULT_MAX_CONNECTIONS ) ,
           _active( false )                        ,
           _blocking( blocking )                   ,
-          m_port( 0 )
+          m_port( 0 )                             ,
+          m_pulseGenerator( &CORE::CGUCEFApplication::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
         
-        _data = new TTCPServerSockData;
-        _data->blocking = blocking;
-        _data->sockid = 0;
-        _data->connectcount = 0;
-//        _data->threadmethod = TM_NO_THREADING;
-        _data->maxcon = DEFAULT_MAX_CONNECTIONS;
-                
-        _connections.SetResizeChange( HEAP_RESIZE_AMOUNT );
-        for ( UInt32 i=0; i<_connections.GetArraySize(); i++ )
-        {
-                _connections.SetEntry( i                                , 
-                                       new CTCPServerConnection( this , 
-                                                                 i    ) );
-        }
+    _data = new TTCPServerSockData;
+    _data->blocking = blocking;
+    _data->sockid = 0;
+    _data->connectcount = 0;
+    _data->maxcon = DEFAULT_MAX_CONNECTIONS;
+            
+    _connections.SetResizeChange( HEAP_RESIZE_AMOUNT );
+    for ( UInt32 i=0; i<_connections.GetArraySize(); i++ )
+    {
+        _connections.SetEntry( i                                , 
+                               new CTCPServerConnection( this , 
+                                                         i    ) );
+    }
+        
+    SubscribeTo( m_pulseGenerator                                    , 
+                 CORE::CPulseGenerator::PulseEvent                   ,
+                 &TEventCallback( this, &CTCPServerSocket::OnPulse ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -214,7 +248,9 @@ CTCPServerSocket::GetConnection( UInt32 index )
 /*-------------------------------------------------------------------------*/
 
 void 
-CTCPServerSocket::Update( void )
+CTCPServerSocket::OnPulse( CORE::CNotifier* notifier                 ,
+                           const CORE::CEvent& eventid               ,
+                           CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
         if ( _active )//&& ( _data->threadmethod == TM_NO_THREADING ) )
         {

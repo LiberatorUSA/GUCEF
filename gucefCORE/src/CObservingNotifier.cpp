@@ -36,7 +36,7 @@
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
-#include "gucefCORE_CTEventHandlerFunctor.h"
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -54,7 +54,7 @@ namespace CORE {
 
 CObservingNotifier::CObservingNotifier( void )
 {GUCEF_TRACE;
-CTEventHandlerFunctor< CObservingNotifier > test( this, &CObservingNotifier::OnNotify );
+
     m_observer.SetOwner( this );
 }
 

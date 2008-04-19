@@ -93,12 +93,12 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CInputController, EInvalidIndex );
 /*-------------------------------------------------------------------------*/
 
 CInputController::CInputController( void )
-        : CGUCEFAppSubSystem( true ) ,
+        : CORE::CObservingNotifier() ,
           m_driverisplugin( false )  ,
           m_driver( NULL )           ,
           m_keyboardMap()            ,
-          m_mouseMap()
-          
+          m_mouseMap()               ,
+          m_pulseGenerator( &CORE::CGUCEFApplication::Instance()->GetPulseGenerator() )
           #ifdef GUCEF_MSWIN_BUILD
           ,
           m_hinstance(0UL)
@@ -106,8 +106,10 @@ CInputController::CInputController( void )
 {GUCEF_TRACE;
 
     RegisterEvents();
-    SetPeriodicUpdateRequirement( true );
-    RequestUpdateInterval( 5 );
+    
+    SubscribeTo( m_pulseGenerator                                    , 
+                 CORE::CPulseGenerator::PulseEvent                   ,
+                 &TEventCallback( this, &CInputController::OnPulse ) );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -284,11 +286,16 @@ CInputController::UnloadDriverModule( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CInputController::OnUpdate( const UInt64 tickcount               ,
-                            const Float64 updateDeltaInMilliSecs )
+void
+CInputController::OnPulse( CORE::CNotifier* notifier                 ,
+                           const CORE::CEvent& eventid               ,
+                           CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
+    CORE::CPulseData* pulseData = static_cast< CORE::CPulseData* >( eventdata );
+    UInt64 tickcount = pulseData->GetTickCount();
+    Float64 updateDeltaInMilliSecs = pulseData->GetUpdateDeltaInMilliSecs();
+    
     TContextSet::iterator i = m_contextSet.begin();
     while( i != m_contextSet.end() )
     {
@@ -328,8 +335,6 @@ CInputController::OnNotify( CORE::CNotifier* notifier                 ,
         #pragma warning( disable: 4311 ) // pointer truncation warning
         m_hinstance = reinterpret_cast<UInt32>( initData->GetData().hinstance );
         #endif /* GUCEF_MSWIN_BUILD ? */
-        
-        RequestUpdate();
     }
 }
 

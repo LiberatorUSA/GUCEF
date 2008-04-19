@@ -44,6 +44,10 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CPulseGenerator;
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  ThreadSafe Gateway Notifier class a.k.a TSGNotifier class a.k.a CTSGNotifier
  *
@@ -63,7 +67,7 @@ class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
 {
     public:
     
-    CTSGNotifier( void );
+    CTSGNotifier( CPulseGenerator& pulsGenerator );
     
     CTSGNotifier( const CTSGNotifier& src );
     
@@ -131,6 +135,10 @@ class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
     virtual void OnPumpedNotify( CNotifier* notifier           ,
                                  const CEvent& eventid         ,
                                  CICloneable* eventdata = NULL );    
+    
+    private:
+    
+    CTSGNotifier( void );
     
     private:
     

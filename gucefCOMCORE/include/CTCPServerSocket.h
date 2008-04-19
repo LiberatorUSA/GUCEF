@@ -33,10 +33,10 @@
 #define GUCEFCOMCORE_MACROS_H
 #endif /* GUCEFCOMCORE_MACROS_H ? */
 
-#ifndef GUCEF_CORE_CEVENT_H
-#include "CEvent.h"
-#define GUCEF_CORE_CEVENT_H
-#endif /* GUCEF_CORE_CEVENT_H ? */
+#ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#include "gucefCORE_CTEventHandlerFunctor.h"
+#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
 
 #include "CSocket.h"                    /* socket base class */
 #include "CTCPServerConnection.h"       /* utils class for 1 client connection */
@@ -103,6 +103,10 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     
     public:
     
+    
+    CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
+                      bool blocking                         );    
+    
     CTCPServerSocket( bool blocking );
 
     /*
@@ -130,16 +134,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     
     UInt32 GetMaxConnections( void ) const;
     
-    void GetListenAddress( CHostAddress& listenAddress ) const;
-    
-    /**                 
-     *      polls the socket etc. as needed and update stats.        
-     */
-    virtual void Update( void );           
+    void GetListenAddress( CHostAddress& listenAddress ) const;          
 
-    /*
-     *      Constructor and Destructor
-     */
     virtual ~CTCPServerSocket();   
     
     private:
@@ -154,25 +150,34 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     void OnClientConnectionClosed( CTCPServerConnection* connection ,
                                    const UInt32 connectionid        ,
                                    bool closedbyclient              );
-    
-    private :
-    struct STCPServerSockData* _data;
-    bool _active; 
-    bool _blocking;               
 
+    private:
+    
+    typedef CORE::CTEventHandlerFunctor< CTCPServerSocket > TEventCallback;
+    
+    void OnPulse( CORE::CNotifier* notifier           ,
+                  const CORE::CEvent& eventid         ,
+                  CORE::CICloneable* eventdata = NULL );
+    
     /**
      *	default constructor cannot be used, we need to know 
      *      whether this socket is blocking.
      */
     CTCPServerSocket( void );     
     
-    void AcceptClients( void );           
+    void AcceptClients( void );     
     
+    private :
+    
+    struct STCPServerSockData* _data;
+    bool _active; 
+    bool _blocking;                        
     CORE::CDynamicArray _connections;          /**< array of connection objects */
     UInt16 m_port;
     MT::CMutex _datalock;
     UInt32 _timeout;   
     UInt32 _acount;                            /**< the number of active connections */        
+    CORE::CPulseGenerator* m_pulseGenerator;
 };
 
 /*-------------------------------------------------------------------------//
