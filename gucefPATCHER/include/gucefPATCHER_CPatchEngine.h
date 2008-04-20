@@ -111,12 +111,12 @@ class CPatchListEngine;
  *  Top-level engine for performing patching tasks
  *  This class is intended as a RAD component
  */
-class GUCEFPATCHER_EXPORT_CPP CPatchEngine : public CORE::CObservingNotifier  ,
-                                             public CORE::CIConfigurable      , /* interface */
-                                             public CPatchSetDirEngineEvents  , /* event interface */
-                                             public CPatchSetFileEngineEvents , /* event interface */
-                                             public CPatchSetEngineEvents     , /* event interface */
-                                             public CPatchListEngineEvents      /* event interface */
+class GUCEF_PATCHER_EXPORT_CPP CPatchEngine : public CORE::CObservingNotifier  ,
+                                              public CORE::CIConfigurable      , /* interface */
+                                              public CPatchSetDirEngineEvents  , /* event interface */
+                                              public CPatchSetFileEngineEvents , /* event interface */
+                                              public CPatchSetEngineEvents     , /* event interface */
+                                              public CPatchListEngineEvents      /* event interface */
 {
     public:
     
@@ -136,6 +136,9 @@ class GUCEFPATCHER_EXPORT_CPP CPatchEngine : public CORE::CObservingNotifier  ,
     public:
     
     CPatchEngine( void );
+    
+    CPatchEngine( CORE::CPulseGenerator& pulseGenerator );
+    
     virtual ~CPatchEngine();
     
     /**
@@ -186,6 +189,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchEngine : public CORE::CObservingNotifier  ,
     CPatchEngine( const CPatchEngine& src );            /**< not implemented */
     CPatchEngine& operator=( const CPatchEngine& src ); /**< not implemented */
     bool ProcessRecievedPatchList( void );
+    void Initialize( void );
     
     private:
     
@@ -224,4 +228,4 @@ class GUCEFPATCHER_EXPORT_CPP CPatchEngine : public CORE::CObservingNotifier  ,
 - 29-12-2006 :
         - Dinand: Initial version
 
------------------------------------------------------------------------------*/
+----------------------------------------------------------------------------*/

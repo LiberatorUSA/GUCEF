@@ -112,6 +112,10 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
 
+    virtual void LockData( void ) const;
+    
+    virtual void UnlockData( void ) const;
+
     private:    
     typedef CTEventHandlerFunctor< CPumpedObserver > TEventCallback;
     
@@ -127,6 +131,7 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
     
     CPulseGenerator* m_pulsGenerator;
     MT::CTMailBox< CEvent > m_mailbox;
+    MT::CMutex m_mutex;
 };
 
 /*-------------------------------------------------------------------------//

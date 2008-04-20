@@ -103,6 +103,14 @@ class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
     void UnsubscribeFrom( CNotifier* threadedNotifier ,
                           const CEvent& eventid       );                          
     
+    virtual const CString& GetClassTypeName( void ) const;
+    
+    protected:
+    
+    virtual void LockData( void ) const;
+    
+    virtual void UnlockData( void ) const;
+    
     protected:
     friend class CTSGObserver;
 

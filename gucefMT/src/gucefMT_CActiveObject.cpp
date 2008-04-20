@@ -162,10 +162,12 @@ CActiveObject::Deactivate( bool force )
     {
         if ( force )
         {
-                /*
-                 *      Kill the thread
-                 */
-                ThreadKill( _td );
+            /*
+             *      Kill the thread
+             */
+            ThreadKill( _td );
+            
+            OnTaskEnd( _taskdata );
         }
         _active = false;
     }
@@ -217,6 +219,14 @@ CActiveObject::operator=( const CActiveObject& src )
         }
 
         return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CActiveObject::GetThreadID( void ) const
+{
+    return ThreadID( _td );
 }
 
 /*-------------------------------------------------------------------------//

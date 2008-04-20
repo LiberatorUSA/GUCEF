@@ -95,9 +95,11 @@ ThreadCreate( void* func ,
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *
- */
+GUCEFMT_EXPORT_C UInt32
+ThreadID( struct SThreadData* td );
+
+/*--------------------------------------------------------------------------*/
+
 GUCEFMT_EXPORT_C UInt32
 ThreadSuspend( struct SThreadData* td );
 

@@ -36,6 +36,11 @@
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
+
 #ifndef GUCEF_PATCHER_CPATCHSETPARSER_H
 #include "gucefPATCHER_CPatchSetParser.h"
 #define GUCEF_PATCHER_CPATCHSETPARSER_H
@@ -98,6 +103,9 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetEngine : public CORE::CObservingNotifier 
     public:
     
     CPatchSetEngine( void );
+    
+    CPatchSetEngine( CORE::CPulseGenerator& pulseGenerator );
+    
     virtual ~CPatchSetEngine();
     
     bool Start( const TPatchSet& pathSet             ,
@@ -118,6 +126,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetEngine : public CORE::CObservingNotifier 
     
     CPatchSetEngine( const CPatchSetEngine& src ); /**< not implemented */
     CPatchSetEngine& operator=( const CPatchSetEngine& src ); /**< not implemented */
+    void Initialize( void );
     
     private:
     

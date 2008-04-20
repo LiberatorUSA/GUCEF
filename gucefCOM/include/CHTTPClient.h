@@ -181,6 +181,8 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
 
     CHTTPClient( void );                
     
+    CHTTPClient( CORE::CPulseGenerator& pulseGenerator );
+    
     virtual ~CHTTPClient();
     
     bool Post( const CORE::CString& host                ,

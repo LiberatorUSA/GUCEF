@@ -96,7 +96,8 @@ const CORE::CEvent CHTTPClient::HTTPTransferFinishedEvent = "GUCEF::COM::CHTTPCl
 //-------------------------------------------------------------------------*/
 
 CHTTPClient::CHTTPClient( void )
-        : m_socket( false )      ,
+        : CObservingNotifier()   ,
+          m_socket( false )      ,
           m_downloading( false ) ,
           m_recieved( 0 )        ,
           m_filesize( 0 )        ,
@@ -105,7 +106,24 @@ CHTTPClient::CHTTPClient( void )
           m_sendBuffer( true )          
 {GUCEF_TRACE;
 
-        SubscribeTo( &m_socket );
+    SubscribeTo( &m_socket );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CHTTPClient::CHTTPClient( CORE::CPulseGenerator& pulseGenerator )
+        : CObservingNotifier()       ,
+          m_socket( pulseGenerator , 
+                    false          ) ,
+          m_downloading( false )     ,
+          m_recieved( 0 )            ,
+          m_filesize( 0 )            ,
+          m_proxyHost()              ,
+          m_proxyPort( 80 )          ,
+          m_sendBuffer( true )          
+{GUCEF_TRACE;
+
+    SubscribeTo( &m_socket );
 }
 
 /*-------------------------------------------------------------------------*/

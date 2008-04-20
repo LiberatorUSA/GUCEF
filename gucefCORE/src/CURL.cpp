@@ -25,6 +25,11 @@
 
 #include <stdio.h>                    /* needed for FILE* utils */
 
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
 #ifndef GUCEF_CORE_CURLHANDLERREGISTRY_H
 #include "CURLHandlerRegistry.h"      /* central registry for URL handlers */
 #define GUCEF_CORE_CURLHANDLERREGISTRY_H
@@ -58,24 +63,54 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CURL::CURL( void )
-        : m_handler( NULL ) ,
-          m_url()       
+    : m_handler( NULL ) ,
+      m_url()           ,
+      m_pulseGenerator( &CGUCEFApplication::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
         
-    AddEventForwarding( URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( URLDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( URLAllDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( URLDataRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );  
+    Initialize();  
+}
+
+/*-------------------------------------------------------------------------*/
+
+CURL::CURL( CPulseGenerator& pulseGenerator )
+    : m_handler( NULL )                   ,
+      m_url()                             ,
+      m_pulseGenerator( &pulseGenerator )
+{GUCEF_TRACE;
+        
+    Initialize();  
+}
+
+/*-------------------------------------------------------------------------*/        
+        
+CURL::CURL( const CString& url )
+    : m_handler( GetHandlerForURL( url ) ) ,
+      m_url( url )                         ,
+      m_pulseGenerator( &CGUCEFApplication::Instance()->GetPulseGenerator() )
+{GUCEF_TRACE;
+
+    Initialize();
 }
         
 /*-------------------------------------------------------------------------*/        
         
-CURL::CURL( const CString& url )
-        : m_handler( GetHandlerForURL( url ) ) ,
-          m_url( url )           
+CURL::CURL( const CString& url              ,
+            CPulseGenerator& pulseGenerator )
+    : m_handler( GetHandlerForURL( url ) ) ,
+      m_url( url )                         ,
+      m_pulseGenerator( &pulseGenerator )
 {GUCEF_TRACE;
 
+    Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CURL::Initialize( void )
+{GUCEF_TRACE;
+    
     if ( m_handler == NULL )
     {
         m_url = NULL;
@@ -105,19 +140,29 @@ CURL::~CURL()
 CURL& 
 CURL::operator=( const CURL& src )
 {GUCEF_TRACE;
-        if ( &src != this )
-        {
-                delete m_handler;
-                m_handler = NULL;
 
-                m_url = src.m_url;
-                
-                // We clone the handler, we want one exclusive to ourselves
-                m_handler = static_cast< CURLHandler* >( src.m_handler->Clone() );
-                
-                SubscribeTo( m_handler );
-        }
-        return *this;
+    if ( &src != this )
+    {
+        delete m_handler;
+        m_handler = NULL;
+
+        m_url = src.m_url;
+        m_pulseGenerator = src.m_pulseGenerator;
+        
+        // We clone the handler, we want one exclusive to ourselves
+        m_handler = static_cast< CURLHandler* >( src.m_handler->Clone() );
+        
+        SubscribeTo( m_handler );
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPulseGenerator&
+CURL::GetPulseGenerator( void )
+{
+    return *m_pulseGenerator;
 }
 
 /*-------------------------------------------------------------------------*/

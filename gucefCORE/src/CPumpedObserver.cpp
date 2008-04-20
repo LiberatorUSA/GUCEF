@@ -141,7 +141,8 @@ class CMailElement : public CICloneable
 
 CPumpedObserver::CPumpedObserver( void )
     : CObserver()                                                            ,
-      m_pulsGenerator( &CGUCEFApplication::Instance()->GetPulseGenerator() )
+      m_pulsGenerator( &CGUCEFApplication::Instance()->GetPulseGenerator() ) ,
+      m_mutex()
 {GUCEF_TRACE;
 
     SubscribeTo( m_pulsGenerator                                    , 
@@ -156,7 +157,8 @@ CPumpedObserver::CPumpedObserver( void )
 
 CPumpedObserver::CPumpedObserver( CPulseGenerator& pulsGenerator )
     : CObserver()                       ,
-      m_pulsGenerator( &pulsGenerator )
+      m_pulsGenerator( &pulsGenerator ) ,
+      m_mutex()
 {GUCEF_TRACE;
 
     SubscribeTo( m_pulsGenerator                                    , 
@@ -171,7 +173,8 @@ CPumpedObserver::CPumpedObserver( CPulseGenerator& pulsGenerator )
 
 CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
     : CObserver( src )        ,
-      m_pulsGenerator( NULL )
+      m_pulsGenerator( NULL ) ,
+      m_mutex()
 {GUCEF_TRACE;
 
     // This is an aggregate relationship that does not affect the source object
@@ -268,6 +271,24 @@ CPumpedObserver::OnNotify( CNotifier* notifier                 ,
     {
         m_pulsGenerator->RequestPulse();
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPumpedObserver::LockData( void ) const
+{GUCEF_TRACE;
+
+    m_mutex.Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CPumpedObserver::UnlockData( void ) const
+{GUCEF_TRACE;
+
+    m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

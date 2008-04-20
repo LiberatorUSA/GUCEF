@@ -81,12 +81,13 @@ bool
 CTaskDelegator::OnTaskCycle( void* taskdata )
 {GUCEF_TRACE;
 
-    CITaskConsumer* taskConsumer = NULL;
+    CTaskConsumer* taskConsumer = NULL;
     CICloneable* taskData = NULL;
     
     if ( m_taskManager->GetQueuedTask( &taskConsumer ,
                                        &taskData     ) )
     {
+        SetAsTaskDelegator( taskConsumer );
         taskConsumer->ProcessTask( taskData );
         
         m_taskManager->TaskCleanup( taskConsumer ,
@@ -98,10 +99,38 @@ CTaskDelegator::OnTaskCycle( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 void
+CTaskDelegator::SetAsTaskDelegator( CTaskConsumer* taskConsumer )
+{GUCEF_TRACE;
+
+    taskConsumer->SetTaskDelegator( this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CTaskDelegator::OnTaskEnd( void* taskdata )
 {GUCEF_TRACE;
 
     m_taskManager->FlagTaskAsNonActive( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTaskManager&
+CTaskDelegator::GetTaskManager( void ) const
+{GUCEF_TRACE;
+
+    return *m_taskManager;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskDelegator::PerformTaskCleanup( CTaskConsumer* taskConsumer ,
+                                    CICloneable* taskData       ) const
+{GUCEF_TRACE;
+
+    m_taskManager->TaskCleanup( taskConsumer, taskData );
 }
 
 /*-------------------------------------------------------------------------//

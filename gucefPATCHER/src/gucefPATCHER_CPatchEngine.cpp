@@ -72,6 +72,30 @@ const CORE::CEvent CPatchEngine::PatchListDecodingFailedEvent = "GUCEF::PATCHER:
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CPatchEngine::CPatchEngine( CORE::CPulseGenerator& pulseGenerator )
+    : CORE::CObservingNotifier()                                  ,
+      CORE::CIConfigurable()                                      ,
+      CPatchSetDirEngineEvents()                                  ,
+      CPatchSetFileEngineEvents()                                 ,
+      CPatchSetEngineEvents()                                     ,
+      CPatchListEngineEvents()                                    ,
+      m_patchListEngine( new CPatchListEngine( pulseGenerator ) ) ,
+      m_url()                                                     ,
+      m_listDataBuffer()                                          ,
+      m_isActive( false )                                         ,
+      m_stopSignalGiven( false )                                  ,
+      m_localRoot()                                               ,
+      m_tempStorageRoot()                                         ,
+      m_patchListURL()                                            ,
+      m_patchListCodec()
+      
+{GUCEF_TRACE;
+
+    Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CPatchEngine::CPatchEngine( void )
     : CORE::CObservingNotifier()                  ,
       CORE::CIConfigurable()                      ,
@@ -89,6 +113,15 @@ CPatchEngine::CPatchEngine( void )
       m_patchListURL()                            ,
       m_patchListCodec()
       
+{GUCEF_TRACE;
+
+    Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatchEngine::Initialize( void )
 {GUCEF_TRACE;
 
     assert( m_patchListEngine != NULL );

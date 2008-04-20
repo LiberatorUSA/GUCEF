@@ -1,6 +1,6 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  gucefPATCHER: GUCEF RAD module providing a patch delivery system
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
  
 /*-------------------------------------------------------------------------//
@@ -23,17 +23,32 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
-#ifndef GUCEF_CORE_CTASKDELEGATOR_H
-#include "gucefCORE_CTaskDelegator.h"
-#define GUCEF_CORE_CTASKDELEGATOR_H
-#endif /* GUCEF_CORE_CTASKDELEGATOR_H ? */
+#ifndef GUCEF_CORE_CTFACTORY_H
+#include "CTFactory.h"
+#define GUCEF_CORE_CTFACTORY_H
+#endif /* GUCEF_CORE_CTFACTORY_H ? */
 
-#include "gucefCORE_CITaskConsumer.h"
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHENGINE_H
+#include "gucefPATCHER_CPatchEngine.h"
+#define GUCEF_PATCHER_CPATCHENGINE_H
+#endif /* GUCEF_PATCHER_CPATCHENGINE_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHTASKCONSUMER_H
+#include "gucefPATCHER_CPatchTaskConsumer.h"
+#define GUCEF_PATCHER_CPATCHTASKCONSUMER_H
+#endif /* GUCEF_PATCHER_CPATCHTASKCONSUMER_H ? */
+
+#include "gucefPATCHER_CModule.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,8 +56,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
-namespace CORE {
+namespace GUCEF {
+namespace PATCHER {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+typedef CORE::CTFactory< CORE::CTaskConsumer, CPatchTaskConsumer > TPatchTaskConsumerFactory; 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,43 +73,35 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CTaskConsumer::CTaskConsumer( void )
+bool
+CModule::Load( void )
 {GUCEF_TRACE;
 
-}
+    GUCEF_SYSTEM_LOG( 0, "gucefPATCHER Module loaded" );
     
-/*-------------------------------------------------------------------------*/    
+    CPatchEngine::RegisterEvents();
+    CPatchSetDirEngineEvents::RegisterEvents();
+    CPatchSetFileEngineEvents::RegisterEvents();
+    CPatchSetEngineEvents::RegisterEvents();
+    CPatchListEngineEvents::RegisterEvents();
     
-CTaskConsumer::~CTaskConsumer()
-{GUCEF_TRACE;
-
+    // Make the task manager capable of handling patch tasks    
+    CORE::CTaskManager::Instance()->RegisterTaskConsumerFactory( CPatchTaskConsumer::GetTypeString() ,
+                                                                 new TPatchTaskConsumerFactory()     );
+                                                                 
+    return true;                                                                 
 }
 
 /*-------------------------------------------------------------------------*/
-
-void
-CTaskConsumer::SetTaskDelegator( CTaskDelegator* delegator )
+    
+bool
+CModule::Unload( void )
 {GUCEF_TRACE;
 
-    m_delegator = delegator;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTaskDelegator*
-CTaskConsumer::GetTaskDelegator( void ) const
-{GUCEF_TRACE;
-
-    return m_delegator;
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt32
-CTaskConsumer::GetTaskID( void ) const
-{GUCEF_TRACE;
-
-    return m_delegator->GetThreadID();
+    GUCEF_SYSTEM_LOG( 0, "gucefPATCHER Module unloading" );
+    
+    CORE::CTaskManager::Instance()->UnregisterTaskConsumerFactory( CPatchTaskConsumer::GetTypeString() );
+    return true;
 }
 
 /*-------------------------------------------------------------------------//
@@ -95,7 +110,7 @@ CTaskConsumer::GetTaskID( void ) const
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace PATCHER */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

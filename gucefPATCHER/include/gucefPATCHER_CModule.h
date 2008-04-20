@@ -1,5 +1,5 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
+ *  gucefPATCHER: GUCEF RAD module providing a patch delivery system
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,39 +14,37 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
 
-#ifndef GUCEF_CORE_CURL_H
-#define GUCEF_CORE_CURL_H
-
+#ifndef GUCEF_PATCHER_CMODULE_H
+#define GUCEF_PATCHER_CMODULE_H
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <set>
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
 
-#ifndef GUCEF_CORE_CSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CSTRING_H
-#endif /* GUCEF_CORE_CSTRING_H ? */
+#ifndef GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H
+#include "gucefCORE_CBusyWaitPulseGeneratorDriver.h"
+#define GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H
+#endif /* GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H ? */
 
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+#ifndef GUCEF_CORE_CITASKCONSUMER_H
+#include "gucefCORE_CITaskConsumer.h"
+#define GUCEF_CORE_CITASKCONSUMER_H
+#endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
-
-#ifndef GUCEF_CORE_CIURLEVENTS_H
-#include "CIURLEvents.h"
-#define GUCEF_CORE_CIURLEVENTS_H
-#endif /* GUCEF_CORE_CIURLEVENTS_H ? */
+#ifndef GUCEF_PATCHER_CPATCHENGINE_H
+#include "gucefPATCHER_CPatchEngine.h"
+#define GUCEF_PATCHER_CPATCHENGINE_H
+#endif /* GUCEF_PATCHER_CPATCHENGINE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,7 +53,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace PATCHER {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,70 +61,20 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CURLHandler;
-class CPulseGenerator;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *  class that allows you to retrieve data using URL's
- */
-class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
-                                  public CIURLEvents
+class GUCEF_PATCHER_EXPORT_CPP CModule
 {
-        public:
-        
-        CURL( void );
-        
-        CURL( CPulseGenerator& pulseGenerator );
-        
-        CURL( const CString& url );
-        
-        CURL( const CString& url              ,
-              CPulseGenerator& pulseGenerator );
-        
-        virtual ~CURL();
-        
-        CURL& operator=( const CURL& src );
-        
-        bool operator==( const CURL& other ) const;
-        
-        bool operator!=( const CURL& other ) const;
-        
-        bool SetURL( const CString& newurl );
-        
-        const CString& GetURL( void ) const;
-        
-        bool Activate( void );
-        
-        void Deactivate( void );
-        
-        /**
-         *      Is a URL resource retrieval action in progress
-         */
-        bool IsActive( void ) const;
-        
-        void Refresh( void );
-        
-        CPulseGenerator& GetPulseGenerator( void );
-
-        protected:
-        
-        virtual void OnNotify( CNotifier* notifier           ,
-                               const CEvent& eventid         ,
-                               CICloneable* eventdata = NULL );
-
-        private:
-        
-        CURLHandler* GetHandlerForURL( const CString& url ) const;
-        
-        void Initialize( void );
-        
-        private:        
-       
-        CString m_url;             /**< the URL string */
-        CURLHandler* m_handler;    /**< URL handler for the specified URL protocol */
-        CPulseGenerator* m_pulseGenerator; /** pulse generator to be used by handlers */
+    public:
+    
+    static bool Load( void );
+    
+    static bool Unload( void );
+    
+    private:
+    
+    CModule( void );    
+    CModule( const CModule& src  );    
+    CModule& operator=( const CModule& src );    
+    ~CModule();
 };
 
 /*-------------------------------------------------------------------------//
@@ -135,12 +83,12 @@ class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace PATCHER */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CURL_H ? */
+#endif /* GUCEF_PATCHER_CMODULE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -148,7 +96,7 @@ class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 24-04-2005 :
-        - Initial implementation
-          
+- 29-12-2006 :
+        - Dinand: Initial version
+
 ---------------------------------------------------------------------------*/

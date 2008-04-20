@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
  
-#ifndef GUCEF_CORE_CITASKCONSUMER_H
-#define GUCEF_CORE_CITASKCONSUMER_H
+#ifndef GUCEF_CORE_CTASKCONSUMER_H
+#define GUCEF_CORE_CTASKCONSUMER_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,21 +56,39 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_EXPORT_CPP CITaskConsumer
+class CTaskDelegator;
+
+/*-------------------------------------------------------------------------*/
+
+class GUCEF_CORE_EXPORT_CPP CTaskConsumer
 {
     public:
     
-    CITaskConsumer( void );
-    
-    CITaskConsumer( const CITaskConsumer& src  );
-    
-    CITaskConsumer& operator=( const CITaskConsumer& src );
-    
-    virtual ~CITaskConsumer();
+    CTaskConsumer( void );
+
+    virtual ~CTaskConsumer();
     
     virtual CString GetType( void ) const = 0;
     
     virtual bool ProcessTask( CICloneable* taskData ) = 0;
+    
+    CTaskDelegator* GetTaskDelegator( void ) const;
+    
+    UInt32 GetTaskID( void ) const;
+    
+    private:
+    friend class CTaskDelegator;
+    
+    void SetTaskDelegator( CTaskDelegator* delegator );
+    
+    private:
+    
+    CTaskConsumer( const CTaskConsumer& src  );
+    CTaskConsumer& operator=( const CTaskConsumer& src );
+    
+    private:
+    
+    CTaskDelegator* m_delegator;
 };
 
 /*-------------------------------------------------------------------------//
@@ -84,7 +102,7 @@ class GUCEF_CORE_EXPORT_CPP CITaskConsumer
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
+#endif /* GUCEF_CORE_CTASKCONSUMER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

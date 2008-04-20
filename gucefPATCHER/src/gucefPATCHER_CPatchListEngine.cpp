@@ -60,6 +60,30 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CPatchListEngine::CPatchListEngine( CORE::CPulseGenerator& pulseGenerator )
+    : CORE::CObservingNotifier()                                ,
+      CPatchSetDirEngineEvents()                                ,
+      CPatchSetFileEngineEvents()                               ,
+      CPatchSetEngineEvents()                                   ,
+      CPatchListEngineEvents()                                  ,
+      m_patchSetEngine( new CPatchSetEngine( pulseGenerator ) ) ,
+      m_url()                                                   ,
+      m_setDataBuffer()                                         ,
+      m_patchList()                                             ,
+      m_setIndex( 0 )                                           ,
+      m_setLocIndex( 0 )                                        ,
+      m_isActive( false )                                       ,
+      m_stopSignalGiven( false )                                ,
+      m_localRoot()                                             ,
+      m_tempStorageRoot()
+      
+{GUCEF_TRACE;
+
+    Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CPatchListEngine::CPatchListEngine( void )
     : CORE::CObservingNotifier()                ,
       CPatchSetDirEngineEvents()                ,
@@ -79,6 +103,15 @@ CPatchListEngine::CPatchListEngine( void )
       
 {GUCEF_TRACE;
 
+    Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatchListEngine::Initialize( void )
+{GUCEF_TRACE;
+    
     assert( m_patchSetEngine != NULL );
   
     // Forward events from the set engine
@@ -109,7 +142,7 @@ CPatchListEngine::CPatchListEngine( void )
     
     // Subscribe to all events from the patch set engine
     // This should allow us to receive all events that we wish to forward
-    SubscribeTo( m_patchSetEngine );
+    SubscribeTo( m_patchSetEngine );    
 }
 
 /*-------------------------------------------------------------------------*/

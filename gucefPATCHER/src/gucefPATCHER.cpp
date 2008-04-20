@@ -28,10 +28,10 @@
 #define GUCEF_DLLINIT_H
 #endif /* GUCEF_DLLINIT_H ? */
 
-#ifndef GUCEF_CORE_CGUCEFCOREMODULE_H
-#include "CGUCEFCOREModule.h"
-#define GUCEF_CORE_CGUCEFCOREMODULE_H
-#endif /*GUCEF_CORE_CGUCEFCOREMODULE_H ? */
+#ifndef GUCEF_PATCHER_CMODULE_H
+#include "gucefPATCHER_CModule.h"
+#define GUCEF_PATCHER_CMODULE_H
+#endif /*GUCEF_PATCHER_CMODULE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -39,12 +39,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::CORE::CGUCEFCOREModule );
+GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::PATCHER::CModule )
 
 /*-------------------------------------------------------------------------*/
 
 const char*
-GUCEF_CORE_ModuleCompileTimeStamp( void )
+GUCEF_PATCHER_ModuleCompileTimeStamp( void )
 {
     return __TIMESTAMP__;
 }

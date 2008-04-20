@@ -261,7 +261,7 @@ CObserver::UnsubscribeFrom( CNotifier& notifier )
 /*-------------------------------------------------------------------------*/
 
 void 
-CObserver::LockData( void )
+CObserver::LockData( void ) const
 {GUCEF_TRACE;
 
     // dummy to avoid mandatory implementation by descending classes
@@ -270,7 +270,7 @@ CObserver::LockData( void )
 /*-------------------------------------------------------------------------*/
     
 void 
-CObserver::UnlockData( void )
+CObserver::UnlockData( void ) const
 {GUCEF_TRACE;
 
     // dummy to avoid mandatory implementation by descending classes

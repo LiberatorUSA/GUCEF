@@ -79,12 +79,6 @@ CTSGNotifier&
 CTSGNotifier::operator=( const CTSGNotifier& src )
 {GUCEF_TRACE;
 
-    assert(0);
-    /* @TODO: makeme */    
-
-    if ( this != &src )
-    {
-    }
     return *this;
 }
 
@@ -161,6 +155,34 @@ CTSGNotifier::NotifyObserversFromThread( const CEvent& eventid               ,
     m_tsgObserver.AddEventToMailbox( this      ,
                                      eventid   ,
                                      eventData );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CTSGNotifier::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::CORE::CTSGNotifier";
+    return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTSGNotifier::LockData( void ) const
+{GUCEF_TRACE;
+    
+    m_tsgObserver.DoLockData();
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CTSGNotifier::UnlockData( void ) const
+{GUCEF_TRACE;
+    
+    m_tsgObserver.DoUnlockData();
 }
 
 /*-------------------------------------------------------------------------//

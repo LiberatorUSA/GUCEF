@@ -31,10 +31,10 @@
 #define GUCEF_MT_CACTIVEOBJECT_H
 #endif /* GUCEF_MT_CACTIVEOBJECT_H ? */
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"       /* module macro's */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CICLONEABLE_H
+#include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,12 +52,17 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CTaskManager;
+class CTaskConsumer;
 
 /*-------------------------------------------------------------------------*/
 
 class GUCEF_CORE_EXPORT_CPP CTaskDelegator : public MT::CActiveObject
 { 
-    private:
+    public:
+    
+    CTaskManager& GetTaskManager( void ) const;
+    
+    protected:
     friend class CTaskManager;
     
     CTaskDelegator( void );
@@ -69,6 +74,11 @@ class GUCEF_CORE_EXPORT_CPP CTaskDelegator : public MT::CActiveObject
     virtual bool OnTaskCycle( void* taskdata );
 
     virtual void OnTaskEnd( void* taskdata );    
+    
+    void PerformTaskCleanup( CTaskConsumer* taskConsumer ,
+                             CICloneable* taskData        ) const;
+                             
+    void SetAsTaskDelegator( CTaskConsumer* taskConsumer );
 
     private:
     

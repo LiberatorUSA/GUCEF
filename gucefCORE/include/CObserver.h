@@ -132,9 +132,9 @@ class GUCEFCORE_EXPORT_CPP CObserver : public CIObserver
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
 
-    virtual void LockData( void );
+    virtual void LockData( void ) const;
     
-    virtual void UnlockData( void );
+    virtual void UnlockData( void ) const;
 
     private:
     friend class CNotifierImplementor;

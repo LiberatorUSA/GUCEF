@@ -62,6 +62,8 @@ class GUCEFCORE_EXPORT_CPP CURLDataRetriever : public CObservingNotifier ,
     
     CURLDataRetriever( void );
     
+    CURLDataRetriever( CPulseGenerator& pulseGenerator );
+    
     virtual ~CURLDataRetriever();
     
     CURL& GetURL( void );
@@ -80,6 +82,7 @@ class GUCEFCORE_EXPORT_CPP CURLDataRetriever : public CObservingNotifier ,
     
     CURLDataRetriever( const CURLDataRetriever& src );
     CURLDataRetriever& operator=( CURLDataRetriever& src );
+    void Initialize( void );
     
     private:
     

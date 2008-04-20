@@ -58,25 +58,13 @@ namespace COM {
 class CHTTPURLHandler : public CORE::CURLHandler
 {
     public:
-    
-    /**
-     *      Doesnt do anything special atm.
-     */        
+           
     CHTTPURLHandler( void );
     
-    /**
-     *      Doesnt do anything special atm.
-     */        
     CHTTPURLHandler( const CHTTPURLHandler& src );
     
-    /**
-     *      Doesnt do anything special atm.
-     */
     virtual ~CHTTPURLHandler();
-    
-    /**
-     *      Doesnt do anything special atm.
-     */        
+         
     CHTTPURLHandler& operator=( const CHTTPURLHandler& src );
 
     virtual bool Activate( CORE::CURL& url );
@@ -97,7 +85,7 @@ class CHTTPURLHandler : public CORE::CURLHandler
     
     private:
     
-    CHTTPClient m_httpClient;
+    CHTTPClient* m_httpClient;
     bool m_transferFinished;
 };
 

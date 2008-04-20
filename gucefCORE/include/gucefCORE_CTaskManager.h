@@ -26,7 +26,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <set>
+#include <map>
 
 #ifndef GUCEF_MT_CTMAILBOX_H
 #include "gucefMT_CTMailbox.h"
@@ -65,16 +65,30 @@ namespace CORE {
 
 class CTaskDelegator;
 
+/*-------------------------------------------------------------------------*/
+
 class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObserver
 {
     public:
     
-    typedef CTFactoryBase< CITaskConsumer > TTaskConsumerFactory;
+    typedef CTFactoryBase< CTaskConsumer > TTaskConsumerFactory;
     
     static CTaskManager* Instance( void );
     
     void QueueTask( const CString& taskType ,
                     CICloneable* taskData   );
+
+    bool StartTask( const CString& taskType ,
+                    CICloneable* taskData   ,
+                    UInt32* taskID = NULL   );
+                    
+    bool PauseTask( const UInt32 taskID );
+    
+    bool ResumeTask( const UInt32 taskID );
+    
+    bool RequestTaskToStop( const UInt32 taskID );
+    
+    bool KillTask( const UInt32 taskID );
     
     void SetNrOfThreadsToLogicalCPUs( const UInt32 coreFactor );    
     
@@ -96,11 +110,11 @@ class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObserver
     private:
     friend class CTaskDelegator;
     
-    bool GetQueuedTask( CITaskConsumer** taskConsumer ,
-                        CICloneable** taskData        );
+    bool GetQueuedTask( CTaskConsumer** taskConsumer ,
+                        CICloneable** taskData       );
 
-    void TaskCleanup( CITaskConsumer* taskConsumer ,
-                      CICloneable* taskData        );
+    void TaskCleanup( CTaskConsumer* taskConsumer ,
+                      CICloneable* taskData       );
 
     void FlagTaskAsActive( CTaskDelegator& task );
     
@@ -122,12 +136,13 @@ class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObserver
     
     private:
     
-    typedef CTAbstractFactory< CString, CITaskConsumer > TAbstractTaskConsumerFactory;
-    typedef std::set< CTaskDelegator* > TTaskSet;
+    typedef CTAbstractFactory< CString, CTaskConsumer > TAbstractTaskConsumerFactory;
+    typedef std::map< UInt32, CTaskDelegator* > TTaskMap;
+    typedef std::pair< UInt32, CTaskDelegator* > TTaskEntry;
     
     TAbstractTaskConsumerFactory m_consumerFactory;
-    TTaskSet m_activeTasks;
-    TTaskSet m_nonactiveTasks;
+    TTaskMap m_activeTasks;
+    TTaskMap m_nonactiveTasks;
     UInt32 m_desiredNrOfThreads;
     MT::CTMailBox< CString > m_taskQueue;
     static MT::CMutex g_mutex;

@@ -210,6 +210,14 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\src\gucefPATCHER.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefPATCHER_CModule.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefPATCHER_CPatchEngine.cpp"
 				>
 			</File>
@@ -223,6 +231,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\gucefPATCHER_CPatchListParser.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchManager.cpp"
 				>
 			</File>
 			<File
@@ -257,12 +269,24 @@
 				RelativePath="..\..\src\gucefPATCHER_CPatchSetParser.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchTaskConsumer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchTaskData.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\include\gucefPATCHER_CModule.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\include\gucefPATCHER_config.h"
 				>
@@ -281,6 +305,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefPATCHER_CPatchListParser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchManager.h"
 				>
 			</File>
 			<File
@@ -313,6 +341,14 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefPATCHER_CPatchSetParser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchTaskConsumer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchTaskData.h"
 				>
 			</File>
 			<File

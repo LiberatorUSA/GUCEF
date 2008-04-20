@@ -1,5 +1,5 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
+ *  gucefPATCHER: GUCEF RAD module providing a patch delivery system
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,11 +14,8 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
-
-#ifndef GUCEF_CORE_CTSGOBSERVER_H
-#define GUCEF_CORE_CTSGOBSERVER_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,7 +23,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CPumpedObserver.h"
+#ifndef GUCEF_PATCHER_CPATCHTASKDATA_H
+#include "gucefPATCHER_CPatchTaskData.h"
+#define GUCEF_PATCHER_CPATCHTASKDATA_H
+#endif /* GUCEF_PATCHER_CPATCHTASKDATA_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHMANAGER_H
+#include "gucefPATCHER_CPatchManager.h"
+#define GUCEF_PATCHER_CPATCHMANAGER_H
+#endif /* GUCEF_PATCHER_CPATCHMANAGER_H ? */
+
+#include "gucefPATCHER_CPatchTaskConsumer.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -34,69 +41,81 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
-namespace CORE {
+namespace GUCEF {
+namespace PATCHER {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CTSGNotifier;
+CPatchTaskConsumer::CPatchTaskConsumer( void )
+    : CTaskConsumer()       ,
+      m_patchEngine( NULL ) ,
+      m_pulseGenerator()    ,
+      m_pulseDriver()       ,
+      m_taskName()          
+{GUCEF_TRACE;
+
+    m_pulseGenerator.SetPulseGeneratorDriver( &m_pulseDriver );
+    m_patchEngine = new CPatchEngine( m_pulseGenerator );
+}
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *  Internally used class that is to be used in combination with the CTSGNotifier
- *  class to add observer behavior to the CTSGNotifier. To use the mechanism create
- *  CTSGNotifier object.
- */
-class GUCEFCORE_EXPORT_CPP CTSGObserver : public CPumpedObserver
-{
-    protected:
-    
-    /**
-     *  Event handler that simply forwards the eventid and the
-     *  eventdata to the parent notifier.
-     *
-     *  @param notifier the notifier that sent the notification
-     *  @param eventid the unique event id for an event
-     *  @param eventdata optional notifier defined userdata
-     */
-    virtual void OnPumpedNotify( CNotifier* notifier           ,
-                                 const CEvent& eventid         ,
-                                 CICloneable* eventdata = NULL );
+CPatchTaskConsumer::~CPatchTaskConsumer()
+{GUCEF_TRACE;
 
-    private:
-    friend class CTSGNotifier;
+    delete m_patchEngine;
+    m_patchEngine = NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CPatchTaskConsumer::GetType( void ) const
+{GUCEF_TRACE;
+
+    return GetTypeString();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CPatchTaskConsumer::GetTypeString( void )
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::PATCHER::CPatchTaskConsumer"; 
+    return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
     
-    CTSGObserver( CPulseGenerator& pulsGenerator );                           
+bool
+CPatchTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
     
-    virtual ~CTSGObserver();
-    
-    void SetParent( CTSGNotifier* parentNotifier );
-    
-    void AddEventToMailbox( CNotifier* notifier           ,
-                            const CEvent& eventid         ,
-                            CICloneable* eventdata = NULL );
-                            
-    void DoLockData( void ) const;
-    
-    void DoUnlockData( void ) const;
-    
-    private:
-    
-    CTSGObserver( void );
-    
-    CTSGObserver( const CTSGObserver& src );
-    
-    CTSGObserver& operator=( const CTSGObserver& src );
-    
-    private:
-    
-    CTSGNotifier* m_parentNotifier;
-};
+    CPatchTaskData* ptData = static_cast< CPatchTaskData* >( taskData );
+    m_taskName = ptData->GetTaskName();    
+    if ( m_patchEngine->LoadConfig( ptData->GetPatchEngineConfig() ) )
+    {
+        ptData->GetPatchManager().RegisterTask( this );        
+        m_patchEngine->Start();
+        ptData->GetPatchManager().UnregisterTask( this );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CPatchTaskConsumer::GetTaskName( void ) const
+{GUCEF_TRACE;
+
+    return m_taskName;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -104,9 +123,7 @@ class GUCEFCORE_EXPORT_CPP CTSGObserver : public CPumpedObserver
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace PATCHER */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CTSGOBSERVER_H  ? */

@@ -37,13 +37,62 @@
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 
+#ifndef GUCEF_PATCHER_CPATCHLISTPARSER_H
+#include "gucefPATCHER_CPatchListParser.h"
+#define GUCEF_PATCHER_CPATCHLISTPARSER_H
+#endif /* GUCEF_PATCHER_CPATCHLISTPARSER_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHSETPARSER_H
+#include "gucefPATCHER_CPatchSetParser.h"
+#define GUCEF_PATCHER_CPATCHSETPARSER_H
+#endif /* GUCEF_PATCHER_CPATCHSETPARSER_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
+#include "gucefPATCHER_CPatchSetFileEngineEvents.h"
+#define GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
+#endif /* GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H
+#include "gucefPATCHER_CPatchSetDirEngineEvents.h"
+#define GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H
+#endif /* GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHSETENGINEEVENTS_H
+#include "gucefPATCHER_CPatchSetEngineEvents.h"
+#define GUCEF_PATCHER_CPATCHSETENGINEEVENTS_H
+#endif /* GUCEF_PATCHER_CPATCHSETENGINEEVENTS_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHLISTENGINEEVENTS_H
+#include "gucefPATCHER_CPatchListEngineEvents.h"
+#define GUCEF_PATCHER_CPATCHLISTENGINEEVENTS_H
+#endif /* GUCEF_PATCHER_CPATCHLISTENGINEEVENTS_H ? */
+
+#ifndef GUCEF_PATCHER_MACROS_H
+#include "gucefPATCHER_macros.h"
+#define GUCEF_PATCHER_MACROS_H
+#endif /* GUCEF_PATCHER_MACROS_H ? */
+
 #ifndef GUCEF_PATCHER_CPATCHENGINE_H
 #include "gucefPATCHER_CPatchEngine.h"
 #define GUCEF_PATCHER_CPATCHENGINE_H
 #endif /* GUCEF_PATCHER_CPATCHENGINE_H ? */
 
+#ifndef GUCEF_PATCHER_CPATCHMANAGER_H
+#include "gucefPATCHER_CPatchManager.h"
+#define GUCEF_PATCHER_CPATCHMANAGER_H
+#endif /* GUCEF_PATCHER_CPATCHMANAGER_H ? */
+
 #endif /* __cplusplus ? */
-/*--------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const char* GUCEF_PATCHER_EXPORT_C GUCEF_PATCHER_ModuleCompileTimeStamp( void );
+
+/*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_PATCHER_H ? */
 
@@ -56,4 +105,4 @@
 - 02-01-2007 :
        - Initial version.
 
------------------------------------------------------------------------------*/
+----------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 /*
  *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -16,9 +16,6 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
-
-#ifndef GUCEF_CORE_CTSGOBSERVER_H
-#define GUCEF_CORE_CTSGOBSERVER_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,7 +23,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CPumpedObserver.h"
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
+#include "gucefCORE_CSingleTaskDelegator.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -39,64 +46,37 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CTSGNotifier;
+CSingleTaskDelegator::CSingleTaskDelegator( CTaskConsumer* taskConsumer ,
+                                            CICloneable* taskData       )
+    : CTaskDelegator()               ,
+      m_taskConsumer( taskConsumer ) ,
+      m_taskData( taskData )
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *  Internally used class that is to be used in combination with the CTSGNotifier
- *  class to add observer behavior to the CTSGNotifier. To use the mechanism create
- *  CTSGNotifier object.
- */
-class GUCEFCORE_EXPORT_CPP CTSGObserver : public CPumpedObserver
-{
-    protected:
-    
-    /**
-     *  Event handler that simply forwards the eventid and the
-     *  eventdata to the parent notifier.
-     *
-     *  @param notifier the notifier that sent the notification
-     *  @param eventid the unique event id for an event
-     *  @param eventdata optional notifier defined userdata
-     */
-    virtual void OnPumpedNotify( CNotifier* notifier           ,
-                                 const CEvent& eventid         ,
-                                 CICloneable* eventdata = NULL );
+CSingleTaskDelegator::~CSingleTaskDelegator()
+{GUCEF_TRACE;
 
-    private:
-    friend class CTSGNotifier;
-    
-    CTSGObserver( CPulseGenerator& pulsGenerator );                           
-    
-    virtual ~CTSGObserver();
-    
-    void SetParent( CTSGNotifier* parentNotifier );
-    
-    void AddEventToMailbox( CNotifier* notifier           ,
-                            const CEvent& eventid         ,
-                            CICloneable* eventdata = NULL );
-                            
-    void DoLockData( void ) const;
-    
-    void DoUnlockData( void ) const;
-    
-    private:
-    
-    CTSGObserver( void );
-    
-    CTSGObserver( const CTSGObserver& src );
-    
-    CTSGObserver& operator=( const CTSGObserver& src );
-    
-    private:
-    
-    CTSGNotifier* m_parentNotifier;
-};
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CSingleTaskDelegator::OnTaskCycle( void* taskdata )
+{GUCEF_TRACE;
+
+    SetAsTaskDelegator( m_taskConsumer );
+    m_taskConsumer->ProcessTask( m_taskData );
+    PerformTaskCleanup( m_taskConsumer, m_taskData );
+    return true;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -108,5 +88,3 @@ class GUCEFCORE_EXPORT_CPP CTSGObserver : public CPumpedObserver
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CTSGOBSERVER_H  ? */

@@ -66,6 +66,34 @@ CPatchSetEngine::CPatchSetEngine( void )
       
 {GUCEF_TRACE;
 
+    Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPatchSetEngine::CPatchSetEngine( CORE::CPulseGenerator& pulseGenerator )
+    : CORE::CObservingNotifier()                                      ,
+      CPatchSetDirEngineEvents()                                      ,
+      CPatchSetFileEngineEvents()                                     ,
+      CPatchSetEngineEvents()                                         ,
+      m_patchSetDirEngine( new CPatchSetDirEngine( pulseGenerator ) ) ,
+      m_patchSet( NULL )                                              ,
+      m_dirIndex( 0 )                                                 ,
+      m_isActive( false )                                             ,
+      m_stopSignalGiven( false )                                      ,
+      m_localRoot()
+      
+{GUCEF_TRACE;
+
+    Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatchSetEngine::Initialize( void )
+{GUCEF_TRACE;
+
     assert( m_patchSetDirEngine != NULL );
     
     // Forward events from the dir engines
@@ -86,7 +114,7 @@ CPatchSetEngine::CPatchSetEngine( void )
     AddEventForwarding( FileListProcessingCompleteEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( FileListProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );    
     
-    SubscribeTo( m_patchSetDirEngine );
+    SubscribeTo( m_patchSetDirEngine );    
 }
 
 /*-------------------------------------------------------------------------*/

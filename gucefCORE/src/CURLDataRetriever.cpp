@@ -46,7 +46,31 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CURLDataRetriever::CURLDataRetriever( void )
-    : m_url()
+    : CObservingNotifier() ,
+      CIURLEvents()        ,
+      m_ioAccess( NULL )   ,
+      m_url()
+{GUCEF_TRACE;
+
+    Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CURLDataRetriever::CURLDataRetriever( CPulseGenerator& pulseGenerator )
+    : CObservingNotifier()    ,
+      CIURLEvents()           ,
+      m_ioAccess( NULL )      ,
+      m_url( pulseGenerator )
+{GUCEF_TRACE;
+
+    Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CURLDataRetriever::Initialize( void )
 {GUCEF_TRACE;
 
     AddEventForwarding( URLActivateEvent, EVENTORIGINFILTER_TRANSFER );

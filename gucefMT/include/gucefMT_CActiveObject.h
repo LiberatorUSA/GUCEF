@@ -51,7 +51,7 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-struct TThreadData;
+struct SThreadData;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -80,6 +80,8 @@ class GUCEFMT_EXPORT_CPP CActiveObject
         void Pause( void );
 
         void Resume( void );
+        
+        UInt32 GetThreadID( void ) const;
 
         protected:
 

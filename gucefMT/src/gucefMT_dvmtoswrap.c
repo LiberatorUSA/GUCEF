@@ -144,18 +144,30 @@ ThreadCreate( void* func ,
         #error unsupported target platform
         #endif
         #endif
-};
+}
+
+/*--------------------------------------------------------------------------*/
+
+GUCEFMT_EXPORT_C UInt32
+ThreadID( struct SThreadData* td )
+{
+    #ifdef GUCEF_MSWIN_BUILD
+    return td->threadid;
+    #else
+    #error unsupported target platform
+    #endif
+}
 
 /*--------------------------------------------------------------------------*/
 
 UInt32
 ThreadSuspend( struct SThreadData* td )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        return ( -1 != SuspendThread( td->threadhandle ) );
-        #else
-        #error unsupported target platform
-        #endif
+    #ifdef GUCEF_MSWIN_BUILD
+    return ( -1 != SuspendThread( td->threadhandle ) );
+    #else
+    #error unsupported target platform
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -163,11 +175,11 @@ ThreadSuspend( struct SThreadData* td )
 UInt32
 ThreadResume( struct SThreadData* td )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        return ( -1 != ResumeThread( td->threadhandle ) );
-        #else
-        #error unsupported target platform
-        #endif
+    #ifdef GUCEF_MSWIN_BUILD
+    return ( -1 != ResumeThread( td->threadhandle ) );
+    #else
+    #error unsupported target platform
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -195,17 +207,17 @@ UInt32
 ThreadWait( struct SThreadData* td ,
             Int32 timeout          )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        if ( timeout >= 0 )
-        {
-                return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
-                                                               timeout          ) );
-        }
+    #ifdef GUCEF_MSWIN_BUILD
+    if ( timeout >= 0 )
+    {
         return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
-                                                       INFINITE         ) );
-        #else
-        #error unsupported target platform
-        #endif
+                                                       timeout          ) );
+    }
+    return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
+                                                   INFINITE         ) );
+    #else
+    #error unsupported target platform
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -213,11 +225,11 @@ ThreadWait( struct SThreadData* td ,
 UInt32
 GetCurrentTaskID( void )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        return GetCurrentThreadId();
-        #else
-        #error unsupported target platform
-        #endif
+    #ifdef GUCEF_MSWIN_BUILD
+    return GetCurrentThreadId();
+    #else
+    #error unsupported target platform
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/

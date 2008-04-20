@@ -44,26 +44,26 @@ namespace COM {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CHTTPURLHandler::CHTTPURLHandler( void )
-    : m_httpClient()              ,
+    : CURLHandler()               ,
+      m_httpClient( NULL )        ,
       m_transferFinished( false )
 {GUCEF_TRACE;
 
-    SubscribeTo( &m_httpClient );
 }
 
 /*-------------------------------------------------------------------------*/
         
 CHTTPURLHandler::CHTTPURLHandler( const CHTTPURLHandler& src )
-    : m_httpClient()              ,
+    : CURLHandler( src )          ,
+      m_httpClient( NULL )        ,
       m_transferFinished( false )
 {GUCEF_TRACE;
 
-    SubscribeTo( &m_httpClient );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -71,7 +71,12 @@ CHTTPURLHandler::CHTTPURLHandler( const CHTTPURLHandler& src )
 CHTTPURLHandler::~CHTTPURLHandler()
 {GUCEF_TRACE;
 
-    UnsubscribeFrom( &m_httpClient );
+    if ( NULL != m_httpClient )
+    {
+        UnsubscribeFrom( m_httpClient );
+        delete m_httpClient;
+        m_httpClient = NULL;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -80,9 +85,6 @@ CHTTPURLHandler&
 CHTTPURLHandler::operator=( const CHTTPURLHandler& src )
 {GUCEF_TRACE;
 
-    if ( &src != this )
-    {
-    }
     return *this;
 }
 
@@ -93,7 +95,12 @@ CHTTPURLHandler::Activate( CORE::CURL& url )
 {GUCEF_TRACE;
 
     m_transferFinished = false;
-    return m_httpClient.Get( url.GetURL() );
+    
+    delete m_httpClient;
+    m_httpClient = new CHTTPClient( url.GetPulseGenerator() );
+    SubscribeTo( m_httpClient );
+    
+    return m_httpClient->Get( url.GetURL() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -102,7 +109,10 @@ void
 CHTTPURLHandler::Deactivate( CORE::CURL& url )
 {GUCEF_TRACE;
 
-    m_httpClient.Close();
+    if ( NULL != m_httpClient )
+    {
+        m_httpClient->Close();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -111,7 +121,11 @@ bool
 CHTTPURLHandler::IsActive( const CORE::CURL& url ) const
 {GUCEF_TRACE;
 
-    return m_httpClient.IsConnected();
+    if ( NULL != m_httpClient )
+    {
+        return m_httpClient->IsConnected();
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -132,7 +146,7 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
 {GUCEF_TRACE;
 
     // We only accept events from our own HTTP client
-    if ( notifier == &m_httpClient )
+    if ( notifier == m_httpClient )
     {
         if ( ( eventid == CHTTPClient::HTTPErrorEvent )       ||
              ( eventid == CHTTPClient::ConnectionErrorEvent )  )
@@ -173,11 +187,12 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
 void 
 CHTTPURLHandler::Register( void )
 {GUCEF_TRACE;
-        CORE::CURLHandlerRegistry* registry = CORE::CURLHandlerRegistry::Instance();
-        if ( !registry->IsRegistered( "http" ) )
-        {
-                registry->Register( "http", new CHTTPURLHandler() );
-        }
+
+    CORE::CURLHandlerRegistry* registry = CORE::CURLHandlerRegistry::Instance();
+    if ( !registry->IsRegistered( "http" ) )
+    {
+        registry->Register( "http", new CHTTPURLHandler() );
+    }
 }
 
 /*-------------------------------------------------------------------------//

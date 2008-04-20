@@ -28,15 +28,25 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
-#ifndef GUCEF_CORE_CTASKDELEGATOR_H
-#include "gucefCORE_CTaskDelegator.h"
-#define GUCEF_CORE_CTASKDELEGATOR_H
-#endif /* GUCEF_CORE_CTASKDELEGATOR_H ? */
+#ifndef GUCEF_CORE_CSINGLETASKDELEGATOR_H
+#include "gucefCORE_CSingleTaskDelegator.h"
+#define GUCEF_CORE_CSINGLETASKDELEGATOR_H
+#endif /* GUCEF_CORE_CSINGLETASKDELEGATOR_H ? */
 
 #include "gucefCORE_CTaskManager.h"
 
@@ -83,14 +93,14 @@ CTaskManager::~CTaskManager( void )
 
     g_mutex.Lock();
     // Cleanup tasks
-    TTaskSet::iterator i = m_activeTasks.begin();
+    TTaskMap::iterator i = m_activeTasks.begin();
     while ( i != m_activeTasks.end() )
     {
         // Kill the task
-        (*i)->Deactivate( true );
+        (*i).second->Deactivate( true );
         
         // Delete the task object
-        delete (*i);
+        delete (*i).second;
         ++i;
     }
     m_activeTasks.clear();
@@ -135,11 +145,11 @@ CTaskManager::OnNotify( CNotifier* notifier    ,
     if ( CGUCEFApplication::AppShutdownEvent == eventid )
     {
         // Make sure we shut down all tasks
-        TTaskSet::iterator i = m_activeTasks.begin();
+        TTaskMap::iterator i = m_activeTasks.begin();
         while ( i != m_activeTasks.end() )
         {
             // Ask them to shut down gracefully
-            (*i)->Deactivate( false );
+            (*i).second->Deactivate( false );
             ++i;
         }
     }
@@ -165,21 +175,21 @@ CTaskManager::EnforceDesiredNrOfThreads( void )
     else
     if ( m_desiredNrOfThreads < m_activeTasks.size() )
     {
-        TTaskSet::iterator i = m_activeTasks.begin();
+        TTaskMap::iterator i = m_activeTasks.begin();
         UInt32 deactivateCount = m_desiredNrOfThreads - m_activeTasks.size();
         for ( UInt32 n=0; n<deactivateCount; ++n )
         {
             // Ask the task to stop gracefully
-            (*i)->Deactivate( false );
+            (*i).second->Deactivate( false );
         }
     }
     // else: we don't have to do anything
     
     // Cleanup tasks that have been discarded
-    TTaskSet::iterator i = m_nonactiveTasks.begin();
+    TTaskMap::iterator i = m_nonactiveTasks.begin();
     while ( i != m_nonactiveTasks.end() )
     {
-        delete (*i);
+        delete (*i).second;
         ++i;
     }
     m_nonactiveTasks.clear();
@@ -236,6 +246,7 @@ CTaskManager::RegisterTaskConsumerFactory( const CString& taskType       ,
                                            
     g_mutex.Lock();
     m_consumerFactory.RegisterConcreteFactory( taskType, factory );
+    GUCEF_SYSTEM_LOG( 0, "TaskManager: new consumer factory registerd of type " + taskType );
     g_mutex.Unlock();
 }
 
@@ -247,14 +258,15 @@ CTaskManager::UnregisterTaskConsumerFactory( const CString& taskType )
 
     g_mutex.Lock();
     m_consumerFactory.UnregisterConcreteFactory( taskType );
+    GUCEF_SYSTEM_LOG( 0, "TaskManager: consumer factory unregisterd of type " + taskType );
     g_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
     
 bool
-CTaskManager::GetQueuedTask( CITaskConsumer** taskConsumer ,
-                             CICloneable** taskData        )
+CTaskManager::GetQueuedTask( CTaskConsumer** taskConsumer ,
+                             CICloneable** taskData       )
 {GUCEF_TRACE;
 
     g_mutex.Lock();    
@@ -273,9 +285,41 @@ CTaskManager::GetQueuedTask( CITaskConsumer** taskConsumer ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CTaskManager::StartTask( const CString& taskType     ,
+                         CICloneable* taskData       ,
+                         UInt32* taskID /* = NULL */ )
+
+{GUCEF_TRACE;
+                         
+    g_mutex.Lock();
+    
+    // Create a consumer for the given task type
+    CTaskConsumer* taskConsumer = m_consumerFactory.Create( taskType );
+    if ( NULL != taskConsumer )
+    {    
+        // Just spawn a task delegator, it will auto register as an active task
+        CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, taskData->Clone() );
+        delegator->Activate();
+        
+        if ( NULL != taskID )
+        {
+            *taskID = delegator->GetThreadID();
+        }
+        
+        g_mutex.Unlock();
+        return true;
+    }                   
+    
+    g_mutex.Unlock();
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
-CTaskManager::TaskCleanup( CITaskConsumer* taskConsumer ,
-                           CICloneable* taskData        )
+CTaskManager::TaskCleanup( CTaskConsumer* taskConsumer ,
+                           CICloneable* taskData       )
 {GUCEF_TRACE;
 
     g_mutex.Lock();
@@ -292,7 +336,7 @@ CTaskManager::FlagTaskAsActive( CTaskDelegator& task )
 {GUCEF_TRACE;
 
     g_mutex.Lock();
-    m_activeTasks.insert( &task );
+    m_activeTasks[ task.GetThreadID() ] = &task;
     g_mutex.Unlock();
 }
 
@@ -303,9 +347,82 @@ CTaskManager::FlagTaskAsNonActive( CTaskDelegator& task )
 {GUCEF_TRACE;
 
     g_mutex.Lock();
-    m_activeTasks.erase( &task );
-    m_nonactiveTasks.insert( &task );
+    m_activeTasks.erase( task.GetThreadID() );
+    m_nonactiveTasks[ task.GetThreadID() ] = &task;
     g_mutex.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::PauseTask( const UInt32 taskID )
+{GUCEF_TRACE;
+
+    g_mutex.Lock();
+    TTaskMap::iterator i = m_activeTasks.find( taskID );
+    if ( i != m_activeTasks.end() )
+    {
+        (*i).second->Pause();
+        g_mutex.Unlock();
+        return true;
+    }
+    g_mutex.Unlock();
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::ResumeTask( const UInt32 taskID )
+{GUCEF_TRACE;
+
+    g_mutex.Lock();
+    TTaskMap::iterator i = m_activeTasks.find( taskID );
+    if ( i != m_activeTasks.end() )
+    {
+        (*i).second->Resume();
+        g_mutex.Unlock();
+        return true;
+    }
+    g_mutex.Unlock();
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::RequestTaskToStop( const UInt32 taskID )
+{GUCEF_TRACE;
+
+    g_mutex.Lock();
+    TTaskMap::iterator i = m_activeTasks.find( taskID );
+    if ( i != m_activeTasks.end() )
+    {
+        (*i).second->Deactivate( false );
+        g_mutex.Unlock();
+        return true;
+    }
+    g_mutex.Unlock();
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CTaskManager::KillTask( const UInt32 taskID )
+{GUCEF_TRACE;
+
+    g_mutex.Lock();
+    TTaskMap::iterator i = m_activeTasks.find( taskID );
+    if ( i != m_activeTasks.end() )
+    {
+        (*i).second->Deactivate( true );
+        g_mutex.Unlock();
+        GUCEF_SYSTEM_LOG( 0, "TaskManager: Killed task with ID " + UInt32ToString( taskID ) );
+        return true;
+    }
+    g_mutex.Unlock();
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

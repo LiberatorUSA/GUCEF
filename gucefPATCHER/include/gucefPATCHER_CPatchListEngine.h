@@ -103,11 +103,11 @@ class CPatchSetEngine;
 /**
  *  Engine for processing a patch list.
  */
-class GUCEFPATCHER_EXPORT_CPP CPatchListEngine : public CORE::CObservingNotifier  ,
-                                                 public CPatchSetDirEngineEvents  , /* event interface */
-                                                 public CPatchSetFileEngineEvents , /* event interface */
-                                                 public CPatchSetEngineEvents     , /* event interface */
-                                                 public CPatchListEngineEvents      /* event interface */
+class GUCEF_PATCHER_EXPORT_CPP CPatchListEngine : public CORE::CObservingNotifier  ,
+                                                  public CPatchSetDirEngineEvents  , /* event interface */
+                                                  public CPatchSetFileEngineEvents , /* event interface */
+                                                  public CPatchSetEngineEvents     , /* event interface */
+                                                  public CPatchListEngineEvents      /* event interface */
 {
     public:
 
@@ -123,6 +123,9 @@ class GUCEFPATCHER_EXPORT_CPP CPatchListEngine : public CORE::CObservingNotifier
     public:
     
     CPatchListEngine( void );
+    
+    CPatchListEngine( CORE::CPulseGenerator& pulseGenerator );
+    
     virtual ~CPatchListEngine();
     
     bool Start( const TPatchList& patchList          ,
@@ -146,6 +149,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchListEngine : public CORE::CObservingNotifier
     bool ObtainCurrentPatchSet( void );
     bool ProcessRecievedPatchSet( void );
     bool GetCurrentPatchSetLocation( TPatchSetLocation** location );
+    void Initialize( void );
     
     private:
     

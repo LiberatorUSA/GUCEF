@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
 
-#ifndef GUCEF_PATCHER_CPATCHSETDIRENGINE_H
-#define GUCEF_PATCHER_CPATCHSETDIRENGINE_H
+#ifndef GUCEF_PATCHER_CPATCHMANAGER_H
+#define GUCEF_PATCHER_CPATCHMANAGER_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,35 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
 
-#ifndef GUCEF_CORE_CPULSEGENERATOR_H
-#include "gucefCORE_CPulseGenerator.h"
-#define GUCEF_CORE_CPULSEGENERATOR_H
-#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
-
-#ifndef GUCEF_PATCHER_CPATCHSETPARSER_H
-#include "gucefPATCHER_CPatchSetParser.h"
-#define GUCEF_PATCHER_CPATCHSETPARSER_H
-#endif /* GUCEF_PATCHER_CPATCHSETPARSER_H ? */
-
-#ifndef GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
-#include "gucefPATCHER_CPatchSetFileEngineEvents.h"
-#define GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
-#endif /* GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H ? */
-
-#ifndef GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H
-#include "gucefPATCHER_CPatchSetDirEngineEvents.h"
-#define GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H
-#endif /* GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H ? */
+#ifndef GUCEF_PATCHER_CPATCHENGINE_H
+#include "gucefPATCHER_CPatchEngine.h"
+#define GUCEF_PATCHER_CPATCHENGINE_H
+#endif /* GUCEF_PATCHER_CPATCHENGINE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -69,69 +54,51 @@ namespace PATCHER {
 //                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
-class CPatchSetFileEngine;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *  Engine for patching a directory tree and all the files it contains.
- *  The tree is mirrored to the one starting at the given local root.
- */
-class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngine : public CORE::CObservingNotifier  ,
-                                                   public CPatchSetFileEngineEvents ,
-                                                   public CPatchSetDirEngineEvents
+class GUCEF_PATCHER_EXPORT_CPP CPatchManager : public CORE::CTSGNotifier
 {
     public:
+    
+    typedef std::vector< CString > TStringVector;
+    
+    CPatchManager( void );
+    
+    CPatchManager( CORE::CPulseGenerator& pulseGenerator );
+    
+    virtual ~CPatchManager();
+    
+    bool StartTask( const CString& taskName                  ,
+                    const CORE::CDataNode& patchEngineConfig );
 
-    typedef CPatchSetParser::TFileLocation TFileLocation;
-    typedef CPatchSetParser::TFileEntry TFileEntry;
-    typedef CPatchSetParser::TDirEntry TDirEntry;
+    bool PauseTask( const CString& taskName );
     
-    public:
+    bool ResumeTask( const CString& taskName );
     
-    CPatchSetDirEngine( void );
-    
-    CPatchSetDirEngine( CORE::CPulseGenerator& pulseGenerator );
-    
-    virtual ~CPatchSetDirEngine();
-    
-    public:
-    
-    bool Start( const TDirEntry& startingDir         ,
-                const CORE::CString& localRoot       ,
-                const CORE::CString& tempStorageRoot );
-    
-    void Stop( void );
-    
-    bool IsActive( void ) const;
-
-    protected:
+    bool RequestTaskToStop( const CString& taskName );
         
-    virtual void OnNotify( CORE::CNotifier* notifier           ,
-                           const CORE::CEvent& eventid         ,
-                           CORE::CICloneable* eventdata = NULL );    
+    void GetTaskList( TStringVector& list ) const;
+    
+    virtual const CString& GetClassTypeName( void ) const;
+    
+    private:
+    friend class CPatchTaskConsumer;
+    
+    void RegisterTask( CPatchTaskConsumer* task );
+    
+    void UnregisterTask( CPatchTaskConsumer* task );
+        
+    private:
+    
+    CPatchManager( const CPatchManager& src );
+    CPatchManager& operator=( const CPatchManager& src );
     
     private:
     
-    bool ProcessCurSubDir( void );
-    bool ProcessNextSubDir( void );
-    bool ProcessFilesInDir( void );
-    void Initialize( void );
+    typedef std::map< CString, CPatchTaskConsumer* > TTaskMap;
     
-    private:
-        
-    UInt32 m_curSubDirIndex;
-    CPatchSetDirEngine* m_subDirPatchEngine;
-    CPatchSetFileEngine* m_filePatchEngine;
-    
-    TDirEntry m_dir;
-    bool m_isActive;
-    bool m_stopSignalGiven;
-    CORE::CString m_localRoot;
-    CORE::CString m_tempStorageRoot;
-    CORE::CPulseGenerator* m_pulseGenerator;
+    TTaskMap m_taskMap;
+    CORE::CTaskManager* m_taskManager;
 };
 
 /*-------------------------------------------------------------------------//
@@ -145,7 +112,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngine : public CORE::CObservingNotifi
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHER_CPATCHSETDIRENGINE_H ? */
+#endif /* GUCEF_PATCHER_CPATCHMANAGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -153,7 +120,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngine : public CORE::CObservingNotifi
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 27-12-2006 :
+- 29-12-2006 :
         - Dinand: Initial version
 
------------------------------------------------------------------------------*/
+----------------------------------------------------------------------------*/

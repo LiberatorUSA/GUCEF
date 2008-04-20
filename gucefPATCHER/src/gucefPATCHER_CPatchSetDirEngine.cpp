@@ -65,9 +65,37 @@ CPatchSetDirEngine::CPatchSetDirEngine( void )
       m_isActive( false )         ,
       m_stopSignalGiven( false )  ,
       m_localRoot()               ,
-      m_tempStorageRoot()
+      m_tempStorageRoot()         ,
+      m_pulseGenerator( NULL )
 {GUCEF_TRACE;
 
+    Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPatchSetDirEngine::CPatchSetDirEngine( CORE::CPulseGenerator& pulseGenerator )
+    : CORE::CObservingNotifier()          ,
+      CPatchSetFileEngineEvents()         ,   
+      m_curSubDirIndex( 0 )               ,
+      m_subDirPatchEngine( NULL )         ,
+      m_filePatchEngine( NULL )           ,    
+      m_dir()                             ,
+      m_isActive( false )                 ,
+      m_stopSignalGiven( false )          ,
+      m_localRoot()                       ,
+      m_tempStorageRoot()                 ,
+      m_pulseGenerator( &pulseGenerator )
+{GUCEF_TRACE;
+
+    Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatchSetDirEngine::Initialize( void )
+{
     // Forward events from child sub-dir engines
     AddEventForwarding( SubDirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
     AddEventForwarding( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
@@ -105,7 +133,14 @@ CPatchSetDirEngine::ProcessFilesInDir( void )
         // We will be needing an engine for our file processing
         if ( m_filePatchEngine == NULL )
         {
-            m_filePatchEngine = new CPatchSetFileEngine();
+            if ( NULL != m_pulseGenerator )
+            {
+                m_filePatchEngine = new CPatchSetFileEngine( *m_pulseGenerator );
+            }
+            else
+            {
+                m_filePatchEngine = new CPatchSetFileEngine();
+            }
             SubscribeTo( m_filePatchEngine );
         }
         
@@ -131,7 +166,14 @@ CPatchSetDirEngine::ProcessCurSubDir( void )
         // We will be needing an engine for our sub-dir processing
         if ( m_subDirPatchEngine == NULL )
         {
-            m_subDirPatchEngine = new CPatchSetDirEngine();
+            if ( NULL != m_pulseGenerator )
+            {
+                m_subDirPatchEngine = new CPatchSetDirEngine( *m_pulseGenerator );
+            }
+            else
+            {
+                m_subDirPatchEngine = new CPatchSetDirEngine();
+            }
             SubscribeTo( m_subDirPatchEngine ); 
         }
         

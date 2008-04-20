@@ -121,6 +121,24 @@ CTSGObserver::AddEventToMailbox( CNotifier* notifier                 ,
               eventdata );
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CTSGObserver::DoLockData( void ) const
+{GUCEF_TRACE;
+
+    LockData();
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CTSGObserver::DoUnlockData( void ) const
+{GUCEF_TRACE;
+
+    UnlockData();
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

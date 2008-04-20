@@ -79,6 +79,25 @@ CPatchSetFileEngine::CPatchSetFileEngine( void )
 
 /*-------------------------------------------------------------------------*/
 
+CPatchSetFileEngine::CPatchSetFileEngine( CORE::CPulseGenerator& pulseGenerator )
+    : CObservingNotifier()               ,
+      CPatchSetFileEngineEvents()        ,
+      m_isActive( false )                ,
+      m_stopSignalGiven( false )         ,
+      m_localRoot()                      ,
+      m_tempStorageRoot()                ,
+      m_dataRetriever( pulseGenerator )  ,
+      m_fileAccess( NULL )               ,
+      m_fileList()                       ,
+      m_curFileLocIndex( 0 )             ,
+      m_curFileIndex( 0 )
+{GUCEF_TRACE;
+
+    SubscribeTo( &m_dataRetriever );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CPatchSetFileEngine::~CPatchSetFileEngine()
 {GUCEF_TRACE;
 
