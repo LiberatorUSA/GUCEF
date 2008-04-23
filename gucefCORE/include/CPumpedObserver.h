@@ -93,7 +93,7 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
      */
     virtual void OnPumpedNotify( CNotifier* notifier           ,
                                  const CEvent& eventid         ,
-                                 CICloneable* eventdata = NULL ) = 0;
+                                 CICloneable* eventdata = NULL );
     
     protected:
     

@@ -50,9 +50,9 @@ namespace DRN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CDRNDataGroup::ItemChangedEvent = "GUCEF::CORE::CDRNDataGroup::ItemChangedEvent";
-const CORE::CEvent CDRNDataGroup::ItemAddedEvent = "GUCEF::CORE::CDRNDataGroup::ItemAddedEvent";
-const CORE::CEvent CDRNDataGroup::ItemRemovedEvent = "GUCEF::CORE::CDRNDataGroup::ItemRemovedEvent";
+const CORE::CEvent CDRNDataGroup::ItemChangedEvent = "GUCEF::DRN::CDRNDataGroup::ItemChangedEvent";
+const CORE::CEvent CDRNDataGroup::ItemAddedEvent = "GUCEF::DRN::CDRNDataGroup::ItemAddedEvent";
+const CORE::CEvent CDRNDataGroup::ItemRemovedEvent = "GUCEF::DRN::CDRNDataGroup::ItemRemovedEvent";
     
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -276,6 +276,17 @@ CPumpedObserver::OnNotify( CNotifier* notifier                 ,
 /*-------------------------------------------------------------------------*/
 
 void
+CPumpedObserver::OnPumpedNotify( CNotifier* notifier                 ,
+                                 const CEvent& eventid               ,
+                                 CICloneable* eventdata /* = NULL */ )
+
+{GUCEF_TRACE;
+                                 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CPumpedObserver::LockData( void ) const
 {GUCEF_TRACE;
 
