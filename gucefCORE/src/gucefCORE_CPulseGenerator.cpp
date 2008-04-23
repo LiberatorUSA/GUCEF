@@ -78,13 +78,13 @@ CPulseGenerator::RegisterEvents( void )
 /*--------------------------------------------------------------------------*/
 
 CPulseGenerator::CPulseGenerator( void )
-    : CNotifier()                                 ,
-      m_lastCycleTickCount( GUCEFGetTickCount() ) ,
-      m_updateDeltaInMilliSecs( 10 )              ,
-      m_timerFreq( 1.0 )                          ,
-      m_forcedStopOfPeriodPulses( false )         ,
-      m_periodicUpdateRequestors()                ,
-      m_driver( NULL )                            ,
+    : CNotifier()                                      ,
+      m_lastCycleTickCount( MT::PrecisionTickCount() ) ,
+      m_updateDeltaInMilliSecs( 10 )                   ,
+      m_timerFreq( 1.0 )                               ,
+      m_forcedStopOfPeriodPulses( false )              ,
+      m_periodicUpdateRequestors()                     ,
+      m_driver( NULL )                                 ,
       m_mutex()
 {GUCEF_TRACE;
 
@@ -294,7 +294,7 @@ Float64
 CPulseGenerator::GetActualPulseDeltaInMilliSecs( void ) const
 {GUCEF_TRACE;
 
-    return MT::PrecisionTickCount() - m_lastCycleTickCount / m_timerFreq;
+    return ( MT::PrecisionTickCount() - m_lastCycleTickCount ) / m_timerFreq;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -390,10 +390,10 @@ CPulseGenerator::RequestPeriodicPulses( void )
     LockData();
     if ( !m_forcedStopOfPeriodPulses )
     {
-        if ( NULL != m_driver && m_periodicUpdateRequestors.size() > 0 )
+        if ( NULL != m_driver )
         {
             UnlockData();
-            m_driver->RequestStopOfPeriodicUpdates( *this );
+            m_driver->RequestPeriodicPulses( *this, m_updateDeltaInMilliSecs );
             return;
         }
     }    
