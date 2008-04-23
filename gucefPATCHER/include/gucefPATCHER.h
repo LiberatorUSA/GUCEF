@@ -90,7 +90,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const char* GUCEF_PATCHER_EXPORT_C GUCEF_PATCHER_ModuleCompileTimeStamp( void );
+GUCEF_PATCHER_EXPORT_C const char* GUCEF_PATCHER_ModuleCompileTimeStamp( void );
 
 /*-------------------------------------------------------------------------*/
 

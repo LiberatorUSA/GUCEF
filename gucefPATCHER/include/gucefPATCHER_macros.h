@@ -101,9 +101,9 @@
 #undef GUCEFPATCHER_EXPORT
 #ifdef GUCEF_MSWIN_BUILD
   #ifdef GUCEFPATCHER_BUILD_MODULE
-    #define GUCEFPATCHER_EXPORT __declspec( dllexport )
+    #define GUCEFPATCHER_EXPORT GUCEF_EXPORT
   #else
-    #define GUCEFPATCHER_EXPORT __declspec( dllimport )
+    #define GUCEFPATCHER_EXPORT GUCEF_EXPORT
   #endif /* GUCEFPATCHER_BUILD_MODULE ? */
 #else
   #define GUCEFPATCHER_EXPORT   /* Linux does not need an additional directive */
