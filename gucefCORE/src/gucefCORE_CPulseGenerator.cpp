@@ -294,7 +294,12 @@ Float64
 CPulseGenerator::GetActualPulseDeltaInMilliSecs( void ) const
 {GUCEF_TRACE;
 
-    return ( MT::PrecisionTickCount() - m_lastCycleTickCount ) / m_timerFreq;
+    UInt64 deltaTicks = MT::PrecisionTickCount() - m_lastCycleTickCount;
+    if ( deltaTicks > 0 )
+    {
+        return deltaTicks / m_timerFreq;
+    }
+    return 0.0;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -426,7 +431,7 @@ CPulseGenerator::OnDriverPulse( void )
 
     LockData();
     UInt64 tickCount = MT::PrecisionTickCount();
-    UInt64 deltaTicks = m_lastCycleTickCount - tickCount;
+    UInt64 deltaTicks = tickCount - m_lastCycleTickCount;
     Float64 deltaMilliSecs = deltaTicks / m_timerFreq;   
     m_lastCycleTickCount = tickCount; 
     UnlockData();

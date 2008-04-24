@@ -339,10 +339,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CIGUCEFApplicationDriver.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\CILogger.cpp"
 				>
 			</File>
@@ -890,10 +886,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CIConfigurable.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CIGUCEFApplicationDriver.h"
 				>
 			</File>
 			<File

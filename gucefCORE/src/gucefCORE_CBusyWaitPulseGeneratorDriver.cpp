@@ -103,7 +103,10 @@ CBusyWaitPulseGeneratorDriver::RequestPeriodicPulses( CPulseGenerator& pulseGene
         }
         else
         {
-            MT::PrecisionDelay( (UInt32)remainingDelta ); 
+            if ( remainingDelta > 1.0 )
+            {
+                //MT::PrecisionDelay( (UInt32)remainingDelta ); 
+            }
         }
     }                                                      
 }
