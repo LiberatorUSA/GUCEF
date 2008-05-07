@@ -128,7 +128,7 @@ CVFS::Instance( void )
 {GUCEF_TRACE;
         
     m_datalock.Lock();
-    if ( NULL != _instance ) 
+    if ( NULL == _instance ) 
     {
         _instance = new CVFS();
     }
@@ -525,7 +525,8 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
                         if ( att2 ) writeable = CORE::StringToBool( att2->value );
                         
                         AddRoot( att->value ,
-                                 writeable );
+                                 att->value ,
+                                 writeable  );
                 }
             }
             ++i;
