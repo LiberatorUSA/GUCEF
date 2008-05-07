@@ -31,10 +31,10 @@
  *      export only C code or perhaps only C++ code. You can do this with the
  *      following defines
  */
-#undef GUCEFPATCHER_EXPORT_CPP_CODE        /* do not change this line */ 
-#undef GUCEFPATCHER_EXPORT_C_CODE          /* do not change this line */  
-#define GUCEFPATCHER_EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
-#define GUCEFPATCHER_EXPORT_C_CODE   /* do you want to enable the C exports ? */
+#undef GUCEF_PATCHER_EXPORT_CPP_CODE        /* do not change this line */ 
+#undef GUCEF_PATCHER_EXPORT_C_CODE          /* do not change this line */  
+#define GUCEF_PATCHER_EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
+#define GUCEF_PATCHER_EXPORT_C_CODE   /* do you want to enable the C exports ? */
 
 /*-------------------------------------------------------------------------*/
 
@@ -55,15 +55,6 @@
  */
 #undef GUCEFPATCHER_DEBUG_MODE      /* do not change this line */ 
 /* #define DEBUG_MODE */
-
-/*-------------------------------------------------------------------------*/
-
-/*
- *      If enabled extra information like line and file information is added to
- *      the DEBUGOUTPUT() macro.
- */
-#undef GUCEFPATCHER_ADD_EXTRA_INFO_TO_DEBUGOUTPUT    /* do not change this line */ 
-/* #define ADD_EXTRA_INFO_TO_DEBUGOUTPUT */
 
 /*-------------------------------------------------------------------------*/
 

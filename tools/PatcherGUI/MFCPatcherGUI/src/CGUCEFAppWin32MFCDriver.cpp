@@ -65,11 +65,13 @@ END_MESSAGE_MAP()
 //-------------------------------------------------------------------------*/
 
 CGUCEFAppWin32MFCDriver::CGUCEFAppWin32MFCDriver( void )
-    : m_appPtr( GUCEF::CORE::CGUCEFApplication::Instance() ) ,
-      m_nTimer( 0 )                                          ,
-      m_frequency( 10 )                                      ,
-      m_initialized( false )                                 ,
-      m_useTimer( false )
+    : CWnd()                                ,
+      GUCEF::CORE::CIPulseGeneratorDriver() ,
+      m_nTimer( 0 )                         ,
+      m_frequency( 10 )                     ,
+      m_initialized( false )                ,
+      m_useTimer( false )                   ,
+      m_pulseGenerator( NULL )
 {GUCEF_TRACE;
 
 }
@@ -84,13 +86,17 @@ CGUCEFAppWin32MFCDriver::~CGUCEFAppWin32MFCDriver()
         OnStopUpdateTimer( 0, 0 );
         DestroyWindow();
     }
-    m_appPtr->SetApplicationDriver( NULL );    
+    if ( NULL != m_pulseGenerator )
+    {
+        m_pulseGenerator->SetPulseGeneratorDriver( NULL );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CGUCEFAppWin32MFCDriver::Init( CWnd* pParentWnd )
+CGUCEFAppWin32MFCDriver::Init( CWnd* pParentWnd                             ,
+                               GUCEF::CORE::CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
 
     if ( !m_initialized )
@@ -103,10 +109,8 @@ CGUCEFAppWin32MFCDriver::Init( CWnd* pParentWnd )
                      1234                                     ) )
         {    
             m_initialized = true;
-            m_appPtr->SetApplicationDriver( this );
-            
-            // Give the first update pulse
-            OnRequestNewUpdateCycle();
+            m_pulseGenerator = &pulseGenerator;
+            pulseGenerator.SetPulseGeneratorDriver( this );
             return true;
         }
         return false;
@@ -116,12 +120,13 @@ CGUCEFAppWin32MFCDriver::Init( CWnd* pParentWnd )
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CGUCEFAppWin32MFCDriver::OnRequestNewMinimalUpdateFreq( const GUCEF::CORE::Float64 updateDeltaInMilliSecs )
+void
+CGUCEFAppWin32MFCDriver::RequestPulseInterval( GUCEF::CORE::CPulseGenerator& pulseGenerator    ,
+                                               const GUCEF::CORE::UInt32 pulseDeltaInMilliSecs )
 {GUCEF_TRACE;
 
-    m_frequency = updateDeltaInMilliSecs;
-    if ( m_appPtr->GetRequiresPeriodicUpdate() )
+    m_frequency = pulseDeltaInMilliSecs;
+    if ( pulseGenerator.IsPulsingPeriodicly() )
     {
         /*
          *  Reset the timer with the new timer interval
@@ -137,7 +142,7 @@ CGUCEFAppWin32MFCDriver::OnRequestNewMinimalUpdateFreq( const GUCEF::CORE::Float
 /*-------------------------------------------------------------------------*/
 
 void 
-CGUCEFAppWin32MFCDriver::OnRequestNewUpdateCycle( void )
+CGUCEFAppWin32MFCDriver::RequestPulse( GUCEF::CORE::CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
 
     if ( GetSafeHwnd() )
@@ -204,7 +209,11 @@ CGUCEFAppWin32MFCDriver::OnClose()
     {
         PostMessage( GUCEFWIN32DRIVERMSG_STOPTIMER );
     }
-    m_appPtr->SetApplicationDriver( NULL );
+    
+    if ( NULL != m_pulseGenerator )
+    {
+        m_pulseGenerator->SetPulseGeneratorDriver( NULL );
+    }
     CWnd::OnClose();
 }
 
@@ -218,7 +227,10 @@ CGUCEFAppWin32MFCDriver::OnTimer( UINT nIDEvent )
     {
         if ( GetSafeHwnd() )
         {
-            m_appPtr->Update();
+            if ( NULL != m_pulseGenerator )
+            {
+                SendDriverPulse( *m_pulseGenerator );
+            }
         }
     }
     CWnd::OnTimer( nIDEvent );
@@ -226,34 +238,37 @@ CGUCEFAppWin32MFCDriver::OnTimer( UINT nIDEvent )
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CGUCEFAppWin32MFCDriver::OnSwitchUpdateMethod( const bool periodic )
+void
+CGUCEFAppWin32MFCDriver::RequestStopOfPeriodicUpdates( GUCEF::CORE::CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
 
-    if ( periodic )
+    if ( GetSafeHwnd() )
     {
-        // don't start the timer twice
-        if ( m_useTimer )
-        {
-            return;
-        }
-        
-        // Get the update frequency desired and post the timer start message
-        m_frequency = m_appPtr->GetMinimalReqUpdateResolution();
-        if ( GetSafeHwnd() )
-        {
-            PostMessage( GUCEFWIN32DRIVERMSG_STARTTIMER );
-        }
-        m_useTimer = true;
+        PostMessage( GUCEFWIN32DRIVERMSG_STOPTIMER );
     }
-    else
+    m_useTimer = false;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUCEFAppWin32MFCDriver::RequestPeriodicPulses( GUCEF::CORE::CPulseGenerator& pulseGenerator    ,
+                                                const GUCEF::CORE::UInt32 pulseDeltaInMilliSecs )
+{GUCEF_TRACE;
+
+    // don't start the timer twice
+    if ( m_useTimer )
     {
-        if ( GetSafeHwnd() )
-        {
-            PostMessage( GUCEFWIN32DRIVERMSG_STOPTIMER );
-        }
-        m_useTimer = false;
+        return;
     }
+    
+    // Get the update frequency desired and post the timer start message
+    m_frequency = pulseGenerator.GetRequiredPulseDeltaInMilliSecs();
+    if ( GetSafeHwnd() )
+    {
+        PostMessage( GUCEFWIN32DRIVERMSG_STARTTIMER );
+    }
+    m_useTimer = true;    
 }
 
 /*-------------------------------------------------------------------------*/

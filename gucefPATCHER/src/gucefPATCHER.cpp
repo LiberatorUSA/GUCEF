@@ -33,6 +33,8 @@
 #define GUCEF_PATCHER_CMODULE_H
 #endif /*GUCEF_PATCHER_CMODULE_H ? */
 
+#include "gucefPATCHER.h"
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //

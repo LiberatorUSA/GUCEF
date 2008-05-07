@@ -28,10 +28,10 @@
 
 #include <afxwin.h>
 
-#ifndef GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H
-#include "CIGUCEFApplicationDriver.h"
-#define GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H
-#endif /* GUCEF_CORE_CIGUCEFAPPLICATIONDRIVER_H ? */
+#ifndef GUCEF_CORE_CIPULSEGENERATORDRIVER_H
+#include "gucefCORE_CIPulseGeneratorDriver.h"
+#define GUCEF_CORE_CIPULSEGENERATORDRIVER_H
+#endif /* GUCEF_CORE_CIPULSEGENERATORDRIVER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -39,12 +39,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF::CORE::CGUCEFApplication;
-
-/*-------------------------------------------------------------------------*/
-
-class CGUCEFAppWin32MFCDriver : public CWnd                                  ,
-                                public GUCEF::CORE::CIGUCEFApplicationDriver
+class CGUCEFAppWin32MFCDriver : public CWnd                                ,
+                                public GUCEF::CORE::CIPulseGeneratorDriver
 {                          
     public:
 
@@ -52,15 +48,20 @@ class CGUCEFAppWin32MFCDriver : public CWnd                                  ,
 
     virtual ~CGUCEFAppWin32MFCDriver();
 
-    bool Init( CWnd* pParentWnd );
+    bool Init( CWnd* pParentWnd                             ,
+               GUCEF::CORE::CPulseGenerator& pulseGenerator );
 
     protected:
 
-    virtual void OnSwitchUpdateMethod( const bool periodic );
+    virtual void RequestPulse( GUCEF::CORE::CPulseGenerator& pulseGenerator );
     
-    virtual void OnRequestNewMinimalUpdateFreq( const GUCEF::CORE::Float64 updateDeltaInMilliSecs );
+    virtual void RequestPeriodicPulses( GUCEF::CORE::CPulseGenerator& pulseGenerator    ,
+                                        const GUCEF::CORE::UInt32 pulseDeltaInMilliSecs );
 
-    virtual void OnRequestNewUpdateCycle( void );
+    virtual void RequestPulseInterval( GUCEF::CORE::CPulseGenerator& pulseGenerator    ,
+                                       const GUCEF::CORE::UInt32 pulseDeltaInMilliSecs );
+    
+    virtual void RequestStopOfPeriodicUpdates( GUCEF::CORE::CPulseGenerator& pulseGenerator );
 
     protected:   
 
@@ -82,9 +83,9 @@ class CGUCEFAppWin32MFCDriver : public CWnd                                  ,
 
     UINT m_nTimer;
     GUCEF::CORE::Float64 m_frequency;
-    GUCEF::CORE::CGUCEFApplication* m_appPtr;
     bool m_initialized;
     bool m_useTimer;
+    GUCEF::CORE::CPulseGenerator* m_pulseGenerator;
 };
 
 /*-------------------------------------------------------------------------*/

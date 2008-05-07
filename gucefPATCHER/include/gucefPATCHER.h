@@ -37,6 +37,21 @@
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 
+#ifndef GUCEF_PATCHER_ETYPES_H
+#include "gucefPATCHER_ETypes.h"
+#define GUCEF_PATCHER_ETYPES_H
+#endif /* GUCEF_PATCHER_ETYPES_H ? */
+
+#ifndef GUCEF_PATCHER_CONFIG_H
+#include "gucefPATCHER_config.h"
+#define GUCEF_PATCHER_CONFIG_H
+#endif /* GUCEF_PATCHER_CONFIG_H ? */
+
+#ifndef GUCEF_PATCHER_MACROS_H
+#include "gucefPATCHER_macros.h"
+#define GUCEF_PATCHER_MACROS_H
+#endif /* GUCEF_PATCHER_MACROS_H ? */
+
 #ifndef GUCEF_PATCHER_CPATCHLISTPARSER_H
 #include "gucefPATCHER_CPatchListParser.h"
 #define GUCEF_PATCHER_CPATCHLISTPARSER_H
@@ -67,15 +82,15 @@
 #define GUCEF_PATCHER_CPATCHLISTENGINEEVENTS_H
 #endif /* GUCEF_PATCHER_CPATCHLISTENGINEEVENTS_H ? */
 
-#ifndef GUCEF_PATCHER_MACROS_H
-#include "gucefPATCHER_macros.h"
-#define GUCEF_PATCHER_MACROS_H
-#endif /* GUCEF_PATCHER_MACROS_H ? */
-
 #ifndef GUCEF_PATCHER_CPATCHENGINE_H
 #include "gucefPATCHER_CPatchEngine.h"
 #define GUCEF_PATCHER_CPATCHENGINE_H
 #endif /* GUCEF_PATCHER_CPATCHENGINE_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHTASKCONSUMER_H
+#include "gucefPATCHER_CPatchTaskConsumer.h"
+#define GUCEF_PATCHER_CPATCHTASKCONSUMER_H
+#endif /* GUCEF_PATCHER_CPATCHTASKCONSUMER_H ? */
 
 #ifndef GUCEF_PATCHER_CPATCHMANAGER_H
 #include "gucefPATCHER_CPatchManager.h"

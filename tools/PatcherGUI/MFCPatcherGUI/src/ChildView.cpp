@@ -86,7 +86,7 @@ CChildView::CChildView()
 CChildView::~CChildView()
 {GUCEF_TRACE;
 
-    UnsubscribeFromAll();
+    UnsubscribeAllFromObserver();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -215,7 +215,8 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
     // Hook the GUCEF application driver into the window message loop
     m_gucefDriver = new CGUCEFAppWin32MFCDriver();
     assert( m_gucefDriver );
-    if ( m_gucefDriver->Init( this ) )
+    if ( m_gucefDriver->Init( this                                                     ,
+                              CORE::CGUCEFApplication::Instance()->GetPulseGenerator() ) )
     {
         // Create our listbox
         m_listBox = new CListBox();
@@ -244,11 +245,7 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
         m_totalProgress->Create( WS_CHILD|WS_VISIBLE      , 
                                  CRect( 10, 30, 460, 40 ) ,
                                  this                     , 
-                                 1                        );        
-        
-        // Now connect the application driver with GUCEF, from this point on things can start
-        // happening behind the screen
-        CORE::CGUCEFApplication::Instance()->SetApplicationDriver( m_gucefDriver );
+                                 1                        );
         
         // Start the application from the GUCEF point of view
         CORE::CGUCEFApplication::Instance()->Main( AfxGetInstanceHandle() ,
