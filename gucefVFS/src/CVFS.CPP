@@ -157,32 +157,24 @@ CVFS::GetFile( const CORE::CString& file          ,
 {GUCEF_TRACE;
 
     m_datalock.Lock();
-    TMountVector::iterator i = m_mountList.begin();
-    while ( i != m_mountList.end() )
+    
+    // Get a list of all eligable mounts
+    TConstMountLinkVector mountLinks;
+    GetEligableMounts( file, mountLinks );
+
+    // Find the file in the available archives
+    TConstMountLinkVector::iterator i = mountLinks.begin();
+    while ( i != mountLinks.end() )
     {
-        const TMountEntry& mountEntry = (*i);
-        
-        // Strip the mount path of the file
-        UInt32 pathLength = file.FindMaxSubstrEquality( mountEntry.mountPath ,
-                                                        0                    ,
-                                                        true                 );        
-        CString pathRemnant = file.CutChars( pathLength ,
-                                            true        );
-        
-        // See if we can find the file in the mounted archive
-        if ( mountEntry.archive->FileExists( pathRemnant ) )
+        TConstMountLink& mountLink = (*i);
+        if ( mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
         {
-            // Attempt to load the file from the archive
-            CVFSHandlePtr filePtr = mountEntry.archive->GetFile( pathRemnant     ,
-                                                                 mode            ,
-                                                                 _maxmemloadsize ,
-                                                                 overwrite       );           
-            if ( NULL != filePtr )
-            {
-                // We managed to obtain the file
-                m_datalock.Unlock();
-                return filePtr;
-            }
+            CVFSHandlePtr filePtr = mountLink.mountEntry->archive->GetFile( mountLink.remainder ,  
+                                                                            mode                ,
+                                                                            _maxmemloadsize     ,
+                                                                            overwrite           );
+            m_datalock.Unlock();
+            return filePtr;
         }
         ++i;
     }

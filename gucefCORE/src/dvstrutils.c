@@ -78,11 +78,13 @@ Buffer_Copy( char *dest, const char *src, UInt32 size )
 const char*
 Extract_Filename( const char *filepath )
 {
-        /*
-         *      Extract the filename, if there is any path prefix it will be
-         *      removed
-         */
-        UInt32 i, length = (UInt32)strlen( filepath );
+    /*
+     *      Extract the filename, if there is any path prefix it will be
+     *      removed
+     */
+    if ( NULL == filepath )
+    {
+        Int32 i, length = (Int32)strlen( filepath );
         for ( i = length; i >= 0; --i )
         {
                 if ( ( ( filepath[ i ] == '/' ) || (  filepath[ i ] == '\\' ) ) && ( i != length ) )
@@ -93,7 +95,8 @@ Extract_Filename( const char *filepath )
                         return filepath+i+1;
                 }
         }
-        return filepath;
+    }
+    return filepath;
 }
 
 /*--------------------------------------------------------------------------*/
