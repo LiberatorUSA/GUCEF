@@ -166,7 +166,12 @@ LastSubDir( const CString& path );
 /*-------------------------------------------------------------------------*/
 
 GUCEFCORE_EXPORT_CPP bool
-IsPathValid( const CString& path  );
+IsPathValid( const CString& path );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
+ExtractFileExtention( const CString& path );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -377,6 +377,15 @@ IsPathValid( const CString& path  )
     return 0 != Is_Path_Valid( path.C_String() ); 
 }
 
+/*-------------------------------------------------------------------------*/
+
+CString
+ExtractFileExtention( const CString& path )
+{GUCEF_TRACE;
+
+    return Extract_File_Ext( path.C_String() );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

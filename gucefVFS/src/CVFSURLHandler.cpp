@@ -122,8 +122,7 @@ CVFSURLHandler::Activate( CORE::CURL& url )
         NotifyObservers( URLActivateEvent );
         
         // Obtain the file
-        UInt32 errorcode;
-        CVFS::CVFSHandlePtr handle = m_vfs->GetFile( url.GetURL().SubstrToSubstr( "://", false ), errorcode );        
+        CVFS::CVFSHandlePtr handle = m_vfs->GetFile( url.GetURL().SubstrToSubstr( "://" ), "rb", false );        
         if ( NULL != handle )
         {                
                 CORE::CIOAccess* access = handle->GetAccess();

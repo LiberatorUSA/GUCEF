@@ -51,15 +51,45 @@ namespace PATCHER {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CEvent CPatchManager::PatchTaskStartedEvent = "GUCEF::PATCHER::CPatchManager::PatchTaskStartedEvent";
+const CORE::CEvent CPatchManager::PatchTaskStoppedEvent = "GUCEF::PATCHER::CPatchManager::PatchTaskStoppedEvent";
+const CORE::CEvent CPatchManager::PatchTaskStopRequestedEvent = "GUCEF::PATCHER::CPatchManager::PatchTaskStopRequestedEvent";
+const CORE::CEvent CPatchManager::PatchTaskFinishedEvent = "GUCEF::PATCHER::CPatchManager::PatchTaskFinishedEvent";
+const CORE::CEvent CPatchManager::PatchTaskPausedEvent = "GUCEF::PATCHER::CPatchManager::PatchTaskPausedEvent";
+const CORE::CEvent CPatchManager::PatchTaskResumedEvent = "GUCEF::PATCHER::CPatchManager::PatchTaskResumedEvent";    
+const CORE::CEvent CPatchManager::PatchTaskEventReceivedEvent = "GUCEF::PATCHER::CPatchManager::PatchTaskEventReceivedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+void
+CPatchManager::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    PatchTaskStartedEvent.Initialize();
+    PatchTaskStoppedEvent.Initialize();
+    PatchTaskStopRequestedEvent.Initialize();
+    PatchTaskFinishedEvent.Initialize();
+    PatchTaskPausedEvent.Initialize();
+    PatchTaskResumedEvent.Initialize();
+    PatchTaskEventReceivedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
 
 CPatchManager::CPatchManager( void )
     : CTSGNotifier( CORE::CGUCEFApplication::Instance()->GetPulseGenerator() ) ,
       m_taskManager( CORE::CTaskManager::Instance() )
 {GUCEF_TRACE;
 
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -68,7 +98,8 @@ CPatchManager::CPatchManager( CORE::CPulseGenerator& pulseGenerator )
     : CTSGNotifier( pulseGenerator )                  ,
       m_taskManager( CORE::CTaskManager::Instance() )
 {GUCEF_TRACE;
-
+    
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -209,6 +240,17 @@ CPatchManager::UnregisterTask( CPatchTaskConsumer* task )
     LockData();
     m_taskMap.erase( task->GetTaskName() );
     UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatchManager::OnPumpedNotify( CORE::CNotifier* notifier    ,
+                               const CORE::CEvent& eventid  ,
+                               CORE::CICloneable* eventdata )
+
+{GUCEF_TRACE;
+                               
 }
 
 /*-------------------------------------------------------------------------//

@@ -210,6 +210,14 @@
 				RelativePath="..\..\src\gucefVFS.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\gucefVFS_CFileSystemArchive.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefVFS_CIArchive.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -234,6 +242,14 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefVFS.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefVFS_CFileSystemArchive.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefVFS_CIArchive.h"
 				>
 			</File>
 			<File

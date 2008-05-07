@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
 
-#ifndef GUCEF_VFS_CVFSHANDLE_H
-#define GUCEF_VFS_CVFSHANDLE_H
+#ifndef GUCEF_VFS_CIARCHIVE_H
+#define GUCEF_VFS_CIARCHIVE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,30 +26,18 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CSTRING_H
-#endif /* GUCEF_CORE_CSTRING_H ? */
+#include <map>
+#include <set>
 
-#ifndef GUCEF_CORE_CIOACCESS_H
-#include "CIOAccess.h"
-#define GUCEF_CORE_CIOACCESS_H
-#endif /* GUCEF_CORE_CIOACCESS_H ? */
+#ifndef GUCEF_CORE_CTBASICSHAREDPTR_H
+#include "CTBasicSharedPtr.h"
+#define GUCEF_CORE_CTBASICSHAREDPTR_H
+#endif /* GUCEF_CORE_CTBASICSHAREDPTR_H ? */
 
-#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
-#include "CDynamicBuffer.h"
-#define GUCEF_CORE_CDYNAMICBUFFER_H
-#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
-
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
-
-#ifndef GUCEF_VFS_MACROS_H
-#include "gucefVFS_macros.h"         /* often used gucefVFS macros */
-#define GUCEF_VFS_MACROS_H
-#endif /* GUCEF_VFS_MACROS_H ? */
+#ifndef GUCEF_VFS_CVFSHANDLE_H
+#include "CVFSHandle.h"              /* handle for VFS ref counted recources */
+#define GUCEF_VFS_CVFSHANDLE_H
+#endif /* GUCEF_VFS_CVFSHANDLE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,8 +45,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_NAMESPACE_BEGIN
-VFS_NAMESPACE_BEGIN
+namespace GUCEF {
+namespace VFS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,39 +54,50 @@ VFS_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CVFSHandle
+class CIArchive : public CORE::CTDynamicDestructorBase< CVFSHandle >
 {
     public:
 
-    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer > TDynamicBufferPtr;
+    typedef CORE::CTBasicSharedPtr< CVFSHandle > CVFSHandlePtr;
+    typedef std::vector< CString >         TStringList;
+    typedef std::set< CString >            TStringSet;
     
-    CVFSHandle( CORE::CIOAccess* fileAccess   ,
-                const CORE::CString& filename ,
-                const CORE::CString& filePath ,
-                TDynamicBufferPtr& bufferPtr  );
-
-    ~CVFSHandle();
+    CIArchive( void );
     
-    CORE::CIOAccess* GetAccess( void );
+    CIArchive( const CIArchive& src );
     
-    const CORE::CString& GetFilename( void ) const;
+    virtual ~CIArchive();
     
-    const CORE::CString& GetFilePath( void ) const;
+    CIArchive& operator=( const CIArchive& src );
     
-    bool IsLoadedInMemory( void ) const;
-
-    private:
-
-    CVFSHandle( void );                              /**< not implemented */
-    CVFSHandle( const CVFSHandle& src );             /**< not implemented */
-    CVFSHandle& operator=( const CVFSHandle& src );  /**< not implemented */
+    virtual CVFSHandlePtr GetFile( const CString& file          ,
+                                   const char* mode = "rb"      ,
+                                   const UInt32 memLoadSize = 0 ,
+                                   const bool overwrite = false ) = 0;
+                                  
+    virtual void GetList( TStringSet& outputList             ,
+                          const CString& location            , 
+                          bool recursive = false             ,
+                          bool includePathInFilename = false ,
+                          const CString& filter = ""         ,
+                          bool addFiles = true               ,
+                          bool addDirs  = false              ) const = 0;
     
-    private:
-
-    TDynamicBufferPtr m_bufferPtr;
-    CORE::CIOAccess* m_fileAccess;
-    CORE::CString m_filename;
-    CORE::CString m_filePath;
+    virtual bool FileExists( const CString& filePath ) const = 0;
+    
+    virtual UInt32 GetFileSize( const CString& filePath ) const = 0;
+    
+    virtual CString GetFileHash( const CString& file ) const = 0;
+    
+    virtual const CString& GetArchiveName( void ) const = 0;
+    
+    virtual bool IsWriteable( void ) const = 0;
+    
+    virtual bool LoadArchive( const CString& archiveName ,
+                              const CString& archivePath ,
+                              const bool writableRequest ) = 0;
+                              
+    virtual bool UnloadArchive( void ) = 0;                              
 };
 
 /*-------------------------------------------------------------------------//
@@ -107,12 +106,12 @@ class EXPORT_CPP CVFSHandle
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-VFS_NAMESPACE_END
-GUCEF_NAMESPACE_END
+}; /* namespace VFS */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_VFS_CVFSHANDLE_H ? */
+#endif /* GUCEF_VFS_CIARCHIVE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -120,7 +119,7 @@ GUCEF_NAMESPACE_END
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 12-02-2005 :
-        - Initial implementation
+- 24-08-2005 :
+        - Dinand: implemented
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

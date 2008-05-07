@@ -17,39 +17,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
 
-#ifndef GUCEF_VFS_CVFSHANDLE_H
-#define GUCEF_VFS_CVFSHANDLE_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CSTRING_H
-#endif /* GUCEF_CORE_CSTRING_H ? */
-
-#ifndef GUCEF_CORE_CIOACCESS_H
-#include "CIOAccess.h"
-#define GUCEF_CORE_CIOACCESS_H
-#endif /* GUCEF_CORE_CIOACCESS_H ? */
-
-#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
-#include "CDynamicBuffer.h"
-#define GUCEF_CORE_CDYNAMICBUFFER_H
-#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
-
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
-
-#ifndef GUCEF_VFS_MACROS_H
-#include "gucefVFS_macros.h"         /* often used gucefVFS macros */
-#define GUCEF_VFS_MACROS_H
-#endif /* GUCEF_VFS_MACROS_H ? */
+#include "gucefVFS_CIArchive.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,70 +31,50 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_NAMESPACE_BEGIN
-VFS_NAMESPACE_BEGIN
+namespace GUCEF {
+namespace VFS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CVFSHandle
-{
-    public:
+CIArchive::CIArchive( void )
+{GUCEF_TRACE;
 
-    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer > TDynamicBufferPtr;
-    
-    CVFSHandle( CORE::CIOAccess* fileAccess   ,
-                const CORE::CString& filename ,
-                const CORE::CString& filePath ,
-                TDynamicBufferPtr& bufferPtr  );
-
-    ~CVFSHandle();
-    
-    CORE::CIOAccess* GetAccess( void );
-    
-    const CORE::CString& GetFilename( void ) const;
-    
-    const CORE::CString& GetFilePath( void ) const;
-    
-    bool IsLoadedInMemory( void ) const;
-
-    private:
-
-    CVFSHandle( void );                              /**< not implemented */
-    CVFSHandle( const CVFSHandle& src );             /**< not implemented */
-    CVFSHandle& operator=( const CVFSHandle& src );  /**< not implemented */
-    
-    private:
-
-    TDynamicBufferPtr m_bufferPtr;
-    CORE::CIOAccess* m_fileAccess;
-    CORE::CString m_filename;
-    CORE::CString m_filePath;
-};
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-VFS_NAMESPACE_END
-GUCEF_NAMESPACE_END
+}
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_VFS_CVFSHANDLE_H ? */
+    
+CIArchive::CIArchive( const CIArchive& src )
+{GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CIArchive::~CIArchive()
+{GUCEF_TRACE;
+
+}
+    
+/*-------------------------------------------------------------------------*/
+    
+CIArchive&
+CIArchive::operator=( const CIArchive& src )
+{GUCEF_TRACE;
+
+    return *this;
+}
+    
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      Info & Changes                                                     //
+//      NAMESPACE                                                          //
 //                                                                         //
-//-------------------------------------------------------------------------//
+//-------------------------------------------------------------------------*/
 
-- 12-02-2005 :
-        - Initial implementation
+}; /* namespace VFS */
+}; /* namespace GUCEF */
 
------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/

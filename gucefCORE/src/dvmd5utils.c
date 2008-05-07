@@ -30,9 +30,7 @@
 #include "md5/md5.h"	     /* MD5 utilities */
 #endif /* md5_INCLUDED ? */
 
-#ifndef GUCEF_CORE_DVMD5UTILS_H
 #include "dvmd5utils.h"	     /* function prototypes */
-#endif /* GUCEF_CORE_DVMD5UTILS_H ? */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"

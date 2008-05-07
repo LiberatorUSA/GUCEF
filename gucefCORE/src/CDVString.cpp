@@ -710,11 +710,63 @@ CString::ParseElements( char seperator ) const
 }
 
 /*-------------------------------------------------------------------------*/
+
+UInt32
+CString::FindMaxSubstrEquality( const CString& searchStr ,
+                                const UInt32 startOffset ,
+                                bool startFront          ) const
+{GUCEF_TRACE;
+
+    // Sanity check on the startOffset
+    if ( (Int32)m_length - startOffset > 0 )
+    {        
+        // Get the smallest of the 2 buffer limits
+        UInt32 max = searchStr.Length();
+        if ( m_length - startOffset < max )
+        {
+            max = m_length - startOffset;
+        }
+        
+        if ( startFront )
+        {            
+            // Loop trough the buffer growing our comparison string
+            for ( UInt32 subLength=1; subLength<max; ++subLength )
+            {
+                if ( memcmp( m_string+startOffset, searchStr.m_string, subLength ) != 0 )
+                {
+                    // Reached the maximum equality length
+                    return subLength;
+                }
+            }
+        }
+        else
+        {
+            // Loop trough the buffer growing our comparison string
+            const char* string = m_string + m_length - startOffset;
+            const char* otherString = searchStr.m_string + searchStr.m_length; 
+             
+            for ( UInt32 subLength=1; subLength<max; ++subLength )
+            {
+                if ( memcmp( string-subLength, otherString-subLength, subLength ) != 0 )
+                {
+                    // Reached the maximum equality length
+                    return subLength;
+                }
+            }            
+        }
+    }
+    
+    // Unable to find an equality 
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
                                 
 Int32 
 CString::HasSubstr( const CString& substr ,
                     bool startfront       ) const
 {GUCEF_TRACE;
+
         UInt32 slen = substr.Length();
         
         if ( slen > m_length )

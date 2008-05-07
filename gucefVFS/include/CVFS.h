@@ -26,36 +26,25 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <map>
-#include <set>
-
-#include "CIConfigurable.h"
-#include "CDVString.h"
-
-#ifndef GUCEFMT_H
+#ifndef GUCEF_MT_GUCEFMT_H
 #include "gucefMT.h"                 /* gucefMT library API */
-#define GUCEFMT_H
-#endif /* GUCEFMT_H ? */
+#define GUCEF_MT_GUCEFMT_H
+#endif /* GUCEF_MT_GUCEFMT_H ? */
 
-#ifndef GUCEF_CORE_CTBASICSHAREDPTR_H
-#include "CTBasicSharedPtr.h"
-#define GUCEF_CORE_CTBASICSHAREDPTR_H
-#endif /* GUCEF_CORE_CTBASICSHAREDPTR_H ? */
-
-#ifndef GUCEFVFS_MACROS_H
-#include "gucefVFS_macros.h"         /* often used gucefVFS macros */
-#define GUCEFVFS_MACROS_H
-#endif /* GUCEFVFS_MACROS_H ? */
-
-#ifndef CVFSHANDLE_H
-#include "CVFSHandle.h"              /* handle for VFS ref counted recources */
-#define CVFSHANDLE_H
-#endif /* CVFSHANDLE_H ? */
-
-#ifndef CICONFIGURABLE_H
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "CIConfigurable.h"          /* abstract base class interface for configurable objects */
-#define CICONFIGURABLE_H
-#endif /* CICONFIGURABLE_H ? */
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
+#ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
+#include "CTAbstractFactory.h"
+#define GUCEF_CORE_CTABSTRACTFACTORY_H
+#endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
+
+#ifndef GUCEF_VFS_CIARCHIVE_H
+#include "gucefVFS_CIArchive.h"
+#define GUCEF_VFS_CIARCHIVE_H
+#endif /* GUCEF_VFS_CIARCHIVE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -75,22 +64,43 @@ namespace VFS {
 /**
  *      Threadsafe Virtual File System
  */
-class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
-                        private CORE::CTDynamicDestructorBase< CVFSHandle >
+class EXPORT_CPP CVFS : public CORE::CIConfigurable
 {
     public:
     
-    typedef CORE::CTBasicSharedPtr< CVFSHandle > CVFSHandlePtr;
-    typedef std::vector< CORE::CString >         TStringList;
-    typedef std::set< CORE::CString >            TStringSet;
+    typedef CIArchive::CVFSHandlePtr CVFSHandlePtr;
+    typedef CIArchive::TStringList   TStringList;
+    typedef CIArchive::TStringSet    TStringSet;
     
     static CVFS* Instance( void );
     
-    void AddRoot( const CORE::CString& rootdir ,
-                  const bool writeable = false );
+    void AddRoot( const CString& rootdir               ,
+                  const CString& archiveName           ,
+                  const bool writeable = false         ,
+                  const bool autoMountArchives = false );
+
+    bool MountArchive( const CString& archiveName  ,
+                       const CString& archivePath  ,
+                       const bool writeableRequest );
+                  
+    bool MountArchive( const CString& archiveName  ,
+                       const CString& archivePath  ,
+                       const CString& mountPoint   ,
+                       const bool writeableRequest );
+    
+    bool MountArchive( const CString& archiveName  ,
+                       const CString& archivePath  ,
+                       const CString& archiveType  ,
+                       const CString& mountPoint   ,
+                       const bool writeableRequest );
+
+    bool UnmountArchiveByName( const CString& archiveName );
+                  
+    void RegisterArchiveFactory( const CString& archiveType );
+    
+    void UnregisterArchiveFactory( const CString& archiveType );
     
     CVFSHandlePtr GetFile( const CORE::CString& file    ,
-                           UInt32& errorcode            ,
                            const char* mode = "rb"      ,
                            const bool overwrite = false );
                                   
@@ -113,6 +123,9 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
     UInt32 GetFileSize( const CORE::CString& filePath ) const;
     
     CORE::CString GetFileHash( const CORE::CString& file ) const;
+
+    bool GetActualFilePath( const CString& file ,
+                            CString& path       ) const;
 
     void SetMemloadSize( UInt32 bytesize );
     
@@ -137,16 +150,38 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
      */                                    
     virtual bool LoadConfig( const CORE::CDataNode& treeroot );                                             
 
+    static bool FilterValidation( const CString& filename , 
+                                  const CString& filter   );
+
     private:
     friend class CGUCEFVFSModule;
     
     static void Deinstance( void );
     
     private:
-    
-    virtual void DestroyObject( CVFSHandle* sharedPointer );
 
-    private:
+    typedef CORE::CTAbstractFactory< CString, CIArchive > TAbstractArchiveFactory;
+
+    struct SMountEntry
+    {
+        CORE::CString abspath;
+        CORE::CString path;
+        bool writeable;
+        CIArchive* archive;
+        CORE::CString mountPath;
+    };
+    typedef struct SMountEntry TMountEntry;
+    
+    struct SConstMountLink
+    {
+        const TMountEntry* mountEntry;
+        CString remainder;
+    };
+    typedef struct SConstMountLink TConstMountLink;
+    
+    typedef std::vector< TMountEntry >                   TMountVector;
+    typedef std::vector< TConstMountLink >               TConstMountLinkVector;
+    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer >    TDynamicBufferPtr;
     
     static CVFS* _instance;
     static MT::CMutex m_datalock;
@@ -156,38 +191,13 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
     virtual ~CVFS();
     CVFS& operator=( const CVFS& src );
 
-    CVFSHandle* LoadFromDisk( const CORE::CString& file    , 
-                              UInt32& errorcode            ,
-                              const char* mode = "rb"      ,
-                              const bool overwrite = false );
-
-    void GetListFromRoot( const CORE::CString& root   , 
-                          bool recursive              , 
-                          bool includePathInFilename  , 
-                          const CORE::CString& filter , 
-                          TStringSet& outputList      , 
-                          bool addFiles               ,
-                          bool addDirs                ) const;
-
-    bool FilterValidation( const CORE::CString& filename, const CORE::CString& filter ) const; 
-
-    private:
-
-    struct SRootDir
-    {
-        CORE::CString abspath;
-        CORE::CString path;
-        bool writeable;
-    };
-    typedef struct SRootDir TRootDir;
+    void GetEligableMounts( const CString& location                ,
+                            TConstMountLinkVector& mountLinkVector ) const;
+    private:    
     
-    typedef std::vector< TRootDir >                      TRootList;
-    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer >    TDynamicBufferPtr;
-    typedef std::map< CORE::CString, TDynamicBufferPtr > TFileMemCache;
-    
-    TRootList m_rootlist;
-    TFileMemCache m_diskCacheList;
+    TMountVector m_mountList;
     UInt32 _maxmemloadsize;
+    TAbstractArchiveFactory m_abstractArchiveFactory;
 };
 
 /*-------------------------------------------------------------------------//
@@ -209,6 +219,11 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable                          ,
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 03-05-2008 :
+        - Dinand: Reworked the VFS system to support a mounting system that
+          groups resources in archives that become part of the resource tree in
+          a transparent manner. This rework allows the VFS plugins to become 
+          operational again as archive factories.
 - 24-08-2005 :
         - Dinand: implemented GetNewFile()
         - Dinand: reworked the AddRoot() and root administration mechanisms. This allows

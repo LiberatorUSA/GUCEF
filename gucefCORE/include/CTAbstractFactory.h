@@ -27,6 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <map>
+#include <set>
 #include "CTFactory.h"
 #include "CTFactoryBase.h"
 #include "CMsgException.h"
@@ -60,6 +61,7 @@ class CTAbstractFactory
 {
     public:
     typedef CTFactoryBase< BaseClassType > TConcreteFactory;
+    typedef std::set< SelectionCriteriaType > TKeySet;
     
     explicit CTAbstractFactory( const bool assumeFactoryOwnership = false );
     
@@ -89,6 +91,8 @@ class CTAbstractFactory
     void UnregisterConcreteFactory( const SelectionCriteriaType& selectedType );
 
     bool IsConstructible( const SelectionCriteriaType& selectedType ) const;
+    
+    void ObtainKeySet( TKeySet& keySet ) const;
     
     private:
     typedef std::map< SelectionCriteriaType, TConcreteFactory* >  TFactoryList;
@@ -165,6 +169,20 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType >::Destroy( BaseClassTyp
         return;
     }
     throw CMsgException( __FILE__, __LINE__, "CTAbstractFactory: Cannot find concrete factory capable of destroying the given product" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename SelectionCriteriaType, class BaseClassType >
+void
+CTAbstractFactory< SelectionCriteriaType, BaseClassType >::ObtainKeySet( TKeySet& keySet ) const
+{
+    TFactoryList::const_iterator i( m_concreteFactoryList.begin() );
+    while ( i != m_concreteFactoryList.end() )
+    {
+        keySet.insert( (*i).first );
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

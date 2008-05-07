@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
+
 #ifndef GUCEF_CORE_CTASKMANAGER_H
 #include "gucefCORE_CTaskManager.h"
 #define GUCEF_CORE_CTASKMANAGER_H
@@ -56,8 +61,31 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CPatchTaskConsumer;
+
+/*-------------------------------------------------------------------------*/
+
 class GUCEF_PATCHER_EXPORT_CPP CPatchManager : public CORE::CTSGNotifier
 {
+    public:
+    
+    static const CORE::CEvent PatchTaskStartedEvent;
+    static const CORE::CEvent PatchTaskStoppedEvent;
+    static const CORE::CEvent PatchTaskStopRequestedEvent;
+    static const CORE::CEvent PatchTaskFinishedEvent;
+    static const CORE::CEvent PatchTaskPausedEvent;
+    static const CORE::CEvent PatchTaskResumedEvent;    
+    static const CORE::CEvent PatchTaskEventReceivedEvent;
+
+    typedef CORE::TCloneableString  TPatchTaskStartedEventData;
+    typedef CORE::TCloneableString  TPatchTaskStoppedEventData;
+    typedef CORE::TCloneableString  TPatchTaskStopRequestedEventData;
+    typedef CORE::TCloneableString  TPatchTaskFinishedEventData;
+    typedef CORE::TCloneableString  TPatchTaskPausedEventData;
+    typedef CORE::TCloneableString  TPatchTaskResumedEventData;
+
+    static void RegisterEvents( void );
+    
     public:
     
     typedef std::vector< CString > TStringVector;
@@ -80,6 +108,12 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchManager : public CORE::CTSGNotifier
     void GetTaskList( TStringVector& list ) const;
     
     virtual const CString& GetClassTypeName( void ) const;
+    
+    protected:
+    
+    virtual void OnPumpedNotify( CORE::CNotifier* notifier           ,
+                                 const CORE::CEvent& eventid         ,
+                                 CORE::CICloneable* eventdata = NULL );
     
     private:
     friend class CPatchTaskConsumer;
