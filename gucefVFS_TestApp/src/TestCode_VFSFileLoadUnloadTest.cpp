@@ -51,7 +51,7 @@
   #define DebugBreak() assert( 0 )
 #endif
 
-#define ERRORHERE { printf( "Test failed @ %s(%d)\n", __FILE__, __LINE__ ); DebugBreak(); }
+#define ERRORHERE { GUCEF_ERROR_LOG( 0, "Test failed @ " + CORE::CString( __FILE__ ) + CORE::UInt32ToString( __LINE__ ) ); DebugBreak(); }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -86,7 +86,7 @@ PerformVFSFileLoadUnloadTest( void )
         
         // We can use the module directory since it should hold the at least 1 file
         // which is the test app itself
-        vfs->AddRoot( "$MODULEDIR$" );
+        vfs->AddRoot( "$MODULEDIR$", "Test", true );
 
         // We will use the root directory itself and ask for a list with no recursive
         // dir iteration and no filter.
@@ -102,14 +102,14 @@ PerformVFSFileLoadUnloadTest( void )
         // We will attempt to load a number of files in sequence
         VFS::UInt32 maxFiles = (VFS::UInt32) fileList.size() > 5 ? 5 : (VFS::UInt32) fileList.size();
         std::vector< VFS::CVFS::CVFSHandlePtr > fileHandles;
+        VFS::CVFS::TStringSet::iterator n = fileList.begin();
         for ( VFS::UInt32 i=0; i<maxFiles; ++i )
         {
             // Try to load the file
             VFS::UInt32 errorCode = 0;
-            VFS::CVFS::CVFSHandlePtr filePtr = vfs->GetFile( fileList[ i ] ,
-                                                             errorCode     ,
-                                                             "rb"          ,
-                                                             false         );
+            VFS::CVFS::CVFSHandlePtr filePtr = vfs->GetFile( (*n)  ,
+                                                             "rb"  ,
+                                                             false );
             // check if the file was loaded
             if ( filePtr == NULL )
             {
@@ -120,6 +120,7 @@ PerformVFSFileLoadUnloadTest( void )
             
             printf( "Loaded file %s\n", filePtr->GetFilename().C_String() );
             fileHandles.push_back( filePtr );
+            ++n;
         }
         
         // Now we try to unload the files we loaded in sequence
@@ -129,10 +130,90 @@ PerformVFSFileLoadUnloadTest( void )
             // file handles
             fileHandles.pop_back();
         }
+        
+        // Create a new unique filename
+        CORE::UInt32 i=0;
+        CORE::CString newFilename;
+        do
+        {
+            newFilename = "DummyVFSTestFile" + CORE::UInt32ToString( i ) + ".tmp";
+            ++i;
+        }    
+        while ( vfs->FileExists( newFilename ) );
+        
+        VFS::CVFS::CVFSHandlePtr filePtr = vfs->GetFile( newFilename ,
+                                                         "wb"        ,
+                                                         true        );
+    
+        if ( NULL == filePtr )
+        {
+            // We verified that the filename was unique, the operation should have suceeded
+            ERRORHERE;
+        }
+        
+        // Get access to the file
+        CORE::CIOAccess* access = filePtr->GetAccess();
+        access->Open();
+        
+        // Create a buffer with test values
+        char buffer[ 1024 ]; 
+        CORE::UInt8 testValue = 0;
+        for ( CORE::UInt32 n=0; n<1024; ++n )
+        {
+            buffer[ n ] = testValue;
+            ++testValue;
+        }
+        
+        // Write the test data
+        for ( CORE::UInt32 n=0; n<1024; ++n )
+        {
+            if ( 1024 != access->Write( buffer, 1, 1024 ) )
+            {
+                // Failed to write data block to file
+                ERRORHERE;
+            }
+        }
+        access->Close();
+        
+        // Make sure there is no outstanding reference to our test file
+        filePtr = NULL;
+        
+        // Try to load the file we created
+        filePtr = vfs->GetFile( newFilename ,
+                                "rb"        ,
+                                false       );
+
+        if ( NULL == filePtr )
+        {
+            // We created the file, we should be able to load it
+            ERRORHERE;
+        }
+        
+        access = filePtr->GetAccess();
+        access->Open();
+        
+        char readBuffer[ 1024 ];
+        for ( CORE::UInt32 n=0; n<1024; ++n )
+        {
+            if ( 1024 != access->Read( readBuffer, 1, 1024 ) )
+            {
+                // Failed to read full data block from file
+                ERRORHERE;
+            }
+            
+            if ( memcmp( buffer, readBuffer, 1024 ) != 0 )
+            {
+                // The data found does not match what we expected
+                ERRORHERE;            
+            }
+        }
+        
+        GUCEF_LOG( 0, "Finished all load unload tests" );
+        
     }
     catch ( ... )
     {
-        printf( "ERROR unhandled exception during test\n" );
+        GUCEF_ERROR_LOG( 0, "unhandled exception during test" );
         #ifdef GUCEF_VFS_DEBUG_MODE
         CORE::GUCEF_PrintCallstack();
         #endif /* GUCEF_VFS_DEBUG_MODE ? */

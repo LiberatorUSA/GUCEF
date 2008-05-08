@@ -121,14 +121,12 @@ CFileSystemArchive::GetFile( const CString& file      ,
                              const bool overwrite     )
 
 {GUCEF_TRACE;
-
-    CString filepath( file.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );
         
     /* 
      *      Try to locate the file using the rootdirs as 
      *      a prefix
      */
-    CVFSHandle* fh = LoadFromDisk( filepath    ,
+    CVFSHandle* fh = LoadFromDisk( file        ,
                                    mode        ,
                                    memLoadSize ,
                                    overwrite   );
@@ -365,9 +363,11 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
         }
     }
     
-    // Check if the file even exists on disk
+    // Check if we can proceed under these circumstances
     bool exists( CORE::File_Exists( filepath.C_String() ) > 0 );
-    if ( exists )
+    if ( ( exists && overwrite && needwriteable ) || 
+         ( !exists && needwriteable )             ||
+         ( exists && !needwriteable )              )
     {                        
         // Attempt to get access to the file
         CORE::CIOAccess* fa = new CORE::CFileAccess( filepath, mode );
@@ -415,14 +415,14 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
                     delete bufferAccess;
                 }
             }
-            
-            // return the file handle
-            return new CVFSHandle( fa                  ,
-                                   file                ,
-                                   filepath            ,
-                                   TDynamicBufferPtr() );                
-                              
         }
+                    
+        // return the file handle
+        return new CVFSHandle( fa                  ,
+                               file                ,
+                               filepath            ,
+                               TDynamicBufferPtr() );                
+                              
     }
     
     return NULL;

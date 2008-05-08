@@ -157,25 +157,39 @@ CVFS::GetFile( const CORE::CString& file          ,
 {GUCEF_TRACE;
 
     m_datalock.Lock();
+
+    CString filepath( file.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );
+    bool fileMustExist = *mode == 'r';    
     
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
-    GetEligableMounts( file, mountLinks );
+    GetEligableMounts( filepath, mountLinks );
 
     // Find the file in the available archives
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
         TConstMountLink& mountLink = (*i);
-        if ( mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
+        
+        bool tryToGetFile = true;
+        if ( fileMustExist )
+        {
+            if ( !mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
+            {
+                tryToGetFile = false;
+            }
+        }
+        
+        if ( tryToGetFile )
         {
             CVFSHandlePtr filePtr = mountLink.mountEntry->archive->GetFile( mountLink.remainder ,  
                                                                             mode                ,
                                                                             _maxmemloadsize     ,
                                                                             overwrite           );
             m_datalock.Unlock();
-            return filePtr;
+            return filePtr;        
         }
+
         ++i;
     }
     

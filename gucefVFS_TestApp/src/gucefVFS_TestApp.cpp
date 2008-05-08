@@ -56,8 +56,25 @@ WinMain( HINSTANCE hinstance     ,
          int ncmdshow            )
 {GUCEF_TRACE;
                
+    #ifdef GUCEF_VFS_DEBUG_MODE
+    //GUCEF::CORE::GUCEF_LogStackToStdOut();
+    //GUCEF::CORE::GUCEF_SetStackLogging( 1 );
+    #endif /* GUCEF_VFS_DEBUG_MODE ? */
+
     try 
     {                               
+        GUCEF::CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
+        GUCEF::CORE::AppendToPath( logFilename, "gucefVFS_TestApp_Log.txt" );
+        GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
+        
+        GUCEF::CORE::CStdLogger logger( logFileAccess );
+        GUCEF::CORE::CLogManager::Instance()->AddLogger( &logger );
+        
+        #ifdef GUCEF_MSWIN_BUILD
+        GUCEF::CORE::CMSWinConsoleLogger consoleOut;
+        GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
+        #endif /* GUCEF_MSWIN_BUILD ? */
+        
         PerformVFSFileLoadUnloadTest();
         
         return 1;                                                                            
