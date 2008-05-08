@@ -637,7 +637,13 @@ CVFS::GetList( TStringSet& outputList                   ,
     while ( i != mountLinks.end() )
     {
         TConstMountLink& mountLink = (*i);
-        mountLink.mountEntry->archive->GetList( outputList, mountLink.remainder );
+        mountLink.mountEntry->archive->GetList( outputList            , 
+                                                mountLink.remainder   ,
+                                                recursive             ,
+                                                includePathInFilename ,
+                                                filter                ,
+                                                addFiles              ,
+                                                addDirs               );
         ++i;
     }
     
