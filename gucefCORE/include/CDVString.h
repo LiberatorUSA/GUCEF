@@ -116,6 +116,8 @@ class GUCEFCORE_EXPORT_CPP CString
 
     char operator[]( const UInt32 index ) const;
     
+    bool IsNULLOrEmpty( void ) const;
+    
     operator std::string() const;
     
     /* operator const char*() const; */

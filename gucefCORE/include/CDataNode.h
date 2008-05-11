@@ -155,7 +155,9 @@ class GUCEFCORE_EXPORT_CPP CDataNode
         
         const TNodeAtt* GetAttribute( const CString& name ) const;
         
-        TNodeAtt* GetAttribute( const CString& name );              
+        TNodeAtt* GetAttribute( const CString& name );
+        
+        CString GetAttributeValue( const CString& name ) const;
                            
         bool SetAttribute( const CString& name  ,
                            const CString& value );                           

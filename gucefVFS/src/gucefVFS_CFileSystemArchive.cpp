@@ -191,33 +191,33 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& root  ,
             }
             else
             {
-                if ( addDirs )
+                CORE::CString dirName = CORE::DI_Name( did );
+                if ( dirName != '.' && dirName != ".." )
                 {
-                    CORE::CString dirName = CORE::DI_Name( did );
-                    if ( dirName != '.' && dirName != ".." )
+                    if ( addDirs )
                     {
                         outputList.insert( dirName );
                     }
-                }
                 
-                if ( recursive )
-                {
-                    /*
-                     *      Build the path including the sub-dir
-                     */
-                    CORE::CString subdir( root );
-                    CORE::AppendToPath( subdir, CORE::DI_Name( did ) );
-                    
-                    /*
-                     *      Recursively process the sub-dir
-                     */
-                    GetListFromRoot( subdir                ,
-                                     recursive             ,
-                                     includePathInFilename ,
-                                     filter                ,
-                                     outputList            ,
-                                     true                  ,
-                                     false                 ); 
+                    if ( recursive )
+                    {
+                        /*
+                         *      Build the path including the sub-dir
+                         */
+                        CORE::CString subdir( root );
+                        CORE::AppendToPath( subdir, dirName );
+                        
+                        /*
+                         *      Recursively process the sub-dir
+                         */
+                        GetListFromRoot( subdir                ,
+                                         recursive             ,
+                                         includePathInFilename ,
+                                         filter                ,
+                                         outputList            ,
+                                         true                  ,
+                                         false                 ); 
+                    }
                 }
             }        
         }

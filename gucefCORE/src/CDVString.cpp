@@ -289,6 +289,15 @@ CString::operator<( const CString& other ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CString::IsNULLOrEmpty( void ) const
+{GUCEF_TRACE;
+
+    return m_length == 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString::operator std::string() const
 {GUCEF_TRACE;
     

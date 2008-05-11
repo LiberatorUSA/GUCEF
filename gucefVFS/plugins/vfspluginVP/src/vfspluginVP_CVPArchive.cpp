@@ -153,9 +153,18 @@ CVPArchive::GetList( TStringSet& outputList       ,
     TFileIndexMap::const_iterator i = m_index.begin();
     while ( i != m_index.end() )
     {        
-        if ( 0 == (*i).first.HasSubstr( location, true ) )
+        // Check if the starting path matches
+        const VFS::CString& filePath = (*i).first;
+        if ( 0 == filePath.HasSubstr( location, true ) )
         {
-                       
+            if ( includePathInFilename )
+            {
+                outputList.insert( filePath );
+            }
+            else
+            {
+                outputList.insert( CORE::ExtractFilename( filePath ) );
+            }
         }        
         ++i;
     }
@@ -294,23 +303,31 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
     FILE* fptr = fopen( archivePath.C_String(), "rb" );
     if ( NULL == fptr ) return false;
     
-    if ( fread( &m_header, VP_HEADER_SIZE, 1, fptr ) == VP_HEADER_SIZE )
+    if ( fread( &m_header, VP_HEADER_SIZE, 1, fptr ) == 1 )
     {
         if ( ( memcmp( m_header.sig, "VPVP", 4 ) == 0 ) &&
              ( m_header.version == 2 ) )
         {
+            
+            // Move to the index location at the end of the file
+            if ( 0 != fseek( fptr, m_header.indexoffset, SEEK_SET ) )
+            {
+                fclose( fptr );
+                return false;
+            }
+            
             // read the index
             VFS::CString path;
             TVPFileIndexEntry fileEntry;
             for ( VFS::UInt32 i=0; i<m_header.idxentries; ++i )
             {             
-                if ( fread( &fileEntry, VP_INDEX_ENTRY_SIZE, 1, fptr ) == VP_INDEX_ENTRY_SIZE )
+                if ( fread( &fileEntry, VP_INDEX_ENTRY_SIZE, 1, fptr ) != 1 )
                 {                                
                     fclose( fptr );
                     return false;
                 }
 
-                if ( fileEntry.size == 0 )
+                if ( fileEntry.offset == 0 )
                 {
                     // directory entry
                     CORE::AppendToPath( path, fileEntry.filename );

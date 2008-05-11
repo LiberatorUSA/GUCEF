@@ -400,35 +400,40 @@ CVFS::AddRoot( const CORE::CString& rootpath              ,
             {
                 // Mount based on archive file extention type
                 CString fileExtention = CORE::ExtractFileExtention( (*i) );
-                TAbstractArchiveFactory::TKeySet::iterator n = keySet.find( fileExtention );
-                if ( n != keySet.end() )
+                if ( !fileExtention.IsNULLOrEmpty() )
                 {
-                    // Found a compatible type,.. create an archive for the type
-                    m_datalock.Lock();
-                    CIArchive* archive = m_abstractArchiveFactory.Create( fileExtention );
-                    if ( NULL != archive )
+                    TAbstractArchiveFactory::TKeySet::iterator n = keySet.find( fileExtention );
+                    if ( n != keySet.end() )
                     {
-                        // Try to load from the resource
-                        if ( archive->LoadArchive( archiveName ,
-                                                   (*i)        ,
-                                                   writeable   ) )
+                        // Found a compatible type,.. create an archive for the type
+                        m_datalock.Lock();
+                        CIArchive* archive = m_abstractArchiveFactory.Create( fileExtention );
+                        if ( NULL != archive )
                         {
-                            // Successfully loaded/linked the archive
-                            // We will add it to our mount list
-                            TMountEntry archiveEntry;
-                            archiveEntry.path = (*i);
-                            archiveEntry.abspath = archiveEntry.path;
-                            archiveEntry.writeable = writeable;
-                            archiveEntry.archive = archive;
-                            archiveEntry.mountPath = archiveEntry.path;
-                            m_mountList.push_back( archiveEntry );
+                            // Try to load from the resource
+                            if ( archive->LoadArchive( (*i)        ,
+                                                       (*i)        ,
+                                                       writeable   ) )
+                            {
+                                // Successfully loaded/linked the archive
+                                // We will add it to our mount list
+                                TMountEntry archiveEntry;
+                                archiveEntry.path = (*i);
+                                archiveEntry.abspath = archiveEntry.path;
+                                archiveEntry.writeable = writeable;
+                                archiveEntry.archive = archive;
+                                archiveEntry.mountPath = archiveEntry.path;
+                                m_mountList.push_back( archiveEntry );
+                                
+                                GUCEF_SYSTEM_LOG( 0, "VFS archive mounted automatically with name " + (*i) );
+                            }
+                            else
+                            {
+                                delete archive;
+                            }
                         }
-                        else
-                        {
-                            delete archive;
-                        }
+                        m_datalock.Unlock();
                     }
-                    m_datalock.Unlock();
                 }
                 ++i;
             }
@@ -451,7 +456,7 @@ CVFS::SetMemloadSize( UInt32 bytesize )
 
     m_datalock.Lock();
     _maxmemloadsize = bytesize;
-    GUCEF_SYSTEM_LOG( 0, "VFS maximum memory load size set to " + CORE::UInt32ToString( bytesize ) );
+    GUCEF_SYSTEM_LOG( 0, "VFS maximum memory load size set to " + CORE::UInt32ToString( bytesize ) + " Bytes" );
     m_datalock.Unlock();
 }
 
@@ -519,7 +524,6 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
         CORE::CString vfsroot( "vfsroot" );
         const CORE::CDataNode* c;
         CORE::CDataNode::const_iterator i = n->ConstBegin();
-        const CORE::CDataNode::TNodeAtt* att2;
         bool writeable;
         
         while( i != n->ConstEnd() )
@@ -527,16 +531,21 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
             c = (*i);
             if ( c->GetName() == vfsroot )
             {
-                att = c->GetAttribute( "path" );
-                att2 = c->GetAttribute( "writeable" );
-                if ( att )
+                CString path = c->GetAttributeValue( "Path" );
+                if ( !path.IsNULLOrEmpty() )
                 {
-                        writeable = false;
-                        if ( att2 ) writeable = CORE::StringToBool( att2->value );
-                        
-                        AddRoot( att->value ,
-                                 att->value ,
-                                 writeable  );
+                    CString archiveName = c->GetAttributeValue( "ArchiveName" );
+                    if ( archiveName.IsNULLOrEmpty() )
+                    {
+                        archiveName = path;
+                    }
+                    
+                    bool mountArchives = CORE::StringToBool( c->GetAttributeValue( "MountArchives" ) ); 
+                    writeable = CORE::StringToBool( c->GetAttributeValue( "Writeable" ) );                        
+                    AddRoot( path          ,
+                             archiveName   ,
+                             writeable     ,
+                             mountArchives );
                 }
             }
             ++i;
@@ -788,7 +797,7 @@ CVFS::RegisterArchiveFactory( const CString& archiveType      ,
     m_abstractArchiveFactory.RegisterConcreteFactory( archiveType     ,
                                                       &archiveFactory );
                                                       
-    GUCEF_SYSTEM_LOG( 0, "Registered VFS archive factory for type " + archiveType ); 
+    GUCEF_SYSTEM_LOG( 0, "Registered VFS archive factory for type \"" + archiveType + "\"" ); 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -799,7 +808,7 @@ CVFS::UnregisterArchiveFactory( const CString& archiveType )
 
     m_abstractArchiveFactory.UnregisterConcreteFactory( archiveType );
     
-    GUCEF_SYSTEM_LOG( 0, "Unregistered VFS archive factory for type " + archiveType );
+    GUCEF_SYSTEM_LOG( 0, "Unregistered VFS archive factory for type \"" + archiveType + "\"" );
 }
 
 /*-------------------------------------------------------------------------//

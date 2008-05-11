@@ -119,6 +119,7 @@ class CVPArchive : public VFS::CIArchive
     
     typedef std::map< VFS::CString, TVPIndexEntry > TFileIndexMap;
     
+    #pragma pack (1)
     TVPHeader m_header;
     TFileIndexMap m_index;
     VFS::CString m_archiveName;

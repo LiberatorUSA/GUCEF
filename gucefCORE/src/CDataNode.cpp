@@ -421,6 +421,20 @@ CDataNode::GetAttribute( const CString& name ) const
 }
 
 /*-------------------------------------------------------------------------*/
+
+CString 
+CDataNode::GetAttributeValue( const CString& name ) const
+{GUCEF_TRACE;
+
+    const TNodeAtt* nodeAtt = GetAttribute( name );
+    if ( NULL != nodeAtt )
+    {
+        return nodeAtt->value;
+    }
+    return CString();
+}
+
+/*-------------------------------------------------------------------------*/
         
 CDataNode::TNodeAtt* 
 CDataNode::GetAttribute( const CString& name )
