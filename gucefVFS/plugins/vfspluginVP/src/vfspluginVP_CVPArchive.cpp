@@ -312,9 +312,12 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
             // Move to the index location at the end of the file
             if ( 0 != fseek( fptr, m_header.indexoffset, SEEK_SET ) )
             {
+                GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Error: unable to archive header" );
                 fclose( fptr );
                 return false;
             }
+            
+            GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Successfully read the archive header" );
             
             // read the index
             VFS::CString path;
@@ -323,6 +326,8 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
             {             
                 if ( fread( &fileEntry, VP_INDEX_ENTRY_SIZE, 1, fptr ) != 1 )
                 {                                
+                    GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Error: unable to read index entry" );
+                    
                     fclose( fptr );
                     return false;
                 }
@@ -330,7 +335,20 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
                 if ( fileEntry.offset == 0 )
                 {
                     // directory entry
-                    CORE::AppendToPath( path, fileEntry.filename );
+                    VFS::CString dirName;
+                    dirName.Scan( fileEntry.filename, 32 );
+                    
+                    GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Found directory entry: " +  dirName);
+                    if ( dirName == ".." )
+                    {
+                        path = CORE::StripLastSubDir( path );
+                        GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Going up to directory: " + path );
+                    }
+                    else
+                    {
+                        CORE::AppendToPath( path, dirName );
+                        GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Entering directory: " + dirName );
+                    }                    
                 }
                 else
                 {
@@ -339,9 +357,14 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
                     entry.offset = fileEntry.offset;
                     entry.size = fileEntry.size;
                     entry.timestamp = fileEntry.timestamp;
+                   
+                    VFS::CString filenameBuffer;
+                    filenameBuffer.Scan( fileEntry.filename, 32 );
                     
                     VFS::CString filename = path;
-                    CORE::AppendToPath( filename, fileEntry.filename );
+                    CORE::AppendToPath( filename, filenameBuffer );
+                    
+                    GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Found file entry: " +  filenameBuffer ) );
                     
                     m_index[ filename ] = entry;
                 }
@@ -351,10 +374,13 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
             
             m_archiveName = archiveName;
             m_archivePath = archivePath;
+            
+            GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Successfully finished reading the index" );
             return true;
         }
         else
         {
+            GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Error: Archive header not recognized" );
             fclose( fptr );
         }     
     }
