@@ -436,8 +436,10 @@ CVFS::AddRoot( const CORE::CString& rootpath              ,
         }
         
         m_datalock.Lock();
-        m_mountList.push_back( mountEntry );        
+        m_mountList.push_back( mountEntry );                
         m_datalock.Unlock();
+        
+        GUCEF_SYSTEM_LOG( 0, "VFS root added as a mount with name " + archiveName );
     }                
 }
 
@@ -449,6 +451,7 @@ CVFS::SetMemloadSize( UInt32 bytesize )
 
     m_datalock.Lock();
     _maxmemloadsize = bytesize;
+    GUCEF_SYSTEM_LOG( 0, "VFS maximum memory load size set to " + CORE::UInt32ToString( bytesize ) );
     m_datalock.Unlock();
 }
 
@@ -491,6 +494,7 @@ CVFS::SaveConfig( CORE::CDataNode& tree )
         n->AddChild( pathnode );                                 
     }                                 
     
+    GUCEF_SYSTEM_LOG( 0, "VFS configuration successfully saved" );
     return true;
 }
 
@@ -537,6 +541,9 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
             }
             ++i;
         }
+        
+        GUCEF_SYSTEM_LOG( 0, "VFS configuration successfully loaded" );
+        
         return true;
     }                                                                                                  
     return false;
@@ -769,6 +776,30 @@ CVFS::GetFileSize( const CORE::CString& file ) const
     
     m_datalock.Unlock();
     return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVFS::RegisterArchiveFactory( const CString& archiveType      ,
+                              TArchiveFactory& archiveFactory )
+{GUCEF_TRACE;
+
+    m_abstractArchiveFactory.RegisterConcreteFactory( archiveType     ,
+                                                      &archiveFactory );
+                                                      
+    GUCEF_SYSTEM_LOG( 0, "Registered VFS archive factory for type " + archiveType ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVFS::UnregisterArchiveFactory( const CString& archiveType )
+{GUCEF_TRACE;
+
+    m_abstractArchiveFactory.UnregisterConcreteFactory( archiveType );
+    
+    GUCEF_SYSTEM_LOG( 0, "Unregistered VFS archive factory for type " + archiveType );
 }
 
 /*-------------------------------------------------------------------------//

@@ -1,6 +1,6 @@
 /*
- *  gucefVFS: GUCEF module implementing a Virtual File System
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  vfspluginVP: Generic GUCEF VFS plugin for "Violation Pack" archives
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_VFS_CVFSHANDLE_H
-#define GUCEF_VFS_CVFSHANDLE_H
+#ifndef GUCEF_VFSPLUGIN_VP_H
+#define GUCEF_VFSPLUGIN_VP_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,30 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CSTRING_H
-#endif /* GUCEF_CORE_CSTRING_H ? */
+#ifndef GUCEF_CORE_ESTRUCTS_H
+#include "EStructs.h"
+#define GUCEF_CORE_ESTRUCTS_H
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef GUCEF_CORE_CIOACCESS_H
-#include "CIOAccess.h"
-#define GUCEF_CORE_CIOACCESS_H
-#endif /* GUCEF_CORE_CIOACCESS_H ? */
-
-#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
-#include "CDynamicBuffer.h"
-#define GUCEF_CORE_CDYNAMICBUFFER_H
-#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
-
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
-
-#ifndef GUCEF_VFS_MACROS_H
-#include "gucefVFS_macros.h"         /* often used gucefVFS macros */
-#define GUCEF_VFS_MACROS_H
-#endif /* GUCEF_VFS_MACROS_H ? */
+#ifndef GUCEF_VFSPLUGIN_VP_MACROS_H
+#include "vfspluginVP_macros.h"
+#define GUCEF_VFSPLUGIN_VP_MACROS_H
+#endif /* GUCEF_VFSPLUGIN_VP_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,53 +42,53 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_NAMESPACE_BEGIN
-VFS_NAMESPACE_BEGIN
+namespace GUCEF {
+namespace VFSPLUGIN {
+namespace VP {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CVFSHandle
-{
-    public:
+/*
+ *      Prevent C++ name mangling
+ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer > TDynamicBufferPtr;
+/*---------------------------------------------------------------------------*/
 
-    CVFSHandle( CORE::CIOAccess* fileAccess   ,
-                const CORE::CString& filename ,
-                const CORE::CString& filePath );
-    
-    CVFSHandle( CORE::CIOAccess* fileAccess   ,
-                const CORE::CString& filename ,
-                const CORE::CString& filePath ,
-                TDynamicBufferPtr& bufferPtr  );
+GUCEF_VFSPLUGIN_VP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Load( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-    ~CVFSHandle();
-    
-    CORE::CIOAccess* GetAccess( void );
-    
-    const CORE::CString& GetFilename( void ) const;
-    
-    const CORE::CString& GetFilePath( void ) const;
-    
-    bool IsLoadedInMemory( void ) const;
+/*--------------------------------------------------------------------------*/
 
-    private:
+GUCEF_VFSPLUGIN_VP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-    CVFSHandle( void );                              /**< not implemented */
-    CVFSHandle( const CVFSHandle& src );             /**< not implemented */
-    CVFSHandle& operator=( const CVFSHandle& src );  /**< not implemented */
-    
-    private:
+/*--------------------------------------------------------------------------*/
 
-    TDynamicBufferPtr m_bufferPtr;
-    CORE::CIOAccess* m_fileAccess;
-    CORE::CString m_filename;
-    CORE::CString m_filePath;
-};
+GUCEF_VFSPLUGIN_VP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_VFSPLUGIN_VP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_VFSPLUGIN_VP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*---------------------------------------------------------------------------*/                 
+
+#ifdef __cplusplus
+   }
+#endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -111,12 +96,13 @@ class EXPORT_CPP CVFSHandle
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-VFS_NAMESPACE_END
-GUCEF_NAMESPACE_END
+}; /* namespace VP */
+}; /* namespace VFSPLUGIN */
+}; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_VFS_CVFSHANDLE_H ? */
+/*--------------------------------------------------------------------------*/
+
+#endif /* GUCEF_VFSPLUGIN_VP_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -124,7 +110,7 @@ GUCEF_NAMESPACE_END
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 12-02-2005 :
-        - Initial implementation
+- 04-05-2005 :
+        - Dinand: Initial version.
 
 -----------------------------------------------------------------------------*/

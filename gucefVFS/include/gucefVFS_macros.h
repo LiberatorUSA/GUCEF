@@ -46,6 +46,11 @@
 #define GUCEF_VFS_CONFIG_H
 #endif /* GUCEF_VFS_CONFIG_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      GENERAL MACROS                                                     //
@@ -178,6 +183,8 @@
 #else
   #define EXPORT_C
 #endif /* EXPORT_C_CODE */
+
+#define GUCEF_VFS_EXPORT_CPP EXPORT_CPP
 
 /*-------------------------------------------------------------------------*/
 

@@ -42,6 +42,19 @@ VFS_NAMESPACE_BEGIN
 
 CVFSHandle::CVFSHandle( CORE::CIOAccess* fileAccess   ,
                         const CORE::CString& filename ,
+                        const CORE::CString& filePath )
+    : m_fileAccess( fileAccess ) ,
+      m_filename( filename )     ,
+      m_bufferPtr()              ,
+      m_filePath( filePath )
+{GUCEF_TRACE;
+                  
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVFSHandle::CVFSHandle( CORE::CIOAccess* fileAccess   ,
+                        const CORE::CString& filename ,
                         const CORE::CString& filePath ,
                         TDynamicBufferPtr& bufferPtr  )
     : m_fileAccess( fileAccess ) ,

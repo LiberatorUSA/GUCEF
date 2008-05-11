@@ -68,9 +68,11 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable
 {
     public:
     
-    typedef CIArchive::CVFSHandlePtr CVFSHandlePtr;
-    typedef CIArchive::TStringList   TStringList;
-    typedef CIArchive::TStringSet    TStringSet;
+    typedef CORE::CTAbstractFactory< CString, CIArchive > TAbstractArchiveFactory;
+    typedef TAbstractArchiveFactory::TConcreteFactory     TArchiveFactory;
+    typedef CIArchive::CVFSHandlePtr                      CVFSHandlePtr;
+    typedef CIArchive::TStringList                        TStringList;
+    typedef CIArchive::TStringSet                         TStringSet;
     
     static CVFS* Instance( void );
     
@@ -96,7 +98,8 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable
 
     bool UnmountArchiveByName( const CString& archiveName );
                   
-    void RegisterArchiveFactory( const CString& archiveType );
+    void RegisterArchiveFactory( const CString& archiveType      ,
+                                 TArchiveFactory& archiveFactory );
     
     void UnregisterArchiveFactory( const CString& archiveType );
     
@@ -159,8 +162,6 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable
     static void Deinstance( void );
     
     private:
-
-    typedef CORE::CTAbstractFactory< CString, CIArchive > TAbstractArchiveFactory;
 
     struct SMountEntry
     {

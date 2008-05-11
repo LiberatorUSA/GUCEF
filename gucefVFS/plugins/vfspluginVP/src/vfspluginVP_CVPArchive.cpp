@@ -1,0 +1,378 @@
+/*
+ *  vfspluginVP: Generic GUCEF VFS plugin for "Violation Pack" archives
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_CORE_DVMD5UTILS_H
+#include "dvmd5utils.h"
+#define GUCEF_CORE_DVMD5UTILS_H
+#endif /* GUCEF_CORE_DVMD5UTILS_H ? */
+
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
+#ifndef GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#include "CDynamicBufferAccess.h"
+#define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
+
+#ifndef GUCEF_CORE_CSUBFILEACCESS_H
+#include "gucefCORE_CSubFileAccess.h"
+#define GUCEF_CORE_CSUBFILEACCESS_H
+#endif /* GUCEF_CORE_CSUBFILEACCESS_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#include "vfspluginVP_CVPArchive.h"
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF {
+namespace VFSPLUGIN {
+namespace VP {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+struct SVPFileIndexEntry
+{
+    VFS::UInt32 offset;
+    VFS::UInt32 size;
+    char filename[ 32 ];
+    VFS::Int32 timestamp;        
+};
+typedef struct SVPFileIndexEntry TVPFileIndexEntry;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#define VP_HEADER_SIZE          16
+#define VP_INDEX_ENTRY_SIZE     44
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CVPArchive::CVPArchive( void )
+    : CIArchive()     ,
+      m_header()      ,
+      m_index()       ,
+      m_archiveName() ,
+      m_archivePath()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CVPArchive::~CVPArchive()
+{GUCEF_TRACE;
+
+    UnloadArchive();
+}
+
+/*-------------------------------------------------------------------------*/
+    
+VFS::CIArchive::CVFSHandlePtr
+CVPArchive::GetFile( const VFS::CString& file      ,
+                     const char* mode              ,
+                     const VFS::UInt32 memLoadSize ,
+                     const bool overwrite          )
+{GUCEF_TRACE;
+
+    // We only support read only modes
+    if ( *mode != 'r' ) return CVFSHandlePtr();
+    
+    // load the file
+    CORE::CIOAccess* fileAccess = LoadFile( file, memLoadSize );
+    if ( NULL != fileAccess )
+    {
+        // create a handle for the file
+        VFS::CString filePath = m_archivePath;
+        CORE::AppendToPath( filePath, file );
+
+        VFS::CVFSHandle* fileHandle = new VFS::CVFSHandle( fileAccess , 
+                                                           file       ,
+                                                           filePath   );
+                                                           
+        return CVFSHandlePtr( fileHandle, this );
+    }
+    
+    return CVFSHandlePtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVPArchive::GetList( TStringSet& outputList       ,
+                     const VFS::CString& location , 
+                     bool recursive               ,
+                     bool includePathInFilename   ,
+                     const VFS::CString& filter   ,
+                     bool addFiles                ,
+                     bool addDirs                 ) const
+{GUCEF_TRACE;
+
+    TFileIndexMap::const_iterator i = m_index.begin();
+    while ( i != m_index.end() )
+    {        
+        if ( 0 == (*i).first.HasSubstr( location, true ) )
+        {
+                       
+        }        
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CVPArchive::FileExists( const VFS::CString& filePath ) const
+{GUCEF_TRACE;
+
+    return m_index.find( filePath ) != m_index.end();
+}
+
+/*-------------------------------------------------------------------------*/
+
+VFS::UInt32
+CVPArchive::GetFileSize( const VFS::CString& filePath ) const
+{GUCEF_TRACE;
+
+    TFileIndexMap::const_iterator i = m_index.find( filePath );
+    if ( i != m_index.end() )
+    {
+        return (*i).second.size;
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CIOAccess*
+CVPArchive::LoadFile( const VFS::CString& file      ,
+                      const VFS::UInt32 memLoadSize ) const
+{GUCEF_TRACE;
+
+    TFileIndexMap::const_iterator i = m_index.find( file );
+    if ( i != m_index.end() )
+    {
+        const TVPIndexEntry& entry = (*i).second;
+        
+        if ( memLoadSize >= entry.size )
+        {
+            FILE* fptr = fopen( m_archivePath.C_String(), "rb" );
+            if ( NULL == fptr ) return NULL;
+            
+            if ( 0 == fseek( fptr, entry.offset, SEEK_CUR ) )
+            {
+                // prepare a memory buffer for the file
+                CORE::CDynamicBuffer* fileBuffer = new CORE::CDynamicBuffer();
+                fileBuffer->SetDataSize( entry.size );
+            
+                if ( entry.size == fread( fileBuffer->GetBufferPtr(), entry.size, 1, fptr ) )
+                {
+                    // Successfully read file into memory
+                    fclose( fptr );
+                    return new CORE::CDynamicBufferAccess( fileBuffer, true );
+                }
+                
+                // unable to read entire file
+                delete fileBuffer;                
+            }
+            
+            fclose( fptr );
+        }
+        else
+        {
+            CORE::CSubFileAccess* fileAccess = new CORE::CSubFileAccess();
+            if ( fileAccess->Load( m_archivePath ,
+                                   entry.offset  ,
+                                   entry.size    ) )
+            {
+                return fileAccess;
+            }
+            delete fileAccess;
+        }
+    }
+    return NULL;    
+}
+
+/*-------------------------------------------------------------------------*/
+    
+VFS::CString
+CVPArchive::GetFileHash( const VFS::CString& file ) const
+{GUCEF_TRACE;
+
+    CORE::CIOAccess* fileAccess = LoadFile( file, 102400 );
+    if ( NULL != fileAccess )
+    {
+        VFS::UInt8 digest[ 16 ];
+        if ( 0 != CORE::md5frommfile( fileAccess->CStyleAccess() ,
+                                      digest                     ) )
+        {
+            delete fileAccess;
+            
+            char md5_str[ 48 ];
+            CORE::md5tostring( digest, md5_str );
+            VFS::CString md5Str;
+            md5Str.Set( md5_str, 48 );
+            return md5Str;
+        }
+        
+        delete fileAccess; 
+    }
+    return VFS::CString();
+}
+
+/*-------------------------------------------------------------------------*/
+    
+const VFS::CString&
+CVPArchive::GetArchiveName( void ) const
+{GUCEF_TRACE;
+
+    return m_archiveName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVPArchive::IsWriteable( void ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CVPArchive::LoadArchive( const VFS::CString& archiveName ,
+                         const VFS::CString& archivePath ,
+                         const bool writableRequest      )
+{GUCEF_TRACE;
+
+    // We do not support writable VP archives
+    if ( writableRequest ) return false;
+    
+    FILE* fptr = fopen( archivePath.C_String(), "rb" );
+    if ( NULL == fptr ) return false;
+    
+    if ( fread( &m_header, VP_HEADER_SIZE, 1, fptr ) == VP_HEADER_SIZE )
+    {
+        if ( ( memcmp( m_header.sig, "VPVP", 4 ) == 0 ) &&
+             ( m_header.version == 2 ) )
+        {
+            // read the index
+            VFS::CString path;
+            TVPFileIndexEntry fileEntry;
+            for ( VFS::UInt32 i=0; i<m_header.idxentries; ++i )
+            {             
+                if ( fread( &fileEntry, VP_INDEX_ENTRY_SIZE, 1, fptr ) == VP_INDEX_ENTRY_SIZE )
+                {                                
+                    fclose( fptr );
+                    return false;
+                }
+
+                if ( fileEntry.size == 0 )
+                {
+                    // directory entry
+                    CORE::AppendToPath( path, fileEntry.filename );
+                }
+                else
+                {
+                    // file entry
+                    TVPIndexEntry entry;
+                    entry.offset = fileEntry.offset;
+                    entry.size = fileEntry.size;
+                    entry.timestamp = fileEntry.timestamp;
+                    
+                    VFS::CString filename = path;
+                    CORE::AppendToPath( filename, fileEntry.filename );
+                    
+                    m_index[ filename ] = entry;
+                }
+            }
+            
+            fclose( fptr );
+            
+            m_archiveName = archiveName;
+            m_archivePath = archivePath;
+            return true;
+        }
+        else
+        {
+            fclose( fptr );
+        }     
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVPArchive::UnloadArchive( void )
+{GUCEF_TRACE;
+
+    m_index.clear();
+    m_archiveName = NULL;
+    m_archivePath = NULL;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVPArchive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed )
+{GUCEF_TRACE;
+
+    delete objectToBeDestroyed;
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace VP */
+}; /* namespace VFSPLUGIN */
+}; /* namespace GUCEF */
+
+/*-------------------------------------------------------------------------*/
