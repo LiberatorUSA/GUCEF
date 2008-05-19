@@ -159,9 +159,20 @@ CURL::operator=( const CURL& src )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CURL::Refresh( void )
+{GUCEF_TRACE;
+
+    Deactivate();
+    Activate();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CPulseGenerator&
 CURL::GetPulseGenerator( void )
-{
+{GUCEF_TRACE;
+
     return *m_pulseGenerator;
 }
 
@@ -170,6 +181,7 @@ CURL::GetPulseGenerator( void )
 bool
 CURL::operator==( const CURL& other ) const
 {GUCEF_TRACE;
+
         return m_url == other.m_url;
 }
 
@@ -178,7 +190,8 @@ CURL::operator==( const CURL& other ) const
 bool
 CURL::operator!=( const CURL& other ) const
 {GUCEF_TRACE;
-        return !( (*this) == other );
+
+    return !( (*this) == other );
 }
         
 /*-------------------------------------------------------------------------*/        

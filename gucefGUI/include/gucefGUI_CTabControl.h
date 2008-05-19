@@ -69,6 +69,8 @@ class GUCEF_GUI_EXPORT_CPP CTabControl : public CWidget
     
     virtual bool SetActiveTab( const UInt32 tabIndex );
     
+    virtual Int32 GetActiveTab( void ) const;
+    
     virtual CTabContentPane* GetTabContentPane( const UInt32 tabIndex );
     
     virtual const CString& GetClassTypeName( void ) const;
