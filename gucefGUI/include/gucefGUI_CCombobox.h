@@ -64,7 +64,7 @@ class GUCEF_GUI_EXPORT_CPP CCombobox : public CWidget
     
     virtual bool SetText( const CString& text );
     
-    virtual bool GetText( CString& text ) const;
+    virtual CString GetText( void ) const;
     
     virtual bool SetListItems( const TStringVector& items );
     

@@ -103,6 +103,8 @@ class GUCEF_GUI_EXPORT_CPP CWidget : public CORE::CObservingNotifier
     
     virtual bool IsVisible( void ) const;
     
+    virtual bool ShowModal( void );
+    
     virtual bool SetEnabled( const bool isEnabled );
      
     virtual bool IsEnabled( void ) const;

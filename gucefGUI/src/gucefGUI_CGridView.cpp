@@ -84,6 +84,51 @@ CGridView::~CGridView()
 }
 
 /*-------------------------------------------------------------------------*/
+
+void
+CGridView::SetText( const UInt32 columnIndex ,
+                    const UInt32 rowIndex    ,
+                    const CString& text      )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CGridView::GetText( const UInt32 columnIndex ,
+                    const UInt32 rowIndex    ) const
+{GUCEF_TRACE;
+
+    return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGridView::AppendText( const UInt32 columnIndex ,
+                       const CString& text      )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGridView::AppendText( const CString& text )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGridView::Clear( void )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
     
 const CString&
 CGridView::GetClassTypeName( void ) const

@@ -54,13 +54,13 @@ class GUCEF_GUI_EXPORT_CPP CWindow : public CWidget
     
     virtual ~CWindow();
     
-    bool SetTitleBarText( const CString& title );
+    virtual bool SetTitleBarText( const CString& title );
     
-    bool GetTitleBarText( CString& title ) const;
+    virtual bool GetTitleBarText( CString& title ) const;
     
-    bool SetTitleBarVisible( const bool isVisible );
+    virtual bool SetTitleBarVisible( const bool isVisible );
     
-    bool GetTitleBarVisible( bool& isVisible );
+    virtual bool GetTitleBarVisible( bool& isVisible );
     
     private:
     

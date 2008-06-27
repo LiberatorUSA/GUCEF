@@ -90,6 +90,8 @@ class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
     
     virtual bool Show( void );
     
+    virtual bool ShowModal( void );
+    
     virtual bool Hide( void );
 
     virtual const CString& GetClassTypeName( void ) const;

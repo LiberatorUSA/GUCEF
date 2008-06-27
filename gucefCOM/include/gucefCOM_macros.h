@@ -146,6 +146,9 @@
   #define GUCEFCOM_EXPORT_C
 #endif /* GUCEFCOM_EXPORT_C_CODE ? */
 
+#define GUCEF_COM_EXPORT_CPP GUCEFCOM_EXPORT_CPP
+#define GUCEF_COM_EXPORT_C GUCEFCOM_EXPORT_C
+
 /*-------------------------------------------------------------------------*/
 
 /*

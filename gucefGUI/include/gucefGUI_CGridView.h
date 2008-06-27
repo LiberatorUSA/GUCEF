@@ -87,6 +87,20 @@ class GUCEF_GUI_EXPORT_CPP CGridView : public CWidget
     
     virtual ~CGridView();
     
+    virtual void SetText( const UInt32 columnIndex ,
+                          const UInt32 rowIndex    ,
+                          const CString& text      );
+
+    virtual CString GetText( const UInt32 columnIndex ,
+                             const UInt32 rowIndex    ) const;
+
+    virtual void AppendText( const UInt32 columnIndex ,
+                             const CString& text      );
+
+    virtual void AppendText( const CString& text );    
+    
+    virtual void Clear( void );
+    
     virtual const CString& GetClassTypeName( void ) const;
     
     private:

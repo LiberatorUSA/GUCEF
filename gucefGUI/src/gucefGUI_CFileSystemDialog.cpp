@@ -1,5 +1,5 @@
 /*
- *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
+ *  guceGUI: GUCE module providing GUI functionality
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -9,14 +9,14 @@
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
-
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -28,12 +28,7 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
-#ifndef GUCEF_GUI_CGUIMANAGER_H
-#include "gucefGUI_CGUIManager.h"
-#define GUCEF_GUI_CGUIMANAGER_H
-#endif /* GUCEF_GUI_CGUIMANAGER_H ? */
-
-#include "gucefGUI_CForm.h"
+#include "gucefGUI_CFileSystemDialog.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,277 +45,239 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CForm::LayoutLoadedEvent = "GUCEF::GUI::CForm::LayoutLoadedEvent";
-const CORE::CEvent CForm::LayoutSavedEvent = "GUCEF::GUI::CForm::LayoutSavedEvent";
+const GUCEF::CORE::CEvent CFileSystemDialog::OkPressedEvent = "GUCE::GUI::CFileSystemDialog::OkPressedEvent";
+const GUCEF::CORE::CEvent CFileSystemDialog::CancelPressedEvent = "GUCE::GUI::CFileSystemDialog::CancelPressedEvent";
+const GUCEF::CORE::CEvent CFileSystemDialog::FilterChangedEvent = "GUCE::GUI::CFileSystemDialog::FilterChangedEvent";
+const GUCEF::CORE::CEvent CFileSystemDialog::SelectionChangedEvent = "GUCE::GUI::CFileSystemDialog::SelectionChangedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-    
-void
-CForm::RegisterEvents( void )
-{GUCEF_TRACE;
 
-    LayoutLoadedEvent.Initialize();
-    LayoutSavedEvent.Initialize();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CForm::CForm( void )
-    : CORE::CObservingNotifier() ,
-      m_backend( NULL )          ,
-      m_parentWidget( NULL )
+CFileSystemDialog::CFileSystemDialog( void )
+    : CForm()                    ,
+      m_window( NULL )           , 
+      m_okButton( NULL )         ,
+      m_cancelButton( NULL )     ,
+      m_fsGridView( NULL )       ,
+      m_filterCombobox( NULL )   ,
+      m_selectionEditbox( NULL )
 {GUCEF_TRACE;
 
     RegisterEvents();
-}
 
-/*-------------------------------------------------------------------------*/
-
-CForm::~CForm()
-{GUCEF_TRACE;
-
-    delete m_backend;
-    m_backend = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
     
-bool
-CForm::LoadLayout( CORE::CIOAccess& layoutStorage )
+CFileSystemDialog::~CFileSystemDialog()
 {GUCEF_TRACE;
 
-    if ( NULL == m_backend )
-    {
-        CFormBackendFactory* beFactory = CGUIManager::Instance()->GetFormBackendFactory();
-        if ( NULL != beFactory )
-        {
-            m_backend = beFactory->Create();
-        }
-    }
-    
-    if ( NULL != m_backend )
-    {
-        OnPreLayoutLoad();
-        if ( m_backend->LoadLayout( layoutStorage ) )
-        {
-            if ( NULL != m_parentWidget )
-            {
-                SetParent( m_parentWidget );
-            }
-            OnPostLayoutLoad();
-            NotifyObservers( LayoutLoadedEvent );
-            return true;
-        }
-    }
-    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CFileSystemDialog::SetFileSystemInfoProvider( CIFileSystemInfoProvider* provider )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CFileSystemDialog::SetCurrentPath( const CString& path )
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
     
-bool
-CForm::SaveLayout( CORE::CIOAccess& layoutStorage )
-{GUCEF_TRACE;
-
-    if ( NULL != m_backend )
-    {
-        if ( m_backend->SaveLayout( layoutStorage ) )
-        {
-            NotifyObservers( LayoutSavedEvent );
-            return true;
-        }
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-const CWidget*
-CForm::GetRootWidget( void ) const
-{GUCEF_TRACE;
-
-    if ( NULL != m_backend )
-    {
-        return m_backend->GetRootWidget();
-    }
-    return NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CWidget*
-CForm::GetRootWidget( void )
-{GUCEF_TRACE;
-
-    if ( NULL != m_backend )
-    {
-        return m_backend->GetRootWidget();
-    }
-    return NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CWidget*
-CForm::GetWidget( const CString& widgetName )
-{GUCEF_TRACE;
-
-    if ( NULL != m_backend )
-    {
-        return m_backend->GetWidget( widgetName );
-    }
-    return NULL;    
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CForm::SetVisibility( const bool isVisible )
-{GUCEF_TRACE;
-
-    CWidget* widget = GetRootWidget();
-    if ( NULL != widget )
-    {
-        return widget->SetVisibility( isVisible );
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CForm::IsVisible( void ) const
-{GUCEF_TRACE;
-
-    const CWidget* widget = GetRootWidget();
-    if ( NULL != widget )
-    {
-        return widget->IsVisible();
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CForm::Show( void )
-{GUCEF_TRACE;
-
-    CWidget* widget = GetRootWidget();
-    if ( NULL != widget )
-    {
-        return widget->SetVisibility( true );
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CForm::ShowModal( void )
-{GUCEF_TRACE;
-
-    CWidget* widget = GetRootWidget();
-    if ( NULL != widget )
-    {
-        return widget->ShowModal();
-    }
-    return false;    
-}
-
-/*-------------------------------------------------------------------------*/
-    
-bool
-CForm::Hide( void )
-{GUCEF_TRACE;
-
-    CWidget* widget = GetRootWidget();
-    if ( NULL != widget )
-    {
-        return widget->SetVisibility( false );
-    }
-    return false;    
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CForm::SetParent( CForm* parentForm )
-{GUCEF_TRACE;
-
-    CWidget* widget = GetRootWidget();
-    if ( NULL != widget )
-    {
-        if ( NULL != parentForm )
-        {
-            m_parentWidget = parentForm->GetRootWidget();
-            if ( NULL != m_parentWidget )
-            {
-                return widget->SetParentWidget( m_parentWidget );
-            }
-        }
-        return widget->SetParentWidget( NULL );
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-bool
-CForm::SetParent( CWidget* parentWidget )
-{GUCEF_TRACE;
-
-    CWidget* widget = GetRootWidget();
-    if ( NULL != widget )
-    {
-        m_parentWidget = parentWidget;
-        return widget->SetParentWidget( m_parentWidget );
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CWidget*
-CForm::GetParent( void )
-{GUCEF_TRACE;
-
-    CWidget* widget = GetRootWidget();
-    if ( NULL != widget )
-    {
-        return widget->GetParentWidget();
-    }
-    return m_parentWidget;
-}
-
-/*-------------------------------------------------------------------------*/
-
- void
- CForm::OnPreLayoutLoad( void )
- {GUCEF_TRACE;
- 
-    // no need to do anything
- }
- 
- /*-------------------------------------------------------------------------*/
-    
- void
- CForm::OnPostLayoutLoad( void )
- {GUCEF_TRACE;
- 
-    // no need to do anything
- }
- 
- /*-------------------------------------------------------------------------*/
-
 const CString&
-CForm::GetClassTypeName( void ) const
-{
-    static CString typeName = "GUCEF::GUI::CForm";
-    return typeName;
+CFileSystemDialog::GetCurrentPath( void ) const
+{GUCEF_TRACE;
+
+    static CString dummyStr;
+    return dummyStr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CFileSystemDialog::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    OkPressedEvent.Initialize();
+    CancelPressedEvent.Initialize();
+    FilterChangedEvent.Initialize();
+    SelectionChangedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CCombobox*
+CFileSystemDialog::GetFilterCombobox( void )
+{GUCEF_TRACE;
+
+    return m_filterCombobox;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEditbox*
+CFileSystemDialog::GetSelectionEditbox( void )
+{GUCEF_TRACE;
+
+    return m_selectionEditbox;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemDialog::IsItemADirectory( const CString& name ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CFileSystemDialog::SetAllowedSelection( const bool allowDirSelect  ,
+                                        const bool allowFileSelect )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemDialog::ShowModal( void )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CWindow*
+CFileSystemDialog::GetWindow( void )
+{GUCEF_TRACE;
+
+    return m_window;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CButton*
+CFileSystemDialog::GetOkButton( void )
+{GUCEF_TRACE;
+
+    return m_okButton;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CButton*
+CFileSystemDialog::GetCancelButton( void )
+{GUCEF_TRACE;
+
+    return m_cancelButton;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGridView*
+CFileSystemDialog::GetFileSystemGridView( void )
+{GUCEF_TRACE;
+
+    return m_fsGridView;
+}
+   
+/*-------------------------------------------------------------------------*/
+    
+void
+CFileSystemDialog::RefreshView( void )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CFileSystemDialog::SetAllowMultiSelect( const bool allow )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CFileSystemDialog::GetAllowMultiSelect( void ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CFileSystemDialog::SetSelectedItems( const TStringVector& items )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+const CFileSystemDialog::TStringVector&
+CFileSystemDialog::GetSelectedItems( void ) const
+{GUCEF_TRACE;
+
+    static TStringVector dummyList;
+    return dummyList;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CFileSystemDialog::SetItemDisplayTypes( const bool showDirs  ,
+                                        const bool showFiles )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CFileSystemDialog::OnPreLayoutLoad( void )
+{GUCEF_TRACE;
+
+    CForm::OnPreLayoutLoad();
+    
+    m_okButton = NULL;
+    m_cancelButton = NULL;
+    m_window = NULL;
+    m_fsGridView = NULL;
+    m_filterCombobox = NULL;
+    m_selectionEditbox = NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CFileSystemDialog::OnPostLayoutLoad( void )
+{GUCEF_TRACE;
+
+    CForm::OnPostLayoutLoad();
+    
+    m_okButton = static_cast< CButton* >( GetWidget( "OkButton" ) );
+    m_cancelButton = static_cast< CButton* >( GetWidget( "CancelButton" ) );
+    m_window = static_cast< CWindow* >( GetWidget( "FileSystemDialogWindow" ) );
+    m_fsGridView = static_cast< CGridView* >( GetWidget( "FileSystemGridView" ) );
+    m_filterCombobox = static_cast< CCombobox* >( GetWidget( "FilterCombobox" ) );
+    m_selectionEditbox = static_cast< CEditbox* >( GetWidget( "SelectionEditbox" ) ); 
 }
 
 /*-------------------------------------------------------------------------//
@@ -329,7 +286,7 @@ CForm::GetClassTypeName( void ) const
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUI */
-}; /* namespace GUCEF */
+} /* namespace GUI */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

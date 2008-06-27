@@ -97,11 +97,11 @@ CCombobox::SetText( const CString& text )
 
 /*-------------------------------------------------------------------------*/
     
-bool
-CCombobox::GetText( CString& text ) const
+CString
+CCombobox::GetText( void ) const
 {GUCEF_TRACE;
 
-    return false;
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/

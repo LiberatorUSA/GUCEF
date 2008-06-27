@@ -134,6 +134,15 @@ CWidget::GetName( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
+CWidget::ShowModal( void )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CWidget::SetVisibility( const bool isVisible )
 {GUCEF_TRACE;
 

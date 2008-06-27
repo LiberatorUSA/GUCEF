@@ -34,10 +34,7 @@
 #define CGUCEFCOMMODULE_H
 #endif /* CGUCEFCOMMODULE_H ? */
 
-#ifndef GUCEF_COM_H
 #include "gucefCOM.h"
-#define GUCEF_COM_H
-#endif /* GUCEF_COM_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,5 +43,14 @@
 //-------------------------------------------------------------------------*/
 
 DLL_INIT_FUNC_BEG_END( GUCEF::COM::CGUCEFCOMModule );
+
+/*-------------------------------------------------------------------------*/
+
+const char*
+GUCEF_COM_ModuleCompileTimeStamp( void )
+{GUCEF_TRACE;
+
+    return __TIMESTAMP__;
+}
 
 /*-------------------------------------------------------------------------*/
