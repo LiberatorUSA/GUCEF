@@ -154,6 +154,11 @@
 #define GUCEF_GUI_CSPINNER_H
 #endif /* GUCEF_GUI_CSPINNER_H ? */
 
+#ifndef GUCEF_GUI_CRENDERCONTEXT_H
+#include "gucefGUI_CRenderContext.h"
+#define GUCEF_GUI_CRENDERCONTEXT_H
+#endif /* GUCEF_GUI_CRENDERCONTEXT_H ? */
+
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
 
