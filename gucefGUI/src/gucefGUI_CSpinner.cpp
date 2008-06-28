@@ -28,7 +28,7 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
-#include "gucefGUI_CGUIManager.h"
+#include "gucefGUI_CSpinner.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,10 +45,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUIManager* CGUIManager::g_instance = NULL;
-
-const CORE::CEvent CGUIManager::FormFactoryRegisteredEvent = "GUCEF::GUI::CGUIManager::FormFactoryRegisteredEvent";
-const CORE::CEvent CGUIManager::FormFactoryUnregisteredEvent = "GUCEF::GUI::CGUIManager::FormFactoryUnregisteredEvent";
+const CORE::CEvent CSpinner::ValueChangedEvent = "GUCEF::GUI::CSpinner::ValueChangedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,118 +53,91 @@ const CORE::CEvent CGUIManager::FormFactoryUnregisteredEvent = "GUCEF::GUI::CGUI
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUIManager*
-CGUIManager::Instance( void )
-{GUCEF_TRACE;
-
-    if ( g_instance == NULL )
-    {
-        g_instance = new CGUIManager();
-    }
-    return g_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
 void
-CGUIManager::Deinstance( void )
+CSpinner::RegisterEvents( void )
 {GUCEF_TRACE;
 
-    delete g_instance;
-    g_instance = NULL; 
+    ValueChangedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CGUIManager::RegisterEvents( void )
-{GUCEF_TRACE;
-
-    FormFactoryRegisteredEvent.Initialize();
-    FormFactoryUnregisteredEvent.Initialize();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUIManager::CGUIManager( void )
-    : m_widgetFactory()            ,
-      m_formFactory()              ,
-      m_formBackendFactory( NULL )
+CSpinner::CSpinner( void )
+    : CWidget( "Spinner" )
 {GUCEF_TRACE;
 
     RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CSpinner::~CSpinner()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CSpinner::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::GUI::CSpinner";
+    return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CSpinner::SetValueUInt32( const UInt32 value )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CSpinner::SetValueInt32( const Int32 value )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CSpinner::SetValueFloat32( const Float32 value )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
     
-    SubscribeTo( &m_formFactory                                                 ,
-                 CORE::CAbstractFactoryBase::ConcreteFactoryRegisteredEvent     ,
-                 &TEventCallback( this, &CGUIManager::OnFormFactoryRegistered ) );
-    SubscribeTo( &m_formFactory                                                   ,
-                 CORE::CAbstractFactoryBase::ConcreteFactoryUnregisteredEvent     ,
-                 &TEventCallback( this, &CGUIManager::OnFormFactoryUnregistered ) );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUIManager::~CGUIManager()
+UInt32
+CSpinner::GetValueUInt32( void ) const
 {GUCEF_TRACE;
 
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
     
-CWidgetFactory&
-CGUIManager::GetWidgetFactory( void )
+Int32
+CSpinner::GetValueInt32( void ) const
 {GUCEF_TRACE;
 
-    return m_widgetFactory;
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
     
-CFormFactory&
-CGUIManager::GetFormFactory( void )
+Float32
+CSpinner::GetValueFloat32( void ) const
 {GUCEF_TRACE;
 
-    return m_formFactory;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CGUIManager::SetFormBackendFactory( CFormBackendFactory* backendFactory )
-{GUCEF_TRACE;
-
-    m_formBackendFactory = backendFactory;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CFormBackendFactory*
-CGUIManager::GetFormBackendFactory( void )
-{GUCEF_TRACE;
-
-    return m_formBackendFactory;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CGUIManager::OnFormFactoryRegistered( CORE::CNotifier* notifier    ,
-                                      const CORE::CEvent& eventid  ,
-                                      CORE::CICloneable* eventdata )
-{GUCEF_TRACE;
-
-    NotifyObservers( FormFactoryRegisteredEvent, eventdata );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CGUIManager::OnFormFactoryUnregistered( CORE::CNotifier* notifier    ,
-                                        const CORE::CEvent& eventid  ,
-                                        CORE::CICloneable* eventdata )
-{GUCEF_TRACE;
-
-    NotifyObservers( FormFactoryUnregisteredEvent, eventdata );
+    return 0.0f;
 }
 
 /*-------------------------------------------------------------------------//

@@ -675,6 +675,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefCORE_CAbstractFactoryBase.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefCORE_CBusyWaitPulseGeneratorDriver.cpp"
 				>
 			</File>
@@ -1281,6 +1285,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefCORE_CAbstractFactoryBase.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefCORE_CBusyWaitPulseGeneratorDriver.h"
 				>
 			</File>
@@ -1330,10 +1338,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefCORE_CTEventHandlerFunctor.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefCORE_CTPolledMailbox.h"
 				>
 			</File>
 			<File

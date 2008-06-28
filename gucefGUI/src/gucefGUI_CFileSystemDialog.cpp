@@ -57,7 +57,7 @@ const GUCEF::CORE::CEvent CFileSystemDialog::SelectionChangedEvent = "GUCE::GUI:
 //-------------------------------------------------------------------------*/
 
 CFileSystemDialog::CFileSystemDialog( void )
-    : CForm()                    ,
+    : CFormEx()                  ,
       m_window( NULL )           , 
       m_okButton( NULL )         ,
       m_cancelButton( NULL )     ,
@@ -254,7 +254,7 @@ void
 CFileSystemDialog::OnPreLayoutLoad( void )
 {GUCEF_TRACE;
 
-    CForm::OnPreLayoutLoad();
+    CFormEx::OnPreLayoutLoad();
     
     m_okButton = NULL;
     m_cancelButton = NULL;
@@ -270,7 +270,7 @@ void
 CFileSystemDialog::OnPostLayoutLoad( void )
 {GUCEF_TRACE;
 
-    CForm::OnPostLayoutLoad();
+    CFormEx::OnPostLayoutLoad();
     
     m_okButton = static_cast< CButton* >( GetWidget( "OkButton" ) );
     m_cancelButton = static_cast< CButton* >( GetWidget( "CancelButton" ) );

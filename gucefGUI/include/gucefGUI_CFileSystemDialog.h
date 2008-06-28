@@ -56,10 +56,10 @@
 #define GUCEF_GUI_CGRIDVIEW_H
 #endif /* GUCEF_GUI_CGRIDVIEW_H ? */
 
-#ifndef GUCEF_GUI_CFORM_H
-#include "gucefGUI_CForm.h"
-#define GUCEF_GUI_CFORM_H
-#endif /* GUCEF_GUI_CFORM_H ? */
+#ifndef GUCEF_GUI_CFORMEX_H
+#include "gucefGUI_CFormEx.h"
+#define GUCEF_GUI_CFORMEX_H
+#endif /* GUCEF_GUI_CFORMEX_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -76,7 +76,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CFileSystemDialog : public CForm
+class GUCEF_GUI_EXPORT_CPP CFileSystemDialog : public CFormEx
 {
     public:
     

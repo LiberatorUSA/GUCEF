@@ -28,9 +28,20 @@
 
 #include <map>
 #include <set>
+
 #include "CTFactory.h"
 #include "CTFactoryBase.h"
 #include "CMsgException.h"
+
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
+#include "CTCloneableObj.h"
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+
+#ifndef GUCEF_CORE_CABSTRACTFACTORYBASE_H
+#include "gucefCORE_CAbstractFactoryBase.h"
+#define GUCEF_CORE_CABSTRACTFACTORYBASE_H
+#endif /* GUCEF_CORE_CABSTRACTFACTORYBASE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,9 +68,12 @@ namespace CORE {
  *
  */
 template< typename SelectionCriteriaType, class BaseClassType >
-class CTAbstractFactory
+class CTAbstractFactory : public CAbstractFactoryBase
 {
     public:
+    
+    typedef SelectionCriteriaType TSelectionCriteriaType;
+    typedef CTCloneableObj< SelectionCriteriaType > TKeyContainer;
     typedef CTFactoryBase< BaseClassType > TConcreteFactory;
     typedef std::set< SelectionCriteriaType > TKeySet;
     
@@ -111,7 +125,7 @@ template< typename SelectionCriteriaType, class BaseClassType >
 CTAbstractFactory< SelectionCriteriaType, BaseClassType >::CTAbstractFactory( const bool assumeFactoryOwnership /* = false */ )
     : m_assumeFactoryOwnership( assumeFactoryOwnership )
 {
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -136,9 +150,6 @@ template< typename SelectionCriteriaType, class BaseClassType >
 CTAbstractFactory< SelectionCriteriaType, BaseClassType >& 
 CTAbstractFactory< SelectionCriteriaType, BaseClassType >::operator=( const CTAbstractFactory< SelectionCriteriaType, BaseClassType >& src )
 {
-    if ( &src != this )
-    {
-    }
     return *this;
 }
 
@@ -202,6 +213,9 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType >::RegisterConcreteFacto
                                                                                     TConcreteFactory* concreteFactory         )
 {
     m_concreteFactoryList[ selectedType ] = concreteFactory;
+    
+    TKeyContainer keyContainer( selectedType );
+    NotifyObservers( ConcreteFactoryRegisteredEvent, &keyContainer );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -218,6 +232,9 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType >::UnregisterConcreteFac
             delete (*i).second;
         }
         m_concreteFactoryList.erase( i );
+        
+        TKeyContainer keyContainer( selectedType );
+        NotifyObservers( ConcreteFactoryUnregisteredEvent, &keyContainer );
     }
 }
 

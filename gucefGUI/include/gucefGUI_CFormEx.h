@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CGUIMANAGER_H
-#define GUCEF_GUI_CGUIMANAGER_H
+#ifndef GUCEF_GUI_CFORMEX_H
+#define GUCEF_GUI_CFORMEX_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,30 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
-#include "gucefCORE_CTEventHandlerFunctor.h"
-#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
-#endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
-
-#ifndef GUCEF_CORE_CLONEABLES_H
-#include "cloneables.h"
-#define GUCEF_CORE_CLONEABLES_H
-#endif /* GUCEF_CORE_CLONEABLES_H ? */
-
-#ifndef GUCEF_GUI_CWIDGETFACTORY_H
-#include "gucefGUI_CWidgetFactory.h"
-#define GUCEF_GUI_CWIDGETFACTORY_H
-#endif /* GUCEF_GUI_CWIDGETFACTORY_H ? */
-
-#ifndef GUCEF_GUI_CFORMFACTORY_H
-#include "gucefGUI_CFormFactory.h"
-#define GUCEF_GUI_CFORMFACTORY_H
-#endif /* GUCEF_GUI_CFORMFACTORY_H ? */
-
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_GUI_CFORM_H
+#include "gucefGUI_CForm.h"
+#define GUCEF_GUI_CFORM_H
+#endif /* GUCEF_GUI_CFORM_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,58 +46,35 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CGUIManager : public CORE::CObservingNotifier
+class GUCEF_GUI_EXPORT_CPP CFormEx : public CForm
 {
     public:
     
-    static const CORE::CEvent FormFactoryRegisteredEvent;
-    static const CORE::CEvent FormFactoryUnregisteredEvent;
+    CFormEx( void );
     
-    typedef CORE::TCloneableString TKeyContainer;  /** event data type used for the keys */
-    
-    static void RegisterEvents( void );
-    
-    public:
-    
-    static CGUIManager* Instance( void );
-    
-    CWidgetFactory& GetWidgetFactory( void );
-    
-    CFormFactory& GetFormFactory( void );
-    
-    void SetFormBackendFactory( CFormBackendFactory* backendFactory );
+    virtual ~CFormEx();
 
-    CFormBackendFactory* GetFormBackendFactory( void );
+    virtual bool LoadLayout( CORE::CIOAccess& layoutStorage );
+    
+    virtual bool LoadLayout( const CString& filename );
+    
+    virtual bool SaveLayout( const CString& filename );
+    
+    virtual bool Reload( void );
+    
+    virtual bool IsReloadable( void ) const;
+    
+    virtual const CString& GetClassTypeName( void ) const;
     
     private:
-    friend class CGUCEFGUIModule;    
     
-    static void Deinstance( void );
+    CFormEx( const CFormEx& src );
+    CFormEx& operator=( const CFormEx& src );
     
     private:
     
-    typedef CORE::CTEventHandlerFunctor< CGUIManager > TEventCallback;
-    
-    CGUIManager( void );
-    CGUIManager( const CGUIManager& src );
-    virtual ~CGUIManager();
-    CGUIManager& operator=( const CGUIManager& src );
-    
-    void OnFormFactoryRegistered( CORE::CNotifier* notifier           ,
-                                  const CORE::CEvent& eventid         ,
-                                  CORE::CICloneable* eventdata = NULL );
-
-    void OnFormFactoryUnregistered( CORE::CNotifier* notifier           ,
-                                    const CORE::CEvent& eventid         ,
-                                    CORE::CICloneable* eventdata = NULL );
-                                      
-    private:
-    
-    CWidgetFactory m_widgetFactory;
-    CFormFactory m_formFactory;
-    CFormBackendFactory* m_formBackendFactory;
-    
-    static CGUIManager* g_instance;
+    bool m_isReloadable;
+    CString m_layoutFile;
 };
 
 /*-------------------------------------------------------------------------//
@@ -131,7 +88,7 @@ class GUCEF_GUI_EXPORT_CPP CGUIManager : public CORE::CObservingNotifier
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_GUI_CGUIMANAGER_H ? */
+#endif /* GUCEF_GUI_CFORMEX_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
