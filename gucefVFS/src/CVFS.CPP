@@ -285,6 +285,101 @@ CVFS::MountArchive( const CString& archiveName  ,
 /*-------------------------------------------------------------------------*/
 
 bool
+CVFS::IsMountedArchive( const CString& location ) const
+{GUCEF_TRACE;
+
+    m_datalock.Lock();
+    TMountVector::const_iterator i = m_mountList.begin();
+    while ( i != m_mountList.end() )
+    {
+        const TMountEntry& archiveEntry = (*i);
+        if ( archiveEntry.mountPath == location )
+        {
+            m_datalock.Unlock();
+            return true;
+        }
+        ++i;
+    }    
+    
+    m_datalock.Unlock();
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVFS::GetMountedArchiveList( const CString& location ,
+                             const CString& filter   ,
+                             const bool recursive    ,
+                             TStringSet& outputList  ) const
+{GUCEF_TRACE;
+
+    m_datalock.Lock();
+    TMountVector::const_iterator i = m_mountList.begin();
+    while ( i != m_mountList.end() )
+    {
+        const TMountEntry& archiveEntry = (*i);
+        
+        if ( archiveEntry.mountPath.Length() > 0 )
+        {        
+            // Check if the location is a root for the mount path
+            Int32 subSection = archiveEntry.mountPath.HasSubstr( location, true );
+            if ( 0 == subSection )
+            {
+                // We now know the archive is mounted in either the root of "location"
+                // or a sub directory
+                if ( !recursive )
+                {
+                    // Check if we have multiple subdirs beyond the "location" to get to
+                    // the archive. If so then we cannot add this archive because recursive 
+                    // searching is not allowed.
+                    CString remainder = archiveEntry.mountPath.CutChars( subSection, true );
+                    if ( remainder.Length() > 0 )
+                    {
+                        // make sure we are using a single directory seperator scheme
+                        remainder = remainder.ReplaceChar( '\\', '/' );
+                        
+                        // Dont count a starting directory seperator
+                        if ( remainder[ 0 ] == '/' )
+                        {
+                            remainder = remainder.CutChars( 1, true );
+                        }
+                        
+                        Int32 dirDelimter = remainder.HasChar( '/', true );
+                        if ( dirDelimter > -1 )
+                        {
+                            // We found a directory seperator so now me must check if it happens 
+                            // to be the last character
+                            if ( remainder.Length() != dirDelimter+1 )
+                            {
+                                // The directory seperator was not the last character so we have multiple
+                                // sub-dirs which is not allowed, we cannot add this item
+                                ++i;
+                                continue;
+                            }
+                        }
+                    }
+                }
+                
+                // Now we must validate the filename with the given filter
+                CString filename = GUCEF::CORE::ExtractFilename( archiveEntry.mountPath );
+                if ( FilterValidation( filename ,
+                                       filter   ) )
+                {
+                    // Everything checks out, we have found a mounted archive that meets 
+                    // the criterea so we add it to the list
+                    outputList.insert( archiveEntry.mountPath );
+                }
+            }
+        }
+        ++i;
+    }
+    m_datalock.Unlock();    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CVFS::GetActualFilePath( const CString& file ,
                          CString& path       ) const
 {GUCEF_TRACE;
@@ -418,8 +513,20 @@ CVFS::AddRoot( const CORE::CString& rootpath              ,
                                 // Successfully loaded/linked the archive
                                 // We will add it to our mount list
                                 TMountEntry archiveEntry;
-                                archiveEntry.path = (*i);
-                                archiveEntry.abspath = archiveEntry.path;
+                                archiveEntry.abspath = (*i);
+                                
+                                // Get the path where the archive is located relative to the root mount
+                                archiveEntry.path = archiveEntry.abspath.CutChars( mountEntry.abspath.Length(), true );
+                                
+                                // Git rid of any directory seperator prefix
+                                if ( archiveEntry.path.Length() > 0 )
+                                {
+                                    if ( ( archiveEntry.path[ 0 ] == '\\' ) ||
+                                         ( archiveEntry.path[ 0 ] == '/' )   )
+                                    {
+                                        archiveEntry.path = archiveEntry.path.CutChars( 1, true );
+                                    }
+                                }
                                 archiveEntry.writeable = writeable;
                                 archiveEntry.archive = archive;
                                 archiveEntry.mountPath = archiveEntry.path;

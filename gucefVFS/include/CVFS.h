@@ -120,6 +120,20 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable
                   bool recursive = false             ,
                   const CORE::CString& filter = ""   ,
                   const bool addHash = false         ) const;
+                  
+    /**
+     *  Checks if the item pointed at is a mounted archive
+     */
+    bool IsMountedArchive( const CString& location ) const;
+    
+    /**
+     *  Searches for archives mounted at the "location"
+     *  directory and below (if recursive is true) and filters the results.
+     */
+    void GetMountedArchiveList( const CString& location ,
+                                const CString& filter   ,
+                                const bool recursive    ,
+                                TStringSet& outputList  ) const;
     
     bool FileExists( const CORE::CString& filePath ) const;
     

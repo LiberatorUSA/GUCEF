@@ -157,6 +157,61 @@ CVPArchive::GetList( TStringSet& outputList       ,
         const VFS::CString& filePath = (*i).first;
         if ( 0 == filePath.HasSubstr( location, true ) )
         {
+            const TVPIndexEntry& indexEntry = (*i).second;
+            
+            // Check if the entry is a directory
+            if ( indexEntry.size == 0 || indexEntry.offset == 0 )
+            {
+                if ( !addDirs )
+                {
+                    // Skip this item
+                    ++i;
+                    continue;
+                }
+            }
+            else
+            {
+                if ( !addFiles )
+                {
+                    // Skip this item
+                    ++i;
+                    continue;                    
+                }
+            }
+            
+            if ( !recursive )
+            {
+                // Check if we have multiple subdirs beyond the "location" to get to
+                // the archive. If so then we cannot add this archive because recursive 
+                // searching is not allowed.
+                VFS::CString remainder = filePath.CutChars( location.Length(), true );
+                if ( remainder.Length() > 0 )
+                {
+                    // make sure we are using a single directory seperator scheme
+                    remainder = remainder.ReplaceChar( '\\', '/' );
+                    
+                    // Dont count a starting directory seperator
+                    if ( remainder[ 0 ] == '/' )
+                    {
+                        remainder = remainder.CutChars( 1, true );
+                    }
+                    
+                    VFS::Int32 dirDelimter = remainder.HasChar( '/', true );
+                    if ( dirDelimter > -1 )
+                    {
+                        // We found a directory seperator so now me must check if it happens 
+                        // to be the last character
+                        if ( remainder.Length() != dirDelimter+1 || !addDirs )
+                        {
+                            // The directory seperator was not the last character so we have multiple
+                            // sub-dirs which is not allowed, we cannot add this item
+                            ++i;
+                            continue;
+                        }
+                    }
+                }
+            }
+
             if ( includePathInFilename )
             {
                 outputList.insert( filePath );
@@ -327,12 +382,11 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
                 if ( fread( &fileEntry, VP_INDEX_ENTRY_SIZE, 1, fptr ) != 1 )
                 {                                
                     GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Error: unable to read index entry" );
-                    
-                    fclose( fptr );
-                    return false;
+                    m_header.idxentries = i;                    
+                    break;
                 }
 
-                if ( fileEntry.offset == 0 )
+                if ( fileEntry.offset == 0 || fileEntry.size == 0 )
                 {
                     // directory entry
                     VFS::CString dirName;
@@ -364,7 +418,7 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
                     VFS::CString filename = path;
                     CORE::AppendToPath( filename, filenameBuffer );
                     
-                    GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Found file entry: " +  filenameBuffer ) );
+                    GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Found file entry: " +  filenameBuffer );
                     
                     m_index[ filename ] = entry;
                 }

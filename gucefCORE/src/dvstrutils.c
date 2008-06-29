@@ -82,7 +82,7 @@ Extract_Filename( const char *filepath )
      *      Extract the filename, if there is any path prefix it will be
      *      removed
      */
-    if ( NULL == filepath )
+    if ( NULL != filepath )
     {
         Int32 i, length = (Int32)strlen( filepath );
         for ( i = length; i >= 0; --i )

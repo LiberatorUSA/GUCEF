@@ -68,7 +68,11 @@ class GUCEF_GUI_EXPORT_CPP CIFileSystemInfoProvider
     virtual bool GetFileList( const CString& path   ,
                               const CString& filter ,
                               TStringSet& list      ) = 0;
-                               
+
+    virtual bool GetArchiveList( const CString& path   ,
+                                 const CString& filter ,
+                                 TStringSet& list      ) = 0;
+                                                             
     private:
     
     CIFileSystemInfoProvider( const CIFileSystemInfoProvider& src );

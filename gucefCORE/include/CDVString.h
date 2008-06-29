@@ -179,6 +179,8 @@ class GUCEFCORE_EXPORT_CPP CString
                             
     Int32 HasSubstr( const CString& substr  ,
                      bool startfront = true ) const;
+                     
+    UInt32 GetCharacterCount( const char searchChar ) const;
 
     UInt32 FindMaxSubstrEquality( const CString& searchStr ,
                                   const UInt32 startOffset ,

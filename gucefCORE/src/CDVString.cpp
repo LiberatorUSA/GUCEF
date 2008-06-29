@@ -343,6 +343,23 @@ CString::Set( const char *new_str ,
 }
 
 /*-------------------------------------------------------------------------*/
+
+UInt32
+CString::GetCharacterCount( const char searchChar ) const
+{GUCEF_TRACE;
+
+    UInt32 charCount = 0;
+    for ( UInt32 i=0; i<m_length; ++i )
+    {
+        if ( m_string[ i ] == searchChar )
+        {
+            ++charCount;
+        }
+    }
+    return charCount;
+}
+
+/*-------------------------------------------------------------------------*/
               
 void 
 CString::Append( const char *appendstr ,
