@@ -83,6 +83,8 @@ class GUCEF_GUI_EXPORT_CPP CGridView : public CWidget
     
     public:
     
+    typedef std::vector< TGridIndex >   TGridIndexVector;
+    
     CGridView( void );
     
     virtual ~CGridView();
@@ -100,6 +102,8 @@ class GUCEF_GUI_EXPORT_CPP CGridView : public CWidget
     virtual void AppendText( const CString& text );    
     
     virtual void Clear( void );
+    
+    virtual void GetSelectedItems( TGridIndexVector& gridIndexList );
     
     virtual const CString& GetClassTypeName( void ) const;
     

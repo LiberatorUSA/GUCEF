@@ -60,7 +60,7 @@ class GUCEF_GUI_EXPORT_CPP CEditbox : public CWidget
     
     CEditbox( void );
     
-    ~CEditbox();
+    virtual ~CEditbox();
     
     virtual bool SetText( const CString& text );
     
@@ -69,6 +69,8 @@ class GUCEF_GUI_EXPORT_CPP CEditbox : public CWidget
     virtual bool SetSelectedText( const CString& text );
     
     virtual bool GetSelectedText( CString& text );    
+    
+    virtual void Clear( void );
     
     private:
     

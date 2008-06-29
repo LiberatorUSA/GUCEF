@@ -129,6 +129,14 @@ CGridView::Clear( void )
 }
 
 /*-------------------------------------------------------------------------*/
+
+void
+CGridView::GetSelectedItems( TGridIndexVector& gridIndexList )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
     
 const CString&
 CGridView::GetClassTypeName( void ) const
