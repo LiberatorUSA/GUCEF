@@ -150,13 +150,18 @@ CVPArchive::GetList( TStringSet& outputList       ,
                      bool addDirs                 ) const
 {GUCEF_TRACE;
 
+            if ( location != NULL )
+            {
+                int a =0;
+            }
+
     TFileIndexMap::const_iterator i = m_index.begin();
     while ( i != m_index.end() )
     {        
         // Check if the starting path matches
         const VFS::CString& filePath = (*i).first;
         if ( 0 == filePath.HasSubstr( location, true ) )
-        {
+        {   
             const TVPIndexEntry& indexEntry = (*i).second;
             
             // Check if the entry is a directory
@@ -212,13 +217,17 @@ CVPArchive::GetList( TStringSet& outputList       ,
                 }
             }
 
-            if ( includePathInFilename )
+            VFS::CString filename = CORE::ExtractFilename( filePath );
+            if ( filename != ".." )
             {
-                outputList.insert( filePath );
-            }
-            else
-            {
-                outputList.insert( CORE::ExtractFilename( filePath ) );
+                if ( includePathInFilename )
+                {
+                    outputList.insert( filePath );
+                }
+                else
+                {
+                    outputList.insert( filename );
+                }
             }
         }        
         ++i;
@@ -402,7 +411,14 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
                     {
                         CORE::AppendToPath( path, dirName );
                         GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Entering directory: " + dirName );
-                    }                    
+                    }
+                    
+                    // Add the entry for the directory to our index
+                    TVPIndexEntry entry;
+                    entry.offset = 0;
+                    entry.size = 0;
+                    entry.timestamp = 0;                    
+                    m_index[ path ] = entry;                                        
                 }
                 else
                 {

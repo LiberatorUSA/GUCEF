@@ -108,9 +108,17 @@ class GUCEFCORE_EXPORT_CPP CString
     
     bool operator==( const char *other ) const;
     
+    bool operator==( const int NULLvalue ) const;
+    
+    bool operator==( const char character ) const;
+    
     bool operator!=( const CString &other ) const;
 
     bool operator!=( const char *other ) const;
+    
+    bool operator!=( const int NULLvalue ) const;
+    
+    bool operator!=( const char character ) const;
     
     bool operator<( const CString& other ) const;
 

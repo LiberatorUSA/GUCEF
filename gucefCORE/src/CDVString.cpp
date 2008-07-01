@@ -212,14 +212,71 @@ CString::operator=( const char *src )
 /*-------------------------------------------------------------------------*/
 
 bool
+CString::operator==( const char character ) const
+{GUCEF_TRACE;          //@TODO  //@FIXME
+       return *this == CString(  character);
+    if ( m_length == 1 )
+    {
+        return *m_string == character;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CString::operator!=( const char character ) const
+{GUCEF_TRACE;
+                     //@TODO  //@FIXME
+    return *this != CString(  character);
+    
+    if ( m_length == 1 )
+    {
+        return *m_string != character;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CString::operator!=( const int NULLvalue ) const
+{GUCEF_TRACE;
+
+    if ( NULLvalue == NULL )
+    {
+        return m_length > 0;
+    }
+    GUCEF_ASSERT_ALWAYS;
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CString::operator==( const int NULLvalue ) const
+{GUCEF_TRACE;
+
+    if ( NULLvalue == NULL )
+    {
+        return m_length == 0;
+    }
+    GUCEF_ASSERT_ALWAYS;
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CString::operator==( const char *other ) const
 {GUCEF_TRACE;
-        if ( !m_string || !other )
-        {
-                return false;        
-        } 
-        return strcmp( m_string ,
-                       other    ) == 0;
+
+    if ( !m_string || !other )
+    {
+        return ( NULL == m_string ) && ( NULL == other );        
+    } 
+    return strcmp( m_string ,
+                   other    ) == 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -258,7 +315,7 @@ CString::operator!=( const char *other ) const
 
     if ( !m_string || !other )
     {
-            return false;        
+        return !( ( NULL == m_string ) && ( NULL == other ) );
     } 
     return strcmp( m_string ,
                    other   ) != 0;
