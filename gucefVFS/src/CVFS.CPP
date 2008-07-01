@@ -719,6 +719,18 @@ CVFS::GetEligableMounts( const CString& location                ,
             {
                 TConstMountLink mountLink;
                 mountLink.remainder = location.CutChars( mountEntry.mountPath.Length(), true );
+                
+                // make sure the remainder does not have a path seperator prefix
+                if ( mountLink.remainder.Length() > 0 )
+                {
+                    if ( ( mountLink.remainder[ 0 ] == '/' ) ||
+                         ( mountLink.remainder[ 0 ] == '\\' ) )
+                    {
+                        // remove the dir seperator prefix
+                        mountLink.remainder = mountLink.remainder.CutChars( 1, true );
+                    }
+                }                
+                
                 mountLink.mountEntry = &mountEntry;
                 mountLinkVector.push_back( mountLink );
             }

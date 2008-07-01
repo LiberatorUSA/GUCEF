@@ -150,16 +150,19 @@ CVPArchive::GetList( TStringSet& outputList       ,
                      bool addDirs                 ) const
 {GUCEF_TRACE;
 
-            if ( location != NULL )
-            {
-                int a =0;
-            }
-
     TFileIndexMap::const_iterator i = m_index.begin();
     while ( i != m_index.end() )
     {        
         // Check if the starting path matches
         const VFS::CString& filePath = (*i).first;
+        
+        if ( filePath == location )
+        {
+            // Don't add the location itself to the list
+            ++i;
+            continue;
+        }
+        
         if ( 0 == filePath.HasSubstr( location, true ) )
         {   
             const TVPIndexEntry& indexEntry = (*i).second;
