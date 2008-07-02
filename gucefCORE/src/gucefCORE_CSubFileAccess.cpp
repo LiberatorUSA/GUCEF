@@ -107,6 +107,7 @@ CSubFileAccess::Open( void )
     m_file = fopen( m_filename.C_String() ,
                     "rb"                  );
     fseek( m_file, m_offset, SEEK_SET );
+    m_totalSize = Filesize( m_filename.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -214,11 +215,12 @@ CSubFileAccess::Seek( Int32 offset ,
     }
     if ( origin == SEEK_SET )
     {
-        if ( offset < (Int32)m_size )
+        if ( ( m_offset + offset < m_totalSize ) &&
+             ( offset < (Int32) m_size )          )
         {
-            return fseek( m_file   ,
-                          offset   ,
-                          SEEK_SET );            
+            return fseek( m_file            ,
+                          m_offset + offset ,
+                          SEEK_SET          );
         }
         return 1;
     }
@@ -249,7 +251,7 @@ bool
 CSubFileAccess::Eof( void ) const
 {GUCEF_TRACE;
 
-    return ftell( m_file ) != ( m_offset + m_size );
+    return (UInt32)ftell( m_file ) >= ( m_offset + m_size );
 }
 
 /*-------------------------------------------------------------------------*/
