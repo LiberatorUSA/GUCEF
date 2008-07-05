@@ -95,6 +95,8 @@ class GUCEF_GUI_EXPORT_CPP CListbox : public CWidget
     virtual bool GetLineSelection( const UInt32 lineIndex ,
                                    bool& isSelected       ) const;
                                        
+    virtual bool GetFirstSelectedLine( CString& text ) const;
+
     virtual bool GetLastSelectedLine( CString& text ) const;    
     
     virtual bool GetSelectedLines( TStringVector& selectedLines ) const;

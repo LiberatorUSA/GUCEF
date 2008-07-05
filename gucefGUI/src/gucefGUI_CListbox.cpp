@@ -198,6 +198,15 @@ CListbox::GetLineSelection( const UInt32 lineIndex ,
 /*-------------------------------------------------------------------------*/
 
 bool
+CListbox::GetFirstSelectedLine( CString& text ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CListbox::GetLastSelectedLine( CString& text ) const
 {GUCEF_TRACE;
 
