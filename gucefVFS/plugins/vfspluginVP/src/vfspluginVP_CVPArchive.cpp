@@ -192,31 +192,12 @@ CVPArchive::GetList( TStringSet& outputList       ,
                 // Check if we have multiple subdirs beyond the "location" to get to
                 // the archive. If so then we cannot add this archive because recursive 
                 // searching is not allowed.
-                VFS::CString remainder = filePath.CutChars( location.Length(), true );
-                if ( remainder.Length() > 0 )
+                if ( !CORE::IsFileInDir( location, filePath ) )
                 {
-                    // make sure we are using a single directory seperator scheme
-                    remainder = remainder.ReplaceChar( '\\', '/' );
-                    
-                    // Dont count a starting directory seperator
-                    if ( remainder[ 0 ] == '/' )
-                    {
-                        remainder = remainder.CutChars( 1, true );
-                    }
-                    
-                    VFS::Int32 dirDelimter = remainder.HasChar( '/', true );
-                    if ( dirDelimter > -1 )
-                    {
-                        // We found a directory seperator so now me must check if it happens 
-                        // to be the last character
-                        if ( remainder.Length() != dirDelimter+1 || !addDirs )
-                        {
-                            // The directory seperator was not the last character so we have multiple
-                            // sub-dirs which is not allowed, we cannot add this item
-                            ++i;
-                            continue;
-                        }
-                    }
+                    // The directory seperator was not the last character so we have multiple
+                    // sub-dirs which is not allowed, we cannot add this item
+                    ++i;
+                    continue;                
                 }
             }
 
