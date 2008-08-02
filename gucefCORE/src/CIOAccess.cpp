@@ -456,6 +456,15 @@ CIOAccess::GetSize( void ) const
     return size;
 }
 
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CIOAccess::Setpos( UInt32 position )
+{GUCEF_TRACE;
+
+    return Seek( position, SEEK_SET );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

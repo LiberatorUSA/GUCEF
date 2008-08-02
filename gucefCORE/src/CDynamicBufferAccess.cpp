@@ -235,7 +235,7 @@ CDynamicBufferAccess::Eof( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CDynamicBufferAccess::IsReadOnly( void ) const
+CDynamicBufferAccess::IsReadable( void ) const
 {GUCEF_TRACE;
 
     return false;
@@ -244,19 +244,10 @@ CDynamicBufferAccess::IsReadOnly( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CDynamicBufferAccess::IsWriteOnly( void ) const
+CDynamicBufferAccess::IsWriteable( void ) const
 {GUCEF_TRACE;
 
     return false;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CDynamicBufferAccess::IsReadAndWrite( void ) const
-{GUCEF_TRACE;
-    
-    return true;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -130,18 +130,9 @@ class GUCEFCORE_EXPORT_CPP CFileAccess : public CIOAccess
          */
         virtual bool Eof( void ) const;
         
-        virtual bool IsReadOnly( void ) const;
+        virtual bool IsReadable( void ) const;
         
-        /**
-         *      Is the only allowed access method writing ?
-         *      if true the recource cannot be read.
-         */
-        virtual bool IsWriteOnly( void ) const;
-        
-        /**
-         *      Are both read AND write operations possible on the recource ?         
-         */
-        virtual bool IsReadAndWrite( void ) const;        
+        virtual bool IsWriteable( void ) const;      
         
         /**
          *      Is the access to the resource a valid one or

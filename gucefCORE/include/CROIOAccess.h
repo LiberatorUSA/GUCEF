@@ -65,20 +65,14 @@ class GUCEFCORE_EXPORT_CPP CROIOAccess : public CIOAccess
          *      If true the recource cannot be written to         
          *      Always returns true
          */
-        virtual bool IsReadOnly( void ) const;
+        virtual bool IsReadable( void ) const;
         
         /**
          *      Is the only allowed access method writing ?
          *      if true the recource cannot be read.
          *      Always returns false
          */
-        virtual bool IsWriteOnly( void ) const;
-        
-        /**
-         *      Are both read AND write operations possible on the recource ?         
-         *      Always returns false
-         */
-        virtual bool IsReadAndWrite( void ) const;
+        virtual bool IsWriteable( void ) const;
         
         /**
          *      Attempts to write the specified number of bytes to the recourse

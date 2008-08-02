@@ -205,25 +205,19 @@ CFileAccess::Eof( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CFileAccess::IsReadOnly( void ) const
+CFileAccess::IsReadable( void ) const
 {GUCEF_TRACE;
-        return _readable;
+
+    return _readable;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CFileAccess::IsWriteOnly( void ) const
+CFileAccess::IsWriteable( void ) const
 {GUCEF_TRACE;
-        return _writeable;
-}
 
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CFileAccess::IsReadAndWrite( void ) const
-{GUCEF_TRACE;
-        return _readable && _writeable;
+    return _writeable;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -282,7 +276,7 @@ CFileAccess::Flush( void )
 CICloneable* 
 CFileAccess::Clone( void ) const
 {GUCEF_TRACE;
-        if ( IsReadOnly() )
+        if ( IsReadable() )
         {
                 return new CFileAccess( _filename, "rb" );
         }

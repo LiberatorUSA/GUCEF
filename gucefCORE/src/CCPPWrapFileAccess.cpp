@@ -209,31 +209,18 @@ CCPPWrapFileAccess::Eof( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CCPPWrapFileAccess::IsReadOnly( void ) const
+CCPPWrapFileAccess::IsReadable( void ) const
 {
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return true;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CCPPWrapFileAccess::IsWriteOnly( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return false;
-}
+CCPPWrapFileAccess::IsWriteable( void ) const
+{GUCEF_TRACE;
 
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CCPPWrapFileAccess::IsReadAndWrite( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return false;
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

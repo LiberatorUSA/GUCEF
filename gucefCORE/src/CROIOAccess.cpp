@@ -56,7 +56,7 @@ CROIOAccess::~CROIOAccess()
 /*-------------------------------------------------------------------------*/
         
 bool 
-CROIOAccess::IsReadOnly( void ) const
+CROIOAccess::IsReadable( void ) const
 {
         return true;
 }
@@ -64,15 +64,7 @@ CROIOAccess::IsReadOnly( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CROIOAccess::IsWriteOnly( void ) const
-{
-        return false;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CROIOAccess::IsReadAndWrite( void ) const
+CROIOAccess::IsWriteable( void ) const
 {
         return false;
 }

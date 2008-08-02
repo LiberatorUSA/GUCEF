@@ -257,7 +257,7 @@ CSubFileAccess::Eof( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CSubFileAccess::IsReadOnly( void ) const
+CSubFileAccess::IsReadable( void ) const
 {GUCEF_TRACE;
 
     return true;
@@ -266,16 +266,7 @@ CSubFileAccess::IsReadOnly( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CSubFileAccess::IsWriteOnly( void ) const
-{GUCEF_TRACE;
-
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CSubFileAccess::IsReadAndWrite( void ) const
+CSubFileAccess::IsWriteable( void ) const
 {GUCEF_TRACE;
 
     return false;

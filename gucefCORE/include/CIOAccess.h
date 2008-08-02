@@ -168,7 +168,7 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
         /**
          *      jump to the given offset in the resource
          */
-        virtual UInt32 Setpos( UInt32 position ) = 0;
+        virtual UInt32 Setpos( UInt32 position );
 
         /**
          *      Read a single character
@@ -181,21 +181,14 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
         virtual bool Eof( void ) const = 0;
         
         /**
-         *      Is the only allowed access method reading ?
-         *      If true the resource cannot be written to
+         *      Can we read from this resource?
          */
-        virtual bool IsReadOnly( void ) const = 0;
+        virtual bool IsReadable( void ) const = 0;
         
         /**
-         *      Is the only allowed access method writing ?
-         *      if true the resource cannot be read.
+         *      Can we write to this resource?
          */
-        virtual bool IsWriteOnly( void ) const = 0;
-        
-        /**
-         *      Are both read AND write operations possible on the resource ?         
-         */
-        virtual bool IsReadAndWrite( void ) const = 0;                
+        virtual bool IsWriteable( void ) const = 0;               
         
         /**
          *      Is the access to the resource a valid one or
