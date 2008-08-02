@@ -173,6 +173,15 @@ IsPathValid( const CString& path );
 GUCEFCORE_EXPORT_CPP CString
 ExtractFileExtention( const CString& path );
 
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Checks whether the file path points to a file in the exact given dir path
+ */
+GUCEF_CORE_EXPORT_CPP bool
+IsFileInDir( const CString& dirPath  , 
+             const CString& filePath );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -192,6 +201,8 @@ ExtractFileExtention( const CString& path );
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+- 08-02-2008 :
+        - Dinand: Added IsFileInDir()
 - 03-03-2007 :
         - Dinand: Added StripFilename()
 - 21-09-2005 :

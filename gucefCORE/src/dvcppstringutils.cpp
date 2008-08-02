@@ -386,6 +386,36 @@ ExtractFileExtention( const CString& path )
     return Extract_File_Ext( path.C_String() );
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+IsFileInDir( const CString& dirPath  , 
+             const CString& filePath )
+{GUCEF_TRACE;
+
+    // must contain the dir path as a starting string
+    if ( 0 == filePath.HasSubstr( dirPath, true ) )
+    {
+        // now we check for deeper nesting
+        CString pathRemainder = filePath.CutChars( dirPath.Length(), true );
+        CString filename = ExtractFilename( pathRemainder );
+        UInt32 remnantSize = pathRemainder.Length() - filename.Length();
+        if ( remnantSize == 1 )
+        {
+            // if the remainder is just a prefixed dir seperator then we don't count
+            // the file as being in the dir, otherwise it isnt
+            char testChar = *(pathRemainder.C_String());
+            return testChar == '\\' || testChar == '/';
+        }
+        else
+        if ( remnantSize == 0 )
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
