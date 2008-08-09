@@ -170,7 +170,8 @@ CSubFileAccess::Read( void *dest      ,
     if ( pos + readBytes > m_offset + m_size )
     {        
         UInt32 remainder = m_size - ( pos - m_offset );
-        elements = esize % remainder;       
+        elements = remainder / esize; // intentional cutoff using int division
+        if ( 0 == elements ) return 0;
     }
     
     return (UInt32) fread( dest     ,

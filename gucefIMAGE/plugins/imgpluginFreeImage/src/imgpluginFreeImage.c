@@ -88,7 +88,6 @@ static char* supportedTypes[] = {
     "cut"    ,
     "xbm"    ,
     "xpm"    ,
-    "dds"    ,
     "gif"    ,
     "hdr"    ,
     "faxg3"  ,

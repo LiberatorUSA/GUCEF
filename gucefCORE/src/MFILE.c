@@ -339,7 +339,7 @@ mfsetpos( MFILE *mfile, UInt32 offset )
          *      The mfsetpos() function repositions a file position indicator
          *      for the MFILE.
          */
-       if ( mfile->offset+offset <= mfile->size )
+       if ( offset <= mfile->size )
        {
                 /*
                  *      Valid range, set the filepointer
@@ -417,7 +417,7 @@ mfeof( const MFILE *mfile )
          *      Return whether the end of the mem chunck representing the file
          *      has been reached.
          */
-        return( mfile->offset == mfile->size );
+        return( mfile->offset >= mfile->size );
 }
 
 /*-------------------------------------------------------------------------*/

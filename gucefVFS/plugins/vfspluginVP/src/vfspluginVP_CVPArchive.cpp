@@ -117,8 +117,14 @@ CVPArchive::GetFile( const VFS::CString& file      ,
                      const bool overwrite          )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( 0, "CVPArchive: request to get file: " +  file );
+    
     // We only support read only modes
-    if ( *mode != 'r' ) return CVFSHandlePtr();
+    if ( *mode != 'r' )
+    {
+        GUCEF_DEBUG_LOG( 0, "CVPArchive: Unable to support requested file access mode for file: " + file );
+        return CVFSHandlePtr();
+    }
     
     // load the file
     CORE::CIOAccess* fileAccess = LoadFile( file, memLoadSize );
@@ -132,9 +138,11 @@ CVPArchive::GetFile( const VFS::CString& file      ,
                                                            file       ,
                                                            filePath   );
                                                            
+        GUCEF_DEBUG_LOG( 0, "CVPArchive: providing access to file: " + file );        
         return CVFSHandlePtr( fileHandle, this );
     }
     
+    GUCEF_DEBUG_LOG( 0, "CVPArchive: Unable to provide access to file: " + file );
     return CVFSHandlePtr();
 }
 
@@ -224,7 +232,8 @@ bool
 CVPArchive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
-    return m_index.find( filePath ) != m_index.end();
+    GUCEF_DEBUG_LOG( 0, "CVPArchive: request to check if file exists: " +  filePath );
+    return m_index.find( filePath.Lowercase().ReplaceChar( '/', '\\' ) ) != m_index.end();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -233,7 +242,7 @@ VFS::UInt32
 CVPArchive::GetFileSize( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
-    TFileIndexMap::const_iterator i = m_index.find( filePath );
+    TFileIndexMap::const_iterator i = m_index.find( filePath.Lowercase().ReplaceChar( '/', '\\' ) );
     if ( i != m_index.end() )
     {
         return (*i).second.size;
@@ -248,7 +257,7 @@ CVPArchive::LoadFile( const VFS::CString& file      ,
                       const VFS::UInt32 memLoadSize ) const
 {GUCEF_TRACE;
 
-    TFileIndexMap::const_iterator i = m_index.find( file );
+    TFileIndexMap::const_iterator i = m_index.find( file.Lowercase().ReplaceChar( '/', '\\' ) );
     if ( i != m_index.end() )
     {
         const TVPIndexEntry& entry = (*i).second;
@@ -264,7 +273,7 @@ CVPArchive::LoadFile( const VFS::CString& file      ,
                 CORE::CDynamicBuffer* fileBuffer = new CORE::CDynamicBuffer();
                 fileBuffer->SetDataSize( entry.size );
             
-                if ( entry.size == fread( fileBuffer->GetBufferPtr(), entry.size, 1, fptr ) )
+                if ( 1 == fread( fileBuffer->GetBufferPtr(), entry.size, 1, fptr ) )
                 {
                     // Successfully read file into memory
                     fclose( fptr );
@@ -298,7 +307,7 @@ VFS::CString
 CVPArchive::GetFileHash( const VFS::CString& file ) const
 {GUCEF_TRACE;
 
-    CORE::CIOAccess* fileAccess = LoadFile( file, 102400 );
+    CORE::CIOAccess* fileAccess = LoadFile( file.Lowercase().ReplaceChar( '/', '\\' ), 102400 );
     if ( NULL != fileAccess )
     {
         VFS::UInt8 digest[ 16 ];
@@ -402,7 +411,7 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
                     entry.offset = 0;
                     entry.size = 0;
                     entry.timestamp = 0;                    
-                    m_index[ path ] = entry;                                        
+                    m_index[ path.Lowercase().ReplaceChar( '/', '\\' ) ] = entry;                                        
                 }
                 else
                 {
@@ -420,7 +429,7 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
                     
                     GUCEF_DEBUG_LOG( 0, "VFSPLUGIN VP: Found file entry: " +  filenameBuffer );
                     
-                    m_index[ filename ] = entry;
+                    m_index[ filename.Lowercase().ReplaceChar( '/', '\\' ) ] = entry;
                 }
             }
             
