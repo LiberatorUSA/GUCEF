@@ -204,119 +204,12 @@ CObservingNotifier::AsObserver( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CObservingNotifier::AddEventForwarding( const CEvent& eventid                 ,
-                                        const TEventOriginFilter originFilter ,
-                                        CNotifier* notifier /* = NULL */      )
-{GUCEF_TRACE;
-        //@TODO: store the originFilter setting and apply it later on
-    if ( NULL != notifier )
-    {
-        LockData();
-        TNotifierList& notifierList = m_eventNotifierMap[ eventid ];
-        notifierList.insert( notifier );
-        UnlockData();
-    }
-    else
-    {
-        LockData();
-        m_eventList.insert( eventid );
-        UnlockData();        
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void
-CObservingNotifier::RemoveEventForwarding( const CEvent& eventid            ,
-                                           CNotifier* notifier /* = NULL */ )
-{GUCEF_TRACE;
-
-    if ( NULL != notifier )
-    {
-        LockData();
-        TEventNotifierMap::iterator i( m_eventNotifierMap.find( eventid ) );
-        if ( i != m_eventNotifierMap.end() )
-        {
-            TNotifierList& notifierList = m_eventNotifierMap[ eventid ];
-            notifierList.erase( notifier );
-        }
-        UnlockData();
-    }
-    else
-    {
-        LockData();
-        m_eventList.erase( eventid );
-        UnlockData();        
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CObservingNotifier::RemoveEventForwarding( CNotifier& notifier )
-{GUCEF_TRACE;
-
-    assert( &notifier );
-    
-    LockData();
-    
-    TEventNotifierMap::iterator i( m_eventNotifierMap.begin() );
-    while ( i != m_eventNotifierMap.end() )
-    {
-        TNotifierList& notifierList = (*i).second;
-        TNotifierList::iterator n( notifierList.find( &notifier ) );
-        if ( n != notifierList.end() )
-        {
-            notifierList.erase( n );
-        }
-    }
-    
-    UnlockData();
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
 CObservingNotifier::OnNotify( CNotifier* notifier                 ,
                               const CEvent& eventid               ,
                               CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
-    assert( NULL != notifier );
-    
-    // Check for administration updates
-    if ( eventid == DestructionEvent )
-    {
-        // make sure that our forwarding list does not contain pointers 
-        // to already deleted notifier instances
-        RemoveEventForwarding( *notifier );
-    }
-    else
-    {
-        LockData();
-        
-        // Check for events we should forward
-        if ( m_eventList.end() != m_eventList.find( eventid ) )
-        {
-            if ( !NotifyObservers( eventid, eventdata ) ) return;
-        }
-        else
-        {
-            // Check for events we should forward for this notifier
-            TEventNotifierMap::iterator i( m_eventNotifierMap.find( eventid ) );
-            if ( i != m_eventNotifierMap.end() )
-            {
-                TNotifierList& notifierList = (*i).second;
-                TNotifierList::iterator n( notifierList.find( notifier ) );
-                if ( n != notifierList.end() )
-                {
-                    if ( !NotifyObservers( eventid, eventdata ) ) return;
-                }
-            }
-        }
-        
-        UnlockData();   
-    }
+    // Dummy to avoid mandatory implementation by decending class
 }
 
 /*-------------------------------------------------------------------------*/

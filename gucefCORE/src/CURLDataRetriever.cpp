@@ -46,9 +46,9 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CURLDataRetriever::CURLDataRetriever( void )
-    : CObservingNotifier() ,
-      CIURLEvents()        ,
-      m_ioAccess( NULL )   ,
+    : CForwardingNotifier() ,
+      CIURLEvents()         ,
+      m_ioAccess( NULL )    ,
       m_url()
 {GUCEF_TRACE;
 
@@ -58,9 +58,9 @@ CURLDataRetriever::CURLDataRetriever( void )
 /*-------------------------------------------------------------------------*/
 
 CURLDataRetriever::CURLDataRetriever( CPulseGenerator& pulseGenerator )
-    : CObservingNotifier()    ,
-      CIURLEvents()           ,
-      m_ioAccess( NULL )      ,
+    : CForwardingNotifier()    ,
+      CIURLEvents()            ,
+      m_ioAccess( NULL )       ,
       m_url( pulseGenerator )
 {GUCEF_TRACE;
 
@@ -73,11 +73,11 @@ void
 CURLDataRetriever::Initialize( void )
 {GUCEF_TRACE;
 
-    AddEventForwarding( URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( URLDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( URLAllDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( URLDataRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( URLDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( URLAllDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( URLDataRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
     
     SubscribeTo( &m_url );
 }

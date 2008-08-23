@@ -31,10 +31,10 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CFORWARDINGNOTIFIER_H
+#include "gucefCORE_CForwardingNotifier.h"
+#define GUCEF_CORE_CFORWARDINGNOTIFIER_H
+#endif /* GUCEF_CORE_CFORWARDINGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CPULSEGENERATOR_H
 #include "gucefCORE_CPulseGenerator.h"
@@ -79,7 +79,7 @@ class CPatchSetFileEngine;
  *  Engine for patching a directory tree and all the files it contains.
  *  The tree is mirrored to the one starting at the given local root.
  */
-class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngine : public CORE::CObservingNotifier  ,
+class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngine : public CORE::CForwardingNotifier ,
                                                    public CPatchSetFileEngineEvents ,
                                                    public CPatchSetDirEngineEvents
 {

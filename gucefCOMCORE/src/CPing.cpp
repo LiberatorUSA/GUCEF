@@ -503,7 +503,7 @@ CPing::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CPing::CPing( void )
-    : CObservingNotifier()     ,
+    : CForwardingNotifier()    ,
       m_isActive( false )      ,
       m_remoteHost()           ,
       m_maxPings( 0 )          ,
@@ -521,11 +521,11 @@ CPing::CPing( void )
         LinkICMPOlderThenXP();
     }
     
-    AddEventForwarding( PingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( PingReponseEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( PingTimeoutEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( PingFailedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( PingStoppedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PingReponseEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PingTimeoutEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PingFailedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PingStoppedEvent, EVENTORIGINFILTER_TRANSFER );
     #endif /* GUCEF_MSWIN_BUILD ? */
 }
 

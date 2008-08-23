@@ -119,7 +119,7 @@ class CMailElement : public CICloneable
 //-------------------------------------------------------------------------*/
 
 CTransactionEventControl::CTransactionEventControl( void )
-    : CObservingNotifier()       ,
+    : CForwardingNotifier()      ,
       m_mutex()                  ,
       m_transactionBusy( false ) ,
       m_mailbox()                ,
@@ -378,11 +378,6 @@ CTransactionEventControl::ApplyFilter( const TFilterMap& filterMap ,
                 CNotifier* sender = NULL;
                 switch ( filterdata.originFilter )
                 {
-                    case EVENTORIGINFILTER_NO_SENDER :
-                    {
-                        sender = NULL;
-                        break;
-                    }
                     case EVENTORIGINFILTER_TRANSFER :
                     {
                         sender = this;

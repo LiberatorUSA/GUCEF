@@ -56,7 +56,7 @@ namespace PATCHER {
 //-------------------------------------------------------------------------*/
 
 CPatchSetDirEngine::CPatchSetDirEngine( void )
-    : CORE::CObservingNotifier()  ,
+    : CORE::CForwardingNotifier() ,
       CPatchSetFileEngineEvents() ,   
       m_curSubDirIndex( 0 )       ,
       m_subDirPatchEngine( NULL ) ,
@@ -75,7 +75,7 @@ CPatchSetDirEngine::CPatchSetDirEngine( void )
 /*-------------------------------------------------------------------------*/
 
 CPatchSetDirEngine::CPatchSetDirEngine( CORE::CPulseGenerator& pulseGenerator )
-    : CORE::CObservingNotifier()          ,
+    : CORE::CForwardingNotifier()         ,
       CPatchSetFileEngineEvents()         ,   
       m_curSubDirIndex( 0 )               ,
       m_subDirPatchEngine( NULL )         ,
@@ -97,22 +97,22 @@ void
 CPatchSetDirEngine::Initialize( void )
 {
     // Forward events from child sub-dir engines
-    AddEventForwarding( SubDirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( SubDirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
     
     // Forward file engine events
-    AddEventForwarding( FileListProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( LocalFileIsOKEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( LocalFileHashMismatchEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( LocalFileReplacedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( FileRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( FileRetrievalCompleteEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( FileRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( FileStorageErrorEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( FileListProcessingCompleteEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( FileListProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileListProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( LocalFileIsOKEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( LocalFileHashMismatchEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( LocalFileReplacedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileRetrievalCompleteEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileStorageErrorEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileListProcessingCompleteEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileListProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );
 }
 
 /*-------------------------------------------------------------------------*/

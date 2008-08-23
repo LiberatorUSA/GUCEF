@@ -683,6 +683,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefCORE_CForwardingNotifier.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefCORE_CIEventHandlerFunctorBase.cpp"
 				>
 			</File>
@@ -1297,6 +1301,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefCORE_CForwardingNotifier.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefCORE_CIEventHandlerFunctorBase.h"
 				>
 			</File>
@@ -1350,10 +1358,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefCORE_macros.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefCOREDLLInit.h"
 				>
 			</File>
 			<File

@@ -38,10 +38,10 @@
 #define GUCEF_CORE_CTSHAREDPTR_H
 #endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CFORWARDINGNOTIFIER_H
+#include "gucefCORE_CForwardingNotifier.h"
+#define GUCEF_CORE_CFORWARDINGNOTIFIER_H
+#endif /* GUCEF_CORE_CFORWARDINGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CIURLEVENTS_H
 #include "CIURLEvents.h"
@@ -71,7 +71,7 @@ class CPulseGenerator;
 /**
  *  class that allows you to retrieve data using URL's
  */
-class GUCEFCORE_EXPORT_CPP CURL : public CObservingNotifier ,
+class GUCEFCORE_EXPORT_CPP CURL : public CForwardingNotifier ,
                                   public CIURLEvents
 {
         public:

@@ -31,7 +31,11 @@
 #define GUCEF_MT_CTMAILBOX_H
 #endif /* GUCEF_MT_CTMAILBOX_H ? */
 
-#include "CObservingNotifier.h"
+#ifndef GUCEF_CORE_CFORWARDINGNOTIFIER_H
+#include "gucefCORE_CForwardingNotifier.h"
+#define GUCEF_CORE_CFORWARDINGNOTIFIER_H
+#endif /* GUCEF_CORE_CFORWARDINGNOTIFIER_H ? */
+
 #include "gucefCORE_macros.h"
 
 /*-------------------------------------------------------------------------//
@@ -61,7 +65,7 @@ namespace CORE {
  *  Define your interactions with sub-system(s) as transactions and add filters
  *  to achieve the desired behaviour.
  */
-class GUCEFCORE_EXPORT_CPP CTransactionEventControl : public CObservingNotifier
+class GUCEFCORE_EXPORT_CPP CTransactionEventControl : public CForwardingNotifier
 {
     public:
     

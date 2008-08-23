@@ -61,7 +61,7 @@ namespace PATCHER {
 //-------------------------------------------------------------------------*/
 
 CPatchListEngine::CPatchListEngine( CORE::CPulseGenerator& pulseGenerator )
-    : CORE::CObservingNotifier()                                ,
+    : CORE::CForwardingNotifier()                               ,
       CPatchSetDirEngineEvents()                                ,
       CPatchSetFileEngineEvents()                               ,
       CPatchSetEngineEvents()                                   ,
@@ -85,7 +85,7 @@ CPatchListEngine::CPatchListEngine( CORE::CPulseGenerator& pulseGenerator )
 /*-------------------------------------------------------------------------*/
 
 CPatchListEngine::CPatchListEngine( void )
-    : CORE::CObservingNotifier()                ,
+    : CORE::CForwardingNotifier()               ,
       CPatchSetDirEngineEvents()                ,
       CPatchSetFileEngineEvents()               ,
       CPatchSetEngineEvents()                   ,
@@ -115,28 +115,28 @@ CPatchListEngine::Initialize( void )
     assert( m_patchSetEngine != NULL );
   
     // Forward events from the set engine
-    AddEventForwarding( PatchSetProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( PatchSetProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( PatchSetProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( PatchSetProcessingFailedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PatchSetProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PatchSetProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PatchSetProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PatchSetProcessingFailedEvent, EVENTORIGINFILTER_TRANSFER );
     
     // Forward events from the dir engines
-    AddEventForwarding( SubDirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( SubDirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
     
     // Forward file engine events
-    AddEventForwarding( FileListProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( LocalFileIsOKEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( LocalFileHashMismatchEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( LocalFileReplacedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( FileRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( FileRetrievalCompleteEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( FileRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( FileStorageErrorEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( FileListProcessingCompleteEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( FileListProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );    
+    AddForwardingForEvent( FileListProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( LocalFileIsOKEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( LocalFileHashMismatchEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( LocalFileReplacedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileRetrievalCompleteEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileStorageErrorEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileListProcessingCompleteEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileListProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );    
 
     SubscribeTo( &m_url );
     

@@ -33,10 +33,10 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CFORWARDINGNOTIFIER_H
+#include "gucefCORE_CForwardingNotifier.h"
+#define GUCEF_CORE_CFORWARDINGNOTIFIER_H
+#endif /* GUCEF_CORE_CFORWARDINGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CURL_H
 #include "CURL.h"
@@ -111,7 +111,7 @@ class CPatchListEngine;
  *  Top-level engine for performing patching tasks
  *  This class is intended as a RAD component
  */
-class GUCEF_PATCHER_EXPORT_CPP CPatchEngine : public CORE::CObservingNotifier  ,
+class GUCEF_PATCHER_EXPORT_CPP CPatchEngine : public CORE::CForwardingNotifier ,
                                               public CORE::CIConfigurable      , /* interface */
                                               public CPatchSetDirEngineEvents  , /* event interface */
                                               public CPatchSetFileEngineEvents , /* event interface */

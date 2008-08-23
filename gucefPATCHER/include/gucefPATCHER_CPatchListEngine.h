@@ -31,10 +31,10 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CFORWARDINGNOTIFIER_H
+#include "gucefCORE_CForwardingNotifier.h"
+#define GUCEF_CORE_CFORWARDINGNOTIFIER_H
+#endif /* GUCEF_CORE_CFORWARDINGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CURL_H
 #include "CURL.h"
@@ -103,7 +103,7 @@ class CPatchSetEngine;
 /**
  *  Engine for processing a patch list.
  */
-class GUCEF_PATCHER_EXPORT_CPP CPatchListEngine : public CORE::CObservingNotifier  ,
+class GUCEF_PATCHER_EXPORT_CPP CPatchListEngine : public CORE::CForwardingNotifier ,
                                                   public CPatchSetDirEngineEvents  , /* event interface */
                                                   public CPatchSetFileEngineEvents , /* event interface */
                                                   public CPatchSetEngineEvents     , /* event interface */

@@ -55,7 +55,7 @@ namespace CORE {
  *  class that allows you to retrieve and subsequently store data
  *  using URL's
  */
-class GUCEFCORE_EXPORT_CPP CURLDataRetriever : public CObservingNotifier ,
+class GUCEFCORE_EXPORT_CPP CURLDataRetriever : public CForwardingNotifier ,
                                                public CIURLEvents
 {
     public:

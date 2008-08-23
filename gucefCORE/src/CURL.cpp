@@ -116,11 +116,11 @@ CURL::Initialize( void )
         m_url = NULL;
     }
     
-    AddEventForwarding( URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( URLDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( URLAllDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddEventForwarding( URLDataRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( URLDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( URLAllDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( URLDataRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
 }
 
 /*-------------------------------------------------------------------------*/

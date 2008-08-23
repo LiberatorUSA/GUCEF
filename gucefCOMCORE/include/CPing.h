@@ -36,10 +36,10 @@
 #define GUCEF_CORE_CEVENT_H
 #endif /* GUCEF_CORE_CEVENT_H ? */
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CFORWARDINGNOTIFIER_H
+#include "gucefCORE_CForwardingNotifier.h"
+#define GUCEF_CORE_CFORWARDINGNOTIFIER_H
+#endif /* GUCEF_CORE_CFORWARDINGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CLONEABLES_H
 #include "cloneables.h"
@@ -66,7 +66,7 @@ namespace COMCORE {
  *  You can ping a remote host and an event will be emitted when a response is
  *  received. If no response is received a timeout will occur.
  */
-class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CObservingNotifier
+class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CForwardingNotifier
 {
     public:
     
