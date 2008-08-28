@@ -636,9 +636,13 @@ CNotifierImplementor::NotifyObservers( void )
 {GUCEF_TRACE;
 
     LockData();
-    bool aliveState = ForceNotifyObserversOnce( CNotifier::ModifyEvent );
-    UnlockData();
-    return aliveState;
+    if ( ForceNotifyObserversOnce( CNotifier::ModifyEvent ) )
+    {
+        UnlockData();
+        return true;
+    }
+    // Notifier is destroyed, don't unlock just return
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -813,14 +817,18 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
     {
         // This notifier is already busy processing a notification
         // We will store the request until we are done
+        TEventMailElement mail;
+        mail.eventID = eventid;
+        mail.specificObserver = NULL; // <- no used in this context        
         if ( eventData != NULL )
         {
-            m_eventMailStack.push_back( TEventMailElement( eventid, eventData->Clone() ) );
+            mail.eventData = eventData->Clone();
         }
         else
         {
-            m_eventMailStack.push_back( TEventMailElement( eventid, NULL ) );
+            mail.eventData = NULL;
         }
+        m_eventMailStack.push_back( mail );
     }
     
     UnlockData();    
@@ -899,8 +907,14 @@ CNotifierImplementor::ProcessEventMailbox( void )
         // Dispatch the message in our mailbox
         // If the mailbox has any more items remaining we will end up back here 
         // for the next mail item
-        NotifyObservers( entry.first, entry.second );            
-        
+        if ( NULL == entry.specificObserver )
+        {
+            NotifyObservers( entry.eventID, entry.eventData );            
+        }
+        else
+        {
+            NotifySpecificObserver( *entry.specificObserver, entry.eventID, entry.eventData );
+        }
         delete entry.second;
     }
 }
@@ -927,6 +941,150 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender                   ,
     // member function of the given notifier.
     return sender.NotifyObservers( eventid, eventData );
 }                            
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
+                                              CObserver& specificObserver ,
+                                              const CEvent& eventid       ,
+                                              CICloneable* eventData      )
+{GUCEF_TRACE;
+
+    // Use the friend relationship to access the NotifySpecificObserver()
+    // member function of the given notifier.
+    return sender.NotifySpecificObserver( specificObserver, eventid, eventData );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CNotifierImplementor::NotifySpecificObserver( CObserver& specificObserver ,
+                                              const CEvent& eventid       ,
+                                              CICloneable* eventData      )
+{GUCEF_TRACE;
+
+    /*
+     *  We will use the flag 'm_isBusy' to indicate whether
+     *  we are busy. It is assumed that the code handling that flag can only be accessed
+     *  from the same thread since the LockData() call should hold any other thread if
+     *  we are operating in a multi threaded environment
+     *  This action is required because a notification can trigger some action that results
+     *  in a new notification request on the same notifier this could muck up our administration
+     *  It could also cause stack overflows if the event chain where long enough.
+     */
+    LockData();
+    
+    if ( !m_isBusy )
+    {
+        m_isBusy = true;
+        
+        // First we check and validate a subscription for all events for the given observer       
+        TObserverList::iterator i = m_observers.find( &specificObserver );
+        if ( i != m_observers.end() )
+        {
+            if ( (*i).second )
+            {
+                // Perform the notification
+                // If an observer is subscribed to all events we never used specialized callbacks
+                // instead we always use the standard OnNotify()
+                specificObserver.OnNotify( m_ownerNotifier ,
+                                           eventid         ,
+                                           eventData       );
+                
+                // Check if someone deleted our owner notifier
+                if ( m_ownerNotifier == NULL )
+                {
+                    // Gracefully handle the destruction sequence
+                    m_isBusy = false;
+                    Destroy( this );
+                    return false;
+                }
+                                                
+                // Process command mail if needed
+                if ( !m_cmdMailStack.empty() )
+                {
+                    // We have command mail
+                    m_isBusy = false;
+                    ProcessCmdMailbox();
+                    m_isBusy = true;
+                }
+                
+                // Since we only have no notify a single observer we can stop here
+                // since an observer cannot be notified twice for the same event
+                UnlockData();
+                return true;
+            } 
+        }
+
+        // Validate a subscription of the given observer to this specific event
+        TEventNotificationMap& observers = m_eventobservers[ eventid ];        
+        TEventNotificationMap::iterator n = observers.find( &specificObserver );
+        if ( n != observers.end() )
+        {
+            // Check if we should perform notification using the generic
+            // handler or a user specified callback.
+            CIEventHandlerFunctorBase* callback = (*n).second;
+            if ( NULL != callback )
+            {
+                callback->OnNotify( m_ownerNotifier ,
+                                    eventid         ,
+                                    eventData       );
+            }
+            else
+            {
+                specificObserver.OnNotify( m_ownerNotifier ,
+                                           eventid         ,
+                                           eventData       );
+            }
+
+            // Check if someone deleted our owner notifier
+            if ( m_ownerNotifier == NULL )
+            {
+                // Gracefully handle the destruction sequence
+                m_isBusy = false;
+                Destroy( this );
+                return false;
+            }                                       
+            
+            // Process command mail if needed
+            if ( !m_cmdMailStack.empty() )
+            {
+                // We have command mail
+                m_isBusy = false;
+                ProcessMailbox();
+                m_isBusy = true;
+            }
+        }
+        
+        if ( m_scheduledForDestruction )
+        {
+            UnlockData();
+            delete m_ownerNotifier;
+            return false;
+        }        
+    }
+    else
+    {
+        // This notifier is already busy processing a notification
+        // We will store the request until we are done
+        TEventMailElement mail;
+        mail.eventID = eventid;
+        mail.specificObserver = &specificObserver;
+        if ( eventData != NULL )
+        {
+            mail.eventData = eventData->Clone();
+        }
+        else
+        {
+            mail.eventData = NULL;
+        }
+        m_eventMailStack.push_back( mail );
+    }
+    
+    UnlockData();        
+    return true;  
+}
 
 /*-------------------------------------------------------------------------*/
 
