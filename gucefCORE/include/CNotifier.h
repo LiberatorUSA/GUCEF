@@ -220,6 +220,37 @@ class GUCEFCORE_EXPORT_CPP CNotifier : public CITypeNamed
                           const CEvent& eventid         ,
                           CICloneable* eventData = NULL );
 
+    /**
+     *  The same as NotifyObservers( CEvent, CICloneable )
+     *  except that this allows you to specify a specific observer the event 
+     *  will be sent to ignoring other observers who are subscribed to the 
+     *  same event. Note that a valid subscription for the given event is still
+     *  validated for notification to the given observer to be processed.
+     *  
+     *  Use with great care !!!
+     *  Use of this version should be an exception and not standard practice
+     *  This is typically only needed for exotic internal use!
+     */
+    bool NotifySpecificObserver( CObserver& specificObserver   ,
+                                 const CEvent& eventid         ,
+                                 CICloneable* eventData = NULL );
+                          
+    /**
+     *  The same as NotifyObservers( CNotifier, CEvent, CICloneable )
+     *  except that this allows you to specify a specific observer the event 
+     *  will be sent to ignoring other observers who are subscribed to the 
+     *  same event. Note that a valid subscription for the given event is still
+     *  validated for notification to the given observer to be processed.
+     *  
+     *  Use with great care !!!
+     *  Use of this version should be an exception and not standard practice
+     *  This is typically only needed for exotic internal use!
+     */
+    bool NotifySpecificObserver( CNotifier& sender             ,
+                                 CObserver& specificObserver   ,
+                                 const CEvent& eventid         ,
+                                 CICloneable* eventData = NULL );
+
     virtual void LockData( void ) const;
     
     virtual void UnlockData( void ) const;

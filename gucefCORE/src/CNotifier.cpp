@@ -203,7 +203,35 @@ CNotifier::NotifyObservers( CNotifier& sender                   ,
     return m_imp->NotifyObservers( sender    ,
                                    eventid   ,
                                    eventData );
-}                            
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CNotifier::NotifySpecificObserver( CNotifier& sender           ,
+                                   CObserver& specificObserver ,
+                                   const CEvent& eventid       ,
+                                   CICloneable* eventData      )
+{GUCEF_TRACE;
+
+    return m_imp->NotifySpecificObserver( sender           ,
+                                          specificObserver ,
+                                          eventid          ,
+                                          eventData        );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CNotifier::NotifySpecificObserver( CObserver& specificObserver ,
+                                   const CEvent& eventid       ,
+                                   CICloneable* eventData      )
+{GUCEF_TRACE;
+
+    return m_imp->NotifySpecificObserver( specificObserver ,
+                                          eventid          ,
+                                          eventData        );
+}
 
 /*-------------------------------------------------------------------------*/
 

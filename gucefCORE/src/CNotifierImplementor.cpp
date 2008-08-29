@@ -88,9 +88,6 @@ CNotifierImplementor::CNotifierImplementor( CNotifier* ownerNotifier ,
       m_scheduledForDestruction( false )
 {GUCEF_TRACE;
 
-    //@TODO: makeme
-    assert( 0 );
-    
     assert( m_ownerNotifier != NULL );
 }
 
@@ -100,11 +97,6 @@ CNotifierImplementor&
 CNotifierImplementor::operator=( const CNotifierImplementor& src )
 {GUCEF_TRACE;
 
-    assert( 0 ); //@TODO: makeme
-
-    if ( this != &src )
-    {
-    }
     return *this; 
 }    
 
@@ -915,7 +907,7 @@ CNotifierImplementor::ProcessEventMailbox( void )
         {
             NotifySpecificObserver( *entry.specificObserver, entry.eventID, entry.eventData );
         }
-        delete entry.second;
+        delete entry.eventData;
     }
 }
 
