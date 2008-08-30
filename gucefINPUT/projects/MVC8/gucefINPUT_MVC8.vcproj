@@ -223,6 +223,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefINPUT_CInputObserverSwitch.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefINPUT_CKeyboard.cpp"
 				>
 			</File>
@@ -290,6 +294,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefINPUT_CInputDriver.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefINPUT_CInputObserverSwitch.h"
 				>
 			</File>
 			<File

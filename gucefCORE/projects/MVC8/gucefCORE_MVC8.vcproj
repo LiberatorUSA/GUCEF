@@ -703,6 +703,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefCORE_CObserverSwitch.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefCORE_CPulseData.cpp"
 				>
 			</File>
@@ -1318,6 +1322,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefCORE_CITaskConsumer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefCORE_CObserverSwitch.h"
 				>
 			</File>
 			<File
