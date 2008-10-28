@@ -110,7 +110,7 @@ BOOL CMFCPatcherGUIApp::InitInstance()
     m_cmdLineParamList.SetMultiple( oInfo.GetParamString(), '\'' );
 
     // Obtain the plugin dir path
-    GUCEF::CORE::CString pluginDir = m_cmdLineParamList.GetValue( "PluginDir" );
+    GUCEF::CORE::CString pluginDir = m_cmdLineParamList.GetValueAlways( "PluginDir" );    
     if ( pluginDir.Length() == 0 )
     {
         pluginDir = "$MODULEDIR$\\plugins";

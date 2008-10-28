@@ -112,6 +112,14 @@ class GUCEFCORE_EXPORT_CPP CValueList
      *  @exception EUnknownKey thrown if the given key is unknown
      */
     const CString& GetValue( const CString& key ) const;
+    
+    /**
+     *  Returns the first value associated with the
+     *  given key. This GetValue version differs from the others in
+     *  that no exception will be thrown if the key does not exist
+     *  instead it will return an empty string.
+     */
+    CString GetValueAlways( const CString& key ) const;
 
     /**
      *  Returns the first value associated with the

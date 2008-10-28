@@ -164,11 +164,11 @@ CChildView::LoadPatchEngineConfig( void )
         return false;
     }    
     
-    m_closeAppWhenDone = GUCEF::CORE::StringToBool( theApp.GetCommandLineParams().GetValue( "CloseWhenDone" ) );
+    m_closeAppWhenDone = GUCEF::CORE::StringToBool( theApp.GetCommandLineParams().GetValueAlways( "CloseWhenDone" ) );
     
-    GUCEF::CORE::CString configFile = theApp.GetCommandLineParams().GetValue( "ConfigFile" );    
+    GUCEF::CORE::CString configFile = theApp.GetCommandLineParams().GetValueAlways( "ConfigFile" );    
     configFile = GUCEF::CORE::RelativePath( configFile );
-    GUCEF::CORE::CString configFileCodec = theApp.GetCommandLineParams().GetValue( "ConfigFileCodec" );
+    GUCEF::CORE::CString configFileCodec = theApp.GetCommandLineParams().GetValueAlways( "ConfigFileCodec" );
     if ( ( configFile.Length() == 0 )     ||
          ( configFileCodec.Length() == 0 ) )
     {

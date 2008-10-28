@@ -232,6 +232,21 @@ CValueList::Set( const CString& key   ,
 
 /*-------------------------------------------------------------------------*/                
         
+CString
+CValueList::GetValueAlways( const CString& key ) const
+{GUCEF_TRACE;
+
+    TValueMap::const_iterator i = m_list.find( key );
+    if ( i != m_list.end() )
+    {
+        return (*i).second[ 0 ];
+    }
+
+    return CString(); 
+}
+
+/*-------------------------------------------------------------------------*/                
+        
 const CString&
 CValueList::GetValue( const CString& key ) const
 {GUCEF_TRACE;
