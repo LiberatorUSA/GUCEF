@@ -177,6 +177,10 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
             {
                 NotifyObservers( CIURLEvents::URLDeactivateEvent );
             }
+            else
+            {
+                NotifyObservers( CIURLEvents::URLAllDataRecievedEvent );
+            }
             return;
         }        
     }

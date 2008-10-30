@@ -108,12 +108,16 @@ class GUCEF_CORE_EXPORT_CPP CForwardingNotifier : public CObservingNotifier
      *  class and potential sub-system classes derive. This allows you
      *  to use forwarding without breaking event scoping rules.
      *
+     *  Note that if "notifier" is NULL you must use the filter type
+     *  EVENTORIGINFILTER_TRANSFER or the you wont be able to add the
+     *  forwarding mapping.
+     *
      *  @param eventid the ID specifying the event you wish to forward
      *  @param notifier if non-NULL only event's triggered from the 
      *  @param notifier given notifier are forwarded, otherwise the 
      *  @param notifier event is always forwarded
      */
-    void AddForwardingForEvent( const CEvent& eventid                 ,
+    bool AddForwardingForEvent( const CEvent& eventid                 ,
                                 const TEventOriginFilter originFilter ,
                                 CNotifier* notifier = NULL            ,
                                 const bool enabled = true             );
@@ -174,8 +178,10 @@ class GUCEF_CORE_EXPORT_CPP CForwardingNotifier : public CObservingNotifier
     
     typedef std::map< CNotifier*, TForwardState > TNotifierMap;
     typedef std::map< CEvent, TNotifierMap > TEventNotifierMap;
+    typedef std::map< CEvent, TForwardState > TEventMap;
         
-    TNotifierMap m_forwardAllList;
+    TEventMap m_forwardAllList;
+    TNotifierMap m_forwardAllForNotifierList;
     TEventNotifierMap m_eventNotifierMap;                              
 };
 

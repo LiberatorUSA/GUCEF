@@ -48,8 +48,9 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CForwardingNotifier::CForwardingNotifier( void )
-    : CObservingNotifier() ,
-      m_forwardAllList()   ,
+    : CObservingNotifier()          ,
+      m_forwardAllList()            ,
+      m_forwardAllForNotifierList() ,
       m_eventNotifierMap()
 {GUCEF_TRACE;
 
@@ -58,8 +59,9 @@ CForwardingNotifier::CForwardingNotifier( void )
 /*-------------------------------------------------------------------------*/
     
 CForwardingNotifier::CForwardingNotifier( const CForwardingNotifier& src )
-    : CObservingNotifier( src ) ,
-      m_forwardAllList()        ,
+    : CObservingNotifier( src )     ,
+      m_forwardAllList()            ,
+      m_forwardAllForNotifierList() ,
       m_eventNotifierMap()
 {GUCEF_TRACE;
 
@@ -89,8 +91,8 @@ CForwardingNotifier::SetForwardingActiveStateForAllEvents( CNotifier& notifier ,
 {GUCEF_TRACE;
 
     LockData();
-    TNotifierMap::iterator i = m_forwardAllList.begin();
-    if ( i != m_forwardAllList.end() )
+    TNotifierMap::iterator i = m_forwardAllForNotifierList.begin();
+    if ( i != m_forwardAllForNotifierList.end() )
     {
         (*i).second.enabled = enabled;
         UnlockData();
@@ -109,7 +111,21 @@ CForwardingNotifier::SetForwardingActiveStateForEvent( const CEvent& eventid ,
 {GUCEF_TRACE;
     
     LockData();
-    TEventNotifierMap::iterator i = m_eventNotifierMap.begin();
+    
+    if ( NULL == notifier )
+    {
+        TEventMap::iterator i = m_forwardAllList.find( eventid );
+        if ( i != m_forwardAllList.end() )
+        {
+            (*i).second.enabled = enabled;
+            UnlockData();
+            return true;             
+        }
+        UnlockData();
+        return false;         
+    }
+    
+    TEventNotifierMap::iterator i = m_eventNotifierMap.find( eventid );
     if ( i != m_eventNotifierMap.end() )
     {
         TNotifierMap& notifierMap = (*i).second;
@@ -136,7 +152,7 @@ CForwardingNotifier::AddForwardingForAllEvents( CNotifier& notifier             
     assert( NULL != &notifier );
     
     LockData();
-    TForwardState& state = m_forwardAllList[ &notifier ];
+    TForwardState& state = m_forwardAllForNotifierList[ &notifier ];
     state.enabled = enabled;
     state.filter = originFilter;
     UnlockData();
@@ -144,18 +160,35 @@ CForwardingNotifier::AddForwardingForAllEvents( CNotifier& notifier             
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CForwardingNotifier::AddForwardingForEvent( const CEvent& eventid                 ,
                                             const TEventOriginFilter originFilter ,
                                             CNotifier* notifier /* = NULL */      ,
                                             const bool enabled                    )
 {GUCEF_TRACE;
 
+    if ( notifier == NULL && originFilter != EVENTORIGINFILTER_TRANSFER )
+    {
+        return false;
+    }
+    
     LockData();
-    TForwardState& state = (m_eventNotifierMap[ eventid ])[ notifier ];
-    state.filter = originFilter;
-    state.enabled = enabled;
-    UnlockData();
+    
+    if ( NULL == notifier )
+    {
+        TForwardState& state = m_forwardAllList[ eventid ];
+        state.filter = originFilter;
+        state.enabled = enabled;        
+    }
+    else
+    {
+        TForwardState& state = (m_eventNotifierMap[ eventid ])[ notifier ];
+        state.filter = originFilter;
+        state.enabled = enabled;
+    }
+    
+    UnlockData();    
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -167,7 +200,7 @@ CForwardingNotifier::RemoveForwardingForAllEvents( CNotifier& notifier )
     assert( NULL != &notifier );
     
     LockData();
-    m_forwardAllList.erase( &notifier );
+    m_forwardAllForNotifierList.erase( &notifier );
     UnlockData();
 }
 
@@ -185,6 +218,7 @@ CForwardingNotifier::RemoveForwardingForEvent( const CEvent& eventid            
         TNotifierMap& notifierList = m_eventNotifierMap[ eventid ];
         notifierList.erase( notifier );
     }
+    m_forwardAllList.erase( eventid );
     UnlockData();
 }
 
@@ -198,7 +232,7 @@ CForwardingNotifier::RemoveAllForwardingForNotifier( CNotifier& notifier )
     
     LockData();
     
-    m_forwardAllList.erase( &notifier );
+    m_forwardAllForNotifierList.erase( &notifier );
     
     TEventNotifierMap::iterator i( m_eventNotifierMap.begin() );
     while ( i != m_eventNotifierMap.end() )
@@ -234,10 +268,10 @@ CForwardingNotifier::OnNotify( CNotifier* notifier                 ,
     else
     {
         LockData();
-        
+                
         // Check for if this is a notifier for which we forward all events
-        TNotifierMap::iterator i = m_forwardAllList.find( notifier );
-        if ( m_forwardAllList.end() != i )
+        TNotifierMap::iterator i = m_forwardAllForNotifierList.find( notifier );
+        if ( m_forwardAllForNotifierList.end() != i )
         {
             const TForwardState& state = (*i).second;
             if ( state.enabled )
@@ -263,33 +297,51 @@ CForwardingNotifier::OnNotify( CNotifier* notifier                 ,
         }
         else
         {
-            // Check for specific events we should forward
-            TEventNotifierMap::iterator i( m_eventNotifierMap.find( eventid ) );
-            if ( i != m_eventNotifierMap.end() )
+            // Check if this is an event we always forward        
+            TEventMap::iterator i = m_forwardAllList.find( eventid );
+            if ( m_forwardAllList.end() != i )
             {
-                TNotifierMap& notifierList = (*i).second;
-                TNotifierMap::iterator n( notifierList.find( notifier ) );
-                if ( n != notifierList.end() )
+                const TForwardState& state = (*i).second;
+                if ( state.filter == EVENTORIGINFILTER_TRANSFER )
                 {
-                    const TForwardState& state = (*n).second;
-                    if ( state.enabled )
+                    if ( !NotifyObservers( *this, eventid, eventdata ) ) return;
+                }
+                else
+                {
+                    // We should not be able to get here since you should not be able to define such a forwarding setting
+                    GUCEF_UNREACHABLE;
+                }
+            }                
+            else
+            {
+                // Check for specific events we should forward
+                TEventNotifierMap::iterator i( m_eventNotifierMap.find( eventid ) );
+                if ( i != m_eventNotifierMap.end() )
+                {
+                    TNotifierMap& notifierList = (*i).second;
+                    TNotifierMap::iterator n( notifierList.find( notifier ) );
+                    if ( n != notifierList.end() )
                     {
-                        switch ( state.filter )
+                        const TForwardState& state = (*n).second;
+                        if ( state.enabled )
                         {
-                            case EVENTORIGINFILTER_UNMODIFIED :
+                            switch ( state.filter )
                             {
-                                if ( !NotifyObservers( *notifier, eventid, eventdata ) ) return;
-                                break;
+                                case EVENTORIGINFILTER_UNMODIFIED :
+                                {
+                                    if ( !NotifyObservers( *notifier, eventid, eventdata ) ) return;
+                                    break;
+                                }
+                                case EVENTORIGINFILTER_TRANSFER :
+                                {
+                                    if ( !NotifyObservers( *this, eventid, eventdata ) ) return;
+                                    break;
+                                }
+                                default:
+                                {
+                                    GUCEF_UNREACHABLE;                        
+                                }                                                            
                             }
-                            case EVENTORIGINFILTER_TRANSFER :
-                            {
-                                if ( !NotifyObservers( *this, eventid, eventdata ) ) return;
-                                break;
-                            }
-                            default:
-                            {
-                                GUCEF_UNREACHABLE;                        
-                            }                                                            
                         }
                     }
                 }

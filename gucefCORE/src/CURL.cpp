@@ -63,8 +63,10 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CURL::CURL( void )
-    : m_handler( NULL ) ,
-      m_url()           ,
+    : CForwardingNotifier() ,
+      CIURLEvents()         ,
+      m_handler( NULL )     ,
+      m_url()               ,
       m_pulseGenerator( &CGUCEFApplication::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
         
@@ -74,7 +76,9 @@ CURL::CURL( void )
 /*-------------------------------------------------------------------------*/
 
 CURL::CURL( CPulseGenerator& pulseGenerator )
-    : m_handler( NULL )                   ,
+    : CForwardingNotifier()               ,
+      CIURLEvents()                       ,
+      m_handler( NULL )                   ,
       m_url()                             ,
       m_pulseGenerator( &pulseGenerator )
 {GUCEF_TRACE;
@@ -85,7 +89,9 @@ CURL::CURL( CPulseGenerator& pulseGenerator )
 /*-------------------------------------------------------------------------*/        
         
 CURL::CURL( const CString& url )
-    : m_handler( GetHandlerForURL( url ) ) ,
+    : CForwardingNotifier()                ,
+      CIURLEvents()                        ,
+      m_handler( GetHandlerForURL( url ) ) ,
       m_url( url )                         ,
       m_pulseGenerator( &CGUCEFApplication::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
@@ -97,7 +103,9 @@ CURL::CURL( const CString& url )
         
 CURL::CURL( const CString& url              ,
             CPulseGenerator& pulseGenerator )
-    : m_handler( GetHandlerForURL( url ) ) ,
+    : CForwardingNotifier()                ,
+      CIURLEvents()                        ,
+      m_handler( GetHandlerForURL( url ) ) ,
       m_url( url )                         ,
       m_pulseGenerator( &pulseGenerator )
 {GUCEF_TRACE;
@@ -299,9 +307,9 @@ CURL::OnNotify( CNotifier* notifier                 ,
 {GUCEF_TRACE;
     
     // Mandatory: call the base-class implementation
-    CObservingNotifier::OnNotify( notifier  ,
-                                  eventid   ,
-                                  eventdata );
+    CForwardingNotifier::OnNotify( notifier  ,
+                                   eventid   ,
+                                   eventdata );
 }
 
 /*-------------------------------------------------------------------------//

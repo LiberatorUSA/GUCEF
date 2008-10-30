@@ -81,7 +81,8 @@ const CORE::CEvent CTCPClientSocket::ConnectingEvent = "GUCEF::COMCORE::CTCPClie
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-#define BUFFER_READ_SIZE        16
+#define MAX_PULSE_INTERVAL_IN_MS    10 
+#define BUFFER_READ_SIZE            16
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -347,6 +348,8 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
         }
     }
     
+    m_pulseGenerator->RequestPeriodicPulses( this, MAX_PULSE_INTERVAL_IN_MS );
+    
     m_isConnecting = true;        
     m_hostAddress.SetHostname( remoteaddr );
     m_hostAddress.SetPortInHostByteOrder( port );	                   
@@ -569,6 +572,8 @@ CTCPClientSocket::Close( void )
                 closesocket( _data->sockid );
                 _active = false;
                 m_isConnecting = false;
+                
+                m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
                 
                 NotifyObservers( DisconnectedEvent );
         }

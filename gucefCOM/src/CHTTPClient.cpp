@@ -226,6 +226,9 @@ CHTTPClient::Get( const CORE::CString& host                      ,
                   const UInt32 byteoffset /* = 0 */              ,
                   const CORE::CValueList* valuelist /* = NULL */ )
 {GUCEF_TRACE;
+        
+        GUCEF_DEBUG_LOG( 0, "CHTTPClient: Performing GET on http://" + host + ":" + CORE::Int32ToString( port ) + "/" + path );
+        
         m_socket.Close();
         
         // reset our counters because we are beginning a new transfer
@@ -278,6 +281,7 @@ CHTTPClient::Get( const CORE::CString& host                      ,
         if ( !systemWideProxyActive )
         {
             // no system wide proxy has been set,.. use the local settings
+            GUCEF_DEBUG_LOG( 0, "CHTTPClient: No system wide HTTP proxy has been set to active" );
             proxyHost = m_proxyHost;
             proxyPort = m_proxyPort;
         }        
@@ -286,14 +290,21 @@ CHTTPClient::Get( const CORE::CString& host                      ,
             // Allow a local proxy setting to override
             if ( m_proxyHost.Length() > 0 )
             {
+                GUCEF_DEBUG_LOG( 0, "CHTTPClient: A system wide HTTP proxy has been set AND a client HTTP proxy, overriding system wide proxy with the local proxy settings" );
                 proxyHost = m_proxyHost;
                 proxyPort = m_proxyPort;            
+            }
+            else
+            {
+                GUCEF_DEBUG_LOG( 0, "CHTTPClient: A system wide HTTP proxy has been set and will be used by the client" );
             }
         }
         
         char* buffer( NULL );
         if ( proxyHost.Length() > 0 )
         {
+            GUCEF_DEBUG_LOG( 0, "CHTTPClient: Using proxy server: " + proxyHost + CORE::UInt16ToString( proxyPort ) );
+            
             // Forward our request to the proxy
             CORE::CString remoteHost( host + ":" + CORE::Int32ToString( port ) + "/" + valuepath );
             buffer = new char[ 32 + valuepath.Length() + remoteHost.Length() ];
@@ -302,6 +313,7 @@ CHTTPClient::Get( const CORE::CString& host                      ,
             if ( m_socket.ConnectTo( proxyHost ,
                                      proxyPort ) )
             {                                         
+                    GUCEF_DEBUG_LOG( 0, "CHTTPClient: Perpared HTTP header for transmission: " + CORE::CString( buffer ) );
                     m_sendBuffer.Append( buffer, (UInt32)strlen( buffer ) );
                     delete []buffer;
                     return true;
@@ -309,6 +321,8 @@ CHTTPClient::Get( const CORE::CString& host                      ,
         }
         else
         {
+            GUCEF_DEBUG_LOG( 0, "CHTTPClient: Not using proxy server, connecting to: " + host + ":" + CORE::Int32ToString( port ) );
+            
             if ( byteoffset == 0 )
             {
                     buffer = new char[ 100 + valuepath.Length() + host.Length() ];
@@ -326,6 +340,7 @@ CHTTPClient::Get( const CORE::CString& host                      ,
             if ( m_socket.ConnectTo( host ,
                                      port ) )
             {                                         
+                    GUCEF_DEBUG_LOG( 0, "CHTTPClient: Perpared HTTP header for transmission: " + CORE::CString( buffer ) );
                     m_sendBuffer.Append( buffer, (UInt32)strlen( buffer ) );
                     delete []buffer;
                     return true;
@@ -369,6 +384,9 @@ CHTTPClient::ParseURL( const CORE::CString& urlstring ,
                        UInt16& port                   ,
                        CORE::CString& path            )
 {GUCEF_TRACE;
+        
+        GUCEF_DEBUG_LOG( 0, "CHTTPClient: Parsing URL: " + urlstring );
+        
         if ( urlstring.Length() < 10 ) return false;
         
         CORE::CString urlStr = urlstring.ReplaceChar( '\\', '/' );
@@ -447,7 +465,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
         if( ( strncmp( data, "HTTP/1.1", 8 ) != 0 ) &&
             ( strncmp( data, "HTTP/1.0", 8 ) != 0 ) )
         {
-            GUCEF_DEBUG_LOG( 0, "Doesn't look like HTTP protocol" );
+            GUCEF_DEBUG_LOG( 0, "CHTTPClient: Doesn't look like HTTP protocol" );
             return;
         }
             
@@ -821,32 +839,33 @@ CHTTPClient::OnNotify( CORE::CNotifier* notifier                 ,
             NotifyObservers( ConnectedEvent );
             
             // Transmit data we have queued for transmission
+            GUCEF_DEBUG_LOG( 0, "CHTTPClient: TCP Socket connected to server, sending " + CORE::UInt32ToString( m_sendBuffer.GetDataSize() ) + " bytes to the server" );
+            
             m_socket.Send( m_sendBuffer.GetConstBufferPtr(), m_sendBuffer.GetDataSize() );
             m_sendBuffer.Clear( true );
         }
         else
         if ( eventid == COMCORE::CTCPClientSocket::ConnectingEvent )
         {
+            GUCEF_DEBUG_LOG( 0, "CHTTPClient: TCP Socket is connecting to the server" );            
             NotifyObservers( ConnectingEvent );
         }
         else
         if ( eventid == COMCORE::CTCPClientSocket::DisconnectedEvent )
         {
+            GUCEF_DEBUG_LOG( 0, "CHTTPClient: TCP Socket disconnected from the server" );
             OnDisconnect( m_socket );
-        }
-        else
-        if ( eventid == COMCORE::CTCPClientSocket::DisconnectedEvent )
-        {
-            NotifyObservers( DisconnectedEvent );
         }
         else
         if ( eventid == COMCORE::CTCPClientSocket::SocketErrorEvent )
         {
+            GUCEF_DEBUG_LOG( 0, "CHTTPClient: TCP Socket reported an error" );
             NotifyObservers( ConnectionErrorEvent, eventdata );
         }
         else
         if ( eventid == COMCORE::CTCPClientSocket::DataRecievedEvent )
         {
+            GUCEF_DEBUG_LOG( 0, "CHTTPClient: TCP Socket received data" );
             COMCORE::CTCPClientSocket::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPClientSocket::TDataRecievedEventData* >( eventdata );
             OnRead( m_socket                                                          ,
                     static_cast< const char*>( eData->GetData().GetConstBufferPtr() ) ,

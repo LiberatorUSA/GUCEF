@@ -134,7 +134,7 @@ CGUCEFAppWin32MFCDriver::RequestPulseInterval( GUCEF::CORE::CPulseGenerator& pul
         m_useTimer = true;
         if ( GetSafeHwnd() )
         {
-            PostMessage( GUCEFWIN32DRIVERMSG_STARTTIMER );
+            PostMessage( GUCEFWIN32DRIVERMSG_STARTTIMER, 0, (LPARAM)&pulseGenerator );
         }
     }
 }
@@ -147,7 +147,7 @@ CGUCEFAppWin32MFCDriver::RequestPulse( GUCEF::CORE::CPulseGenerator& pulseGenera
 
     if ( GetSafeHwnd() )
     {
-        PostMessage( GUCEFWIN32DRIVERMSG_UPDATE );
+        PostMessage( GUCEFWIN32DRIVERMSG_UPDATE, 0, (LPARAM)&pulseGenerator );
     }
 }
 
@@ -158,7 +158,8 @@ CGUCEFAppWin32MFCDriver::OnGUCEFUpdateRequestMsg( WPARAM wParam ,
                                                   LPARAM lParam )
 {GUCEF_TRACE;
 
-    GUCEF::CORE::CGUCEFApplication::Instance()->Update();
+    GUCEF::CORE::CPulseGenerator& pulseGenerator = *( (GUCEF::CORE::CPulseGenerator*) lParam );
+    SendDriverPulse( pulseGenerator );
     return 0;
 }
 
@@ -244,7 +245,7 @@ CGUCEFAppWin32MFCDriver::RequestStopOfPeriodicUpdates( GUCEF::CORE::CPulseGenera
 
     if ( GetSafeHwnd() )
     {
-        PostMessage( GUCEFWIN32DRIVERMSG_STOPTIMER );
+        PostMessage( GUCEFWIN32DRIVERMSG_STOPTIMER, 0, (LPARAM)&pulseGenerator );
     }
     m_useTimer = false;    
 }
@@ -266,7 +267,7 @@ CGUCEFAppWin32MFCDriver::RequestPeriodicPulses( GUCEF::CORE::CPulseGenerator& pu
     m_frequency = pulseGenerator.GetRequiredPulseDeltaInMilliSecs();
     if ( GetSafeHwnd() )
     {
-        PostMessage( GUCEFWIN32DRIVERMSG_STARTTIMER );
+        PostMessage( GUCEFWIN32DRIVERMSG_STARTTIMER, 0, (LPARAM)&pulseGenerator );
     }
     m_useTimer = true;    
 }
