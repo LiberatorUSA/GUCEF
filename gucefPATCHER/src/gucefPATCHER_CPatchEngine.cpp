@@ -530,9 +530,9 @@ CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
     if ( !m_stopSignalGiven && m_isActive )
     {
         // Call base-class version
-        CORE::CObservingNotifier::OnNotify( notifier  ,
-                                            eventid   ,
-                                            eventdata );
+        CORE::CForwardingNotifier::OnNotify( notifier  ,
+                                             eventid   ,
+                                             eventdata );
         
         if ( notifier == m_patchListEngine )
         {
