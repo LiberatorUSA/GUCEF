@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -162,6 +167,8 @@ bool
 CPatchListEngine::GetCurrentPatchSetLocation( TPatchSetLocation** location )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( 0, "CPatchListEngine: Obtaining the current patch set location" );
+    
     // Get the current set
     TPatchList::iterator i = m_patchList.begin();
     for ( UInt32 n=0; n<m_setIndex; ++n ) { ++i; }
@@ -184,6 +191,8 @@ bool
 CPatchListEngine::ObtainCurrentPatchSet( void )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( 0, "CPatchListEngine: Obtaining the current patch set" );
+    
     TPatchSetLocation* setLocation = NULL;
     if ( GetCurrentPatchSetLocation( &setLocation ) )
     {
@@ -215,6 +224,8 @@ CPatchListEngine::Start( const TPatchList& patchList          ,
                          const CORE::CString& tempStorageRoot )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( 0, "CPatchListEngine: Starting,.." );
+    
     assert( &patchList != NULL );
     
     // The user should explicitly stop first if we are already busy
@@ -257,6 +268,8 @@ void
 CPatchListEngine::Stop( void )
 {GUCEF_TRACE;
     
+    GUCEF_DEBUG_LOG( 0, "CPatchListEngine: Stopping,.." );
+    
     if ( !m_stopSignalGiven && m_isActive )
     {
         m_stopSignalGiven = true;
@@ -281,6 +294,8 @@ bool
 CPatchListEngine::ProcessRecievedPatchSet( void )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( 0, "CPatchListEngine: Processing the received patch set" );
+    
     if ( m_setDataBuffer.GetDataSize() > 0 )
     {
         // Now we must process the raw patch set data to turn it into something we can use
@@ -373,6 +388,8 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
         {
             if ( eventid == CORE::CURL::URLDataRecievedEvent )
             {
+                GUCEF_DEBUG_LOG( 0, "CPatchListEngine: Patch set data received" );
+                
                 // Translate event data
                 const CORE::CDynamicBuffer& buffer = ( static_cast< CORE::CURL::TURLDataRecievedEventData* >( eventdata ) )->GetData();
                 
@@ -394,6 +411,8 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
             else
             if ( eventid == CORE::CURL::URLDeactivateEvent )
             {
+                GUCEF_DEBUG_LOG( 0, "CPatchListEngine: Aborting patch list processing" );
+                
                 // Someone has called Stop() while we where busy with our data retrieval
                 m_stopSignalGiven = false;
                 m_isActive = false;
@@ -402,6 +421,8 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
             else
             if ( eventid == CORE::CURL::URLDataRetrievalErrorEvent )
             {
+                GUCEF_DEBUG_LOG( 0, "CPatchListEngine: Patch set data retrieval error" );
+                
                 // We failed to obtain the patch set data using the current location URL
                 // Perhaps we can use another location
                 ++m_setLocIndex;

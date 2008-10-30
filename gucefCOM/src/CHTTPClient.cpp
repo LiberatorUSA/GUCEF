@@ -718,6 +718,8 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
             // Check if we are already finished
             if ( m_filesize == 0 )
             {
+                GUCEF_DEBUG_LOG( 0, "CHTTPClient: Received all the desired data thus closing the TCP socket" );
+                
                 NotifyObservers( HTTPTransferFinishedEvent );
                 m_socket.Close();
             }
@@ -742,6 +744,8 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
             // Check if we are finished
             if ( m_filesize == 0 )
             {
+                GUCEF_DEBUG_LOG( 0, "CHTTPClient: Received all the desired data thus closing the TCP socket" );
+                
                 NotifyObservers( HTTPTransferFinishedEvent );
                 m_socket.Close();
             }            

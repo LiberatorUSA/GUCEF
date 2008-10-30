@@ -24,7 +24,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
+#ifndef GUCEF_CORE_CMFILEACCESS_H
 #include "CMFileAccess.h"
+#define GUCEF_CORE_CMFILEACCESS_H
+#endif /* GUCEF_CORE_CMFILEACCESS_H ? */
 
 #ifndef GUCEF_CORE_CURLHANDLERREGISTRY_H
 #include "CURLHandlerRegistry.h"
@@ -94,6 +102,8 @@ bool
 CHTTPURLHandler::Activate( CORE::CURL& url )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Activating using URL: " + url.GetURL() ); 
+    
     m_transferFinished = false;
     
     delete m_httpClient;
@@ -109,6 +119,8 @@ void
 CHTTPURLHandler::Deactivate( CORE::CURL& url )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Deactivating" );
+    
     if ( NULL != m_httpClient )
     {
         m_httpClient->Close();
@@ -151,28 +163,34 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
         if ( ( eventid == CHTTPClient::HTTPErrorEvent )       ||
              ( eventid == CHTTPClient::ConnectionErrorEvent )  )
         {
+            
+            GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Data retrieval error" );
             NotifyObservers( CIURLEvents::URLDataRetrievalErrorEvent );
             return;
         }
         if ( eventid == CHTTPClient::HTTPDataRecievedEvent )
         {
             // pass on the eventdata since it's a cloneable buffer it  will sort itself out
+            GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Data received" );
             NotifyObservers( CIURLEvents::URLDataRecievedEvent, eventdata );
             return;
         }
         if ( eventid == CHTTPClient::HTTPTransferFinishedEvent )
         {
+            GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Transfer finished" );
             m_transferFinished = true;
             NotifyObservers( CIURLEvents::URLAllDataRecievedEvent );
             return;
         }
         if ( eventid == CHTTPClient::ConnectingEvent )
         {
+            GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Connecting" );
             NotifyObservers( CIURLEvents::URLActivateEvent );
             return;
         }
         if ( eventid == CHTTPClient::DisconnectedEvent )
         {
+            GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Disconnected" );
             if ( !m_transferFinished )
             {
                 NotifyObservers( CIURLEvents::URLDeactivateEvent );

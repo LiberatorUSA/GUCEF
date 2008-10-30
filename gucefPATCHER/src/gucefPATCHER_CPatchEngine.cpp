@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_CMFILEACCESS_H
 #include "CMFileAccess.h"
 #define GUCEF_CORE_CMFILEACCESS_H
@@ -215,6 +220,8 @@ bool
 CPatchEngine::LoadConfig( const CORE::CDataNode& treeroot )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( 0, "CPatchEngine: Loading configuration" );
+    
     const CORE::CDataNode* infoNode = treeroot.Find( "CPatchEngine" );
     if ( infoNode != NULL )
     {
@@ -419,6 +426,8 @@ bool
 CPatchEngine::Start( void )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( 0, "CPatchEngine: Starting" );
+    
     // The user should explicitly stop first if we are already busy
     if ( !m_isActive )
     {
@@ -462,6 +471,8 @@ void
 CPatchEngine::Stop( void )
 {GUCEF_TRACE;
     
+    GUCEF_DEBUG_LOG( 0, "CPatchEngine: Stopping" );
+    
     if ( !m_stopSignalGiven && m_isActive )
     {
         m_stopSignalGiven = true;
@@ -486,6 +497,8 @@ bool
 CPatchEngine::ProcessRecievedPatchList( void )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( 0, "CPatchEngine: Processing patch list" );
+    
     // Now we must process the raw patch set data to turn it into something we can use
     // Get the required codec for the current raw patch set data type
     CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = CORE::CDStoreCodecRegistry::Instance()->Lookup( m_patchListCodec );
@@ -513,6 +526,8 @@ CPatchEngine::ProcessRecievedPatchList( void )
                                              m_tempStorageRoot );
         }
     }
+    
+    GUCEF_DEBUG_LOG( 0, "CPatchEngine: Error while processing patch list" );
     
     // If we get here then we failed to decode the raw data into a patch set
     NotifyObservers( PatchListDecodingFailedEvent );
@@ -557,6 +572,8 @@ CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
         {
             if ( eventid == CORE::CURL::URLDataRecievedEvent )
             {
+                GUCEF_DEBUG_LOG( 0, "CPatchEngine: Patch list data received" );
+                
                 // Translate event data
                 const CORE::CDynamicBuffer& buffer = ( static_cast< CORE::CURL::TURLDataRecievedEventData* >( eventdata ) )->GetData();
                 
@@ -581,6 +598,8 @@ CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
             else
             if ( eventid == CORE::CURL::URLDeactivateEvent )
             {
+                GUCEF_DEBUG_LOG( 0, "CPatchEngine: Aborting patch list retrieval" );
+                
                 // Someone has called Stop() while we where busy with our data retrieval
                 m_stopSignalGiven = false;
                 m_isActive = false;
@@ -589,6 +608,8 @@ CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
             else
             if ( eventid == CORE::CURL::URLDataRetrievalErrorEvent )
             {
+                GUCEF_DEBUG_LOG( 0, "CPatchEngine: Patch list data retrieval error" );
+                
                 // We failed to obtain the patch list data using the URL
                  m_stopSignalGiven = false;
                  m_isActive = false;

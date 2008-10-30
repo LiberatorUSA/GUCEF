@@ -25,6 +25,16 @@
 
 #include <assert.h>
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #include "gucefCORE_CForwardingNotifier.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -304,6 +314,8 @@ CForwardingNotifier::OnNotify( CNotifier* notifier                 ,
                 const TForwardState& state = (*i).second;
                 if ( state.filter == EVENTORIGINFILTER_TRANSFER )
                 {
+                    GUCEF_DEBUG_LOG( 0, "CForwardingNotifier: Transfering event origin from " + PointerToString( notifier ) + " to " + PointerToString( this ) + " for event: " + eventid.GetName() );
+                    
                     if ( !NotifyObservers( *this, eventid, eventdata ) ) return;
                 }
                 else

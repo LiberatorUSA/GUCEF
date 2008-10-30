@@ -30,6 +30,16 @@
 #define DVSTRUTILS_H
 #endif /* DVSTRUTILS_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -348,6 +358,8 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
         }
     }
     
+    GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Connecting to " + remoteaddr + ":" + CORE::UInt16ToString( port ) );
+    
     m_pulseGenerator->RequestPeriodicPulses( this, MAX_PULSE_INTERVAL_IN_MS );
     
     m_isConnecting = true;        
@@ -405,6 +417,8 @@ CTCPClientSocket::CheckRecieveBuffer( void )
 
     if ( !_blocking && _active )
     {       
+        GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Checking the recieve buffer for incoming data" );
+        
         LockData();
                  
         /*
@@ -433,6 +447,8 @@ CTCPClientSocket::CheckRecieveBuffer( void )
             // Check for an error
             if ( ( bytesrecv == SOCKET_ERROR ) || ( errorcode != 0 ) )
             {
+                GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Socket error occured: " + CORE::Int32ToString( errorcode ) );
+                
                 // Notify our users of the error
                 TSocketErrorEventData eData( errorcode );
                 NotifyObservers( SocketErrorEvent, &eData );
@@ -465,8 +481,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                         break;
                 }
             }
-        }
-        
+        }        
         while ( bytesrecv == readblocksize );
         
         if ( m_readbuffer.GetDataSize() > 0 )
@@ -491,6 +506,8 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
     
     if ( !_blocking && _active )
     {       
+        GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Pulse received" );
+        
         fd_set writefds;     /* Setup the write variable for the select function */
         fd_set readfds;      /* Setup the read variable for the select function */        
         fd_set exceptfds;    /* Setup the except variable for the select function */
@@ -505,48 +522,55 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
         FD_SET( _data->sockid, &readfds );
         FD_SET( _data->sockid, &exceptfds );                
         
-        int errorcode = 0;
-        if ( select( (int)_data->sockid+1 , 
-                     &readfds             , 
-                     &writefds            ,
-                     &exceptfds           , 
-                     &_data->timeout      ) != SOCKET_ERROR ) 
+        int errorcode = select( (int)_data->sockid+1 , 
+                                 &readfds            , 
+                                 &writefds           ,
+                                 &exceptfds          , 
+                                 &_data->timeout     );
+                                 
+        if ( errorcode != SOCKET_ERROR ) 
         {
-                /* something happened on the socket */
+            /* something happened on the socket */
+            
+            if ( FD_ISSET( _data->sockid, &exceptfds ) )
+            {
+                GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Socket error occured: " + CORE::Int32ToString( errorcode ) );
                 
-                if ( FD_ISSET( _data->sockid, &exceptfds ) )
-                {
-                        TSocketErrorEventData eData( errorcode );
-                        NotifyObservers( SocketErrorEvent, &eData );
-                        
-                        Close();
-                        UnlockData();
-                        return;                                                                   
+                TSocketErrorEventData eData( errorcode );
+                NotifyObservers( SocketErrorEvent, &eData );
+                
+                Close();
+                UnlockData();
+                return;                                                                   
+            }
+            else
+            if ( FD_ISSET( _data->sockid, &readfds ) )
+            {
+                /* data can be read from the socket */
+                CheckRecieveBuffer();
+            }
+            else
+            if ( m_isConnecting )
+            {
+                // Check if the socket is now ready for writing
+                if ( FD_ISSET( _data->sockid, &writefds ) )
+                {   
+                    GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Socket is now connected to the server, TCP channel established" );
+                    
+                    // We are now connected
+                    m_isConnecting = false;
+                    NotifyObservers( ConnectedEvent );
                 }
-                else
-                if ( FD_ISSET( _data->sockid, &readfds ) )
-                {
-                        /* data can be read from the socket */
-                        CheckRecieveBuffer();
-                }
-                else
-                if ( m_isConnecting )
-                {
-                    // Check if the socket is now ready for writing
-                    if ( FD_ISSET( _data->sockid, &writefds ) )
-                    {   
-                        // We are now connected
-                        m_isConnecting = false;
-                        NotifyObservers( ConnectedEvent );
-                    }
-                }                                                
+            }                                                
         }
         else
         {
-                /* select call failed */
-                TSocketErrorEventData eData( errorcode );
-                NotifyObservers( SocketErrorEvent, &eData );
-                Close();
+            GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Socket error occured (select call failed): " + CORE::Int32ToString( errorcode ) );
+            
+            /* select call failed */
+            TSocketErrorEventData eData( errorcode );
+            NotifyObservers( SocketErrorEvent, &eData );
+            Close();
         }
         UnlockData(); 
     }
@@ -557,27 +581,29 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
 void
 CTCPClientSocket::Close( void )
 {GUCEF_TRACE;
-
-        /*
-         *      close the socket connection
-         */
-        LockData();
-        if ( IsActive() )
-        {
-                /* prevent any further sends on the socket */
-                shutdown( _data->sockid , 
-                          1             );
-                                          
-                /* close the socket, this de-allocates the winsock buffers for the socket */          
-                closesocket( _data->sockid );
-                _active = false;
-                m_isConnecting = false;
-                
-                m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
-                
-                NotifyObservers( DisconnectedEvent );
-        }
-        UnlockData();
+        
+    /*
+     *      close the socket connection
+     */
+    LockData();
+    if ( IsActive() )
+    {
+        GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Closing active socket" );
+        
+        /* prevent any further sends on the socket */
+        shutdown( _data->sockid , 
+                  1             );
+                                  
+        /* close the socket, this de-allocates the winsock buffers for the socket */          
+        closesocket( _data->sockid );
+        _active = false;
+        m_isConnecting = false;
+        
+        m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
+        
+        NotifyObservers( DisconnectedEvent );
+    }
+    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -600,36 +626,38 @@ CTCPClientSocket::Send( const void* data ,
                         UInt32 timeout   )
 {GUCEF_TRACE;
 
-        /*
-         *      Write data to socket
-         */
-        if ( IsActive() )
+    /*
+     *      Write data to socket
+     */
+    if ( IsActive() )
+    {
+        GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Sending data of length " + CORE::UInt32ToString( length ) + " with timeout " + CORE::UInt32ToString( timeout ) );
+        
+        LockData();
+        
+        CORE::CDynamicBuffer linkedBuffer;
+        linkedBuffer.LinkTo( data, length );
+        TDataRecievedEventData cData( &linkedBuffer );
+        NotifyObservers( DataSentEvent, &cData );
+                                
+        int error;
+        Int32 wbytes = WSTS_send( _data->sockid ,  
+                                  data          , 
+                                  length        , 
+                                  0             , 
+                                  &error        );
+        
+        UnlockData();
+        
+        if ( wbytes == SOCKET_ERROR )
         {
-                LockData();
-                
-                CORE::CDynamicBuffer linkedBuffer;
-                linkedBuffer.LinkTo( data, length );
-                TDataRecievedEventData cData( &linkedBuffer );
-                NotifyObservers( DataSentEvent, &cData );
-                                        
-                int error;
-                Int32 wbytes = WSTS_send( _data->sockid ,  
-                                          data          , 
-                                          length        , 
-                                          0             , 
-                                          &error        );
-                
-                UnlockData();
-                
-                if ( wbytes == SOCKET_ERROR )
-                {
-                    TSocketErrorEventData eData( error );
-                    NotifyObservers( SocketErrorEvent, &eData );
-                    return false;
-                }
-                return true;
-        } 
-        return false;
+            TSocketErrorEventData eData( error );
+            NotifyObservers( SocketErrorEvent, &eData );
+            return false;
+        }
+        return true;
+    } 
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

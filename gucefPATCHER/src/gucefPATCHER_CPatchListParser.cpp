@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
@@ -64,6 +69,8 @@ CPatchListParser::ParsePatchList( const CORE::CDataNode& patchListData ,
                                   TPatchList& patchList                ) const
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( 0, "CPatchListParser: Parsing patch list" );    
+    
     const CORE::CDataNode* patchListNode = patchListData.Find( "PatchList" );
     
     if ( patchListNode != NULL )

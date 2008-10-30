@@ -26,6 +26,11 @@
 #include <assert.h>
 #include <map>
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -88,6 +93,8 @@ CPatchSetParser::ValidateAndParseFileLocEntries( const CORE::CDataNode& patchSet
                                                  TFileEntry& fileEntry                   ) const
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( 0, "CPatchSetParser: Parsing patch set" );
+    
     const CORE::CDataNode* locationEntry( NULL );
     CORE::CDataNode::const_iterator i = patchSetFileNode.ConstBegin();
     while ( i != patchSetFileNode.ConstEnd() )
