@@ -462,6 +462,8 @@ CTCPClientSocket::CheckRecieveBuffer( void )
             else 
             if ( bytesrecv == 0 )
             {
+                GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: The server has closed the connection" );
+                
                 // The connection has been closed on us
                 Close();
 
@@ -486,6 +488,8 @@ CTCPClientSocket::CheckRecieveBuffer( void )
         
         if ( m_readbuffer.GetDataSize() > 0 )
         {
+            GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Received " + CORE::UInt32ToString( m_readbuffer.GetDataSize() ) + " bytes" );
+            
             CORE::CDynamicBuffer linkedBuffer;
             linkedBuffer.LinkTo( m_readbuffer.GetConstBufferPtr(), m_readbuffer.GetDataSize() );
             TDataRecievedEventData cData( &linkedBuffer );
@@ -651,6 +655,8 @@ CTCPClientSocket::Send( const void* data ,
         
         if ( wbytes == SOCKET_ERROR )
         {
+            GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Socket error occured: " + CORE::Int32ToString( error ) );
+            
             TSocketErrorEventData eData( error );
             NotifyObservers( SocketErrorEvent, &eData );
             return false;
