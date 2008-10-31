@@ -271,6 +271,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     if ( errorcode != 0 )
     {
         // Notify our users of the error
+        GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
         TSocketErrorEventData eData( errorcode );
         NotifyObservers( SocketErrorEvent, &eData );
         
@@ -292,6 +293,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     if ( errorcode != 0 )
     {
         // Notify our users of the error
+        GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
         TSocketErrorEventData eData( errorcode );
         NotifyObservers( SocketErrorEvent, &eData );
         
@@ -346,6 +348,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
             if ( errorcode != 0 )
             {
                 // Notify our users of the error
+                GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
                 TSocketErrorEventData eData( errorcode );
                 NotifyObservers( SocketErrorEvent, &eData );
             }        
@@ -358,8 +361,9 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
         }
     }
     
-    GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Connecting to " + remoteaddr + ":" + CORE::UInt16ToString( port ) );
+    GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Connecting to " + remoteaddr + ":" + CORE::UInt16ToString( port ) );
     
+    m_readbuffer.Clear();
     m_pulseGenerator->RequestPeriodicPulses( this, MAX_PULSE_INTERVAL_IN_MS );
     
     m_isConnecting = true;        
@@ -417,7 +421,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
 
     if ( !_blocking && _active )
     {       
-        GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Checking the recieve buffer for incoming data" );
+        GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Checking the recieve buffer for incoming data" );
         
         LockData();
                  
@@ -447,7 +451,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
             // Check for an error
             if ( ( bytesrecv == SOCKET_ERROR ) || ( errorcode != 0 ) )
             {
-                GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Socket error occured: " + CORE::Int32ToString( errorcode ) );
+                GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
                 
                 // Notify our users of the error
                 TSocketErrorEventData eData( errorcode );
@@ -462,7 +466,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
             else 
             if ( bytesrecv == 0 )
             {
-                GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: The server has closed the connection" );
+                GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): The server has closed the connection" );
                 
                 // The connection has been closed on us
                 Close();
@@ -488,7 +492,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
         
         if ( m_readbuffer.GetDataSize() > 0 )
         {
-            GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Received " + CORE::UInt32ToString( m_readbuffer.GetDataSize() ) + " bytes" );
+            GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Received " + CORE::UInt32ToString( m_readbuffer.GetDataSize() ) + " bytes" );
             
             CORE::CDynamicBuffer linkedBuffer;
             linkedBuffer.LinkTo( m_readbuffer.GetConstBufferPtr(), m_readbuffer.GetDataSize() );
@@ -538,7 +542,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
             
             if ( FD_ISSET( _data->sockid, &exceptfds ) )
             {
-                GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Socket error occured: " + CORE::Int32ToString( errorcode ) );
+                GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
                 
                 TSocketErrorEventData eData( errorcode );
                 NotifyObservers( SocketErrorEvent, &eData );
@@ -559,7 +563,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
                 // Check if the socket is now ready for writing
                 if ( FD_ISSET( _data->sockid, &writefds ) )
                 {   
-                    GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Socket is now connected to the server, TCP channel established" );
+                    GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket is now connected to the server, TCP channel established" );
                     
                     // We are now connected
                     m_isConnecting = false;
@@ -569,7 +573,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
         }
         else
         {
-            GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Socket error occured (select call failed): " + CORE::Int32ToString( errorcode ) );
+            GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured (select call failed): " + CORE::Int32ToString( errorcode ) );
             
             /* select call failed */
             TSocketErrorEventData eData( errorcode );
@@ -592,7 +596,7 @@ CTCPClientSocket::Close( void )
     LockData();
     if ( IsActive() )
     {
-        GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Closing active socket" );
+        GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Closing active socket" );
         
         /* prevent any further sends on the socket */
         shutdown( _data->sockid , 
@@ -635,7 +639,7 @@ CTCPClientSocket::Send( const void* data ,
      */
     if ( IsActive() )
     {
-        GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Sending data of length " + CORE::UInt32ToString( length ) + " with timeout " + CORE::UInt32ToString( timeout ) );
+        GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Sending data of length " + CORE::UInt32ToString( length ) + " with timeout " + CORE::UInt32ToString( timeout ) );
         
         LockData();
         
@@ -655,7 +659,7 @@ CTCPClientSocket::Send( const void* data ,
         
         if ( wbytes == SOCKET_ERROR )
         {
-            GUCEF_DEBUG_LOG( 0, "CTCPClientSocket: Socket error occured: " + CORE::Int32ToString( error ) );
+            GUCEF_DEBUG_LOG( 0, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( error ) );
             
             TSocketErrorEventData eData( error );
             NotifyObservers( SocketErrorEvent, &eData );

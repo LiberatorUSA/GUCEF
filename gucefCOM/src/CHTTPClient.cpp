@@ -130,6 +130,7 @@ CHTTPClient::CHTTPClient( CORE::CPulseGenerator& pulseGenerator )
         
 CHTTPClient::~CHTTPClient()
 {GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -137,7 +138,12 @@ CHTTPClient::~CHTTPClient()
 void 
 CHTTPClient::Close( void )
 {GUCEF_TRACE;
-        m_socket.Close();
+
+    m_socket.Close();
+    m_downloading = false;
+    m_filesize = 0;
+    m_recieved = 0;
+    m_sendBuffer.Clear();
 }
         
 /*-------------------------------------------------------------------------*/
@@ -148,6 +154,7 @@ CHTTPClient::Post( const CORE::CString& host                      ,
                    const CORE::CString& path                      , 
                    const CORE::CValueList* valuelist /* = NULL */ )
 {GUCEF_TRACE;
+
         m_socket.Close();
         
         // reset our counters because we are beginning a new transfer
@@ -719,9 +726,10 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
             if ( m_filesize == 0 )
             {
                 GUCEF_DEBUG_LOG( 0, "CHTTPClient: Received all the desired data thus closing the TCP socket" );
+                m_socket.Close();
                 
                 NotifyObservers( HTTPTransferFinishedEvent );
-                m_socket.Close();
+                
             }
         }        
     }
@@ -761,6 +769,8 @@ CHTTPClient::OnDisconnect( COMCORE::CTCPClientSocket &socket )
 
         m_downloading = false;
         m_filesize = 0;
+        m_recieved = 0;
+        m_sendBuffer.Clear();
         NotifyObservers( DisconnectedEvent );
 }
 
@@ -878,6 +888,7 @@ CHTTPClient::OnNotify( CORE::CNotifier* notifier                 ,
         else
         if ( eventid == COMCORE::CTCPClientSocket::DataSentEvent )
         {
+            GUCEF_DEBUG_LOG( 0, "CHTTPClient: TCP Socket send data to the server" );
             NotifyObservers( HTTPDataSendEvent, eventdata );
         }
     }
