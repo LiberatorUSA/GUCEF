@@ -67,10 +67,18 @@ class GUCEFCORE_EXPORT_CPP CMSWinConsoleLogger : public CILogger
 
     CString GetLogMsgTypeString( const TLogMsgType logMsgType ) const;
     
+    void SetMinimalLogLevel( const Int32 minimalLogLevel );
+    
+    Int32 GetMinimalLogLevel( void ) const; 
+    
     private:
     
     CMSWinConsoleLogger& operator=( const CMSWinConsoleLogger& src );
     CMSWinConsoleLogger( const CMSWinConsoleLogger& src );
+    
+    private:
+    
+    Int32 m_minimalLogLevel;
 };
 
 /*-------------------------------------------------------------------------//

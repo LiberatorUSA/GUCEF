@@ -166,14 +166,14 @@ CInputController::CreateContext( const CORE::CValueList& params )
         
         if ( context )
         {
-            GUCEF_SYSTEM_LOG( 0, "Created input context" );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Created input context" );
             
             m_contextSet.insert( context );
             return context;
         }
     }
     
-    GUCEF_ERROR_LOG( 0, "Failed to created input context" );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to created input context" );
     
     return NULL;
 }
@@ -189,11 +189,11 @@ CInputController::DestroyContext( CInputContext* context )
         m_contextSet.erase( context );
         m_driver->DeleteContext( context );
         
-        GUCEF_SYSTEM_LOG( 0, "Destroyed input context" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Destroyed input context" );
         return;
     }
     
-    GUCEF_ERROR_LOG( 0, "Attempting to destroy an input context without an input driver" );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to destroy an input context without an input driver" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -218,13 +218,13 @@ CInputController::SetDriver( CInputDriver* driver )
         m_driver = driver;
         m_driverisplugin = false;
         
-        GUCEF_SYSTEM_LOG( 0, "Input driver has been set" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Input driver has been set" );
         
         NotifyObservers( InputDriverLoadedEvent );
         return true;
     }
     
-    GUCEF_ERROR_LOG( 0, "Failed to set input driver because there are input context objects remaining" );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to set input driver because there are input context objects remaining" );
     return false;
 }
         
@@ -244,12 +244,12 @@ CInputController::LoadDriverModule( const CORE::CString& filename  ,
 {GUCEF_TRACE;
         CORE::CString path = CORE::RelativePath( filename );
         
-        GUCEF_SYSTEM_LOG( 0, "Attempting to load an input driver from module: \"" + filename + "\"" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to load an input driver from module: \"" + filename + "\"" );
         
         CInputDriverPlugin* plugin = new CInputDriverPlugin();
         if ( plugin->LoadModule( path, params ) )
         {
-                GUCEF_SYSTEM_LOG( 0, "Successfully loaded an input driver from module: \"" + filename + "\"" );
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded an input driver from module: \"" + filename + "\"" );
                 
                 if ( SetDriver( plugin ) )
                 {
@@ -259,7 +259,7 @@ CInputController::LoadDriverModule( const CORE::CString& filename  ,
                 }
         }
         
-        GUCEF_ERROR_LOG( 0, "Failed to load an input driver from module: \"" + filename + "\"" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load an input driver from module: \"" + filename + "\"" );
         delete plugin;
         return false;
 }
@@ -278,7 +278,7 @@ CInputController::UnloadDriverModule( void )
         m_driver = NULL;
         delete plugin;
         
-        GUCEF_SYSTEM_LOG( 0, "Input driver has unloaded" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Input driver has unloaded" );
         
         NotifyObservers( InputDriverUnloadedEvent );
     }
@@ -305,7 +305,7 @@ CInputController::OnPulse( CORE::CNotifier* notifier                 ,
                                   updateDeltaInMilliSecs ,
                                   (*i)                   ) )
         {
-            GUCEF_ERROR_LOG( 0, "Failed to perform an update cycle on the input driver" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to perform an update cycle on the input driver" );
         }                                          
         
         #else
@@ -370,7 +370,7 @@ CInputController::SetMouseButtonState( const Int32 deviceID     ,
     }
     else
     {
-        GUCEF_ERROR_LOG( 0, "Invalid input device ID given: " + CORE::Int32ToString( deviceID ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Invalid input device ID given: " + CORE::Int32ToString( deviceID ) );
     }    
 }
 
@@ -392,7 +392,7 @@ CInputController::SetMousePos( const Int32 deviceID ,
     }
     else
     {
-        GUCEF_ERROR_LOG( 0, "Invalid input device ID given: " + CORE::Int32ToString( deviceID ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Invalid input device ID given: " + CORE::Int32ToString( deviceID ) );
     }    
 }
 
@@ -409,7 +409,7 @@ CInputController::ResetMouseStates( const Int32 deviceID )
     }
     else
     {
-        GUCEF_ERROR_LOG( 0, "Invalid input device ID given: " + CORE::Int32ToString( deviceID ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Invalid input device ID given: " + CORE::Int32ToString( deviceID ) );
     }    
 }
 
@@ -429,7 +429,7 @@ CInputController::SetKeyboardKeyState( const Int32 deviceID  ,
     }
     else
     {
-        GUCEF_ERROR_LOG( 0, "Invalid input device ID given: " + CORE::Int32ToString( deviceID ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Invalid input device ID given: " + CORE::Int32ToString( deviceID ) );
     }
 }
 
@@ -510,7 +510,7 @@ CInputController::AddMouse( const Int32 deviceID )
         CMouse* mouse = new CMouse( deviceID );
         m_mouseMap.insert( std::pair< UInt32, CMouse* >( deviceID, mouse ) );
         
-        GUCEF_SYSTEM_LOG( 0, "Mouse input device added with device ID " + CORE::Int32ToString( deviceID ) );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Mouse input device added with device ID " + CORE::Int32ToString( deviceID ) );
         NotifyObservers( MouseAttachedEvent, &TMouseAttachedEventData( deviceID ) );
     }
 }
@@ -528,7 +528,7 @@ CInputController::RemoveMouse( const Int32 deviceID )
         delete mouse;
         m_mouseMap.erase( i );
         
-        GUCEF_SYSTEM_LOG( 0, "Mouse input device removed with device ID " + CORE::Int32ToString( deviceID ) );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Mouse input device removed with device ID " + CORE::Int32ToString( deviceID ) );
         NotifyObservers( MouseDetachedEvent, &TMouseDetachedEventData( deviceID ) );
     }
 }
@@ -545,7 +545,7 @@ CInputController::AddKeyboard( const Int32 deviceID )
         CKeyboard* keyboard = new CKeyboard( deviceID, this );
         m_keyboardMap.insert( std::pair< UInt32, CKeyboard* >( deviceID, keyboard ) );
         
-        GUCEF_SYSTEM_LOG( 0, "Keyboard input device added with device ID " + CORE::Int32ToString( deviceID ) );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Keyboard input device added with device ID " + CORE::Int32ToString( deviceID ) );
         NotifyObservers( KeyboardAttachedEvent, &TKeyboardAttachedEventData( deviceID ) );
     }
 }
@@ -563,7 +563,7 @@ CInputController::RemoveKeyboard( const Int32 deviceID )
         delete keyboard;
         m_keyboardMap.erase( i );
         
-        GUCEF_SYSTEM_LOG( 0, "Keyboard input device removed with device ID " + CORE::Int32ToString( deviceID ) );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Keyboard input device removed with device ID " + CORE::Int32ToString( deviceID ) );
         NotifyObservers( KeyboardDetachedEvent, &TKeyboardDetachedEventData( deviceID ) );
     }
 }

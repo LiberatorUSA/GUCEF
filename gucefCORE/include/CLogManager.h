@@ -116,6 +116,23 @@ class GUCEFCORE_EXPORT_CPP CLogManager
     static MT::CMutex g_dataLock;
 };
 
+/*-------------------------------------------------------------------------*/
+
+// A number of optional constants that can be used to define log levels.
+// These levels are used by the library itself. The lower the importance of the log level
+// the more likely it will be filtered out by most logging backends   
+extern "C"
+{
+
+GUCEF_CORE_EXPORT_C extern const Int32 LOGLEVEL_CRITICAL;
+GUCEF_CORE_EXPORT_C extern const Int32 LOGLEVEL_VERY_IMPORTANT;
+GUCEF_CORE_EXPORT_C extern const Int32 LOGLEVEL_IMPORTANT;
+GUCEF_CORE_EXPORT_C extern const Int32 LOGLEVEL_NORMAL;
+GUCEF_CORE_EXPORT_C extern const Int32 LOGLEVEL_BELOW_NORMAL;
+GUCEF_CORE_EXPORT_C extern const Int32 LOGLEVEL_EVERYTHING;
+
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

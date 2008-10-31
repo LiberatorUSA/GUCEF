@@ -77,7 +77,7 @@ bool
 CModule::Load( void )
 {GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( 0, "gucefPATCHER Module loaded" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefPATCHER Module loaded" );
     
     CPatchEngine::RegisterEvents();
     CPatchSetDirEngineEvents::RegisterEvents();
@@ -98,7 +98,7 @@ bool
 CModule::Unload( void )
 {GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( 0, "gucefPATCHER Module unloading" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefPATCHER Module unloading" );
     
     CORE::CTaskManager::Instance()->UnregisterTaskConsumerFactory( CPatchTaskConsumer::GetTypeString() );
     return true;

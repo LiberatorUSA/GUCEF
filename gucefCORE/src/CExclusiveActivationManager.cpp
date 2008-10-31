@@ -78,7 +78,7 @@ CExclusiveActivationManager::Instance( void )
     if ( !m_instance )
     {
         m_instance = new CExclusiveActivationManager();
-        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CExclusiveActivationManager Singleton created" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CExclusiveActivationManager Singleton created" );
     }
     return m_instance;
 }
@@ -226,7 +226,7 @@ CExclusiveActivationManager::Deinstance( void )
 
     delete m_instance;
     m_instance = NULL;
-    GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CExclusiveActivationManager Singleton destroyed" );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CExclusiveActivationManager Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/

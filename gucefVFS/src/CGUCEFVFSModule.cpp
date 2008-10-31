@@ -64,7 +64,7 @@ bool
 CGUCEFVFSModule::Load( void )
 {GUCEF_TRACE;
 
-        GUCEF_SYSTEM_LOG( 0, "gucefVFS Module loaded" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefVFS Module loaded" );
         
         try
         {
@@ -92,7 +92,7 @@ bool
 CGUCEFVFSModule::Unload( void )
 {GUCEF_TRACE;
 
-        GUCEF_SYSTEM_LOG( 0, "gucefVFS Module unloading" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefVFS Module unloading" );
         
         CVFSURLHandler::Unregister();
         

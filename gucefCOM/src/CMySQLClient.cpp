@@ -592,7 +592,7 @@ CMySQLClient::QueryAndWait( CDBQuery &cdbquery   ,
         }
         if ( timeout < 0 )
         {
-                GUCEF_DEBUG_LOG( 0, "CMySQLClient: Timeout waiting for an existing query to finish" );
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CMySQLClient: Timeout waiting for an existing query to finish" );
                 lock.Unlock();
                 return false;
         }

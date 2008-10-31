@@ -228,7 +228,7 @@ CGUCEFCOREModule::Load( void )
          */
         CURLHandlerRegistry::Instance()->Register( "file", new CFileURLHandler() );
         
-        GUCEF_SYSTEM_LOG( 0, "gucefCORE module initialized" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "gucefCORE module initialized" );
         
         return true;
 }
@@ -238,7 +238,7 @@ CGUCEFCOREModule::Load( void )
 bool 
 CGUCEFCOREModule::Unload( void )
 {         
-        GUCEF_SYSTEM_LOG( 0, "Unloading gucefCORE module" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Unloading gucefCORE module" );
                
         /*
          *      cleanup all singletons

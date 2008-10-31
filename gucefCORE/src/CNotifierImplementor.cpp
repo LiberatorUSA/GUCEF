@@ -30,6 +30,16 @@
 #define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
 #endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_COBSERVER_H
 #include "CObserver.h"
 #define GUCEF_CORE_COBSERVER_H
@@ -165,6 +175,8 @@ CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid ,
         oPtr = (*i).first;
         if ( notifiedObservers.find( oPtr ) == notifiedObservers.end() )
         {
+            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + CORE::PointerToString( (*i).first ) );
+            
             (*i).first->OnNotify( m_ownerNotifier ,
                                   eventid         ,
                                   data            );
@@ -273,6 +285,8 @@ CNotifierImplementor::Subscribe( CObserver* observer )
              *  Establish our bi-directional communication path
              */
             observer->LinkTo( m_ownerNotifier );
+            
+            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + CNotifier::SubscribeEvent.GetName() + "\" to " + CORE::PointerToString( observer ) );
 
             /*
              *  Send the standard subscription event
@@ -388,6 +402,8 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
             
             // Establish our bi-directional communication path for the given event
             observer->LinkTo( m_ownerNotifier );
+            
+            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + CNotifier::SubscribeEvent.GetName() + "\" to " + CORE::PointerToString( observer ) );
 
             // Send the standard subscription event
             observer->OnNotify( m_ownerNotifier            ,
@@ -416,6 +432,8 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
 
             if ( notifyAboutSubscription )
             {
+                GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + CNotifier::SubscribeEvent.GetName() + "\" to " + CORE::PointerToString( observer ) );
+                
                 /*
                  *  Send the standard subscription event
                  */
@@ -517,6 +535,8 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer       ,
              */
             observer->UnlinkFrom( m_ownerNotifier, true );
 
+            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + CNotifier::UnsubscribeEvent.GetName() + "\" to " + CORE::PointerToString( observer ) );
+            
             /*
              *  Send the standard un-subscribe event
              */
@@ -589,6 +609,8 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
              *  reference count for this notifier.
              */
             observer->UnlinkFrom( m_ownerNotifier );
+
+            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + CNotifier::UnsubscribeEvent.GetName() + "\" to " + CORE::PointerToString( observer ) );
 
             /*
              *  Send the standard un-subscribe event
@@ -672,6 +694,8 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
                 oPtr = (*i).first;
                 if ( notifiedObservers.find( oPtr ) == notifiedObservers.end() )
                 {
+                    GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + CORE::PointerToString( oPtr ) );
+                    
                     // Perform the notification
                     // If an observer is subscribed to all events we never used specialized callbacks
                     // instead we always use the standard OnNotify()
@@ -737,12 +761,16 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
                         CIEventHandlerFunctorBase* callback = (*n).second;
                         if ( NULL != callback )
                         {
+                            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + CORE::PointerToString( callback ) );
+                            
                             callback->OnNotify( m_ownerNotifier ,
                                                 eventid         ,
                                                 eventData       );
                         }
                         else
                         {
+                            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + CORE::PointerToString( oPtr ) );
+                            
                             oPtr->OnNotify( m_ownerNotifier ,
                                             eventid         ,
                                             eventData       );
@@ -754,6 +782,9 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
                 {
                     // We should not get here, but we will pass on the event anyway
                     GUCEF_ASSERT_ALWAYS;
+                    
+                    GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + CORE::PointerToString( oPtr ) );
+                    
                     oPtr->OnNotify( m_ownerNotifier  ,
                                     eventid          ,
                                     eventData        );
@@ -976,7 +1007,9 @@ CNotifierImplementor::NotifySpecificObserver( CObserver& specificObserver ,
         if ( i != m_observers.end() )
         {
             if ( (*i).second )
-            {
+            {                
+                GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + CORE::PointerToString( &specificObserver ) );
+                
                 // Perform the notification
                 // If an observer is subscribed to all events we never used specialized callbacks
                 // instead we always use the standard OnNotify()
@@ -1019,12 +1052,16 @@ CNotifierImplementor::NotifySpecificObserver( CObserver& specificObserver ,
             CIEventHandlerFunctorBase* callback = (*n).second;
             if ( NULL != callback )
             {
+                GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + CORE::PointerToString( callback ) );
+                
                 callback->OnNotify( m_ownerNotifier ,
                                     eventid         ,
                                     eventData       );
             }
             else
             {
+                GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + CORE::PointerToString( &specificObserver ) );
+                
                 specificObserver.OnNotify( m_ownerNotifier ,
                                            eventid         ,
                                            eventData       );

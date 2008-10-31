@@ -112,7 +112,7 @@ CGUCEFApplication::Instance( void )
             _instance = new CGUCEFApplication();
             CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
             
-            GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CGUCEFApplication Singleton created" );
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CGUCEFApplication Singleton created" );
     }
     m_mutex.Unlock();
     return _instance;
@@ -128,7 +128,7 @@ CGUCEFApplication::Deinstance( void )
     CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
     delete _instance;
     _instance = NULL;
-    GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CGUCEFApplication Singleton destroyed" );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CGUCEFApplication Singleton destroyed" );
     m_mutex.Unlock();
 }
 

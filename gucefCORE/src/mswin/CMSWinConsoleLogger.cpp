@@ -65,7 +65,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CMSWinConsoleLogger::CMSWinConsoleLogger( void )
-    : CILogger()
+    : CILogger()                           ,
+      m_minimalLogLevel( LOGLEVEL_NORMAL )
 {GUCEF_TRACE;
        
     AllocConsole();
@@ -117,8 +118,11 @@ CMSWinConsoleLogger::Log( const TLogMsgType logMsgType ,
                           const CString& logMessage    )
 {GUCEF_TRACE;
 
-    CString actualLogMsg( "[" + GetLogMsgTypeString( logMsgType ) + "] [LVL " + Int32ToString( logLevel ) + "] " + logMessage + "\n" );
-    fprintf( stdout, actualLogMsg.C_String() ); 
+    if ( logLevel >= m_minimalLogLevel )
+    {    
+        CString actualLogMsg( "[" + GetLogMsgTypeString( logMsgType ) + "] [LVL " + Int32ToString( logLevel ) + "] " + logMessage + "\n" );
+        fprintf( stdout, actualLogMsg.C_String() );
+    } 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -128,6 +132,24 @@ CMSWinConsoleLogger::FlushLog( void )
 {GUCEF_TRACE;
 
     fflush( stdout );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMSWinConsoleLogger::SetMinimalLogLevel( const Int32 minimalLogLevel )
+{GUCEF_TRACE;
+    
+    m_minimalLogLevel = minimalLogLevel;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+Int32
+CMSWinConsoleLogger::GetMinimalLogLevel( void ) const
+{GUCEF_TRACE;
+
+    return m_minimalLogLevel;
 }
 
 /*-------------------------------------------------------------------------//

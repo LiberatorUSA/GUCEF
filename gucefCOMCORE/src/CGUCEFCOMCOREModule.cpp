@@ -92,7 +92,7 @@ namespace COMCORE {
 bool 
 CGUCEFCOMCOREModule::Load( void )
 {
-        GUCEF_SYSTEM_LOG( 0, "gucefCOMCORE Module loaded" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Module loaded" );
         
         #ifdef GUCEF_MSWIN_BUILD
         InitWinsock( 1 );
@@ -117,7 +117,7 @@ CGUCEFCOMCOREModule::Load( void )
 bool 
 CGUCEFCOMCOREModule::Unload( void )
 {
-        GUCEF_SYSTEM_LOG( 0, "gucefCOMCORE Module unloading" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Module unloading" );
         
         CCom::Deinstance();
         

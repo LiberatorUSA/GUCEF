@@ -532,7 +532,7 @@ CVFS::AddRoot( const CORE::CString& rootpath              ,
                                 archiveEntry.mountPath = archiveEntry.path;
                                 m_mountList.push_back( archiveEntry );
                                 
-                                GUCEF_SYSTEM_LOG( 0, "VFS archive mounted automatically with name " + (*i) );
+                                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS archive mounted automatically with name " + (*i) );
                             }
                             else
                             {
@@ -551,7 +551,7 @@ CVFS::AddRoot( const CORE::CString& rootpath              ,
         m_mountList.push_back( mountEntry );                
         m_datalock.Unlock();
         
-        GUCEF_SYSTEM_LOG( 0, "VFS root added as a mount with name " + archiveName );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS root added as a mount with name " + archiveName );
     }                
 }
 
@@ -563,7 +563,7 @@ CVFS::SetMemloadSize( UInt32 bytesize )
 
     m_datalock.Lock();
     _maxmemloadsize = bytesize;
-    GUCEF_SYSTEM_LOG( 0, "VFS maximum memory load size set to " + CORE::UInt32ToString( bytesize ) + " Bytes" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS maximum memory load size set to " + CORE::UInt32ToString( bytesize ) + " Bytes" );
     m_datalock.Unlock();
 }
 
@@ -606,7 +606,7 @@ CVFS::SaveConfig( CORE::CDataNode& tree )
         n->AddChild( pathnode );                                 
     }                                 
     
-    GUCEF_SYSTEM_LOG( 0, "VFS configuration successfully saved" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS configuration successfully saved" );
     return true;
 }
 
@@ -658,7 +658,7 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
             ++i;
         }
         
-        GUCEF_SYSTEM_LOG( 0, "VFS configuration successfully loaded" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS configuration successfully loaded" );
         
         return true;
     }                                                                                                  
@@ -916,7 +916,7 @@ CVFS::RegisterArchiveFactory( const CString& archiveType      ,
     m_abstractArchiveFactory.RegisterConcreteFactory( archiveType     ,
                                                       &archiveFactory );
                                                       
-    GUCEF_SYSTEM_LOG( 0, "Registered VFS archive factory for type \"" + archiveType + "\"" ); 
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Registered VFS archive factory for type \"" + archiveType + "\"" ); 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -927,7 +927,7 @@ CVFS::UnregisterArchiveFactory( const CString& archiveType )
 
     m_abstractArchiveFactory.UnregisterConcreteFactory( archiveType );
     
-    GUCEF_SYSTEM_LOG( 0, "Unregistered VFS archive factory for type \"" + archiveType + "\"" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Unregistered VFS archive factory for type \"" + archiveType + "\"" );
 }
 
 /*-------------------------------------------------------------------------//

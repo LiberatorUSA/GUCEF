@@ -239,7 +239,7 @@ OnParserErrorHandler( void* privdata          ,
         pd->error = description;
         pd->errorcode = errorcode;
         
-        GUCEF_ERROR_LOG( 0, "DStore Codec error: " + CString( description ) );
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "DStore Codec error: " + CString( description ) );
 }                      
 
 /*-------------------------------------------------------------------------*/
@@ -345,7 +345,7 @@ CDStoreCodecPlugin::CDStoreCodecPlugin( const CString& pluginfile )
                 memset( _fptable, NULL, sizeof(void*) * DSTOREPLUG_LASTFPTR );
                 _sohandle = NULL;
                 
-                GUCEF_ERROR_LOG( 0, "Invalid codec module" );
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Invalid codec module" );
                 return;        
         }
         
@@ -354,9 +354,9 @@ CDStoreCodecPlugin::CDStoreCodecPlugin( const CString& pluginfile )
          */
         ( (TDSTOREPLUGFPTR_Init) _fptable[ DSTOREPLUG_INIT ] )( &_plugdata );
         
-        GUCEF_SYSTEM_LOG( 0, "DStoreCodec plugin initialized\n" );
-        GUCEF_SYSTEM_LOG( 0, "  - Name: " + GetName() );
-        GUCEF_SYSTEM_LOG( 0, "  - Copyright/EULA: " + GetCopyright() );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "DStoreCodec plugin initialized\n" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Name: " + GetName() );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Copyright/EULA: " + GetCopyright() );
 }
 
 /*-------------------------------------------------------------------------*/

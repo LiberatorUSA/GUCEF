@@ -149,7 +149,7 @@ CMouse::SetButtonState( const UInt32 buttonIndex ,
 
     m_buttonStates[ buttonIndex ] = pressedState;
     
-    GUCEF_DEBUG_LOG( 0, "Setting state of button " + CORE::Int32ToString( buttonIndex ) + " to " + CORE::BoolToString( pressedState ) + " on mouse " + CORE::Int32ToString( m_deviceID ) );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Setting state of button " + CORE::Int32ToString( buttonIndex ) + " to " + CORE::BoolToString( pressedState ) + " on mouse " + CORE::Int32ToString( m_deviceID ) );
     
     CMouseButtonEventData eData( m_deviceID, buttonIndex, pressedState );
     NotifyObservers( MouseButtonEvent, &eData );

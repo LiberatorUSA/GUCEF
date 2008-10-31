@@ -82,7 +82,7 @@ CStdCodecPluginManager::Instance( void )
     if ( NULL == m_instance )
     {
         m_instance = new CStdCodecPluginManager();
-        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CStdCodecPluginManager Singleton created" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CStdCodecPluginManager Singleton created" );
     }
     return m_instance;
 }
@@ -96,7 +96,7 @@ CStdCodecPluginManager::Deinstance( void )
     delete m_instance;
     m_instance = NULL;
     
-    GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CStdCodecPluginManager Singleton destroyed" );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CStdCodecPluginManager Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -93,7 +93,7 @@ CPatchSetParser::ValidateAndParseFileLocEntries( const CORE::CDataNode& patchSet
                                                  TFileEntry& fileEntry                   ) const
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG( 0, "CPatchSetParser: Parsing patch set" );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetParser: Parsing patch set" );
     
     const CORE::CDataNode* locationEntry( NULL );
     CORE::CDataNode::const_iterator i = patchSetFileNode.ConstBegin();

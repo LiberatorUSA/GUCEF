@@ -95,7 +95,7 @@ bool
 CGUCEFCOMModule::Load( void )
 {GUCEF_TRACE;
         
-        GUCEF_SYSTEM_LOG( 0, "gucefCOM Module loaded" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOM Module loaded" );
         
         /* simply instantiate our com manager when the module is loaded */
         //CCom::Instance();
@@ -112,7 +112,7 @@ bool
 CGUCEFCOMModule::Unload( void )
 {GUCEF_TRACE;
         
-        GUCEF_SYSTEM_LOG( 0, "gucefCOMCORE Module unloading" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Module unloading" );
         
         //CCom::Deinstance();
         return true;

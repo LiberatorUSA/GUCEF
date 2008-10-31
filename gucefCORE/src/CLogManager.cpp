@@ -60,6 +60,13 @@ namespace CORE {
 CLogManager* CLogManager::g_instance = NULL;
 MT::CMutex CLogManager::g_dataLock;
 
+const Int32 LOGLEVEL_CRITICAL = GUCEFCORE_INT32MAX - 1;
+const Int32 LOGLEVEL_VERY_IMPORTANT = 250000;
+const Int32 LOGLEVEL_IMPORTANT = 100000;
+const Int32 LOGLEVEL_NORMAL = 50000;
+const Int32 LOGLEVEL_BELOW_NORMAL = 25000;
+const Int32 LOGLEVEL_EVERYTHING = 0;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -135,7 +142,7 @@ CLogManager::AddLogger( CILogger* loggerImp )
     m_loggers.insert( loggerImp );
     g_dataLock.Unlock();
     
-    GUCEF_SYSTEM_LOG( 0, "Added logger" );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Added logger" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -147,7 +154,7 @@ CLogManager::RemoveLogger( CILogger* loggerImp )
     // Do not pass in bogus pointers
     assert( NULL != loggerImp );
 
-    GUCEF_SYSTEM_LOG( 0, "Removing logger" );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Removing logger" );
     
     g_dataLock.Lock();
     m_loggers.erase( loggerImp );

@@ -155,7 +155,7 @@ CCom::Instance( void )
         if ( !_instance ) 
         {
                 _instance = new CCom();
-                GUCEF_SYSTEM_LOG( 0, "GUCEF::COMCORE::CCom Singleton created" );
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "GUCEF::COMCORE::CCom Singleton created" );
         }
         _mutex.Unlock();
         return _instance;
@@ -169,7 +169,7 @@ CCom::Deinstance( void )
         _mutex.Lock();
         delete _instance;
         _instance = NULL;
-        GUCEF_SYSTEM_LOG( 0, "GUCEF::COMCORE::CCom Singleton destroyed" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "GUCEF::COMCORE::CCom Singleton destroyed" );
         _mutex.Unlock();                
 }
 
@@ -308,7 +308,7 @@ CCom::SetSystemWideProxyServer( const CORE::CString& protocol   ,
                                 const bool active               )
 {GUCEF_TRACE;
     
-    GUCEF_SYSTEM_LOG( 0, "Setting system wide proxy server for protocol " + protocol + 
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Setting system wide proxy server for protocol " + protocol + 
                           " to " + remoteHost + ":" + CORE::UInt16ToString( remotePort ) + " and active state " + CORE::BoolToString( active ) );
     
     TProxyServer& proxyServer = m_proxyList[ protocol ];

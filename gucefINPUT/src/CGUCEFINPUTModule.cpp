@@ -66,7 +66,7 @@ bool
 CGUCEFINPUTModule::Load( void )
 {GUCEF_TRACE;
         
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module loaded" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefINPUT Module loaded" );
         
         CKeyboard::RegisterEvents();
         CInputController::RegisterEvents();
@@ -80,7 +80,7 @@ bool
 CGUCEFINPUTModule::Unload( void )
 {GUCEF_TRACE;
         
-        GUCEF_SYSTEM_LOG( 0, "gucefINPUT Module unloading" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefINPUT Module unloading" );
         
         CInputController::Deinstance();        
         return true;

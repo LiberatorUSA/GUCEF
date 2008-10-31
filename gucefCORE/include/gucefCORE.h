@@ -146,11 +146,6 @@
 #define GUCEF_CORE_CSTRINGMAP_H
 #endif /* GUCEF_CORE_CSTRINGMAP_H ? */
 
-#ifndef GUCEF_CORE_CINTMAP_H
-#include "CIntMap.h"
-#define GUCEF_CORE_CINTMAP_H
-#endif /* GUCEF_CORE_CINTMAP_H ? */
-
 #ifndef GUCEF_CORE_COBSERVER_H
 #include "CObserver.h"
 #define GUCEF_CORE_COBSERVER_H

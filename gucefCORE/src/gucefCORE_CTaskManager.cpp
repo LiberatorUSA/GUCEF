@@ -246,7 +246,7 @@ CTaskManager::RegisterTaskConsumerFactory( const CString& taskType       ,
                                            
     g_mutex.Lock();
     m_consumerFactory.RegisterConcreteFactory( taskType, factory );
-    GUCEF_SYSTEM_LOG( 0, "TaskManager: new consumer factory registerd of type " + taskType );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: new consumer factory registerd of type " + taskType );
     g_mutex.Unlock();
 }
 
@@ -258,7 +258,7 @@ CTaskManager::UnregisterTaskConsumerFactory( const CString& taskType )
 
     g_mutex.Lock();
     m_consumerFactory.UnregisterConcreteFactory( taskType );
-    GUCEF_SYSTEM_LOG( 0, "TaskManager: consumer factory unregisterd of type " + taskType );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: consumer factory unregisterd of type " + taskType );
     g_mutex.Unlock();
 }
 
@@ -418,7 +418,7 @@ CTaskManager::KillTask( const UInt32 taskID )
     {
         (*i).second->Deactivate( true );
         g_mutex.Unlock();
-        GUCEF_SYSTEM_LOG( 0, "TaskManager: Killed task with ID " + UInt32ToString( taskID ) );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Killed task with ID " + UInt32ToString( taskID ) );
         return true;
     }
     g_mutex.Unlock();

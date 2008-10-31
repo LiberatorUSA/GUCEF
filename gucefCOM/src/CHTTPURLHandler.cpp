@@ -29,6 +29,11 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef GUCEF_CORE_CMFILEACCESS_H
 #include "CMFileAccess.h"
 #define GUCEF_CORE_CMFILEACCESS_H
@@ -102,7 +107,7 @@ bool
 CHTTPURLHandler::Activate( CORE::CURL& url )
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Activating using URL: " + url.GetURL() ); 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): Activating using URL: " + url.GetURL() ); 
     
     m_transferFinished = false;
     
@@ -119,7 +124,7 @@ void
 CHTTPURLHandler::Deactivate( CORE::CURL& url )
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Deactivating" );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): Deactivating" );
     
     if ( NULL != m_httpClient )
     {
@@ -164,33 +169,33 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
              ( eventid == CHTTPClient::ConnectionErrorEvent )  )
         {
             
-            GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Data retrieval error" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): Data retrieval error" );
             NotifyObservers( CIURLEvents::URLDataRetrievalErrorEvent );
             return;
         }
         if ( eventid == CHTTPClient::HTTPDataRecievedEvent )
         {
             // pass on the eventdata since it's a cloneable buffer it  will sort itself out
-            GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Data received" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): Data received" );
             NotifyObservers( CIURLEvents::URLDataRecievedEvent, eventdata );
             return;
         }
         if ( eventid == CHTTPClient::HTTPTransferFinishedEvent )
         {
-            GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Transfer finished" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): Transfer finished" );
             m_transferFinished = true;
             NotifyObservers( CIURLEvents::URLAllDataRecievedEvent );
             return;
         }
         if ( eventid == CHTTPClient::ConnectingEvent )
         {
-            GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Connecting" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): Connecting" );
             NotifyObservers( CIURLEvents::URLActivateEvent );
             return;
         }
         if ( eventid == CHTTPClient::DisconnectedEvent )
         {
-            GUCEF_DEBUG_LOG( 0, "CHTTPURLHandler: Disconnected" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): Disconnected" );
             if ( !m_transferFinished )
             {
                 NotifyObservers( CIURLEvents::URLDeactivateEvent );

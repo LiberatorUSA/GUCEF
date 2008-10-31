@@ -75,7 +75,7 @@ CCodecRegistry::Instance( void )
     if ( m_instance == NULL )
     {
         m_instance = new CCodecRegistry();
-        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CCodecRegistry Singleton created" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CCodecRegistry Singleton created" );
     }
     
     return m_instance;
@@ -90,7 +90,7 @@ CCodecRegistry::Deinstance( void )
     delete m_instance;
     m_instance = NULL;
     
-    GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CCodecRegistry Singleton destroyed" );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CCodecRegistry Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------//

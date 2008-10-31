@@ -127,7 +127,7 @@ CDStoreCodecPluginManager::LoadAll( void )
                 {                
                         if ( DI_Is_It_A_File( did ) )
                         {
-                                GUCEF_SYSTEM_LOG( 0, "Attempt to load " + CString( DI_Name( did ) ) + " as an DSTORE Codec plugin" );
+                                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Attempt to load " + CString( DI_Name( did ) ) + " as an DSTORE Codec plugin" );
                                 
                                 filepath = path; 
                                 file = DI_Name( did );
@@ -169,7 +169,7 @@ CDStoreCodecPluginManager::Instance( void )
         {
                 _instance = new CDStoreCodecPluginManager();
                 CHECKMEM( _instance, sizeof(CDStoreCodecPluginManager) );
-                GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CDStoreCodecPluginManager Singleton created" );
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecPluginManager Singleton created" );
         }
         _datalock.Unlock();
         return _instance;
@@ -184,7 +184,7 @@ CDStoreCodecPluginManager::Deinstance( void )
         CHECKMEM( _instance, sizeof(CDStoreCodecPluginManager) );
         delete _instance;
         _instance = NULL;
-        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CDStoreCodecPluginManager Singleton destroyed" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecPluginManager Singleton destroyed" );
         _datalock.Unlock();
 }
 
@@ -206,7 +206,7 @@ CDStoreCodecPluginManager::LoadCodecPlugin( const CString& filename )
                         CDStoreCodecRegistry::Instance()->Register( cp->GetTypeName().C_String() , 
                                                                     &cp->_ref                    );
                         
-                        GUCEF_SYSTEM_LOG( 0, "Loaded Data Storage codec plugin with name: " + cp->GetTypeName() );
+                        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Loaded Data Storage codec plugin with name: " + cp->GetTypeName() );
                         return cp;
                 }
                 delete cp;

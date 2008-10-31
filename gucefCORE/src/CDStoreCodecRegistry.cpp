@@ -104,7 +104,7 @@ CDStoreCodecRegistry::Instance( void )
         {
                 _instance = new CDStoreCodecRegistry();
                 CHECKMEM( _instance, sizeof(CDStoreCodecRegistry) );
-                GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CDStoreCodecRegistry Singleton created" );
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecRegistry Singleton created" );
         }
         _datalock.Unlock();
         GUCEF_END;
@@ -121,7 +121,7 @@ CDStoreCodecRegistry::Deinstance( void )
         CHECKMEM( _instance, sizeof(CDStoreCodecRegistry) );
         delete _instance;
         _instance = NULL;
-        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CDStoreCodecRegistry Singleton destroyed" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecRegistry Singleton destroyed" );
         _datalock.Unlock();
         GUCEF_END;
 }

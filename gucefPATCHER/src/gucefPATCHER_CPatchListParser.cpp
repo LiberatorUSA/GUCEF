@@ -69,7 +69,7 @@ CPatchListParser::ParsePatchList( const CORE::CDataNode& patchListData ,
                                   TPatchList& patchList                ) const
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG( 0, "CPatchListParser: Parsing patch list" );    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchListParser: Parsing patch list" );    
     
     const CORE::CDataNode* patchListNode = patchListData.Find( "PatchList" );
     

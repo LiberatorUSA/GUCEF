@@ -169,7 +169,7 @@ CPluginManager::LoadAll( void )
         {                
             if ( DI_Is_It_A_File( did ) == 1 )
             {
-                GUCEF_SYSTEM_LOG( 0, "Attempt to load " + CString( DI_Name( did ) ) + " as a plugin" );
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Attempt to load " + CString( DI_Name( did ) ) + " as a plugin" );
                 
                 filepath = path; 
                 file = DI_Name( did );

@@ -95,7 +95,7 @@ CPluginControl::Instance( void )
         {
                 _instance = new CPluginControl();
                 CHECKMEM( _instance, sizeof(CPluginControl) );
-                GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CPluginControl Singleton created" );
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CPluginControl Singleton created" );
         }
         _mutex.Unlock();
         GUCEF_END;
@@ -112,7 +112,7 @@ CPluginControl::Deinstance( void )
         CHECKMEM( _instance, sizeof(CPluginControl) );
         delete _instance;
         _instance = NULL;
-        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CPluginControl Singleton destroyed" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CPluginControl Singleton destroyed" );
         _mutex.Unlock();
         GUCEF_END;
 }

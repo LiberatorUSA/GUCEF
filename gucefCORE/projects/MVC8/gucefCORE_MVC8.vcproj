@@ -347,10 +347,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CIntMap.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\CINumericIDGeneratorBase.cpp"
 				>
 			</File>
@@ -910,10 +906,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\CINamedInstance.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\CIntMap.h"
 				>
 			</File>
 			<File

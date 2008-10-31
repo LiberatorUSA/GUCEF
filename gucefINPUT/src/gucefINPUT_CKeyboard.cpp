@@ -150,7 +150,7 @@ CKeyboard::SetKeyState( const KeyCode key       ,
 
     m_keyState[ key ] = pressedState;
     
-    GUCEF_DEBUG_LOG( 0, "Setting state of key [" + KeyCodeToString( key ) + "] to " + CORE::BoolToString( pressedState ) + " on keyboard " + CORE::Int32ToString(  m_deviceID ) );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Setting state of key [" + KeyCodeToString( key ) + "] to " + CORE::BoolToString( pressedState ) + " on keyboard " + CORE::Int32ToString(  m_deviceID ) );
     
     CKeyStateChangedEventData eventData( m_deviceID, key, pressedState, m_keyModStates );
     NotifyObservers( KeyStateChangedEvent, &eventData );
@@ -165,7 +165,7 @@ CKeyboard::SetKeyModState( const KeyModifier keyMod ,
 
     m_keyModStates = m_keyModStates | keyMod;
     
-    GUCEF_DEBUG_LOG( 0, "Setting state of key mod [" + KeyModifierToString( keyMod ) + "] to " + CORE::BoolToString( pressedState ) + " on keyboard " + CORE::Int32ToString(  m_deviceID ) );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Setting state of key mod [" + KeyModifierToString( keyMod ) + "] to " + CORE::BoolToString( pressedState ) + " on keyboard " + CORE::Int32ToString(  m_deviceID ) );
     
     CKeyModStateChangedEventData eventData( keyMod, pressedState );
     NotifyObservers( KeyModStateChangedEvent, &eventData );

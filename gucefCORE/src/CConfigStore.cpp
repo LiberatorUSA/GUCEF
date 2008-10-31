@@ -120,7 +120,7 @@ CConfigStore::Instance( void )
         {
                 _instance = new CConfigStore();
                 CHECKMEM( _instance, sizeof(CConfigStore) );
-                GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CConfigStore Singleton created" );
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CConfigStore Singleton created" );
         }
         _datalock.Unlock();
         return _instance;
@@ -134,7 +134,7 @@ CConfigStore::Deinstance( void )
         _datalock.Lock();
         delete _instance;
         _instance = NULL;
-        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CConfigStore Singleton destroyed" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CConfigStore Singleton destroyed" );
         _datalock.Unlock();
 }        
 

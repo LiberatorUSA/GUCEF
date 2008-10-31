@@ -127,7 +127,7 @@ CNotificationIDRegistry::Instance( void )
     if ( m_instance == NULL )
     {
         m_instance = new CNotificationIDRegistry();
-        GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CNotificationIDRegistry Singleton created" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CNotificationIDRegistry Singleton created" );
     }
 
     m_dataLock.Unlock();
@@ -145,7 +145,7 @@ CNotificationIDRegistry::Deinstance( void )
     delete m_instance;
     m_instance = NULL;
 
-    GUCEF_SYSTEM_LOG( 0, "GUCEF::CORE::CNotificationIDRegistry Singleton destroyed" );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CNotificationIDRegistry Singleton destroyed" );
 
     m_dataLock.Unlock();
 }
@@ -170,7 +170,7 @@ CNotificationIDRegistry::Register( const CString& keyvalue                      
                 ++m_lastid;
                 m_dataLock.Unlock();
                 
-                GUCEF_SYSTEM_LOG( 0, "Event registered with ID " + UInt32ToString( m_lastid-1 ) + " and name \"" + keyvalue + "\"" );
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Event registered with ID " + UInt32ToString( m_lastid-1 ) + " and name \"" + keyvalue + "\"" );
                 
                 return CEvent( m_lastid-1, keyvalue );
             }
