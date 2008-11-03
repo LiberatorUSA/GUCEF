@@ -242,6 +242,7 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
         }
         else
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): The remote file has no local equavalant" );
             NotifyObservers( LocalFileNotFoundEvent );
         }    
         
@@ -501,11 +502,14 @@ CPatchSetFileEngine::OnNotify( CORE::CNotifier* notifier                 ,
     }
     else
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): File processing has been aborted" );
-        
-        NotifyObservers( FileListProcessingAbortedEvent );        
-        m_stopSignalGiven = false;
-        m_isActive = false;
+        if ( m_stopSignalGiven )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): File processing has been aborted" );
+            
+            NotifyObservers( FileListProcessingAbortedEvent );        
+            m_stopSignalGiven = false;
+            m_isActive = false;
+        }
     }
 }
 

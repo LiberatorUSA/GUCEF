@@ -157,9 +157,9 @@ CURLDataRetriever::OnNotify( CNotifier* notifier                 ,
 
     // Call the base class implementation to allow 
     // event forwarding to do its work
-    CObservingNotifier::OnNotify( notifier  ,
-                                  eventid   ,
-                                  eventdata );    
+    CForwardingNotifier::OnNotify( notifier  ,
+                                   eventid   ,
+                                   eventdata );    
 }
 
 /*-------------------------------------------------------------------------//
