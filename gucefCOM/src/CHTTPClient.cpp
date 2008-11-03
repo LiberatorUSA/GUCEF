@@ -894,6 +894,16 @@ CHTTPClient::OnNotify( CORE::CNotifier* notifier                 ,
     }
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CHTTPClient::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::COM::CHTTPClient";
+    return typeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

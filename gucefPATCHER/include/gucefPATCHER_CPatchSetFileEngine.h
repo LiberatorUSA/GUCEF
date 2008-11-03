@@ -80,6 +80,8 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetFileEngine : public CORE::CObservingNotif
     
     bool IsActive( void ) const;
     
+    virtual const CString& GetClassTypeName( void ) const;
+    
     protected:
         
     virtual void OnNotify( CORE::CNotifier* notifier           ,

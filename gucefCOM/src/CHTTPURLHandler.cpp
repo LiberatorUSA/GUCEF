@@ -196,13 +196,14 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
         if ( eventid == CHTTPClient::DisconnectedEvent )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): Disconnected" );
+            
+            // Check if the transfer has already been completed. If so then the URLAllDataRecievedEvent event was the 
+            // final event and we don't have to send anything. If we where still expecting data then we will send the 
+            // URLDeactivateEvent event to notify that we deactivated prematurely.
             if ( !m_transferFinished )
-            {
+            {                
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): The transfer was not finished when we where disconnected!" );
                 NotifyObservers( CIURLEvents::URLDeactivateEvent );
-            }
-            else
-            {
-                NotifyObservers( CIURLEvents::URLAllDataRecievedEvent );
             }
             return;
         }        
@@ -220,6 +221,16 @@ CHTTPURLHandler::Register( void )
     {
         registry->Register( "http", new CHTTPURLHandler() );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CHTTPURLHandler::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::COM::CHTTPURLHandler";
+    return typeName;
 }
 
 /*-------------------------------------------------------------------------//

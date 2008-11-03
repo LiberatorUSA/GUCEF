@@ -28,6 +28,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -128,6 +133,8 @@ bool
 CPatchSetDirEngine::ProcessFilesInDir( void )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetDirEngine(" + CORE::PointerToString( this ) + "): Processing files in the directory" );
+    
     if ( m_dir.files.size() > 0 )
     {
         // We will be needing an engine for our file processing
@@ -159,6 +166,8 @@ bool
 CPatchSetDirEngine::ProcessCurSubDir( void )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetDirEngine(" + CORE::PointerToString( this ) + "): Processing current sub-directory" );
+    
     if ( m_curSubDirIndex < m_dir.subDirs.size() )
     {
         NotifyObservers( SubDirProcessingStartedEvent );
@@ -177,14 +186,14 @@ CPatchSetDirEngine::ProcessCurSubDir( void )
             SubscribeTo( m_subDirPatchEngine ); 
         }
         
-        // Create the correct path strings for this sub-sir
+        // Create the correct path strings for this sub-dir
         const TDirEntry* subDir = &m_dir.subDirs[ m_curSubDirIndex ];
         CORE::CString subDirPath = m_localRoot;
         CORE::AppendToPath( subDirPath, subDir->name );
         CORE::CString subTmpDirPath = m_tempStorageRoot;
         CORE::AppendToPath( subTmpDirPath, subDir->name );
         
-        // make sure the sub-sir exists locally
+        // make sure the sub-dir exists locally
         CORE::Create_Directory( subDirPath.C_String() );
         
         // process the sub-dir
@@ -205,6 +214,8 @@ CPatchSetDirEngine::Start( const TDirEntry& startingDir         ,
 {GUCEF_TRACE;
 
     assert( &startingDir != NULL );
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetDirEngine(" + CORE::PointerToString( this ) + "): Started" );
     
     // The user should explicitly stop first if we are already busy
     if ( !IsActive() )
@@ -246,6 +257,8 @@ CPatchSetDirEngine::Stop( void )
 
     if ( m_isActive )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetDirEngine(" + CORE::PointerToString( this ) + "): Stop called while active" );
+        
         m_stopSignalGiven = true;
         
         if ( m_filePatchEngine != NULL )
@@ -280,6 +293,8 @@ bool
 CPatchSetDirEngine::ProcessNextSubDir( void )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetDirEngine(" + CORE::PointerToString( this ) + "): Processing the next sub-directory" );
+    
     // Move on to the next sub-dir (if any exists)
     if ( m_curSubDirIndex+1 < m_dir.subDirs.size() )
     {
@@ -316,6 +331,8 @@ CPatchSetDirEngine::OnNotify( CORE::CNotifier* notifier                 ,
         {
             if ( eventid == CPatchSetFileEngine::FileListProcessingCompleteEvent )
             {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetDirEngine(" + CORE::PointerToString( this ) + "): Finished processing all files in the directory" );
+                
                 if ( m_curSubDirIndex < m_dir.subDirs.size() )
                 {
                     // The files in this dir have been processed, we can move on to the
@@ -339,6 +356,7 @@ CPatchSetDirEngine::OnNotify( CORE::CNotifier* notifier                 ,
         {
             if ( eventid == DirProcessingCompletedEvent )
             {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetDirEngine(" + CORE::PointerToString( this ) + "): Finished processing the current sub-directory" );
                 NotifyObservers( SubDirProcessingCompletedEvent );
                 
                 // Move on to the next sub-dir (if any exists)
@@ -353,6 +371,16 @@ CPatchSetDirEngine::OnNotify( CORE::CNotifier* notifier                 ,
         m_isActive = false;
         NotifyObservers( DirProcessingAbortedEvent );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CPatchSetDirEngine::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::PATCHER::CPatchSetDirEngine";
+    return typeName;
 }
 
 /*-------------------------------------------------------------------------//

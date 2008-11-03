@@ -77,6 +77,8 @@ class CHTTPURLHandler : public CORE::CURLHandler
     
     static void Register( void );
     
+    virtual const CString& GetClassTypeName( void ) const;
+    
     protected:
     
     virtual void OnNotify( CORE::CNotifier* notifier           ,

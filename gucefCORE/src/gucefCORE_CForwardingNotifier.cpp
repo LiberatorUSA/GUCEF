@@ -314,7 +314,7 @@ CForwardingNotifier::OnNotify( CNotifier* notifier                 ,
                 const TForwardState& state = (*i).second;
                 if ( state.filter == EVENTORIGINFILTER_TRANSFER )
                 {
-                    GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CForwardingNotifier: Transfering event origin from " + PointerToString( notifier ) + " to " + PointerToString( this ) + " for event: " + eventid.GetName() );
+                    GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CForwardingNotifier: Transfering event origin from " + notifier->GetClassTypeName() + "(" + PointerToString( notifier ) + ") to " + GetClassTypeName() + "(" + PointerToString( this ) + ") for event: " + eventid.GetName() );
                     
                     if ( !NotifyObservers( *this, eventid, eventdata ) ) return;
                 }

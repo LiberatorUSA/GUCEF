@@ -448,6 +448,16 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
     }
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CPatchListEngine::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::PATCHER::CPatchListEngine";
+    return typeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

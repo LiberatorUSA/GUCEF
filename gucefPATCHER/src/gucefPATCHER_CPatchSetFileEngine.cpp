@@ -33,6 +33,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -115,6 +120,8 @@ CPatchSetFileEngine::Start( const TFileList& fileList            ,
     // The user should explicitly stop first if we are already busy
     if ( !IsActive() )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Starting inactive engine" );
+        
         // parameter sanity check
         if ( ( fileList.size() > 0 )   &&
              ( localRoot.Length() > 0 ) )
@@ -145,6 +152,8 @@ bool
 CPatchSetFileEngine::ProcessCurrentFile( void )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Processing the current file" );    
+    
     if ( !m_stopSignalGiven                 && 
          m_isActive                         && 
          m_fileList.size() > m_curFileIndex )
@@ -159,10 +168,14 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
         // Check if the file exists
         if ( CORE::FileExists( filePath ) )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): There is already a file with the same name as the new file in the destination folder" );
+            
             // The file exists, let's see if it's up to date
             UInt32 fileSize = CORE::Filesize( filePath.C_String() );
             if ( fileSize == curFile->sizeInBytes )
             {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): The old file is the same size as the new file so we will have to do a hash check" );
+                
                 // The file matches in byte size, it may be up-to-date
                 // We will try a hash comparison to make sure
                 UInt8 md5Digest[ 16 ];
@@ -173,6 +186,8 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
                     if ( 0 != CORE::md5frommfile( fileAccess.CStyleAccess() , 
                                                   md5Digest                 ) )
                     {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Finished old file hash generation" );
+                        
                         // This may have been a lengthy operation so we re-check the stop signal
                         if ( m_stopSignalGiven || !m_isActive )
                         {
@@ -186,6 +201,8 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
                         CORE::CString md5String( CORE::MD5ToString( md5Digest ) );
                         if ( curFile->hash == md5String )
                         {
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): The old file has the same hash as the new file so it is already up-to-date" );
+                            
                             // Woohoo, this file is already up-to-date
                             NotifyObservers( LocalFileIsOKEvent );
                             
@@ -198,20 +215,28 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
                             else
                             {
                                 // We are finished,.. engine stopping
+                                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Depleted list of files to process, we are finished" );
                                 NotifyObservers( FileListProcessingCompleteEvent );
                                 m_isActive = false;
                             }
                             return true;
                         }
+                        else
+                        {
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): The hash of the remote file does not match that of the local file" );
+                            NotifyObservers( LocalFileHashMismatchEvent );
+                        }                        
                     }
                     else
                     {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Failed to generate hash from the old file so we treat this as a hash mismatch" );
                         NotifyObservers( LocalFileHashMismatchEvent );
                     }
                 }  
             }
             else
             {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): The local file has a different size then the remote file" );
                 NotifyObservers( LocalFileSizeMismatchEvent );
             }
         }
@@ -219,6 +244,8 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
         {
             NotifyObservers( LocalFileNotFoundEvent );
         }    
+        
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): The local file did not match the remote file or is missing thus it will be retrieved and updated" );
         
         // If we get here then the file was found but it is not up-to-date or
         // the file does not even exist locally, either way,.. we have to update it
@@ -243,17 +270,21 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
                 {
                     // The data retrieval process has now commenced
                     // This is an a-sync operation, we wait for notification
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Started retrieving the file" );
                     NotifyObservers( FileRetrievalStartedEvent );
                     return true;
                 }
                 else
                 {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Failed to retrieve the file" );
                     NotifyObservers( FileRetrievalErrorEvent );
                     
                     // if we get here then we where unable to activate the given URL
                     // We will try the next one,.. if there is a next one
                     if ( m_curFileLocIndex+1 < curFile->fileLocations.size() )
                     {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): File processing has been aborted, no alternative download locations remaining" );
+                        
                         // we ran out of options,.. the end
                         delete m_fileAccess;
                         m_fileAccess = NULL;
@@ -268,6 +299,8 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
         }
         else
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Unable to obtain write access to the temporary storage location,.. the end" );
+            
             // We failed to obtain writable access to our temp file storage
             // we ran out of options,.. the end
             delete m_fileAccess;
@@ -306,6 +339,8 @@ CPatchSetFileEngine::Stop( void )
 
     if ( m_isActive )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Stop called while active" );
+        
         m_stopSignalGiven = true;
         
         if ( m_dataRetriever.GetURL().IsActive() )
@@ -330,6 +365,8 @@ bool
 CPatchSetFileEngine::TryNextFileLocation( void )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Attempting to retrieve file from an alternate location" );
+    
     m_fileAccess->Close();
 
     const TFileEntry& curFile = m_fileList[ m_curFileIndex ];
@@ -366,6 +403,8 @@ bool
 CPatchSetFileEngine::ProceedToNextFile( void )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Proceeding to the next file" );
+    
     // Close the last file if it is still opened
     if ( m_fileAccess != NULL )
     {
@@ -399,9 +438,13 @@ CPatchSetFileEngine::OnNotify( CORE::CNotifier* notifier                 ,
         {
             if ( eventid == CORE::CURLDataRetriever::URLAllDataRecievedEvent )
             {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): All data for the file has been received" );
+                
                 // Check if we stored the file in an alternate location
                 if ( m_tempStorageRoot != m_localRoot )
                 {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): The new file is stored in a temporary location" );
+                    
                     // safety check,.. just in case
                     assert( m_fileAccess != NULL );
                     if ( m_fileAccess != NULL )
@@ -413,25 +456,33 @@ CPatchSetFileEngine::OnNotify( CORE::CNotifier* notifier                 ,
                         // If a file already exists at the target location attempt to delete it
                         if ( CORE::FileExists( destPath ) )
                         {
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): A file with the same name already exists at the destination location of the new file" );
+                            
                             if ( 0 == CORE::Delete_File( destPath.C_String() ) )
                             {
+                                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Failed to delete an old file" );
+                                
                                 // We failed to delete the old file,.. the end
                                 NotifyObservers( FileStorageErrorEvent );
                                 m_stopSignalGiven = false;
                                 m_isActive = false;
                                 return;                            
                             }
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Deleted old file" );
                         }
                         
                         // Move the new file to the desired final location
                         if ( 0 == CORE::Move_File( destPath.C_String(), m_fileAccess->GetFilename().C_String() ) )
                         {
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Failed to move the new file to the location of the old file!" );
+                            
                             // Moving the file failed,.. the end
                             NotifyObservers( FileStorageErrorEvent );
                             m_stopSignalGiven = false;
                             m_isActive = false;
                             return;                             
                         }
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Moved the new file to the location of the old file thus replacing it" );
                         
                         // We successfully replaced/patched a local file
                         NotifyObservers( LocalFileReplacedEvent );
@@ -443,16 +494,29 @@ CPatchSetFileEngine::OnNotify( CORE::CNotifier* notifier                 ,
             else
             if ( eventid == CORE::CURLDataRetriever::URLDataRetrievalErrorEvent )
             {   
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Unable to retrieve the file from the current remote file location" );
                 TryNextFileLocation();
             }
         }
     }
     else
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): File processing has been aborted" );
+        
         NotifyObservers( FileListProcessingAbortedEvent );        
         m_stopSignalGiven = false;
         m_isActive = false;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CPatchSetFileEngine::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::PATCHER::CPatchSetFileEngine";
+    return typeName;
 }
 
 /*-------------------------------------------------------------------------//

@@ -312,6 +312,16 @@ CURL::OnNotify( CNotifier* notifier                 ,
                                    eventdata );
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CURL::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::CORE::CURL";
+    return typeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -214,6 +214,8 @@ class GUCEFCOM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     
     void GetHTTPProxy( CORE::CString& proxyHost ,
                        UInt16& port             );
+
+    virtual const CString& GetClassTypeName( void ) const;
     
     protected:	
 

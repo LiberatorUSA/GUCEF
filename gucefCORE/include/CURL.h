@@ -109,6 +109,8 @@ class GUCEFCORE_EXPORT_CPP CURL : public CForwardingNotifier ,
         void Refresh( void );
         
         CPulseGenerator& GetPulseGenerator( void );
+        
+        virtual const CString& GetClassTypeName( void ) const;
 
         protected:
         

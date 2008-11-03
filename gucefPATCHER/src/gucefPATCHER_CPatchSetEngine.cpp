@@ -30,6 +30,16 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef GUCEF_PATCHER_CPATCHSETDIRENGINE_H
 #include "gucefPATCHER_CPatchSetDirEngine.h"
 #define GUCEF_PATCHER_CPATCHSETDIRENGINE_H
@@ -138,6 +148,8 @@ CPatchSetEngine::Start( const TPatchSet& patchSet            ,
     // The user should explicitly stop first if we are already busy
     if ( !IsActive() )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Start called while inactive,.. starting" );
+        
         // parameter sanity check
         if ( ( patchSet.size() > 0 )     &&
              ( localRoot.Length() > 0 )  )
@@ -168,9 +180,10 @@ CPatchSetEngine::Start( const TPatchSet& patchSet            ,
 void
 CPatchSetEngine::Stop( void )
 {GUCEF_TRACE;
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Stop called" );
     
-    m_stopSignalGiven = true;
-    
+    m_stopSignalGiven = true;    
     m_patchSetDirEngine->Stop();
 }
 
@@ -202,11 +215,15 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
         {
             if ( eventid == DirProcessingCompletedEvent )
             {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Completed processing the current directory" );
+                
                 NotifyObservers( SubDirProcessingCompletedEvent );
                 
                 // Move on to the next sub-dir (if any exists)
                 if ( m_dirIndex+1 < m_patchSet.size() )
                 {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Moving on to the next directory in the patch set" );
+                    
                     ++m_dirIndex;
                     
                     NotifyObservers( SubDirProcessingStartedEvent );
@@ -216,6 +233,7 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
                 }
                 else
                 {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Completed processing the entire patch set" );
                     NotifyObservers( PatchSetProcessingCompletedEvent );
                 }
                 return;
@@ -223,6 +241,7 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
             else
             if ( eventid == DirProcessingAbortedEvent )
             {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Directory processing has been aborted, aborting patch set processing" );                
                 NotifyObservers( PatchSetProcessingAbortedEvent );
                 return;
             }
@@ -234,6 +253,16 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
         m_isActive = false;
         NotifyObservers( PatchSetProcessingAbortedEvent );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CPatchSetEngine::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::PATCHER::CPatchSetEngine";
+    return typeName;
 }
 
 /*-------------------------------------------------------------------------//

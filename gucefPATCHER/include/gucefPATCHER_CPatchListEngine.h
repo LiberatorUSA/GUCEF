@@ -136,6 +136,8 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchListEngine : public CORE::CForwardingNotifi
     
     bool IsActive( void ) const;
     
+    virtual const CString& GetClassTypeName( void ) const;
+    
     protected:
         
     virtual void OnNotify( CORE::CNotifier* notifier           ,

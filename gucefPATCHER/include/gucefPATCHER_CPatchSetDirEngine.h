@@ -106,6 +106,8 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngine : public CORE::CForwardingNotif
     void Stop( void );
     
     bool IsActive( void ) const;
+    
+    virtual const CString& GetClassTypeName( void ) const;
 
     protected:
         
