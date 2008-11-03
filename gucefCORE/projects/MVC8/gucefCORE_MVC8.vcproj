@@ -699,6 +699,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefCORE_CLinkedTransferBuffer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefCORE_CObserverSwitch.cpp"
 				>
 			</File>
@@ -1314,6 +1318,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefCORE_CITaskConsumer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefCORE_CLinkedTransferBuffer.h"
 				>
 			</File>
 			<File

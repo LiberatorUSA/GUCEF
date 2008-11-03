@@ -71,8 +71,10 @@ class CTLinkedCloneableObj : public CICloneable
 
     CTLinkedCloneableObj( void );
     
+    // preserves the link, does not copy the wrapped object
     explicit CTLinkedCloneableObj( const T* data );
 
+    // creates a copy of the wrapped object
     CTLinkedCloneableObj( const CTLinkedCloneableObj& src );
         
     virtual ~CTLinkedCloneableObj();
@@ -82,6 +84,8 @@ class CTLinkedCloneableObj : public CICloneable
     virtual CICloneable* Clone( void ) const;    
     
     const T& GetData( void ) const;
+    
+    void LinkTo( const T* data );
 
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( ENULLPointer );
 
@@ -160,6 +164,17 @@ CTLinkedCloneableObj< T >::operator=( const CTLinkedCloneableObj< T >& src )
         m_data = new T( *src.m_data );
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+void
+CTLinkedCloneableObj< T >::LinkTo( const T* data )
+{GUCEF_TRACE;
+
+    m_data = data;
+    m_linked = true;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -65,7 +65,7 @@ class GUCEFCORE_EXPORT_CPP CIURLEvents
         static const CEvent URLAllDataRecievedEvent;
         static const CEvent URLDataRetrievalErrorEvent;
         
-        typedef TLinkedCloneableBuffer    TURLDataRecievedEventData;
+        typedef CLinkedTransferBuffer    TURLDataRecievedEventData;
         
         static void RegisterEvents( void );                                    
         

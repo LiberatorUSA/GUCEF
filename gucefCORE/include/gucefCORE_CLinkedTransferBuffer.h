@@ -1,6 +1,6 @@
 /*
- *  gucefPATCHER: GUCEF RAD module providing a patch delivery system
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,32 +14,27 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H
-#define GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H
- 
+#ifndef GUCEF_CORE_CLINKEDTRANSFERBUFFER_H
+#define GUCEF_CORE_CLINKEDTRANSFERBUFFER_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CEVENT_H
-#include "CEvent.h"
-#define GUCEF_CORE_CEVENT_H
-#endif /* GUCEF_CORE_CEVENT_H ? */
+#ifndef GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
+#include "CTLinkedCloneableObj.h"
+#define GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H ? */
 
-#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
-#include "CTCloneableObj.h"
-#define GUCEF_CORE_CTCLONEABLEOBJ_H
-#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
-
-#ifndef GUCEF_PATCHER_CPATCHSETPARSER_H
-#include "gucefPATCHER_CPatchSetParser.h"
-#define GUCEF_PATCHER_CPATCHSETPARSER_H
-#endif /* GUCEF_PATCHER_CPATCHSETPARSER_H ? */
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PATCHER {
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,30 +51,40 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngineEvents
+/**
+ *  Utility class for passing a transfer buffer as a cloneable object by means of linking.
+ *  Transfer buffers are typically the sort of thing where you have large buffers that you
+ *  do not want to copy unless absolutely needed. This utility class provides a convenient
+ *  way of passing along all information
+ */
+class GUCEF_CORE_EXPORT_CPP CLinkedTransferBuffer : public CTLinkedCloneableObj< CDynamicBuffer >
 {
     public:
     
-    static const CORE::CEvent DirProcessingStartedEvent;
-    static const CORE::CEvent SubDirProcessingStartedEvent;
-    static const CORE::CEvent SubDirProcessingCompletedEvent;
-    static const CORE::CEvent DirProcessingCompletedEvent;
-    static const CORE::CEvent DirProcessingAbortedEvent;
+    CLinkedTransferBuffer( void );
     
-    static void RegisterEvents( void );
+    CLinkedTransferBuffer( const CDynamicBuffer* buffer             ,
+                           const Float32 transferProgress = 0       ,
+                           const CICloneable* additionalData = NULL );
+    
+    CLinkedTransferBuffer( const CLinkedTransferBuffer& src );    
+    
+    virtual ~CLinkedTransferBuffer();
+    
+    CLinkedTransferBuffer& operator=( const CLinkedTransferBuffer& src );
 
-    typedef CPatchSetParser::TFileLocation TFileLocation;
-    typedef CPatchSetParser::TFileEntry TFileEntry;
-    typedef CPatchSetParser::TDirEntry TDirEntry;
+    virtual CICloneable* Clone( void ) const;
     
-    protected:
+    void SetTransferProgress( const Float32 transferProgress );
     
-    CPatchSetDirEngineEvents( void );
-    virtual ~CPatchSetDirEngineEvents();
+    Float32 GetTransferProgress( void ) const;
     
+    const CICloneable* GetAdditionalData( void ) const;
+
     private:
-    CPatchSetDirEngineEvents( const CPatchSetDirEngineEvents& src );            /**< not implemented */
-    CPatchSetDirEngineEvents& operator=( const CPatchSetDirEngineEvents& src ); /**< not implemented */
+    
+    Float32 m_transferProgress;
+    CICloneable* m_additionalData;
 };
 
 /*-------------------------------------------------------------------------//
@@ -88,12 +93,12 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngineEvents
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PATCHER */
+}; /* namespace CORE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHER_CPATCHSETDIRENGINEEVENTS_H ? */
+#endif /* GUCEF_CORE_CLINKEDTRANSFERBUFFER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -101,7 +106,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngineEvents
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 27-12-2006 :
-        - Dinand: Initial version
-
------------------------------------------------------------------------------*/
+- 08-10-2006 :
+        - Initial implementation
+          
+---------------------------------------------------------------------------*/

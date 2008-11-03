@@ -41,11 +41,6 @@
 #define GUCEF_CORE_CPULSEGENERATOR_H
 #endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
 
-#ifndef GUCEF_PATCHER_CPATCHSETPARSER_H
-#include "gucefPATCHER_CPatchSetParser.h"
-#define GUCEF_PATCHER_CPATCHSETPARSER_H
-#endif /* GUCEF_PATCHER_CPATCHSETPARSER_H ? */
-
 #ifndef GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
 #include "gucefPATCHER_CPatchSetFileEngineEvents.h"
 #define GUCEF_PATCHER_CPATCHSETFILEENGINEEVENTS_H
@@ -82,13 +77,7 @@ class CPatchSetFileEngine;
 class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngine : public CORE::CForwardingNotifier ,
                                                    public CPatchSetFileEngineEvents ,
                                                    public CPatchSetDirEngineEvents
-{
-    public:
-
-    typedef CPatchSetParser::TFileLocation TFileLocation;
-    typedef CPatchSetParser::TFileEntry TFileEntry;
-    typedef CPatchSetParser::TDirEntry TDirEntry;
-    
+{    
     public:
     
     CPatchSetDirEngine( void );

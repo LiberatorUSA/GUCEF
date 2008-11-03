@@ -55,13 +55,7 @@ namespace PATCHER {
  */
 class GUCEFPATCHER_EXPORT_CPP CPatchSetFileEngine : public CORE::CObservingNotifier  ,
                                                     public CPatchSetFileEngineEvents
-{
-    public:
-
-    typedef CPatchSetParser::TFileLocation TFileLocation;
-    typedef CPatchSetParser::TFileEntry TFileEntry;
-    typedef std::vector< TFileEntry > TFileList;
-  
+{  
     public:
     
     CPatchSetFileEngine( void );
@@ -93,6 +87,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetFileEngine : public CORE::CObservingNotif
     bool ProcessCurrentFile( void );
     bool ProceedToNextFile( void );
     bool TryNextFileLocation( void );
+    TPatchSetFileEngineEventData* CreateEventStatusObj( void ) const;
     
     private:
     

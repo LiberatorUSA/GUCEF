@@ -31,7 +31,15 @@
 #define GUCEF_CORE_CEVENT_H
 #endif /* GUCEF_CORE_CEVENT_H ? */
 
-#include "gucefPATCHER_macros.h"
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
+#include "CTCloneableObj.h"
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+
+#ifndef GUCEF_PATCHER_CPATCHSETPARSER_H
+#include "gucefPATCHER_CPatchSetParser.h"
+#define GUCEF_PATCHER_CPATCHSETPARSER_H
+#endif /* GUCEF_PATCHER_CPATCHSETPARSER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,6 +74,31 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetFileEngineEvents
     static const CORE::CEvent FileListProcessingAbortedEvent;
     
     static void RegisterEvents( void );
+    
+    typedef CPatchSetParser::TFileLocation TFileLocation;
+    typedef CPatchSetParser::TFileEntry TFileEntry;
+    typedef std::vector< TFileEntry > TFileList;
+    
+    /**
+     *  Storage structure for patch-set-file-engine events that provides access to status information
+     *  We use a single data type for all event data for all events listed in this event interface.
+     *  We cannot include references to data since that would cause problems in the very likely threading use-case
+     */
+    struct SPatchSetFileEngineEventDataStorage
+    {
+        TFileEntry currentFileEntry;         /**< current file that is being processed */
+        UInt32 currentRemoteLocationIndex;   /**< index of the current remote location of the current file that is being processed */
+        CString localRoot;                   /**< local root directory where the local copy will be placed/patched */
+        CString tempStorageRoot;             /**< local root directory used for temporary resource storage */
+        Float32 fileTransferProgress;        /**< progress of transferring the remote file in % */ 
+    };
+    typedef struct SPatchSetFileEngineEventDataStorage TPatchSetFileEngineEventDataStorage;
+    
+    /**
+     *  Cloneable wrapper for the event data.
+     *  See struct SPatchSetFileEngineEventDataStorage for information.     
+     */
+    typedef CORE::CTCloneableObj< TPatchSetFileEngineEventDataStorage > TPatchSetFileEngineEventData;
     
     protected:
     

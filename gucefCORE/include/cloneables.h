@@ -51,6 +51,11 @@
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
+#ifndef GUCEF_CORE_CLINKEDTRANSFERBUFFER_H
+#include "gucefCORE_CLinkedTransferBuffer.h"
+#define GUCEF_CORE_CLINKEDTRANSFERBUFFER_H
+#endif /* GUCEF_CORE_CLINKEDTRANSFERBUFFER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
