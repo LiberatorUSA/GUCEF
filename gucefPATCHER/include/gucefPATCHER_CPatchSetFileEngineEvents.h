@@ -90,7 +90,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetFileEngineEvents
         UInt32 currentRemoteLocationIndex;   /**< index of the current remote location of the current file that is being processed */
         CString localRoot;                   /**< local root directory where the local copy will be placed/patched */
         CString tempStorageRoot;             /**< local root directory used for temporary resource storage */
-        Float32 fileTransferProgress;        /**< progress of transferring the remote file in % */ 
+        UInt64 totalBytesReceived;           /**< total number of bytes received so far */
     };
     typedef struct SPatchSetFileEngineEventDataStorage TPatchSetFileEngineEventDataStorage;
     

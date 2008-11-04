@@ -121,7 +121,7 @@ CPatchSetFileEngine::CreateEventStatusObj( void ) const
         storage.currentRemoteLocationIndex = m_curFileLocIndex;
         storage.localRoot = m_localRoot;
         storage.tempStorageRoot = m_tempStorageRoot;
-        storage.fileTransferProgress = 0;
+        storage.totalBytesReceived = m_dataRetriever.GetTotalBytesReceived();
     }
     
     return new TPatchSetFileEngineEventData( storage );

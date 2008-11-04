@@ -175,6 +175,70 @@ StringToBool( const CString& str )
 
 /*-------------------------------------------------------------------------*/
 
+Int64
+StringToInt64( const CString& str )
+{GUCEF_TRACE;
+
+    Int64 value;
+    #ifdef GUCEF_MSWIN_BUILD
+    sscanf( str.C_String(), "%I64d", &value );
+    #else
+    sscanf( str.C_String(), "%d", &value );
+    #endif
+    
+    return value;        
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+Int64ToString( const Int64 value )
+{GUCEF_TRACE;
+
+    char intBuffer[ 17 ];
+    #ifdef GUCEF_MSWIN_BUILD
+    sprintf( intBuffer, "%I64d", value );
+    #else
+    sprintf( intBuffer, "%d", value );
+    #endif
+    
+    return CString( intBuffer );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt64
+StringToUInt64( const CString& str )
+{GUCEF_TRACE;
+
+    UInt64 value;
+    #ifdef GUCEF_MSWIN_BUILD
+    sscanf( str.C_String(), "%I64u", &value );
+    #else
+    sscanf( str.C_String(), "%u", &value );
+    #endif
+    
+    return value;        
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+UInt64ToString( const UInt64 value )
+{GUCEF_TRACE;
+
+    char intBuffer[ 17 ];
+    #ifdef GUCEF_MSWIN_BUILD
+    sprintf( intBuffer, "%I64u", value );
+    #else
+    sprintf( intBuffer, "%u", value );
+    #endif
+    
+    return CString( intBuffer );
+}
+
+/*-------------------------------------------------------------------------*/
+
 Int32
 StringToInt32( const CString& str )
 {GUCEF_TRACE;

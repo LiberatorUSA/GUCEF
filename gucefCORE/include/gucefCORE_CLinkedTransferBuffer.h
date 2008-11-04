@@ -65,6 +65,7 @@ class GUCEF_CORE_EXPORT_CPP CLinkedTransferBuffer : public CTLinkedCloneableObj<
     
     CLinkedTransferBuffer( const CDynamicBuffer* buffer             ,
                            const Float32 transferProgress = 0       ,
+                           const Int64 totalSize = -1               ,
                            const CICloneable* additionalData = NULL );
     
     CLinkedTransferBuffer( const CLinkedTransferBuffer& src );    
@@ -79,12 +80,18 @@ class GUCEF_CORE_EXPORT_CPP CLinkedTransferBuffer : public CTLinkedCloneableObj<
     
     Float32 GetTransferProgress( void ) const;
     
+    void SetTotalSize( const Int64 totalSize );
+    
+    // Returns the total size if known, -1 if unknown.
+    Int64 GetTotalSize( void ) const;
+    
     const CICloneable* GetAdditionalData( void ) const;
 
     private:
     
     Float32 m_transferProgress;
     CICloneable* m_additionalData;
+    Int64 m_totalSize;
 };
 
 /*-------------------------------------------------------------------------//

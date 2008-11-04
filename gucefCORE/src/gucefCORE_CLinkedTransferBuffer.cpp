@@ -48,7 +48,8 @@ namespace CORE {
 CLinkedTransferBuffer::CLinkedTransferBuffer( void )
     : CTLinkedCloneableObj< CDynamicBuffer >() ,
       m_transferProgress( 0 )                  ,
-      m_additionalData( NULL )         
+      m_additionalData( NULL )                 ,
+      m_totalSize( -1 )
 {GUCEF_TRACE;
 
 }
@@ -57,10 +58,12 @@ CLinkedTransferBuffer::CLinkedTransferBuffer( void )
 
 CLinkedTransferBuffer::CLinkedTransferBuffer( const CDynamicBuffer* buffer                   ,
                                               const Float32 transferProgress /* = 0 */       ,
+                                              const Int64 totalSize /* = -1 */               ,
                                               const CICloneable* additionalData /* = NULL */ )
     : CTLinkedCloneableObj< CDynamicBuffer >() ,
       m_transferProgress( transferProgress )   ,
-      m_additionalData( NULL )         
+      m_additionalData( NULL )                 ,
+      m_totalSize( totalSize )
 {GUCEF_TRACE;
 
     if ( NULL != additionalData )
@@ -74,7 +77,8 @@ CLinkedTransferBuffer::CLinkedTransferBuffer( const CDynamicBuffer* buffer      
 CLinkedTransferBuffer::CLinkedTransferBuffer( const CLinkedTransferBuffer& src )
     : CTLinkedCloneableObj< CDynamicBuffer >( src ) ,
       m_transferProgress( src.m_transferProgress )  ,
-      m_additionalData( NULL )
+      m_additionalData( NULL )                      ,
+      m_totalSize( src.m_totalSize )
 {GUCEF_TRACE;
 
     if ( NULL != src.m_additionalData )
@@ -99,6 +103,8 @@ CLinkedTransferBuffer::operator=( const CLinkedTransferBuffer& src )
     CTLinkedCloneableObj< CDynamicBuffer >::operator=( src );
     
     m_transferProgress = src.m_transferProgress;
+    m_totalSize = src.m_totalSize;
+    
     if ( NULL != src.m_additionalData )
     {
         m_additionalData = src.m_additionalData->Clone(); 
@@ -117,6 +123,24 @@ CLinkedTransferBuffer::Clone( void ) const
 {GUCEF_TRACE;
 
     return new CLinkedTransferBuffer( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLinkedTransferBuffer::SetTotalSize( const Int64 totalSize )
+{GUCEF_TRACE;
+
+    m_totalSize = totalSize;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+Int64
+CLinkedTransferBuffer::GetTotalSize( void ) const
+{GUCEF_TRACE;
+    
+    return m_totalSize;
 }
 
 /*-------------------------------------------------------------------------*/

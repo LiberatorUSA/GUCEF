@@ -105,6 +105,26 @@ StringToBool( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEFCORE_EXPORT_CPP UInt64
+StringToUInt64( const CString& str );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
+UInt64ToString( const UInt64 value );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP Int64
+StringToInt64( const CString& str );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
+Int64ToString( const Int64 value );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEFCORE_EXPORT_CPP Int32
 StringToInt32( const CString& str );
 

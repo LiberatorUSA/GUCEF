@@ -71,6 +71,15 @@ class GUCEFCORE_EXPORT_CPP CURLDataRetriever : public CForwardingNotifier ,
     void SetIOAccess( CIOAccess* ioAccess );
 
     CIOAccess* GetIOAccess( void ) const;  
+    
+    UInt64 GetTotalBytesReceived( void ) const;
+    
+    // Returns the total size of the resource in bytes if known
+    // returns -1 if unknown
+    Int64 GetTotalResourceBytes( void ) const;
+    
+    // returns the progress of the transfer as a %
+    Float32 GetTransferProgress( void ) const;
 
     protected:
     
@@ -88,6 +97,9 @@ class GUCEFCORE_EXPORT_CPP CURLDataRetriever : public CForwardingNotifier ,
     
     CIOAccess* m_ioAccess;
     CURL m_url;
+    UInt64 m_totalBytesReceived;
+    Int64 m_totalBytes;
+    bool m_allDataReceived;
 };
 
 /*-------------------------------------------------------------------------//

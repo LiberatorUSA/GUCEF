@@ -46,10 +46,13 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CURLDataRetriever::CURLDataRetriever( void )
-    : CForwardingNotifier() ,
-      CIURLEvents()         ,
-      m_ioAccess( NULL )    ,
-      m_url()
+    : CForwardingNotifier()      ,
+      CIURLEvents()              ,
+      m_ioAccess( NULL )         ,
+      m_url()                    ,
+      m_totalBytesReceived( 0 )  ,
+      m_totalBytes( -1 )         ,
+      m_allDataReceived( false )
 {GUCEF_TRACE;
 
     Initialize();
@@ -58,10 +61,13 @@ CURLDataRetriever::CURLDataRetriever( void )
 /*-------------------------------------------------------------------------*/
 
 CURLDataRetriever::CURLDataRetriever( CPulseGenerator& pulseGenerator )
-    : CForwardingNotifier()    ,
-      CIURLEvents()            ,
-      m_ioAccess( NULL )       ,
-      m_url( pulseGenerator )
+    : CForwardingNotifier()      ,
+      CIURLEvents()              ,
+      m_ioAccess( NULL )         ,
+      m_url( pulseGenerator )    ,
+      m_totalBytesReceived( 0 )  ,
+      m_totalBytes( -1 )         ,
+      m_allDataReceived( false )
 {GUCEF_TRACE;
 
     Initialize();
@@ -101,6 +107,15 @@ CURLDataRetriever::GetURL( void )
 
 /*-------------------------------------------------------------------------*/
 
+UInt64
+CURLDataRetriever::GetTotalBytesReceived( void ) const
+{GUCEF_TRACE;
+    
+    return m_totalBytesReceived;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CURLDataRetriever::SetIOAccess( CIOAccess* ioAccess )
 {GUCEF_TRACE;
@@ -119,6 +134,34 @@ CURLDataRetriever::GetIOAccess( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+Int64
+CURLDataRetriever::GetTotalResourceBytes( void ) const
+{GUCEF_TRACE;
+
+    return m_totalBytes;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Float32
+CURLDataRetriever::GetTransferProgress( void ) const
+{GUCEF_TRACE;
+
+    if ( m_totalBytes > 0 )
+    {
+        return (Float32) ( m_totalBytesReceived / (UInt64) m_totalBytes );
+    }
+    
+    // If we get here then we don't know the total size and will either have 0% or 100%
+    if ( m_allDataReceived )
+    {
+        return 100;
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CURLDataRetriever::OnNotify( CNotifier* notifier                 ,
                              const CEvent& eventid               ,
@@ -133,6 +176,9 @@ CURLDataRetriever::OnNotify( CNotifier* notifier                 ,
             if ( eventid == URLActivateEvent )
             {
                 // prepare to receive the data
+                m_totalBytesReceived = 0;
+                m_totalBytes = -1;
+                m_allDataReceived = false;
                 m_ioAccess->Open();
             }
             else
@@ -143,11 +189,18 @@ CURLDataRetriever::OnNotify( CNotifier* notifier                 ,
                     // append the received data to the IO media
                     const TURLDataRecievedEventData* data = static_cast< TURLDataRecievedEventData* >( eventdata );
                     m_ioAccess->Write( data->GetData().GetConstBufferPtr(), data->GetData().GetDataSize(), 1 );
+                    
+                    m_totalBytesReceived += data->GetData().GetDataSize();
                 }
             }
             else
+            if ( eventid == URLAllDataRecievedEvent )
+            {
+                m_allDataReceived = true;
+                m_ioAccess->Close();
+            }            
+            else
             if ( ( eventid == URLDeactivateEvent )         ||
-                 ( eventid == URLAllDataRecievedEvent )    ||
                  ( eventid == URLDataRetrievalErrorEvent )  )
             {
                 m_ioAccess->Close();
