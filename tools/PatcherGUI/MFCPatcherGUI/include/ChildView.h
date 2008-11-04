@@ -88,6 +88,9 @@ class CChildView : public CWnd                    ,
     
     void PrintOutput( const GUCEF::CORE::CString& output );
     
+    void PrintPatchSetFileEngineStatus( const GUCEF::CORE::CString& summary ,
+                                        GUCEF::CORE::CICloneable* eventData );
+    
     private:
 
     CListBox* m_listBox;

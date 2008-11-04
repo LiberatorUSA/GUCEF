@@ -287,6 +287,31 @@ CChildView::PrintOutput( const GUCEF::CORE::CString& output )
 /*-------------------------------------------------------------------------*/
 
 void
+CChildView::PrintPatchSetFileEngineStatus( const GUCEF::CORE::CString& summary ,
+                                           CORE::CICloneable* eventData        )
+{
+    PrintOutput( "Summary: " + summary );
+    
+    const GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventData* eventDataWrapper = static_cast< GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventData* >( eventData );
+    const GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventDataStorage& status = eventDataWrapper->GetData();
+    
+    PrintOutput( "Current file: " + status.currentFileEntry.name );
+    PrintOutput( "Total file size: " + GUCEF::CORE::UInt64ToString( status.currentFileEntry.sizeInBytes ) );
+    PrintOutput( "Total bytes received: " + GUCEF::CORE::UInt64ToString( status.totalBytesReceived ) );
+    PrintOutput( "Local root: " + status.localRoot );
+    PrintOutput( "Temp. storage root: " + status.tempStorageRoot );
+    
+    if ( status.currentFileEntry.fileLocations.size() > status.currentRemoteLocationIndex )
+    {
+        PrintOutput( "Remote source: " + status.currentFileEntry.fileLocations[ status.currentRemoteLocationIndex ].URL );
+    }
+            
+    PrintOutput( "-------------------------------------" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CChildView::OnNotify( CORE::CNotifier* notifier                 ,
                       const CORE::CEvent& eventid               ,
                       CORE::CICloneable* eventdata /* = NULL */ )
@@ -411,47 +436,47 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
         else        
         if ( eventid == PATCHER::CPatchEngine::FileRetrievalStartedEvent )
         {
-            PrintOutput( "Retrieving file..." );
+            PrintPatchSetFileEngineStatus( "Retrieving file...", eventdata );
         }                 
         else        
         if ( eventid == PATCHER::CPatchEngine::FileListProcessingStartedEvent )
         {
-            PrintOutput( "Started processing file list..." );
+            PrintPatchSetFileEngineStatus( "Started processing file list...", eventdata );
         }
         else        
         if ( eventid == PATCHER::CPatchEngine::FileListProcessingCompleteEvent )
         {
-            PrintOutput( "Completed file list processing" );
+            PrintPatchSetFileEngineStatus( "Completed file list processing", eventdata );
         }                 
         else
         if ( eventid == PATCHER::CPatchEngine::FileListProcessingAbortedEvent )
         {
-            PrintOutput( "Aborted file list processing" );
+            PrintPatchSetFileEngineStatus( "Aborted file list processing", eventdata );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::LocalFileIsOKEvent )
         {
-            PrintOutput( "Local file is Ok" );
+            PrintPatchSetFileEngineStatus( "Local file is Ok", eventdata );
         }         
         else
         if ( eventid == PATCHER::CPatchEngine::LocalFileSizeMismatchEvent )
         {
-            PrintOutput( "Local file size mismatch" );
+            PrintPatchSetFileEngineStatus( "Local file size mismatch", eventdata );
         }         
         else
         if ( eventid == PATCHER::CPatchEngine::LocalFileHashMismatchEvent )
         {
-            PrintOutput( "Local file hash mismatch" );
+            PrintPatchSetFileEngineStatus( "Local file hash mismatch", eventdata );
         }        
         else
         if ( eventid == PATCHER::CPatchEngine::LocalFileNotFoundEvent )
         {
-            PrintOutput( "Local file not found" );
+            PrintPatchSetFileEngineStatus( "Local file not found", eventdata );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::LocalFileReplacedEvent )
         {
-            PrintOutput( "Local file replaced" );
+            PrintPatchSetFileEngineStatus( "Local file replaced", eventdata );
         }
         else
         {
