@@ -60,12 +60,14 @@ using namespace GUCEF;
 //-------------------------------------------------------------------------*/
 
 CChildView::CChildView()
-    : m_listBox( NULL )          ,
-      m_transferProgress( NULL ) ,
-      m_totalProgress( NULL )    ,
-      m_patchEngine()            ,
-      m_gucefDriver( NULL )      ,
-      m_closeAppWhenDone( false )
+    : m_listBox( NULL )                  ,
+      m_transferProgress( NULL )         ,
+      m_totalProgress( NULL )            ,
+      m_patchEngine()                    ,
+      m_gucefDriver( NULL )              ,
+      m_closeAppWhenDone( false )        ,
+      m_patchSetDirEngineStatus( NULL )  ,
+      m_patchSetFileEngineStatus( NULL )
 {GUCEF_TRACE;
 
     // Subscribe to all patch engine events
@@ -240,12 +242,15 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
                                     CRect( 10, 10, 460, 20 ) ,
                                     this                     , 
                                     1                        );
+        m_transferProgress->SetRange( 0, 100 );
+                                            
         m_totalProgress = new CProgressCtrl();
         assert( m_totalProgress );
         m_totalProgress->Create( WS_CHILD|WS_VISIBLE      , 
                                  CRect( 10, 30, 460, 40 ) ,
                                  this                     , 
                                  1                        );
+        m_totalProgress->SetRange( 0, 100 );
         
         // Start the application from the GUCEF point of view
         CORE::CGUCEFApplication::Instance()->Main( AfxGetInstanceHandle() ,
@@ -287,26 +292,90 @@ CChildView::PrintOutput( const GUCEF::CORE::CString& output )
 /*-------------------------------------------------------------------------*/
 
 void
+CChildView::PrintPatchSetEngineStatus( const GUCEF::CORE::CString& summary ,
+                                       CORE::CICloneable* eventData        )
+{
+    const GUCEF::PATCHER::CPatchSetEngineEvents::TPatchSetEngineEventData* eventDataWrapper = static_cast< GUCEF::PATCHER::CPatchSetEngineEvents::TPatchSetEngineEventData* >( eventData );
+    const GUCEF::PATCHER::CPatchSetEngineEvents::TPatchSetEngineEventDataStorage& storage = eventDataWrapper->GetData();
+
+    PrintOutput( "Summary: " + summary );
+    PrintOutput( "Processed patch set data size: " + GUCEF::CORE::UInt64ToString( storage.processedDataSizeInBytes ) );
+    PrintOutput( "Total patch set data size: " + GUCEF::CORE::UInt64ToString( storage.totalDataSizeInBytes ) );
+    PrintOutput( "-------------------------------------" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CChildView::PrintPatchSetDirEngineStatus( const GUCEF::CORE::CString& summary )
+{
+    if ( NULL != m_patchSetDirEngineStatus )
+    {    
+        PrintOutput( "Summary: " + summary );
+        
+        PrintOutput( "Current Directory: " + m_patchSetDirEngineStatus->dirName );
+        PrintOutput( "Total directory size: " + GUCEF::CORE::UInt64ToString( m_patchSetDirEngineStatus->dirSizeInBytes ) );
+        PrintOutput( "Directory hash: " + m_patchSetDirEngineStatus->dirHash );
+        PrintOutput( "-------------------------------------" );
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CChildView::PrintPatchSetDirEngineStatus( const GUCEF::CORE::CString& summary ,
+                                          CORE::CICloneable* eventData        )
+{
+    const GUCEF::PATCHER::CPatchSetDirEngineEvents::TPatchSetDirEngineEventData* eventDataWrapper = static_cast< GUCEF::PATCHER::CPatchSetDirEngineEvents::TPatchSetDirEngineEventData* >( eventData );
+    const GUCEF::PATCHER::CPatchSetDirEngineEvents::TPatchSetDirEngineEventDataStorage& storage = eventDataWrapper->GetData();
+    
+    delete m_patchSetDirEngineStatus;
+    m_patchSetDirEngineStatus = new GUCEF::PATCHER::CPatchSetDirEngineEvents::TPatchSetDirEngineEventDataStorage;    
+    
+    m_patchSetDirEngineStatus->dirHash = storage.dirHash;
+    m_patchSetDirEngineStatus->dirName = storage.dirName;
+    m_patchSetDirEngineStatus->dirSizeInBytes = storage.dirSizeInBytes;
+    
+    PrintPatchSetDirEngineStatus( summary );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CChildView::PrintPatchSetFileEngineStatus( const GUCEF::CORE::CString& summary )
+{
+    if ( NULL != m_patchSetFileEngineStatus )
+    {    
+        PrintOutput( "Summary: " + summary );
+        
+        PrintOutput( "Current file: " + m_patchSetFileEngineStatus->currentFileEntry.name );
+        PrintOutput( "Total file size: " + GUCEF::CORE::UInt64ToString( m_patchSetFileEngineStatus->currentFileEntry.sizeInBytes ) );
+        PrintOutput( "Total bytes received: " + GUCEF::CORE::UInt64ToString( m_patchSetFileEngineStatus->totalBytesReceived ) );
+        PrintOutput( "Local root: " + m_patchSetFileEngineStatus->localRoot );
+        PrintOutput( "Temp. storage root: " + m_patchSetFileEngineStatus->tempStorageRoot );
+        
+        if ( m_patchSetFileEngineStatus->currentFileEntry.fileLocations.size() > m_patchSetFileEngineStatus->currentRemoteLocationIndex )
+        {
+            PrintOutput( "Remote source: " + m_patchSetFileEngineStatus->currentFileEntry.fileLocations[ m_patchSetFileEngineStatus->currentRemoteLocationIndex ].URL );
+        }
+        PrintOutput( "-------------------------------------" );
+        
+        m_transferProgress->SetPos( (int)( ( m_patchSetFileEngineStatus->totalBytesReceived / m_patchSetFileEngineStatus->currentFileEntry.sizeInBytes ) * 100.0 ) );
+    }                
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CChildView::PrintPatchSetFileEngineStatus( const GUCEF::CORE::CString& summary ,
                                            CORE::CICloneable* eventData        )
 {
-    PrintOutput( "Summary: " + summary );
-    
     const GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventData* eventDataWrapper = static_cast< GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventData* >( eventData );
-    const GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventDataStorage& status = eventDataWrapper->GetData();
+    delete m_patchSetFileEngineStatus;
+    m_patchSetFileEngineStatus = new GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventDataStorage;
+    *m_patchSetFileEngineStatus = eventDataWrapper->GetData();
     
-    PrintOutput( "Current file: " + status.currentFileEntry.name );
-    PrintOutput( "Total file size: " + GUCEF::CORE::UInt64ToString( status.currentFileEntry.sizeInBytes ) );
-    PrintOutput( "Total bytes received: " + GUCEF::CORE::UInt64ToString( status.totalBytesReceived ) );
-    PrintOutput( "Local root: " + status.localRoot );
-    PrintOutput( "Temp. storage root: " + status.tempStorageRoot );
-    
-    if ( status.currentFileEntry.fileLocations.size() > status.currentRemoteLocationIndex )
-    {
-        PrintOutput( "Remote source: " + status.currentFileEntry.fileLocations[ status.currentRemoteLocationIndex ].URL );
-    }
-            
-    PrintOutput( "-------------------------------------" );
+    PrintPatchSetFileEngineStatus( summary );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -408,10 +477,30 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
         {
             PrintOutput( "Completed patch set retrieval" );
         }  
-        else        
+        else 
+        if ( eventid == PATCHER::CPatchEngine::PatchSetProcessingStartedEvent )
+        {
+            PrintPatchSetEngineStatus( "Started processing of a patch set", eventdata );
+        }
+        else
+        if ( eventid == PATCHER::CPatchEngine::PatchSetProcessingProgressEvent )
+        {
+            PrintPatchSetEngineStatus( "Progress processing a patch set", eventdata );
+        }
+        else
+        if ( eventid == PATCHER::CPatchEngine::PatchSetProcessingAbortedEvent )
+        {
+            PrintPatchSetEngineStatus( "Aborted processing of a patch set", eventdata );
+        }
+        else 
+        if ( eventid == PATCHER::CPatchEngine::PatchSetProcessingFailedEvent )
+        {
+            PrintPatchSetEngineStatus( "Failed to process the complete patch set", eventdata );
+        }
+        else
         if ( eventid == PATCHER::CPatchEngine::PatchSetProcessingCompletedEvent )
         {
-            PrintOutput( "Completed processing the patch set" );
+            PrintPatchSetEngineStatus( "Completed processing a patch set", eventdata );
         }        
         else
         if ( eventid == PATCHER::CPatchEngine::PatchSetDecodingFailedEvent )
@@ -426,12 +515,17 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
         else
         if ( eventid == PATCHER::CPatchEngine::DirProcessingStartedEvent )
         {
-            PrintOutput( "Started processing directory..." );
+            PrintPatchSetDirEngineStatus( "Started processing directory...", eventdata );
         }
+        else
+        if ( eventid == PATCHER::CPatchEngine::DirProcessingCompletedEvent )
+        {
+            PrintPatchSetDirEngineStatus( "Completed processing directory", eventdata );
+        }        
         else
         if ( eventid == PATCHER::CPatchEngine::SubDirProcessingCompletedEvent )
         {
-            PrintOutput( "Completed processing sub directories" );
+            PrintPatchSetDirEngineStatus( "Completed processing sub directories", eventdata );
         }        
         else        
         if ( eventid == PATCHER::CPatchEngine::FileRetrievalStartedEvent )

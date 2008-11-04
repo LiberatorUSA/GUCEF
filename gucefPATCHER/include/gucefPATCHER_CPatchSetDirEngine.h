@@ -111,6 +111,8 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngine : public CORE::CForwardingNotif
     bool ProcessFilesInDir( void );
     void Initialize( void );
     
+    TPatchSetDirEngineEventData* CreateEventStatusObj( void ) const;
+    
     private:
         
     UInt32 m_curSubDirIndex;

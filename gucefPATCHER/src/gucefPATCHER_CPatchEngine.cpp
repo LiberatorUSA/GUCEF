@@ -152,6 +152,8 @@ CPatchEngine::Initialize( void )
     AddForwardingForEvent( PatchSetProcessingFailedEvent, EVENTORIGINFILTER_TRANSFER );
     
     // Forward events from the dir engines
+    AddForwardingForEvent( DirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( DirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( SubDirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
     

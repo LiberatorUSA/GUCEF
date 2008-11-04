@@ -72,7 +72,9 @@ CPatchSetEngine::CPatchSetEngine( void )
       m_dirIndex( 0 )                                 ,
       m_isActive( false )                             ,
       m_stopSignalGiven( false )                      ,
-      m_localRoot()
+      m_localRoot()                                   ,
+      m_processedDataSizeInBytes( 0 )                 ,
+      m_totalDataSizeInBytes( 0 )
       
 {GUCEF_TRACE;
 
@@ -91,7 +93,9 @@ CPatchSetEngine::CPatchSetEngine( CORE::CPulseGenerator& pulseGenerator )
       m_dirIndex( 0 )                                                 ,
       m_isActive( false )                                             ,
       m_stopSignalGiven( false )                                      ,
-      m_localRoot()
+      m_localRoot()                                                   ,
+      m_processedDataSizeInBytes( 0 )                                 ,
+      m_totalDataSizeInBytes( 0 )
       
 {GUCEF_TRACE;
 
@@ -107,6 +111,8 @@ CPatchSetEngine::Initialize( void )
     assert( m_patchSetDirEngine != NULL );
     
     // Forward events from the dir engines
+    AddForwardingForEvent( DirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( DirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( SubDirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
     
@@ -137,6 +143,18 @@ CPatchSetEngine::~CPatchSetEngine()
 
 /*-------------------------------------------------------------------------*/
 
+CPatchSetEngine::TPatchSetEngineEventData*
+CPatchSetEngine::CreateEventStatusObj( void ) const
+{GUCEF_TRACE;
+    
+    TPatchSetEngineEventDataStorage storage;
+    storage.processedDataSizeInBytes = m_processedDataSizeInBytes;
+    storage.totalDataSizeInBytes = m_totalDataSizeInBytes;
+    return new TPatchSetEngineEventData( storage );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPatchSetEngine::Start( const TPatchSet& patchSet            ,
                         const CORE::CString& localRoot       ,
@@ -154,8 +172,19 @@ CPatchSetEngine::Start( const TPatchSet& patchSet            ,
         if ( ( patchSet.size() > 0 )     &&
              ( localRoot.Length() > 0 )  )
         {
+            // Determine the total patchset size, this is easy since we only have to
+            // add the size of all root dirs since they already have the size of everything in it
+            m_totalDataSizeInBytes = 0;
+            TPatchSet::const_iterator i = patchSet.begin();
+            while ( i != patchSet.end() )
+            {
+                m_totalDataSizeInBytes += (*i).sizeInBytes;
+                ++i;
+            }
+
             m_isActive = true;
             m_stopSignalGiven = false;
+            m_processedDataSizeInBytes = 0;
             
             m_patchSet = patchSet;
 
@@ -163,7 +192,7 @@ CPatchSetEngine::Start( const TPatchSet& patchSet            ,
             m_tempStorageRoot = tempStorageRoot;
             m_dirIndex = 0;
             
-            NotifyObservers( PatchSetProcessingStartedEvent );            
+            NotifyObservers( PatchSetProcessingStartedEvent, CreateEventStatusObj() );            
             m_patchSetDirEngine->Start( m_patchSet[ m_dirIndex ] ,
                                         m_localRoot              ,
                                         m_tempStorageRoot        );
@@ -217,8 +246,6 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Completed processing the current directory" );
                 
-                NotifyObservers( SubDirProcessingCompletedEvent );
-                
                 // Move on to the next sub-dir (if any exists)
                 if ( m_dirIndex+1 < m_patchSet.size() )
                 {
@@ -226,7 +253,6 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
                     
                     ++m_dirIndex;
                     
-                    NotifyObservers( SubDirProcessingStartedEvent );
                     m_patchSetDirEngine->Start( m_patchSet[ m_dirIndex ] ,
                                                 m_localRoot              ,
                                                 m_tempStorageRoot        );
@@ -234,7 +260,7 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
                 else
                 {
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Completed processing the entire patch set" );
-                    NotifyObservers( PatchSetProcessingCompletedEvent );
+                    NotifyObservers( PatchSetProcessingCompletedEvent, CreateEventStatusObj() );
                 }
                 return;
             }
@@ -242,7 +268,7 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
             if ( eventid == DirProcessingAbortedEvent )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Directory processing has been aborted, aborting patch set processing" );                
-                NotifyObservers( PatchSetProcessingAbortedEvent );
+                NotifyObservers( PatchSetProcessingAbortedEvent, CreateEventStatusObj() );
                 return;
             }
         }
@@ -251,7 +277,7 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
     {
         m_stopSignalGiven = false;
         m_isActive = false;
-        NotifyObservers( PatchSetProcessingAbortedEvent );
+        NotifyObservers( PatchSetProcessingAbortedEvent, CreateEventStatusObj() );
     }
 }
 

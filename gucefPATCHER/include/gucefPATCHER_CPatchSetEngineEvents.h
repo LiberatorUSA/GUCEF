@@ -31,6 +31,11 @@
 #define GUCEF_CORE_CEVENT_H
 #endif /* GUCEF_CORE_CEVENT_H ? */
 
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
+#include "CTCloneableObj.h"
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+
 #include "gucefPATCHER_macros.h"
 
 /*-------------------------------------------------------------------------//
@@ -53,11 +58,30 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetEngineEvents
     public:
     
     static const CORE::CEvent PatchSetProcessingStartedEvent;
+    static const CORE::CEvent PatchSetProcessingProgressEvent;
     static const CORE::CEvent PatchSetProcessingCompletedEvent;
     static const CORE::CEvent PatchSetProcessingAbortedEvent;
     static const CORE::CEvent PatchSetProcessingFailedEvent;
     
     static void RegisterEvents( void );
+    
+    /**
+     *  Storage structure for patch-set-engine events that provides access to status information
+     *  We use a single data type for all event data for all events listed in this event interface.
+     *  We cannot include references to data since that would cause problems in the very likely threading use-case
+     */
+    struct SPatchSetEngineEventDataStorage
+    {
+        UInt64 totalDataSizeInBytes;
+        UInt64 processedDataSizeInBytes;
+    };
+    typedef struct SPatchSetEngineEventDataStorage TPatchSetEngineEventDataStorage;    
+
+    /**
+     *  Cloneable wrapper for the event data.
+     *  See struct TPatchSetEngineEventDataStorage for information.     
+     */
+    typedef CORE::CTCloneableObj< TPatchSetEngineEventDataStorage > TPatchSetEngineEventData;
     
     protected:
     

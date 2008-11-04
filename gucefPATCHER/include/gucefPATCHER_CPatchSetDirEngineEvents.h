@@ -71,6 +71,25 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngineEvents
     typedef CPatchSetParser::TFileLocation TFileLocation;
     typedef CPatchSetParser::TFileEntry TFileEntry;
     typedef CPatchSetParser::TDirEntry TDirEntry;
+
+    /**
+     *  Storage structure for patch-set-dir-engine events that provides access to status information
+     *  We use a single data type for all event data for all events listed in this event interface.
+     *  We cannot include references to data since that would cause problems in the very likely threading use-case
+     */
+    struct SPatchSetDirEngineEventDataStorage
+    {
+        CString dirName;
+        UInt64 dirSizeInBytes;
+        CString dirHash;
+    };
+    typedef struct SPatchSetDirEngineEventDataStorage TPatchSetDirEngineEventDataStorage;
+    
+    /**
+     *  Cloneable wrapper for the event data.
+     *  See struct SPatchSetDirEngineEventDataStorage for information.     
+     */
+    typedef CORE::CTCloneableObj< TPatchSetDirEngineEventDataStorage > TPatchSetDirEngineEventData;
     
     protected:
     

@@ -90,6 +90,16 @@ class CChildView : public CWnd                    ,
     
     void PrintPatchSetFileEngineStatus( const GUCEF::CORE::CString& summary ,
                                         GUCEF::CORE::CICloneable* eventData );
+
+    void PrintPatchSetFileEngineStatus( const GUCEF::CORE::CString& summary );
+
+    void PrintPatchSetDirEngineStatus( const GUCEF::CORE::CString& summary ,
+                                       GUCEF::CORE::CICloneable* eventData );
+
+    void PrintPatchSetDirEngineStatus( const GUCEF::CORE::CString& summary );
+
+    void PrintPatchSetEngineStatus( const GUCEF::CORE::CString& summary ,
+                                    GUCEF::CORE::CICloneable* eventData );
     
     private:
 
@@ -99,7 +109,10 @@ class CChildView : public CWnd                    ,
     bool m_closeAppWhenDone;
     
     GUCEF::PATCHER::CPatchEngine m_patchEngine;
-    CGUCEFAppWin32MFCDriver* m_gucefDriver;   
+    CGUCEFAppWin32MFCDriver* m_gucefDriver;
+    
+    GUCEF::PATCHER::CPatchSetDirEngineEvents::TPatchSetDirEngineEventDataStorage* m_patchSetDirEngineStatus;
+    GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventDataStorage* m_patchSetFileEngineStatus;
     
 };
 

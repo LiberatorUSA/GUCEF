@@ -129,6 +129,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetEngine : public CORE::CForwardingNotifier
     CPatchSetEngine( const CPatchSetEngine& src ); /**< not implemented */
     CPatchSetEngine& operator=( const CPatchSetEngine& src ); /**< not implemented */
     void Initialize( void );
+    TPatchSetEngineEventData* CreateEventStatusObj( void ) const;
     
     private:
     
@@ -137,8 +138,10 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetEngine : public CORE::CForwardingNotifier
     CPatchSetDirEngine* m_patchSetDirEngine;
     bool m_isActive;
     bool m_stopSignalGiven;
-    CORE::CString m_localRoot;
-    CORE::CString m_tempStorageRoot;
+    CString m_localRoot;
+    CString m_tempStorageRoot;
+    UInt64 m_processedDataSizeInBytes;
+    UInt64 m_totalDataSizeInBytes;
 };
 
 /*-------------------------------------------------------------------------//

@@ -129,6 +129,19 @@ CPatchSetDirEngine::~CPatchSetDirEngine()
 
 /*-------------------------------------------------------------------------*/
 
+CPatchSetDirEngine::TPatchSetDirEngineEventData*
+CPatchSetDirEngine::CreateEventStatusObj( void ) const
+{GUCEF_TRACE;
+    
+    TPatchSetDirEngineEventDataStorage storage;
+    storage.dirHash = m_dir.hash;
+    storage.dirSizeInBytes = m_dir.sizeInBytes;
+    storage.dirName = m_dir.name;
+    return new TPatchSetDirEngineEventData( storage );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPatchSetDirEngine::ProcessFilesInDir( void )
 {GUCEF_TRACE;
@@ -226,7 +239,7 @@ CPatchSetDirEngine::Start( const TDirEntry& startingDir         ,
             m_isActive = true;
             m_stopSignalGiven = false;
             
-            NotifyObservers( DirProcessingStartedEvent );
+            NotifyObservers( DirProcessingStartedEvent, CreateEventStatusObj() );
             
             // Copy and link params for later use
             m_dir = startingDir;
@@ -240,7 +253,7 @@ CPatchSetDirEngine::Start( const TDirEntry& startingDir         ,
             }
             else
             {
-                NotifyObservers( SubDirProcessingStartedEvent );
+                NotifyObservers( SubDirProcessingStartedEvent, CreateEventStatusObj() );
                 return ProcessCurSubDir();
             }
         }
@@ -307,7 +320,7 @@ CPatchSetDirEngine::ProcessNextSubDir( void )
     // everyone we are finished
     m_stopSignalGiven = false;
     m_isActive = false;
-    NotifyObservers( DirProcessingCompletedEvent );
+    NotifyObservers( DirProcessingCompletedEvent, CreateEventStatusObj() );
     
     return true;
 }
@@ -346,7 +359,7 @@ CPatchSetDirEngine::OnNotify( CORE::CNotifier* notifier                 ,
                     // everyone we are finished
                     m_stopSignalGiven = false;
                     m_isActive = false;
-                    NotifyObservers( DirProcessingCompletedEvent );
+                    NotifyObservers( DirProcessingCompletedEvent, CreateEventStatusObj() );
                 }
                 return;
             }
@@ -357,7 +370,7 @@ CPatchSetDirEngine::OnNotify( CORE::CNotifier* notifier                 ,
             if ( eventid == DirProcessingCompletedEvent )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetDirEngine(" + CORE::PointerToString( this ) + "): Finished processing the current sub-directory" );
-                NotifyObservers( SubDirProcessingCompletedEvent );
+                NotifyObservers( SubDirProcessingCompletedEvent, CreateEventStatusObj() );
                 
                 // Move on to the next sub-dir (if any exists)
                 ProcessNextSubDir();
@@ -369,7 +382,7 @@ CPatchSetDirEngine::OnNotify( CORE::CNotifier* notifier                 ,
     {
         m_stopSignalGiven = false;
         m_isActive = false;
-        NotifyObservers( DirProcessingAbortedEvent );
+        NotifyObservers( DirProcessingAbortedEvent, CreateEventStatusObj() );
     }
 }
 

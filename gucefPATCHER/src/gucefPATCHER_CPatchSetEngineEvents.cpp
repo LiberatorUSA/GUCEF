@@ -46,6 +46,7 @@ namespace PATCHER {
 //-------------------------------------------------------------------------*/
 
 const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingStartedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::PatchSetProcessingStartedEvent";
+const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingProgressEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::PatchSetProcessingProgressEvent";
 const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingCompletedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::PatchSetProcessingCompletedEvent";
 const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingAbortedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::PatchSetProcessingAbortedEvent";
 const CORE::CEvent CPatchSetEngineEvents::PatchSetProcessingFailedEvent = "GUCEF::PATCHER::CPatchSetEngineEvents::PatchSetProcessingFailedEvent";
@@ -76,6 +77,7 @@ CPatchSetEngineEvents::RegisterEvents( void )
 {GUCEF_TRACE;
 
     PatchSetProcessingStartedEvent.Initialize();
+    PatchSetProcessingProgressEvent.Initialize();
     PatchSetProcessingCompletedEvent.Initialize();
     PatchSetProcessingAbortedEvent.Initialize();
     PatchSetProcessingFailedEvent.Initialize();
