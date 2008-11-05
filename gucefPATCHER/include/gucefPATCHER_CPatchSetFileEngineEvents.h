@@ -67,6 +67,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetFileEngineEvents
     static const CORE::CEvent LocalFileNotFoundEvent;
     static const CORE::CEvent LocalFileReplacedEvent;
     static const CORE::CEvent FileRetrievalStartedEvent;
+    static const CORE::CEvent FileRetrievalProgressEvent;
     static const CORE::CEvent FileRetrievalCompleteEvent;
     static const CORE::CEvent FileRetrievalErrorEvent;
     static const CORE::CEvent FileStorageErrorEvent;
@@ -90,7 +91,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetFileEngineEvents
         UInt32 currentRemoteLocationIndex;   /**< index of the current remote location of the current file that is being processed */
         CString localRoot;                   /**< local root directory where the local copy will be placed/patched */
         CString tempStorageRoot;             /**< local root directory used for temporary resource storage */
-        UInt64 totalBytesReceived;           /**< total number of bytes received so far */
+        UInt64 totalBytesProcessed;          /**< total number of bytes processed so far */
     };
     typedef struct SPatchSetFileEngineEventDataStorage TPatchSetFileEngineEventDataStorage;
     

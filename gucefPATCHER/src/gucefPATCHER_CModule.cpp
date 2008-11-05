@@ -48,6 +48,11 @@
 #define GUCEF_PATCHER_CPATCHTASKCONSUMER_H
 #endif /* GUCEF_PATCHER_CPATCHTASKCONSUMER_H ? */
 
+#ifndef GUCEF_PATCHER_CPATCHMANAGER_H
+#include "gucefPATCHER_CPatchManager.h"
+#define GUCEF_PATCHER_CPATCHMANAGER_H
+#endif /* GUCEF_PATCHER_CPATCHMANAGER_H ? */
+
 #include "gucefPATCHER_CModule.h"
 
 /*-------------------------------------------------------------------------//
@@ -84,6 +89,7 @@ CModule::Load( void )
     CPatchSetFileEngineEvents::RegisterEvents();
     CPatchSetEngineEvents::RegisterEvents();
     CPatchListEngineEvents::RegisterEvents();
+    CPatchManager::RegisterEvents();
     
     // Make the task manager capable of handling patch tasks    
     CORE::CTaskManager::Instance()->RegisterTaskConsumerFactory( CPatchTaskConsumer::GetTypeString() ,

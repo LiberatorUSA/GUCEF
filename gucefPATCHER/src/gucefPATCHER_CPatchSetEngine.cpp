@@ -124,6 +124,7 @@ CPatchSetEngine::Initialize( void )
     AddForwardingForEvent( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( LocalFileReplacedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( FileRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileRetrievalProgressEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( FileRetrievalCompleteEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( FileRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( FileStorageErrorEvent, EVENTORIGINFILTER_TRANSFER );
@@ -242,6 +243,13 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
         
         if ( notifier == m_patchSetDirEngine )
         {
+            if ( ( eventid == CPatchSetFileEngineEvents::LocalFileIsOKEvent )    ||
+                 ( eventid == CPatchSetFileEngineEvents::LocalFileReplacedEvent ) )
+            {                
+                NotifyObservers( PatchSetProcessingProgressEvent, CreateEventStatusObj() );
+                return;
+            }
+            else            
             if ( eventid == DirProcessingCompletedEvent )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Completed processing the current directory" );

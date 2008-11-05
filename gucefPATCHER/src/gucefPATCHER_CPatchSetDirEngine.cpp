@@ -113,6 +113,7 @@ CPatchSetDirEngine::Initialize( void )
     AddForwardingForEvent( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( LocalFileReplacedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( FileRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileRetrievalProgressEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( FileRetrievalCompleteEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( FileRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( FileStorageErrorEvent, EVENTORIGINFILTER_TRANSFER );

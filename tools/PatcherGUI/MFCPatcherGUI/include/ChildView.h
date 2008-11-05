@@ -100,6 +100,9 @@ class CChildView : public CWnd                    ,
 
     void PrintPatchSetEngineStatus( const GUCEF::CORE::CString& summary ,
                                     GUCEF::CORE::CICloneable* eventData );
+
+    void PrintPatchListEngineStatus( const GUCEF::CORE::CString& summary ,
+                                     GUCEF::CORE::CICloneable* eventData );
     
     private:
 

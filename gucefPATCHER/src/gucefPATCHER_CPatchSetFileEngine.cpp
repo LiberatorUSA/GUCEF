@@ -66,17 +66,19 @@ namespace PATCHER {
 //-------------------------------------------------------------------------*/
 
 CPatchSetFileEngine::CPatchSetFileEngine( void )
-    : CObservingNotifier()        ,
-      CPatchSetFileEngineEvents() ,
-      m_isActive( false )         ,
-      m_stopSignalGiven( false )  ,
-      m_localRoot()               ,
-      m_tempStorageRoot()         ,
-      m_dataRetriever()           ,
-      m_fileAccess( NULL )        ,
-      m_fileList()                ,
-      m_curFileLocIndex( 0 )      ,
-      m_curFileIndex( 0 )
+    : CObservingNotifier()            ,
+      CPatchSetFileEngineEvents()     ,
+      m_isActive( false )             ,
+      m_stopSignalGiven( false )      ,
+      m_localRoot()                   ,
+      m_tempStorageRoot()             ,
+      m_dataRetriever()               ,
+      m_fileAccess( NULL )            ,
+      m_fileList()                    ,
+      m_curFileLocIndex( 0 )          ,
+      m_curFileIndex( 0 )             ,
+      m_totalBytesProcessed( 0 )      ,
+      m_currentFileReceivedBytes( 0 )
 {GUCEF_TRACE;
 
     SubscribeTo( &m_dataRetriever );
@@ -95,7 +97,9 @@ CPatchSetFileEngine::CPatchSetFileEngine( CORE::CPulseGenerator& pulseGenerator 
       m_fileAccess( NULL )               ,
       m_fileList()                       ,
       m_curFileLocIndex( 0 )             ,
-      m_curFileIndex( 0 )
+      m_curFileIndex( 0 )                ,
+      m_totalBytesProcessed( 0 )         ,
+      m_currentFileReceivedBytes( 0 )
 {GUCEF_TRACE;
 
     SubscribeTo( &m_dataRetriever );
@@ -121,7 +125,7 @@ CPatchSetFileEngine::CreateEventStatusObj( void ) const
         storage.currentRemoteLocationIndex = m_curFileLocIndex;
         storage.localRoot = m_localRoot;
         storage.tempStorageRoot = m_tempStorageRoot;
-        storage.totalBytesReceived = m_dataRetriever.GetTotalBytesReceived();
+        storage.totalBytesProcessed = m_totalBytesProcessed;
     }
     
     return new TPatchSetFileEngineEventData( storage );
@@ -147,6 +151,8 @@ CPatchSetFileEngine::Start( const TFileList& fileList            ,
         {
             m_isActive = true;
             m_stopSignalGiven = false;
+            m_totalBytesProcessed = 0;
+            m_currentFileReceivedBytes = 0;
             
             // Copy and link params for later use
             m_fileList = fileList;
@@ -223,6 +229,7 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): The old file has the same hash as the new file so it is already up-to-date" );
                             
                             // Woohoo, this file is already up-to-date
+                            m_totalBytesProcessed += curFile->sizeInBytes;
                             NotifyObservers( LocalFileIsOKEvent, CreateEventStatusObj() );
                             
                             // We can now proceed to the next file if there is any
@@ -456,6 +463,21 @@ CPatchSetFileEngine::OnNotify( CORE::CNotifier* notifier                 ,
                                             
         if ( notifier == &m_dataRetriever )
         {
+            if ( eventid == CORE::CURLDataRetriever::URLActivateEvent )
+            {
+                m_currentFileReceivedBytes = 0;
+                return;
+            }
+            else
+            if ( eventid == CORE::CURLDataRetriever::URLDataRecievedEvent )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Data segment received" );
+                m_totalBytesProcessed += ( m_totalBytesProcessed - m_currentFileReceivedBytes ) + m_dataRetriever.GetTotalBytesReceived();
+                m_currentFileReceivedBytes = m_dataRetriever.GetTotalBytesReceived();
+                NotifyObservers( FileRetrievalProgressEvent, CreateEventStatusObj() );
+                return;
+            }
+            else
             if ( eventid == CORE::CURLDataRetriever::URLAllDataRecievedEvent )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): All data for the file has been received" );

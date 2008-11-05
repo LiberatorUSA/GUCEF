@@ -292,6 +292,26 @@ CChildView::PrintOutput( const GUCEF::CORE::CString& output )
 /*-------------------------------------------------------------------------*/
 
 void
+CChildView::PrintPatchListEngineStatus( const GUCEF::CORE::CString& summary ,
+                                        GUCEF::CORE::CICloneable* eventData )
+{
+    const GUCEF::PATCHER::CPatchListEngineEvents::TPatchListEngineEventData* eventDataWrapper = static_cast< GUCEF::PATCHER::CPatchListEngineEvents::TPatchListEngineEventData* >( eventData );
+    const GUCEF::PATCHER::CPatchListEngineEvents::TPatchListEngineEventDataStorage& storage = eventDataWrapper->GetData();
+    
+    PrintOutput( "Summary: " + summary );
+    PrintOutput( "Processed patch list data size: " + GUCEF::CORE::UInt64ToString( storage.processedDataSizeInBytes ) );
+    PrintOutput( "Total patch list data size: " + GUCEF::CORE::UInt64ToString( storage.totalDataSizeInBytes ) );
+    PrintOutput( "-------------------------------------" );
+    
+    if ( storage.totalDataSizeInBytes > 0 )
+    {
+        m_totalProgress->SetPos( (int)( ( storage.processedDataSizeInBytes / storage.totalDataSizeInBytes ) * 100.0 ) );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CChildView::PrintPatchSetEngineStatus( const GUCEF::CORE::CString& summary ,
                                        CORE::CICloneable* eventData        )
 {
@@ -350,7 +370,7 @@ CChildView::PrintPatchSetFileEngineStatus( const GUCEF::CORE::CString& summary )
         
         PrintOutput( "Current file: " + m_patchSetFileEngineStatus->currentFileEntry.name );
         PrintOutput( "Total file size: " + GUCEF::CORE::UInt64ToString( m_patchSetFileEngineStatus->currentFileEntry.sizeInBytes ) );
-        PrintOutput( "Total bytes received: " + GUCEF::CORE::UInt64ToString( m_patchSetFileEngineStatus->totalBytesReceived ) );
+        PrintOutput( "Total bytes received: " + GUCEF::CORE::UInt64ToString( m_patchSetFileEngineStatus->totalBytesProcessed ) );
         PrintOutput( "Local root: " + m_patchSetFileEngineStatus->localRoot );
         PrintOutput( "Temp. storage root: " + m_patchSetFileEngineStatus->tempStorageRoot );
         
@@ -360,7 +380,7 @@ CChildView::PrintPatchSetFileEngineStatus( const GUCEF::CORE::CString& summary )
         }
         PrintOutput( "-------------------------------------" );
         
-        m_transferProgress->SetPos( (int)( ( m_patchSetFileEngineStatus->totalBytesReceived / m_patchSetFileEngineStatus->currentFileEntry.sizeInBytes ) * 100.0 ) );
+        m_transferProgress->SetPos( (int)( ( m_patchSetFileEngineStatus->totalBytesProcessed / m_patchSetFileEngineStatus->currentFileEntry.sizeInBytes ) * 100.0 ) );
     }                
 }
 
@@ -425,12 +445,12 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
         else
         if ( eventid == PATCHER::CPatchEngine::PatchListProcessingStartedEvent )
         {
-            PrintOutput( "Patch list processing started..." );
+            PrintPatchListEngineStatus( "Patch list processing started...", eventdata );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::PatchListProcessingCompletedEvent )
         {
-            PrintOutput( "Completed processing the patch list" );
+            PrintPatchListEngineStatus( "Completed processing the patch list", eventdata );
         }        
         else        
         if ( eventid == PATCHER::CPatchEngine::PatchListDataReceivedEvent )
@@ -453,59 +473,59 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
             PrintOutput( "Started processing patch set..." );
         }        
         else
-        if ( eventid == PATCHER::CPatchEngine::PatchSetRetrievalFailedEvent )
+        if ( eventid == PATCHER::CPatchListEngineEvents::PatchSetRetrievalFailedEvent )
         {
-            PrintOutput( "ERROR: Failed to retrieve the patch set" );
+            PrintPatchListEngineStatus( "ERROR: Failed to retrieve the patch set", eventdata );
         }
         else
-        if ( eventid == PATCHER::CPatchEngine::PatchSetDataRecievedEvent )
+        if ( eventid == PATCHER::CPatchListEngineEvents::PatchSetDataRecievedEvent )
         {
-            PrintOutput( "Received patch set data" );
+            PrintPatchListEngineStatus( "Received patch set data", eventdata );
         }
         else        
-        if ( eventid == PATCHER::CPatchEngine::PatchSetRetrievalAbortedEvent )
+        if ( eventid == PATCHER::CPatchListEngineEvents::PatchSetRetrievalAbortedEvent )
         {
-            PrintOutput( "Aborted patch set retrieval" );
+            PrintPatchListEngineStatus( "Aborted patch set retrieval", eventdata );
         }  
         else        
-        if ( eventid == PATCHER::CPatchEngine::PatchSetRetrievalStartedEvent )
+        if ( eventid == PATCHER::CPatchListEngineEvents::PatchSetRetrievalStartedEvent )
         {
-            PrintOutput( "Retrieving patch set..." );
+            PrintPatchListEngineStatus( "Retrieving patch set...", eventdata );
         }  
         else        
-        if ( eventid == PATCHER::CPatchEngine::PatchSetRetrievalCompletedEvent )
+        if ( eventid == PATCHER::CPatchListEngineEvents::PatchSetRetrievalCompletedEvent )
         {
-            PrintOutput( "Completed patch set retrieval" );
+            PrintPatchListEngineStatus( "Completed patch set retrieval", eventdata );
         }  
         else 
-        if ( eventid == PATCHER::CPatchEngine::PatchSetProcessingStartedEvent )
+        if ( eventid == PATCHER::CPatchSetEngineEvents::PatchSetProcessingStartedEvent )
         {
             PrintPatchSetEngineStatus( "Started processing of a patch set", eventdata );
         }
         else
-        if ( eventid == PATCHER::CPatchEngine::PatchSetProcessingProgressEvent )
+        if ( eventid == PATCHER::CPatchSetEngineEvents::PatchSetProcessingProgressEvent )
         {
             PrintPatchSetEngineStatus( "Progress processing a patch set", eventdata );
         }
         else
-        if ( eventid == PATCHER::CPatchEngine::PatchSetProcessingAbortedEvent )
+        if ( eventid == PATCHER::CPatchSetEngineEvents::PatchSetProcessingAbortedEvent )
         {
             PrintPatchSetEngineStatus( "Aborted processing of a patch set", eventdata );
         }
         else 
-        if ( eventid == PATCHER::CPatchEngine::PatchSetProcessingFailedEvent )
+        if ( eventid == PATCHER::CPatchSetEngineEvents::PatchSetProcessingFailedEvent )
         {
             PrintPatchSetEngineStatus( "Failed to process the complete patch set", eventdata );
         }
         else
-        if ( eventid == PATCHER::CPatchEngine::PatchSetProcessingCompletedEvent )
+        if ( eventid == PATCHER::CPatchSetEngineEvents::PatchSetProcessingCompletedEvent )
         {
             PrintPatchSetEngineStatus( "Completed processing a patch set", eventdata );
         }        
         else
-        if ( eventid == PATCHER::CPatchEngine::PatchSetDecodingFailedEvent )
+        if ( eventid == PATCHER::CPatchListEngineEvents::PatchSetDecodingFailedEvent )
         {
-            PrintOutput( "ERROR: Failed to decode a patch set" );
+            PrintPatchListEngineStatus( "ERROR: Failed to decode a patch set", eventdata );
         }
         else
         if ( eventid == PATCHER::CPatchEngine::PatchProcessAbortedEvent )
@@ -513,62 +533,62 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
             PrintOutput( "The patching process has been aborted" );
         }
         else
-        if ( eventid == PATCHER::CPatchEngine::DirProcessingStartedEvent )
+        if ( eventid == PATCHER::CPatchSetDirEngineEvents::DirProcessingStartedEvent )
         {
             PrintPatchSetDirEngineStatus( "Started processing directory...", eventdata );
         }
         else
-        if ( eventid == PATCHER::CPatchEngine::DirProcessingCompletedEvent )
+        if ( eventid == PATCHER::CPatchSetDirEngineEvents::DirProcessingCompletedEvent )
         {
             PrintPatchSetDirEngineStatus( "Completed processing directory", eventdata );
         }        
         else
-        if ( eventid == PATCHER::CPatchEngine::SubDirProcessingCompletedEvent )
+        if ( eventid == PATCHER::CPatchSetDirEngineEvents::SubDirProcessingCompletedEvent )
         {
             PrintPatchSetDirEngineStatus( "Completed processing sub directories", eventdata );
         }        
         else        
-        if ( eventid == PATCHER::CPatchEngine::FileRetrievalStartedEvent )
+        if ( eventid == PATCHER::CPatchSetFileEngineEvents::FileRetrievalStartedEvent )
         {
             PrintPatchSetFileEngineStatus( "Retrieving file...", eventdata );
         }                 
         else        
-        if ( eventid == PATCHER::CPatchEngine::FileListProcessingStartedEvent )
+        if ( eventid == PATCHER::CPatchSetFileEngineEvents::FileListProcessingStartedEvent )
         {
             PrintPatchSetFileEngineStatus( "Started processing file list...", eventdata );
         }
         else        
-        if ( eventid == PATCHER::CPatchEngine::FileListProcessingCompleteEvent )
+        if ( eventid == PATCHER::CPatchSetFileEngineEvents::FileListProcessingCompleteEvent )
         {
             PrintPatchSetFileEngineStatus( "Completed file list processing", eventdata );
         }                 
         else
-        if ( eventid == PATCHER::CPatchEngine::FileListProcessingAbortedEvent )
+        if ( eventid == PATCHER::CPatchSetFileEngineEvents::FileListProcessingAbortedEvent )
         {
             PrintPatchSetFileEngineStatus( "Aborted file list processing", eventdata );
         }
         else
-        if ( eventid == PATCHER::CPatchEngine::LocalFileIsOKEvent )
+        if ( eventid == PATCHER::CPatchSetFileEngineEvents::LocalFileIsOKEvent )
         {
             PrintPatchSetFileEngineStatus( "Local file is Ok", eventdata );
         }         
         else
-        if ( eventid == PATCHER::CPatchEngine::LocalFileSizeMismatchEvent )
+        if ( eventid == PATCHER::CPatchSetFileEngineEvents::LocalFileSizeMismatchEvent )
         {
             PrintPatchSetFileEngineStatus( "Local file size mismatch", eventdata );
         }         
         else
-        if ( eventid == PATCHER::CPatchEngine::LocalFileHashMismatchEvent )
+        if ( eventid == PATCHER::CPatchSetFileEngineEvents::LocalFileHashMismatchEvent )
         {
             PrintPatchSetFileEngineStatus( "Local file hash mismatch", eventdata );
         }        
         else
-        if ( eventid == PATCHER::CPatchEngine::LocalFileNotFoundEvent )
+        if ( eventid == PATCHER::CPatchSetFileEngineEvents::LocalFileNotFoundEvent )
         {
             PrintPatchSetFileEngineStatus( "Local file not found", eventdata );
         }
         else
-        if ( eventid == PATCHER::CPatchEngine::LocalFileReplacedEvent )
+        if ( eventid == PATCHER::CPatchSetFileEngineEvents::LocalFileReplacedEvent )
         {
             PrintPatchSetFileEngineStatus( "Local file replaced", eventdata );
         }

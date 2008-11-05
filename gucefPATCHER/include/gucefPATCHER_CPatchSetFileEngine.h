@@ -107,6 +107,8 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetFileEngine : public CORE::CObservingNotif
     bool m_stopSignalGiven;
     CORE::CString m_localRoot;
     CORE::CString m_tempStorageRoot;
+    UInt64 m_totalBytesProcessed;
+    UInt64 m_currentFileReceivedBytes;
 };
 
 /*-------------------------------------------------------------------------//

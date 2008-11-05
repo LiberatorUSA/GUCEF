@@ -52,6 +52,7 @@ const CORE::CEvent CPatchSetFileEngineEvents::LocalFileHashMismatchEvent = "GUCE
 const CORE::CEvent CPatchSetFileEngineEvents::LocalFileNotFoundEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::LocalFileNotFoundEvent";
 const CORE::CEvent CPatchSetFileEngineEvents::LocalFileReplacedEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::LocalFileReplacedEvent";
 const CORE::CEvent CPatchSetFileEngineEvents::FileRetrievalStartedEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::FileRetrievalStartedEvent";
+const CORE::CEvent CPatchSetFileEngineEvents::FileRetrievalProgressEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::FileRetrievalProgressEvent";
 const CORE::CEvent CPatchSetFileEngineEvents::FileRetrievalCompleteEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::FileRetrievalCompleteEvent";
 const CORE::CEvent CPatchSetFileEngineEvents::FileRetrievalErrorEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::FileRetrievalErrorEvent";
 const CORE::CEvent CPatchSetFileEngineEvents::FileStorageErrorEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::FileStorageErrorEvent";
@@ -90,6 +91,7 @@ CPatchSetFileEngineEvents::RegisterEvents( void )
     LocalFileNotFoundEvent.Initialize();
     LocalFileReplacedEvent.Initialize();
     FileRetrievalStartedEvent.Initialize();
+    FileRetrievalProgressEvent.Initialize();
     FileRetrievalCompleteEvent.Initialize();
     FileRetrievalErrorEvent.Initialize();
     FileStorageErrorEvent.Initialize();

@@ -135,6 +135,7 @@ CPatchEngine::Initialize( void )
   
     // Forward events from the list engine
     AddForwardingForEvent( PatchListProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PatchListProcessingProgressEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( PatchListProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( PatchListProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( PatchListProcessingFailedEvent, EVENTORIGINFILTER_TRANSFER );
@@ -147,6 +148,7 @@ CPatchEngine::Initialize( void )
 
     // Forward events from the set engine
     AddForwardingForEvent( PatchSetProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PatchSetProcessingProgressEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( PatchSetProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( PatchSetProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( PatchSetProcessingFailedEvent, EVENTORIGINFILTER_TRANSFER );

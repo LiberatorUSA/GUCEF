@@ -152,10 +152,14 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchListEngine : public CORE::CForwardingNotifi
     bool ProcessRecievedPatchSet( void );
     bool GetCurrentPatchSetLocation( TPatchSetLocation** location );
     void Initialize( void );
+    TPatchListEngineEventData* CreateEventStatusObj( void ) const;
     
     private:
     
+    typedef std::vector< TPatchSet >    TPatchSetVector;
+    
     TPatchList m_patchList;
+    TPatchSetVector m_patchSets;
     UInt32 m_setIndex;
     UInt32 m_setLocIndex;
     CPatchSetEngine* m_patchSetEngine;
@@ -163,8 +167,11 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchListEngine : public CORE::CForwardingNotifi
     CORE::CDynamicBuffer m_setDataBuffer;
     bool m_isActive;
     bool m_stopSignalGiven;
-    CORE::CString m_localRoot;
-    CORE::CString m_tempStorageRoot;
+    CString m_localRoot;
+    CString m_tempStorageRoot;
+    UInt64 m_totalDataSizeInBytes;
+    UInt64 m_processedDataSizeInBytes;
+    UInt64 m_processedCurrentSetDataSizeInBytes;
 };
 
 /*-------------------------------------------------------------------------//

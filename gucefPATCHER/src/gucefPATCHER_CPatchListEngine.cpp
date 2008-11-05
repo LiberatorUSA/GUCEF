@@ -80,7 +80,10 @@ CPatchListEngine::CPatchListEngine( CORE::CPulseGenerator& pulseGenerator )
       m_isActive( false )                                       ,
       m_stopSignalGiven( false )                                ,
       m_localRoot()                                             ,
-      m_tempStorageRoot()
+      m_tempStorageRoot()                                       ,
+      m_totalDataSizeInBytes( 0 )                               ,
+      m_processedDataSizeInBytes( 0 )                           ,
+      m_processedCurrentSetDataSizeInBytes( 0 )
       
 {GUCEF_TRACE;
 
@@ -104,7 +107,10 @@ CPatchListEngine::CPatchListEngine( void )
       m_isActive( false )                       ,
       m_stopSignalGiven( false )                ,
       m_localRoot()                             ,
-      m_tempStorageRoot()
+      m_tempStorageRoot()                       ,
+      m_totalDataSizeInBytes( 0 )               ,
+      m_processedDataSizeInBytes( 0 )           ,
+      m_processedCurrentSetDataSizeInBytes( 0 )
       
 {GUCEF_TRACE;
 
@@ -121,6 +127,7 @@ CPatchListEngine::Initialize( void )
   
     // Forward events from the set engine
     AddForwardingForEvent( PatchSetProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PatchSetProcessingProgressEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( PatchSetProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( PatchSetProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( PatchSetProcessingFailedEvent, EVENTORIGINFILTER_TRANSFER );
@@ -139,6 +146,7 @@ CPatchListEngine::Initialize( void )
     AddForwardingForEvent( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( LocalFileReplacedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( FileRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( FileRetrievalProgressEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( FileRetrievalCompleteEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( FileRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( FileStorageErrorEvent, EVENTORIGINFILTER_TRANSFER );
@@ -161,6 +169,18 @@ CPatchListEngine::~CPatchListEngine()
     
     delete m_patchSetEngine;
     m_patchSetEngine = NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPatchListEngine::TPatchListEngineEventData*
+CPatchListEngine::CreateEventStatusObj( void ) const
+{GUCEF_TRACE;
+
+    TPatchListEngineEventDataStorage storage;
+    storage.totalDataSizeInBytes = m_totalDataSizeInBytes;
+    storage.processedDataSizeInBytes = m_processedDataSizeInBytes;
+    return new TPatchListEngineEventData( storage );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -205,10 +225,10 @@ CPatchListEngine::ObtainCurrentPatchSet( void )
         m_url.SetURL( setLocation->URL );
         
         // Now we try and obtain it
-        NotifyObservers( PatchSetRetrievalStartedEvent );
+        NotifyObservers( PatchSetRetrievalStartedEvent, CreateEventStatusObj() );
         if ( !m_url.Activate() )
         {
-            NotifyObservers( PatchSetRetrievalFailedEvent );
+            NotifyObservers( PatchSetRetrievalFailedEvent, CreateEventStatusObj() );
             return false;
         }
         
@@ -239,7 +259,10 @@ CPatchListEngine::Start( const TPatchList& patchList          ,
         {
             m_isActive = true;
             m_stopSignalGiven = false;
-            
+            m_totalDataSizeInBytes = 0;
+            m_processedDataSizeInBytes = 0;
+            m_processedCurrentSetDataSizeInBytes = 0;
+                  
             m_patchList = patchList;
 
             m_localRoot = CORE::RelativePath( localRoot );
@@ -247,12 +270,12 @@ CPatchListEngine::Start( const TPatchList& patchList          ,
             m_setIndex = 0;
             m_setLocIndex = 0;
             
-            NotifyObservers( PatchListProcessingStartedEvent );
+            NotifyObservers( PatchListProcessingStartedEvent, CreateEventStatusObj() );
             
             // We must obtain the patch set before we can use it
             if ( !ObtainCurrentPatchSet() )
             {
-                NotifyObservers( PatchListProcessingFailedEvent );
+                NotifyObservers( PatchListProcessingFailedEvent, CreateEventStatusObj() );
                 return false;
             }
             
@@ -326,11 +349,48 @@ CPatchListEngine::ProcessRecievedPatchSet( void )
                     if ( setParser.ParsePatchSet( rootNode ,
                                                   patchSet ) )
                     {
-                        // Now that the raw data has been processed into a real patch list we can commence
-                        // with the patching process for this patch set
-                        return m_patchSetEngine->Start( patchSet          ,
-                                                        m_localRoot       ,
-                                                        m_tempStorageRoot );
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchListEngine: Parsed the patch set, adding it to the patch set cache" );
+                        
+                        // Add the newly received patch set to out patch set cache
+                        m_patchSets.push_back( patchSet );
+                        
+                        // Check if we have more patch set documents we have to retrieve
+                        if ( m_setIndex+1 < m_patchList.size() )
+                        {
+                            // Move to the next set entry and obtain the document for it
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchListEngine: Moving on to the retrieval of the next patch set document" );
+                            ++m_setIndex;
+                            m_setLocIndex = 0;                        
+                            return ObtainCurrentPatchSet();
+                        }
+                        else
+                        {
+                            // Now that all patch sets have been retrieved and turned into a real patch list we can commence
+                            // with the patching process for the first patch set. First we will calculate the total size of all data in all patch sets
+                            // this will allow us to give accurate progress reports.
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchListEngine: Retrieved all patch sets and processed the documents" );
+                            m_totalDataSizeInBytes = 0;
+                            TPatchSetVector::iterator i = m_patchSets.begin();
+                            while ( i != m_patchSets.end() )
+                            {
+                                // Add the size of all root directories for this patch set entry
+                                // That size includes the size of everything below it.
+                                TPatchSet& patchSetEntry = (*i);
+                                TPatchSet::iterator n = patchSetEntry.begin();
+                                while ( n != patchSetEntry.end() ) 
+                                {
+                                    m_totalDataSizeInBytes += (*n).sizeInBytes;
+                                    ++n;
+                                }
+                                ++i;
+                            }
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchListEngine: The total size of all data in the patch list is: " + CORE::UInt64ToString( m_totalDataSizeInBytes ) + " Bytes" );
+                                                        
+                            m_setIndex = 0;
+                            return m_patchSetEngine->Start( patchSet          ,
+                                                            m_localRoot       ,
+                                                            m_tempStorageRoot );
+                        }
                     }
                 }
             }
@@ -338,7 +398,7 @@ CPatchListEngine::ProcessRecievedPatchSet( void )
     }
     
     // If we get here then we failed to decode the raw data into a patch set
-    NotifyObservers( PatchSetDecodingFailedEvent );
+    NotifyObservers( PatchSetDecodingFailedEvent, CreateEventStatusObj() );
     return false;
 }
 
@@ -359,6 +419,18 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
         
         if ( notifier == m_patchSetEngine )
         {
+            if ( eventid == PatchSetProcessingProgressEvent )
+            {
+                const TPatchSetEngineEventData* eData = static_cast< TPatchSetEngineEventData* >( eventdata );
+                const TPatchSetEngineEventDataStorage& storage = eData->GetData();
+                
+                // Update the total bytes processed counter
+                m_processedDataSizeInBytes = ( m_processedDataSizeInBytes - m_processedCurrentSetDataSizeInBytes ) + storage.processedDataSizeInBytes;
+                m_processedCurrentSetDataSizeInBytes = storage.processedDataSizeInBytes;
+                
+                NotifyObservers( PatchListProcessingProgressEvent, CreateEventStatusObj() );
+            }
+            else
             if ( eventid == PatchSetProcessingCompletedEvent )
             {
                 // W00t,.. we finished processing an entire patch set
@@ -373,7 +445,7 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
                     // YIHA,.. We are finished
                     m_stopSignalGiven = false;
                     m_isActive = false;
-                    NotifyObservers( PatchListProcessingCompletedEvent );                    
+                    NotifyObservers( PatchListProcessingCompletedEvent, CreateEventStatusObj() );                    
                 }
             }
             else
@@ -382,7 +454,7 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
                 // Cascade failure
                 m_stopSignalGiven = false;
                 m_isActive = false;                
-                NotifyObservers( PatchListProcessingFailedEvent );
+                NotifyObservers( PatchListProcessingFailedEvent, CreateEventStatusObj() );
             }
         }
         else
@@ -399,13 +471,13 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
                 m_setDataBuffer.Append( buffer.GetConstBufferPtr() , 
                                         buffer.GetDataSize()       );
                                         
-                NotifyObservers( PatchSetDataRecievedEvent );
+                NotifyObservers( PatchSetDataRecievedEvent, CreateEventStatusObj() );
             }
             else
             if ( eventid == CORE::CURL::URLAllDataRecievedEvent )
             {
                 // The retrieval process of the patch set has been completed
-                NotifyObservers( PatchSetRetrievalCompletedEvent );
+                NotifyObservers( PatchSetRetrievalCompletedEvent, CreateEventStatusObj() );
                 
                 // Now we must process the received patch set
                 ProcessRecievedPatchSet();
@@ -418,7 +490,7 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
                 // Someone has called Stop() while we where busy with our data retrieval
                 m_stopSignalGiven = false;
                 m_isActive = false;
-                NotifyObservers( PatchListProcessingAbortedEvent );            
+                NotifyObservers( PatchListProcessingAbortedEvent, CreateEventStatusObj() );            
             }
             else
             if ( eventid == CORE::CURL::URLDataRetrievalErrorEvent )
@@ -433,8 +505,8 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
                     // switching to the next location (if there is one) didn't help.
                     m_stopSignalGiven = false;
                     m_isActive = false;
-                    NotifyObservers( PatchSetRetrievalFailedEvent );
-                    NotifyObservers( PatchListProcessingFailedEvent );
+                    NotifyObservers( PatchSetRetrievalFailedEvent, CreateEventStatusObj() );
+                    NotifyObservers( PatchListProcessingFailedEvent, CreateEventStatusObj() );
                 } 
             }
         }
@@ -445,7 +517,7 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
         {
             m_stopSignalGiven = false;
             m_isActive = false;
-            NotifyObservers( PatchListProcessingAbortedEvent );
+            NotifyObservers( PatchListProcessingAbortedEvent, CreateEventStatusObj() );
         }
     }
 }
