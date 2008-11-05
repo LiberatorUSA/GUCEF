@@ -146,25 +146,35 @@ CPatchSetFileEngine::Start( const TFileList& fileList            ,
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Starting inactive engine" );
         
         // parameter sanity check
-        if ( ( fileList.size() > 0 )   &&
-             ( localRoot.Length() > 0 ) )
+        if ( localRoot.Length() > 0 )
         {
-            m_isActive = true;
-            m_stopSignalGiven = false;
-            m_totalBytesProcessed = 0;
-            m_currentFileReceivedBytes = 0;
-            
-            // Copy and link params for later use
-            m_fileList = fileList;
-            m_localRoot = localRoot;
-            m_tempStorageRoot = tempStorageRoot;
-            m_curFileIndex = 0;
-            m_curFileLocIndex = 0;
-            
-            NotifyObservers( FileListProcessingStartedEvent, CreateEventStatusObj() );
-            
-            // Set things in motion
-            return ProcessCurrentFile();
+            // Check if we even need to do anything
+            if ( fileList.size() > 0 )
+            {
+                m_isActive = true;
+                m_stopSignalGiven = false;
+                m_totalBytesProcessed = 0;
+                m_currentFileReceivedBytes = 0;
+                
+                // Copy and link params for later use
+                m_fileList = fileList;
+                m_localRoot = localRoot;
+                m_tempStorageRoot = tempStorageRoot;
+                m_curFileIndex = 0;
+                m_curFileLocIndex = 0;
+                
+                NotifyObservers( FileListProcessingStartedEvent, CreateEventStatusObj() );
+                
+                // Set things in motion
+                return ProcessCurrentFile();
+            }
+            else
+            {
+                // There are no files to process,.. so we are done
+                NotifyObservers( FileListProcessingStartedEvent, CreateEventStatusObj() );
+                NotifyObservers( FileListProcessingCompleteEvent, CreateEventStatusObj() );
+                return true;
+            }
         }
     }
     

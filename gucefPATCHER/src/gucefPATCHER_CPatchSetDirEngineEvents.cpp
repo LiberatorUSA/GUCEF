@@ -46,6 +46,7 @@ namespace PATCHER {
 //-------------------------------------------------------------------------*/
 
 const CORE::CEvent CPatchSetDirEngineEvents::DirProcessingStartedEvent = "GUCEF::PATCHER::CPatchSetDirEngineEvents::DirProcessingStartedEvent";
+const CORE::CEvent CPatchSetDirEngineEvents::DirProcessingProgressEvent = "GUCEF::PATCHER::CPatchSetDirEngineEvents::DirProcessingProgressEvent";
 const CORE::CEvent CPatchSetDirEngineEvents::SubDirProcessingStartedEvent = "GUCEF::PATCHER::CPatchSetDirEngineEvents::SubDirProcessingStartedEvent";
 const CORE::CEvent CPatchSetDirEngineEvents::SubDirProcessingCompletedEvent = "GUCEF::PATCHER::CPatchSetDirEngineEvents::SubDirProcessingCompletedEvent";
 const CORE::CEvent CPatchSetDirEngineEvents::DirProcessingCompletedEvent = "GUCEF::PATCHER::CPatchSetDirEngineEvents::DirProcessingCompletedEvent";
@@ -77,6 +78,7 @@ CPatchSetDirEngineEvents::RegisterEvents( void )
 {GUCEF_TRACE;
 
     DirProcessingStartedEvent.Initialize();
+    DirProcessingProgressEvent.Initialize();
     SubDirProcessingStartedEvent.Initialize();
     SubDirProcessingCompletedEvent.Initialize();
     DirProcessingCompletedEvent.Initialize();

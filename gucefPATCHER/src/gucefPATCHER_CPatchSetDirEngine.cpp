@@ -61,17 +61,18 @@ namespace PATCHER {
 //-------------------------------------------------------------------------*/
 
 CPatchSetDirEngine::CPatchSetDirEngine( void )
-    : CORE::CForwardingNotifier() ,
-      CPatchSetFileEngineEvents() ,   
-      m_curSubDirIndex( 0 )       ,
-      m_subDirPatchEngine( NULL ) ,
-      m_filePatchEngine( NULL )   ,    
-      m_dir()                     ,
-      m_isActive( false )         ,
-      m_stopSignalGiven( false )  ,
-      m_localRoot()               ,
-      m_tempStorageRoot()         ,
-      m_pulseGenerator( NULL )
+    : CORE::CForwardingNotifier()     ,
+      CPatchSetFileEngineEvents()     ,   
+      m_curSubDirIndex( 0 )           ,
+      m_subDirPatchEngine( NULL )     ,
+      m_filePatchEngine( NULL )       ,
+      m_dir()                         ,
+      m_isActive( false )             ,
+      m_stopSignalGiven( false )      ,
+      m_localRoot()                   ,
+      m_tempStorageRoot()             ,
+      m_pulseGenerator( NULL )        ,
+      m_processedDataSizeInBytes( 0 )
 {GUCEF_TRACE;
 
     Initialize();
@@ -90,7 +91,8 @@ CPatchSetDirEngine::CPatchSetDirEngine( CORE::CPulseGenerator& pulseGenerator )
       m_stopSignalGiven( false )          ,
       m_localRoot()                       ,
       m_tempStorageRoot()                 ,
-      m_pulseGenerator( &pulseGenerator )
+      m_pulseGenerator( &pulseGenerator ) ,
+      m_processedDataSizeInBytes( 0 )
 {GUCEF_TRACE;
 
     Initialize();
@@ -136,8 +138,9 @@ CPatchSetDirEngine::CreateEventStatusObj( void ) const
     
     TPatchSetDirEngineEventDataStorage storage;
     storage.dirHash = m_dir.hash;
-    storage.dirSizeInBytes = m_dir.sizeInBytes;
     storage.dirName = m_dir.name;
+    storage.dirSizeInBytes = m_dir.sizeInBytes;
+    storage.processedDataSizeInBytes = m_processedDataSizeInBytes;
     return new TPatchSetDirEngineEventData( storage );
 }
 
@@ -184,6 +187,9 @@ CPatchSetDirEngine::ProcessCurSubDir( void )
     
     if ( m_curSubDirIndex < m_dir.subDirs.size() )
     {
+        // reset the sub-dir progress counter
+        m_processedSubDirDataSizeInBytes = 0;
+        
         NotifyObservers( SubDirProcessingStartedEvent );
         
         // We will be needing an engine for our sub-dir processing
@@ -247,6 +253,8 @@ CPatchSetDirEngine::Start( const TDirEntry& startingDir         ,
             m_localRoot = localRoot;
             m_tempStorageRoot = tempStorageRoot;
             m_curSubDirIndex = 0;
+            m_processedDataSizeInBytes = 0;
+            m_processedSubDirDataSizeInBytes = 0;
             
             if ( m_dir.files.size() > 0 )
             {
@@ -343,6 +351,19 @@ CPatchSetDirEngine::OnNotify( CORE::CNotifier* notifier                 ,
         
         if ( ( m_filePatchEngine != NULL ) && ( notifier == m_filePatchEngine ) )
         {
+            if ( ( eventid == CPatchSetFileEngineEvents::FileRetrievalProgressEvent ) ||
+                 ( eventid == CPatchSetFileEngineEvents::LocalFileIsOKEvent )         ||
+                 ( eventid == CPatchSetFileEngineEvents::LocalFileReplacedEvent )     )
+            {
+                // Data has been processed by the file engine and we should update the progress counter
+                const TPatchSetFileEngineEventData* eData = static_cast< TPatchSetFileEngineEventData* >( eventdata );
+                const TPatchSetFileEngineEventDataStorage& storage = eData->GetData();
+                
+                // Files get processed first so we can simply assign the value without worrying about sub-dirs
+                m_processedDataSizeInBytes = storage.totalBytesProcessed;
+                NotifyObservers( DirProcessingProgressEvent, CreateEventStatusObj() );
+            }
+            else
             if ( eventid == CPatchSetFileEngine::FileListProcessingCompleteEvent )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetDirEngine(" + CORE::PointerToString( this ) + "): Finished processing all files in the directory" );
@@ -368,7 +389,20 @@ CPatchSetDirEngine::OnNotify( CORE::CNotifier* notifier                 ,
         else
         if ( ( m_subDirPatchEngine != NULL ) && ( notifier == m_subDirPatchEngine ) )
         {
-            if ( eventid == DirProcessingCompletedEvent )
+            if ( eventid == DirProcessingProgressEvent )
+            {
+                // Data has been processed by the dir engine and we should update the progress counter
+                const TPatchSetDirEngineEventData* eData = static_cast< TPatchSetDirEngineEventData* >( eventdata );
+                const TPatchSetDirEngineEventDataStorage& storage = eData->GetData();
+                
+                m_processedDataSizeInBytes += ( m_processedDataSizeInBytes - m_processedSubDirDataSizeInBytes ) + storage.processedDataSizeInBytes;
+                m_processedSubDirDataSizeInBytes = storage.processedDataSizeInBytes;
+                
+                NotifyObservers( DirProcessingProgressEvent, CreateEventStatusObj() );
+                return;
+            }
+            else
+            if ( eventid == CPatchSetDirEngineEvents::DirProcessingCompletedEvent )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetDirEngine(" + CORE::PointerToString( this ) + "): Finished processing the current sub-directory" );
                 NotifyObservers( SubDirProcessingCompletedEvent, CreateEventStatusObj() );

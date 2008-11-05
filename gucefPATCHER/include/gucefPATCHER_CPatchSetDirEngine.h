@@ -125,6 +125,8 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngine : public CORE::CForwardingNotif
     CORE::CString m_localRoot;
     CORE::CString m_tempStorageRoot;
     CORE::CPulseGenerator* m_pulseGenerator;
+    UInt64 m_processedDataSizeInBytes;
+    UInt64 m_processedSubDirDataSizeInBytes;
 };
 
 /*-------------------------------------------------------------------------//

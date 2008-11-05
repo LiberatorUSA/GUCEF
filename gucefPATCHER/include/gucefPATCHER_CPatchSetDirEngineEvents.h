@@ -61,6 +61,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngineEvents
     public:
     
     static const CORE::CEvent DirProcessingStartedEvent;
+    static const CORE::CEvent DirProcessingProgressEvent;
     static const CORE::CEvent SubDirProcessingStartedEvent;
     static const CORE::CEvent SubDirProcessingCompletedEvent;
     static const CORE::CEvent DirProcessingCompletedEvent;
@@ -80,8 +81,9 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngineEvents
     struct SPatchSetDirEngineEventDataStorage
     {
         CString dirName;
-        UInt64 dirSizeInBytes;
         CString dirHash;
+        UInt64 dirSizeInBytes;           /**< total size in bytes of the directory and all it's sub-directories */
+        UInt64 processedDataSizeInBytes; /**< total amount of data processed for the directory and all it's sub-directories */
     };
     typedef struct SPatchSetDirEngineEventDataStorage TPatchSetDirEngineEventDataStorage;
     

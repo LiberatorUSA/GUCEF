@@ -142,6 +142,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetEngine : public CORE::CForwardingNotifier
     CString m_tempStorageRoot;
     UInt64 m_processedDataSizeInBytes;
     UInt64 m_totalDataSizeInBytes;
+    UInt64 m_currentSubDirProcessedDataSizeInBytes;
 };
 
 /*-------------------------------------------------------------------------//

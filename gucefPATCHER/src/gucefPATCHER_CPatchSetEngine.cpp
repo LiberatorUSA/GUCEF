@@ -186,6 +186,7 @@ CPatchSetEngine::Start( const TPatchSet& patchSet            ,
             m_isActive = true;
             m_stopSignalGiven = false;
             m_processedDataSizeInBytes = 0;
+            m_currentSubDirProcessedDataSizeInBytes = 0;
             
             m_patchSet = patchSet;
 
@@ -242,25 +243,40 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
                                              eventdata );
         
         if ( notifier == m_patchSetDirEngine )
-        {
-            if ( ( eventid == CPatchSetFileEngineEvents::LocalFileIsOKEvent )    ||
-                 ( eventid == CPatchSetFileEngineEvents::LocalFileReplacedEvent ) )
+        {         
+            if ( eventid == CPatchSetDirEngineEvents::DirProcessingProgressEvent )
             {                
+                const TPatchSetDirEngineEventData* eData = static_cast< TPatchSetDirEngineEventData* >( eventdata );
+                const TPatchSetDirEngineEventDataStorage& storage = eData->GetData();
+                
+                // Update the progress byte counter with the byte delta
+                m_processedDataSizeInBytes += ( m_processedDataSizeInBytes - m_currentSubDirProcessedDataSizeInBytes ) + storage.processedDataSizeInBytes;
+                m_currentSubDirProcessedDataSizeInBytes = storage.processedDataSizeInBytes;
+                
                 NotifyObservers( PatchSetProcessingProgressEvent, CreateEventStatusObj() );
                 return;
             }
             else            
-            if ( eventid == DirProcessingCompletedEvent )
+            if ( eventid == CPatchSetDirEngineEvents::DirProcessingCompletedEvent )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Completed processing the current directory" );
                 
+                const TPatchSetDirEngineEventData* eData = static_cast< TPatchSetDirEngineEventData* >( eventdata );
+                const TPatchSetDirEngineEventDataStorage& storage = eData->GetData();
+                
+                // Update the progress byte counter with the byte delta
+                m_processedDataSizeInBytes += ( m_processedDataSizeInBytes - m_currentSubDirProcessedDataSizeInBytes ) + storage.processedDataSizeInBytes;
+                m_currentSubDirProcessedDataSizeInBytes = 0;
+
                 // Move on to the next sub-dir (if any exists)
                 if ( m_dirIndex+1 < m_patchSet.size() )
                 {
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Moving on to the next directory in the patch set" );
                     
-                    ++m_dirIndex;
+                    // Since we are not finished yet make sure we propegate the data counter progress we calculated above to our observers
+                    NotifyObservers( PatchSetProcessingProgressEvent, CreateEventStatusObj() );
                     
+                    ++m_dirIndex;                    
                     m_patchSetDirEngine->Start( m_patchSet[ m_dirIndex ] ,
                                                 m_localRoot              ,
                                                 m_tempStorageRoot        );

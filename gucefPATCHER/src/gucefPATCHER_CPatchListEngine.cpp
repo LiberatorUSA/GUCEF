@@ -433,9 +433,19 @@ CPatchListEngine::OnNotify( CORE::CNotifier* notifier                 ,
             else
             if ( eventid == PatchSetProcessingCompletedEvent )
             {
+                const TPatchSetEngineEventData* eData = static_cast< TPatchSetEngineEventData* >( eventdata );
+                const TPatchSetEngineEventDataStorage& storage = eData->GetData();
+                
+                // Update the total bytes processed counter
+                m_processedDataSizeInBytes = ( m_processedDataSizeInBytes - m_processedCurrentSetDataSizeInBytes ) + storage.processedDataSizeInBytes;
+                m_processedCurrentSetDataSizeInBytes = 0;
+
                 // W00t,.. we finished processing an entire patch set
                 if ( m_setIndex+1 < m_patchList.size() )
                 {
+                    // Make sure we propergate the progress we calculated above since we are not done yet
+                    NotifyObservers( PatchListProcessingProgressEvent, CreateEventStatusObj() );
+                    
                     ++m_setIndex;
                     m_setLocIndex = 0;
                     ObtainCurrentPatchSet();

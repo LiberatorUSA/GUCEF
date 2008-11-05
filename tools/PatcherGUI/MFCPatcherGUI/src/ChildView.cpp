@@ -60,14 +60,12 @@ using namespace GUCEF;
 //-------------------------------------------------------------------------*/
 
 CChildView::CChildView()
-    : m_listBox( NULL )                  ,
-      m_transferProgress( NULL )         ,
-      m_totalProgress( NULL )            ,
-      m_patchEngine()                    ,
-      m_gucefDriver( NULL )              ,
-      m_closeAppWhenDone( false )        ,
-      m_patchSetDirEngineStatus( NULL )  ,
-      m_patchSetFileEngineStatus( NULL )
+    : m_listBox( NULL )            ,
+      m_transferProgress( NULL )   ,
+      m_totalProgress( NULL )      ,
+      m_patchEngine()              ,
+      m_gucefDriver( NULL )        ,
+      m_closeAppWhenDone( false )
 {GUCEF_TRACE;
 
     // Subscribe to all patch engine events
@@ -307,6 +305,10 @@ CChildView::PrintPatchListEngineStatus( const GUCEF::CORE::CString& summary ,
     {
         m_totalProgress->SetPos( (int)( ( storage.processedDataSizeInBytes / storage.totalDataSizeInBytes ) * 100.0 ) );
     }
+    else
+    {
+        m_totalProgress->SetPos( 0 );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -327,61 +329,18 @@ CChildView::PrintPatchSetEngineStatus( const GUCEF::CORE::CString& summary ,
 /*-------------------------------------------------------------------------*/
 
 void
-CChildView::PrintPatchSetDirEngineStatus( const GUCEF::CORE::CString& summary )
-{
-    if ( NULL != m_patchSetDirEngineStatus )
-    {    
-        PrintOutput( "Summary: " + summary );
-        
-        PrintOutput( "Current Directory: " + m_patchSetDirEngineStatus->dirName );
-        PrintOutput( "Total directory size: " + GUCEF::CORE::UInt64ToString( m_patchSetDirEngineStatus->dirSizeInBytes ) );
-        PrintOutput( "Directory hash: " + m_patchSetDirEngineStatus->dirHash );
-        PrintOutput( "-------------------------------------" );
-    }    
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
 CChildView::PrintPatchSetDirEngineStatus( const GUCEF::CORE::CString& summary ,
                                           CORE::CICloneable* eventData        )
 {
     const GUCEF::PATCHER::CPatchSetDirEngineEvents::TPatchSetDirEngineEventData* eventDataWrapper = static_cast< GUCEF::PATCHER::CPatchSetDirEngineEvents::TPatchSetDirEngineEventData* >( eventData );
     const GUCEF::PATCHER::CPatchSetDirEngineEvents::TPatchSetDirEngineEventDataStorage& storage = eventDataWrapper->GetData();
     
-    delete m_patchSetDirEngineStatus;
-    m_patchSetDirEngineStatus = new GUCEF::PATCHER::CPatchSetDirEngineEvents::TPatchSetDirEngineEventDataStorage;    
+    PrintOutput( "Summary: " + summary );
     
-    m_patchSetDirEngineStatus->dirHash = storage.dirHash;
-    m_patchSetDirEngineStatus->dirName = storage.dirName;
-    m_patchSetDirEngineStatus->dirSizeInBytes = storage.dirSizeInBytes;
-    
-    PrintPatchSetDirEngineStatus( summary );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CChildView::PrintPatchSetFileEngineStatus( const GUCEF::CORE::CString& summary )
-{
-    if ( NULL != m_patchSetFileEngineStatus )
-    {    
-        PrintOutput( "Summary: " + summary );
-        
-        PrintOutput( "Current file: " + m_patchSetFileEngineStatus->currentFileEntry.name );
-        PrintOutput( "Total file size: " + GUCEF::CORE::UInt64ToString( m_patchSetFileEngineStatus->currentFileEntry.sizeInBytes ) );
-        PrintOutput( "Total bytes received: " + GUCEF::CORE::UInt64ToString( m_patchSetFileEngineStatus->totalBytesProcessed ) );
-        PrintOutput( "Local root: " + m_patchSetFileEngineStatus->localRoot );
-        PrintOutput( "Temp. storage root: " + m_patchSetFileEngineStatus->tempStorageRoot );
-        
-        if ( m_patchSetFileEngineStatus->currentFileEntry.fileLocations.size() > m_patchSetFileEngineStatus->currentRemoteLocationIndex )
-        {
-            PrintOutput( "Remote source: " + m_patchSetFileEngineStatus->currentFileEntry.fileLocations[ m_patchSetFileEngineStatus->currentRemoteLocationIndex ].URL );
-        }
-        PrintOutput( "-------------------------------------" );
-        
-        m_transferProgress->SetPos( (int)( ( m_patchSetFileEngineStatus->totalBytesProcessed / m_patchSetFileEngineStatus->currentFileEntry.sizeInBytes ) * 100.0 ) );
-    }                
+    PrintOutput( "Current Directory: " + storage.dirName );
+    PrintOutput( "Total directory size: " + GUCEF::CORE::UInt64ToString( storage.dirSizeInBytes ) );
+    PrintOutput( "Directory hash: " + storage.dirHash );
+    PrintOutput( "-------------------------------------" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -391,11 +350,30 @@ CChildView::PrintPatchSetFileEngineStatus( const GUCEF::CORE::CString& summary ,
                                            CORE::CICloneable* eventData        )
 {
     const GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventData* eventDataWrapper = static_cast< GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventData* >( eventData );
-    delete m_patchSetFileEngineStatus;
-    m_patchSetFileEngineStatus = new GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventDataStorage;
-    *m_patchSetFileEngineStatus = eventDataWrapper->GetData();
+    const GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventDataStorage& storage = eventDataWrapper->GetData();
+
+    PrintOutput( "Summary: " + summary );
     
-    PrintPatchSetFileEngineStatus( summary );
+    PrintOutput( "Current file: " + storage.currentFileEntry.name );
+    PrintOutput( "Total file size: " + GUCEF::CORE::UInt64ToString( storage.currentFileEntry.sizeInBytes ) );
+    PrintOutput( "Total bytes processed: " + GUCEF::CORE::UInt64ToString( storage.totalBytesProcessed ) );
+    PrintOutput( "Local root: " + storage.localRoot );
+    PrintOutput( "Temp. storage root: " + storage.tempStorageRoot );
+    
+    if ( storage.currentFileEntry.fileLocations.size() > storage.currentRemoteLocationIndex )
+    {
+        PrintOutput( "Remote source: " + storage.currentFileEntry.fileLocations[ storage.currentRemoteLocationIndex ].URL );
+    }
+    PrintOutput( "-------------------------------------" );
+    
+    if ( storage.currentFileEntry.sizeInBytes > 0 )
+    {
+        m_transferProgress->SetPos( (int)( ( storage.totalBytesProcessed / storage.currentFileEntry.sizeInBytes ) * 100.0 ) );
+    }
+    else
+    {
+        m_transferProgress->SetPos( 0 );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
