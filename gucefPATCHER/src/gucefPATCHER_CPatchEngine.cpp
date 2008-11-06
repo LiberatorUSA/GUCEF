@@ -134,44 +134,44 @@ CPatchEngine::Initialize( void )
     RegisterEvents();    
   
     // Forward events from the list engine
-    AddForwardingForEvent( PatchListProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchListProcessingProgressEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchListProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchListProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchListProcessingFailedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetRetrievalCompletedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetRetrievalFailedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetRetrievalAbortedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetDecodingFailedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PatchListProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchListProcessingProgressEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchListProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchListProcessingAbortedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchListProcessingFailedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetDataRecievedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetRetrievalStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetRetrievalCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetRetrievalFailedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetRetrievalAbortedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetDecodingFailedEvent, EVENTORIGINFILTER_UNMODIFIED );
 
     // Forward events from the set engine
-    AddForwardingForEvent( PatchSetProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetProcessingProgressEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetProcessingFailedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PatchSetProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetProcessingProgressEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetProcessingAbortedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetProcessingFailedEvent, EVENTORIGINFILTER_UNMODIFIED );
     
     // Forward events from the dir engines
-    AddForwardingForEvent( DirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( DirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( SubDirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( DirProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( DirProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( SubDirProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
     
     // Forward file engine events
-    AddForwardingForEvent( FileListProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( LocalFileIsOKEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( LocalFileHashMismatchEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( LocalFileReplacedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( FileRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( FileRetrievalCompleteEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( FileRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( FileStorageErrorEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( FileListProcessingCompleteEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( FileListProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );    
+    AddForwardingForEvent( FileListProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( LocalFileIsOKEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( LocalFileHashMismatchEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( LocalFileNotFoundEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( LocalFileReplacedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileRetrievalStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileRetrievalCompleteEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileRetrievalErrorEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileStorageErrorEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileListProcessingCompleteEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileListProcessingAbortedEvent, EVENTORIGINFILTER_UNMODIFIED );    
     
     SubscribeTo( &m_url );
     

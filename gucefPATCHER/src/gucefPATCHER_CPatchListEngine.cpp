@@ -126,32 +126,32 @@ CPatchListEngine::Initialize( void )
     assert( m_patchSetEngine != NULL );
   
     // Forward events from the set engine
-    AddForwardingForEvent( PatchSetProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetProcessingProgressEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( PatchSetProcessingFailedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( PatchSetProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetProcessingProgressEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetProcessingAbortedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( PatchSetProcessingFailedEvent, EVENTORIGINFILTER_UNMODIFIED );
     
     // Forward events from the dir engines
-    AddForwardingForEvent( DirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( DirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( SubDirProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_TRANSFER );
+    AddForwardingForEvent( DirProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( DirProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( SubDirProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
     
     // Forward file engine events
-    AddForwardingForEvent( FileListProcessingStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( LocalFileIsOKEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( LocalFileHashMismatchEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( LocalFileNotFoundEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( LocalFileReplacedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( FileRetrievalStartedEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( FileRetrievalProgressEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( FileRetrievalCompleteEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( FileRetrievalErrorEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( FileStorageErrorEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( FileListProcessingCompleteEvent, EVENTORIGINFILTER_TRANSFER );
-    AddForwardingForEvent( FileListProcessingAbortedEvent, EVENTORIGINFILTER_TRANSFER );    
+    AddForwardingForEvent( FileListProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( LocalFileIsOKEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( LocalFileHashMismatchEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( LocalFileNotFoundEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( LocalFileReplacedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileRetrievalStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileRetrievalProgressEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileRetrievalCompleteEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileRetrievalErrorEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileStorageErrorEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileListProcessingCompleteEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileListProcessingAbortedEvent, EVENTORIGINFILTER_UNMODIFIED );    
 
     SubscribeTo( &m_url );
     

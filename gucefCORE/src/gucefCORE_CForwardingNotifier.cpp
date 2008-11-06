@@ -176,11 +176,6 @@ CForwardingNotifier::AddForwardingForEvent( const CEvent& eventid               
                                             CNotifier* notifier /* = NULL */      ,
                                             const bool enabled                    )
 {GUCEF_TRACE;
-
-    if ( notifier == NULL && originFilter != EVENTORIGINFILTER_TRANSFER )
-    {
-        return false;
-    }
     
     LockData();
     
@@ -307,26 +302,34 @@ CForwardingNotifier::OnNotify( CNotifier* notifier                 ,
         }
         else
         {
-            // Check if this is an event we always forward        
+            // Check if this is an event we always forward regardless of who the notifier is      
             TEventMap::iterator i = m_forwardAllList.find( eventid );
             if ( m_forwardAllList.end() != i )
             {
-                const TForwardState& state = (*i).second;
-                if ( state.filter == EVENTORIGINFILTER_TRANSFER )
+                const TForwardState& state = (*i).second;                
+                switch ( state.filter )
                 {
-                    GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CForwardingNotifier: Transfering event origin from " + notifier->GetClassTypeName() + "(" + PointerToString( notifier ) + ") to " + GetClassTypeName() + "(" + PointerToString( this ) + ") for event: " + eventid.GetName() );
-                    
-                    if ( !NotifyObservers( *this, eventid, eventdata ) ) return;
-                }
-                else
-                {
-                    // We should not be able to get here since you should not be able to define such a forwarding setting
-                    GUCEF_UNREACHABLE;
+                    case EVENTORIGINFILTER_UNMODIFIED :
+                    {
+                        if ( !NotifyObservers( *notifier, eventid, eventdata ) ) return;
+                        break;
+                    }
+                    case EVENTORIGINFILTER_TRANSFER :
+                    {
+                        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CForwardingNotifier: Transfering event origin from " + notifier->GetClassTypeName() + "(" + PointerToString( notifier ) + ") to " + GetClassTypeName() + "(" + PointerToString( this ) + ") for event: " + eventid.GetName() );
+                        if ( !NotifyObservers( *this, eventid, eventdata ) ) return;
+                        break;
+                    }
+                    default:
+                    {
+                        // We should not be able to get here since you should not be able to define such a forwarding setting
+                        GUCEF_UNREACHABLE;                        
+                    }                                                            
                 }
             }                
             else
             {
-                // Check for specific events we should forward
+                // Check for specific events we should forward for specific notifiers
                 TEventNotifierMap::iterator i( m_eventNotifierMap.find( eventid ) );
                 if ( i != m_eventNotifierMap.end() )
                 {
