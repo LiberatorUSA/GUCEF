@@ -555,6 +555,11 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
         PrintPatchSetFileEngineStatus( "Started processing file list...", eventdata );
     }
     else        
+    if ( eventid == PATCHER::CPatchSetFileEngineEvents::FileRetrievalProgressEvent )
+    {
+        PrintPatchSetFileEngineStatus( "Progress retrieving a file", eventdata );
+    }    
+    else        
     if ( eventid == PATCHER::CPatchSetFileEngineEvents::FileListProcessingCompleteEvent )
     {
         PrintPatchSetFileEngineStatus( "Completed file list processing", eventdata );
