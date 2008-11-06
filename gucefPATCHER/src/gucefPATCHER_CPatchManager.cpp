@@ -158,9 +158,15 @@ CPatchManager::PauseTask( const CString& taskName )
     if ( i != m_taskMap.end() )
     {
         UInt32 taskID = (*i).second->GetTaskID();
-        bool success = m_taskManager->PauseTask( taskID );
         UnlockData();
-        return success;
+        
+        if ( m_taskManager->PauseTask( taskID ) )
+        {
+            TPatchTaskPausedEventData eData( taskName );
+            NotifyObserversFromThread( PatchTaskPausedEvent, &eData );
+            return true;
+        }
+        return false;
     }
     UnlockData();
     return false;
@@ -177,9 +183,15 @@ CPatchManager::ResumeTask( const CString& taskName )
     if ( i != m_taskMap.end() )
     {
         UInt32 taskID = (*i).second->GetTaskID();
-        bool success = m_taskManager->ResumeTask( taskID );
         UnlockData();
-        return success;
+        
+        if ( m_taskManager->ResumeTask( taskID ) )
+        {
+            TPatchTaskResumedEventData eData( taskName );
+            NotifyObserversFromThread( PatchTaskResumedEvent, &eData );
+            return true;            
+        }
+        return false;
     }
     UnlockData();
     return false;
@@ -195,10 +207,16 @@ CPatchManager::RequestTaskToStop( const CString& taskName )
     TTaskMap::iterator i = m_taskMap.find( taskName );
     if ( i != m_taskMap.end() )
     {
-        UInt32 taskID = (*i).second->GetTaskID();
-        bool success = m_taskManager->PauseTask( taskID );
+        UInt32 taskID = (*i).second->GetTaskID();        
         UnlockData();
-        return success;
+        
+        if ( m_taskManager->RequestTaskToStop( taskID ) )
+        {
+            TPatchTaskStopRequestedEventData eData( taskName );
+            NotifyObserversFromThread( PatchTaskStopRequestedEvent, &eData );
+            return true;
+        }
+        return false;
     }
     UnlockData();
     return false;
@@ -229,6 +247,11 @@ CPatchManager::RegisterTask( CPatchTaskConsumer* task )
     LockData();
     m_taskMap[ task->GetTaskName() ] = task;
     UnlockData();
+    
+    SubscribeTo( &task->GetPatchEngine() );
+    
+    TPatchTaskStartedEventData eData( task->GetTaskName() );
+    NotifyObserversFromThread( PatchTaskStartedEvent, &eData );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -240,6 +263,11 @@ CPatchManager::UnregisterTask( CPatchTaskConsumer* task )
     LockData();
     m_taskMap.erase( task->GetTaskName() );
     UnlockData();
+    
+    UnsubscribeFrom( &task->GetPatchEngine() );
+    
+    TPatchTaskFinishedEventData eData( task->GetTaskName() );
+    NotifyObserversFromThread( PatchTaskFinishedEvent, &eData );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -251,6 +279,8 @@ CPatchManager::OnPumpedNotify( CORE::CNotifier* notifier    ,
 
 {GUCEF_TRACE;
                                
+    // @todo: finish
+    //PatchTaskEventReceivedEvent
 }
 
 /*-------------------------------------------------------------------------//

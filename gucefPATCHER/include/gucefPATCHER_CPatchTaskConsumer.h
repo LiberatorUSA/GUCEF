@@ -77,6 +77,8 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchTaskConsumer : public CORE::CTaskConsumer
     
     virtual bool ProcessTask( CORE::CICloneable* taskData );
     
+    CPatchEngine& GetPatchEngine( void );
+    
     private:
     
     CPatchTaskConsumer( const CPatchTaskConsumer& src  );

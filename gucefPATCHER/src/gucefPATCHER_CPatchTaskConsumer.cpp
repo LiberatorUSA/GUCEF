@@ -117,6 +117,15 @@ CPatchTaskConsumer::GetTaskName( void ) const
     return m_taskName;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CPatchEngine&
+CPatchTaskConsumer::GetPatchEngine( void )
+{GUCEF_TRACE;
+
+    return *m_patchEngine;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
