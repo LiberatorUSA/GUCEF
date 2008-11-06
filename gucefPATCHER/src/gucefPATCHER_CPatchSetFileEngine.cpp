@@ -482,7 +482,7 @@ CPatchSetFileEngine::OnNotify( CORE::CNotifier* notifier                 ,
             if ( eventid == CORE::CURLDataRetriever::URLDataRecievedEvent )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Data segment received" );
-                m_totalBytesProcessed += ( m_totalBytesProcessed - m_currentFileReceivedBytes ) + m_dataRetriever.GetTotalBytesReceived();
+                m_totalBytesProcessed = ( m_totalBytesProcessed - m_currentFileReceivedBytes ) + m_dataRetriever.GetTotalBytesReceived();
                 m_currentFileReceivedBytes = m_dataRetriever.GetTotalBytesReceived();
                 NotifyObservers( FileRetrievalProgressEvent, CreateEventStatusObj() );
                 return;

@@ -155,6 +155,7 @@ CPatchEngine::Initialize( void )
     
     // Forward events from the dir engines
     AddForwardingForEvent( DirProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( DirProcessingProgressEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( DirProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( SubDirProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
@@ -167,6 +168,7 @@ CPatchEngine::Initialize( void )
     AddForwardingForEvent( LocalFileNotFoundEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( LocalFileReplacedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( FileRetrievalStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
+    AddForwardingForEvent( FileRetrievalProgressEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( FileRetrievalCompleteEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( FileRetrievalErrorEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( FileStorageErrorEvent, EVENTORIGINFILTER_UNMODIFIED );

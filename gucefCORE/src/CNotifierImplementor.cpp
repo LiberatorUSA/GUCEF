@@ -660,9 +660,34 @@ CNotifierImplementor::NotifyObservers( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
+bool 
+CNotifierImplementor::NotifyObserversFrom( CNotifier& sender     ,
+                                           const CEvent& eventid ,
+                                           CICloneable* eventData )
+{GUCEF_TRACE;
+
+    return sender.NotifyObservers( eventid   ,
+                                   eventData );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
+                                       CICloneable* eventData )
+{GUCEF_TRACE;
+
+    return NotifyObservers( *m_ownerNotifier , 
+                            eventid          ,
+                            eventData        );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool 
+CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
+                                       const CEvent& eventid  ,
                                        CICloneable* eventData )
 {GUCEF_TRACE;
 
@@ -699,9 +724,9 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
                     // Perform the notification
                     // If an observer is subscribed to all events we never used specialized callbacks
                     // instead we always use the standard OnNotify()
-                    oPtr->OnNotify( m_ownerNotifier ,
-                                    eventid         ,
-                                    eventData       );
+                    oPtr->OnNotify( &sender   ,
+                                    eventid   ,
+                                    eventData );
                     
                     // Check if someone deleted our owner notifier
                     if ( m_ownerNotifier == NULL )
@@ -763,17 +788,17 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
                         {
                             GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + CORE::PointerToString( callback ) );
                             
-                            callback->OnNotify( m_ownerNotifier ,
-                                                eventid         ,
-                                                eventData       );
+                            callback->OnNotify( &sender   ,
+                                                eventid   ,
+                                                eventData );
                         }
                         else
                         {
                             GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + CORE::PointerToString( oPtr ) );
                             
-                            oPtr->OnNotify( m_ownerNotifier ,
-                                            eventid         ,
-                                            eventData       );
+                            oPtr->OnNotify( &sender   ,
+                                            eventid   ,
+                                            eventData );
                         }
                         notified = true;
                     }                    
@@ -785,9 +810,9 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
                     
                     GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + CORE::PointerToString( oPtr ) );
                     
-                    oPtr->OnNotify( m_ownerNotifier  ,
-                                    eventid          ,
-                                    eventData        );
+                    oPtr->OnNotify( &sender   ,
+                                    eventid   ,
+                                    eventData );
                     notified = true;
                 }
                 
@@ -842,7 +867,8 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
         // We will store the request until we are done
         TEventMailElement mail;
         mail.eventID = eventid;
-        mail.specificObserver = NULL; // <- no used in this context        
+        mail.specificObserver = NULL; // <- not used in this context        
+        mail.sender = &sender;
         if ( eventData != NULL )
         {
             mail.eventData = eventData->Clone();
@@ -932,11 +958,11 @@ CNotifierImplementor::ProcessEventMailbox( void )
         // for the next mail item
         if ( NULL == entry.specificObserver )
         {
-            NotifyObservers( entry.eventID, entry.eventData );            
+            NotifyObservers( *entry.sender, entry.eventID, entry.eventData );            
         }
         else
         {
-            NotifySpecificObserver( *entry.specificObserver, entry.eventID, entry.eventData );
+            NotifySpecificObserver( *entry.sender, *entry.specificObserver, entry.eventID, entry.eventData );
         }
         delete entry.eventData;
     }
@@ -955,34 +981,36 @@ CNotifierImplementor::ProcessMailbox( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CNotifierImplementor::NotifyObservers( CNotifier& sender                   ,
-                                       const CEvent& eventid               ,
-                                       CICloneable* eventData /* = NULL */ )
+CNotifierImplementor::NotifySpecificObserverFrom( CNotifier& sender           ,
+                                                  CObserver& specificObserver ,
+                                                  const CEvent& eventid       ,
+                                                  CICloneable* eventData      )
 {GUCEF_TRACE;
 
-    // Use the friend relationship to access the NotifyObservers()
-    // member function of the given notifier.
-    return sender.NotifyObservers( eventid, eventData );
-}                            
+    return sender.NotifySpecificObserver( specificObserver , 
+                                          eventid          ,
+                                          eventData        );
+}
+                                              
+/*-------------------------------------------------------------------------*/
+
+bool
+CNotifierImplementor::NotifySpecificObserver( CObserver& specificObserver ,
+                                              const CEvent& eventid       ,
+                                              CICloneable* eventData      )
+{GUCEF_TRACE;
+
+    return NotifySpecificObserver( *m_ownerNotifier , 
+                                   specificObserver , 
+                                   eventid          ,
+                                   eventData        );
+}
 
 /*-------------------------------------------------------------------------*/
 
 bool
 CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
                                               CObserver& specificObserver ,
-                                              const CEvent& eventid       ,
-                                              CICloneable* eventData      )
-{GUCEF_TRACE;
-
-    // Use the friend relationship to access the NotifySpecificObserver()
-    // member function of the given notifier.
-    return sender.NotifySpecificObserver( specificObserver, eventid, eventData );    
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CNotifierImplementor::NotifySpecificObserver( CObserver& specificObserver ,
                                               const CEvent& eventid       ,
                                               CICloneable* eventData      )
 {GUCEF_TRACE;
@@ -1013,9 +1041,9 @@ CNotifierImplementor::NotifySpecificObserver( CObserver& specificObserver ,
                 // Perform the notification
                 // If an observer is subscribed to all events we never used specialized callbacks
                 // instead we always use the standard OnNotify()
-                specificObserver.OnNotify( m_ownerNotifier ,
-                                           eventid         ,
-                                           eventData       );
+                specificObserver.OnNotify( &sender   ,
+                                           eventid   ,
+                                           eventData );
                 
                 // Check if someone deleted our owner notifier
                 if ( m_ownerNotifier == NULL )
@@ -1054,17 +1082,17 @@ CNotifierImplementor::NotifySpecificObserver( CObserver& specificObserver ,
             {
                 GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + CORE::PointerToString( callback ) );
                 
-                callback->OnNotify( m_ownerNotifier ,
-                                    eventid         ,
-                                    eventData       );
+                callback->OnNotify( &sender   ,
+                                    eventid   ,
+                                    eventData );
             }
             else
             {
                 GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + CORE::PointerToString( &specificObserver ) );
                 
-                specificObserver.OnNotify( m_ownerNotifier ,
-                                           eventid         ,
-                                           eventData       );
+                specificObserver.OnNotify( &sender   ,
+                                           eventid   ,
+                                           eventData );
             }
 
             // Check if someone deleted our owner notifier
@@ -1100,6 +1128,7 @@ CNotifierImplementor::NotifySpecificObserver( CObserver& specificObserver ,
         TEventMailElement mail;
         mail.eventID = eventid;
         mail.specificObserver = &specificObserver;
+        mail.sender = &sender;
         if ( eventData != NULL )
         {
             mail.eventData = eventData->Clone();

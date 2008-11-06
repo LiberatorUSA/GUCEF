@@ -249,8 +249,6 @@ CPatchSetDirEngine::Start( const TDirEntry& startingDir         ,
             m_isActive = true;
             m_stopSignalGiven = false;
             
-            NotifyObservers( DirProcessingStartedEvent, CreateEventStatusObj() );
-            
             // Copy and link params for later use
             m_dir = startingDir;
             m_localRoot = localRoot;
@@ -258,6 +256,8 @@ CPatchSetDirEngine::Start( const TDirEntry& startingDir         ,
             m_curSubDirIndex = 0;
             m_processedDataSizeInBytes = 0;
             m_processedSubDirDataSizeInBytes = 0;
+            
+            NotifyObservers( DirProcessingStartedEvent, CreateEventStatusObj() );
             
             if ( m_dir.files.size() > 0 )
             {
@@ -398,7 +398,7 @@ CPatchSetDirEngine::OnNotify( CORE::CNotifier* notifier                 ,
                 const TPatchSetDirEngineEventData* eData = static_cast< TPatchSetDirEngineEventData* >( eventdata );
                 const TPatchSetDirEngineEventDataStorage& storage = eData->GetData();
                 
-                m_processedDataSizeInBytes += ( m_processedDataSizeInBytes - m_processedSubDirDataSizeInBytes ) + storage.processedDataSizeInBytes;
+                m_processedDataSizeInBytes = ( m_processedDataSizeInBytes - m_processedSubDirDataSizeInBytes ) + storage.processedDataSizeInBytes;
                 m_processedSubDirDataSizeInBytes = storage.processedDataSizeInBytes;
                 
                 NotifyObservers( DirProcessingProgressEvent, CreateEventStatusObj() );

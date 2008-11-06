@@ -251,7 +251,7 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
                 const TPatchSetDirEngineEventDataStorage& storage = eData->GetData();
                 
                 // Update the progress byte counter with the byte delta
-                m_processedDataSizeInBytes += ( m_processedDataSizeInBytes - m_currentSubDirProcessedDataSizeInBytes ) + storage.processedDataSizeInBytes;
+                m_processedDataSizeInBytes = ( m_processedDataSizeInBytes - m_currentSubDirProcessedDataSizeInBytes ) + storage.processedDataSizeInBytes;
                 m_currentSubDirProcessedDataSizeInBytes = storage.processedDataSizeInBytes;
                 
                 NotifyObservers( PatchSetProcessingProgressEvent, CreateEventStatusObj() );
@@ -266,7 +266,7 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
                 const TPatchSetDirEngineEventDataStorage& storage = eData->GetData();
                 
                 // Update the progress byte counter with the byte delta
-                m_processedDataSizeInBytes += ( m_processedDataSizeInBytes - m_currentSubDirProcessedDataSizeInBytes ) + storage.processedDataSizeInBytes;
+                m_processedDataSizeInBytes = ( m_processedDataSizeInBytes - m_currentSubDirProcessedDataSizeInBytes ) + storage.processedDataSizeInBytes;
                 m_currentSubDirProcessedDataSizeInBytes = 0;
 
                 // Move on to the next sub-dir (if any exists)

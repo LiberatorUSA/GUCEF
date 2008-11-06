@@ -167,8 +167,8 @@ class CNotifierImplementor
 
     /**
      *  The same as NotifyObservers( CEvent, CICloneable )
-     *  except that this allows you to specify the sender yourself.
-     *  You will basically be faking an event emitted at the given sender.
+     *  except that the notifier reference passed in the notifications will be the
+     *  specified sender and not the sending notifier object.
      *  
      *  Use with great care !!!
      *  Use of this version should be an exception and not standard practice
@@ -177,6 +177,18 @@ class CNotifierImplementor
                           const CEvent& eventid         ,
                           CICloneable* eventData = NULL );
 
+    /**
+     *  The same as NotifyObservers( CEvent, CICloneable )
+     *  except that this allows you to specify the sender yourself.
+     *  You will basically be faking an event emitted at the given sender.
+     *  
+     *  Use with great care !!!
+     *  Use of this version should be an exception and not standard practice
+     */
+    bool NotifyObserversFrom( CNotifier& sender             ,
+                              const CEvent& eventid         ,
+                              CICloneable* eventData = NULL );    
+    
     /**
      *  The same as NotifyObservers( CEvent, CICloneable )
      *  except that this allows you to specify a specific observer the event 
@@ -207,6 +219,25 @@ class CNotifierImplementor
                                  CObserver& specificObserver   ,
                                  const CEvent& eventid         ,
                                  CICloneable* eventData = NULL );
+
+    /**
+     *  The same as NotifyObservers( CNotifier, CEvent, CICloneable )
+     *  except that this allows you to specify a specific observer the event 
+     *  will be sent to ignoring other observers who are subscribed to the 
+     *  same event. Note that a valid subscription for the given event is still
+     *  validated for notification to the given observer to be processed.
+     *
+     *  The *From variant of this function allows you to specify the sender yourself.
+     *  You will basically be faking an event emitted at the given sender.
+     *  
+     *  Use with great care !!!
+     *  Use of this version should be an exception and not standard practice
+     *  This is typically only needed for exotic internal use!
+     */
+    bool NotifySpecificObserverFrom( CNotifier& sender             ,
+                                     CObserver& specificObserver   ,
+                                     const CEvent& eventid         ,
+                                     CICloneable* eventData = NULL );
 
     /**
      *  Handler for observers that are deleted without having been
@@ -256,6 +287,7 @@ class CNotifierImplementor
 
     struct SEventMailElement
     {
+        CNotifier* sender;
         CEvent eventID;
         CICloneable* eventData;
         CObserver* specificObserver;
