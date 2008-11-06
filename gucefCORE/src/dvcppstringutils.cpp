@@ -195,7 +195,7 @@ CString
 Int64ToString( const Int64 value )
 {GUCEF_TRACE;
 
-    char intBuffer[ 17 ];
+    char intBuffer[ 21 ];
     #ifdef GUCEF_MSWIN_BUILD
     sprintf( intBuffer, "%I64d", value );
     #else
@@ -227,7 +227,7 @@ CString
 UInt64ToString( const UInt64 value )
 {GUCEF_TRACE;
 
-    char intBuffer[ 17 ];
+    char intBuffer[ 21 ];
     #ifdef GUCEF_MSWIN_BUILD
     sprintf( intBuffer, "%I64u", value );
     #else
