@@ -1,5 +1,5 @@
 /*
- *  PatchSetGenerator: Tool shell using the gucefPATCHER module
+ *  FileReplacer: Tool for replacing files
  *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -37,6 +37,11 @@
 #include "CValueList.h"
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
+
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

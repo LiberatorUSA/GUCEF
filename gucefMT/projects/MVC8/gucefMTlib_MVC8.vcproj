@@ -126,7 +126,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\bin\Release_MVC8\gucefMTlib.lib"
+				OutputFile="..\..\bin\Release_MVC8\gucefMTlib_MVC8.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
