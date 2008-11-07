@@ -108,9 +108,10 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetEngine : public CORE::CForwardingNotifier
     
     virtual ~CPatchSetEngine();
     
-    bool Start( const TPatchSet& pathSet             ,
-                const CORE::CString& localRoot       ,
-                const CORE::CString& tempStorageRoot );
+    bool Start( const TPatchSet& pathSet                ,
+                const CORE::CString& localRoot          ,
+                const CORE::CString& tempStorageRoot    ,
+                const bool stopOnFileReplacementFailure );
     
     void Stop( void );
     
@@ -143,6 +144,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetEngine : public CORE::CForwardingNotifier
     UInt64 m_processedDataSizeInBytes;
     UInt64 m_totalDataSizeInBytes;
     UInt64 m_currentSubDirProcessedDataSizeInBytes;
+    bool m_stopOnFileReplacementFailure;
 };
 
 /*-------------------------------------------------------------------------//

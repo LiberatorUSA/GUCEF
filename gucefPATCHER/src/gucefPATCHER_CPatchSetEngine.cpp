@@ -74,7 +74,8 @@ CPatchSetEngine::CPatchSetEngine( void )
       m_stopSignalGiven( false )                      ,
       m_localRoot()                                   ,
       m_processedDataSizeInBytes( 0 )                 ,
-      m_totalDataSizeInBytes( 0 )
+      m_totalDataSizeInBytes( 0 )                     ,
+      m_stopOnFileReplacementFailure( false )
       
 {GUCEF_TRACE;
 
@@ -95,7 +96,8 @@ CPatchSetEngine::CPatchSetEngine( CORE::CPulseGenerator& pulseGenerator )
       m_stopSignalGiven( false )                                      ,
       m_localRoot()                                                   ,
       m_processedDataSizeInBytes( 0 )                                 ,
-      m_totalDataSizeInBytes( 0 )
+      m_totalDataSizeInBytes( 0 )                                     ,
+      m_stopOnFileReplacementFailure( false )
       
 {GUCEF_TRACE;
 
@@ -158,9 +160,10 @@ CPatchSetEngine::CreateEventStatusObj( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CPatchSetEngine::Start( const TPatchSet& patchSet            ,
-                        const CORE::CString& localRoot       ,
-                        const CORE::CString& tempStorageRoot )
+CPatchSetEngine::Start( const TPatchSet& patchSet               ,
+                        const CORE::CString& localRoot          ,
+                        const CORE::CString& tempStorageRoot    ,
+                        const bool stopOnFileReplacementFailure )
 {GUCEF_TRACE;
 
     assert( &patchSet != NULL );
@@ -188,6 +191,7 @@ CPatchSetEngine::Start( const TPatchSet& patchSet            ,
             m_stopSignalGiven = false;
             m_processedDataSizeInBytes = 0;
             m_currentSubDirProcessedDataSizeInBytes = 0;
+            m_stopOnFileReplacementFailure = stopOnFileReplacementFailure;
             
             m_patchSet = patchSet;
 
@@ -196,9 +200,10 @@ CPatchSetEngine::Start( const TPatchSet& patchSet            ,
             m_dirIndex = 0;
             
             NotifyObservers( PatchSetProcessingStartedEvent, CreateEventStatusObj() );            
-            m_patchSetDirEngine->Start( m_patchSet[ m_dirIndex ] ,
-                                        m_localRoot              ,
-                                        m_tempStorageRoot        );
+            m_patchSetDirEngine->Start( m_patchSet[ m_dirIndex ]     ,
+                                        m_localRoot                  ,
+                                        m_tempStorageRoot            ,
+                                        stopOnFileReplacementFailure );
             
             return true;
         }
@@ -278,9 +283,10 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
                     NotifyObservers( PatchSetProcessingProgressEvent, CreateEventStatusObj() );
                     
                     ++m_dirIndex;                    
-                    m_patchSetDirEngine->Start( m_patchSet[ m_dirIndex ] ,
-                                                m_localRoot              ,
-                                                m_tempStorageRoot        );
+                    m_patchSetDirEngine->Start( m_patchSet[ m_dirIndex ]       ,
+                                                m_localRoot                    ,
+                                                m_tempStorageRoot              ,
+                                                m_stopOnFileReplacementFailure );
                 }
                 else
                 {

@@ -83,7 +83,8 @@ CPatchListEngine::CPatchListEngine( CORE::CPulseGenerator& pulseGenerator )
       m_tempStorageRoot()                                       ,
       m_totalDataSizeInBytes( 0 )                               ,
       m_processedDataSizeInBytes( 0 )                           ,
-      m_processedCurrentSetDataSizeInBytes( 0 )
+      m_processedCurrentSetDataSizeInBytes( 0 )                 ,
+      m_stopOnFileReplacementFailure( false )
       
 {GUCEF_TRACE;
 
@@ -110,7 +111,8 @@ CPatchListEngine::CPatchListEngine( void )
       m_tempStorageRoot()                       ,
       m_totalDataSizeInBytes( 0 )               ,
       m_processedDataSizeInBytes( 0 )           ,
-      m_processedCurrentSetDataSizeInBytes( 0 )
+      m_processedCurrentSetDataSizeInBytes( 0 ) ,
+      m_stopOnFileReplacementFailure( false )
       
 {GUCEF_TRACE;
 
@@ -241,9 +243,10 @@ CPatchListEngine::ObtainCurrentPatchSet( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPatchListEngine::Start( const TPatchList& patchList          ,
-                         const CORE::CString& localRoot       ,
-                         const CORE::CString& tempStorageRoot )
+CPatchListEngine::Start( const TPatchList& patchList             ,
+                         const CORE::CString& localRoot          ,
+                         const CORE::CString& tempStorageRoot    ,
+                         const bool stopOnFileReplacementFailure )
 {GUCEF_TRACE;
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchListEngine: Starting,.." );
@@ -262,6 +265,7 @@ CPatchListEngine::Start( const TPatchList& patchList          ,
             m_totalDataSizeInBytes = 0;
             m_processedDataSizeInBytes = 0;
             m_processedCurrentSetDataSizeInBytes = 0;
+            m_stopOnFileReplacementFailure = stopOnFileReplacementFailure;
                   
             m_patchList = patchList;
 
@@ -387,9 +391,10 @@ CPatchListEngine::ProcessRecievedPatchSet( void )
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchListEngine: The total size of all data in the patch list is: " + CORE::UInt64ToString( m_totalDataSizeInBytes ) + " Bytes" );
                                                         
                             m_setIndex = 0;
-                            return m_patchSetEngine->Start( patchSet          ,
-                                                            m_localRoot       ,
-                                                            m_tempStorageRoot );
+                            return m_patchSetEngine->Start( patchSet                       ,
+                                                            m_localRoot                    ,
+                                                            m_tempStorageRoot              ,
+                                                            m_stopOnFileReplacementFailure );
                         }
                     }
                 }

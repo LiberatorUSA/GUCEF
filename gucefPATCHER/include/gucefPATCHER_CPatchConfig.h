@@ -115,6 +115,10 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchConfig : public CORE::CIConfigurable
     
     const CORE::CString& GetPatchListCodec( void ) const;
     
+    void SetStopOnFileReplacementFailure( const bool stopOnFailure );
+    
+    bool GetStopOnFileReplacementFailure( void ) const;
+    
     private:
     
     CORE::CString m_patchListURL;
@@ -123,6 +127,7 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchConfig : public CORE::CIConfigurable
     CORE::CString m_tempStorageRoot;
     std::set< CORE::CEvent > m_startTriggers;
     std::set< CORE::CEvent > m_stopTriggers;
+    bool m_stopOnReplacementFailure;
 };
 
 /*-------------------------------------------------------------------------//

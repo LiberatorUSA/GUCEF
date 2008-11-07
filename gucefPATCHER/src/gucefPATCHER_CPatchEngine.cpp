@@ -323,9 +323,10 @@ CPatchEngine::ProcessRecievedPatchList( void )
                                        
             // Now that the raw data has been processed into a real patch list we can commence
             // with the patching process for this patch list
-            return m_patchListEngine->Start( patchList                             ,
-                                             m_config.GetLocalRootDir()            ,
-                                             m_config.GetLocalTempStorageRootDir() );
+            return m_patchListEngine->Start( patchList                                  ,
+                                             m_config.GetLocalRootDir()                 ,
+                                             m_config.GetLocalTempStorageRootDir()      ,
+                                             m_config.GetStopOnFileReplacementFailure() );
         }
     }
     

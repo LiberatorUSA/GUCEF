@@ -51,6 +51,7 @@ const CORE::CEvent CPatchSetFileEngineEvents::LocalFileSizeMismatchEvent = "GUCE
 const CORE::CEvent CPatchSetFileEngineEvents::LocalFileHashMismatchEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::LocalFileHashMismatchEvent";
 const CORE::CEvent CPatchSetFileEngineEvents::LocalFileNotFoundEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::LocalFileNotFoundEvent";
 const CORE::CEvent CPatchSetFileEngineEvents::LocalFileReplacedEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::LocalFileReplacedEvent";
+const CORE::CEvent CPatchSetFileEngineEvents::LocalFileReplacementFailure = "GUCEF::PATCHER::CPatchSetFileEngineEvents::LocalFileReplacementFailure";
 const CORE::CEvent CPatchSetFileEngineEvents::FileRetrievalStartedEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::FileRetrievalStartedEvent";
 const CORE::CEvent CPatchSetFileEngineEvents::FileRetrievalProgressEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::FileRetrievalProgressEvent";
 const CORE::CEvent CPatchSetFileEngineEvents::FileRetrievalCompleteEvent = "GUCEF::PATCHER::CPatchSetFileEngineEvents::FileRetrievalCompleteEvent";
@@ -90,6 +91,7 @@ CPatchSetFileEngineEvents::RegisterEvents( void )
     LocalFileHashMismatchEvent.Initialize();
     LocalFileNotFoundEvent.Initialize();
     LocalFileReplacedEvent.Initialize();
+    LocalFileReplacementFailure.Initialize();
     FileRetrievalStartedEvent.Initialize();
     FileRetrievalProgressEvent.Initialize();
     FileRetrievalCompleteEvent.Initialize();

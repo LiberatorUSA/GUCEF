@@ -28,6 +28,11 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #include "gucefPATCHER_CPatchConfig.h"
 
 /*-------------------------------------------------------------------------//
@@ -46,13 +51,14 @@ namespace PATCHER {
 //-------------------------------------------------------------------------*/
 
 CPatchConfig::CPatchConfig( void )
-    : CIConfigurable()    ,
-      m_patchListURL()    ,
-      m_patchListCodec()  ,
-      m_localRoot()       ,
-      m_tempStorageRoot() ,
-      m_startTriggers()   ,
-      m_stopTriggers()
+    : CIConfigurable()                    ,
+      m_patchListURL()                    ,
+      m_patchListCodec()                  ,
+      m_localRoot()                       ,
+      m_tempStorageRoot()                 ,
+      m_startTriggers()                   ,
+      m_stopTriggers()                    ,
+      m_stopOnReplacementFailure( true )
 {GUCEF_TRACE;
 
 }
@@ -66,7 +72,8 @@ CPatchConfig::CPatchConfig( const CPatchConfig& src )
       m_localRoot( src.m_localRoot )             ,
       m_tempStorageRoot( src.m_tempStorageRoot ) ,
       m_startTriggers( src.m_startTriggers )     ,
-      m_stopTriggers( src.m_stopTriggers )
+      m_stopTriggers( src.m_stopTriggers )       ,
+      m_stopOnReplacementFailure( true )
 {GUCEF_TRACE;
 
 }
@@ -92,8 +99,27 @@ CPatchConfig::operator=( const CPatchConfig& src )
         m_tempStorageRoot = src.m_tempStorageRoot;
         m_startTriggers = src.m_startTriggers;
         m_stopTriggers = src.m_stopTriggers;
+        m_stopOnReplacementFailure = src.m_stopOnReplacementFailure;
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatchConfig::SetStopOnFileReplacementFailure( const bool stopOnFailure )
+{GUCEF_TRACE;
+
+    m_stopOnReplacementFailure = stopOnFailure;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CPatchConfig::GetStopOnFileReplacementFailure( void ) const
+{GUCEF_TRACE;
+
+    return m_stopOnReplacementFailure;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -120,6 +146,7 @@ bool
 CPatchConfig::SaveConfig( CORE::CDataNode& tree )
 {GUCEF_TRACE;
     
+    //@TODO
     return false;
 }
 
@@ -131,7 +158,7 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchConfig: Loading configuration" );
     
-    const CORE::CDataNode* infoNode = treeroot.Find( "CPatchEngine" );
+    const CORE::CDataNode* infoNode = treeroot.Find( "CPatchConfig" );
     if ( infoNode != NULL )
     {
         // First we obtain the mandatory atributes
@@ -150,6 +177,17 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
         att = infoNode->GetAttribute( "PatchListCodec" );
         if ( att == NULL ) return false;
         SetPatchListCodec( att->value );
+        
+        // Load optional attributes
+        att = infoNode->GetAttribute( "StopOnFileReplacementFailure" );
+        if ( att == NULL )
+        {
+            m_stopOnReplacementFailure = true;
+        }
+        else
+        {
+            SetStopOnFileReplacementFailure( CORE::StringToBool( att->value ) );
+        }
         
         // Try and find some optional engine trigger events
         const CORE::CDataNode* childNode = NULL;

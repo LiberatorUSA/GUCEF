@@ -128,9 +128,10 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchListEngine : public CORE::CForwardingNotifi
     
     virtual ~CPatchListEngine();
     
-    bool Start( const TPatchList& patchList          ,
-                const CORE::CString& localRoot       ,
-                const CORE::CString& tempStorageRoot );
+    bool Start( const TPatchList& patchList             ,
+                const CORE::CString& localRoot          ,
+                const CORE::CString& tempStorageRoot    ,
+                const bool stopOnFileReplacementFailure );
     
     void Stop( void );
     
@@ -172,6 +173,7 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchListEngine : public CORE::CForwardingNotifi
     UInt64 m_totalDataSizeInBytes;
     UInt64 m_processedDataSizeInBytes;
     UInt64 m_processedCurrentSetDataSizeInBytes;
+    bool m_stopOnFileReplacementFailure;
 };
 
 /*-------------------------------------------------------------------------//

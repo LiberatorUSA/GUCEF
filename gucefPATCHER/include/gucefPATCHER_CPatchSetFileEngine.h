@@ -68,7 +68,8 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetFileEngine : public CORE::CObservingNotif
     
     bool Start( const TFileList& fileList            ,
                 const CORE::CString& localRoot       ,
-                const CORE::CString& tempStorageRoot );
+                const CORE::CString& tempStorageRoot ,
+                const bool stopOnReplacementFailure  );
     
     void Stop( void );
     
@@ -109,6 +110,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetFileEngine : public CORE::CObservingNotif
     CORE::CString m_tempStorageRoot;
     UInt64 m_totalBytesProcessed;
     UInt64 m_currentFileReceivedBytes;
+    bool m_stopOnReplacementFailure;
 };
 
 /*-------------------------------------------------------------------------//

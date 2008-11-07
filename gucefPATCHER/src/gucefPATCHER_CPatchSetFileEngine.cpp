@@ -66,19 +66,20 @@ namespace PATCHER {
 //-------------------------------------------------------------------------*/
 
 CPatchSetFileEngine::CPatchSetFileEngine( void )
-    : CObservingNotifier()            ,
-      CPatchSetFileEngineEvents()     ,
-      m_isActive( false )             ,
-      m_stopSignalGiven( false )      ,
-      m_localRoot()                   ,
-      m_tempStorageRoot()             ,
-      m_dataRetriever()               ,
-      m_fileAccess( NULL )            ,
-      m_fileList()                    ,
-      m_curFileLocIndex( 0 )          ,
-      m_curFileIndex( 0 )             ,
-      m_totalBytesProcessed( 0 )      ,
-      m_currentFileReceivedBytes( 0 )
+    : CObservingNotifier()               ,
+      CPatchSetFileEngineEvents()        ,
+      m_isActive( false )                ,
+      m_stopSignalGiven( false )         ,
+      m_localRoot()                      ,
+      m_tempStorageRoot()                ,
+      m_dataRetriever()                  ,
+      m_fileAccess( NULL )               ,
+      m_fileList()                       ,
+      m_curFileLocIndex( 0 )             ,
+      m_curFileIndex( 0 )                ,
+      m_totalBytesProcessed( 0 )         ,
+      m_currentFileReceivedBytes( 0 )    ,
+      m_stopOnReplacementFailure( true )
 {GUCEF_TRACE;
 
     SubscribeTo( &m_dataRetriever );
@@ -99,7 +100,8 @@ CPatchSetFileEngine::CPatchSetFileEngine( CORE::CPulseGenerator& pulseGenerator 
       m_curFileLocIndex( 0 )             ,
       m_curFileIndex( 0 )                ,
       m_totalBytesProcessed( 0 )         ,
-      m_currentFileReceivedBytes( 0 )
+      m_currentFileReceivedBytes( 0 )    ,
+      m_stopOnReplacementFailure( true )
 {GUCEF_TRACE;
 
     SubscribeTo( &m_dataRetriever );
@@ -136,7 +138,8 @@ CPatchSetFileEngine::CreateEventStatusObj( void ) const
 bool
 CPatchSetFileEngine::Start( const TFileList& fileList            ,
                             const CORE::CString& localRoot       ,
-                            const CORE::CString& tempStorageRoot )
+                            const CORE::CString& tempStorageRoot ,
+                            const bool stopOnReplacementFailure  )
 
 {GUCEF_TRACE;
 
@@ -155,8 +158,7 @@ CPatchSetFileEngine::Start( const TFileList& fileList            ,
                 m_stopSignalGiven = false;
                 m_totalBytesProcessed = 0;
                 m_currentFileReceivedBytes = 0;
-                
-                // Copy and link params for later use
+                m_stopOnReplacementFailure = stopOnReplacementFailure;
                 m_fileList = fileList;
                 m_localRoot = localRoot;
                 m_tempStorageRoot = tempStorageRoot;
@@ -514,13 +516,22 @@ CPatchSetFileEngine::OnNotify( CORE::CNotifier* notifier                 ,
                             {
                                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Failed to delete an old file" );
                                 
-                                // We failed to delete the old file,.. the end
-                                NotifyObservers( FileStorageErrorEvent, CreateEventStatusObj() );
-                                m_stopSignalGiven = false;
-                                m_isActive = false;
-                                return;                            
+                                // We failed to delete the old file,..
+                                NotifyObservers( LocalFileReplacementFailure, CreateEventStatusObj() );
+                                
+                                // This is a critical feature for implementing self-replacement of products that use the
+                                // patching libraries which will be in use when we patch.
+                                if ( m_stopOnReplacementFailure )
+                                {
+                                    m_stopSignalGiven = false;
+                                    m_isActive = false;
+                                    return;
+                                }                            
                             }
-                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Deleted old file" );
+                            else
+                            {
+                                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Deleted old file" );
+                            }
                         }
                         
                         // Move the new file to the desired final location

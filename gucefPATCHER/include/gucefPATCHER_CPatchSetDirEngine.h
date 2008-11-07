@@ -88,9 +88,10 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngine : public CORE::CForwardingNotif
     
     public:
     
-    bool Start( const TDirEntry& startingDir         ,
-                const CORE::CString& localRoot       ,
-                const CORE::CString& tempStorageRoot );
+    bool Start( const TDirEntry& startingDir            ,
+                const CORE::CString& localRoot          ,
+                const CORE::CString& tempStorageRoot    ,
+                const bool stopOnFileReplacementFailure );
     
     void Stop( void );
     
@@ -127,6 +128,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetDirEngine : public CORE::CForwardingNotif
     CORE::CPulseGenerator* m_pulseGenerator;
     UInt64 m_processedDataSizeInBytes;
     UInt64 m_processedSubDirDataSizeInBytes;
+    bool m_stopOnFileReplacementFailure;
 };
 
 /*-------------------------------------------------------------------------//

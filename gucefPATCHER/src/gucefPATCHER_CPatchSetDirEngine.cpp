@@ -61,18 +61,19 @@ namespace PATCHER {
 //-------------------------------------------------------------------------*/
 
 CPatchSetDirEngine::CPatchSetDirEngine( void )
-    : CORE::CForwardingNotifier()     ,
-      CPatchSetFileEngineEvents()     ,   
-      m_curSubDirIndex( 0 )           ,
-      m_subDirPatchEngine( NULL )     ,
-      m_filePatchEngine( NULL )       ,
-      m_dir()                         ,
-      m_isActive( false )             ,
-      m_stopSignalGiven( false )      ,
-      m_localRoot()                   ,
-      m_tempStorageRoot()             ,
-      m_pulseGenerator( NULL )        ,
-      m_processedDataSizeInBytes( 0 )
+    : CORE::CForwardingNotifier()            ,
+      CPatchSetFileEngineEvents()            ,
+      m_curSubDirIndex( 0 )                  ,
+      m_subDirPatchEngine( NULL )            ,
+      m_filePatchEngine( NULL )              ,
+      m_dir()                                ,
+      m_isActive( false )                    ,
+      m_stopSignalGiven( false )             ,
+      m_localRoot()                          ,
+      m_tempStorageRoot()                    ,
+      m_pulseGenerator( NULL )               ,
+      m_processedDataSizeInBytes( 0 )        ,
+      m_stopOnFileReplacementFailure( true )
 {GUCEF_TRACE;
 
     Initialize();
@@ -81,18 +82,19 @@ CPatchSetDirEngine::CPatchSetDirEngine( void )
 /*-------------------------------------------------------------------------*/
 
 CPatchSetDirEngine::CPatchSetDirEngine( CORE::CPulseGenerator& pulseGenerator )
-    : CORE::CForwardingNotifier()         ,
-      CPatchSetFileEngineEvents()         ,   
-      m_curSubDirIndex( 0 )               ,
-      m_subDirPatchEngine( NULL )         ,
-      m_filePatchEngine( NULL )           ,    
-      m_dir()                             ,
-      m_isActive( false )                 ,
-      m_stopSignalGiven( false )          ,
-      m_localRoot()                       ,
-      m_tempStorageRoot()                 ,
-      m_pulseGenerator( &pulseGenerator ) ,
-      m_processedDataSizeInBytes( 0 )
+    : CORE::CForwardingNotifier()             ,
+      CPatchSetFileEngineEvents()             ,
+      m_curSubDirIndex( 0 )                   ,
+      m_subDirPatchEngine( NULL )             ,
+      m_filePatchEngine( NULL )               , 
+      m_dir()                                 ,
+      m_isActive( false )                     ,
+      m_stopSignalGiven( false )              ,
+      m_localRoot()                           ,
+      m_tempStorageRoot()                     ,
+      m_pulseGenerator( &pulseGenerator )     ,
+      m_processedDataSizeInBytes( 0 )         ,
+      m_stopOnFileReplacementFailure( false )
 {GUCEF_TRACE;
 
     Initialize();
@@ -172,9 +174,10 @@ CPatchSetDirEngine::ProcessFilesInDir( void )
         }
         
         // process the files in this directory
-        return m_filePatchEngine->Start( m_dir.files       ,
-                                         m_localRoot       ,
-                                         m_tempStorageRoot );
+        return m_filePatchEngine->Start( m_dir.files                    ,
+                                         m_localRoot                    ,
+                                         m_tempStorageRoot              ,
+                                         m_stopOnFileReplacementFailure );
     }
     
     return true;
@@ -220,9 +223,10 @@ CPatchSetDirEngine::ProcessCurSubDir( void )
         CORE::Create_Directory( subDirPath.C_String() );
         
         // process the sub-dir
-        return m_subDirPatchEngine->Start( *subDir       ,
-                                           subDirPath    ,
-                                           subTmpDirPath );
+        return m_subDirPatchEngine->Start( *subDir                        ,
+                                           subDirPath                     ,
+                                           subTmpDirPath                  ,
+                                           m_stopOnFileReplacementFailure );
     }
     
     return true;
@@ -231,9 +235,10 @@ CPatchSetDirEngine::ProcessCurSubDir( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPatchSetDirEngine::Start( const TDirEntry& startingDir         ,
-                           const CORE::CString& localRoot       ,
-                           const CORE::CString& tempStorageRoot )
+CPatchSetDirEngine::Start( const TDirEntry& startingDir            ,
+                           const CORE::CString& localRoot          ,
+                           const CORE::CString& tempStorageRoot    ,
+                           const bool stopOnFileReplacementFailure )
 {GUCEF_TRACE;
 
     assert( &startingDir != NULL );
@@ -256,6 +261,7 @@ CPatchSetDirEngine::Start( const TDirEntry& startingDir         ,
             m_curSubDirIndex = 0;
             m_processedDataSizeInBytes = 0;
             m_processedSubDirDataSizeInBytes = 0;
+            m_stopOnFileReplacementFailure = stopOnFileReplacementFailure;
             
             NotifyObservers( DirProcessingStartedEvent, CreateEventStatusObj() );
             

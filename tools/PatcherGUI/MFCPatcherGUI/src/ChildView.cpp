@@ -77,8 +77,8 @@ CChildView::CChildView()
     m_patchEngine.SubscribeTo( gucefApp, CORE::CGUCEFApplication::AppShutdownEvent );
     
     // Set the application startup and shutdown events as triggers
-    m_patchEngine.AddEngineStartTriggerEvent( CORE::CGUCEFApplication::AppInitEvent );
-    m_patchEngine.AddEngineStopTriggerEvent( CORE::CGUCEFApplication::AppShutdownEvent );
+    m_patchEngine.GetConfig().AddEngineStartTriggerEvent( CORE::CGUCEFApplication::AppInitEvent );
+    m_patchEngine.GetConfig().AddEngineStopTriggerEvent( CORE::CGUCEFApplication::AppShutdownEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -185,7 +185,7 @@ CChildView::LoadPatchEngineConfig( void )
         if ( codec->BuildDataTree( &configData ,
                                    configFile  ) )
         {
-            return m_patchEngine.LoadConfig( configData );
+            return m_patchEngine.GetConfig().LoadConfig( configData );
         }
         else
         {
@@ -594,6 +594,11 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
     {
         PrintPatchSetFileEngineStatus( "Local file replaced", eventdata );
     }
+    else
+    if ( eventid == PATCHER::CPatchSetFileEngineEvents::LocalFileReplacementFailure )
+    {
+        PrintPatchSetFileEngineStatus( "Local file replacement failed", eventdata );
+    }    
     else
     {
         if ( ( NULL != m_listBox )                            &&
