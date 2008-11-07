@@ -98,7 +98,7 @@ CPatchTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
     
     CPatchTaskData* ptData = static_cast< CPatchTaskData* >( taskData );
     m_taskName = ptData->GetTaskName();    
-    if ( m_patchEngine->LoadConfig( ptData->GetPatchEngineConfig() ) )
+    if ( m_patchEngine->GetConfig().LoadConfig( ptData->GetPatchEngineConfig() ) )
     {
         ptData->GetPatchManager().RegisterTask( this );        
         m_patchEngine->Start();

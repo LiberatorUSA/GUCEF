@@ -83,6 +83,11 @@
 #define GUCEF_PATCHER_CPATCHLISTENGINEEVENTS_H
 #endif /* GUCEF_PATCHER_CPATCHLISTENGINEEVENTS_H ? */
 
+#ifndef GUCEF_PATCHER_CPATCHCONFIG_H
+#include "gucefPATCHER_CPatchConfig.h"
+#define GUCEF_PATCHER_CPATCHCONFIG_H
+#endif /* GUCEF_PATCHER_CPATCHCONFIG_H ? */
+
 #ifndef GUCEF_PATCHER_MACROS_H
 #include "gucefPATCHER_macros.h"
 #define GUCEF_PATCHER_MACROS_H
@@ -112,7 +117,6 @@ class CPatchListEngine;
  *  This class is intended as a RAD component
  */
 class GUCEF_PATCHER_EXPORT_CPP CPatchEngine : public CORE::CForwardingNotifier ,
-                                              public CORE::CIConfigurable      , /* interface */
                                               public CPatchSetDirEngineEvents  , /* event interface */
                                               public CPatchSetFileEngineEvents , /* event interface */
                                               public CPatchSetEngineEvents     , /* event interface */
@@ -150,33 +154,9 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchEngine : public CORE::CForwardingNotifier ,
     
     bool IsActive( void ) const;
     
-    virtual bool SaveConfig( CORE::CDataNode& tree );
-                                   
-    virtual bool LoadConfig( const CORE::CDataNode& treeroot );
+    CPatchConfig& GetConfig( void );
     
-    bool AddEngineStartTriggerEvent( const CORE::CEvent& triggerEvent );   
-    
-    bool RemoveEngineStartTriggerEvent( const CORE::CEvent& triggerEvent );
-    
-    bool AddEngineStopTriggerEvent( const CORE::CEvent& triggerEvent );   
-    
-    bool RemoveEngineStopTriggerEvent( const CORE::CEvent& triggerEvent );    
-
-    bool SetLocalRootDir( const CORE::CString& localRoot );
-    
-    const CORE::CString& GetLocalRootDir( void ) const;
-    
-    bool SetLocalTempStorageRootDir( const CORE::CString& tempStorageRoot );
-    
-    const CORE::CString& GetLocalTempStorageRootDir( void ) const;
-    
-    bool SetPatchListURL( const CORE::CString& patchListURL );
-    
-    const CORE::CString& GetPatchListURL( void ) const;
-
-    bool SetPatchListCodec( const CORE::CString& patchListCodec );
-    
-    const CORE::CString& GetPatchListCodec( void ) const;
+    const CPatchConfig& GetConfig( void ) const;
 
     virtual const CString& GetClassTypeName( void ) const;
 
@@ -200,12 +180,7 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchEngine : public CORE::CForwardingNotifier ,
     CORE::CDynamicBuffer m_listDataBuffer;
     bool m_isActive;
     bool m_stopSignalGiven;
-    CORE::CString m_patchListURL;
-    CORE::CString m_patchListCodec;
-    CORE::CString m_localRoot;
-    CORE::CString m_tempStorageRoot;
-    std::set< CORE::CEvent > m_startTriggers;
-    std::set< CORE::CEvent > m_stopTriggers;
+    CPatchConfig m_config;
 };
 
 /*-------------------------------------------------------------------------//

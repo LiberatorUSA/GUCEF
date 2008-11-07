@@ -218,6 +218,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefPATCHER_CPatchConfig.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefPATCHER_CPatchEngine.cpp"
 				>
 			</File>
@@ -293,6 +297,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefPATCHER_config.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefPATCHER_CPatchConfig.h"
 				>
 			</File>
 			<File

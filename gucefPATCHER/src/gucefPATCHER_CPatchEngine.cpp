@@ -79,7 +79,6 @@ const CORE::CEvent CPatchEngine::PatchListDecodingFailedEvent = "GUCEF::PATCHER:
 
 CPatchEngine::CPatchEngine( CORE::CPulseGenerator& pulseGenerator )
     : CORE::CForwardingNotifier()                                 ,
-      CORE::CIConfigurable()                                      ,
       CPatchSetDirEngineEvents()                                  ,
       CPatchSetFileEngineEvents()                                 ,
       CPatchSetEngineEvents()                                     ,
@@ -89,11 +88,7 @@ CPatchEngine::CPatchEngine( CORE::CPulseGenerator& pulseGenerator )
       m_listDataBuffer()                                          ,
       m_isActive( false )                                         ,
       m_stopSignalGiven( false )                                  ,
-      m_localRoot()                                               ,
-      m_tempStorageRoot()                                         ,
-      m_patchListURL()                                            ,
-      m_patchListCodec()
-      
+      m_config()      
 {GUCEF_TRACE;
 
     Initialize();
@@ -103,7 +98,6 @@ CPatchEngine::CPatchEngine( CORE::CPulseGenerator& pulseGenerator )
 
 CPatchEngine::CPatchEngine( void )
     : CORE::CForwardingNotifier()                 ,
-      CORE::CIConfigurable()                      ,
       CPatchSetDirEngineEvents()                  ,
       CPatchSetFileEngineEvents()                 ,
       CPatchSetEngineEvents()                     ,
@@ -113,10 +107,7 @@ CPatchEngine::CPatchEngine( void )
       m_listDataBuffer()                          ,
       m_isActive( false )                         ,
       m_stopSignalGiven( false )                  ,
-      m_localRoot()                               ,
-      m_tempStorageRoot()                         ,
-      m_patchListURL()                            ,
-      m_patchListCodec()
+      m_config()
       
 {GUCEF_TRACE;
 
@@ -213,218 +204,23 @@ CPatchEngine::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CPatchEngine::SaveConfig( CORE::CDataNode& tree )
-{GUCEF_TRACE;
-    
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-                                   
-bool
-CPatchEngine::LoadConfig( const CORE::CDataNode& treeroot )
+CPatchConfig&
+CPatchEngine::GetConfig( void )
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchEngine: Loading configuration" );
-    
-    const CORE::CDataNode* infoNode = treeroot.Find( "CPatchEngine" );
-    if ( infoNode != NULL )
-    {
-        // First we obtain the mandatory atributes
-        const CORE::CDataNode::TNodeAtt* att = infoNode->GetAttribute( "LocalRootDir" );
-        if ( att == NULL ) return false;
-        SetLocalRootDir( att->value );
-        
-        att = infoNode->GetAttribute( "TempStorageRoot" );
-        if ( att == NULL ) return false;
-        SetLocalTempStorageRootDir( att->value );
-        
-        att = infoNode->GetAttribute( "PatchListURL" );
-        if ( att == NULL ) return false;
-        SetPatchListURL( att->value );
-
-        att = infoNode->GetAttribute( "PatchListCodec" );
-        if ( att == NULL ) return false;
-        SetPatchListCodec( att->value );
-        
-        // Try and find some optional engine trigger events
-        const CORE::CDataNode* childNode = NULL;
-        CORE::CDataNode::const_iterator i = infoNode->ConstBegin();
-        while ( i != infoNode->ConstEnd() )
-        {
-            childNode = (*i);
-            if ( childNode->GetName() == "EngineStartTrigger" )
-            {
-                att = infoNode->GetAttribute( "Event" );
-                if ( att != NULL )
-                {
-                    AddEngineStartTriggerEvent( att->value );
-                }
-            }
-            else
-            if ( childNode->GetName() == "EngineStopTrigger" )
-            {
-                att = infoNode->GetAttribute( "Event" );
-                if ( att != NULL )
-                {
-                    AddEngineStopTriggerEvent( att->value );
-                }
-            }            
-            ++i;
-        }
-        return true;
-    }  
-    return false;
+    return m_config;
 }
 
 /*-------------------------------------------------------------------------*/
     
-bool
-CPatchEngine::AddEngineStartTriggerEvent( const CORE::CEvent& triggerEvent )
+const CPatchConfig&
+CPatchEngine::GetConfig( void ) const
 {GUCEF_TRACE;
 
-    if ( !m_isActive )
-    {
-        m_startTriggers.insert( triggerEvent );
-        return true;
-    }
-    return false;
+    return m_config;
 }
 
-/*-------------------------------------------------------------------------*/
-    
-bool
-CPatchEngine::RemoveEngineStartTriggerEvent( const CORE::CEvent& triggerEvent )
-{GUCEF_TRACE;
 
-    if ( !m_isActive )
-    {
-        m_startTriggers.erase( triggerEvent );
-        return true;
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-bool
-CPatchEngine::AddEngineStopTriggerEvent( const CORE::CEvent& triggerEvent )
-{GUCEF_TRACE;
-
-    if ( !m_isActive )
-    {
-        m_stopTriggers.insert( triggerEvent );
-        return true;
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-bool
-CPatchEngine::RemoveEngineStopTriggerEvent( const CORE::CEvent& triggerEvent )
-{GUCEF_TRACE;
-
-    if ( !m_isActive )
-    {
-        m_stopTriggers.erase( triggerEvent );
-        return true;
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CPatchEngine::SetLocalRootDir( const CORE::CString& localRoot )
-{GUCEF_TRACE;
-
-    if ( !m_isActive )
-    {
-        m_localRoot = localRoot;
-        return true;
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-const CORE::CString&
-CPatchEngine::GetLocalRootDir( void ) const
-{GUCEF_TRACE;
-
-    return m_localRoot;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-bool
-CPatchEngine::SetLocalTempStorageRootDir( const CORE::CString& tempStorageRoot )
-{GUCEF_TRACE;
-
-    if ( !m_isActive )
-    {
-        m_tempStorageRoot = tempStorageRoot;
-        return true;
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-const CORE::CString&
-CPatchEngine::GetLocalTempStorageRootDir( void ) const
-{GUCEF_TRACE;
-
-    return m_tempStorageRoot;
-}
-    
-/*-------------------------------------------------------------------------*/
-    
-bool
-CPatchEngine::SetPatchListURL( const CORE::CString& patchListURL )
-{GUCEF_TRACE;
-
-    if ( !m_isActive )
-    {
-        m_patchListURL = patchListURL;
-        return true;
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-const CORE::CString&
-CPatchEngine::GetPatchListURL( void ) const
-{GUCEF_TRACE;
-
-    return m_patchListURL;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CPatchEngine::SetPatchListCodec( const CORE::CString& patchListCodec )
-{GUCEF_TRACE;
-
-    if ( !m_isActive )
-    {
-        m_patchListCodec = patchListCodec;
-        return true;
-    }
-    return false;
-}
-    
-/*-------------------------------------------------------------------------*/
-
-const CORE::CString&
-CPatchEngine::GetPatchListCodec( void ) const
-{GUCEF_TRACE;
-
-    return m_patchListCodec;
-}
 
 /*-------------------------------------------------------------------------*/
 
@@ -438,9 +234,9 @@ CPatchEngine::Start( void )
     if ( !m_isActive )
     {
         // configuration sanity check
-        if ( ( m_patchListURL.Length() > 0 )   &&
-             ( m_patchListCodec.Length() > 0 ) &&
-             ( m_localRoot.Length() > 0 )       )
+        if ( ( m_config.GetPatchListURL().Length() > 0 )   &&
+             ( m_config.GetPatchListCodec().Length() > 0 ) &&
+             ( m_config.GetLocalRootDir().Length() > 0 )    )
         {
             m_isActive = true;
             m_stopSignalGiven = false;
@@ -450,7 +246,7 @@ CPatchEngine::Start( void )
             
             // We must obtain the patch list before we can use it,..
             // Set the URL for the list location        
-            if ( m_url.SetURL( m_patchListURL ) )
+            if ( m_url.SetURL( m_config.GetPatchListURL() ) )
             {
                 // Now we try and obtain it
                 NotifyObservers( PatchListRetrievalStartedEvent );
@@ -507,7 +303,7 @@ CPatchEngine::ProcessRecievedPatchList( void )
     
     // Now we must process the raw patch set data to turn it into something we can use
     // Get the required codec for the current raw patch set data type
-    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = CORE::CDStoreCodecRegistry::Instance()->Lookup( m_patchListCodec );
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = CORE::CDStoreCodecRegistry::Instance()->Lookup( m_config.GetPatchListCodec() );
     if ( NULL != codecPtr )
     {
         // Prepare vars for the decoding process
@@ -527,9 +323,9 @@ CPatchEngine::ProcessRecievedPatchList( void )
                                        
             // Now that the raw data has been processed into a real patch list we can commence
             // with the patching process for this patch list
-            return m_patchListEngine->Start( patchList         ,
-                                             m_localRoot       ,
-                                             m_tempStorageRoot );
+            return m_patchListEngine->Start( patchList                             ,
+                                             m_config.GetLocalRootDir()            ,
+                                             m_config.GetLocalTempStorageRootDir() );
         }
     }
     
@@ -637,12 +433,12 @@ CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
              ( eventid != CORE::CNotifier::UnsubscribeEvent ) &&
              ( eventid != CORE::CNotifier::SubscribeEvent   )  )
         {
-            if ( m_startTriggers.end() != m_startTriggers.find( eventid ) )
+            if ( m_config.HasEngineStartTriggerEvent( eventid ) )
             {
                 Start();
             }
             else
-            if ( m_stopTriggers.end() != m_stopTriggers.find( eventid ) )
+            if ( m_config.HasEngineStopTriggerEvent( eventid ) )
             {
                 Stop();
             }             
