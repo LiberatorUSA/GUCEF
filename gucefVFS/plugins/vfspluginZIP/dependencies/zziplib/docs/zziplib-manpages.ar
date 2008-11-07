@@ -1,0 +1,4056 @@
+!<arch>
+//                                              2382      `
+zzip_compr_str.3/
+zzip_dir_alloc.3/
+zzip_dir_alloc_ext_io.3/
+zzip_dir_close.3/
+zzip_dir_fdopen.3/
+zzip_dir_fdopen_ext_io.3/
+zzip_dirhandle.3/
+zzip_dir_open_ext_io.3/
+zzip_disk_close.3/
+zzip_disk_entry_fopen.3/
+zzip_disk_entry_strdup_comment.3/
+zzip_disk_entry_strdup_name.3/
+zzip_disk_entry_to_data.3/
+zzip_disk_entry_to_file_header.3/
+zzip_disk_fclose.3/
+zzip_disk_feof.3/
+zzip_disk_findfile.3/
+zzip_disk_findfirst.3/
+zzip_disk_findmatch.3/
+zzip_disk_findnext.3/
+zzip_disk_fopen.3/
+zzip_disk_fread.3/
+zzip_disk_init.3/
+zzip_disk_mmap.3/
+zzip_disk_munmap.3/
+zzip_disk_open.3/
+zzip_entry_data_offset.3/
+zzip_entry_fclose.3/
+zzip_entry_feof.3/
+zzip_entry_ffile.3/
+zzip_entry_findfile.3/
+zzip_entry_findfirst.3/
+zzip_entry_findmatch.3/
+zzip_entry_findnext.3/
+zzip_entry_fopen.3/
+zzip_entry_fread.3/
+zzip_entry_fread_file_header.3/
+zzip_entry_free.3/
+zzip_entry_strdup_name.3/
+__zzip_fetch_disk_trailer.3/
+zzip_file_close.3/
+zzip_file_open.3/
+zzip_file_read.3/
+zzip_file_real.3/
+zzip_file_stat.3/
+zzip_get_default_io.3/
+zzip_inflate_init.3/
+zzip_opendir_ext_io.3/
+zzip_open_ext_io.3/
+zzip_open_shared_io.3/
+__zzip_parse_root_directory.3/
+zzip_rewinddir.3/
+zzip_strerror_of.3/
+__zzip_try_open.3/
+zzip_compr_str.3/
+zzip_dir_alloc.3/
+zzip_dir_alloc_ext_io.3/
+zzip_dir_close.3/
+zzip_dir_fdopen.3/
+zzip_dir_fdopen_ext_io.3/
+zzip_dirhandle.3/
+zzip_dir_open_ext_io.3/
+zzip_disk_close.3/
+zzip_disk_entry_fopen.3/
+zzip_disk_entry_strdup_comment.3/
+zzip_disk_entry_strdup_name.3/
+zzip_disk_entry_to_data.3/
+zzip_disk_entry_to_file_header.3/
+zzip_disk_fclose.3/
+zzip_disk_feof.3/
+zzip_disk_findfile.3/
+zzip_disk_findfirst.3/
+zzip_disk_findmatch.3/
+zzip_disk_findnext.3/
+zzip_disk_fopen.3/
+zzip_disk_fread.3/
+zzip_disk_init.3/
+zzip_disk_mmap.3/
+zzip_disk_munmap.3/
+zzip_disk_open.3/
+zzip_entry_data_offset.3/
+zzip_entry_fclose.3/
+zzip_entry_feof.3/
+zzip_entry_ffile.3/
+zzip_entry_findfile.3/
+zzip_entry_findfirst.3/
+zzip_entry_findmatch.3/
+zzip_entry_findnext.3/
+zzip_entry_fopen.3/
+zzip_entry_fread.3/
+zzip_entry_fread_file_header.3/
+zzip_entry_free.3/
+zzip_entry_strdup_name.3/
+__zzip_fetch_disk_trailer.3/
+zzip_file_close.3/
+zzip_file_open.3/
+zzip_file_read.3/
+zzip_file_real.3/
+zzip_file_stat.3/
+zzip_get_default_io.3/
+zzip_inflate_init.3/
+zzip_opendir_ext_io.3/
+zzip_open_ext_io.3/
+zzip_open_shared_io.3/
+__zzip_parse_root_directory.3/
+zzip_rewinddir.3/
+zzip_strerror_of.3/
+__zzip_try_open.3/
+zzip_close.3/   1170369182  1001  0     100644  23        `
+.so man3/zzip_fclose.3
+
+zzip_closedir.3/1170369182  1001  0     100644  835       `
+.\"     Title: zzip_closedir
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_CLOSEDIR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_closedir \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 18
+.BI "int zzip_closedir((ZZIP_DIR*\ dir));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/0              1170369182  1001  0     100644  839       `
+.\"     Title: zzip_compr_str
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_COMPR_STR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_compr_str \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 28
+.BI "zzip_char_t* zzip_compr_str((int\ compr));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/18             1170369182  1001  0     100644  33        `
+.so man3/zzip_dir_alloc_ext_io.3
+
+/36             1170369182  1001  0     100644  1290      `
+.\"     Title: zzip_dir_alloc_ext_io
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DIR_ALLOC_EXT_I" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_dir_alloc_ext_io, zzip_dir_alloc \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 32
+.BI "ZZIP_DIR* zzip_dir_alloc_ext_io((zzip_strings_t*\ ext,\ const\ zzip_plugin_io_t\ io));"
+.HP 25
+.BI "ZZIP_DIR* zzip_dir_alloc((zzip_strings_t*\ fileext));"
+.SH "DESCRIPTION"
+.PP
+the
+\fBzzip_dir_alloc\fR
+function is obsolete \- it was generally used for implementation and exported to let other code build on it. It is now advised to use
+\fBzzip_dir_alloc_ext_io\fR
+now on explicitly, just set that second argument to zero to achieve the same functionality as the old style.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/61             1170369182  1001  0     100644  25        `
+.so man3/zzip_dir_free.3
+
+zzip_dirfd.3/   1170369182  1001  0     100644  26        `
+.so man3/zzip_dirhandle.3
+/79             1170369182  1001  0     100644  1521      `
+.\"     Title: zzip_dir_fdopen
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DIR_FDOPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_dir_fdopen, zzip_dir_fdopen_ext_io \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 27
+.BI "ZZIP_DIR * zzip_dir_fdopen((int\ fd,\ zzip_error_t\ *\ errcode_p));"
+.HP 34
+.BI "ZZIP_DIR * zzip_dir_fdopen_ext_io((int\ fd,\ zzip_error_t\ *\ errcode_p,\ zzip_strings_t*\ ext,\ const\ zzip_plugin_io_t\ io));"
+.SH "DESCRIPTION"
+.PP
+used by the
+\fBzzip_dir_open\fR
+and zzip_opendir(2) call. Opens the zip\-archive as specified with the fd which points to an already openend file. The
+\fBzzip_dir_fdopen\fR
+function then search and parse the zip's central directory.
+.PP
+NOTE: refcount is zero, so an _open/_close pair will also delete this _dirhandle
+.PP
+the
+\fBzzip_dir_fdopen_ext_io\fR
+function uses explicit ext and io instead of the internal defaults, setting these to zero is equivalent to
+\fBzzip_dir_fdopen\fR
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/98             1170369182  1001  0     100644  27        `
+.so man3/zzip_dir_fdopen.3
+
+zzip_dir_free.3/1170369182  1001  0     100644  1039      `
+.\"     Title: zzip_dir_free
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DIR_FREE" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_dir_free, zzip_dir_close \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 18
+.BI "int zzip_dir_free((ZZIP_DIR\ *\ dir));"
+.HP 19
+.BI "int zzip_dir_close((ZZIP_DIR\ *\ dir));"
+.SH "DESCRIPTION"
+.PP
+It will also
+\fBfree(2)\fR
+the
+\fBZZIP_DIR\-handle\fR
+given. the counterpart for
+\fBzzip_dir_open\fR
+see also
+\fBzzip_dir_free\fR
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/124            1170369182  1001  0     100644  1355      `
+.\"     Title: zzip_dirhandle
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DIRHANDLE" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_dirhandle, zzip_dirfd \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 26
+.BI "ZZIP_DIR * zzip_dirhandle((ZZIP_FILE\ *\ fp));"
+.HP 15
+.BI "int zzip_dirfd((ZZIP_DIR*\ dir));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_dirhandle\fR
+function will just return fp\->dir
+.PP
+If a ZZIP_FILE is contained within a zip\-file that one will be a valid pointer, otherwise a NULL is returned and the ZZIP_FILE wraps a real file.
+.PP
+The
+\fBzzip_dirfd\fR
+function will just return dir\->fd
+.PP
+If a ZZIP_DIR does point to a zipfile then the file\-descriptor of that zipfile is returned, otherwise a NULL is returned and the ZZIP_DIR wraps a real directory DIR (if you have dirent on your system).
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+zzip_dir_open.3/1170369182  1001  0     100644  1421      `
+.\"     Title: zzip_dir_open
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DIR_OPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_dir_open, zzip_dir_open_ext_io, zzip_dir_read \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 24
+.BI "ZZIP_DIR* zzip_dir_open((zzip_char_t*\ filename,\ zzip_error_t*\ e));"
+.HP 31
+.BI "ZZIP_DIR* zzip_dir_open_ext_io((zzip_char_t*\ filename,\ zzip_error_t*\ e,\ zzip_strings_t*\ ext,\ zzip_plugin_io_t\ io));"
+.HP 18
+.BI "int zzip_dir_read((ZZIP_DIR\ *\ dir,\ ZZIP_DIRENT\ *\ d\ ));"
+.SH "DESCRIPTION"
+.PP
+the
+\fBzzip_dir_open_ext_io\fR
+function uses explicit ext and io instead of the internal defaults. Setting these to zero is equivalent to
+\fBzzip_dir_open\fR
+.PP
+fills the dirent\-argument with the values and increments the read\-pointer of the dir\-argument.
+.PP
+returns 0 if there no entry (anymore).
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/142            1170369182  1001  0     100644  25        `
+.so man3/zzip_dir_open.3
+
+zzip_dir_read.3/1170369182  1001  0     100644  25        `
+.so man3/zzip_dir_open.3
+
+zzip_dir_real.3/1170369182  1001  0     100644  26        `
+.so man3/zzip_file_real.3
+zzip_dir_stat.3/1170369182  1001  0     100644  1680      `
+.\"     Title: zzip_dir_stat
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DIR_STAT" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_dir_stat, zzip_file_stat, zzip_fstat \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 18
+.BI "int zzip_dir_stat((ZZIP_DIR\ *\ dir,\ zzip_char_t*\ name,\ ZZIP_STAT\ *\ zs,\ int\ flags));"
+.HP 19
+.BI "int zzip_file_stat((ZZIP_FILE*\ file,\ ZZIP_STAT*\ zs));"
+.HP 15
+.BI "int zzip_fstat((ZZIP_FILE*\ file,\ ZZIP_STAT*\ zs));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_file_stat\fR
+function will obtain information about a opened file _within_ a zip\-archive. The file is supposed to be open (otherwise \-1 is returned). The st_size stat\-member contains the uncompressed size. The optional d_name is never set here.
+.PP
+The
+\fBzzip_fstat\fR
+function will obtain information about a opened file which may be either real/zipped. The file is supposed to be open (otherwise \-1 is returned). The st_size stat\-member contains the uncompressed size. The optional d_name is never set here. For a real file, we do set the d_csize := st_size and d_compr := 0 for meaningful defaults.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/166            1170369184  1001  0     100644  26        `
+.so man3/zzip_disk_mmap.3
+/185            1170369184  1001  0     100644  27        `
+.so man3/zzip_disk_fopen.3
+
+/210            1170369184  1001  0     100644  35        `
+.so man3/zzip_disk_entry_to_data.3
+
+/244            1170369184  1001  0     100644  35        `
+.so man3/zzip_disk_entry_to_data.3
+
+/275            1170369184  1001  0     100644  2443      `
+.\"     Title: zzip_disk_entry_to_data
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DISK_ENTRY_TO_D" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_disk_entry_to_data, zzip_disk_entry_to_file_header, zzip_disk_entry_strdup_name, zzip_disk_entry_strdup_comment \- helper functions for (mmapped) zip access api
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/mmapped.h>
+.fi
+.ft
+.HP 37
+.BI "zzip_byte_t* zzip_disk_entry_to_data((ZZIP_DISK*\ disk,\ struct\ zzip_disk_entry*\ entry));"
+.HP 56
+.BI "struct zzip_file_header* zzip_disk_entry_to_file_header((ZZIP_DISK*\ disk,\ struct\ zzip_disk_entry*\ entry));"
+.HP 46
+.BI "zzip__new__ char* zzip_disk_entry_strdup_name((ZZIP_DISK*\ disk,\ struct\ zzip_disk_entry*\ entry));"
+.HP 49
+.BI "zzip__new__ char* zzip_disk_entry_strdup_comment((ZZIP_DISK*\ disk,\ struct\ zzip_disk_entry*\ entry));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_disk_entry_to_data\fR
+function augments the other zzip_disk_entry_* helpers: here we move a disk_entry pointer (as returned by _find* functions) into a pointer to the data block right after the file_header. Only disk\->buffer would be needed to perform the seek but we check the mmapped range end as well.
+.PP
+The
+\fBzzip_disk_entry_to_file_header\fR
+function does half the job of
+\fBzzip_disk_entry_to_data\fR
+where it can augment with
+\fBzzip_file_header_to_data\fR
+helper from format/fetch.h
+.PP
+The
+\fBzzip_disk_entry_strdup_name\fR
+function is a big helper despite its little name: in a zip file the encoded filenames are usually NOT zero\-terminated but for common usage with libc we need it that way. Secondly, the filename SHOULD be present in the zip central directory but if not then we fallback to the filename given in the file_header of each compressed data portion.
+.PP
+The
+\fBzzip_disk_entry_strdup_comment\fR
+function is similar creating a reference to a zero terminated string but it can only exist in the zip central directory entry.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004,2006 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/302            1170369184  1001  0     100644  35        `
+.so man3/zzip_disk_entry_to_data.3
+
+/336            1170369184  1001  0     100644  27        `
+.so man3/zzip_disk_fopen.3
+
+/356            1170369184  1001  0     100644  27        `
+.so man3/zzip_disk_fopen.3
+
+/374            1170369184  1001  0     100644  4314      `
+.\"     Title: zzip_disk_findfile
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DISK_FINDFILE" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_disk_findfile, zzip_disk_findfirst, zzip_disk_findnext, zzip_disk_findmatch \- search for files in the (mmapped) zip central directory
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/mmapped.h>
+.fi
+.ft
+.HP 43
+.BI "struct zzip_disk_entry* zzip_disk_findfile((ZZIP_DISK*\ disk,\ char*\ filename,\ struct\ zzip_disk_entry*\ after,\ zzip_strcmp_fn_t\ compare));"
+.HP 44
+.BI "struct zzip_disk_entry* zzip_disk_findfirst((ZZIP_DISK*\ disk));"
+.HP 43
+.BI "struct zzip_disk_entry* zzip_disk_findnext((ZZIP_DISK*\ disk,\ struct\ zzip_disk_entry*\ entry));"
+.HP 44
+.BI "struct zzip_disk_entry* zzip_disk_findmatch((ZZIP_DISK*\ disk,\ char*\ filespec,\ struct\ zzip_disk_entry*\ after,\ zzip_fnmatch_fn_t\ compare,\ int\ flags));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_disk_findfile\fR
+function is given a filename as an additional argument, to find the disk_entry matching a given filename. The compare\-function is usually strcmp or strcasecmp or perhaps strcoll, if null then strcmp is used. \- use null as argument for "after"\-entry when searching the first matching entry, otherwise the last returned value if you look for other entries with a special "compare" function (if null then a doubled search is rather useless with this variant of _findfile).
+.PP
+The
+\fBzzip_disk_findfirst\fR
+function is the first call of all the zip access functions here. It contains the code to find the first entry of the zip central directory. Here we require the mmapped block to represent a real zip file where the disk_trailer is _last_ in the file area, so that its position would be at a fixed offset from the end of the file area if not for the comment field allowed to be of variable length (which needs us to do a little search for the disk_tailer). However, in this simple implementation we disregard any disk_trailer info telling about multidisk archives, so we just return a pointer to the zip central directory.
+.PP
+For an actual means, we are going to search backwards from the end of the mmaped block looking for the PK\-magic signature of a disk_trailer. If we see one then we check the rootseek value to find the first disk_entry of the root central directory. If we find the correct PK\-magic signature of a disk_entry over there then we assume we are done and we are going to return a pointer to that label.
+.PP
+The return value is a pointer to the first zzip_disk_entry being checked to be within the bounds of the file area specified by the arguments. If no disk_trailer was found then null is returned, and likewise we only accept a disk_trailer with a seekvalue that points to a disk_entry and both parts have valid PK\-magic parts. Beyond some sanity check we try to catch a common brokeness with zip archives that still allows us to find the start of the zip central directory.
+.PP
+The
+\fBzzip_disk_findnext\fR
+function takes an existing disk_entry in the central root directory (e.g. from zzip_disk_findfirst) and returns the next entry within in the given bounds of the mmapped file area.
+.PP
+The
+\fBzzip_disk_findmatch\fR
+function uses a compare\-function with an additional argument and it is called just like fnmatch(3) from POSIX.2 AD:1993), i.e. the argument filespec first and the ziplocal filename second with the integer\-flags put in as third to the indirect call. If the platform has fnmatch available then null\-compare will use that one and otherwise we fall back to mere strcmp, so if you need fnmatch searching then please provide an implementation somewhere else. \- use null as argument for "after"\-entry when searching the first matching entry, or the last disk_entry return\-value to find the next entry matching the given filespec.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004,2006 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/396            1170369184  1001  0     100644  30        `
+.so man3/zzip_disk_findfile.3
+/419            1170369184  1001  0     100644  30        `
+.so man3/zzip_disk_findfile.3
+/442            1170369184  1001  0     100644  30        `
+.so man3/zzip_disk_findfile.3
+/464            1170369184  1001  0     100644  2735      `
+.\"     Title: zzip_disk_fopen
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DISK_FOPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_disk_fopen, zzip_disk_entry_fopen, zzip_disk_fread, zzip_disk_fclose, zzip_disk_feof \- openening a file part wrapped within a (mmapped) zip archive
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/mmapped.h>
+.fi
+.ft
+.HP 44
+.BI "zzip__new__ ZZIP_DISK_FILE* zzip_disk_fopen((ZZIP_DISK*\ disk,\ char*\ filename));"
+.HP 50
+.BI "zzip__new__ ZZIP_DISK_FILE* zzip_disk_entry_fopen((ZZIP_DISK*\ disk,\ ZZIP_DISK_ENTRY*\ entry));"
+.HP 28
+.BI "zzip_size_t zzip_disk_fread((void*\ ptr,\ zzip_size_t\ sized,\ zzip_size_t\ nmemb,\ ZZIP_DISK_FILE*\ file));"
+.HP 21
+.BI "int zzip_disk_fclose((ZZIP_DISK_FILE*\ file));"
+.HP 19
+.BI "int zzip_disk_feof((ZZIP_DISK_FILE*\ file));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_disk_fopen\fR
+function opens a file found by name, so it does a search into the zip central directory with
+\fBzzip_disk_findfile\fR
+and whatever is found first is given to
+\fBzzip_disk_entry_fopen\fR
+.PP
+the ZZIP_DISK_FILE* is rather simple in just encapsulating the arguments given to the
+\fBzzip_disk_entry_fopen\fR
+function plus a zlib deflate buffer. Note that the ZZIP_DISK pointer does already contain the full mmapped file area of a zip disk, so open()ing a file part within that area happens to be a lookup of its bounds and encoding. That information is memorized on the ZZIP_DISK_FILE so that subsequent _read() operations will be able to get the next data portion or return an eof condition for that file part wrapped in the zip archive.
+.PP
+The
+\fBzzip_disk_fread\fR
+function reads more bytes into the output buffer specified as arguments. The return value is null on eof or error, the stdio\-like interface can not distinguish between these so you need to check with
+\fBzzip_disk_feof\fR
+for the difference.
+.PP
+The
+\fBzzip_disk_fclose\fR
+function releases any zlib decoder info needed for decompression and dumps the ZZIP_DISK_FILE* then.
+.PP
+The
+\fBzzip_disk_feof\fR
+function allows to distinguish an error from an eof condition. Actually, if we found an error but we did already reach eof then we just keep on saying that it was an eof, so the app can just continue.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004,2006 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/483            1170369184  1001  0     100644  27        `
+.so man3/zzip_disk_fopen.3
+
+/502            1170369184  1001  0     100644  26        `
+.so man3/zzip_disk_mmap.3
+/520            1170369184  1001  0     100644  2516      `
+.\"     Title: zzip_disk_mmap
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DISK_MMAP" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_disk_mmap, zzip_disk_init, zzip_disk_new, zzip_disk_munmap, zzip_disk_open, zzip_disk_close \- turn a filehandle into a mmapped zip disk archive handle
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/mmapped.h>
+.fi
+.ft
+.HP 38
+.BI "zzip__new__ ZZIP_DISK* zzip_disk_mmap((int\ fd));"
+.HP 19
+.BI "int zzip_disk_init((ZZIP_DISK*\ disk,\ void*\ buffer,\ zzip_size_t\ buflen));"
+.HP 37
+.BI "zzip__new__ ZZIP_DISK* zzip_disk_new((void));"
+.HP 21
+.BI "int zzip_disk_munmap((ZZIP_DISK*\ disk));"
+.HP 38
+.BI "ZZIP_DISK* zzip__new__ zzip_disk_open((char*\ filename));"
+.HP 20
+.BI "int zzip_disk_close((ZZIP_DISK*\ disk));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_disk_mmap\fR
+function uses the given file\-descriptor to detect the length of the file and calls the system
+\fBmmap(2)\fR
+to put it in main memory. If it is successful then a newly allocated ZZIP_DISK* is returned with disk\->buffer pointing to the mapview of the zipdisk content.
+.PP
+The
+\fBzzip_disk_init\fR
+function does primary initialization of a disk\-buffer struct.
+.PP
+The
+\fBzzip_disk_new\fR
+function allocates a new disk\-buffer with
+\fBmalloc(3)\fR
+.PP
+The
+\fBzzip_disk_munmap\fR
+function is the inverse of
+\fBzzip_disk_mmap\fR
+and using the system munmap(2) on the buffer area and
+\fBfree(3)\fR
+on the ZZIP_DISK structure.
+.PP
+The
+\fBzzip_disk_open\fR
+function opens the given archive by name and turn the filehandle to
+\fBzzip_disk_mmap\fR
+for bringing it to main memory. If it can not be
+\fBmmap(2)\fR'ed then we slurp the whole file into a newly
+\fBmalloc(2)\fR'ed memory block. Only if that fails too then we return null. Since handling of disk\->buffer is ambigous it should not be snatched away please.
+.PP
+The
+\fBzzip_disk_close\fR
+function will release all data needed to access a (mmapped) zip archive, including any malloc()ed blocks, sharedmem mappings and it dumps the handle struct as well.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004,2006 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/538            1170369184  1001  0     100644  26        `
+.so man3/zzip_disk_mmap.3
+zzip_disk_new.3/1170369184  1001  0     100644  26        `
+.so man3/zzip_disk_mmap.3
+/558            1170369184  1001  0     100644  26        `
+.so man3/zzip_disk_mmap.3
+/576            1170369185  1001  0     100644  2246      `
+.\"     Title: zzip_entry_data_offset
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_ENTRY_DATA_OFFS" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_entry_data_offset, zzip_entry_fread_file_header, zzip_entry_strdup_name \- helper functions for (fseeko) zip access api
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/fseeko.h>
+.fi
+.ft
+.HP 34
+.BI "zzip_off_t zzip_entry_data_offset((ZZIP_ENTRY*\ entry));"
+.HP 47
+.BI "static zzip_off_t zzip_entry_fread_file_header((ZZIP_ENTRY*\ entry,\ struct\ zzip_file_header*\ file_header));"
+.HP 41
+.BI "zzip__new__ char* zzip_entry_strdup_name((ZZIP_ENTRY*\ entry));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_entry_data_offset\fR
+functions returns the seekval offset of the data portion of the file referenced by the given zzip_entry. It requires an intermediate check of the file_header structure (i.e. it reads it from disk). After this call, the contained diskfile readposition is already set to the data_offset returned here. On error \-1 is returned.
+.PP
+The
+\fBzzip_entry_fread_file_header\fR
+functions read the correspoding struct zzip_file_header from the zip disk of the given "entry". The returned off_t points to the end of the file_header where the current fseek pointer has stopped. This is used to immediatly parse out any filename/extras block following the file_header. The return value is null on error.
+.PP
+The
+\fBzzip_entry_strdup_name\fR
+function is a big helper despite its little name: in a zip file the encoded filenames are usually NOT zero\-terminated but for common usage with libc we need it that way. Secondly, the filename SHOULD be present in the zip central directory but if not then we fallback to the filename given in the file_header of each compressed data portion.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/602            1170369185  1001  0     100644  28        `
+.so man3/zzip_entry_fopen.3
+/623            1170369185  1001  0     100644  28        `
+.so man3/zzip_entry_fopen.3
+/642            1170369185  1001  0     100644  28        `
+.so man3/zzip_entry_fopen.3
+/662            1170369185  1001  0     100644  5069      `
+.\"     Title: zzip_entry_findfile
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_ENTRY_FINDFILE" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_entry_findfile, zzip_entry_findfirst, zzip_entry_findnext, zzip_entry_free, zzip_entry_findmatch \- search for files in the (fseeko) zip central directory
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/fseeko.h>
+.fi
+.ft
+.HP 44
+.BI "zzip__new__ ZZIP_ENTRY* zzip_entry_findfile((FILE*\ disk,\ char*\ filename,\ ZZIP_ENTRY*\ _zzip_restrict\ entry,\ zzip_strcmp_fn_t\ compare));"
+.HP 45
+.BI "zzip__new__ ZZIP_ENTRY* zzip_entry_findfirst((FILE*\ disk));"
+.HP 44
+.BI "zzip__new__ ZZIP_ENTRY* zzip_entry_findnext((ZZIP_ENTRY*\ _zzip_restrict\ entry));"
+.HP 20
+.BI "int zzip_entry_free((ZZIP_ENTRY*\ entry));"
+.HP 45
+.BI "zzip__new__ ZZIP_ENTRY* zzip_entry_findmatch((FILE*\ disk,\ char*\ filespec,\ ZZIP_ENTRY*\ _zzip_restrict\ entry,\ zzip_fnmatch_fn_t\ compare,\ int\ flags));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_entry_findfile\fR
+function is given a filename as an additional argument, to find the disk_entry matching a given filename. The compare\-function is usually strcmp or strcasecmp or perhaps strcoll, if null then strcmp is used. \- use null as argument for "old"\-entry when searching the first matching entry, otherwise the last returned value if you look for other entries with a special "compare" function (if null then a doubled search is rather useless with this variant of _findfile). If no further entry is found then null is returned and any "old"\-entry gets already free()d.
+.PP
+The
+\fBzzip_entry_findfirst\fR
+function is the first call of all the zip access functions here. It contains the code to find the first entry of the zip central directory. Here we require the stdio handle to represent a real zip file where the disk_trailer is _last_ in the file area, so that its position would be at a fixed offset from the end of the file area if not for the comment field allowed to be of variable length (which needs us to do a little search for the disk_tailer). However, in this simple implementation we disregard any disk_trailer info telling about multidisk archives, so we just return a pointer to the first entry in the zip central directory of that file.
+.PP
+For an actual means, we are going to search backwards from the end of the mmaped block looking for the PK\-magic signature of a disk_trailer. If we see one then we check the rootseek value to find the first disk_entry of the root central directory. If we find the correct PK\-magic signature of a disk_entry over there then we assume we are done and we are going to return a pointer to that label.
+.PP
+The return value is a pointer to the first zzip_disk_entry being checked to be within the bounds of the file area specified by the arguments. If no disk_trailer was found then null is returned, and likewise we only accept a disk_trailer with a seekvalue that points to a disk_entry and both parts have valid PK\-magic parts. Beyond some sanity check we try to catch a common brokeness with zip archives that still allows us to find the start of the zip central directory.
+.PP
+The
+\fBzzip_entry_findnext\fR
+function takes an existing "entry" in the central root directory (e.g. from zzip_entry_findfirst) and moves it to point to the next entry. On error it returns 0, otherwise the old entry. If no further match is found then null is returned and the entry already free()d. If you want to stop searching for matches before that case then please call
+\fBzzip_entry_free\fR
+on the cursor struct ZZIP_ENTRY.
+.PP
+the
+\fBzzip_entry_free\fR
+function releases the malloc()ed areas needed for zzip_entry, the pointer is invalid afterwards. The
+\fBzzip_entry_free\fR
+function has #define synonyms of zzip_entry_findlast(), zzip_entry_findlastfile(), zzip_entry_findlastmatch()
+.PP
+The
+\fBzzip_entry_findmatch\fR
+function uses a compare\-function with an additional argument and it is called just like fnmatch(3) from POSIX.2 AD:1993), i.e. the argument filespec first and the ziplocal filename second with the integer\-flags put in as third to the indirect call. If the platform has fnmatch available then null\-compare will use that one and otherwise we fall back to mere strcmp, so if you need fnmatch searching then please provide an implementation somewhere else. \- use null as argument for "after"\-entry when searching the first matching entry, or the last disk_entry return\-value to find the next entry matching the given filespec. If no further entry is found then null is returned and any "old"\-entry gets already free()d.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/685            1170369185  1001  0     100644  31        `
+.so man3/zzip_entry_findfile.3
+
+/709            1170369185  1001  0     100644  31        `
+.so man3/zzip_entry_findfile.3
+
+/733            1170369185  1001  0     100644  31        `
+.so man3/zzip_entry_findfile.3
+
+/756            1170369185  1001  0     100644  2792      `
+.\"     Title: zzip_entry_fopen
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_ENTRY_FOPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_entry_fopen, zzip_entry_ffile, zzip_entry_fread, zzip_entry_fclose, zzip_entry_feof \- open a file within a zip disk for reading
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/fseeko.h>
+.fi
+.ft
+.HP 46
+.BI "zzip__new__ ZZIP_ENTRY_FILE* zzip_entry_fopen((ZZIP_ENTRY*\ entry,\ int\ takeover));"
+.HP 46
+.BI "zzip__new__ ZZIP_ENTRY_FILE* zzip_entry_ffile((FILE*\ disk,\ char*\ filename));"
+.HP 29
+.BI "zzip_size_t zzip_entry_fread((void*\ ptr,\ zzip_size_t\ sized,\ zzip_size_t\ nmemb,\ ZZIP_ENTRY_FILE*\ file));"
+.HP 22
+.BI "int zzip_entry_fclose((ZZIP_ENTRY_FILE*\ file));"
+.HP 20
+.BI "int zzip_entry_feof((ZZIP_ENTRY_FILE*\ file));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_entry_fopen\fR
+function does take an "entry" argument and copies it (or just takes it over as owner) to a new ZZIP_ENTRY_FILE handle structure. That structure contains also a zlib buffer for decoding. The
+\fBzzip_entry_fopen\fR
+function does seek to the file_header of the given "entry" and validates it for the data buffer following it. We do also prefetch some data from the data buffer thereby trying to match the disk pagesize for faster access later. The
+\fBzzip_entry_fread\fR
+will then read in chunks of pagesizes which is the size of the internal readahead buffer. If an error occurs then null is returned.
+.PP
+The
+\fBzzip_entry_ffile\fR
+function opens a file found by name, so it does a search into the zip central directory with
+\fBzzip_entry_findfile\fR
+and whatever is found first is given to
+\fBzzip_entry_fopen\fR
+.PP
+The
+\fBzzip_entry_fread\fR
+function reads more bytes into the output buffer specified as arguments. The return value is null on eof or error, the stdio\-like interface can not distinguish between these so you need to check with
+\fBzzip_entry_feof\fR
+for the difference.
+.PP
+The
+\fBzzip_entry_fclose\fR
+function releases any zlib decoder info needed for decompression and dumps the ZZIP_ENTRY_FILE struct then.
+.PP
+The
+\fBzzip_entry_feof\fR
+function allows to distinguish an error from an eof condition. Actually, if we found an error but we did already reach eof then we just keep on saying that it was an eof, so the app can just continue.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/776            1170369185  1001  0     100644  28        `
+.so man3/zzip_entry_fopen.3
+/796            1170369185  1001  0     100644  34        `
+.so man3/zzip_entry_data_offset.3
+/828            1170369185  1001  0     100644  31        `
+.so man3/zzip_entry_findfile.3
+
+/847            1170369185  1001  0     100644  34        `
+.so man3/zzip_entry_data_offset.3
+zzip_errno.3/   1170369182  1001  0     100644  1103      `
+.\"     Title: zzip_errno
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_ERRNO" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_errno \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 15
+.BI "int zzip_errno((int\ errcode));"
+.SH "DESCRIPTION"
+.PP
+map the error code to a system error code. This is used for the drop\-in replacement functions to return a value that can be interpreted correctly by code sections that are unaware of the fact they their
+\fBopen(2)\fR
+call had been diverted to a file inside a zip\-archive.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+zzip_error.3/   1170369182  1001  0     100644  1085      `
+.\"     Title: zzip_error
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_ERROR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_error, zzip_seterror \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 15
+.BI "int zzip_error((ZZIP_DIR\ *\ dir));"
+.HP 19
+.BI "void zzip_seterror((ZZIP_DIR\ *\ dir,\ int\ errcode));"
+.SH "DESCRIPTION"
+.PP
+just returns dir\->errcode of the ZZIP_DIR handle see:
+\fBzzip_dir_open\fR,
+\fBzzip_diropen\fR,
+\fBzzip_readdir\fR,
+\fBzzip_dir_read\fR
+.PP
+The
+\fBzzip_seterror\fR
+function just does dir\->errcode = errcode
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+zzip_fclose.3/  1170369182  1001  0     100644  1101      `
+.\"     Title: zzip_fclose
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_FCLOSE" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_fclose, zzip_close \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 16
+.BI "int zzip_fclose((ZZIP_FILE\ *\ fp));"
+.HP 15
+.BI "int zzip_close((ZZIP_FILE*\ fp));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_fclose\fR
+function closes the given ZZIP_FILE handle.
+.PP
+If the ZZIP_FILE wraps a normal stat'fd then it is just that int'fd that is being closed and the otherwise empty ZZIP_FILE gets freed.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/873            1170369182  1001  0     100644  994       `
+.\"     Title: __zzip_fetch_disk_trailer
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "__ZZIP_FETCH_DISK_TR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+__zzip_fetch_disk_trailer \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 30
+.BI "int __zzip_fetch_disk_trailer((int\ fd,\ zzip_off_t\ filesize,\ struct\ _disk_trailer\ *\ _zzip_restrict\ trailer,\ zzip_plugin_io_t\ io));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/902            1170369182  1001  0     100644  878       `
+.\"     Title: zzip_file_close
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_FILE_CLOSE" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_file_close \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 20
+.BI "int zzip_file_close((ZZIP_FILE\ *\ fp));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/921            1170369182  1001  0     100644  917       `
+.\"     Title: zzip_file_open
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_FILE_OPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_file_open \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 27
+.BI "ZZIP_FILE * zzip_file_open((ZZIP_DIR\ *\ dir,\ zzip_char_t*\ name,\ int\ o_mode));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/939            1170369182  1001  0     100644  1496      `
+.\"     Title: zzip_file_read
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_FILE_READ" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_file_read \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 28
+.BI "zzip_ssize_t zzip_file_read((ZZIP_FILE\ *\ fp,\ void\ *\ buf,\ zzip_size_t\ len));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_file_read\fR
+functions read data from zip\-contained file.
+.PP
+It works like
+\fBread(2)\fR
+and will fill the given buffer with bytes from the opened file. It will return the number of bytes read, so if the
+\fBEOF\fR
+is encountered you will be prompted with the number of bytes actually read.
+.PP
+This is the routines that needs the
+\fBbuf32k\fR
+buffer, and it would have need for much more polishing but it does already work quite well.
+.PP
+Note: the 32K buffer is rather big. The original inflate\-algorithm required just that but the latest zlib would work just fine with a smaller buffer.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/957            1170369182  1001  0     100644  1526      `
+.\"     Title: zzip_file_real
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_FILE_REAL" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_file_real, zzip_dir_real, zzip_realdir, zzip_realfd \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 19
+.BI "int zzip_file_real((ZZIP_FILE*\ fp));"
+.HP 18
+.BI "int zzip_dir_real((ZZIP_DIR*\ dir));"
+.HP 19
+.BI "void* zzip_realdir((ZZIP_DIR*\ dir));"
+.HP 16
+.BI "int zzip_realfd((ZZIP_FILE*\ fp));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_dir_real\fR
+function checks if the ZZIP_DIR\-handle is wrapping a real directory or a zip\-archive. Returns 1 for a stat'able directory, and 0 for a handle to zip\-archive.
+.PP
+The
+\fBzzip_realdir\fR
+function returns the posix DIR* handle (if one exists). Check before with
+\fBzzip_dir_real\fR
+if the the ZZIP_DIR points to a real directory.
+.PP
+The
+\fBzzip_realfd\fR
+function returns the posix file descriptor (if one exists). Check before with
+\fBzzip_file_real\fR
+if the the ZZIP_FILE points to a real file.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/975            1170369182  1001  0     100644  25        `
+.so man3/zzip_dir_stat.3
+
+zzip_fopen.3/   1170369182  1001  0     100644  4206      `
+.\"     Title: zzip_fopen
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_FOPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_fopen, zzip_freopen \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 22
+.BI "ZZIP_FILE* zzip_fopen((zzip_char_t*\ filename,\ zzip_char_t*\ mode));"
+.HP 24
+.BI "ZZIP_FILE* zzip_freopen((zzip_char_t*\ filename,\ zzip_char_t*\ mode,\ ZZIP_FILE*\ stream));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_fopen\fR
+function will
+\fBfopen(3)\fR
+a real/zipped file.
+.PP
+It has some magic functionality builtin \- it will first try to open the given
+\fIfilename\fR
+as a normal file. If it does not exist, the given path to the filename (if any) is split into its directory\-part and the file\-part. A ".zip" extension is then added to the directory\-part to create the name of a zip\-archive. That zip\-archive (if it exists) is being searched for the file\-part, and if found a zzip\-handle is returned.
+.PP
+Note that if the file is found in the normal fs\-directory the returned structure is mostly empty and the
+\fBzzip_read\fR
+call will use the libc
+\fBread\fR
+to obtain data. Otherwise a
+\fBzzip_file_open\fR
+is performed and any error mapped to
+\fBerrno(3)\fR.
+.PP
+unlike the posix\-wrapper
+\fBzzip_open\fR
+the mode\-argument is a string which allows for more freedom to support the extra zzip modes called ZZIP_CASEINSENSITIVE and ZZIP_IGNOREPATH. Currently, this
+\fBzzip_fopen\fR
+call will convert the following characters in the mode\-string into their corrsponding mode\-bits:
+.TP 4
+\(bu
+
+"r" : O_RDONLY :
+read\-only
+.TP 4
+\(bu
+
+"b" : O_BINARY :
+binary (win32 specific)
+.TP 4
+\(bu
+
+"f" : O_NOCTTY :
+no char device (unix)
+.TP 4
+\(bu
+
+"i" : ZZIP_CASELESS :
+inside zip file
+.TP 4
+\(bu
+
+"*" : ZZIP_NOPATHS :
+inside zip file only
+.PP
+all other modes will be ignored for zip\-contained entries but they are transferred for compatibility and portability, including these extra sugar bits:
+.TP 4
+\(bu
+
+"x" : O_EXCL :
+fail if file did exist
+.TP 4
+\(bu
+
+"s" : O_SYNC :
+synchronized access
+.TP 4
+\(bu
+
+"n" : O_NONBLOCK :
+nonblocking access
+.TP 4
+\(bu
+
+"z#" : compression level :
+for zlib
+.TP 4
+\(bu
+
+"g#" : group access :
+unix access bits
+.TP 4
+\(bu
+
+"u#" : owner access :
+unix access bits
+.TP 4
+\(bu
+
+"o#" : world access :
+unix access bits
+.PP
+... the access bits are in traditional unix bit format with 7 = read/write/execute, 6 = read/write, 4 = read\-only.
+.PP
+The default access mode is 0664, and the compression level is ignored since the lib can not yet write zip files, otherwise it would be the initialisation value for the zlib deflateInit where 0 = no\-compression, 1 = best\-speed, 9 = best\-compression.
+.PP
+The
+\fBzzip_freopen\fR
+function receives an additional argument pointing to a ZZIP_FILE* being already in use. If this extra argument is null then the
+\fBzzip_freopen\fR
+function is identical with calling
+\fBzzip_fopen\fR
+.PP
+Per default, the old file stream is closed and only the internal structures associated with it are kept. These internal structures may be reused for the return value, and this is a lot quicker when the filename matches a zipped file that is incidently in the very same zip arch as the old filename wrapped in the stream struct.
+.PP
+That's simply because the zip arch's central directory does not need to be read again. As an extension for the
+\fBzzip_freopen\fR
+function, if the mode\-string contains a "q" then the old stream is not closed but left untouched, instead it is only given as a hint that a new file handle may share/copy the zip arch structures of the old file handle if that is possible, i.e when they are in the same zip arch.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+.SH "SEE ALSO"
+.PP
+fopen(2)
+zzip_fread.3/   1170369182  1001  0     100644  21        `
+.so man3/zzip_read.3
+
+zzip_freopen.3/ 1170369182  1001  0     100644  22        `
+.so man3/zzip_fopen.3
+zzip_fstat.3/   1170369182  1001  0     100644  25        `
+.so man3/zzip_dir_stat.3
+
+/993            1170369182  1001  0     100644  24        `
+.so man3/zzip_init_io.3
+/1016           1170369182  1001  0     100644  922       `
+.\"     Title: zzip_inflate_init
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_INFLATE_INIT" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_inflate_init \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 29
+.BI "static int zzip_inflate_init((ZZIP_FILE\ *\ fp,\ struct\ zzip_dir_hdr*\ hdr));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+zzip_init_io.3/ 1170369182  1001  0     100644  1089      `
+.\"     Title: zzip_init_io
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_INIT_IO" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_init_io, zzip_get_default_io \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 17
+.BI "int zzip_init_io((zzip_plugin_io_handlers_t\ io,\ int\ flags));"
+.HP 37
+.BI "zzip_plugin_io_t zzip_get_default_io(());"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_get_default_io\fR
+function returns a zzip_plugin_io_t handle to static defaults wrapping the posix io file functions for actual file access.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Mike Nordell <tamlin\-@\-algonet\-se>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+zzip_open.3/    1170369182  1001  0     100644  3940      `
+.\"     Title: zzip_open
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_OPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_open, zzip_open_ext_io, zzip_open_shared_io \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 21
+.BI "ZZIP_FILE* zzip_open((zzip_char_t*\ filename,\ int\ o_flags));"
+.HP 28
+.BI "ZZIP_FILE* zzip_open_ext_io((zzip_char_t*\ filename,\ int\ o_flags,\ int\ o_modes,\ zzip_strings_t*\ ext,\ zzip_plugin_io_t\ io));"
+.HP 31
+.BI "ZZIP_FILE* zzip_open_shared_io((ZZIP_FILE*\ stream,\ zzip_char_t*\ filename,\ int\ o_flags,\ int\ o_modes,\ zzip_strings_t*\ ext,\ zzip_plugin_io_t\ io));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_open\fR
+function will
+\fBopen(2)\fR
+a real/zipped file
+.PP
+It has some magic functionality builtin \- it will first try to open the given
+\fIfilename\fR
+as a normal file. If it does not exist, the given path to the filename (if any) is split into its directory\-part and the file\-part. A ".zip" extension is then added to the directory\-part to create the name of a zip\-archive. That zip\-archive (if it exists) is being searched for the file\-part, and if found a zzip\-handle is returned.
+.PP
+Note that if the file is found in the normal fs\-directory the returned structure is mostly empty and the
+\fBzzip_read\fR
+call will use the libc
+\fBread\fR
+to obtain data. Otherwise a
+\fBzzip_file_open\fR
+is performed and any error mapped to
+\fBerrno(3)\fR.
+.PP
+There was a possibility to transfer zziplib\-specific openmodes through o_flags but you should please not use them anymore and look into
+\fBzzip_open_ext_io\fR
+to submit them down. The
+\fBzzip_open\fR
+function is shallow in that it just extracts the zzipflags and calls
+.TP 4
+\(bu
+
+zzip_open_ext_io(filename, o_flags, zzipflags|0664, 0, 0)
+.PP
+you must stop using this extra functionality (not well known anyway) since zzip_open might be later usable to open files for writing in which case the _EXTRAFLAGS will get in conflict.
+.PP
+compare with
+\fBopen(2)\fR
+and
+\fBzzip_fopen\fR
+.PP
+The
+\fBzzip_open_ext_io\fR
+function uses explicit ext and io instead of the internal defaults, setting them to zero is equivalent to
+\fBzzip_open\fR
+.PP
+note that the two flag types have been split into an o_flags (for fcntl\-like openflags) and o_modes where the latter shall carry the zzip_flags and possibly accessmodes for unix filesystems. Since this version of zziplib can not write zipfiles, it is not yet used for anything else than zzip\-specific modeflags.
+.PP
+The
+\fBzzip_open_shared_io\fR
+function takes an extra stream argument \- if a handle has been then ext/io can be left null and the new stream handle will pick up the ext/io. This should be used only in specific environment however since
+\fBzzip_file_real\fR
+does not store any ext\-sequence.
+.PP
+The benefit for the
+\fBzzip_open_shared_io\fR
+function comes in when the old file handle was openened from a file within a zip archive. When the new file is in the same zip archive then the internal zzip_dir structures will be shared. It is even quicker, as no check needs to be done anymore trying to guess the zip archive place in the filesystem, here we just check whether the zip archive's filepath is a prefix part of the filename to be opened.
+.PP
+Note that the
+\fBzzip_open_shared_io\fR
+function is also used by
+\fBzzip_freopen\fR
+that will unshare the old handle, thereby possibly closing the handle.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+zzip_opendir.3/ 1170369182  1001  0     100644  1130      `
+.\"     Title: zzip_opendir
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_OPENDIR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_opendir, zzip_opendir_ext_io \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 23
+.BI "ZZIP_DIR* zzip_opendir((zzip_char_t*\ filename));"
+.HP 30
+.BI "ZZIP_DIR* zzip_opendir_ext_io((zzip_char_t*\ filename,\ int\ o_modes,\ zzip_strings_t*\ ext,\ zzip_plugin_io_t\ io));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_opendir_ext_io\fR
+function uses explicit ext and io instead of the internal defaults, setting them to zero is equivalent to
+\fBzzip_opendir\fR
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/1037           1170369182  1001  0     100644  24        `
+.so man3/zzip_opendir.3
+/1060           1170369182  1001  0     100644  21        `
+.so man3/zzip_open.3
+
+/1080           1170369182  1001  0     100644  21        `
+.so man3/zzip_open.3
+
+/1103           1170369182  1001  0     100644  1000      `
+.\"     Title: __zzip_parse_root_directory
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "__ZZIP_PARSE_ROOT_DI" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+__zzip_parse_root_directory \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 32
+.BI "int __zzip_parse_root_directory((int\ fd,\ struct\ _disk_trailer\ *\ trailer,\ struct\ zzip_dir_hdr\ **\ hdr_return,\ zzip_plugin_io_t\ io));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+zzip_read.3/    1170369182  1001  0     100644  1528      `
+.\"     Title: zzip_read
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_READ" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_read, zzip_fread \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 23
+.BI "zzip_ssize_t zzip_read((ZZIP_FILE\ *\ fp,\ void\ *\ buf,\ zzip_size_t\ len));"
+.HP 23
+.BI "zzip_size_t zzip_fread((void\ *ptr,\ zzip_size_t\ size,\ zzip_size_t\ nmemb,\ ZZIP_FILE\ *file));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_read\fR
+function will read(2) data from a real/zipped file.
+.PP
+the replacement for
+\fBread(2)\fR
+will fill the given buffer with bytes from the opened file. It will return the number of bytes read, so if the EOF is encountered you will be prompted with the number of bytes actually read.
+.PP
+If the file\-handle is wrapping a stat'able file then it will actually just perform a normal
+\fBread(2)\fR\-call, otherwise
+\fBzzip_file_read\fR
+is called to decompress the data stream and any error is mapped to
+\fBerrno(3)\fR.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+zzip_readdir.3/ 1170369182  1001  0     100644  842       `
+.\"     Title: zzip_readdir
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_READDIR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_readdir \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 26
+.BI "ZZIP_DIRENT* zzip_readdir((ZZIP_DIR\ *\ dir));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+zzip_realdir.3/ 1170369182  1001  0     100644  26        `
+.so man3/zzip_file_real.3
+zzip_realfd.3/  1170369182  1001  0     100644  26        `
+.so man3/zzip_file_real.3
+zzip_rewind.3/  1170369182  1001  0     100644  1004      `
+.\"     Title: zzip_rewind
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_REWIND" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_rewind \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 16
+.BI "int zzip_rewind((ZZIP_FILE\ *fp));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_rewind\fR
+function will rewind a real/zipped file.
+.PP
+It seeks to the beginning of this file's data in the zip, or the beginning of the file for a stat'fd.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/1134           1170369182  1001  0     100644  1469      `
+.\"     Title: zzip_rewinddir
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_REWINDDIR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_rewinddir, zzip_telldir, zzip_seekdir \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 20
+.BI "void zzip_rewinddir((ZZIP_DIR\ *\ dir));"
+.HP 24
+.BI "zzip_off_t zzip_telldir((ZZIP_DIR*\ dir));"
+.HP 18
+.BI "void zzip_seekdir((ZZIP_DIR*\ dir,\ zzip_off_t\ offset));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_rewinddir\fR
+function is the equivalent of a
+\fBrewinddir(2)\fR
+for a realdir or the zipfile in place of a directory. The ZZIP_DIR handle returned from
+\fBzzip_opendir\fR
+has a flag saying realdir or zipfile. As for a zipfile, the filenames will include the filesubpath, so take care.
+.PP
+The
+\fBzzip_telldir\fR
+function is the equivalent of
+\fBtelldir(2)\fR
+for a realdir or zipfile.
+.PP
+The
+\fBzzip_seekdir\fR
+function is the equivalent of
+\fBseekdir(2)\fR
+for a realdir or zipfile.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+zzip_seek.3/    1170369182  1001  0     100644  1541      `
+.\"     Title: zzip_seek
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_SEEK" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_seek \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 21
+.BI "zzip_off_t zzip_seek((ZZIP_FILE\ *\ fp,\ zzip_off_t\ offset,\ int\ whence));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_seek\fR
+function will perform a
+\fBlseek(2)\fR
+operation on a real/zipped file
+.PP
+It will try to seek to the offset specified by offset, relative to whence, which is one of SEEK_SET, SEEK_CUR or SEEK_END.
+.PP
+If the file\-handle is wrapping a stat'able file then it will actually just perform a normal
+\fBlseek(2)\fR\-call. Otherwise the relative offset is calculated, negative offsets are transformed into positive ones by rewinding the file, and then data is read until the offset is reached. This can make the function terribly slow, but this is how gzio implements it, so I'm not sure there is a better way without using the internals of the algorithm.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+zzip_seekdir.3/ 1170369182  1001  0     100644  26        `
+.so man3/zzip_rewinddir.3
+zzip_seterror.3/1170369182  1001  0     100644  22        `
+.so man3/zzip_error.3
+zzip_strerror.3/1170369182  1001  0     100644  1431      `
+.\"     Title: zzip_strerror
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_STRERROR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_strerror, zzip_strerror_of \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 27
+.BI "zzip_char_t* zzip_strerror((int\ errcode));"
+.HP 30
+.BI "zzip_char_t* zzip_strerror_of((ZZIP_DIR*\ dir));"
+.SH "DESCRIPTION"
+.PP
+returns the static string for the given error code. The error code can be either a normal system error (a positive error code will flag this), it can be
+\fBlibz\fR
+error code (a small negative error code will flag this) or it can be an error code from
+\fBlibzzip\fR, which is an negative value lower than
+\fBZZIP_ERROR\fR
+.PP
+The
+\fBzzip_strerror_of\fR
+function fetches the errorcode from the
+\fBDIR\-handle\fR
+and runs it through
+\fBzzip_strerror\fR
+to obtain the static string describing the error.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/1152           1170369182  1001  0     100644  25        `
+.so man3/zzip_strerror.3
+
+zzip_tell.3/    1170369182  1001  0     100644  1267      `
+.\"     Title: zzip_tell
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_TELL" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_tell \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 21
+.BI "zzip_off_t zzip_tell((ZZIP_FILE\ *\ fp));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_tell\fR
+function will
+\fBtell(2)\fR
+the current position in a real/zipped file
+.PP
+It will return the current offset within the real/zipped file, measured in uncompressed bytes for the zipped\-file case.
+.PP
+If the file\-handle is wrapping a stat'able file then it will actually just perform a normal
+\fBtell(2)\fR\-call, otherwise the offset is calculated from the amount of data left and the total uncompressed size;
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+zzip_telldir.3/ 1170369182  1001  0     100644  26        `
+.so man3/zzip_rewinddir.3
+/1172           1170369182  1001  0     100644  938       `
+.\"     Title: __zzip_try_open
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "__ZZIP_TRY_OPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+__zzip_try_open \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 20
+.BI "int __zzip_try_open((zzip_char_t*\ filename,\ int\ filemode,\ zzip_strings_t*\ ext,\ zzip_plugin_io_t\ io));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+zzip_close.3/   1174235125  1001  0     100644  23        `
+.so man3/zzip_fclose.3
+
+zzip_closedir.3/1174235125  1001  0     100644  835       `
+.\"     Title: zzip_closedir
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_CLOSEDIR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_closedir \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 18
+.BI "int zzip_closedir((ZZIP_DIR*\ dir));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/1191           1174235125  1001  0     100644  839       `
+.\"     Title: zzip_compr_str
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_COMPR_STR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_compr_str \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 28
+.BI "zzip_char_t* zzip_compr_str((int\ compr));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/1209           1174235125  1001  0     100644  33        `
+.so man3/zzip_dir_alloc_ext_io.3
+
+/1227           1174235125  1001  0     100644  1290      `
+.\"     Title: zzip_dir_alloc_ext_io
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DIR_ALLOC_EXT_I" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_dir_alloc_ext_io, zzip_dir_alloc \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 32
+.BI "ZZIP_DIR* zzip_dir_alloc_ext_io((zzip_strings_t*\ ext,\ const\ zzip_plugin_io_t\ io));"
+.HP 25
+.BI "ZZIP_DIR* zzip_dir_alloc((zzip_strings_t*\ fileext));"
+.SH "DESCRIPTION"
+.PP
+the
+\fBzzip_dir_alloc\fR
+function is obsolete \- it was generally used for implementation and exported to let other code build on it. It is now advised to use
+\fBzzip_dir_alloc_ext_io\fR
+now on explicitly, just set that second argument to zero to achieve the same functionality as the old style.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/1252           1174235125  1001  0     100644  25        `
+.so man3/zzip_dir_free.3
+
+zzip_dirfd.3/   1174235125  1001  0     100644  26        `
+.so man3/zzip_dirhandle.3
+/1270           1174235125  1001  0     100644  1521      `
+.\"     Title: zzip_dir_fdopen
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DIR_FDOPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_dir_fdopen, zzip_dir_fdopen_ext_io \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 27
+.BI "ZZIP_DIR * zzip_dir_fdopen((int\ fd,\ zzip_error_t\ *\ errcode_p));"
+.HP 34
+.BI "ZZIP_DIR * zzip_dir_fdopen_ext_io((int\ fd,\ zzip_error_t\ *\ errcode_p,\ zzip_strings_t*\ ext,\ const\ zzip_plugin_io_t\ io));"
+.SH "DESCRIPTION"
+.PP
+used by the
+\fBzzip_dir_open\fR
+and zzip_opendir(2) call. Opens the zip\-archive as specified with the fd which points to an already openend file. The
+\fBzzip_dir_fdopen\fR
+function then search and parse the zip's central directory.
+.PP
+NOTE: refcount is zero, so an _open/_close pair will also delete this _dirhandle
+.PP
+the
+\fBzzip_dir_fdopen_ext_io\fR
+function uses explicit ext and io instead of the internal defaults, setting these to zero is equivalent to
+\fBzzip_dir_fdopen\fR
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/1289           1174235125  1001  0     100644  27        `
+.so man3/zzip_dir_fdopen.3
+
+zzip_dir_free.3/1174235125  1001  0     100644  1039      `
+.\"     Title: zzip_dir_free
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DIR_FREE" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_dir_free, zzip_dir_close \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 18
+.BI "int zzip_dir_free((ZZIP_DIR\ *\ dir));"
+.HP 19
+.BI "int zzip_dir_close((ZZIP_DIR\ *\ dir));"
+.SH "DESCRIPTION"
+.PP
+It will also
+\fBfree(2)\fR
+the
+\fBZZIP_DIR\-handle\fR
+given. the counterpart for
+\fBzzip_dir_open\fR
+see also
+\fBzzip_dir_free\fR
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/1315           1174235125  1001  0     100644  1355      `
+.\"     Title: zzip_dirhandle
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DIRHANDLE" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_dirhandle, zzip_dirfd \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 26
+.BI "ZZIP_DIR * zzip_dirhandle((ZZIP_FILE\ *\ fp));"
+.HP 15
+.BI "int zzip_dirfd((ZZIP_DIR*\ dir));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_dirhandle\fR
+function will just return fp\->dir
+.PP
+If a ZZIP_FILE is contained within a zip\-file that one will be a valid pointer, otherwise a NULL is returned and the ZZIP_FILE wraps a real file.
+.PP
+The
+\fBzzip_dirfd\fR
+function will just return dir\->fd
+.PP
+If a ZZIP_DIR does point to a zipfile then the file\-descriptor of that zipfile is returned, otherwise a NULL is returned and the ZZIP_DIR wraps a real directory DIR (if you have dirent on your system).
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+zzip_dir_open.3/1174235125  1001  0     100644  1421      `
+.\"     Title: zzip_dir_open
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DIR_OPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_dir_open, zzip_dir_open_ext_io, zzip_dir_read \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 24
+.BI "ZZIP_DIR* zzip_dir_open((zzip_char_t*\ filename,\ zzip_error_t*\ e));"
+.HP 31
+.BI "ZZIP_DIR* zzip_dir_open_ext_io((zzip_char_t*\ filename,\ zzip_error_t*\ e,\ zzip_strings_t*\ ext,\ zzip_plugin_io_t\ io));"
+.HP 18
+.BI "int zzip_dir_read((ZZIP_DIR\ *\ dir,\ ZZIP_DIRENT\ *\ d\ ));"
+.SH "DESCRIPTION"
+.PP
+the
+\fBzzip_dir_open_ext_io\fR
+function uses explicit ext and io instead of the internal defaults. Setting these to zero is equivalent to
+\fBzzip_dir_open\fR
+.PP
+fills the dirent\-argument with the values and increments the read\-pointer of the dir\-argument.
+.PP
+returns 0 if there no entry (anymore).
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/1333           1174235125  1001  0     100644  25        `
+.so man3/zzip_dir_open.3
+
+zzip_dir_read.3/1174235125  1001  0     100644  25        `
+.so man3/zzip_dir_open.3
+
+zzip_dir_real.3/1174235125  1001  0     100644  26        `
+.so man3/zzip_file_real.3
+zzip_dir_stat.3/1174235125  1001  0     100644  1680      `
+.\"     Title: zzip_dir_stat
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DIR_STAT" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_dir_stat, zzip_file_stat, zzip_fstat \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 18
+.BI "int zzip_dir_stat((ZZIP_DIR\ *\ dir,\ zzip_char_t*\ name,\ ZZIP_STAT\ *\ zs,\ int\ flags));"
+.HP 19
+.BI "int zzip_file_stat((ZZIP_FILE*\ file,\ ZZIP_STAT*\ zs));"
+.HP 15
+.BI "int zzip_fstat((ZZIP_FILE*\ file,\ ZZIP_STAT*\ zs));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_file_stat\fR
+function will obtain information about a opened file _within_ a zip\-archive. The file is supposed to be open (otherwise \-1 is returned). The st_size stat\-member contains the uncompressed size. The optional d_name is never set here.
+.PP
+The
+\fBzzip_fstat\fR
+function will obtain information about a opened file which may be either real/zipped. The file is supposed to be open (otherwise \-1 is returned). The st_size stat\-member contains the uncompressed size. The optional d_name is never set here. For a real file, we do set the d_csize := st_size and d_compr := 0 for meaningful defaults.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/1357           1174235126  1001  0     100644  26        `
+.so man3/zzip_disk_mmap.3
+/1376           1174235126  1001  0     100644  27        `
+.so man3/zzip_disk_fopen.3
+
+/1401           1174235126  1001  0     100644  35        `
+.so man3/zzip_disk_entry_to_data.3
+
+/1435           1174235126  1001  0     100644  35        `
+.so man3/zzip_disk_entry_to_data.3
+
+/1466           1174235126  1001  0     100644  2443      `
+.\"     Title: zzip_disk_entry_to_data
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DISK_ENTRY_TO_D" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_disk_entry_to_data, zzip_disk_entry_to_file_header, zzip_disk_entry_strdup_name, zzip_disk_entry_strdup_comment \- helper functions for (mmapped) zip access api
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/mmapped.h>
+.fi
+.ft
+.HP 37
+.BI "zzip_byte_t* zzip_disk_entry_to_data((ZZIP_DISK*\ disk,\ struct\ zzip_disk_entry*\ entry));"
+.HP 56
+.BI "struct zzip_file_header* zzip_disk_entry_to_file_header((ZZIP_DISK*\ disk,\ struct\ zzip_disk_entry*\ entry));"
+.HP 46
+.BI "zzip__new__ char* zzip_disk_entry_strdup_name((ZZIP_DISK*\ disk,\ struct\ zzip_disk_entry*\ entry));"
+.HP 49
+.BI "zzip__new__ char* zzip_disk_entry_strdup_comment((ZZIP_DISK*\ disk,\ struct\ zzip_disk_entry*\ entry));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_disk_entry_to_data\fR
+function augments the other zzip_disk_entry_* helpers: here we move a disk_entry pointer (as returned by _find* functions) into a pointer to the data block right after the file_header. Only disk\->buffer would be needed to perform the seek but we check the mmapped range end as well.
+.PP
+The
+\fBzzip_disk_entry_to_file_header\fR
+function does half the job of
+\fBzzip_disk_entry_to_data\fR
+where it can augment with
+\fBzzip_file_header_to_data\fR
+helper from format/fetch.h
+.PP
+The
+\fBzzip_disk_entry_strdup_name\fR
+function is a big helper despite its little name: in a zip file the encoded filenames are usually NOT zero\-terminated but for common usage with libc we need it that way. Secondly, the filename SHOULD be present in the zip central directory but if not then we fallback to the filename given in the file_header of each compressed data portion.
+.PP
+The
+\fBzzip_disk_entry_strdup_comment\fR
+function is similar creating a reference to a zero terminated string but it can only exist in the zip central directory entry.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004,2006 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/1493           1174235126  1001  0     100644  35        `
+.so man3/zzip_disk_entry_to_data.3
+
+/1527           1174235126  1001  0     100644  27        `
+.so man3/zzip_disk_fopen.3
+
+/1547           1174235126  1001  0     100644  27        `
+.so man3/zzip_disk_fopen.3
+
+/1565           1174235126  1001  0     100644  4314      `
+.\"     Title: zzip_disk_findfile
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DISK_FINDFILE" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_disk_findfile, zzip_disk_findfirst, zzip_disk_findnext, zzip_disk_findmatch \- search for files in the (mmapped) zip central directory
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/mmapped.h>
+.fi
+.ft
+.HP 43
+.BI "struct zzip_disk_entry* zzip_disk_findfile((ZZIP_DISK*\ disk,\ char*\ filename,\ struct\ zzip_disk_entry*\ after,\ zzip_strcmp_fn_t\ compare));"
+.HP 44
+.BI "struct zzip_disk_entry* zzip_disk_findfirst((ZZIP_DISK*\ disk));"
+.HP 43
+.BI "struct zzip_disk_entry* zzip_disk_findnext((ZZIP_DISK*\ disk,\ struct\ zzip_disk_entry*\ entry));"
+.HP 44
+.BI "struct zzip_disk_entry* zzip_disk_findmatch((ZZIP_DISK*\ disk,\ char*\ filespec,\ struct\ zzip_disk_entry*\ after,\ zzip_fnmatch_fn_t\ compare,\ int\ flags));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_disk_findfile\fR
+function is given a filename as an additional argument, to find the disk_entry matching a given filename. The compare\-function is usually strcmp or strcasecmp or perhaps strcoll, if null then strcmp is used. \- use null as argument for "after"\-entry when searching the first matching entry, otherwise the last returned value if you look for other entries with a special "compare" function (if null then a doubled search is rather useless with this variant of _findfile).
+.PP
+The
+\fBzzip_disk_findfirst\fR
+function is the first call of all the zip access functions here. It contains the code to find the first entry of the zip central directory. Here we require the mmapped block to represent a real zip file where the disk_trailer is _last_ in the file area, so that its position would be at a fixed offset from the end of the file area if not for the comment field allowed to be of variable length (which needs us to do a little search for the disk_tailer). However, in this simple implementation we disregard any disk_trailer info telling about multidisk archives, so we just return a pointer to the zip central directory.
+.PP
+For an actual means, we are going to search backwards from the end of the mmaped block looking for the PK\-magic signature of a disk_trailer. If we see one then we check the rootseek value to find the first disk_entry of the root central directory. If we find the correct PK\-magic signature of a disk_entry over there then we assume we are done and we are going to return a pointer to that label.
+.PP
+The return value is a pointer to the first zzip_disk_entry being checked to be within the bounds of the file area specified by the arguments. If no disk_trailer was found then null is returned, and likewise we only accept a disk_trailer with a seekvalue that points to a disk_entry and both parts have valid PK\-magic parts. Beyond some sanity check we try to catch a common brokeness with zip archives that still allows us to find the start of the zip central directory.
+.PP
+The
+\fBzzip_disk_findnext\fR
+function takes an existing disk_entry in the central root directory (e.g. from zzip_disk_findfirst) and returns the next entry within in the given bounds of the mmapped file area.
+.PP
+The
+\fBzzip_disk_findmatch\fR
+function uses a compare\-function with an additional argument and it is called just like fnmatch(3) from POSIX.2 AD:1993), i.e. the argument filespec first and the ziplocal filename second with the integer\-flags put in as third to the indirect call. If the platform has fnmatch available then null\-compare will use that one and otherwise we fall back to mere strcmp, so if you need fnmatch searching then please provide an implementation somewhere else. \- use null as argument for "after"\-entry when searching the first matching entry, or the last disk_entry return\-value to find the next entry matching the given filespec.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004,2006 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/1587           1174235126  1001  0     100644  30        `
+.so man3/zzip_disk_findfile.3
+/1610           1174235126  1001  0     100644  30        `
+.so man3/zzip_disk_findfile.3
+/1633           1174235126  1001  0     100644  30        `
+.so man3/zzip_disk_findfile.3
+/1655           1174235126  1001  0     100644  2735      `
+.\"     Title: zzip_disk_fopen
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DISK_FOPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_disk_fopen, zzip_disk_entry_fopen, zzip_disk_fread, zzip_disk_fclose, zzip_disk_feof \- openening a file part wrapped within a (mmapped) zip archive
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/mmapped.h>
+.fi
+.ft
+.HP 44
+.BI "zzip__new__ ZZIP_DISK_FILE* zzip_disk_fopen((ZZIP_DISK*\ disk,\ char*\ filename));"
+.HP 50
+.BI "zzip__new__ ZZIP_DISK_FILE* zzip_disk_entry_fopen((ZZIP_DISK*\ disk,\ ZZIP_DISK_ENTRY*\ entry));"
+.HP 28
+.BI "zzip_size_t zzip_disk_fread((void*\ ptr,\ zzip_size_t\ sized,\ zzip_size_t\ nmemb,\ ZZIP_DISK_FILE*\ file));"
+.HP 21
+.BI "int zzip_disk_fclose((ZZIP_DISK_FILE*\ file));"
+.HP 19
+.BI "int zzip_disk_feof((ZZIP_DISK_FILE*\ file));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_disk_fopen\fR
+function opens a file found by name, so it does a search into the zip central directory with
+\fBzzip_disk_findfile\fR
+and whatever is found first is given to
+\fBzzip_disk_entry_fopen\fR
+.PP
+the ZZIP_DISK_FILE* is rather simple in just encapsulating the arguments given to the
+\fBzzip_disk_entry_fopen\fR
+function plus a zlib deflate buffer. Note that the ZZIP_DISK pointer does already contain the full mmapped file area of a zip disk, so open()ing a file part within that area happens to be a lookup of its bounds and encoding. That information is memorized on the ZZIP_DISK_FILE so that subsequent _read() operations will be able to get the next data portion or return an eof condition for that file part wrapped in the zip archive.
+.PP
+The
+\fBzzip_disk_fread\fR
+function reads more bytes into the output buffer specified as arguments. The return value is null on eof or error, the stdio\-like interface can not distinguish between these so you need to check with
+\fBzzip_disk_feof\fR
+for the difference.
+.PP
+The
+\fBzzip_disk_fclose\fR
+function releases any zlib decoder info needed for decompression and dumps the ZZIP_DISK_FILE* then.
+.PP
+The
+\fBzzip_disk_feof\fR
+function allows to distinguish an error from an eof condition. Actually, if we found an error but we did already reach eof then we just keep on saying that it was an eof, so the app can just continue.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004,2006 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/1674           1174235126  1001  0     100644  27        `
+.so man3/zzip_disk_fopen.3
+
+/1693           1174235126  1001  0     100644  26        `
+.so man3/zzip_disk_mmap.3
+/1711           1174235126  1001  0     100644  2516      `
+.\"     Title: zzip_disk_mmap
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_DISK_MMAP" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_disk_mmap, zzip_disk_init, zzip_disk_new, zzip_disk_munmap, zzip_disk_open, zzip_disk_close \- turn a filehandle into a mmapped zip disk archive handle
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/mmapped.h>
+.fi
+.ft
+.HP 38
+.BI "zzip__new__ ZZIP_DISK* zzip_disk_mmap((int\ fd));"
+.HP 19
+.BI "int zzip_disk_init((ZZIP_DISK*\ disk,\ void*\ buffer,\ zzip_size_t\ buflen));"
+.HP 37
+.BI "zzip__new__ ZZIP_DISK* zzip_disk_new((void));"
+.HP 21
+.BI "int zzip_disk_munmap((ZZIP_DISK*\ disk));"
+.HP 38
+.BI "ZZIP_DISK* zzip__new__ zzip_disk_open((char*\ filename));"
+.HP 20
+.BI "int zzip_disk_close((ZZIP_DISK*\ disk));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_disk_mmap\fR
+function uses the given file\-descriptor to detect the length of the file and calls the system
+\fBmmap(2)\fR
+to put it in main memory. If it is successful then a newly allocated ZZIP_DISK* is returned with disk\->buffer pointing to the mapview of the zipdisk content.
+.PP
+The
+\fBzzip_disk_init\fR
+function does primary initialization of a disk\-buffer struct.
+.PP
+The
+\fBzzip_disk_new\fR
+function allocates a new disk\-buffer with
+\fBmalloc(3)\fR
+.PP
+The
+\fBzzip_disk_munmap\fR
+function is the inverse of
+\fBzzip_disk_mmap\fR
+and using the system munmap(2) on the buffer area and
+\fBfree(3)\fR
+on the ZZIP_DISK structure.
+.PP
+The
+\fBzzip_disk_open\fR
+function opens the given archive by name and turn the filehandle to
+\fBzzip_disk_mmap\fR
+for bringing it to main memory. If it can not be
+\fBmmap(2)\fR'ed then we slurp the whole file into a newly
+\fBmalloc(2)\fR'ed memory block. Only if that fails too then we return null. Since handling of disk\->buffer is ambigous it should not be snatched away please.
+.PP
+The
+\fBzzip_disk_close\fR
+function will release all data needed to access a (mmapped) zip archive, including any malloc()ed blocks, sharedmem mappings and it dumps the handle struct as well.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004,2006 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/1729           1174235126  1001  0     100644  26        `
+.so man3/zzip_disk_mmap.3
+zzip_disk_new.3/1174235126  1001  0     100644  26        `
+.so man3/zzip_disk_mmap.3
+/1749           1174235126  1001  0     100644  26        `
+.so man3/zzip_disk_mmap.3
+/1767           1174235128  1001  0     100644  2246      `
+.\"     Title: zzip_entry_data_offset
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_ENTRY_DATA_OFFS" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_entry_data_offset, zzip_entry_fread_file_header, zzip_entry_strdup_name \- helper functions for (fseeko) zip access api
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/fseeko.h>
+.fi
+.ft
+.HP 34
+.BI "zzip_off_t zzip_entry_data_offset((ZZIP_ENTRY*\ entry));"
+.HP 47
+.BI "static zzip_off_t zzip_entry_fread_file_header((ZZIP_ENTRY*\ entry,\ struct\ zzip_file_header*\ file_header));"
+.HP 41
+.BI "zzip__new__ char* zzip_entry_strdup_name((ZZIP_ENTRY*\ entry));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_entry_data_offset\fR
+functions returns the seekval offset of the data portion of the file referenced by the given zzip_entry. It requires an intermediate check of the file_header structure (i.e. it reads it from disk). After this call, the contained diskfile readposition is already set to the data_offset returned here. On error \-1 is returned.
+.PP
+The
+\fBzzip_entry_fread_file_header\fR
+functions read the correspoding struct zzip_file_header from the zip disk of the given "entry". The returned off_t points to the end of the file_header where the current fseek pointer has stopped. This is used to immediatly parse out any filename/extras block following the file_header. The return value is null on error.
+.PP
+The
+\fBzzip_entry_strdup_name\fR
+function is a big helper despite its little name: in a zip file the encoded filenames are usually NOT zero\-terminated but for common usage with libc we need it that way. Secondly, the filename SHOULD be present in the zip central directory but if not then we fallback to the filename given in the file_header of each compressed data portion.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/1793           1174235128  1001  0     100644  28        `
+.so man3/zzip_entry_fopen.3
+/1814           1174235128  1001  0     100644  28        `
+.so man3/zzip_entry_fopen.3
+/1833           1174235128  1001  0     100644  28        `
+.so man3/zzip_entry_fopen.3
+/1853           1174235128  1001  0     100644  5069      `
+.\"     Title: zzip_entry_findfile
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_ENTRY_FINDFILE" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_entry_findfile, zzip_entry_findfirst, zzip_entry_findnext, zzip_entry_free, zzip_entry_findmatch \- search for files in the (fseeko) zip central directory
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/fseeko.h>
+.fi
+.ft
+.HP 44
+.BI "zzip__new__ ZZIP_ENTRY* zzip_entry_findfile((FILE*\ disk,\ char*\ filename,\ ZZIP_ENTRY*\ _zzip_restrict\ entry,\ zzip_strcmp_fn_t\ compare));"
+.HP 45
+.BI "zzip__new__ ZZIP_ENTRY* zzip_entry_findfirst((FILE*\ disk));"
+.HP 44
+.BI "zzip__new__ ZZIP_ENTRY* zzip_entry_findnext((ZZIP_ENTRY*\ _zzip_restrict\ entry));"
+.HP 20
+.BI "int zzip_entry_free((ZZIP_ENTRY*\ entry));"
+.HP 45
+.BI "zzip__new__ ZZIP_ENTRY* zzip_entry_findmatch((FILE*\ disk,\ char*\ filespec,\ ZZIP_ENTRY*\ _zzip_restrict\ entry,\ zzip_fnmatch_fn_t\ compare,\ int\ flags));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_entry_findfile\fR
+function is given a filename as an additional argument, to find the disk_entry matching a given filename. The compare\-function is usually strcmp or strcasecmp or perhaps strcoll, if null then strcmp is used. \- use null as argument for "old"\-entry when searching the first matching entry, otherwise the last returned value if you look for other entries with a special "compare" function (if null then a doubled search is rather useless with this variant of _findfile). If no further entry is found then null is returned and any "old"\-entry gets already free()d.
+.PP
+The
+\fBzzip_entry_findfirst\fR
+function is the first call of all the zip access functions here. It contains the code to find the first entry of the zip central directory. Here we require the stdio handle to represent a real zip file where the disk_trailer is _last_ in the file area, so that its position would be at a fixed offset from the end of the file area if not for the comment field allowed to be of variable length (which needs us to do a little search for the disk_tailer). However, in this simple implementation we disregard any disk_trailer info telling about multidisk archives, so we just return a pointer to the first entry in the zip central directory of that file.
+.PP
+For an actual means, we are going to search backwards from the end of the mmaped block looking for the PK\-magic signature of a disk_trailer. If we see one then we check the rootseek value to find the first disk_entry of the root central directory. If we find the correct PK\-magic signature of a disk_entry over there then we assume we are done and we are going to return a pointer to that label.
+.PP
+The return value is a pointer to the first zzip_disk_entry being checked to be within the bounds of the file area specified by the arguments. If no disk_trailer was found then null is returned, and likewise we only accept a disk_trailer with a seekvalue that points to a disk_entry and both parts have valid PK\-magic parts. Beyond some sanity check we try to catch a common brokeness with zip archives that still allows us to find the start of the zip central directory.
+.PP
+The
+\fBzzip_entry_findnext\fR
+function takes an existing "entry" in the central root directory (e.g. from zzip_entry_findfirst) and moves it to point to the next entry. On error it returns 0, otherwise the old entry. If no further match is found then null is returned and the entry already free()d. If you want to stop searching for matches before that case then please call
+\fBzzip_entry_free\fR
+on the cursor struct ZZIP_ENTRY.
+.PP
+the
+\fBzzip_entry_free\fR
+function releases the malloc()ed areas needed for zzip_entry, the pointer is invalid afterwards. The
+\fBzzip_entry_free\fR
+function has #define synonyms of zzip_entry_findlast(), zzip_entry_findlastfile(), zzip_entry_findlastmatch()
+.PP
+The
+\fBzzip_entry_findmatch\fR
+function uses a compare\-function with an additional argument and it is called just like fnmatch(3) from POSIX.2 AD:1993), i.e. the argument filespec first and the ziplocal filename second with the integer\-flags put in as third to the indirect call. If the platform has fnmatch available then null\-compare will use that one and otherwise we fall back to mere strcmp, so if you need fnmatch searching then please provide an implementation somewhere else. \- use null as argument for "after"\-entry when searching the first matching entry, or the last disk_entry return\-value to find the next entry matching the given filespec. If no further entry is found then null is returned and any "old"\-entry gets already free()d.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/1876           1174235128  1001  0     100644  31        `
+.so man3/zzip_entry_findfile.3
+
+/1900           1174235128  1001  0     100644  31        `
+.so man3/zzip_entry_findfile.3
+
+/1924           1174235128  1001  0     100644  31        `
+.so man3/zzip_entry_findfile.3
+
+/1947           1174235128  1001  0     100644  2792      `
+.\"     Title: zzip_entry_fopen
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_ENTRY_FOPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_entry_fopen, zzip_entry_ffile, zzip_entry_fread, zzip_entry_fclose, zzip_entry_feof \- open a file within a zip disk for reading
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/fseeko.h>
+.fi
+.ft
+.HP 46
+.BI "zzip__new__ ZZIP_ENTRY_FILE* zzip_entry_fopen((ZZIP_ENTRY*\ entry,\ int\ takeover));"
+.HP 46
+.BI "zzip__new__ ZZIP_ENTRY_FILE* zzip_entry_ffile((FILE*\ disk,\ char*\ filename));"
+.HP 29
+.BI "zzip_size_t zzip_entry_fread((void*\ ptr,\ zzip_size_t\ sized,\ zzip_size_t\ nmemb,\ ZZIP_ENTRY_FILE*\ file));"
+.HP 22
+.BI "int zzip_entry_fclose((ZZIP_ENTRY_FILE*\ file));"
+.HP 20
+.BI "int zzip_entry_feof((ZZIP_ENTRY_FILE*\ file));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_entry_fopen\fR
+function does take an "entry" argument and copies it (or just takes it over as owner) to a new ZZIP_ENTRY_FILE handle structure. That structure contains also a zlib buffer for decoding. The
+\fBzzip_entry_fopen\fR
+function does seek to the file_header of the given "entry" and validates it for the data buffer following it. We do also prefetch some data from the data buffer thereby trying to match the disk pagesize for faster access later. The
+\fBzzip_entry_fread\fR
+will then read in chunks of pagesizes which is the size of the internal readahead buffer. If an error occurs then null is returned.
+.PP
+The
+\fBzzip_entry_ffile\fR
+function opens a file found by name, so it does a search into the zip central directory with
+\fBzzip_entry_findfile\fR
+and whatever is found first is given to
+\fBzzip_entry_fopen\fR
+.PP
+The
+\fBzzip_entry_fread\fR
+function reads more bytes into the output buffer specified as arguments. The return value is null on eof or error, the stdio\-like interface can not distinguish between these so you need to check with
+\fBzzip_entry_feof\fR
+for the difference.
+.PP
+The
+\fBzzip_entry_fclose\fR
+function releases any zlib decoder info needed for decompression and dumps the ZZIP_ENTRY_FILE struct then.
+.PP
+The
+\fBzzip_entry_feof\fR
+function allows to distinguish an error from an eof condition. Actually, if we found an error but we did already reach eof then we just keep on saying that it was an eof, so the app can just continue.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2003,2004 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/1967           1174235128  1001  0     100644  28        `
+.so man3/zzip_entry_fopen.3
+/1987           1174235128  1001  0     100644  34        `
+.so man3/zzip_entry_data_offset.3
+/2019           1174235128  1001  0     100644  31        `
+.so man3/zzip_entry_findfile.3
+
+/2038           1174235128  1001  0     100644  34        `
+.so man3/zzip_entry_data_offset.3
+zzip_errno.3/   1174235125  1001  0     100644  854       `
+.\"     Title: zzip_errno
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_ERRNO" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_errno \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 15
+.BI "int zzip_errno((int\ errcode));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+zzip_error.3/   1174235125  1001  0     100644  1085      `
+.\"     Title: zzip_error
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_ERROR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_error, zzip_seterror \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 15
+.BI "int zzip_error((ZZIP_DIR\ *\ dir));"
+.HP 19
+.BI "void zzip_seterror((ZZIP_DIR\ *\ dir,\ int\ errcode));"
+.SH "DESCRIPTION"
+.PP
+just returns dir\->errcode of the ZZIP_DIR handle see:
+\fBzzip_dir_open\fR,
+\fBzzip_diropen\fR,
+\fBzzip_readdir\fR,
+\fBzzip_dir_read\fR
+.PP
+The
+\fBzzip_seterror\fR
+function just does dir\->errcode = errcode
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+zzip_fclose.3/  1174235125  1001  0     100644  1101      `
+.\"     Title: zzip_fclose
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_FCLOSE" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_fclose, zzip_close \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 16
+.BI "int zzip_fclose((ZZIP_FILE\ *\ fp));"
+.HP 15
+.BI "int zzip_close((ZZIP_FILE*\ fp));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_fclose\fR
+function closes the given ZZIP_FILE handle.
+.PP
+If the ZZIP_FILE wraps a normal stat'fd then it is just that int'fd that is being closed and the otherwise empty ZZIP_FILE gets freed.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/2064           1174235125  1001  0     100644  994       `
+.\"     Title: __zzip_fetch_disk_trailer
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "__ZZIP_FETCH_DISK_TR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+__zzip_fetch_disk_trailer \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 30
+.BI "int __zzip_fetch_disk_trailer((int\ fd,\ zzip_off_t\ filesize,\ struct\ _disk_trailer\ *\ _zzip_restrict\ trailer,\ zzip_plugin_io_t\ io));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/2093           1174235125  1001  0     100644  878       `
+.\"     Title: zzip_file_close
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_FILE_CLOSE" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_file_close \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 20
+.BI "int zzip_file_close((ZZIP_FILE\ *\ fp));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/2112           1174235125  1001  0     100644  917       `
+.\"     Title: zzip_file_open
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_FILE_OPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_file_open \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 27
+.BI "ZZIP_FILE * zzip_file_open((ZZIP_DIR\ *\ dir,\ zzip_char_t*\ name,\ int\ o_mode));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+/2130           1174235125  1001  0     100644  1496      `
+.\"     Title: zzip_file_read
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_FILE_READ" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_file_read \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 28
+.BI "zzip_ssize_t zzip_file_read((ZZIP_FILE\ *\ fp,\ void\ *\ buf,\ zzip_size_t\ len));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_file_read\fR
+functions read data from zip\-contained file.
+.PP
+It works like
+\fBread(2)\fR
+and will fill the given buffer with bytes from the opened file. It will return the number of bytes read, so if the
+\fBEOF\fR
+is encountered you will be prompted with the number of bytes actually read.
+.PP
+This is the routines that needs the
+\fBbuf32k\fR
+buffer, and it would have need for much more polishing but it does already work quite well.
+.PP
+Note: the 32K buffer is rather big. The original inflate\-algorithm required just that but the latest zlib would work just fine with a smaller buffer.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/2148           1174235125  1001  0     100644  1526      `
+.\"     Title: zzip_file_real
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_FILE_REAL" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_file_real, zzip_dir_real, zzip_realdir, zzip_realfd \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 19
+.BI "int zzip_file_real((ZZIP_FILE*\ fp));"
+.HP 18
+.BI "int zzip_dir_real((ZZIP_DIR*\ dir));"
+.HP 19
+.BI "void* zzip_realdir((ZZIP_DIR*\ dir));"
+.HP 16
+.BI "int zzip_realfd((ZZIP_FILE*\ fp));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_dir_real\fR
+function checks if the ZZIP_DIR\-handle is wrapping a real directory or a zip\-archive. Returns 1 for a stat'able directory, and 0 for a handle to zip\-archive.
+.PP
+The
+\fBzzip_realdir\fR
+function returns the posix DIR* handle (if one exists). Check before with
+\fBzzip_dir_real\fR
+if the the ZZIP_DIR points to a real directory.
+.PP
+The
+\fBzzip_realfd\fR
+function returns the posix file descriptor (if one exists). Check before with
+\fBzzip_file_real\fR
+if the the ZZIP_FILE points to a real file.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/2166           1174235125  1001  0     100644  25        `
+.so man3/zzip_dir_stat.3
+
+zzip_fopen.3/   1174235125  1001  0     100644  4566      `
+.\"     Title: zzip_fopen
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_FOPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_fopen, zzip_freopen \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 22
+.BI "ZZIP_FILE* zzip_fopen((zzip_char_t*\ filename,\ zzip_char_t*\ mode));"
+.HP 24
+.BI "ZZIP_FILE* zzip_freopen((zzip_char_t*\ filename,\ zzip_char_t*\ mode,\ ZZIP_FILE*\ stream));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_fopen\fR
+function will
+\fBfopen(3)\fR
+a real/zipped file.
+.PP
+It has some magic functionality builtin \- it will first try to open the given
+\fIfilename\fR
+as a normal file. If it does not exist, the given path to the filename (if any) is split into its directory\-part and the file\-part. A ".zip" extension is then added to the directory\-part to create the name of a zip\-archive. That zip\-archive (if it exists) is being searched for the file\-part, and if found a zzip\-handle is returned.
+.PP
+Note that if the file is found in the normal fs\-directory the returned structure is mostly empty and the
+\fBzzip_read\fR
+call will use the libc
+\fBread\fR
+to obtain data. Otherwise a
+\fBzzip_file_open\fR
+is performed and any error mapped to
+\fBerrno(3)\fR.
+.PP
+unlike the posix\-wrapper
+\fBzzip_open\fR
+the mode\-argument is a string which allows for more freedom to support the extra zzip modes called ZZIP_CASEINSENSITIVE and ZZIP_IGNOREPATH. Currently, this
+\fBzzip_fopen\fR
+call will convert the following characters in the mode\-string into their corrsponding mode\-bits:
+.TP 4
+\(bu
+
+"r" : O_RDONLY :
+read\-only
+.TP 4
+\(bu
+
+"b" : O_BINARY :
+binary (win32 specific)
+.TP 4
+\(bu
+
+"f" : O_NOCTTY :
+no char device (unix)
+.TP 4
+\(bu
+
+"i" : ZZIP_CASELESS :
+inside zip file
+.TP 4
+\(bu
+
+"*" : ZZIP_NOPATHS :
+inside zip file only
+.PP
+all other modes will be ignored for zip\-contained entries but they are transferred for compatibility and portability, including these extra sugar bits:
+.TP 4
+\(bu
+
+"x" : O_EXCL :
+fail if file did exist
+.TP 4
+\(bu
+
+"s" : O_SYNC :
+synchronized access
+.TP 4
+\(bu
+
+"n" : O_NONBLOCK :
+nonblocking access
+.TP 4
+\(bu
+
+"z#" : compression level :
+for zlib
+.TP 4
+\(bu
+
+"g#" : group access :
+unix access bits
+.TP 4
+\(bu
+
+"u#" : owner access :
+unix access bits
+.TP 4
+\(bu
+
+"o#" : world access :
+unix access bits
+.PP
+... the access bits are in traditional unix bit format with 7 = read/write/execute, 6 = read/write, 4 = read\-only.
+.PP
+The default access mode is 0664, and the compression level is ignored since the lib can not yet write zip files, otherwise it would be the initialisation value for the zlib deflateInit where 0 = no\-compression, 1 = best\-speed, 9 = best\-compression.
+.PP
+The
+\fBzzip_fopen\fR
+function returns a new zzip\-handle (use
+\fBzzip_close\fR
+to return it). On error the
+\fBzzip_fopen\fR
+function will return null setting
+\fBerrno(3)\fR.
+.PP
+The
+\fBzzip_freopen\fR
+function receives an additional argument pointing to a ZZIP_FILE* being already in use. If this extra argument is null then the
+\fBzzip_freopen\fR
+function is identical with calling
+\fBzzip_fopen\fR
+.PP
+Per default, the old file stream is closed and only the internal structures associated with it are kept. These internal structures may be reused for the return value, and this is a lot quicker when the filename matches a zipped file that is incidently in the very same zip arch as the old filename wrapped in the stream struct.
+.PP
+That's simply because the zip arch's central directory does not need to be read again. As an extension for the
+\fBzzip_freopen\fR
+function, if the mode\-string contains a "q" then the old stream is not closed but left untouched, instead it is only given as a hint that a new file handle may share/copy the zip arch structures of the old file handle if that is possible, i.e when they are in the same zip arch.
+.PP
+The
+\fBzzip_freopen\fR
+function returns a new zzip\-handle (use
+\fBzzip_close\fR
+to return it). On error the
+\fBzzip_freopen\fR
+function will return null setting
+\fBerrno(3)\fR.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+.SH "SEE ALSO"
+.PP
+fopen(2)
+zzip_fread.3/   1174235125  1001  0     100644  21        `
+.so man3/zzip_read.3
+
+zzip_freopen.3/ 1174235125  1001  0     100644  22        `
+.so man3/zzip_fopen.3
+zzip_fstat.3/   1174235125  1001  0     100644  25        `
+.so man3/zzip_dir_stat.3
+
+/2184           1174235125  1001  0     100644  24        `
+.so man3/zzip_init_io.3
+/2207           1174235125  1001  0     100644  922       `
+.\"     Title: zzip_inflate_init
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_INFLATE_INIT" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_inflate_init \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 29
+.BI "static int zzip_inflate_init((ZZIP_FILE\ *\ fp,\ struct\ zzip_dir_hdr*\ hdr));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+zzip_init_io.3/ 1174235125  1001  0     100644  1089      `
+.\"     Title: zzip_init_io
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_INIT_IO" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_init_io, zzip_get_default_io \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 17
+.BI "int zzip_init_io((zzip_plugin_io_handlers_t\ io,\ int\ flags));"
+.HP 37
+.BI "zzip_plugin_io_t zzip_get_default_io(());"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_get_default_io\fR
+function returns a zzip_plugin_io_t handle to static defaults wrapping the posix io file functions for actual file access.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Mike Nordell <tamlin\-@\-algonet\-se>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+zzip_open.3/    1174235125  1001  0     100644  4326      `
+.\"     Title: zzip_open
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_OPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_open, zzip_open_ext_io, zzip_open_shared_io \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 21
+.BI "ZZIP_FILE* zzip_open((zzip_char_t*\ filename,\ int\ o_flags));"
+.HP 28
+.BI "ZZIP_FILE* zzip_open_ext_io((zzip_char_t*\ filename,\ int\ o_flags,\ int\ o_modes,\ zzip_strings_t*\ ext,\ zzip_plugin_io_t\ io));"
+.HP 31
+.BI "ZZIP_FILE* zzip_open_shared_io((ZZIP_FILE*\ stream,\ zzip_char_t*\ filename,\ int\ o_flags,\ int\ o_modes,\ zzip_strings_t*\ ext,\ zzip_plugin_io_t\ io));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_open\fR
+function will
+\fBopen(2)\fR
+a real/zipped file
+.PP
+It has some magic functionality builtin \- it will first try to open the given
+\fIfilename\fR
+as a normal file. If it does not exist, the given path to the filename (if any) is split into its directory\-part and the file\-part. A ".zip" extension is then added to the directory\-part to create the name of a zip\-archive. That zip\-archive (if it exists) is being searched for the file\-part, and if found a zzip\-handle is returned.
+.PP
+Note that if the file is found in the normal fs\-directory the returned structure is mostly empty and the
+\fBzzip_read\fR
+call will use the libc
+\fBread\fR
+to obtain data. Otherwise a
+\fBzzip_file_open\fR
+is performed and any error mapped to
+\fBerrno(3)\fR.
+.PP
+There was a possibility to transfer zziplib\-specific openmodes through o_flags but you should please not use them anymore and look into
+\fBzzip_open_ext_io\fR
+to submit them down. The
+\fBzzip_open\fR
+function is shallow in that it just extracts the zzipflags and calls
+.TP 4
+\(bu
+
+zzip_open_ext_io(filename, o_flags, zzipflags|0664, 0, 0)
+.PP
+you must stop using this extra functionality (not well known anyway) since zzip_open might be later usable to open files for writing in which case the _EXTRAFLAGS will get in conflict.
+.PP
+compare with
+\fBopen(2)\fR
+and
+\fBzzip_fopen\fR
+.PP
+The
+\fBzzip_open_ext_io\fR
+function uses explicit ext and io instead of the internal defaults, setting them to zero is equivalent to
+\fBzzip_open\fR
+.PP
+note that the two flag types have been split into an o_flags (for fcntl\-like openflags) and o_modes where the latter shall carry the zzip_flags and possibly accessmodes for unix filesystems. Since this version of zziplib can not write zipfiles, it is not yet used for anything else than zzip\-specific modeflags.
+.PP
+The
+\fBzzip_open_ext_io\fR
+function returns a new zzip\-handle (use
+\fBzzip_close\fR
+to return it). On error the
+\fBzzip_open_ext_io\fR
+function will return null setting
+\fBerrno(3)\fR.
+.PP
+The
+\fBzzip_open_shared_io\fR
+function takes an extra stream argument \- if a handle has been then ext/io can be left null and the new stream handle will pick up the ext/io. This should be used only in specific environment however since
+\fBzzip_file_real\fR
+does not store any ext\-sequence.
+.PP
+The benefit for the
+\fBzzip_open_shared_io\fR
+function comes in when the old file handle was openened from a file within a zip archive. When the new file is in the same zip archive then the internal zzip_dir structures will be shared. It is even quicker, as no check needs to be done anymore trying to guess the zip archive place in the filesystem, here we just check whether the zip archive's filepath is a prefix part of the filename to be opened.
+.PP
+Note that the
+\fBzzip_open_shared_io\fR
+function is also used by
+\fBzzip_freopen\fR
+that will unshare the old handle, thereby possibly closing the handle.
+.PP
+The
+\fBzzip_open_shared_io\fR
+function returns a new zzip\-handle (use
+\fBzzip_close\fR
+to return it). On error the
+\fBzzip_open_shared_io\fR
+function will return null setting
+\fBerrno(3)\fR.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+zzip_opendir.3/ 1174235125  1001  0     100644  1130      `
+.\"     Title: zzip_opendir
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_OPENDIR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_opendir, zzip_opendir_ext_io \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 23
+.BI "ZZIP_DIR* zzip_opendir((zzip_char_t*\ filename));"
+.HP 30
+.BI "ZZIP_DIR* zzip_opendir_ext_io((zzip_char_t*\ filename,\ int\ o_modes,\ zzip_strings_t*\ ext,\ zzip_plugin_io_t\ io));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_opendir_ext_io\fR
+function uses explicit ext and io instead of the internal defaults, setting them to zero is equivalent to
+\fBzzip_opendir\fR
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/2228           1174235125  1001  0     100644  24        `
+.so man3/zzip_opendir.3
+/2251           1174235125  1001  0     100644  21        `
+.so man3/zzip_open.3
+
+/2271           1174235125  1001  0     100644  21        `
+.so man3/zzip_open.3
+
+/2294           1174235125  1001  0     100644  1000      `
+.\"     Title: __zzip_parse_root_directory
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "__ZZIP_PARSE_ROOT_DI" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+__zzip_parse_root_directory \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 32
+.BI "int __zzip_parse_root_directory((int\ fd,\ struct\ _disk_trailer\ *\ trailer,\ struct\ zzip_dir_hdr\ **\ hdr_return,\ zzip_plugin_io_t\ io));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+zzip_read.3/    1174235125  1001  0     100644  1528      `
+.\"     Title: zzip_read
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_READ" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_read, zzip_fread \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 23
+.BI "zzip_ssize_t zzip_read((ZZIP_FILE\ *\ fp,\ void\ *\ buf,\ zzip_size_t\ len));"
+.HP 23
+.BI "zzip_size_t zzip_fread((void\ *ptr,\ zzip_size_t\ size,\ zzip_size_t\ nmemb,\ ZZIP_FILE\ *file));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_read\fR
+function will read(2) data from a real/zipped file.
+.PP
+the replacement for
+\fBread(2)\fR
+will fill the given buffer with bytes from the opened file. It will return the number of bytes read, so if the EOF is encountered you will be prompted with the number of bytes actually read.
+.PP
+If the file\-handle is wrapping a stat'able file then it will actually just perform a normal
+\fBread(2)\fR\-call, otherwise
+\fBzzip_file_read\fR
+is called to decompress the data stream and any error is mapped to
+\fBerrno(3)\fR.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+zzip_readdir.3/ 1174235125  1001  0     100644  842       `
+.\"     Title: zzip_readdir
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_READDIR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_readdir \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 26
+.BI "ZZIP_DIRENT* zzip_readdir((ZZIP_DIR\ *\ dir));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+zzip_realdir.3/ 1174235125  1001  0     100644  26        `
+.so man3/zzip_file_real.3
+zzip_realfd.3/  1174235125  1001  0     100644  26        `
+.so man3/zzip_file_real.3
+zzip_rewind.3/  1174235125  1001  0     100644  1004      `
+.\"     Title: zzip_rewind
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_REWIND" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_rewind \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 16
+.BI "int zzip_rewind((ZZIP_FILE\ *fp));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_rewind\fR
+function will rewind a real/zipped file.
+.PP
+It seeks to the beginning of this file's data in the zip, or the beginning of the file for a stat'fd.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/2325           1174235125  1001  0     100644  1469      `
+.\"     Title: zzip_rewinddir
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_REWINDDIR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_rewinddir, zzip_telldir, zzip_seekdir \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 20
+.BI "void zzip_rewinddir((ZZIP_DIR\ *\ dir));"
+.HP 24
+.BI "zzip_off_t zzip_telldir((ZZIP_DIR*\ dir));"
+.HP 18
+.BI "void zzip_seekdir((ZZIP_DIR*\ dir,\ zzip_off_t\ offset));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_rewinddir\fR
+function is the equivalent of a
+\fBrewinddir(2)\fR
+for a realdir or the zipfile in place of a directory. The ZZIP_DIR handle returned from
+\fBzzip_opendir\fR
+has a flag saying realdir or zipfile. As for a zipfile, the filenames will include the filesubpath, so take care.
+.PP
+The
+\fBzzip_telldir\fR
+function is the equivalent of
+\fBtelldir(2)\fR
+for a realdir or zipfile.
+.PP
+The
+\fBzzip_seekdir\fR
+function is the equivalent of
+\fBseekdir(2)\fR
+for a realdir or zipfile.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+zzip_seek.3/    1174235125  1001  0     100644  1541      `
+.\"     Title: zzip_seek
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_SEEK" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_seek \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 21
+.BI "zzip_off_t zzip_seek((ZZIP_FILE\ *\ fp,\ zzip_off_t\ offset,\ int\ whence));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_seek\fR
+function will perform a
+\fBlseek(2)\fR
+operation on a real/zipped file
+.PP
+It will try to seek to the offset specified by offset, relative to whence, which is one of SEEK_SET, SEEK_CUR or SEEK_END.
+.PP
+If the file\-handle is wrapping a stat'able file then it will actually just perform a normal
+\fBlseek(2)\fR\-call. Otherwise the relative offset is calculated, negative offsets are transformed into positive ones by rewinding the file, and then data is read until the offset is reached. This can make the function terribly slow, but this is how gzio implements it, so I'm not sure there is a better way without using the internals of the algorithm.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+zzip_seekdir.3/ 1174235125  1001  0     100644  26        `
+.so man3/zzip_rewinddir.3
+zzip_seterror.3/1174235125  1001  0     100644  22        `
+.so man3/zzip_error.3
+zzip_strerror.3/1174235125  1001  0     100644  1108      `
+.\"     Title: zzip_strerror
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_STRERROR" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_strerror, zzip_strerror_of \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 27
+.BI "zzip_char_t* zzip_strerror((int\ errcode));"
+.HP 30
+.BI "zzip_char_t* zzip_strerror_of((ZZIP_DIR*\ dir));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_strerror_of\fR
+function fetches the errorcode from the
+\fBDIR\-handle\fR
+and runs it through
+\fBzzip_strerror\fR
+to obtain the static string describing the error.
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+/2343           1174235125  1001  0     100644  25        `
+.so man3/zzip_strerror.3
+
+zzip_tell.3/    1174235125  1001  0     100644  1267      `
+.\"     Title: zzip_tell
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "ZZIP_TELL" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+zzip_tell \- 
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 21
+.BI "zzip_off_t zzip_tell((ZZIP_FILE\ *\ fp));"
+.SH "DESCRIPTION"
+.PP
+The
+\fBzzip_tell\fR
+function will
+\fBtell(2)\fR
+the current position in a real/zipped file
+.PP
+It will return the current offset within the real/zipped file, measured in uncompressed bytes for the zipped\-file case.
+.PP
+If the file\-handle is wrapping a stat'able file then it will actually just perform a normal
+\fBtell(2)\fR\-call, otherwise the offset is calculated from the amount of data left and the total uncompressed size;
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <Tomi.Ollila@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
+
+zzip_telldir.3/ 1174235125  1001  0     100644  26        `
+.so man3/zzip_rewinddir.3
+/2363           1174235125  1001  0     100644  938       `
+.\"     Title: __zzip_try_open
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.1 <http://docbook.sf.net/>
+.\"      Date: 0.13.49
+.\"    Manual: zziplib Function List
+.\"    Source: zziplib
+.\"
+.TH "__ZZIP_TRY_OPEN" "3" "0.13.49" "zziplib" "zziplib Function List"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+__zzip_try_open \- ...
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <zzip/lib.h>
+.fi
+.ft
+.HP 20
+.BI "int __zzip_try_open((zzip_char_t*\ filename,\ int\ filemode,\ zzip_strings_t*\ ext,\ zzip_plugin_io_t\ io));"
+.SH "DESCRIPTION"
+.PP
+(missing description)
+.SH "AUTHOR"
+.TP 4
+\(bu
+Guido Draheim <guidod@gmx.de> Tomi Ollila <too@iki.fi>
+.SH "COPYRIGHT"
+.PP
+Copyright (c) 1999,2000,2001,2002,2003 Guido Draheim All rights reserved, use under the restrictions of the Lesser GNU General Public License or alternatively the restrictions of the Mozilla Public License 1.1
