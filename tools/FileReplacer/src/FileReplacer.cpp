@@ -43,6 +43,11 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
+#ifndef GUCEF_CORE_DVFILEUTILS_H
+#include "dvfileutils.h"
+#define GUCEF_CORE_DVFILEUTILS_H
+#endif /* GUCEF_CORE_DVFILEUTILS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      CONSTANTS                                                          //
@@ -222,32 +227,35 @@ main( int argc , char* argv[] )
 	                 argv    ,
 	                 argList ); 
 	                 
-        if ( !argList.HasKey( "RootDirPath" )     ||
-             !argList.HasKey( "PatchSetOutFile" ) ||
-             !argList.HasKey( "URLRoot" )          )
+        for ( GUCEF::CORE::UInt32 i=0; i<argList.GetCount(); ++i )
         {
-            printf( "ERROR: Not enough parameters where provided\n\n" );
-            PrintHelp();
-            getchar();
-            return 1;
-        }
-               
-        GUCEF::CORE::CString rootDirPath = argList[ "RootDirPath" ];
-        GUCEF::CORE::CString patchSetOutFile = argList[ "PatchSetOutFile" ];
-        GUCEF::CORE::CString URLRoot = argList[ "URLRoot" ];
-        GUCEF::CORE::CString patchSetOutCodec = argList[ "PatchSetOutCodec" ];
-        GUCEF::CORE::CString pluginDir = argList[ "PluginDir" ];
-        
-        if ( patchSetOutCodec.Length() == 0 )
-        {
-            // Use our codec default which is xml
-            patchSetOutCodec = "xml";
-        }
-        if ( pluginDir.Length() == 0 )
-        {
-            // Use our codec default plugin path
-            pluginDir = GUCEF::CORE::RelativePath( "$MODULEDIR$\\plugins" );
-        }
+            GUCEF::CORE::CString destPath = argList.GetKey( i );
+            if ( GUCEF::CORE::FileExists( destPath ) )
+            {
+                if ( 0 == GUCEF::CORE::Delete_File( destPath.C_String() ) )
+                {
+                    printf( GUCEF::CORE::CString( "ERROR: Failed to delete file: " + destPath ).C_String() );
+                    getchar();
+                    continue;                           
+                }
+                else
+                {
+                    printf( GUCEF::CORE::CString( "Deleted file: " + destPath ).C_String() );
+                }
+            }
+            
+            // Move the new file to the desired final location
+            GUCEF::CORE::CString originPath = argList.GetValue( i );
+            if ( 0 == GUCEF::CORE::Move_File( destPath.C_String(), originPath.C_String() ) )
+            {
+                printf( GUCEF::CORE::CString( "ERROR: Failed to move file: " + originPath + " -> " + destPath ).C_String() );
+                getchar();                            
+            }
+            else
+            {
+                printf( GUCEF::CORE::CString( "Moved file: " + originPath + " -> " + destPath ).C_String() );
+            }
+        } 
 
 	}
 	
