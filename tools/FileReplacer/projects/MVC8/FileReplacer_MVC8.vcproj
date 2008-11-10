@@ -67,6 +67,7 @@
 				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\..\gucefMT\bin\Debug_MVC8"
 				GenerateDebugInformation="true"
 				SubSystem="1"
+				EntryPointSymbol="WinMain"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -92,6 +93,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\common\bin\Debug_MVC8"
 			/>
 		</Configuration>
 		<Configuration
@@ -146,6 +148,7 @@
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				EntryPointSymbol="WinMain"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -171,6 +174,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\common\bin\Release_MVC8"
 			/>
 		</Configuration>
 	</Configurations>

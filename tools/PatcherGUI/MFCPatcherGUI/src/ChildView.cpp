@@ -65,7 +65,8 @@ CChildView::CChildView()
       m_totalProgress( NULL )      ,
       m_patchEngine()              ,
       m_gucefDriver( NULL )        ,
-      m_closeAppWhenDone( false )
+      m_closeAppWhenDone( false )  ,
+      m_fileReplacements()
 {GUCEF_TRACE;
 
     // Subscribe to all patch engine events
@@ -117,6 +118,15 @@ BOOL CChildView::PreCreateWindow(CREATESTRUCT& cs)
 		::LoadCursor(NULL, IDC_ARROW), HBRUSH(COLOR_WINDOW+1), NULL);
 
 	return TRUE;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CChildView::TFileReplacementMap&
+CChildView::GetFileReplacementMap( void )
+{GUCEF_TRACE;
+
+    return m_fileReplacements;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -598,6 +608,18 @@ CChildView::OnNotify( CORE::CNotifier* notifier                 ,
     if ( eventid == PATCHER::CPatchSetFileEngineEvents::LocalFileReplacementFailure )
     {
         PrintPatchSetFileEngineStatus( "Local file replacement failed", eventdata );
+
+        // Add the file combo to the list of file we will try to replace after patcher shutdown        
+        const GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventData* eventDataWrapper = static_cast< GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventData* >( eventdata );
+        const GUCEF::PATCHER::CPatchSetFileEngineEvents::TPatchSetFileEngineEventDataStorage& storage = eventDataWrapper->GetData();
+        
+        GUCEF::CORE::CString oldFile = storage.localRoot;
+        GUCEF::CORE::AppendToPath( oldFile, storage.currentFileEntry.name );
+        
+        GUCEF::CORE::CString newFile = storage.tempStorageRoot;
+        GUCEF::CORE::AppendToPath( newFile, storage.currentFileEntry.name );
+                
+        m_fileReplacements[ oldFile ] = newFile;
     }    
     else
     {

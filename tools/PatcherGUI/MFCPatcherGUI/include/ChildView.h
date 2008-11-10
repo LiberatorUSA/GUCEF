@@ -56,6 +56,10 @@ class CChildView : public CWnd                    ,
 
     // Attributes
     public:
+    
+    typedef std::map< GUCEF::CORE::CString, GUCEF::CORE::CString > TFileReplacementMap;
+    
+    TFileReplacementMap& GetFileReplacementMap( void );
 
     // Operations
     public:
@@ -109,6 +113,7 @@ class CChildView : public CWnd                    ,
     
     GUCEF::PATCHER::CPatchEngine m_patchEngine;
     CGUCEFAppWin32MFCDriver* m_gucefDriver;
+    TFileReplacementMap m_fileReplacements;
 };
 
 #endif /* MFCPATCHERGUI_CCHILDVIEW_H ? */
