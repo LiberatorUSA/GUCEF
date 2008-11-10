@@ -637,7 +637,24 @@ CString::SubstrToSubstr( const CString& searchstr ,
         }
         CString substr( *this );
         return substr; 
-}                         
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CString::RemoveChar( const char charToRemove ) const
+{GUCEF_TRACE;
+
+    CString newString;
+    for ( UInt32 i=0; i<m_length; ++i )
+    {
+        if ( m_string[ i ] != charToRemove )
+        {
+            newString += m_string[ i ];
+        }
+    }
+    return newString;
+}
 
 /*-------------------------------------------------------------------------*/
 

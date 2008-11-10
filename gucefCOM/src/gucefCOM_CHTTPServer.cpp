@@ -61,6 +61,8 @@ CHTTPServer::CHTTPServer( CIHTTPServerRouterController* routerController /* = NU
     {
         m_routerController = routerController;
     }
+    
+    m_tcpServerSocket.Subscribe( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -81,6 +83,8 @@ CHTTPServer::CHTTPServer( CORE::CPulseGenerator& pulsGenerator                  
     {
         m_routerController = routerController;
     }
+    
+    m_tcpServerSocket.Subscribe( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -578,6 +582,177 @@ CHTTPServer::GetLastRequestUri( void ) const
 {GUCEF_TRACE;
     
     return m_lastRequestUri;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CHTTPServer::OnNotify( CORE::CNotifier* notifier                 ,
+                       const CORE::CEvent& eventid               ,
+                       CORE::CICloneable* eventdata /* = NULL */ )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CHTTPServer::ExtractCommaSeparatedValues( const CString& stringToExtractFrom ,
+                                          TStringVector& list                ) const
+{GUCEF_TRACE;
+
+    // Create a list and make sure we trim each element
+    TStringVector elements = stringToExtractFrom.ParseElements( ',' );
+    TStringVector::iterator i = elements.begin();
+    while ( i != elements.end() )
+    {                    
+        list.push_back( (*i).RemoveChar( ' ' ) );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CHTTPServer::THttpRequestData*
+CHTTPServer::ParseRequest( CORE::CDynamicBuffer& inputBuffer )
+{GUCEF_TRACE;
+ /*
+    HttpRequestData request = new HttpRequestData();
+
+    WebHeaderCollection requestHeaders = WebOperationContext.Current.IncomingRequest.Headers;
+    IncomingWebRequestContext incomingRequest = WebOperationContext.Current.IncomingRequest;
+
+    //Common implementation goes here
+    string httpMethod = WebOperationContext.Current.IncomingRequest.Method;// GET, PUT, POST , DELETE etc.
+
+    //Read authorization token here and any other thing related to authorization.
+    //Similarly other headers can be read
+    // @TODO: string authorizationToken = requestProp.Headers[ HttpRequestHeader.Authorization ];            
+
+    string contentType = WebOperationContext.Current.IncomingRequest.ContentType;
+    if (null != contentType) {
+        request.ResourceRepresentations.Add(contentType.Trim());
+    } else {
+        //Gets hold of the mime types that the client can handle
+        string acceptTypes = incomingRequest.Accept;
+        request.ResourceRepresentations = ExtractCommaSeparatedValues(acceptTypes);
+
+    }
+
+    if (null != body) {
+        int readBytes = 0;
+        byte[] readBuffer = new byte[1024];
+        MemoryStream memoryStream = new MemoryStream();
+        do {
+            readBytes = body.Read(readBuffer, 0, 1024);
+            memoryStream.Write(readBuffer, 0, readBytes);
+        } while (readBytes == 1024);
+
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        if (memoryStream.Length > 0) {
+            request.Content = memoryStream;
+        }
+    }
+
+                
+    // Get the resource versions desired by the client
+    request.ResourceVersions = null;
+    request.ResourceVersions = ExtractCommaSeparatedValues( requestHeaders[ HttpRequestHeader.IfMatch ] );
+    
+    //If it is null, it could also mean that the values are in If-None-Match
+    if ( null == request.ResourceVersions )
+    {
+        request.ResourceVersions = ExtractCommaSeparatedValues( requestHeaders[HttpRequestHeader.IfNoneMatch ] );
+    }
+             
+    request.TransactionID = requestHeaders[ HttpRequestHeader.Cookie ];
+    request.RequestUri = incomingRequest.UriTemplateMatch.RequestUri;
+    request.FullResourceUri = request.RequestUri;
+
+    return request;  */
+    
+    return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CHTTPServer::ParseResponse( const THttpReturnData& returnData  ,
+                            CORE::CDynamicBuffer& outputBuffer )
+{  /*
+    try
+    {
+
+        Stream body = null;
+        WebHeaderCollection headers = WebOperationContext.Current.OutgoingResponse.Headers;
+
+        headers[HttpResponseHeader.ContentType] = returnData.ContentType;
+        if (returnData.Content != null) {
+            body = returnData.Content;
+        }
+        if (returnData.Content != null && returnData.Content.CanSeek) {
+            headers[HttpResponseHeader.ContentLength] = returnData.Content.Length.ToString();
+        }
+
+        
+        WebOperationContext.Current.OutgoingResponse.StatusCode = (HttpStatusCode) returnData.StatusCode;
+        if ( null != returnData.Location ) 
+        {
+            headers[ HttpResponseHeader.Location ] = returnData.Location.ToString();
+        }
+        if ( !String.IsNullOrEmpty( returnData.ETag ) )
+        {
+            headers[ HttpResponseHeader.ETag ] = returnData.ETag;
+        }
+        if ( !String.IsNullOrEmpty( returnData.Cacheability ) )
+        {
+            headers[ HttpResponseHeader.CacheControl ] = returnData.Cacheability;
+        }
+        
+        // You cannot send back accept types to the client using a standard HTTP header since
+        // it is a HTTP request only header. We don't want the client to aimlessly retry different
+        // representations either on PUT/POST so we do want to inform the client of the accepted types.
+        if ( returnData.StatusCode == 415 )
+        {
+            // Make sure we don't overwrite anything or do work for nothing
+            if ( returnData.AcceptedTypes.Count > 0 && null == body )
+            {
+                // Build the accept header
+                string acceptHeader = "Accept:";
+                foreach ( string typeName in returnData.AcceptedTypes )
+                {
+                    acceptHeader += typeName + ',';
+                }                           
+                // Turn the string into a stream we can send back trough the WFC pipeline
+                byte[] buffer = Encoding.GetEncoding( "iso-8859-1" ).GetBytes(acceptHeader);
+                body = new MemoryStream( buffer );
+                
+                returnData.ContentType = "plain/text";
+            }
+        }
+        if (returnData.StatusCode == 405) {
+            if (returnData.AllowedMethods.Count > 0) {
+                string allow = String.Empty;
+                foreach (string allowedMethod in returnData.AllowedMethods) {
+                    allow = allow + allowedMethod + ",";
+                }
+                headers[HttpResponseHeader.Allow] = allow.Remove(allow.Length-1, 1);
+            }
+        }
+        if (body == null) {
+            //This code is to overcome the limitation of the ISAPI extension
+            //suppressing the content type header when there is no body.
+            //In many scenarios such as 201(Created), Head request etc, it is necessary that the
+            //meta data be conveyed, with out the body. 
+            //so whenever there is no body irrespective of the kind of request made, we always send a dummy buffer
+            byte[] dummyBuffer = new byte[1];
+            body = new MemoryStream(dummyBuffer);
+        }
+        return body;
+    }
+    catch ( Exception )
+    {
+        return null;
+    }     */
 }
 
 /*-------------------------------------------------------------------------//

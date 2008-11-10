@@ -196,6 +196,8 @@ class GUCEFCORE_EXPORT_CPP CString
                           
     CString CutChars( UInt32 charcount        ,
                       bool startfront = false ) const;
+
+    CString RemoveChar( const char charToRemove ) const;
                       
     std::vector< CString > ParseElements( char seperator ) const;                          
                         

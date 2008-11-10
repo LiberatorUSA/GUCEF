@@ -103,16 +103,6 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     
     virtual ~CHTTPServer();
     
-    THttpReturnData* OnRead( const THttpRequestData& request );
-
-    THttpReturnData* OnReadMetaData( const THttpRequestData& request );
-    
-    THttpReturnData* OnUpdate( const THttpRequestData& request );
-    
-    THttpReturnData* OnCreate( const THttpRequestData& request );
-    
-    THttpReturnData* OnDelete( const THttpRequestData& request );
-    
     CString GetLastRequestUri( void ) const;
     
     private:
@@ -122,6 +112,35 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
 
     bool MatchResourceVersion( const CString& resourceVersion  ,
                                const TStringVector& searchList );
+                               
+    THttpReturnData* OnRead( const THttpRequestData& request );
+
+    THttpReturnData* OnReadMetaData( const THttpRequestData& request );
+    
+    THttpReturnData* OnUpdate( const THttpRequestData& request );
+    
+    THttpReturnData* OnCreate( const THttpRequestData& request );
+    
+    THttpReturnData* OnDelete( const THttpRequestData& request );
+
+    /**
+     *  Event callback member function.
+     *
+     *  @param notifier the notifier that sent the notification
+     *  @param eventid the unique event id for an event
+     *  @param eventdata optional notifier defined userdata
+     */
+    virtual void OnNotify( CORE::CNotifier* notifier                 ,
+                           const CORE::CEvent& eventid               ,
+                           CORE::CICloneable* eventdata /* = NULL */ );
+                           
+    void ExtractCommaSeparatedValues( const CString& stringToExtractFrom ,
+                                      TStringVector& list                ) const;
+
+    THttpRequestData* ParseRequest( CORE::CDynamicBuffer& inputBuffer );
+
+    void ParseResponse( const THttpReturnData& returnData  ,
+                        CORE::CDynamicBuffer& outputBuffer );
 
     CHTTPServer( const CHTTPServer& src );             /**< not implemented */
     CHTTPServer& operator=( const CHTTPServer& src );  /**< not implemented */
