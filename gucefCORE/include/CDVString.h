@@ -199,11 +199,11 @@ class GUCEFCORE_EXPORT_CPP CString
                       
     std::vector< CString > ParseElements( char seperator ) const;                          
                         
-    bool Equals( const CString& otherStr          ,
-                 const bool syntaxSpecific = true ) const;
+    bool Equals( const CString& otherStr        ,
+                 const bool caseSensitive = true ) const;
 
-    bool NotEquals( const CString& otherStr          ,
-                    const bool syntaxSpecific = true ) const;
+    bool NotEquals( const CString& otherStr         ,
+                    const bool caseSensitive = true ) const;
     
     void Clear( void );
     
