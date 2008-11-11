@@ -92,6 +92,11 @@
 #define GUCEF_COM_CPHUDPSOCKET_H
 #endif /* GUCEF_COM_CPHUDPSOCKET_H ? */
 
+#ifndef GUCEF_COM_CHTTPSERVER_H
+#include "gucefCOM_CHTTPServer.h"
+#define GUCEF_COM_CHTTPSERVER_H
+#endif /* GUCEF_COM_CHTTPSERVER_H ? */
+
 #endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//

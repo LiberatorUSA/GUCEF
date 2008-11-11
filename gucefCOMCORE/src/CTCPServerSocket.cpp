@@ -152,11 +152,10 @@ CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
     _data->connectcount = 0;
     _data->maxcon = DEFAULT_MAX_CONNECTIONS;
             
-    _connections.reserve( HEAP_RESIZE_AMOUNT );
-    for ( UInt32 i=0; i<HEAP_RESIZE_AMOUNT; ++i )
+    _connections.reserve( DEFAULT_MAX_CONNECTIONS );
+    for ( UInt32 i=0; i<DEFAULT_MAX_CONNECTIONS; ++i )
     {
-        CTCPServerConnection* connection = new CTCPServerConnection( this, i );
-        _connections.push_back( connection );
+        _connections[ i ] = new CTCPServerConnection( this, i );
     }
         
     SubscribeTo( m_pulseGenerator                                    , 
@@ -181,11 +180,10 @@ CTCPServerSocket::CTCPServerSocket( bool blocking )
     _data->connectcount = 0;
     _data->maxcon = DEFAULT_MAX_CONNECTIONS;
             
-    _connections.reserve( HEAP_RESIZE_AMOUNT );
-    for ( UInt32 i=0; i<HEAP_RESIZE_AMOUNT; ++i )
+    _connections.reserve( DEFAULT_MAX_CONNECTIONS );
+    for ( UInt32 i=0; i<DEFAULT_MAX_CONNECTIONS; ++i )
     {
-        CTCPServerConnection* connection = new CTCPServerConnection( this, i );
-        _connections.push_back( connection );
+        _connections[ i ] = new CTCPServerConnection( this, i );
     }
         
     SubscribeTo( m_pulseGenerator                                    , 
@@ -247,24 +245,25 @@ CTCPServerSocket::OnPulse( CORE::CNotifier* notifier                 ,
                            const CORE::CEvent& eventid               ,
                            CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
-        if ( _active )//&& ( _data->threadmethod == TM_NO_THREADING ) )
+    
+    if ( _active )
+    {
+        /*
+         *      Accept new incoming connections
+         */
+        AcceptClients();
+        
+        /*
+         *      Update the client connections
+         */
+        if ( !_blocking )
         {
-                /*
-                 *      Accept new incoming connections
-                 */
-                AcceptClients();
-                
-                /*
-                 *      Update the client connections
-                 */
-                if ( !_blocking )
-                {
-                        for ( UInt32 i=0; i<_data->maxcon; ++i )
-                        {
-                                ((CTCPServerConnection*)(_connections[ i ]))->Update();
-                        } 
-                }
-        }                                       
+            for ( UInt32 i=0; i<_connections.size(); ++i )
+            {
+                _connections[ i ]->Update();
+            } 
+        }
+    }                                       
 }
 
 /*-------------------------------------------------------------------------*/   

@@ -194,6 +194,10 @@
 				RelativePath="..\..\src\TestCode_CHTTPClient.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\TestCode_CHTTPServer.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -202,6 +206,10 @@
 			>
 			<File
 				RelativePath="..\..\include\TestCode_CHTTPClient.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\TestCode_CHTTPServer.h"
 				>
 			</File>
 		</Filter>

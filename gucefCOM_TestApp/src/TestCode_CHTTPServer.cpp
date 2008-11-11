@@ -17,14 +17,12 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
-
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-#include <windows.h>
 
 #ifndef GUCEFCORE_H
 #include "gucefCORE.h"
@@ -41,77 +39,52 @@
 #define GUCEFCOM_H
 #endif /* GUCEFCOM_H ? */
 
-#ifndef TESTCODE_CHTTPCLIENT_H
-#include "TestCode_CHTTPClient.h"
-#define TESTCODE_CHTTPCLIENT_H
-#endif /* TESTCODE_CHTTPCLIENT_H ? */
-
-#ifndef TESTCODE_CHTTPSERVER_H
 #include "TestCode_CHTTPServer.h"
-#define TESTCODE_CHTTPSERVER_H
-#endif /* TESTCODE_CHTTPSERVER_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      MACROS                                                             //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_MSWIN_BUILD
+  #define DebugBreak() assert( 0 )
+#endif
+
+#define ERRORHERE { GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Test failed @ " + CORE::CString( __FILE__ ) + CORE::UInt32ToString( __LINE__ ) ); DebugBreak(); }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
-//-------------------------------------------------------------------------*/
+//-------------------------------------------------------------------------*/ 
+
+using namespace GUCEF;
+using namespace GUCEF::CORE;
+using namespace GUCEF::COMCORE;
+using namespace GUCEF::COM;
+
+/*-------------------------------------------------------------------------*/
 
 
-          
-/*
- *      Application entry point
- */
-#ifdef GUCEF_MSWIN_BUILD
 
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
-{
+/*-------------------------------------------------------------------------*/
 
-    int argc = 0;
-    char** argv = &lpcmdline;
-    if ( lpcmdline != NULL )
-    {
-        if ( *lpcmdline != '\0' )
-        {
-            argc = 1;
-        }
-    }
-    
-#else
-
-int
-main( int argc , char* argv[] )
+void
+RunHTTPServerTest( int argc    , 
+                   char** argv )
 {GUCEF_TRACE;
 
-#endif
-        using namespace GUCEF::CORE;
-        using namespace GUCEF::COMCORE;
-        using namespace GUCEF::COM;
-                
-        try 
-        {                               
-               // SetupHTTPClientTest();
-
-                RunHTTPServerTest( argc, argv );
-                
-                return 1;                                                                            
-        }
-        catch ( ... )
-        {
-                #ifdef DEBUG_MODE
-                GUCEF_PrintCallstack();
-                GUCEF_DumpCallstack( "GUCEFCallstack.txt" );
-                #endif
-                
-                ShowErrorMessage( "Unknown exception"                                                                 ,
-                                  "Unhandled exception during program execution, the application will now terminate"  );                                                         
-        }
-        GUCEF_END;
-        return 1;                                                                                                                              
+    CHTTPServer httpServer;
+    if ( httpServer.ListenOnPort( 45678 ) )
+    {
+        CGUCEFApplication::Instance()->main( argc, argv, true );
+    }
+    else
+    {
+        // We have to be able to listen on that port in order to run our tests
+        ERRORHERE;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

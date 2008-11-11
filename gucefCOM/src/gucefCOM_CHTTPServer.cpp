@@ -558,6 +558,33 @@ CHTTPServer::GetLastRequestUri( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CHTTPServer::ListenOnPort( const UInt16 port )
+{GUCEF_TRACE;
+
+    return m_tcpServerSocket.ListenOnPort( port );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CHTTPServer::Close( void )
+{GUCEF_TRACE;
+
+    m_tcpServerSocket.Close();
+}
+
+/*-------------------------------------------------------------------------*/
+    
+UInt16
+CHTTPServer::GetPort( void ) const
+{GUCEF_TRACE;
+
+    return m_tcpServerSocket.GetPort();
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CHTTPServer::OnNotify( CORE::CNotifier* notifier                 ,
                        const CORE::CEvent& eventid               ,
@@ -660,6 +687,10 @@ CHTTPServer::ParseHeaderFields( const char* bufferPtr       ,
                     ++i;
                     if ( i+1 < bufferSize )
                     {
+                        // Add the segment to our list
+                        headerFields.push_back( CString( bufferPtr+startIndex, i-1-startIndex ) );
+                        startIndex = i+1; 
+
                         // Check for empty line which is the end of header delimiter
                         // We start with cariage return
                         if ( bufferPtr[ i+1 ] == '\r' )
@@ -671,7 +702,7 @@ CHTTPServer::ParseHeaderFields( const char* bufferPtr       ,
                                 if ( bufferPtr[ i+1 ] == '\n' )
                                 {
                                     // Proper end of header delimiter found, we can stop
-                                    headerSize = i+1;
+                                    headerSize = i+2;
                                     break;
                                 }
                                 
@@ -686,10 +717,6 @@ CHTTPServer::ParseHeaderFields( const char* bufferPtr       ,
                                 break;
                             }                             
                         }
-                        
-                        // Not a end of header delimiter so we found the end of our HTTP header segment
-                        // Add the segment to our list
-                        headerFields.push_back( CString( bufferPtr+startIndex, i-1 ) );                    
                     }
                     else
                     {

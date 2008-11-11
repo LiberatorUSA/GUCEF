@@ -138,7 +138,7 @@ class CMyHTTPClient : public GUCEF::CORE::CObserver
 
 /*-------------------------------------------------------------------------*/
 
-class CMyPumpClient : public CGUCEFAppSubSystem
+class CMyPumpClient : public CORE::CObserver
 {
     public:
     

@@ -104,6 +104,18 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     
     virtual ~CHTTPServer();
     
+    /** 
+     *  listen on default NIC with port given 
+     */
+    bool ListenOnPort( const UInt16 port );   
+    
+    /**
+     *  stop listening for clients, close server socket 
+     */
+    void Close( void ); 
+    
+    UInt16 GetPort( void ) const;
+    
     CString GetLastRequestUri( void ) const;
     
     private:
