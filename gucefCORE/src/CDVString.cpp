@@ -658,6 +658,55 @@ CString::RemoveChar( const char charToRemove ) const
 
 /*-------------------------------------------------------------------------*/
 
+CString
+CString::CompactRepeatingChar( const char charToCompact ) const
+{GUCEF_TRACE;
+    
+    CString newString;
+    for ( UInt32 i=0; i<m_length; ++i )
+    {
+        if ( m_string[ i ] != charToCompact )
+        {
+            newString += m_string[ i ];
+        }
+        else
+        {
+            if ( i+1 < m_length )
+            {
+                // Check if we are dealing with a sequence
+                if ( m_string[ i+1 ] != charToCompact )
+                {
+                    // Only one occurance, add it
+                    newString += m_string[ i+1 ];
+                    continue;
+                }
+            }
+            else
+            {
+                break;
+            }
+            
+            // Skip over the repeating char until we hit a different char
+            ++i;
+            for ( i; i<m_length; ++i )
+            {
+                if ( m_string[ i ] == charToCompact )
+                {
+                    ++i;
+                }
+                else
+                {
+                    // end of the sequence
+                    break;
+                }
+            }
+        }
+    }
+    return newString;    
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString 
 CString::CutChars( UInt32 charcount ,
                    bool startfront  ) const

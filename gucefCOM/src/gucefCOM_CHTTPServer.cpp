@@ -151,11 +151,7 @@ CHTTPServer::PerformReadOperation( const THttpRequestData& request ,
 
     try
     {
-        CString resourceURI;
-        if ( request.fullResourceUri.Length() > 0 )
-        {
-            resourceURI = request.requestUri;
-        }
+        const CString& resourceURI = request.requestUri;
         m_lastRequestUri = resourceURI; 
         
         CIHTTPServerRouter* resourceRouter = m_routerController->GetHandler( resourceURI );
@@ -251,15 +247,7 @@ CHTTPServer::OnUpdate( const THttpRequestData& request )
     }
     try
     {            
-        CString resourceURI;
-        if ( request.fullResourceUri.Length() > 0 )
-        {
-            resourceURI = request.fullResourceUri;
-        }
-        else
-        {
-            resourceURI = request.requestUri;
-        }
+        const CString& resourceURI = request.requestUri;
         m_lastRequestUri = resourceURI;
         
         CIHTTPServerRouter* resourceRouter = m_routerController->GetHandler( resourceURI );
@@ -389,15 +377,7 @@ CHTTPServer::OnCreate( const THttpRequestData& request )
 
     try
     {
-        CString resourceURI;
-        if ( request.fullResourceUri.Length() > 0 )
-        {
-            resourceURI = request.fullResourceUri;
-        }
-        else
-        {
-            resourceURI = request.requestUri;
-        }
+        const CString& resourceURI = request.requestUri;
         m_lastRequestUri = resourceURI;
         
         CIHTTPServerRouter* resourceRouter = m_routerController->GetHandler( resourceURI );
@@ -510,15 +490,7 @@ CHTTPServer::OnDelete( const THttpRequestData& request )
 
     try
     {
-        CString resourceURI;
-        if ( request.fullResourceUri.Length() > 0 )
-        {
-            resourceURI = request.fullResourceUri;
-        }
-        else
-        {
-            resourceURI = request.requestUri;
-        }
+        const CString& resourceURI = request.requestUri;
         m_lastRequestUri = resourceURI;
         
         CIHTTPServerRouter* resourceRouter = m_routerController->GetHandler( resourceURI );
@@ -612,65 +584,166 @@ CHTTPServer::ExtractCommaSeparatedValues( const CString& stringToExtractFrom ,
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+CHTTPServer::ParseHeaderFields( const char* bufferPtr       ,
+                                const UInt32 bufferSize     ,
+                                TStringVector& headerFields ) const
+{GUCEF_TRACE;
+
+    UInt32 startIndex = 0;
+    UInt32 headerSize = 0;
+    
+    // According to the RFC lines are separated using '\r\n'
+    for ( UInt32 i=0; i<bufferSize; ++i )
+    {
+        // Check for the end of line delimiter, cariage return first
+        if ( bufferPtr[ i ] == '\r' )
+        {
+            if ( i+1 < bufferSize )
+            {
+                // Check for line feed
+                if ( bufferPtr[ i+1 ] == '\n' )
+                {
+                    ++i;
+                    if ( i+1 < bufferSize )
+                    {
+                        // Check for empty line which is the end of header delimiter
+                        // We start with cariage return
+                        if ( bufferPtr[ i+1 ] == '\r' )
+                        {
+                            ++i;
+                            if ( i+1 < bufferSize )
+                            {
+                                // Check for line feed
+                                if ( bufferPtr[ i+1 ] == '\n' )
+                                {
+                                    // Proper end of header delimiter found, we can stop
+                                    headerSize = i+1;
+                                    break;
+                                }
+                                
+                                // If we get here:
+                                // Some HTTP1.0 implementations add an extra '/r' after a '/r/n' so we have to be robust
+                                // and tolerate this condition
+                            }
+                            else
+                            {
+                                // Not a well formatted HTTP header
+                                headerSize = i;
+                                break;
+                            }                             
+                        }
+                        
+                        // Not a end of header delimiter so we found the end of our HTTP header segment
+                        // Add the segment to our list
+                        headerFields.push_back( CString( bufferPtr+startIndex, i-1 ) );                    
+                    }
+                    else
+                    {
+                        // Not a well formatted HTTP header
+                        headerSize = i;
+                        break;
+                    }                    
+                }
+            }
+            else
+            {
+                // Not a well formatted HTTP header
+                headerSize = i;
+                break;
+            }
+        }
+    }
+    return headerSize;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CHTTPServer::THttpRequestData*
 CHTTPServer::ParseRequest( CORE::CDynamicBuffer& inputBuffer )
 {GUCEF_TRACE;
- /*
-    HttpRequestData request = new HttpRequestData();
-
-    WebHeaderCollection requestHeaders = WebOperationContext.Current.IncomingRequest.Headers;
-    IncomingWebRequestContext incomingRequest = WebOperationContext.Current.IncomingRequest;
-
-    //Common implementation goes here
-    string httpMethod = WebOperationContext.Current.IncomingRequest.Method;// GET, PUT, POST , DELETE etc.
-
-    //Read authorization token here and any other thing related to authorization.
-    //Similarly other headers can be read
-    // @TODO: string authorizationToken = requestProp.Headers[ HttpRequestHeader.Authorization ];            
-
-    string contentType = WebOperationContext.Current.IncomingRequest.ContentType;
-    if (null != contentType) {
-        request.ResourceRepresentations.Add(contentType.Trim());
-    } else {
-        //Gets hold of the mime types that the client can handle
-        string acceptTypes = incomingRequest.Accept;
-        request.ResourceRepresentations = ExtractCommaSeparatedValues(acceptTypes);
-
-    }
-
-    if (null != body) {
-        int readBytes = 0;
-        byte[] readBuffer = new byte[1024];
-        MemoryStream memoryStream = new MemoryStream();
-        do {
-            readBytes = body.Read(readBuffer, 0, 1024);
-            memoryStream.Write(readBuffer, 0, readBytes);
-        } while (readBytes == 1024);
-
-        memoryStream.Seek(0, SeekOrigin.Begin);
-        if (memoryStream.Length > 0) {
-            request.Content = memoryStream;
-        }
-    }
-
-                
-    // Get the resource versions desired by the client
-    request.ResourceVersions = null;
-    request.ResourceVersions = ExtractCommaSeparatedValues( requestHeaders[ HttpRequestHeader.IfMatch ] );
-    
-    //If it is null, it could also mean that the values are in If-None-Match
-    if ( null == request.ResourceVersions )
+ 
+    if ( inputBuffer.GetDataSize() == 0 )
     {
-        request.ResourceVersions = ExtractCommaSeparatedValues( requestHeaders[HttpRequestHeader.IfNoneMatch ] );
+        // Invalid input
+        return NULL;
     }
-             
-    request.TransactionID = requestHeaders[ HttpRequestHeader.Cookie ];
-    request.RequestUri = incomingRequest.UriTemplateMatch.RequestUri;
-    request.FullResourceUri = request.RequestUri;
-
-    return request;  */
     
-    return NULL;
+    // Parse all the HTTP Header fields out of the buffer
+    TStringVector headerFields;
+    UInt32 headerSize = ParseHeaderFields( static_cast< const char* >( inputBuffer.GetConstBufferPtr() ) ,
+                                           inputBuffer.GetDataSize()                                     ,
+                                           headerFields                                                  );
+    
+    // Sanity check on the parsed result
+    if ( headerSize == 0 || headerFields.size() == 0 )
+    {
+        return NULL;
+    }
+    
+    THttpRequestData* request = new THttpRequestData;
+    
+    CString temp = headerFields.front().CompactRepeatingChar( ' ' );
+    headerFields.erase( headerFields.begin() );
+
+    // Parse the request type from the first line
+    request->requestType = temp.SubstrToChar( ' ', true );
+    temp = temp.CutChars( request->requestType.Length()+1, true );
+    
+    // Parse the request URI
+    request->requestUri = temp.SubstrToChar( ' ', true );
+    
+    // Parse all the subsequent HTTP header fields    
+    TStringVector::iterator i = headerFields.begin();
+    while ( i != headerFields.end() )
+    {
+        // Parse the header name and header value out of the header field
+        CString& headerField = (*i);
+        CString headerName = headerField.SubstrToChar( ':', true );
+        CString headerValue( headerField.C_String() + headerName.Length(), headerField.Length() - headerName.Length() );
+        
+        // Remove additional spaces and lowercase the headername for easy comparison
+        headerName = headerName.RemoveChar( ' ' ).Lowercase();
+        headerValue = headerValue.RemoveChar( ' ' );
+        
+        //  Remove the trailing ':'
+        headerValue = headerValue.CutChars( 1, false );
+        
+        // Now that we have formatted the header name + value we can use them
+        if ( headerName == "accept" )
+        {
+            ExtractCommaSeparatedValues( headerValue                      ,
+                                         request->resourceRepresentations );
+        }
+        else
+        if ( headerName == "content-type" )
+        {
+            ExtractCommaSeparatedValues( headerValue               ,
+                                         request->resourceVersions );            
+        }
+        else
+        if ( headerName == "if-match" )
+        {
+            ExtractCommaSeparatedValues( headerValue               ,
+                                         request->resourceVersions );            
+        }
+        else
+        if ( headerName == "cookie" )
+        {
+            request->transactionID = headerValue;            
+        }
+        else
+        if ( headerName == "host" )
+        {
+            request->requestHost = headerValue;            
+        }                        
+        ++i;
+    }
+    
+    // Set the content as a sub-segment of our data buffer
+    request->content.LinkTo( inputBuffer.GetConstBufferPtr(), inputBuffer.GetDataSize() - headerSize ); 
+    
+    return request;
 }
 
 /*-------------------------------------------------------------------------*/

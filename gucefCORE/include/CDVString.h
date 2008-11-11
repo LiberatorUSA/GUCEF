@@ -198,6 +198,8 @@ class GUCEFCORE_EXPORT_CPP CString
                       bool startfront = false ) const;
 
     CString RemoveChar( const char charToRemove ) const;
+    
+    CString CompactRepeatingChar( const char charToCompact ) const;
                       
     std::vector< CString > ParseElements( char seperator ) const;                          
                         

@@ -74,7 +74,8 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     {
         TStringVector resourceRepresentations;
         TStringVector resourceVersions;
-        CString fullResourceUri;
+        CString requestType;
+        CString requestHost;
         CString requestUri;
         CORE::CDynamicBuffer content;
         CString transactionID; 
@@ -141,6 +142,10 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
 
     void ParseResponse( const THttpReturnData& returnData  ,
                         CORE::CDynamicBuffer& outputBuffer );
+                        
+    UInt32 ParseHeaderFields( const char* bufferPtr       ,
+                              const UInt32 bufferSize     ,
+                              TStringVector& headerFields ) const;
 
     CHTTPServer( const CHTTPServer& src );             /**< not implemented */
     CHTTPServer& operator=( const CHTTPServer& src );  /**< not implemented */
