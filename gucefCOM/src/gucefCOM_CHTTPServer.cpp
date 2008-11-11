@@ -564,6 +564,21 @@ CHTTPServer::OnNotify( CORE::CNotifier* notifier                 ,
                        CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
+    if ( COMCORE::CTCPServerSocket::ClientConnectedEvent == eventid )        
+    {
+        const COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata );
+        const COMCORE::CTCPServerSocket::TConnectionInfo& storage = eData->GetData();
+        
+        // Subscribe to the connection
+        storage.connection->Subscribe( this );
+    }
+    else
+    if ( COMCORE::CTCPServerConnection::DataRecievedEvent == eventid )
+    {
+        const COMCORE::CTCPServerConnection::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPServerConnection::TDataRecievedEventData* >( eventdata );
+        const CORE::CDynamicBuffer& receivedData = eData->GetData();
+        ProcessReceivedData( receivedData );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -579,6 +594,44 @@ CHTTPServer::ExtractCommaSeparatedValues( const CString& stringToExtractFrom ,
     while ( i != elements.end() )
     {                    
         list.push_back( (*i).RemoveChar( ' ' ) );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CHTTPServer::ProcessReceivedData( const CORE::CDynamicBuffer& inputBuffer )
+{GUCEF_TRACE;
+
+    THttpReturnData* returnData = NULL;
+    THttpRequestData* requestData = ParseRequest( inputBuffer );
+    
+    if ( NULL != requestData )
+    {
+        if ( requestData->requestType == "GET" )
+        {
+            returnData = OnRead( *requestData );
+        }
+        else
+        if ( requestData->requestType == "HEAD" )
+        {
+            returnData = OnReadMetaData( *requestData );
+        }         
+        else
+        if ( requestData->requestType == "POST" )
+        {
+            returnData = OnCreate( *requestData );
+        }
+        else
+        if ( requestData->requestType == "PUT" )
+        {
+            returnData = OnUpdate( *requestData );
+        }
+        else
+        if ( requestData->requestType == "DELETE" )
+        {
+            returnData = OnDelete( *requestData );
+        }                        
     }
 }
 
@@ -660,7 +713,7 @@ CHTTPServer::ParseHeaderFields( const char* bufferPtr       ,
 /*-------------------------------------------------------------------------*/
 
 CHTTPServer::THttpRequestData*
-CHTTPServer::ParseRequest( CORE::CDynamicBuffer& inputBuffer )
+CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
 {GUCEF_TRACE;
  
     if ( inputBuffer.GetDataSize() == 0 )

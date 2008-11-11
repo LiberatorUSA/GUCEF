@@ -84,8 +84,6 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     
     public:
     
-    static const CORE::CEvent ClientDataRecievedEvent;
-    static const CORE::CEvent ClientDataSentEvent;
     static const CORE::CEvent ClientConnectedEvent;
     static const CORE::CEvent ClientDisconnectedEvent;
     static const CORE::CEvent ClientErrorEvent;        
@@ -98,6 +96,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     typedef CORE::TCloneableInt32   TServerSocketErrorEventData;
     typedef CORE::TCloneableInt32   TServerSocketClientErrorEventData;    
     typedef CORE::CTCloneableObj< TConnectionInfo > TClientConnectedEventData;
+    typedef CORE::TLinkedCloneableBuffer TClientDataRecievedEventData;
 
     static void RegisterEvents( void );
     
@@ -140,12 +139,6 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     
     private:
     friend class CTCPServerConnection;
-    
-    void OnClientRead( CTCPServerConnection* connection ,
-                       const UInt32 connectionid        ,
-                       const char* data                 ,
-                       const UInt16 recieved            ,
-                       UInt16& keepbytes                );
 
     void OnClientConnectionClosed( CTCPServerConnection* connection ,
                                    const UInt32 connectionid        ,
@@ -169,10 +162,12 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     
     private :
     
+    typedef std::vector< CTCPServerConnection* > TConnectionVector;
+    
     struct STCPServerSockData* _data;
     bool _active; 
     bool _blocking;                        
-    CORE::CDynamicArray _connections;          /**< array of connection objects */
+    TConnectionVector _connections;          /**< array of connection objects */
     UInt16 m_port;
     MT::CMutex _datalock;
     UInt32 _timeout;   

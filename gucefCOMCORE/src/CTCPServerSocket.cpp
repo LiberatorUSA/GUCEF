@@ -84,8 +84,6 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CTCPServerSocket::ClientDataRecievedEvent = "GUCEF::COMCORE::CTCPServerSocket::ClientDataRecievedEvent";
-const CORE::CEvent CTCPServerSocket::ClientDataSentEvent = "GUCEF::COMCORE::CTCPServerSocket::ClientDataSentEvent";
 const CORE::CEvent CTCPServerSocket::ClientConnectedEvent = "GUCEF::COMCORE::CTCPServerSocket::ClientConnectedEvent";
 const CORE::CEvent CTCPServerSocket::ClientDisconnectedEvent = "GUCEF::COMCORE::CTCPServerSocket::ClientDisconnectedEvent";
 const CORE::CEvent CTCPServerSocket::ClientErrorEvent = "GUCEF::COMCORE::CTCPServerSocket::ClientErrorEvent";
@@ -154,12 +152,11 @@ CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
     _data->connectcount = 0;
     _data->maxcon = DEFAULT_MAX_CONNECTIONS;
             
-    _connections.SetResizeChange( HEAP_RESIZE_AMOUNT );
-    for ( UInt32 i=0; i<_connections.GetArraySize(); i++ )
+    _connections.reserve( HEAP_RESIZE_AMOUNT );
+    for ( UInt32 i=0; i<HEAP_RESIZE_AMOUNT; ++i )
     {
-        _connections.SetEntry( i                                , 
-                               new CTCPServerConnection( this , 
-                                                         i    ) );
+        CTCPServerConnection* connection = new CTCPServerConnection( this, i );
+        _connections.push_back( connection );
     }
         
     SubscribeTo( m_pulseGenerator                                    , 
@@ -184,12 +181,11 @@ CTCPServerSocket::CTCPServerSocket( bool blocking )
     _data->connectcount = 0;
     _data->maxcon = DEFAULT_MAX_CONNECTIONS;
             
-    _connections.SetResizeChange( HEAP_RESIZE_AMOUNT );
-    for ( UInt32 i=0; i<_connections.GetArraySize(); i++ )
+    _connections.reserve( HEAP_RESIZE_AMOUNT );
+    for ( UInt32 i=0; i<HEAP_RESIZE_AMOUNT; ++i )
     {
-        _connections.SetEntry( i                                , 
-                               new CTCPServerConnection( this , 
-                                                         i    ) );
+        CTCPServerConnection* connection = new CTCPServerConnection( this, i );
+        _connections.push_back( connection );
     }
         
     SubscribeTo( m_pulseGenerator                                    , 
@@ -208,11 +204,12 @@ CTCPServerSocket::~CTCPServerSocket()
 
         /*
          *      Cleanup connection data
-         */
-        for ( Int32 i=0; i<=_connections.GetLast(); i++ )
+         */ 
+        for ( UInt32 i=0; i<_connections.size(); ++i )
         {
-                delete (CTCPServerConnection*)_connections[ i ];
+            delete _connections[ i ];
         }
+        _connections.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -221,8 +218,6 @@ void
 CTCPServerSocket::RegisterEvents( void )
 {GUCEF_TRACE;
 
-    ClientDataRecievedEvent.Initialize();
-    ClientDataSentEvent.Initialize();
     ClientConnectedEvent.Initialize();
     ClientDisconnectedEvent.Initialize();
     ClientErrorEvent.Initialize();
@@ -506,7 +501,8 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 UInt32 
 CTCPServerSocket::GetMaxConnections( void ) const
 {GUCEF_TRACE; 
-        return _connections.GetCount(); 
+
+    return (UInt32) _connections.size(); 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -537,7 +533,7 @@ CTCPServerSocket::Close( void )
                                 
                 NotifyObservers( ServerSocketClosedEvent );
                                    
-                for( UInt32 i=0; i<_connections.GetCount(); ++i )
+                for( UInt32 i=0; i<_connections.size(); ++i )
                 {
                         ((CTCPServerConnection*)_connections[ i ])->Close();
                 }
@@ -553,31 +549,6 @@ CTCPServerSocket::GetPort( void ) const
 {GUCEF_TRACE;
 
     return m_port;        
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CTCPServerSocket::OnClientRead( CTCPServerConnection* connection ,
-                                const UInt32 connectionid        ,
-                                const char* data                 ,
-                                const UInt16 recieved            ,
-                                UInt16& keepbytes                )
-{GUCEF_TRACE;
-        _datalock.Lock();
-        
-        NotifyObservers( ClientDataRecievedEvent );
-        /*
-        if ( _iface )
-        {
-                _iface->OnClientRead( *this        ,
-                                      *connection  ,
-                                      connectionid ,
-                                      data         ,
-                                      recieved     ,
-                                      keepbytes    );
-        } */
-        _datalock.Unlock();        
 }
 
 /*-------------------------------------------------------------------------*/
