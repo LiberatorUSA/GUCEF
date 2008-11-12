@@ -87,6 +87,7 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
         TStringVector allowedMethods;
         CString cacheability;
         CString eTag;
+        CString lastModified;
         CORE::CDynamicBuffer content;
         int statusCode;
         CString contentType;
@@ -150,7 +151,8 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     void ExtractCommaSeparatedValues( const CString& stringToExtractFrom ,
                                       TStringVector& list                ) const;
 
-    void ProcessReceivedData( const CORE::CDynamicBuffer& inputBuffer );
+    void ProcessReceivedData( const CORE::CDynamicBuffer& inputBuffer ,
+                              CORE::CDynamicBuffer& outputBuffer      );
 
     THttpRequestData* ParseRequest( const CORE::CDynamicBuffer& inputBuffer );
 

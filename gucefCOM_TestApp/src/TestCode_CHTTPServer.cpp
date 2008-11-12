@@ -24,20 +24,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCORE_H
+#ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
-#define GUCEFCORE_H
-#endif /* GUCEFCORE_H ? */
+#define GUCEF_CORE_H
+#endif /* GUCEF_CORE_H ? */
 
-#ifndef GUCEFCOMCORE_H
+#ifndef GUCEF_COMCORE_H
 #include "gucefCOMCORE.h"
-#define GUCEFCOMCORE_H
-#endif /* GUCEFCOMCORE_H ? */
+#define GUCEF_COMCORE_H
+#endif /* GUCEF_COMCORE_H ? */
 
-#ifndef GUCEFCOM_H
+#ifndef GUCEF_COM_H
 #include "gucefCOM.h"
-#define GUCEFCOM_H
-#endif /* GUCEFCOM_H ? */
+#define GUCEF_COM_H
+#endif /* GUCEF_COM_H ? */
 
 #include "TestCode_CHTTPServer.h"
 
@@ -75,6 +75,12 @@ RunHTTPServerTest( int argc    ,
                    char** argv )
 {GUCEF_TRACE;
 
+    #if defined( GUCEF_MSWIN_BUILD ) && defined( GUCEF_CORE_DEBUG_MODE )
+    CMSWinConsoleLogger consoleLogger;
+    consoleLogger.SetMinimalLogLevel( LOGLEVEL_BELOW_NORMAL );
+    CLogManager::Instance()->AddLogger( &consoleLogger );
+    #endif
+
     CHTTPServer httpServer;
     if ( httpServer.ListenOnPort( 45678 ) )
     {
@@ -85,6 +91,10 @@ RunHTTPServerTest( int argc    ,
         // We have to be able to listen on that port in order to run our tests
         ERRORHERE;
     }
+    
+    #if defined( GUCEF_MSWIN_BUILD ) && defined( GUCEF_CORE_DEBUG_MODE )
+    CLogManager::Instance()->RemoveLogger( &consoleLogger );    
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/

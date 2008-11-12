@@ -24,6 +24,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
 #include "gucefCOM_CDefaultHTTPServerRouterController.h"
 #define GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
@@ -209,6 +214,7 @@ CHTTPServer::PerformReadOperation( const THttpRequestData& request ,
         }
 
         returnData->eTag = resource->GetResourceVersion();
+        returnData->lastModified = resource->GetLastModifiedTime();
         returnData->cacheability = resource->GetCacheability();
 
         // Inform the client of the actual location of the resource if the request Uri was
@@ -335,6 +341,7 @@ CHTTPServer::OnUpdate( const THttpRequestData& request )
         }
 
         returnData->eTag = resource->GetResourceVersion();
+        returnData->lastModified = resource->GetLastModifiedTime();
         
         // Make sure we only send back absolute Uri's for resource locations
         returnData->location = m_routerController->MakeUriAbsolute( *resourceRouter, resourceURI, resource->GetURL() );
@@ -455,6 +462,7 @@ CHTTPServer::OnCreate( const THttpRequestData& request )
             // tell client what representation the resource is stored as plus its version
             returnData->contentType = createRepresentation;
             returnData->eTag = resource->GetResourceVersion();
+            returnData->lastModified = resource->GetLastModifiedTime();
 
             // Tell the client we succeeded in creating a new resource
             returnData->statusCode = 201;
@@ -596,6 +604,8 @@ CHTTPServer::OnNotify( CORE::CNotifier* notifier                 ,
         const COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata );
         const COMCORE::CTCPServerSocket::TConnectionInfo& storage = eData->GetData();
         
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Client connected" );
+        
         // Subscribe to the connection
         storage.connection->Subscribe( this );
     }
@@ -604,7 +614,17 @@ CHTTPServer::OnNotify( CORE::CNotifier* notifier                 ,
     {
         const COMCORE::CTCPServerConnection::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPServerConnection::TDataRecievedEventData* >( eventdata );
         const CORE::CDynamicBuffer& receivedData = eData->GetData();
-        ProcessReceivedData( receivedData );
+        COMCORE::CTCPServerConnection* connection = static_cast< COMCORE::CTCPServerConnection* >( notifier );
+        
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): " + CORE::UInt32ToString( receivedData.GetDataSize() ) + " Bytes received from client " + connection->GetRemoteHostName() );
+        
+        // Process the request
+        CORE::CDynamicBuffer responseBuffer;
+        ProcessReceivedData( receivedData, responseBuffer );
+        
+        // Send the reponse back to the client        
+        connection->Send( responseBuffer.GetConstBufferPtr(), responseBuffer.GetDataSize() );
+        connection->Close();
     }
 }
 
@@ -621,44 +641,60 @@ CHTTPServer::ExtractCommaSeparatedValues( const CString& stringToExtractFrom ,
     while ( i != elements.end() )
     {                    
         list.push_back( (*i).RemoveChar( ' ' ) );
+        ++i;
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CHTTPServer::ProcessReceivedData( const CORE::CDynamicBuffer& inputBuffer )
+CHTTPServer::ProcessReceivedData( const CORE::CDynamicBuffer& inputBuffer ,
+                                  CORE::CDynamicBuffer& outputBuffer      )
 {GUCEF_TRACE;
 
-    THttpReturnData* returnData = NULL;
-    THttpRequestData* requestData = ParseRequest( inputBuffer );
-    
-    if ( NULL != requestData )
+    try
     {
-        if ( requestData->requestType == "GET" )
+        THttpReturnData* returnData = NULL;
+        THttpRequestData* requestData = ParseRequest( inputBuffer );
+        
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): About to process request of type: " + requestData->requestType );
+        
+        if ( NULL != requestData )
         {
-            returnData = OnRead( *requestData );
+            if ( requestData->requestType == "GET" )
+            {
+                returnData = OnRead( *requestData );
+            }
+            else
+            if ( requestData->requestType == "HEAD" )
+            {
+                returnData = OnReadMetaData( *requestData );
+            }         
+            else
+            if ( requestData->requestType == "POST" )
+            {
+                returnData = OnCreate( *requestData );
+            }
+            else
+            if ( requestData->requestType == "PUT" )
+            {
+                returnData = OnUpdate( *requestData );
+            }
+            else
+            if ( requestData->requestType == "DELETE" )
+            {
+                returnData = OnDelete( *requestData );
+            }                        
         }
-        else
-        if ( requestData->requestType == "HEAD" )
+        
+        if ( NULL != returnData )
         {
-            returnData = OnReadMetaData( *requestData );
-        }         
-        else
-        if ( requestData->requestType == "POST" )
-        {
-            returnData = OnCreate( *requestData );
+            ParseResponse( *returnData  ,
+                           outputBuffer );
         }
-        else
-        if ( requestData->requestType == "PUT" )
-        {
-            returnData = OnUpdate( *requestData );
-        }
-        else
-        if ( requestData->requestType == "DELETE" )
-        {
-            returnData = OnDelete( *requestData );
-        }                        
+    }
+    catch ( std::exception& )
+    {
     }
 }
 
@@ -670,71 +706,78 @@ CHTTPServer::ParseHeaderFields( const char* bufferPtr       ,
                                 TStringVector& headerFields ) const
 {GUCEF_TRACE;
 
-    UInt32 startIndex = 0;
-    UInt32 headerSize = 0;
-    
-    // According to the RFC lines are separated using '\r\n'
-    for ( UInt32 i=0; i<bufferSize; ++i )
+    try
     {
-        // Check for the end of line delimiter, cariage return first
-        if ( bufferPtr[ i ] == '\r' )
+        UInt32 startIndex = 0;
+        UInt32 headerSize = 0;
+        
+        // According to the RFC lines are separated using '\r\n'
+        for ( UInt32 i=0; i<bufferSize; ++i )
         {
-            if ( i+1 < bufferSize )
+            // Check for the end of line delimiter, cariage return first
+            if ( bufferPtr[ i ] == '\r' )
             {
-                // Check for line feed
-                if ( bufferPtr[ i+1 ] == '\n' )
+                if ( i+1 < bufferSize )
                 {
-                    ++i;
-                    if ( i+1 < bufferSize )
+                    // Check for line feed
+                    if ( bufferPtr[ i+1 ] == '\n' )
                     {
-                        // Add the segment to our list
-                        headerFields.push_back( CString( bufferPtr+startIndex, i-1-startIndex ) );
-                        startIndex = i+1; 
-
-                        // Check for empty line which is the end of header delimiter
-                        // We start with cariage return
-                        if ( bufferPtr[ i+1 ] == '\r' )
+                        ++i;
+                        if ( i+1 < bufferSize )
                         {
-                            ++i;
-                            if ( i+1 < bufferSize )
+                            // Add the segment to our list
+                            headerFields.push_back( CString( bufferPtr+startIndex, i-1-startIndex ) );
+                            startIndex = i+1; 
+
+                            // Check for empty line which is the end of header delimiter
+                            // We start with cariage return
+                            if ( bufferPtr[ i+1 ] == '\r' )
                             {
-                                // Check for line feed
-                                if ( bufferPtr[ i+1 ] == '\n' )
+                                ++i;
+                                if ( i+1 < bufferSize )
                                 {
-                                    // Proper end of header delimiter found, we can stop
-                                    headerSize = i+2;
-                                    break;
+                                    // Check for line feed
+                                    if ( bufferPtr[ i+1 ] == '\n' )
+                                    {
+                                        // Proper end of header delimiter found, we can stop
+                                        headerSize = i+2;
+                                        break;
+                                    }
+                                    
+                                    // If we get here:
+                                    // Some HTTP1.0 implementations add an extra '/r' after a '/r/n' so we have to be robust
+                                    // and tolerate this condition
                                 }
-                                
-                                // If we get here:
-                                // Some HTTP1.0 implementations add an extra '/r' after a '/r/n' so we have to be robust
-                                // and tolerate this condition
+                                else
+                                {
+                                    // Not a well formatted HTTP header
+                                    headerSize = i;
+                                    break;
+                                }                             
                             }
-                            else
-                            {
-                                // Not a well formatted HTTP header
-                                headerSize = i;
-                                break;
-                            }                             
                         }
+                        else
+                        {
+                            // Not a well formatted HTTP header
+                            headerSize = i;
+                            break;
+                        }                    
                     }
-                    else
-                    {
-                        // Not a well formatted HTTP header
-                        headerSize = i;
-                        break;
-                    }                    
+                }
+                else
+                {
+                    // Not a well formatted HTTP header
+                    headerSize = i;
+                    break;
                 }
             }
-            else
-            {
-                // Not a well formatted HTTP header
-                headerSize = i;
-                break;
-            }
         }
+        return headerSize;
     }
-    return headerSize;
+    catch ( std::exception& )
+    {
+        return 0;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -743,91 +786,100 @@ CHTTPServer::THttpRequestData*
 CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
 {GUCEF_TRACE;
  
-    if ( inputBuffer.GetDataSize() == 0 )
-    {
-        // Invalid input
-        return NULL;
-    }
-    
-    // Parse all the HTTP Header fields out of the buffer
-    TStringVector headerFields;
-    UInt32 headerSize = ParseHeaderFields( static_cast< const char* >( inputBuffer.GetConstBufferPtr() ) ,
-                                           inputBuffer.GetDataSize()                                     ,
-                                           headerFields                                                  );
-    
-    // Sanity check on the parsed result
-    if ( headerSize == 0 || headerFields.size() == 0 )
-    {
-        return NULL;
-    }
-    
-    THttpRequestData* request = new THttpRequestData;
-    
-    CString temp = headerFields.front().CompactRepeatingChar( ' ' );
-    headerFields.erase( headerFields.begin() );
+    try
+    {    
+        if ( inputBuffer.GetDataSize() == 0 )
+        {
+            // Invalid input
+            return NULL;
+        }
+        
+        // Parse all the HTTP Header fields out of the buffer
+        TStringVector headerFields;
+        UInt32 headerSize = ParseHeaderFields( static_cast< const char* >( inputBuffer.GetConstBufferPtr() ) ,
+                                               inputBuffer.GetDataSize()                                     ,
+                                               headerFields                                                  );
+        
+        // Sanity check on the parsed result
+        if ( headerSize == 0 || headerFields.size() == 0 )
+        {
+            return NULL;
+        }
+        
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Finished parsing request header" );
+        
+        THttpRequestData* request = new THttpRequestData;
+        
+        CString temp = headerFields.front().CompactRepeatingChar( ' ' );
+        headerFields.erase( headerFields.begin() );
 
-    // Parse the request type from the first line
-    request->requestType = temp.SubstrToChar( ' ', true );
-    temp = temp.CutChars( request->requestType.Length()+1, true );
-    
-    // Parse the request URI
-    request->requestUri = temp.SubstrToChar( ' ', true );
-    
-    // Parse all the subsequent HTTP header fields    
-    TStringVector::iterator i = headerFields.begin();
-    while ( i != headerFields.end() )
-    {
-        // Parse the header name and header value out of the header field
-        CString& headerField = (*i);
-        CString headerName = headerField.SubstrToChar( ':', true );
-        CString headerValue( headerField.C_String() + headerName.Length(), headerField.Length() - headerName.Length() );
+        // Parse the request type from the first line
+        request->requestType = temp.SubstrToChar( ' ', true );
+        temp = temp.CutChars( request->requestType.Length()+1, true );
         
-        // Remove additional spaces and lowercase the headername for easy comparison
-        headerName = headerName.RemoveChar( ' ' ).Lowercase();
-        headerValue = headerValue.RemoveChar( ' ' );
+        // Parse the request URI
+        request->requestUri = temp.SubstrToChar( ' ', true );
         
-        //  Remove the ':' prefix
-        headerValue = headerValue.CutChars( 1, true );
+        // Parse all the subsequent HTTP header fields    
+        TStringVector::iterator i = headerFields.begin();
+        while ( i != headerFields.end() )
+        {
+            // Parse the header name and header value out of the header field
+            CString& headerField = (*i);
+            CString headerName = headerField.SubstrToChar( ':', true );
+            CString headerValue( headerField.C_String() + headerName.Length(), headerField.Length() - headerName.Length() );
+            
+            // Remove additional spaces and lowercase the headername for easy comparison
+            headerName = headerName.RemoveChar( ' ' ).Lowercase();
+            headerValue = headerValue.RemoveChar( ' ' );
+            
+            //  Remove the ':' prefix
+            headerValue = headerValue.CutChars( 1, true );
+            
+            // Now that we have formatted the header name + value we can use them
+            if ( headerName == "accept" )
+            {
+                ExtractCommaSeparatedValues( headerValue                      ,
+                                             request->resourceRepresentations );
+            }
+            else
+            if ( headerName == "content-type" )
+            {
+                ExtractCommaSeparatedValues( headerValue               ,
+                                             request->resourceVersions );            
+            }
+            else
+            if ( headerName == "if-match" )
+            {
+                ExtractCommaSeparatedValues( headerValue               ,
+                                             request->resourceVersions );            
+            }
+            else
+            if ( headerName == "cookie" )
+            {
+                request->transactionID = headerValue;            
+            }
+            else
+            if ( headerName == "host" )
+            {
+                request->requestHost = headerValue;            
+            }                        
+            ++i;
+        }
         
-        // Now that we have formatted the header name + value we can use them
-        if ( headerName == "accept" )
+        // Set the content as a sub-segment of our data buffer
+        if ( inputBuffer.GetDataSize() - headerSize > 0 )
         {
-            ExtractCommaSeparatedValues( headerValue                      ,
-                                         request->resourceRepresentations );
+            request->content.LinkTo( inputBuffer.GetConstBufferPtr( headerSize ) , 
+                                     inputBuffer.GetDataSize() - headerSize      );
         }
-        else
-        if ( headerName == "content-type" )
-        {
-            ExtractCommaSeparatedValues( headerValue               ,
-                                         request->resourceVersions );            
-        }
-        else
-        if ( headerName == "if-match" )
-        {
-            ExtractCommaSeparatedValues( headerValue               ,
-                                         request->resourceVersions );            
-        }
-        else
-        if ( headerName == "cookie" )
-        {
-            request->transactionID = headerValue;            
-        }
-        else
-        if ( headerName == "host" )
-        {
-            request->requestHost = headerValue;            
-        }                        
-        ++i;
+        
+        return request;
     }
-    
-    // Set the content as a sub-segment of our data buffer
-    if ( inputBuffer.GetDataSize() - headerSize > 0 )
+    catch ( std::exception& )
     {
-        request->content.LinkTo( inputBuffer.GetConstBufferPtr( headerSize ) , 
-                                 inputBuffer.GetDataSize() - headerSize      );
+        return NULL;
     }
-    
-    return request;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -835,81 +887,72 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
 void
 CHTTPServer::ParseResponse( const THttpReturnData& returnData  ,
                             CORE::CDynamicBuffer& outputBuffer )
-{  /*
-    try
+{GUCEF_TRACE;  
+
+    CString response = "HTTP/1.1 " + CORE::Int32ToString( returnData.statusCode ) + "\r\nServer: gucefCOM\r\nConnection: close\r\n";
+    if ( !returnData.location.IsNULLOrEmpty() )
     {
-
-        Stream body = null;
-        WebHeaderCollection headers = WebOperationContext.Current.OutgoingResponse.Headers;
-
-        headers[HttpResponseHeader.ContentType] = returnData.ContentType;
-        if (returnData.Content != null) {
-            body = returnData.Content;
-        }
-        if (returnData.Content != null && returnData.Content.CanSeek) {
-            headers[HttpResponseHeader.ContentLength] = returnData.Content.Length.ToString();
-        }
-
-        
-        WebOperationContext.Current.OutgoingResponse.StatusCode = (HttpStatusCode) returnData.StatusCode;
-        if ( null != returnData.Location ) 
-        {
-            headers[ HttpResponseHeader.Location ] = returnData.Location.ToString();
-        }
-        if ( !String.IsNullOrEmpty( returnData.ETag ) )
-        {
-            headers[ HttpResponseHeader.ETag ] = returnData.ETag;
-        }
-        if ( !String.IsNullOrEmpty( returnData.Cacheability ) )
-        {
-            headers[ HttpResponseHeader.CacheControl ] = returnData.Cacheability;
-        }
-        
-        // You cannot send back accept types to the client using a standard HTTP header since
-        // it is a HTTP request only header. We don't want the client to aimlessly retry different
-        // representations either on PUT/POST so we do want to inform the client of the accepted types.
-        if ( returnData.StatusCode == 415 )
-        {
-            // Make sure we don't overwrite anything or do work for nothing
-            if ( returnData.AcceptedTypes.Count > 0 && null == body )
-            {
-                // Build the accept header
-                string acceptHeader = "Accept:";
-                foreach ( string typeName in returnData.AcceptedTypes )
-                {
-                    acceptHeader += typeName + ',';
-                }                           
-                // Turn the string into a stream we can send back trough the WFC pipeline
-                byte[] buffer = Encoding.GetEncoding( "iso-8859-1" ).GetBytes(acceptHeader);
-                body = new MemoryStream( buffer );
-                
-                returnData.ContentType = "plain/text";
-            }
-        }
-        if (returnData.StatusCode == 405) {
-            if (returnData.AllowedMethods.Count > 0) {
-                string allow = String.Empty;
-                foreach (string allowedMethod in returnData.AllowedMethods) {
-                    allow = allow + allowedMethod + ",";
-                }
-                headers[HttpResponseHeader.Allow] = allow.Remove(allow.Length-1, 1);
-            }
-        }
-        if (body == null) {
-            //This code is to overcome the limitation of the ISAPI extension
-            //suppressing the content type header when there is no body.
-            //In many scenarios such as 201(Created), Head request etc, it is necessary that the
-            //meta data be conveyed, with out the body. 
-            //so whenever there is no body irrespective of the kind of request made, we always send a dummy buffer
-            byte[] dummyBuffer = new byte[1];
-            body = new MemoryStream(dummyBuffer);
-        }
-        return body;
+        response += "Content-Location: " + returnData.location + "\r\n";
     }
-    catch ( Exception )
+    if ( !returnData.eTag.IsNULLOrEmpty() )
     {
-        return null;
-    }     */
+        response += "ETag: " + returnData.eTag + "\r\n";
+    }    
+    if ( !returnData.cacheability.IsNULLOrEmpty() )
+    {
+        response += "Cache-Control: " + returnData.cacheability + "\r\n";
+    }
+    if ( !returnData.lastModified.IsNULLOrEmpty() )
+    {    
+        response += "Last-Modified: " + returnData.lastModified + "\r\n";
+    }
+    if ( returnData.content.GetDataSize() > 0 )
+    {
+        response += "Content-Length: " + CORE::UInt32ToString( returnData.content.GetDataSize() ) + "\r\n";
+        response += "Content-Type: " + returnData.contentType + "\r\n";
+    }
+    
+    // You cannot send back accept types to the client using a standard HTTP header since
+    // it is a HTTP request only header. We don't want the client to aimlessly retry different
+    // representations either on PUT/POST so we do want to inform the client of the accepted types.
+    // The client will need to have support for this operation to take advantage of it since it is a custom HTTP header
+    if ( returnData.statusCode == 415 )
+    {
+        response += "Accept: ";
+        TStringVector::const_iterator i = returnData.acceptedTypes.begin();
+        while ( i != returnData.acceptedTypes.end() )
+        {
+            response += (*i) + ',';
+        }
+        response += "\r\n";
+    }
+    
+    // If the operation was and a subset of allowed operations where specified
+    // we will send those to the client.
+    if ( returnData.statusCode == 405 && returnData.allowedMethods.size() > 0 )
+    {
+        response += "Allow: ";
+        TStringVector::const_iterator i = returnData.allowedMethods.begin();
+        while ( i != returnData.allowedMethods.end() )
+        {
+            response += (*i) + ',';
+        }
+        response += "\r\n";        
+    } 
+    
+    // Add the end of HTTP header delimiter
+    response += "\r\n";
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Finished building response header: " + response );
+
+    // Copy the HTTP header into the buffer
+    outputBuffer.CopyFrom( response.Length(), response.C_String() );
+    
+    // Copy the HTTP message body into the buffer
+    if ( returnData.content.GetDataSize() > 0 )
+    {
+        outputBuffer.CopyFrom( response.Length(), returnData.content.GetDataSize(), returnData.content.GetConstBufferPtr() );
+    }
 }
 
 /*-------------------------------------------------------------------------//
