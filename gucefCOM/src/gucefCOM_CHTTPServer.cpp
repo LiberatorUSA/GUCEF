@@ -786,8 +786,8 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
         headerName = headerName.RemoveChar( ' ' ).Lowercase();
         headerValue = headerValue.RemoveChar( ' ' );
         
-        //  Remove the trailing ':'
-        headerValue = headerValue.CutChars( 1, false );
+        //  Remove the ':' prefix
+        headerValue = headerValue.CutChars( 1, true );
         
         // Now that we have formatted the header name + value we can use them
         if ( headerName == "accept" )
@@ -821,7 +821,11 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
     }
     
     // Set the content as a sub-segment of our data buffer
-    request->content.LinkTo( inputBuffer.GetConstBufferPtr(), inputBuffer.GetDataSize() - headerSize ); 
+    if ( inputBuffer.GetDataSize() - headerSize > 0 )
+    {
+        request->content.LinkTo( inputBuffer.GetConstBufferPtr( headerSize ) , 
+                                 inputBuffer.GetDataSize() - headerSize      );
+    }
     
     return request;
 }

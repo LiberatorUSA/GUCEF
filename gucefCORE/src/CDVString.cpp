@@ -677,7 +677,7 @@ CString::CompactRepeatingChar( const char charToCompact ) const
                 if ( m_string[ i+1 ] != charToCompact )
                 {
                     // Only one occurance, add it
-                    newString += m_string[ i+1 ];
+                    newString += m_string[ i ];
                     continue;
                 }
             }
