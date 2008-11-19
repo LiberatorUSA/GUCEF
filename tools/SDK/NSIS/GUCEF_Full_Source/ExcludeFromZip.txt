@@ -1,0 +1,13 @@
+*.obj
+*.pch
+*.o
+*.dep
+*.pdb
+*.idb
+*.ilk
+*.manifest
+*.user
+*.suo
+*.ncb
+*.lib
+*.exp

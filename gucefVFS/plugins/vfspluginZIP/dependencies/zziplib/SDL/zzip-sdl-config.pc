@@ -1,0 +1,10 @@
+prefix=/usr
+sdl_static_libs=-L/usr/lib -lSDL -lpthread
+sdl_libs=-L/usr/lib -lSDL -lpthread
+sdl_cflags=-I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
+ 
+Name: zzip-sdl-config
+Version: 1.2.11
+Description: SDL Config (for ZZipLib)
+Libs: ${sdl_libs}
+Cflags: ${sdl_cflags}

@@ -1,0 +1,6 @@
+; gucefMT_MVC8.def : Declares the module parameters for the DLL.
+
+LIBRARY      "gucefMT_MVC8_d"
+
+EXPORTS
+    ; Explicit exports can go here

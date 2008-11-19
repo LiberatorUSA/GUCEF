@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MFCPatcherGUIConfig>
+	<CPatchConfig LocalRootDir="$MODULEDIR$" TempStorageRoot="$CURWORKDIR$\temp" PatchListURL="http://www.VanvelzenSoftware.com/bin/GUCEF/tools/PatcherGUI/PatcherTest/PatcherPatchListDummy.xml" PatchListCodec="xml" StopOnFileReplacementFailure="false" >
+		<EngineStartTrigger Event="GUCEF::CORE::CGUCEFApplication::AppInitEvent" />
+		<EngineStopTrigger Event="GUCEF::CORE::CGUCEFApplication::AppShutdownEvent" />
+	</CPatchConfig>
+</MFCPatcherGUIConfig>

@@ -1,0 +1,148 @@
+/*
+ *  guceGUI: GUCE module providing GUI functionality
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_VFS_CVFS_H
+#include "CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
+#include "gucefGUI_CFormEx.h"
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF {
+namespace GUI {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CFormEx::CFormEx( void )
+    : CForm()                 ,
+      m_isReloadable( false ) ,
+      m_layoutFile()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CFormEx::~CFormEx()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFormEx::LoadLayout( CORE::CIOAccess& layoutStorage )
+{GUCEF_TRACE;
+
+    m_isReloadable = false;
+    m_layoutFile = NULL;
+    return CForm::LoadLayout( layoutStorage );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CFormEx::LoadLayout( const CString& filename )
+{GUCEF_TRACE;
+
+    VFS::CVFS::CVFSHandlePtr file = VFS::CVFS::Instance()->GetFile( filename );
+    if ( NULL != file )
+    {
+        if ( LoadLayout( *file->GetAccess() ) )
+        {
+            m_layoutFile = filename;
+            m_isReloadable = true;
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CFormEx::SaveLayout( const CString& filename )
+{GUCEF_TRACE;
+
+    VFS::CVFS::CVFSHandlePtr file = VFS::CVFS::Instance()->GetFile( filename, "wb", true );
+    if ( NULL != file )
+    {
+        return CForm::SaveLayout( *file->GetAccess() );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CFormEx::Reload( void )
+{GUCEF_TRACE;
+    
+    if ( m_isReloadable )
+    {
+        return LoadLayout( m_layoutFile );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CFormEx::IsReloadable( void ) const
+{GUCEF_TRACE;
+
+    return m_isReloadable;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CFormEx::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::GUI::CFormEx";
+    return typeName;
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace GUI */
+}; /* namespace GUCEF */
+
+/*-------------------------------------------------------------------------*/

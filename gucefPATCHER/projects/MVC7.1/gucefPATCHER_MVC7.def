@@ -1,0 +1,6 @@
+; gucefPATCHER.def : Declares the module parameters for the DLL.
+
+LIBRARY      "gucefPATCHER"
+
+EXPORTS
+    ; Explicit exports can go here
