@@ -225,7 +225,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
         data->mouseListener = new CMouseListener( *callbacks );
         data->keyboardListener = new CKeyboardListener( *callbacks );
 
-        UInt32 keyboardCount = (UInt32) data->inputManager->numKeyBoards();
+        UInt32 keyboardCount = (UInt32) data->inputManager->getNumberOfDevices( OIS::OISKeyboard );
         for ( UInt32 i=0; i<keyboardCount; ++i )
         {
             try
@@ -241,7 +241,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
         }
         UInt32 windowWidth = ParseArgListItemUInt32( args, "WINDOW_WIDTH" );
         UInt32 windowHeight = ParseArgListItemUInt32( args, "WINDOW_HEIGHT" );
-        UInt32 miceCount = (UInt32) data->inputManager->numMice();
+        UInt32 miceCount = (UInt32) data->inputManager->getNumberOfDevices( OIS::OISMouse );
         for ( UInt32 i=0; i<miceCount; ++i )
         {
             try
@@ -259,7 +259,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
             {
             }
         }
-        UInt32 joystickCount = (UInt32) data->inputManager->numJoysticks();
+        UInt32 joystickCount = (UInt32) data->inputManager->getNumberOfDevices( OIS::OISJoyStick );
         for ( UInt32 i=0; i<joystickCount; ++i )
         {
             try
