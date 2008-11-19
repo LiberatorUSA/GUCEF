@@ -1,0 +1,1 @@
+The current supported FreeImage version is 3110
