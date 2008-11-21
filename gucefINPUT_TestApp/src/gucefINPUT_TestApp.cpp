@@ -78,8 +78,8 @@ WinMain( HINSTANCE hinstance     ,
     catch ( ... )
     {
         #ifdef GUCEF_INPUT_DEBUG_MODE
-        GUCEF_PrintCallstack();
-        GUCEF_DumpCallstack( "gucefINPUT_TestApp_callstack.txt" );
+        GUCEF::CORE::GUCEF_PrintCallstack();
+        GUCEF::CORE::GUCEF_DumpCallstack( "gucefINPUT_TestApp_callstack.txt" );
         #endif /* GUCEF_INPUT_DEBUG_MODE ? */
         
         GUCEF::CORE::ShowErrorMessage( "Unknown exception"                                                                 ,

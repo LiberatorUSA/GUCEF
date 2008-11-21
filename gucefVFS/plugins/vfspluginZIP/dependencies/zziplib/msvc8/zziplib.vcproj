@@ -64,9 +64,9 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="zlib.lib"
+				AdditionalDependencies="zlibd.lib"
 				OutputFile="zziplib-$(ConfigurationName).lib"
-				AdditionalLibraryDirectories="../msvc/zlib/lib;../../zlib/projects/visualc6/Win32_LIB_Release"
+				AdditionalLibraryDirectories="../msvc/zlib/lib;../../zlib/projects/visualc6/Win32_LIB_Debug"
 			/>
 			<Tool
 				Name="VCALinkTool"
