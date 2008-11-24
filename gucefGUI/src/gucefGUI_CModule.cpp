@@ -28,17 +28,17 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
-#ifndef GUCEF_GUI_CWIDGET_H
-#include "gucefGUI_CWidget.h"
-#define GUCEF_GUI_CWIDGET_H
-#endif /* GUCEF_GUI_CWIDGET_H ? */
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
-#ifndef GUCEF_GUI_CGUIMANAGER_H
-#include "gucefGUI_CGUIManager.h"
-#define GUCEF_GUI_CGUIMANAGER_H
-#endif /* GUCEF_GUI_CGUIMANAGER_H ? */
+#ifndef GUCEF_GUI_H
+#include "gucefGUI.h"
+#define GUCEF_GUI_H
+#endif /* GUCEF_GUI_H ? */
 
-#include "gucefGUI_CGUCEFGUIModule.h"
+#include "gucefGUI_CModule.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,24 +51,45 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 bool
-CGUCEFGUIModule::Load( void )
-{
-    CGUIManager::Instance();
-    CWidget::RegisterEvents();
+CModule::Load( void )
+{GUCEF_TRACE;
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefGUI Module loaded" );
     
+    CWidget::RegisterEvents();
+    CForm::RegisterEvents();
+    CButton::RegisterEvents();
+    CCheckbox::RegisterEvents();
+    CCombobox::RegisterEvents();
+    CEditbox::RegisterEvents();
+    CFileSystemDialog::RegisterEvents();
+    CGridView::RegisterEvents();
+    CLabel::RegisterEvents();
+    CListbox::RegisterEvents();
+    CPushButton::RegisterEvents();
+    CSpinner::RegisterEvents();
+    CTabControl::RegisterEvents();
+    CTextbox::RegisterEvents();
+    CGUIManager::RegisterEvents();
+    
+    CGUIManager::Instance();
+        
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
     
 bool
-CGUCEFGUIModule::Unload( void )
-{
+CModule::Unload( void )
+{GUCEF_TRACE;
+    
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefGUI Module unloading" );
+    
     CGUIManager::Deinstance();
     
     return true;

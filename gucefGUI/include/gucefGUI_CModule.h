@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CGUCEFGUIMODULE_H
-#define GUCEF_GUI_CGUCEFGUIMODULE_H
+#ifndef GUCEF_GUI_CMODULE_H
+#define GUCEF_GUI_CMODULE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -27,7 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_GUI_MACROS_H
-#include "gucefGUI_macros.h"      /* often used gucefCOMCORE macros */
+#include "gucefGUI_macros.h"         /* often used gucefGUI macros */
 #define GUCEF_GUI_MACROS_H
 #endif /* GUCEF_GUI_MACROS_H ? */
 
@@ -46,7 +46,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUCEFGUIModule
+class CModule
 {
     public:
     
@@ -55,10 +55,10 @@ class CGUCEFGUIModule
     static bool Unload( void );
     
     private:
-    CGUCEFGUIModule( void );
-    CGUCEFGUIModule( const CGUCEFGUIModule& src );
-    ~CGUCEFGUIModule();
-    CGUCEFGUIModule& operator=( const CGUCEFGUIModule& src );
+    CModule( void );
+    CModule( const CModule& src );
+    ~CModule();
+    CModule& operator=( const CModule& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -72,7 +72,7 @@ class CGUCEFGUIModule
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_GUI_CGUCEFGUIMODULE_H ? */
+#endif /* GUCEF_GUI_CMODULE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -80,7 +80,7 @@ class CGUCEFGUIModule
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 18-08-2007 :
+- 12-02-2005 :
         - Initial implementation
 
 -----------------------------------------------------------------------------*/

@@ -235,10 +235,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\gucefGUI_CGUCEFGUIModule.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\gucefGUI_CGUIManager.cpp"
 				>
 			</File>
@@ -259,11 +255,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\gucefGUI_CMemobox.cpp"
+				RelativePath="..\..\src\gucefGUI_CMenuBar.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\gucefGUI_CMenuBar.cpp"
+				RelativePath="..\..\src\gucefGUI_CModule.cpp"
 				>
 			</File>
 			<File
@@ -292,6 +288,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\gucefGUI_CTabControl.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefGUI_CTextbox.cpp"
 				>
 			</File>
 			<File
@@ -393,23 +393,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefGUI_CMemobox.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\include\gucefGUI_CMenuBar.h"
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefGUI_CModule.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefGUI_config.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefGUI_CPopupMenu.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefGUI_CProgressBar.h"
 				>
 			</File>
 			<File
@@ -430,6 +422,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefGUI_CTabControl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\gucefGUI_CTextbox.h"
 				>
 			</File>
 			<File
