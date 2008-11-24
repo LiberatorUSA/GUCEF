@@ -28,7 +28,7 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
-#include "gucefGUI_CEditbox.h"
+#include "gucefGUI_CTextbox.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,46 +45,92 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CEditbox::SelectionChangedEvent = "GUCEF::GUI::CEditbox::SelectionChangedEvent";
-const CORE::CEvent CEditbox::CaratPositionChangedEvent = "GUCEF::GUI::CEditbox::CaratPositionChangedEvent";
-const CORE::CEvent CEditbox::TextChangedEvent = "GUCEF::GUI::CEditbox::TextChangedEvent";
-const CORE::CEvent CEditbox::TextEnteredEvent = "GUCEF::GUI::CEditbox::TextEnteredEvent";
+const CORE::CEvent CTextbox::SelectionChangedEvent = "GUCEF::GUI::CTextbox::SelectionChangedEvent";
+const CORE::CEvent CTextbox::TextChangedEvent = "GUCEF::GUI::CTextbox::TextChangedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-    
+
 void
-CEditbox::RegisterEvents( void )
+CTextbox::RegisterEvents( void )
 {GUCEF_TRACE;
 
     SelectionChangedEvent.Initialize();
-    CaratPositionChangedEvent.Initialize();
     TextChangedEvent.Initialize();
-    TextEnteredEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CEditbox::CEditbox( void )
-    : CWidget( "Editbox" )
+CTextbox::CTextbox( void )
+    : CWidget( "Textbox" )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTextbox::~CTextbox()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CEditbox::~CEditbox()
+const CString&
+CTextbox::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
+    static CString typeName = "GUCEF::GUI::CTextbox";
+    return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+UInt32
+CTextbox::GetLineCount( void )
+{GUCEF_TRACE;
+
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
     
 bool
-CEditbox::SetText( const CString& text )
+CTextbox::Clear( void )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CTextbox::GetLineAtIndex( const UInt32 lineIndex ,
+                          CString& lineText      ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CTextbox::InsertLineAtIndex( const UInt32 lineIndex ,
+                             const CString& text    )
+{GUCEF_TRACE;
+
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CTextbox::AppendLine( const CString& text )
 {GUCEF_TRACE;
 
     return false;
@@ -93,36 +139,28 @@ CEditbox::SetText( const CString& text )
 /*-------------------------------------------------------------------------*/
     
 CString
-CEditbox::GetText( void )
+CTextbox::GetTextAsString( void ) const
 {GUCEF_TRACE;
 
-    return false;
+    return CString();
 }
 
 /*-------------------------------------------------------------------------*/
     
-bool
-CEditbox::SetSelectedText( const CString& text )
+CTextbox::TStringVector
+CTextbox::GetText( void ) const
 {GUCEF_TRACE;
 
-    return false;
+    return TStringVector();
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CEditbox::GetSelectedText( CString& text )
+CString
+CTextbox::GetSelectedText( void ) const
 {GUCEF_TRACE;
 
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CEditbox::Clear( void )
-{GUCEF_TRACE;
-
+    return CString();
 }
 
 /*-------------------------------------------------------------------------//

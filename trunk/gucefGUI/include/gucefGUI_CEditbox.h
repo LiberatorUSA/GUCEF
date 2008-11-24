@@ -53,6 +53,7 @@ class GUCEF_GUI_EXPORT_CPP CEditbox : public CWidget
     static const CORE::CEvent SelectionChangedEvent;
     static const CORE::CEvent CaratPositionChangedEvent;
     static const CORE::CEvent TextChangedEvent;
+    static const CORE::CEvent TextEnteredEvent;
     
     static void RegisterEvents( void );
     
@@ -64,7 +65,7 @@ class GUCEF_GUI_EXPORT_CPP CEditbox : public CWidget
     
     virtual bool SetText( const CString& text );
     
-    virtual bool GetText( CString& text );
+    virtual CString GetText( void );
     
     virtual bool SetSelectedText( const CString& text );
     

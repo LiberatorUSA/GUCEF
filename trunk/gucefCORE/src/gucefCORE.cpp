@@ -33,6 +33,8 @@
 #define GUCEF_CORE_CGUCEFCOREMODULE_H
 #endif /*GUCEF_CORE_CGUCEFCOREMODULE_H ? */
 
+#include "gucefCORE.h"
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //

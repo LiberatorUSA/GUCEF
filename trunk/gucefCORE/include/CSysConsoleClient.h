@@ -66,6 +66,8 @@ class GUCEFCORE_EXPORT_CPP CSysConsoleClient
 {
         protected:
         
+        typedef std::vector< CString > TStringVector;
+        
         CSysConsoleClient( void );
         
         CSysConsoleClient( const CSysConsoleClient& src );
@@ -74,10 +76,10 @@ class GUCEFCORE_EXPORT_CPP CSysConsoleClient
         
         CSysConsoleClient& operator=( const CSysConsoleClient& src );
         
-        bool RegisterCmd( const CString& path                   ,
-                          const CString& command                ,
-                          const std::vector< CString >& arglist ,
-                          CISysConsoleCmdHandler* cmdhandler    );                        
+        bool RegisterCmd( const CString& path                ,
+                          const CString& command             ,
+                          const TStringVector& arglist       ,
+                          CISysConsoleCmdHandler* cmdhandler );                        
 
         void UnregisterCmd( const CString& path    ,
                             const CString& command );
@@ -90,15 +92,15 @@ class GUCEFCORE_EXPORT_CPP CSysConsoleClient
         
         const CString& GetPath( void ) const;
         
-        bool Execute( const CString& funcname               ,
-                      const std::vector< CString >& arglist ,
-                      std::vector< CString >& resultdata    );
+        bool Execute( const CString& funcname      ,
+                      const TStringVector& arglist ,
+                      TStringVector& resultdata    );
         
-        std::vector< CString > GetDirList( void ) const;
+        TStringVector GetDirList( void ) const;
         
-        std::vector< CString > GetCmdList( void ) const;
+        TStringVector GetCmdList( void ) const;
         
-        virtual void OnReturnData( const std::vector< CString >& data );
+        virtual void OnReturnData( const TStringVector& data );
         
         private:
         friend class CSysConsole;

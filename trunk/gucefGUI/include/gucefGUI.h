@@ -119,6 +119,16 @@
 #define GUCEF_GUI_CEDITBOX_H
 #endif /* GUCEF_GUI_CEDITBOX_H ? */
 
+#ifndef GUCEF_GUI_CTEXTBOX_H
+#include "gucefGUI_CTextbox.h"
+#define GUCEF_GUI_CTEXTBOX_H
+#endif /* GUCEF_GUI_CTEXTBOX_H ? */
+
+#ifndef GUCEF_GUI_CLISTBOX_H
+#include "gucefGUI_CListbox.h"
+#define GUCEF_GUI_CLISTBOX_H
+#endif /* GUCEF_GUI_CLISTBOX_H ? */
+
 #ifndef GUCEF_GUI_CLABEL_H
 #include "gucefGUI_CLabel.h"
 #define GUCEF_GUI_CLABEL_H
@@ -128,6 +138,11 @@
 #include "gucefGUI_CIFileSystemInfoProvider.h"
 #define GUCEF_GUI_CIFILESYSTEMINFOPROVIDER_H
 #endif /* GUCEF_GUI_CIFILESYSTEMINFOPROVIDER_H ? */
+
+#ifndef GUCEF_GUI_CFILESYSTEMDIALOG_H
+#include "gucefGUI_CFileSystemDialog.h"
+#define GUCEF_GUI_CFILESYSTEMDIALOG_H
+#endif /* GUCEF_GUI_CFILESYSTEMDIALOG_H ? */
 
 #ifndef GUCEF_GUI_CTABCONTENTPANE_H
 #include "gucefGUI_CTabContentPane.h"
@@ -160,7 +175,16 @@
 #endif /* GUCEF_GUI_CRENDERCONTEXT_H ? */
 
 #endif /* __cplusplus ? */
-/*--------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+GUCEF_GUI_EXPORT_C const char* GUCEF_GUI_ModuleCompileTimeStamp( void );
+
+/*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_GUI_H ? */
 

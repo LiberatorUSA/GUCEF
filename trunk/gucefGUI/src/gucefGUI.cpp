@@ -23,4 +23,32 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_DLLINIT_H
+#include "gucef_DLLInit.h"
+#define GUCEF_DLLINIT_H
+#endif /* GUCEF_DLLINIT_H ? */
+
+#ifndef GUCEF_GUI_CMODULE_H
+#include "gucefGUI_CModule.h"
+#define GUCEF_GUI_CMODULE_H
+#endif /* GUCEF_GUI_CMODULE_H ? */
+
 #include "gucefGUI.h"
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::GUI::CModule );
+
+/*-------------------------------------------------------------------------*/
+
+const char*
+GUCEF_GUI_ModuleCompileTimeStamp( void )
+{
+    return __TIMESTAMP__;
+}
+
+/*-------------------------------------------------------------------------*/
