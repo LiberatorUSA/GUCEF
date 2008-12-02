@@ -80,12 +80,13 @@ class GUCEF_GUI_EXPORT_CPP CWidget : public CORE::CObservingNotifier
     static const CORE::CEvent MouseClickEvent;
     static const CORE::CEvent MouseDoubleClickEvent;
     static const CORE::CEvent MouseTripleClickEvent;
-    
+    static const CORE::CEvent MouseFocusReceivedEvent;
+    static const CORE::CEvent MouseFocusLostEvent;
+        
     static const CORE::CEvent KeyDownEvent;
     static const CORE::CEvent KeyUpEvent;
-    
-    static const CORE::CEvent FocusReceivedEvent;
-    static const CORE::CEvent FocusLostEvent;
+    static const CORE::CEvent KeyboardFocusReceivedEvent;
+    static const CORE::CEvent KeyboardFocusLostEvent;
     
     static void RegisterEvents( void );
     

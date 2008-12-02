@@ -54,10 +54,12 @@ const CORE::CEvent CWidget::MouseUpEvent = "GUCEF::GUI::CWidget::MouseUpEvent";
 const CORE::CEvent CWidget::MouseClickEvent = "GUCEF::GUI::CWidget::MouseClickEvent";
 const CORE::CEvent CWidget::MouseDoubleClickEvent = "GUCEF::GUI::CWidget::MouseDoubleClickEvent";
 const CORE::CEvent CWidget::MouseTripleClickEvent = "GUCEF::GUI::CWidget::MouseTripleClickEvent";
+const CORE::CEvent CWidget::MouseFocusReceivedEvent = "GUCEF::GUI::CWidget::MouseFocusReceivedEvent";
+const CORE::CEvent CWidget::MouseFocusLostEvent = "GUCEF::GUI::CWidget::MouseFocusLostEvent";
 const CORE::CEvent CWidget::KeyDownEvent = "GUCEF::GUI::CWidget::KeyDownEvent";
 const CORE::CEvent CWidget::KeyUpEvent = "GUCEF::GUI::CWidget::KeyUpEvent";
-const CORE::CEvent CWidget::FocusReceivedEvent = "GUCEF::GUI::CWidget::FocusReceivedEvent";
-const CORE::CEvent CWidget::FocusLostEvent = "GUCEF::GUI::CWidget::FocusLostEvent";
+const CORE::CEvent CWidget::KeyboardFocusReceivedEvent = "GUCEF::GUI::CWidget::KeyboardFocusReceivedEvent";
+const CORE::CEvent CWidget::KeyboardFocusLostEvent = "GUCEF::GUI::CWidget::KeyboardFocusLostEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -78,10 +80,12 @@ CWidget::RegisterEvents( void )
     MouseClickEvent.Initialize();
     MouseDoubleClickEvent.Initialize();
     MouseTripleClickEvent.Initialize();
+    MouseFocusReceivedEvent.Initialize();
+    MouseFocusLostEvent.Initialize();    
     KeyDownEvent.Initialize();
     KeyUpEvent.Initialize();
-    FocusReceivedEvent.Initialize();
-    FocusLostEvent.Initialize();
+    KeyboardFocusReceivedEvent.Initialize();
+    KeyboardFocusLostEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
