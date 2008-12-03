@@ -218,7 +218,7 @@ const CString&
 CObservingNotifier::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static CString typeName = "GUCEF::CORE::CObservingNotifier";
+    static const CString typeName = "GUCEF::CORE::CObservingNotifier";
     return typeName;
 }
 

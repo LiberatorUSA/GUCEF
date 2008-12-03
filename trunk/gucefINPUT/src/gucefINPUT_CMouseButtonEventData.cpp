@@ -42,11 +42,15 @@ namespace INPUT {
 
 CMouseButtonEventData::CMouseButtonEventData( const UInt32 deviceID    ,
                                               const UInt32 buttonIndex ,
-                                              const bool pressedState  )
+                                              const bool pressedState  ,
+                                              const UInt32 xPos        ,
+                                              const UInt32 yPos        )
     : CICloneable()                  ,
       m_deviceID( deviceID )         ,
       m_buttonIndex( buttonIndex )   ,
-      m_pressedState( pressedState ) 
+      m_pressedState( pressedState ) ,
+      m_xPos( xPos )                 ,
+      m_yPos( yPos )
 {GUCEF_TRACE;
 
 }
@@ -57,7 +61,9 @@ CMouseButtonEventData::CMouseButtonEventData( const CMouseButtonEventData& src )
     : CICloneable( src )                   ,
       m_deviceID( src.m_deviceID )         ,
       m_buttonIndex( src.m_buttonIndex )   ,
-      m_pressedState( src.m_pressedState )
+      m_pressedState( src.m_pressedState ) ,
+      m_xPos( src.m_xPos )                 ,
+      m_yPos( src.m_yPos )
 {GUCEF_TRACE;
 
 }
@@ -103,6 +109,24 @@ CMouseButtonEventData::Clone( void ) const
 {GUCEF_TRACE;
 
     return new CMouseButtonEventData( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CMouseButtonEventData::GetXPos( void ) const
+{GUCEF_TRACE;
+
+    return m_xPos;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+UInt32
+CMouseButtonEventData::GetYPos( void ) const
+{GUCEF_TRACE;
+
+    return m_yPos;
 }
     
 /*-------------------------------------------------------------------------//

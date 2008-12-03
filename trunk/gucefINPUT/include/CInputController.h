@@ -138,6 +138,8 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CObservingNotifier
     
     const TMouseMap& GetMouseMap( void ) const;
     
+    virtual const CString& GetClassTypeName( void ) const;
+    
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_INPUT_EXPORT_CPP, EInvalidIndex );
     
     protected:

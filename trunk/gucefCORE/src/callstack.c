@@ -112,10 +112,20 @@ Log( const char* logtype ,
      const char* file    ,
      int line            )
 {
-    if ( ( logStack == 1 ) && ( logFile != NULL ) )
+    if ( logStack == 1 )
     {
+        if ( logFile == NULL )
+        {
+            /* lazy initialization of the default output file */
+            logFilename = (char*) malloc( 14 );
+            memcpy( logFilename, "Callstack.txt", 14 );
+            logFile = fopen( logFilename, "ab" );
+        }
+
         fprintf( logFile, "Thread %d: %s: %d: %s(%d)%s", threadID, logtype, stackheight, file, line, EOL );
+        fflush( logFile );
     }
+    
     if ( callback != NULL )
     {
         callback( file                           ,

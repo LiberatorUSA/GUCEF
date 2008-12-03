@@ -25,6 +25,11 @@
 
 #include <assert.h>
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #include "gucefCORE_CObserverSwitch.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -94,6 +99,8 @@ CObserverSwitch::AddObserverToGroup( const CString& groupName ,
     
     LockData();
     
+    GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CObserverSwitch(" + PointerToString( this ) + "): Adding observer " + observer.GetClassTypeName() + "(" + PointerToString( &observer ) + ") to group " + groupName );
+    
     (m_observerGroups[ groupName ]).insert( &observer );
     
     // Make sure our shortcut pointer gets set if this is the first item in the
@@ -102,6 +109,7 @@ CObserverSwitch::AddObserverToGroup( const CString& groupName ,
     {
         if ( groupName == m_activeGroupName )
         {
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CObserverSwitch(" + PointerToString( this ) + "): Setting active group to " + groupName );
             m_activeGroup = &( (*m_observerGroups.find( groupName ) ).second );
         }
     }
@@ -119,6 +127,9 @@ CObserverSwitch::RemoveObserverFromGroup( const CString& groupName ,
     assert( NULL != &observer );
     
     LockData();
+    
+    GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CObserverSwitch(" + PointerToString( this ) + "): Removing observer " + observer.GetClassTypeName() + "(" + PointerToString( &observer ) + ") from group " + groupName );
+    
     TObserverGroupMap::iterator i = m_observerGroups.find( groupName );
     if ( i != m_observerGroups.end() )
     {
@@ -139,6 +150,7 @@ CObserverSwitch::SetActiveGroup( const CString& groupName )
 {GUCEF_TRACE;
 
     LockData();
+    GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CObserverSwitch(" + PointerToString( this ) + "): Setting active group to " + groupName );
     m_activeGroupName = groupName;
     TObserverGroupMap::iterator i = m_observerGroups.find( groupName );
     if ( i != m_observerGroups.end() )
@@ -170,6 +182,9 @@ CObserverSwitch::OnNotify( CNotifier* notifier                 ,
 {GUCEF_TRACE;
 
     LockData();
+
+    GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CObserverSwitch(" + PointerToString( this ) + "): Dispatching event \"" + eventid.GetName() + "\" to group: " + m_activeGroupName );
+
     if ( NULL != m_activeGroup )
     {
         TObserverSet::iterator i = m_activeGroup->begin();
@@ -195,7 +210,7 @@ const CString&
 CObserverSwitch::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static CString typeName = "GUCEF::CORE::CObserverSwitch";
+    static const CString typeName = "GUCEF::CORE::CObserverSwitch";
     return typeName;
 }
 

@@ -100,6 +100,8 @@ class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObserver
                                       TTaskConsumerFactory* factory );
                                       
     void UnregisterTaskConsumerFactory( const CString& taskType );
+    
+    virtual const CString& GetClassTypeName( void ) const;
 
     protected:
     

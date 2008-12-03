@@ -57,7 +57,9 @@ class GUCEF_INPUT_EXPORT_CPP CMouseButtonEventData : public CORE::CICloneable
     
     CMouseButtonEventData( const UInt32 deviceID    ,
                            const UInt32 buttonIndex ,
-                           const bool pressedState  );
+                           const bool pressedState  ,
+                           const UInt32 xPos        ,
+                           const UInt32 yPos        );
     
     CMouseButtonEventData( const CMouseButtonEventData& src );
                         
@@ -68,6 +70,10 @@ class GUCEF_INPUT_EXPORT_CPP CMouseButtonEventData : public CORE::CICloneable
     UInt32 GetButtonIndex( void ) const;
     
     bool GetPressedState( void ) const;
+    
+    UInt32 GetXPos( void ) const;
+    
+    UInt32 GetYPos( void ) const;
     
     virtual CORE::CICloneable* Clone( void ) const;
     
@@ -81,6 +87,8 @@ class GUCEF_INPUT_EXPORT_CPP CMouseButtonEventData : public CORE::CICloneable
     UInt32 m_deviceID;
     UInt32 m_buttonIndex;
     bool m_pressedState;
+    UInt32 m_xPos;
+    UInt32 m_yPos;    
 };
 
 /*-------------------------------------------------------------------------//

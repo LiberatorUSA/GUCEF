@@ -59,8 +59,7 @@ CObserver::CObserver( void )
 CObserver::CObserver( const CObserver& src )
 {GUCEF_TRACE;
 
-    //@TODO: makeme
-    assert( 0 );
+    // We intentionally do not copy subscriptions
 }
 
 /*-------------------------------------------------------------------------*/
@@ -88,11 +87,18 @@ CObserver&
 CObserver::operator=( const CObserver& src )
 {GUCEF_TRACE;
 
-    assert( 0 );
-    if ( this != &src )
-    {
-    }
-    return *this; //@TODO: makeme
+    // We intentionally do not copy subscriptions
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CObserver::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+    
+    static const CString typeName = "GUCEF::CORE::CObserver";
+    return typeName;
 }
 
 /*-------------------------------------------------------------------------*/

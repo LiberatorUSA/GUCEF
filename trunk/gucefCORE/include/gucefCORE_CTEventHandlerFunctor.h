@@ -41,6 +41,16 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
 #include "gucefCORE_CIEventHandlerFunctorBase.h"
 #define GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
@@ -80,7 +90,9 @@ class CTEventHandlerFunctor : public CIEventHandlerFunctorBase
     
     CTEventHandlerFunctor& operator=( const CTEventHandlerFunctor& src );
     
-    virtual CICloneable* Clone( void ) const;    
+    virtual CICloneable* Clone( void ) const;
+        
+    virtual const CString& GetClassTypeName( void ) const;
     
     protected:
     
@@ -155,11 +167,24 @@ CTEventHandlerFunctor< IObserverDerived >::operator=( const CTEventHandlerFuncto
 /*-------------------------------------------------------------------------*/
 
 template< class IObserverDerived >
+const CString&
+CTEventHandlerFunctor< IObserverDerived >::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+    
+    static const CString typeName = "GUCEF::CORE::CTEventHandlerFunctor< IObserverDerived >";
+    return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class IObserverDerived >
 void
 CTEventHandlerFunctor< IObserverDerived >::OnNotify( CNotifier* notifier   , 
                                                      const CEvent& eventID ,
                                                      CICloneable* evenData )
 {GUCEF_TRACE; 
+    
+    GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CTEventHandlerFunctor(" + CORE::PointerToString( this ) + "): Class " + notifier->GetClassTypeName() + ": Dispatching event \"" + eventID.GetName() + "\" to " + m_observer->GetClassTypeName() + "(" + CORE::PointerToString( m_observer ) + ")" );
     
     (m_observer->*m_functor)( notifier ,
                               eventID  ,

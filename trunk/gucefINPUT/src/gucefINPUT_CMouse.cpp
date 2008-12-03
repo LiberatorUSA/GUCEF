@@ -75,6 +75,16 @@ CMouse::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
+const CString&
+CMouse::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString typeName = "GUCEF::INPUT::CMouse";
+    return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CMouse::IsButtonPressed( const UInt32 buttonIndex ) const
 {GUCEF_TRACE;
@@ -151,7 +161,7 @@ CMouse::SetButtonState( const UInt32 buttonIndex ,
     
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Setting state of button " + CORE::Int32ToString( buttonIndex ) + " to " + CORE::BoolToString( pressedState ) + " on mouse " + CORE::Int32ToString( m_deviceID ) );
     
-    CMouseButtonEventData eData( m_deviceID, buttonIndex, pressedState );
+    CMouseButtonEventData eData( m_deviceID, buttonIndex, pressedState, m_xPos, m_yPos );
     NotifyObservers( MouseButtonEvent, &eData );
 }
 

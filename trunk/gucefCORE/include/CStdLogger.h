@@ -74,6 +74,10 @@ class GUCEFCORE_EXPORT_CPP CStdLogger : public CILogger
 
     CString GetLogMsgTypeString( const TLogMsgType logMsgType ) const;
     
+    void SetMinimalLogLevel( const Int32 minimalLogLevel );
+    
+    Int32 GetMinimalLogLevel( void ) const;
+    
     private:
     
     CStdLogger& operator=( const CStdLogger& src );
@@ -82,6 +86,7 @@ class GUCEFCORE_EXPORT_CPP CStdLogger : public CILogger
     private:
     
     CIOAccess* m_output;
+    Int32 m_minimalLogLevel;
 };
 
 /*-------------------------------------------------------------------------//
