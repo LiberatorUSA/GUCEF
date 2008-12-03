@@ -137,6 +137,8 @@ enum KeyCode
 	KEYCODE_NUMPAD3     = 0x51,
 	KEYCODE_NUMPAD0     = 0x52,
 	KEYCODE_DECIMAL     = 0x53,    /* . on numeric keypad */
+	KEYCODE_LEFTWINKEY  = 0x5B,    /* Windows key */
+	KEYCODE_RIGHTWINKEY = 0x5C,    /* Windows key */
 	KEYCODE_OEM_102     = 0x56,    /* < > | on UK/Germany keyboards */
 	KEYCODE_F11         = 0x57,
 	KEYCODE_F12         = 0x58,
