@@ -93,7 +93,19 @@ CObserverSwitch::AddObserverToGroup( const CString& groupName ,
     assert( NULL != &observer );
     
     LockData();
+    
     (m_observerGroups[ groupName ]).insert( &observer );
+    
+    // Make sure our shortcut pointer gets set if this is the first item in the
+    // already active group
+    if ( NULL == m_activeGroup )
+    {
+        if ( groupName == m_activeGroupName )
+        {
+            m_activeGroup = &( (*m_observerGroups.find( groupName ) ).second );
+        }
+    }
+    
     UnlockData();
 }
 
