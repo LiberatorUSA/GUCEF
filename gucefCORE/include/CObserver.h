@@ -115,6 +115,8 @@ class GUCEFCORE_EXPORT_CPP CObserver : public CIObserver
     UInt32 GetSubscriptionCount( void );
 
     UInt32 GetNotifierCount( void ) const;
+    
+    virtual const CString& GetClassTypeName( void ) const;
 
     protected:
     friend class CNotifierImplementor;

@@ -302,6 +302,16 @@ CPumpedObserver::UnlockData( void ) const
     m_mutex.Unlock();
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CPumpedObserver::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+    
+    static const CString typeName = "GUCEF::CORE::CPumpedObserver";
+    return typeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -109,6 +109,8 @@ class CTONRegistry : public CTObservingNotifierExpansion< CTRegistry< T > > ,
     virtual void Unregister( const CString& name );                   
     
     virtual void UnregisterAll( void );
+    
+    virtual const CString& GetClassTypeName( void ) const;
 };
 
 /*-------------------------------------------------------------------------//
@@ -147,11 +149,23 @@ template< class T >
 CTONRegistry< T >& 
 CTONRegistry< T >::operator=( const CTONRegistry& src )
 {GUCEF_TRACE;
+
     if ( &src != this )
     {
         CTObservingNotifierExpansion< CTRegistry< T > >::operator=( src );
     }
     return *this;        
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class T >
+const CString&
+CTONRegistry< T >::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString typeName = "GUCEF::CORE::CTONRegistry< T >";
+    return typeName;
 }
 
 /*-------------------------------------------------------------------------*/

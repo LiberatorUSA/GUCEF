@@ -108,6 +108,8 @@ class GUCEF_CORE_EXPORT_CPP CPulseGenerator : public CNotifier
     void ForceStopOfPeriodicPulses( void );
     
     void AllowPeriodicPulses( void );
+    
+    virtual const CString& GetClassTypeName( void ) const;
 
     protected:
     

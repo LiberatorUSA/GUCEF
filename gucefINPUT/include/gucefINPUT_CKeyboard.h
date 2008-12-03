@@ -102,6 +102,8 @@ class GUCEF_INPUT_EXPORT_CPP CKeyboard : public CORE::CNotifier
 
     virtual const CString& GetType( void ) const;
     
+    virtual const CString& GetClassTypeName( void ) const;
+    
     private:
     friend class CInputController;
     

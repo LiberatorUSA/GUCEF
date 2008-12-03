@@ -76,6 +76,8 @@ class GUCEFCORE_EXPORT_CPP CNotifierObservingComponent : public CObserver
     
     void SetOwner( CObservingNotifier* owner );
     
+    virtual const CString& GetClassTypeName( void ) const;
+    
     private:
     
     CObservingNotifier* m_owner;

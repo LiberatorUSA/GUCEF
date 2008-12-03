@@ -121,6 +121,16 @@ CInputController::~CInputController()
 
 /*-------------------------------------------------------------------------*/
 
+const CString&
+CInputController::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString typeName = "GUCEF::INPUT::CInputController";
+    return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CInputController* 
 CInputController::Instance( void )
 {GUCEF_TRACE;

@@ -106,6 +106,16 @@ CKeyboard::~CKeyboard()
 
 /*-------------------------------------------------------------------------*/
 
+const CString&
+CKeyboard::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString typeName = "GUCEF::INPUT::CKeyboard";
+    return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CKeyboard::IsKeyDown( const KeyCode key ) const
 {GUCEF_TRACE;

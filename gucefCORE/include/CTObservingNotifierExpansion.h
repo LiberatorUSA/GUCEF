@@ -89,6 +89,8 @@ class CTObservingNotifierExpansion : public BaseClass  ,
      */
     const CObserver& AsObserver( void ) const;
     
+    virtual const CString& GetClassTypeName( void ) const;
+    
     protected:
     
     typedef CTObservingNotifierExpansion< BaseClass >    TONExpansion;
@@ -204,6 +206,17 @@ CTObservingNotifierExpansion< BaseClass >::operator=( const CTObservingNotifierE
         m_notificationComponent = src.m_notificationComponent;
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < class BaseClass >
+const CString&
+CTObservingNotifierExpansion< BaseClass >::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+    
+    static const CString typeName = "GUCEF::CORE::CTObservingNotifierExpansion< BaseClass >";
+    return typeName;
 }
 
 /*-------------------------------------------------------------------------*/

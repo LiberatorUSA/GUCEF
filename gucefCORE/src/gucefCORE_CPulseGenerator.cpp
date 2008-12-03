@@ -103,6 +103,16 @@ CPulseGenerator::~CPulseGenerator()
 
 /*--------------------------------------------------------------------------*/
 
+const CString&
+CPulseGenerator::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString typeName = "GUCEF::CORE::CPulseGenerator";
+    return typeName;
+}
+
+/*--------------------------------------------------------------------------*/
+
 void
 CPulseGenerator::RequestPulse( void )
 {GUCEF_TRACE;

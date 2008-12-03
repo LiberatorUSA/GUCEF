@@ -109,6 +109,16 @@ CTaskManager::~CTaskManager( void )
 
 /*-------------------------------------------------------------------------*/
 
+const CString&
+CTaskManager::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+    
+    static const CString typeName = "GUCEF::CORE::CTaskManager";
+    return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CTaskManager*
 CTaskManager::Instance( void )
 {GUCEF_TRACE;

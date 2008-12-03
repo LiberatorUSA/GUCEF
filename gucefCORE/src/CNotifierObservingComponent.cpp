@@ -119,6 +119,21 @@ CNotifierObservingComponent::SetOwner( CObservingNotifier* owner )
     m_owner = owner;
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CNotifierObservingComponent::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    if ( NULL != m_owner )
+    {
+        return m_owner->GetClassTypeName();
+    }
+    
+    static const CString typeName = "GUCEF::CORE::CNotifierObservingComponent";
+    return typeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

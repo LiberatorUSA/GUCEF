@@ -31,6 +31,11 @@
 #define GUCEF_CORE_CICLONEABLE_H
 #endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
+#ifndef GUCEF_CORE_CITYPENAMED_H
+#include "CITypeNamed.h"
+#define GUCEF_CORE_CITYPENAMED_H
+#endif /* GUCEF_CORE_CITYPENAMED_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"    
 #define GUCEF_CORE_MACROS_H
@@ -61,7 +66,7 @@ class CEvent;
  *  Interface for observers.
  *  Observer based classes should implement OnNotify()
  */
-class GUCEF_CORE_EXPORT_CPP CIObserver
+class GUCEF_CORE_EXPORT_CPP CIObserver : public CITypeNamed
 {
     public:
     

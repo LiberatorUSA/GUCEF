@@ -72,7 +72,9 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
     
     virtual ~CPumpedObserver();
     
-    CPumpedObserver& operator=( const CPumpedObserver& src );    
+    CPumpedObserver& operator=( const CPumpedObserver& src );
+    
+    virtual const CString& GetClassTypeName( void ) const;    
     
     protected:
     
