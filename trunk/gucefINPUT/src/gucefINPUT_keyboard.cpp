@@ -445,6 +445,14 @@ KeyCodeToString( const KeyCode keyCode )
         {
             return "DECIMAL";  
         }
+        case KEYCODE_LEFTWINKEY :
+        {
+            return "LEFTWINKEY";
+        }
+        case KEYCODE_RIGHTWINKEY :
+        {
+            return "RIGHTWINKEY";
+        }        
         case KEYCODE_OEM_102 : // < > | on UK/Germany keyboards
         {
             return "OEM_102";  
@@ -1126,6 +1134,16 @@ StringToKeyCode( const CString& keyCodeStr )
         return KEYCODE_DECIMAL;
     }
     else
+    if ( keyCodeStr == "LEFTWINKEY" )
+    {
+        return KEYCODE_LEFTWINKEY;
+    }
+    else
+    if ( keyCodeStr == "RIGHTWINKEY" )
+    {
+        return KEYCODE_RIGHTWINKEY;
+    }    
+    else    
     if ( keyCodeStr == "OEM_102" )
     {
         return KEYCODE_OEM_102;

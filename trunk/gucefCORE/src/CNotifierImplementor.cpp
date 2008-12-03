@@ -863,6 +863,8 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
     }
     else
     {
+        GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + " is Busy, Mailboxing event \"" +  eventid.GetName() + "\" from " + sender.GetClassTypeName() );
+        
         // This notifier is already busy processing a notification
         // We will store the request until we are done
         TEventMailElement mail;
@@ -1044,12 +1046,12 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
                 specificObserver.OnNotify( &sender   ,
                                            eventid   ,
                                            eventData );
+                m_isBusy = false;
                 
                 // Check if someone deleted our owner notifier
                 if ( m_ownerNotifier == NULL )
                 {
                     // Gracefully handle the destruction sequence
-                    m_isBusy = false;
                     Destroy( this );
                     return false;
                 }
@@ -1058,9 +1060,7 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
                 if ( !m_cmdMailStack.empty() )
                 {
                     // We have command mail
-                    m_isBusy = false;
                     ProcessCmdMailbox();
-                    m_isBusy = true;
                 }
                 
                 // Since we only have no notify a single observer we can stop here
@@ -1094,12 +1094,12 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
                                            eventid   ,
                                            eventData );
             }
+            m_isBusy = false;
 
             // Check if someone deleted our owner notifier
             if ( m_ownerNotifier == NULL )
             {
                 // Gracefully handle the destruction sequence
-                m_isBusy = false;
                 Destroy( this );
                 return false;
             }                                       
@@ -1108,9 +1108,7 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
             if ( !m_cmdMailStack.empty() )
             {
                 // We have command mail
-                m_isBusy = false;
                 ProcessMailbox();
-                m_isBusy = true;
             }
         }
         
@@ -1123,6 +1121,8 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
     }
     else
     {
+        GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + " is Busy, Mailboxing event \"" +  eventid.GetName() + "\" from " + sender.GetClassTypeName() + " to " + specificObserver.GetClassTypeName() );
+        
         // This notifier is already busy processing a notification
         // We will store the request until we are done
         TEventMailElement mail;
@@ -1198,6 +1198,8 @@ void
 CNotifierImplementor::ScheduleForDestruction( void )
 {
    LockData();
+   
+   GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Scheduling for destruction" );
    
    if ( !m_isBusy )
     {
