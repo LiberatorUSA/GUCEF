@@ -135,19 +135,19 @@
 //-------------------------------------------------------------------------//
 
 - 03-06-2007 :
-       - Added CUDPMasterSocket
-       - Added CUDPChannel
-       - Added CIPAddress
-       - Added CTCPServerConnection
-       - Removed CIUDPSocketEventHandler
+       - Dinand: Added CUDPMasterSocket
+       - Dinand:Added CUDPChannel
+       - Dinand:Added CIPAddress
+       - Dinand:Added CTCPServerConnection
+       - Dinand:Removed CIUDPSocketEventHandler
 - 07-05-2005 :
-       - Added CUDPSocket
-       - Added CIUDPSocketEventHandler
+       - Dinand:Added CUDPSocket
+       - Dinand:Added CIUDPSocketEventHandler
 - 12-03-2005 :
-       - Made the initial version of the library header. The classes here
+       - Dinand: Made the initial version of the library header. The classes here
          where originally part of one large GUCEF codebase without segmentation.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/
 
 
  
