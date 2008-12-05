@@ -551,9 +551,28 @@ CPing::Start( const CORE::CString& remoteHost           ,
               const UInt32 minimalPingDelta /* = 500 */ )
 {GUCEF_TRACE;
 
-    if ( !m_isActive && ( remoteHost.Length() > 0 ) )
+    TStringVector hostList;
+    hostList.push_back( remoteHost );
+    return Start( hostList         ,
+                  maxPings         ,
+                  bytesToSend      ,
+                  timeout          ,
+                  minimalPingDelta );
+}              
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPing::Start( const TStringVector& remoteHosts          ,
+              const UInt32 maxPings /* = 0 */           ,
+              const UInt32 bytesToSend /* = 32 */       ,
+              const UInt32 timeout /* = 1000 */         ,
+              const UInt32 minimalPingDelta /* = 500 */ )
+{GUCEF_TRACE;
+
+    if ( !m_isActive && ( remoteHosts.size() > 0 ) )
     {
-        m_remoteHost = remoteHost;
+        m_remoteHost = remoteHosts[ 0 ];
         m_maxPings = maxPings;
         m_timeout = timeout;
         m_bytesToSend = bytesToSend;
@@ -570,7 +589,7 @@ CPing::Start( const CORE::CString& remoteHost           ,
                 
                 // configure our task and subscribe to it
                 m_osData = pingTask;
-                pingTask->SetTaskData( remoteHost       ,
+                pingTask->SetTaskData( m_remoteHost     ,
                                        maxPings         ,
                                        bytesToSend      ,
                                        timeout          );                                   

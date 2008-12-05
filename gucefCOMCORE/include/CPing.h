@@ -82,6 +82,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CForwardingNotifier
     
     public:
     
+    typedef std::vector< CString > TStringVector;
+    
     CPing( void );
     
     virtual ~CPing();
@@ -90,6 +92,12 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CForwardingNotifier
      *  
      */
     bool Start( const CORE::CString& remoteHost     ,
+                const UInt32 maxPings = 0           ,
+                const UInt32 bytesToSend = 32       ,
+                const UInt32 timeout = 1000         ,
+                const UInt32 minimalPingDelta = 500 );
+
+    bool Start( const TStringVector& remoteHosts    ,
                 const UInt32 maxPings = 0           ,
                 const UInt32 bytesToSend = 32       ,
                 const UInt32 timeout = 1000         ,
