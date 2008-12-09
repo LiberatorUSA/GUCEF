@@ -29,10 +29,6 @@
 
 #ifdef GUCEF_MSWIN_BUILD
 
-/* #include <Icmpapi.h> -> this is the header for the functions that we dynamicly link */  
-#define WIN32_LEAN_AND_MEAN
-#include <winsock.h>                  /* windows networking API, used here for it's type declarations */
-
 #ifndef GUCEF_CORE_DVOSWRAP_H
 #include "DVOSWRAP.h"
 #define GUCEF_CORE_DVOSWRAP_H
@@ -41,7 +37,17 @@
 #ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"
 #define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */  
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"  
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
+/* #include <Icmpapi.h> -> this is the header for the functions that we dynamicly link */  
+#define WIN32_LEAN_AND_MEAN
+#define _STD_USING
+#include <winsock.h>                  /* windows networking API, used here for it's type declarations */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -64,6 +70,8 @@ void* DllHandle = NULL;
 TIcmpCreateFilePtr IcmpCreateFile = NULL;
 TIcmpCloseHandlePtr IcmpCloseHandle = NULL;
 TIcmpSendEchoPtr IcmpSendEcho = NULL;
+TIcmpSendEcho2Ptr IcmpSendEcho2 = NULL;
+TIcmpSendEcho2VistaPtr IcmpSendEcho2Vista = NULL;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -73,7 +81,8 @@ TIcmpSendEchoPtr IcmpSendEcho = NULL;
 
 bool
 LinkICMPModule( const char* moduleName )
-{
+{GUCEF_TRACE;
+
     globalMutex.Lock();
     if ( DllHandle == NULL )
     {
@@ -89,7 +98,13 @@ LinkICMPModule( const char* moduleName )
             IcmpSendEcho = (TIcmpSendEchoPtr) CORE::GetFunctionAddress( DllHandle         ,
                                                                         "IcmpSendEcho"    ,
                                                                         sizeof( HANDLE ) + sizeof( IPAddr ) + 2*sizeof( LPVOID ) + sizeof( WORD ) + sizeof( PIP_OPTION_INFORMATION ) + 2*sizeof( DWORD ) );
-                                                     
+            IcmpSendEcho2Vista = (TIcmpSendEcho2VistaPtr) CORE::GetFunctionAddress( DllHandle         ,
+                                                                                    "IcmpSendEcho2"    ,
+                                                                                    2*sizeof( HANDLE ) + sizeof( PIO_APC_ROUTINE_NEW ) + sizeof( PVOID ) + sizeof( IPAddr ) + 2*sizeof( LPVOID ) + sizeof( WORD ) + sizeof( PIP_OPTION_INFORMATION ) + 2*sizeof( DWORD ) );
+            IcmpSendEcho2 = (TIcmpSendEcho2Ptr) CORE::GetFunctionAddress( DllHandle         ,
+                                                                          "IcmpSendEcho2"    ,
+                                                                          2*sizeof( HANDLE ) + sizeof( PIO_APC_ROUTINE_OLD ) + sizeof( PVOID ) + sizeof( IPAddr ) + 2*sizeof( LPVOID ) + sizeof( WORD ) + sizeof( PIP_OPTION_INFORMATION ) + 2*sizeof( DWORD ) );
+                                                                          
             bool foundFunctions = ( IcmpCreateFile != NULL ) && ( IcmpCloseHandle != NULL ) && ( IcmpSendEcho != NULL );
             if ( !foundFunctions )
             {
@@ -123,7 +138,8 @@ LinkICMPModule( const char* moduleName )
 
 bool
 LinkICMPOlderThenXP( void )
-{
+{GUCEF_TRACE;
+
     return LinkICMPModule( "ICMP.dll" );
 }
 
@@ -131,7 +147,8 @@ LinkICMPOlderThenXP( void )
 
 bool
 LinkICMPForXPAndHigher( void )
-{
+{GUCEF_TRACE;
+
     return LinkICMPModule( "iphlpapi.dll" );
 }
 
@@ -139,7 +156,8 @@ LinkICMPForXPAndHigher( void )
 
 void
 UnlinkICMP( void )
-{
+{GUCEF_TRACE;
+
     globalMutex.Lock();    
     if ( DllHandle != NULL )
     {
@@ -157,7 +175,7 @@ UnlinkICMP( void )
 
 Int32
 LinkICMP( void )
-{GUCEF_CORE;
+{GUCEF_TRACE;
     
     if ( !LinkICMPForXPAndHigher() )
     {

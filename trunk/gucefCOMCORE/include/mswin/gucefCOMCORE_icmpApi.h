@@ -71,12 +71,12 @@ typedef struct ip_option_information {
 typedef struct {
   union {
     struct {
-      u_char s_b1,s_b2,s_b3,s_b4;
+      UCHAR s_b1,s_b2,s_b3,s_b4;
     } S_un_b;
     struct {
-      u_short s_w1,s_w2;
+      USHORT s_w1,s_w2;
     } S_un_w;
-    u_long S_addr;
+    ULONG S_addr;
   } S_un;
 } IPAddr;
 
@@ -95,9 +95,39 @@ typedef struct icmp_echo_reply {
 
 /*-------------------------------------------------------------------------*/
 
-typedef HANDLE ( WINAPI *TIcmpCreateFilePtr)( VOID );
-typedef BOOL ( WINAPI *TIcmpCloseHandlePtr)( HANDLE IcmpHandle );
-typedef DWORD ( WINAPI *TIcmpSendEchoPtr)( HANDLE IcmpHandle, IPAddr DestinationAddress, LPVOID RequestData, WORD RequestSize, PIP_OPTION_INFORMATION RequestOptions, LPVOID ReplyBuffer, DWORD ReplySize, DWORD Timeout );
+typedef struct _IO_STATUS_BLOCK {
+    union {
+        LONG Status;
+        PVOID Pointer;
+    };
+    ULONG_PTR Information;
+} IO_STATUS_BLOCK, *PIO_STATUS_BLOCK;
+
+/*-------------------------------------------------------------------------*/
+
+// For Vista and later:
+typedef
+VOID 
+(*PIO_APC_ROUTINE_NEW) (
+    IN PVOID ApcContext,
+    IN PIO_STATUS_BLOCK IoStatusBlock,
+    IN ULONG Reserved
+    );
+    
+// Older then Vista:
+typedef
+VOID 
+(*PIO_APC_ROUTINE_OLD) (
+    IN PVOID ApcContext
+    );
+
+/*-------------------------------------------------------------------------*/
+
+typedef HANDLE ( WINAPI *TIcmpCreateFilePtr )( VOID );
+typedef BOOL ( WINAPI *TIcmpCloseHandlePtr )( HANDLE IcmpHandle );
+typedef DWORD ( WINAPI *TIcmpSendEchoPtr )( HANDLE IcmpHandle, IPAddr DestinationAddress, LPVOID RequestData, WORD RequestSize, PIP_OPTION_INFORMATION RequestOptions, LPVOID ReplyBuffer, DWORD ReplySize, DWORD Timeout );
+typedef DWORD ( WINAPI *TIcmpSendEcho2VistaPtr ) ( HANDLE IcmpHandle, HANDLE Event, PIO_APC_ROUTINE_NEW ApcRoutine, PVOID ApcContext, IPAddr DestinationAddress, LPVOID RequestData, WORD RequestSize, PIP_OPTION_INFORMATION RequestOptions, LPVOID ReplyBuffer, DWORD ReplySize, DWORD Timeout );
+typedef DWORD ( WINAPI *TIcmpSendEcho2Ptr ) ( HANDLE IcmpHandle, HANDLE Event, PIO_APC_ROUTINE_OLD ApcRoutine, PVOID ApcContext, IPAddr DestinationAddress, LPVOID RequestData, WORD RequestSize, PIP_OPTION_INFORMATION RequestOptions, LPVOID ReplyBuffer, DWORD ReplySize, DWORD Timeout );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -147,15 +177,24 @@ typedef DWORD ( WINAPI *TIcmpSendEchoPtr)( HANDLE IcmpHandle, IPAddr Destination
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_CORE_EXPORT_C 
+GUCEF_COMCORE_EXPORT_C 
 Int32 LinkICMP( void );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_CORE_EXPORT_C
+GUCEF_COMCORE_EXPORT_C
 void UnlinkICMP( void );
 
 /*-------------------------------------------------------------------------*/
+
+/*
+ *  ICMP function pointers
+ */
+GUCEF_COMCORE_EXPORT_C extern TIcmpCreateFilePtr IcmpCreateFile;
+GUCEF_COMCORE_EXPORT_C extern TIcmpCloseHandlePtr IcmpCloseHandle;
+GUCEF_COMCORE_EXPORT_C extern TIcmpSendEchoPtr IcmpSendEcho;
+GUCEF_COMCORE_EXPORT_C extern TIcmpSendEcho2VistaPtr IcmpSendEcho2Vista;
+GUCEF_COMCORE_EXPORT_C extern TIcmpSendEcho2Ptr IcmpSendEcho2;
 
 /*-------------------------------------------------------------------------*/
 
