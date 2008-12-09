@@ -105,7 +105,7 @@ typedef struct _IO_STATUS_BLOCK {
 
 /*-------------------------------------------------------------------------*/
 
-// For Vista and later:
+/* For Vista and later: */
 typedef
 VOID 
 (*PIO_APC_ROUTINE_NEW) (
@@ -114,7 +114,7 @@ VOID
     IN ULONG Reserved
     );
     
-// Older then Vista:
+/* Older then Vista: */
 typedef
 VOID 
 (*PIO_APC_ROUTINE_OLD) (
