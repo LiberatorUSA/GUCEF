@@ -32,9 +32,12 @@
 
 #ifdef GUCEF_MSWIN_BUILD
 
-  /* #include <Icmpapi.h> -> this is the header for the functions that we dynamicly link */  
-  #define WIN32_LEAN_AND_MEAN
-  #include <winsock.h>                  /* windows networking API, used here for it's type declarations */
+  /* #include <Icmpapi.h> -> this is the header for the functions that we dynamicly link */ 
+   
+  #ifndef GUCEF_COMCORE_ICMPAPI_H
+  #include "gucefCOMCORE_icmpApi.h"
+  #define GUCEF_COMCORE_ICMPAPI_H
+  #endif /* GUCEF_COMCORE_ICMPAPI_H ? */
   
   #ifndef GUCEF_CORE_DVOSWRAP_H
   #include "DVOSWRAP.h"
@@ -84,120 +87,7 @@ const CORE::CEvent CPing::PingTimeoutEvent = "GUCEF::COMCORE::CPing::PingTimeout
 const CORE::CEvent CPing::PingFailedEvent = "GUCEF::COMCORE::CPing::PingFailedEvent";
 const CORE::CEvent CPing::PingStoppedEvent = "GUCEF::COMCORE::CPing::PingStoppedEvent";
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      TYPES                                                              //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-#ifdef GUCEF_MSWIN_BUILD
-
-/*-------------------------------------------------------------------------*/
-
-typedef struct ip_option_information {
-  UCHAR Ttl;
-  UCHAR Tos;
-  UCHAR Flags;
-  UCHAR OptionsSize;
-  PUCHAR OptionsData;
-} IP_OPTION_INFORMATION, 
- *PIP_OPTION_INFORMATION;
- 
-/*-------------------------------------------------------------------------*/
- 
-typedef struct {
-  union {
-    struct {
-      u_char s_b1,s_b2,s_b3,s_b4;
-    } S_un_b;
-    struct {
-      u_short s_w1,s_w2;
-    } S_un_w;
-    u_long S_addr;
-  } S_un;
-} IPAddr;
-
-/*-------------------------------------------------------------------------*/
-
-typedef struct icmp_echo_reply {
-  IPAddr Address;
-  ULONG Status;
-  ULONG RoundTripTime;
-  USHORT DataSize;
-  USHORT Reserved;
-  PVOID Data;
-  IP_OPTION_INFORMATION Options;
-} ICMP_ECHO_REPLY, 
- *PICMP_ECHO_REPLY;
-
-/*-------------------------------------------------------------------------*/
-
-typedef HANDLE ( WINAPI *TIcmpCreateFilePtr)( VOID );
-typedef BOOL ( WINAPI *TIcmpCloseHandlePtr)( HANDLE IcmpHandle );
-typedef DWORD ( WINAPI *TIcmpSendEchoPtr)( HANDLE IcmpHandle, IPAddr DestinationAddress, LPVOID RequestData, WORD RequestSize, PIP_OPTION_INFORMATION RequestOptions, LPVOID ReplyBuffer, DWORD ReplySize, DWORD Timeout );
-
-/*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_MSWIN_BUILD ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      CONSTANTS                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-#ifdef GUCEF_MSWIN_BUILD
-
-/*-------------------------------------------------------------------------*/
-
-/*
- *  icmp_echo_reply.Status is one of the following values
- */
-
-#define IP_SUCCESS                  11000
-#define IP_BUF_TOO_SMALL            11001
-#define IP_DEST_NET_UNREACHABLE     11002
-#define IP_DEST_HOST_UNREACHABLE    11003
-#define IP_DEST_PROT_UNREACHABLE    11004
-#define IP_DEST_PORT_UNREACHABLE    11005
-#define IP_NO_RESOURCES             11006
-#define IP_BAD_OPTION               11007
-#define IP_HW_ERROR                 11008
-#define IP_PACKET_TOO_BIG           11009
-#define IP_REQ_TIMED_OUT            11010
-#define IP_BAD_REQ                  11011
-#define IP_BAD_ROUTE                11012
-#define IP_TTL_EXPIRED_TRANSIT      11013
-#define IP_TTL_EXPIRED_REASSEM      11014
-#define IP_PARAM_PROBLEM            11015
-#define IP_SOURCE_QUENCH            11016
-#define IP_OPTION_TOO_BIG           11017
-#define IP_BAD_DESTINATION          11018
-#define IP_DEST_UNREACHABLE         11019
-#define IP_TIME_EXCEEDED            11020
-#define IP_BAD_HEADER               11021
-#define IP_UNRECOGNIZED_NEXT_HEADER 11022
-#define IP_ICMP_ERROR               11023
-#define IP_DEST_SCOPE_MISMATCH      11024
-
-/*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_MSWIN_BUILD ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-#ifdef GUCEF_MSWIN_BUILD
-MT::CMutex globalMutex;
-UInt32 DllRefCount = 0;
-void* DllHandle = NULL;
-TIcmpCreateFilePtr IcmpCreateFile = NULL;
-TIcmpCloseHandlePtr IcmpCloseHandle = NULL;
-TIcmpSendEchoPtr IcmpSendEcho = NULL;
-#endif /* GUCEF_MSWIN_BUILD ? */
+bool icmpLinked = false;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -401,94 +291,6 @@ class CMSWinPingTask : public MT::CActiveObject   ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MSWIN_BUILD
-
-bool
-LinkICMP( const char* moduleName )
-{
-    globalMutex.Lock();
-    if ( DllHandle == NULL )
-    {
-        DllHandle = CORE::LoadModuleDynamicly( moduleName );
-        if ( DllHandle != NULL )
-        {
-            IcmpCreateFile = (TIcmpCreateFilePtr) CORE::GetFunctionAddress( DllHandle         ,
-                                                                            "IcmpCreateFile"  ,
-                                                                            0                 );
-            IcmpCloseHandle = (TIcmpCloseHandlePtr) CORE::GetFunctionAddress( DllHandle         ,
-                                                                              "IcmpCloseHandle" ,
-                                                                              sizeof( HANDLE )  );
-            IcmpSendEcho = (TIcmpSendEchoPtr) CORE::GetFunctionAddress( DllHandle         ,
-                                                                        "IcmpSendEcho"    ,
-                                                                        sizeof( HANDLE ) + sizeof( IPAddr ) + 2*sizeof( LPVOID ) + sizeof( WORD ) + sizeof( PIP_OPTION_INFORMATION ) + 2*sizeof( DWORD ) );
-                                                     
-            bool foundFunctions = ( IcmpCreateFile != NULL ) && ( IcmpCloseHandle != NULL ) && ( IcmpSendEcho != NULL );
-            if ( !foundFunctions )
-            {
-                CORE::UnloadModuleDynamicly( DllHandle );
-                DllHandle = NULL;
-                DllRefCount = 0;
-                
-                globalMutex.Unlock();
-                return false;            
-            }
-        
-            // Successfully linked the module and functions
-        }
-        else
-        {
-            DllHandle = NULL;
-            DllRefCount = 0;
-            
-            globalMutex.Unlock();
-            return false;            
-        }
-    }
-    
-    ++DllRefCount;
-    
-    globalMutex.Unlock();
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-LinkICMPOlderThenXP( void )
-{
-    return LinkICMP( "ICMP.dll" );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-LinkICMPForXPAndHigher( void )
-{
-    return LinkICMP( "iphlpapi.dll" );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-UnlinkICMP( void )
-{
-    globalMutex.Lock();    
-    if ( DllHandle != NULL )
-    {
-        if ( DllRefCount == 1 )
-        {
-            CORE::UnloadModuleDynamicly( DllHandle );
-            DllHandle = NULL;            
-            --DllRefCount;
-        }
-    }
-    globalMutex.Unlock();
-}
-
-#endif /* GUCEF_MSWIN_BUILD ? */
-
-/*-------------------------------------------------------------------------*/
-
 void
 CPing::RegisterEvents( void )
 {GUCEF_TRACE;
@@ -515,11 +317,8 @@ CPing::CPing( void )
     RegisterEvents();    
     
     #ifdef GUCEF_MSWIN_BUILD
-    
-    if ( !LinkICMPForXPAndHigher() )
-    {
-        LinkICMPOlderThenXP();
-    }
+    icmpLinked = LinkICMP() > 0;
+
     
     AddForwardingForEvent( PingStartedEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( PingReponseEvent, EVENTORIGINFILTER_TRANSFER );
@@ -583,7 +382,7 @@ CPing::Start( const TStringVector& remoteHosts          ,
         CMSWinPingTask* pingTask = new CMSWinPingTask();
         if ( pingTask != NULL )
         {
-            if ( DllHandle != NULL )
+            if ( icmpLinked )
             {
                 m_isActive = true;
                 
