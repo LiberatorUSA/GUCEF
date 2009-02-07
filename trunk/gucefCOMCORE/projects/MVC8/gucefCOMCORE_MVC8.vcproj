@@ -270,6 +270,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\mswin\gucefCOMCORE_CPingTaskConsumer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\mswin\gucefCOMCORE_icmpApi.cpp"
 				>
 			</File>
@@ -345,6 +349,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\gucefCOMCORE_config.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\mswin\gucefCOMCORE_CPingTaskConsumer.h"
 				>
 			</File>
 			<File

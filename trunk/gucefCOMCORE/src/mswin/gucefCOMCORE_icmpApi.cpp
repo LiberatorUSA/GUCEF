@@ -69,6 +69,7 @@ UInt32 DllRefCount = 0;
 void* DllHandle = NULL;
 TIcmpCreateFilePtr IcmpCreateFile = NULL;
 TIcmpCloseHandlePtr IcmpCloseHandle = NULL;
+TIcmpParseRepliesPtr IcmpParseReplies = NULL;
 TIcmpSendEchoPtr IcmpSendEcho = NULL;
 TIcmpSendEcho2Ptr IcmpSendEcho2 = NULL;
 TIcmpSendEcho2VistaPtr IcmpSendEcho2Vista = NULL;
@@ -95,6 +96,9 @@ LinkICMPModule( const char* moduleName )
             IcmpCloseHandle = (TIcmpCloseHandlePtr) CORE::GetFunctionAddress( DllHandle         ,
                                                                               "IcmpCloseHandle" ,
                                                                               sizeof( HANDLE )  );
+            IcmpParseReplies = (TIcmpParseRepliesPtr) CORE::GetFunctionAddress( DllHandle         ,
+                                                                                "IcmpParseReplies" ,
+                                                                                sizeof(LPVOID) + sizeof(DWORD) );
             IcmpSendEcho = (TIcmpSendEchoPtr) CORE::GetFunctionAddress( DllHandle         ,
                                                                         "IcmpSendEcho"    ,
                                                                         sizeof( HANDLE ) + sizeof( IPAddr ) + 2*sizeof( LPVOID ) + sizeof( WORD ) + sizeof( PIP_OPTION_INFORMATION ) + 2*sizeof( DWORD ) );
@@ -105,7 +109,7 @@ LinkICMPModule( const char* moduleName )
                                                                           "IcmpSendEcho2"    ,
                                                                           2*sizeof( HANDLE ) + sizeof( PIO_APC_ROUTINE_OLD ) + sizeof( PVOID ) + sizeof( IPAddr ) + 2*sizeof( LPVOID ) + sizeof( WORD ) + sizeof( PIP_OPTION_INFORMATION ) + 2*sizeof( DWORD ) );
                                                                           
-            bool foundFunctions = ( IcmpCreateFile != NULL ) && ( IcmpCloseHandle != NULL ) && ( IcmpSendEcho != NULL );
+            bool foundFunctions = ( IcmpCreateFile != NULL ) && ( IcmpCloseHandle != NULL ) && ( IcmpSendEcho != NULL ) && ( IcmpParseReplies != NULL );
             if ( !foundFunctions )
             {
                 CORE::UnloadModuleDynamicly( DllHandle );

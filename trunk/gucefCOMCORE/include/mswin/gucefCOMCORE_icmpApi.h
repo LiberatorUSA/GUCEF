@@ -125,6 +125,7 @@ VOID
 
 typedef HANDLE ( WINAPI *TIcmpCreateFilePtr )( VOID );
 typedef BOOL ( WINAPI *TIcmpCloseHandlePtr )( HANDLE IcmpHandle );
+typedef DWORD ( WINAPI *TIcmpParseRepliesPtr( LPVOID ReplyBuffer, DWORD ReplySize );
 typedef DWORD ( WINAPI *TIcmpSendEchoPtr )( HANDLE IcmpHandle, IPAddr DestinationAddress, LPVOID RequestData, WORD RequestSize, PIP_OPTION_INFORMATION RequestOptions, LPVOID ReplyBuffer, DWORD ReplySize, DWORD Timeout );
 typedef DWORD ( WINAPI *TIcmpSendEcho2VistaPtr ) ( HANDLE IcmpHandle, HANDLE Event, PIO_APC_ROUTINE_NEW ApcRoutine, PVOID ApcContext, IPAddr DestinationAddress, LPVOID RequestData, WORD RequestSize, PIP_OPTION_INFORMATION RequestOptions, LPVOID ReplyBuffer, DWORD ReplySize, DWORD Timeout );
 typedef DWORD ( WINAPI *TIcmpSendEcho2Ptr ) ( HANDLE IcmpHandle, HANDLE Event, PIO_APC_ROUTINE_OLD ApcRoutine, PVOID ApcContext, IPAddr DestinationAddress, LPVOID RequestData, WORD RequestSize, PIP_OPTION_INFORMATION RequestOptions, LPVOID ReplyBuffer, DWORD ReplySize, DWORD Timeout );
@@ -192,6 +193,7 @@ void UnlinkICMP( void );
  */
 GUCEF_COMCORE_EXPORT_C extern TIcmpCreateFilePtr IcmpCreateFile;
 GUCEF_COMCORE_EXPORT_C extern TIcmpCloseHandlePtr IcmpCloseHandle;
+GUCEF_COMCORE_EXPORT_C extern TIcmpParseRepliesPtr IcmpParseReplies;
 GUCEF_COMCORE_EXPORT_C extern TIcmpSendEchoPtr IcmpSendEcho;
 GUCEF_COMCORE_EXPORT_C extern TIcmpSendEcho2VistaPtr IcmpSendEcho2Vista;
 GUCEF_COMCORE_EXPORT_C extern TIcmpSendEcho2Ptr IcmpSendEcho2;
