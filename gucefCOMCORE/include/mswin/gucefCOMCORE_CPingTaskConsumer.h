@@ -65,6 +65,49 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
 {
     public:
     
+    typedef std::vector< CString > TStringVector;
+    
+    class CPingTaskData : public CORE::CICloneable
+    {
+        CPingTaskData( const TStringVector& remoteHosts    ,
+                       const UInt32 maxPings = 0           ,
+                       const UInt32 bytesToSend = 32       ,
+                       const UInt32 timeout = 1000         ,
+                       const UInt32 minimalPingDelta = 500 );
+        
+        CPingTaskData( const CPingTaskData& src );
+        
+        virtual CORE::CICloneable* Clone( void );
+        
+        void SetRemoteHosts( const TStringVector& hostList );
+        
+        const TStringVector& GetRemoteHosts( void ) const;
+        
+        void SetMaxPings( const UInt32 maxPings );
+        
+        UInt32 GetMaxPings( void ) const;
+        
+        void SetBytesToSend( const UInt32 bytesToSend );
+        
+        UInt32 GetBytesToSend( void ) const;
+        
+        void SetTimeout( const UInt32 timeout );
+        
+        UInt32 GetTimeout( void ) const;
+        
+        void SetMinimalPingDelta( const minimalPingDelta );
+        
+        const UInt32 GetMinimalPingDelta( void ) const;
+        
+        private:
+        
+        TStringVector m_hostList;
+        UInt32 m_maxPings;
+        UInt32 m_bytesToSend;
+        UInt32 m_timeout;
+        UInt32 m_minimalPingDelta;
+    }
+    
     CPingTaskConsumer( void );
     
     virtual ~CPingTaskConsumer();
@@ -81,11 +124,16 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     
     CPatchTaskConsumer( const CPatchTaskConsumer& src  );
     CPatchTaskConsumer& operator=( const CPatchTaskConsumer& src );
+    
+    static void IcmpCallback( void* vdata );
 
     private:
         
     CORE::CPulseGenerator m_pulseGenerator;
     CORE::CBusyWaitPulseGeneratorDriver m_pulseDriver;
+    void* m_pingEvent;
+    void* m_icmpHandle;
+    bool m_notDone;
 };
 
 /*-------------------------------------------------------------------------//
