@@ -61,7 +61,7 @@ struct SIcmpCallbackData
     CHostAddress host;
     void* replyBuffer;
     UInt32 echoSize;
-}
+};
 typedef struct SIcmpCallbackData TIcmpCallbackData;
 
 /*-------------------------------------------------------------------------//
@@ -70,13 +70,81 @@ typedef struct SIcmpCallbackData TIcmpCallbackData;
 //                                                                         //
 //-------------------------------------------------------------------------*/
     
+CPingTaskConsumer::CEchoReceivedEventData::CEchoReceivedEventData( const CHostAddress& host   ,
+                                                                   const UInt32 echoSize      ,
+                                                                   const UInt32 roundTripTime )
+    : CORE::CICloneable()              ,
+      m_hostAddress( host )            ,
+      m_echoSize( echoSize )           ,
+      m_roundTripTime( roundTripTime )
+{GUCEF_TRACE;
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPingTaskConsumer::CEchoReceivedEventData::CEchoReceivedEventData( const CEchoReceivedEventData& src )
+    : CORE::CICloneable( src)                ,
+      m_hostAddress( src.m_hostAddress )     ,
+      m_echoSize( src.m_echoSize )           ,
+      m_roundTripTime( src.m_roundTripTime )
+{GUCEF_TRACE;    
+
+}
+
+/*-------------------------------------------------------------------------*/
+        
+CPingTaskConsumer::CEchoReceivedEventData::~CEchoReceivedEventData()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+                
+CORE::CICloneable*
+CPingTaskConsumer::CEchoReceivedEventData::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CEchoReceivedEventData( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+        
+const CHostAddress&
+CPingTaskConsumer::CEchoReceivedEventData::GetHostAddress( void ) const
+{GUCEF_TRACE;
+
+    return m_hostAddress;
+}
+
+/*-------------------------------------------------------------------------*/
+        
+UInt32
+CPingTaskConsumer::CEchoReceivedEventData::GetEchoSize( void ) const
+{GUCEF_TRACE;
+
+    return m_echoSize;
+}
+
+/*-------------------------------------------------------------------------*/
+        
+UInt32
+CPingTaskConsumer::CEchoReceivedEventData::GetRoundTripTime( void ) const
+{GUCEF_TRACE;
+
+    return m_roundTripTime;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CPingTaskConsumer::CPingTaskConsumer( void )
     : CTaskConsumer()      ,
       m_pulseGenerator()   ,
       m_pulseDriver()      ,
       m_pingEvent( NULL )  ,
       m_icmpHandle( NULL ) ,
-      m_notDone( true )
+      m_notDone( true )    ,
+      m_taskData( NULL )
 {GUCEF_TRACE;
 
     m_icmpHandle = TIcmpCreateFilePtr();    
@@ -132,7 +200,7 @@ CPingTaskConsumer::IcmpCallback( void* vdata )
     
     UInt32 replyCount = IcmpParseReplies( data->replyBuffer, sizeof(ICMP_ECHO_REPLY) + data->echoSize ); 
     PICMP_ECHO_REPLY echoReply = (PICMP_ECHO_REPLY) data->replyBuffer;
-    echoReply->RoundTripTime
+    //echoReply->RoundTripTime
     
 }
 
@@ -142,35 +210,35 @@ bool
 CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    const CPingTaskData* theTaskData = static_cast< CPingTaskData* >( taskData );
+    m_taskData = static_cast< CPingTaskData* >( taskData );
   
-    UInt8* pingData = new UInt8[ theTaskData->GetBytesToSend() ];
-    memset( pingData, 0, theTaskData->GetBytesToSend() );
+    UInt8* pingData = new UInt8[ m_taskData->GetBytesToSend() ];
+    memset( pingData, 0, m_taskData->GetBytesToSend() );
     m_notDone = true;
     
-    const TStringVector& hosts = theTaskData->GetRemoteHosts();
+    const TStringVector& hosts = m_taskData->GetRemoteHosts();
     for ( UInt32 i=0; i<hosts.size(); ++i )
     {
         TIcmpCallbackData* callbackdata = new TIcmpCallbackData;
         callbackdata.host.SetHostname( hosts[ i ] );
         callbackdata.taskConsumer = this;
-        callbackdata.echoSize = theTaskData->GetBytesToSend();
+        callbackdata.echoSize = m_taskData->GetBytesToSend();
         callbackdata.replyBuffer = new Int8[ sizeof(ICMP_ECHO_REPLY) + callbackdata.echoSize ];
         
         in_addr netIp;
         netIp.S_addr = callbackdata.host.GetAddress();
         
-        IcmpSendEcho2( icmpHandle                                              ,
-                       pingEvent                                               ,
-                       &IcmpCallback                                           ,
-                       callbackdata                                            ,
-                       netIp                                                   ,
-                       pingData                                                ,
-                       theTaskData->GetBytesToSend()                           ,
-                       NULL                                                    ,
-                       callbackdata->replyBuffer                               ,
-                       sizeof(ICMP_ECHO_REPLY) + theTaskData->GetBytesToSend() ,
-                       theTaskData->GetTimeout()                               );
+        IcmpSendEcho2( icmpHandle                                             ,
+                       pingEvent                                              ,
+                       &IcmpCallback                                          ,
+                       callbackdata                                           ,
+                       netIp                                                  ,
+                       pingData                                               ,
+                       theTaskData->GetBytesToSend()                          ,
+                       NULL                                                   ,
+                       callbackdata->replyBuffer                              ,
+                       sizeof(ICMP_ECHO_REPLY) + m_taskData->GetBytesToSend() ,
+                       m_taskData->GetTimeout()                               );
                            
     }
     

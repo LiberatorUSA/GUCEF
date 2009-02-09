@@ -65,10 +65,43 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
 {
     public:
     
+    static const CORE::CEvent EchoReceivedEvent;
+    
+    static void RegisterEvents( void );
+    
+    class CEchoReceivedEventData : public CORE::CICloneable
+    {
+        CEchoReceivedEventData( const CHostAddress& host   ,
+                                const UInt32 echoSize      ,
+                                const UInt32 roundTripTime );
+
+        CEchoReceivedEventData( const CEchoReceivedEventData& src );
+        
+        virtual ~CEchoReceivedEventData();
+                
+        virtual CORE::CICloneable* Clone( void ) const;
+        
+        const CHostAddress& GetHostAddress( void ) const;
+        
+        UInt32 GetEchoSize( void ) const;
+        
+        UInt32 GetRoundTripTime( void ) const;
+        
+        private:
+        
+        CHostAddress m_hostAddress;
+        UInt32 m_echoSize;
+        UInt32 m_roundTripTime;
+    };    
+    
+    public:
+    
     typedef std::vector< CString > TStringVector;
     
     class CPingTaskData : public CORE::CICloneable
     {
+        public:
+        
         CPingTaskData( const TStringVector& remoteHosts    ,
                        const UInt32 maxPings = 0           ,
                        const UInt32 bytesToSend = 32       ,
@@ -95,7 +128,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
         
         UInt32 GetTimeout( void ) const;
         
-        void SetMinimalPingDelta( const minimalPingDelta );
+        void SetMinimalPingDelta( const UInt32 minimalPingDelta );
         
         const UInt32 GetMinimalPingDelta( void ) const;
         
@@ -106,7 +139,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
         UInt32 m_bytesToSend;
         UInt32 m_timeout;
         UInt32 m_minimalPingDelta;
-    }
+    };
     
     CPingTaskConsumer( void );
     
@@ -122,8 +155,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     
     private:
     
-    CPatchTaskConsumer( const CPatchTaskConsumer& src  );
-    CPatchTaskConsumer& operator=( const CPatchTaskConsumer& src );
+    CPingTaskConsumer( const CPingTaskConsumer& src );
+    CPingTaskConsumer& operator=( const CPingTaskConsumer& src );
     
     static void IcmpCallback( void* vdata );
 
@@ -134,6 +167,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     void* m_pingEvent;
     void* m_icmpHandle;
     bool m_notDone;
+    CPingTaskData* m_taskData;
 };
 
 /*-------------------------------------------------------------------------//

@@ -83,11 +83,17 @@ CTaskDelegator::OnTaskCycle( void* taskdata )
 
     CTaskConsumer* taskConsumer = NULL;
     CICloneable* taskData = NULL;
+    CObserver* taskObserver = NULL;
     
     if ( m_taskManager->GetQueuedTask( &taskConsumer ,
-                                       &taskData     ) )
+                                       &taskData     ,
+                                       &taskObserver ) )
     {
         SetAsTaskDelegator( taskConsumer );
+        if ( NULL != taskObserver )
+        {
+            taskConsumer->Subscribe( taskObserver );
+        }
         taskConsumer->ProcessTask( taskData );
         
         m_taskManager->TaskCleanup( taskConsumer ,

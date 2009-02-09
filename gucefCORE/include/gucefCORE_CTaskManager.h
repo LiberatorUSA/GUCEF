@@ -33,10 +33,10 @@
 #define GUCEF_MT_CTMAILBOX_H
 #endif /* GUCEF_MT_CTMAILBOX_H ? */
 
-#ifndef GUCEF_CORE_COBSERVER_H
-#include "CObserver.h"
-#define GUCEF_CORE_COBSERVER_H
-#endif /* GUCEF_CORE_COBSERVER_H ? */
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
 #include "CTAbstractFactory.h"
@@ -67,7 +67,7 @@ class CTaskDelegator;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObserver
+class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObservingNotifier
 {
     public:
     
@@ -75,11 +75,13 @@ class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObserver
     
     static CTaskManager* Instance( void );
     
-    void QueueTask( const CString& taskType ,
-                    CICloneable* taskData   );
+    void QueueTask( const CString& taskType ,      
+                    CICloneable* taskData   ,
+                    CObserver* taskObserver );
 
     bool StartTask( const CString& taskType ,
                     CICloneable* taskData   ,
+                    CObserver* taskObserver ,
                     UInt32* taskID = NULL   );
                     
     bool PauseTask( const UInt32 taskID );
@@ -111,9 +113,32 @@ class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObserver
 
     private:
     friend class CTaskDelegator;
+
+    class CTaskQueueItem : public CICloneable
+    {
+        public:
+        
+        CTaskQueueItem( CICloneable* taskData   ,
+                        CObserver* taskObserver );
+        
+        CTaskQueueItem( const CTaskQueueItem& src );
+        
+        virtual ~CTaskQueueItem();
+        
+        CObserver* GetTaskObserver( void );
+        
+        CICloneable* GetTaskData( void );
+        
+        virtual CICloneable* Clone( void ) const;
+
+        private:        
+        CICloneable* m_taskData;
+        CObserver* m_taskObserver;
+    };
     
     bool GetQueuedTask( CTaskConsumer** taskConsumer ,
-                        CICloneable** taskData       );
+                        CICloneable** taskData       ,
+                        CObserver** taskObserver     );
 
     void TaskCleanup( CTaskConsumer* taskConsumer ,
                       CICloneable* taskData       );
