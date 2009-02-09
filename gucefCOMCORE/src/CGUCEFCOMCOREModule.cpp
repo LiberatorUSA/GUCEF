@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
 #ifndef CCOM_H
 #include "CCom.h"      /* header for the main communication manager */
 #define CCOM_H
@@ -58,6 +63,11 @@
 #define GUCEF_COMCORE_CUDPCHANNEL_H
 #endif /* GUCEF_COMCORE_CUDPCHANNEL_H ? */
 
+#ifndef GUCEF_COMCORE_CPINGTASKCONSUMER_H
+#include "gucefCOMCORE_CPingTaskConsumer.h"
+#define GUCEF_COMCORE_CPINGTASKCONSUMER_H
+#endif /* GUCEF_COMCORE_CPINGTASKCONSUMER_H ? */
+
 #include "CGUCEFCOMCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef GUCEF_MSWIN_BUILD
@@ -85,6 +95,14 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+typedef CORE::CTFactory< CORE::CTaskConsumer, CPingTaskConsumer > TPingTaskConsumerFactory;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -92,24 +110,28 @@ namespace COMCORE {
 bool 
 CGUCEFCOMCOREModule::Load( void )
 {
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Module loaded" );
-        
-        #ifdef GUCEF_MSWIN_BUILD
-        InitWinsock( 1 );
-        #endif
-        
-        /* simply instantiate our com manager when the module is loaded */
-        //CCom::Instance();
-        
-        CTCPConnection::RegisterEvents();
-        CTCPServerSocket::RegisterEvents();
-        CTCPClientSocket::RegisterEvents();
-        CUDPSocket::RegisterEvents();
-        CPing::RegisterEvents();
-        CUDPMasterSocket::RegisterEvents();
-        CUDPChannel::RegisterEvents();
-        
-        return true;
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Module loaded" );
+    
+    #ifdef GUCEF_MSWIN_BUILD
+    InitWinsock( 1 );
+    #endif
+    
+    /* simply instantiate our com manager when the module is loaded */
+    //CCom::Instance();
+    
+    CTCPConnection::RegisterEvents();
+    CTCPServerSocket::RegisterEvents();
+    CTCPClientSocket::RegisterEvents();
+    CUDPSocket::RegisterEvents();
+    CPing::RegisterEvents();
+    CUDPMasterSocket::RegisterEvents();
+    CUDPChannel::RegisterEvents();
+    
+    // Make the task manager capable of handling ping tasks    
+    CORE::CTaskManager::Instance()->RegisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() ,
+                                                                 new TPingTaskConsumerFactory()     );
+    
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -118,6 +140,8 @@ bool
 CGUCEFCOMCOREModule::Unload( void )
 {
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Module unloading" );
+        
+        CORE::CTaskManager::Instance()->UnregisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() );
         
         CCom::Deinstance();
         

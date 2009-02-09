@@ -373,7 +373,7 @@ CTaskManager::StartTask( const CString& taskType     ,
     if ( NULL != taskConsumer )
     {    
         // Just spawn a task delegator, it will auto register as an active task
-        CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, taskData->Clone() );
+        CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, taskData->Clone(), taskObserver );
         delegator->Activate();
         
         if ( NULL != taskID )

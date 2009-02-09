@@ -36,15 +36,20 @@
 #define GUCEF_CORE_CEVENT_H
 #endif /* GUCEF_CORE_CEVENT_H ? */
 
-#ifndef GUCEF_CORE_CFORWARDINGNOTIFIER_H
-#include "gucefCORE_CForwardingNotifier.h"
-#define GUCEF_CORE_CFORWARDINGNOTIFIER_H
-#endif /* GUCEF_CORE_CFORWARDINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CLONEABLES_H
 #include "cloneables.h"
 #define GUCEF_CORE_CLONEABLES_H
 #endif /* GUCEF_CORE_CLONEABLES_H ? */
+
+#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
+#include "CHostAddress.h"
+#define GUCEF_COMCORE_CHOSTADDRESS_H
+#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,7 +71,7 @@ namespace COMCORE {
  *  You can ping a remote host and an event will be emitted when a response is
  *  received. If no response is received a timeout will occur.
  */
-class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CForwardingNotifier
+class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CTSGNotifier
 {
     public:
     
@@ -75,10 +80,35 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CForwardingNotifier
     static const CORE::CEvent PingTimeoutEvent;
     static const CORE::CEvent PingFailedEvent;
     static const CORE::CEvent PingStoppedEvent;
-
-    typedef CORE::TCloneableUInt32  TPingReponseEventData;
     
     static void RegisterEvents( void );
+    
+    class CPingEventData : public CORE::CICloneable
+    {
+        public: 
+        
+        CPingEventData( const CHostAddress& host   ,
+                        const UInt32 echoSize      ,
+                        const UInt32 roundTripTime );
+
+        CPingEventData( const CPingEventData& src );
+        
+        virtual ~CPingEventData();
+                
+        virtual CORE::CICloneable* Clone( void ) const;
+        
+        const CHostAddress& GetHostAddress( void ) const;
+        
+        UInt32 GetEchoSize( void ) const;
+        
+        UInt32 GetRoundTripTime( void ) const;
+        
+        private:
+        
+        CHostAddress m_hostAddress;
+        UInt32 m_echoSize;
+        UInt32 m_roundTripTime;
+    };
     
     public:
     
@@ -86,19 +116,21 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CForwardingNotifier
     
     CPing( void );
     
+    CPing( CORE::CPulseGenerator& pulsGenerator );
+    
     virtual ~CPing();
 
     /**
      *  
      */
     bool Start( const CORE::CString& remoteHost     ,
-                const UInt32 maxPings = 0           ,
+                const Int32 maxPings = 0            ,
                 const UInt32 bytesToSend = 32       ,
                 const UInt32 timeout = 1000         ,
                 const UInt32 minimalPingDelta = 500 );
 
     bool Start( const TStringVector& remoteHosts    ,
-                const UInt32 maxPings = 0           ,
+                const Int32 maxPings = 0            ,
                 const UInt32 bytesToSend = 32       ,
                 const UInt32 timeout = 1000         ,
                 const UInt32 minimalPingDelta = 500 );
@@ -107,13 +139,19 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CForwardingNotifier
     
     bool IsActive( void ) const;
     
-    const CORE::CString& GetRemoteHost( void ) const;
+    const TStringVector& GetRemoteHosts( void ) const;
     
-    UInt32 GetMaxPings( void ) const;
+    Int32 GetMaxPings( void ) const;
     
     void SetUserData( void* userData );
     
     void* GetUserData( void ) const;
+    
+    protected:
+    
+    virtual void OnPumpedNotify( CORE::CNotifier* notifier           ,
+                                 const CORE::CEvent& eventid         ,
+                                 CORE::CICloneable* eventdata = NULL );
     
     private:
     
@@ -123,13 +161,14 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CForwardingNotifier
     private:
     
     bool m_isActive;
-    CORE::CString m_remoteHost;
+    TStringVector m_remoteHosts;
     UInt32 m_maxPings;
     UInt32 m_bytesToSend;
     UInt32 m_timeout;
     UInt32 m_minimalPingDelta;
     void* m_osData;
     void* m_userData;
+    UInt32 m_taskId;
 };
 
 /*-------------------------------------------------------------------------//

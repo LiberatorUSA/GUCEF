@@ -66,6 +66,8 @@ class GUCEF_CORE_EXPORT_CPP CTaskConsumer : public CNotifier
     
     UInt32 GetTaskID( void ) const;
     
+    virtual const CString& GetClassTypeName( void ) const;
+    
     private:
     friend class CTaskDelegator;
     
