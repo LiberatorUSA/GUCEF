@@ -51,7 +51,7 @@ using namespace GUCEF::COMCORE;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CTestTCPClientServer : public CGUCEFAppSubSystem
+class CTestTCPClientServer : public CORE::CObservingNotifier 
 {
         public:
         
@@ -113,7 +113,7 @@ CTestTCPClientServer::Instance( bool block /* = false */ )
 /*-------------------------------------------------------------------------*/
 
 CTestTCPClientServer::CTestTCPClientServer( bool block /* = false */ )
-        : CGUCEFAppSubSystem( true ) ,
+        : CObservingNotifier() ,
           m_serverSock( block )      ,
           m_clientSock( block )
 {GUCEF_TRACE;

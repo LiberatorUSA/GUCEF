@@ -76,44 +76,19 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CPingTester : public CORE::CGUCEFAppSubSystem
+class CPingTester : public CORE::CObserver
 {
     public:
     
     /*---------------------------------------------------------------------*/
     
-    static CPingTester* Instance( void )
-    {GUCEF_TRACE;
-        
-        if ( NULL == m_instance )
-        {
-            m_instance = new CPingTester();
-        }
-        return m_instance;
-    }
-    
-    /*---------------------------------------------------------------------*/
-    
-    private:
-    
-    /*---------------------------------------------------------------------*/
-    
-    static void Deinstance( void )
-    {GUCEF_TRACE;
-    
-        delete m_instance;
-        m_instance = NULL;
-    }
-    
-    /*---------------------------------------------------------------------*/
-    
     CPingTester( void )
-        : CORE::CGUCEFAppSubSystem( true ) ,
-          m_pingCount( 0 )                 ,
+        : CORE::CObserver() ,
+          m_pingCount( 0 )  ,
           m_ping()
     {GUCEF_TRACE;
     
-        printf( "**** STARTING THE PING TEST ****\n" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "**** STARTING THE PING TEST ****" );
         
         SubscribeTo( &m_ping );
     }
@@ -148,25 +123,25 @@ class CPingTester : public CORE::CGUCEFAppSubSystem
                 printf( "ERROR: CPingTester: Failed to start the ping sequence\n" );
                 ERRORHERE;
             }
-            printf( "CPingTester: Ping started\n" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: Ping started" );
         }
         else
         if ( eventid == CORE::CGUCEFApplication::AppShutdownEvent )
         {
-            printf( "CPingTester: The application is shutting down\n" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: The application is shutting down" );
             // @TODO: ScheduleForDestruction 
         }
         else
         if ( eventid == COMCORE::CPing::PingReponseEvent )
         {
-            COMCORE::CPing::TPingReponseEventData* eData = static_cast< COMCORE::CPing::TPingReponseEventData* >( eventdata );
+            COMCORE::CPing::CPingEventData* eData = static_cast< COMCORE::CPing::CPingEventData* >( eventdata );
             if ( NULL == eData )
             {
                 // We should have received data with this event
-                printf( "ERROR: CPingTester: no event data for event PingReponseEvent\n" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ERROR: CPingTester: no event data for event PingReponseEvent" );
                 ERRORHERE;
             }            
-            printf( "CPingTester: Received ping response from %s: %d ms\n", REMOTE_HOST, eData->GetData() );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: Received ping response from " + eData->GetHostAddress().GetHostname() + ": " + CORE::UInt32ToString( eData->GetRoundTripTime() ) + " ms" );
                         
             if ( m_pingCount > MAX_PINGS )
             {
@@ -238,7 +213,7 @@ PerformPingTest( void )
     
     try
     {
-        CPingTester::Instance();
+        CPingTester pingTester;
         CORE::CGUCEFApplication::Instance()->main( 0, NULL, true );
     }
     catch ( ... )
