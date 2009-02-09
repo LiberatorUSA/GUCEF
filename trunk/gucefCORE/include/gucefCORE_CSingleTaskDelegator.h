@@ -56,7 +56,8 @@ class GUCEF_CORE_EXPORT_CPP CSingleTaskDelegator : public CTaskDelegator
     friend class CTaskManager;
     
     CSingleTaskDelegator( CTaskConsumer* taskConsumer ,
-                          CICloneable* taskData       );
+                          CICloneable* taskData       ,
+                          CObserver* taskObserver     );
     
     virtual ~CSingleTaskDelegator();
 
@@ -72,6 +73,7 @@ class GUCEF_CORE_EXPORT_CPP CSingleTaskDelegator : public CTaskDelegator
     
     CTaskConsumer* m_taskConsumer;
     CICloneable* m_taskData;
+    CObserver* m_taskObserver;
 };
 
 /*-------------------------------------------------------------------------//

@@ -67,6 +67,8 @@ class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
 {
     public:
     
+    CTSGNotifier( void );
+    
     CTSGNotifier( CPulseGenerator& pulsGenerator );
     
     CTSGNotifier( const CTSGNotifier& src );
@@ -105,6 +107,8 @@ class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
     
     virtual const CString& GetClassTypeName( void ) const;
     
+    CObserver& AsObserver( void );
+    
     protected:
     
     virtual void LockData( void ) const;
@@ -131,10 +135,10 @@ class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
      *  Implement this in your descending class to handle
      *  notification events. 
      *
-     *  Note that this call is always made in the main
-     *  application thread. As such it is well suited for linking
-     *  non-treadsafe code via an observer behavior to a notifier  
-     *  that operates from within another thread.
+     *  Note that this call is always made from the thread running the 
+     *  puls generator. As such it is well suited for linking non-treadsafe   
+     *  code via an observer behavior to a notifier that operates from 
+     *  within another thread.
      *
      *  @param notifier the notifier that sent the notification
      *  @param eventid the unique event id for an event
@@ -143,10 +147,6 @@ class GUCEFCORE_EXPORT_CPP CTSGNotifier : public CNotifier
     virtual void OnPumpedNotify( CNotifier* notifier           ,
                                  const CEvent& eventid         ,
                                  CICloneable* eventdata = NULL );    
-    
-    private:
-    
-    CTSGNotifier( void );
     
     private:
     

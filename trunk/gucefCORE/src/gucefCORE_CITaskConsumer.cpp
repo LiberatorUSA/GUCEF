@@ -89,6 +89,16 @@ CTaskConsumer::GetTaskID( void ) const
     return m_delegator->GetThreadID();
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CTaskConsumer::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "GUCEF::CORE::CTaskConsumer";
+    return typeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

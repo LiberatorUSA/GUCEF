@@ -141,7 +141,8 @@ CPatchManager::StartTask( const CString& taskName                  ,
         UnlockData();
         CPatchTaskData taskData( *this, patchEngineConfig, taskName );
         return m_taskManager->StartTask( CPatchTaskConsumer::GetTypeString() ,
-                                         &taskData                           );
+                                         &taskData                           ,
+                                         NULL                                );
     }
     UnlockData();
     return false;

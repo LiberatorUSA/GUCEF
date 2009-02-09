@@ -26,25 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CPULSEGENERATOR_H
-#include "gucefCORE_CPulseGenerator.h"
-#define GUCEF_CORE_CPULSEGENERATOR_H
-#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
-
-#ifndef GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H
-#include "gucefCORE_CBusyWaitPulseGeneratorDriver.h"
-#define GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H
-#endif /* GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H ? */
-
 #ifndef GUCEF_CORE_CITASKCONSUMER_H
 #include "gucefCORE_CITaskConsumer.h"
 #define GUCEF_CORE_CITASKCONSUMER_H
 #endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
 
-#ifndef GUCEF_COMCORE_CPING_H
-#include "CPing.h"
-#define GUCEF_COMCORE_CPING_H
-#endif /* GUCEF_COMCORE_CPING_H ? */
+#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
+#include "CHostAddress.h"
+#define GUCEF_COMCORE_CHOSTADDRESS_H
+#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -65,12 +55,18 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
 {
     public:
     
-    static const CORE::CEvent EchoReceivedEvent;
+    static const CORE::CEvent PingStartedEvent;
+    static const CORE::CEvent PingReponseEvent;
+    static const CORE::CEvent PingTimeoutEvent;
+    static const CORE::CEvent PingFailedEvent;
+    static const CORE::CEvent PingStoppedEvent;
     
     static void RegisterEvents( void );
     
     class CEchoReceivedEventData : public CORE::CICloneable
     {
+        public: 
+        
         CEchoReceivedEventData( const CHostAddress& host   ,
                                 const UInt32 echoSize      ,
                                 const UInt32 roundTripTime );
@@ -103,22 +99,22 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
         public:
         
         CPingTaskData( const TStringVector& remoteHosts    ,
-                       const UInt32 maxPings = 0           ,
+                       const Int32 maxPings = 0            ,
                        const UInt32 bytesToSend = 32       ,
                        const UInt32 timeout = 1000         ,
-                       const UInt32 minimalPingDelta = 500 );
+                       const Int32 minimalPingDelta = 500  );
         
         CPingTaskData( const CPingTaskData& src );
         
-        virtual CORE::CICloneable* Clone( void );
+        virtual CORE::CICloneable* Clone( void ) const;
         
         void SetRemoteHosts( const TStringVector& hostList );
         
         const TStringVector& GetRemoteHosts( void ) const;
         
-        void SetMaxPings( const UInt32 maxPings );
+        void SetMaxPings( const Int32 maxPings );
         
-        UInt32 GetMaxPings( void ) const;
+        Int32 GetMaxPings( void ) const;
         
         void SetBytesToSend( const UInt32 bytesToSend );
         
@@ -130,12 +126,12 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
         
         void SetMinimalPingDelta( const UInt32 minimalPingDelta );
         
-        const UInt32 GetMinimalPingDelta( void ) const;
+        UInt32 GetMinimalPingDelta( void ) const;
         
         private:
         
         TStringVector m_hostList;
-        UInt32 m_maxPings;
+        Int32 m_maxPings;
         UInt32 m_bytesToSend;
         UInt32 m_timeout;
         UInt32 m_minimalPingDelta;
@@ -144,12 +140,12 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     CPingTaskConsumer( void );
     
     virtual ~CPingTaskConsumer();
-    
-    const CString& GetTaskName( void ) const;
 
     virtual CString GetType( void ) const;
     
     static const CString& GetTypeString( void );
+    
+    virtual const CString& GetClassTypeName( void ) const;
     
     virtual bool ProcessTask( CORE::CICloneable* taskData );
     
@@ -161,13 +157,30 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     static void IcmpCallback( void* vdata );
 
     private:
-        
-    CORE::CPulseGenerator m_pulseGenerator;
-    CORE::CBusyWaitPulseGeneratorDriver m_pulseDriver;
+
+    struct SIcmpCallbackData
+    {
+        CPingTaskConsumer* taskConsumer;
+        const CHostAddress* host;
+        void* replyBuffer;
+        UInt32 echoSize;
+    };
+    typedef struct SIcmpCallbackData TIcmpCallbackData;
+    
+    struct SPingEntry
+    {
+        UInt32 pingCount;
+        UInt64 ticksAtLastPing;
+        TIcmpCallbackData callbackData;
+    };
+    typedef struct SPingEntry TPingEntry;
+    typedef std::map< CHostAddress, TPingEntry > TPingCounters;
+
     void* m_pingEvent;
     void* m_icmpHandle;
     bool m_notDone;
     CPingTaskData* m_taskData;
+    TPingCounters m_pingCounters;
 };
 
 /*-------------------------------------------------------------------------//
