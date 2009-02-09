@@ -74,8 +74,61 @@ CTaskManager* CTaskManager::g_instance = NULL;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CTaskManager::CTaskQueueItem::CTaskQueueItem( CICloneable* taskData   ,
+                                              CObserver* taskObserver )
+    : m_taskData( taskData )         ,
+      m_taskObserver( taskObserver )
+{GUCEF_TRACE;
+    
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CTaskManager::CTaskQueueItem::CTaskQueueItem( const CTaskQueueItem& src )
+    : m_taskData( src.m_taskData->Clone() ) ,
+      m_taskObserver( src.m_taskObserver )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CTaskManager::CTaskQueueItem::~CTaskQueueItem()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CObserver*
+CTaskManager::CTaskQueueItem::GetTaskObserver( void )
+{GUCEF_TRACE;
+
+    return m_taskObserver;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CICloneable*
+CTaskManager::CTaskQueueItem::GetTaskData( void )
+{GUCEF_TRACE;
+
+    return m_taskData; 
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CICloneable*
+CTaskManager::CTaskQueueItem::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CTaskQueueItem( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CTaskManager::CTaskManager( void )
-    : CObserver()               ,
+    : CObservingNotifier()      ,
       m_consumerFactory()       ,
       m_activeTasks()           ,
       m_nonactiveTasks()        ,
@@ -83,7 +136,7 @@ CTaskManager::CTaskManager( void )
       m_taskQueue()             
 {GUCEF_TRACE;
 
-    CGUCEFApplication::Instance()->Subscribe( this, CGUCEFApplication::AppShutdownEvent );
+    CGUCEFApplication::Instance()->Subscribe( &AsObserver(), CGUCEFApplication::AppShutdownEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -209,11 +262,15 @@ CTaskManager::EnforceDesiredNrOfThreads( void )
     
 void
 CTaskManager::QueueTask( const CString& taskType ,
-                         CICloneable* taskData   )
+                         CICloneable* taskData   ,
+                         CObserver* taskObserver )
 {GUCEF_TRACE;
                          
+    CTaskQueueItem* queueItem = new CTaskQueueItem( taskData     ,
+                                                    taskObserver );
+    
     g_mutex.Lock();
-    m_taskQueue.AddMail( taskType, taskData );
+    m_taskQueue.AddMail( taskType, queueItem );
     g_mutex.Unlock();
 }
 
@@ -276,16 +333,22 @@ CTaskManager::UnregisterTaskConsumerFactory( const CString& taskType )
     
 bool
 CTaskManager::GetQueuedTask( CTaskConsumer** taskConsumer ,
-                             CICloneable** taskData       )
+                             CICloneable** taskData       ,
+                             CObserver** taskObserver     )
 {GUCEF_TRACE;
 
     g_mutex.Lock();    
     EnforceDesiredNrOfThreads();
     CString taskConsumerType;
+    CICloneable* queueItemPtr;
     if ( m_taskQueue.GetMail( taskConsumerType ,
-                              taskData         ) )
+                              &queueItemPtr       ) )
     {
+        CTaskQueueItem* queueItem = static_cast< CTaskQueueItem* >( queueItemPtr );
         *taskConsumer = m_consumerFactory.Create( taskConsumerType );
+        *taskData = queueItem->GetTaskData();
+        *taskObserver = queueItem->GetTaskObserver();
+        
         g_mutex.Unlock();
         return *taskConsumer != NULL;
     }    
@@ -298,6 +361,7 @@ CTaskManager::GetQueuedTask( CTaskConsumer** taskConsumer ,
 bool
 CTaskManager::StartTask( const CString& taskType     ,
                          CICloneable* taskData       ,
+                         CObserver* taskObserver     ,
                          UInt32* taskID /* = NULL */ )
 
 {GUCEF_TRACE;
