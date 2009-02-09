@@ -51,7 +51,7 @@ using namespace GUCEF::COMCORE;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CSimpleTCPClient : public CGUCEFAppSubSystem
+class CSimpleTCPClient : public CORE::CObservingNotifier
 {
         public:
         
@@ -59,7 +59,7 @@ class CSimpleTCPClient : public CGUCEFAppSubSystem
                           CORE::UInt16 port                ,
                           const CORE::CString& information )
                 : _clientsock( false ),
-                  CGUCEFAppSubSystem( true )
+                  CObservingNotifier()
         {
             RemoteAddr  = remoteaddr;
             Port        = port;
