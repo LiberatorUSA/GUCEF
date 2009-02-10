@@ -34,6 +34,11 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"           /* often used gucef macros */
 #define GUCEF_CORE_MACROS_H
@@ -93,6 +98,18 @@ class GUCEFCORE_EXPORT_CPP CLogManager
 
     void FlushLogs( void );
     
+    /**
+     *  About the bootstrap log:
+     *  At application startup there will be log messages entered before any logger
+     *  is actually attached to the LogManager. Such log messages are stored in the bootstrap
+     *  Log which is kept in-memory in the LogManager itself. Log entried will continue to be logged
+     *  to the bootstrap log untill the first Logger is registered with the LogManager.
+     *
+     *  This function will flush all the bootstrap log entries to the attached loggers and clear
+     *  the LogManager in-memory bootstrap log.
+     */    
+    void FlushBootstrapLogEntriesToLogs( void );
+    
     private:
     friend class CGUCEFCOREModule;
     
@@ -109,9 +126,19 @@ class GUCEFCORE_EXPORT_CPP CLogManager
     
     typedef std::set< CILogger* > TLoggerList;
     
+    struct SBootstrapLogEntry
+    {
+        TLogMsgType logMsgType;
+        Int32 logLevel;
+        CString logMessage;
+    };
+    typedef struct SBootstrapLogEntry TBootstrapLogEntry;
+    typedef std::vector< TBootstrapLogEntry > TBootstrapLogVector;
+    
     TLoggerList m_loggers;
     std::map< TLogMsgType, bool > m_msgTypeEnablers;
     Int32 m_maxLogLevel;
+    TBootstrapLogVector m_bootstrapLog;
     static CLogManager* g_instance;
     static MT::CMutex g_dataLock;
 };

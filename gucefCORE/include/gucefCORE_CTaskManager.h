@@ -71,6 +71,19 @@ class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObservingNotifier
 {
     public:
     
+    static const CEvent TaskQueuedEvent;
+    static const CEvent QueuedTaskStartedEvent;
+    static const CEvent TaskStartedImmediatelyEvent;
+    static const CEvent TaskKilledEvent;
+    static const CEvent TaskStoppedEvent;
+    static const CEvent TaskPausedEvent;
+    static const CEvent TaskResumedEvent;
+    static const CEvent TaskFinishedEvent;
+    
+    static void RegisterEvents( void );
+    
+    public:
+    
     typedef CTFactoryBase< CTaskConsumer > TTaskConsumerFactory;
     
     static CTaskManager* Instance( void );

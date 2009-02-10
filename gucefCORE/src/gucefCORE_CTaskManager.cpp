@@ -48,6 +48,11 @@
 #define GUCEF_CORE_CSINGLETASKDELEGATOR_H
 #endif /* GUCEF_CORE_CSINGLETASKDELEGATOR_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #include "gucefCORE_CTaskManager.h"
 
 /*-------------------------------------------------------------------------//
@@ -68,11 +73,36 @@ namespace CORE {
 MT::CMutex CTaskManager::g_mutex;
 CTaskManager* CTaskManager::g_instance = NULL;
 
+const CEvent CTaskManager::TaskQueuedEvent = "GUCEF::CORE::CTaskManager::TaskQueuedEvent";
+const CEvent CTaskManager::QueuedTaskStartedEvent = "GUCEF::CORE::CTaskManager::QueuedTaskStartedEvent";
+const CEvent CTaskManager::TaskStartedImmediatelyEvent = "GUCEF::CORE::CTaskManager::TaskStartedImmediatelyEvent";
+const CEvent CTaskManager::TaskKilledEvent = "GUCEF::CORE::CTaskManager::TaskKilledEvent";
+const CEvent CTaskManager::TaskStoppedEvent = "GUCEF::CORE::CTaskManager::TaskStoppedEvent";
+const CEvent CTaskManager::TaskPausedEvent = "GUCEF::CORE::CTaskManager::TaskPausedEvent";
+const CEvent CTaskManager::TaskResumedEvent = "GUCEF::CORE::CTaskManager::TaskResumedEvent";
+const CEvent CTaskManager::TaskFinishedEvent = "GUCEF::CORE::CTaskManager::TaskFinishedEvent";
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+void
+CTaskManager::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    TaskQueuedEvent.Initialize();
+    QueuedTaskStartedEvent.Initialize();
+    TaskStartedImmediatelyEvent.Initialize();
+    TaskKilledEvent.Initialize();
+    TaskStoppedEvent.Initialize();
+    TaskPausedEvent.Initialize();
+    TaskResumedEvent.Initialize();
+    TaskFinishedEvent.Initialize();
+}   
+    
+/*-------------------------------------------------------------------------*/
 
 CTaskManager::CTaskQueueItem::CTaskQueueItem( CICloneable* taskData   ,
                                               CObserver* taskObserver )
@@ -136,6 +166,8 @@ CTaskManager::CTaskManager( void )
       m_taskQueue()             
 {GUCEF_TRACE;
 
+    RegisterEvents();
+    
     CGUCEFApplication::Instance()->Subscribe( &AsObserver(), CGUCEFApplication::AppShutdownEvent );
 }
 
@@ -224,10 +256,12 @@ CTaskManager::OnNotify( CNotifier* notifier    ,
 void
 CTaskManager::EnforceDesiredNrOfThreads( void )
 {GUCEF_TRACE;
-
+    
     // Check if we need to do anything
     if ( m_desiredNrOfThreads > m_activeTasks.size() )
     {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CTaskManager: Increasing the number of threads used for processing tasks to " + UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( (UInt32)m_activeTasks.size() ) );
+        
         UInt32 addCount = m_desiredNrOfThreads - m_activeTasks.size();
         for ( UInt32 i=0; i<addCount; ++i )
         {
@@ -239,6 +273,8 @@ CTaskManager::EnforceDesiredNrOfThreads( void )
     else
     if ( m_desiredNrOfThreads < m_activeTasks.size() )
     {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CTaskManager: Decreasing the number of threads used for processing tasks to " + UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( (UInt32)m_activeTasks.size() ) );
+        
         TTaskMap::iterator i = m_activeTasks.begin();
         UInt32 deactivateCount = m_desiredNrOfThreads - m_activeTasks.size();
         for ( UInt32 n=0; n<deactivateCount; ++n )

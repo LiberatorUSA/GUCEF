@@ -188,14 +188,31 @@ CGUCEFCOREModule::Load( void )
         tssetcoutfile( "GUCEFLog.txt" );
         tsusecoutfile( 1 );
         #endif
-        
+
         /*
          *  Instantiate all the singletons
          *  We start with the log manager so that it is possible to log everything from that point on
          *  if a logger is registered at an early stage      
          */
         CLogManager::Instance();
-        CNotificationIDRegistry::Instance();        
+        CNotificationIDRegistry::Instance();
+
+        /*
+         *  Make sure all events are registered from the start
+         */
+        CNotifier::RegisterEvents();
+        CPulseGenerator::RegisterEvents();
+        CStreamerEvents::RegisterEvents();
+        CTimer::RegisterEvents();
+        CPluginManager::RegisterEvents();
+        CIURLEvents::RegisterEvents();
+        CNotifyingMapEvents::RegisterEvents();
+        CGUCEFApplication::RegisterEvents();
+        CTaskManager::RegisterEvents();        
+
+        /*
+         *  Instantiate the rest of the singletons
+         */
         CPluginControl::Instance();         
         CDStoreCodecRegistry::Instance();
         CDStoreCodecPluginManager::Instance();
@@ -207,17 +224,7 @@ CGUCEFCOREModule::Load( void )
         CGenericPluginManager::Instance();
         CStdCodecPluginManager::Instance();
         
-        /*
-         *      Make sure all events are registered from the start
-         */
-        CNotifier::RegisterEvents();
-        CPulseGenerator::RegisterEvents();
-        CStreamerEvents::RegisterEvents();
-        CTimer::RegisterEvents();
-        CPluginManager::RegisterEvents();
-        CIURLEvents::RegisterEvents();
-        CNotifyingMapEvents::RegisterEvents();
-        CGUCEFApplication::RegisterEvents();
+
 
         #ifdef GUCEF_MSWIN_BUILD
         CWndMsgHookNotifier::RegisterEvents();
