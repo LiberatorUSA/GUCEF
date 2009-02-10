@@ -76,7 +76,8 @@ const Int32 LOGLEVEL_EVERYTHING = 0;
 CLogManager::CLogManager( void )
     : m_loggers()                         ,
       m_msgTypeEnablers()                 ,
-      m_maxLogLevel( GUCEFCORE_INT32MAX )
+      m_maxLogLevel( GUCEFCORE_INT32MAX ) ,
+      m_bootstrapLog()
 {GUCEF_TRACE;
 
     m_msgTypeEnablers[ LOG_ERROR ] = true;
@@ -127,6 +128,29 @@ CLogManager::Deinstance( void )
     g_instance = NULL;
     
     g_dataLock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogManager::FlushBootstrapLogEntriesToLogs( void )
+{GUCEF_TRACE;
+
+    g_dataLock.Lock();
+    
+    TBootstrapLogVector::iterator i = m_bootstrapLog.begin();
+    while ( i != m_bootstrapLog.end() )
+    {
+        TBootstrapLogEntry& entry = (*i);
+        Log( entry.logMsgType ,
+             entry.logLevel   ,
+             entry.logMessage );
+             
+        ++i;
+    }
+    m_bootstrapLog.clear();
+    
+    g_dataLock.Unlock();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -205,28 +229,43 @@ CLogManager::Log( const TLogMsgType logMsgType ,
     {
         if ( (*m_msgTypeEnablers.find( logMsgType )).second )
         {
-            TLoggerList::const_iterator i = m_loggers.begin();
-            while ( i != m_loggers.end() )
-            {
-                CILogger* logger = (*i);
-                if ( NULL != logger )
+            if ( m_loggers.size() > 0 )
+            {            
+                TLoggerList::const_iterator i = m_loggers.begin();
+                while ( i != m_loggers.end() )
                 {
-                    logger->Log( logMsgType ,
-                                 logLevel   ,
-                                 logMessage );
+                    CILogger* logger = (*i);
+                    if ( NULL != logger )
+                    {
+                        logger->Log( logMsgType ,
+                                     logLevel   ,
+                                     logMessage );
+                    }
+                    ++i;
                 }
-                ++i;
+                
+                // We want to make certain that errors are always in the log file.
+                // We might crash moments later which might cause some loggers not
+                // to write the error entry to their respective output media
+                if ( LOG_ERROR == logMsgType )
+                {
+                    FlushLogs();
+                }
+            }
+            else
+            {
+                // We do not have any loggers yet so we will add the log entry to 
+                // the bootstrap log                
+                TBootstrapLogEntry entry;
+                entry.logLevel = logLevel;
+                entry.logMsgType = logMsgType;
+                entry.logMessage = logMessage;                
+                m_bootstrapLog.push_back( entry );
             }
         }
     }
     
-    // We want to make certain that errors are always in the log file.
-    // We might crash moments later which might cause some loggers not
-    // to write the error entry to their respective output media
-    if ( LOG_ERROR == logMsgType )
-    {
-        FlushLogs();
-    }
+
     
     g_dataLock.Unlock();
 }
