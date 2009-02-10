@@ -71,7 +71,6 @@ class GUCEF_CORE_EXPORT_CPP CSingleTaskDelegator : public CTaskDelegator
     
     private:
     
-    CTaskConsumer* m_taskConsumer;
     CICloneable* m_taskData;
     CObserver* m_taskObserver;
 };

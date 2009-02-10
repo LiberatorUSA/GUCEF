@@ -285,14 +285,19 @@ CTaskManager::EnforceDesiredNrOfThreads( void )
     }
     // else: we don't have to do anything
     
-    // Cleanup tasks that have been discarded
-    TTaskMap::iterator i = m_nonactiveTasks.begin();
-    while ( i != m_nonactiveTasks.end() )
+    if ( m_nonactiveTasks.size() > 0 )
     {
-        delete (*i).second;
-        ++i;
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CTaskManager: Cleaning up non-active tasks " );
+        
+        // Cleanup tasks that have been discarded
+        TTaskMap::iterator i = m_nonactiveTasks.begin();
+        while ( i != m_nonactiveTasks.end() )
+        {
+            delete (*i).second;
+            ++i;
+        }
+        m_nonactiveTasks.clear();
     }
-    m_nonactiveTasks.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -305,6 +310,8 @@ CTaskManager::QueueTask( const CString& taskType ,
                          
     CTaskQueueItem* queueItem = new CTaskQueueItem( taskData     ,
                                                     taskObserver );
+    
+    NotifyObservers( TaskQueuedEvent );
     
     g_mutex.Lock();
     m_taskQueue.AddMail( taskType, queueItem );
@@ -418,6 +425,8 @@ CTaskManager::StartTask( const CString& taskType     ,
             *taskID = delegator->GetThreadID();
         }
         
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Started task immediatly of type \"" + taskType + "\" using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
+        
         g_mutex.Unlock();
         return true;
     }                   
@@ -448,6 +457,16 @@ CTaskManager::FlagTaskAsActive( CTaskDelegator& task )
 
     g_mutex.Lock();
     m_activeTasks[ task.GetThreadID() ] = &task;
+    
+    CTaskConsumer* taskConsumer = task.GetTaskConsumer();
+    if ( NULL != taskConsumer )
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Task delegator activated for task of type \"" + taskConsumer->GetType() + "\" using thread with ID " + UInt32ToString( task.GetThreadID() ) );
+    }
+    else
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Task delegator activated for tasks using thread with ID " + UInt32ToString( task.GetThreadID() ) );
+    }
     g_mutex.Unlock();
 }
 
@@ -460,6 +479,16 @@ CTaskManager::FlagTaskAsNonActive( CTaskDelegator& task )
     g_mutex.Lock();
     m_activeTasks.erase( task.GetThreadID() );
     m_nonactiveTasks[ task.GetThreadID() ] = &task;
+    
+    CTaskConsumer* taskConsumer = task.GetTaskConsumer();
+    if ( NULL != taskConsumer )
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Task delegator deactivated for task of type \"" + taskConsumer->GetType() + "\" using thread with ID " + UInt32ToString( task.GetThreadID() ) );
+    }
+    else
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Task delegator deactivated for tasks using thread with ID " + UInt32ToString( task.GetThreadID() ) );
+    }
     g_mutex.Unlock();
 }
 
@@ -475,6 +504,8 @@ CTaskManager::PauseTask( const UInt32 taskID )
     {
         (*i).second->Pause();
         g_mutex.Unlock();
+        
+        NotifyObservers( TaskPausedEvent );
         return true;
     }
     g_mutex.Unlock();
@@ -493,6 +524,8 @@ CTaskManager::ResumeTask( const UInt32 taskID )
     {
         (*i).second->Resume();
         g_mutex.Unlock();
+        
+        NotifyObservers( TaskResumedEvent );
         return true;
     }
     g_mutex.Unlock();

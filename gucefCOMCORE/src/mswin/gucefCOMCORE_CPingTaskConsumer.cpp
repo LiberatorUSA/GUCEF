@@ -363,6 +363,14 @@ CPingTaskConsumer::IcmpCallback( void* vdata )
         CEchoReceivedEventData eventData( *data->host, data->echoSize, echoReply->RoundTripTime );
         data->taskConsumer->NotifyObservers( PingFailedEvent, &eventData );
     }
+    
+    // Make sure we set the wait flag to false to signal that we finished this ping attempt for
+    // the given ping entry
+    TPingCounters::iterator n = data->taskConsumer->m_pingCounters.find( *data->host );
+    if ( n != data->taskConsumer->m_pingCounters.end() )
+    {
+        (*n).second.areWeWaitingForPingResult = false;
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -388,6 +396,7 @@ CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
         TPingEntry pingEntry;
         pingEntry.pingCount = 0;
         pingEntry.ticksAtLastPing = MT::PrecisionTickCount();
+        pingEntry.areWeWaitingForPingResult = false;
         pingEntry.callbackData.echoSize = m_taskData->GetBytesToSend();
         pingEntry.callbackData.replyBuffer = new Int8[ sizeof(ICMP_ECHO_REPLY) + pingEntry.callbackData.echoSize ];
         pingEntry.callbackData.taskConsumer = this;
@@ -407,6 +416,14 @@ CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
         {
             TPingEntry& pingEntry = (*i).second;
             
+            // Make sure we give a ping time to complete
+            if ( pingEntry.areWeWaitingForPingResult )
+            {
+                m_notDone = true;
+                ++i;
+                continue;
+            }
+            
             // Make sure we don't ping a host to often
             if ( m_taskData->GetMaxPings() < 1 || pingEntry.pingCount < (UInt32)m_taskData->GetMaxPings() )
             {
@@ -424,6 +441,7 @@ CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
                                             
                     IPAddr netIp;
                     netIp.S_un.S_addr = pingEntry.callbackData.host->GetAddress();
+                    pingEntry.areWeWaitingForPingResult = true;
                     
                     DWORD result = IcmpSendEcho2( m_icmpHandle                                           ,
                                                   m_pingEvent                                            ,
