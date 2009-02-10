@@ -49,7 +49,9 @@
   #define DebugBreak() assert( 0 )
 #endif
 
-#define ERRORHERE { printf( "Test failed @ %s(%d)\n", __FILE__, __LINE__ ); DebugBreak(); }
+#define ERRORHERE { GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GUCEF::CORE::CString( "Test failed @ " ) + GUCEF::CORE::CString( __FILE__ ) + ':' + GUCEF::CORE::Int32ToString( __LINE__ ) ); \
+                    DebugBreak();                                                                                                                                     \
+                  }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -120,10 +122,10 @@ class CPingTester : public CORE::CObserver
                                 PING_TIMEOUT ) )
             {
                 // Failed to start the ping sequence
-                printf( "ERROR: CPingTester: Failed to start the ping sequence\n" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: Failed to start the ping sequence" );
                 ERRORHERE;
             }
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: Ping started" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: Ping start requested" );
         }
         else
         if ( eventid == CORE::CGUCEFApplication::AppShutdownEvent )
@@ -138,7 +140,7 @@ class CPingTester : public CORE::CObserver
             if ( NULL == eData )
             {
                 // We should have received data with this event
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ERROR: CPingTester: no event data for event PingReponseEvent" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: no event data for event PingReponseEvent" );
                 ERRORHERE;
             }            
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: Received ping response from " + eData->GetHostAddress().GetHostname() + ": " + CORE::UInt32ToString( eData->GetRoundTripTime() ) + " ms" );
@@ -146,37 +148,45 @@ class CPingTester : public CORE::CObserver
             if ( m_pingCount > MAX_PINGS )
             {
                 // check if the maximum ping count functionality is working
-                printf( "ERROR: CPingTester: we are getting more ping responses then we asked for\n" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: we are getting more ping responses then we asked for\n" );
                 ERRORHERE;
             }
             ++m_pingCount;
         }
         else
+        if ( eventid == COMCORE::CPing::PingStartedEvent )
+        {   
+            COMCORE::CPing::CPingEventData* eData = static_cast< COMCORE::CPing::CPingEventData* >( eventdata );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: started pinging " + eData->GetHostAddress().GetHostname() );
+        }
+        else
         if ( eventid == COMCORE::CPing::PingTimeoutEvent )
         {   
             // We are pinging REMOTE_HOST, we should not get a timeout (unless REMOTE_HOST is having a bad day)
-            printf( "ERROR: CPingTester: timeout while pinging %s, this should not happen\n", REMOTE_HOST );
+            COMCORE::CPing::CPingEventData* eData = static_cast< COMCORE::CPing::CPingEventData* >( eventdata );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: timeout while pinging " + eData->GetHostAddress().GetHostname() + " this should not happen" );
             ERRORHERE;
         }
         else
         if ( eventid == COMCORE::CPing::PingFailedEvent )
         {   
             // some error occurred while attempting to ping
-            printf( "ERROR: CPingTester: error while pinging\n" );
+            COMCORE::CPing::CPingEventData* eData = static_cast< COMCORE::CPing::CPingEventData* >( eventdata );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: error while pinging " + eData->GetHostAddress().GetHostname() );
             ERRORHERE;
         }
         else
         if ( eventid == COMCORE::CPing::PingStoppedEvent )
         {
             // If we got here without any errors then we are finished
-            printf( "CPingTester: Stopped pinging\n" );
-            printf( "**** SUCCESSFULLY COMPLETED THE PING TEST ****\n" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: Stopped pinging" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "**** SUCCESSFULLY COMPLETED THE PING TEST ****" );
             CORE::CGUCEFApplication::Instance()->Stop();
-            printf( "CPingTester: Application stopped\n" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: Application stopping" );
         }                
         else
         {
-            printf( "CPingTester: Received event: %s\n", eventid.GetName() );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: Received event: " + eventid.GetName() );
         }
     }
     
@@ -205,23 +215,17 @@ CPingTester* CPingTester::m_instance = NULL;
 
 void
 PerformPingTest( void )
-{
-    #ifdef DEBUG_MODE
-    //CORE::GUCEF_LogStackToStdOut();
-    //CORE::GUCEF_SetStackLogging( 1 );
-    #endif /* DEBUG_MODE ? */
-    
+{   
     try
     {
+        CORE::CGUCEFApplication* app = CORE::CGUCEFApplication::Instance();
         CPingTester pingTester;
-        CORE::CGUCEFApplication::Instance()->main( 0, NULL, true );
+        pingTester.SubscribeTo( app );
+        app->main( 0, NULL, true );
     }
     catch ( ... )
     {
-        printf( "ERROR unhandled exception during test\n" );
-        #ifdef DEBUG_MODE
-        CORE::GUCEF_PrintCallstack();
-        #endif /* DEBUG_MODE ? */
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "unhandled exception during Ping test" );
         ERRORHERE;
     }
 }

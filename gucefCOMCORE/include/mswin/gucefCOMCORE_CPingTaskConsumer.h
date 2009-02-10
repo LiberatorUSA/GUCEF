@@ -63,7 +63,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     
     static void RegisterEvents( void );
     
-    class CEchoReceivedEventData : public CORE::CICloneable
+    class GUCEF_COMCORE_EXPORT_CPP CEchoReceivedEventData : public CORE::CICloneable
     {
         public: 
         
@@ -94,7 +94,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     
     typedef std::vector< CString > TStringVector;
     
-    class CPingTaskData : public CORE::CICloneable
+    class GUCEF_COMCORE_EXPORT_CPP CPingTaskData : public CORE::CICloneable
     {
         public:
         

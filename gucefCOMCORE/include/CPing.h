@@ -83,7 +83,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CTSGNotifier
     
     static void RegisterEvents( void );
     
-    class CPingEventData : public CORE::CICloneable
+    class GUCEF_COMCORE_EXPORT_CPP CPingEventData : public CORE::CICloneable
     {
         public: 
         

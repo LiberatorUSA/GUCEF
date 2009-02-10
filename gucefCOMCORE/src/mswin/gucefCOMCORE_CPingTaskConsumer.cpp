@@ -290,7 +290,7 @@ CPingTaskConsumer::CPingTaskConsumer( void )
       m_pingCounters()
 {GUCEF_TRACE;
 
-    m_icmpHandle = TIcmpCreateFilePtr();    
+    m_icmpHandle = IcmpCreateFile();    
     m_pingEvent = CreateEvent( NULL, FALSE, FALSE, NULL );    
     
     RegisterEvents();
@@ -376,7 +376,7 @@ CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
     
     // Prepare our ping packet
     UInt8* pingData = new UInt8[ m_taskData->GetBytesToSend() ];
-    memset( pingData, 0, m_taskData->GetBytesToSend() );
+    memset( pingData, 'x', m_taskData->GetBytesToSend() );
         
     // Setup all ping counters
     const TStringVector& hosts = m_taskData->GetRemoteHosts();
@@ -425,17 +425,19 @@ CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
                     IPAddr netIp;
                     netIp.S_un.S_addr = pingEntry.callbackData.host->GetAddress();
                     
-                    if ( ERROR_IO_PENDING == IcmpSendEcho2( m_icmpHandle                                           ,
-                                                            m_pingEvent                                            ,
-                                                            &IcmpCallback                                          ,
-                                                            &pingEntry.callbackData                                ,
-                                                            netIp                                                  ,
-                                                            pingData                                               ,
-                                                            (WORD) m_taskData->GetBytesToSend()                    ,
-                                                            NULL                                                   ,
-                                                            pingEntry.callbackData.replyBuffer                     ,
-                                                            sizeof(ICMP_ECHO_REPLY) + m_taskData->GetBytesToSend() ,
-                                                            m_taskData->GetTimeout()                               ) )
+                    DWORD result = IcmpSendEcho2( m_icmpHandle                                           ,
+                                                  m_pingEvent                                            ,
+                                                  &IcmpCallback                                          ,
+                                                  &pingEntry.callbackData                                ,
+                                                  netIp                                                  ,
+                                                  pingData                                               ,
+                                                  (WORD) m_taskData->GetBytesToSend()                    ,
+                                                  NULL                                                   ,
+                                                  pingEntry.callbackData.replyBuffer                     ,
+                                                  sizeof(ICMP_ECHO_REPLY) + m_taskData->GetBytesToSend() ,
+                                                  m_taskData->GetTimeout()                               );
+                                                  
+                    if ( ERROR_IO_PENDING == result || ERROR_SUCCESS == result )
                     {                                   
                         ++pingEntry.pingCount;
                         pingEntry.ticksAtLastPing = MT::PrecisionTickCount();
@@ -449,6 +451,9 @@ CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
                     }
                     else
                     {
+                        ++pingEntry.pingCount;
+                        pingEntry.ticksAtLastPing = MT::PrecisionTickCount();
+
                         // We did not get the expected return value,.. something went wrong
                         CEchoReceivedEventData eventData( *pingEntry.callbackData.host, pingEntry.callbackData.echoSize, 0 );
                         NotifyObservers( PingFailedEvent, &eventData );
@@ -471,6 +476,7 @@ CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
     {
         TPingEntry& pingEntry = (*i).second;
         delete[] pingEntry.callbackData.replyBuffer;
+        ++i;        
     }
     m_pingCounters.clear();
     

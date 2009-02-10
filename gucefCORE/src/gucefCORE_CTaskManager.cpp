@@ -180,6 +180,7 @@ CTaskManager::Instance( void )
     if ( NULL == g_instance )
     {
         g_instance = new CTaskManager();
+        g_instance->EnforceDesiredNrOfThreads();
     }
     g_mutex.Unlock();
     return g_instance;
