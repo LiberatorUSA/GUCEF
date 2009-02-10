@@ -116,20 +116,20 @@ CGUCEFCOMCOREModule::Load( void )
     InitWinsock( 1 );
     #endif
     
-    /* simply instantiate our com manager when the module is loaded */
-    //CCom::Instance();
-    
     CTCPConnection::RegisterEvents();
     CTCPServerSocket::RegisterEvents();
     CTCPClientSocket::RegisterEvents();
     CUDPSocket::RegisterEvents();
     CPing::RegisterEvents();
+    CPingTaskConsumer::RegisterEvents();
     CUDPMasterSocket::RegisterEvents();
     CUDPChannel::RegisterEvents();
-    
+        
     // Make the task manager capable of handling ping tasks    
     CORE::CTaskManager::Instance()->RegisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() ,
                                                                  new TPingTaskConsumerFactory()     );
+    
+    CCom::Instance();
     
     return true;
 }
@@ -139,17 +139,17 @@ CGUCEFCOMCOREModule::Load( void )
 bool 
 CGUCEFCOMCOREModule::Unload( void )
 {
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Module unloading" );
-        
-        CORE::CTaskManager::Instance()->UnregisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() );
-        
-        CCom::Deinstance();
-        
-        #ifdef GUCEF_MSWIN_BUILD
-        ShutdownWinsock();
-        #endif
-                
-        return true;
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Module unloading" );
+    
+    CCom::Deinstance();
+
+    CORE::CTaskManager::Instance()->UnregisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() );
+    
+    #ifdef GUCEF_MSWIN_BUILD
+    ShutdownWinsock();
+    #endif
+            
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

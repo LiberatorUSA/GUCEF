@@ -25,15 +25,15 @@
 
 #include <windows.h>
 
-#ifndef GUCEFCORE_H
+#ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
-#define GUCEFCORE_H
-#endif /* GUCEFCORE_H ? */
+#define GUCEF_CORE_H
+#endif /* GUCEF_CORE_H ? */
 
-#ifndef GUCEFCOMCORE_H
+#ifndef GUCEF_COMCORE_H
 #include "gucefCOMCORE.h"
-#define GUCEFCOMCORE_H
-#endif /* GUCEFCOMCORE_H ? */
+#define GUCEF_COMCORE_H
+#endif /* GUCEF_COMCORE_H ? */
 
 #include "TestCode_PingTest.h"
 #include "TestCode_ClientServer.h"
@@ -45,8 +45,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-
-          
 /*
  *      Application entry point
  */
@@ -55,30 +53,47 @@ WinMain( HINSTANCE hinstance     ,
          HINSTANCE hprevinstance ,
          LPSTR lpcmdline         ,
          int ncmdshow            )
-{
-        using namespace GUCEF::CORE;
-        using namespace GUCEF::COMCORE;
-                
-        try 
-        {                               
-                PerformPingTest();
-                SetupClientServerTest();
-                SetupSimpleTCPClient("httpd.apache.org", 80, "GET /\r\n");
-                
-                return 1;                                                                            
-        }
-        catch ( ... )
-        {
-                #ifdef DEBUG_MODE
-                GUCEF_PrintCallstack();
-                GUCEF_DumpCallstack( "GUCEFCallstack.txt" );
-                #endif
-                
-                ShowErrorMessage( "Unknown exception"                                                                 ,
-                                  "Unhandled exception during program execution, the application will now terminate"  );                                                         
-        }
-        GUCEF_END;
-        return 1;                                                                                                                              
+{GUCEF_TRACE;
+
+    using namespace GUCEF::CORE;
+    using namespace GUCEF::COMCORE;
+
+    #ifdef GUCEF_COMCORE_DEBUG_MODE
+    //GUCEF::CORE::GUCEF_LogStackToStdOut();
+    //GUCEF::CORE::GUCEF_SetStackLogging( 1 );
+    #endif /* GUCEF_COMCORE_DEBUG_MODE ? */
+            
+    try 
+    {                               
+        GUCEF::CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
+        GUCEF::CORE::AppendToPath( logFilename, "gucefCOMCORE_TestApp_Log.txt" );
+        GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
+        
+        GUCEF::CORE::CStdLogger logger( logFileAccess );
+        GUCEF::CORE::CLogManager::Instance()->AddLogger( &logger );
+        
+        #ifdef GUCEF_MSWIN_BUILD
+        GUCEF::CORE::CMSWinConsoleLogger consoleOut;
+        GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
+        #endif /* GUCEF_MSWIN_BUILD ? */
+
+        PerformPingTest();
+        //SetupClientServerTest();
+        //SetupSimpleTCPClient("httpd.apache.org", 80, "GET /\r\n");
+        
+        return 1;                                                                            
+    }
+    catch ( ... )
+    {
+        #ifdef GUCEF_COMCORE_DEBUG_MODE
+        GUCEF::CORE::GUCEF_PrintCallstack();
+        GUCEF::CORE::GUCEF_DumpCallstack( "gucefDRN_TestApp_callstack.txt" );
+        #endif /* GUCEF_COMCORE_DEBUG_MODE ? */
+        
+        GUCEF::CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
+                                       "Unhandled exception during program execution, the application will now terminate"  );                                                         
+    }
+    return 1;                                                                                                                              
 }
 
 /*-------------------------------------------------------------------------//
