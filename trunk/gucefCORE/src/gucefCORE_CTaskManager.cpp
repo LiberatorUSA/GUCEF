@@ -276,7 +276,7 @@ CTaskManager::EnforceDesiredNrOfThreads( void )
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CTaskManager: Decreasing the number of threads used for processing tasks to " + UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( (UInt32)m_activeTasks.size() ) );
         
         TTaskMap::iterator i = m_activeTasks.begin();
-        UInt32 deactivateCount = m_desiredNrOfThreads - m_activeTasks.size();
+        UInt32 deactivateCount = m_activeTasks.size() - m_desiredNrOfThreads;
         for ( UInt32 n=0; n<deactivateCount; ++n )
         {
             // Ask the task to stop gracefully
