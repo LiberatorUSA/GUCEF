@@ -62,6 +62,8 @@ class GUCEF_CORE_EXPORT_CPP CTaskDelegator : public MT::CActiveObject
     
     CTaskManager& GetTaskManager( void ) const;
     
+    CTaskConsumer* GetTaskConsumer( void );
+    
     protected:
     friend class CTaskManager;
     
@@ -87,6 +89,7 @@ class GUCEF_CORE_EXPORT_CPP CTaskDelegator : public MT::CActiveObject
     
     private:
     
+    CTaskConsumer* m_taskConsumer;
     CTaskManager* m_taskManager;
 };
 

@@ -54,11 +54,11 @@ CSingleTaskDelegator::CSingleTaskDelegator( CTaskConsumer* taskConsumer ,
                                             CICloneable* taskData       ,
                                             CObserver* taskObserver     )
     : CTaskDelegator()               ,
-      m_taskConsumer( taskConsumer ) ,
       m_taskData( taskData )         ,
       m_taskObserver( taskObserver )
 {GUCEF_TRACE;
 
+    SetAsTaskDelegator( taskConsumer );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -74,14 +74,14 @@ bool
 CSingleTaskDelegator::OnTaskCycle( void* taskdata )
 {GUCEF_TRACE;
 
-    SetAsTaskDelegator( m_taskConsumer );
+    CTaskConsumer* taskConsumer = GetTaskConsumer();
     if ( NULL != m_taskObserver )
     {
-        m_taskConsumer->Subscribe( m_taskObserver );
+        taskConsumer->Subscribe( m_taskObserver );
     }
-    m_taskConsumer->ProcessTask( m_taskData );
-    PerformTaskCleanup( m_taskConsumer, m_taskData );
-    return true;
+    bool result = taskConsumer->ProcessTask( m_taskData );
+    PerformTaskCleanup( taskConsumer, m_taskData );
+    return result;
 }
 
 /*-------------------------------------------------------------------------//

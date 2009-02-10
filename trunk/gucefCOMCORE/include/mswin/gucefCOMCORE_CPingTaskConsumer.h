@@ -172,6 +172,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
         UInt32 pingCount;
         UInt64 ticksAtLastPing;
         TIcmpCallbackData callbackData;
+        bool areWeWaitingForPingResult;
     };
     typedef struct SPingEntry TPingEntry;
     typedef std::map< CHostAddress, TPingEntry > TPingCounters;

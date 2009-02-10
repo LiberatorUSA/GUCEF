@@ -51,7 +51,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CTaskDelegator::CTaskDelegator( void )
-    : CActiveObject()       ,
+    : CActiveObject()        ,
+      m_taskConsumer( NULL ) ,
       m_taskManager( NULL )
 {GUCEF_TRACE;
 
@@ -104,10 +105,20 @@ CTaskDelegator::OnTaskCycle( void* taskdata )
 
 /*-------------------------------------------------------------------------*/
 
+CTaskConsumer*
+CTaskDelegator::GetTaskConsumer( void )
+{GUCEF_TRACE;
+
+    return m_taskConsumer;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CTaskDelegator::SetAsTaskDelegator( CTaskConsumer* taskConsumer )
 {GUCEF_TRACE;
 
+    m_taskConsumer = taskConsumer;
     taskConsumer->SetTaskDelegator( this );
 }
 
