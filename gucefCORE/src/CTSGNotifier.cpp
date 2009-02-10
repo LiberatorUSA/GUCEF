@@ -57,6 +57,7 @@ CTSGNotifier::CTSGNotifier( void )
       m_tsgObserver( CGUCEFApplication::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
 
+    m_tsgObserver.SetParent( this );
 }
 
 /*-------------------------------------------------------------------------*/
