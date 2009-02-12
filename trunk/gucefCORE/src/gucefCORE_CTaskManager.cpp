@@ -278,6 +278,9 @@ void
 CTaskManager::EnforceDesiredNrOfThreads( void )
 {GUCEF_TRACE;
     
+    // This is an internal function but still make sure that the TaskManager is locked
+    // when this function is called. There are no locks here for efficiency!!!
+    
     // Check if we need to do anything
     if ( m_desiredNrOfThreads > m_activeTasks.size() )
     {
@@ -296,12 +299,35 @@ CTaskManager::EnforceDesiredNrOfThreads( void )
     {
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CTaskManager: Decreasing the number of threads used for processing tasks to " + UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( (UInt32)m_activeTasks.size() ) );
         
-        TTaskMap::iterator i = m_activeTasks.begin();
         UInt32 deactivateCount = ((UInt32)m_activeTasks.size()) - m_desiredNrOfThreads;
-        for ( UInt32 n=0; n<deactivateCount; ++n )
+        
+        // Check the number of threads that are already asked to deactivate
+        UInt32 deactivatingCount = 0;
+        TTaskMap::iterator i = m_activeTasks.begin();
+        while ( i != m_activeTasks.end() )
         {
-            // Ask the task to stop gracefully
-            (*i).second->Deactivate( false );
+            if ( (*i).second->IsDeactivationRequested() )
+            {
+                ++deactivatingCount;
+            }
+            ++i;
+        }
+        
+        // Check if we need to do anything
+        UInt32 leftToBeDeactivated = deactivateCount - deactivatingCount;
+        if ( leftToBeDeactivated > 0 )
+        
+        TTaskMap::iterator i = m_activeTasks.begin();
+        while ( i != m_activeTasks.end() )
+        {
+            // If the thread is not yet asked to deactivate we will do so now up
+            // to the number of thread we wish to deactivate
+            if ( !(*i).second->IsDeactivationRequested() )
+            {
+                // Ask thread to gracefully deactivate
+                (*i).second->Deactivate( false );
+            }
+            ++i;
         }
     }
     // else: we don't have to do anything
