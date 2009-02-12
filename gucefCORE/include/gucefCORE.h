@@ -376,6 +376,16 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_CMSGEXCEPTION_H
+#include "CMsgException.h"
+#define GUCEF_CORE_CMSGEXCEPTION_H
+#endif /* GUCEF_CORE_CMSGEXCEPTION_H ? */
+
+#ifndef GUCEF_CORE_CEXCEPTION_H
+#include "CException.h"
+#define GUCEF_CORE_CEXCEPTION_H
+#endif /* GUCEF_CORE_CEXCEPTION_H ? */
+
 /*---------------------------------------------------------------------------/
 
         C++ MS Windows includes
