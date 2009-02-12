@@ -216,7 +216,7 @@ PerformPingTest( void )
     }
     catch ( CORE::CMsgException& e )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "unhandled GUCEF exception during Ping test: " ) + e.GetErrorMsg() );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "unhandled GUCEF exception during Ping test: " ) + e.what() );
         ERRORHERE;
     }
     catch ( std::exception& e )

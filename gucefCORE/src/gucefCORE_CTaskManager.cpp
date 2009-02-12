@@ -284,7 +284,7 @@ CTaskManager::EnforceDesiredNrOfThreads( void )
     // Check if we need to do anything
     if ( m_desiredNrOfThreads > m_activeTasks.size() )
     {
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CTaskManager: Increasing the number of threads used for processing tasks to " + UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( (UInt32)m_activeTasks.size() ) );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Increasing the number of threads used for processing tasks to " + UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( (UInt32)m_activeTasks.size() ) );
         
         UInt32 addCount = m_desiredNrOfThreads - m_activeTasks.size();
         for ( UInt32 i=0; i<addCount; ++i )
@@ -296,9 +296,7 @@ CTaskManager::EnforceDesiredNrOfThreads( void )
     }
     else
     if ( m_desiredNrOfThreads < m_activeTasks.size() )
-    {
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CTaskManager: Decreasing the number of threads used for processing tasks to " + UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( (UInt32)m_activeTasks.size() ) );
-        
+    {        
         UInt32 deactivateCount = ((UInt32)m_activeTasks.size()) - m_desiredNrOfThreads;
         
         // Check the number of threads that are already asked to deactivate
@@ -314,27 +312,32 @@ CTaskManager::EnforceDesiredNrOfThreads( void )
         }
         
         // Check if we need to do anything
-        UInt32 leftToBeDeactivated = deactivateCount - deactivatingCount;
+        Int32 leftToBeDeactivated = (Int32) deactivateCount - deactivatingCount;
         if ( leftToBeDeactivated > 0 )
-        
-        TTaskMap::iterator i = m_activeTasks.begin();
-        while ( i != m_activeTasks.end() )
         {
-            // If the thread is not yet asked to deactivate we will do so now up
-            // to the number of thread we wish to deactivate
-            if ( !(*i).second->IsDeactivationRequested() )
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Decreasing the number of threads used for processing tasks to " + 
+                                                UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( (UInt32)m_activeTasks.size() ) + 
+                                                " by asking " + Int32ToString( leftToBeDeactivated ) + " additional threads to deactivate" );
+            
+            TTaskMap::iterator i = m_activeTasks.begin();
+            while ( i != m_activeTasks.end() )
             {
-                // Ask thread to gracefully deactivate
-                (*i).second->Deactivate( false );
+                // If the thread is not yet asked to deactivate we will do so now up
+                // to the number of thread we wish to deactivate
+                if ( !(*i).second->IsDeactivationRequested() )
+                {
+                    // Ask thread to gracefully deactivate
+                    (*i).second->Deactivate( false );
+                }
+                ++i;
             }
-            ++i;
         }
     }
     // else: we don't have to do anything
     
     if ( m_nonactiveTasks.size() > 0 )
     {
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CTaskManager: Cleaning up non-active tasks " );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Cleaning up non-active tasks " );
         
         // Cleanup tasks that have been discarded
         TTaskMap::iterator i = m_nonactiveTasks.begin();
@@ -473,12 +476,12 @@ CTaskManager::StartTask( const CString& taskType     ,
     {    
         // Just spawn a task delegator, it will auto register as an active task
         CTaskConsumer::TTaskID uniqueTaskId = m_taskIdGenerator.GenerateID( false );
-        CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, uniqueTaskId, taskData->Clone(), taskObserver );
-        delegator->Activate();
         *taskID = uniqueTaskId;
+        CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, uniqueTaskId, taskData->Clone(), taskObserver );
+        delegator->Activate();        
         
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Started task immediatly of type \"" + taskType + "\" with ID " + 
-                                            UInt32ToString( uniqueTaskId ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
+                                            UInt32ToString( *taskID ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
         
         g_mutex.Unlock();
         return true;
