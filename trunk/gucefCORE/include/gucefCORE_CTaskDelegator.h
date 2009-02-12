@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CICLONEABLE_H
 #endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
+#ifndef GUCEF_CORE_CTNUMERICID_H
+#include "CTNumericID.h"
+#define GUCEF_CORE_CTNUMERICID_H
+#endif /* GUCEF_CORE_CTNUMERICID_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -60,6 +65,8 @@ class GUCEF_CORE_EXPORT_CPP CTaskDelegator : public MT::CActiveObject
 { 
     public:
     
+    typedef CTNumericID< UInt32 > TTaskID;
+    
     CTaskManager& GetTaskManager( void ) const;
     
     CTaskConsumer* GetTaskConsumer( void );
@@ -80,7 +87,8 @@ class GUCEF_CORE_EXPORT_CPP CTaskDelegator : public MT::CActiveObject
     void PerformTaskCleanup( CTaskConsumer* taskConsumer ,
                              CICloneable* taskData        ) const;
                              
-    void SetAsTaskDelegator( CTaskConsumer* taskConsumer );
+    void SetTaskData( TTaskID& taskId             ,
+                      CTaskConsumer* taskConsumer );
 
     private:
     

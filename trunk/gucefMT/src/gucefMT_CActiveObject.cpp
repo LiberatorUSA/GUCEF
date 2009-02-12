@@ -46,9 +46,10 @@ namespace MT {
 //-------------------------------------------------------------------------*/
 
 CActiveObject::CActiveObject( void )
-        : _taskdata( NULL ) ,
-          _delay( 10 )      ,
-          _suspend( false ) ,
+        : _taskdata( NULL )                  ,
+          _delay( 10 )                       ,
+          m_isDeactivationRequested( false ) ,
+          _suspend( false )                  ,
           _active( false )
 {
 
@@ -57,22 +58,31 @@ CActiveObject::CActiveObject( void )
 /*-------------------------------------------------------------------------*/
 
 CActiveObject::CActiveObject( const CActiveObject& src )
-        : _taskdata( src._taskdata ) ,
-          _delay( src._delay )       ,
-          _suspend( false )          ,
+        : _taskdata( src._taskdata )         ,
+          _delay( src._delay )               ,
+          m_isDeactivationRequested( false ) ,
+          _suspend( false )                  ,
           _active( false )
 {
-        if ( src.IsActive() )
-        {
-                Activate();
-        }
+    if ( src.IsActive() )
+    {
+        Activate();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 CActiveObject::~CActiveObject()
 {
-        Deactivate( true );
+    Deactivate( true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CActiveObject::IsDeactivationRequested( void ) const
+{
+    return m_isDeactivationRequested;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -80,7 +90,7 @@ CActiveObject::~CActiveObject()
 bool
 CActiveObject::IsActive( void ) const
 {
-        return _active;
+    return _active;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -99,7 +109,7 @@ CActiveObject::OnActivate( void* thisobject )
         Float64 timeDelta = 0;
 
         bool taskfinished = false;
-        while ( !taskfinished && tao->_active )
+        while ( !taskfinished && !tao->m_isDeactivationRequested )
         {
             // Check if the order has been given to suspend the thread
             if ( tao->_suspend )
@@ -133,24 +143,37 @@ CActiveObject::OnActivate( void* thisobject )
         tao->OnTaskEnd( taskdata );
     }
     tao->_td = NULL;
+    tao->_active = false;
     return 1;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CActiveObject::Activate( void* taskdata /* = NULL */               ,
                          const UInt32 cycleDelay /* = 0 */         ,
                          const UInt32 minimalCycleDelta /* = 10 */ )
 {
-        if ( _active ) return;
+    if ( _active ) return false;
 
-        _taskdata = taskdata;
-        _delay = cycleDelay;
-        m_minimalCycleDelta = minimalCycleDelta / 1000.0; // <- the unit used here is seconds not milliseconds
-        _td = ThreadCreate( (void*) OnActivate ,
-                            this               );
-        _active = true;
+    _taskdata = taskdata;
+    _delay = cycleDelay;
+    m_minimalCycleDelta = minimalCycleDelta / 1000.0; // <- the unit used here is seconds not milliseconds
+    m_isDeactivationRequested = false;
+    _suspend = false;
+    _active = true;
+    _td = ThreadCreate( (void*) OnActivate ,
+                        this               );
+                        
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CActiveObject::OnTaskPausedForcibly( void* taskdata )
+{
+    // Dummy to avoid mandatory implementation in decending classes
 }
 
 /*-------------------------------------------------------------------------*/
@@ -169,17 +192,37 @@ CActiveObject::Deactivate( bool force )
             
             OnTaskEnd( _taskdata );
         }
-        _active = false;
+        else
+        {
+            m_isDeactivationRequested = true;
+        }        
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CActiveObject::Pause( void )
+bool
+CActiveObject::IsPauseRequested( void ) const
 {
-        _suspend = true;
+    return _suspend;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CActiveObject::Pause( bool force )
+{
+    if ( force )
+    {
+        // Don't wait for the thread to cycle
+        ThreadSuspend( _td );
         _active = false;
+        OnTaskPausedForcibly( _taskdata );
+    }
+    else
+    {
+        _suspend = true;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -187,11 +230,11 @@ CActiveObject::Pause( void )
 void
 CActiveObject::Resume( void )
 {
-        if ( _td && _suspend )
-        {
-                ThreadResume( _td );
-                _active = true;
-        }
+    if ( _td && _suspend )
+    {
+        _active = true;
+        ThreadResume( _td );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -199,7 +242,7 @@ CActiveObject::Resume( void )
 void*
 CActiveObject::GetTaskData( void ) const
 {
-        return _taskdata;
+    return _taskdata;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -207,18 +250,18 @@ CActiveObject::GetTaskData( void ) const
 CActiveObject&
 CActiveObject::operator=( const CActiveObject& src )
 {
-        Deactivate( true );
+    Deactivate( true );
 
-        _taskdata = src._taskdata;
-        _delay = src._delay;
-        _suspend = false;
+    _taskdata = src._taskdata;
+    _delay = src._delay;
+    _suspend = false;
 
-        if ( src.IsActive() )
-        {
-                Activate();
-        }
+    if ( src.IsActive() )
+    {
+        Activate();
+    }
 
-        return *this;
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/

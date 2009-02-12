@@ -85,12 +85,14 @@ CTaskDelegator::OnTaskCycle( void* taskdata )
     CTaskConsumer* taskConsumer = NULL;
     CICloneable* taskData = NULL;
     CObserver* taskObserver = NULL;
+    CTaskConsumer::TTaskID taskId;
     
     if ( m_taskManager->GetQueuedTask( &taskConsumer ,
+                                       &taskId       ,
                                        &taskData     ,
                                        &taskObserver ) )
     {
-        SetAsTaskDelegator( taskConsumer );
+        SetTaskData( taskId, taskConsumer );
         if ( NULL != taskObserver )
         {
             taskConsumer->Subscribe( taskObserver );
@@ -115,11 +117,12 @@ CTaskDelegator::GetTaskConsumer( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::SetAsTaskDelegator( CTaskConsumer* taskConsumer )
+CTaskDelegator::SetTaskData( TTaskID& taskId             ,
+                             CTaskConsumer* taskConsumer )
 {GUCEF_TRACE;
 
     m_taskConsumer = taskConsumer;
-    taskConsumer->SetTaskDelegator( this );
+    taskConsumer->SetTaskData( taskId, this );
 }
 
 /*-------------------------------------------------------------------------*/

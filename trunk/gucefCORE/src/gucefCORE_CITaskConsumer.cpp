@@ -51,6 +51,9 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CTaskConsumer::CTaskConsumer( void )
+    : CNotifier()         ,
+      m_delegator( NULL ) ,
+      m_taskId()
 {GUCEF_TRACE;
 
 }
@@ -65,10 +68,12 @@ CTaskConsumer::~CTaskConsumer()
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskConsumer::SetTaskDelegator( CTaskDelegator* delegator )
+CTaskConsumer::SetTaskData( TTaskID& taskId           ,
+                            CTaskDelegator* delegator )
 {GUCEF_TRACE;
 
     m_delegator = delegator;
+    m_taskId = taskId;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -82,11 +87,20 @@ CTaskConsumer::GetTaskDelegator( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+const CTaskConsumer::TTaskID&
 CTaskConsumer::GetTaskID( void ) const
 {GUCEF_TRACE;
 
-    return m_delegator->GetThreadID();
+    return m_taskId;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTaskConsumer::TTaskID&
+CTaskConsumer::GetMutableTaskId( void )
+{GUCEF_TRACE;
+
+    return m_taskId;
 }
 
 /*-------------------------------------------------------------------------*/

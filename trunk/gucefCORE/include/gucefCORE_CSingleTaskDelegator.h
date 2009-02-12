@@ -47,6 +47,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CTaskManager;
+class CTaskConsumer;
 
 /*-------------------------------------------------------------------------*/
 
@@ -56,6 +57,7 @@ class GUCEF_CORE_EXPORT_CPP CSingleTaskDelegator : public CTaskDelegator
     friend class CTaskManager;
     
     CSingleTaskDelegator( CTaskConsumer* taskConsumer ,
+                          TTaskID& taskId             ,
                           CICloneable* taskData       ,
                           CObserver* taskObserver     );
     
