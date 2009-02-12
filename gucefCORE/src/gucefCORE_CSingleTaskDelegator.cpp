@@ -51,6 +51,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CSingleTaskDelegator::CSingleTaskDelegator( CTaskConsumer* taskConsumer ,
+                                            TTaskID& taskId             ,
                                             CICloneable* taskData       ,
                                             CObserver* taskObserver     )
     : CTaskDelegator()               ,
@@ -58,7 +59,7 @@ CSingleTaskDelegator::CSingleTaskDelegator( CTaskConsumer* taskConsumer ,
       m_taskObserver( taskObserver )
 {GUCEF_TRACE;
 
-    SetAsTaskDelegator( taskConsumer );
+    SetTaskData( taskId, taskConsumer );
 }
 
 /*-------------------------------------------------------------------------*/

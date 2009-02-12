@@ -48,6 +48,11 @@
 #define GUCEF_CORE_CITASKCONSUMER_H
 #endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
 
+#ifndef GUCEF_CORE_CTNUMERICIDGENERATOR_H
+#include "CTNumericIDGenerator.h"
+#define GUCEF_CORE_CTNUMERICIDGENERATOR_H
+#endif /* GUCEF_CORE_CTNUMERICIDGENERATOR_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -97,7 +102,8 @@ class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObservingNotifier
                     CObserver* taskObserver ,
                     UInt32* taskID = NULL   );
                     
-    bool PauseTask( const UInt32 taskID );
+    bool PauseTask( const UInt32 taskID ,
+                    const bool force    );
     
     bool ResumeTask( const UInt32 taskID );
     
@@ -131,10 +137,11 @@ class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObservingNotifier
     {
         public:
         
-        CTaskQueueItem( CICloneable* taskData   ,
-                        CObserver* taskObserver );
+        CTaskQueueItem( CTaskConsumer::TTaskID& taskId ,
+                        CICloneable* taskData          ,
+                        CObserver* taskObserver        );
         
-        CTaskQueueItem( const CTaskQueueItem& src );
+        CTaskQueueItem( CTaskQueueItem& src );
         
         virtual ~CTaskQueueItem();
         
@@ -142,16 +149,25 @@ class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObservingNotifier
         
         CICloneable* GetTaskData( void );
         
+        const CTaskConsumer::TTaskID& GetTaskId( void ) const;
+        
         virtual CICloneable* Clone( void ) const;
+        
+        private:
+        friend class CTaskManager;
+        
+        CTaskConsumer::TTaskID& GetMutableTaskId( void );
 
         private:        
         CICloneable* m_taskData;
         CObserver* m_taskObserver;
+        CTaskConsumer::TTaskID m_taskId;
     };
     
-    bool GetQueuedTask( CTaskConsumer** taskConsumer ,
-                        CICloneable** taskData       ,
-                        CObserver** taskObserver     );
+    bool GetQueuedTask( CTaskConsumer** taskConsumer   ,
+                        CTaskConsumer::TTaskID* taskId ,
+                        CICloneable** taskData         ,
+                        CObserver** taskObserver       );
 
     void TaskCleanup( CTaskConsumer* taskConsumer ,
                       CICloneable* taskData       );
@@ -185,6 +201,7 @@ class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObservingNotifier
     TTaskMap m_nonactiveTasks;
     UInt32 m_desiredNrOfThreads;
     MT::CTMailBox< CString > m_taskQueue;
+    CTNumericIDGenerator< UInt32 > m_taskIdGenerator;
     static MT::CMutex g_mutex;
     static CTaskManager* g_instance;
 };

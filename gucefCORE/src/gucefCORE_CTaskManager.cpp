@@ -104,9 +104,11 @@ CTaskManager::RegisterEvents( void )
     
 /*-------------------------------------------------------------------------*/
 
-CTaskManager::CTaskQueueItem::CTaskQueueItem( CICloneable* taskData   ,
-                                              CObserver* taskObserver )
-    : m_taskData( taskData )         ,
+CTaskManager::CTaskQueueItem::CTaskQueueItem( CTaskConsumer::TTaskID& taskId ,
+                                              CICloneable* taskData          ,
+                                              CObserver* taskObserver        )
+    : m_taskId( taskId )             ,
+      m_taskData( taskData )         ,
       m_taskObserver( taskObserver )
 {GUCEF_TRACE;
     
@@ -114,8 +116,9 @@ CTaskManager::CTaskQueueItem::CTaskQueueItem( CICloneable* taskData   ,
 
 /*-------------------------------------------------------------------------*/
     
-CTaskManager::CTaskQueueItem::CTaskQueueItem( const CTaskQueueItem& src )
-    : m_taskData( src.m_taskData->Clone() ) ,
+CTaskManager::CTaskQueueItem::CTaskQueueItem( CTaskQueueItem& src )
+    : m_taskId( src.m_taskId )              ,
+      m_taskData( src.m_taskData->Clone() ) ,
       m_taskObserver( src.m_taskObserver )
 {GUCEF_TRACE;
 
@@ -147,12 +150,29 @@ CTaskManager::CTaskQueueItem::GetTaskData( void )
 }
 
 /*-------------------------------------------------------------------------*/
+
+const CTaskConsumer::TTaskID& 
+CTaskManager::CTaskQueueItem::GetTaskId( void ) const
+{GUCEF_TRACE;
+
+    return m_taskId;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTaskConsumer::TTaskID&
+CTaskManager::CTaskQueueItem::GetMutableTaskId( void )
+{
+    return m_taskId;
+}
+
+/*-------------------------------------------------------------------------*/
     
 CICloneable*
 CTaskManager::CTaskQueueItem::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CTaskQueueItem( *this );
+    return new CTaskQueueItem( const_cast< CTaskQueueItem& >( *this ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -163,7 +183,8 @@ CTaskManager::CTaskManager( void )
       m_activeTasks()           ,
       m_nonactiveTasks()        ,
       m_desiredNrOfThreads( 2 ) ,
-      m_taskQueue()             
+      m_taskQueue()             ,
+      m_taskIdGenerator()
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -276,7 +297,7 @@ CTaskManager::EnforceDesiredNrOfThreads( void )
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CTaskManager: Decreasing the number of threads used for processing tasks to " + UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( (UInt32)m_activeTasks.size() ) );
         
         TTaskMap::iterator i = m_activeTasks.begin();
-        UInt32 deactivateCount = m_activeTasks.size() - m_desiredNrOfThreads;
+        UInt32 deactivateCount = ((UInt32)m_activeTasks.size()) - m_desiredNrOfThreads;
         for ( UInt32 n=0; n<deactivateCount; ++n )
         {
             // Ask the task to stop gracefully
@@ -308,7 +329,9 @@ CTaskManager::QueueTask( const CString& taskType ,
                          CObserver* taskObserver )
 {GUCEF_TRACE;
                          
-    CTaskQueueItem* queueItem = new CTaskQueueItem( taskData     ,
+    CTaskConsumer::TTaskID uniqueTaskId = m_taskIdGenerator.GenerateID( false );
+    CTaskQueueItem* queueItem = new CTaskQueueItem( uniqueTaskId ,
+                                                    taskData     ,
                                                     taskObserver );
     
     NotifyObservers( TaskQueuedEvent );
@@ -376,9 +399,10 @@ CTaskManager::UnregisterTaskConsumerFactory( const CString& taskType )
 /*-------------------------------------------------------------------------*/
     
 bool
-CTaskManager::GetQueuedTask( CTaskConsumer** taskConsumer ,
-                             CICloneable** taskData       ,
-                             CObserver** taskObserver     )
+CTaskManager::GetQueuedTask( CTaskConsumer** taskConsumer   ,
+                             CTaskConsumer::TTaskID* taskId ,
+                             CICloneable** taskData         ,
+                             CObserver** taskObserver       )
 {GUCEF_TRACE;
 
     g_mutex.Lock();    
@@ -389,9 +413,14 @@ CTaskManager::GetQueuedTask( CTaskConsumer** taskConsumer ,
                               &queueItemPtr       ) )
     {
         CTaskQueueItem* queueItem = static_cast< CTaskQueueItem* >( queueItemPtr );
-        *taskConsumer = m_consumerFactory.Create( taskConsumerType );
-        *taskData = queueItem->GetTaskData();
-        *taskObserver = queueItem->GetTaskObserver();
+        
+        if ( m_consumerFactory.IsConstructible( taskConsumerType ) )
+        {        
+            *taskConsumer = m_consumerFactory.Create( taskConsumerType );        
+            *taskId = queueItem->GetMutableTaskId();        
+            *taskData = queueItem->GetTaskData();
+            *taskObserver = queueItem->GetTaskObserver();
+        }
         
         g_mutex.Unlock();
         return *taskConsumer != NULL;
@@ -417,15 +446,13 @@ CTaskManager::StartTask( const CString& taskType     ,
     if ( NULL != taskConsumer )
     {    
         // Just spawn a task delegator, it will auto register as an active task
-        CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, taskData->Clone(), taskObserver );
+        CTaskConsumer::TTaskID uniqueTaskId = m_taskIdGenerator.GenerateID( false );
+        CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, uniqueTaskId, taskData->Clone(), taskObserver );
         delegator->Activate();
+        *taskID = uniqueTaskId;
         
-        if ( NULL != taskID )
-        {
-            *taskID = delegator->GetThreadID();
-        }
-        
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Started task immediatly of type \"" + taskType + "\" using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Started task immediatly of type \"" + taskType + "\" with ID " + 
+                                            UInt32ToString( uniqueTaskId ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
         
         g_mutex.Unlock();
         return true;
@@ -443,7 +470,9 @@ CTaskManager::TaskCleanup( CTaskConsumer* taskConsumer ,
 {GUCEF_TRACE;
 
     g_mutex.Lock();
+    CTaskConsumer::TTaskID uniqueTaskId = taskConsumer->GetMutableTaskId();
     m_consumerFactory.Destroy( taskConsumer );
+    m_taskIdGenerator.ReleaseID( &uniqueTaskId );
     delete taskData;
     EnforceDesiredNrOfThreads();
     g_mutex.Unlock();
@@ -461,7 +490,8 @@ CTaskManager::FlagTaskAsActive( CTaskDelegator& task )
     CTaskConsumer* taskConsumer = task.GetTaskConsumer();
     if ( NULL != taskConsumer )
     {
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Task delegator activated for task of type \"" + taskConsumer->GetType() + "\" using thread with ID " + UInt32ToString( task.GetThreadID() ) );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Task delegator activated for task of type \"" + taskConsumer->GetType() + 
+                                           "\" with ID " + UInt32ToString( taskConsumer->GetTaskID() ) + " using thread with ID " + UInt32ToString( task.GetThreadID() ) );
     }
     else
     {
@@ -483,7 +513,8 @@ CTaskManager::FlagTaskAsNonActive( CTaskDelegator& task )
     CTaskConsumer* taskConsumer = task.GetTaskConsumer();
     if ( NULL != taskConsumer )
     {
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Task delegator deactivated for task of type \"" + taskConsumer->GetType() + "\" using thread with ID " + UInt32ToString( task.GetThreadID() ) );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Task delegator deactivated for task of type \"" + taskConsumer->GetType() + 
+                                           "\" with ID " + UInt32ToString( taskConsumer->GetTaskID() ) + " using thread with ID " + UInt32ToString( task.GetThreadID() ) );
     }
     else
     {
@@ -495,14 +526,15 @@ CTaskManager::FlagTaskAsNonActive( CTaskDelegator& task )
 /*-------------------------------------------------------------------------*/
 
 bool
-CTaskManager::PauseTask( const UInt32 taskID )
+CTaskManager::PauseTask( const UInt32 taskID ,
+                         const bool force    )
 {GUCEF_TRACE;
 
     g_mutex.Lock();
     TTaskMap::iterator i = m_activeTasks.find( taskID );
     if ( i != m_activeTasks.end() )
     {
-        (*i).second->Pause();
+        (*i).second->Pause( force );
         g_mutex.Unlock();
         
         NotifyObservers( TaskPausedEvent );

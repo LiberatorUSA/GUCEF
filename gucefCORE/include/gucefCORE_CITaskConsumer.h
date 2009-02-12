@@ -31,6 +31,11 @@
 #define GUCEF_CORE_CNOTIFIER_H
 #endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
+#ifndef GUCEF_CORE_CTNUMERICID_H
+#include "CTNumericID.h"
+#define GUCEF_CORE_CTNUMERICID_H
+#endif /* GUCEF_CORE_CTNUMERICID_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -54,6 +59,8 @@ class GUCEF_CORE_EXPORT_CPP CTaskConsumer : public CNotifier
 {
     public:
     
+    typedef CTNumericID< UInt32 > TTaskID;
+    
     CTaskConsumer( void );
 
     virtual ~CTaskConsumer();
@@ -64,14 +71,20 @@ class GUCEF_CORE_EXPORT_CPP CTaskConsumer : public CNotifier
     
     CTaskDelegator* GetTaskDelegator( void ) const;
     
-    UInt32 GetTaskID( void ) const;
+    const TTaskID& GetTaskID( void ) const;
     
     virtual const CString& GetClassTypeName( void ) const;
     
     private:
     friend class CTaskDelegator;
     
-    void SetTaskDelegator( CTaskDelegator* delegator );
+    void SetTaskData( TTaskID& taskId           ,
+                      CTaskDelegator* delegator );
+
+    protected:
+    friend class CTaskManager;
+    
+    TTaskID& GetMutableTaskId( void );
     
     private:
     
@@ -81,6 +94,7 @@ class GUCEF_CORE_EXPORT_CPP CTaskConsumer : public CNotifier
     private:
     
     CTaskDelegator* m_delegator;
+    TTaskID m_taskId;
 };
 
 /*-------------------------------------------------------------------------//
