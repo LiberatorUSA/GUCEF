@@ -131,8 +131,7 @@ class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObservingNotifier
                            CICloneable* eventdata = NULL );
 
     private:
-    friend class CTaskDelegator;
-
+    
     class CTaskQueueItem : public CICloneable
     {
         public:
@@ -153,9 +152,6 @@ class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObservingNotifier
         
         virtual CICloneable* Clone( void ) const;
         
-        private:
-        friend class CTaskManager;
-        
         CTaskConsumer::TTaskID& GetMutableTaskId( void );
 
         private:        
@@ -163,6 +159,9 @@ class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObservingNotifier
         CObserver* m_taskObserver;
         CTaskConsumer::TTaskID m_taskId;
     };
+    
+    private:
+    friend class CTaskDelegator;
     
     bool GetQueuedTask( CTaskConsumer** taskConsumer   ,
                         CTaskConsumer::TTaskID* taskId ,

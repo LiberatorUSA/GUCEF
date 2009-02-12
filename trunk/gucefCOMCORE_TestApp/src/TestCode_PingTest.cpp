@@ -130,8 +130,7 @@ class CPingTester : public CORE::CObserver
         else
         if ( eventid == CORE::CGUCEFApplication::AppShutdownEvent )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: The application is shutting down" );
-            // @TODO: ScheduleForDestruction 
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: The application is shutting down" ); 
         }
         else
         if ( eventid == COMCORE::CPing::PingReponseEvent )
@@ -214,6 +213,16 @@ PerformPingTest( void )
         CPingTester pingTester;
         pingTester.SubscribeTo( app );
         app->main( 0, NULL, true );
+    }
+    catch ( CORE::CMsgException& e )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "unhandled GUCEF exception during Ping test: " ) + e.GetErrorMsg() );
+        ERRORHERE;
+    }
+    catch ( std::exception& e )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "unhandled std exception during Ping test: " ) + e.what() );
+        ERRORHERE;
     }
     catch ( ... )
     {
