@@ -345,43 +345,50 @@ void
 CPingTaskConsumer::IcmpCallback( void* vdata )
 {GUCEF_TRACE;
 
-    TIcmpCallbackData* data = static_cast< TIcmpCallbackData* >( vdata );
+    TPingEntry* entry = static_cast< TPingEntry* >( vdata );
     
-    UInt32 replyCount = IcmpParseReplies( data->replyBuffer, sizeof(ICMP_ECHO_REPLY) + data->echoSize ); 
-    PICMP_ECHO_REPLY echoReply = (PICMP_ECHO_REPLY) data->replyBuffer;
+    UInt32 replyCount = IcmpParseReplies( entry->replyBuffer, sizeof(ICMP_ECHO_REPLY) + entry->echoSize ); 
+    PICMP_ECHO_REPLY echoReply = (PICMP_ECHO_REPLY) entry->replyBuffer;
     
     if ( echoReply->Status == IP_SUCCESS )
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: ICMP callback: ping response recieved from " + data->host->GetHostname() + " with RTT " + CORE::UInt32ToString( echoReply->RoundTripTime ) );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: ICMP callback: ping response recieved from " + entry->host->GetHostname() + " with RTT " + CORE::UInt32ToString( echoReply->RoundTripTime ) );
         
-        CEchoReceivedEventData eventData( *data->host, data->echoSize, echoReply->RoundTripTime );
-        data->taskConsumer->NotifyObservers( PingReponseEvent, &eventData );
+        CEchoReceivedEventData eventData( *entry->host, entry->echoSize, echoReply->RoundTripTime );
+        entry->taskConsumer->NotifyObservers( PingReponseEvent, &eventData );
     }
     else
     if ( ( echoReply->Status == IP_REQ_TIMED_OUT )       ||
          ( echoReply->Status == IP_TTL_EXPIRED_TRANSIT ) ||
          ( echoReply->Status == IP_TTL_EXPIRED_REASSEM )  )
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: ICMP callback: ping timed out to " + data->host->GetHostname() );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: ICMP callback: ping timed out to " + entry->host->GetHostname() );
         
-        CEchoReceivedEventData eventData( *data->host, data->echoSize, echoReply->RoundTripTime );
-        data->taskConsumer->NotifyObservers( PingTimeoutEvent, &eventData );        
+        CEchoReceivedEventData eventData( *entry->host, entry->echoSize, echoReply->RoundTripTime );
+        entry->taskConsumer->NotifyObservers( PingTimeoutEvent, &eventData );        
     }
     else
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: ICMP callback: ping failed to " + data->host->GetHostname() );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: ICMP callback: ping failed to " + entry->host->GetHostname() );
         
-        CEchoReceivedEventData eventData( *data->host, data->echoSize, echoReply->RoundTripTime );
-        data->taskConsumer->NotifyObservers( PingFailedEvent, &eventData );
+        CEchoReceivedEventData eventData( *entry->host, entry->echoSize, echoReply->RoundTripTime );
+        entry->taskConsumer->NotifyObservers( PingFailedEvent, &eventData );
     }
-    
+
     // Make sure we set the wait flag to false to signal that we finished this ping attempt for
     // the given ping entry
-    TPingCounters::iterator n = data->taskConsumer->m_pingCounters.find( *data->host );
-    if ( n != data->taskConsumer->m_pingCounters.end() )
+    TPingCounters::iterator n = entry->taskConsumer->m_pingCounters.find( *entry->host );
+    if ( n != entry->taskConsumer->m_pingCounters.end() )
     {
         (*n).second.areWeWaitingForPingResult = false;
-    }    
+    }
+        
+    if ( entry->pingCount == (UInt32)entry->taskConsumer->m_taskData->GetMaxPings() )
+    {
+        // We reached the max number of pings for this host,.. send a ping stopped event
+        CEchoReceivedEventData eventData( *entry->host, entry->echoSize, 0 );
+        entry->taskConsumer->NotifyObservers( PingStoppedEvent, &eventData );                            
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -410,15 +417,15 @@ CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
         pingEntry.pingCount = 0;
         pingEntry.ticksAtLastPing = MT::PrecisionTickCount();
         pingEntry.areWeWaitingForPingResult = false;
-        pingEntry.callbackData.echoSize = m_taskData->GetBytesToSend();
-        pingEntry.callbackData.replyBuffer = new Int8[ sizeof(ICMP_ECHO_REPLY) + pingEntry.callbackData.echoSize ];
-        pingEntry.callbackData.taskConsumer = this;
+        pingEntry.echoSize = m_taskData->GetBytesToSend();
+        pingEntry.replyBuffer = new Int8[ sizeof(ICMP_ECHO_REPLY) + pingEntry.echoSize ];
+        pingEntry.taskConsumer = this;
         
         m_pingCounters.insert( std::pair< CHostAddress, TPingEntry >( host, pingEntry ) );
         TPingCounters::iterator n = m_pingCounters.find( host );
-        (*n).second.callbackData.host = &(*n).first;
+        (*n).second.host = &(*n).first;
         
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: Initialized ping counter for " + pingEntry.callbackData.host->GetHostname() );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: Initialized ping counter for " + (*n).second.host->GetHostname() );
     }
     
     // Now we have to stick around untill all pings are done or this task is cancelled
@@ -450,25 +457,25 @@ CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
                     if ( pingEntry.pingCount == 0 )
                     {
                         // This is the first time we are pinging this host, send out a ping start event
-                        CEchoReceivedEventData eventData( *pingEntry.callbackData.host, pingEntry.callbackData.echoSize, 0 );
+                        CEchoReceivedEventData eventData( *pingEntry.host, pingEntry.echoSize, 0 );
                         NotifyObservers( PingStartedEvent, &eventData );
                     }
                                             
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: Sending ping to " + pingEntry.callbackData.host->GetHostname() );
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: Sending ping to " + pingEntry.host->GetHostname() );
                     
                     IPAddr netIp;
-                    netIp.S_un.S_addr = pingEntry.callbackData.host->GetAddress();
+                    netIp.S_un.S_addr = pingEntry.host->GetAddress();
                     pingEntry.areWeWaitingForPingResult = true;
                     
                     DWORD result = IcmpSendEcho2( m_icmpHandle                                           ,
                                                   m_pingEvent                                            ,
                                                   &IcmpCallback                                          ,
-                                                  &pingEntry.callbackData                                ,
+                                                  &pingEntry                                             ,
                                                   netIp                                                  ,
                                                   pingData                                               ,
                                                   (WORD) m_taskData->GetBytesToSend()                    ,
                                                   NULL                                                   ,
-                                                  pingEntry.callbackData.replyBuffer                     ,
+                                                  pingEntry.replyBuffer                                  ,
                                                   sizeof(ICMP_ECHO_REPLY) + m_taskData->GetBytesToSend() ,
                                                   m_taskData->GetTimeout()                               );
                                                   
@@ -477,24 +484,17 @@ CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
                         ++pingEntry.pingCount;
                         pingEntry.ticksAtLastPing = MT::PrecisionTickCount();
                         
-                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: Successfully performed an async ping dispatch to " + pingEntry.callbackData.host->GetHostname() );
-                        
-                        if ( pingEntry.pingCount == (UInt32)m_taskData->GetMaxPings() )
-                        {
-                            // We reached the max number of pings for this host,.. send a ping stopped event
-                            CEchoReceivedEventData eventData( *pingEntry.callbackData.host, pingEntry.callbackData.echoSize, 0 );
-                            NotifyObservers( PingStoppedEvent, &eventData );                            
-                        }
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: Successfully performed an async ping dispatch to " + pingEntry.host->GetHostname() );
                     }
                     else
                     {
-                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: There was a problem sending a ping to " + pingEntry.callbackData.host->GetHostname() );
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: There was a problem sending a ping to " + pingEntry.host->GetHostname() );
                         
                         ++pingEntry.pingCount;
                         pingEntry.ticksAtLastPing = MT::PrecisionTickCount();
 
                         // We did not get the expected return value,.. something went wrong
-                        CEchoReceivedEventData eventData( *pingEntry.callbackData.host, pingEntry.callbackData.echoSize, 0 );
+                        CEchoReceivedEventData eventData( *pingEntry.host, pingEntry.echoSize, 0 );
                         NotifyObservers( PingFailedEvent, &eventData );
                     }
                 }
@@ -514,7 +514,7 @@ CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
     while ( i != m_pingCounters.end() )
     {
         TPingEntry& pingEntry = (*i).second;
-        delete[] pingEntry.callbackData.replyBuffer;
+        delete[] pingEntry.replyBuffer;
         ++i;        
     }
     m_pingCounters.clear();

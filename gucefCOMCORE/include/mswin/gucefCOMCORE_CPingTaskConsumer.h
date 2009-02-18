@@ -157,22 +157,19 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     static void IcmpCallback( void* vdata );
 
     private:
-
-    struct SIcmpCallbackData
+    
+    struct SPingEntry
     {
+        // generic ping entry attributes
+        UInt32 pingCount;
+        UInt64 ticksAtLastPing;
+        bool areWeWaitingForPingResult;
+        
+        // attributes used for ping callbacks
         CPingTaskConsumer* taskConsumer;
         const CHostAddress* host;
         void* replyBuffer;
         UInt32 echoSize;
-    };
-    typedef struct SIcmpCallbackData TIcmpCallbackData;
-    
-    struct SPingEntry
-    {
-        UInt32 pingCount;
-        UInt64 ticksAtLastPing;
-        TIcmpCallbackData callbackData;
-        bool areWeWaitingForPingResult;
     };
     typedef struct SPingEntry TPingEntry;
     typedef std::map< CHostAddress, TPingEntry > TPingCounters;
