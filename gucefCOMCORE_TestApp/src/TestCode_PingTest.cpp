@@ -62,7 +62,7 @@
 #define MAX_PINGS    1
 #define PING_BYTES   32
 #define PING_TIMEOUT 1000
-#define REMOTE_HOST  "127.0.0.1"
+#define REMOTE_HOST  "www.google.com"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

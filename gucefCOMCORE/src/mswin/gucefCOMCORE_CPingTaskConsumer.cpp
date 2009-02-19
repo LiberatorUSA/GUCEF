@@ -347,7 +347,7 @@ CPingTaskConsumer::IcmpCallback( void* vdata )
 
     TPingEntry* entry = static_cast< TPingEntry* >( vdata );
     
-    UInt32 replyCount = IcmpParseReplies( entry->replyBuffer, sizeof(ICMP_ECHO_REPLY) + entry->echoSize ); 
+    //UInt32 replyCount = IcmpParseReplies( entry->replyBuffer, sizeof(ICMP_ECHO_REPLY) + entry->echoSize ); 
     PICMP_ECHO_REPLY echoReply = (PICMP_ECHO_REPLY) entry->replyBuffer;
     
     if ( echoReply->Status == IP_SUCCESS )
@@ -468,8 +468,8 @@ CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
                     pingEntry.areWeWaitingForPingResult = true;
                     
                     DWORD result = IcmpSendEcho2( m_icmpHandle                                           ,
-                                                  m_pingEvent                                            ,
-                                                  &IcmpCallback                                          ,
+                                                  NULL                                            ,
+                                                  (PIO_APC_ROUTINE_OLD)&IcmpCallback                     ,
                                                   &pingEntry                                             ,
                                                   netIp                                                  ,
                                                   pingData                                               ,
@@ -479,8 +479,20 @@ CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
                                                   sizeof(ICMP_ECHO_REPLY) + m_taskData->GetBytesToSend() ,
                                                   m_taskData->GetTimeout()                               );
                                                   
-                    if ( ERROR_IO_PENDING == result || ERROR_SUCCESS == result )
+                    if ( 0 == result )
+                    {
+                        DWORD errorNr = GetLastError();
+                        bool a = errorNr == ERROR_INVALID_PARAMETER;
+                        bool b = errorNr == ERROR_IO_PENDING;
+                        bool c = errorNr == ERROR_NOT_ENOUGH_MEMORY;
+                        bool d = errorNr == ERROR_NOT_SUPPORTED;
+                        bool e = errorNr == IP_BUF_TOO_SMALL;
+                        
+                    }
+                    else
+                    if ( ERROR_IO_PENDING == result )
                     {                                   
+                        // This means the async call was successfull but we have to wait for the result, which is what this code is designed to do                        
                         ++pingEntry.pingCount;
                         pingEntry.ticksAtLastPing = MT::PrecisionTickCount();
                         
