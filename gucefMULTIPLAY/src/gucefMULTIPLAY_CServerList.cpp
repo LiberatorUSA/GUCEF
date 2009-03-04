@@ -165,7 +165,7 @@ CServerList::OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
     {
         // First we handle the response
         COMCORE::CPing& ping = *static_cast< COMCORE::CPing* >( notifier );
-        UInt32 pingTime = static_cast< COMCORE::CPing::TPingReponseEventData* >( eventdata )->GetData();
+        UInt32 pingTime = static_cast< COMCORE::CPing::CPingEventData* >( eventdata )->GetRoundTripTime();
         
         TServerListEntryPtr entry = *static_cast< TServerListEntryPtr* >( ping.GetUserData() );
         delete static_cast< TServerListEntryPtr* >( ping.GetUserData() );

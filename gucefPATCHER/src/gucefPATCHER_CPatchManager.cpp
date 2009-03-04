@@ -161,7 +161,7 @@ CPatchManager::PauseTask( const CString& taskName )
         UInt32 taskID = (*i).second->GetTaskID();
         UnlockData();
         
-        if ( m_taskManager->PauseTask( taskID ) )
+        if ( m_taskManager->PauseTask( taskID, false ) )
         {
             TPatchTaskPausedEventData eData( taskName );
             NotifyObserversFromThread( PatchTaskPausedEvent, &eData );
