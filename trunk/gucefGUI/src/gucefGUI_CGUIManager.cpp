@@ -92,7 +92,8 @@ CGUIManager::RegisterEvents( void )
 CGUIManager::CGUIManager( void )
     : m_widgetFactory()            ,
       m_formFactory()              ,
-      m_formBackendFactory( NULL )
+      m_formBackendFactory( NULL ) ,
+      m_guiDrivers()
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -108,6 +109,48 @@ CGUIManager::CGUIManager( void )
 /*-------------------------------------------------------------------------*/
 
 CGUIManager::~CGUIManager()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGUIContext*
+CGUIManager::CreateGUIContext( const CString& guiDriver )
+{GUCEF_TRACE;
+
+    return NULL;
+}
+/*-------------------------------------------------------------------------*/
+
+void
+CGUIManager::DestroyGUIContext( CGUIContext* context )
+{GUCEF_TRACE;
+
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUIManager::RegisterGUIDriver( CIGUIDriver* guiDriver )
+{GUCEF_TRACE;
+
+    //m_guiDrivers
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CGUIManager::UnregisterGUIDriver( CIGUIDriver* guiDriver )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CGUIManager::UnregisterGUIDriverByName( const CString& guiDriverName )
 {GUCEF_TRACE;
 
 }
