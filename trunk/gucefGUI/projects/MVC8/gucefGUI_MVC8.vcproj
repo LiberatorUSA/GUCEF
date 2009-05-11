@@ -381,6 +381,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefGUI_CIGUIContext.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefGUI_CIGUIDriver.h"
 				>
 			</File>

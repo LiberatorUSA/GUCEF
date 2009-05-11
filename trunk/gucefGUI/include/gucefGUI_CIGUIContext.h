@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CIGUIDRIVER_H
-#define GUCEF_GUI_CIGUIDRIVER_H
+#ifndef GUCEF_GUI_CIGUICONTEXT_H
+#define GUCEF_GUI_CIGUICONTEXT_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,6 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_GUI_CFORM_H
+#include "gucefGUI_CForm.h"
+#define GUCEF_GUI_CFORM_H
+#endif /* GUCEF_GUI_CFORM_H ? */
+
+#ifndef GUCEF_GUI_CWIDGET_H
+#include "gucefGUI_CWidget.h"
+#define GUCEF_GUI_CWIDGET_H
+#endif /* GUCEF_GUI_CWIDGET_H ? */
+
+#ifndef GUCEF_GUI_CFORMBACKEND_H
+#include "gucefGUI_CFormBackend.h"
+#define GUCEF_GUI_CFORMBACKEND_H
+#endif /* GUCEF_GUI_CFORMBACKEND_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,23 +56,25 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CIGUIDriver
+class GUCEF_GUI_EXPORT_CPP CIGUIContext
 {    
     public:
 
-    virtual ~CIGUIDriver();
+    virtual ~CIGUIContext();
     
-    virtual CIGUIContext* CreateGUIContext( void ) = 0;
+    virtual CWidget* CreateWidget( const CString& widgetName ) = 0;
     
-    virtual void DestroyGUIContext( CIGUIContext* context ) = 0;   
+    virtual CForm* CreateForm( const CString& formName ) = 0;
     
-    virtual CString GetDriverName( void ) const = 0;
+    virtual CFormBackend* CreateFormBackend( void ) = 0;
+    
+    virtual CIGUIDriver* GetDriver( void ) = 0;
     
     protected:
     
-    CIGUIDriver( void );
+    CIGUIContext( void );
     
-    CIGUIDriver( const CIGUIDriver& src );
+    CIGUIContext( const CIGUIContext& src );
     
 };
 
@@ -73,7 +89,7 @@ class GUCEF_GUI_EXPORT_CPP CIGUIDriver
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_GUI_CIGUIDRIVER_H ? */
+#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
