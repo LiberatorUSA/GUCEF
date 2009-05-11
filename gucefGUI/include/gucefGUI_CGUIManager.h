@@ -85,14 +85,6 @@ class GUCEF_GUI_EXPORT_CPP CGUIManager : public CORE::CObservingNotifier
     
     void DestroyGUIContext( CGUIContext* context );
     
-    CWidgetFactory& GetWidgetFactory( void );
-    
-    CFormFactory& GetFormFactory( void );
-    
-    void SetFormBackendFactory( CFormBackendFactory* backendFactory );
-
-    CFormBackendFactory* GetFormBackendFactory( void );
-    
     void RegisterGUIDriver( CIGUIDriver* guiDriver );
     
     void UnregisterGUIDriver( CIGUIDriver* guiDriver );
