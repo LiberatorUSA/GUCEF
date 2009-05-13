@@ -34,16 +34,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <stdlib.h>     // standard utils
-#include <stdio.h>      // standard I/O
-#include <conio.h>      // console i/o
+#include <stdlib.h>     /* standard utils */
+#include <stdio.h>      /* standard I/O */
+#include <conio.h>      /* console i/o */
 
-#include "DVPACKSYS.h"  // Pack sys utils
-#include "dvstrutils.h" // My own string tools
+#include "DVPACKSYS.h"  /* Pack sys utils */
 
 #ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>
 #endif /* GUCEF_MSWIN_BUILD ? */
+
+#include "dvstrutils.h" /* My own string tools */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -99,11 +100,10 @@ void cls( void )
 void
 Create_Archive_Wizard( void )
 {
-        char *rbuffer  = calloc( 1024, sizeof( char ) )                 ;
-        char *archive  = NULL                                           ;
-        char *dir_root = NULL                                           ;
-        char *ID       = NULL                                           ;
-        int key        = 0                                              ;
+        char *rbuffer  = calloc( 1024, sizeof( char ) );
+        char *archive  = NULL;
+        char *dir_root = NULL;
+        char *ID       = NULL;
 
         /*
          *      Obtain required data from user
@@ -112,20 +112,20 @@ Create_Archive_Wizard( void )
         /*
          *      Get a archive name from user
          */
-        rbuffer[ 0 ] = 0                                                ; 
+        rbuffer[ 0 ] = 0; 
         while ( strlen( rbuffer ) < MIN_ARCHIVE_NAME_LENGTH )
         {
-                printf( "\nPlease enter a name for the archive :\n" )   ;
-                scanf( "%s", rbuffer )                                  ;
+                printf( "\nPlease enter a name for the archive :\n" );
+                scanf( "%s", rbuffer );
                 if ( strlen( rbuffer ) < MIN_ARCHIVE_NAME_LENGTH )
                 {
                         printf( "minimum length for name is %i, please enter a new one\n", MIN_ARCHIVE_NAME_LENGTH );
                 }
 
         }
-        archive = calloc( strlen( rbuffer ), sizeof( char ) )           ;
-        strcpy( archive, rbuffer )                                      ;
-        rbuffer[ 0 ] = 0                                                ;
+        archive = calloc( strlen( rbuffer ), sizeof( char ) );
+        strcpy( archive, rbuffer );
+        rbuffer[ 0 ] = 0;
 
         /*
          *      Get a starting dir
@@ -144,22 +144,6 @@ Create_Archive_Wizard( void )
         strcpy( ID, rbuffer )                                           ;
 
         /*
-         *      Get a key value from user
-         */
-        printf( "\nPlease enter a key to be used with archive\n" )      ;
-        printf( "Enter 0 for no key protection\n" )                     ;
-        scanf( "%i", &key )                                             ;
-        if ( key == 0 )
-        {
-                printf( "The archive will not be key protected\n" )     ;
-        }
-        else
-        {
-                printf( "The archive will be key protected\n" )         ;
-                printf( "The key value = %i\n", key )                   ;
-        }
-
-        /*
          *      free unneeded input buffer
          */
         free( rbuffer )                                                 ; 
@@ -168,7 +152,7 @@ Create_Archive_Wizard( void )
          *      Do the actual creation of the archive
          */
         printf( "Creating Archive...\n" )                               ; 
-        if ( !DVP_Create_Archive( archive, dir_root, key, ID ) )
+        if ( !DVP_Create_Archive( archive, dir_root, ID ) )
         {
                 printf( "Process completed\n" )                         ;
         }
@@ -224,8 +208,7 @@ Display_Header_Wizard( void )
                                        &index_offset ,
                                        &num_files    ,
                                        &num_dirs     ,
-                                       &lastchange   ,
-                                       key           ) )
+                                       &lastchange   ) )
                 {
                         printf( "\nHeader data obtained...\n\n" )       ;
                         printf( "ID          = %s\n", ID )              ;
@@ -277,17 +260,16 @@ Display_Header_Wizard( void )
 void
 Display_Index_Wizard( void )
 {
-        char *rbuffer = ( char* ) calloc( 1024, sizeof( char ) )        ;
-        char *ext = NULL        ;
-        char *archive = NULL    ;
-        int key = 0             ;
-        long tmp                 ;
-        long files = 0           ;
-        long dirs  = 0           ;
-        long lastchange         ;
-        long offset             ;
-        long pos = 0            ;
-        FILE *fptr = NULL       ;
+        char *rbuffer = ( char* ) calloc( 1024, sizeof( char ) );
+        const char *ext = NULL;
+        char *archive = NULL;
+        long tmp;
+        long files = 0;
+        long dirs  = 0;
+        long lastchange;
+        long offset;
+        long pos = 0;
+        FILE *fptr = NULL;
 
         /*
          *      Output archive index to console
@@ -306,9 +288,6 @@ Display_Index_Wizard( void )
                 printf("\nError opening file\n" )                       ;
                 return                                                  ;
         }
-
-        printf( "\nPlease enter the archive key :\n" )                  ;
-        scanf( "%i", &key )                                             ;
 
         /*
          *      Check file extension
@@ -335,14 +314,13 @@ Display_Index_Wizard( void )
                 /*
                  *      Get index offset and entry count
                  */
-                if ( DVP_Read_Header( fptr               ,
-	                              rbuffer  	         ,
-        	                      &tmp 	         ,
-        	                      &offset            ,
-                	              &files             ,
-	                              &dirs	         ,
-                                      &lastchange        ,
-        	                      key		 ) )
+                if ( DVP_Read_Header( fptr        ,
+                                      rbuffer  	  ,
+                                      &tmp 	      ,
+                                      &offset     ,
+                                      &files      ,
+                                      &dirs	      ,
+                                      &lastchange ) )
                 {
                         printf( "\nError obtaing header data\n" )       ;
                         printf( "The file may be invalid or corrupt\n") ;
@@ -355,7 +333,6 @@ Display_Index_Wizard( void )
                         return                                          ;
                 }
         }
-        free( ext )                                                     ;
 
         /*
          *      Free unneeded buffer
@@ -403,7 +380,6 @@ Extract_Index_File_Wizard( void )
          *      file.
          */
 
-        int key = 0                                                     ;
         long num_files = 0                                               ;
         long num_dirs = 0                                                ;       
         long version                                                     ;
@@ -426,8 +402,6 @@ Extract_Index_File_Wizard( void )
         target = ( char* ) calloc( strlen( rbuffer ), sizeof( char ) )  ;
         strcpy( target, rbuffer )                                       ;
         free( rbuffer )                                                 ;
-        printf( "\nPlease enter key for archive :\n" )                  ;
-        scanf( "%i", &key )                                             ;
 
         /*
          *      Attempt to open archive
@@ -458,8 +432,7 @@ Extract_Index_File_Wizard( void )
                                &index_offset ,
                                &num_files    ,
                                &num_dirs     ,
-                               &lastchange   ,
-                               key           ) )
+                               &lastchange   ) )
         {
                 /*
                  *      An error occured.. wrong checksum ?
@@ -512,7 +485,6 @@ Extract_All_Files_Wizard( void )
         char *rbuffer = calloc( 1024, sizeof( char ) )                  ;
         char *archive = NULL                                            ;
         char *target = NULL                                             ;
-        int key = 0                                                     ;
         FILE *fptr = NULL                                               ;
 
         /*
@@ -527,8 +499,6 @@ Extract_All_Files_Wizard( void )
         target = ( char* ) calloc( strlen( rbuffer ), sizeof( char ) )  ;
         strcpy( target, rbuffer )                                       ;
         free( rbuffer )                                                 ;
-        printf( "\nPlease enter key for archive :\n" )                  ;
-        scanf( "%i", &key )                                             ;
 
         /*
          *      Attempt to open archive
@@ -551,7 +521,7 @@ Extract_All_Files_Wizard( void )
         /*
          *      Do the actual extracting
          */
-        if ( DVP_Extract_All_Files( fptr, target, key ) )
+        if ( DVP_Extract_All_Files( fptr, target ) )
         {
                 printf( "There has been an error\n" )                   ;
         }
@@ -578,7 +548,6 @@ Strip_Index_Wizard( void )
          *      this requires creating a new temp file
          */
         char *rbuffer = calloc( 512, sizeof( char ) );
-        int key = 0;
         char *archive;
         char *new_archive;
 
@@ -591,13 +560,11 @@ Strip_Index_Wizard( void )
         new_archive = ( char* ) calloc( strlen( rbuffer ), sizeof( char ) ) ;
         strcpy( new_archive, rbuffer )                                  ;
         free( rbuffer );
-        printf( "\nPlease enter archive key :\n" )                      ;
-        scanf( "%i", &key )                                             ;
 
         /*
          *      Do the actual stripping
          */
-        if ( DVP_Strip_Index( archive, new_archive, key ) )
+        if ( DVP_Strip_Index( archive, new_archive ) )
         {
                 printf( "There has been an error\n" )                   ;
         }
@@ -622,7 +589,6 @@ Extract_File_Wizard( void )
         char *rbuffer = calloc( 1024, sizeof( char ) )   ;
         char *archive = NULL                             ;
         char *filename = NULL                            ;
-        int key = 0                                      ;
         int blocksize                                    ;
         FILE *fptr = NULL                                ;
         TDVP_Index_Entry *entry = NULL                   ;
@@ -639,8 +605,6 @@ Extract_File_Wizard( void )
         filename = ( char* ) calloc( strlen( rbuffer ), sizeof( char ) );
         strcpy( filename, rbuffer )                                     ;
         free( rbuffer )                                                 ;
-        printf( "\nPlease enter archive key :\n" )                      ;
-        scanf( "%i", &key )                                             ;
 
         /*
          *      Open archive
@@ -662,8 +626,7 @@ Extract_File_Wizard( void )
         /*
          *      Obtain file entry data
          */
-        entry = DVP_Find_Entry_Data( fptr, filename, key  )             ;
-        if ( !entry )
+        if ( 0 == DVP_Find_Entry_Data( fptr, filename, entry ) )
         {
                 printf( "Unable to locate %s in archive\n", filename )  ;
 
@@ -738,7 +701,7 @@ Print_Info_Header( void )
         printf( "*****************************************\n" )         ;
         printf( "\n" )                                                  ;
         printf( " - Tool Version %d\n" , VERSION_NUMBER )               ;
-        printf( " - Module Version %d\n" , versionStr )         ;
+        printf( " - Module Version %s\n" , versionStr )         ;
         #ifdef SUPPORT_ARGS
                 printf( " - Command line arguments are supported\n" )   ;
                 printf( "   use the -args switch to view options\n" )   ;
@@ -812,7 +775,7 @@ Extract_All_Files( char *argv[] )
         /*
          *      Do the actual extraction
          */
-        if ( DVP_Extract_All_Files( fptr, argv[3], Str_To_Int( argv[4] ) ) )
+        if ( DVP_Extract_All_Files( fptr, argv[3] ) )
         {
                 printf( "\nAn error occured\n" )                        ;
                 return                                                  ;
@@ -835,23 +798,21 @@ Display_Header( char *argv[] )
         long  num_files                                                  ;
         long  num_dirs                                                   ;
         long lastchange = 0                                             ;
-        char ID[ DVP_ID_LENGTH+1 ]                                      ;
-        int key = Str_To_Int( argv[3] )                                 ; 
+        char ID[ DVP_ID_LENGTH+1 ]                                      ; 
         FILE *fptr = fopen( argv[2], "rb" )                             ;
         if ( fptr )
         {
                 /*
                  *      Do the actual obtaining of header data
                  */
-                ID[ DVP_ID_LENGTH ] = 0                                 ;
+                ID[ DVP_ID_LENGTH ] = 0;
                 if ( !DVP_Read_Header( fptr          ,
                                        ID            ,
                                        &version      ,
                                        &index_offset ,
                                        &num_files    ,
                                        &num_dirs     ,
-                                       &lastchange   ,
-                                       key           ) )
+                                       &lastchange   ) )
                 {
                         printf( "\nHeader data obtained...\n\n" )       ;
                         printf( "ID          = %s\n", ID )              ;
@@ -896,8 +857,7 @@ Create_Archive( char *argv[] )
         /*
          *      Create an archive
          */
-        int key = Str_To_Int( argv[ 5 ] )                               ;
-        if ( !DVP_Create_Archive( argv[ 2 ], argv[ 3 ], key, argv[ 4 ] ) )
+        if ( !DVP_Create_Archive( argv[ 2 ], argv[ 3 ], argv[ 4 ] ) )
         {
                 printf( "...Process completed\n" )                      ;
         }
@@ -919,7 +879,7 @@ Create_Archive( char *argv[] )
 void
 Display_Index( char *argv[] )
 {
-        char *ext = NULL                                                ;
+        const char *ext = NULL;
         long pos = 0                                                    ;
         long offset                                                     ;
         long files = 0                                                   ;
@@ -928,7 +888,6 @@ Display_Index( char *argv[] )
         long tmp                                                         ;
         char ID[ DVP_ID_LENGTH+1 ]                                      ;
         FILE *fptr = NULL                                               ;
-        int key = Str_To_Int( argv[3] )                                 ;
 
         fptr = fopen( argv[2], "rb" )                                   ;
         if ( !fptr )
@@ -962,15 +921,14 @@ Display_Index( char *argv[] )
                 /*
                  *      Get index offset and entry count
                  */
-                ID[ DVP_ID_LENGTH ] = 0                                 ;                 
-                if ( DVP_Read_Header( fptr               ,
-	                              ID  	         ,
-        	                      &tmp 	         ,
-        	                      &offset            ,
-                	              &files             ,
-	                              &dirs	         ,
-                                      &lastchange        ,
-        	                      key		 ) )
+                ID[ DVP_ID_LENGTH ] = 0;
+                if ( DVP_Read_Header( fptr        ,
+                                      ID  	      ,
+                                      &tmp 	      ,
+                                      &offset     ,
+                                      &files      ,
+                                      &dirs	      ,
+                                      &lastchange ) )
                 {
                         printf( "\nError obtaing header data\n" )       ;
                         printf( "The file may be invalid or corrupt\n") ;
@@ -983,7 +941,6 @@ Display_Index( char *argv[] )
                         return                                          ;
                 }
         }
-        free( ext )                                                     ;
 
         /*
          *      Output index to console
