@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\bin\Debug_MVC8"
-			IntermediateDirectory="..\..\bin\Debug_MVC8"
+			OutputDirectory="..\..\bin\Debug_MVC9"
+			IntermediateDirectory="..\..\bin\Debug_MVC9"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -63,9 +63,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCORElib_MVC8_d.lib gucefMTlib_MVC8_d.lib"
+				AdditionalDependencies="gucefCORElib_MVC9_d.lib gucefMTlib_MVC9_d.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\..\gucefMT\bin\Debug_MVC8"
+				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Debug_MVC9;..\..\..\..\gucefMT\bin\Debug_MVC9"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				EntryPointSymbol="WinMain"
@@ -93,13 +93,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\common\bin\Debug_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\common\bin\Debug_MVC9"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\bin\Release_MVC8"
-			IntermediateDirectory="..\..\bin\Release_MVC8"
+			OutputDirectory="..\..\bin\Release_MVC9"
+			IntermediateDirectory="..\..\bin\Release_MVC9"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -141,9 +141,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCORElib_MVC8.lib gucefMTlib_MVC8.lib"
+				AdditionalDependencies="gucefCORElib_MVC9.lib gucefMTlib_MVC9.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Release_MVC8;..\..\..\..\gucefMT\bin\Release_MVC8"
+				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Release_MVC9;..\..\..\..\gucefMT\bin\Release_MVC9"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -173,7 +173,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\common\bin\Release_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\common\bin\Release_MVC9"
 			/>
 		</Configuration>
 	</Configurations>

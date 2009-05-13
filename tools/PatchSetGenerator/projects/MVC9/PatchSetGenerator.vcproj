@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\bin\Debug_MVC8"
-			IntermediateDirectory="..\..\bin\Debug_MVC8"
+			OutputDirectory="..\..\bin\Debug_MVC9"
+			IntermediateDirectory="..\..\bin\Debug_MVC9"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -63,10 +63,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCORE_MVC8_d.lib gucefMT_MVC8_d.lib gucefPATCHER_MVC8_d.lib"
-				OutputFile="$(OutDir)/PatchSetGenerator_MVC8_d.exe"
+				AdditionalDependencies="gucefCORE_MVC9_d.lib gucefMT_MVC9_d.lib gucefPATCHER_MVC9_d.lib"
+				OutputFile="$(OutDir)/PatchSetGenerator_MVC9_d.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\..\gucefMT\bin\Debug_MVC8;..\..\..\..\gucefPATCHER\bin\Debug_MVC8"
+				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Debug_MVC9;..\..\..\..\gucefMT\bin\Debug_MVC9;..\..\..\..\gucefPATCHER\bin\Debug_MVC9"
 				GenerateManifest="true"
 				AddModuleNamesToAssembly=""
 				GenerateDebugInformation="true"
@@ -97,13 +97,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\common\bin\Debug_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\common\bin\Debug_MVC9"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="..\..\bin\Release_MVC9"
+			IntermediateDirectory="..\..\bin\Release_MVC9"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -143,7 +143,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="gucefCORE_MVC9.lib gucefMT_MVC9.lib gucefPATCHER_MVC9.lib"
+				OutputFile="$(OutDir)/PatchSetGenerator_MVC9.exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Release_MVC9;..\..\..\..\gucefMT\bin\Release_MVC9;..\..\..\..\gucefPATCHER\bin\Release_MVC9"
 				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -174,6 +177,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\common\bin\Release_MVC9"
 			/>
 		</Configuration>
 	</Configurations>
