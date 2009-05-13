@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\bin\Debug_MVC9"
-			IntermediateDirectory="..\..\bin\Debug_MVC9"
+			OutputDirectory="..\..\bin\DebugLib_MVC9"
+			IntermediateDirectory="..\..\bin\DebugLib_MVC9"
 			ConfigurationType="4"
 			CharacterSet="1"
 			>
@@ -64,7 +64,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="winmm.lib"
-				OutputFile="..\..\bin\Debug_MVC9\gucefMTlib_MVC9_d.lib"
+				OutputFile="..\..\bin\DebugLib_MVC9\gucefMTlib_MVC9_d.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -85,8 +85,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\bin\Release_MVC9"
-			IntermediateDirectory="..\..\bin\Release_MVC9"
+			OutputDirectory="..\..\bin\ReleaseLib_MVC9"
+			IntermediateDirectory="..\..\bin\ReleaseLib_MVC9"
 			ConfigurationType="4"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -129,7 +129,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="winmm.lib"
-				OutputFile="..\..\bin\Release_MVC9\gucefMTlib_MVC9.lib"
+				OutputFile="..\..\bin\ReleaseLib_MVC9\gucefMTlib_MVC9.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
