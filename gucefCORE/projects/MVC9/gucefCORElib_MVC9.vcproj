@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\bin\Debug_MVC8"
-			IntermediateDirectory="..\..\bin\Debug_MVC8"
+			OutputDirectory="..\..\bin\Debug_MVC9"
+			IntermediateDirectory="..\..\bin\Debug_MVC9"
 			ConfigurationType="4"
 			CharacterSet="1"
 			>
@@ -63,9 +63,9 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="gucefMTlib_MVC8_d.lib"
-				OutputFile="..\..\bin\Debug_MVC8\gucefCORElib_MVC8_d.lib"
-				AdditionalLibraryDirectories="..\..\..\gucefMT\bin\Debug_MVC8"
+				AdditionalDependencies="gucefMTlib_MVC9_d.lib"
+				OutputFile="..\..\bin\Debug_MVC9\gucefCORElib_MVC9_d.lib"
+				AdditionalLibraryDirectories="..\..\..\gucefMT\bin\Debug_MVC9"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -81,7 +81,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Debug_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Debug_MVC9"
 			/>
 		</Configuration>
 		<Configuration
@@ -129,9 +129,9 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="gucefMTlib_MVC8.lib"
-				OutputFile="..\..\bin\Release_MVC8\gucefCORElib_MVC8.lib"
-				AdditionalLibraryDirectories="..\..\..\gucefMT\bin\Release_MVC8"
+				AdditionalDependencies="gucefMTlib_MVC9.lib"
+				OutputFile="..\..\bin\Release_MVC9\gucefCORElib_MVC9.lib"
+				AdditionalLibraryDirectories="..\..\..\gucefMT\bin\Release_MVC9"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -147,7 +147,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Release_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Release_MVC9"
 			/>
 		</Configuration>
 	</Configurations>
