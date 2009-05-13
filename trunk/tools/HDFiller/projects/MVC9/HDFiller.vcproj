@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\bin\Debug_MVC8"
-			IntermediateDirectory="..\..\bin\Debug_MVC8"
+			OutputDirectory="..\..\bin\Debug_MVC9"
+			IntermediateDirectory="..\..\bin\Debug_MVC9"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -63,10 +63,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCORE_MVC8_d.lib"
+				AdditionalDependencies="gucefCORE_MVC9_d.lib"
 				OutputFile="$(OutDir)\HDFiller_d.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Debug_MVC8"
+				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Debug_MVC9"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
@@ -93,13 +93,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;..\..\..\..\common\bin\Debug_MVC8&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;..\..\..\..\common\bin\Debug_MVC9&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\bin\Release_MVC8"
-			IntermediateDirectory="..\..\bin\Release_MVC8"
+			OutputDirectory="..\..\bin\Release_MVC9"
+			IntermediateDirectory="..\..\bin\Release_MVC9"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -141,10 +141,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCORE_MVC8.lib"
+				AdditionalDependencies="gucefCORE_MVC9.lib"
 				OutputFile="$(OutDir)\HDFiller.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Release_MVC8"
+				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Release_MVC9"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -173,7 +173,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;..\..\..\..\common\bin\Release_MVC8&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;..\..\..\..\common\bin\Release_MVC9&quot;"
 			/>
 		</Configuration>
 	</Configurations>
