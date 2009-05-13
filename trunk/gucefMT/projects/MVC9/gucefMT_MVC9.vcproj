@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../bin/Debug_MVC8"
-			IntermediateDirectory="../../bin/Debug_MVC8"
+			OutputDirectory="../../bin/Debug_MVC9"
+			IntermediateDirectory="../../bin/Debug_MVC9"
 			ConfigurationType="2"
 			CharacterSet="1"
 			BuildLogFile="$(IntDir)\BuildLog.htm"
@@ -67,11 +67,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib"
-				OutputFile="$(OutDir)/gucefMT_MVC8_d.dll"
+				OutputFile="$(OutDir)/gucefMT_MVC9_d.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateManifest="true"
-				ModuleDefinitionFile="gucefMT_MVC8_d.def"
+				ModuleDefinitionFile="gucefMT_MVC9_d.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				SubSystem="2"
@@ -101,13 +101,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Debug_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Debug_MVC9"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="../../bin/Release_MVC8"
-			IntermediateDirectory="../../bin/Release_MVC8"
+			OutputDirectory="../../bin/Release_MVC9"
+			IntermediateDirectory="../../bin/Release_MVC9"
 			ConfigurationType="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -150,11 +150,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib"
-				OutputFile="$(OutDir)/gucefMT_MVC8.dll"
+				OutputFile="$(OutDir)/gucefMT_MVC9.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateManifest="true"
-				ModuleDefinitionFile="gucefMT_MVC8.def"
+				ModuleDefinitionFile="gucefMT_MVC9.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -185,7 +185,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Release_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Release_MVC9"
 			/>
 		</Configuration>
 	</Configurations>

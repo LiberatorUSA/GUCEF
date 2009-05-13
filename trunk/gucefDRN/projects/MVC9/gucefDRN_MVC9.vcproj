@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\bin\Debug_MVC8"
-			IntermediateDirectory="..\..\bin\Debug_MVC8"
+			OutputDirectory="..\..\bin\Debug_MVC9"
+			IntermediateDirectory="..\..\bin\Debug_MVC9"
 			ConfigurationType="2"
 			CharacterSet="1"
 			>
@@ -63,10 +63,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCOMCORE_MVC8_d.lib gucefCORE_MVC8_d.lib gucefMT_MVC8_d.lib"
-				OutputFile="$(OutDir)\gucefDRN_MVC8_d.dll"
+				AdditionalDependencies="gucefCOMCORE_MVC9_d.lib gucefCORE_MVC9_d.lib gucefMT_MVC9_d.lib"
+				OutputFile="$(OutDir)\gucefDRN_MVC9_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\gucefCOMCORE\bin\Debug_MVC8;..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\gucefMT\bin\Debug_MVC8"
+				AdditionalLibraryDirectories="..\..\..\gucefCOMCORE\bin\Debug_MVC9;..\..\..\gucefCORE\bin\Debug_MVC9;..\..\..\gucefMT\bin\Debug_MVC9"
 				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -95,13 +95,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Debug_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Debug_MVC9"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\bin\Release_MVC8"
-			IntermediateDirectory="..\..\bin\Release_MVC8"
+			OutputDirectory="..\..\bin\Release_MVC9"
+			IntermediateDirectory="..\..\bin\Release_MVC9"
 			ConfigurationType="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -143,10 +143,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCOMCORE_MVC8.lib gucefCORE_MVC8.lib gucefMT_MVC8.lib"
-				OutputFile="$(OutDir)\gucefDRN_MVC8.dll"
+				AdditionalDependencies="gucefCOMCORE_MVC9.lib gucefCORE_MVC9.lib gucefMT_MVC9.lib"
+				OutputFile="$(OutDir)\gucefDRN_MVC9.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\gucefCOMCORE\bin\Release_MVC8;..\..\..\gucefCORE\bin\Release_MVC8;..\..\..\gucefMT\bin\Release_MVC8"
+				AdditionalLibraryDirectories="..\..\..\gucefCOMCORE\bin\Release_MVC9;..\..\..\gucefCORE\bin\Release_MVC9;..\..\..\gucefMT\bin\Release_MVC9"
 				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -177,7 +177,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Release_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Release_MVC9"
 			/>
 		</Configuration>
 	</Configurations>
