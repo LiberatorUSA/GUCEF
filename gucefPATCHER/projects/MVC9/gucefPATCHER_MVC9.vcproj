@@ -80,7 +80,7 @@
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/gucefPATCHER_MVC8_d.lib"
+				ImportLibrary="$(OutDir)/gucefPATCHER_MVC9_d.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -170,7 +170,7 @@
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/gucefPATCHER_MVC8.lib"
+				ImportLibrary="$(OutDir)/gucefPATCHER_MVC9.lib"
 				TargetMachine="1"
 			/>
 			<Tool

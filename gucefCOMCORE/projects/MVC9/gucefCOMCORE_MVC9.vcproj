@@ -80,7 +80,7 @@
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/gucefCOMCORE_MVC8_d.lib"
+				ImportLibrary="$(OutDir)/gucefCOMCORE_MVC9_d.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -170,7 +170,7 @@
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/gucefCOMCORE_MVC8.lib"
+				ImportLibrary="$(OutDir)/gucefCOMCORE_MVC9.lib"
 				TargetMachine="1"
 			/>
 			<Tool
