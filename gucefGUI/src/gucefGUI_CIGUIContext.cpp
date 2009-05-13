@@ -17,26 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CIGUICONTEXT_H
-#define GUCEF_GUI_CIGUICONTEXT_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <set>
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
 
-#ifndef GUCEF_GUI_CWIDGET_H
-#include "gucefGUI_CWidget.h"
-#define GUCEF_GUI_CWIDGET_H
-#endif /* GUCEF_GUI_CWIDGET_H ? */
-
-#ifndef GUCEF_GUI_CFORM_H
-#include "gucefGUI_CForm.h"
-#define GUCEF_GUI_CFORM_H
-#endif /* GUCEF_GUI_CFORM_H ? */
+#include "gucefGUI_CIGUIContext.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -49,46 +41,28 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUIDriver;
+CIGUIContext::CIGUIContext( void )
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CIGUIContext
-{    
-    public:
-    
-    typedef std::set< CString > TStringSet;
+CIGUIContext::CIGUIContext( const CIGUIContext& src )
+{GUCEF_TRACE;
 
-    virtual ~CIGUIContext();
-    
-    virtual CWidget* CreateWidget( const CString& widgetName ) = 0;
-    
-    virtual void DestroyWidget( CWidget* widget ) = 0;
-    
-    virtual CForm* CreateForm( const CString& formName ) = 0;
-    
-    virtual void DestroyForm( CForm* form ) = 0;   
+}
 
-    virtual TStringSet GetAvailableFormTypes( void ) = 0;
+/*-------------------------------------------------------------------------*/
     
-    virtual TStringSet GetAvailableWidgetTypes( void ) = 0;
-    
-    virtual CFormBackend* CreateFormBackend( void ) = 0;
-    
-    virtual void DestroyFormBackend( CFormBackend* formBackend ) = 0;
-    
-    virtual CGUIDriver* GetDriver( void ) = 0;
-    
-    protected:
-    
-    CIGUIContext( void );
-    
-    CIGUIContext( const CIGUIContext& src );    
-};
+CIGUIContext::~CIGUIContext()
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -100,16 +74,3 @@ class GUCEF_GUI_EXPORT_CPP CIGUIContext
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

@@ -17,15 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CIGUIDRIVER_H
-#define GUCEF_GUI_CIGUIDRIVER_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
+#include "gucefGUI_CGUIDriver.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,29 +41,30 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CIGUIDriver
-{    
-    public:
+CGUIDriver::CGUIDriver( void )
+    : CObservingNotifier()
+{GUCEF_TRACE;
 
-    virtual ~CIGUIDriver();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGUIDriver::CGUIDriver( const CGUIDriver& src )
+    : CObservingNotifier( src )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
     
-    virtual CIGUIContext* CreateGUIContext( void ) = 0;
-    
-    virtual void DestroyGUIContext( CIGUIContext* context ) = 0;   
-    
-    virtual CString GetDriverName( void ) const = 0;
-    
-    protected:
-    
-    CIGUIDriver( void );
-    
-    CIGUIDriver( const CIGUIDriver& src );
-    
-};
+CGUIDriver::~CGUIDriver()
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,16 +76,3 @@ class GUCEF_GUI_EXPORT_CPP CIGUIDriver
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_GUI_CIGUIDRIVER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

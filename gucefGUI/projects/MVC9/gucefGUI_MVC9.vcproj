@@ -240,11 +240,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\gucefGUI_CGUIDriver.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\gucefGUI_CGUIManager.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\gucefGUI_CIFileSystemInfoProvider.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\gucefGUI_CIGUIContext.cpp"
 				>
 			</File>
 			<File
@@ -378,6 +386,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefGUI_CGUIDriver.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefGUI_CGUIManager.h"
 				>
 			</File>
@@ -386,7 +398,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefGUI_CIGUIDriver.h"
+				RelativePath="..\..\include\gucefGUI_CIGUIContext.h"
 				>
 			</File>
 			<File
