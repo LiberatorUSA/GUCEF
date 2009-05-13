@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\bin\Debug_MVC8"
-			IntermediateDirectory="..\..\bin\Debug_MVC8"
+			OutputDirectory="..\..\bin\Debug_MVC9"
+			IntermediateDirectory="..\..\bin\Debug_MVC9"
 			ConfigurationType="2"
 			CharacterSet="1"
 			>
@@ -63,7 +63,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="Freeimaged.lib"
-				OutputFile="$(OutDir)\imgpluginFreeImage_MVC8_d.dll"
+				OutputFile="$(OutDir)\imgpluginFreeImage_MVC9_d.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\dependencies\Freeimage\Debug"
 				GenerateManifest="true"
@@ -94,13 +94,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Debug_MVC8\plugins&#x0D;&#x0A;copy ..\..\dependencies\FreeImage\Dist\Freeimaged.dll ..\..\..\..\..\common\bin\Debug_MVC8&#x0D;&#x0A;"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Debug_MVC9\plugins&#x0D;&#x0A;copy ..\..\dependencies\FreeImage\Dist\Freeimaged.dll ..\..\..\..\..\common\bin\Debug_MVC9&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="..\..\bin\Release_MVC9"
+			IntermediateDirectory="..\..\bin\Release_MVC9"
 			ConfigurationType="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -141,6 +141,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\imgpluginFreeImage_MVC9.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\dependencies\Freeimage\Release"
 				GenerateManifest="true"
@@ -173,7 +174,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Release_MVC8\plugins&#x0D;&#x0A;copy ..\..\dependencies\FreeImage\Dist\Freeimaged.dll ..\..\..\..\..\common\bin\Release_MVC8&#x0D;&#x0A;"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\..\..\common\bin\Release_MVC9\plugins&#x0D;&#x0A;copy ..\..\dependencies\FreeImage\Dist\Freeimaged.dll ..\..\..\..\..\common\bin\Release_MVC9&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
