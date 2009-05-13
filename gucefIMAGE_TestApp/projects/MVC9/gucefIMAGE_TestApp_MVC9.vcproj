@@ -65,10 +65,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCORE_MVC8_d.lib gucefMT_MVC8_d.lib gucefIMAGE_MVC8_d.lib"
-				OutputFile="$(OutDir)/gucefVFS_TestApp_MVC8_d.exe"
+				AdditionalDependencies="gucefCORE_MVC9_d.lib gucefMT_MVC9_d.lib gucefIMAGE_MVC9_d.lib"
+				OutputFile="$(OutDir)/gucefIMAGE_TestApp_MVC9_d.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="../../../gucefCORE/bin/Debug_MVC8;../../../gucefIMAGE/bin/Debug_MVC8;../../../gucefMT/bin/Debug_MVC8"
+				AdditionalLibraryDirectories="../../../gucefCORE/bin/Debug_MVC9;../../../gucefMT/bin/Debug_MVC9;../../../gucefIMAGE/bin/Debug_MVC9"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				SubSystem="2"
@@ -96,7 +96,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Debug_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Debug_MVC9"
 			/>
 		</Configuration>
 		<Configuration
@@ -144,10 +144,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCORE_MVC8.lib gucefMT_MVC8.lib gucefIMAGE_MVC8.lib"
-				OutputFile="$(OutDir)/gucefIMAGE_TestApp_MVC8.exe"
+				AdditionalDependencies="gucefCORE_MVC9.lib gucefMT_MVC9.lib gucefIMAGE_MVC9.lib"
+				OutputFile="$(OutDir)/gucefIMAGE_TestApp_MVC9.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="../../../gucefCORE/bin/Release_MVC8;../../../gucefIMAGE/bin/Release_MVC8;../../../gucefMT/bin/Release_MVC8"
+				AdditionalLibraryDirectories="../../../gucefCORE/bin/Release_MVC9;../../../gucefMT/bin/Release_MVC9;../../../gucefIMAGE/bin/Release_MVC9"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -176,7 +176,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Release_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Release_MVC9"
 			/>
 		</Configuration>
 	</Configurations>
