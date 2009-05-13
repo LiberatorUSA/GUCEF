@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CGUIMANAGER_H
-#define GUCEF_GUI_CGUIMANAGER_H
+#ifndef GUCEF_GUI_CGUIDRIVER_H
+#define GUCEF_GUI_CGUIDRIVER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,35 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
-#include "gucefCORE_CTEventHandlerFunctor.h"
-#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
-#endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
-
-#ifndef GUCEF_CORE_CLONEABLES_H
-#include "cloneables.h"
-#define GUCEF_CORE_CLONEABLES_H
-#endif /* GUCEF_CORE_CLONEABLES_H ? */
-
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
-#ifndef GUCEF_GUI_CIGUICONTEXT_H
-#include "gucefGUI_CIGUIContext.h"
-#define GUCEF_GUI_CIGUICONTEXT_H
-#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
-
-#ifndef GUCEF_GUI_CGUIDRIVER_H
-#include "gucefGUI_CGUIDriver.h"
-#define GUCEF_GUI_CGUIDRIVER_H
-#endif /* GUCEF_GUI_CGUIDRIVER_H ? */
-
-#ifndef GUCEF_GUI_CFORMFACTORY_H
-#include "gucefGUI_CFormFactory.h"
-#define GUCEF_GUI_CFORMFACTORY_H
-#endif /* GUCEF_GUI_CFORMFACTORY_H ? */
+#ifndef GUCEF_GUI_MACROS_H
+#include "gucefGUI_macros.h"
+#define GUCEF_GUI_MACROS_H
+#endif /* GUCEF_GUI_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -71,78 +51,46 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CGUIManager : public CORE::CObservingNotifier
-{
-    public:
-    
-    static const CORE::CEvent FormFactoryRegisteredEvent;
-    static const CORE::CEvent FormFactoryUnregisteredEvent;
-    
-    typedef CORE::TCloneableString TKeyContainer;  /** event data type used for the keys */
-    
-    static void RegisterEvents( void );
-    
-    public:
-    
-    typedef CFormFactory::TConcreteFactory TConcreteFormFactory;
-    typedef std::set< CString > TFormTypeSet;
-    
-    static CGUIManager* Instance( void );
-    
-    CIGUIContext* CreateGUIContext( const CString& guiDriverName );
-    
-    void DestroyGUIContext( CIGUIContext* context );
-    
-    void RegisterGenericFormFactory( const CString& formTypeName   ,
-                                     TConcreteFormFactory* factory );
-    
-    void UnregisterGenericFormFactory( const CString& formTypeName );
-    
-    TFormTypeSet GetGenericFormTypes( void ) const;
-    
-    bool HasGenericFormType( const CString& formTypeName );
-    
-    // creates a generic form, this form will have to context
-    // associated with it. It is recommended to create forms
-    // via the gui context
-    CForm* CreateGenericForm( const CString& formTypeName );
-    
-    void DestroyGenericForm( CForm* genericForm );
-    
-    void RegisterGUIDriver( const CString& guiDriverName, CGUIDriver* guiDriver );
-    
-    void UnregisterGUIDriverByName( const CString& guiDriverName );
-    
-    private:
-    friend class CModule;    
-    
-    static void Deinstance( void );
-    
-    private:
-    
-    typedef CORE::CTEventHandlerFunctor< CGUIManager > TEventCallback;
-    
-    CGUIManager( void );
-    CGUIManager( const CGUIManager& src );
-    virtual ~CGUIManager();
-    CGUIManager& operator=( const CGUIManager& src );
-    
-    void OnFormFactoryRegistered( CORE::CNotifier* notifier           ,
-                                  const CORE::CEvent& eventid         ,
-                                  CORE::CICloneable* eventdata = NULL );
+class CIGUIContext;
 
-    void OnFormFactoryUnregistered( CORE::CNotifier* notifier           ,
-                                    const CORE::CEvent& eventid         ,
-                                    CORE::CICloneable* eventdata = NULL );
-                                      
-    private:
+/*-------------------------------------------------------------------------*/
+
+class GUCEF_GUI_EXPORT_CPP CGUIDriver : public CORE::CObservingNotifier
+{    
+    public:
+
+    static const CORE::CEvent WidgetTypeRegisteredEvent;
+    static const CORE::CEvent WidgetTypeUnregisteredEvent;    
+    static const CORE::CEvent FormTypeRegisteredEvent;
+    static const CORE::CEvent FormTypeUnregisteredEvent;
+
+    public:
     
-    typedef std::map< CString, CGUIDriver* > TGUIDriverMap;
+    typedef std::set< CString > TStringSet;
+    typedef std::vector< CIGUIContext* > TGUIContextVector;
+
+    virtual ~CGUIDriver();
     
-    CFormFactory m_genericFormFactory;
-    TGUIDriverMap m_guiDrivers;
+    virtual CIGUIContext* CreateGUIContext() = 0;
     
-    static CGUIManager* g_instance;
+    virtual void DestroyGUIContext( CIGUIContext* context ) = 0;   
+    
+    virtual TGUIContextVector GetContextList( void ) = 0;
+    
+    virtual UInt32 GetContextCount( void ) = 0;
+    
+    virtual CString GetDriverName( void ) = 0;
+    
+    virtual TStringSet GetAvailableFormTypes( void ) = 0;
+    
+    virtual TStringSet GetAvailableWidgetTypes( void ) = 0;
+    
+    protected:
+    
+    CGUIDriver( void );
+    
+    CGUIDriver( const CGUIDriver& src );
+    
 };
 
 /*-------------------------------------------------------------------------//
@@ -156,7 +104,7 @@ class GUCEF_GUI_EXPORT_CPP CGUIManager : public CORE::CObservingNotifier
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_GUI_CGUIMANAGER_H ? */
+#endif /* GUCEF_GUI_CGUIDRIVER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

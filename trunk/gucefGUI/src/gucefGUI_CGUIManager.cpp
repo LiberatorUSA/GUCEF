@@ -90,20 +90,12 @@ CGUIManager::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CGUIManager::CGUIManager( void )
-    : m_widgetFactory()            ,
-      m_formFactory()              ,
-      m_formBackendFactory( NULL ) ,
+    : CObservingNotifier()   ,
+      m_genericFormFactory() ,
       m_guiDrivers()
 {GUCEF_TRACE;
 
     RegisterEvents();
-    
-    SubscribeTo( &m_formFactory                                                 ,
-                 CORE::CAbstractFactoryBase::ConcreteFactoryRegisteredEvent     ,
-                 &TEventCallback( this, &CGUIManager::OnFormFactoryRegistered ) );
-    SubscribeTo( &m_formFactory                                                   ,
-                 CORE::CAbstractFactoryBase::ConcreteFactoryUnregisteredEvent     ,
-                 &TEventCallback( this, &CGUIManager::OnFormFactoryUnregistered ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -115,36 +107,36 @@ CGUIManager::~CGUIManager()
 
 /*-------------------------------------------------------------------------*/
 
-CGUIContext*
-CGUIManager::CreateGUIContext( const CString& guiDriver )
+CIGUIContext*
+CGUIManager::CreateGUIContext( const CString& guiDriverName )
 {GUCEF_TRACE;
 
+    TGUIDriverMap::iterator i = m_guiDrivers.find( guiDriverName );
+    if ( i != m_guiDrivers.end() )
+    {
+        CGUIDriver* guiDriver = (*i).second;
+        return guiDriver->CreateGUIContext();
+    }
     return NULL;
 }
 /*-------------------------------------------------------------------------*/
 
 void
-CGUIManager::DestroyGUIContext( CGUIContext* context )
+CGUIManager::DestroyGUIContext( CIGUIContext* context )
 {GUCEF_TRACE;
 
-    
+    CGUIDriver* guiDriver = context->GetDriver();
+    guiDriver->DestroyGUIContext( context );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CGUIManager::RegisterGUIDriver( CIGUIDriver* guiDriver )
+CGUIManager::RegisterGUIDriver( const CString& guiDriverName ,
+                                CGUIDriver* guiDriver        )
 {GUCEF_TRACE;
 
-    //m_guiDrivers
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void
-CGUIManager::UnregisterGUIDriver( CIGUIDriver* guiDriver )
-{GUCEF_TRACE;
-
+    m_guiDrivers.insert( std::pair< CString, CGUIDriver* >( guiDriverName, guiDriver ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -153,42 +145,64 @@ void
 CGUIManager::UnregisterGUIDriverByName( const CString& guiDriverName )
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CWidgetFactory&
-CGUIManager::GetWidgetFactory( void )
-{GUCEF_TRACE;
-
-    return m_widgetFactory;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CFormFactory&
-CGUIManager::GetFormFactory( void )
-{GUCEF_TRACE;
-
-    return m_formFactory;
+    m_guiDrivers.erase( guiDriverName );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CGUIManager::SetFormBackendFactory( CFormBackendFactory* backendFactory )
+CGUIManager::RegisterGenericFormFactory( const CString& formTypeName   ,
+                                         TConcreteFormFactory* factory )
 {GUCEF_TRACE;
 
-    m_formBackendFactory = backendFactory;
-}
+    m_genericFormFactory.RegisterConcreteFactory( formTypeName, factory );
+}    
 
 /*-------------------------------------------------------------------------*/
 
-CFormBackendFactory*
-CGUIManager::GetFormBackendFactory( void )
+void
+CGUIManager::UnregisterGenericFormFactory( const CString& formTypeName )
 {GUCEF_TRACE;
 
-    return m_formBackendFactory;
+    m_genericFormFactory.UnregisterConcreteFactory( formTypeName );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CGUIManager::TFormTypeSet
+CGUIManager::GetGenericFormTypes( void ) const
+{GUCEF_TRACE;
+
+    TFormTypeSet formTypes;
+    m_genericFormFactory.ObtainKeySet( formTypes );
+    return formTypes;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CGUIManager::HasGenericFormType( const CString& formTypeName )
+{GUCEF_TRACE;
+
+    return m_genericFormFactory.IsConstructible( formTypeName );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CForm*
+CGUIManager::CreateGenericForm( const CString& formTypeName )
+{GUCEF_TRACE;
+
+    return m_genericFormFactory.Create( formTypeName );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CGUIManager::DestroyGenericForm( CForm* genericForm )
+{GUCEF_TRACE;
+
+    m_genericFormFactory.Destroy( genericForm );
 }
 
 /*-------------------------------------------------------------------------*/

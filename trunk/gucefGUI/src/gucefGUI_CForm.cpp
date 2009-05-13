@@ -33,6 +33,11 @@
 #define GUCEF_GUI_CGUIMANAGER_H
 #endif /* GUCEF_GUI_CGUIMANAGER_H ? */
 
+#ifndef GUCEF_GUI_CIGUICONTEXT_H
+#include "gucefGUI_CIGUIContext.h"
+#define GUCEF_GUI_CIGUICONTEXT_H
+#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
+
 #include "gucefGUI_CForm.h"
 
 /*-------------------------------------------------------------------------//
@@ -72,7 +77,20 @@ CForm::RegisterEvents( void )
 CForm::CForm( void )
     : CORE::CObservingNotifier() ,
       m_backend( NULL )          ,
-      m_parentWidget( NULL )
+      m_parentWidget( NULL )     ,
+      m_context( NULL )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CForm::CForm( CIGUIContext* context )
+    : CORE::CObservingNotifier() ,
+      m_backend( NULL )          ,
+      m_parentWidget( NULL )     ,
+      m_context( context )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -88,21 +106,38 @@ CForm::~CForm()
 }
 
 /*-------------------------------------------------------------------------*/
+
+void
+CForm::SetContext( CIGUIContext* context )
+{GUCEF_TRACE;
+
+    m_context = context;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CIGUIContext*
+CForm::GetContext( void )
+{GUCEF_TRACE;
+
+    return m_context;
+}
+
+/*-------------------------------------------------------------------------*/
     
 bool
 CForm::LoadLayout( CORE::CIOAccess& layoutStorage )
 {GUCEF_TRACE;
 
-    if ( NULL == m_backend )
+    if ( NULL != m_context )
     {
-        CFormBackendFactory* beFactory = CGUIManager::Instance()->GetFormBackendFactory();
-        if ( NULL != beFactory )
+        if ( NULL == m_backend )
         {
-            m_backend = beFactory->Create();
+            m_backend = m_context->CreateFormBackend();
         }
     }
     
-    if ( NULL != m_backend )
+    if ( NULL == m_backend )
     {
         OnPreLayoutLoad();
         if ( m_backend->LoadLayout( layoutStorage ) )
@@ -320,6 +355,16 @@ const CString&
 CForm::GetClassTypeName( void ) const
 {
     static CString typeName = "GUCEF::GUI::CForm";
+    return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CForm::GetType( void ) const
+{GUCEF_TRACE;
+
+    static CString typeName = "CForm";
     return typeName;
 }
 

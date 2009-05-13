@@ -36,7 +36,10 @@
 #define GUCEF_GUI_CWIDGET_H
 #endif /* GUCEF_GUI_CWIDGET_H ? */
 
+#ifndef GUCEF_GUI_CFORMBACKEND_H
 #include "gucefGUI_CFormBackend.h"
+#define GUCEF_GUI_CFORMBACKEND_H
+#endif /* GUCEF_GUI_CFORMBACKEND_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,6 +56,10 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CIGUIContext;
+
+/*-------------------------------------------------------------------------*/
+
 class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
 {
     public:    
@@ -66,11 +73,17 @@ class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
     
     CForm( void );
     
+    CForm( CIGUIContext* context );
+    
     virtual ~CForm();
     
     virtual bool LoadLayout( CORE::CIOAccess& layoutStorage );
     
     virtual bool SaveLayout( CORE::CIOAccess& layoutStorage );
+    
+    void SetContext( CIGUIContext* context );
+    
+    CIGUIContext* GetContext( void );
     
     virtual bool SetParent( CForm* parentForm );
     
@@ -96,6 +109,8 @@ class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
 
     virtual const CString& GetClassTypeName( void ) const;
     
+    virtual const CString& GetType( void ) const;
+    
     protected:
     
     virtual void OnPreLayoutLoad( void );
@@ -111,6 +126,7 @@ class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
     
     CFormBackend* m_backend;
     CWidget* m_parentWidget;
+    CIGUIContext* m_context;
 };
 
 /*-------------------------------------------------------------------------//
