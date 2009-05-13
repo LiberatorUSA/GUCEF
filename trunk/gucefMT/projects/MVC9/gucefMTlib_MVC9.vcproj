@@ -80,7 +80,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Debug_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Debug_MVC9"
 			/>
 		</Configuration>
 		<Configuration
@@ -145,7 +145,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Release_MVC8"
+				CommandLine="copy &quot;$(TargetPath)&quot; ..\..\..\common\bin\Release_MVC9"
 			/>
 		</Configuration>
 	</Configurations>

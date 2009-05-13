@@ -71,13 +71,13 @@
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateManifest="true"
-				ModuleDefinitionFile="gucefMT_MVC9_d.def"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/gucefMT_MVC8_d.lib"
+				ImportLibrary="$(OutDir)/gucefMT_MVC9_d.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -154,14 +154,14 @@
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateManifest="true"
-				ModuleDefinitionFile="gucefMT_MVC9.def"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/gucefMT_MVC8.lib"
+				ImportLibrary="$(OutDir)/gucefMT_MVC9.lib"
 				TargetMachine="1"
 			/>
 			<Tool
