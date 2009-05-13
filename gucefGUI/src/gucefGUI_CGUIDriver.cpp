@@ -66,6 +66,16 @@ CGUIDriver::~CGUIDriver()
 
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CGUIDriver::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString classTypeName = "GUCEF::GUI::CGUIDriver";
+    return classTypeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

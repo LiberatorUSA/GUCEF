@@ -61,7 +61,9 @@ class GUCEF_GUI_EXPORT_CPP CIGUIContext
 {    
     public:
     
-    typedef std::set< CString > TStringSet;
+    typedef std::set< GUCEF::GUI::CWidget* >    TWidgetSet;
+    typedef std::set< GUCEF::GUI::CForm* >      TFormSet;
+    typedef std::set< CString >                 TStringSet;
 
     virtual ~CIGUIContext();
     
@@ -82,6 +84,10 @@ class GUCEF_GUI_EXPORT_CPP CIGUIContext
     virtual void DestroyFormBackend( CFormBackend* formBackend ) = 0;
     
     virtual CGUIDriver* GetDriver( void ) = 0;
+    
+    virtual TWidgetSet GetOwnedWidgets( void ) = 0;
+    
+    virtual TFormSet GetOwnedForms( void ) = 0;
     
     protected:
     

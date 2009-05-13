@@ -31,6 +31,11 @@
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
 #ifndef GUCEF_GUI_MACROS_H
 #include "gucefGUI_macros.h"
 #define GUCEF_GUI_MACROS_H
@@ -55,7 +60,8 @@ class CIGUIContext;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CGUIDriver : public CORE::CObservingNotifier
+class GUCEF_GUI_EXPORT_CPP CGUIDriver : public CORE::CObservingNotifier ,
+                                        public CORE::CIConfigurable
 {    
     public:
 
@@ -67,7 +73,7 @@ class GUCEF_GUI_EXPORT_CPP CGUIDriver : public CORE::CObservingNotifier
     public:
     
     typedef std::set< CString > TStringSet;
-    typedef std::vector< CIGUIContext* > TGUIContextVector;
+    typedef std::set< CIGUIContext* > TGUIContextSet;
 
     virtual ~CGUIDriver();
     
@@ -75,7 +81,7 @@ class GUCEF_GUI_EXPORT_CPP CGUIDriver : public CORE::CObservingNotifier
     
     virtual void DestroyGUIContext( CIGUIContext* context ) = 0;   
     
-    virtual TGUIContextVector GetContextList( void ) = 0;
+    virtual TGUIContextSet GetContextList( void ) = 0;
     
     virtual UInt32 GetContextCount( void ) = 0;
     
@@ -84,6 +90,8 @@ class GUCEF_GUI_EXPORT_CPP CGUIDriver : public CORE::CObservingNotifier
     virtual TStringSet GetAvailableFormTypes( void ) = 0;
     
     virtual TStringSet GetAvailableWidgetTypes( void ) = 0;
+    
+    virtual const CString& GetClassTypeName( void ) const;
     
     protected:
     
