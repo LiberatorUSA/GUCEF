@@ -2,10 +2,10 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="gucefDRN"
-	ProjectGUID="{EC85F48F-04B3-469A-882C-E5B07691716D}"
-	RootNamespace="gucefDRN_MVC8"
-	Keyword="Win32Proj"
+	Name="gucefIMAGE"
+	ProjectGUID="{E9DF8BF0-E6C7-4725-864D-91397DC50BFA}"
+	RootNamespace="gucefIMAGE"
+	Keyword="MFCDLLProj"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -21,7 +21,9 @@
 			OutputDirectory="..\..\bin\Debug_MVC8"
 			IntermediateDirectory="..\..\bin\Debug_MVC8"
 			ConfigurationType="2"
-			CharacterSet="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -37,41 +39,49 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="false"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefCOMCORE\include;..\..\..\gucefCORE\include;..\..\..\gucefCORE\include\mswin;..\..\..\gucefMT\include;..\..\..\common\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GUCEFDRN_MVC8_EXPORTS;GUCEF_DRN_BUILD_MODULE"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefCORE\include;..\..\..\gucefMT\include;..\..\..\common\include"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;GUCEFIMAGE_BUILD_MODULE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="4"
-				DisableSpecificWarnings="4100;4251;4996"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996;4251"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1043"
+				AdditionalIncludeDirectories="$(IntDir)"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCOMCORE_MVC8_d.lib gucefCORE_MVC8_d.lib gucefMT_MVC8_d.lib"
-				OutputFile="$(OutDir)\gucefDRN_MVC8_d.dll"
+				AdditionalDependencies="gucefMT_MVC8_d.lib gucefCORE_MVC8_d.lib"
+				OutputFile="$(OutDir)/gucefIMAGE_MVC8_d.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\gucefCOMCORE\bin\Debug_MVC8;..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\gucefMT\bin\Debug_MVC8"
+				AdditionalLibraryDirectories="..\..\..\gucefCORE\bin\Debug_MVC8;..\..\..\gucefMT\bin\Debug_MVC8"
 				GenerateManifest="true"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(OutDir)/gucefIMAGE_MVC8_d.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -103,8 +113,9 @@
 			OutputDirectory="..\..\bin\Release_MVC8"
 			IntermediateDirectory="..\..\bin\Release_MVC8"
 			ConfigurationType="2"
-			CharacterSet="1"
-			WholeProgramOptimization="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -120,40 +131,47 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="false"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefCOMCORE\include;..\..\..\gucefCORE\include;..\..\..\gucefCORE\include\mswin;..\..\..\gucefMT\include;..\..\..\common\include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GUCEFDRN_MVC8_EXPORTS;GUCEF_DRN_BUILD_MODULE"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\gucefCORE\include;..\..\..\gucefMT\include;..\..\..\common\include"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;GUCEFIMAGE_BUILD_MODULE"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="0"
+				TreatWChar_tAsBuiltInType="true"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4100;4251;4996"
+				DisableSpecificWarnings="4996;4251"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1043"
+				AdditionalIncludeDirectories="$(IntDir)"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gucefCOMCORE_MVC8.lib gucefCORE_MVC8.lib gucefMT_MVC8.lib"
-				OutputFile="$(OutDir)\gucefDRN_MVC8.dll"
+				AdditionalDependencies="gucefMT_MVC8.lib gucefCORE_MVC8.lib"
+				OutputFile="$(OutDir)/gucefIMAGE_MVC8.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\gucefCOMCORE\bin\Release_MVC8;..\..\..\gucefCORE\bin\Release_MVC8;..\..\..\gucefMT\bin\Release_MVC8"
+				AdditionalLibraryDirectories="..\..\..\gucefCORE\bin\Release_MVC8;..\..\..\gucefMT\bin\Release_MVC8"
 				GenerateManifest="true"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(OutDir)/gucefIMAGE_MVC8.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -186,47 +204,31 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\gucefDRN.cpp"
+				RelativePath="..\..\src\CGUCEFIMAGEModule.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\gucefDRN_CDRNDataGroup.cpp"
+				RelativePath="..\..\src\CGUIImageCodec.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\gucefDRN_CDRNDataGroupProperties.cpp"
+				RelativePath="..\..\src\CImage.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\gucefDRN_CDRNDataStream.cpp"
+				RelativePath="..\..\src\CIMGCodec.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\gucefDRN_CDRNNode.cpp"
+				RelativePath="..\..\src\CPixelMap.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\gucefDRN_CDRNPeerLink.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\gucefDRN_CDRNPeerLinkData.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\gucefDRN_CGUCEFDRNModule.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\gucefDRN_CIDRNPeerLinkCrypter.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\gucefDRN_CIDRNPeerValidator.cpp"
+				RelativePath="..\..\src\gucefIMAGE.cpp"
 				>
 			</File>
 		</Filter>
@@ -236,59 +238,47 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\include\gucefDRN.h"
+				RelativePath="..\..\include\CGUCEFIMAGEModule.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefDRN_CDRNDataGroup.h"
+				RelativePath="..\..\include\CGUIImageCodec.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefDRN_CDRNDataGroupProperties.h"
+				RelativePath="..\..\include\CImage.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefDRN_CDRNDataStream.h"
+				RelativePath="..\..\include\CIMGCodec.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefDRN_CDRNNode.h"
+				RelativePath="..\..\include\CPixelMap.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefDRN_CDRNPeerLink.h"
+				RelativePath="..\..\include\gucefIMAGE.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefDRN_CDRNPeerLinkData.h"
+				RelativePath="..\..\include\gucefIMAGE_config.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefDRN_CGUCEFDRNModule.h"
+				RelativePath="..\..\include\gucefIMAGE_ETypes.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefDRN_CIDRNPeerLinkCrypter.h"
+				RelativePath="..\..\include\gucefIMAGE_macros.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefDRN_CIDRNPeerValidator.h"
+				RelativePath="..\..\include\gucefIMAGEDLLInit.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\gucefDRN_config.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefDRN_DRNProtocol.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefDRN_ETypes.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\gucefDRN_macros.h"
+				RelativePath="..\..\include\imagedata.h"
 				>
 			</File>
 		</Filter>
