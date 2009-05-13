@@ -51,7 +51,7 @@
   #define DebugBreak() assert( 0 )
 #endif
 
-#define ERRORHERE { GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Test failed @ " + CORE::CString( __FILE__ ) + CORE::UInt32ToString( __LINE__ ) ); DebugBreak(); }
+#define ERRORHERE { GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Test failed @ " + CORE::CString( __FILE__ ) + CORE::UInt32ToString( __LINE__ ) ); DebugBreak(); }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -208,12 +208,12 @@ PerformVFSFileLoadUnloadTest( void )
             }
         }
         
-        GUCEF_LOG( LOGLEVEL_NORMAL, "Finished all load unload tests" );
+        GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Finished all load unload tests" );
         
     }
     catch ( ... )
     {
-        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "unhandled exception during test" );
+        GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "unhandled exception during test" );
         #ifdef GUCEF_VFS_DEBUG_MODE
         CORE::GUCEF_PrintCallstack();
         #endif /* GUCEF_VFS_DEBUG_MODE ? */

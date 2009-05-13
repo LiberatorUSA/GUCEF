@@ -404,11 +404,11 @@ PerformNotifierObserverTests( void )
         /*
          *  Now we will test using custom events
          */
-        CEvent myEventA = registry->Register( "XtraBase::TestApp::myEventA" ); 
-        CEvent myEventB = registry->Register( "XtraBase::TestApp::myEventB" );
-        CEvent myEventC = registry->Register( "XtraBase::TestApp::myEventC" );
+        CEvent myEventA = registry->Register( "TestApp::myEventA" ); 
+        CEvent myEventB = registry->Register( "TestApp::myEventB" );
+        CEvent myEventC = registry->Register( "TestApp::myEventC" );
         
-        printf( "Registered test events: XtraBase::TestApp::myEventA(%d) & XtraBase::TestApp::myEventB(%d)\n", myEventA.GetID(), myEventB.GetID() );
+        printf( "Registered test events: TestApp::myEventA(%d) & TestApp::myEventB(%d)\n", myEventA.GetID(), myEventB.GetID() );
         
         notifierB = new CMyNotifier();
         if ( notifierB == NULL )
