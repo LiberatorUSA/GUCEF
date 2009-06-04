@@ -36,7 +36,11 @@
  *      Make sure NULL is defined
  */
 #ifndef NULL
-#define NULL    0UL
+  #ifndef __CPP09NULLPTRSUPPORTED
+    #define NULL (0UL)
+  #else 
+    #define NULL (nullptr)
+  #endif
 #endif
 
 /*-------------------------------------------------------------------------*/
