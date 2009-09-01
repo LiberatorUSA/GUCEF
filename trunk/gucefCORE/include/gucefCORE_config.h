@@ -106,6 +106,13 @@
 #undef ACTIVATE_MEMORY_MANAGER  /* do not change this line */
 //#define ACTIVATE_MEMORY_MANAGER
 
+/*
+ *  Switch for enabling/disabling the logging of exceptions that are thrown
+ *  using the GUCEF exception macros
+ */
+#undef GUCEF_LOG_EXCEPTIONS
+#define GUCEF_LOG_EXCEPTIONS
+
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CONFIG_H */

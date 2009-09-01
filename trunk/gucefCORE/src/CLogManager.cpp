@@ -89,6 +89,7 @@ CLogManager::CLogManager( void )
     m_msgTypeEnablers[ LOG_SERVICE ] = true;
     m_msgTypeEnablers[ LOG_PROTECTED ] = true;
     m_msgTypeEnablers[ LOG_CALLSTACK ] = true;
+    m_msgTypeEnablers[ LOG_EXCEPTION ] = true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -103,15 +104,16 @@ CLogManager::~CLogManager()
 CLogManager*
 CLogManager::Instance( void )
 {GUCEF_TRACE;
-    
-    g_dataLock.Lock();
-    
+
     if ( g_instance == NULL )
-    {
-        g_instance = new CLogManager();
+    {        
+        g_dataLock.Lock();
+        if ( g_instance == NULL )
+        {
+            g_instance = new CLogManager();
+        }
+        g_dataLock.Unlock();
     }
-    
-    g_dataLock.Unlock();
     
     return g_instance;
 }
