@@ -26,9 +26,25 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefCORE_macros.h"
+#ifdef GUCEF_CORE_CEXCEPTION_H
 #include "CException.h"
+#define GUCEF_CORE_CEXCEPTION_H
+#endif /* GUCEF_CORE_CEXCEPTION_H ? */
+
+#ifndef GUCEF_CORE_CMSGEXCEPTION_H
 #include "CMsgException.h"
+#define GUCEF_CORE_CMSGEXCEPTION_H
+#endif /* GUCEF_CORE_CMSGEXCEPTION_H ? */
+
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -183,13 +199,51 @@ ownerScopeClass::exceptionName::~exceptionName()                            \
 
 /*--------------------------------------------------------------------------*/
 
+#ifdef GUCEF_LOG_EXCEPTIONS
+
+/*--------------------------------------------------------------------------*/
+
 #undef GUCEF_ETHROW
-#define GUCEF_ETHROW( exceptionName )  {throw exceptionName( __FILE__, __LINE__ );}
+#define GUCEF_ETHROW( exceptionName )                                        \
+{                                                                            \
+    GUCEF_EXCEPTION_LOG( ::GUCEF::CORE::LOGLEVEL_EVERYTHING,                 \
+                         ::GUCEF::CORE::CString( "Throwing exception @ " ) + \
+                         __FILE__                                          + \
+                         ::GUCEF::CORE::Int32ToString( __LINE__ )         ); \
+    throw exceptionName( __FILE__, __LINE__ );                               \
+}
+
+/*--------------------------------------------------------------------------*/
+
+#undef GUCEF_EMSGTHROW
+#define GUCEF_EMSGTHROW( exceptionName, errorMsg )                                       \
+{                                                                                        \
+    GUCEF_EXCEPTION_LOG( ::GUCEF::CORE::LOGLEVEL_EVERYTHING,                             \
+                         ::GUCEF::CORE::CString( "Throwing exception with message: " ) + \
+                         ::GUCEF::CORE::CString( errorMsg )                            + \
+                         ::GUCEF::CORE::CString( " @ " )                               + \
+                         __FILE__                                                      + \
+                         ::GUCEF::CORE::Int32ToString( __LINE__ )                     ); \
+    throw exceptionName( __FILE__, __LINE__, (errorMsg) );                               \
+}
+
+/*--------------------------------------------------------------------------*/
+
+#else /* GUCEF_LOG_EXCEPTIONS ? */ 
+
+/*--------------------------------------------------------------------------*/
+
+#undef GUCEF_ETHROW
+#define GUCEF_ETHROW( exceptionName )  {   throw exceptionName( __FILE__, __LINE__ );}
 
 /*--------------------------------------------------------------------------*/
 
 #undef GUCEF_EMSGTHROW
 #define GUCEF_EMSGTHROW( exceptionName, errorMsg ) {throw exceptionName( __FILE__, __LINE__, (errorMsg) );}
+
+/*--------------------------------------------------------------------------*/
+
+#endif /* GUCEF_LOG_EXCEPTIONS ? */ 
 
 /*--------------------------------------------------------------------------*/
 

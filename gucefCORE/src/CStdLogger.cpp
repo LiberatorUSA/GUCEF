@@ -112,6 +112,7 @@ CStdLogger::GetLogMsgTypeString( const TLogMsgType logMsgType ) const
         case CLogManager::LOG_SERVICE : return "SERVICE";
         case CLogManager::LOG_PROTECTED : return "PROTECTED";
         case CLogManager::LOG_CALLSTACK : return "CALLSTACK";
+        case CLogManager::LOG_EXCEPTION : return "EXCEPTION";
         default : return "";
     }
 }
