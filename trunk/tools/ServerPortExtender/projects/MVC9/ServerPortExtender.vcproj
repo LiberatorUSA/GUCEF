@@ -190,6 +190,10 @@
 				RelativePath="..\..\include\CServerPortExtender.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\include\ServerPortExtenderProtocol.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

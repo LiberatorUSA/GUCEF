@@ -37,6 +37,10 @@ typedef enum ServerPortExtenderProtocolEnum TServerPortExtenderProtocolEnum;
 
 /*-------------------------------------------------------------------------*/
 
+#define SPEP_PROTOCOL_VERSION 1
+
+/*-------------------------------------------------------------------------*/
+
 #endif /* SERVERPORTEXTENDERPROTOCOL_H ? */
 
 /*-------------------------------------------------------------------------//
