@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef SERVERPORTEXTENDERPROTOCOL_H
+#include "ServerPortExtenderProtocol.h"
+#define SERVERPORTEXTENDERPROTOCOL_H
+#endif /* SERVERPORTEXTENDERPROTOCOL_H ? */
+
 #include "CServerPortExtender.h"
 
 /*-------------------------------------------------------------------------//
@@ -41,15 +46,6 @@ CServerPortExtender::CServerPortExtender( void )
       m_reversedServerControlPort( 67235 )
 {GUCEF_TRACE;
 
-    //m_reversedServerSocket.Subscribe( this, 
-    //                                  CTCPServerConnection::,
-    //                                  &TEventCallback( this, &CServerPortExtender::OnRSClientConnectedEvent );
-
-    //static const CORE::CEvent ConnectedEvent;
-    //static const CORE::CEvent DisconnectedEvent;
-    //static const CORE::CEvent DataRecievedEvent;
-    //static const CORE::CEvent DataSentEvent;
-    //static const CORE::CEvent SocketErrorEvent;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -90,6 +86,16 @@ CServerPortExtender::OnRSControlClientConnected( CNotifier* notifier    ,
                                                  CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    CTCPConnection* connection = static_cast< CTCPConnection* >( notifier );
+    
+    // Send welcome handshake with protocol version so the client can determine
+    // whether it is compatible with this server
+    
+    char msg[ 4 ];
+    msg[ 0 ] = (char) SPEP_INITIAL_CONTROL_SERVER_MSG;
+    msg[ 1 ] = 45; // magic number, additional sanity check
+    msg[ 2 ]= SPEP_PROTOCOL_VERSION;
+    connection->Send( msg, 3 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -130,6 +136,7 @@ CServerPortExtender::OnRSControlClientDataRecieved( CNotifier* notifier    ,
                                                     CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    CTCPConnection* connection = static_cast< CTCPConnection* >( notifier );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -245,14 +252,17 @@ CServerPortExtender::OnReversedServerControlSocketNotify( CNotifier* notifier   
 
     if ( CTCPServerSocket::ClientConnectedEvent == eventid )
     {
+        // Now that the control connection is established we can listen for clients on our extended server port
         if ( !m_serverSocket.IsActive() )
         {
             m_serverSocket.ListenOnPort( m_serverPort );
         }
         
+        // Get the connection object
         CTCPServerSocket::TClientConnectedEventData* eData = static_cast< CTCPServerSocket::TClientConnectedEventData* >( eventdata );
         CTCPServerSocket::TConnectionInfo& connectionInfo = eData->GetData();
-        
+
+        // Subscribe to connection events        
         Subscribe( connectionInfo.connection                                                      ,
                    CTCPServerConnection::ConnectedEvent                                           ,
                    &TEventCallback( this, &CServerPortExtender::OnRSControlClientConnectedEvent ) );
