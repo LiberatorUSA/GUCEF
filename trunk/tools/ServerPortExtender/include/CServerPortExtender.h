@@ -131,10 +131,14 @@ class CServerPortExtender : public CObserver
     
     private:
     
+    typedef std::map< UInt32, UInt32 > TConnectionMap;
+     
     CTCPServerSocket m_reversedServerControlSocket;
     CTCPServerSocket m_reversedServerSocket;
     CTCPServerSocket m_serverSocket;
+    CTCPServerConnection* m_controlConnection;
     UInt16 m_serverPort;
     UInt16 m_reversedServerPort;
     UInt16 m_reversedServerControlPort;
+    TConnectionMap m_remoteToLocalConnectionMap;
 };
