@@ -228,14 +228,27 @@ CTCPServerSocket::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-/*
- *	Obtain pointer to connection data by means of connection index
- */
+CTCPServerConnection* 
+CTCPServerSocket::GetConnectionBySocketId( UInt32 socketId )
+{GUCEF_TRACE;
+
+    for ( UInt32 i=0; i<_connections.size(); ++i )
+    {
+        if ( socketId == _connections[ i ]->GetSocketID() )
+        {
+            return _connections[ i ];
+        }
+    }
+	return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CTCPServerConnection* 
 CTCPServerSocket::GetConnection( UInt32 index )
- {GUCEF_TRACE;
+{GUCEF_TRACE;
 
-	return (CTCPServerConnection*)_connections[ index ];
+	return _connections[ index ];
 }
 
 /*-------------------------------------------------------------------------*/

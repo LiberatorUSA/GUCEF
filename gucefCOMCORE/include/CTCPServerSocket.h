@@ -112,6 +112,11 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
      *  Obtain pointer to connection data by means of connection index
      */
     CTCPServerConnection* GetConnection( UInt32 index );
+    
+    /*
+     *  Obtain pointer to connection data by means of the socket Id
+     */
+    CTCPServerConnection* GetConnectionBySocketId( UInt32 socketId );
 
     UInt32 GetActiveCount( void ) const;
 

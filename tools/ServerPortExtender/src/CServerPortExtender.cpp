@@ -41,9 +41,11 @@ CServerPortExtender::CServerPortExtender( void )
       m_reversedServerControlSocket( false ) ,
       m_reversedServerSocket( false )        ,
       m_serverSocket( false )                ,
+      m_controlConnection( NULL )            ,
       m_serverPort( 76234 )                  ,
       m_reversedServerPort( 67234 )          ,
-      m_reversedServerControlPort( 67235 )
+      m_reversedServerControlPort( 67235 )   ,
+      m_remoteToLocalConnectionMap()
 {GUCEF_TRACE;
 
 }
@@ -86,7 +88,7 @@ CServerPortExtender::OnRSControlClientConnected( CNotifier* notifier    ,
                                                  CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    CTCPConnection* connection = static_cast< CTCPConnection* >( notifier );
+    CTCPServerConnection* connection = static_cast< CTCPServerConnection* >( notifier );
     
     // Send welcome handshake with protocol version so the client can determine
     // whether it is compatible with this server
@@ -96,6 +98,15 @@ CServerPortExtender::OnRSControlClientConnected( CNotifier* notifier    ,
     msg[ 1 ] = 45; // magic number, additional sanity check
     msg[ 2 ]= SPEP_PROTOCOL_VERSION;
     connection->Send( msg, 3 );
+    
+    // If we already have an existing control connection we should close it
+    // we only support 1 control connection at a time.
+    if ( NULL != m_controlConnection )
+    {
+        m_controlConnection->Close();
+        m_controlConnection = NULL;
+    }
+    m_controlConnection = connection;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -106,6 +117,16 @@ CServerPortExtender::OnRSControlClientDisconnected( CNotifier* notifier    ,
                                                     CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    CTCPServerConnection* connection = static_cast< CTCPServerConnection* >( notifier );
+    if ( NULL != m_controlConnection )
+    {
+        // Make sure the control connection object is no longer used since we where
+        // disconnected
+        if ( m_controlConnection == connection )
+        {
+            m_controlConnection = NULL;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -151,12 +172,34 @@ CServerPortExtender::OnRSClientConnected( CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
+CTCPServerConnection*
+CServerPortExtender::GetLocalConnectionForRemoteConnection( UInt32 rsSocketId )
+{GUCEF_TRACE;
+
+    TConnectionMap::iterator i = m_remoteToLocalConnectionMap.find( rsSocket );
+    if ( i != m_remoteToLocalConnectionMap.end() )
+    {
+        return m_serverSocket.GetConnectionBySocketId( (*i) );
+    }
+    return NULL; 
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CServerPortExtender::OnRSClientDisconnected( CNotifier* notifier    ,
                                              const CEvent& eventid  ,
                                              CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    // Since the remote link has been severed we should sever the local link since its
+    // the same virtual socket connection    
+    CTCPServerConnection* rsConnection = static_cast< CTCPServerConnection* >( notifier );
+    CTCPServerConnection* lConnection = GetLocalConnectionForRemoteConnection( connection->GetSocketID() );
+    if ( NULL != lConnection )
+    {
+        lConnection->Close();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -187,6 +230,12 @@ CServerPortExtender::OnRSClientDataRecieved( CNotifier* notifier    ,
                                              CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    CTCPServerConnection* rsConnection = static_cast< CTCPServerConnection* >( notifier );
+    CTCPServerConnection* lConnection = GetLocalConnectionForRemoteConnection( connection->GetSocketID() );
+    if ( NULL != lConnection )
+    {
+        lConnection->Close();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -197,6 +246,18 @@ CServerPortExtender::OnClientConnected( CNotifier* notifier    ,
                                         CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    // If a client connects to our extended port we have to make sure 
+    // it triggers the remote SPE client to establish a connection in the 
+    // opposite direction to this SPE server and establish a connection to 
+    // the actual remote server port
+    
+    CTCPServerConnection* clientConnection = static_cast< CTCPServerConnection* >( notifier );
+
+    // Send the request for a new connection to be established    
+    char msg[ 5 ];
+    msg[ 0 ] = (char) SPEP_CONTROL_SERVER_MSG_CREATE_CONNECTION_REQUEST;
+    memcpy( msg+1, &clientConnection->GetSocketID(), 4 );
+    m_controlConnection->Send( msg, 5 );  
 }
 
 /*-------------------------------------------------------------------------*/
@@ -217,6 +278,7 @@ CServerPortExtender::OnClientDataSent( CNotifier* notifier    ,
                                        CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    CTCPServerConnection* clientConnection = static_cast< CTCPServerConnection* >( notifier );
 }
 
 /*-------------------------------------------------------------------------*/
