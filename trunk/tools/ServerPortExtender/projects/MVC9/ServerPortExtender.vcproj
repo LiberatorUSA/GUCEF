@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include;..\..\..\..\gucefMT\include;..\..\..\..\gucefCORE\include;..\..\..\..\gucefCOMCORE\include"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\..\common\include;..\..\..\..\gucefMT\include;..\..\..\..\gucefCORE\include\mswin;..\..\..\..\gucefCORE\include;..\..\..\..\gucefCOMCORE\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -49,6 +49,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4251"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -118,13 +119,14 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\..\..\gucefMT\include;..\..\..\..\gucefCORE\include;..\..\..\..\gucefCOMCORE\include"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\..\common\include;..\..\..\..\gucefMT\include;..\..\..\..\gucefCORE\include;..\..\..\..\gucefCOMCORE\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4251"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -178,6 +180,10 @@
 			>
 			<File
 				RelativePath="..\..\src\CServerPortExtender.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\main.cpp"
 				>
 			</File>
 		</Filter>
