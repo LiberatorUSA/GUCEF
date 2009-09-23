@@ -18,40 +18,47 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
-
-#ifndef SERVERPORTEXTENDERPROTOCOL_H
-#define SERVERPORTEXTENDERPROTOCOL_H
-
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      TYPES                                                              //
+//      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-enum ServerPortExtenderProtocolEnum
+#ifndef CSERVERPORTEXTENDER_H
+#include "CServerPortExtender.h"
+#define CSERVERPORTEXTENDER_H
+#endif /* CSERVERPORTEXTENDER_H ? */
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef GUCEF_MSWIN_BUILD
+
+int __stdcall
+WinMain( HINSTANCE hinstance     ,
+         HINSTANCE hprevinstance ,
+         LPSTR lpcmdline         ,
+         int ncmdshow            )
 {
-    SPEP_INITIAL_CONTROL_CLIENT_MSG                   ,
-    SPEP_INITIAL_CONTROL_SERVER_MSG                   ,
-    SPEP_CONTROL_SERVER_MSG_CREATE_CONNECTION_REQUEST
-};
 
-typedef enum ServerPortExtenderProtocolEnum TServerPortExtenderProtocolEnum;
+    int argc = 0;
+    char** argv = &lpcmdline;
+    if ( lpcmdline != NULL )
+    {
+        if ( *lpcmdline != '\0' )
+        {
+            argc = 1;
+        }
+    }
+    
+#else
 
-/*-------------------------------------------------------------------------*/
+int
+main( int argc , char* argv[] )
+{GUCEF_TRACE;
 
-#define SPEP_PROTOCOL_VERSION 1
+#endif
 
-/*-------------------------------------------------------------------------*/
 
-#endif /* SERVERPORTEXTENDERPROTOCOL_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 09-06-2009 :
-        - Dinand: First version
-
----------------------------------------------------------------------------*/
+}

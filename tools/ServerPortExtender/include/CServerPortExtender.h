@@ -1,6 +1,8 @@
 /*
- *  gucefCOMCORE: GUCEF module providing basic communication facilities
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  ServerPortExtender: Generic networking tool for connecting clients
+ *  to a server that is behind a NAT firewall.
+ *
+ *  Copyright (C) 2002 - 2009.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -36,16 +38,18 @@
 #define GUCEF_COMCORE_CTCPCLIENTSOCKET_H
 #endif /* GUCEF_COMCORE_CTCPCLIENTSOCKET_H ? */
 
+#ifndef GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
+#include "CCyclicDynamicBuffer.h"
+#define GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CCYCLICDYNAMICBUFFER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-using GUCEF;
-using GUCEF::COMCORE;
-using GUCEF::CORE;
-using GUCEF::MT;
+using namespace GUCEF;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,92 +57,121 @@ using GUCEF::MT;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CServerPortExtender : public CObserver
+class CServerPortExtender : public CORE::CObserver
 {
     public:
     
     CServerPortExtender( void );
     
-    bool ListenForClientsOnPort( UInt16 port );
+    bool ListenForClientsOnPort( CORE::UInt16 port );
     
-    bool ListenForReversedControlClientOnPort( UInt16 port );
+    bool ListenForReversedControlClientOnPort( CORE::UInt16 port );
     
-    bool ListenForReversedClientsOnPort( UInt16 port );
+    bool ListenForReversedClientsOnPort( CORE::UInt16 port );
 
     protected:
     
-    typedef CTEventHandlerFunctor< CServerPortExtender > TEventCallback;
+    typedef CORE::CTEventHandlerFunctor< CServerPortExtender > TEventCallback;
     
     private:
     
     CServerPortExtender( const CServerPortExtender& src );
-
-    virtual void OnNotify( CNotifier* notifier           ,
-                           const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );
     
-    virtual void OnServerSocketNotify( CNotifier* notifier           ,
-                                       const CEvent& eventid         ,
-                                       CICloneable* eventdata = NULL );
+    COMCORE::CTCPServerConnection* GetLocalConnectionForRemoteConnection( CORE::UInt32 rsSocketId );
 
-    virtual void OnReversedServerSocketNotify( CNotifier* notifier           ,
-                                               const CEvent& eventid         ,
-                                               CICloneable* eventdata = NULL );
-
-    virtual void OnReversedServerControlSocketNotify( CNotifier* notifier           ,
-                                                      const CEvent& eventid         ,
-                                                      CICloneable* eventdata = NULL );
-
-    virtual void OnRSControlClientConnected( CNotifier* notifier           ,
-                                             const CEvent& eventid         ,
-                                             CICloneable* eventdata = NULL );
-
-    virtual void OnRSControlClientDisconnected( CNotifier* notifier           ,
-                                                const CEvent& eventid         ,
-                                                CICloneable* eventdata = NULL );
-
-    virtual void OnRSControlClientDataSent( CNotifier* notifier           ,
-                                            const CEvent& eventid         ,
-                                            CICloneable* eventdata = NULL );
-
-    virtual void OnRSControlClientDataRecieved( CNotifier* notifier           ,
-                                                const CEvent& eventid         ,
-                                                CICloneable* eventdata = NULL );
-                                         
-    virtual void OnRSControlClientSocketError( CNotifier* notifier           ,
-                                               const CEvent& eventid         ,
-                                               CICloneable* eventdata = NULL );
-
-    virtual void OnRSClientConnected( CNotifier* notifier           ,
-                                      const CEvent& eventid         ,
-                                      CICloneable* eventdata = NULL );
-
-    virtual void OnRSClientDisconnected( CNotifier* notifier           ,
-                                         const CEvent& eventid         ,
-                                         CICloneable* eventdata = NULL );
-
-    virtual void OnRSClientDataSent( CNotifier* notifier           ,
-                                     const CEvent& eventid         ,
-                                     CICloneable* eventdata = NULL );
-
-    virtual void OnRSClientDataRecieved( CNotifier* notifier           ,
-                                         const CEvent& eventid         ,
-                                         CICloneable* eventdata = NULL );
-                                         
-    virtual void OnRSClientSocketError( CNotifier* notifier           ,
-                                        const CEvent& eventid         ,
-                                        CICloneable* eventdata = NULL );
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );
     
+    virtual void OnServerSocketNotify( CORE::CNotifier* notifier           ,
+                                       const CORE::CEvent& eventid         ,
+                                       CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnReversedServerSocketNotify( CORE::CNotifier* notifier           ,
+                                               const CORE::CEvent& eventid         ,
+                                               CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnReversedServerControlSocketNotify( CORE::CNotifier* notifier           ,
+                                                      const CORE::CEvent& eventid         ,
+                                                      CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnRSControlClientConnected( CORE::CNotifier* notifier           ,
+                                             const CORE::CEvent& eventid         ,
+                                             CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnRSControlClientDisconnected( CORE::CNotifier* notifier           ,
+                                                const CORE::CEvent& eventid         ,
+                                                CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnRSControlClientDataSent( CORE::CNotifier* notifier           ,
+                                            const CORE::CEvent& eventid         ,
+                                            CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnRSControlClientDataRecieved( CORE::CNotifier* notifier           ,
+                                                const CORE::CEvent& eventid         ,
+                                                CORE::CICloneable* eventdata = NULL );
+                                         
+    virtual void OnRSControlClientSocketError( CORE::CNotifier* notifier           ,
+                                               const CORE::CEvent& eventid         ,
+                                               CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnRSClientConnected( CORE::CNotifier* notifier           ,
+                                      const CORE::CEvent& eventid         ,
+                                      CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnRSClientDisconnected( CORE::CNotifier* notifier           ,
+                                         const CORE::CEvent& eventid         ,
+                                         CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnRSClientDataSent( CORE::CNotifier* notifier           ,
+                                     const CORE::CEvent& eventid         ,
+                                     CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnRSClientDataRecieved( CORE::CNotifier* notifier           ,
+                                         const CORE::CEvent& eventid         ,
+                                         CORE::CICloneable* eventdata = NULL );
+                                         
+    virtual void OnRSClientSocketError( CORE::CNotifier* notifier           ,
+                                        const CORE::CEvent& eventid         ,
+                                        CORE::CICloneable* eventdata = NULL );
+    
+    virtual void OnClientConnected( CORE::CNotifier* notifier           ,
+                                    const CORE::CEvent& eventid         ,
+                                    CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnClientDisconnected( CORE::CNotifier* notifier           ,
+                                       const CORE::CEvent& eventid         ,
+                                       CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnClientDataSent( CORE::CNotifier* notifier           ,
+                                   const CORE::CEvent& eventid         ,
+                                   CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnClientDataRecieved( CORE::CNotifier* notifier           ,
+                                       const CORE::CEvent& eventid         ,
+                                       CORE::CICloneable* eventdata = NULL );
+                                         
+    virtual void OnClientSocketError( CORE::CNotifier* notifier           ,
+                                      const CORE::CEvent& eventid         ,
+                                      CORE::CICloneable* eventdata = NULL );
+
     private:
     
-    typedef std::map< UInt32, UInt32 > TConnectionMap;
+    typedef std::map< CORE::UInt32, CORE::UInt32 > TConnectionMap;
+    typedef std::map< COMCORE::CTCPServerConnection*, CORE::CCyclicDynamicBuffer > TConnectionBuffers;
      
-    CTCPServerSocket m_reversedServerControlSocket;
-    CTCPServerSocket m_reversedServerSocket;
-    CTCPServerSocket m_serverSocket;
-    CTCPServerConnection* m_controlConnection;
-    UInt16 m_serverPort;
-    UInt16 m_reversedServerPort;
-    UInt16 m_reversedServerControlPort;
+    COMCORE::CTCPServerSocket m_reversedServerControlSocket;
+    COMCORE::CTCPServerSocket m_reversedServerSocket;
+    COMCORE::CTCPServerSocket m_serverSocket;
+    COMCORE::CTCPServerConnection* m_controlConnection;
+    TConnectionBuffers m_cConnectionBuffers;
+    TConnectionBuffers m_rsConnectionBuffers;
+    CORE::UInt16 m_serverPort;
+    CORE::UInt16 m_reversedServerPort;
+    CORE::UInt16 m_reversedServerControlPort;
     TConnectionMap m_remoteToLocalConnectionMap;
 };
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* CSERVERPORTEXTENDER_H ? */
