@@ -104,6 +104,34 @@ CCyclicDynamicBuffer::operator=( const CCyclicDynamicBuffer& src )
 /*-------------------------------------------------------------------------*/
 
 UInt32
+CCyclicDynamicBuffer::ReadBlockTo( CDynamicBuffer& buffer )
+{GUCEF_TRACE;
+    
+    LockData();
+    
+    // We will simply pop a FIFO element
+    TBlockList::reverse_iterator i = m_usedBlocks.rend();
+    TDataChunk& dataChunck = (*i);
+    
+    // Copy the entire element into the given buffer and set the data size
+    UInt32 bytesRead = m_buffer.CopyTo( dataChunck.startOffset ,
+                                        dataChunck.blockSize   ,
+                                        buffer.GetBufferPtr()  );
+    buffer.SetDataSize( bytesRead );
+    
+    // Mark the element as free'd
+    TDataChunk freeDataChunck = dataChunck;
+    m_freeBlocks.push_back( freeDataChunck );
+    m_usedBlocks.pop_back();
+    
+    UnlockData();
+    
+    return bytesRead;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
 CCyclicDynamicBuffer::Read( void* destBuffer             ,
                             const UInt32 bytesPerElement ,
                             const UInt32 elementsToRead  )
@@ -157,7 +185,7 @@ CCyclicDynamicBuffer::Read( void* destBuffer             ,
 /*-------------------------------------------------------------------------*/
     
 UInt32
-CCyclicDynamicBuffer::Write( void* srcBuffer              ,
+CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
                              const UInt32 bytesPerElement ,
                              const UInt32 elementsToWrite )
 {GUCEF_TRACE;
