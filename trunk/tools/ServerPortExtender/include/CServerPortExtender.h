@@ -33,11 +33,6 @@
 #define GUCEF_COMCORE_CTCPSERVERSOCKET_H
 #endif /* GUCEF_COMCORE_CTCPSERVERSOCKET_H ? */
 
-#ifndef GUCEF_COMCORE_CTCPCLIENTSOCKET_H
-#include "CTCPClientSocket.h"
-#define GUCEF_COMCORE_CTCPCLIENTSOCKET_H
-#endif /* GUCEF_COMCORE_CTCPCLIENTSOCKET_H ? */
-
 #ifndef GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
 #include "CCyclicDynamicBuffer.h"
 #define GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
@@ -78,6 +73,7 @@ class CServerPortExtender : public CORE::CObserver
     CServerPortExtender( const CServerPortExtender& src );
     
     COMCORE::CTCPServerConnection* GetLocalConnectionForRemoteConnection( CORE::UInt32 rsSocketId );
+    COMCORE::CTCPServerConnection* GetRemoteConnectionForLocalConnection( CORE::UInt32 localSocketId );
 
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
@@ -154,11 +150,14 @@ class CServerPortExtender : public CORE::CObserver
     virtual void OnClientSocketError( CORE::CNotifier* notifier           ,
                                       const CORE::CEvent& eventid         ,
                                       CORE::CICloneable* eventdata = NULL );
+                                      
+    bool MapRemoteConnectionToLocalConnection( COMCORE::CTCPServerConnection* rsConnection );
 
     private:
     
     typedef std::map< CORE::UInt32, CORE::UInt32 > TConnectionMap;
     typedef std::map< COMCORE::CTCPServerConnection*, CORE::CCyclicDynamicBuffer > TConnectionBuffers;
+    typedef std::set< COMCORE::CTCPServerConnection* > TConnectionSet;
      
     COMCORE::CTCPServerSocket m_reversedServerControlSocket;
     COMCORE::CTCPServerSocket m_reversedServerSocket;
@@ -166,6 +165,7 @@ class CServerPortExtender : public CORE::CObserver
     COMCORE::CTCPServerConnection* m_controlConnection;
     TConnectionBuffers m_cConnectionBuffers;
     TConnectionBuffers m_rsConnectionBuffers;
+    TConnectionSet m_unmappedClientConnections;
     CORE::UInt16 m_serverPort;
     CORE::UInt16 m_reversedServerPort;
     CORE::UInt16 m_reversedServerControlPort;
