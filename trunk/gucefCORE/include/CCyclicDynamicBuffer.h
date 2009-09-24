@@ -71,11 +71,15 @@ class GUCEFCORE_EXPORT_CPP CCyclicDynamicBuffer
     
     CCyclicDynamicBuffer& operator=( const CCyclicDynamicBuffer& src );
     
+    // Copies an entire block, resulting from an original write action, 
+    // into the given buffer. The target buffer will be overwritten and not appended.
+    UInt32 ReadBlockTo( CDynamicBuffer& buffer );
+    
     UInt32 Read( void* destBuffer             ,
                  const UInt32 bytesPerElement ,
                  const UInt32 elementsToRead  );
     
-    UInt32 Write( void* srcBuffer              ,
+    UInt32 Write( const void* srcBuffer        ,
                   const UInt32 bytesPerElement ,
                   const UInt32 elementsToWrite );
 

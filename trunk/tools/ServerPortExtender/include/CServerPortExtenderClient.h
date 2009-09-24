@@ -58,14 +58,48 @@ class CServerPortExtenderClient : public CORE::CObserver
     
     CServerPortExtenderClient( void );
     
-    bool ConnectToSPEControlSocket( CORE::UInt16 controlPort );
+    bool ConnectToSPEControlSocket( const COMCORE::CHostAddress& host );
+    
+    bool ConnectToSPEControlSocket( const CORE::CString& hostname, CORE::UInt16 controlPort );
+    
+    void SetLocalServer( const COMCORE::CHostAddress& host );    
+
+    void SetLocalServer( const CORE::CString& hostname, CORE::UInt16 port );
+    
+    void SetRemoteServerSocket( CORE::UInt16 port );
+
+    protected:
+    
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );
      
     private:
+    
+    COMCORE::CTCPClientSocket* GetRemoteConnectionForLocalConnection( const CORE::UInt32 socketId );
+    
+    COMCORE::CTCPClientSocket* GetLocalConnectionForRemoteConnection( const CORE::UInt32 socketId );
+    
+    void MapLocalToRemoteConnection( COMCORE::CTCPClientSocket* localSocket  ,
+                                     COMCORE::CTCPClientSocket* remoteSocket );
+                                     
+    void OnControlClientNotify( CORE::CNotifier* notifier    ,
+                                const CORE::CEvent& eventid  ,
+                                CORE::CICloneable* eventdata );
+
+    private:
+    typedef std::map< COMCORE::CTCPClientSocket*, CORE::CCyclicDynamicBuffer > TClientConnectionBufferMap;
+    typedef std::map< CORE::UInt32, COMCORE::CTCPClientSocket* > TSocketIdMap;
     typedef std::set< COMCORE::CTCPClientSocket* > TClientConnectionSet;
     
     COMCORE::CTCPClientSocket m_controlClient;
-    TClientConnectionSet m_rsClientConnections;
+    TClientConnectionBufferMap m_rsClientConnections;
     TClientConnectionSet m_localClientConnections;
+    TSocketIdMap m_remoteToLocalConnectionMap;
+    TSocketIdMap m_localToRemoteConnectionMap;
+    COMCORE::CHostAddress m_localServer;
+    COMCORE::CHostAddress m_remoteSPEServer;
+    CORE::UInt16 m_remoteSPEServerPort;
 };
 
 /*-------------------------------------------------------------------------*/
