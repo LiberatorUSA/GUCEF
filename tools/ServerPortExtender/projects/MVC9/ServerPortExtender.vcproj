@@ -183,6 +183,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CServerPortExtenderClient.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\main.cpp"
 				>
 			</File>
@@ -194,6 +198,10 @@
 			>
 			<File
 				RelativePath="..\..\include\CServerPortExtender.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\CServerPortExtenderClient.h"
 				>
 			</File>
 			<File
