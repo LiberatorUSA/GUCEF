@@ -112,12 +112,47 @@ CServerPortExtenderClient::SetRemoteServerSocket( CORE::UInt16 port )
 /*-------------------------------------------------------------------------*/
 
 void
+CServerPortExtenderClient::OnControlMsg( TServerPortExtenderProtocolEnum msgType, )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CServerPortExtenderClient::OnControlClientNotify( CORE::CNotifier* notifier    ,
                                                   const CORE::CEvent& eventid  ,
                                                   CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
     
-
+    if ( COMCORE::CTCPClientSocket::ConnectedEvent == eventid )
+    {
+    }
+    else
+    if ( COMCORE::CTCPClientSocket::DisconnectedEvent == eventid )
+    {
+    }
+    else
+    if ( COMCORE::CTCPClientSocket::DataRecievedEvent == eventid )
+    {
+        // Get the data buffer
+        COMCORE::CTCPServerConnection::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPServerConnection::TDataRecievedEventData* >( eventdata );
+        const CORE::CDynamicBuffer& data = eData->GetData();
+        
+        UInt32 dataSize = data.GetDataSize();
+        
+        
+        
+        
+    }
+    else
+    if ( COMCORE::CTCPClientSocket::DataSentEvent == eventid )
+    {
+    }
+    else
+    if ( COMCORE::CTCPClientSocket::SocketErrorEvent == eventid )
+    {
+    }
 }
 
 /*-------------------------------------------------------------------------*/
