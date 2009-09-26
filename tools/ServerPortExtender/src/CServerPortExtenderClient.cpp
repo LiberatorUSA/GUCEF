@@ -140,10 +140,11 @@ CServerPortExtenderClient::OnControlClientNotify( CORE::CNotifier* notifier    ,
         const CORE::CDynamicBuffer& data = eData->GetData();
         
         UInt32 dataSize = data.GetDataSize();
-        
-        
-        
-        
+        if ( dataSize > 4 )
+        {
+            const char* data.
+            TServerPortExtenderProtocolEnum msgType = 
+        }
     }
     else
     if ( COMCORE::CTCPClientSocket::DataSentEvent == eventid )
