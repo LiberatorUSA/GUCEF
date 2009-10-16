@@ -201,6 +201,14 @@ ExtractFileExtention( const CString& path );
 GUCEF_CORE_EXPORT_CPP bool
 IsFileInDir( const CString& dirPath  , 
              const CString& filePath );
+             
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Attempts to load the text file into a string
+ */
+GUCEF_CORE_EXPORT_CPP bool
+LoadTextFileAsString( const CString& filePath, CString& fileContent );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
