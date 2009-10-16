@@ -480,6 +480,53 @@ IsFileInDir( const CString& dirPath  ,
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+LoadTextFileAsString( const CString& filePath , 
+                      CString& fileContent    )
+{GUCEF_TRACE;
+
+    fileContent.Clear();
+    
+    FILE* fptr = fopen( filePath, "rb" );
+    if ( NULL != fptr )
+    {
+        char charBuffer[ 1024 ];
+
+        do
+        {        
+            // read a block
+            size_t bytesRead = fread( charBuffer, 1, 1024, fptr );
+            
+            // Look for a null terminator
+            int delimter = bytesRead;
+            for ( size_t i=0; i<bytesRead; ++i )
+            {
+                if ( charBuffer[ i ] == 0 )
+                {
+                    delimter = (int) i;
+                }
+            }
+            
+            if ( delimter != bytesRead )
+            {
+                // This is not a text file
+                fclose( fptr );
+                return false;
+            }
+            
+            // Append what we can
+            fileContent.Append( charBuffer, delimter );
+        }
+        while ( bytesRead == 1024 );
+        
+        fclose( fptr );
+        return true;
+    }
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
