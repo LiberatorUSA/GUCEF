@@ -23,6 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <stdio.h>
+
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
@@ -37,6 +39,21 @@
 #include "dvfileutils.h"
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
+
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
+
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_CORE_CFILEACCESS_H
+#include "CFileAccess.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
 
 #ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>
@@ -66,6 +83,32 @@ PopulateFileListFromDir( const CORE::CString& path              ,
             if ( 0 != DI_Is_It_A_File( sdiData ) )
             {
                 fileList.push_back( DI_Name( sdiData ) );
+            }
+        }
+        while ( 0 != DI_Next_Dir_Entry( sdiData ) );
+        DI_Cleanup( sdiData );
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+PopulateDirListFromDir( const CORE::CString& path              , 
+                         std::vector< CORE::CString >& dirList )
+{GUCEF_TRACE;
+
+    CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( path.C_String() );
+    if ( NULL != sdiData )
+    {
+        do
+        {
+            if ( 0 == DI_Is_It_A_File( sdiData ) )
+            {
+                CORE::CString dirName = DI_Name( sdiData ); 
+                if ( ( dirName != "." ) && ( dirName != ".." ) )
+                {
+                    dirList.push_back( dirName );
+                }
             }
         }
         while ( 0 != DI_Next_Dir_Entry( sdiData ) );
@@ -105,7 +148,7 @@ GenerateCMakeListsFileSection( const CORE::CString& sectionContent       ,
         newSectionContent += "  " + filePrefix + (*i) + "\n";
         ++i;
     }
-    newSectionContent += ")\n";
+    newSectionContent += ")\n\n";
     return newSectionContent;
 }
 
@@ -144,13 +187,16 @@ GenerateCMakeListsFile( const CORE::CString& projectName                 ,
     
     // Add all the include files
     fileContent += GenerateCMakeListsFileIncludeSection( includeFiles );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( includeFiles.size() ) + " include files for project " + projectName );
     
     // Add all the source files
     fileContent += GenerateCMakeListsFileSrcSection( srcFiles );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( srcFiles.size() ) + " source files for project " + projectName );
     
     if ( fileSuffix.Length() > 0 )
     {
         fileContent += fileSuffix;
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed suffix file for project " + projectName );
     }
     else
     {
@@ -167,11 +213,10 @@ GenerateCMakeListsFile( const CORE::CString& projectName                 ,
 
 /*---------------------------------------------------------------------------*/
 
-int
-main( int argc , char* argv[] )
+void
+ProcessProjectDir( CORE::CString projectDir )
 {GUCEF_TRACE;
-
-    CORE::CString projectDir = CORE::RelativePath( "$CURWORKDIR$" );    
+   
     CORE::CString projectName = CORE::LastSubDir( projectDir ); 
     
     CORE::CString includeDir = projectDir;
@@ -185,14 +230,128 @@ main( int argc , char* argv[] )
     std::vector< CORE::CString > srcFiles;
     PopulateFileListFromDir( srcDir, srcFiles );
     
+    CORE::CString pathToSuffixFile = projectDir;
+    CORE::AppendToPath( pathToSuffixFile, "CMakeListsSuffix.txt" );
+    
     CORE::CString fileSuffix;
-    CORE::LoadTextFileAsString( "CMakeListsSuffix.txt", fileSuffix );
+    CORE::LoadTextFileAsString( pathToSuffixFile, fileSuffix );
     
     CORE::CString fileContent = GenerateCMakeListsFile( projectName, includeFiles, srcFiles, fileSuffix );
     
-    fptr = fopen( "CMakeLists.txt", "wb" );
-    fwrite( fileContent.C_String(), fileContent.Length(), 1, fptr );
-    fclose( fptr );
+    CORE::CString pathToCMakeListsFile = projectDir;
+    CORE::AppendToPath( pathToCMakeListsFile, "CMakeLists.txt" );
+    
+    CORE::WriteStringAsTextFile( pathToCMakeListsFile, fileContent );
+    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMake List file for project dir: " + projectDir );
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsDirAProjectDir( CORE::CString dir )
+{GUCEF_TRACE;
+
+    CORE::CString includeDir = dir;
+    CORE::AppendToPath( includeDir, "include" );
+    CORE::CString srcDir = dir;
+    CORE::AppendToPath( srcDir, "src" );
+    
+    return 0 != CORE::Is_Path_Valid( includeDir.C_String() ) &&
+           0 != CORE::Is_Path_Valid( srcDir.C_String() );
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+LocateAndProcessProjectDirsRecusively( CORE::CString topLevelDir )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Recursively processing directory: " + topLevelDir );
+    
+    // Is this a project dir or some other dir?    
+    if ( IsDirAProjectDir( topLevelDir ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that the following directory is a project directory: " + topLevelDir );
+        
+        // Process this dir
+        ProcessProjectDir( topLevelDir );
+    }
+    
+    // Get all subsir's
+    std::vector< CORE::CString > dirList;
+    PopulateDirListFromDir( topLevelDir, dirList );
+    
+    // Process all sub-dirs
+    std::vector< CORE::CString >::iterator i = dirList.begin();
+    while ( i != dirList.end() )
+    {
+        CORE::CString subDir = topLevelDir;
+        CORE::AppendToPath( subDir, (*i) );
+        
+        LocateAndProcessProjectDirsRecusively( subDir );
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+ParseParams( const int argc                 , 
+             char* argv[]                   ,
+             CORE::CValueList& keyValueList )
+{GUCEF_TRACE;
+    
+    keyValueList.DeleteAll();
+    GUCEF::CORE::CString argString;
+    if ( argc > 0 )
+    {
+        argString = *argv;
+
+        // Combine the argument strings back into a single string because we don't want to use
+        // a space as the seperator
+        for ( int i=1; i<argc; ++i )
+        {
+            argString += ' ' + CORE::CString( argv[ i ] );
+        }
+        
+        // Parse the param list based on the ' symbol
+        keyValueList.SetMultiple( argString, '\'' );
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+int
+main( int argc , char* argv[] )
+{GUCEF_TRACE;
+
+    CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
+    CORE::AppendToPath( logFilename, "CMakeListsGenerator_Log.txt" );
+    CORE::CFileAccess logFileAccess( logFilename, "w" );
+    
+    CORE::CStdLogger logger( logFileAccess );
+    CORE::CLogManager::Instance()->AddLogger( &logger );
+    
+    #ifdef GUCEF_MSWIN_BUILD
+    CORE::CMSWinConsoleLogger consoleOut;
+    CORE::CLogManager::Instance()->AddLogger( &consoleOut );
+    #endif /* GUCEF_MSWIN_BUILD ? */
+
+    CORE::CValueList keyValueList;
+    ParseParams( argc, argv, keyValueList );
+                                              
+    CORE::CString topLevelProjectDir;
+    try
+    {
+        topLevelProjectDir = keyValueList.GetValue( "rootDir" );
+    }
+    catch ( CORE::CValueList::EUnknownKey& )
+    {
+        topLevelProjectDir = CORE::RelativePath( "$CURWORKDIR$" );
+    }
+    
+    LocateAndProcessProjectDirsRecusively( topLevelProjectDir ); 
 }
 
 /*---------------------------------------------------------------------------*/

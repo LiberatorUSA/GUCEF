@@ -173,8 +173,8 @@ class GUCEFCORE_EXPORT_CPP CString
     CString ReplaceChar( char oldchar ,
                          char newchar ) const;                  
               
-    void ReplaceSubstr( const CString& substr      ,
-                        const CString& replacement );
+    CString ReplaceSubstr( const CString& substr      ,
+                           const CString& replacement ) const;
                         
     CString SubstrToChar( char searchchar        ,
                           bool startfront = true ) const;

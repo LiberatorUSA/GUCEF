@@ -208,7 +208,17 @@ IsFileInDir( const CString& dirPath  ,
  *  Attempts to load the text file into a string
  */
 GUCEF_CORE_EXPORT_CPP bool
-LoadTextFileAsString( const CString& filePath, CString& fileContent );
+LoadTextFileAsString( const CString& filePath , 
+                      CString& fileContent    );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Attempts to write the string as a text file
+ */
+GUCEF_CORE_EXPORT_CPP bool
+WriteStringAsTextFile( const CString& filePath    , 
+                       const CString& fileContent );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

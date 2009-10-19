@@ -535,13 +535,28 @@ CString::ReplaceChar( char oldchar ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
+CString 
 CString::ReplaceSubstr( const CString& substr      ,
-                        const CString& replacement )
+                        const CString& replacement ) const
 {GUCEF_TRACE;
     
-    //@TODO @MAKEME
-    assert( 0 );      
+    CString testStr = *this;
+    CString newStr;    
+    Int32 subStrIndex = 0;
+    do
+    {
+        subStrIndex = testStr.HasSubstr( substr, true );
+        if ( subStrIndex >= 0 )
+        {
+            newStr.Append( testStr.C_String(), subStrIndex ); 
+            newStr += replacement;
+            testStr = testStr.CutChars( (UInt32)subStrIndex + substr.Length(), true );
+        }
+    }
+    while ( subStrIndex >= 0 );    
+    newStr += testStr;
+    
+    return newStr;    
 }
 
 /*-------------------------------------------------------------------------*/

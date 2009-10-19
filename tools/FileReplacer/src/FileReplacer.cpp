@@ -173,7 +173,7 @@ ParseParams( const int argc                        ,
         // a space as the seperator
         for ( int i=1; i<argc; ++i )
         {
-            argString += ( ' ' + argv[ i ] );
+            argString += ( ' ' + GUCEF::CORE::CString( argv[ i ] ) );
         }
         
         // Parse the param list based on the " symbol

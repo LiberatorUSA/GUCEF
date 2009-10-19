@@ -483,24 +483,54 @@ IsFileInDir( const CString& dirPath  ,
 /*-------------------------------------------------------------------------*/
 
 bool
+WriteStringAsTextFile( const CString& filePath    , 
+                       const CString& fileContent )
+{GUCEF_TRACE;
+    
+    FILE* fptr = fopen( filePath.C_String(), "wb" );
+    if ( NULL != fptr )
+    {
+        #ifdef GUCEF_MSWIN_BUILD
+        // Turn everything into "\n" in case of a mixed EOL char string
+        CString content = fileContent.ReplaceSubstr( "\r\n", "\n" );
+        content = fileContent.ReplaceSubstr( "\r", "\n" );
+        
+        // Now turn "\n" into the windows variant which is "\r\n"
+        content = fileContent.ReplaceSubstr( "\n", "\r\n" );
+        
+        fwrite( content.C_String(), content.Length(), 1, fptr );
+        fclose( fptr );
+        #else
+        fwrite( fileContent.C_String(), fileContent.Length(), 1, fptr );
+        fclose( fptr );
+        #endif
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 LoadTextFileAsString( const CString& filePath , 
                       CString& fileContent    )
 {GUCEF_TRACE;
 
     fileContent.Clear();
     
-    FILE* fptr = fopen( filePath, "rb" );
+    FILE* fptr = fopen( filePath.C_String(), "rb" );
     if ( NULL != fptr )
     {
         char charBuffer[ 1024 ];
 
+        size_t bytesRead = 0;
         do
         {        
             // read a block
-            size_t bytesRead = fread( charBuffer, 1, 1024, fptr );
+            bytesRead = fread( charBuffer, 1, 1024, fptr );
             
             // Look for a null terminator
-            int delimter = bytesRead;
+            size_t delimter = bytesRead;
             for ( size_t i=0; i<bytesRead; ++i )
             {
                 if ( charBuffer[ i ] == 0 )
@@ -517,7 +547,7 @@ LoadTextFileAsString( const CString& filePath ,
             }
             
             // Append what we can
-            fileContent.Append( charBuffer, delimter );
+            fileContent.Append( charBuffer, (UInt32)delimter );
         }
         while ( bytesRead == 1024 );
         

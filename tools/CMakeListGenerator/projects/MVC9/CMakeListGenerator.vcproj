@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\gucefCORE\include;..\..\..\..\common\include;..\..\..\..\gucefMT\include"
+				AdditionalIncludeDirectories="..\..\..\..\gucefCORE\include;..\..\..\..\gucefCORE\include\mswin;..\..\..\..\common\include;..\..\..\..\gucefMT\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -49,6 +49,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4251"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -62,7 +63,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="gucefCORE_MVC9_d.lib"
+				OutputFile="$(OutDir)\CMakeListGenerator_d.exe"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Debug_MVC9"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -124,6 +127,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4251"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -137,7 +141,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="gucefCORE_MVC9.lib"
+				OutputFile="$(OutDir)\CMakeListGenerator.exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\..\..\gucefCORE\bin\Release_MVC9"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
