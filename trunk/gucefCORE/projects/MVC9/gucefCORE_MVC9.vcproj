@@ -1364,6 +1364,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\gucefCORE_Logging.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\gucefCORE_macros.h"
 				>
 			</File>
