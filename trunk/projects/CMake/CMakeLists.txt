@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------
-# This file is part of the CMake build system for OGRE
-#     (Object-oriented Graphics Rendering Engine)
-# For the latest info, see http://www.ogre3d.org/
+# This file is part of the CMake build system for GUCEF
+#     (Galaxy Unlimited Framework)
+# For the latest info, see http://www.VanvelzenSoftware.com/
 #
 # The contents of this file are placed in the public domain. Feel
 # free to make use of it in any way you like.
@@ -14,20 +14,20 @@
 #############################################################
 
 if(WIN32)
-	set(OGRE_CMAKE_DIR "CMake")
+	set(GUCEF_CMAKE_DIR "CMake")
 else(WIN32)
-	set(OGRE_CMAKE_DIR "lib/OGRE/cmake")
+	set(GUCEF_CMAKE_DIR "lib/GUCEF/cmake")
 endif(WIN32)
 
 set(INST_FILES
   Packages/FindCEGUI.cmake
   Packages/FindOIS.cmake
-  Packages/FindOGRE.cmake
+  Packages/FindGUCEF.cmake
   Utils/FindPkgMacros.cmake
   Utils/PreprocessorUtils.cmake
-  Utils/OgreConfigTargets.cmake
-  Utils/OgreGetVersion.cmake
-  Utils/OgreFindFrameworks.cmake
+  Utils/GUCEFConfigTargets.cmake
+  Utils/GUCEFGetVersion.cmake
+  Utils/GUCEFFindFrameworks.cmake
 ) 
 set(STATIC_INST_FILES
   Packages/FindCg.cmake
@@ -57,7 +57,7 @@ if (APPLE)
   )
 endif ()
 
-install(FILES ${INST_FILES} DESTINATION ${OGRE_CMAKE_DIR})
-if (OGRE_STATIC)
-  install(FILES ${STATIC_INST_FILES} DESTINATION ${OGRE_CMAKE_DIR})
+install(FILES ${INST_FILES} DESTINATION ${GUCEF_CMAKE_DIR})
+if (GUCEF_STATIC)
+  install(FILES ${STATIC_INST_FILES} DESTINATION ${GUCEF_CMAKE_DIR})
 endif ()

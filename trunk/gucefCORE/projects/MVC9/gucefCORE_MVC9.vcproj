@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\common\include;..\..\include;..\..\include\mswin;..\..\..\gucefMT\include;..\..\dependancy;..\..\dependancy\md5"
+				AdditionalIncludeDirectories="..\..\..\common\include;..\..\include;..\..\include\mswin;..\..\..\gucefMT\include;..\..\dependencies;..\..\dependencies\md5"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_DEPRECATE;GUCEFCORE_BUILD_MODULE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -1423,7 +1423,7 @@
 				Name="Source Files"
 				>
 				<File
-					RelativePath="..\..\dependancy\MD5\md5.c"
+					RelativePath="..\..\dependencies\MD5\md5.c"
 					>
 				</File>
 			</Filter>
@@ -1431,7 +1431,7 @@
 				Name="Header Files"
 				>
 				<File
-					RelativePath="..\..\dependancy\MD5\md5.h"
+					RelativePath="..\..\dependencies\MD5\md5.h"
 					>
 				</File>
 			</Filter>
