@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  CMakeListGenerator: Tool to generate CMakeList.txt with headers and sources
  *  Copyright (C) 2002 - 2009.  Dinand Vanvelzen
  *
@@ -130,7 +130,25 @@ GetCMakeListsFileHeader( void )
     "#\n"
     "# The contents of this file are placed in the public domain. Feel\n"
     "# free to make use of it in any way you like.\n"
-    "#-------------------------------------------------------------------\n\n";
+    "#-------------------------------------------------------------------\n\n"
+    "#\n"
+    "#\n"
+    "# -- Basic CMake concepts:\n"
+    "#      CMAKE_MODULE_PATH\n"
+    "#      – Path to where the CMake modules are located\n"
+    "#      CMAKE_INSTALL_PREFIX\n"
+    "#      – Where to put files when calling 'make install'\n"
+    "#      CMAKE_BUILD_TYPE\n"
+    "#      – Type of build (Debug, Release, ...)\n"
+    "#      BUILD_SHARED_LIBS\n"
+    "#      – Switch between shared and static libraries\n";
+    "#\n"
+    "# Variables can be changed directly in the build files (CMakeLists.txt) or through\n"
+    "# the command line by prefixing a variable's name with '-D':\n"
+    "#               Example: cmake -DBUILD_SHARED_LIBS=OFF\n"
+    "#           Here BUILD_SHARED_LIBS is the variable prefixed by -D\n"
+    "#\n"
+    "#\n";    
 }
 
 /*---------------------------------------------------------------------------*/
@@ -156,7 +174,8 @@ GenerateCMakeListsFileSection( const CORE::CString& sectionContent       ,
 
 CORE::CString
 GenerateCMakeListsFileIncludeSection( const std::vector< CORE::CString >& includeFiles )
-{
+{GUCEF_TRACE;
+
     CORE::CString sectionContent = "set(HEADER_FILES \n";
     return GenerateCMakeListsFileSection( sectionContent, "include/", includeFiles );
 }
@@ -165,7 +184,8 @@ GenerateCMakeListsFileIncludeSection( const std::vector< CORE::CString >& includ
 
 CORE::CString
 GenerateCMakeListsFileSrcSection( const std::vector< CORE::CString >& includeFiles )
-{
+{GUCEF_TRACE;
+
     CORE::CString sectionContent = "set(SOURCE_FILES \n";
     return GenerateCMakeListsFileSection( sectionContent, "src/", includeFiles );
 }
@@ -173,11 +193,130 @@ GenerateCMakeListsFileSrcSection( const std::vector< CORE::CString >& includeFil
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFile( const CORE::CString& projectName                 ,
-                        const std::vector< CORE::CString >& includeFiles ,
-                        const std::vector< CORE::CString >& srcFiles     ,
-                        const CORE::CString& fileSuffix                  )
+GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir )
 {GUCEF_TRACE;
+
+    CORE::CString sectionContent;
+    
+    // test for 'mswin' dir for the MS Windows platform
+    bool validPlatform = true; bool 
+    sectionContent += GenerateCMakeListsFilePlatformIncludeSection( projectDir, "WIN32", "mswin", true, validPlatform );
+    sectionContent += GenerateCMakeListsFilePlatformIncludeSection( projectDir, "UNIX", "linux", !validPlatform, validPlatform );
+    
+    if ( sectionContent.Length() > 0 )
+    {
+        // since we added data we have to close the section
+        sectionContent += "endif ()\n";
+    }
+    
+    return sectionContent;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir   ,
+                                            const CORE::CString& platformName ,
+                                            const CORE::CString& platformDir  ,
+                                            bool firstPlatform                ,
+                                            bool& validPlatform               )
+{GUCEF_TRACE;
+
+    bool hasPlatformIncludes = false;
+    bool hasPlatformSrc = false;
+    
+    CORE::CString includeDir = subDir;
+    CORE::AppendToPath( includeDir, "include" );
+    CORE::CString srcDir = subDir;
+    CORE::AppendToPath( srcDir, "src" );
+
+    CORE::CString sectionContent;
+    CORE::CString subDirLastSeg = CORE::LastSubDir( projectDir ); 
+
+    if ( firstPlatform )
+    {
+        sectionContent = "if (" + platformName + ")\n"
+    }
+    else
+    {
+        sectionContent = "elseif (" + platformName + ")\n"
+    }
+    
+    CORE::CString platformSubDir = projectDir;
+    CORE::AppendToPath( platformSubDir, "include" );    
+    CORE::AppendToPath( platformSubDir, platformDir );
+    if ( CORE::IsPathValid( platformSubDir ) )
+    {
+        hasPlatformIncludes = true;
+        sectionContent += "  set(PLATFORM_HEADER_FILES \n";
+
+        
+        CORE::CString platformSubDirSeg = subDirLastSeg;
+        CORE::AppendToPath( platformSubDir, platformDir );        
+        const std::vector< CORE::CString >& subFiles;
+        sectionContent += GenerateCMakeListsFileSection( sectionContent, platformSubDir, subFiles );
+        
+        sectionContent += "  include_directories(" + platformSubDir + ")\n";
+        sectionContent += "  set(PLATFORM_HEADER_INSTALL \"" + platformName + "\")\n";
+    }
+    else
+    {
+        hasPlatformIncludes = false;
+    }
+    
+    CORE::CString platformSubDir = projectDir;
+    CORE::AppendToPath( platformSubDir, "src" );    
+    CORE::AppendToPath( platformSubDir, platformDir );
+    if ( CORE::IsPathValid( platformSubDir ) )
+    {
+        hasPlatformSrc = true;
+        
+        if ( firstPlatform )
+        {
+            sectionContent += "  set(PLATFORM_SOURCE_FILES \n";
+        }
+        else
+        {
+            sectionContent += "elseif (" + platformName + ")\n  set(PLATFORM_SOURCE_FILES \n";
+        }
+        
+        CORE::CString platformSubDirSeg = subDirLastSeg;
+        CORE::AppendToPath( platformSubDir, platformDir );        
+        const std::vector< CORE::CString >& subFiles;
+        sectionContent += GenerateCMakeListsFileSection( sectionContent, platformSubDir, subFiles );
+        
+        sectionContent += "  include_directories(" + platformSubDir + ")\n";
+        sectionContent += "  set(PLATFORM_HEADER_INSTALL \"" + platformName + "\")\n";
+    }
+    else
+    {
+        hasPlatformSrc = false;
+    }
+    
+    if ( hasPlatformIncludes || hasPlatformSrc )
+    {
+        validPlatform = true;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeListsFile( const CORE::CString& projectName ,
+                        const CORE::CString& projectDir  ,
+                        const CORE::CString& fileSuffix  )
+{GUCEF_TRACE;
+
+    CORE::CString includeDir = projectDir;
+    CORE::AppendToPath( includeDir, "include" );
+    CORE::CString srcDir = projectDir;
+    CORE::AppendToPath( srcDir, "src" );
+    
+    std::vector< CORE::CString > includeFiles;
+    PopulateFileListFromDir( includeDir, includeFiles );
+    
+    std::vector< CORE::CString > srcFiles;
+    PopulateFileListFromDir( srcDir, srcFiles );
 
     // Set file header comment section
     CORE::CString fileContent = GetCMakeListsFileHeader();
@@ -192,6 +331,9 @@ GenerateCMakeListsFile( const CORE::CString& projectName                 ,
     // Add all the source files
     fileContent += GenerateCMakeListsFileSrcSection( srcFiles );
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( srcFiles.size() ) + " source files for project " + projectName );
+    
+    // Add all platform files, headers and source
+    fileContent += GenerateCMakeListsFilePlatformFilesSection( projectDir );
     
     if ( fileSuffix.Length() > 0 )
     {
@@ -219,24 +361,13 @@ ProcessProjectDir( CORE::CString projectDir )
    
     CORE::CString projectName = CORE::LastSubDir( projectDir ); 
     
-    CORE::CString includeDir = projectDir;
-    CORE::AppendToPath( includeDir, "include" );
-    CORE::CString srcDir = projectDir;
-    CORE::AppendToPath( srcDir, "src" );
-    
-    std::vector< CORE::CString > includeFiles;
-    PopulateFileListFromDir( includeDir, includeFiles );
-    
-    std::vector< CORE::CString > srcFiles;
-    PopulateFileListFromDir( srcDir, srcFiles );
-    
     CORE::CString pathToSuffixFile = projectDir;
     CORE::AppendToPath( pathToSuffixFile, "CMakeListsSuffix.txt" );
     
     CORE::CString fileSuffix;
     CORE::LoadTextFileAsString( pathToSuffixFile, fileSuffix );
     
-    CORE::CString fileContent = GenerateCMakeListsFile( projectName, includeFiles, srcFiles, fileSuffix );
+    CORE::CString fileContent = GenerateCMakeListsFile( projectName, projectDir, fileSuffix );
     
     CORE::CString pathToCMakeListsFile = projectDir;
     CORE::AppendToPath( pathToCMakeListsFile, "CMakeLists.txt" );
@@ -363,7 +494,7 @@ WinMain( HINSTANCE hinstance     ,
          HINSTANCE hprevinstance ,
          LPSTR lpcmdline         ,
          int ncmdshow            )
-{
+{GUCEF_TRACE;
 
     int argc = 0;
     char** argv = &lpcmdline;
