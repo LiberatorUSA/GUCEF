@@ -198,10 +198,9 @@ GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir )
 
     CORE::CString sectionContent;
     
-    // test for 'mswin' dir for the MS Windows platform
-    bool validPlatform = true; bool 
-    sectionContent += GenerateCMakeListsFilePlatformIncludeSection( projectDir, "WIN32", "mswin", true, validPlatform );
-    sectionContent += GenerateCMakeListsFilePlatformIncludeSection( projectDir, "UNIX", "linux", !validPlatform, validPlatform );
+    bool validPlatform = true;
+    sectionContent += GenerateCMakeListsFilePlatformFilesSection( projectDir, "WIN32", "mswin", true, validPlatform );
+    sectionContent += GenerateCMakeListsFilePlatformFilesSection( projectDir, "UNIX", "linux", !validPlatform, validPlatform );
     
     if ( sectionContent.Length() > 0 )
     {
@@ -225,9 +224,9 @@ GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir   ,
     bool hasPlatformIncludes = false;
     bool hasPlatformSrc = false;
     
-    CORE::CString includeDir = subDir;
+    CORE::CString includeDir = projectDir;
     CORE::AppendToPath( includeDir, "include" );
-    CORE::CString srcDir = subDir;
+    CORE::CString srcDir = projectDir;
     CORE::AppendToPath( srcDir, "src" );
 
     CORE::CString sectionContent;
@@ -235,11 +234,11 @@ GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir   ,
 
     if ( firstPlatform )
     {
-        sectionContent = "if (" + platformName + ")\n"
+        sectionContent = "if (" + platformName + ")\n";
     }
     else
     {
-        sectionContent = "elseif (" + platformName + ")\n"
+        sectionContent = "elseif (" + platformName + ")\n";
     }
     
     CORE::CString platformSubDir = projectDir;
@@ -253,7 +252,7 @@ GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir   ,
         
         CORE::CString platformSubDirSeg = subDirLastSeg;
         CORE::AppendToPath( platformSubDir, platformDir );        
-        const std::vector< CORE::CString >& subFiles;
+        std::vector< CORE::CString > subFiles;
         sectionContent += GenerateCMakeListsFileSection( sectionContent, platformSubDir, subFiles );
         
         sectionContent += "  include_directories(" + platformSubDir + ")\n";
@@ -264,7 +263,7 @@ GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir   ,
         hasPlatformIncludes = false;
     }
     
-    CORE::CString platformSubDir = projectDir;
+    platformSubDir = projectDir;
     CORE::AppendToPath( platformSubDir, "src" );    
     CORE::AppendToPath( platformSubDir, platformDir );
     if ( CORE::IsPathValid( platformSubDir ) )
@@ -282,7 +281,7 @@ GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir   ,
         
         CORE::CString platformSubDirSeg = subDirLastSeg;
         CORE::AppendToPath( platformSubDir, platformDir );        
-        const std::vector< CORE::CString >& subFiles;
+        std::vector< CORE::CString > subFiles;
         sectionContent += GenerateCMakeListsFileSection( sectionContent, platformSubDir, subFiles );
         
         sectionContent += "  include_directories(" + platformSubDir + ")\n";
@@ -297,6 +296,8 @@ GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir   ,
     {
         validPlatform = true;
     }
+    
+    return sectionContent;
 }
 
 /*---------------------------------------------------------------------------*/
