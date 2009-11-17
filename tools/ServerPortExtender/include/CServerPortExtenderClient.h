@@ -38,6 +38,11 @@
 #define GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CCYCLICDYNAMICBUFFER_H ? */
 
+#ifndef SERVERPORTEXTENDERPROTOCOL_H
+#include "ServerPortExtenderProtocol.h"
+#define SERVERPORTEXTENDERPROTOCOL_H
+#endif /* SERVERPORTEXTENDERPROTOCOL_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -52,6 +57,12 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/** 
+ *  The client application is run on the machine that has the server port 
+ *  you which to extend through the inverted connection. The extender server
+ *  should be run from where the client application is location which will be
+ *  connecting via the server port extender connection.
+ */
 class CServerPortExtenderClient : public CORE::CObserver
 {
     public:
@@ -70,6 +81,8 @@ class CServerPortExtenderClient : public CORE::CObserver
 
     protected:
     
+    typedef CORE::CTEventHandlerFunctor< CServerPortExtenderClient > TEventCallback;
+    
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
                            CORE::CICloneable* eventdata = NULL );
@@ -79,13 +92,62 @@ class CServerPortExtenderClient : public CORE::CObserver
     COMCORE::CTCPClientSocket* GetRemoteConnectionForLocalConnection( const CORE::UInt32 socketId );
     
     COMCORE::CTCPClientSocket* GetLocalConnectionForRemoteConnection( const CORE::UInt32 socketId );
+
+    void RemoveConnectionUsingLocalClient( COMCORE::CTCPClientSocket* localSocket );
+    
+    void RemoveConnectionUsingSPEClient( COMCORE::CTCPClientSocket* speClientSocket );
     
     void MapLocalToRemoteConnection( COMCORE::CTCPClientSocket* localSocket  ,
                                      COMCORE::CTCPClientSocket* remoteSocket );
+
+    void SendAllDataInBuffer( CORE::CCyclicDynamicBuffer& buffer ,
+                              COMCORE::CTCPClientSocket& socket  );
+                              
+    void OnControlMsg( TServerPortExtenderProtocolEnum msgType );
                                      
     void OnControlClientNotify( CORE::CNotifier* notifier    ,
                                 const CORE::CEvent& eventid  ,
                                 CORE::CICloneable* eventdata );
+
+   void OnClientToRemoteSPEConnected( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventid  ,
+                                      CORE::CICloneable* eventdata );
+                                      
+    void OnClientToRemoteSPEDisconnected( CORE::CNotifier* notifier    ,
+                                          const CORE::CEvent& eventid  ,
+                                          CORE::CICloneable* eventdata );
+                                               
+    void OnClientToRemoteSPEDataRecieved( CORE::CNotifier* notifier    ,
+                                          const CORE::CEvent& eventid  ,
+                                          CORE::CICloneable* eventdata );
+                                               
+    void OnClientToRemoteSPEDataSent( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventid  ,
+                                      CORE::CICloneable* eventdata );
+                                           
+    void OnClientToRemoteSPESocketError( CORE::CNotifier* notifier    ,
+                                         const CORE::CEvent& eventid  ,
+                                         CORE::CICloneable* eventdata );
+                                              
+   void OnClientToActualServerConnected( CORE::CNotifier* notifier    ,
+                                         const CORE::CEvent& eventid  ,
+                                         CORE::CICloneable* eventdata );
+                                      
+    void OnClientToActualServerDisconnected( CORE::CNotifier* notifier    ,
+                                             const CORE::CEvent& eventid  ,
+                                             CORE::CICloneable* eventdata );
+                                               
+    void OnClientToActualServerDataRecieved( CORE::CNotifier* notifier    ,
+                                             const CORE::CEvent& eventid  ,
+                                             CORE::CICloneable* eventdata );
+                                               
+    void OnClientToActualServerDataSent( CORE::CNotifier* notifier    ,
+                                         const CORE::CEvent& eventid  ,
+                                         CORE::CICloneable* eventdata );
+                                           
+    void OnClientToActualServerSocketError( CORE::CNotifier* notifier    ,
+                                            const CORE::CEvent& eventid  ,
+                                            CORE::CICloneable* eventdata );
 
     private:
     typedef std::map< COMCORE::CTCPClientSocket*, CORE::CCyclicDynamicBuffer > TClientConnectionBufferMap;
@@ -94,7 +156,7 @@ class CServerPortExtenderClient : public CORE::CObserver
     
     COMCORE::CTCPClientSocket m_controlClient;
     TClientConnectionBufferMap m_rsClientConnections;
-    TClientConnectionSet m_localClientConnections;
+    TClientConnectionBufferMap m_localClientConnections;
     TSocketIdMap m_remoteToLocalConnectionMap;
     TSocketIdMap m_localToRemoteConnectionMap;
     COMCORE::CHostAddress m_localServer;

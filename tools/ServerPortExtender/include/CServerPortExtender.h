@@ -52,8 +52,16 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CServerPortExtender : public CORE::CObserver
+class CServerPortExtender : public CORE::CObservingNotifier
 {
+    public:
+    
+    static const CORE::CEvent ControlSocketOpenedEvent;
+    static const CORE::CEvent ReversedSocketOpenedEvent;
+    static const CORE::CEvent ClientSocketOpenedEvent;
+    
+    static void RegisterEvents( void );
+    
     public:
     
     CServerPortExtender( void );

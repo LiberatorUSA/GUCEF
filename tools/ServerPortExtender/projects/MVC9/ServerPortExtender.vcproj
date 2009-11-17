@@ -90,6 +90,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;..\..\..\..\common\bin\Debug_MVC9&quot;"
 			/>
 		</Configuration>
 		<Configuration
