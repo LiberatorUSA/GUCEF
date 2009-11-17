@@ -193,32 +193,11 @@ GenerateCMakeListsFileSrcSection( const std::vector< CORE::CString >& includeFil
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir )
-{GUCEF_TRACE;
-
-    CORE::CString sectionContent;
-    
-    bool validPlatform = true;
-    sectionContent += GenerateCMakeListsFilePlatformFilesSection( projectDir, "WIN32", "mswin", true, validPlatform );
-    sectionContent += GenerateCMakeListsFilePlatformFilesSection( projectDir, "UNIX", "linux", !validPlatform, validPlatform );
-    
-    if ( sectionContent.Length() > 0 )
-    {
-        // since we added data we have to close the section
-        sectionContent += "endif ()\n";
-    }
-    
-    return sectionContent;
-}
-
-/*---------------------------------------------------------------------------*/
-
-CORE::CString
-GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir   ,
-                                            const CORE::CString& platformName ,
-                                            const CORE::CString& platformDir  ,
-                                            bool firstPlatform                ,
-                                            bool& validPlatform               )
+GenerateCMakeListsPlatformFilesSection( const CORE::CString& projectDir   ,
+                                        const CORE::CString& platformName ,
+                                        const CORE::CString& platformDir  ,
+                                        bool firstPlatform                ,
+                                        bool& validPlatform               )
 {GUCEF_TRACE;
 
     bool hasPlatformIncludes = false;
@@ -295,6 +274,27 @@ GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir   ,
     if ( hasPlatformIncludes || hasPlatformSrc )
     {
         validPlatform = true;
+    }
+    
+    return sectionContent;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir )
+{GUCEF_TRACE;
+
+    CORE::CString sectionContent;
+    
+    bool validPlatform = true;
+    sectionContent += GenerateCMakeListsPlatformFilesSection( projectDir, "WIN32", "mswin", true, validPlatform );
+    sectionContent += GenerateCMakeListsPlatformFilesSection( projectDir, "UNIX", "linux", !validPlatform, validPlatform );
+    
+    if ( sectionContent.Length() > 0 )
+    {
+        // since we added data we have to close the section
+        sectionContent += "endif ()\n";
     }
     
     return sectionContent;
