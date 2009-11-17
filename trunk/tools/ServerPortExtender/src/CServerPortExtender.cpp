@@ -34,12 +34,33 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CEvent CServerPortExtender::ControlSocketOpenedEvent = "CServerPortExtender::ControlSocketOpenedEvent";
+const CORE::CEvent CServerPortExtender::ReversedSocketOpenedEvent = "CServerPortExtender::ReversedSocketOpenedEvent";
+const CORE::CEvent CServerPortExtender::ClientSocketOpenedEvent = "CServerPortExtender::ClientSocketOpenedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+void
+CServerPortExtender::RegisterEvents( void )
+{GUCEF_TRACE;
+    
+    ControlSocketOpenedEvent.Initialize();
+    ReversedSocketOpenedEvent.Initialize();
+    ClientSocketOpenedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CServerPortExtender::CServerPortExtender( void )
-    : CObserver()                            ,
+    : CObservingNotifier()                   ,
       m_reversedServerControlSocket( false ) ,
       m_reversedServerSocket( false )        ,
       m_serverSocket( false )                ,
@@ -479,6 +500,8 @@ CServerPortExtender::OnReversedServerControlSocketNotify( CORE::CNotifier* notif
     if ( COMCORE::CTCPServerSocket::ServerSocketOpenedEvent == eventid )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Reversed server socket opened,.. waiting for ServerPortExtenderClient" );
+        
+        NotifyObservers( ControlSocketOpenedEvent );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketClosedEvent == eventid )
@@ -549,6 +572,8 @@ CServerPortExtender::OnReversedServerSocketNotify( CORE::CNotifier* notifier    
     if ( COMCORE::CTCPServerSocket::ServerSocketOpenedEvent == eventid )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Reversed server socket opened,.. waiting for ServerPortExtenderClient" );
+        
+        NotifyObservers( ReversedSocketOpenedEvent );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketClosedEvent == eventid )
@@ -612,6 +637,7 @@ CServerPortExtender::OnServerSocketNotify( CORE::CNotifier* notifier    ,
     if ( COMCORE::CTCPServerSocket::ServerSocketOpenedEvent == eventid )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Server socket opened,.. listning for clients" );
+        NotifyObservers( ClientSocketOpenedEvent );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketClosedEvent == eventid )
