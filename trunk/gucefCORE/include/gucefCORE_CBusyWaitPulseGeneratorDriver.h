@@ -67,6 +67,8 @@ class GUCEF_CORE_EXPORT_CPP CBusyWaitPulseGeneratorDriver : public CIPulseGenera
                                        const UInt32 pulseDeltaInMilliSecs );
     
     virtual void RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator );
+    
+    void Run( CPulseGenerator& pulseGenerator );
 
     private:
     
