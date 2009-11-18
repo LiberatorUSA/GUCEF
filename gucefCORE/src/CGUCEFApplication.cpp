@@ -272,25 +272,42 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         data.argv = NULL;
     }
     
+    // Set shutdown to false before we emit the init event so that observers can
+    // request a shutdown if something went wrong
+    m_shutdownRequested = false;
+    
     // Dispatch the initialization event
     TAppInitEventData cloneableData( data );                
     if ( !NotifyObservers( AppInitEvent, &cloneableData ) ) return 0;
 
-
-    _initialized = true;
-    
-    if ( run )
+    // Check if we need to abort because a shutdown was requested
+    if ( !m_shutdownRequested )
     {
-        m_shutdownRequested = false;
-        m_pulseGenerator.AllowPeriodicPulses();
-        m_mutex.Unlock();
+        _initialized = true;
         
-        m_pulseGenerator.RequestPeriodicPulses();
+        if ( run )
+        {            
+            m_pulseGenerator.AllowPeriodicPulses();
+            m_mutex.Unlock();
+            
+            m_pulseGenerator.RequestPeriodicPulses();
+            
+            // Unless the pulse drive is overridden we will now start the loop
+            if ( m_pulseGenerator.GetPulseGeneratorDriver() == &m_busyWaitPulseDriver )
+            {
+                m_busyWaitPulseDriver.Run( m_pulseGenerator );
+            }
+        }
+        else
+        {
+            m_mutex.Unlock();
+        }
     }
     else
     {
         m_mutex.Unlock();
     }
+
     delete []data.argv; 
     return 0;      
 }
@@ -326,6 +343,12 @@ CGUCEFApplication::main( int argc    ,
         GUCEFSetEnv( "argc", intstr );
         GUCEFSetEnv( "argv", (char*)argv );                 
     }
+    
+    _initialized = false;
+    
+    // Set shutdown to false before we emit the init event so that observers can
+    // request a shutdown if something went wrong
+    m_shutdownRequested = false;
 
     /*
      *      We now know we have an instance of this singleton and can begin
@@ -345,14 +368,28 @@ CGUCEFApplication::main( int argc    ,
         if ( !NotifyObservers( AppInitEvent, &cloneableData ) ) return 0;
     }
 
-    _initialized = true;
-        
-    if ( run )
+    // Check if we need to abort because a shutdown was requested
+    if ( !m_shutdownRequested )
     {
-        m_shutdownRequested = false;
-        m_pulseGenerator.AllowPeriodicPulses();
-        m_mutex.Unlock();
-        m_pulseGenerator.RequestPeriodicPulses();
+        _initialized = true;
+        
+        if ( run )
+        {            
+            m_pulseGenerator.AllowPeriodicPulses();
+            m_mutex.Unlock();
+            
+            m_pulseGenerator.RequestPeriodicPulses();
+            
+            // Unless the pulse drive is overridden we will now start the loop
+            if ( m_pulseGenerator.GetPulseGeneratorDriver() == &m_busyWaitPulseDriver )
+            {
+                m_busyWaitPulseDriver.Run( m_pulseGenerator );
+            }
+        }
+        else
+        {
+            m_mutex.Unlock();
+        }
     }
     else
     {

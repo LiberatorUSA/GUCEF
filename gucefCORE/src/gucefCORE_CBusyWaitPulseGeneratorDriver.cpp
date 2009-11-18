@@ -85,14 +85,12 @@ CBusyWaitPulseGeneratorDriver::RequestPulse( CPulseGenerator& pulseGenerator )
 }
 
 /*--------------------------------------------------------------------------*/
-    
-void
-CBusyWaitPulseGeneratorDriver::RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
-                                                      const UInt32 pulseDeltaInMilliSecs )
-{GUCEF_TRACE;
 
+void
+CBusyWaitPulseGeneratorDriver::Run( CPulseGenerator& pulseGenerator )
+{GUCEF_TRACE;
+    
     m_loop = true;
-    m_desiredPulseDelta = pulseDeltaInMilliSecs;
     Float64 remainingDelta;
     while ( m_loop )
     {
@@ -108,7 +106,17 @@ CBusyWaitPulseGeneratorDriver::RequestPeriodicPulses( CPulseGenerator& pulseGene
                 //MT::PrecisionDelay( (UInt32)remainingDelta ); 
             }
         }
-    }                                                      
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+    
+void
+CBusyWaitPulseGeneratorDriver::RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
+                                                      const UInt32 pulseDeltaInMilliSecs )
+{GUCEF_TRACE;
+
+    m_desiredPulseDelta = pulseDeltaInMilliSecs;                                      
 }
 
 /*--------------------------------------------------------------------------*/
