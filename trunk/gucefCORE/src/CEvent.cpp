@@ -128,6 +128,7 @@ bool
 CEvent::operator==( const CEvent& other ) const
 {GUCEF_TRACE;
     
+    // If you hit the asserts below then the event object was not initialized
     assert( m_eventID > 0 );
     assert( other.m_eventID > 0 );
     return m_eventID == other.m_eventID;
@@ -139,6 +140,7 @@ bool
 CEvent::operator!=( const CEvent& other ) const
 {GUCEF_TRACE;
     
+    // If you hit the asserts below then the event object was not initialized
     assert( m_eventID > 0 );
     assert( other.m_eventID > 0 );
     return m_eventID != other.m_eventID;
@@ -150,6 +152,7 @@ bool
 CEvent::operator<( const CEvent& other ) const
 {GUCEF_TRACE;
     
+    // If you hit the asserts below then the event object was not initialized
     assert( m_eventID > 0 );
     assert( other.m_eventID > 0 );
     return m_eventID < other.m_eventID;
@@ -161,6 +164,7 @@ UInt32
 CEvent::GetID( void ) const
 {GUCEF_TRACE;
 
+    // If you hit the asserts below then the event object was not initialized
     assert( m_eventID > 0 );
     return m_eventID;
 }
