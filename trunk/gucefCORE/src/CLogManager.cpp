@@ -30,12 +30,12 @@
 #define GUCEF_CORE_CILOGGER_H
 #endif /* GUCEF_CORE_CILOGGER_H ? */
 
-#include "CLogManager.h"
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#include "CLogManager.h"
 
 #ifndef GUCEF_CORE_ESSENTIALS_H
 #include "gucef_essentials.h"
@@ -274,6 +274,72 @@ CLogManager::Log( const TLogMsgType logMsgType ,
 
 /*-------------------------------------------------------------------------*/
 
+const CString&
+CLogManager::GetLogMsgTypeString( const TLogMsgType logMsgType )
+{GUCEF_TRACE;
+
+    switch ( logMsgType )
+    {
+        case CLogManager::LOG_ERROR :
+        {
+            static CString typeStr = "ERROR";
+            return typeStr;
+        }
+        case CLogManager::LOG_STANDARD :
+        {
+            static CString typeStr = "STANDARD";
+            return typeStr;
+        }        
+        case CLogManager::LOG_USER :
+        {
+            static CString typeStr = "USER";
+            return typeStr;
+        }
+        case CLogManager::LOG_SYSTEM :
+        {
+            static CString typeStr = "SYSTEM";
+            return typeStr;
+        }
+        case CLogManager::LOG_DEV :
+        {
+            static CString typeStr = "DEV";
+            return typeStr;
+        }
+        case CLogManager::LOG_DEBUG :
+        {
+            static CString typeStr = "DEBUG";
+            return typeStr;
+        }
+        case CLogManager::LOG_SERVICE :
+        {
+            static CString typeStr = "SERVICE";
+            return typeStr;
+        }
+        case CLogManager::LOG_PROTECTED :
+        {
+            static CString typeStr = "PROTECTED";
+            return typeStr;
+        }
+        case CLogManager::LOG_CALLSTACK :
+        {
+            static CString typeStr = "CALLSTACK";
+            return typeStr;
+        }
+        case CLogManager::LOG_EXCEPTION :
+        {
+            static CString typeStr = "EXCEPTION";
+            return typeStr;
+        }
+        default :
+        {
+            static CString typeStr = "";
+            return typeStr;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CLogManager::FlushLogs( void )
 {GUCEF_TRACE;
@@ -292,6 +358,24 @@ CLogManager::FlushLogs( void )
     }
     
     g_dataLock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+LogLevelToString( const Int32 logLevel )
+{GUCEF_TRACE;
+
+    switch ( logLevel )
+    {
+        case LOGLEVEL_CRITICAL : return "CRITICAL";
+        case LOGLEVEL_VERY_IMPORTANT : return "VERY_IMPORTANT";
+        case LOGLEVEL_IMPORTANT : return "IMPORTANT";
+        case LOGLEVEL_NORMAL : return "NORMAL";
+        case LOGLEVEL_BELOW_NORMAL : return "BELOW_NORMAL";
+        case LOGLEVEL_EVERYTHING : return "EVERYTHING";
+        default : return Int32ToString( logLevel );
+    }
 }
 
 /*-------------------------------------------------------------------------//

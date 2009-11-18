@@ -97,28 +97,6 @@ CStdLogger::SetOutput( CIOAccess& output )
 
 /*-------------------------------------------------------------------------*/
 
-CString
-CStdLogger::GetLogMsgTypeString( const TLogMsgType logMsgType ) const
-{GUCEF_TRACE;
-
-    switch ( logMsgType )
-    {
-        case CLogManager::LOG_ERROR : return "ERROR";
-        case CLogManager::LOG_STANDARD : return "STANDARD";
-        case CLogManager::LOG_USER : return "USER";
-        case CLogManager::LOG_SYSTEM : return "SYSTEM";
-        case CLogManager::LOG_DEV : return "DEV";
-        case CLogManager::LOG_DEBUG : return "DEBUG";
-        case CLogManager::LOG_SERVICE : return "SERVICE";
-        case CLogManager::LOG_PROTECTED : return "PROTECTED";
-        case CLogManager::LOG_CALLSTACK : return "CALLSTACK";
-        case CLogManager::LOG_EXCEPTION : return "EXCEPTION";
-        default : return "";
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
 void
 CStdLogger::Log( const TLogMsgType logMsgType ,
                  const Int32 logLevel         ,
@@ -127,7 +105,7 @@ CStdLogger::Log( const TLogMsgType logMsgType ,
 
     if ( m_output != NULL )
     {
-        CString actualLogMsg( "[" + GetLogMsgTypeString( logMsgType ) + "] [LVL " + Int32ToString( logLevel ) + "] " + logMessage + "\n" );
+        CString actualLogMsg( "[" + CLogManager::GetLogMsgTypeString( logMsgType ) + "] [LVL " + LogLevelToString( logLevel ) + "] " + logMessage + "\n" );
         m_output->Write( actualLogMsg.C_String() ,
                          actualLogMsg.Length()   ,
                          1                       );
