@@ -67,6 +67,7 @@ class SpeTestController : CORE::CObserver
     SpeTestController()
     {
         SubscribeTo( GUCEF::CORE::CGUCEFApplication::Instance() );
+        SubscribeTo( &spe );
     }
     
     virtual void OnNotify( CORE::CNotifier* notifier           ,
@@ -75,6 +76,8 @@ class SpeTestController : CORE::CObserver
     {
         if ( GUCEF::CORE::CGUCEFApplication::AppInitEvent == eventid )
         {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: Application initializing..." );
+            
             m_client = new COMCORE::CTCPClientSocket( false );
             m_server = new COMCORE::CTCPServerSocket( false );
             
@@ -94,6 +97,7 @@ class SpeTestController : CORE::CObserver
         {
             if ( CServerPortExtender::ControlSocketOpenedEvent == eventid )
             {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: Connecting to control socket" );                
                 speClient.ConnectToSPEControlSocket( "localhost", 10003 );
             }
             else
@@ -101,13 +105,21 @@ class SpeTestController : CORE::CObserver
             {
                 
             }
+            else
+            if ( CServerPortExtender::ControlConnectionEstablishedEvent == eventid )
+            {
+                // now that we have a control connection lets try connecting a client
+                // to the extended server socket
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: Connecting test client to the extended server socket" );
+                m_client->ConnectTo( "localhost", 10001 );
+            }
         }
         else
         if ( notifier == m_server )
         {
             if ( GUCEF::COMCORE::CTCPServerSocket::ServerSocketOpenedEvent == eventid )
             {
-                m_client->ConnectTo( "localhost", 10001 );
+                
             }
         }
         else

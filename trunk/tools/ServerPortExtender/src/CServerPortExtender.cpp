@@ -41,6 +41,7 @@
 const CORE::CEvent CServerPortExtender::ControlSocketOpenedEvent = "CServerPortExtender::ControlSocketOpenedEvent";
 const CORE::CEvent CServerPortExtender::ReversedSocketOpenedEvent = "CServerPortExtender::ReversedSocketOpenedEvent";
 const CORE::CEvent CServerPortExtender::ClientSocketOpenedEvent = "CServerPortExtender::ClientSocketOpenedEvent";
+const CORE::CEvent CServerPortExtender::ControlConnectionEstablishedEvent = "CServerPortExtender::ControlConnectionEstablishedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,6 +56,7 @@ CServerPortExtender::RegisterEvents( void )
     ControlSocketOpenedEvent.Initialize();
     ReversedSocketOpenedEvent.Initialize();
     ClientSocketOpenedEvent.Initialize();
+    ControlConnectionEstablishedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -121,6 +123,8 @@ CServerPortExtender::OnRSControlClientConnected( CORE::CNotifier* notifier    ,
 
     COMCORE::CTCPServerConnection* connection = static_cast< COMCORE::CTCPServerConnection* >( notifier );
     
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Sending initial handshake on control connection" );
+    
     // Send welcome handshake with protocol version so the client can determine
     // whether it is compatible with this server
     
@@ -138,6 +142,9 @@ CServerPortExtender::OnRSControlClientConnected( CORE::CNotifier* notifier    ,
         m_controlConnection = NULL;
     }
     m_controlConnection = connection;
+    
+    // probably move this later after authentication etc
+    NotifyObservers( ControlConnectionEstablishedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -480,28 +487,29 @@ CServerPortExtender::OnReversedServerControlSocketNotify( CORE::CNotifier* notif
                      COMCORE::CTCPServerConnection::ConnectedEvent                             ,
                      &TEventCallback( this, &CServerPortExtender::OnRSControlClientConnected ) );
         SubscribeTo( connectionInfo.connection                                                    ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                                ,
+                     COMCORE::CTCPServerConnection::DisconnectedEvent                             ,
                      &TEventCallback( this, &CServerPortExtender::OnRSControlClientDisconnected ) );
         SubscribeTo( connectionInfo.connection                                                ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                            ,
+                     COMCORE::CTCPServerConnection::DataSentEvent                             ,
                      &TEventCallback( this, &CServerPortExtender::OnRSControlClientDataSent ) );
         SubscribeTo( connectionInfo.connection                                                   ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                               ,
+                     COMCORE::CTCPServerConnection::SocketErrorEvent                             ,
                      &TEventCallback( this, &CServerPortExtender::OnRSControlClientSocketError ) );
-        SubscribeTo( connectionInfo.connection                                                    ,
-                    COMCORE::CTCPServerConnection::ConnectedEvent                                ,
+        SubscribeTo( connectionInfo.connection                                                   ,
+                    COMCORE::CTCPServerConnection::DataRecievedEvent                             ,
                     &TEventCallback( this, &CServerPortExtender::OnRSControlClientDataRecieved ) );
-                   
+
+       OnRSControlClientConnected( connectionInfo.connection, COMCORE::CTCPConnection::ConnectedEvent, NULL );
     }
     else
     if ( COMCORE::CTCPServerSocket::ClientDisconnectedEvent == eventid )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Client disconnected on reversed server socket" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Client disconnected from server control socket" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ClientErrorEvent == eventid )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Client error on reversed server socket" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Client error on server control socket" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketOpenedEvent == eventid )
@@ -513,22 +521,22 @@ CServerPortExtender::OnReversedServerControlSocketNotify( CORE::CNotifier* notif
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketClosedEvent == eventid )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Reversed server socket closed" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: server control socket closed" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketErrorEvent == eventid )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Socket error on reversed server socket" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Socket error on server control socket" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketClientErrorEvent == eventid )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Server socket client error on reversed server socket" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Server socket client error on server control socket" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketMaxConnectionsChangedEvent == eventid )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Max connections changed on reversed server socket" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Max connections changed on server control socket" );
     }
 }
 
@@ -617,6 +625,8 @@ CServerPortExtender::OnServerSocketNotify( CORE::CNotifier* notifier    ,
     
     if ( COMCORE::CTCPServerSocket::ClientConnectedEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: A client connected to the extended server port" );
+        
         COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata );
         COMCORE::CTCPServerSocket::TConnectionInfo& connectionInfo = eData->GetData();
         
@@ -639,33 +649,38 @@ CServerPortExtender::OnServerSocketNotify( CORE::CNotifier* notifier    ,
     else
     if ( COMCORE::CTCPServerSocket::ClientDisconnectedEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: A client disconnected from the extended server port" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ClientErrorEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: A client error occured with a client connected to the extended server port" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketOpenedEvent == eventid )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Server socket opened,.. listning for clients" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Extended server socket opened,.. listning for clients" );
         NotifyObservers( ClientSocketOpenedEvent );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketClosedEvent == eventid )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Server socket closed" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Extended server socket closed" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketErrorEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Socket error occured in the extended server socket" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketClientErrorEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Client error occured on the extended server socket" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketMaxConnectionsChangedEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Maximum number of connections changed on the extended server socket" );
     }
 }
 
