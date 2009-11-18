@@ -491,10 +491,12 @@ CServerPortExtender::OnReversedServerControlSocketNotify( CORE::CNotifier* notif
     else
     if ( COMCORE::CTCPServerSocket::ClientDisconnectedEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Client disconnected on reversed server socket" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ClientErrorEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Client error on reversed server socket" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketOpenedEvent == eventid )
@@ -506,18 +508,22 @@ CServerPortExtender::OnReversedServerControlSocketNotify( CORE::CNotifier* notif
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketClosedEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Reversed server socket closed" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketErrorEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Socket error on reversed server socket" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketClientErrorEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Server socket client error on reversed server socket" );
     }
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketMaxConnectionsChangedEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Max connections changed on reversed server socket" );
     }
 }
 

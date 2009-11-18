@@ -71,8 +71,6 @@ class GUCEFCORE_EXPORT_CPP CStdLogger : public CILogger
     virtual void FlushLog( void );
     
     void SetOutput( CIOAccess& output );
-
-    CString GetLogMsgTypeString( const TLogMsgType logMsgType ) const;
     
     void SetMinimalLogLevel( const Int32 minimalLogLevel );
     

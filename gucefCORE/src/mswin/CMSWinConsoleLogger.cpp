@@ -70,15 +70,9 @@ CMSWinConsoleLogger::CMSWinConsoleLogger( void )
 {GUCEF_TRACE;
        
     AllocConsole();
-
-    /* reopen stdin handle as console window input */
-    freopen( "CONIN$", "rb", stdin );
     
     /* reopen stout handle as console window output */
     freopen( "CONOUT$", "wb", stdout );
-    
-    /* reopen stderr handle as console window output */
-    freopen( "CONOUT$", "wb", stderr );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -91,27 +85,6 @@ CMSWinConsoleLogger::~CMSWinConsoleLogger()
 
 /*-------------------------------------------------------------------------*/
 
-CString
-CMSWinConsoleLogger::GetLogMsgTypeString( const TLogMsgType logMsgType ) const
-{GUCEF_TRACE;
-
-    switch ( logMsgType )
-    {
-        case CLogManager::LOG_ERROR : return "ERROR";
-        case CLogManager::LOG_STANDARD : return "STANDARD";
-        case CLogManager::LOG_USER : return "USER";
-        case CLogManager::LOG_SYSTEM : return "SYSTEM";
-        case CLogManager::LOG_DEV : return "DEV";
-        case CLogManager::LOG_DEBUG : return "DEBUG";
-        case CLogManager::LOG_SERVICE : return "SERVICE";
-        case CLogManager::LOG_PROTECTED : return "PROTECTED";
-        case CLogManager::LOG_CALLSTACK : return "CALLSTACK";
-        default : return "";
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
 void
 CMSWinConsoleLogger::Log( const TLogMsgType logMsgType ,
                           const Int32 logLevel         ,
@@ -120,7 +93,7 @@ CMSWinConsoleLogger::Log( const TLogMsgType logMsgType ,
 
     if ( logLevel >= m_minimalLogLevel )
     {    
-        CString actualLogMsg( "[" + GetLogMsgTypeString( logMsgType ) + "] [LVL " + Int32ToString( logLevel ) + "] " + logMessage + "\n" );
+        CString actualLogMsg( "[" + CLogManager::GetLogMsgTypeString( logMsgType ) + "] [LVL " + LogLevelToString( logLevel ) + "] " + logMessage + "\n" );
         fprintf( stdout, actualLogMsg.C_String() );
     } 
 }

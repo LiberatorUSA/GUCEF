@@ -111,6 +111,8 @@ class GUCEFCORE_EXPORT_CPP CLogManager
      */    
     void FlushBootstrapLogEntriesToLogs( void );
     
+    static const CString& GetLogMsgTypeString( const TLogMsgType logMsgType );
+    
     private:
     friend class CGUCEFCOREModule;
     
@@ -160,6 +162,14 @@ GUCEF_CORE_EXPORT_C extern const Int32 LOGLEVEL_BELOW_NORMAL;
 GUCEF_CORE_EXPORT_C extern const Int32 LOGLEVEL_EVERYTHING;
 
 }
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Function that will convert the loglevel values above into a string equivalant
+ *  and the rest into numbers.
+ */
+CString LogLevelToString( const Int32 logLevel );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
