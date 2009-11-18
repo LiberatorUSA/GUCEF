@@ -389,16 +389,25 @@ CServerPortExtenderClient::OnControlClientNotify( CORE::CNotifier* notifier    ,
                                                   CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
     
+    if ( COMCORE::CTCPClientSocket::ConnectingEvent == eventid )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Connecting control connection,..." );
+    }
+    else
     if ( COMCORE::CTCPClientSocket::ConnectedEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Control connection established" );
     }
     else
     if ( COMCORE::CTCPClientSocket::DisconnectedEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Control connection disconnected" );
     }
     else
     if ( COMCORE::CTCPClientSocket::DataRecievedEvent == eventid )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Data received on the control connection" );
+        
         // Get the data buffer
         COMCORE::CTCPClientSocket::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPClientSocket::TDataRecievedEventData* >( eventdata );
         const CORE::CDynamicBuffer& data = eData->GetData();
@@ -413,10 +422,12 @@ CServerPortExtenderClient::OnControlClientNotify( CORE::CNotifier* notifier    ,
     else
     if ( COMCORE::CTCPClientSocket::DataSentEvent == eventid )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_EVERYTHING, "ServerPortExtenderClient: Data send on the control connection" );
     }
     else
     if ( COMCORE::CTCPClientSocket::SocketErrorEvent == eventid )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: Socket error on the control connection" );
     }
 }
 

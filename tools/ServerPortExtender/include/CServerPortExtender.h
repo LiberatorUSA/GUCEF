@@ -59,6 +59,7 @@ class CServerPortExtender : public CORE::CObservingNotifier
     static const CORE::CEvent ControlSocketOpenedEvent;
     static const CORE::CEvent ReversedSocketOpenedEvent;
     static const CORE::CEvent ClientSocketOpenedEvent;
+    static const CORE::CEvent ControlConnectionEstablishedEvent;
     
     static void RegisterEvents( void );
     

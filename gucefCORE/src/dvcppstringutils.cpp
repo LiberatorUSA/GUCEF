@@ -305,6 +305,50 @@ UInt16ToString( const UInt16 value )
 
 /*-------------------------------------------------------------------------*/
 
+Int8
+StringToInt8( const CString& str )
+{GUCEF_TRACE;
+
+    Int8 value;
+    sscanf( str.C_String(), "%d", &value );
+    return value;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+Int8ToString( const Int8 value )
+{GUCEF_TRACE;
+
+    char intBuffer[ 12 ];
+    sprintf( intBuffer, "%d", value );
+    return CString( intBuffer );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt8
+StringToUInt8( const CString& str )
+{GUCEF_TRACE;
+
+    UInt8 value;
+    sscanf( str.C_String(), "%u", &value );
+    return value;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+UInt8ToString( const UInt8 value )
+{GUCEF_TRACE;
+
+    char intBuffer[ 12 ];
+    sprintf( intBuffer, "%u", value );
+    return CString( intBuffer );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString
 PointerToString( const void* value )
 {GUCEF_TRACE;

@@ -153,7 +153,7 @@ CIPAddress::ResolveDNS( const CORE::CString& address ,
             if ( netaddr >= 0 ) 
             {   
                 m_address = netaddr;
-                m_port = port;
+                m_port = htons( port );
                 return true;
             }            
         }
@@ -262,12 +262,20 @@ CIPAddress::GetAddressInHostByteOrder( void ) const
 
 /*-------------------------------------------------------------------------*/
     
-CORE::CString
+CString
 CIPAddress::AddressAsString( void ) const
 {GUCEF_TRACE;
 
     UInt32 address = ntohl( m_address );
-    return CORE::UInt32ToString( address );
+    UInt8* addressArray = (UInt8*) &address;
+    
+    CString addressStr =
+      CORE::UInt8ToString( addressArray[ 3 ] ) + '.' + 
+      CORE::UInt8ToString( addressArray[ 2 ] ) + '.' +
+      CORE::UInt8ToString( addressArray[ 1 ] ) + '.' +
+      CORE::UInt8ToString( addressArray[ 0 ] );
+      
+    return addressStr;
 }
 
 /*-------------------------------------------------------------------------*/

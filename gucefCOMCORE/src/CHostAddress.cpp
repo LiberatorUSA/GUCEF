@@ -65,11 +65,11 @@ CHostAddress::CHostAddress( const CHostAddress& src )
 
 CHostAddress::CHostAddress( const CORE::CString& hostname ,
                             const UInt16 port             )
-    : CIPAddress( hostname ,
-                  port     ) ,
+    : CIPAddress()           ,
       m_hostname( hostname )
 {GUCEF_TRACE;
 
+    ResolveDNS( hostname, port );
 }
 
 /*-------------------------------------------------------------------------*/

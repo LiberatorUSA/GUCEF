@@ -155,6 +155,26 @@ UInt16ToString( const UInt16 value );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEFCORE_EXPORT_CPP Int8
+StringToInt8( const CString& str );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
+UInt8ToString( const UInt8 value );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP UInt8
+StringToUInt8( const CString& str );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEFCORE_EXPORT_CPP CString
+Int8ToString( const Int8 value );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEFCORE_EXPORT_CPP CString
 PointerToString( const void* value );
 
