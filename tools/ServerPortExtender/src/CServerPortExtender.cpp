@@ -74,6 +74,11 @@ CServerPortExtender::CServerPortExtender( void )
       m_remoteToLocalConnectionMap()
 {GUCEF_TRACE;
 
+    RegisterEvents();
+
+    SubscribeTo( &m_reversedServerControlSocket );
+    SubscribeTo( &m_reversedServerSocket );
+    SubscribeTo( &m_serverSocket );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -501,7 +506,7 @@ CServerPortExtender::OnReversedServerControlSocketNotify( CORE::CNotifier* notif
     else
     if ( COMCORE::CTCPServerSocket::ServerSocketOpenedEvent == eventid )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Reversed server socket opened,.. waiting for ServerPortExtenderClient" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Server control socket opened,.. waiting for ServerPortExtenderClient control connection" );
         
         NotifyObservers( ControlSocketOpenedEvent );
     }
