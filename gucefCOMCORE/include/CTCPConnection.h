@@ -94,6 +94,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPConnection : public CSocket
     virtual bool Send( const void* dataSource ,
                        const UInt32 dataSize  ) = 0;
 
+    bool SendString( const CString& data );
+
     virtual const CORE::CString& GetClassTypeName( void ) const;
  
     private:

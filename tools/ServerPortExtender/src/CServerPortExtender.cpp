@@ -90,7 +90,16 @@ CServerPortExtender::CServerPortExtender( CORE::CPulseGenerator& pulseGenerator 
 CServerPortExtender::~CServerPortExtender()
 {GUCEF_TRACE;
     
+    m_serverSocket.Close();
+    m_reversedServerSocket.Close();
+    m_reversedServerControlSocket.Close();
     
+    m_controlConnection = NULL;
+    
+    m_cConnectionBuffers.clear();
+    m_rsConnectionBuffers.clear();
+    m_unmappedClientConnections.clear();
+    m_remoteToLocalConnectionMap.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -458,6 +467,7 @@ CServerPortExtender::OnRSClientDataRecieved( CORE::CNotifier* notifier    ,
         while ( 0 != cyclicBuffer.ReadBlockTo( readBuffer ) )
         {
             // Send the block
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Forwarding data from a reversed client-server connection to a client" );
             lConnection->Send( readBuffer.GetConstBufferPtr(), readBuffer.GetDataSize() );
             readBuffer.SetDataSize( 0 );
         }
@@ -558,6 +568,15 @@ CServerPortExtender::OnClientSocketError( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtender: There was a socket error on a client connection" );
+    
+    COMCORE::CTCPServerConnection* clientConnection = static_cast< COMCORE::CTCPServerConnection* >( notifier );    
+    COMCORE::CTCPServerConnection* rsConnection = GetRemoteConnectionForLocalConnection( clientConnection->GetSocketID() );
+    if ( NULL != rsConnection )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Closing reversed client-server connection for a client who a client had a socket error" );
+        
+        rsConnection->Close();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -707,16 +726,16 @@ CServerPortExtender::OnReversedServerSocketNotify( CORE::CNotifier* notifier    
                      COMCORE::CTCPServerConnection::ConnectedEvent                      ,
                      &TEventCallback( this, &CServerPortExtender::OnRSClientConnected ) );
         SubscribeTo( connectionInfo.connection                                             ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                         ,
+                     COMCORE::CTCPServerConnection::DisconnectedEvent                      ,
                      &TEventCallback( this, &CServerPortExtender::OnRSClientDisconnected ) );
         SubscribeTo( connectionInfo.connection                                         ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                     ,
+                     COMCORE::CTCPServerConnection::DataSentEvent                      ,
                      &TEventCallback( this, &CServerPortExtender::OnRSClientDataSent ) );
         SubscribeTo( connectionInfo.connection                                            ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                        ,
+                     COMCORE::CTCPServerConnection::SocketErrorEvent                      ,
                      &TEventCallback( this, &CServerPortExtender::OnRSClientSocketError ) );
         SubscribeTo( connectionInfo.connection                                             ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                         ,
+                     COMCORE::CTCPServerConnection::DataRecievedEvent                      ,
                      &TEventCallback( this, &CServerPortExtender::OnRSClientDataRecieved ) );
 
         OnRSClientConnected( connectionInfo.connection, COMCORE::CTCPServerConnection::ConnectedEvent, NULL );                   

@@ -672,17 +672,6 @@ CTCPClientSocket::Send( const void* data ,
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CTCPClientSocket::Send( const CORE::CString& data )
-{GUCEF_TRACE;
-
-        return Send( data.C_String() ,
-                     data.Length()   ,
-                     0               );
-}
-
-/*-------------------------------------------------------------------------*/
-
 void
 CTCPClientSocket::LockData( void ) const
 {GUCEF_TRACE;

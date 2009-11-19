@@ -145,8 +145,10 @@ void
 CTCPServerConnection::Close( void )
 {GUCEF_TRACE;
 
-        _datalock.Lock();
-        
+    _datalock.Lock();
+    
+    if ( _active )
+    {
         closesocket( _data->sockid ); 
         _active = false;
         
@@ -155,8 +157,8 @@ CTCPServerConnection::Close( void )
         m_parentsock->OnClientConnectionClosed( this            ,
                                                 m_connectionidx ,
                                                 false           );
-                                                                        
-        _datalock.Unlock();
+    }                                                                    
+    _datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

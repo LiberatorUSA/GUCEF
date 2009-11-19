@@ -341,7 +341,6 @@ CServerPortExtenderClient::OnClientToRemoteSPEConnected( CORE::CNotifier* notifi
     // initiate a new connection to the local server
     // we create the client socket and add it to our list of connections
     COMCORE::CTCPClientSocket* clientSocket = new COMCORE::CTCPClientSocket( *m_pulseGenerator, false );
-    clientSocket->ConnectTo( m_localServer );
     
     // Subscribe to client events
     SubscribeTo( clientSocket                                                                         ,
@@ -366,7 +365,8 @@ CServerPortExtenderClient::OnClientToRemoteSPEConnected( CORE::CNotifier* notifi
     // map the local to remote client connections
     MapLocalToRemoteConnection( clientSocket, static_cast< COMCORE::CTCPClientSocket* >( notifier ) ); 
     
-  //  GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Received request for a new connection to remote SPE server, created client and attempting to connect" );
+    clientSocket->ConnectTo( m_localServer );    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Received request for a new connection to remote SPE server, created client and attempting to connect" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -608,8 +608,8 @@ COMCORE::CTCPClientSocket*
 CServerPortExtenderClient::GetRemoteConnectionForLocalConnection( const CORE::UInt32 socketId )
 {GUCEF_TRACE;
 
-    TSocketIdMap::iterator i = m_remoteToLocalConnectionMap.find( socketId );
-    if ( i != m_remoteToLocalConnectionMap.end() )
+    TSocketIdMap::iterator i = m_localToRemoteConnectionMap.find( socketId );
+    if ( i != m_localToRemoteConnectionMap.end() )
     {
         return (*i).second;
     }
@@ -622,8 +622,8 @@ COMCORE::CTCPClientSocket*
 CServerPortExtenderClient::GetLocalConnectionForRemoteConnection( const CORE::UInt32 socketId )
 {GUCEF_TRACE;
 
-    TSocketIdMap::iterator i = m_localToRemoteConnectionMap.find( socketId );
-    if ( i != m_localToRemoteConnectionMap.end() )
+    TSocketIdMap::iterator i = m_remoteToLocalConnectionMap.find( socketId );
+    if ( i != m_remoteToLocalConnectionMap.end() )
     {
         return (*i).second;
     }

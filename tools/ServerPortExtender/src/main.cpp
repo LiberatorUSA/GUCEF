@@ -64,7 +64,15 @@ class SpeTestController : CORE::CObserver
 {
     public:
     
+    //GUCEF_INLINED_MSGEXCEPTION( 
+    
     SpeTestController()
+        : CORE::CObserver()          ,
+          m_client( NULL )           ,
+          m_server( NULL )           ,
+          m_serverConnection( NULL ) ,
+          m_spe( NULL )              ,
+          m_speClient( NULL )
     {
         GUCEF::CORE::CGUCEFApplication* app = GUCEF::CORE::CGUCEFApplication::Instance();
         
@@ -130,6 +138,7 @@ class SpeTestController : CORE::CObserver
             {
                 // now that we have a control connection lets try connecting a client
                 // to the extended server socket
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: SPE control connection established" );
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: Connecting test client to the extended server socket" );
                 m_client->ConnectTo( "localhost", 10001 );
             }
@@ -137,9 +146,18 @@ class SpeTestController : CORE::CObserver
         else
         if ( notifier == m_server )
         {
-            if ( GUCEF::COMCORE::CTCPServerSocket::ServerSocketOpenedEvent == eventid )
+            if ( COMCORE::CTCPServerSocket::ClientConnectedEvent == eventid )
             {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: A client connected to the test server" );
                 
+                // Get the connection object
+                COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< GUCEF::COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata );
+                COMCORE::CTCPServerSocket::TConnectionInfo& connectionInfo = eData->GetData();
+                
+                // keep a convenience pointer to the connection object which is ok knowing how the test works
+                m_serverConnection = connectionInfo.connection;
+                
+                SubscribeTo( connectionInfo.connection );
             }
         }
         else
@@ -147,13 +165,79 @@ class SpeTestController : CORE::CObserver
         {
             if ( GUCEF::COMCORE::CTCPClientSocket::ConnectedEvent == eventid )
             {
-                m_client->Send( "ThisIsATestString" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: Sending test string from the test client" );
+                m_client->SendString( "Client:ThisIsATestString" );
+            }
+            else
+            if ( GUCEF::COMCORE::CTCPClientSocket::DataRecievedEvent == eventid )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: recieved data on the test client" );
+                
+                // Get the data buffer
+                COMCORE::CTCPClientSocket::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPClientSocket::TDataRecievedEventData* >( eventdata );
+                const CORE::CDynamicBuffer& data = eData->GetData();
+                
+                CORE::CString testString;
+                testString.Scan( (const char*)data.GetConstBufferPtr(), data.GetDataSize() );
+                
+                if ( testString == "Server:ThisIsATestString" )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: data was successfully communicated from the test server to the test client using the SPE functionality!!!" );
+                    
+                    // Now see if we can do it again with a data packet of a different size
+                     m_client->SendString( "Client:ThisIsTheSecondTestString" );
+                }
+                else
+                if ( testString == "Server:ThisIsTheSecondTestString" )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: data was successfully communicated from the test server to the test client using the SPE functionality for the second time!!!" );                    
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: Finished the test successfully, we can now shut down" );
+                    GUCEF::CORE::CGUCEFApplication::Instance()->Stop();
+                }
+                else
+                {
+                    // error
+                }
+            }
+        }
+        else
+        if ( notifier == m_serverConnection )
+        {
+            if ( COMCORE::CTCPServerConnection::DataRecievedEvent == eventid )
+            {
+                // Get the data buffer
+                COMCORE::CTCPServerConnection::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPServerConnection::TDataRecievedEventData* >( eventdata );
+                const CORE::CDynamicBuffer& data = eData->GetData();
+                
+                CORE::CString testString;
+                testString.Scan( (const char*)data.GetConstBufferPtr(), data.GetDataSize() );
+
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: Received data on the test server: " + testString );
+                
+                if ( testString == "Client:ThisIsATestString" )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: data was successfully communicated from the test client to the test server using the SPE functionality!!!" );
+                    
+                    m_serverConnection->SendString( "Server:ThisIsATestString" );
+                }
+                else
+                if ( testString == "Client:ThisIsTheSecondTestString" )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: data was successfully communicated from the test client to the test server using the SPE functionality for the second time!!!" );
+                    
+                    m_serverConnection->SendString( "Server:ThisIsTheSecondTestString" );
+                }
+                else
+                {
+                    // error
+                }
             }
         }
     }
     
     COMCORE::CTCPClientSocket* m_client;
     COMCORE::CTCPServerSocket* m_server;
+    COMCORE::CTCPServerConnection* m_serverConnection;
     CServerPortExtender* m_spe;
     CServerPortExtenderClient* m_speClient;
 };
