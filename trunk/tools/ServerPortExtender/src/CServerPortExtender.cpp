@@ -247,7 +247,12 @@ CServerPortExtender::OnRSClientConnected( CORE::CNotifier* notifier    ,
     // message which will tell us how to setup the routing for this connection
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Reversed server client connection established" );
     COMCORE::CTCPServerConnection* rsConnection = static_cast< COMCORE::CTCPServerConnection* >( notifier );
-    MapRemoteConnectionToLocalConnection( rsConnection );
+    if ( !MapRemoteConnectionToLocalConnection( rsConnection ) )
+    {
+        // unable to map this reversed connection to a waiting client connection
+        rsConnection->Close();
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Unable to mapped a client connection to a reversed SPE connection, perhaps the client for which the connection was requested has already disconnected again" );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -336,6 +341,9 @@ CServerPortExtender::MapRemoteConnectionToLocalConnection( COMCORE::CTCPServerCo
         CORE::UInt32 localClientSocketId = (*i)->GetSocketID();
         m_remoteToLocalConnectionMap[ rsConnection->GetSocketID() ] = localClientSocketId;
         m_unmappedClientConnections.erase( i );
+        
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Mapped a client connection to a reversed SPE connection" );
+        
         return true;
     }
     return false;
