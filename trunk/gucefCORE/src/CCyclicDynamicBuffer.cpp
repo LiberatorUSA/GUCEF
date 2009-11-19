@@ -209,9 +209,9 @@ CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
             UInt32 bytesToWrite = ( (*i).blockSize / bytesPerElement ) * bytesPerElement;
             
             // Copy the max number of elements
-            bytesWritten = m_buffer.CopyFrom( (*i).startOffset ,
-                                              bytesToWrite     ,
-                                              srcBuffer        );
+            bytesWritten = m_buffer.CopyFrom( (*i).startOffset                  ,
+                                              bytesToWrite                      ,
+                                              ((Int8*)srcBuffer) + bytesWritten );
             totalBytesWritten += bytesToWrite;
             
             // Sanity check
@@ -248,6 +248,10 @@ CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
             {
                 // remove the block from out list of available blocks
                 i = m_freeBlocks.erase( i );
+                if ( i == m_freeBlocks.end() )
+                {
+                    break;
+                }
             }
         }
     }

@@ -109,8 +109,6 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     bool Send( const void* data   , 
                UInt32 length      ,
                UInt32 timeout     );
-                   
-    bool Send( const CORE::CString& data );
 
     /**
      *      Set's the maximum number of bytes to be read from the socket

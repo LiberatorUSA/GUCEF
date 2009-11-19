@@ -81,12 +81,22 @@ CTCPConnection::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString&
+const CString&
 CTCPConnection::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static CORE::CString typeName = "GUCEF::COMCORE::CTCPConnection";
+    static CString typeName = "GUCEF::COMCORE::CTCPConnection";
     return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTCPConnection::SendString( const CString& data )
+{GUCEF_TRACE;
+
+    return Send( data.C_String() ,
+                 data.Length()   );
 }
 
 /*-------------------------------------------------------------------------//
