@@ -70,7 +70,9 @@ class CServerPortExtender : public CORE::CObservingNotifier
     
     public:
     
-    CServerPortExtender( void );
+    CServerPortExtender( CORE::CPulseGenerator& pulseGenerator );
+    
+    virtual ~CServerPortExtender();
     
     bool ListenForClientsOnPort( CORE::UInt16 port );
     
@@ -80,19 +82,20 @@ class CServerPortExtender : public CORE::CObservingNotifier
     
     bool IsControlConnectionInitialized( void ) const;
 
-    protected:
+    private:
     
     typedef CORE::CTEventHandlerFunctor< CServerPortExtender > TEventCallback;
     
-    private:
-    
-    CServerPortExtender( const CServerPortExtender& src );
-    
     COMCORE::CTCPServerConnection* GetLocalConnectionForRemoteConnection( CORE::UInt32 rsSocketId );
+    
     COMCORE::CTCPServerConnection* GetRemoteConnectionForLocalConnection( CORE::UInt32 localSocketId );
 
     void OnControlMsg( TServerPortExtenderProtocolEnum msgType ,
                        const CORE::UInt8* data                 );
+
+    virtual void OnPulse( CORE::CNotifier* notifier           ,
+                          const CORE::CEvent& eventid         ,
+                          CORE::CICloneable* eventdata = NULL );
 
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
@@ -176,6 +179,12 @@ class CServerPortExtender : public CORE::CObservingNotifier
                                       
     bool MapRemoteConnectionToLocalConnection( COMCORE::CTCPServerConnection* rsConnection );
 
+    private:
+    
+    CServerPortExtender( void );
+    CServerPortExtender( const CServerPortExtender& src );
+    CServerPortExtender& operator=( const CServerPortExtender& src );
+    
     private:
     
     typedef std::map< CORE::UInt32, CORE::UInt32 > TConnectionMap;
