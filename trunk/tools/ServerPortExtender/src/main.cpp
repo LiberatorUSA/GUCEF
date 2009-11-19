@@ -69,6 +69,7 @@ class SpeTestController : CORE::CObserver
         GUCEF::CORE::CGUCEFApplication* app = GUCEF::CORE::CGUCEFApplication::Instance();
         
         m_spe = new CServerPortExtender( app->GetPulseGenerator() );
+        m_speClient = new CServerPortExtenderClient( app->GetPulseGenerator() );
         
         SubscribeTo( app );
         SubscribeTo( m_spe );
@@ -78,6 +79,15 @@ class SpeTestController : CORE::CObserver
     {
         delete m_spe;
         m_spe = NULL;
+        
+        delete m_speClient;
+        m_speClient = NULL;
+        
+        delete m_client;
+        m_client = NULL;
+        
+        delete m_server;
+        m_server = NULL;
     }
     
     virtual void OnNotify( CORE::CNotifier* notifier           ,
@@ -98,8 +108,8 @@ class SpeTestController : CORE::CObserver
             m_spe->ListenForReversedClientsOnPort( 10002 );
             m_spe->ListenForReversedControlClientOnPort( 10003 );
             
-            speClient.SetLocalServer( "localhost", 10000 );
-            speClient.SetRemoteServerSocket( 10002 );
+            m_speClient->SetLocalServer( "localhost", 10000 );
+            m_speClient->SetRemoteServerSocket( 10002 );
             m_server->ListenOnPort( 10000 );            
         }
         else
@@ -108,7 +118,7 @@ class SpeTestController : CORE::CObserver
             if ( CServerPortExtender::ControlSocketOpenedEvent == eventid )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SpeTestController: Connecting to control socket" );                
-                speClient.ConnectToSPEControlSocket( "localhost", 10003 );
+                m_speClient->ConnectToSPEControlSocket( "localhost", 10003 );
             }
             else
             if ( CServerPortExtender::ReversedSocketOpenedEvent == eventid )
@@ -145,7 +155,7 @@ class SpeTestController : CORE::CObserver
     COMCORE::CTCPClientSocket* m_client;
     COMCORE::CTCPServerSocket* m_server;
     CServerPortExtender* m_spe;
-    CServerPortExtenderClient speClient;
+    CServerPortExtenderClient* m_speClient;
 };
 
 

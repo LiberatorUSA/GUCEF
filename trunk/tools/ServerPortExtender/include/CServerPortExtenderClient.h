@@ -67,7 +67,9 @@ class CServerPortExtenderClient : public CORE::CObserver
 {
     public:
     
-    CServerPortExtenderClient( void );
+    CServerPortExtenderClient( CORE::CPulseGenerator& pulseGenerator );
+    
+    virtual ~CServerPortExtenderClient();
     
     bool ConnectToSPEControlSocket( const COMCORE::CHostAddress& host );
     
@@ -124,9 +126,9 @@ class CServerPortExtenderClient : public CORE::CObserver
                                 const CORE::CEvent& eventid  ,
                                 CORE::CICloneable* eventdata );
 
-   void OnClientToRemoteSPEConnected( CORE::CNotifier* notifier    ,
-                                      const CORE::CEvent& eventid  ,
-                                      CORE::CICloneable* eventdata );
+    void OnClientToRemoteSPEConnected( CORE::CNotifier* notifier    ,
+                                       const CORE::CEvent& eventid  ,
+                                       CORE::CICloneable* eventdata );
                                       
     void OnClientToRemoteSPEDisconnected( CORE::CNotifier* notifier    ,
                                           const CORE::CEvent& eventid  ,
@@ -164,6 +166,16 @@ class CServerPortExtenderClient : public CORE::CObserver
                                             const CORE::CEvent& eventid  ,
                                             CORE::CICloneable* eventdata );
 
+    void OnPulse( CORE::CNotifier* notifier    ,
+                  const CORE::CEvent& eventid  ,
+                  CORE::CICloneable* eventdata );
+
+    private:
+    
+    CServerPortExtenderClient( void );
+    CServerPortExtenderClient( const CServerPortExtenderClient& src );
+    CServerPortExtenderClient& operator=( const CServerPortExtenderClient& src );
+
     private:
     typedef std::map< COMCORE::CTCPClientSocket*, CORE::CCyclicDynamicBuffer > TClientConnectionBufferMap;
     typedef std::map< CORE::UInt32, COMCORE::CTCPClientSocket* > TSocketIdMap;
@@ -177,6 +189,7 @@ class CServerPortExtenderClient : public CORE::CObserver
     COMCORE::CHostAddress m_remoteSPEServerControl;
     COMCORE::CHostAddress m_remoteSPEReversedServer;
     bool m_controlConnectionInitialized;
+    CORE::CPulseGenerator* m_pulseGenerator;
 };
 
 /*-------------------------------------------------------------------------*/
