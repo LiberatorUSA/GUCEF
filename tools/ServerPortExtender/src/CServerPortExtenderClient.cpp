@@ -42,15 +42,16 @@ using namespace GUCEF;
 //-------------------------------------------------------------------------*/
 
 CServerPortExtenderClient::CServerPortExtenderClient( void )
-    : CORE::CObserver()                     ,
-      m_controlClient( false )              ,
-      m_rsClientConnections()               ,
-      m_localClientConnections()            ,
-      m_remoteToLocalConnectionMap()        ,
-      m_localToRemoteConnectionMap()        ,
-      m_localServer()                       ,
-      m_remoteSPEServer()                   ,
-      m_remoteSPEServerPort( 10235 )
+    : CORE::CObserver()                      ,
+      m_controlClient( false )               ,
+      m_rsClientConnections()                ,
+      m_localClientConnections()             ,
+      m_remoteToLocalConnectionMap()         ,
+      m_localToRemoteConnectionMap()         ,
+      m_localServer()                        ,
+      m_remoteSPEServer()                    ,
+      m_remoteSPEServerPort( 10235 )         ,
+      m_controlConnectionInitialized( false )
 {GUCEF_TRACE;
 
     m_remoteSPEServer.SetPortInHostByteOrder( 10236 );
@@ -65,6 +66,7 @@ bool
 CServerPortExtenderClient::ConnectToSPEControlSocket( const COMCORE::CHostAddress& host )
 {GUCEF_TRACE;
 
+    m_controlConnectionInitialized = false;
     m_remoteSPEServer = host;
     return m_controlClient.ConnectTo( host );
 }
@@ -335,50 +337,82 @@ CServerPortExtenderClient::OnClientToRemoteSPESocketError( CORE::CNotifier* noti
 /*-------------------------------------------------------------------------*/
 
 void
-CServerPortExtenderClient::OnControlMsg( TServerPortExtenderProtocolEnum msgType )
+CServerPortExtenderClient::OnControlMsg( TServerPortExtenderProtocolEnum msgType ,
+                                         const CORE::UInt8* data                 )
 {GUCEF_TRACE;
 
     switch ( msgType )
     {
-        case SPEP_INITIAL_CONTROL_CLIENT_MSG :
-        {
-            break;
-        }
         case SPEP_INITIAL_CONTROL_SERVER_MSG :
         {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Received initial handshake on control connection" );
+            m_controlConnectionInitialized = true;
             break;
         }
         case SPEP_CONTROL_SERVER_MSG_CREATE_CONNECTION_REQUEST : 
         {
-            // initiate a new connection to the SPE server
-            // we create the client socket and add it to our list of connections
-            COMCORE::CTCPClientSocket* clientSocket = new COMCORE::CTCPClientSocket( false );
-            clientSocket->ConnectTo( m_remoteSPEServer );
-            
-            // Subscribe to client events
-            SubscribeTo( clientSocket                                                                      ,
-                         COMCORE::CTCPClientSocket::ConnectedEvent                                         ,
-                         &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPEConnected ) );
-            SubscribeTo( clientSocket                                                                         ,
-                         COMCORE::CTCPClientSocket::DisconnectedEvent                                         ,
-                         &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPEDisconnected ) );
-            SubscribeTo( clientSocket                                                                     ,
-                         COMCORE::CTCPClientSocket::DataSentEvent                                         ,
-                         &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPEDataSent ) );
-            SubscribeTo( clientSocket                                                                        ,
-                         COMCORE::CTCPClientSocket::SocketErrorEvent                                         ,
-                         &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPESocketError ) );
-            SubscribeTo( clientSocket                                                                         ,
-                         COMCORE::CTCPClientSocket::DataRecievedEvent                                         ,
-                         &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPEDataRecieved ) );
-            
-            m_rsClientConnections[ clientSocket ]; 
-            
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Received request for a new connection to remote SPE server, created client and attempting to connect" );
+            if ( m_controlConnectionInitialized )
+            {
+                // initiate a new connection to the SPE server
+                // we create the client socket and add it to our list of connections
+                COMCORE::CTCPClientSocket* clientSocket = new COMCORE::CTCPClientSocket( false );
+                clientSocket->ConnectTo( m_remoteSPEServer );
+                
+                // Subscribe to client events
+                SubscribeTo( clientSocket                                                                      ,
+                             COMCORE::CTCPClientSocket::ConnectedEvent                                         ,
+                             &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPEConnected ) );
+                SubscribeTo( clientSocket                                                                         ,
+                             COMCORE::CTCPClientSocket::DisconnectedEvent                                         ,
+                             &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPEDisconnected ) );
+                SubscribeTo( clientSocket                                                                     ,
+                             COMCORE::CTCPClientSocket::DataSentEvent                                         ,
+                             &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPEDataSent ) );
+                SubscribeTo( clientSocket                                                                        ,
+                             COMCORE::CTCPClientSocket::SocketErrorEvent                                         ,
+                             &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPESocketError ) );
+                SubscribeTo( clientSocket                                                                         ,
+                             COMCORE::CTCPClientSocket::DataRecievedEvent                                         ,
+                             &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPEDataRecieved ) );
+                
+                m_rsClientConnections[ clientSocket ]; 
+                
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Received request for a new connection to remote SPE server, created client and attempting to connect" );\
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Received request for new connection on an uninitialized control connection" );
+            }
             break;
+        }
+        default:
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Received control message of unknown type" );
         }
     }
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CServerPortExtenderClient::OnControlClientConnected( CORE::CNotifier* notifier    ,
+                                                     const CORE::CEvent& eventid  ,
+                                                     CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Control connection established, sending initial handshake,.." );
+
+    COMCORE::CTCPClientSocket* clientSocket = static_cast< COMCORE::CTCPClientSocket* >( notifier );
+    
+    // Send welcome handshake with protocol version so the server can determine
+    // whether it is compatible with this client
+    
+    char msg[ 3 ];
+    msg[ 0 ] = (char) SPEP_INITIAL_CONTROL_CLIENT_MSG;
+    msg[ 1 ] = 45; // magic number, additional sanity check
+    msg[ 2 ]= SPEP_PROTOCOL_VERSION;
+    clientSocket->Send( msg, 3 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -395,8 +429,8 @@ CServerPortExtenderClient::OnControlClientNotify( CORE::CNotifier* notifier    ,
     }
     else
     if ( COMCORE::CTCPClientSocket::ConnectedEvent == eventid )
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Control connection established" );
+    {                
+        OnControlClientConnected( notifier, eventid, eventdata );
     }
     else
     if ( COMCORE::CTCPClientSocket::DisconnectedEvent == eventid )
@@ -413,10 +447,11 @@ CServerPortExtenderClient::OnControlClientNotify( CORE::CNotifier* notifier    ,
         const CORE::CDynamicBuffer& data = eData->GetData();
         
         CORE::UInt32 dataSize = data.GetDataSize();
-        if ( dataSize > 4 )
+        if ( dataSize > 0 )
         {
-            TServerPortExtenderProtocolEnum msgType = (TServerPortExtenderProtocolEnum) data.AsConstType< CORE::Int32 >( 0 );
-            OnControlMsg( msgType );
+            TServerPortExtenderProtocolEnum msgType = (TServerPortExtenderProtocolEnum) data.AsConstType< CORE::Int8 >( 0 );
+            const CORE::UInt8* dataPtr = dataSize > 1 ? (const CORE::UInt8*) data.GetConstBufferPtr( 1 ) : NULL;
+            OnControlMsg( msgType, dataPtr );
         }
     }
     else

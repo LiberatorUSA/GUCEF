@@ -25,11 +25,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef SERVERPORTEXTENDERPROTOCOL_H
-#include "ServerPortExtenderProtocol.h"
-#define SERVERPORTEXTENDERPROTOCOL_H
-#endif /* SERVERPORTEXTENDERPROTOCOL_H ? */
-
 #include "CServerPortExtender.h"
 
 /*-------------------------------------------------------------------------//
@@ -62,18 +57,19 @@ CServerPortExtender::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CServerPortExtender::CServerPortExtender( void )
-    : CObservingNotifier()                   ,
-      m_reversedServerControlSocket( false ) ,
-      m_reversedServerSocket( false )        ,
-      m_serverSocket( false )                ,
-      m_controlConnection( NULL )            ,
-      m_cConnectionBuffers()                 ,
-      m_rsConnectionBuffers()                ,
-      m_unmappedClientConnections()          ,
-      m_serverPort( 10234 )                  ,
-      m_reversedServerPort( 10235 )          ,
-      m_reversedServerControlPort( 10236 )   ,
-      m_remoteToLocalConnectionMap()
+    : CObservingNotifier()                    ,
+      m_reversedServerControlSocket( false )  ,
+      m_reversedServerSocket( false )         ,
+      m_serverSocket( false )                 ,
+      m_controlConnection( NULL )             ,
+      m_cConnectionBuffers()                  ,
+      m_rsConnectionBuffers()                 ,
+      m_unmappedClientConnections()           ,
+      m_serverPort( 10234 )                   ,
+      m_reversedServerPort( 10235 )           ,
+      m_reversedServerControlPort( 10236 )    ,
+      m_remoteToLocalConnectionMap()          ,
+      m_controlConnectionInitialized( false )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -81,6 +77,15 @@ CServerPortExtender::CServerPortExtender( void )
     SubscribeTo( &m_reversedServerControlSocket );
     SubscribeTo( &m_reversedServerSocket );
     SubscribeTo( &m_serverSocket );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CServerPortExtender::IsControlConnectionInitialized( void ) const
+{GUCEF_TRACE;
+
+    return m_controlConnectionInitialized;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -128,7 +133,7 @@ CServerPortExtender::OnRSControlClientConnected( CORE::CNotifier* notifier    ,
     // Send welcome handshake with protocol version so the client can determine
     // whether it is compatible with this server
     
-    char msg[ 4 ];
+    char msg[ 3 ];
     msg[ 0 ] = (char) SPEP_INITIAL_CONTROL_SERVER_MSG;
     msg[ 1 ] = 45; // magic number, additional sanity check
     msg[ 2 ]= SPEP_PROTOCOL_VERSION;
@@ -142,9 +147,6 @@ CServerPortExtender::OnRSControlClientConnected( CORE::CNotifier* notifier    ,
         m_controlConnection = NULL;
     }
     m_controlConnection = connection;
-    
-    // probably move this later after authentication etc
-    NotifyObservers( ControlConnectionEstablishedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -190,12 +192,47 @@ CServerPortExtender::OnRSControlClientSocketError( CORE::CNotifier* notifier    
 /*-------------------------------------------------------------------------*/
 
 void
+CServerPortExtender::OnControlMsg( TServerPortExtenderProtocolEnum msgType ,
+                                   const CORE::UInt8* data                 )
+{GUCEF_TRACE;
+
+    switch ( msgType )
+    {
+        case SPEP_INITIAL_CONTROL_CLIENT_MSG :
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Received initial handshake on control connection" );
+            m_controlConnectionInitialized = true;
+            NotifyObservers( ControlConnectionEstablishedEvent );
+            break;
+        }
+        default:
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Received control message of unknown type" );
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CServerPortExtender::OnRSControlClientDataRecieved( CORE::CNotifier* notifier    ,
                                                     const CORE::CEvent& eventid  ,
                                                     CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Reversed server control client send us data,... possible error: we did not expect data" );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Received data on the control connection" );
+    
+    // Get the data buffer
+    COMCORE::CTCPConnection::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPConnection::TDataRecievedEventData* >( eventdata );
+    const CORE::CDynamicBuffer& data = eData->GetData();
+    
+    CORE::UInt32 dataSize = data.GetDataSize();
+    if ( dataSize > 0 )
+    {
+        TServerPortExtenderProtocolEnum msgType = (TServerPortExtenderProtocolEnum) data.AsConstType< CORE::Int8 >( 0 );
+        const CORE::UInt8* dataPtr = dataSize > 1 ? (const CORE::UInt8*) data.GetConstBufferPtr( 1 ) : NULL;
+        OnControlMsg( msgType, dataPtr );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -554,6 +591,8 @@ CServerPortExtender::OnReversedServerSocketNotify( CORE::CNotifier* notifier    
 
     if ( COMCORE::CTCPServerSocket::ClientConnectedEvent == eventid )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Reversed connection established between SPE server and client" );
+        
         if ( !m_serverSocket.IsActive() )
         {
             m_serverSocket.ListenOnPort( m_serverPort );
@@ -563,8 +602,8 @@ CServerPortExtender::OnReversedServerSocketNotify( CORE::CNotifier* notifier    
         COMCORE::CTCPServerSocket::TConnectionInfo& connectionInfo = eData->GetData();
         
         SubscribeTo( connectionInfo.connection                                          ,
-                    COMCORE::CTCPServerConnection::ConnectedEvent                      ,
-                    &TEventCallback( this, &CServerPortExtender::OnRSClientConnected ) );
+                     COMCORE::CTCPServerConnection::ConnectedEvent                      ,
+                     &TEventCallback( this, &CServerPortExtender::OnRSClientConnected ) );
         SubscribeTo( connectionInfo.connection                                             ,
                      COMCORE::CTCPServerConnection::ConnectedEvent                         ,
                      &TEventCallback( this, &CServerPortExtender::OnRSClientDisconnected ) );
@@ -577,7 +616,8 @@ CServerPortExtender::OnReversedServerSocketNotify( CORE::CNotifier* notifier    
         SubscribeTo( connectionInfo.connection                                             ,
                      COMCORE::CTCPServerConnection::ConnectedEvent                         ,
                      &TEventCallback( this, &CServerPortExtender::OnRSClientDataRecieved ) );
-                   
+
+        OnRSClientConnected( connectionInfo.connection, COMCORE::CTCPServerConnection::ConnectedEvent, NULL );                   
     }
     else
     if ( COMCORE::CTCPServerSocket::ClientDisconnectedEvent == eventid )
@@ -615,6 +655,49 @@ CServerPortExtender::OnReversedServerSocketNotify( CORE::CNotifier* notifier    
 /*-------------------------------------------------------------------------*/
 
 void
+CServerPortExtender::OnServerSocketClientConnected( CORE::CNotifier* notifier    ,
+                                                    const CORE::CEvent& eventid  ,
+                                                    CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: A client connected to the extended server port" );
+    
+    // get the connection info
+    COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata );
+    COMCORE::CTCPServerSocket::TConnectionInfo& connectionInfo = eData->GetData();
+    
+    // Check if we have a control connection up and running,.. if not then disconnect the client
+    // because we will be unable to complete the connection to the remote server
+    if ( !m_controlConnectionInitialized )
+    {
+        connectionInfo.connection->Close();
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Disconnecting client because no control connection is available" );
+        return;
+    }    
+    
+    // subscribe the handlers to the connection object
+    SubscribeTo( connectionInfo.connection                                        ,
+                 COMCORE::CTCPServerConnection::ConnectedEvent                    ,
+                 &TEventCallback( this, &CServerPortExtender::OnClientConnected ) );
+    SubscribeTo( connectionInfo.connection                                           ,
+                 COMCORE::CTCPServerConnection::ConnectedEvent                       ,
+                 &TEventCallback( this, &CServerPortExtender::OnClientDisconnected ) );
+    SubscribeTo( connectionInfo.connection                                       ,
+                 COMCORE::CTCPServerConnection::ConnectedEvent                   ,
+                 &TEventCallback( this, &CServerPortExtender::OnClientDataSent ) );
+    SubscribeTo( connectionInfo.connection                                          ,
+                 COMCORE::CTCPServerConnection::ConnectedEvent                      ,
+                 &TEventCallback( this, &CServerPortExtender::OnClientSocketError ) );
+    SubscribeTo( connectionInfo.connection                                           ,
+                 COMCORE::CTCPServerConnection::ConnectedEvent                       ,
+                 &TEventCallback( this, &CServerPortExtender::OnClientDataRecieved ) );
+
+    OnClientConnected( connectionInfo.connection, COMCORE::CTCPServerConnection::ConnectedEvent, NULL );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CServerPortExtender::OnServerSocketNotify( CORE::CNotifier* notifier    ,
                                            const CORE::CEvent& eventid  ,
                                            CORE::CICloneable* eventdata )
@@ -625,26 +708,7 @@ CServerPortExtender::OnServerSocketNotify( CORE::CNotifier* notifier    ,
     
     if ( COMCORE::CTCPServerSocket::ClientConnectedEvent == eventid )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: A client connected to the extended server port" );
-        
-        COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata );
-        COMCORE::CTCPServerSocket::TConnectionInfo& connectionInfo = eData->GetData();
-        
-        SubscribeTo( connectionInfo.connection                                        ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                    ,
-                     &TEventCallback( this, &CServerPortExtender::OnClientConnected ) );
-        SubscribeTo( connectionInfo.connection                                           ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                       ,
-                     &TEventCallback( this, &CServerPortExtender::OnClientDisconnected ) );
-        SubscribeTo( connectionInfo.connection                                       ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                   ,
-                     &TEventCallback( this, &CServerPortExtender::OnClientDataSent ) );
-        SubscribeTo( connectionInfo.connection                                          ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                      ,
-                     &TEventCallback( this, &CServerPortExtender::OnClientSocketError ) );
-        SubscribeTo( connectionInfo.connection                                           ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                       ,
-                     &TEventCallback( this, &CServerPortExtender::OnClientDataRecieved ) );
+        OnServerSocketClientConnected( notifier, eventid, eventdata );
     }
     else
     if ( COMCORE::CTCPServerSocket::ClientDisconnectedEvent == eventid )
