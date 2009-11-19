@@ -89,6 +89,8 @@ class GUCEFCORE_EXPORT_CPP CCyclicDynamicBuffer
     
     Float32 GetBufferUsagePercentage( void ) const;
     
+    bool HasBufferedData( void ) const;
+    
     protected:
     
     virtual void LockData( void ) const;

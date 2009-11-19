@@ -56,19 +56,19 @@ CServerPortExtender::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CServerPortExtender::CServerPortExtender( void )
-    : CObservingNotifier()                    ,
-      m_reversedServerControlSocket( false )  ,
-      m_reversedServerSocket( false )         ,
-      m_serverSocket( false )                 ,
-      m_controlConnection( NULL )             ,
-      m_cConnectionBuffers()                  ,
-      m_rsConnectionBuffers()                 ,
-      m_unmappedClientConnections()           ,
-      m_serverPort( 10234 )                   ,
-      m_reversedServerPort( 10235 )           ,
-      m_reversedServerControlPort( 10236 )    ,
-      m_remoteToLocalConnectionMap()          ,
+CServerPortExtender::CServerPortExtender( CORE::CPulseGenerator& pulseGenerator )
+    : CObservingNotifier()                                   ,
+      m_reversedServerControlSocket( pulseGenerator, false ) ,
+      m_reversedServerSocket( pulseGenerator, false )        ,
+      m_serverSocket( pulseGenerator, false )                ,
+      m_controlConnection( NULL )                            ,
+      m_cConnectionBuffers()                                 ,
+      m_rsConnectionBuffers()                                ,
+      m_unmappedClientConnections()                          ,
+      m_serverPort( 10234 )                                  ,
+      m_reversedServerPort( 10235 )                          ,
+      m_reversedServerControlPort( 10236 )                   ,
+      m_remoteToLocalConnectionMap()                         ,
       m_controlConnectionInitialized( false )
 {GUCEF_TRACE;
 
@@ -77,6 +77,20 @@ CServerPortExtender::CServerPortExtender( void )
     SubscribeTo( &m_reversedServerControlSocket );
     SubscribeTo( &m_reversedServerSocket );
     SubscribeTo( &m_serverSocket );
+    
+    SubscribeTo( &pulseGenerator                                        ,
+                 CORE::CPulseGenerator::PulseEvent                      ,
+                 &TEventCallback( this, &CServerPortExtender::OnPulse ) );
+                 
+    pulseGenerator.RequestPeriodicPulses( this, 10 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CServerPortExtender::~CServerPortExtender()
+{GUCEF_TRACE;
+    
+    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -116,6 +130,72 @@ CServerPortExtender::ListenForReversedClientsOnPort( CORE::UInt16 port )
 
     m_reversedServerPort = port;
     return m_reversedServerSocket.ListenOnPort( m_reversedServerPort );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CServerPortExtender::OnPulse( CORE::CNotifier* notifier    ,
+                              const CORE::CEvent& eventid  ,
+                              CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    // transfer data buffered from local clients to the remote SPE client
+    CORE::CDynamicBuffer transferBuffer;    
+    TConnectionBuffers::iterator i = m_cConnectionBuffers.begin();
+    while ( i != m_cConnectionBuffers.end() )
+    {
+        // Check to see if we need to transfer data for this connection to its linked connection
+        CORE::CCyclicDynamicBuffer& cBuffer = (*i).second;
+        if ( cBuffer.HasBufferedData() )
+        {        
+            // Since we have data to transfer check if the corresponding connection is available for transfer
+            COMCORE::CTCPServerConnection* serverConnection = GetRemoteConnectionForLocalConnection( (*i).first->GetSocketID() );
+            if ( NULL != serverConnection )
+            {
+                // transfer the data
+                CORE::UInt32 bytesRead;
+                do
+                {        
+                    bytesRead = (*i).second.ReadBlockTo( transferBuffer );                
+                    if ( bytesRead > 0 )
+                    {
+                        serverConnection->Send( transferBuffer.GetConstBufferPtr(), transferBuffer.GetDataSize() );
+                    }
+                }
+                while ( bytesRead > 0 );
+            }
+        }        
+        ++i;
+    }
+    
+    // transfer data buffered from the remote SPE client to local clients
+    i = m_rsConnectionBuffers.begin();
+    while ( i != m_rsConnectionBuffers.end() )
+    {
+        // Check to see if we need to transfer data for this connection to its linked connection
+        CORE::CCyclicDynamicBuffer& cBuffer = (*i).second;
+        if ( cBuffer.HasBufferedData() )
+        {        
+            // Since we have data to transfer check if the corresponding connection is available for transfer
+            COMCORE::CTCPServerConnection* serverConnection = GetLocalConnectionForRemoteConnection( (*i).first->GetSocketID() );
+            if ( NULL != serverConnection )
+            {
+                // transfer the data
+                CORE::UInt32 bytesRead;
+                do
+                {        
+                    bytesRead = (*i).second.ReadBlockTo( transferBuffer );                
+                    if ( bytesRead > 0 )
+                    {
+                        serverConnection->Send( transferBuffer.GetConstBufferPtr(), transferBuffer.GetDataSize() );
+                    }
+                }
+                while ( bytesRead > 0 );
+            }
+        }        
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -357,6 +437,8 @@ CServerPortExtender::OnRSClientDataRecieved( CORE::CNotifier* notifier    ,
                                              CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Received data on a reversed client-server connection" );
+    
     COMCORE::CTCPServerConnection* rsConnection = static_cast< COMCORE::CTCPServerConnection* >( notifier );
     COMCORE::CTCPServerConnection* lConnection = GetLocalConnectionForRemoteConnection( rsConnection->GetSocketID() );
     if ( NULL != lConnection )
@@ -435,6 +517,8 @@ CServerPortExtender::OnClientDisconnected( CORE::CNotifier* notifier    ,
                                            CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: A client disconnected" );
+    
     // If a local client disconnects we have to disconnect the other half of the
     // virtual connection if it is still active, meaning the connection
     // from this server to the remote client
@@ -443,6 +527,8 @@ CServerPortExtender::OnClientDisconnected( CORE::CNotifier* notifier    ,
     COMCORE::CTCPServerConnection* rsConnection = GetRemoteConnectionForLocalConnection( clientConnection->GetSocketID() );
     if ( NULL != rsConnection )
     {
+         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Closing reversed client-server connection for a client who disconnected" );
+        
         rsConnection->Close();
     }
     
@@ -468,6 +554,7 @@ CServerPortExtender::OnClientSocketError( CORE::CNotifier* notifier    ,
                                           CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -478,6 +565,8 @@ CServerPortExtender::OnClientDataRecieved( CORE::CNotifier* notifier    ,
                                            CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Received data from a client" );
+    
     COMCORE::CTCPServerConnection* lConnection = static_cast< COMCORE::CTCPServerConnection* >( notifier );
     COMCORE::CTCPServerConnection* rsConnection = GetRemoteConnectionForLocalConnection( lConnection->GetSocketID() );
     
@@ -500,6 +589,8 @@ CServerPortExtender::OnClientDataRecieved( CORE::CNotifier* notifier    ,
             // Send the block
             rsConnection->Send( readBuffer.GetConstBufferPtr(), readBuffer.GetDataSize() );
             readBuffer.SetDataSize( 0 );
+            
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Fowarded client data to mapped reverse-client-server connection" );
         }
     }
 }
@@ -688,16 +779,16 @@ CServerPortExtender::OnServerSocketClientConnected( CORE::CNotifier* notifier   
                  COMCORE::CTCPServerConnection::ConnectedEvent                    ,
                  &TEventCallback( this, &CServerPortExtender::OnClientConnected ) );
     SubscribeTo( connectionInfo.connection                                           ,
-                 COMCORE::CTCPServerConnection::ConnectedEvent                       ,
+                 COMCORE::CTCPServerConnection::DisconnectedEvent                    ,
                  &TEventCallback( this, &CServerPortExtender::OnClientDisconnected ) );
     SubscribeTo( connectionInfo.connection                                       ,
-                 COMCORE::CTCPServerConnection::ConnectedEvent                   ,
+                 COMCORE::CTCPServerConnection::DataSentEvent                    ,
                  &TEventCallback( this, &CServerPortExtender::OnClientDataSent ) );
     SubscribeTo( connectionInfo.connection                                          ,
-                 COMCORE::CTCPServerConnection::ConnectedEvent                      ,
+                 COMCORE::CTCPServerConnection::SocketErrorEvent                    ,
                  &TEventCallback( this, &CServerPortExtender::OnClientSocketError ) );
     SubscribeTo( connectionInfo.connection                                           ,
-                 COMCORE::CTCPServerConnection::ConnectedEvent                       ,
+                 COMCORE::CTCPServerConnection::DataRecievedEvent                    ,
                  &TEventCallback( this, &CServerPortExtender::OnClientDataRecieved ) );
 
     OnClientConnected( connectionInfo.connection, COMCORE::CTCPServerConnection::ConnectedEvent, NULL );

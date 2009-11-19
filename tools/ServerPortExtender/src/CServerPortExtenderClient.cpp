@@ -58,7 +58,22 @@ CServerPortExtenderClient::CServerPortExtenderClient( void )
     m_remoteSPEReversedServer.SetPortInHostByteOrder( 10235 );
     m_localServer.SetPortInHostByteOrder( 10234 );
     
-    SubscribeTo( &m_controlClient );
+    // Subscribe to control client events
+    SubscribeTo( &m_controlClient                                                              ,
+                 COMCORE::CTCPClientSocket::ConnectedEvent                                     ,
+                 &TEventCallback( this, &CServerPortExtenderClient::OnControlClientConnected ) );
+    SubscribeTo( &m_controlClient                                                                 ,
+                 COMCORE::CTCPClientSocket::DisconnectedEvent                                     ,
+                 &TEventCallback( this, &CServerPortExtenderClient::OnControlClientDisconnected ) );
+    SubscribeTo( &m_controlClient                                                             ,
+                 COMCORE::CTCPClientSocket::DataSentEvent                                     ,
+                 &TEventCallback( this, &CServerPortExtenderClient::OnControlClientDataSent ) );
+    SubscribeTo( &m_controlClient                                                                ,
+                 COMCORE::CTCPClientSocket::SocketErrorEvent                                     ,
+                 &TEventCallback( this, &CServerPortExtenderClient::OnControlClientSocketError ) );
+    SubscribeTo( &m_controlClient                                                                 ,
+                 COMCORE::CTCPClientSocket::DataRecievedEvent                                     ,
+                 &TEventCallback( this, &CServerPortExtenderClient::OnControlClientDataRecieved ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -420,68 +435,57 @@ CServerPortExtenderClient::OnControlClientConnected( CORE::CNotifier* notifier  
 /*-------------------------------------------------------------------------*/
 
 void
-CServerPortExtenderClient::OnControlClientNotify( CORE::CNotifier* notifier    ,
-                                                  const CORE::CEvent& eventid  ,
-                                                  CORE::CICloneable* eventdata )
+CServerPortExtenderClient::OnControlClientDisconnected( CORE::CNotifier* notifier    ,
+                                                        const CORE::CEvent& eventid  ,
+                                                        CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Control connection disconnected" );
+}
+
+/*-------------------------------------------------------------------------*/
+                                               
+void
+CServerPortExtenderClient::OnControlClientDataRecieved( CORE::CNotifier* notifier    ,
+                                                        const CORE::CEvent& eventid  ,
+                                                        CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Data received on the control connection" );
     
-    if ( COMCORE::CTCPClientSocket::ConnectingEvent == eventid )
+    // Get the data buffer
+    COMCORE::CTCPClientSocket::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPClientSocket::TDataRecievedEventData* >( eventdata );
+    const CORE::CDynamicBuffer& data = eData->GetData();
+    
+    CORE::UInt32 dataSize = data.GetDataSize();
+    if ( dataSize > 0 )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Connecting control connection,..." );
-    }
-    else
-    if ( COMCORE::CTCPClientSocket::ConnectedEvent == eventid )
-    {                
-        OnControlClientConnected( notifier, eventid, eventdata );
-    }
-    else
-    if ( COMCORE::CTCPClientSocket::DisconnectedEvent == eventid )
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Control connection disconnected" );
-    }
-    else
-    if ( COMCORE::CTCPClientSocket::DataRecievedEvent == eventid )
-    {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Data received on the control connection" );
-        
-        // Get the data buffer
-        COMCORE::CTCPClientSocket::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPClientSocket::TDataRecievedEventData* >( eventdata );
-        const CORE::CDynamicBuffer& data = eData->GetData();
-        
-        CORE::UInt32 dataSize = data.GetDataSize();
-        if ( dataSize > 0 )
-        {
-            TServerPortExtenderProtocolEnum msgType = (TServerPortExtenderProtocolEnum) data.AsConstType< CORE::Int8 >( 0 );
-            const CORE::UInt8* dataPtr = dataSize > 1 ? (const CORE::UInt8*) data.GetConstBufferPtr( 1 ) : NULL;
-            OnControlMsg( msgType, dataPtr );
-        }
-    }
-    else
-    if ( COMCORE::CTCPClientSocket::DataSentEvent == eventid )
-    {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_EVERYTHING, "ServerPortExtenderClient: Data send on the control connection" );
-    }
-    else
-    if ( COMCORE::CTCPClientSocket::SocketErrorEvent == eventid )
-    {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: Socket error on the control connection" );
+        TServerPortExtenderProtocolEnum msgType = (TServerPortExtenderProtocolEnum) data.AsConstType< CORE::Int8 >( 0 );
+        const CORE::UInt8* dataPtr = dataSize > 1 ? (const CORE::UInt8*) data.GetConstBufferPtr( 1 ) : NULL;
+        OnControlMsg( msgType, dataPtr );
     }
 }
 
 /*-------------------------------------------------------------------------*/
-
+                                               
 void
-CServerPortExtenderClient::OnNotify( CORE::CNotifier* notifier    ,
-                                     const CORE::CEvent& eventid  ,
-                                     CORE::CICloneable* eventdata )
+CServerPortExtenderClient::OnControlClientDataSent( CORE::CNotifier* notifier    ,
+                                                    const CORE::CEvent& eventid  ,
+                                                    CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
-    
-    if ( &m_controlClient == notifier )
-    {
-        OnControlClientNotify( notifier  , 
-                               eventid   ,
-                               eventdata );
-    }
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_EVERYTHING, "ServerPortExtenderClient: Data send on the control connection" );
+}
+
+/*-------------------------------------------------------------------------*/
+                                           
+void
+CServerPortExtenderClient::OnControlClientSocketError( CORE::CNotifier* notifier    ,
+                                                       const CORE::CEvent& eventid  ,
+                                                       CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: Socket error on the control connection" );
 }
 
 /*-------------------------------------------------------------------------*/

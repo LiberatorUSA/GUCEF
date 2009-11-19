@@ -112,10 +112,13 @@ CCyclicDynamicBuffer::ReadBlockTo( CDynamicBuffer& buffer )
     LockData();
     
     // We will simply pop a FIFO element
-    TBlockList::reverse_iterator i = m_usedBlocks.rend();
-    if ( i != m_usedBlocks.rbegin() )
+    TBlockList::reverse_iterator i = m_usedBlocks.rbegin();
+    if ( i != m_usedBlocks.rend() )
     {
         TDataChunk& dataChunck = (*i);
+        
+        // Ensure that the receiving buffer is large enough to handle the block
+        buffer.SetBufferSize( dataChunck.blockSize, false );
         
         // Copy the entire element into the given buffer and set the data size
         bytesRead = m_buffer.CopyTo( dataChunck.startOffset ,
@@ -147,7 +150,7 @@ CCyclicDynamicBuffer::Read( void* destBuffer             ,
     UInt32 bytesRead = 0, totalBytesRead = 0, totalBytes = bytesPerElement * elementsToRead;
     
     // We will simply pop FIFO elements until we hit the byte count
-    for ( TBlockList::reverse_iterator i = m_usedBlocks.rend(); i != m_usedBlocks.rbegin(); ++i )
+    for ( TBlockList::reverse_iterator i = m_usedBlocks.rbegin(); i != m_usedBlocks.rend(); ++i )
     {
         TDataChunk& dataChunck = (*i);
         if ( totalBytes > dataChunck.blockSize )
@@ -160,7 +163,7 @@ CCyclicDynamicBuffer::Read( void* destBuffer             ,
 
             m_freeBlocks.push_back( dataChunck );            
             m_usedBlocks.pop_back();
-            i = m_usedBlocks.rend();
+            i = m_usedBlocks.rbegin();
         }
         else
         {
@@ -251,14 +254,22 @@ CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
     
     // Check if we where able to store the given data using free blocks 
     // in the existing buffer space
-    if ( bytesWritten == 0 )
+    if ( totalBytesWritten < totalBytes )
     {
         // We where unable to store everything using the available free blocks
-        // We will enlarge the buffer to store the excess data
-        UInt32 bytesToWrite = ( bytesPerElement * elementsToWrite ) - totalBytes;
-        m_buffer.Append( srcBuffer    ,
-                         bytesToWrite ,
-                         true         );
+        // We will create a new used block and enlarge the buffer if needed to
+        // store the excess data
+        UInt32 bytesToWrite = totalBytes - totalBytesWritten;
+        UInt32 startOffset = m_buffer.GetDataSize();
+        m_buffer.Append( ((Int8*)srcBuffer) + totalBytesWritten ,
+                         bytesToWrite                           ,
+                         true                                   );
+                         
+        // push the used-block-info on our FIFO stack
+        TDataChunk usedDataChunck;
+        usedDataChunck.blockSize = bytesToWrite;
+        usedDataChunck.startOffset = startOffset;
+        m_usedBlocks.push_back( usedDataChunck );
     }
     
     TidyFreeBlocks();
@@ -346,6 +357,15 @@ CCyclicDynamicBuffer::Clear( const bool logicalClearOnly /* = false */ )
     m_buffer.Clear( logicalClearOnly );
     
     UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CCyclicDynamicBuffer::HasBufferedData( void ) const
+{GUCEF_TRACE;
+
+    return !m_usedBlocks.empty();
 }
 
 /*-------------------------------------------------------------------------*/

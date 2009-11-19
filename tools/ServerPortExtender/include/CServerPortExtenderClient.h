@@ -79,15 +79,9 @@ class CServerPortExtenderClient : public CORE::CObserver
     
     void SetRemoteServerSocket( CORE::UInt16 port );
 
-    protected:
+    private:
     
     typedef CORE::CTEventHandlerFunctor< CServerPortExtenderClient > TEventCallback;
-    
-    virtual void OnNotify( CORE::CNotifier* notifier           ,
-                           const CORE::CEvent& eventid         ,
-                           CORE::CICloneable* eventdata = NULL );
-     
-    private:
     
     COMCORE::CTCPClientSocket* GetRemoteConnectionForLocalConnection( const CORE::UInt32 socketId );
     
@@ -109,6 +103,22 @@ class CServerPortExtenderClient : public CORE::CObserver
     void OnControlClientConnected( CORE::CNotifier* notifier    ,
                                    const CORE::CEvent& eventid  ,
                                    CORE::CICloneable* eventdata );
+
+    void OnControlClientDisconnected( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventid  ,
+                                      CORE::CICloneable* eventdata );
+                                               
+    void OnControlClientDataRecieved( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventid  ,
+                                      CORE::CICloneable* eventdata );
+                                               
+    void OnControlClientDataSent( CORE::CNotifier* notifier    ,
+                                  const CORE::CEvent& eventid  ,
+                                  CORE::CICloneable* eventdata );
+                                           
+    void OnControlClientSocketError( CORE::CNotifier* notifier    ,
+                                     const CORE::CEvent& eventid  ,
+                                     CORE::CICloneable* eventdata );
                                      
     void OnControlClientNotify( CORE::CNotifier* notifier    ,
                                 const CORE::CEvent& eventid  ,
@@ -157,7 +167,6 @@ class CServerPortExtenderClient : public CORE::CObserver
     private:
     typedef std::map< COMCORE::CTCPClientSocket*, CORE::CCyclicDynamicBuffer > TClientConnectionBufferMap;
     typedef std::map< CORE::UInt32, COMCORE::CTCPClientSocket* > TSocketIdMap;
-    typedef std::set< COMCORE::CTCPClientSocket* > TClientConnectionSet;
     
     COMCORE::CTCPClientSocket m_controlClient;
     TClientConnectionBufferMap m_rsClientConnections;

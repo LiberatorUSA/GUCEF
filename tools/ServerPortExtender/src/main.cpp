@@ -66,8 +66,18 @@ class SpeTestController : CORE::CObserver
     
     SpeTestController()
     {
-        SubscribeTo( GUCEF::CORE::CGUCEFApplication::Instance() );
-        SubscribeTo( &spe );
+        GUCEF::CORE::CGUCEFApplication* app = GUCEF::CORE::CGUCEFApplication::Instance();
+        
+        m_spe = new CServerPortExtender( app->GetPulseGenerator() );
+        
+        SubscribeTo( app );
+        SubscribeTo( m_spe );
+    }
+    
+    virtual ~SpeTestController()
+    {
+        delete m_spe;
+        m_spe = NULL;
     }
     
     virtual void OnNotify( CORE::CNotifier* notifier           ,
@@ -84,16 +94,16 @@ class SpeTestController : CORE::CObserver
             SubscribeTo( m_client );
             SubscribeTo( m_server );
             
-            spe.ListenForClientsOnPort( 10001 );
-            spe.ListenForReversedClientsOnPort( 10002 );
-            spe.ListenForReversedControlClientOnPort( 10003 );
+            m_spe->ListenForClientsOnPort( 10001 );
+            m_spe->ListenForReversedClientsOnPort( 10002 );
+            m_spe->ListenForReversedControlClientOnPort( 10003 );
             
             speClient.SetLocalServer( "localhost", 10000 );
             speClient.SetRemoteServerSocket( 10002 );
             m_server->ListenOnPort( 10000 );            
         }
         else
-        if ( notifier == &spe )
+        if ( notifier == m_spe )
         {
             if ( CServerPortExtender::ControlSocketOpenedEvent == eventid )
             {
@@ -134,7 +144,7 @@ class SpeTestController : CORE::CObserver
     
     COMCORE::CTCPClientSocket* m_client;
     COMCORE::CTCPServerSocket* m_server;
-    CServerPortExtender spe;
+    CServerPortExtender* m_spe;
     CServerPortExtenderClient speClient;
 };
 
