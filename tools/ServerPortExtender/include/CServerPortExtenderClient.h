@@ -165,8 +165,8 @@ class CServerPortExtenderClient : public CORE::CObserver
     TSocketIdMap m_remoteToLocalConnectionMap;
     TSocketIdMap m_localToRemoteConnectionMap;
     COMCORE::CHostAddress m_localServer;
-    COMCORE::CHostAddress m_remoteSPEServer;
-    CORE::UInt16 m_remoteSPEServerPort;
+    COMCORE::CHostAddress m_remoteSPEServerControl;
+    COMCORE::CHostAddress m_remoteSPEReversedServer;
     bool m_controlConnectionInitialized;
 };
 

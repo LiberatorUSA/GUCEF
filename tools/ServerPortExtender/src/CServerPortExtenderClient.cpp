@@ -42,20 +42,21 @@ using namespace GUCEF;
 //-------------------------------------------------------------------------*/
 
 CServerPortExtenderClient::CServerPortExtenderClient( void )
-    : CORE::CObserver()                      ,
-      m_controlClient( false )               ,
-      m_rsClientConnections()                ,
-      m_localClientConnections()             ,
-      m_remoteToLocalConnectionMap()         ,
-      m_localToRemoteConnectionMap()         ,
-      m_localServer()                        ,
-      m_remoteSPEServer()                    ,
-      m_remoteSPEServerPort( 10235 )         ,
+    : CORE::CObserver()                       ,
+      m_controlClient( false )                ,
+      m_rsClientConnections()                 ,
+      m_localClientConnections()              ,
+      m_remoteToLocalConnectionMap()          ,
+      m_localToRemoteConnectionMap()          ,
+      m_localServer()                         ,
+      m_remoteSPEServerControl()              ,
+      m_remoteSPEReversedServer()             ,
       m_controlConnectionInitialized( false )
 {GUCEF_TRACE;
 
-    m_remoteSPEServer.SetPortInHostByteOrder( 10236 );
-    m_localServer.SetPortInHostByteOrder( 10235 );
+    m_remoteSPEServerControl.SetPortInHostByteOrder( 10236 );
+    m_remoteSPEReversedServer.SetPortInHostByteOrder( 10235 );
+    m_localServer.SetPortInHostByteOrder( 10234 );
     
     SubscribeTo( &m_controlClient );
 }
@@ -67,7 +68,7 @@ CServerPortExtenderClient::ConnectToSPEControlSocket( const COMCORE::CHostAddres
 {GUCEF_TRACE;
 
     m_controlConnectionInitialized = false;
-    m_remoteSPEServer = host;
+    m_remoteSPEServerControl = host;
     return m_controlClient.ConnectTo( host );
 }
 
@@ -108,7 +109,8 @@ void
 CServerPortExtenderClient::SetRemoteServerSocket( CORE::UInt16 port )
 {GUCEF_TRACE;
     
-    m_remoteSPEServerPort = port;
+    m_remoteSPEReversedServer = m_remoteSPEServerControl;
+    m_remoteSPEReversedServer.SetPortInHostByteOrder( port );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -356,7 +358,7 @@ CServerPortExtenderClient::OnControlMsg( TServerPortExtenderProtocolEnum msgType
                 // initiate a new connection to the SPE server
                 // we create the client socket and add it to our list of connections
                 COMCORE::CTCPClientSocket* clientSocket = new COMCORE::CTCPClientSocket( false );
-                clientSocket->ConnectTo( m_remoteSPEServer );
+                clientSocket->ConnectTo( m_remoteSPEReversedServer );
                 
                 // Subscribe to client events
                 SubscribeTo( clientSocket                                                                      ,
