@@ -103,7 +103,12 @@ class CServerPortExtenderClient : public CORE::CObserver
     void SendAllDataInBuffer( CORE::CCyclicDynamicBuffer& buffer ,
                               COMCORE::CTCPClientSocket& socket  );
                               
-    void OnControlMsg( TServerPortExtenderProtocolEnum msgType );
+    void OnControlMsg( TServerPortExtenderProtocolEnum msgType , 
+                       const CORE::UInt8* data                 );
+
+    void OnControlClientConnected( CORE::CNotifier* notifier    ,
+                                   const CORE::CEvent& eventid  ,
+                                   CORE::CICloneable* eventdata );
                                      
     void OnControlClientNotify( CORE::CNotifier* notifier    ,
                                 const CORE::CEvent& eventid  ,
@@ -162,6 +167,7 @@ class CServerPortExtenderClient : public CORE::CObserver
     COMCORE::CHostAddress m_localServer;
     COMCORE::CHostAddress m_remoteSPEServer;
     CORE::UInt16 m_remoteSPEServerPort;
+    bool m_controlConnectionInitialized;
 };
 
 /*-------------------------------------------------------------------------*/

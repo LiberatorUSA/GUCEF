@@ -38,6 +38,11 @@
 #define GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CCYCLICDYNAMICBUFFER_H ? */
 
+#ifndef SERVERPORTEXTENDERPROTOCOL_H
+#include "ServerPortExtenderProtocol.h"
+#define SERVERPORTEXTENDERPROTOCOL_H
+#endif /* SERVERPORTEXTENDERPROTOCOL_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -72,6 +77,8 @@ class CServerPortExtender : public CORE::CObservingNotifier
     bool ListenForReversedControlClientOnPort( CORE::UInt16 port );
     
     bool ListenForReversedClientsOnPort( CORE::UInt16 port );
+    
+    bool IsControlConnectionInitialized( void ) const;
 
     protected:
     
@@ -84,6 +91,9 @@ class CServerPortExtender : public CORE::CObservingNotifier
     COMCORE::CTCPServerConnection* GetLocalConnectionForRemoteConnection( CORE::UInt32 rsSocketId );
     COMCORE::CTCPServerConnection* GetRemoteConnectionForLocalConnection( CORE::UInt32 localSocketId );
 
+    void OnControlMsg( TServerPortExtenderProtocolEnum msgType ,
+                       const CORE::UInt8* data                 );
+
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
                            CORE::CICloneable* eventdata = NULL );
@@ -91,7 +101,11 @@ class CServerPortExtender : public CORE::CObservingNotifier
     virtual void OnServerSocketNotify( CORE::CNotifier* notifier           ,
                                        const CORE::CEvent& eventid         ,
                                        CORE::CICloneable* eventdata = NULL );
-
+                                       
+    void OnServerSocketClientConnected( CORE::CNotifier* notifier           ,
+                                        const CORE::CEvent& eventid         ,
+                                        CORE::CICloneable* eventdata = NULL );
+                                                    
     virtual void OnReversedServerSocketNotify( CORE::CNotifier* notifier           ,
                                                const CORE::CEvent& eventid         ,
                                                CORE::CICloneable* eventdata = NULL );
@@ -179,6 +193,7 @@ class CServerPortExtender : public CORE::CObservingNotifier
     CORE::UInt16 m_reversedServerPort;
     CORE::UInt16 m_reversedServerControlPort;
     TConnectionMap m_remoteToLocalConnectionMap;
+    bool m_controlConnectionInitialized;
 };
 
 /*-------------------------------------------------------------------------*/
