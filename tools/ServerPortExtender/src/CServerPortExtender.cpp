@@ -160,6 +160,7 @@ CServerPortExtender::OnPulse( CORE::CNotifier* notifier    ,
                     bytesRead = (*i).second.ReadBlockTo( transferBuffer );                
                     if ( bytesRead > 0 )
                     {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Fowarding buffered client data to remote SPE client" );                        
                         serverConnection->Send( transferBuffer.GetConstBufferPtr(), transferBuffer.GetDataSize() );
                     }
                 }
@@ -188,6 +189,7 @@ CServerPortExtender::OnPulse( CORE::CNotifier* notifier    ,
                     bytesRead = (*i).second.ReadBlockTo( transferBuffer );                
                     if ( bytesRead > 0 )
                     {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Fowarding buffered remote SPE client data to local client" );
                         serverConnection->Send( transferBuffer.GetConstBufferPtr(), transferBuffer.GetDataSize() );
                     }
                 }
@@ -544,6 +546,7 @@ CServerPortExtender::OnClientDataSent( CORE::CNotifier* notifier    ,
                                        CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "ServerPortExtender: Sent data to client" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -554,7 +557,7 @@ CServerPortExtender::OnClientSocketError( CORE::CNotifier* notifier    ,
                                           CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtender: There was a socket error on a client connection" );
 }
 
 /*-------------------------------------------------------------------------*/
