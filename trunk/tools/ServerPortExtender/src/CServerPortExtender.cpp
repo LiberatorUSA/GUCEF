@@ -278,6 +278,7 @@ CServerPortExtender::OnRSControlClientSocketError( CORE::CNotifier* notifier    
                                                    CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtender: Socket error on the control connection" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -418,6 +419,7 @@ CServerPortExtender::OnRSClientSocketError( CORE::CNotifier* notifier    ,
                                             CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtender: Socket error on a reversed client-server connection" );
 }
 
 /*-------------------------------------------------------------------------*/

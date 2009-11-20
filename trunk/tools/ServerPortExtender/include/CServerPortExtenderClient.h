@@ -38,6 +38,11 @@
 #define GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CCYCLICDYNAMICBUFFER_H ? */
 
+#ifndef GUCEF_CORE_CTIMER_H
+#include "CTimer.h"
+#define GUCEF_CORE_CTIMER_H
+#endif /* GUCEF_CORE_CTIMER_H ? */
+
 #ifndef SERVERPORTEXTENDERPROTOCOL_H
 #include "ServerPortExtenderProtocol.h"
 #define SERVERPORTEXTENDERPROTOCOL_H
@@ -80,6 +85,8 @@ class CServerPortExtenderClient : public CORE::CObserver
     void SetLocalServer( const CORE::CString& hostname, CORE::UInt16 port );
     
     void SetRemoteServerSocket( CORE::UInt16 port );
+    
+    void Disconnect( void );
 
     private:
     
@@ -169,6 +176,10 @@ class CServerPortExtenderClient : public CORE::CObserver
     void OnPulse( CORE::CNotifier* notifier    ,
                   const CORE::CEvent& eventid  ,
                   CORE::CICloneable* eventdata );
+                  
+    void OnReconnectTimerUpdate( CORE::CNotifier* notifier    ,
+                                 const CORE::CEvent& eventid  ,
+                                 CORE::CICloneable* eventdata );
 
     private:
     
@@ -190,6 +201,8 @@ class CServerPortExtenderClient : public CORE::CObserver
     COMCORE::CHostAddress m_remoteSPEReversedServer;
     bool m_controlConnectionInitialized;
     CORE::CPulseGenerator* m_pulseGenerator;
+    CORE::CTimer m_reconnectTimer;
+    bool m_disconnectRequested;
 };
 
 /*-------------------------------------------------------------------------*/

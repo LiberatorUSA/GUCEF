@@ -52,7 +52,9 @@ CServerPortExtenderClient::CServerPortExtenderClient( CORE::CPulseGenerator& pul
       m_remoteSPEServerControl()               ,
       m_remoteSPEReversedServer()              ,
       m_controlConnectionInitialized( false )  ,
-      m_pulseGenerator( &pulseGenerator )
+      m_pulseGenerator( &pulseGenerator )      ,
+      m_reconnectTimer( pulseGenerator, 2500 ) ,
+      m_disconnectRequested( false )
 {GUCEF_TRACE;
 
     m_remoteSPEServerControl.SetPortInHostByteOrder( 10236 );
@@ -83,6 +85,11 @@ CServerPortExtenderClient::CServerPortExtenderClient( CORE::CPulseGenerator& pul
                  
     // Request to be periodicly updated
     pulseGenerator.RequestPeriodicPulses( this, 10 );
+    
+    // Subscribe to timer
+    SubscribeTo( &m_reconnectTimer                                                           ,
+                 CORE::CTimer::TimerUpdateEvent                                              ,
+                 &TEventCallback( this, &CServerPortExtenderClient::OnReconnectTimerUpdate ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -90,6 +97,7 @@ CServerPortExtenderClient::CServerPortExtenderClient( CORE::CPulseGenerator& pul
 CServerPortExtenderClient::~CServerPortExtenderClient()
 {GUCEF_TRACE;
 
+    Disconnect();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -98,6 +106,7 @@ bool
 CServerPortExtenderClient::ConnectToSPEControlSocket( const COMCORE::CHostAddress& host )
 {GUCEF_TRACE;
 
+    m_disconnectRequested = false;
     m_controlConnectionInitialized = false;
     m_remoteSPEServerControl = host;
     return m_controlClient.ConnectTo( host );
@@ -159,6 +168,9 @@ CServerPortExtenderClient::RemoveConnectionUsingLocalClient( COMCORE::CTCPClient
     
     m_localClientConnections.erase( localSocket );
     m_rsClientConnections.erase( speClientSocket );
+    
+    delete localSocket;
+    delete speClientSocket;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -176,6 +188,36 @@ CServerPortExtenderClient::RemoveConnectionUsingSPEClient( COMCORE::CTCPClientSo
     
     m_localClientConnections.erase( localSocket );
     m_rsClientConnections.erase( speClientSocket );
+    
+    delete localSocket;
+    delete speClientSocket;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CServerPortExtenderClient::Disconnect( void )
+{GUCEF_TRACE;
+
+    m_disconnectRequested = true;
+    m_controlClient.Close();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CServerPortExtenderClient::OnReconnectTimerUpdate( CORE::CNotifier* notifier    ,
+                                                   const CORE::CEvent& eventid  ,
+                                                   CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    // Unless we have been asked to disconnect we will always attempt to keep the
+    // control connection up and running
+    m_reconnectTimer.SetEnabled( false );
+    if ( !m_disconnectRequested )
+    {
+        m_controlClient.Reconnect();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -542,6 +584,12 @@ CServerPortExtenderClient::OnControlClientDisconnected( CORE::CNotifier* notifie
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Control connection disconnected" );
+    
+    // Make sure the control connection is always up and running unless explicitly asked to disconnect
+    if ( !m_disconnectRequested )
+    {
+        m_reconnectTimer.SetEnabled( true );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -587,6 +635,12 @@ CServerPortExtenderClient::OnControlClientSocketError( CORE::CNotifier* notifier
 {GUCEF_TRACE;
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: Socket error on the control connection" );
+    
+    // Make sure the control connection is always up and running unless explicitly asked to disconnect
+    if ( !m_disconnectRequested )
+    {
+        m_reconnectTimer.SetEnabled( true );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
