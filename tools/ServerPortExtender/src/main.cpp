@@ -282,7 +282,7 @@ ParseParams( const int argc                 ,
 /*-------------------------------------------------------------------------*/
 
 int
-main( int argc , char* argv[] )
+main( int argc, char* argv[] )
 {GUCEF_TRACE;
 
     CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
@@ -292,15 +292,140 @@ main( int argc , char* argv[] )
     CORE::CStdLogger logger( logFileAccess );
     CORE::CLogManager::Instance()->AddLogger( &logger );
     
-    #ifdef GUCEF_MSWIN_BUILD
-    CORE::CMSWinConsoleLogger consoleOut;
-    CORE::CLogManager::Instance()->AddLogger( &consoleOut );
-    #endif /* GUCEF_MSWIN_BUILD ? */
-
+    // Parse the application parameters
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
-                                              
-    return TestSPE( argc, argv, keyValueList );
+
+    // Do we want to display the console window?
+    #ifdef GUCEF_MSWIN_BUILD    
+    CORE::CMSWinConsoleLogger* consoleOut = NULL;    
+    bool showConsole = true;    
+    if ( keyValueList.HasKey( "showConsole" ) )
+    {
+        showConsole = CORE::StringToBool( keyValueList.GetValue( "showConsole" ) );
+    }
+    if ( showConsole )
+    {
+        consoleOut = new CORE::CMSWinConsoleLogger();
+        CORE::CLogManager::Instance()->AddLogger( consoleOut );
+        
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: Enabled console output" );
+    }
+    #endif /* GUCEF_MSWIN_BUILD ? */
+
+    // Check if we want to do a diagnostic test
+    bool runTest = false;
+    if ( keyValueList.HasKey( "runTest" ) ) 
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: Found request for diagnostic test,.. running test" );
+        runTest = CORE::StringToBool( keyValueList.GetValue( "runTest" ) );
+    }
+    if ( runTest )
+    {
+        TestSPE( argc, argv, keyValueList );
+    }
+    
+    // Check for the application role
+    bool actAsServer = true;
+    if ( keyValueList.HasKey( "appRole" ) ) 
+    {
+        CORE::CString appRole = keyValueList.GetValue( "appRole" );
+        if ( appRole == "client" )
+        {
+            actAsServer = false;            
+        }
+    }
+    
+    if ( actAsServer )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: application role set to server" );
+        
+        CORE::UInt16 extendedServerPort = 10234;
+        if ( keyValueList.HasKey( "extendedServerPort" ) ) 
+        {
+            extendedServerPort = CORE::StringToUInt16( keyValueList.GetValue( "extendedServerPort" ) );
+        }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: extended server port set to " + CORE::UInt16ToString( extendedServerPort ) );
+        
+        CORE::UInt16 serverControlPort = 10236;
+        if ( keyValueList.HasKey( "serverControlPort" ) ) 
+        {
+            serverControlPort = CORE::StringToUInt16( keyValueList.GetValue( "serverControlPort" ) );
+        }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: server control port set to " + CORE::UInt16ToString( serverControlPort ) );
+        
+        CORE::UInt16 reversedServerPort = 10235;
+        if ( keyValueList.HasKey( "reversedServerPort" ) ) 
+        {
+            reversedServerPort = CORE::StringToUInt16( keyValueList.GetValue( "reversedServerPort" ) );
+        }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: reversed server port set to " + CORE::UInt16ToString( reversedServerPort ) );
+        
+        CORE::CGUCEFApplication* app = CORE::CGUCEFApplication::Instance();
+        CServerPortExtender serverPortExtender( app->GetPulseGenerator() );
+        
+        serverPortExtender.ListenForReversedControlClientOnPort( serverControlPort );
+        serverPortExtender.ListenForReversedClientsOnPort( reversedServerPort );
+        serverPortExtender.ListenForClientsOnPort( extendedServerPort );        
+        
+        return app->main( argc, argv, true );
+    }
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: application role set to client" );
+
+        CORE::UInt16 actualServerPort = 10234;
+        if ( keyValueList.HasKey( "actualServerPort" ) ) 
+        {
+            actualServerPort = CORE::StringToUInt16( keyValueList.GetValue( "actualServerPort" ) );
+        }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: actual server port set to " + CORE::UInt16ToString( actualServerPort ) );
+        
+        CORE::CString actualServerHostname = "localhost";
+        if ( keyValueList.HasKey( "actualServerHostname" ) ) 
+        {
+            actualServerHostname = keyValueList.GetValue( "actualServerHostname" );
+        }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: actual server hostname set to " + actualServerHostname );
+        
+        CORE::UInt16 reversedServerPort = 10235;
+        if ( keyValueList.HasKey( "reversedServerPort" ) ) 
+        {
+            reversedServerPort = CORE::StringToUInt16( keyValueList.GetValue( "reversedServerPort" ) );
+        }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: reversed server port set to " + CORE::UInt16ToString( reversedServerPort ) );
+
+        CORE::CString speServerHostname = "localhost";
+        if ( keyValueList.HasKey( "actualServerHostname" ) ) 
+        {
+            speServerHostname = keyValueList.GetValue( "speServerHostname" );
+        }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: SPE server hostname set to " + speServerHostname );
+
+        CORE::UInt16 speServerPort = 10235;
+        if ( keyValueList.HasKey( "speServerPort" ) ) 
+        {
+            speServerPort = CORE::StringToUInt16( keyValueList.GetValue( "speServerPort" ) );
+        }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: SPE server port set to " + CORE::UInt16ToString( speServerPort ) );
+                        
+        CORE::CGUCEFApplication* app = CORE::CGUCEFApplication::Instance();
+        CServerPortExtenderClient serverPortExtenderClient( app->GetPulseGenerator() );
+        
+        serverPortExtenderClient.SetLocalServer( actualServerHostname, actualServerPort );
+        serverPortExtenderClient.SetRemoteServerSocket( reversedServerPort );
+        
+        serverPortExtenderClient.ConnectToSPEControlSocket( speServerHostname, speServerPort );
+        return app->main( argc, argv, true );
+    }
+    
+
+    #ifdef GUCEF_MSWIN_BUILD
+    delete consoleOut;
+    consoleOut = NULL;
+    #endif /* GUCEF_MSWIN_BUILD ? */
+    
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
