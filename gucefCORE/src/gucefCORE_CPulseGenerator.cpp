@@ -250,12 +250,22 @@ CPulseGenerator::RequestStopOfPeriodicUpdates( void* requestor )
         m_periodicUpdateRequestors.erase( requestor );
     }
     
+    // Determine the new common divider interval for all clients
     m_updateDeltaInMilliSecs = DetermineRequiredPulseInterval();
-    if ( NULL != m_driver && m_periodicUpdateRequestors.size() > 0 )
+    
+    // Check if we have a driver we can pass the request on to
+    if ( NULL != m_driver )
     {
-        UnlockData();
-        m_driver->RequestStopOfPeriodicUpdates( *this );
-        return;
+        // Depending on whether we have more clients wanting updates
+        // we should either update the frequency or switch to manually requested pulses
+        if ( !m_periodicUpdateRequestors.empty() )
+        {
+            m_driver->RequestPulseInterval( *this, m_updateDeltaInMilliSecs );
+        }
+        else
+        {
+            m_driver->RequestStopOfPeriodicUpdates( *this );
+        }
     }    
     UnlockData();
 }

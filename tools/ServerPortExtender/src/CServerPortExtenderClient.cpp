@@ -25,6 +25,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
 #include "CServerPortExtenderClient.h"
 
 /*-------------------------------------------------------------------------//
@@ -54,7 +59,8 @@ CServerPortExtenderClient::CServerPortExtenderClient( CORE::CPulseGenerator& pul
       m_controlConnectionInitialized( false )  ,
       m_pulseGenerator( &pulseGenerator )      ,
       m_reconnectTimer( pulseGenerator, 2500 ) ,
-      m_disconnectRequested( false )
+      m_disconnectRequested( false )           ,
+      m_clientGarbageHeap()
 {GUCEF_TRACE;
 
     m_remoteSPEServerControl.SetPortInHostByteOrder( 10236 );
@@ -90,6 +96,11 @@ CServerPortExtenderClient::CServerPortExtenderClient( CORE::CPulseGenerator& pul
     SubscribeTo( &m_reconnectTimer                                                           ,
                  CORE::CTimer::TimerUpdateEvent                                              ,
                  &TEventCallback( this, &CServerPortExtenderClient::OnReconnectTimerUpdate ) );
+                 
+    // Subscribe to application
+    SubscribeTo( CORE::CGUCEFApplication::Instance()                                ,
+                 CORE::CGUCEFApplication::AppShutdownEvent                          ,
+                 &TEventCallback( this, &CServerPortExtenderClient::OnAppShutdown ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -109,6 +120,7 @@ CServerPortExtenderClient::ConnectToSPEControlSocket( const COMCORE::CHostAddres
     m_disconnectRequested = false;
     m_controlConnectionInitialized = false;
     m_remoteSPEServerControl = host;
+    m_remoteSPEReversedServer.SetHostname( host.GetHostname() );
     return m_controlClient.ConnectTo( host );
 }
 
@@ -161,16 +173,18 @@ CServerPortExtenderClient::RemoveConnectionUsingLocalClient( COMCORE::CTCPClient
 
     COMCORE::CTCPClientSocket* speClientSocket = m_localToRemoteConnectionMap[ localSocket->GetSocketID() ];
     m_localToRemoteConnectionMap.erase( localSocket->GetSocketID() );
-    m_remoteToLocalConnectionMap.erase( speClientSocket->GetSocketID() );
+        
+    if ( NULL != speClientSocket )
+    {
+        m_remoteToLocalConnectionMap.erase( speClientSocket->GetSocketID() );
+        speClientSocket->Close();
+        m_rsClientConnections.erase( speClientSocket );
+        m_clientGarbageHeap.insert( speClientSocket );
+    }
     
-    speClientSocket->Close();
     localSocket->Close();
-    
-    m_localClientConnections.erase( localSocket );
-    m_rsClientConnections.erase( speClientSocket );
-    
-    delete localSocket;
-    delete speClientSocket;
+    m_localClientConnections.erase( localSocket );    
+    m_clientGarbageHeap.insert( localSocket );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -181,16 +195,39 @@ CServerPortExtenderClient::RemoveConnectionUsingSPEClient( COMCORE::CTCPClientSo
 
     COMCORE::CTCPClientSocket* localSocket = m_remoteToLocalConnectionMap[ speClientSocket->GetSocketID() ];
     m_remoteToLocalConnectionMap.erase( speClientSocket->GetSocketID() );
-    m_localToRemoteConnectionMap.erase( localSocket->GetSocketID() );
+
+    if ( NULL != localSocket )
+    {
+        m_localToRemoteConnectionMap.erase( localSocket->GetSocketID() );
+        localSocket->Close();
+        m_localClientConnections.erase( localSocket );
+        m_clientGarbageHeap.insert( localSocket );
+    }
     
-    localSocket->Close();    
     speClientSocket->Close();
-    
-    m_localClientConnections.erase( localSocket );
     m_rsClientConnections.erase( speClientSocket );
+    m_clientGarbageHeap.insert( speClientSocket );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CServerPortExtenderClient::CleanupGarbage( void )
+{GUCEF_TRACE;
+
+    if ( !m_clientGarbageHeap.empty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Cleaning up discarded client sockets" );
+    }
     
-    delete localSocket;
-    delete speClientSocket;
+    TSocketSet::iterator i = m_clientGarbageHeap.begin();
+    while ( i != m_clientGarbageHeap.end() )
+    {
+        delete (*i);
+        m_clientGarbageHeap.erase( i );
+        
+        i = m_clientGarbageHeap.begin();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -199,8 +236,37 @@ void
 CServerPortExtenderClient::Disconnect( void )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Disconnecting,.." );
+    
     m_disconnectRequested = true;
     m_controlClient.Close();
+    
+    TClientConnectionBufferMap::iterator i = m_localClientConnections.begin();
+    while ( i != m_localClientConnections.end() )
+    {
+        RemoveConnectionUsingLocalClient( (*i).first );
+        i = m_localClientConnections.begin();
+    }
+    
+    m_localClientConnections.clear();
+    m_rsClientConnections.clear(); 
+    m_remoteToLocalConnectionMap.clear();
+    m_localToRemoteConnectionMap.clear();
+    
+    CleanupGarbage();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CServerPortExtenderClient::OnAppShutdown( CORE::CNotifier* notifier    ,
+                                          const CORE::CEvent& eventid  ,
+                                          CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Disconnecting because the application is shutting down" );
+    
+    Disconnect();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -216,6 +282,8 @@ CServerPortExtenderClient::OnReconnectTimerUpdate( CORE::CNotifier* notifier    
     m_reconnectTimer.SetEnabled( false );
     if ( !m_disconnectRequested )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Attempting to reconnect control connection,.." );
+        
         m_controlClient.Reconnect();
     }
 }
@@ -286,6 +354,8 @@ CServerPortExtenderClient::OnPulse( CORE::CNotifier* notifier    ,
         }        
         ++i;
     }
+    
+    CleanupGarbage();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -588,6 +658,7 @@ CServerPortExtenderClient::OnControlClientDisconnected( CORE::CNotifier* notifie
     // Make sure the control connection is always up and running unless explicitly asked to disconnect
     if ( !m_disconnectRequested )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Starting control connection reconnect timer with interval " + CORE::UInt32ToString( m_reconnectTimer.GetInterval() ) );
         m_reconnectTimer.SetEnabled( true );
     }
 }
@@ -634,11 +705,13 @@ CServerPortExtenderClient::OnControlClientSocketError( CORE::CNotifier* notifier
                                                        CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: Socket error on the control connection" );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: Socket error on the control connection" );
     
     // Make sure the control connection is always up and running unless explicitly asked to disconnect
     if ( !m_disconnectRequested )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Starting control connection reconnect timer with interval " + CORE::UInt32ToString( m_reconnectTimer.GetInterval() ) );
+        
         m_reconnectTimer.SetEnabled( true );
     }
 }

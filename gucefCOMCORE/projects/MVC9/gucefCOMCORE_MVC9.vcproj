@@ -134,7 +134,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../../include;../../../gucefCORE/include;../../../gucefCORE/include/mswin;../../../gucefMT/include;..\..\..\common\include"
+				AdditionalIncludeDirectories="../../include/mswin;../../include;../../../gucefCORE/include;../../../gucefCORE/include/mswin;../../../gucefMT/include;..\..\..\common\include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;GUCEFCOMCORE_BUILD_MODULE"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"
