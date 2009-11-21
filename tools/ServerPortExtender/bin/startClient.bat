@@ -1,0 +1,1 @@
+ServerPortExtender_MVC9.exe 'showConsole=true' 'appRole=client' 'actualServerPort=5900' 'actualServerHostname=localhost' 'reversedServerPort=10235' 'speServerHostname=localhost' 'speServerControlPort=10236'
