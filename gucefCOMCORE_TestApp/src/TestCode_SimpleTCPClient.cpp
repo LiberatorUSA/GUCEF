@@ -81,7 +81,7 @@ class CSimpleTCPClient : public CORE::CObservingNotifier
             }
             else if ( eventid == CTCPClientSocket::ConnectedEvent )
             {
-                _clientsock.Send(Information);
+                _clientsock.SendString(Information);
             }
             else if ( eventid == CTCPClientSocket::DataRecievedEvent )
             {
