@@ -34,6 +34,14 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#define SPE_RECONNECT_INTERVAL  5000
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -58,7 +66,7 @@ CServerPortExtenderClient::CServerPortExtenderClient( CORE::CPulseGenerator& pul
       m_remoteSPEReversedServer()              ,
       m_controlConnectionInitialized( false )  ,
       m_pulseGenerator( &pulseGenerator )      ,
-      m_reconnectTimer( pulseGenerator, 2500 ) ,
+      m_reconnectTimer( pulseGenerator, SPE_RECONNECT_INTERVAL ) ,
       m_disconnectRequested( false )           ,
       m_clientGarbageHeap()
 {GUCEF_TRACE;
