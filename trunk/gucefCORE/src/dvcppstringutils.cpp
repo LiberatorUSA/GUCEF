@@ -287,9 +287,9 @@ UInt16
 StringToUInt16( const CString& str )
 {GUCEF_TRACE;
 
-    UInt16 value;
+    UInt32 value;
     sscanf( str.C_String(), "%u", &value );
-    return value;
+    return (UInt16) value;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -309,9 +309,9 @@ Int8
 StringToInt8( const CString& str )
 {GUCEF_TRACE;
 
-    Int8 value;
+    Int32 value;
     sscanf( str.C_String(), "%d", &value );
-    return value;
+    return (Int8) value;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -331,9 +331,9 @@ UInt8
 StringToUInt8( const CString& str )
 {GUCEF_TRACE;
 
-    UInt8 value;
+    UInt32 value;
     sscanf( str.C_String(), "%u", &value );
-    return value;
+    return (UInt8) value;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -214,6 +214,7 @@ CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid ,
     
     if ( m_scheduledForDestruction )
     {
+        m_ownerNotifier->m_imp = NULL;
         delete m_ownerNotifier;
         return false;
     }
@@ -300,6 +301,7 @@ CNotifierImplementor::Subscribe( CObserver* observer )
             if ( m_scheduledForDestruction )
             {
                 UnlockData();
+                m_ownerNotifier->m_imp = NULL;
                 delete m_ownerNotifier;
                 return;
             }
@@ -448,6 +450,7 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
         if ( m_scheduledForDestruction )
         {
             UnlockData();
+            m_ownerNotifier->m_imp = NULL;
             delete m_ownerNotifier;
             return;
         }        
@@ -549,6 +552,7 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer       ,
         if ( m_scheduledForDestruction )
         {
             UnlockData();
+            m_ownerNotifier->m_imp = NULL;
             delete m_ownerNotifier;
             return;
         }
@@ -624,6 +628,7 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
         if ( m_scheduledForDestruction )
         {
             UnlockData();
+            m_ownerNotifier->m_imp = NULL;
             delete m_ownerNotifier;
             return;
         }
@@ -854,6 +859,7 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
         if ( m_scheduledForDestruction )
         {
             UnlockData();
+            m_ownerNotifier->m_imp = NULL;
             delete m_ownerNotifier;
             return false;
         }        
@@ -1115,6 +1121,7 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
         if ( m_scheduledForDestruction )
         {
             UnlockData();
+            m_ownerNotifier->m_imp = NULL;
             delete m_ownerNotifier;
             return false;
         }        

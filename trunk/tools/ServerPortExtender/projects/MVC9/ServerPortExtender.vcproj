@@ -120,7 +120,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\include;..\..\..\..\common\include;..\..\..\..\gucefMT\include;..\..\..\..\gucefCORE\include;..\..\..\..\gucefCOMCORE\include"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\..\common\include;..\..\..\..\gucefMT\include;..\..\..\..\gucefCORE\include\mswin;..\..\..\..\gucefCORE\include;..\..\..\..\gucefCOMCORE\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -140,8 +140,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="gucefMT_MVC9.lib gucefCORE_MVC9.lib gucefCOMCORE_MVC9.lib"
 				OutputFile="$(OutDir)\ServerPortExtender_MVC9.exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\..\..\gucefMT\bin\Release_MVC9;..\..\..\..\gucefCORE\bin\Release_MVC9;..\..\..\..\gucefCOMCORE\bin\Release_MVC9"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -168,6 +170,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;..\..\..\..\common\bin\Release_MVC9&quot;"
 			/>
 		</Configuration>
 	</Configurations>

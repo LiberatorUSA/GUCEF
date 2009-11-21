@@ -138,7 +138,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\common\include;..\..\include;..\..\include\mswin;..\..\..\gucefMT\include;..\..\dependancy;..\..\dependancy\md5"
+				AdditionalIncludeDirectories="..\..\..\common\include;..\..\include;..\..\include\mswin;..\..\..\gucefMT\include;..\..\dependencies;..\..\dependencies\md5"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_DEPRECATE;GUCEFCORE_BUILD_MODULE"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"

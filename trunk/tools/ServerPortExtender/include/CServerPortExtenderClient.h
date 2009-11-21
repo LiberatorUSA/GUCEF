@@ -181,6 +181,12 @@ class CServerPortExtenderClient : public CORE::CObserver
                                  const CORE::CEvent& eventid  ,
                                  CORE::CICloneable* eventdata );
 
+    void OnAppShutdown( CORE::CNotifier* notifier    ,
+                        const CORE::CEvent& eventid  ,
+                        CORE::CICloneable* eventdata );
+                        
+    void CleanupGarbage( void );                        
+
     private:
     
     CServerPortExtenderClient( void );
@@ -190,6 +196,7 @@ class CServerPortExtenderClient : public CORE::CObserver
     private:
     typedef std::map< COMCORE::CTCPClientSocket*, CORE::CCyclicDynamicBuffer > TClientConnectionBufferMap;
     typedef std::map< CORE::UInt32, COMCORE::CTCPClientSocket* > TSocketIdMap;
+    typedef std::set< COMCORE::CTCPClientSocket* > TSocketSet;
     
     COMCORE::CTCPClientSocket m_controlClient;
     TClientConnectionBufferMap m_rsClientConnections;
@@ -203,6 +210,7 @@ class CServerPortExtenderClient : public CORE::CObserver
     CORE::CPulseGenerator* m_pulseGenerator;
     CORE::CTimer m_reconnectTimer;
     bool m_disconnectRequested;
+    TSocketSet m_clientGarbageHeap;
 };
 
 /*-------------------------------------------------------------------------*/

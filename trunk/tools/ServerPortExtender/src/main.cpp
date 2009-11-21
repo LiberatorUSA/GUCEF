@@ -54,6 +54,8 @@
 #include <windows.h>
 #endif /* GUCEF_MSWIN_BUILD ? */
 
+#include "callstack.h"
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -285,6 +287,12 @@ int
 main( int argc, char* argv[] )
 {GUCEF_TRACE;
 
+    #ifdef GUCEF_CORE_DEBUG_MODE
+    CORE::GUCEF_LogStackTo( "SPE_Callstack.cvs" );
+    CORE::GUCEF_SetStackLoggingInCvsFormat( 1 );
+    CORE::GUCEF_SetStackLogging( 1 );
+    #endif /* GUCEF_CORE_DEBUG_MODE ? */    
+    
     CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
     CORE::AppendToPath( logFilename, "ServerPortExtender_Log.txt" );
     CORE::CFileAccess logFileAccess( logFilename, "w" );
@@ -396,16 +404,16 @@ main( int argc, char* argv[] )
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: reversed server port set to " + CORE::UInt16ToString( reversedServerPort ) );
 
         CORE::CString speServerHostname = "localhost";
-        if ( keyValueList.HasKey( "actualServerHostname" ) ) 
+        if ( keyValueList.HasKey( "speServerHostname" ) ) 
         {
             speServerHostname = keyValueList.GetValue( "speServerHostname" );
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: SPE server hostname set to " + speServerHostname );
 
-        CORE::UInt16 speServerPort = 10235;
-        if ( keyValueList.HasKey( "speServerPort" ) ) 
+        CORE::UInt16 speServerPort = 10236;
+        if ( keyValueList.HasKey( "speServerControlPort" ) ) 
         {
-            speServerPort = CORE::StringToUInt16( keyValueList.GetValue( "speServerPort" ) );
+            speServerPort = CORE::StringToUInt16( keyValueList.GetValue( "speServerControlPort" ) );
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: SPE server port set to " + CORE::UInt16ToString( speServerPort ) );
                         

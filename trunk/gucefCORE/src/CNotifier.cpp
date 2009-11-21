@@ -95,7 +95,14 @@ CNotifier::operator=( const CNotifier& src )
 
     if ( this != &src )
     {
-        (*m_imp) = (*src.m_imp);
+        if ( NULL != src.m_imp )
+        {
+            (*m_imp) = (*src.m_imp);
+        }
+        else
+        {
+            m_imp = NULL;
+        }
     }
     return *this; 
 }    
@@ -105,8 +112,11 @@ CNotifier::operator=( const CNotifier& src )
 CNotifier::~CNotifier()
 {GUCEF_TRACE;
 
-      m_imp->OnDeathOfOwnerNotifier();
-      m_imp = NULL;
+    if ( NULL != m_imp )
+    {
+        m_imp->OnDeathOfOwnerNotifier();
+    }
+    m_imp = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -127,7 +137,10 @@ void
 CNotifier::Subscribe( CObserver* observer )
 {GUCEF_TRACE;
 
-    m_imp->Subscribe( observer );  
+    if ( NULL != m_imp )
+    {
+        m_imp->Subscribe( observer );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -138,9 +151,12 @@ CNotifier::Subscribe( CObserver* observer                              ,
                       CIEventHandlerFunctorBase* callback /* = NULL */ )
 {GUCEF_TRACE;
 
-    m_imp->Subscribe( observer ,
-                      eventid  ,
-                      callback );
+    if ( NULL != m_imp )
+    {
+        m_imp->Subscribe( observer ,
+                          eventid  ,
+                          callback );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -149,7 +165,10 @@ void
 CNotifier::Unsubscribe( CObserver* observer )
 {GUCEF_TRACE;
 
-    m_imp->Unsubscribe( observer );                                  
+    if ( NULL != m_imp )
+    {
+        m_imp->Unsubscribe( observer );
+    }
 }
 
 /*-------------------------------------------------------------------------*/                
@@ -159,8 +178,11 @@ CNotifier::Unsubscribe( CObserver* observer   ,
                         const CEvent& eventid )
 {GUCEF_TRACE;
 
-    m_imp->Unsubscribe( observer ,
-                        eventid  );
+    if ( NULL != m_imp )
+    {
+        m_imp->Unsubscribe( observer ,
+                            eventid  );
+    }                            
 }
 
 /*-------------------------------------------------------------------------*/
@@ -169,7 +191,10 @@ void
 CNotifier::UnsubscribeAllFromNotifier( void )
 {GUCEF_TRACE;
 
-    m_imp->UnsubscribeAllFromNotifier();
+    if ( NULL != m_imp )
+    {
+        m_imp->UnsubscribeAllFromNotifier();
+    }        
 }
 
 /*-------------------------------------------------------------------------*/                        
@@ -178,7 +203,11 @@ bool
 CNotifier::NotifyObservers( void )
 {GUCEF_TRACE;
 
-    return m_imp->NotifyObservers();
+    if ( NULL != m_imp )
+    {
+        return m_imp->NotifyObservers();
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -188,8 +217,12 @@ CNotifier::NotifyObservers( const CEvent& eventid  ,
                             CICloneable* eventData )
 {GUCEF_TRACE;
 
-    return m_imp->NotifyObservers( eventid   ,
-                                   eventData );   
+    if ( NULL != m_imp )
+    {
+        return m_imp->NotifyObservers( eventid   ,
+                                       eventData );
+    }
+    return false;   
 }
 
 /*-------------------------------------------------------------------------*/
@@ -200,9 +233,13 @@ CNotifier::NotifyObservers( CNotifier& sender                   ,
                             CICloneable* eventData /* = NULL */ )
 {GUCEF_TRACE;
 
-    return m_imp->NotifyObservers( sender    ,
-                                   eventid   ,
-                                   eventData );
+    if ( NULL != m_imp )
+    {
+        return m_imp->NotifyObservers( sender    ,
+                                       eventid   ,
+                                       eventData );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -214,10 +251,14 @@ CNotifier::NotifySpecificObserver( CNotifier& sender           ,
                                    CICloneable* eventData      )
 {GUCEF_TRACE;
 
-    return m_imp->NotifySpecificObserver( sender           ,
-                                          specificObserver ,
-                                          eventid          ,
-                                          eventData        );
+    if ( NULL != m_imp )
+    {
+        return m_imp->NotifySpecificObserver( sender           ,
+                                              specificObserver ,
+                                              eventid          ,
+                                              eventData        );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -228,9 +269,13 @@ CNotifier::NotifySpecificObserver( CObserver& specificObserver ,
                                    CICloneable* eventData      )
 {GUCEF_TRACE;
 
-    return m_imp->NotifySpecificObserver( specificObserver ,
-                                          eventid          ,
-                                          eventData        );
+    if ( NULL != m_imp )
+    {
+        return m_imp->NotifySpecificObserver( specificObserver ,
+                                              eventid          ,
+                                              eventData        );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -239,7 +284,10 @@ void
 CNotifier::OnObserverDestroy( CObserver* observer )
 {GUCEF_TRACE;
 
-    m_imp->OnObserverDestroy( observer );                                 
+    if ( NULL != m_imp )
+    {
+        m_imp->OnObserverDestroy( observer );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -258,7 +306,10 @@ void
 CNotifier::ScheduleForDestruction( void )
 {GUCEF_TRACE;
 
-    m_imp->ScheduleForDestruction();
+    if ( NULL != m_imp )
+    {
+        m_imp->ScheduleForDestruction();
+    }
 }
 
 /*-------------------------------------------------------------------------*/

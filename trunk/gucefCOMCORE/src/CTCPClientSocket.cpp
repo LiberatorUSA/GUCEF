@@ -273,7 +273,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
         // Notify our users of the error
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
         TSocketErrorEventData eData( errorcode );
-        NotifyObservers( SocketErrorEvent, &eData );
+        if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return false;
         
         // After a socket error you must always close the connection.
         _active = false;
@@ -295,7 +295,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
         // Notify our users of the error
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
         TSocketErrorEventData eData( errorcode );
-        NotifyObservers( SocketErrorEvent, &eData );
+        if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return false;
         
         // After a socket error you must always close the connection.
         _active = false;
@@ -350,7 +350,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
                 // Notify our users of the error
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
                 TSocketErrorEventData eData( errorcode );
-                NotifyObservers( SocketErrorEvent, &eData );
+                if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return false;
             }        
                     
             // After a socket error you must always close the connection.
@@ -455,7 +455,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                 
                 // Notify our users of the error
                 TSocketErrorEventData eData( errorcode );
-                NotifyObservers( SocketErrorEvent, &eData );
+                if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
                 
                 // After a socket error you must always close the connection.
                 Close();
@@ -497,7 +497,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
             CORE::CDynamicBuffer linkedBuffer;
             linkedBuffer.LinkTo( m_readbuffer.GetConstBufferPtr(), m_readbuffer.GetDataSize() );
             TDataRecievedEventData cData( &linkedBuffer );
-            NotifyObservers( DataRecievedEvent, &cData );
+            if ( !NotifyObservers( DataRecievedEvent, &cData ) ) return;
         }
                       
         UnlockData();      
@@ -545,11 +545,10 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
                 
                 TSocketErrorEventData eData( errorcode );
-                NotifyObservers( SocketErrorEvent, &eData );
-                
+                if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;             
                 Close();
                 UnlockData();
-                return;                                                                   
+                return;
             }
             else
             if ( FD_ISSET( _data->sockid, &readfds ) )
@@ -567,7 +566,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
                     
                     // We are now connected
                     m_isConnecting = false;
-                    NotifyObservers( ConnectedEvent );
+                    if ( !NotifyObservers( ConnectedEvent ) ) return;
                 }
             }                                                
         }
@@ -577,7 +576,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
             
             /* select call failed */
             TSocketErrorEventData eData( errorcode );
-            NotifyObservers( SocketErrorEvent, &eData );
+            if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
             Close();
         }
         UnlockData(); 
@@ -609,7 +608,7 @@ CTCPClientSocket::Close( void )
         
         m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
         
-        NotifyObservers( DisconnectedEvent );
+        if ( !NotifyObservers( DisconnectedEvent ) ) return;
     }
     UnlockData();
 }
@@ -646,7 +645,7 @@ CTCPClientSocket::Send( const void* data ,
         CORE::CDynamicBuffer linkedBuffer;
         linkedBuffer.LinkTo( data, length );
         TDataRecievedEventData cData( &linkedBuffer );
-        NotifyObservers( DataSentEvent, &cData );
+        if ( !NotifyObservers( DataSentEvent, &cData ) ) return false;
                                 
         int error;
         Int32 wbytes = WSTS_send( _data->sockid ,  

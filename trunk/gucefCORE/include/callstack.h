@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_ETYPES_H
+#include "gucefMT_ETypes.h"
+#define GUCEF_MT_ETYPES_H
+#endif /* GUCEF_MT_ETYPES_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"
 #define GUCEF_CORE_MACROS_H
@@ -107,12 +112,29 @@ GUCEF_SetStackLogging( const UInt32 logStackBool );
 
 /*-------------------------------------------------------------------------*/
 
-typedef void (*TStackCallback) ( const char* fileName ,
-                                 const int lineNr     ,
-                                 const char isPush    );
+GUCEFCORE_EXPORT_C void
+GUCEF_SetStackLoggingInCvsFormat( const UInt32 logAsCvsBool );
+
+/*-------------------------------------------------------------------------*/
+
+typedef void (*TStackPushCallback) ( const char* fileName     ,
+                                     const int lineNr         ,
+                                     const UInt32 threadId    ,
+                                     const UInt32 stackHeight );
 
 GUCEFCORE_EXPORT_C void
-GUCEF_SetStackCallback( TStackCallback callback );
+GUCEF_SetStackPushCallback( TStackPushCallback callback );
+
+/*-------------------------------------------------------------------------*/
+
+typedef void (*TStackPopCallback) ( const char* fileName     ,
+                                    const int lineNr         ,
+                                    const UInt32 threadId    ,
+                                    const UInt32 stackHeight ,
+                                    const UInt32 ticksSpent  );
+
+GUCEFCORE_EXPORT_C void
+GUCEF_SetStackPopCallback( TStackPopCallback callback );
 
 /*-------------------------------------------------------------------------*/
 
@@ -151,7 +173,7 @@ GUCEF_ShutdowntCallstackUtility( void );
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef DEBUG_MODE
+#ifdef GUCEF_CORE_DEBUG_MODE
   #define GUCEF_BEGIN { GUCEF_UtilityCodeBegin( __FILE__, __LINE__ ); }
   #define GUCEF_END { GUCEF_UtilityCodeEnd(); }
   #define GUCEF_END_RET( retvaltype, retval ) { retvaltype var( retval ); GUCEF_UtilityCodeEnd(); return var; }

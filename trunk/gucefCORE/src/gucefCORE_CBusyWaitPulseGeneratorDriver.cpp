@@ -33,6 +33,11 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #include "gucefCORE_CBusyWaitPulseGeneratorDriver.h"
 
 /*-------------------------------------------------------------------------//
@@ -103,10 +108,12 @@ CBusyWaitPulseGeneratorDriver::Run( CPulseGenerator& pulseGenerator )
         {
             if ( remainingDelta > 1.0 )
             {
-                //MT::PrecisionDelay( (UInt32)remainingDelta ); 
+                MT::PrecisionDelay( (UInt32)remainingDelta ); 
             }
         }
     }
+    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "BusyWaitPulseGeneratorDriver: Exited run loop" );
 }
 
 /*--------------------------------------------------------------------------*/
