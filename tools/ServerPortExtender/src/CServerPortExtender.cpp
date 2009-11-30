@@ -90,10 +90,20 @@ CServerPortExtender::CServerPortExtender( CORE::CPulseGenerator& pulseGenerator 
 CServerPortExtender::~CServerPortExtender()
 {GUCEF_TRACE;
     
+    Disconnect();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CServerPortExtender::Disconnect( void )
+{GUCEF_TRACE;
+
     m_serverSocket.Close();
     m_reversedServerSocket.Close();
     m_reversedServerControlSocket.Close();
     
+    m_controlConnectionInitialized = false;
     m_controlConnection = NULL;
     
     m_cConnectionBuffers.clear();
@@ -248,16 +258,10 @@ CServerPortExtender::OnRSControlClientDisconnected( CORE::CNotifier* notifier   
                                                     CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    COMCORE::CTCPServerConnection* connection = static_cast< COMCORE::CTCPServerConnection* >( notifier );
-    if ( NULL != m_controlConnection )
-    {
-        // Make sure the control connection object is no longer used since we where
-        // disconnected
-        if ( m_controlConnection == connection )
-        {
-            m_controlConnection = NULL;
-        }
-    }
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Control connection has been disconnected" );
+
+    m_controlConnectionInitialized = false;
+    m_controlConnection = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -268,6 +272,7 @@ CServerPortExtender::OnRSControlClientDataSent( CORE::CNotifier* notifier    ,
                                                 CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Sending data on the control connection" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -279,6 +284,9 @@ CServerPortExtender::OnRSControlClientSocketError( CORE::CNotifier* notifier    
 {GUCEF_TRACE;
 
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtender: Socket error on the control connection" );
+    
+    m_controlConnectionInitialized = false;
+    m_controlConnection = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -399,6 +407,7 @@ CServerPortExtender::OnRSClientDisconnected( CORE::CNotifier* notifier    ,
     
     // Remove the buffer for this connection
     m_rsConnectionBuffers.erase( rsConnection );
+    m_remoteToLocalConnectionMap.erase( rsConnection->GetSocketID() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -541,8 +550,9 @@ CServerPortExtender::OnClientDisconnected( CORE::CNotifier* notifier    ,
     COMCORE::CTCPServerConnection* rsConnection = GetRemoteConnectionForLocalConnection( clientConnection->GetSocketID() );
     if ( NULL != rsConnection )
     {
-         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Closing reversed client-server connection for a client who disconnected" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Closing reversed client-server connection for a client who disconnected" );
         
+        m_remoteToLocalConnectionMap.erase( rsConnection->GetSocketID() );
         rsConnection->Close();
     }
     
@@ -577,6 +587,7 @@ CServerPortExtender::OnClientSocketError( CORE::CNotifier* notifier    ,
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtender: Closing reversed client-server connection for a client who a client had a socket error" );
         
+        m_remoteToLocalConnectionMap.erase( rsConnection->GetSocketID() );
         rsConnection->Close();
     }
 }

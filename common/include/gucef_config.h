@@ -34,7 +34,7 @@
  *      Target platform selection switches
  *      By default autodetects
  */
-// #define GUCEF_LINUX_BUILD
+/* #define GUCEF_LINUX_BUILD */
 #define GUCEF_MSWIN_BUILD
 
 /*-------------------------------------------------------------------------*/
@@ -44,14 +44,14 @@
  *      Defaults to CALLSPEC_C
  */
 #define GUCEF_USE_CALLSPEC_C
-// #define GUCEF_USE_CALLSPEC_STD
-// #define GUCEF_USE_CALLSPEC_PASCAL
-// #define GUCEF_USE_CALLSPEC_FAST
+/* #define GUCEF_USE_CALLSPEC_STD */
+/* #define GUCEF_USE_CALLSPEC_PASCAL */
+/* #define GUCEF_USE_CALLSPEC_FAST */
 
 #define GUCEF_USE_PLUGIN_CALLSPEC_C
-// #define GUCEF_USE_PLUGIN_CALLSPEC_STD
-// #define GUCEF_USE_PLUGIN_CALLSPEC_PASCAL
-// #define GUCEF_USE_PLUGIN_CALLSPEC_FAST
+/* #define GUCEF_USE_PLUGIN_CALLSPEC_STD */
+/* #define GUCEF_USE_PLUGIN_CALLSPEC_PASCAL */
+/* #define GUCEF_USE_PLUGIN_CALLSPEC_FAST */
 
 /*-------------------------------------------------------------------------*/
 
@@ -60,7 +60,7 @@
  *      Default is 32bit, may be able to autodetect
  */
 #define GUCEF_32BIT
-// #define GUCEF_64BIT
+/* #define GUCEF_64BIT */
 
 /*-------------------------------------------------------------------------*/
 
@@ -68,8 +68,16 @@
  *      Debug mode
  *      Autodetects from the _DEBUG define
  */
-// #define GUCEF_DEBUG_MODE
-// #define GUCEF_DEBUG_VERBOSE
+/* #define GUCEF_DEBUG_MODE */
+/* #define GUCEF_DEBUG_VERBOSE */
+
+/*-------------------------------------------------------------------------*/
+
+/*
+ *  Switches to enable/disable callstack tracking
+ */
+/* #define GUCEF_RELEASE_CALLSTACK_TRACKING */
+/* #define GUCEF_DEBUG_CALLSTACK_TRACKING */
 
 /*-------------------------------------------------------------------------*/
 
