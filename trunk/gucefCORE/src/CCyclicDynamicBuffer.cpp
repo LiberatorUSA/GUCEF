@@ -115,6 +115,8 @@ CCyclicDynamicBuffer::ReadBlockTo( CDynamicBuffer& buffer )
     TBlockList::reverse_iterator i = m_usedBlocks.rbegin();
     if ( i != m_usedBlocks.rend() )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCyclicDynamicBuffer: Reading an entire block out of the buffer" );
+        
         TDataChunk& dataChunck = (*i);
         
         // Ensure that the receiving buffer is large enough to handle the block
@@ -152,6 +154,8 @@ CCyclicDynamicBuffer::Read( void* destBuffer             ,
     // We will simply pop FIFO elements until we hit the byte count
     for ( TBlockList::reverse_iterator i = m_usedBlocks.rbegin(); i != m_usedBlocks.rend(); ++i )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCyclicDynamicBuffer: Reading data out of the buffer" );
+        
         TDataChunk& dataChunck = (*i);
         if ( totalBytes > dataChunck.blockSize )
         {
@@ -199,6 +203,8 @@ CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
 {GUCEF_TRACE;
 
     LockData();
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCyclicDynamicBuffer: Writing data into the buffer" );
     
     UInt32 bytesWritten = 0, totalBytesWritten = 0, totalBytes = bytesPerElement * elementsToWrite;
     for ( TBlockList::iterator i = m_freeBlocks.begin(); i != m_freeBlocks.end(); ++i )
@@ -313,7 +319,7 @@ CCyclicDynamicBuffer::TidyFreeBlocks( void )
             }
         }
 
-        // now we merge blocks that are adjecent
+        // now we (bubble) merge blocks that are adjecent
         listMutation = true;
         while ( listMutation )
         {
@@ -333,11 +339,12 @@ CCyclicDynamicBuffer::TidyFreeBlocks( void )
                     freeDataChunck.blockSize = chunck.blockSize + (*i).blockSize;
                     freeDataChunck.startOffset = chunck.startOffset;
                     
-                    i = m_freeBlocks.erase( i );
-                    n = m_freeBlocks.erase( n );
+                    m_freeBlocks.erase( i );
+                    m_freeBlocks.erase( n );
                     m_freeBlocks.push_back( freeDataChunck );
                     
                     listMutation = true;
+                    break;
                 }
                 else
                 {
@@ -355,6 +362,8 @@ CCyclicDynamicBuffer::Clear( const bool logicalClearOnly /* = false */ )
 {GUCEF_TRACE;
 
     LockData();
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCyclicDynamicBuffer: Clearing the buffer" );
     
     m_usedBlocks.clear();
     m_freeBlocks.clear();
@@ -420,6 +429,7 @@ CCyclicDynamicBuffer::LockData( void ) const
 void
 CCyclicDynamicBuffer::UnlockData( void ) const
 {GUCEF_TRACE;
+
     // non-operation, implement in descending class for threadsafety if desired
 }
 

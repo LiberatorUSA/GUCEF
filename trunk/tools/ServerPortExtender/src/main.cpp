@@ -287,11 +287,11 @@ int
 main( int argc, char* argv[] )
 {GUCEF_TRACE;
 
-    #ifdef GUCEF_CORE_DEBUG_MODE
+    #ifdef GUCEF_CALLSTACK_TRACING
     CORE::GUCEF_LogStackTo( "SPE_Callstack.cvs" );
     CORE::GUCEF_SetStackLoggingInCvsFormat( 1 );
     CORE::GUCEF_SetStackLogging( 1 );
-    #endif /* GUCEF_CORE_DEBUG_MODE ? */    
+    #endif /* GUCEF_CALLSTACK_TRACING ? */    
     
     CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
     CORE::AppendToPath( logFilename, "ServerPortExtender_Log.txt" );

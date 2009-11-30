@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_MACROS_H
-  #include "gucefCORE_macros.h"
-  #define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CALLSTACK_H
+#include "callstack.h"
+#define GUCEF_CORE_CALLSTACK_H
+#endif /* GUCEF_CORE_CALLSTACK_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,20 +57,20 @@ namespace CORE {
  */
 class GUCEFCORE_EXPORT_CPP CTracer
 {
-        public:
-        
-        CTracer( const char* file ,
-                 const int line   );
-        
-        ~CTracer();
-        
-        private:
-        
-        CTracer( void );
-        
-        CTracer( const CTracer& src );
-        
-        CTracer& operator=( const CTracer& src );
+    public:
+    
+    CTracer( const char* file ,
+             const int line   );
+    
+    ~CTracer();
+    
+    private:
+    
+    CTracer( void );
+    
+    CTracer( const CTracer& src );
+    
+    CTracer& operator=( const CTracer& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -92,8 +92,7 @@ class GUCEFCORE_EXPORT_CPP CTracer
  *      Macro that creates a tracer object and fills in the file and line
  *      precompiler directives. This should save you some typing.
  */
-#undef GUCEF_TRACE
-#ifdef GUCEF_CORE_DEBUG_MODE    
+#ifdef GUCEF_CALLSTACK_TRACKING    
   #define GUCEF_TRACE GUCEF::CORE::CTracer GUCEFStackTracerObject( __FILE__, __LINE__ );
 #else
   #define GUCEF_TRACE

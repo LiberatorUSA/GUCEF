@@ -173,7 +173,19 @@ GUCEF_ShutdowntCallstackUtility( void );
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_CORE_DEBUG_MODE
+#ifdef GUCEF_DEBUG_MODE
+  #ifdef GUCEF_DEBUG_CALLSTACK_TRACKING
+    #define GUCEF_CALLSTACK_TRACKING
+  #endif
+#else
+  #ifdef GUCEF_RELEASE_CALLSTACK_TRACKING
+    #define GUCEF_CALLSTACK_TRACKING
+  #endif
+#endif
+  
+/*-------------------------------------------------------------------------*/
+  
+#ifdef GUCEF_CALLSTACK_TRACKING
   #define GUCEF_BEGIN { GUCEF_UtilityCodeBegin( __FILE__, __LINE__ ); }
   #define GUCEF_END { GUCEF_UtilityCodeEnd(); }
   #define GUCEF_END_RET( retvaltype, retval ) { retvaltype var( retval ); GUCEF_UtilityCodeEnd(); return var; }

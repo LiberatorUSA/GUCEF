@@ -81,6 +81,8 @@ class CServerPortExtender : public CORE::CObservingNotifier
     bool ListenForReversedClientsOnPort( CORE::UInt16 port );
     
     bool IsControlConnectionInitialized( void ) const;
+    
+    void Disconnect( void );
 
     private:
     
