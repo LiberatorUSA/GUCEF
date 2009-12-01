@@ -398,8 +398,6 @@ CServerPortExtenderClient::OnClientToActualServerDataRecieved( CORE::CNotifier* 
                                                                const CORE::CEvent& eventid  ,
                                                                CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Received data from the actual server, forwarding it" );
     
     // received data from the actual server on this client connection.
     // we have to forward it to remote SPE server
@@ -411,6 +409,8 @@ CServerPortExtenderClient::OnClientToActualServerDataRecieved( CORE::CNotifier* 
         // get the received data
         COMCORE::CTCPClientSocket::TDataRecievedEventData* receivedDataObj = static_cast< COMCORE::CTCPClientSocket::TDataRecievedEventData* >( eventdata );
         const CORE::CDynamicBuffer& receivedData = receivedDataObj->GetData();
+        
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Received " + CORE::UInt32ToString( receivedData.GetDataSize() ) + " bytes of data from the actual server, forwarding it" );
         
         // write the received data into our data buffer for this socket
         CORE::CCyclicDynamicBuffer& buffer = m_rsClientConnections[ remoteClientConnection ];
@@ -542,7 +542,7 @@ CServerPortExtenderClient::OnClientToRemoteSPEDataRecieved( CORE::CNotifier* not
     if ( NULL != localClientConnection )
     {
         // send all data from the data buffer
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Forwarding received data from remote SPE server to actual server" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Forwarding received " + CORE::UInt32ToString( buffer.GetBufferedDataSizeInBytes() ) + " bytes of data from remote SPE server to actual server" );
         SendAllDataInBuffer( buffer, *localClientConnection );
     }
 }
@@ -615,7 +615,7 @@ CServerPortExtenderClient::OnControlMsg( TServerPortExtenderProtocolEnum msgType
                 
                 m_rsClientConnections[ clientSocket ]; 
                 
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Received request for a new connection to remote SPE server, created client and attempting to connect" );\
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Received request for a new connection to remote SPE server, created client and attempting to connect" );
             }
             else
             {

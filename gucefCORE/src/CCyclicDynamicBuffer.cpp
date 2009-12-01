@@ -114,10 +114,10 @@ CCyclicDynamicBuffer::ReadBlockTo( CDynamicBuffer& buffer )
     // We will simply pop a FIFO element
     TBlockList::reverse_iterator i = m_usedBlocks.rbegin();
     if ( i != m_usedBlocks.rend() )
-    {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCyclicDynamicBuffer: Reading an entire block out of the buffer" );
-        
+    {        
         TDataChunk& dataChunck = (*i);
+        
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCyclicDynamicBuffer: Reading an entire block of size " + UInt32ToString( dataChunck.blockSize ) + "bytes out of the buffer" );
         
         // Ensure that the receiving buffer is large enough to handle the block
         buffer.SetBufferSize( dataChunck.blockSize, false );
@@ -204,9 +204,10 @@ CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
 
     LockData();
     
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCyclicDynamicBuffer: Writing data into the buffer" );
-    
     UInt32 bytesWritten = 0, totalBytesWritten = 0, totalBytes = bytesPerElement * elementsToWrite;
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCyclicDynamicBuffer: Writing " + UInt32ToString( totalBytes ) + " bytes of data into the buffer" );
+    
     for ( TBlockList::iterator i = m_freeBlocks.begin(); i != m_freeBlocks.end(); ++i )
     {            
         if ( (*i).blockSize >= bytesPerElement )
