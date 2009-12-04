@@ -182,7 +182,7 @@ CTaskManager::CTaskManager( void )
       m_consumerFactory()       ,
       m_activeTasks()           ,
       m_nonactiveTasks()        ,
-      m_desiredNrOfThreads( 2 ) ,
+      m_desiredNrOfThreads( 0 ) ,
       m_taskQueue()             ,
       m_taskIdGenerator()
 {GUCEF_TRACE;

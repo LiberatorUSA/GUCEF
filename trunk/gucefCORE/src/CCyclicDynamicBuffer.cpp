@@ -370,29 +370,21 @@ CCyclicDynamicBuffer::TidyFreeBlocks( void )
             
             TBlockList::iterator i = m_freeBlocks.begin();
             TBlockList::iterator n = i;
-            ++i;
             
-            TDataChunk chunck = (*n);
-            for ( ; i != m_freeBlocks.end(); ++i )
+            TDataChunk prevChunck = (*n);
+            for ( ++i; i != m_freeBlocks.end(); ++i )
             {
-                if ( chunck.startOffset + chunck.blockSize == (*i).startOffset )
+                if ( prevChunck.startOffset + prevChunck.blockSize == (*i).startOffset )
                 {
                     // Perform a block merge
-                    TDataChunk freeDataChunck;
-                    freeDataChunck.blockSize = chunck.blockSize + (*i).blockSize;
-                    freeDataChunck.startOffset = chunck.startOffset;
-                    
+                    (*n).blockSize = prevChunck.blockSize + (*i).blockSize;
+                    (*n).startOffset = prevChunck.startOffset;                    
                     m_freeBlocks.erase( i );
-                    m_freeBlocks.erase( n );
-                    m_freeBlocks.push_back( freeDataChunck );
                     
                     listMutation = true;
                     break;
                 }
-                else
-                {
-                    ++n;
-                }
+                ++n;
             }
         }
     }
