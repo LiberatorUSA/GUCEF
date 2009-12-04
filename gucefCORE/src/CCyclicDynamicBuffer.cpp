@@ -112,8 +112,8 @@ CCyclicDynamicBuffer::ReadBlockTo( CDynamicBuffer& buffer )
     LockData();
     
     // We will simply pop a FIFO element
-    TBlockList::reverse_iterator i = m_usedBlocks.rbegin();
-    if ( i != m_usedBlocks.rend() )
+    TBlockList::iterator i = m_usedBlocks.begin();
+    if ( i != m_usedBlocks.end() )
     {        
         TDataChunk& dataChunck = (*i);
         
@@ -131,8 +131,10 @@ CCyclicDynamicBuffer::ReadBlockTo( CDynamicBuffer& buffer )
         // Mark the element as free'd
         TDataChunk freeDataChunck = dataChunck;
         m_freeBlocks.push_back( freeDataChunck );
-        m_usedBlocks.pop_back();
+        m_usedBlocks.erase( i );
     }
+    
+    TidyFreeBlocks();
     
     UnlockData();
     
@@ -152,7 +154,7 @@ CCyclicDynamicBuffer::Read( void* destBuffer             ,
     UInt32 bytesRead = 0, totalBytesRead = 0, totalBytes = bytesPerElement * elementsToRead;
     
     // We will simply pop FIFO elements until we hit the byte count
-    for ( TBlockList::reverse_iterator i = m_usedBlocks.rbegin(); i != m_usedBlocks.rend(); ++i )
+    for ( TBlockList::iterator i = m_usedBlocks.begin(); i != m_usedBlocks.end(); ++i )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCyclicDynamicBuffer: Reading data out of the buffer" );
         
@@ -166,8 +168,8 @@ CCyclicDynamicBuffer::Read( void* destBuffer             ,
             totalBytes -= bytesRead;             
 
             m_freeBlocks.push_back( dataChunck );            
-            m_usedBlocks.pop_back();
-            i = m_usedBlocks.rbegin();
+            m_usedBlocks.erase( i );
+            i = m_usedBlocks.begin();
         }
         else
         {
@@ -202,9 +204,14 @@ CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
                              const UInt32 elementsToWrite )
 {GUCEF_TRACE;
 
+    // Initial sanity check
+    if ( bytesPerElement == 0 || elementsToWrite == 0 ) return 0;
+    
     LockData();
     
-    UInt32 bytesWritten = 0, totalBytesWritten = 0, totalBytes = bytesPerElement * elementsToWrite;
+    UInt32 totalBytesWritten = 0;
+    UInt32 totalBytes = bytesPerElement * elementsToWrite;
+    UInt32 remainingElements = elementsToWrite;
     
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCyclicDynamicBuffer: Writing " + UInt32ToString( totalBytes ) + " bytes of data into the buffer" );
     
@@ -212,40 +219,45 @@ CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
     {            
         if ( (*i).blockSize >= bytesPerElement )
         {
-            // Calculate how many elements we can fit in the block
-            UInt32 bytesToWrite = ( (*i).blockSize / bytesPerElement ) * bytesPerElement;
+            // Calculate how many elements and thus bytes we can fit in the block
+            UInt32 bytesToWrite, elementsToWrite;
+            UInt32 nrOfElementsThatFitInBlock = (*i).blockSize / bytesPerElement;
+            if ( nrOfElementsThatFitInBlock >= remainingElements )
+            {
+                elementsToWrite = remainingElements;
+                bytesToWrite = bytesPerElement * remainingElements;
+            }
+            else
+            {
+                elementsToWrite = remainingElements - nrOfElementsThatFitInBlock;
+                bytesToWrite = bytesPerElement * elementsToWrite;
+            }
             
             // Copy the max number of elements
-            bytesWritten = m_buffer.CopyFrom( (*i).startOffset                  ,
-                                              bytesToWrite                      ,
-                                              ((Int8*)srcBuffer) + bytesWritten );
+            UInt32 bytesWritten = m_buffer.CopyFrom( (*i).startOffset                       ,
+                                                     bytesToWrite                           ,
+                                                     ((Int8*)srcBuffer) + totalBytesWritten );
             totalBytesWritten += bytesToWrite;
+            remainingElements -= elementsToWrite;
             
             // Sanity check
             if ( bytesWritten < bytesToWrite )
             {
-                // something went wrong
-                (*i).blockSize -= bytesWritten;
-                (*i).startOffset += bytesWritten;
-                TDataChunk usedDataChunck;
-                usedDataChunck.blockSize = bytesWritten;
-                usedDataChunck.startOffset = (*i).startOffset + (*i).blockSize;
-                m_usedBlocks.push_back( usedDataChunck );
-               
-                TidyFreeBlocks();
-                UnlockData();
+                // something went wrong,.. intentionally do not update administration
+                // as if the write to buffer never happened
                 
+                UnlockData();                
                 return totalBytesWritten;
             }
                     
             // push the used-block-info on our FIFO stack
             TDataChunk usedDataChunck;
-            usedDataChunck.blockSize = bytesToWrite;
+            usedDataChunck.blockSize = bytesWritten;
             usedDataChunck.startOffset = (*i).startOffset;
             m_usedBlocks.push_back( usedDataChunck );
             
-            // Check if we have a block remnant
-            if ( (*i).blockSize > bytesToWrite )
+            // Check if we have a block remnant in the now (partially?) used free block
+            if ( (*i).blockSize > bytesWritten )
             {
                 // store the free-block-info
                 (*i).blockSize -= bytesWritten;
@@ -253,19 +265,22 @@ CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
             }
             else
             {
-                // remove the block from out list of available blocks
-                i = m_freeBlocks.erase( i );
-                if ( i == m_freeBlocks.end() )
-                {
-                    break;
-                }
+                // remove the block from our list of available blocks
+                m_freeBlocks.erase( i );
+                i = m_freeBlocks.begin();
+            }
+            
+            // Check if we should stop this free block matching excercise
+            if ( 0 == remainingElements || i == m_freeBlocks.end() )
+            {
+                break;
             }
         }
     }
     
     // Check if we where able to store the given data using free blocks 
     // in the existing buffer space
-    if ( totalBytesWritten < totalBytes )
+    if ( remainingElements > 0 )
     {
         // We where unable to store everything using the available free blocks
         // We will create a new used block and enlarge the buffer if needed to
@@ -281,6 +296,9 @@ CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
         usedDataChunck.blockSize = bytesToWrite;
         usedDataChunck.startOffset = startOffset;
         m_usedBlocks.push_back( usedDataChunck );
+        
+        // We have now written everything into the buffer
+        totalBytesWritten = totalBytes;
     }
     
     TidyFreeBlocks();
@@ -288,6 +306,30 @@ CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
     UnlockData(); 
     
     return totalBytesWritten;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CCyclicDynamicBuffer::GetNrOfUsedBlocks( void ) const
+{GUCEF_TRACE;
+
+    LockData();    
+    UInt32 nrOfUsedBlocks = (UInt32) m_usedBlocks.size();    
+    UnlockData();
+    return nrOfUsedBlocks;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CCyclicDynamicBuffer::GetNrOfFreeBlocks( void ) const
+{GUCEF_TRACE;
+
+    LockData();    
+    UInt32 nrOfFreeBlocks = (UInt32) m_freeBlocks.size();    
+    UnlockData();
+    return nrOfFreeBlocks;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -399,6 +441,21 @@ CCyclicDynamicBuffer::GetBufferedDataSizeInBytes( void ) const
     UnlockData();
     
     return totalBytes;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CCyclicDynamicBuffer::GetTotalBufferSizeInBytes( void ) const
+{GUCEF_TRACE;
+
+    LockData();
+    
+    UInt32 totalBufferSize = m_buffer.GetBufferSize();
+    
+    UnlockData();
+    
+    return totalBufferSize;
 }
 
 /*-------------------------------------------------------------------------*/

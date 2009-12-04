@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\gucefCORE\include\mswin;..\..\..\gucefCORE\include;..\..\..\gucefMT\include;..\..\..\common\include"
+				AdditionalIncludeDirectories="..\..\..\gucefCORE\include\mswin;..\..\..\gucefCORE\include;..\..\..\gucefMT\include;..\..\..\common\include;..\..\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -121,7 +121,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\gucefCORE\include\mswin;..\..\..\gucefCORE\include;..\..\..\gucefMT\include;..\..\..\common\include"
+				AdditionalIncludeDirectories="..\..\..\gucefCORE\include\mswin;..\..\..\gucefCORE\include;..\..\..\gucefMT\include;..\..\..\common\include;..\..\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -190,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\TestCyclicDynamicBuffer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\TestNotifierObserver.cpp"
 				>
 			</File>
@@ -203,6 +207,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\include\TestCyclicDynamicBuffer.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\src\TestNotifierObserver.h"
 				>

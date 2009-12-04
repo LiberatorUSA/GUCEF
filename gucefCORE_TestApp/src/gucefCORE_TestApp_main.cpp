@@ -30,15 +30,20 @@
 #define GUCEF_CORE_H
 #endif /* GUCEF_CORE_H ? */
 
-#ifndef GUCEFCORE_TESTAPP_TESTSHAREDPTR_H
+#ifndef GUCEF_CORE_TESTAPP_TESTSHAREDPTR_H
 #include "TestSharedPtr.h"
-#define GUCEFCORE_TESTAPP_TESTSHAREDPTR_H
-#endif /* GUCEFCORE_TESTAPP_TESTSHAREDPTR_H ? */
+#define GUCEF_CORE_TESTAPP_TESTSHAREDPTR_H
+#endif /* GUCEF_CORE_TESTAPP_TESTSHAREDPTR_H ? */
 
-#ifndef GUCEFCORE_TESTAPP_TESTNOTIFIEROBSERVER_H
+#ifndef GUCEF_CORE_TESTAPP_TESTNOTIFIEROBSERVER_H
 #include "TestNotifierObserver.h"
-#define GUCEFCORE_TESTAPP_TESTNOTIFIEROBSERVER_H
-#endif /* GUCEFCORE_TESTAPP_TESTNOTIFIEROBSERVER_H ? */
+#define GUCEF_CORE_TESTAPP_TESTNOTIFIEROBSERVER_H
+#endif /* GUCEF_CORE_TESTAPP_TESTNOTIFIEROBSERVER_H ? */
+
+#ifndef GUCEF_CORE_TESTAPP_TESTCYCLICDYNAMICBUFFER_H
+#include "TestCyclicDynamicBuffer.h"
+#define GUCEF_CORE_TESTAPP_TESTCYCLICDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_TESTAPP_TESTCYCLICDYNAMICBUFFER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -75,9 +80,11 @@ WinMain( HINSTANCE hinstance     ,
         GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
         #endif /* GUCEF_MSWIN_BUILD ? */
 
-        PerformSharedPtrTests();
+        //PerformSharedPtrTests();
         
-        PerformNotifierObserverTests();
+        PerformCyclicDynamicBufferTests();
+        
+        //PerformNotifierObserverTests();
         
         return 1;                                                                            
     }
