@@ -106,9 +106,11 @@ PerformCyclicDynamicBufferTests( void )
         // Test to make sure the number of free blocks is 0 because all the free blocks should have been
         // consolidated into a single free block by now
         ASSERT_TRUE( cdBuffer.GetNrOfFreeBlocks() == 1 );
+        cdBuffer = CORE::CCyclicDynamicBuffer();
+        
         
         // Now we will do the same thing again but with intermittend reads
-        bool firstPass = true;
+        useBlock1 = true;
         for ( CORE::UInt16 i=0; i<100; ++i )
         {
             ASSERT_TRUE( testDataBlock1.Length()+1 == cdBuffer.Write( testDataBlock1.C_String(), testDataBlock1.Length()+1, 1 ) );
@@ -119,22 +121,21 @@ PerformCyclicDynamicBufferTests( void )
             
             if ( useBlock1 )
             {
-                // Now we read a block,.. since its FIFO this should always be testDataBlock2 never 1 that got read
-                ASSERT_TRUE( cdBuffer.GetBufferedDataSizeInBytes() == testDataBlock2.Length()+1 );                
+                // Now we read a block,.. since its FIFO this should always be testDataBlock2 never 1 that got read               
                 ASSERT_TRUE( blockString == testDataBlock1 );
-                firstPass = false;
+                useBlock1 = false;
             }
             else
             {
                 // Now we read a block,.. since its FIFO this should always be testDataBlock1 from the previous round and never 2 that got read
-                ASSERT_TRUE( cdBuffer.GetBufferedDataSizeInBytes() == (testDataBlock2.Length()+1) + i*(testDataBlock1.Length()+1)  );
                 ASSERT_TRUE( blockString == testDataBlock2 );
+                useBlock1 = true;
             }
         }
         
-        // Test if the buffer still has half the reads
-        ASSERT_TRUE( cdBuffer.GetNrOfUsedBlocks() == 50 );
-        ASSERT_FALSE( cdBuffer.HasBufferedData() )
+        // Test if the buffer still has half the reads, 100 iterations with 2 writes = 200 -> / 2 = 100 used
+        ASSERT_TRUE( cdBuffer.GetNrOfUsedBlocks() == 100 );
+        ASSERT_TRUE( cdBuffer.HasBufferedData() )
     }
     catch( ... )
     {
