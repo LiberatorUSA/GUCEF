@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
 #endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
 
+#ifndef GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
+#include "CCyclicDynamicBuffer.h"
+#define GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CCYCLICDYNAMICBUFFER_H ? */
+
 #ifndef GUCEF_COMCORE_CTCPCONNECTION_H
 #include "CTCPConnection.h"                     /* TCP connection base class */
 #define GUCEF_COMCORE_CTCPCONNECTION_H
@@ -181,6 +186,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     bool _active;
     MT::CMutex datalock;
     CORE::CDynamicBuffer m_readbuffer;
+    CORE::CCyclicDynamicBuffer m_sendBuffer;
+    CORE::CDynamicBuffer m_sendOpBuffer;
     UInt32 m_maxreadbytes;                  /**< max number of bytes to receive before processing it */ 
     CHostAddress m_hostAddress;             /**< network order IP address */
     CORE::CPulseGenerator* m_pulseGenerator;

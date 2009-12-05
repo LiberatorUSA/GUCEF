@@ -25,15 +25,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef CSERVERPORTEXTENDER_H
-#include "CServerPortExtender.h"
-#define CSERVERPORTEXTENDER_H
-#endif /* CSERVERPORTEXTENDER_H ? */
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
-#ifndef CSERVERPORTEXTENDERCLIENT_H
-#include "CServerPortExtenderClient.h"
-#define CSERVERPORTEXTENDERCLIENT_H
-#endif /* CSERVERPORTEXTENDERCLIENT_H ? */
+#ifndef GUCEF_CORE_CFILEACCESS_H
+#include "CFileAccess.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
 
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
@@ -49,6 +49,16 @@
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef CSERVERPORTEXTENDER_H
+#include "CServerPortExtender.h"
+#define CSERVERPORTEXTENDER_H
+#endif /* CSERVERPORTEXTENDER_H ? */
+
+#ifndef CSERVERPORTEXTENDERCLIENT_H
+#include "CServerPortExtenderClient.h"
+#define CSERVERPORTEXTENDERCLIENT_H
+#endif /* CSERVERPORTEXTENDERCLIENT_H ? */
 
 #ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>
