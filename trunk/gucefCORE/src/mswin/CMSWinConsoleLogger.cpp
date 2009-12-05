@@ -65,10 +65,10 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CMSWinConsoleLogger::CMSWinConsoleLogger( void )
-    : CILogger()                           ,
-      m_minimalLogLevel( LOGLEVEL_NORMAL )
+    : CILogger()                                 ,
+      m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL )
 {GUCEF_TRACE;
-       
+    
     AllocConsole();
     
     /* reopen stout handle as console window output */

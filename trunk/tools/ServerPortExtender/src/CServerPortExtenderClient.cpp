@@ -440,7 +440,8 @@ CServerPortExtenderClient::OnClientToActualServerSocketError( CORE::CNotifier* n
                                                               CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: Socket error on a connection with the actual server" );
+    CORE::Int32 socketErrorCode = static_cast< COMCORE::CTCPClientSocket::TSocketErrorEventData* >( eventdata )->GetData();
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: Socket error on a connection with the actual server: " + CORE::Int32ToString( socketErrorCode ) );
     
     // Remove the corresponding remote connection
     COMCORE::CTCPClientSocket* localClientConnection = static_cast< COMCORE::CTCPClientSocket* >( notifier );
@@ -566,7 +567,8 @@ CServerPortExtenderClient::OnClientToRemoteSPESocketError( CORE::CNotifier* noti
                                                            CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: socket error on a connection to the remote SPE server" );
+    CORE::Int32 socketErrorCode = static_cast< COMCORE::CTCPClientSocket::TSocketErrorEventData* >( eventdata )->GetData();    
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: socket error on a connection to the remote SPE server: " + CORE::Int32ToString( socketErrorCode ) );
     
     // make sure we dismantle our connection links
     RemoveConnectionUsingSPEClient( static_cast< COMCORE::CTCPClientSocket* >( notifier ) );
@@ -713,7 +715,8 @@ CServerPortExtenderClient::OnControlClientSocketError( CORE::CNotifier* notifier
                                                        CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: Socket error on the control connection" );
+    CORE::Int32 socketErrorCode = static_cast< COMCORE::CTCPClientSocket::TSocketErrorEventData* >( eventdata )->GetData();
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: Socket error on the control connection: " + CORE::Int32ToString( socketErrorCode ) );
     
     // Make sure the control connection is always up and running unless explicitly asked to disconnect
     if ( !m_disconnectRequested )

@@ -58,9 +58,9 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CStdLogger::CStdLogger( void )
-    : CILogger()                           ,
-      m_output( NULL )                     ,
-      m_minimalLogLevel( LOGLEVEL_NORMAL )
+    : CILogger()                                 ,
+      m_output( NULL )                           ,
+      m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL )
 {GUCEF_TRACE;
 
 }
@@ -68,9 +68,9 @@ CStdLogger::CStdLogger( void )
 /*-------------------------------------------------------------------------*/
 
 CStdLogger::CStdLogger( CIOAccess& output )
-    : CILogger()                           ,
-      m_output( &output )                  ,
-      m_minimalLogLevel( LOGLEVEL_NORMAL )
+    : CILogger()                                 ,
+      m_output( &output )                        ,
+      m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL )
 {GUCEF_TRACE;
 
     assert( &m_output != NULL );

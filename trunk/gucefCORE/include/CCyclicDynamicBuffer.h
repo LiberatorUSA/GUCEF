@@ -83,6 +83,15 @@ class GUCEFCORE_EXPORT_CPP CCyclicDynamicBuffer
                   const UInt32 bytesPerElement ,
                   const UInt32 elementsToWrite );
 
+    /**
+     *  Writes data at the front of the queue bypassing normal
+     *  read-write FIFO making it for the purpose of this single write
+     *  a FILO operation instead
+     */
+    UInt32 WriteAtFrontOfQueue( const void* srcBuffer        ,
+                                const UInt32 bytesPerElement ,
+                                const UInt32 elementsToWrite );
+
     void Clear( const bool logicalClearOnly = false );
     
     UInt32 GetBufferedDataSizeInBytes( void ) const;
@@ -106,6 +115,11 @@ class GUCEFCORE_EXPORT_CPP CCyclicDynamicBuffer
     private:
     
     void TidyFreeBlocks( void );
+    
+    UInt32 WriteImp( const void* srcBuffer        ,
+                     const UInt32 bytesPerElement ,
+                     const UInt32 elementsToWrite ,
+                     bool writeToBack             );
     
     private:
     

@@ -29,6 +29,11 @@
 #include "dvstrutils.h"                 /* my own string utils */
 #include "tsprinting.h"			/* threadsafe printing */
 
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
 #ifndef GUCEF_CORE_CLOGMANAGER_H
 #include "CLogManager.h"              /* we want the log manager for its defines */
 #define GUCEF_CORE_CLOGMANAGER_H

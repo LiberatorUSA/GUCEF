@@ -26,20 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCORE_H
-#include "gucefCORE.h"           /* gucefCORE library API */
-#define GUCEFCORE_H
-#endif /* GUCEFCORE_H ? */
-
-#ifndef GUCEFCOMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"       /* build defines */
-#define GUCEFCOMCORE_MACROS_H
-#endif /* GUCEFCOMCORE_MACROS_H ? */
-
-#ifndef GUCEF_COMCORE_ETYPES_H
-#include "gucefCOMCORE_ETypes.h"             /* simple types used */
-#define GUCEF_COMCORE_ETYPES_H
-#endif /* GUCEF_COMCORE_ETYPES_H ? */
+#ifndef GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
+#include "CCyclicDynamicBuffer.h"
+#define GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CCYCLICDYNAMICBUFFER_H ? */
 
 #ifndef GUCEF_COMCORE_CTCPCONNECTION_H
 #include "CTCPConnection.h"                     /* TCP connection base class */
@@ -81,106 +71,111 @@ class CTCPServerSocket;
  */
 class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
 {
-        public:
+    public:
 
-        /**
-         *      Closes the connection to the client.
-         *      This can cause this object to be deleted by the parent server.
-         *      After a call to Close() the object should no longer be accessed
-         *      by the user.
-         */
-        virtual void Close( void );
+    /**
+     *      Closes the connection to the client.
+     *      This can cause this object to be deleted by the parent server.
+     *      After a call to Close() the object should no longer be accessed
+     *      by the user.
+     */
+    virtual void Close( void );
 
-        /**
-         *      Allows you to read data from the socket when using a blocking
-         *      socket approach. This member function always returns false for
-         *      non-blocking sockets.         
-         *      
-         */
-        bool Read( char *dest     , 
-                   UInt32 size    , 
-                   UInt32 &wbytes , 
-                   Int32 timeout  );
+    /**
+     *      Allows you to read data from the socket when using a blocking
+     *      socket approach. This member function always returns false for
+     *      non-blocking sockets.         
+     *      
+     */
+    bool Read( char *dest     , 
+               UInt32 size    , 
+               UInt32 &wbytes , 
+               Int32 timeout  );
 
-        /**
-         *      Send data to client.
-         */
-        virtual bool Send( const void* dataSource , 
-                           const UInt32 dataSize  );
+    /**
+     *      Send data to client.
+     */
+    virtual bool Send( const void* dataSource , 
+                       const UInt32 dataSize  );
 
-        virtual bool IsActive( void ) const;
+    virtual bool IsActive( void ) const;
 
-        /**
-         *      Set's the maximum number of bytes to be read from the socket
-         *      received data buffer. A value of 0 means infinite. Setting this
-         *      value to non-zero allows you to avoid the server connection or
-         *      even the entire server socket (if the server socket is not using
-         *      a separate thread) from getting stuck reading data. If data is
-         *      being sent in such a fast rate that the continues stream will
-         *      be considered to be a single transmission the server will not
-         *      be able to stop reading. This is where the max read value comes
-         *      in. No matter how much new data is available the reading will
-         *      stop at the set number of bytes. If you have a fixed transmission
-         *      length then this is easy to deal with by using a factor of the
-         *      transmission length as the max read value. Otherwise you will
-         *      have to check what data you need and what data should be kept.
-         *      The data you think that should be kept will be prefixed to the
-         *      next data buffer. You can control this process by setting the
-         *      keepbytes value in the OnClientRead() event handler.
-         *      In short, this helps prevent a DOS attack on the software.
-         */
-        void SetMaxRead( UInt32 mr );
+    /**
+     *      Set's the maximum number of bytes to be read from the socket
+     *      received data buffer. A value of 0 means infinite. Setting this
+     *      value to non-zero allows you to avoid the server connection or
+     *      even the entire server socket (if the server socket is not using
+     *      a separate thread) from getting stuck reading data. If data is
+     *      being sent in such a fast rate that the continues stream will
+     *      be considered to be a single transmission the server will not
+     *      be able to stop reading. This is where the max read value comes
+     *      in. No matter how much new data is available the reading will
+     *      stop at the set number of bytes. If you have a fixed transmission
+     *      length then this is easy to deal with by using a factor of the
+     *      transmission length as the max read value. Otherwise you will
+     *      have to check what data you need and what data should be kept.
+     *      The data you think that should be kept will be prefixed to the
+     *      next data buffer. You can control this process by setting the
+     *      keepbytes value in the OnClientRead() event handler.
+     *      In short, this helps prevent a DOS attack on the software.
+     */
+    void SetMaxRead( UInt32 mr );
 
-        /**
-         *      This returns the current max read value.
-         *      This represents the current setting for the maximum number of
-         *      bytes that will be read from the data buffer.
-         */
-        UInt32 GetMaxRead( void ) const;
-        
-        virtual const CORE::CString& GetRemoteHostName( void ) const;
-        
-        virtual UInt16 GetRemoteTCPPort( void ) const;
-        
-        virtual CIPAddress GetRemoteIP( void ) const;
+    /**
+     *      This returns the current max read value.
+     *      This represents the current setting for the maximum number of
+     *      bytes that will be read from the data buffer.
+     */
+    UInt32 GetMaxRead( void ) const;
+    
+    virtual const CORE::CString& GetRemoteHostName( void ) const;
+    
+    virtual UInt16 GetRemoteTCPPort( void ) const;
+    
+    virtual CIPAddress GetRemoteIP( void ) const;
 
-        /**
-         *	Constructor, init vars
-         */
-        CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
-                              UInt32 connection_idx            );
+    /**
+     *	Constructor, init vars
+     */
+    CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
+                          UInt32 connection_idx            );
 
-        virtual ~CTCPServerConnection();
-        
-        protected:
-        friend class CTCPServerSocket;
+    virtual ~CTCPServerConnection();
+    
+    protected:
+    friend class CTCPServerSocket;
 
-        /**                 
-         *      polls the socket ect. as needed and update stats.
-         *
-         *      @param tickcount the tick count when the Update process commenced.
-         *      @param deltaticks ticks since the last Update process commenced.          
-         */
-        virtual void Update( void ); 
-                             
-        private:
-        
-        void CheckRecieveBuffer( void );
-        
-        private:
-        friend class CTCPServerSocket;
-        
-        struct STCPServerConData* _data;
-        bool _blocking;  
-        bool _active;
-        CORE::CDynamicBuffer m_readbuffer;
-        CORE::CDynamicBuffer _sendbuffer;
-        MT::CMutex _datalock;
-        UInt32 m_maxreadbytes;
-        UInt32 m_connectionidx;      
-        CTCPServerSocket* m_parentsock;
+    /**                 
+     *      polls the socket ect. as needed and update stats.
+     *
+     *      @param tickcount the tick count when the Update process commenced.
+     *      @param deltaticks ticks since the last Update process commenced.          
+     */
+    virtual void Update( void );
+    
+    virtual void LockData( void ) const;
+    
+    virtual void UnlockData( void ) const; 
+                         
+    private:
+    
+    void CheckRecieveBuffer( void );
+    
+    private:
+    friend class CTCPServerSocket;
+    
+    struct STCPServerConData* _data;
+    bool _blocking;  
+    bool _active;
+    CORE::CDynamicBuffer m_readbuffer;
+    CORE::CCyclicDynamicBuffer m_sendBuffer;
+    CORE::CDynamicBuffer m_sendOpBuffer;
+    MT::CMutex _datalock;
+    UInt32 m_maxreadbytes;
+    UInt32 m_connectionidx;      
+    CTCPServerSocket* m_parentsock;
 
-        CTCPServerConnection( void ); /* private default constructor because we need data */                             
+    CTCPServerConnection( void ); /* private default constructor because we need data */                             
 };
 
 /*-------------------------------------------------------------------------//

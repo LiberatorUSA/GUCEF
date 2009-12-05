@@ -197,11 +197,40 @@ CCyclicDynamicBuffer::Read( void* destBuffer             ,
 }
 
 /*-------------------------------------------------------------------------*/
+
+UInt32
+CCyclicDynamicBuffer::WriteAtFrontOfQueue( const void* srcBuffer        ,
+                                           const UInt32 bytesPerElement ,
+                                           const UInt32 elementsToWrite )
+{GUCEF_TRACE;
+
+    return WriteImp( srcBuffer       ,
+                     bytesPerElement ,
+                     elementsToWrite ,
+                     false           );
+}
+
+/*-------------------------------------------------------------------------*/
     
 UInt32
 CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
                              const UInt32 bytesPerElement ,
                              const UInt32 elementsToWrite )
+{GUCEF_TRACE;
+
+    return WriteImp( srcBuffer       ,
+                     bytesPerElement ,
+                     elementsToWrite ,
+                     true            );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+UInt32
+CCyclicDynamicBuffer::WriteImp( const void* srcBuffer        ,
+                                const UInt32 bytesPerElement ,
+                                const UInt32 elementsToWrite ,
+                                const bool writeToBack       )
 {GUCEF_TRACE;
 
     // Initial sanity check
@@ -249,12 +278,20 @@ CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
                 UnlockData();                
                 return totalBytesWritten;
             }
-                    
-            // push the used-block-info on our FIFO stack
+            
             TDataChunk usedDataChunck;
             usedDataChunck.blockSize = bytesWritten;
-            usedDataChunck.startOffset = (*i).startOffset;
-            m_usedBlocks.push_back( usedDataChunck );
+            usedDataChunck.startOffset = (*i).startOffset;                    
+            if ( writeToBack )
+            {
+                // push the used-block-info ontop of our FIFO stack
+                m_usedBlocks.push_back( usedDataChunck );
+            }
+            else
+            {
+                // push the used-block-info to the bottom of our FIFO stack
+                m_usedBlocks.insert( m_usedBlocks.begin(), usedDataChunck );
+            }
             
             // Check if we have a block remnant in the now (partially?) used free block
             if ( (*i).blockSize > bytesWritten )
@@ -295,7 +332,16 @@ CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
         TDataChunk usedDataChunck;
         usedDataChunck.blockSize = bytesToWrite;
         usedDataChunck.startOffset = startOffset;
-        m_usedBlocks.push_back( usedDataChunck );
+        if ( writeToBack )
+        {
+            // push the used-block-info ontop of our FIFO stack
+            m_usedBlocks.push_back( usedDataChunck );
+        }
+        else
+        {
+            // push the used-block-info to the bottom of our FIFO stack
+            m_usedBlocks.insert( m_usedBlocks.begin(), usedDataChunck );
+        }
         
         // We have now written everything into the buffer
         totalBytesWritten = totalBytes;
