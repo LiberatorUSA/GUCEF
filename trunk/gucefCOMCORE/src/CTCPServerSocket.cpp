@@ -200,19 +200,20 @@ CTCPServerSocket::CTCPServerSocket( bool blocking )
 
 CTCPServerSocket::~CTCPServerSocket()
 {GUCEF_TRACE;
-        /*
-         *      Clean everything up
-         */
-        Close();       
 
-        /*
-         *      Cleanup connection data
-         */ 
-        for ( UInt32 i=0; i<_connections.size(); ++i )
-        {
-            delete _connections[ i ];
-        }
-        _connections.clear();
+    /*
+     *      Clean everything up
+     */
+    Close();       
+
+    /*
+     *      Cleanup connection data
+     */ 
+    for ( UInt32 i=0; i<_connections.size(); ++i )
+    {
+        delete _connections[ i ];
+    }
+    _connections.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -391,7 +392,8 @@ CTCPServerSocket::AcceptClients( void )
 bool
 CTCPServerSocket::IsActive( void ) const 
 {GUCEF_TRACE;
-        return _active;
+
+    return _active;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -399,7 +401,8 @@ CTCPServerSocket::IsActive( void ) const
 bool 
 CTCPServerSocket::IsBlocking( void ) const
 {GUCEF_TRACE;
-        return _blocking;
+
+    return _blocking;
 }
                         
 /*-------------------------------------------------------------------------*/
@@ -408,40 +411,40 @@ bool
 CTCPServerSocket::ListenOnPort( UInt16 servport )
 {GUCEF_TRACE;
 
-        /*
-         *      Close all existing connections
-         */
-        if ( IsActive() )
-        {
-                Close();
-        }
-        
-        /*
-         *      === Microsoft Windows implementation === 
-         */        
-        #ifdef GUCEF_MSWIN_BUILD
-        
-        int error = 0;
-        _data->sockid = WSTS_socket( AF_INET     ,    /* Go over TCP/IP */
-	                             SOCK_STREAM ,    /* This is a stream-oriented socket */
-	                             IPPROTO_TCP ,    /* Use TCP rather than UDP */
-	                             &error      );   
-                
-        if ( _data->sockid == INVALID_SOCKET ) 
-        {
-            GUCEF_ERROR_LOG( 1, "Socket error: " + CORE::Int32ToString( error ) );
-            TServerSocketErrorEventData eData( error );
-            NotifyObservers( ServerSocketErrorEvent, &eData );                                                      
-            return false;			
-        }
-	
-        /* Set the desired blocking mode */
-        if ( !SetBlockingMode( _data->sockid ,
-                               _blocking     ) )
-        {
-                NotifyObservers( ServerSocketErrorEvent );
-                return false;
-        }	    
+    /*
+     *      Close all existing connections
+     */
+    if ( IsActive() )
+    {
+            Close();
+    }
+    
+    /*
+     *      === Microsoft Windows implementation === 
+     */        
+    #ifdef GUCEF_MSWIN_BUILD
+    
+    int error = 0;
+    _data->sockid = WSTS_socket( AF_INET     ,    /* Go over TCP/IP */
+                             SOCK_STREAM ,    /* This is a stream-oriented socket */
+                             IPPROTO_TCP ,    /* Use TCP rather than UDP */
+                             &error      );   
+            
+    if ( _data->sockid == INVALID_SOCKET ) 
+    {
+        GUCEF_ERROR_LOG( 1, "CTCPServerSocket: Socket error: " + CORE::Int32ToString( error ) );
+        TServerSocketErrorEventData eData( error );
+        NotifyObservers( ServerSocketErrorEvent, &eData );                                                      
+        return false;			
+    }
+
+    /* Set the desired blocking mode */
+    if ( !SetBlockingMode( _data->sockid ,
+                           _blocking     ) )
+    {
+            NotifyObservers( ServerSocketErrorEvent );
+            return false;
+    }	    
 	
 	/*
 	 *      We set the protocol family to TCP/IP
@@ -469,17 +472,17 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 
 	if ( retval == SOCKET_ERROR ) 
 	{
-		GUCEF_ERROR_LOG( 1, "Socket error: " + CORE::Int32ToString( error ) );
+		GUCEF_ERROR_LOG( 1, "CTCPServerSocket: Socket error: " + CORE::Int32ToString( error ) );
 		TServerSocketErrorEventData eData( error );
 		NotifyObservers( ServerSocketErrorEvent, &eData );		
 		return false;
 	}
-        /*
-         *      Make the socket listen
-         *
-         *      Up to maxcon connections may wait at any
-	 *      one time to be accept()'ed
-         */
+    /*
+     *      Make the socket listen
+     *
+     *      Up to maxcon connections may wait at any
+     *      one time to be accept()'ed
+     */
 	retval = WSTS_listen( _data->sockid      , 
 	                      _data->maxcon      ,
 	                      &error             );		
@@ -499,18 +502,18 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 	/*
 	 *      Accept new connections if there are any.
 	 */
-        AcceptClients();
-                                 
-        return true;
-        
-        /*
-         *      === Linux implementation === 
-         */         
-        #elif GUCEF_LINUX_BUILD
-            #error implementation not implemented
-        #elif
-        return false;
-        #endif                
+    AcceptClients();
+                             
+    return true;
+    
+    /*
+     *      === Linux implementation === 
+     */         
+    #elif GUCEF_LINUX_BUILD
+        #error implementation not implemented
+    #elif
+    return false;
+    #endif                
 }
 
 /*-------------------------------------------------------------------------*/
@@ -527,7 +530,8 @@ CTCPServerSocket::GetMaxConnections( void ) const
 UInt32 
 CTCPServerSocket::GetActiveCount( void ) const
 {GUCEF_TRACE; 
-        return _acount; 
+
+    return _acount; 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -536,26 +540,26 @@ void
 CTCPServerSocket::Close( void )
 {GUCEF_TRACE;
 
-        /*
-         *      Close the socket
-         *      By setting active to false the thread will terminate
-         */
-        _datalock.Lock();
-        
-        if ( IsActive() )
-        {        	
-        	//StopAndWait();
-        	
-                closesocket( _data->sockid );                    
-                                
-                NotifyObservers( ServerSocketClosedEvent );
-                                   
-                for( UInt32 i=0; i<_connections.size(); ++i )
-                {
-                        ((CTCPServerConnection*)_connections[ i ])->Close();
-                }
-        }                
-        _datalock.Unlock();
+    /*
+     *      Close the socket
+     *      By setting active to false the thread will terminate
+     */
+    _datalock.Lock();
+    
+    if ( IsActive() )
+    {        	
+	    //StopAndWait();
+	
+        closesocket( _data->sockid );                    
+                        
+        NotifyObservers( ServerSocketClosedEvent );
+                           
+        for( UInt32 i=0; i<_connections.size(); ++i )
+        {
+            _connections[ i ]->Close();
+        }
+    }                
+    _datalock.Unlock();
 }
 
 
@@ -575,11 +579,8 @@ CTCPServerSocket::OnClientConnectionClosed( CTCPServerConnection* connection ,
                                             const UInt32 connectionid        ,
                                             bool closedbyclient              )
 {GUCEF_TRACE;
-        _datalock.Lock();
-        
-        NotifyObservers( ClientDisconnectedEvent );
 
-        _datalock.Unlock();        
+    NotifyObservers( ClientDisconnectedEvent );     
 }                                            
 
 /*-------------------------------------------------------------------------*/
