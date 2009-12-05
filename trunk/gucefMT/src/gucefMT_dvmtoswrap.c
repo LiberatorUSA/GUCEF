@@ -261,8 +261,8 @@ UInt64
 PrecisionTimerResolution( void )
 {
     #ifdef GUCEF_MSWIN_BUILD
-    LARGE_INTEGER t;
-    if ( QueryPerformanceFrequency( &t ) == TRUE )
+    ULARGE_INTEGER t;
+    if ( QueryPerformanceFrequency( (LARGE_INTEGER*) &t ) == TRUE )
     {
         return t.QuadPart;
     }
