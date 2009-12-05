@@ -137,6 +137,7 @@ CIPAddress::ResolveDNS( const CORE::CString& address ,
     if ( CORE::Check_If_IP( address.C_String() ) )
     {
         m_address = inet_addr( address.C_String() );
+        m_port = htons( port );
         if ( m_address == INADDR_NONE ) return false;
         return true;
     }
