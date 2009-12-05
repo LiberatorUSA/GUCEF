@@ -228,6 +228,7 @@ CTimer::SetEnabled( const bool enabled )
         if ( enabled )
         {                    
             m_lastTimerCycle = m_activationTickCount = MT::PrecisionTickCount();
+
             m_timerFreq = MT::PrecisionTimerResolution() / 1000.0;
             assert( m_timerFreq != 0 );
             m_tickCount = 0;
@@ -283,13 +284,14 @@ CTimer::OnPulse( CNotifier* notifier                 ,
     if ( m_enabled )
     {
         UInt64 newTickCount = MT::PrecisionTickCount();    
-        UInt64 deltaTicks = m_lastTimerCycle - newTickCount;
-        Float64 deltaMilliSecs = ( deltaTicks / m_timerFreq ) ;
-        m_lastTimerCycle = newTickCount;
+        UInt64 deltaTicks = ( newTickCount - m_lastTimerCycle );				
+		Float64 deltaMilliSecs = deltaTicks / m_timerFreq;
         m_tickCount += deltaTicks;
 
         if ( deltaMilliSecs >= m_updateDeltaInMilliSecs )
         {                    
+            m_lastTimerCycle = newTickCount;
+            
             TTimerUpdateData updateData;
             updateData.tickCount = m_tickCount;
             updateData.updateDeltaInMilliSecs = deltaMilliSecs;

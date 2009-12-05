@@ -175,6 +175,10 @@ CTCPServerConnection::Close( void )
         m_parentsock->OnClientConnectionClosed( this            ,
                                                 m_connectionidx ,
                                                 false           );
+
+		m_readbuffer.Clear( false );
+		m_sendBuffer.Clear( false );
+		m_sendOpBuffer.Clear( false );
     }                                                                    
     UnlockData();
 }

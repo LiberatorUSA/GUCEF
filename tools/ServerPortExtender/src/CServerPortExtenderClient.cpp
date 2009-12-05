@@ -290,9 +290,11 @@ CServerPortExtenderClient::OnReconnectTimerUpdate( CORE::CNotifier* notifier    
     m_reconnectTimer.SetEnabled( false );
     if ( !m_disconnectRequested )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Attempting to reconnect control connection,.." );
-        
-        m_controlClient.Reconnect();
+        if ( !m_controlClient.IsActive() )
+		{
+			GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Attempting to reconnect control connection,.." );
+			m_controlClient.Reconnect();
+		}
     }
 }
 
