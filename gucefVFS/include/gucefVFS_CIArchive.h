@@ -89,6 +89,8 @@ class GUCEF_VFS_EXPORT_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVF
     
     virtual CString GetFileHash( const CString& file ) const = 0;
     
+    virtual time_t GetFileModificationTime( const CString& filePath ) const = 0;
+    
     virtual const CString& GetArchiveName( void ) const = 0;
     
     virtual bool IsWriteable( void ) const = 0;

@@ -135,11 +135,13 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable
                                 const bool recursive    ,
                                 TStringSet& outputList  ) const;
     
-    bool FileExists( const CORE::CString& filePath ) const;
+    bool FileExists( const CString& filePath ) const;
     
-    UInt32 GetFileSize( const CORE::CString& filePath ) const;
+    UInt32 GetFileSize( const CString& filePath ) const;
     
-    CORE::CString GetFileHash( const CORE::CString& file ) const;
+    CORE::CString GetFileHash( const CString& filename ) const;
+    
+    time_t GetFileModificationTime( const CString& filename ) const;
 
     bool GetActualFilePath( const CString& file ,
                             CString& path       ) const;

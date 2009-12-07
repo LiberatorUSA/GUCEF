@@ -335,6 +335,14 @@ GUCEFCORE_EXPORT_C UInt32
 Relative_Path( const char *pathstr ,
                char *dest          ,
                UInt32 buffersize   );
+               
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Returns the modification time of the inicated resource
+ */               
+GUCEFCORE_EXPORT_C time_t
+Get_Modification_Time( const char* path );
 
 /*-------------------------------------------------------------------------*/
 
