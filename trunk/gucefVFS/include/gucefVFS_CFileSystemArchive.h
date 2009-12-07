@@ -75,6 +75,8 @@ class CFileSystemArchive : public CIArchive
     
     virtual CString GetFileHash( const CString& file ) const;
     
+    virtual time_t GetFileModificationTime( const CString& filePath ) const;
+    
     virtual const CString& GetArchiveName( void ) const;
     
     virtual bool IsWriteable( void ) const;

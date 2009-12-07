@@ -26,6 +26,7 @@
 #include <malloc.h>		/* memory management */
 #include <stdio.h>              /* standard I/O utils */
 #include <string.h>             /* standard string utils */
+#include <assert.h>
 
 #ifndef GUCEF_CORE_CONFIG_H
 #include "gucefCORE_config.h"     /* build defines */
@@ -1045,6 +1046,52 @@ Is_Path_Valid( const char* path )
     #ifdef GUCEF_LINUX_BUILD
     // @TODO
     #endif
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef GUCEF_MSWIN_BUILD
+
+time_t 
+FileTimeToUnixTime( const FILETIME* ft )
+{
+	/* the reverse of http://support.microsoft.com/kb/167296/en-us */
+	ULONGLONG ull = *(const ULONGLONG*)((void*)(ft));
+	ull -= 116444736000000000;
+	ull /= 10000000;
+	assert(ull < ULONG_MAX);
+	return (time_t)(ull);
+}
+
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+time_t
+Get_Modification_Time( const char* path )
+{
+    #ifdef GUCEF_MSWIN_BUILD
+    
+    WIN32_FILE_ATTRIBUTE_DATA data;
+    if ( 0 != GetFileAttributesEx( path, GetFileExInfoStandard, &data ) )
+    {
+        return FileTimeToUnixTime( &data.ftLastWriteTime );
+    }
+    return -1;
+    
+    #else
+    
+    struct _stat buf;
+
+    /* Get File Statistics for stat.c. */ 
+    if( _stat( path, &buf ) == 0 )
+    {
+        /* get the date/time last modified */ 
+        return buf.st_mtime;
+    }
+    return -1;
+    
     #endif
 }
 

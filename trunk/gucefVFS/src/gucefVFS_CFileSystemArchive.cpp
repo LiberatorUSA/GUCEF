@@ -313,6 +313,21 @@ CFileSystemArchive::GetFileHash( const CString& file ) const
 
 /*-------------------------------------------------------------------------*/
 
+time_t
+CFileSystemArchive::GetFileModificationTime( const CString& filePath ) const
+{GUCEF_TRACE;
+
+    CString path = m_rootDir;
+    CORE::AppendToPath( path, filePath );
+    if ( CORE::File_Exists( path.C_String() ) != 0 )
+    {    
+        return CORE::Get_Modification_Time( path.C_String() );
+    }
+    return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CString&
 CFileSystemArchive::GetArchiveName( void ) const
 {GUCEF_TRACE;

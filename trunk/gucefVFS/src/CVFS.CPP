@@ -840,14 +840,47 @@ CVFS::GetList( CORE::CDataNode& outputDataTree        ,
 
 /*-------------------------------------------------------------------------*/
 
+time_t
+CVFS::GetFileModificationTime( const CString& filename ) const
+{GUCEF_TRACE;
+
+    // Switch dir separator chars if needed
+    CString path( filename.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );
+
+    m_datalock.Lock();
+    
+    // Get a list of all eligable mounts
+    TConstMountLinkVector mountLinks;
+    GetEligableMounts( path, mountLinks );
+    
+    // Search for a file and then get the hash
+    TConstMountLinkVector::iterator i = mountLinks.begin();
+    while ( i != mountLinks.end() )
+    {
+        TConstMountLink& mountLink = (*i);
+        if ( mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
+        {
+            time_t modificationTime = mountLink.mountEntry->archive->GetFileModificationTime( mountLink.remainder );
+            m_datalock.Unlock();
+            return modificationTime;
+        }
+        ++i;
+    }    
+    
+    m_datalock.Unlock();
+    return -1;  
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CString
 CVFS::GetFileHash( const CORE::CString& file ) const
 {GUCEF_TRACE;
 
-    m_datalock.Lock();
-
     // Switch dir separator chars if needed
     CString path( file.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );
+
+    m_datalock.Lock();
     
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
