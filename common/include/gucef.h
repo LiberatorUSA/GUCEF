@@ -24,6 +24,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_PREREQUISITES_H
+#include "gucef_prerequisites.h"
+#define GUCEF_PREREQUISITES_H
+#endif /* GUCEF_PREREQUISITES_H ? */
+
 #ifndef GUCEF_CONFIG_H
 #include "gucef_config.h"      /* GUCEF platform build configuration */
 #define GUCEF_CONFIG_H
@@ -102,4 +107,4 @@
 - 02-01-2007 :
        - Initial version of this file.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

@@ -46,7 +46,7 @@ endif ()
 
 # determine GUCEF version numbers
 include(GUCEFGetVersion)
-GUCEF_get_version(${GUCEF_SOURCE_DIR}/GUCEFMain/include/GUCEFPrerequisites.h)
+GUCEF_get_version(${GUCEF_SOURCE_DIR}/common/include/gucef_prerequisites.h)
 message(STATUS "Configuring GUCEF ${GUCEF_VERSION}")
 
 if (NOT APPLE)
