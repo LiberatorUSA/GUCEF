@@ -73,8 +73,8 @@ find_package(FreeImage)
 macro_log_feature(FreeImage_FOUND "freeimage" "Support for commonly used graphics image formats" "http://freeimage.sourceforge.net" FALSE "" "")
 
 # Find FreeType
-find_package(Freetype)
-macro_log_feature(FREETYPE_FOUND "freetype" "Portable font engine" "http://www.freetype.org" TRUE "" "")
+#find_package(Freetype)
+#macro_log_feature(FREETYPE_FOUND "freetype" "Portable font engine" "http://www.freetype.org" TRUE "" "")
 
 # Find X11
 if (UNIX)
@@ -92,12 +92,12 @@ endif ()
 #######################################################################
 
 # Find OpenGL
-find_package(OpenGL)
-macro_log_feature(OPENGL_FOUND "OpenGL" "Support for the OpenGL render system" "http://www.opengl.org/" FALSE "" "")
+#find_package(OpenGL)
+#macro_log_feature(OPENGL_FOUND "OpenGL" "Support for the OpenGL render system" "http://www.opengl.org/" FALSE "" "")
 
 # Find OpenGL ES
-find_package(OpenGLES)
-macro_log_feature(OPENGLES_FOUND "OpenGL ES" "Support for the OpenGL ES 1.x render system" "http://www.khronos.org/opengles/" FALSE "" "")
+#find_package(OpenGLES)
+#macro_log_feature(OPENGLES_FOUND "OpenGL ES" "Support for the OpenGL ES 1.x render system" "http://www.khronos.org/opengles/" FALSE "" "")
 
 # Find OpenGL ES 2.x
 #find_package(OpenGLES2)
@@ -105,8 +105,8 @@ macro_log_feature(OPENGLES_FOUND "OpenGL ES" "Support for the OpenGL ES 1.x rend
 
 # Find DirectX
 if(WIN32)
-	find_package(DirectX)
-	macro_log_feature(DirectX_FOUND "DirectX" "Support for the DirectX render system" "http://msdn.microsoft.com/en-us/directx/" FALSE "" "")
+#	find_package(DirectX)
+#	macro_log_feature(DirectX_FOUND "DirectX" "Support for the DirectX render system" "http://msdn.microsoft.com/en-us/directx/" FALSE "" "")
 endif()
 
 #######################################################################
@@ -114,8 +114,8 @@ endif()
 #######################################################################
 
 # Find Cg
-find_package(Cg)
-macro_log_feature(Cg_FOUND "cg" "C for graphics shader language" "http://developer.nvidia.com/object/cg_toolkit.html" FALSE "" "")
+#find_package(Cg)
+#macro_log_feature(Cg_FOUND "cg" "C for graphics shader language" "http://developer.nvidia.com/object/cg_toolkit.html" FALSE "" "")
 
 # Find Boost
 # Prefer static linking in all cases
@@ -143,12 +143,12 @@ if (NOT OGRE_BUILD_PLATFORM_IPHONE)
 endif(NOT OGRE_BUILD_PLATFORM_IPHONE)
 
 # POCO
-find_package(POCO)
-macro_log_feature(POCO_FOUND "POCO" "POCO framework" "http://pocoproject.org/" FALSE "" "")
+#find_package(POCO)
+#macro_log_feature(POCO_FOUND "POCO" "POCO framework" "http://pocoproject.org/" FALSE "" "")
 
 # ThreadingBuildingBlocks
-find_package(TBB)
-macro_log_feature(TBB_FOUND "tbb" "Threading Building Blocks" "http://www.threadingbuildingblocks.org/" FALSE "" "")
+#find_package(TBB)
+#macro_log_feature(TBB_FOUND "tbb" "Threading Building Blocks" "http://www.threadingbuildingblocks.org/" FALSE "" "")
 
 
 
@@ -157,8 +157,8 @@ macro_log_feature(TBB_FOUND "tbb" "Threading Building Blocks" "http://www.thread
 #######################################################################
 
 # Find CEGUI
-find_package(CEGUI)
-macro_log_feature(CEGUI_FOUND "CEGUI" "GUI system used for some of the samples" "http://www.cegui.org.uk" FALSE "" "")
+#find_package(CEGUI)
+#macro_log_feature(CEGUI_FOUND "CEGUI" "GUI system used for some of the samples" "http://www.cegui.org.uk" FALSE "" "")
 
 # Find OIS
 find_package(OIS)
@@ -182,17 +182,17 @@ macro_log_feature(CppUnit_FOUND "CppUnit" "Library for performing unit tests" "h
 # Apple-specific
 #######################################################################
 if (APPLE)
-  find_package(Carbon)
-  macro_log_feature(Carbon_FOUND "Carbon" "Carbon" "http://developer.apple.com/mac" TRUE "" "")
+#  find_package(Carbon)
+#  macro_log_feature(Carbon_FOUND "Carbon" "Carbon" "http://developer.apple.com/mac" TRUE "" "")
 
-  find_package(Cocoa)
-  macro_log_feature(Cocoa_FOUND "Cocoa" "Cocoa" "http://developer.apple.com/mac" TRUE "" "")
+#  find_package(Cocoa)
+#  macro_log_feature(Cocoa_FOUND "Cocoa" "Cocoa" "http://developer.apple.com/mac" TRUE "" "")
 
-  find_package(IOKit)
-  macro_log_feature(IOKit_FOUND "IOKit" "IOKit HID framework needed by the samples" "http://developer.apple.com/mac" FALSE "" "")
+#  find_package(IOKit)
+#  macro_log_feature(IOKit_FOUND "IOKit" "IOKit HID framework needed by the samples" "http://developer.apple.com/mac" FALSE "" "")
 
-  find_package(iPhoneSDK)
-  macro_log_feature(iPhoneSDK_FOUND "iPhone SDK" "iPhone SDK" "http://developer.apple.com/iphone" FALSE "" "")
+#  find_package(iPhoneSDK)
+#  macro_log_feature(iPhoneSDK_FOUND "iPhone SDK" "iPhone SDK" "http://developer.apple.com/iphone" FALSE "" "")
 endif(APPLE)
 
 # Display results, terminate if anything required is missing
