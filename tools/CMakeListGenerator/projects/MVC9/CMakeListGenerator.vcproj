@@ -120,7 +120,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\..\..\gucefCORE\include;..\..\..\..\common\include;..\..\..\..\gucefMT\include"
+				AdditionalIncludeDirectories="..\..\..\..\gucefCORE\include;..\..\..\..\gucefCORE\include\mswin;..\..\..\..\common\include;..\..\..\..\gucefMT\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"

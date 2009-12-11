@@ -323,7 +323,7 @@ GenerateCMakeListsFile( const CORE::CString& projectName ,
     CORE::CString fileContent = GetCMakeListsFileHeader();
     
     // Set project name comment section
-    fileContent += "# Configure " + projectName + "\n\n";
+    fileContent += "\n# Configure " + projectName + "\n\n";
     
     // Add all the include files
     fileContent += GenerateCMakeListsFileIncludeSection( includeFiles );
@@ -344,12 +344,12 @@ GenerateCMakeListsFile( const CORE::CString& projectName ,
     else
     {
         // add example section
-        fileContent += "# TODO: the following is an example section, you have to complete it\n";
-        fileContent += "include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)\n";
-        fileContent += "add_definitions(-DTIXML_USE_STL)\n";
-        fileContent += "add_executable(" + projectName + " ${HEADER_FILES} ${SOURCE_FILES})\n";
-        fileContent += "target_link_libraries(" + projectName + " ${OGRE_LIBRARIES})\n";
-        fileContent += "ogre_config_tool(" + projectName + ")\n";
+        fileContent += "## TODO: the following is an example section, you have to complete it\n";
+        fileContent += "#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)\n";
+        fileContent += "#add_definitions(-DTIXML_USE_STL)\n";
+        fileContent += "#add_executable(" + projectName + " ${HEADER_FILES} ${SOURCE_FILES})\n";
+        fileContent += "#target_link_libraries(" + projectName + " ${OGRE_LIBRARIES})\n";
+        fileContent += "#gucef_config_tool(" + projectName + ")\n";
     }
     return fileContent;
 }
@@ -398,8 +398,8 @@ IsDirAProjectDir( CORE::CString dir )
 void
 LocateAndProcessProjectDirsRecusively( CORE::CString topLevelDir )
 {GUCEF_TRACE;
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Recursively processing directory: " + topLevelDir );
+    
+    GUCEF_LOG( CORE::LOGLEVEL_EVERYTHING, "Recursively processing directory: " + topLevelDir );
     
     // Is this a project dir or some other dir?    
     if ( IsDirAProjectDir( topLevelDir ) )
