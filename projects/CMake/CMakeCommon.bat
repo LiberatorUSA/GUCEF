@@ -1,5 +1,7 @@
 @echo off
 
+SET BATCHSTARTDIR=%CD%
+
 ECHO *** Enable command extensions ***
 
 VERIFY OTHER 2>nul
@@ -12,9 +14,9 @@ ENDLOCAL
 
 ECHO *** Generate CMakeLists.txt files ***
 
-ECHO CALL GenerateCMakeLists.bat
+CALL GenerateCMakeLists.bat
 
-ECHO cd "%BATCHSTARTDIR%"
+cd "%BATCHSTARTDIR%"
 
 ECHO *** Perform common CMake environment variable setup ***
 

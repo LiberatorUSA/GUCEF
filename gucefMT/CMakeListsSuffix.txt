@@ -1,0 +1,7 @@
+
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+#add_definitions(-DTIXML_USE_STL)
+add_executable(gucefMT ${HEADER_FILES} ${SOURCE_FILES})
+#target_link_libraries(gucefMT ${OGRE_LIBRARIES})
+#gucef_config_tool(gucefMT)
