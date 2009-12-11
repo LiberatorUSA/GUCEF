@@ -27,11 +27,13 @@ endmacro(pkg_message)
 
 # Get environment variable, define it as ENV_$var and make sure backslashes are converted to forward slashes
 macro(getenv_path VAR)
-   set(ENV_${VAR} ${VAR})
+   set(ENV_${VAR} $ENV{${VAR}})
+   message(STATUS ENV_${VAR} = ${ENV_${VAR}})
    # replace won't work if var is blank
-   if (ENV_${VAR})
-     message(STATUS "${VAR} found")
-     string( REGEX REPLACE "\\\\" "/" ENV_${VAR} ${ENV_${VAR}} )
+   if ( ${ENV_${VAR}} )
+     message(STATUS "Replacing slashes for ENV_${VAR}" )
+     string( REGEX REPLACE "\\\\" "/" ${ENV_${VAR}} ${ENV_${VAR}} )
+     message(STATUS ENV_${VAR} = ${ENV_${VAR}})
    endif ()
 endmacro(getenv_path)
 
