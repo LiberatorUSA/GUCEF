@@ -959,6 +959,7 @@ Append_To_Path( char *path           ,
          *      path and the addition strings.
          */
         #ifdef GUCEF_MSWIN_BUILD
+        Convert_Dir_Seperators( path );
         if ( path[ len-1 ] == '\\' )
         {
                 strcat( path, addition+offset );
@@ -967,7 +968,6 @@ Append_To_Path( char *path           ,
         }
         strcat( path, "\\" );
         strcat( path, addition+offset );
-        Convert_Dir_Seperators( path );
         #else
         #ifdef GUCEF_LINUX_BUILD
         if ( path[ len-1 ] == '/' )
