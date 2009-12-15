@@ -1,0 +1,3 @@
+#link_directories( ServerPortExtender )
+add_executable( ServerPortExtender WIN32 ${HEADER_FILES} ${SOURCE_FILES} )
+target_link_libraries( ServerPortExtender gucefMT gucefCORE gucefCOMCORE )
