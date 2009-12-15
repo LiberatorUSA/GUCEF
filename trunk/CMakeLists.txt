@@ -227,18 +227,19 @@ include(ConfigureBuild)
 ##################################################################
 
 # Setup GUCEF modules
-add_subdirectory(gucefVFS)
-add_subdirectory(gucefCOM)
-add_subdirectory(gucefCOMCORE)
 add_subdirectory(gucefMT)
 add_subdirectory(gucefCORE)
+add_subdirectory(gucefVFS)
+add_subdirectory(gucefCOMCORE)
 add_subdirectory(gucefGUI)
 add_subdirectory(gucefIMAGE)
-add_subdirectory(gucefMULTIPLAY)
 add_subdirectory(gucefMATH)
 add_subdirectory(gucefINPUT)
 add_subdirectory(gucefAUDIO)
+add_subdirectory(gucefCOM)
+add_subdirectory(gucefMULTIPLAY)
 add_subdirectory(gucefDRN)
+add_subdirectory(gucefPATCHER)
 
 # Setup GUCEF Test applications
 add_subdirectory(gucefVFS_TestApp)
