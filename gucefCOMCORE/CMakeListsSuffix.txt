@@ -5,3 +5,4 @@ add_library( gucefCOMCORE ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILE
 add_dependencies( gucefCOMCORE gucefCORE gucefMT)
 target_link_libraries( gucefCOMCORE gucefCORE gucefMT )
 set_target_properties( gucefCOMCORE PROPERTIES COMPILE_DEFINITIONS GUCEFCOMCORE_BUILD_MODULE )
+GUCEF_config_lib( gucefCOMCORE )
