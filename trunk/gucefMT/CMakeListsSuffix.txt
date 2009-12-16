@@ -12,3 +12,5 @@ if ( DEFINED PLATFORM_LIBS )
 endif()
 
 set_target_properties( gucefMT PROPERTIES COMPILE_DEFINITIONS GUCEFMT_BUILD_MODULE )
+
+GUCEF_config_lib( gucefMT )
