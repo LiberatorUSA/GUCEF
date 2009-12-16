@@ -1,4 +1,5 @@
 
 add_library( gucefPATCHER ${HEADER_FILES} ${SOURCE_FILES} )
+add_dependencies( gucefPATCHER gucefCOM gucefCOMCORE gucefCORE gucefMT)
 target_link_libraries( gucefPATCHER gucefCOM gucefCOMCORE gucefCORE gucefMT )
 set_target_properties( gucefPATCHER PROPERTIES COMPILE_DEFINITIONS GUCEFPATCHER_BUILD_MODULE )

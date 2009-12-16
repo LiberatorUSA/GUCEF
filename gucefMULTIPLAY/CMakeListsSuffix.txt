@@ -1,5 +1,6 @@
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 add_library( gucefMULTIPLAY ${HEADER_FILES} ${SOURCE_FILES} )
+add_dependencies( gucefMULTIPLAY gucefCOM gucefCOMCORE gucefCORE gucefMT)
 target_link_libraries( gucefMULTIPLAY gucefCOM gucefCOMCORE gucefCORE gucefMT )
 set_target_properties( gucefMULTIPLAY PROPERTIES COMPILE_DEFINITIONS GUCEFMULTIPLAY_BUILD_MODULE )

@@ -1,5 +1,6 @@
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 add_library( gucefCOM ${HEADER_FILES} ${SOURCE_FILES} )
+add_dependencies( gucefCOM gucefCOMCORE gucefCORE gucefMT)
 target_link_libraries( gucefCOM gucefCOMCORE gucefCORE gucefMT )
 set_target_properties( gucefCOM PROPERTIES COMPILE_DEFINITIONS GUCEFCOM_BUILD_MODULE )

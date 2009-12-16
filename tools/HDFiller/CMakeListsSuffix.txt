@@ -1,0 +1,4 @@
+
+add_executable( HDFiller ${HEADER_FILES} ${SOURCE_FILES} )
+target_link_libraries( HDFiller gucefCORE gucefMT )
+set_target_properties( HDFiller PROPERTIES COMPILE_DEFINITIONS HDFILLER_BUILD_MODULE )
