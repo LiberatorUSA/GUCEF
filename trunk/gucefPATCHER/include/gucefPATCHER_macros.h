@@ -74,6 +74,10 @@
  *      Macros for dynamic linking or static linking. Use the switches in the
  *      config file to control the export type.
  */
+#ifdef GUCEFPATCHER_BUILD_MODULE
+  #define GUCEF_PATCHER_BUILD_MODULE
+#endif
+
 #undef GUCEF_PATCHER_EXPORT
 #ifdef GUCEF_PATCHER_BUILD_MODULE
   #define GUCEF_PATCHER_EXPORT GUCEF_EXPORT

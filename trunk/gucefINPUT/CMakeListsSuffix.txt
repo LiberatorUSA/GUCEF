@@ -1,7 +1,7 @@
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 add_library( gucefINPUT ${HEADER_FILES} ${SOURCE_FILES} )
 add_dependencies( gucefINPUT gucefCORE gucefMT)
 target_link_libraries( gucefINPUT gucefCORE gucefMT )
 set_target_properties( gucefINPUT PROPERTIES COMPILE_DEFINITIONS GUCEFINPUT_BUILD_MODULE )
+include_directories( ../gucefMT/include ../gucefCORE/include )
 GUCEF_config_lib( gucefINPUT )

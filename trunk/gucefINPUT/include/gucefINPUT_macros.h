@@ -92,6 +92,11 @@
 
 /*-------------------------------------------------------------------------*/
 
+#ifdef GUCEFINPUT_BUILD_MODULE
+  #define BUILD_GUCEF_INPUT_DLL
+  #define GUCEF_INPUT_BUILD_MODULE
+#endif /* GUCEFINPUT_BUILD_MODULE ? */ 
+
 /*
  *      When compiling the gucefINPUT library you should define BUILD_GUCEF_INPUT_DLL
  *      before including this macro file.

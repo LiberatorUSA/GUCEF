@@ -61,6 +61,10 @@
  *      Macros for dynamic linking or static linking. Use the switches in the
  *      config file to control the export type.
  */
+#ifdef GUCEFDRN_BUILD_MODULE
+  #define GUCEF_DRN_BUILD_MODULE
+#endif /* GUCEFDRN_BUILD_MODULE ? */
+ 
 #undef GUCEF_EXPORTSPEC
 #ifdef GUCEF_DRN_BUILD_MODULE
   #define GUCEF_EXPORTSPEC GUCEF_EXPORT

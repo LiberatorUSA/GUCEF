@@ -27,7 +27,7 @@
 #include <string.h>
 
 #ifndef md5_INCLUDED
-#include "md5/md5.h"	     /* MD5 utilities */
+#include "md5.h"	     /* MD5 utilities */
 #endif /* md5_INCLUDED ? */
 
 #include "dvmd5utils.h"	     /* function prototypes */

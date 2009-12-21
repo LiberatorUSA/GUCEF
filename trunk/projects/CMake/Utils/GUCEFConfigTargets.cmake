@@ -86,6 +86,11 @@ function(GUCEF_config_common TARGETNAME)
   endif(GUCEF_BUILD_PLATFORM_IPHONE)
 
   GUCEF_create_vcproj_userfile(${TARGETNAME})
+
+  if (MSVC) 
+    add_definitions( "/D_CRT_SECURE_NO_WARNINGS /wd4251 /nologo" )
+  endif()
+
 endfunction(GUCEF_config_common)
 
 # setup library build

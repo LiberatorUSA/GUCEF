@@ -56,6 +56,11 @@
  *      Macros for dynamic linking. Use the switches in the
  *      config file to control the export type.
  */
+
+#ifdef GUCEFMULTIPLAY_BUILD_MODULE
+  #define GUCEF_MULTIPLAY_BUILD_MODULE
+#endif /* GUCEFMULTIPLAY_BUILD_MODULE ? */
+
 #ifdef GUCEF_MSWIN_BUILD
   #ifdef GUCEF_MULTIPLAY_BUILD_MODULE
     #define GUCEF_MULTIPLAY_EXPORT __declspec( dllexport )
