@@ -1,14 +1,11 @@
 
-# Add system specific libraries
-if (WIN32)
-  set( PLATFORM_LIBS winmm )
-endif()
-
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 add_library( gucefMT ${HEADER_FILES} ${SOURCE_FILES} )
 
-if ( DEFINED PLATFORM_LIBS )
-  target_link_libraries( ${PLATFORM_LIBS} )
+# Add system specific libraries
+if (WIN32)
+  set( PLATFORM_LIBS Winmm.lib )
+  target_link_libraries( gucefMT ${PLATFORM_LIBS} )
 endif()
 
 set_target_properties( gucefMT PROPERTIES COMPILE_DEFINITIONS GUCEFMT_BUILD_MODULE )
