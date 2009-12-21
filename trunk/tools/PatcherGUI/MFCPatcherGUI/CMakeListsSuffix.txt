@@ -2,3 +2,6 @@
 add_executable( MFCPatcherGUI WIN32 ${HEADER_FILES} ${SOURCE_FILES} )
 add_dependencies( MFCPatcherGUI gucefPATCHER gucefCOM gucefCOMCORE gucefCORE gucefMT)
 target_link_libraries( MFCPatcherGUI gucefMT gucefCORE gucefCOMCORE gucefCOM gucefPATCHER )
+if (WIN32)
+  set_target_properties( MFCPatcherGUI PROPERTIES COMPILE_DEFINITIONS _AFXDLL )
+endif()
