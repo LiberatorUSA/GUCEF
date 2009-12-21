@@ -1,4 +1,11 @@
 
-add_executable( HDFiller ${HEADER_FILES} ${SOURCE_FILES} )
+if (WIN32)
+  add_executable( HDFiller WIN32 ${HEADER_FILES} ${SOURCE_FILES} )
+else()
+  add_executable( HDFiller ${HEADER_FILES} ${SOURCE_FILES} )
+endif()
+add_dependencies( HDFiller gucefCORE gucefMT )
 target_link_libraries( HDFiller gucefCORE gucefMT )
 set_target_properties( HDFiller PROPERTIES COMPILE_DEFINITIONS HDFILLER_BUILD_MODULE )
+include_directories( ../../gucefMT/include ../../gucefCORE/include )
+GUCEF_config_tool( HDFiller )
