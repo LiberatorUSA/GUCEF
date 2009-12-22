@@ -1,0 +1,7 @@
+CALL CMakeCommon.bat
+
+ECHO *** Set MVC9 Win64 specifics and run CMake ***
+
+SET MVC9_OUTPUTDIR="%OUTPUTDIR%\MVC9WIN64"
+CMake.exe -DBUILD_SHARED_LIBS=OFF -G"Visual Studio 9 2008 Win64" -H"%SRCROOTDIR%" -B%MVC9_OUTPUTDIR%
+PAUSE
