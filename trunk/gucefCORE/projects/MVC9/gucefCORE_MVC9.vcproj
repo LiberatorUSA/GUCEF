@@ -738,6 +738,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\md5.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\MemoryManager.cpp"
 				>
 			</File>
@@ -1380,6 +1384,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\md5.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\MemoryManager.h"
 				>
 			</File>
@@ -1415,26 +1423,6 @@
 				RelativePath="..\..\include\tsprinting.h"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="MD5"
-			>
-			<Filter
-				Name="Source Files"
-				>
-				<File
-					RelativePath="..\..\dependencies\MD5\md5.c"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Header Files"
-				>
-				<File
-					RelativePath="..\..\dependencies\MD5\md5.h"
-					>
-				</File>
-			</Filter>
 		</Filter>
 	</Files>
 	<Globals>
