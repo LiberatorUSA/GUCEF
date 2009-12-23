@@ -5,3 +5,5 @@ target_link_libraries( gucefVFS gucefCORE gucefMT )
 set_target_properties( gucefVFS PROPERTIES COMPILE_DEFINITIONS GUCEFVFS_BUILD_MODULE )
 include_directories( ../gucefMT/include ../gucefCORE/include )
 GUCEF_config_lib( gucefVFS )
+
+add_subdirectory( plugins )
