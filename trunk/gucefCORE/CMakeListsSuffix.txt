@@ -7,5 +7,3 @@ target_link_libraries( gucefCORE gucefMT )
 set_target_properties( gucefCORE PROPERTIES COMPILE_DEFINITIONS GUCEFCORE_BUILD_MODULE )
 include_directories( ../gucefMT/include )
 GUCEF_config_lib( gucefCORE )
-
-add_subdirectory( plugins )

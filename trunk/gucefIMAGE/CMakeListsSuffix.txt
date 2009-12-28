@@ -6,5 +6,3 @@ target_link_libraries( gucefIMAGE gucefCORE gucefMT )
 set_target_properties( gucefIMAGE PROPERTIES COMPILE_DEFINITIONS GUCEFIMAGE_BUILD_MODULE )
 include_directories( ../gucefMT/include ../gucefCORE/include )
 GUCEF_config_lib( gucefIMAGE )
-
-add_subdirectory( plugins )
