@@ -1,4 +1,4 @@
-``#-------------------------------------------------------------------
+#-------------------------------------------------------------------
 # This file is part of the CMake build system for GUCEF
 #     (Galaxy Unlimited Framework)
 # For the latest info, see http://www.VanvelzenSoftware.com/
