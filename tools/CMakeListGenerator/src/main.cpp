@@ -414,6 +414,49 @@ IsDirAProjectDir( CORE::CString dir )
 
 /*---------------------------------------------------------------------------*/
 
+std::vector<CORE::CString>
+GetSubDirExcludeList( CORE::CString dir )
+{GUCEF_TRACE;
+
+    CORE::CString excludeFile = dir;
+    CORE::AppendToPath( excludeFile, "CMakeGenExcludeList.txt" );
+    
+    if ( CORE::FileExists( excludeFile ) )
+    {
+        CORE::CString excludeFileContent;
+        if ( CORE::LoadTextFileAsString( excludeFile        ,
+                                         excludeFileContent ) )
+        {
+            return excludeFileContent.ParseElements( '\n' );            
+        } 
+    }
+    
+    return std::vector<CORE::CString>();
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+RemoveString( std::vector< CORE::CString >& list, const CORE::CString& searchStr )
+{GUCEF_TRACE;
+
+    bool removedString = false;
+    std::vector< CORE::CString >::iterator i = list.begin();
+    while ( i != list.end() )
+    {
+        if ( (*i) == searchStr )
+        {
+            list.erase( i );
+            i = list.begin();
+            removedString = true;
+        }
+        ++i;
+    }
+    return removedString;
+}
+
+/*---------------------------------------------------------------------------*/
+
 void
 LocateAndProcessProjectDirsRecusively( CORE::CString topLevelDir )
 {GUCEF_TRACE;
@@ -429,12 +472,29 @@ LocateAndProcessProjectDirsRecusively( CORE::CString topLevelDir )
         ProcessProjectDir( topLevelDir );
     }
     
-    // Get all subsir's
+    // Get all subdir's
     std::vector< CORE::CString > dirList;
     PopulateDirListFromDir( topLevelDir, dirList );
     
-    // Process all sub-dirs
+    // Get list of dirs to exclude
+    std::vector< CORE::CString > dirExcludeList = GetSubDirExcludeList( topLevelDir );
+    
+    // Remove excluded dirs from dir list
     std::vector< CORE::CString >::iterator i = dirList.begin();
+    while ( i != dirList.end() )
+    {
+        if ( RemoveString( dirList, (*i) ) )
+        {
+            i = dirList.begin();
+        }
+        else
+        {
+            ++i;
+        }    
+    }    
+    
+    // Process all sub-dirs
+    i = dirList.begin();
     while ( i != dirList.end() )
     {
         CORE::CString subDir = topLevelDir;
