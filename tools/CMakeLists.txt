@@ -16,5 +16,7 @@ add_subdirectory(HDFiller)
 add_subdirectory(PatcherGUI)
 add_subdirectory(PatchSetGenerator)
 add_subdirectory(ServerPortExtender)
+add_subdirectory(CMakeListGenerator)
+add_subdirectory(CallstackLogAnalyzer)
 
 

@@ -573,38 +573,55 @@ CString::Clear( void )
 /*-------------------------------------------------------------------------*/
 
 CString 
-CString::SubstrToChar( char searchchar ,
-                       bool startfront ) const
+CString::SubstrToChar( char searchchar   ,
+                       UInt32 startIndex ,
+                       bool frontToBack  ) const
 {GUCEF_TRACE;
 
-        if ( startfront )
+    if ( startIndex < m_length )
+    {
+        if ( frontToBack )
         {
-                for ( UInt32 i=0; i<m_length; ++i )
-                {
-                        if ( m_string[ i ] == searchchar )
-                        {
-                                CString substr;
-                                substr.Set( m_string ,
-                                            i        );            
-                                return substr;
-                        }
-                }
-                CString substr( *this );
-                return substr;
-        }
-        
-        for ( Int32 i=m_length-1; i>=0; --i )
-        {
+            for ( UInt32 i=startIndex; i<m_length; ++i )
+            {
                 if ( m_string[ i ] == searchchar )
                 {
-                        CString substr;
-                        substr.Set( m_string+i+1 ,
-                                    m_length-i-1 );                                   
-                        return substr;
+                    CString substr;
+                    substr.Set( m_string ,
+                                i        );            
+                    return substr;
                 }
+            }
+            return CString( *this );
         }
-        CString substr( *this );
-        return substr;        
+        
+        for ( Int32 i=startIndex; i>=0; --i )
+        {
+            if ( m_string[ i ] == searchchar )
+            {
+                CString substr;
+                substr.Set( m_string+i+1 ,
+                            startIndex-i );                                   
+                return substr;
+            }
+        }
+        return CString( *this );
+    }
+    return CString();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString 
+CString::SubstrToChar( char searchchar  ,
+                       bool frontToBack ) const
+{GUCEF_TRACE;
+
+    if ( frontToBack )
+    {
+        return SubstrToChar( searchchar, 0, frontToBack );
+    }
+    return SubstrToChar( searchchar, m_length-1, frontToBack );
 }
 
 /*-------------------------------------------------------------------------*/

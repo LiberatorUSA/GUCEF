@@ -59,16 +59,42 @@
 #include <windows.h>
 #endif /* GUCEF_MSWIN_BUILD ? */
 
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 using namespace GUCEF;
 
 /*---------------------------------------------------------------------------*/
+
+struct SModuleInfo
+{
+    std::vector< CORE::CString > dependencies;    
+    std::vector< CORE::CString > includeDirs;
+    std::vector< CORE::CString > sourceDirs;
+    CORE::CString name;
+    CORE::CString rootDir;
+    
+    CORE::CString cmakeListFileContent;
+    CORE::CString cmakeListSuffixFileContent;
+};
+typedef struct SModuleInfo TModuleInfo;
+
+/*---------------------------------------------------------------------------*/
+
+struct SProjectInfo
+{
+    std::vector< TModuleInfo > modules;
+};
+typedef struct SProjectInfo TProjectInfo;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
 
 void
 PopulateFileListFromDir( const CORE::CString& path              , 
@@ -201,7 +227,7 @@ GenerateCMakeListsFileSrcSection( const std::vector< CORE::CString >& includeFil
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsPlatformFilesSection( const CORE::CString& projectDir   ,
+GenerateCMakeListsPlatformFilesSection( TModuleInfo& moduleInfo           ,
                                         const CORE::CString& platformName ,
                                         const CORE::CString& platformDir  ,
                                         bool firstPlatform                ,
@@ -211,13 +237,13 @@ GenerateCMakeListsPlatformFilesSection( const CORE::CString& projectDir   ,
     bool hasPlatformIncludes = false;
     bool hasPlatformSrc = false;
     
-    CORE::CString includeDir = projectDir;
+    CORE::CString includeDir = moduleInfo.rootDir;
     CORE::AppendToPath( includeDir, "include" );
-    CORE::CString srcDir = projectDir;
+    CORE::CString srcDir = moduleInfo.rootDir;
     CORE::AppendToPath( srcDir, "src" );
 
     CORE::CString sectionContent;
-    CORE::CString subDirLastSeg = CORE::LastSubDir( projectDir ); 
+    CORE::CString subDirLastSeg = CORE::LastSubDir( moduleInfo.rootDir ); 
 
     if ( firstPlatform )
     {
@@ -228,7 +254,7 @@ GenerateCMakeListsPlatformFilesSection( const CORE::CString& projectDir   ,
         sectionContent = "elseif (" + platformName + ")\n";
     }
     
-    CORE::CString platformSubDir = projectDir;
+    CORE::CString platformSubDir = moduleInfo.rootDir;
     CORE::AppendToPath( platformSubDir, "include" );    
     CORE::AppendToPath( platformSubDir, platformDir );
     if ( CORE::IsPathValid( platformSubDir ) )
@@ -240,6 +266,8 @@ GenerateCMakeListsPlatformFilesSection( const CORE::CString& projectDir   ,
         CORE::AppendToPath( platformSubDirSeg, platformDir );
         platformSubDirSeg = platformSubDirSeg.ReplaceChar( '\\', '/' );
         
+        moduleInfo.includeDirs.push_back( platformSubDirSeg );
+        
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir " + platformSubDirSeg );
         
         std::vector< CORE::CString > subFiles;
@@ -248,14 +276,15 @@ GenerateCMakeListsPlatformFilesSection( const CORE::CString& projectDir   ,
         sectionContent = GenerateCMakeListsFileSection( sectionContent, "  " + platformSubDirSeg, subFiles );
         
         sectionContent += "  include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/" + platformSubDirSeg + " )\n";
-        sectionContent += "  set(PLATFORM_HEADER_INSTALL \"" + platformName + "\")\n\n";
+        sectionContent += "  set(PLATFORM_HEADER_INSTALL \"" + platformName + "\")\n";
+        sectionContent += "  source_group( \"Platform Header Files\" FILES ${PLATFORM_SOURCE_FILES} )\n\n";
     }
     else
     {
         hasPlatformIncludes = false;
     }
     
-    platformSubDir = projectDir;
+    platformSubDir = moduleInfo.rootDir;
     CORE::AppendToPath( platformSubDir, "src" );    
     CORE::AppendToPath( platformSubDir, platformDir );
     if ( CORE::IsPathValid( platformSubDir ) )
@@ -274,6 +303,8 @@ GenerateCMakeListsPlatformFilesSection( const CORE::CString& projectDir   ,
         CORE::CString platformSubDirSeg = "src";
         CORE::AppendToPath( platformSubDirSeg, platformDir );        
         platformSubDirSeg = platformSubDirSeg.ReplaceChar( '\\', '/' );
+        
+        moduleInfo.sourceDirs.push_back( platformSubDirSeg );
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir " + platformSubDirSeg );
         
@@ -282,8 +313,8 @@ GenerateCMakeListsPlatformFilesSection( const CORE::CString& projectDir   ,
 
         sectionContent = GenerateCMakeListsFileSection( sectionContent, "  " + platformSubDirSeg, subFiles );
         
-        //sectionContent += "  include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/" + platformSubDirSeg + " )\n";
-        sectionContent += "  set(PLATFORM_SOURCE_INSTALL \"" + platformName + "\")\n\n";
+        sectionContent += "  set(PLATFORM_SOURCE_INSTALL \"" + platformName + "\")\n";
+        sectionContent += "  source_group( \"Platform Source Files\" FILES ${PLATFORM_SOURCE_FILES} )\n\n";
     }
     else
     {
@@ -301,14 +332,14 @@ GenerateCMakeListsPlatformFilesSection( const CORE::CString& projectDir   ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir )
+GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo )
 {GUCEF_TRACE;
 
     CORE::CString sectionContent;
     
     bool validPlatform = true;
-    sectionContent += GenerateCMakeListsPlatformFilesSection( projectDir, "WIN32", "mswin", true, validPlatform );
-    sectionContent += GenerateCMakeListsPlatformFilesSection( projectDir, "UNIX", "linux", !validPlatform, validPlatform );
+    sectionContent += GenerateCMakeListsPlatformFilesSection( moduleInfo, "WIN32", "mswin", true, validPlatform );
+    sectionContent += GenerateCMakeListsPlatformFilesSection( moduleInfo, "UNIX", "linux", !validPlatform, validPlatform );
     
     if ( sectionContent.Length() > 0 )
     {
@@ -321,16 +352,36 @@ GenerateCMakeListsFilePlatformFilesSection( const CORE::CString& projectDir )
 
 /*---------------------------------------------------------------------------*/
 
-CORE::CString
-GenerateCMakeListsFile( const CORE::CString& projectName ,
-                        const CORE::CString& projectDir  ,
-                        const CORE::CString& fileSuffix  )
+std::vector< CORE::CString >
+ParseDependencies( const CORE::CString& fileSuffix )
 {GUCEF_TRACE;
 
-    CORE::CString includeDir = projectDir;
+    CORE::CString testStr = fileSuffix.Lowercase();
+    CORE::Int32 subStrIdx = testStr.HasSubstr( "add_dependencies(", true );
+    if ( subStrIdx >= 0 )
+    {
+        CORE::CString dependenciesStr = fileSuffix.SubstrToChar( ')', (CORE::UInt32)subStrIdx+17, true );
+        dependenciesStr = dependenciesStr.CompactRepeatingChar( ' ' );
+        return dependenciesStr.ParseElements( ' ' );
+    }
+    return std::vector< CORE::CString >();
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
+                        TModuleInfo& moduleInfo         ,
+                        const CORE::CString& fileSuffix )
+{GUCEF_TRACE;
+
+    CORE::CString includeDir = moduleInfo.rootDir;
     CORE::AppendToPath( includeDir, "include" );
-    CORE::CString srcDir = projectDir;
+    moduleInfo.includeDirs.push_back( "include" );
+    
+    CORE::CString srcDir = moduleInfo.rootDir;
     CORE::AppendToPath( srcDir, "src" );
+    moduleInfo.sourceDirs.push_back( "src" );
     
     std::vector< CORE::CString > includeFiles;
     PopulateFileListFromDir( includeDir, includeFiles );
@@ -342,23 +393,28 @@ GenerateCMakeListsFile( const CORE::CString& projectName ,
     CORE::CString fileContent = GetCMakeListsFileHeader();
     
     // Set project name comment section
-    fileContent += "\n# Configure " + projectName + "\n\n";
+    fileContent += "\n# Configure " + moduleInfo.name + "\n\n";
     
     // Add all the include files
     fileContent += GenerateCMakeListsFileIncludeSection( includeFiles );
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( includeFiles.size() ) + " include files for project " + projectName );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( includeFiles.size() ) + " include files for project " + moduleInfo.name );
     
     // Add all the source files
     fileContent += GenerateCMakeListsFileSrcSection( srcFiles );
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( srcFiles.size() ) + " source files for project " + projectName );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( srcFiles.size() ) + " source files for project " + moduleInfo.name );
     
     // Add all platform files, headers and source
-    fileContent += GenerateCMakeListsFilePlatformFilesSection( projectDir );
+    fileContent += GenerateCMakeListsFilePlatformFilesSection( moduleInfo );
     
     if ( fileSuffix.Length() > 0 )
     {
+        // Fill in the dependencies as specified in the suffix file
+        moduleInfo.dependencies = ParseDependencies( fileSuffix );
+        
+        // Get information for each project we have already processed that this project depends on        
+        
         fileContent += fileSuffix;
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed suffix file for project " + projectName );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed suffix file for project " + moduleInfo.name );
     }
     else
     {
@@ -366,9 +422,9 @@ GenerateCMakeListsFile( const CORE::CString& projectName ,
         fileContent += "## TODO: the following is an example section, you have to complete it\n";
         fileContent += "#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)\n";
         fileContent += "#add_definitions(-DTIXML_USE_STL)\n";
-        fileContent += "#add_executable(" + projectName + " ${HEADER_FILES} ${SOURCE_FILES})\n";
-        fileContent += "#target_link_libraries(" + projectName + " ${OGRE_LIBRARIES})\n";
-        fileContent += "#gucef_config_tool(" + projectName + ")\n";
+        fileContent += "#add_executable(" + moduleInfo.name + " ${HEADER_FILES} ${SOURCE_FILES})\n";
+        fileContent += "#target_link_libraries(" + moduleInfo.name + " ${GUCEF_LIBRARIES})\n";
+        fileContent += "#gucef_config_tool(" + moduleInfo.name + ")\n";
     }
     return fileContent;
 }
@@ -376,25 +432,26 @@ GenerateCMakeListsFile( const CORE::CString& projectName ,
 /*---------------------------------------------------------------------------*/
 
 void
-ProcessProjectDir( CORE::CString projectDir )
+ProcessProjectDir( const TProjectInfo& projectInfo , 
+                   TModuleInfo& moduleInfo         )
 {GUCEF_TRACE;
    
-    CORE::CString projectName = CORE::LastSubDir( projectDir ); 
+    moduleInfo.name = CORE::LastSubDir( moduleInfo.rootDir ); 
     
-    CORE::CString pathToSuffixFile = projectDir;
+    CORE::CString pathToSuffixFile = moduleInfo.rootDir;
     CORE::AppendToPath( pathToSuffixFile, "CMakeListsSuffix.txt" );
     
     CORE::CString fileSuffix;
     CORE::LoadTextFileAsString( pathToSuffixFile, fileSuffix );
     
-    CORE::CString fileContent = GenerateCMakeListsFile( projectName, projectDir, fileSuffix );
+    CORE::CString fileContent = GenerateCMakeListsFile( projectInfo, moduleInfo, fileSuffix );
     
-    CORE::CString pathToCMakeListsFile = projectDir;
+    CORE::CString pathToCMakeListsFile = moduleInfo.rootDir;
     CORE::AppendToPath( pathToCMakeListsFile, "CMakeLists.txt" );
     
     CORE::WriteStringAsTextFile( pathToCMakeListsFile, fileContent );
     
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMake List file for project dir: " + projectDir );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMake List file for project dir: " + moduleInfo.rootDir );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -437,7 +494,8 @@ GetSubDirExcludeList( CORE::CString dir )
 /*---------------------------------------------------------------------------*/
 
 bool
-RemoveString( std::vector< CORE::CString >& list, const CORE::CString& searchStr )
+RemoveString( std::vector< CORE::CString >& list , 
+              const CORE::CString& searchStr     )
 {GUCEF_TRACE;
 
     bool removedString = false;
@@ -461,7 +519,8 @@ RemoveString( std::vector< CORE::CString >& list, const CORE::CString& searchStr
 /*---------------------------------------------------------------------------*/
 
 void
-LocateAndProcessProjectDirsRecusively( CORE::CString topLevelDir )
+LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
+                                       CORE::CString topLevelDir )
 {GUCEF_TRACE;
     
     GUCEF_LOG( CORE::LOGLEVEL_EVERYTHING, "Recursively processing directory: " + topLevelDir );
@@ -472,7 +531,10 @@ LocateAndProcessProjectDirsRecusively( CORE::CString topLevelDir )
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that the following directory is a project directory: " + topLevelDir );
         
         // Process this dir
-        ProcessProjectDir( topLevelDir );
+        TModuleInfo moduleInfo;
+        moduleInfo.rootDir = topLevelDir;
+        ProcessProjectDir( projectInfo, moduleInfo );        
+        projectInfo.modules.push_back( moduleInfo );
     }
     
     // Get all subdir's
@@ -500,7 +562,7 @@ LocateAndProcessProjectDirsRecusively( CORE::CString topLevelDir )
         CORE::CString subDir = topLevelDir;
         CORE::AppendToPath( subDir, (*i) );
         
-        LocateAndProcessProjectDirsRecusively( subDir );
+        LocateAndProcessProjectDirsRecusively( projectInfo, subDir );
         ++i;
     }
 }
@@ -562,7 +624,8 @@ main( int argc , char* argv[] )
         topLevelProjectDir = CORE::RelativePath( "$CURWORKDIR$" );
     }
     
-    LocateAndProcessProjectDirsRecusively( topLevelProjectDir ); 
+    TProjectInfo projectInfo;
+    LocateAndProcessProjectDirsRecusively( projectInfo, topLevelProjectDir ); 
 }
 
 /*---------------------------------------------------------------------------*/
