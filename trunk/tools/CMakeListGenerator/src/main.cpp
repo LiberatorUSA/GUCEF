@@ -450,7 +450,10 @@ RemoveString( std::vector< CORE::CString >& list, const CORE::CString& searchStr
             i = list.begin();
             removedString = true;
         }
-        ++i;
+        else
+        {
+            ++i;
+        }
     }
     return removedString;
 }
@@ -480,17 +483,14 @@ LocateAndProcessProjectDirsRecusively( CORE::CString topLevelDir )
     std::vector< CORE::CString > dirExcludeList = GetSubDirExcludeList( topLevelDir );
     
     // Remove excluded dirs from dir list
-    std::vector< CORE::CString >::iterator i = dirList.begin();
-    while ( i != dirList.end() )
+    std::vector< CORE::CString >::iterator i = dirExcludeList.begin();
+    while ( i != dirExcludeList.end() )
     {
         if ( RemoveString( dirList, (*i) ) )
         {
-            i = dirList.begin();
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the sub-dir \"" + (*i) + "\" based on the exclude list for this dir" );
         }
-        else
-        {
-            ++i;
-        }    
+        ++i;
     }    
     
     // Process all sub-dirs
