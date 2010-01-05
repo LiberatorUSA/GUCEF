@@ -176,26 +176,30 @@ class GUCEFCORE_EXPORT_CPP CString
     CString ReplaceSubstr( const CString& substr      ,
                            const CString& replacement ) const;
                         
-    CString SubstrToChar( char searchchar        ,
-                          bool startfront = true ) const;
+    CString SubstrToChar( char searchchar         ,
+                          bool frontToBack = true ) const;
+
+    CString SubstrToChar( char searchchar         ,
+                          UInt32 startIndex       ,
+                          bool frontToBack = true ) const;
                           
     CString SubstrToSubstr( const CString& searchstr ,
-                            bool startfront = true   ) const;
+                            bool frontToBack = true  ) const;
                             
-    Int32 HasChar( char searchchar        ,
-                   bool startfront = true ) const;                                
+    Int32 HasChar( char searchchar         ,
+                   bool frontToBack = true ) const;                                
                             
-    Int32 HasSubstr( const CString& substr  ,
-                     bool startfront = true ) const;
+    Int32 HasSubstr( const CString& substr   ,
+                     bool frontToBack = true ) const;
                      
     UInt32 GetCharacterCount( const char searchChar ) const;
 
     UInt32 FindMaxSubstrEquality( const CString& searchStr ,
                                   const UInt32 startOffset ,
-                                  bool startFront          ) const;                                 
+                                  bool frontToBack         ) const;                                 
                           
-    CString CutChars( UInt32 charcount        ,
-                      bool startfront = false ) const;
+    CString CutChars( UInt32 charcount         ,
+                      bool frontToBack = false ) const;
 
     CString RemoveChar( const char charToRemove ) const;
     
