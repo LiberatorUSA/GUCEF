@@ -369,10 +369,9 @@ ParseDependencies( const CORE::CString& fileSuffix )
 
 /*---------------------------------------------------------------------------*/
 
-CORE::CString
+void
 GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
-                        TModuleInfo& moduleInfo         ,
-                        const CORE::CString& fileSuffix )
+                        TModuleInfo& moduleInfo         )
 {GUCEF_TRACE;
 
     CORE::CString includeDir = moduleInfo.rootDir;
@@ -406,27 +405,8 @@ GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
     // Add all platform files, headers and source
     fileContent += GenerateCMakeListsFilePlatformFilesSection( moduleInfo );
     
-    if ( fileSuffix.Length() > 0 )
-    {
-        // Fill in the dependencies as specified in the suffix file
-        moduleInfo.dependencies = ParseDependencies( fileSuffix );
-        
-        // Get information for each project we have already processed that this project depends on        
-        
-        fileContent += fileSuffix;
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed suffix file for project " + moduleInfo.name );
-    }
-    else
-    {
-        // add example section
-        fileContent += "## TODO: the following is an example section, you have to complete it\n";
-        fileContent += "#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)\n";
-        fileContent += "#add_definitions(-DTIXML_USE_STL)\n";
-        fileContent += "#add_executable(" + moduleInfo.name + " ${HEADER_FILES} ${SOURCE_FILES})\n";
-        fileContent += "#target_link_libraries(" + moduleInfo.name + " ${GUCEF_LIBRARIES})\n";
-        fileContent += "#gucef_config_tool(" + moduleInfo.name + ")\n";
-    }
-    return fileContent;
+    // We have completed generating the file content and gathering info
+    moduleInfo.cmakeListFileContent = fileContent;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -441,17 +421,26 @@ ProcessProjectDir( const TProjectInfo& projectInfo ,
     CORE::CString pathToSuffixFile = moduleInfo.rootDir;
     CORE::AppendToPath( pathToSuffixFile, "CMakeListsSuffix.txt" );
     
-    CORE::CString fileSuffix;
-    CORE::LoadTextFileAsString( pathToSuffixFile, fileSuffix );
+    if ( CORE::LoadTextFileAsString( pathToSuffixFile, moduleInfo.cmakeListSuffixFileContent ) )
+    {
+        // Fill in the dependencies as specified in the suffix file
+        moduleInfo.dependencies = ParseDependencies( fileSuffix );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed suffix file for project " + moduleInfo.name );
+    }
+    else
+    {
+        // add suffix example section instead
+        moduleInfo.cmakeListSuffixFileContent  = "## TODO: the following is an example suffix section, you have to complete it\n";
+        moduleInfo.cmakeListSuffixFileContent += "#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)\n";
+        moduleInfo.cmakeListSuffixFileContent += "#add_definitions(-DTIXML_USE_STL)\n";
+        moduleInfo.cmakeListSuffixFileContent += "#add_executable(" + moduleInfo.name + " ${HEADER_FILES} ${SOURCE_FILES})\n";
+        moduleInfo.cmakeListSuffixFileContent += "#target_link_libraries(" + moduleInfo.name + " ${GUCEF_LIBRARIES})\n";
+        moduleInfo.cmakeListSuffixFileContent += "#gucef_config_tool(" + moduleInfo.name + ")\n";
+    }
     
-    CORE::CString fileContent = GenerateCMakeListsFile( projectInfo, moduleInfo, fileSuffix );
+    GenerateCMakeListsFile( projectInfo, moduleInfo );
     
-    CORE::CString pathToCMakeListsFile = moduleInfo.rootDir;
-    CORE::AppendToPath( pathToCMakeListsFile, "CMakeLists.txt" );
-    
-    CORE::WriteStringAsTextFile( pathToCMakeListsFile, fileContent );
-    
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMake List file for project dir: " + moduleInfo.rootDir );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generated CMake List file content for project dir: " + moduleInfo.rootDir );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -624,8 +613,26 @@ main( int argc , char* argv[] )
         topLevelProjectDir = CORE::RelativePath( "$CURWORKDIR$" );
     }
     
+    // Generate all the data
     TProjectInfo projectInfo;
-    LocateAndProcessProjectDirsRecusively( projectInfo, topLevelProjectDir ); 
+    LocateAndProcessProjectDirsRecusively( projectInfo, topLevelProjectDir );
+    
+    // Write all the CMakeLists.txt files
+    std::vector< TModuleInfo >::iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        TModuleInfo& moduleInfo = (*i);
+        
+        CORE::CString pathToCMakeListsFile = moduleInfo.rootDir;
+        CORE::AppendToPath( pathToCMakeListsFile, "CMakeLists.txt" );
+        
+        CORE::CString fileContent = moduleInfo.cmakeListFileContent + moduleInfo.cmakeListSuffixFileContent;        
+        CORE::WriteStringAsTextFile( pathToCMakeListsFile, fileContent );
+        
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMakeLists.txt file for project dir: " + moduleInfo.rootDir );
+        ++i;
+    }
+
 }
 
 /*---------------------------------------------------------------------------*/
