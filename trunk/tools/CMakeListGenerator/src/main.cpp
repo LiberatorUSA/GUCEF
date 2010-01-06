@@ -69,16 +69,22 @@ using namespace GUCEF;
 
 /*---------------------------------------------------------------------------*/
 
+typedef std::vector< CORE::CString > TStringVector;
+
+/*---------------------------------------------------------------------------*/
+
 struct SModuleInfo
 {
-    std::vector< CORE::CString > dependencies;    
-    std::vector< CORE::CString > includeDirs;
-    std::vector< CORE::CString > sourceDirs;
+    TStringVector dependencies;    
+    std::map< CORE::CString, TStringVector > includeDirs;
+    std::map< CORE::CString, TStringVector > sourceDirs;
     CORE::CString name;
     CORE::CString rootDir;
     
     CORE::CString cmakeListFileContent;
     CORE::CString cmakeListSuffixFileContent;
+    
+    int priority;
 };
 typedef struct SModuleInfo TModuleInfo;
 
@@ -90,6 +96,10 @@ struct SProjectInfo
 };
 typedef struct SProjectInfo TProjectInfo;
 
+/*---------------------------------------------------------------------------*/
+
+typedef std::map< int, TModuleInfo* > TModulePrioMap;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -97,8 +107,8 @@ typedef struct SProjectInfo TProjectInfo;
 //-------------------------------------------------------------------------*/
 
 void
-PopulateFileListFromDir( const CORE::CString& path              , 
-                         std::vector< CORE::CString >& fileList )
+PopulateFileListFromDir( const CORE::CString& path , 
+                         TStringVector& fileList   )
 {GUCEF_TRACE;
 
     CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( path.C_String() );
@@ -119,8 +129,8 @@ PopulateFileListFromDir( const CORE::CString& path              ,
 /*---------------------------------------------------------------------------*/
 
 void
-PopulateDirListFromDir( const CORE::CString& path              , 
-                         std::vector< CORE::CString >& dirList )
+PopulateDirListFromDir( const CORE::CString& path , 
+                        TStringVector& dirList    )
 {GUCEF_TRACE;
 
     CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( path.C_String() );
@@ -189,7 +199,7 @@ GenerateCMakeListsFileSection( const CORE::CString& sectionContent       ,
 {GUCEF_TRACE;
 
     CORE::CString newSectionContent = sectionContent;
-    std::vector< CORE::CString >::const_iterator i = files.begin();
+    TStringVector::const_iterator i = files.begin();
     while ( i != files.end() )
     {
         CORE::CString path = filePrefix;
@@ -266,12 +276,12 @@ GenerateCMakeListsPlatformFilesSection( TModuleInfo& moduleInfo           ,
         CORE::AppendToPath( platformSubDirSeg, platformDir );
         platformSubDirSeg = platformSubDirSeg.ReplaceChar( '\\', '/' );
         
-        moduleInfo.includeDirs.push_back( platformSubDirSeg );
-        
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir " + platformSubDirSeg );
         
-        std::vector< CORE::CString > subFiles;
-        PopulateFileListFromDir( platformSubDir, subFiles );        
+        TStringVector subFiles;
+        PopulateFileListFromDir( platformSubDir, subFiles );
+        
+        moduleInfo.includeDirs.insert( std::pair< CORE::CString, TStringVector >( platformSubDirSeg, subFiles ) );        
         
         sectionContent = GenerateCMakeListsFileSection( sectionContent, "  " + platformSubDirSeg, subFiles );
         
@@ -303,13 +313,13 @@ GenerateCMakeListsPlatformFilesSection( TModuleInfo& moduleInfo           ,
         CORE::CString platformSubDirSeg = "src";
         CORE::AppendToPath( platformSubDirSeg, platformDir );        
         platformSubDirSeg = platformSubDirSeg.ReplaceChar( '\\', '/' );
-        
-        moduleInfo.sourceDirs.push_back( platformSubDirSeg );
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir " + platformSubDirSeg );
         
         std::vector< CORE::CString > subFiles;
         PopulateFileListFromDir( platformSubDir, subFiles );
+        
+        moduleInfo.sourceDirs.insert( std::pair< CORE::CString, TStringVector >( platformSubDirSeg, subFiles ) );
 
         sectionContent = GenerateCMakeListsFileSection( sectionContent, "  " + platformSubDirSeg, subFiles );
         
@@ -370,24 +380,12 @@ ParseDependencies( const CORE::CString& fileSuffix )
 /*---------------------------------------------------------------------------*/
 
 void
-GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
-                        TModuleInfo& moduleInfo         )
+GenerateCMakeListsFile( TModuleInfo& moduleInfo )
 {GUCEF_TRACE;
 
-    CORE::CString includeDir = moduleInfo.rootDir;
-    CORE::AppendToPath( includeDir, "include" );
-    moduleInfo.includeDirs.push_back( "include" );
+    TStringVector& includeFiles = moduleInfo.includeDirs[ "include" ];
+    TStringVector& srcFiles = moduleInfo.sourceDirs[ "src" ];
     
-    CORE::CString srcDir = moduleInfo.rootDir;
-    CORE::AppendToPath( srcDir, "src" );
-    moduleInfo.sourceDirs.push_back( "src" );
-    
-    std::vector< CORE::CString > includeFiles;
-    PopulateFileListFromDir( includeDir, includeFiles );
-    
-    std::vector< CORE::CString > srcFiles;
-    PopulateFileListFromDir( srcDir, srcFiles );
-
     // Set file header comment section
     CORE::CString fileContent = GetCMakeListsFileHeader();
     
@@ -412,8 +410,7 @@ GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 void
-ProcessProjectDir( const TProjectInfo& projectInfo , 
-                   TModuleInfo& moduleInfo         )
+ProcessProjectDir( TModuleInfo& moduleInfo )
 {GUCEF_TRACE;
    
     moduleInfo.name = CORE::LastSubDir( moduleInfo.rootDir ); 
@@ -424,7 +421,7 @@ ProcessProjectDir( const TProjectInfo& projectInfo ,
     if ( CORE::LoadTextFileAsString( pathToSuffixFile, moduleInfo.cmakeListSuffixFileContent ) )
     {
         // Fill in the dependencies as specified in the suffix file
-        moduleInfo.dependencies = ParseDependencies( fileSuffix );
+        moduleInfo.dependencies = ParseDependencies( moduleInfo.cmakeListSuffixFileContent );
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed suffix file for project " + moduleInfo.name );
     }
     else
@@ -438,7 +435,19 @@ ProcessProjectDir( const TProjectInfo& projectInfo ,
         moduleInfo.cmakeListSuffixFileContent += "#gucef_config_tool(" + moduleInfo.name + ")\n";
     }
     
-    GenerateCMakeListsFile( projectInfo, moduleInfo );
+    CORE::CString includeDir = moduleInfo.rootDir;
+    CORE::AppendToPath( includeDir, "include" );
+    
+    CORE::CString srcDir = moduleInfo.rootDir;
+    CORE::AppendToPath( srcDir, "src" );
+    
+    TStringVector includeFiles;
+    PopulateFileListFromDir( includeDir, includeFiles );
+    moduleInfo.includeDirs[ "include" ] = includeFiles;
+    
+    TStringVector srcFiles;
+    PopulateFileListFromDir( srcDir, srcFiles );
+    moduleInfo.sourceDirs[ "src" ] = srcFiles;
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generated CMake List file content for project dir: " + moduleInfo.rootDir );
 }
@@ -522,7 +531,8 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
         // Process this dir
         TModuleInfo moduleInfo;
         moduleInfo.rootDir = topLevelDir;
-        ProcessProjectDir( projectInfo, moduleInfo );        
+        moduleInfo.priority = 0;
+        ProcessProjectDir( moduleInfo );        
         projectInfo.modules.push_back( moduleInfo );
     }
     
@@ -554,6 +564,99 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
         LocateAndProcessProjectDirsRecusively( projectInfo, subDir );
         ++i;
     }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+WriteCMakeListsFilesToDisk( TProjectInfo& projectInfo )
+{GUCEF_TRACE;
+
+    // Write all the CMakeLists.txt files
+    std::vector< TModuleInfo >::iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        TModuleInfo& moduleInfo = (*i);
+        
+        CORE::CString pathToCMakeListsFile = moduleInfo.rootDir;
+        CORE::AppendToPath( pathToCMakeListsFile, "CMakeLists.txt" );
+        
+        CORE::CString fileContent = moduleInfo.cmakeListFileContent + moduleInfo.cmakeListSuffixFileContent;        
+        CORE::WriteStringAsTextFile( pathToCMakeListsFile, fileContent );
+        
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMakeLists.txt file for project dir: " + moduleInfo.rootDir );
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+GenerateCMakeListsContentForModules( TProjectInfo& projectInfo )
+{GUCEF_TRACE;
+
+    // Generate all the CMakeLists.txt file content
+    std::vector< TModuleInfo >::iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        TModuleInfo& moduleInfo = (*i);     
+        GenerateCMakeListsFile( moduleInfo );        
+        
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generated CMakeLists.txt file contents for project dir: " + moduleInfo.rootDir );
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+int
+GetModulePrio( TModulePrioMap& prioMap         ,
+               const CORE::CString& moduleName )
+{GUCEF_TRACE;
+
+    TModulePrioMap::iterator i = prioMap.begin();
+    while ( i != prioMap.end() )
+    {
+        if ( (*i).second->name == moduleName )
+        {
+            return (*i).first;
+        }
+        ++i;
+    }
+    return -1;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+SortModulesInDependencyOrder( TProjectInfo& projectInfo )
+{GUCEF_TRACE;
+
+    TModulePrioMap prioMap;
+    std::vector< TModuleInfo >::iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        TModuleInfo& moduleInfo = (*i);
+
+        TStringVector::iterator n = moduleInfo.dependencies.begin();
+        int modulePrio = (int) projectInfo.modules.size();
+        while ( n != moduleInfo.dependencies.end() )
+        {
+            // Check if we already have this dependency in the prio map
+            // If so then logically we cannot have a prio higher then the dependency
+            // so we will ensure it is lower 
+            int dependencyPrio = GetModulePrio( prioMap, (*n) );
+            if ( dependencyPrio >= modulePrio )
+            {
+                modulePrio = dependencyPrio-1;
+            }
+            ++n;
+        }
+        prioMap[ modulePrio ] = &moduleInfo;
+        ++i;
+    }
+    
+    //@TODO finish me
 }
 
 /*---------------------------------------------------------------------------*/
@@ -592,12 +695,12 @@ main( int argc , char* argv[] )
     CORE::AppendToPath( logFilename, "CMakeListsGenerator_Log.txt" );
     CORE::CFileAccess logFileAccess( logFilename, "w" );
     
-    CORE::CStdLogger logger( logFileAccess );
-    CORE::CLogManager::Instance()->AddLogger( &logger );
-    
     #ifdef GUCEF_MSWIN_BUILD
     CORE::CMSWinConsoleLogger consoleOut;
     CORE::CLogManager::Instance()->AddLogger( &consoleOut );
+    #else
+    CORE::CStdLogger logger( logFileAccess );
+    CORE::CLogManager::Instance()->AddLogger( &logger );
     #endif /* GUCEF_MSWIN_BUILD ? */
 
     CORE::CValueList keyValueList;
@@ -613,26 +716,18 @@ main( int argc , char* argv[] )
         topLevelProjectDir = CORE::RelativePath( "$CURWORKDIR$" );
     }
     
-    // Generate all the data
+    // Gather all the information
     TProjectInfo projectInfo;
     LocateAndProcessProjectDirsRecusively( projectInfo, topLevelProjectDir );
     
-    // Write all the CMakeLists.txt files
-    std::vector< TModuleInfo >::iterator i = projectInfo.modules.begin();
-    while ( i != projectInfo.modules.end() )
-    {
-        TModuleInfo& moduleInfo = (*i);
-        
-        CORE::CString pathToCMakeListsFile = moduleInfo.rootDir;
-        CORE::AppendToPath( pathToCMakeListsFile, "CMakeLists.txt" );
-        
-        CORE::CString fileContent = moduleInfo.cmakeListFileContent + moduleInfo.cmakeListSuffixFileContent;        
-        CORE::WriteStringAsTextFile( pathToCMakeListsFile, fileContent );
-        
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMakeLists.txt file for project dir: " + moduleInfo.rootDir );
-        ++i;
-    }
-
+    // Order the modules in the list such so that 
+    SortModulesInDependencyOrder( projectInfo );
+    
+    // Generate the contents of the CMakeLists files
+    GenerateCMakeListsContentForModules( projectInfo );
+    
+    // Now write what we created to disk
+    WriteCMakeListsFilesToDisk( projectInfo );
 }
 
 /*---------------------------------------------------------------------------*/
