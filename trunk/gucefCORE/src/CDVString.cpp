@@ -587,8 +587,8 @@ CString::SubstrToChar( char searchchar   ,
                 if ( m_string[ i ] == searchchar )
                 {
                     CString substr;
-                    substr.Set( m_string ,
-                                i        );            
+                    substr.Set( m_string+startIndex ,
+                                i-startIndex        );
                     return substr;
                 }
             }
@@ -622,6 +622,36 @@ CString::SubstrToChar( char searchchar  ,
         return SubstrToChar( searchchar, 0, frontToBack );
     }
     return SubstrToChar( searchchar, m_length-1, frontToBack );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CString::Trim( bool frontToBack ) const
+{GUCEF_TRACE;
+    
+    if ( m_length > 0 )
+    {    
+        if ( frontToBack )
+        {
+            UInt32 charsToCut = 0;            
+            while ( m_string[ charsToCut ] == ' ' ||  m_string[ charsToCut ] == '\t' )
+            {
+                ++charsToCut;
+            }
+            return CutChars( charsToCut, frontToBack );
+        }
+        
+        UInt32 i=m_length-1;
+        UInt32 charsToCut = 0;            
+        while ( i>=0 && ( m_string[ i ] == ' ' ||  m_string[ i ] == '\t' ) )
+        {
+            --i;
+            ++charsToCut;
+        }
+        return CutChars( charsToCut, frontToBack );
+    }
+    return CString( *this );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -872,16 +902,16 @@ CString::ParseElements( char seperator ) const
         UInt32 last = 0;
         for ( UInt32 i=0; i<m_length; ++i )
         {
-                if ( m_string[ i ] == seperator )
-                {
-                        entry.Set( m_string+last ,
-                                   i-last       );
-                        list.push_back( entry );
-                        last = i;                    
-                }  
+            if ( m_string[ i ] == seperator )
+            {
+                entry.Set( m_string+last ,
+                           i-last        );
+                list.push_back( entry );
+                last = i+1;                    
+            }  
         }
      
-        /* add last item */
+        // add last item
         entry.Set( m_string+last ,
                    m_length-last );        
         list.push_back( entry ); 

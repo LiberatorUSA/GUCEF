@@ -84,15 +84,20 @@ struct SModuleInfo
     CORE::CString cmakeListFileContent;
     CORE::CString cmakeListSuffixFileContent;
     
-    int priority;
+    int buildOrder;
 };
 typedef struct SModuleInfo TModuleInfo;
 
 /*---------------------------------------------------------------------------*/
 
+typedef std::vector< TModuleInfo > TModuleInfoVector;
+typedef std::vector< TModuleInfo* > TModuleInfoPtrVector;
+
+/*---------------------------------------------------------------------------*/
+
 struct SProjectInfo
 {
-    std::vector< TModuleInfo > modules;
+    TModuleInfoVector modules;
 };
 typedef struct SProjectInfo TProjectInfo;
 
@@ -372,7 +377,15 @@ ParseDependencies( const CORE::CString& fileSuffix )
     {
         CORE::CString dependenciesStr = fileSuffix.SubstrToChar( ')', (CORE::UInt32)subStrIdx+17, true );
         dependenciesStr = dependenciesStr.CompactRepeatingChar( ' ' );
-        return dependenciesStr.ParseElements( ' ' );
+        dependenciesStr = dependenciesStr.Trim( true );
+        dependenciesStr = dependenciesStr.Trim( false );
+        std::vector< CORE::CString > elements = dependenciesStr.ParseElements( ' ' );
+        if ( !elements.empty() )
+        {
+            elements.erase( elements.begin() );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::Int32ToString( elements.size() ) + " dependencies in suffix file" );
+        }
+        return elements;
     }
     return std::vector< CORE::CString >();
 }
@@ -531,7 +544,7 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
         // Process this dir
         TModuleInfo moduleInfo;
         moduleInfo.rootDir = topLevelDir;
-        moduleInfo.priority = 0;
+        moduleInfo.buildOrder = 0;
         ProcessProjectDir( moduleInfo );        
         projectInfo.modules.push_back( moduleInfo );
     }
@@ -628,35 +641,199 @@ GetModulePrio( TModulePrioMap& prioMap         ,
 
 /*---------------------------------------------------------------------------*/
 
+TModuleInfoPtrVector
+GetModulesWithDependencyCounfOf( TModuleInfoVector& modules   ,
+                                 CORE::UInt32 dependencyCount )
+{GUCEF_TRACE;
+
+    TModuleInfoPtrVector resultSet;
+    TModuleInfoVector::iterator i = modules.begin();
+    while ( i != modules.end() )
+    {
+        if ( (*i).dependencies.size() == dependencyCount )
+        {
+            resultSet.push_back( &( (*i) ) );
+        }
+        ++i;
+    }
+    return resultSet;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::UInt32
+GetHighestDependencyCount( TModuleInfoVector& modules )
+{GUCEF_TRACE;
+
+    CORE::UInt32 greatestDependencyCount = 0;
+    TModuleInfoVector::iterator i = modules.begin();
+    while ( i != modules.end() )
+    {
+        if ( (*i).dependencies.size() > greatestDependencyCount )
+        {
+            greatestDependencyCount = (*i).dependencies.size();
+        }
+        ++i;
+    }
+    return greatestDependencyCount;
+}
+
+/*---------------------------------------------------------------------------*/
+
 void
 SortModulesInDependencyOrder( TProjectInfo& projectInfo )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Sorting all modules based on build priority,.." );
+    
     TModulePrioMap prioMap;
-    std::vector< TModuleInfo >::iterator i = projectInfo.modules.begin();
-    while ( i != projectInfo.modules.end() )
+    
+    // First we make sorting easier by putting all modules in the priority list
+    // in such a way that they are already sorted somewhat based on their dependency count
+    int prioInc=0;
+    CORE::UInt32 highestDependencyCount = GetHighestDependencyCount( projectInfo.modules );
+    for ( CORE::UInt32 i=0; i<=highestDependencyCount; ++i )
     {
-        TModuleInfo& moduleInfo = (*i);
-
-        TStringVector::iterator n = moduleInfo.dependencies.begin();
-        int modulePrio = (int) projectInfo.modules.size();
-        while ( n != moduleInfo.dependencies.end() )
+        // Grab a list of modules with *i* dependencies
+        TModuleInfoPtrVector modules = GetModulesWithDependencyCounfOf( projectInfo.modules, i );
+        TModuleInfoPtrVector::iterator n = modules.begin();
+        while ( n != modules.end() )
         {
-            // Check if we already have this dependency in the prio map
-            // If so then logically we cannot have a prio higher then the dependency
-            // so we will ensure it is lower 
-            int dependencyPrio = GetModulePrio( prioMap, (*n) );
-            if ( dependencyPrio >= modulePrio )
-            {
-                modulePrio = dependencyPrio-1;
-            }
+            prioMap[ prioInc ] = (*n);
             ++n;
-        }
-        prioMap[ modulePrio ] = &moduleInfo;
-        ++i;
+            ++prioInc;
+        }        
+    }
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Performed initial sorting based on number of dependencies" );
+    
+    // Now we can bubble sort the priority map, because of the initial sorting done above
+    // the number of iterations should be greatly reduced.
+    bool changes = true;
+    while ( changes )
+    {
+        changes = false;
+        
+        TModulePrioMap::iterator n = prioMap.begin();
+        while ( n != prioMap.end() )
+        {
+            int modulePrio = (*n).first;
+            TModuleInfo* moduleInfo = (*n).second;
+            
+            TStringVector::iterator m = moduleInfo->dependencies.begin();
+            while ( m != moduleInfo->dependencies.end() )
+            {
+                // Logically we cannot have a prio higher then the dependency
+                // so we will ensure it is lower 
+                int dependencyPrio = GetModulePrio( prioMap, (*m) );
+                if ( dependencyPrio >= modulePrio )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Module " + moduleInfo->name + " with build priority " + CORE::Int32ToString( modulePrio ) + 
+                                " has dependency " + (*m) + " which has build priority " + CORE::Int32ToString( dependencyPrio ) + ", the dependency should have a lower priority (thus build earlier) then the module that requires it!"  );
+                    
+                    TModulePrioMap newPrioMap;
+                    
+                    // Set the new priority, the priority should be higher then the dependency 
+                    // causing it to be build after the dependency (lower prio = builder earlier)
+                    modulePrio = dependencyPrio+1;
+
+                    // Now insert our reprioritized item at this location
+                    newPrioMap[ modulePrio ] = moduleInfo;
+
+                    // Now add everything around the reprioritized item to our
+                    // new prio map
+                    TModulePrioMap::iterator p = prioMap.begin();
+                    while ( p != prioMap.end() )
+                    {                        
+                        if ( (*p).first < modulePrio )
+                        {
+                            if ( (*p).second->name != moduleInfo->name )
+                            {
+                                newPrioMap[ (*p).first ] = (*p).second;
+                            }
+                        }
+                        else
+                        if ( (*p).first >= modulePrio )
+                        {
+                            if ( (*p).second->name != moduleInfo->name )
+                            {
+                                newPrioMap[ (*p).first + 1 ] = (*p).second;
+                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Changed build priority for module: " + (*p).second->name + 
+                                            " from " + CORE::Int32ToString( (*p).first ) + " to " + CORE::Int32ToString( (*p).first+1 ) );
+                            }                                                                                                     
+                        }
+                        ++p;
+                    }
+
+                    // Reindex list to close gap
+                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Reindexing the build priority list" );
+                    CORE::Int32 i=0;                    
+                    TModulePrioMap newestPrioMap;
+                    p = newPrioMap.begin();
+                    while ( p != newPrioMap.end() )
+                    {                        
+                        newestPrioMap[ i ] = (*p).second;
+
+                        if ( i != (*p).first )
+                        {                        
+                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Changed build priority for module: " + (*p).second->name + 
+                                        " from " + CORE::Int32ToString( (*p).first ) + " to " + CORE::Int32ToString( i ) );
+                        }                        
+                        ++i; ++p;
+                    }
+                    
+                    #ifdef GUCEF_CORE_DEBUG_MODE
+                    
+                    // For debug: output final differeces between the altered list and the original 
+                    TModulePrioMap::iterator q = prioMap.begin();
+                    p = newestPrioMap.begin();
+                    while ( p != newestPrioMap.end() )
+                    {                        
+                        if ( (*p).second != (*q).second )
+                        {
+                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Difference with original build order: module " + (*p).second->name + 
+                                        " is now at index " + CORE::Int32ToString( (*p).first ) + " where module " + (*q).second->name + " used to be" );
+                        }                  
+                        ++q; ++p;
+                    }
+                    
+                    #endif
+
+                    // Replace the old map with the new one and start the next bubbling iteration
+                    prioMap = newestPrioMap;
+                    changes = true;
+                    
+                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Completed changing the build priority for module: " + moduleInfo->name );
+                    break;
+                }
+                ++m;
+            }
+            
+            // Restart the process if something had to be changed
+            if ( changes )
+            {
+                break;
+            }
+            
+            ++n;
+        }        
     }
     
-    //@TODO finish me
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished determining the correct build order (priority) for all modules, assigning priorities and reordering modules to refect this" );
+    
+    // First assign the determined build order index to the module
+    TModuleInfoVector newModuleInfoVector;
+    TModulePrioMap::iterator n = prioMap.begin();
+    while ( n != prioMap.end() )
+    {
+        TModuleInfo* moduleInfo = (*n).second;
+        moduleInfo->buildOrder = (*n).first;
+        
+        newModuleInfoVector.push_back( *moduleInfo );
+        ++n;
+    }
+    projectInfo.modules = newModuleInfoVector;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished assigning the correct build order for all modules and sorted them accordingly" );
 }
 
 /*---------------------------------------------------------------------------*/
