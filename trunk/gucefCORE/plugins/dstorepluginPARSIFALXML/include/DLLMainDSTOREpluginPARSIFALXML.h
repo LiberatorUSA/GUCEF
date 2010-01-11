@@ -54,7 +54,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef DSTOREPLUG_BUILD_MODULE
+#ifdef DSTOREPLUGINPARSIFALXML_BUILD_MODULE
   #define DSTOREPLUG_EXPORT_C GUCEFCORE_EXPORT
 #endif 
  

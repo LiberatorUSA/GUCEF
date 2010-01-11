@@ -1,6 +1,6 @@
 
 add_library( dstorepluginPARSIFALXML ${HEADER_FILES} ${SOURCE_FILES} )
-add_dependencies( dstorepluginPARSIFALXML parsifal )
+add_dependencies( dstorepluginPARSIFALXML libparsifal gucefCORE gucefMT )
 target_link_libraries( parsifal )
 set_target_properties( dstorepluginPARSIFALXML PROPERTIES COMPILE_DEFINITIONS DSTOREPLUGINPARSIFALXML_BUILD_MODULE )
 GUCEF_config_plugin( dstorepluginPARSIFALXML )

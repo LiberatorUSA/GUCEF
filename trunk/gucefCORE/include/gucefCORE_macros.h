@@ -71,9 +71,9 @@
  */
 #ifdef GUCEF_MSWIN_BUILD
   #ifdef GUCEFCORE_BUILD_MODULE
-    #define GUCEFCORE_EXPORT __declspec( dllexport )
+    #define GUCEFCORE_EXPORT GUCEF_EXPORT
   #else
-    #define GUCEFCORE_EXPORT __declspec( dllimport )
+    #define GUCEFCORE_EXPORT GUCEF_IMPORT
   #endif /* GUCEFCORE_BUILD_MODULE ? */
 #else
   #define GUCEFCORE_EXPORT   /* Linux does not need an additional directive */

@@ -113,9 +113,101 @@ typedef std::map< int, TModuleInfo* > TModulePrioMap;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+TStringVector
+GetSourceFileExtensions( void )
+{GUCEF_TRACE;
+
+    TStringVector fileTypes;
+    fileTypes.push_back( "c" );
+    fileTypes.push_back( "cpp" );
+    fileTypes.push_back( "cxx" );
+    fileTypes.push_back( "asm" );
+    return fileTypes;
+}
+
+/*---------------------------------------------------------------------------*/
+
+TStringVector
+GetHeaderFileExtensions( void )
+{GUCEF_TRACE;
+
+    TStringVector fileTypes;
+    fileTypes.push_back( "h" );
+    fileTypes.push_back( "hpp" );
+    fileTypes.push_back( "asm" );
+    return fileTypes;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsDirAProjectDir( CORE::CString dir )
+{GUCEF_TRACE;
+
+    // We detect module directories in 2 ways
+    // Either is has to have certain directories or
+    // it has to have a CMakeListsSuffix.txt file
+    
+    CORE::CString includeDir = dir;
+    CORE::AppendToPath( includeDir, "include" );
+    CORE::CString srcDir = dir;
+    CORE::AppendToPath( srcDir, "src" );
+    CORE::CString suffixFilePath = dir;
+    CORE::AppendToPath( suffixFilePath, "CMakeListsSuffix.txt" );
+    
+    return ( CORE::IsPathValid( includeDir ) &&
+             CORE::IsPathValid( srcDir )      ) ||
+           CORE::FileExists( suffixFilePath );  
+}
+
+/*---------------------------------------------------------------------------*/
+
+std::vector<CORE::CString>
+GetSubDirExcludeList( CORE::CString dir )
+{GUCEF_TRACE;
+
+    CORE::CString excludeFile = dir;
+    CORE::AppendToPath( excludeFile, "CMakeGenExcludeList.txt" );
+    
+    if ( CORE::FileExists( excludeFile ) )
+    {
+        CORE::CString excludeFileContent;
+        if ( CORE::LoadTextFileAsString( excludeFile        ,
+                                         excludeFileContent ) )
+        {
+            return excludeFileContent.ParseElements( '\n' );            
+        } 
+    }
+    
+    return std::vector<CORE::CString>();
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsStringInList( const TStringVector& list       ,
+                bool caseSensitive              ,
+                const CORE::CString& testString )
+{GUCEF_TRACE;
+
+    TStringVector::const_iterator i = list.begin();
+    while ( i != list.end() )
+    {
+        if ( (*i).Equals( testString, caseSensitive ) )
+        {
+            return true;
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
-PopulateFileListFromDir( const CORE::CString& path , 
-                         TStringVector& fileList   )
+PopulateFileListFromDir( const CORE::CString& path      ,
+                         const TStringVector& fileTypes , 
+                         TStringVector& fileList        )
 {GUCEF_TRACE;
 
     CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( path.C_String() );
@@ -125,7 +217,13 @@ PopulateFileListFromDir( const CORE::CString& path ,
         {
             if ( 0 != DI_Is_It_A_File( sdiData ) )
             {
-                fileList.push_back( DI_Name( sdiData ) );
+                CORE::CString filename = DI_Name( sdiData );
+                CORE::CString fileExt = CORE::ExtractFileExtention( filename );
+                
+                if ( IsStringInList( fileTypes, false, fileExt ) )
+                {
+                    fileList.push_back( filename );
+                }
             }
         }
         while ( 0 != DI_Next_Dir_Entry( sdiData ) );
@@ -200,20 +298,24 @@ GetCMakeListsFileHeader( void )
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFileSection( const CORE::CString& sectionContent       , 
-                               const CORE::CString& filePrefix           , 
-                               const std::vector< CORE::CString >& files )
+GenerateCMakeListsFileSection( const CORE::CString& sectionContent , 
+                               const TStringVectorMap& fileMap     )
 {GUCEF_TRACE;
 
     CORE::CString newSectionContent = sectionContent;
-    TStringVector::const_iterator i = files.begin();
-    while ( i != files.end() )
+    TStringVectorMap::const_iterator i = fileMap.begin();
+    while ( i != fileMap.end() )
     {
-        CORE::CString path = filePrefix;
-        CORE::AppendToPath( path, (*i) ); 
-        path = path.ReplaceChar( '\\', '/' );
-        
-        newSectionContent += "  " + path + "\n";
+        TStringVector::const_iterator n = (*i).second.begin();
+        while ( n != (*i).second.end() )
+        {        
+            CORE::CString path = (*i).first;
+            CORE::AppendToPath( path, (*n) ); 
+            path = path.ReplaceChar( '\\', '/' );
+            
+            newSectionContent += "  " + path + "\n";
+            ++n;
+        }
         ++i;
     }
     newSectionContent += ")\n\n";
@@ -223,22 +325,21 @@ GenerateCMakeListsFileSection( const CORE::CString& sectionContent       ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFileIncludeSection( const std::vector< CORE::CString >& includeFiles )
+GenerateCMakeListsFileIncludeSection( const TStringVectorMap& includeFiles )
 {GUCEF_TRACE;
 
     CORE::CString sectionContent = "set(HEADER_FILES \n";
-    sectionContent = GenerateCMakeListsFileSection( sectionContent, "include/", includeFiles );
-    return sectionContent + "include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )\n\n";
+    return GenerateCMakeListsFileSection( sectionContent, includeFiles );
 }
 
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFileSrcSection( const std::vector< CORE::CString >& includeFiles )
+GenerateCMakeListsFileSrcSection( const TStringVectorMap& srcFiles )
 {GUCEF_TRACE;
 
     CORE::CString sectionContent = "set(SOURCE_FILES \n";
-    return GenerateCMakeListsFileSection( sectionContent, "src/", includeFiles );
+    return GenerateCMakeListsFileSection( sectionContent, srcFiles );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -286,15 +387,17 @@ GenerateCMakeListsPlatformFilesSection( TModuleInfo& moduleInfo           ,
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir " + platformSubDirSeg );
         
         TStringVector subFiles;
-        PopulateFileListFromDir( platformSubDir, subFiles );
+        PopulateFileListFromDir( platformSubDir, GetHeaderFileExtensions(), subFiles );
         
         moduleInfo.includeDirs.insert( std::pair< CORE::CString, TStringVector >( platformSubDirSeg, subFiles ) );        
         
-        sectionContent = GenerateCMakeListsFileSection( sectionContent, "  " + platformSubDirSeg, subFiles );
+        TStringVectorMap filesMap;
+        filesMap[ "  " + platformSubDirSeg ] = subFiles;
+        sectionContent = GenerateCMakeListsFileSection( sectionContent, filesMap );
         
         sectionContent += "  include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/" + platformSubDirSeg + " )\n";
         sectionContent += "  set(PLATFORM_HEADER_INSTALL \"" + platformName + "\")\n";
-        sectionContent += "  source_group( \"Platform Header Files\" FILES ${PLATFORM_SOURCE_FILES} )\n\n";
+        sectionContent += "  source_group( \"Platform Header Files\" FILES ${PLATFORM_HEADER_FILES} )\n\n";
     }
     else
     {
@@ -324,11 +427,13 @@ GenerateCMakeListsPlatformFilesSection( TModuleInfo& moduleInfo           ,
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir " + platformSubDirSeg );
         
         std::vector< CORE::CString > subFiles;
-        PopulateFileListFromDir( platformSubDir, subFiles );
+        PopulateFileListFromDir( platformSubDir, GetSourceFileExtensions(), subFiles );
         
         moduleInfo.sourceDirs.insert( std::pair< CORE::CString, TStringVector >( platformSubDirSeg, subFiles ) );
 
-        sectionContent = GenerateCMakeListsFileSection( sectionContent, "  " + platformSubDirSeg, subFiles );
+        TStringVectorMap filesMap;
+        filesMap[ "  " + platformSubDirSeg ] = subFiles;
+        sectionContent = GenerateCMakeListsFileSection( sectionContent, filesMap );
         
         sectionContent += "  set(PLATFORM_SOURCE_INSTALL \"" + platformName + "\")\n";
         sectionContent += "  source_group( \"Platform Source Files\" FILES ${PLATFORM_SOURCE_FILES} )\n\n";
@@ -365,6 +470,16 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo )
     }
     
     return sectionContent;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsDirAPlatformDir( const CORE::CString& path )
+{GUCEF_TRACE;
+
+    CORE::CString lastSubDir = CORE::LastSubDir( path ).Lowercase();
+    return lastSubDir == "mswin" || lastSubDir == "linux";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -507,9 +622,6 @@ void
 GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
                         TModuleInfo& moduleInfo         )
 {GUCEF_TRACE;
-
-    TStringVector& includeFiles = moduleInfo.includeDirs[ "include" ];
-    TStringVector& srcFiles = moduleInfo.sourceDirs[ "src" ];
     
     // Set file header comment section
     CORE::CString fileContent = GetCMakeListsFileHeader();
@@ -518,12 +630,12 @@ GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
     fileContent += "\n# Configure " + moduleInfo.name + "\n\n";
     
     // Add all the include files
-    fileContent += GenerateCMakeListsFileIncludeSection( includeFiles );
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( includeFiles.size() ) + " include files for project " + moduleInfo.name );
+    fileContent += GenerateCMakeListsFileIncludeSection( moduleInfo.includeDirs );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( moduleInfo.includeDirs.size() ) + " include dirs for project " + moduleInfo.name );
     
     // Add all the source files
-    fileContent += GenerateCMakeListsFileSrcSection( srcFiles );
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( srcFiles.size() ) + " source files for project " + moduleInfo.name );
+    fileContent += GenerateCMakeListsFileSrcSection( moduleInfo.sourceDirs );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( moduleInfo.sourceDirs.size() ) + " source dirs for project " + moduleInfo.name );
     
     // Add all platform files, headers and source
     fileContent += GenerateCMakeListsFilePlatformFilesSection( moduleInfo );
@@ -541,6 +653,72 @@ GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
     fileContent += GenerateAutoGenertedSeperator( true );
     
     moduleInfo.cmakeListFileContentPostSuffix = fileContent;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
+                          const TStringVector& fileTypes     ,
+                          const CORE::CString& curRootDir    ,
+                          const CORE::CString& curRootDirSeg )
+{GUCEF_TRACE;
+
+    TStringVector fileList;
+    PopulateFileListFromDir( curRootDir, fileTypes, fileList );
+    if ( fileList.size() > 0 )
+    {
+        // found files in the current root
+        fileMap[ curRootDirSeg ] = fileList;
+    }
+    
+    // Get a list of sub-dirs
+    TStringVector dirList;
+    PopulateDirListFromDir( curRootDir, dirList );
+    
+    TStringVector dirExcludeList = GetSubDirExcludeList( curRootDir );
+    
+    TStringVector::iterator i = dirList.begin();
+    while ( i != dirList.end() )
+    { 
+        CORE::CString subDir = curRootDir;
+        CORE::AppendToPath( subDir, (*i) );
+        
+        // Honor the exclude list
+        if ( !IsStringInList( dirExcludeList, false, (*i) ) )
+        {
+            // Do not recurse into other project dirs or platform dirs
+            if ( !IsDirAProjectDir( subDir ) && !IsDirAPlatformDir( subDir ) ) 
+            {
+                CORE::CString subDirSeg = curRootDirSeg;
+                CORE::AppendToPath( subDirSeg, (*i) );
+                subDirSeg.ReplaceChar( '\\', '/' );
+                
+                FindSubDirsWithFileTypes( fileMap, fileTypes, subDir, subDirSeg );
+            }
+        }
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+FindSubDirsWithHeaders( TModuleInfo& moduleInfo )
+{GUCEF_TRACE;
+
+    // Look into the root itself and recuse downwards
+    FindSubDirsWithFileTypes( moduleInfo.includeDirs, GetHeaderFileExtensions(), moduleInfo.rootDir, "" );  
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+FindSubDirsWithSource( TModuleInfo& moduleInfo )
+{GUCEF_TRACE;
+
+    // Look into the root itself and recuse downwards
+    FindSubDirsWithFileTypes( moduleInfo.sourceDirs, GetSourceFileExtensions(), moduleInfo.rootDir, "" );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -564,65 +742,16 @@ ProcessProjectDir( TModuleInfo& moduleInfo )
     {
         // add suffix example section instead
         moduleInfo.cmakeListSuffixFileContent  = "## TODO: the following is an example suffix section, you have to complete it\n";
-        moduleInfo.cmakeListSuffixFileContent += "#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)\n";
         moduleInfo.cmakeListSuffixFileContent += "#add_definitions(-DTIXML_USE_STL)\n";
         moduleInfo.cmakeListSuffixFileContent += "#add_executable(" + moduleInfo.name + " ${HEADER_FILES} ${SOURCE_FILES})\n";
         moduleInfo.cmakeListSuffixFileContent += "#target_link_libraries(" + moduleInfo.name + " ${GUCEF_LIBRARIES})\n";
         moduleInfo.cmakeListSuffixFileContent += "#gucef_config_tool(" + moduleInfo.name + ")\n";
     }
     
-    CORE::CString includeDir = moduleInfo.rootDir;
-    CORE::AppendToPath( includeDir, "include" );
-    
-    CORE::CString srcDir = moduleInfo.rootDir;
-    CORE::AppendToPath( srcDir, "src" );
-    
-    TStringVector includeFiles;
-    PopulateFileListFromDir( includeDir, includeFiles );
-    moduleInfo.includeDirs[ "include" ] = includeFiles;
-    
-    TStringVector srcFiles;
-    PopulateFileListFromDir( srcDir, srcFiles );
-    moduleInfo.sourceDirs[ "src" ] = srcFiles;
+    FindSubDirsWithHeaders( moduleInfo );
+    FindSubDirsWithSource( moduleInfo );
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generated CMake List file content for project dir: " + moduleInfo.rootDir );
-}
-
-/*---------------------------------------------------------------------------*/
-
-bool
-IsDirAProjectDir( CORE::CString dir )
-{GUCEF_TRACE;
-
-    CORE::CString includeDir = dir;
-    CORE::AppendToPath( includeDir, "include" );
-    CORE::CString srcDir = dir;
-    CORE::AppendToPath( srcDir, "src" );
-    
-    return 0 != CORE::Is_Path_Valid( includeDir.C_String() ) &&
-           0 != CORE::Is_Path_Valid( srcDir.C_String() );
-}
-
-/*---------------------------------------------------------------------------*/
-
-std::vector<CORE::CString>
-GetSubDirExcludeList( CORE::CString dir )
-{GUCEF_TRACE;
-
-    CORE::CString excludeFile = dir;
-    CORE::AppendToPath( excludeFile, "CMakeGenExcludeList.txt" );
-    
-    if ( CORE::FileExists( excludeFile ) )
-    {
-        CORE::CString excludeFileContent;
-        if ( CORE::LoadTextFileAsString( excludeFile        ,
-                                         excludeFileContent ) )
-        {
-            return excludeFileContent.ParseElements( '\n' );            
-        } 
-    }
-    
-    return std::vector<CORE::CString>();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -996,13 +1125,13 @@ main( int argc , char* argv[] )
     CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
     CORE::AppendToPath( logFilename, "CMakeListsGenerator_Log.txt" );
     CORE::CFileAccess logFileAccess( logFilename, "w" );
+
+    CORE::CStdLogger logger( logFileAccess );
+    CORE::CLogManager::Instance()->AddLogger( &logger );
     
     #ifdef GUCEF_MSWIN_BUILD
     CORE::CMSWinConsoleLogger consoleOut;
     CORE::CLogManager::Instance()->AddLogger( &consoleOut );
-    #else
-    CORE::CStdLogger logger( logFileAccess );
-    CORE::CLogManager::Instance()->AddLogger( &logger );
     #endif /* GUCEF_MSWIN_BUILD ? */
 
     CORE::CValueList keyValueList;
