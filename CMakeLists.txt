@@ -241,6 +241,9 @@ add_subdirectory( gucefMULTIPLAY )
 add_subdirectory( gucefDRN )
 add_subdirectory( gucefPATCHER )
 
+# Setup GUCEF plugin dependencies
+add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML/dependancy/libparsifal )
+
 # Setup GUCEF Plugin modules
 add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML )
 add_subdirectory( gucefVFS/plugins/vfspluginDVP )
