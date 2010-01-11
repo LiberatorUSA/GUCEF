@@ -207,7 +207,8 @@ class GUCEFCORE_EXPORT_CPP CString
     
     CString CompactRepeatingChar( const char charToCompact ) const;
                       
-    std::vector< CString > ParseElements( char seperator ) const;                          
+    std::vector< CString > ParseElements( char seperator               ,
+                                          bool addEmptyElements = true ) const;                          
                         
     bool Equals( const CString& otherStr        ,
                  const bool caseSensitive = true ) const;

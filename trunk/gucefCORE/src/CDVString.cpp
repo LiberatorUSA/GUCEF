@@ -892,7 +892,8 @@ CString::HasChar( char searchchar  ,
 /*-------------------------------------------------------------------------*/
 
 std::vector< CString > 
-CString::ParseElements( char seperator ) const
+CString::ParseElements( char seperator        , 
+                        bool addEmptyElements ) const
 {GUCEF_TRACE;
 
     if ( m_length > 0 )
@@ -904,17 +905,27 @@ CString::ParseElements( char seperator ) const
         {
             if ( m_string[ i ] == seperator )
             {
-                entry.Set( m_string+last ,
-                           i-last        );
-                list.push_back( entry );
+                UInt32 stringLength = i-last;
+                if ( ( 0 == stringLength && addEmptyElements ) ||
+                     ( stringLength > 0 ) ) 
+                {
+                    entry.Set( m_string+last ,
+                               stringLength  );
+                    list.push_back( entry );
+                }    
                 last = i+1;                    
             }  
         }
      
         // add last item
-        entry.Set( m_string+last ,
-                   m_length-last );        
-        list.push_back( entry ); 
+        UInt32 stringLength = m_length-last;
+        if ( ( 0 == stringLength && addEmptyElements ) ||
+             ( stringLength > 0 ) ) 
+        {        
+            entry.Set( m_string+last ,
+                       stringLength );
+            list.push_back( entry );
+        }                 
         return list;        
     }
     return std::vector< CString >();
@@ -941,14 +952,17 @@ CString::FindMaxSubstrEquality( const CString& searchStr ,
         if ( startFront )
         {            
             // Loop trough the buffer growing our comparison string
-            for ( UInt32 subLength=1; subLength<max; ++subLength )
+            UInt32 subLength=1;
+            while ( subLength<max )
             {
                 if ( memcmp( m_string+startOffset, searchStr.m_string, subLength ) != 0 )
                 {
                     // Reached the maximum equality length
-                    return subLength;
+                    return subLength-1;
                 }
+                ++subLength;
             }
+            return subLength-1;
         }
         else
         {
@@ -956,14 +970,17 @@ CString::FindMaxSubstrEquality( const CString& searchStr ,
             const char* string = m_string + m_length - startOffset;
             const char* otherString = searchStr.m_string + searchStr.m_length; 
              
-            for ( UInt32 subLength=1; subLength<max; ++subLength )
+            UInt32 subLength=1;
+            while ( subLength<max )
             {
                 if ( memcmp( string-subLength, otherString-subLength, subLength ) != 0 )
                 {
                     // Reached the maximum equality length
-                    return subLength;
+                    return subLength-1;
                 }
-            }            
+                ++subLength;
+            }
+            return subLength-1;
         }
     }
     
