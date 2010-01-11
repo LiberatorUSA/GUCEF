@@ -517,6 +517,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CTLinkedCloneableObj.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CTNotifyingMap.cpp"
 				>
 			</File>
@@ -693,7 +697,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\dependancy\MD5\md5.c"
+				RelativePath="..\..\src\md5.c"
 				>
 			</File>
 			<File
@@ -1359,7 +1363,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\dependancy\MD5\md5.h"
+				RelativePath="..\..\include\md5.h"
 				>
 			</File>
 			<File

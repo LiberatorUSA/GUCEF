@@ -1,0 +1,9 @@
+
+if (WIN32)
+  add_executable( gucefCOMCORE_TestApp WIN32 ${HEADER_FILES} ${SOURCE_FILES} )
+else()
+  add_executable( gucefCOMCORE_TestApp ${HEADER_FILES} ${SOURCE_FILES} )
+endif()
+add_dependencies( gucefCOMCORE_TestApp gucefCOMCORE gucefCORE gucefMT)
+target_link_libraries( gucefCOMCORE_TestApp gucefCOMCORE gucefCORE gucefMT )
+GUCEF_config_tool( gucefCOMCORE_TestApp )
