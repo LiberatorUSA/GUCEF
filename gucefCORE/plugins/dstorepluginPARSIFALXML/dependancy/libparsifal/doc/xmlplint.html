@@ -55,7 +55,7 @@ Xmlplint in action:
 Xmlplint is included in the parsifal library distribution files in source form (see samples/xmlplint/INSTALL for
 installation instructions). Win32 binary files
 are also available. You can find them at the <a href="download.html" target="main">Download</a> section.
-Xmlplint uses libiconv library so you must have one too. Get it for example here <a href="http://ftp.gnu.org/pub/gnu/libiconv/" target="_top">
+Xmlplint uses libiconv library so you must have one too (<b>see also links for win_iconv</b>). Get it for example here <a href="http://ftp.gnu.org/pub/gnu/libiconv/" target="_top">
 	GNU.ORG libiconv</a>. Also Win32 binary distribution doesn't include iconv.dll so you must download
 	<code>libiconv-1.9.1.bin.woe32.zip</code> or similar.
 </p>
@@ -72,7 +72,7 @@ Parsifal XML Parser and xmlplint command line tool are <a href="../COPYING" targ
 <table><tr><th>xmlplint usage</th></tr><tr><td>
 <code><pre>
 C:\xmlplint>xmlplint -?
-Usage: xmlplint [options] <file/url>
+Usage: xmlplint [options] &lt;file/url&gt;
 Options:
   -V Validate document
   -a Sort attributes
@@ -105,6 +105,7 @@ Options:
   -E Error reporting (default: verbose)
      1: simple (useful for editors)
      2: output displays UTF-8 (for column info)
+  -F Set spesific parser flag(s) (see parsifal.h)
 Example:
   xmlplint -V -f1 xmlfile.xml -o outfile.xml
 </pre></code>
@@ -181,10 +182,10 @@ Remove -c flag if you do not intent to use xml catalogs support (described above
 	XML validation is at the top of the tool list in the tool configuration dialog the default
   key mapping is CTRL+SHIFT+0).</p>
 <hr>
-<p><font color="#004040">Copyright &copy; 2002-2005 Toni
+<p><font color="#004040">Copyright &copy; 2002-2008 Toni
 Uusitalo.<br>
 Send mail, suggestions and bug reports to<br><img src="pics/semail.gif"><br>
-Last modified: 02.10.2005 15:00</font></p>
+Last modified: 04.10.2008 00:00</font></p>
 </div>
 </body>
 </html>

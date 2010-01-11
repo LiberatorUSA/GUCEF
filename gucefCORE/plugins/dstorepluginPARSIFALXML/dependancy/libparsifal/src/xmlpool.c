@@ -9,6 +9,21 @@
 #include "xmlpool.h"
 #include "xmlcfg.h"
 
+/******************************************************************************/
+
+/*
+ *  Dinand Vanvelzen edit:
+ *  Added this to build easily with CMake
+ */
+#ifdef PARSIFAL_CUSTOM_GUCEF_BUILD 
+ 
+#undef XMLAPI
+#define XMLAPI
+
+#endif /* PARSIFAL_CUSTOM_GUCEF_BUILD ? */
+
+/******************************************************************************/
+
 #define ALIGN_FOUR(n) (((n+3) >> 2) << 2)
 #define ALIGN_EIGHT(n) (((n+7) >> 3) << 3)
 

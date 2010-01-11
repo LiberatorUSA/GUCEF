@@ -10,8 +10,8 @@ Libs=
 PrivateResource=
 ResourceIncludes=
 MakeIncludes=
-Compiler=-DDTD_SUPPORT=1_@@_-DHAS_STRICMP=1_@@_-DMAX_SPEED=1_@@_-DDTDVALID_SUPPORT=1_@@__@@__@@__@@_
-CppCompiler=
+Compiler=-DDTD_SUPPORT=1_@@_-DMAX_SPEED=1_@@_-DDTDVALID_SUPPORT=1_@@_-Wall_@@__@@__@@__@@_
+CppCompiler=_@@__@@_
 Linker=
 IsCpp=0
 Icon=

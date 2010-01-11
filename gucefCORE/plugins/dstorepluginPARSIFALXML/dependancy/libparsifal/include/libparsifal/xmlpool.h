@@ -10,6 +10,51 @@
 #define XMLPOOL__H
 
 #include <stddef.h>
+#include "pns.h"
+
+/******************************************************************************/
+
+/*
+ *  Dinand Vanvelzen edit:
+ *  Added this to build easily with CMake
+ */
+ 
+#ifdef PARSIFAL_CUSTOM_GUCEF_BUILD 
+
+#ifndef XMLAPI
+#define XMLAPI
+#endif
+
+#define PARSIFAL_XMLAPI XMLAPI
+ 
+#if !( defined(PARSIFAL_LINUX_BUILD) || defined(PARSIFAL_MSWIN_BUILD) )
+  #if defined( WIN32 ) || defined( _WIN32 )
+    #define PARSIFAL_MSWIN_BUILD
+  #elif defined( linux )
+    #define PARSIFAL_LINUX_BUILD
+  #else
+    #error Cannot automaticly detect your operating system, please define
+  #endif
+#endif /* MANUAL_OS_DEFINE ? */ 
+ 
+#ifdef PARSIFAL_MSWIN_BUILD
+    #define PARSIFAL_EXPORT __declspec( dllexport )
+    #define PARSIFAL_IMPORT __declspec( dllimport )
+#else
+    #define PARSIFAL_EXPORT
+    #define PARSIFAL_IMPORT
+#endif /* GUCEF_MSWIN_BUILD ? */
+
+#undef XMLAPI
+#ifdef PARSIFAL_BUILD_MODULE
+  #define XMLAPI PARSIFAL_EXPORT
+#else
+  #define XMLAPI PARSIFAL_IMPORT
+#endif
+
+#endif /* PARSIFAL_CUSTOM_GUCEF_BUILD ? */
+
+/******************************************************************************/
 
 #ifndef XMLAPI
 #define XMLAPI
@@ -40,6 +85,22 @@ LPXMLPOOL XMLAPI XMLPool_Create(int itemSize, int itemsPerBlock);
 void XMLAPI XMLPool_FreePool(LPXMLPOOL pool);
 void XMLAPI *XMLPool_Alloc(LPXMLPOOL pool);
 void XMLAPI XMLPool_Free(LPXMLPOOL pool, void *ptr);
+
+/******************************************************************************/
+
+/*
+ *  Dinand Vanvelzen edit:
+ *  Added this to build easily with CMake
+ */
+
+#ifdef PARSIFAL_CUSTOM_GUCEF_BUILD 
+
+#undef XMLAPI
+#define XMLAPI PARSIFAL_XMLAPI
+
+#endif /* PARSIFAL_CUSTOM_GUCEF_BUILD ? */
+ 
+/******************************************************************************/
 
 #ifdef __cplusplus
    }

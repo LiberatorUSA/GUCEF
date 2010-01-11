@@ -6,7 +6,7 @@ PREFIX=/usr/local
 LIBS = -lparsifal
 
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -Wno-pointer-sign
 CPPFLAGS = -I/usr/include
 BIN_INSTALL_DIR=$(PREFIX)/bin
 

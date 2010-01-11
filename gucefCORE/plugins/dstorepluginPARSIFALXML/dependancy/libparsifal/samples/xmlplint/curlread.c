@@ -13,7 +13,7 @@
 #endif
 
 static size_t getdata(char *buffer, size_t size, size_t nitems, void *userp)
-{	
+{
 	CURLREADER *r = (CURLREADER*)userp;
 	if (r->pos) {
 		size_t bytesLeft = r->sbuf.len-r->pos;
@@ -41,8 +41,8 @@ CURLREADER *Curlreader_Create(void)
 		Curlreader_Free(r);
 		return NULL;
 	}
-    curl_easy_setopt(r->curlh, CURLOPT_WRITEDATA, r);
-    curl_easy_setopt(r->curlh, CURLOPT_WRITEFUNCTION, getdata);
+	curl_easy_setopt(r->curlh, CURLOPT_WRITEDATA, r);
+	curl_easy_setopt(r->curlh, CURLOPT_WRITEFUNCTION, getdata);
 	r->curlmh = curl_multi_init();
 	if (!r->curlmh) {
 		Curlreader_Free(r);
@@ -74,7 +74,7 @@ int Curlreader_ReadStatusCode(CURLREADER *r)
 }
 
 int Curlreader_Open(CURLREADER *r, char *url)
-{	
+{
 	r->pos = 0;
 	r->errE = curl_easy_setopt(r->curlh, CURLOPT_URL, url);
 	if (r->errE != CURLE_OK) return 0;
@@ -96,41 +96,41 @@ void Curlreader_Close(CURLREADER *r)
 }
 
 size_t Curlreader_Read(CURLREADER *r, void *ptr, size_t size, size_t nmemb)
-{ 
+{
 	size*=nmemb;
-    while (r->still_running && (r->sbuf.len - r->pos) < size)
-    {	
+	while (r->still_running && (r->sbuf.len - r->pos) < size)
+	{	
 		fd_set fdread;
 		fd_set fdwrite;
 		fd_set fdexcep;
 		int maxfd;
 		struct timeval timeout;
 
-        FD_ZERO(&fdread);
-        FD_ZERO(&fdwrite);
-        FD_ZERO(&fdexcep);
+		FD_ZERO(&fdread);
+		FD_ZERO(&fdwrite);
+		FD_ZERO(&fdexcep);
 
-        timeout.tv_sec = 10;
-        timeout.tv_usec = 0;
+		timeout.tv_sec = 10;
+		timeout.tv_usec = 0;
 
-        r->errM = curl_multi_fdset(r->curlmh, &fdread, &fdwrite, &fdexcep, &maxfd);
+		r->errM = curl_multi_fdset(r->curlmh, &fdread, &fdwrite, &fdexcep, &maxfd);
 		if (r->errM != CURLM_OK) return 0;
 		
-        switch(select(maxfd+1, &fdread, &fdwrite, &fdexcep, &timeout)) {
-        case -1:
+		switch(select(maxfd+1, &fdread, &fdwrite, &fdexcep, &timeout)) {
+		case -1:
 			r->still_running = 0;
 			#ifdef _DEBUG
 				fputs("Curlreader select() error!", stderr);
 			#endif
 			break;   
-        case 0: /* timeout */
-        default:
+		case 0: /* timeout */
+		default:
 			while((r->errM = curl_multi_perform(r->curlmh, &r->still_running)) ==
 				CURLM_CALL_MULTI_PERFORM);
-            if (r->errM != CURLM_OK) return 0;
-            break;
-        }
-    }
+			if (r->errM != CURLM_OK) return 0;
+			break;
+		}
+	}
 
 	if (r->pos == (size_t)r->sbuf.len) return 0;
 	
@@ -176,7 +176,7 @@ void ShowCurlReaderStatusErr(CURLREADER *r, char *ErrBuf)
 }
 
 int main(int argc, char* argv[])
-{	
+{
 	char ErrBuf[CURL_ERROR_SIZE] = {'\0'};
 	CURLREADER *r = Curlreader_Create();
 	char buf[128];
@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
 			_CrtSetDbgFlag( tmpFlag );
 	#endif
 	#endif
-*/	
+*/
 	if (curl_global_init(CURL_GLOBAL_ALL)) {
 		fputs("Error Initializing libcurl!", stderr);
 		return 1;

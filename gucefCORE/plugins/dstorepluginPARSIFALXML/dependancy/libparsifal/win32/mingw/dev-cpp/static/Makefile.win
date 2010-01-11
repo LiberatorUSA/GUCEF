@@ -11,8 +11,8 @@ LIBS =  -L"C:/Dev-Cpp/lib"
 INCS =  -I"C:/Dev-Cpp/include"  -I"../../../../include/libparsifal" 
 CXXINCS =  -I"C:/Dev-Cpp/lib/gcc/mingw32/3.4.2/include"  -I"C:/Dev-Cpp/include/c++/3.4.2/backward"  -I"C:/Dev-Cpp/include/c++/3.4.2/mingw32"  -I"C:/Dev-Cpp/include/c++/3.4.2"  -I"C:/Dev-Cpp/include"  -I"../../../../include/libparsifal" 
 BIN  = libparsifal.a
-CXXFLAGS = $(CXXINCS)   -ansi -O3
-CFLAGS = $(INCS) -DDTD_SUPPORT=1 -DHAS_STRICMP=1 -DMAX_SPEED=1 -DDTDVALID_SUPPORT=1      -ansi -O3
+CXXFLAGS = $(CXXINCS)     -ansi -O3
+CFLAGS = $(INCS) -DDTD_SUPPORT=1 -DMAX_SPEED=1 -DDTDVALID_SUPPORT=1 -Wall      -ansi -O3
 RM = rm -f
 
 .PHONY: all all-before all-after clean clean-custom

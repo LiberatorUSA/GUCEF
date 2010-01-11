@@ -38,6 +38,11 @@ typedef struct tagXMLATTDECL
 	void *pExt;
 } XMLATTDECL, *LPXMLATTDECL;
 
+typedef union tagXMLATTENUM {
+	char *name;
+	int len;
+} XMLATTENUM;
+
 /* cp content model types and tree node XMLCP type
 (used when XMLFLAG_REPORT_DTD_EXT is true) */
 #define XMLCTYPE_CHOICE 1

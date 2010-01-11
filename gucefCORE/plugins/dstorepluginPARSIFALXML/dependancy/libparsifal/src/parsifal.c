@@ -15,7 +15,24 @@
 #include "isrcmem.h" /* DTD_SUPPORT - defs only */
 #include "xmlcfg.h"
 
-#define PARSIFAL_VERSION "1.0.0"
+
+/******************************************************************************/
+
+/*
+ *  Dinand Vanvelzen edit:
+ *  Added this to build easily with CMake
+ */
+#ifdef PARSIFAL_CUSTOM_GUCEF_BUILD 
+ 
+#undef XMLAPI
+#define XMLAPI
+
+#endif /* PARSIFAL_CUSTOM_GUCEF_BUILD ? */
+
+/******************************************************************************/
+
+#define PARSIFAL_VERSION "1.1.0"
+
 
 #define CLEANUP_ATTS \
 pEnd = (LPXMLRUNTIMEATT)_XMLVector_GetIterP(RT->atts, pAtt); \
@@ -64,8 +81,8 @@ static const XMLCH *GetErrorString(XMLERRCODE code);
 static int Er_(LPXMLPARSER parser, XMLERRCODE code, ...);
 static int ErP_(LPXMLPARSER parser, XMLERRCODE code, int posOffset);
 static void ParseInput(LPXMLPARSER parser);
-static int DestroyUriTableProc(char *key, void *data, void *userdata);
-static int CopyUriTableProc(char *key, void *data, void *userdata);
+static int DestroyUriTableProc(XMLCH *key, void *data, void *userdata);
+static int CopyUriTableProc(XMLCH *key, void *data, void *userdata);
 static XMLCH *prepUri(XMLCH *uri, int declHere);
 static int ParseNameTok(LPXMLPARSER parser, int *len, 
 						int *prefixLen, const XMLCH *endChars, int *cEndChars);
@@ -95,7 +112,7 @@ static int ParseUserSubset(LPXMLPARSER parser);
 static int MemInputsrc(BYTE *buf, int cBytes, int *cBytesActual, void *inputData);
 static int GetAttlistDecl(LPXMLPARSER parser, LPXMLVECTOR **newAtts, LPXMLVECTOR *en);
 static int ParseAttlistDecl(LPXMLPARSER parser);
-static int DestroyDeclAttTableProc(char *key, void *data, void *userdata);
+static int DestroyDeclAttTableProc(XMLCH *key, void *data, void *userdata);
 static int ParseElementDecl(LPXMLPARSER parser);
 static int ParseChildren(LPXMLPARSER parser, XMLCP *cp);
 static int ParseCp(LPXMLPARSER parser, XMLCP *cp);
@@ -139,6 +156,11 @@ static const XMLCH *GetErrorString(XMLERRCODE code)
 }
 
 #include "optcfg.h"
+
+static char xml_ass3rt_statik_[
+  (int)((struct trie*)0) == 0 &&
+  (int)((struct trie*)9) == 9
+? 1 : -1 ]; 
 
 /*===========================================================================
   FUNCTION
@@ -368,7 +390,8 @@ static int ParseEntityRef(LPXMLPARSER parser, LPXMLSTRINGBUF sbuf,
 		}
 	}
 	else {
-		int namelen, endChars;		
+		int namelen, endChars;
+		LPXMLENTITY e;
 		DPOS(chSize);
 		if (Context != 1 && ((i = TrieRaw(parser, TRstdEnt)) != -1)) { 
 			/* expand predefined entities: */
@@ -410,9 +433,7 @@ static int ParseEntityRef(LPXMLPARSER parser, LPXMLSTRINGBUF sbuf,
 			return 1;
 #ifdef DTD_SUPPORT
 		}
-		else if ((i = (int)XMLHTable_Lookup(RT->entitiesTable, c))) {
-
-			LPXMLENTITY e = XMLVector_Get(RT->entities, i-1);
+		else if ((e = XMLHTable_Lookup(RT->entitiesTable, c))) {
 
 			if (e->open)
 				return Er_(parser, ERR_XMLP_RECURSIVE_ENTITY_REF, c);
@@ -509,6 +530,11 @@ static int ParseContent(LPXMLPARSER parser)
 		}
 		if (!(XMLStringbuf_Append_Opt(&RT->charsBuf, c, chSize)))		
 			return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
+
+		if (PFLAG(XMLFLAG_SPLIT_LARGE_CONTENT) && RT->charsBuf.len > 4090) {
+			FLUSHCHARS(&RT->charsBuf, 0);
+			if (PREADER->pos > 1000 && !ResetLine(parser)) return 0;
+		} 
 	}
 	
 	if (parser->ErrorCode) return 0;
@@ -609,7 +635,7 @@ static XMLCH *ParseString(LPXMLPARSER parser, LPXMLSTRINGBUF sbuf,
 	LPBUFFEREDISTREAM rTok = NULL;
 	
 	if (SkipWS(parser) == -1)
-		return (XMLCH*)NULL;
+		return NULL;
 
 	quote = CURCHAR;	
 
@@ -633,7 +659,7 @@ static XMLCH *ParseString(LPXMLPARSER parser, LPXMLSTRINGBUF sbuf,
 							continue; /* trim start */
 						if (!(XMLStringbuf_AppendCh(sbuf, ' '))) {
 							Er_(parser, ERR_XMLP_MEMORY_ALLOC);
-							return (XMLCH*)NULL;
+							return NULL;
 						}
 						while((c = ReadCh(parser, &chSize))) { /* normalize */
 							if (chSize != 1) break;
@@ -643,7 +669,7 @@ static XMLCH *ParseString(LPXMLPARSER parser, LPXMLSTRINGBUF sbuf,
 						if (chSize != 1) {
 							if (!(XMLStringbuf_Append(sbuf, c, chSize))) {
 								Er_(parser, ERR_XMLP_MEMORY_ALLOC);
-								return (XMLCH*)NULL;
+								return NULL;
 							}
 							continue;
 						}
@@ -652,7 +678,7 @@ static XMLCH *ParseString(LPXMLPARSER parser, LPXMLSTRINGBUF sbuf,
 						if (Normalize) c = XMLStringbuf_AppendCh(sbuf, ' ');
 						else c = XMLStringbuf_AppendCh(sbuf, *c);
 						if (!c) { Er_(parser, ERR_XMLP_MEMORY_ALLOC);
-							return (XMLCH*)NULL;
+							return NULL;
 						}
 						continue;
 					}
@@ -667,34 +693,34 @@ static XMLCH *ParseString(LPXMLPARSER parser, LPXMLSTRINGBUF sbuf,
 						sbuf->len--; /* trim end */
 					if (!(XMLStringbuf_ToString(sbuf))) {
 						Er_(parser, ERR_XMLP_MEMORY_ALLOC);
-						return (XMLCH*)NULL;
+						return NULL;
 					}
 					return sbuf->str;
 				}
 				else if (entHandling && *c == '&') {
 					if (!ParseEntityRef(parser, sbuf, pAtt, entHandling, NULL))
-						return (XMLCH*)NULL;
+						return NULL;
 					continue;
 				}
 				else if (*c == '<' && pAtt) {		
 					ErP_(parser, ERR_XMLP_INVALID_TOKEN, 1);
-					return (XMLCH*)NULL;
+					return NULL;
 				}
 			}
 			if (!(XMLStringbuf_Append_Opt(sbuf, c, chSize))) {
 				Er_(parser, ERR_XMLP_MEMORY_ALLOC);
-				return (XMLCH*)NULL;
+				return NULL;
 			}
 		}		
 	}
 	if (!parser->ErrorCode)
 		Er_(parser, ERR_XMLP_EXPECTED_TOKEN, "String");
-	return (XMLCH*)NULL;
+	return NULL;
 }
 
 static LPBISREADERDATA InitEntityReader(LPXMLPARSER parser, LPBUFFEREDISTREAM r, 
 							int blockSize, LPBISREADERDATA rd, int stackLevel, 
-							LPXMLENTITY e, int iEnt)
+							LPXMLENTITY e)
 {	
 	if (!rd) {
 		if (!(rd = (LPBISREADERDATA)malloc(sizeof(*rd)))) {
@@ -712,7 +738,7 @@ static LPBISREADERDATA InitEntityReader(LPXMLPARSER parser, LPBUFFEREDISTREAM r,
 		}
 	}
 	else {
-		RT->publicID = RT->systemID = (XMLCH*)NULL;
+		RT->publicID = RT->systemID = NULL;
 	}
 
 	rd->line = rd->col = rd->lEndian = 0;
@@ -721,9 +747,6 @@ static LPBISREADERDATA InitEntityReader(LPXMLPARSER parser, LPBUFFEREDISTREAM r,
 	rd->stackLevel = stackLevel;
 	rd->context = 0; 
 	r->userdata = rd;
-	rd->iCurPE = iEnt; /* PEs need index to RT->entities vector, this also flags
-		that this entity can be relocated while parsing DTD and thus must be
-		retrieved via XMLVector_Get (see GetCurrentEntity()) */
 	rd->curEnt = e;
 	PREADER = r;
 	return rd;
@@ -762,7 +785,7 @@ static XMLCH *ReadCh(LPXMLPARSER parser, int *chSize)
 			else {
 			#endif
 				*chSize = 0;
-				return (XMLCH*)NULL;
+				return NULL;
 			#ifdef DTD_SUPPORT
 			}
 			#endif
@@ -774,8 +797,8 @@ static XMLCH *ReadCh(LPXMLPARSER parser, int *chSize)
 	if (*chSize == 1) {
 		if (ISILLBYTE(*c)) {
 			*chSize = 0;
-			ErP_(parser, ERR_XMLP_ILLEGAL_CHAR, 1);
-			return (XMLCH*)NULL;
+			ErP_(parser, ERR_XMLP_ILLEGAL_CHAR, 0);
+			return NULL;
 		}
 
 		PREADER->pos++;
@@ -787,7 +810,7 @@ static XMLCH *ReadCh(LPXMLPARSER parser, int *chSize)
 				ret = PEEKINPUT((const BYTE*)NULL, 1);
 				if (EINPUT(ret)) {
 					*chSize = 0;
-					return (XMLCH*)NULL;
+					return NULL;
 				}
 				c = PREADER->buf+(PREADER->pos-1);
 				if (ret) return(c);
@@ -810,12 +833,12 @@ static XMLCH *ReadCh(LPXMLPARSER parser, int *chSize)
 		if (*chSize == 3 && UTF8_ISILL3(c)) {
 			*chSize = 0;
 			ErP_(parser, ERR_XMLP_ILLEGAL_CHAR, 0);
-			return (XMLCH*)NULL;
+			return NULL;
 		}
 		else if (*chSize == 4 && UTF8_ISILL4(c)) {
 			*chSize = 0;
 			ErP_(parser, ERR_XMLP_ILLEGAL_CHAR, 0);
-			return (XMLCH*)NULL;
+			return NULL;
 		}
 		PREADER->pos += *chSize;
 		PREADERDATA->col += *chSize;
@@ -1056,7 +1079,7 @@ static int ParseStartTag(LPXMLPARSER parser)
 
 	pTag->localName = pTag->prefix = EmptyStr;
 	pTag->prevScope = RT->nsScope;
-	pTag->Scope = (LPXMLHTABLE)NULL;
+	pTag->Scope = NULL;
 	
 	pTag->qname = XMLStringbuf_Append_Opt(&pTag->nameBuf, PREADER->buf+namepos, namelen+1);
 	if (!(pTag->qname)) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
@@ -1179,7 +1202,7 @@ static int ParseAttributes(LPXMLPARSER parser, LPXMLRUNTIMETAG pTag,
 						   int *isEmpty, LPXMLVECTOR DeclAtts)
 {
 	int attCount, i, nsDefdecl, namepos, namelen, prefixlen, endChars;
-	int attType, iDeclAtts;
+	int attType, iDeclAtts, *ii;
 	int processNS = PFLAG(XMLFLAG_NAMESPACES);
 	int NSprefixes = PFLAG(XMLFLAG_NAMESPACE_PREFIXES);
 	XMLCH *uri, *s;
@@ -1248,8 +1271,8 @@ static int ParseAttributes(LPXMLPARSER parser, LPXMLRUNTIMETAG pTag,
 		else { /* DeclAtts - handle default attributes and normalization: */
 			for (pAtt=NULL; iDeclAtts < DeclAtts->length;) {
 				LPXMLATTDECL pDeclAtt = XMLVector_Get(DeclAtts, iDeclAtts++);
-				i = (int)XMLHTable_Lookup(RT->namedAtts, pDeclAtt->name);
-				if (!i) {
+				ii = XMLHTable_Lookup(RT->namedAtts, pDeclAtt->name);
+				if (!ii) {
 					if (pDeclAtt->value) { /* has default value: */
 						if(!(pAtt = XMLVector_Append(RT->atts, NULL)))
 							return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
@@ -1260,14 +1283,14 @@ static int ParseAttributes(LPXMLPARSER parser, LPXMLRUNTIMETAG pTag,
 						pAtt->nameBuf.len = pDeclAtt->nameLen;
 						pAtt->valBuf.len = pDeclAtt->valueLen;
 						/* BUT set stringbuf strs to isDefaulted "flags": */
-						pAtt->nameBuf.str = pAtt->valBuf.str = (XMLCH*)NULL;
+						pAtt->nameBuf.str = pAtt->valBuf.str = NULL;
 						namelen = pDeclAtt->nameLen;
 						prefixlen = pDeclAtt->prefixLen;
 						break;
 					}
 				}
 				else if (pDeclAtt->type != 1) { /* not CDATA, must be normalized: */
-					pAtt = XMLVector_Get(RT->atts, i-1);
+					pAtt = XMLVector_Get(RT->atts, *ii-1);
 					if (!_XMLParser_AttIsDefaulted(pAtt)) { /* unless defaulted
 						(which actually mean duplicate declaration) */
 						i = XMLNormalizeBuf(pAtt->value, pAtt->valBuf.len);
@@ -1316,7 +1339,7 @@ static int ParseAttributes(LPXMLPARSER parser, LPXMLRUNTIMETAG pTag,
 				return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
 		
 			s = XMLHTable_Insert(RT->nsScope,
-				pAtt->qname+prefixlen+1, (void*)uri);
+				pAtt->qname+prefixlen+1, uri);
 			if (!s) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
 			else if (uri != s) {					
 				if (*(s-1)) { /* check if declared in this element. see prepURI */
@@ -1356,7 +1379,7 @@ static int ParseAttributes(LPXMLPARSER parser, LPXMLRUNTIMETAG pTag,
 				if (!(uri = prepUri(pAtt->value, 1)))
 					return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
 				
-				s = XMLHTable_Insert(RT->nsScope, pAtt->qname, (void*)uri);
+				s = XMLHTable_Insert(RT->nsScope, pAtt->qname, uri);
 				if (!s) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
 				else if (uri != s) free((s-1)); /* note that pointer must be 
 					decremented */
@@ -1365,7 +1388,7 @@ static int ParseAttributes(LPXMLPARSER parser, LPXMLRUNTIMETAG pTag,
 		}
 		else if (attType == XMLATT_WITHNS) {
 				/* set prefix and localName (they will be examined later when
-				all atts are collected into vector) */
+				all atts are collected into vector and processNS==2) */
 				if (!_XMLParser_AttIsDefaulted(pAtt)) {
 					/* note that qname can be relocated */
 					pAtt->qname = XMLStringbuf_Append(&pAtt->nameBuf, 
@@ -1379,6 +1402,7 @@ static int ParseAttributes(LPXMLPARSER parser, LPXMLRUNTIMETAG pTag,
 					pAtt->prefix=pAtt->qname+namelen+1;
 				
 				pAtt->localName = pAtt->prefix+prefixlen+1;
+				if (processNS==1) processNS=2;
 		}
 		/* test default declaration: */
 		else if (attType == XMLATT_DEFAULTDECL) {
@@ -1402,7 +1426,7 @@ static int ParseAttributes(LPXMLPARSER parser, LPXMLRUNTIMETAG pTag,
 				if (!(uri = prepUri(pAtt->value, 1)))
 					return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
 
-				s = XMLHTable_Insert(RT->nsScope, "xmlns", (void*)uri);
+				s = XMLHTable_Insert(RT->nsScope, "xmlns", uri);
 				if (!s) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);	
 				else if (uri != s) free((s-1));
 			}
@@ -1419,18 +1443,15 @@ static int ParseAttributes(LPXMLPARSER parser, LPXMLRUNTIMETAG pTag,
 		} /* processNS (namespaces on) */
 		/* store attribute into namedAtts hashtable; we cannot store
 			direct pointer to Vector item 'cos it might get relocated thus
-			we have to store index to newly added
-			vector item. Same thing applies to RT->entitiesTable.
-			We just use void* hashtable item to hold index, this might change
-			when hashtable gets changed/optimized. */
-		i = (int)XMLHTable_Insert(RT->namedAtts, pAtt->qname, (void*)RT->atts->length);
-		if (RT->atts->length != i) {
-			if (!i) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
-			return Er_(parser, ERR_XMLP_DUPL_ATTRIBUTE, pAtt->qname);
-		}
+			we have to store index to newly added vector item. Note also
+			XMLHTABLEFLAG_NOCOPYKEY is set so qname won't be copied */
+		ii = XMLHTable_Insert(RT->namedAtts, pAtt->qname, &i);
+		if (!ii) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
+		if (ii==&i) return Er_(parser, ERR_XMLP_DUPL_ATTRIBUTE, pAtt->qname);
+		*ii = RT->atts->length;
 	}
 
-	if (processNS && RT->atts->length) {
+	if (processNS==2 && RT->atts->length) {
 		/* test Vector for declared namespace prefixes and set uris. Cannot
 			test attribute prefixes "on the fly" 'cos declaration can follow
 			the prefixed attribute i.e. x:att='val' xmlns:x='uri.org'
@@ -1519,16 +1540,16 @@ static int ParseCData(LPXMLPARSER parser)
 	if (!RT->tagstack->length)		
 		return ErP_(parser,  ERR_XMLP_INVALID_AT_TOP, 9);
 	startPos = PREADER->pos + 2; /* start testing ]] when > found */
-	
+	if (HANDLER(startCDATA)) {
+		if (HANDLER(startCDATA)(parser->UserData) == XML_ABORT)
+			return Er_(parser, ERR_XMLP_ABORT);				
+	}
+
 	while((c = ReadCh(parser, &chSize))) {				
 		if (chSize == 1) {	
 			if (*c == '>' && PREADER->pos > startPos) {
 				if (*(c-1) == ']' && *(c-2) == ']') {			
-					if (HANDLER(startCDATA)) {
-						if (HANDLER(startCDATA)(parser->UserData) == XML_ABORT)
-							return Er_(parser, ERR_XMLP_ABORT);				
-					}
-					
+									
 					if (HANDLER(characters) && (RT->charsBuf.len - 2) > 0) {
 							if (HANDLER(characters)(parser->UserData,
 								RT->charsBuf.str, RT->charsBuf.len - 2) == XML_ABORT)
@@ -1547,6 +1568,11 @@ static int ParseCData(LPXMLPARSER parser)
 		}
 		if (!(XMLStringbuf_Append(&RT->charsBuf, c, chSize)))
 			return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
+
+		if (PFLAG(XMLFLAG_SPLIT_LARGE_CONTENT) && RT->charsBuf.len > 4090) {
+			FLUSHCHARS(&RT->charsBuf, 0);
+			if (PREADER->pos > 1000 && !ResetLine(parser)) return 0;
+		} 
 	}
 	
 	if (!parser->ErrorCode)
@@ -1635,6 +1661,11 @@ static int SetEncoding(LPXMLPARSER parser, XMLCH *encodingName)
 {
 	LPFNENCODE fnEncode = NULL;
 	
+	if (HANDLER(encodingAlias)) {
+		XMLCH *a = HANDLER(encodingAlias)(parser->UserData, encodingName);
+		if (a) encodingName = a;
+	}
+
 	if (!stricmp(encodingName, "UTF-8"))
 		fnEncode = Utf8ToUtf8;
 	else if (!stricmp(encodingName, "ISO-8859-1"))
@@ -1770,9 +1801,9 @@ static int ParseXmlDecl(LPXMLPARSER parser, int skip, LPXMLSTRINGBUF sbuf)
 	
 	if (!count) return 0;
 
-	ver = (iver == -1) ? (XMLCH*)NULL : sbuf->str+iver;
-	enc = (ienc == -1) ? (XMLCH*)NULL : sbuf->str+ienc;
-	sta = (ista == -1) ? (XMLCH*)NULL : sbuf->str+ista;
+	ver = (iver == -1) ? NULL : sbuf->str+iver;
+	enc = (ienc == -1) ? NULL : sbuf->str+ienc;
+	sta = (ista == -1) ? NULL : sbuf->str+ista;
 
 	if (ver) {
 		if (strcmp(ver, "1.0")) return 0;
@@ -2008,12 +2039,11 @@ unsigned char* xmlMemdup(unsigned char* buf, int len)
   TODO
     endPrefixMapping handler must be implemented here...
 =================================c==========================================*/
-static int DestroyUriTableProc(char *key, void *data, void *userdata)
+static int DestroyUriTableProc(XMLCH *key, void *data, void *userdata)
 {	
-	char *d = (char*)data;
-	XMLHTable_Remove((LPXMLHTABLE)userdata, key);
+	XMLCH *d = (char*)data;
 	if (d) free(--d);
-	return 0;
+	return XMLHTABLEDFLAG_FREETHISKEY;
 }
 
 /*===========================================================================
@@ -2035,7 +2065,7 @@ static XMLCH* prepUri(XMLCH *uri, int declHere)
 {	
 	int len = strlen(uri);
 	XMLCH *dup = (XMLCH*)malloc((len + 2) * sizeof(XMLCH));
-	if (!dup) return (XMLCH*)NULL;
+	if (!dup) return NULL;
 	*(dup) = (char)declHere;
 	memcpy(++dup, uri, len+1);
 	return dup;
@@ -2047,11 +2077,11 @@ static XMLCH* prepUri(XMLCH *uri, int declHere)
   DESC
     enumeration callback for copying nsScope hashtable.
 ===========================================================================*/
-static int CopyUriTableProc(char *key, void *data, void *userdata)
+static int CopyUriTableProc(XMLCH *key, void *data, void *userdata)
 {
 	XMLCH *dup = prepUri((XMLCH*)data, 0);
 	if (!dup) return 1;
-	if (!(XMLHTable_Insert((LPXMLHTABLE)userdata, key, (void*)dup))) return 1;
+	if (!(XMLHTable_Insert((LPXMLHTABLE)userdata, key, dup))) return 1;
 	return 0;
 }
 
@@ -2119,40 +2149,38 @@ LPXMLPARSER XMLAPI XMLParser_Create(LPXMLPARSER *parser)
 	#endif
 	
 	p = (LPXMLPARSER)malloc(sizeof(XMLPARSER));
-	if (!p) return (LPXMLPARSER)NULL;
+	if (!p) return NULL;
 	memset(p, 0, sizeof(XMLPARSER));
 
 	p->reader = (LPBUFFEREDISTREAM)malloc(sizeof(BUFFEREDISTREAM));
-	if (!p->reader) { free(p); return (LPXMLPARSER)NULL; }
-	p->reader->buf = p->reader->inbuf = (XMLCH*)NULL;
+	if (!p->reader) { free(p); return NULL; }
+	p->reader->buf = p->reader->inbuf = NULL;
 
 	p->reader->userdata = (LPBISREADERDATA)malloc(sizeof(BISREADERDATA));
-	if (!p->reader->userdata) { XMLParser_Free(p); return (LPXMLPARSER)NULL; }
+	if (!p->reader->userdata) { XMLParser_Free(p); return NULL; }
 
 	p->prt = (LPXMLPARSERRUNTIME)malloc(sizeof(XMLPARSERRUNTIME));
-	if (!p->prt) { XMLParser_Free(p); return (LPXMLPARSER)NULL; }
+	if (!p->prt) { XMLParser_Free(p); return NULL; }
 	memset(p->prt, 0, sizeof(XMLPARSERRUNTIME));
 		
 	p->prt->atts = XMLVector_Create(&p->prt->atts, 16, sizeof(XMLRUNTIMEATT));
 	p->prt->tagstack = XMLVector_Create(&p->prt->tagstack, 16, sizeof(XMLRUNTIMETAG));	
 	if (!p->prt->atts || !p->prt->tagstack) {
 		XMLParser_Free(p);
-		return (LPXMLPARSER)NULL;
+		return NULL;
 	}
 	p->prt->atts->capacityIncrement = 16;
 	p->prt->tagstack->capacityIncrement = 16;
 
-	p->prt->namedAtts = XMLHTable_Create(p->prt->namedAtts, 255);
-	if (!p->prt->namedAtts) { XMLParser_Free(p); return (LPXMLPARSER)NULL; }
+	p->prt->namedAtts = XMLHTable_CreateEx(p->prt->namedAtts, 255, int, sizeof(int));
+	if (!p->prt->namedAtts) { XMLParser_Free(p); return NULL; }
+	p->prt->namedAtts->flags|=XMLHTABLEFLAG_NOCOPYKEY;
 
 #ifdef DTD_SUPPORT
-	p->prt->entities = XMLVector_Create(&p->prt->entities, 16,
-		sizeof(XMLENTITY));
-	if (!p->prt->entities) { XMLParser_Free(p); return (LPXMLPARSER)NULL; }
-	p->prt->entities->capacityIncrement = 16;
-	
-	p->prt->entitiesTable = XMLHTable_Create(p->prt->entitiesTable, 64);
-	if (!p->prt->entitiesTable) { XMLParser_Free(p); return (LPXMLPARSER)NULL; }
+	p->prt->entitiesTable = XMLHTable_CreateEx(p->prt->entitiesTable, 64, XMLENTITY, sizeof(XMLENTITY));
+	if (!p->prt->entitiesTable) { XMLParser_Free(p); return NULL; }
+	p->prt->entitiesTable->flags|=XMLHTABLEFLAG_NOCOPYKEY;
+	p->prt->entitiesTable->userdata = NULL;
 #endif
 	
 	XMLStringbuf_Init(&p->prt->charsBuf, 4096, 4096);
@@ -2160,13 +2188,13 @@ LPXMLPARSER XMLAPI XMLParser_Create(LPXMLPARSER *parser)
 
 	if (!p->prt->charsBuf.str || !p->prt->strPool) {
 		XMLParser_Free(p);
-		return (LPXMLPARSER)NULL;
+		return NULL;
 	}
 	
-	p->DocumentElement = (XMLCH*)NULL;
+	p->DocumentElement = NULL;
 	p->XMLFlags = XMLFLAG_NAMESPACES | XMLFLAG_EXTERNAL_GENERAL_ENTITIES;
 	p->prt->nameStart = nameStartAscii;
-return (*parser = p);
+	return (*parser = p);
 }
 
 /*===========================================================================
@@ -2185,19 +2213,11 @@ void XMLAPI XMLParser_Free(LPXMLPARSER parser)
 		if (RT) {
 			if (RT->tagstack) XMLVector_Free(RT->tagstack);
 			if (RT->atts) XMLVector_Free(RT->atts);
-			if (RT->namedAtts) {
-				if (RT->namedAtts->table)
-					free(RT->namedAtts->table); /* should be empty by now so
-						we don't need to call XMLHTable_Destroy... */
-				free(RT->namedAtts);
-			}			
+			if (RT->namedAtts)
+				XMLHTable_Destroy(RT->namedAtts, NULL, XMLHTABLEDFLAG_NOENUM);
 #ifdef DTD_SUPPORT
-			if (RT->entities) XMLVector_Free(RT->entities);		
-			if (RT->entitiesTable) {
-				if (RT->entitiesTable->table)
-					free(RT->entitiesTable->table);
-				free(RT->entitiesTable);
-			}
+			if (RT->entitiesTable)
+				XMLHTable_Destroy(RT->entitiesTable, NULL, XMLHTABLEDFLAG_NOENUM);
 #endif
 			SAFE_FREESTR(parser->DocumentElement);
 			XMLStringbuf_Free(&RT->charsBuf);
@@ -2224,39 +2244,37 @@ void XMLAPI XMLParser_Free(LPXMLPARSER parser)
 LPXMLRUNTIMEATT XMLAPI XMLParser_GetNamedItem(LPXMLPARSER parser,
 											  const XMLCH *name)
 {
-	int index = (int)XMLHTable_Lookup(RT->namedAtts, (XMLCH*)name);
-	return ((index) ? (LPXMLRUNTIMEATT)XMLVector_Get(RT->atts, index-1) :
-		(LPXMLRUNTIMEATT)NULL);
+	int *index = XMLHTable_Lookup(RT->namedAtts, (XMLCH*)name);
+	return ((index) ? (LPXMLRUNTIMEATT)XMLVector_Get(RT->atts, *index-1) : NULL);
 }
 
 XMLCH XMLAPI *XMLParser_GetPrefixMapping(LPXMLPARSER parser, const XMLCH *prefix)
 {
-	return (!parser || !RT->nsScope) ? (XMLCH*)NULL :
-		(XMLCH*)XMLHTable_Lookup(RT->nsScope, (XMLCH*)prefix);	
+	return (!parser || !RT->nsScope) ? NULL :
+		XMLHTable_Lookup(RT->nsScope, (XMLCH*)prefix);	
 }
 
 LPXMLENTITY XMLAPI XMLParser_GetCurrentEntity(LPXMLPARSER parser) 
 {
 	if (!parser || !PREADERDATA || !PREADERDATA->curEnt) return NULL;
-	return (!PREADERDATA->iCurPE) ? PREADERDATA->curEnt :
-		XMLVector_Get(RT->entities, PREADERDATA->iCurPE-1);
+	return PREADERDATA->curEnt;
 }
 
 XMLCH XMLAPI *XMLParser_GetSystemID(LPXMLPARSER parser)
 {
 #ifdef DTD_SUPPORT
-	return (PREADER == RT->refReader) ? (XMLCH*)NULL : RT->systemID;
+	return (PREADER == RT->refReader) ? NULL : RT->systemID;
 #else
-	return (XMLCH*)NULL;
+	return NULL;
 #endif
 }
 
 XMLCH XMLAPI *XMLParser_GetPublicID(LPXMLPARSER parser)
 {
 #ifdef DTD_SUPPORT
-	return (PREADER == RT->refReader) ? (XMLCH*)NULL : RT->publicID;
+	return (PREADER == RT->refReader) ? NULL : RT->publicID;
 #else
-	return (XMLCH*)NULL;
+	return NULL;
 #endif
 }
 
@@ -2323,33 +2341,39 @@ XMLCH XMLAPI *XMLParser_GetVersionString()
 int XMLAPI XMLParser_Parse(LPXMLPARSER parser, LPFNINPUTSRC inputSrc,
 						   void *inputData, const XMLCH *encoding)
 {	
-	int started = 0;
-	
-	InitEntityReader(parser, PREADER, BIS_DEFAULT_BLOCKSIZE, 
-		PREADERDATA, 0, NULL, 0);
-	PREADER->inputsrc = inputSrc;
-	PREADER->inputData = inputData;
-	RT->refReader = PREADER; /* save ref to main reader */
-	RT->nsScope = (LPXMLHTABLE)NULL;
-	RT->cpNames = NULL;
-	RT->cpNodesPool = NULL;
-	RT->doctypeParsed = 0;
+	int started;
 
-	SAFE_FREESTR(parser->DocumentElement);
-	if (*parser->ErrorString) *parser->ErrorString = '\0';
-	parser->ErrorCode = parser->ErrorLine = parser->ErrorColumn = 0;
-	
-	if (encoding && !SetEncoding(parser, (XMLCH*)encoding)) return 0;
-
-	if (DetectEncoding(parser, 0)) {
+	if (!inputSrc) 
 		started = 1;
-		if (HANDLER(startDocument)) {
-			if (HANDLER(startDocument)(parser->UserData) == XML_ABORT) {
-				BufferedIStream_Free(PREADER);
-				return Er_(parser, ERR_XMLP_ABORT);
+	else {
+		started = 0;
+		InitEntityReader(parser, PREADER, BIS_DEFAULT_BLOCKSIZE, 
+			PREADERDATA, 0, NULL);
+		PREADER->inputsrc = inputSrc;
+		PREADER->inputData = inputData;
+		RT->refReader = PREADER; /* save ref to main reader */
+		RT->nsScope = NULL;
+		RT->cpNames = NULL;
+		RT->cpNodesPool = NULL;
+		RT->doctypeParsed = 0;
+
+		SAFE_FREESTR(parser->DocumentElement);
+		if (*parser->ErrorString) *parser->ErrorString = '\0';
+		parser->ErrorCode = parser->ErrorLine = parser->ErrorColumn = 0;
+		
+		if (encoding && !SetEncoding(parser, (XMLCH*)encoding)) return 0;
+
+		if (DetectEncoding(parser, 0)) {
+			started = 1;
+			if (HANDLER(startDocument)) {
+				if (HANDLER(startDocument)(parser->UserData) == XML_ABORT) {
+					BufferedIStream_Free(PREADER);
+					return Er_(parser, ERR_XMLP_ABORT);
+				}
 			}
+			if (PFLAG(XMLFLAG_USE_SIMPLEPULL)) return 1;
+			ParseInput(parser);
 		}
-		ParseInput(parser);
 	}
 
 	while(RT->tagstack->length) {
@@ -2370,23 +2394,22 @@ int XMLAPI XMLParser_Parse(LPXMLPARSER parser, LPFNINPUTSRC inputSrc,
 	else if (!parser->DocumentElement)
 		Er_(parser, ERR_XMLP_EXPECTED_TOKEN, "document element");
 	
-	if (started && HANDLER(endDocument)) /* fire endDoc even there's an error */
-		HANDLER(endDocument)(parser->UserData);
+	if (started && HANDLER(endDocument)) { /* fire endDoc even there's an error */
+		if (HANDLER(endDocument)(parser->UserData) == XML_ABORT)
+			Er_(parser, ERR_XMLP_ABORT); 
+	}
 
 #ifdef DTD_SUPPORT
-	if (RT->entities->length) {
-		LPXMLENTITY e, pEnd;
-		pEnd = (LPXMLENTITY)_XMLVector_GetIterP(RT->entities, e);
-		for (; e!=pEnd; e++) {
-			XMLHTable_Remove(RT->entitiesTable, e->name);
-			free(e->name);
-		}
-		_XMLVector_RemoveAll(RT->entities);
+	if (RT->entitiesTable->userdata) {
+		RT->entitiesTable->flags&=~XMLHTABLEFLAG_NOCOPYKEY;
+		XMLHTable_Destroy(RT->entitiesTable, NULL, XMLHTABLEDFLAG_FORREUSE);
+		RT->entitiesTable->flags|=XMLHTABLEFLAG_NOCOPYKEY;
+		RT->entitiesTable->userdata = NULL;		
 	}
 
 	if (RT->declAttTable) {
 		XMLHTable_Destroy(RT->declAttTable, DestroyDeclAttTableProc, 1);
-		RT->declAttTable = (LPXMLHTABLE)NULL;
+		RT->declAttTable = NULL;
 	}
 #endif	 
 	BufferedIStream_Free(PREADER); /* doesn't free the parser->reader itself,
@@ -2427,6 +2450,35 @@ static void ParseInput(LPXMLPARSER parser)
 			default: return;
 		}
 	}
+}
+
+int XMLAPI XMLParser_HasMoreEvents(LPXMLPARSER parser)
+{	
+	int done=0;
+	while (!done && ParseContent(parser)) {
+		switch(TrieRaw(parser, TRxmlTok)) {
+			case -1: 
+				if (ParseStartTag(parser)) return 1; 
+				done = 1; break;
+			case 1:
+				if (ParseCData(parser)) return 1; 
+				done = 1; break;
+			case 2:
+				if (ParsePI(parser, 0)) return 1; 
+				done = 1; break;
+			case 3:
+				if (ParseComment(parser, 0)) return 1; 
+				done = 1; break;
+			case 4: 
+				if (ParseEndTag(parser)) return 1; 
+				done = 1; break;
+			case 5: 
+				if (ParseDoctypeDecl(parser)) return 1; 
+			default: done = 1;
+		}
+	}
+	XMLParser_Parse(parser, NULL, NULL, NULL);
+	return 0;
 }
 
 /*===========================================================================
@@ -2497,8 +2549,8 @@ static int ParseDoctypeDecl(LPXMLPARSER parser)
 		}
 	}
 
-	ent.publicID = (iPublicID == -1) ? (XMLCH*)NULL : sbuf.str+iPublicID;
-	ent.systemID = (iSystemID == -1) ? (XMLCH*)NULL : sbuf.str+iSystemID;
+	ent.publicID = (iPublicID == -1) ? NULL : sbuf.str+iPublicID;
+	ent.systemID = (iSystemID == -1) ? NULL : sbuf.str+iSystemID;
 
 	if (HANDLER(startDTD)) {
 		if (HANDLER(startDTD)(parser->UserData, ent.name,
@@ -2585,7 +2637,7 @@ static int ResolveExternalDTD(LPXMLPARSER parser, LPXMLENTITY e)
 		XMLCH *dtdEntName = "[dtd]";
 
 		InitEntityReader(parser, &dtdReader, BIS_DEFAULT_BLOCKSIZE,
-			&readerdata, 0, e, 0);
+			&readerdata, 0, e);
 		e->name = dtdEntName;
 		
 		if (HANDLER(startEntity)) {
@@ -2775,7 +2827,7 @@ static int ParseContentDTD(LPXMLPARSER parser, int isExternal)
 				}
 				else ErP_(parser, ERR_XMLP_INVALID_TOKEN, 1);
 
-				c = (XMLCH*)NULL;
+				c = NULL;
 				break;
 			}
 			else {
@@ -2785,7 +2837,7 @@ static int ParseContentDTD(LPXMLPARSER parser, int isExternal)
 		}
 	}
 	if (parser->ErrorCode) return 0;
-	return (c != (XMLCH*)NULL);
+	return (c != NULL);
 }
 
 /*===========================================================================
@@ -2926,7 +2978,7 @@ static int ParseNameDTD(LPXMLPARSER parser, int *len, int *prefixLen,
 static int ParseEnumeration(LPXMLPARSER parser, LPXMLVECTOR *en)
 {
 	int len;
-	void **p;
+	XMLATTENUM *p;
 
 	RT->nameStart = nameAscii;
 	if (!XMLStringbuf_AppendCh(&RT->charsBuf, '('))
@@ -2938,11 +2990,11 @@ static int ParseEnumeration(LPXMLPARSER parser, LPXMLVECTOR *en)
 	if (SkipWS(parser) == -1) return 0;
 
 	if (PFLAG(XMLFLAG_REPORT_DTD_EXT)) {
-		XMLVector_Create(en, 0, sizeof(void*));
+		XMLVector_Create(en, 0, sizeof(XMLATTENUM));
 		if (!*en) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
 		p = XMLVector_Append(*en, NULL);
 		if (!p) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
-		*p = (void*)len;
+		p->len = len;
 	}
 
 	while (CURCHAR!=')') {
@@ -2955,7 +3007,7 @@ static int ParseEnumeration(LPXMLPARSER parser, LPXMLVECTOR *en)
 		if (*en) {
 			p = XMLVector_Append(*en, NULL);
 			if (!p) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
-			*p = (void*)len;
+			p->len = len;
 		}
 		RT->charsBuf.len--;
 		if (SkipWS(parser) == -1) return 0;
@@ -3128,7 +3180,7 @@ static int ParseElementDecl(LPXMLPARSER parser)
 			XMLCH *n = XMLHTable_Insert(RT->cpNames, RT->dtd->sbuf.str, parser->ErrorString);
 			if (n != parser->ErrorString) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
 			m->name = RT->cpNames->bucket;
-			n = RT->cpNames->bucket->key;
+			n = ((XMLHTABLEBUCKET*)RT->cpNames->bucket)->key;
 			if (HANDLER(elementDecl)(parser->UserData, n, m)==XML_ABORT)
 				return Er_(parser, ERR_XMLP_ABORT);
 		}
@@ -3231,7 +3283,7 @@ static int ParseCp(LPXMLPARSER parser, XMLCP *cp)
 			if (cp->name != parser->ErrorString) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
 			cp = CpNewChild(parser, cp);
 			if (!cp) return 0;
-			cp->name = RT->cpNames->bucket->key;
+			cp->name = ((XMLHTABLEBUCKET*)RT->cpNames->bucket)->key;
 			cp->type = XMLCTYPE_NAME;
 		}
 		if (CURCHAR=='?'||CURCHAR=='*'||CURCHAR=='+') {
@@ -3261,7 +3313,7 @@ static int ParseMixed(LPXMLPARSER parser, XMLCP *cp)
 			if (!c) return 0;
 			c->name = XMLHTable_Insert(RT->cpNames, RT->charsBuf.str, parser->ErrorString);
 			if (c->name != parser->ErrorString) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
-			c->name = RT->cpNames->bucket->key;
+			c->name = ((XMLHTABLEBUCKET*)RT->cpNames->bucket)->key;
 			c->type = XMLCTYPE_NAME;			
 		}
 		if (SkipWS(parser) == -1) return 0;
@@ -3288,7 +3340,7 @@ static XMLCH *ReadPERefEnd(LPXMLPARSER parser, int *chSize)
 		/* return space: */
 		PREADERDATA->context &= ~XMLREADERCTX_PE_SPACE;
 		if (EINPUT(BufferedIStream_AppendBytes(PREADER, " ", 1))) 
-			return (XMLCH*)NULL;
+			return NULL;
 		*chSize = 1;
 		IPOS(1);
 		return PREADER->buf+PREADER->pos-1; 
@@ -3324,17 +3376,19 @@ static XMLCH *RestoreReaderPeRef(LPXMLPARSER parser, int *chSize)
 		RT->systemID = PREADERDATA->curEnt->systemID;
 		RT->publicID = PREADERDATA->curEnt->publicID;
 	}
-	return (parser->ErrorCode) ? (XMLCH*)NULL : ReadCh(parser, chSize);
+	return (parser->ErrorCode) ? NULL : ReadCh(parser, chSize);
 }
 
 static XMLCH *ReadPERefStart(LPXMLPARSER parser, int *chSize)
 {
 	int n, l, i=1;
 	XMLCH *s;
+	LPXMLENTITY e;
+
 	DTDTOK_START(0);
 	n = ParseNameTok(parser, &l, NULL, ";", &i);
 	DTDTOK_END;
-	if (n == -1) return (XMLCH*)NULL;
+	if (n == -1) return NULL;
 
 	if (!l) {
 		/* S after %, must read S again for row increment etc. */
@@ -3343,35 +3397,34 @@ static XMLCH *ReadPERefStart(LPXMLPARSER parser, int *chSize)
 	}
 	if (!i) {
 		ErP_(parser, ERR_XMLP_WS_NOT_ALLOWED, 1);
-		return (XMLCH*)NULL;
+		return NULL;
 	}
 
 	s = BUFTOSTR(PREADER->buf, n-1, n+l);
 	
-	if ((l = (int)XMLHTable_Lookup(RT->entitiesTable, s))) {
+	if ((e = XMLHTable_Lookup(RT->entitiesTable, s))) {
 
-		LPXMLENTITY e = XMLVector_Get(RT->entities, l-1);
 		LPBUFFEREDISTREAM *peReader;
 		LPBISREADERDATA readerdata;
 
 		if (e->open) {
 			Er_(parser, ERR_XMLP_RECURSIVE_ENTITY_REF, s);
-			return (XMLCH*)NULL;
+			return NULL;
 		}
 
 		peReader = STACK_PUSH(RT->dtd->peStack, NULL);
 		if (!peReader) {
 			Er_(parser, ERR_XMLP_MEMORY_ALLOC);
-			return (XMLCH*)NULL;
+			return NULL;
 		}
 		if (!(*peReader = XMLPool_Alloc(RT->dtd->pePool))) {
 			Er_(parser, ERR_XMLP_MEMORY_ALLOC);
-			return (XMLCH*)NULL;
+			return NULL;
 		}
 
 		readerdata = InitEntityReader(parser, *peReader, BIS_DEFAULT_BLOCKSIZE,
-			NULL, 0, e, l);
-		if (!readerdata) return (XMLCH*)NULL;
+			NULL, 0, e);
+		if (!readerdata) return NULL;
 		
 		if (e->type == XML_ENTITY_INT_PARAM) {
 			XMLMEMINPUTSRC *mementityinput = malloc(sizeof(XMLMEMINPUTSRC));
@@ -3408,22 +3461,22 @@ static XMLCH *ReadPERefStart(LPXMLPARSER parser, int *chSize)
 				return ReadCh(parser, chSize); 
 				
 			if (EINPUT(BufferedIStream_AppendBytes(PREADER, " ", 1))) 
-				return (XMLCH*)NULL;
+				return NULL;
 			readerdata->context |= XMLREADERCTX_PE_SPACE;
 			IPOS(1);
 			return PREADER->buf;
 		}
-		return (XMLCH*)NULL;
+		return NULL;
 	}
 	/* not found: */
 	if (PFLAG(XMLFLAG_UNDEF_GENERAL_ENTITIES)) {
 		Er_(parser, ERR_XMLP_UNDEF_ENTITY, s);
-		return (XMLCH*)NULL;
+		return NULL;
 	}
 	if (!RT->dtd->inLiteral && HANDLER(skippedEntity)) {
 		if (HANDLER(skippedEntity)(parser->UserData, s)==XML_ABORT) {
 			Er_(parser, ERR_XMLP_ABORT);
-			return (XMLCH*)NULL;
+			return NULL;
 		}
 	}
 	return ReadCh(parser, chSize);
@@ -3440,6 +3493,13 @@ static int ParseAttlistDecl(LPXMLPARSER parser)
 		return 1;
 	}
 	return 1;
+}
+
+static int ecmp(const void *a, const void *b) 
+{
+	XMLATTENUM *a1 = (XMLATTENUM*)a;
+	XMLATTENUM *a2 = (XMLATTENUM*)b;
+	return strcmp((char*)a1->name, (char*)a2->name); 
 }
 
 static int GetAttlistDecl(LPXMLPARSER parser, LPXMLVECTOR **newAtts, LPXMLVECTOR *en)
@@ -3550,15 +3610,22 @@ static int GetAttlistDecl(LPXMLPARSER parser, LPXMLVECTOR **newAtts, LPXMLVECTOR
 				if (*en) {
 					int i, j; /* construct enumeratedType atts from */
 								/* LPXMLVECTOR collected in ParseEnumeration */
-					void **p = XMLVector_Get(*en, 0);
-					XMLCH *s = xmlMemdup(RT->charsBuf.str+1, RT->charsBuf.len-1);
+					XMLATTENUM *p = XMLVector_Get(*en, 0);
+					XMLCH *o, *s = xmlMemdup(RT->charsBuf.str+1, RT->charsBuf.len-1);
 					dAtt.pExt = *en;  
 					if (!s) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
-					for (i=0; i<(*en)->length; i++, p = XMLVector_Get(*en, i)) {
-						j = (int)*p;
-						*p = s;
+					for (o=s, i=0; i<(*en)->length; i++, p = XMLVector_Get(*en, i)) {
+						j = p->len;
+						p->name = s;
 						s[j] = 0;
 						s += (j+1);
+					}
+					if ((*en)->length>1) {
+						qsort((*en)->array, (*en)->length, sizeof(XMLATTENUM), ecmp);
+						p = XMLVector_Get(*en, 0);
+						(*en)->capacity = ((char*)p->name-(char*)o); /* HACK HACK */
+						/* vector won't change so we use capacity to store starting address pos see
+						DestroyDeclAttTableProc */
 					}
 					*en = NULL;
 				}
@@ -3609,9 +3676,9 @@ static int GetAttlistDecl(LPXMLPARSER parser, LPXMLVECTOR **newAtts, LPXMLVECTOR
     This is also used for deallocating vector only when key and
 	userdata (hashtable pointer) params are NULL
 =================================c==========================================*/
-static int DestroyDeclAttTableProc(char *key, void *data, void *userdata)
+static int DestroyDeclAttTableProc(XMLCH *key, void *data, void *userdata)
 {	
-    LPXMLVECTOR *atts = (LPXMLVECTOR*)data;
+	LPXMLVECTOR *atts = (LPXMLVECTOR*)data;
 	LPXMLVECTOR v = (*(atts+1)) ? *(atts+1) : *atts;
 	LPXMLATTDECL a, pEnd;
 	pEnd = (LPXMLATTDECL)_XMLVector_GetIterP(v, a);
@@ -3619,16 +3686,16 @@ static int DestroyDeclAttTableProc(char *key, void *data, void *userdata)
 		free(a->name);
 		if (a->value) free(a->value);
 		if (a->pExt) { /* currently enumeratedType only: */
-			void **s = XMLVector_Get((LPXMLVECTOR)a->pExt, 0);
-			if (*s) free(*s);
-			XMLVector_Free((LPXMLVECTOR)a->pExt);
+			LPXMLVECTOR av = (LPXMLVECTOR)a->pExt;
+			XMLATTENUM *s = XMLVector_Get(av, 0);
+			(av->length>1) ? free((s->name-av->capacity)) : free(s->name);
+			XMLVector_Free(av);
 		}
 	}
 	XMLVector_Free(v);
 	if (v != *atts) XMLVector_Free(*atts);
-	if (userdata) XMLHTable_Remove((LPXMLHTABLE)userdata, key);
 	free(atts);
-	return 0;
+	return (userdata) ? XMLHTABLEDFLAG_FREETHISKEY : 0;
 }
 
 static int GetEntityDecl(LPXMLPARSER parser, LPXMLENTITY e, LPXMLSTRINGBUF sbuf)
@@ -3686,9 +3753,9 @@ static int GetEntityDecl(LPXMLPARSER parser, LPXMLENTITY e, LPXMLSTRINGBUF sbuf)
 
 static int ParseEntityDecl(LPXMLPARSER parser)
 {	
-	XMLENTITY e;
+	XMLENTITY e, *e2;
 	e.type = e.len = e.open = 0;
-	e.name = e.notation = e.publicID = e.systemID = e.value = (XMLCH*)NULL;
+	e.name = e.notation = e.publicID = e.systemID = e.value = NULL;
 
 	if (!GetEntityDecl(parser, &e, &RT->charsBuf)) return 0;
 	XMLStringbuf_SetLength(&RT->charsBuf, 0);
@@ -3699,19 +3766,17 @@ static int ParseEntityDecl(LPXMLPARSER parser)
 			return Er_(parser, ERR_XMLP_ABORT);
 		}
 	}
-
-	if (XMLHTable_Lookup(RT->entitiesTable, e.name)) {
+	
+	e2 = XMLHTable_Insert(RT->entitiesTable, e.name, &e);
+	if (!e2) return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
+	if (e2 == &e) { /* duplicate checking */
 		if (e.name) free(e.name);
-	}	
-	else {
-		/* append entity into RT->entities vector and
-		into RT->entitiesTable hashtable: */
-		if (!(XMLVector_Append(RT->entities, &e)))
-			return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
-		if (!(XMLHTable_Insert(RT->entitiesTable, e.name,
-			(void*)RT->entities->length)))
-			return Er_(parser, ERR_XMLP_MEMORY_ALLOC);
 	}
+	else {
+		memcpy(e2, &e, sizeof(XMLENTITY));
+		if (!RT->entitiesTable->userdata) /* for marking entities exist */
+			RT->entitiesTable->userdata = RT->entitiesTable; 
+	}	
 	return 1;
 }
 
@@ -3750,7 +3815,7 @@ static void ParseEntityContent(LPXMLPARSER parser, LPXMLENTITY e)
 	}
 
 	InitEntityReader(parser, &entityReader, BIS_DEFAULT_BLOCKSIZE,
-		&readerdata, RT->tagstack->length, e, 0);
+		&readerdata, RT->tagstack->length, e);
 
 	if (e->type == XML_ENTITY_INT_GEN) {
 		/* parse internal general entities from XMLMEMINPUTSRC: */
@@ -3846,7 +3911,7 @@ static void ParseIntEntityAtt(LPXMLPARSER parser, LPXMLENTITY e,
 
 	XMLMEMINPUTSRC_INIT(&mementityinput, e->value, e->len);
 	tmpReader = PREADER;
-	InitEntityReader(parser, &entityReader, e->len, &readerdata, 0, e, 0);
+	InitEntityReader(parser, &entityReader, e->len, &readerdata, 0, e);
 	entityReader.inputData = &mementityinput;
 	entityReader.inputsrc = MemInputsrc;
 

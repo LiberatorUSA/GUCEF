@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+    This is main document for Parsifal XML Parser internal Testsuite
+-->
+
+<?xml-stylesheet href="xmlconformance.xsl" type="text/xsl"?>
+
+<!DOCTYPE TESTSUITE SYSTEM "testcases.dtd" [
+    <!ENTITY known_bugs		SYSTEM "parsifal_tests/known_bugs.xml">
+    <!ENTITY modular_tests  SYSTEM "parsifal_tests/modular_tests.xml">
+    <!ENTITY misc_tests		SYSTEM "parsifal_tests/misc_tests.xml">
+    <!ENTITY encoding_tests	SYSTEM "parsifal_tests/encoding_tests.xml">
+    <!ENTITY output_tests	SYSTEM "parsifal_tests/output_tests.xml">
+]>
+
+<TESTSUITE PROFILE="Parsifal XML Parser Testsuite">
+	&known_bugs;
+	&modular_tests;
+	&misc_tests;
+	&encoding_tests;
+	&output_tests;
+</TESTSUITE>

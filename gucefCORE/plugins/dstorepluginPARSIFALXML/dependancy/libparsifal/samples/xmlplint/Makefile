@@ -2,12 +2,12 @@ APP = xmlplint
 
 ## install root location:
 PREFIX=/usr/local
-CURL_LIBS = -lcurl -lidn -lssl -lcrypto -ldl -lssl -lcrypto -ldl -lz
+CURL_LIBS := $(shell curl-config --libs)
 LIBS = -L/usr/lib $(CURL_LIBS) -lparsifal
-OBJ = catalogs.o curlread.o events.o rtrip.o stimer.o vfilter.o xmlplint.o
+OBJ = catalogs.o curlread.o events.o rtrip.o stimer.o vfilter.o uriresolver.o xmlplint.o
 CC = gcc
 CPPFLAGS = -I/usr/include
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -Wno-pointer-sign
 
 BIN_INSTALL_DIR=$(PREFIX)/bin
 
@@ -44,6 +44,9 @@ stimer.o: stimer.c
 
 vfilter.o: vfilter.c
 	$(CC) -c vfilter.c -o vfilter.o $(CFLAGS)
+	
+uriresolver.o: uriresolver.c
+	$(CC) -c uriresolver.c -o uriresolver.o $(CFLAGS)
 
 xmlplint.o: xmlplint.c
 	$(CC) -c xmlplint.c -o xmlplint.o $(CFLAGS)

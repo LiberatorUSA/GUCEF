@@ -49,6 +49,7 @@ size_t UTF8BufToLatin1(XMLCH *buf, XMLCH *end)
      index of file/resource in src for example if src is "http://myorg/index.xml"
      then returns 13 (src+13 points to index.xml)
      if there is no basedir, returns 0 (and dst will be empty string)
+   note: See samples/xmlplint/uriresolver.h for more complete base dir handling
 */
 size_t GetBaseDir(XMLCH *dst, XMLCH *src)
 {
@@ -86,7 +87,8 @@ size_t GetBaseDir(XMLCH *dst, XMLCH *src)
    notes:
      Real accurate base uri handling needs of course somekind of stack,
      however ResolveBaseUri kind of approach should be sufficient for
-     most cases
+     most cases - See samples/xmlplint/uriresolver.h for more complete 
+     base dir handling
 */
 XMLCH *ResolveBaseUri(LPXMLPARSER parser, XMLCH *systemID, XMLCH *base)
 {

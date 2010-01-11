@@ -80,6 +80,6 @@ int gettimeofday(struct timeval* tv, void *tz)
 
 void STimer_Start(STIMER *stimer)
 {	
-    gettimeofday(&stimer->begin, NULL);
+	gettimeofday(&stimer->begin, NULL);
 }
 

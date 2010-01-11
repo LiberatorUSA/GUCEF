@@ -11,6 +11,7 @@
 #include "xmlplint.h"
 #include "curlread.h"
 #include "stimer.h"
+#include "uriresolver.h"
 #ifdef _MSC_VER
 #ifdef _DEBUG
 #include <crtdbg.h>
@@ -33,16 +34,17 @@ static int xmlErrorRep;
 static int xmlUseCatalogs;
 static int xmlValidationWarn;
 static int xmlShowStatus;
+static int xmlFlags;
 static size_t xmlInMemory;
-static char *xmlBaseUri;
 static XMLCH *doc=NULL;
 static char *xmlForeignDTD=NULL;
 static CURLREADER *r=NULL;
 char curlErrBuf2[CURL_ERROR_SIZE] = {'\0'};
-char AppBase[FILENAME_MAX];
+char *AppBase;
+XMLSTRINGBUF uribuf;
+static struct uriresolver_input_t *curinput;
 static int warnings;
 static int gRet;
-
 static int optind=1;
 static char *optarg;
 
@@ -53,7 +55,6 @@ extern void vfilter_Cleanup(LPXMLDTDVALIDATOR dtd);
 extern int Catalogs_Init(void);
 extern void Catalogs_Cleanup(void); 
 extern XMLCH *Catalogs_ResolveUri(XMLCH *publicID, XMLCH *systemID);
-
 extern void OutputEntity(const XMLCH *publicId, const XMLCH *systemId, 
 						 const XMLCH *value, int type);
 
@@ -209,74 +210,67 @@ static CURLREADER *NewCurlreader(char *doc, char *errbuf)
 
 int curlstream(BYTE *buf, int cBytes, int *cBytesActual, void *inputData)
 {
-	*cBytesActual = Curlreader_Read((CURLREADER*)inputData, buf, 1, cBytes);
+	*cBytesActual = Curlreader_Read(((struct uriresolver_input_t*)inputData)->src, buf, 1, cBytes);
 	return (*cBytesActual < cBytes);
 }
 
 int filestream(BYTE *buf, int cBytes, int *cBytesActual, void *inputData)
 {
-	*cBytesActual = fread(buf, 1, cBytes, (FILE*)inputData);
+	*cBytesActual = fread(buf, 1, cBytes, ((struct uriresolver_input_t*)inputData)->src);
 	return (*cBytesActual < cBytes);
 }
 
 int MemInputsrc(BYTE *buf, int cBytes, int *cBytesActual, void *inputData)
-{   
-    XMLMEMINPUTSRC_HANDLE
-}
-
-static size_t GetBaseDir(XMLCH *dst, XMLCH *src)
 {
-	XMLCH *s = strrchr(src, '/');	
-#ifdef _WIN32
-	if (!s) s = strrchr(src, '\\');
-#endif
-	if (s) {
-		size_t i = (s-src)+1;
-		memcpy(dst, src, i);
-		dst[i] = '\0';
-		return i;
-	}
-	dst[0] = '\0';
-	return 0;
-}
-
-XMLCH *ResolveBaseUri(LPXMLPARSER parser, XMLCH *systemID, XMLCH *base)
-{
-	XMLCH *s=systemID;
-	for (; *s; s++) {
-		if (*s == ':') return systemID; /* probably absolute */ 
-		if (*s == '/' || *s == '\\') break;
-	}
-	s = XMLParser_GetPrefixMapping(parser, "xml:base");
-	return (s) ? s : base;
+	/* note that we cant use XMLMEMINPUTSRC_HANDLE 'cos inputData is uriresolver */
+	LPXMLMEMINPUTSRC inp = ((struct uriresolver_input_t*)inputData)->src;
+	if ((inp->cBytes + cBytes) < inp->cTotal) {
+        memcpy(buf, inp->pBuf + inp->cBytes, cBytes);
+        *cBytesActual = cBytes;
+        inp->cBytes += cBytes;
+        return 0;
+    }
+    else {
+        *cBytesActual = inp->cTotal - inp->cBytes;
+        if (*cBytesActual) {
+            memcpy(buf, inp->pBuf + inp->cBytes, *cBytesActual);
+            inp->cBytes += *cBytesActual; 
+		}
+        return 1;
+    }
 }
 
 static int ResolveEntity(void *UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader)
 {
-	XMLCH res[FILENAME_MAX];
 	XMLCH *systemID = entity->systemID;
 	XMLCH *uri;
 	
 	if (xmlUseCatalogs) {
-		XMLCH *cUri;
 		if (xmlUseCatalogs == 1) {
 			if (!Catalogs_Init()) return XML_ABORT;
 			xmlUseCatalogs = -1;
 		}
-		cUri = Catalogs_ResolveUri(entity->publicID, entity->systemID);
-		if (cUri) systemID = cUri;
+		uri = Catalogs_ResolveUri(entity->publicID, entity->systemID);
+		if (uri) systemID = uri;
 	}
-
-	uri = ResolveBaseUri(parser, systemID, xmlBaseUri);
-	if (uri != systemID) {
-		strcpy(res, uri);
-		uri = strcat(res, systemID);
+	
+	curinput = Uriresolver_AddInput(curinput, systemID);
+	ASSERT_MEM_ABORT(curinput);
+	
+ 	if (!curinput->src) { /* absolute or no base exists at all */
+		if (uri != systemID) uri = systemID;
 	}
-	else if (entity->type == XML_ENTITY_DOCTYPE)
-		/* set new base uri for further external resources,
-		note that this isn't entirely accurate - we should use
-		stack of base uris */
-		GetBaseDir(xmlBaseUri, systemID);
+	else {
+		XMLCH *s = (entity->type == XML_ENTITY_DOCTYPE) ? NULL : 
+			XMLParser_GetPrefixMapping(parser, "xml:base");
+		if (uribuf.len) uribuf.len = 0;
+		uri = (s) ? XMLStringbuf_Append(&uribuf, s, strlen(s)) :
+			XMLStringbuf_Append(&uribuf, curinput->absolute->base, 
+				curinput->absolute->baselen);		
+		ASSERT_MEM_ABORT(uri);
+		uri = XMLStringbuf_Append(&uribuf, curinput->src, strlen(curinput->src)+1);
+		ASSERT_MEM_ABORT(uri);
+	}
 
 	if (entity->type == XML_ENTITY_DOCTYPE &&
 		xmlOutputFormat == XMLOUTPUTFORMAT_ROUNDRIP) {
@@ -295,30 +289,36 @@ static int ResolveEntity(void *UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM r
 		OutputEntity(entity->publicID, systemID, NULL, entity->type);
 	}
 
-	reader->inputData = mfopen(uri, "rb");
-	if (reader->inputData)
+	curinput->src = mfopen(uri, "rb");
+	if (curinput->src)
 		reader->inputsrc = filestream;
 	else {	
-		reader->inputData = NewCurlreader(uri, curlErrBuf2);
-		if (reader->inputData==NULL) return XML_ABORT;
+		curinput->src = NewCurlreader(uri, curlErrBuf2);
+		if (!curinput->src) return XML_ABORT;
 		reader->inputsrc = curlstream;
 	}
+	reader->inputData = curinput;
 	return 0;
 }
 
 static int FreeInputData(void *UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader)
-{
+{	
+	struct uriresolver_input_t *inp = reader->inputData;
+
 	if (reader->inputsrc == filestream) {
-		if (ferror((FILE*)reader->inputData)) fputs("\nFile error\n", stderr);
-		fclose((FILE*)reader->inputData);
+		if (ferror((FILE*)inp->src)) fputs("\nFile error\n", stderr);
+		fclose((FILE*)inp->src);
 	}
 	else {
-		if (Curlreader_ReadStatusCode(reader->inputData) != CURLE_OK) {
+		if (Curlreader_ReadStatusCode(inp->src) != CURLE_OK) {
 			fprintf(stderr, "\nLibcurl Error: %s\n", 
 				(*curlErrBuf2) ? curlErrBuf2 : "unknown/bad url");
 		}
-		Curlreader_Free(reader->inputData);
+		Curlreader_Free(inp->src);
 	}
+	
+	curinput = Uriresolver_RemoveInput(inp);
+
 	if (xmlOutputFormat == XMLOUTPUTFORMAT_EVENTS)
 		fprintf(PFOUT, "externalEntityParsed(name {%s})\n", entity->name);
 	return 0;
@@ -360,6 +360,7 @@ static void usage(void)
 	"  -E Error reporting (default: verbose)\n"
 	"     1: simple (useful for editors)\n"
 	"     2: output displays UTF-8 (for column info)\n"
+	"  -F Set spesific parser flag(s) (see parsifal.h)\n"
 	"Example:\n"
 	"  xmlplint -V -f1 xmlfile.xml -o outfile.xml\n\n"
 	,stderr);
@@ -376,11 +377,11 @@ int main(int argc, char* argv[])
 	int n = 0;
 	int timed;
 	int ret = RET_SUCCESS;
-	char *encoding = NULL;	
-	void *input;
+	char *encoding = NULL;
+	char *s;
+	void *input; /* most likely same as curinput->src but for cleaning up after parse etc. */
 	char curlErrBuf[CURL_ERROR_SIZE] = {'\0'};
-	char baseuri[FILENAME_MAX] = {'\0'};
-	char userDTD[FILENAME_MAX] = {'\0'};
+	struct uriresolver_input_t startinp = { NULL, NULL, 0, NULL, &startinp };
 
 	#ifdef _MSC_VER
 	#ifdef _DEBUG
@@ -389,12 +390,25 @@ int main(int argc, char* argv[])
 		_CrtSetDbgFlag( tmpFlag );
 	#endif
 	#endif
+	
+	curinput = &startinp;
+	XMLStringbuf_Init(&uribuf, 256, 0);
 
-	xmlBaseUri = baseuri;
-	GetBaseDir(AppBase, argv[0]);
+	s = strrchr(argv[0], '/');	
+#ifdef _WIN32
+	if (!s) s = strrchr(argv[0], '\\');
+#endif
+	if (!s) AppBase = NULL;
+	else {
+		if (!(AppBase = strdup(argv[0]))) {
+			fputs("Out of memory!\n", stderr);
+			return RET_FATAL;
+		}
+		AppBase[(s-argv[0])+1] = '\0';
+	}
 
 	while (optind < argc) { /* to allow argument (case -1) in any place */
-		int c = mgetopt(argc, argv, "VavxMicWsd:o:f:e:n:u:U:t:E:X:");
+		int c = mgetopt(argc, argv, "VavxMicWsd:o:f:e:n:u:U:t:E:X:F:");
 		switch(c) {
 			case 'V': xmlDoValidate = 1; break;
 			case 'a': xmlSortAtts = 1; break;
@@ -425,7 +439,10 @@ int main(int argc, char* argv[])
 				xmlNsHandling = atoi(optarg);
 				if (xmlNsHandling < 1 || xmlNsHandling > 2) usage();
 				break;
-			case 'u': xmlBaseUri = optarg; break;
+			case 'u': 
+				curinput->base = optarg;
+				curinput->baselen = strlen(optarg);
+				break;
 			case 'U': xmlDTDUri = optarg; break;
 			case 't':
 				iter = atoi(optarg);
@@ -439,6 +456,10 @@ int main(int argc, char* argv[])
 				xmlGenEnt = atoi(optarg);
 				if (xmlGenEnt < 1 || xmlGenEnt > 2) usage();
 				break;
+			case 'F':
+				xmlFlags = atoi(optarg);
+				if (xmlFlags < 1) usage();
+				break;
 			case -1:
 				if (!doc) {
 					doc = argv[optind++];
@@ -448,17 +469,13 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	if (xmlForeignDTD) {
-		int docpos = GetBaseDir(baseuri, xmlForeignDTD);
-		strcpy(userDTD, xmlForeignDTD+docpos);		
-	}
-	
 	if (!doc) {
-		input=stdin;	
+		input = curinput->src = stdin;
 		doc="<stdin>";
 	}
 	else {
-		if (!(input = mfopen(doc, "rb"))) {
+		input = mfopen(doc, "rb");
+		if (!input) {
 			r = NewCurlreader(doc, curlErrBuf);
 			if (r==NULL) return RET_FATAL;
 			input=r;
@@ -486,10 +503,16 @@ int main(int argc, char* argv[])
 			fclose(input);
 			input=&meminput;
 		}
-		if (!*xmlBaseUri)
-			GetBaseDir(baseuri, doc);
+		if (!xmlSkipExt) {
+			curinput = Uriresolver_AddInput(curinput, doc);
+			if (!curinput) {
+				fputs("Out of memory!\n", stderr);
+				return RET_FATAL;
+			}
+		}
+		curinput->src = input;
 	}
-	
+
 	if (!XMLParser_Create(&parser)) {
 		fputs("Error creating parser!\n", stderr);
 		return RET_FATAL;
@@ -518,7 +541,9 @@ int main(int argc, char* argv[])
 		_XMLParser_SetFlag(parser, XMLFLAG_UNDEF_GENERAL_ENTITIES, 1);
 
 	if (xmlForeignDTD)
-		XMLParser_SetExternalSubset(parser, NULL, userDTD);
+		XMLParser_SetExternalSubset(parser, NULL, xmlForeignDTD);
+
+	if (xmlFlags) parser->XMLFlags |= xmlFlags;
 
 	parser->errorHandler = ErrorHandler;
 	
@@ -553,7 +578,7 @@ int main(int argc, char* argv[])
 		if ((dtd = XMLParser_CreateDTDValidator())) {
 			if (xmlDTDUri && !vfilter_Init(dtd, xmlDTDUri)) return RET_FATAL;
 			while(1) {
-				XMLParser_ParseValidateDTD(dtd, parser, stream, input, encoding);
+				XMLParser_ParseValidateDTD(dtd, parser, stream, curinput, encoding);
 				if (++n == iter) break;
 				meminput.cBytes=0;
 			}
@@ -567,7 +592,7 @@ int main(int argc, char* argv[])
 	}
 	else {
 		while(1) {
-			XMLParser_Parse(parser, stream, input, encoding);
+			XMLParser_Parse(parser, stream, curinput, encoding);
 			if (++n == iter) break;
 			meminput.cBytes=0;
 		}
@@ -597,14 +622,19 @@ int main(int argc, char* argv[])
 		if (input != stdin) fclose(input);
 	}
 	
+	XMLStringbuf_Free(&uribuf);
+	while (curinput != &startinp) {
+		curinput = Uriresolver_RemoveInput(curinput);
+	}
+	if (AppBase) free(AppBase);
 	if (xmlUseCatalogs) Catalogs_Cleanup();
 	if (fout && fout != stdout) fclose(fout);
 	XMLParser_Free(parser);
 	curl_global_cleanup();
 	if (xmlShowStatus)
 		fprintf(stderr, "xmlplint - %d warning(s), %d error(s)\n",
-			warnings, (xmlShowStatus==1) ? 0 : 1);
-		
+			warnings, (xmlShowStatus==1) ? 0 : 1);	
+	
 	if (ret != RET_SUCCESS) return ret;
 	return (gRet) ? gRet : RET_SUCCESS;
 }

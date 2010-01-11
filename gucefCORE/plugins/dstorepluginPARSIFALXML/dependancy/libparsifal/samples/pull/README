@@ -1,0 +1,119 @@
+XMLREADER.C
+-----------
+
+Building:
+
+WINDOWS
+
+    Visual C++ users can build sample by running build.bat.
+    Executable will be build into WIN32\BIN directory by default.
+    
+    MinGW users can build sample by running build_mingw.bat
+    it links to win32/mingw/dll/parsifal.dll which must be available
+    to executable after building.
+
+UNIX
+
+    make
+    make install
+    
+
+Xmlreader.c is simple pull parser which utilizes XMLParser_HasMoreEvents
+progressive parsing feature. xmlreader.c and pull1.c are intended to
+give guidelines for generating pull parser language bindings etc. for 
+Parsifal xml parser. It is fully functional simple pull parser for C 
+too providing methods explained briefly here (you should also take a 
+look into pull1.c and xmlreader.h for more info).
+
+struct XMLReader_t *XMLReader_Create(struct XMLReader_t *r, int validating);
+  creates pull parser which is optionally validating (parameter validating 
+  set to 1)
+
+  XMLReader_t wraps LPXMLPARSER which you can configure after the _Create
+  call by setting properties/flags for parser member of XMLReader_t.
+  There's also errorhandler callback for XMLReader_t which you can use to
+  catch errors/validation warnings that work similar to normal parsifal error 
+  handling.
+
+void XMLReader_Free(struct XMLReader_t *r);
+int XMLReader_Parse(struct XMLReader_t *r, LPFNINPUTSRC inputSrc, void *inputData, 
+          const XMLCH *encoding);
+  these methods are identical to parsifal methods. note that you must
+  use XMLReader_t parser member's resolveEntityHandler when you want to load 
+  DTD/external entity. See parsifal documentation for that.
+
+void XMLReader_AbortParse(struct XMLReader_t *r);
+  This is method to exit parsing, you can't call Read method after using
+  AbortParse, you must start new parse with XMLReader_Parse. See pull1.c
+
+union XMLReaderNode_t *XMLReader_Read(struct XMLReader_t *r);
+  called after XMLReader_Parse to get events from the pull parser. See pull1.c and
+  xmlreader.h
+
+TECHICAL DETAILS
+----------------
+
+Pull/progressive parsing in parsifal is implemented simply by adding 
+XMLFLAG_USE_SIMPLEPULL flag, when set XMLParser_Parse (or ParseValidateDTD) only 
+initializes parser and comes out of the event loop without parsing. You then call 
+XMLParser_HasMoreEvents to trigger/parse next event(s). When implementing pull
+parser You must buffer events like done in xmlreader.c XMLReader_Read code. 
+Mostly buffer won't grow bigger than 2-3 events. for example the fact that
+there will never be more than 1 startElement event in the buffer is utilized in
+xmlreader.c - there's only 1 attributes vector at a time. DTD events might be
+problematic when parsing extremely large DTDs since they will be flushed only 
+in endDTD stage meaning they all need to be buffered. 
+
+So for event buffering you need an array (or other suitable data struct) where 
+to append events and also index int variable to keep track which events are flushed,
+here's pseudo code:
+
+-------------------
+
+Chars_Event(text, length) // or any other event etc
+{
+  // append event to eventbuffer
+  eventbuffer[eventbuffer.lenght++] = chars_event_obj_with_text_and_length
+}
+
+and in our XMLReader_Read:
+
+ret_event_obj XMLReader_Read()
+{
+  do
+    if notempty(eventbuffer)
+      if eventbufferpos==eventbuffer.length // clear eventbuffer
+        eventbuffer.removeall
+        eventbufferpos=0
+      else // return event from eventbuffer
+        eventbufferpos++
+        return eventbuffer[eventbufferpos-1]
+  while XMLParser_HasMoreEvents()
+
+  return NULL
+}
+
+-------------------
+
+Aborting parse must be handled special way when you don't
+finish parsing by calling XMLParser_HasMoreEvents until it returns NULL.
+
+This is done by calling XMLParse_Parse with NULL in 2-4 params: 
+XMLParser_Parse(r->parser, NULL, NULL, NULL);
+(see also XMLReader_AbortParse) which terminates parsing correctly.
+There's also equivalent for terminating validating parsing
+XMLParser_ParseValidateDTD(v, v->parser, NULL, NULL, NULL);
+When validating this method MUST be called every time not just
+when aborting since validation checks IDREFS etc in the terminating
+stage. This is simple to do in EndDocument event. See xmlreader.c.
+
+Also in practice pull parser must have errorhandler callback when
+you want to use GetCurrentSystemID etc. functions since they
+can't return anything meaningful after Parsifal errorhandler call.
+
+note also that because validating parse uses parser userdata we
+must use separate handlers for validation. see R3AD3R in xmlreader.c
+
+ 
+
+ 

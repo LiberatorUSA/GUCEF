@@ -13,7 +13,7 @@ extern int xmlDoValidate;
 extern void ContentModelToString(XMLCP *cp); 
 
 static int StartElement(void *UserData, const XMLCH *uri, const XMLCH *localName, const XMLCH *qName, LPXMLVECTOR atts)
-{	
+{
 	if (*uri)
 		fprintf(PFOUT, "startElement(qName {%s} uri {%s} localName {%s})\n",
 			qName, uri, localName);
@@ -139,7 +139,7 @@ void OutputEntity(const XMLCH *publicId, const XMLCH *systemId,
 }
 
 static int StartDTD(void *UserData, const XMLCH *Name, const XMLCH *publicId,
-                             const XMLCH *systemId, int hasInternalSubset)
+				const XMLCH *systemId, int hasInternalSubset)
 {
 	fprintf(PFOUT, "startDTD(Name {%s}", Name);
 	OutputEntity(publicId, systemId, NULL, -1);
@@ -179,8 +179,8 @@ static int ElementDecl(void *UserData, const XMLCH *name, void *contentModel)
 }
 
 static int AttributeDecl(void *UserData, const XMLCH *eName,
-    const XMLCH *aName, int type, const XMLCH *typeStr, int valueDef,
-    const XMLCH *def)
+	const XMLCH *aName, int type, const XMLCH *typeStr, int valueDef,
+	const XMLCH *def)
 {
 	fprintf(PFOUT, "attributeDecl(eName {%s} aName {%s} type {", eName, aName);
 	switch(type) {
@@ -208,7 +208,7 @@ static int AttributeDecl(void *UserData, const XMLCH *eName,
 }
 
 static int EntityDecl(void *UserData, LPXMLENTITY entity)
-{	
+{
 	fprintf(PFOUT, "entityDecl(Name {%s}", entity->name);
 	if (entity->notation) fprintf(PFOUT, " notation {%s}", entity->notation);
 	OutputEntity(entity->publicID, entity->systemID, 
@@ -217,7 +217,7 @@ static int EntityDecl(void *UserData, LPXMLENTITY entity)
 }
 
 static int NotationDecl(void *UserData, const XMLCH *name,
-    const XMLCH *publicID, const XMLCH *systemID)
+	const XMLCH *publicID, const XMLCH *systemID)
 {
 	fprintf(PFOUT, "notationDecl(Name {%s}", name);
 	OutputEntity(publicID, systemID, NULL, -1);

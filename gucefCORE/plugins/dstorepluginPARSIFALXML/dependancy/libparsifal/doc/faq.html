@@ -125,17 +125,25 @@ Author believes printf family of functions are sufficient for outputting XML.
 XML specification defines strict rules for well-formedness, this is actually
    a good thing and leads to more efficient/safe parsing. If you must parse 
    HTML/tag soup there are very good <b>specialized</b> libraries available for that
-   like for xample tidylib. It's usually best to use specialized libraries - tidy for tag
+   like for example tidylib. It's usually best to use specialized libraries - tidy for tag
    soup and parsifal for xml parsing. Tip: you can feed tidied XHTML to 
    parsifal if you want to process your documents with SAX - you can even 
    invoke tidy only if some well-formedness error occurs
 </p>
 
+<p>
+<h3>8. Parsing takes very long time/seems to hang when processing documents with
+	massive content/base64 encoded binary data, why?</h3>
+</p>
+<p>By default parsifal tries to keep characterHandler content in single chunk. Use
+XMLFLAG_SPLIT_LARGE_CONTENT flag when parsing this sort of documents.
+</p>
+
 <hr>
-<p><font color="#004040">Copyright &copy; 2002-2005 Toni
+<p><font color="#004040">Copyright &copy; 2002-2008 Toni
 Uusitalo.<br>
 Send mail, suggestions and bug reports to<br><img src="pics/semail.gif"><br>
-Last modified: 15.08.2005 23:00</font></p>
+Last modified: 04.10.2008 00:00</font></p>
 </div>
 </body>
 </html>

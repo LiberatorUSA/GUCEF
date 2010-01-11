@@ -1,6 +1,6 @@
 /*===========================================================================
   Parsifal XML Parser
-  Copyright (c) 2002-2005 Toni Uusitalo
+  Copyright (c) 2002-2008 Toni Uusitalo
   released to the public domain 2002-11-15
   http://www.saunalahti.fi/~samiuus/toni/xmlproc/
 
@@ -26,12 +26,57 @@
    extern "C" {
 #endif
 
+#include "pns.h"
 #include "bistream.h"
 #include "xmlhash.h"
 #include "xmlvect.h"
 #include "xmlsbuf.h"
 #include "xmlpool.h"
 #include "xmldtd.h"
+
+/******************************************************************************/
+
+/*
+ *  Dinand Vanvelzen edit:
+ *  Added this to build easily with CMake
+ */
+ 
+#ifdef PARSIFAL_CUSTOM_GUCEF_BUILD 
+
+#ifndef XMLAPI
+#define XMLAPI
+#endif
+
+#define PARSIFAL_XMLAPI XMLAPI
+ 
+#if !( defined(PARSIFAL_LINUX_BUILD) || defined(PARSIFAL_MSWIN_BUILD) )
+  #if defined( WIN32 ) || defined( _WIN32 )
+    #define PARSIFAL_MSWIN_BUILD
+  #elif defined( linux )
+    #define PARSIFAL_LINUX_BUILD
+  #else
+    #error Cannot automaticly detect your operating system, please define
+  #endif
+#endif /* MANUAL_OS_DEFINE ? */ 
+ 
+#ifdef PARSIFAL_MSWIN_BUILD
+    #define PARSIFAL_EXPORT __declspec( dllexport )
+    #define PARSIFAL_IMPORT __declspec( dllimport )
+#else
+    #define PARSIFAL_EXPORT
+    #define PARSIFAL_IMPORT
+#endif /* GUCEF_MSWIN_BUILD ? */
+
+#undef XMLAPI
+#ifdef PARSIFAL_BUILD_MODULE
+  #define XMLAPI PARSIFAL_EXPORT
+#else
+  #define XMLAPI PARSIFAL_IMPORT
+#endif
+
+#endif /* PARSIFAL_CUSTOM_GUCEF_BUILD ? */
+
+/******************************************************************************/
 
 #ifndef XMLCH_DEFINED
     #define XMLCH_DEFINED
@@ -140,6 +185,8 @@ typedef enum tagXMLERRCODE XMLERRCODE;
 #define XMLFLAG_PRESERVE_WS_ATTRIBUTES 0x20
 #define XMLFLAG_REPORT_DTD_EXT 0x40
 #define XMLFLAG_VALIDATION_WARNINGS 0x80
+#define XMLFLAG_SPLIT_LARGE_CONTENT 0x100
+#define XMLFLAG_USE_SIMPLEPULL 0x200
 
 typedef int (*XML_EVENT_HANDLER)(void *UserData);
 typedef int (*XML_START_ELEMENT_HANDLER)(void *UserData, const XMLCH *uri,
@@ -165,6 +212,7 @@ typedef int (*XML_ELEMENTDECL_HANDLER)(void *UserData, const XMLCH *name,
     void *contentModel);
 typedef int (*XML_NOTATIONDECL_HANDLER)(void *UserData, const XMLCH *name,
     const XMLCH *publicID, const XMLCH *systemID);
+typedef XMLCH* (*XML_ENCODINGALIAS_HANDLER)(void *UserData, const XMLCH *enc);
 
 typedef struct tagXMLPARSER
 {
@@ -185,7 +233,7 @@ typedef struct tagXMLPARSER
     XML_CHARACTERS_HANDLER charactersHandler;
     XML_CHARACTERS_HANDLER ignorableWhitespaceHandler;
     XML_CHARACTERS_HANDLER commentHandler;
-    XML_CHARACTERS_HANDLER defaultHandler;
+    XML_ENCODINGALIAS_HANDLER encodingAliasHandler;
     XML_START_ELEMENT_HANDLER startElementHandler;
     XML_END_ELEMENT_HANDLER endElementHandler;
     XML_PI_HANDLER processingInstructionHandler;
@@ -237,6 +285,24 @@ int XMLAPI XMLParser_GetContextBytes(LPXMLPARSER parser, XMLCH **Bytes, int *cBy
 int XMLAPI XMLNormalizeBuf(XMLCH *buf, int len);
 int XMLAPI XMLIsNameStartChar(XMLCH *ch, int chSize);
 int XMLAPI XMLIsNameChar(XMLCH *ch, int chSize);
+int XMLAPI XMLParser_HasMoreEvents(LPXMLPARSER parser);
+
+/******************************************************************************/
+
+/*
+ *  Dinand Vanvelzen edit:
+ *  Added this to build easily with CMake
+ */
+
+#ifdef PARSIFAL_CUSTOM_GUCEF_BUILD 
+
+#undef XMLAPI
+#define XMLAPI PARSIFAL_XMLAPI
+
+#endif /* PARSIFAL_CUSTOM_GUCEF_BUILD ? */
+ 
+/******************************************************************************/
+
 
 #ifdef __cplusplus
    }
