@@ -1,0 +1,112 @@
+#! @SHELL@
+# 
+# Simple script to provide configuration information about libparsifal
+#
+PACKAGE="@PACKAGE@"
+VERSION="@VERSION@"
+build_os="@build_os@"
+
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+bindir="@bindir@"
+libdir="@libdir@"
+sbindir="@sbindir@"
+libexecdir="@libexecdir@"
+datarootdir="@datarootdir@"
+datadir="@datadir@"
+sysconfdir="@sysconfdir@"
+sharedstatedir="@sharedstatedir@"
+localstatedir="@localstatedir@"
+includedir="@includedir@"
+CFLAGS="@CFLAGS@"
+CPPFLAGS="@CPPFLAGS@"
+LIBS="@LIBS@"
+
+usage()
+{
+  exit_code=$1
+  cat <<EOF
+Usage: parsifal-config [OPTION]
+
+    This tool is provided to query information about how
+    libparsifal was configured and installed.
+
+Generic options:
+    --version       show libparsifal version
+    --help          display this help and exit
+
+Installation directories libparsifal was configured to:
+    --prefix        root for all platform independent files
+    --exec-prefix   root for all platform specific files
+    --bindir        platform specific executables
+    --libdir        platform specific libraries
+    --includedir    platform independent C (and C++) header files
+
+Compilation flags for libparsifal clients:
+    --libs          print library linking flags
+    --cflags        print pre-processor and compiler flags
+    --cppflags      print pre-processor flags
+    --libtool-libs  print library linking flags for libtool
+EOF
+   exit $exit_code
+}
+
+if test $# -eq 0; then
+  usage 1
+fi
+
+case "$build_os" in
+  darwin*)
+    rpath_str=""
+    ;;
+  *)
+    rpath_str="-Wl,-rpath,$libdir"
+    ;;
+esac
+
+while test $# -gt 0; do
+  case $1 in
+  --version)
+    echo $VERSION
+    ;;
+  --help)
+    usage 0
+    ;;
+  --prefix)
+    echo $prefix
+    exit 0
+    ;;
+  --exec-prefix)
+    echo $exec_prefix
+    exit 0
+    ;;
+  --bindir)
+    echo $bindir
+    exit 0
+    ;;
+  --libdir)
+    echo $libdir
+    ;;
+  --includedir)
+    echo $includedir
+    ;;
+  --libs)
+    echo "-L${libdir} ${rpath_str} -lparsifal ${LIBS}"
+    ;;
+  --cflags)
+    echo "$CPPFLAGS $CFLAGS"
+    ;;
+  --cppflags)
+    echo "$CPPFLAGS"
+    ;;
+  --libtool-libs)
+    echo "${libdir}/libparsifal.la"
+    ;;
+  *)
+    usage 1
+    ;;
+  esac
+  shift
+done
+
+exit 0

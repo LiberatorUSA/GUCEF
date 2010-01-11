@@ -1,10 +1,7 @@
 LINUX
 =====
     
-    Install libcurl. Check that your
-    curl-config --libs
-    gives same libraries as in CURL_LIBS section in xmlplint Makefile 
-    (modify if needed)
+    Install libcurl-dev if not already installed
     
     make
     make install

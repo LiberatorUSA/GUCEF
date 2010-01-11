@@ -10,6 +10,7 @@
 #ifdef ICONV_SUPPORT
 #include "iconv.h"
 #endif
+#include "pns.h"
 
 #ifndef BYTE
  #define BYTE unsigned char

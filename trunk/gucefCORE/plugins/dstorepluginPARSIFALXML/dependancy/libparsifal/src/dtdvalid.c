@@ -86,8 +86,8 @@ static struct FSAState *CreateNFA(LPXMLDTDVALIDATOR vp, XMLCP *cp, struct FSASta
 static void UnMarkFSA(LPXMLVECTOR fsa, int mark);
 static int AddEpsilonClosure(struct FSAState *base, struct FSAState *state);
 static int NFAtoDFA(LPXMLDTDVALIDATOR vp, struct ElementDecl *e);
-static int attcmp(const LPXMLATTDECL a1, const LPXMLATTDECL a2);
-static int sattcmp(const XMLCH *key, const LPXMLATTDECL ad);
+static int attcmp(const void *a, const void *b);
+static int sattcmp(const void *key, const void *ad);
 static int InitValidator(LPXMLDTDVALIDATOR vp);
 static int DTDValidate_EndDTD(void *UserData);
 static int AddElementDecl(LPXMLDTDVALIDATOR vp, XMLCH *name, XMLCP *cm);
@@ -99,7 +99,7 @@ static int ValidateAtts(LPXMLDTDVALIDATOR vp,
 						struct ElementDecl *e, LPXMLVECTOR atts);
 static int NameTokIter(XMLCH **next, int isNmToken);
 static int NewIdRef(LPXMLDTDVALIDATOR v, XMLCH *idref, int len, int hasNul);
-static int CheckIDREFS(char *key, void *data, void *userdata);
+static int CheckIDREFS(XMLCH *key, void *data, void *userdata);
 static int ValidateAttsTok(LPXMLDTDVALIDATOR v, int type, XMLCH *eName, XMLCH *name, XMLCH *val);
 static void FreeDTDValidator(LPXMLDTDVALIDATOR p, int ForReuse);
 
@@ -167,8 +167,8 @@ static void Er_Hint(LPXMLDTDVALIDATOR p, void *errCtx, int n)
 
 	do {
 		if (p->ErrorCode==ERR_XMLDTDV_ILLEGAL_ATT_VALUE) {
-			void **av = XMLVector_Get(v, i);
-			s = *av;
+			XMLATTENUM *av = XMLVector_Get(v, i);
+			s = av->name;
 		}
 		else {
 			struct FSATran *t = XMLVector_Get(v, i);
@@ -430,8 +430,10 @@ static int NFAtoDFA(LPXMLDTDVALIDATOR vp, struct ElementDecl *e)
    XMLATTDECL_DEF_REQUIRED atts will be first and
    others will follow them sorted by name (for
    bsearch - see ValidateAtts()) */
-static int attcmp(const LPXMLATTDECL a1, const LPXMLATTDECL a2)
-{
+static int attcmp(const void *a, const void *b)
+{	
+	const LPXMLATTDECL a1 = (LPXMLATTDECL)a;
+	const LPXMLATTDECL a2 = (LPXMLATTDECL)b;
 	if (a1->defaultDecl == XMLATTDECL_DEF_REQUIRED) {
 		return (a2->defaultDecl == XMLATTDECL_DEF_REQUIRED) ? 0 : -1;
 	}
@@ -441,9 +443,9 @@ static int attcmp(const LPXMLATTDECL a1, const LPXMLATTDECL a2)
 	return strcmp(a1->name, a2->name);
 }
 
-static int sattcmp(const XMLCH *key, const LPXMLATTDECL ad)
+static int sattcmp(const void *key, const void *ad)
 {
-	return strcmp(key, ad->name);
+	return strcmp((const XMLCH*)key, ((const LPXMLATTDECL)ad)->name);
 }
 
 static int InitValidator(LPXMLDTDVALIDATOR v) 
@@ -451,6 +453,7 @@ static int InitValidator(LPXMLDTDVALIDATOR v)
 	struct ElementDecl *e, *ee;
 	struct FSAState *s;
 	LPXMLVECTOR *declAtts;
+	void **d;
 
 	ee = (struct ElementDecl *)_XMLVector_GetIterP(v->ElementDecls, e);
 	for (; e!=ee; e++) {
@@ -458,9 +461,9 @@ static int InitValidator(LPXMLDTDVALIDATOR v)
 		hastablebucket in its name, we MUST assign hashtable data here,
 		we cannot alter the cpNames table when DTD parsing is in progress! */
 		
-		if (((XMLHTABLEBUCKET*)e->cp->name)->data != EMPTYSTR)
-			continue; /* duplicate declaration */
-		((XMLHTABLEBUCKET*)e->cp->name)->data = e;
+		d = (void**)XMLHTable_GetData(v->parser->prt->cpNames, (XMLHTABLEBUCKET*)e->cp->name);
+		if (*d != EMPTYSTR) continue; /* duplicate declaration */
+		*d = e;
 	
 		switch (e->type) {
 			case XMLCTYPE_ANY: 
@@ -492,8 +495,8 @@ static int InitValidator(LPXMLDTDVALIDATOR v)
 			if (declAtts) {
 				e->declAtts = *(declAtts+1);
 				if (e->declAtts->length > 1) 
-					qsort((void*)e->declAtts->array, e->declAtts->length, sizeof(XMLATTDECL), 
-						(int(*)(const void*, const void*))attcmp);
+					qsort((void*)e->declAtts->array, e->declAtts->length, 
+						sizeof(XMLATTDECL), attcmp);
 			}
 		}
 	}
@@ -552,15 +555,12 @@ static struct FSAState *Validate(struct FSAState *context, XMLCH *name)
 	return NULL;
 }
 
+static int ecmp(const void *key, const void *a) { return strcmp(key, ((XMLATTENUM*)a)->name); }
+
 static int ValidateAttsEnum(LPXMLVECTOR e, XMLCH *val)
 {
-	int i;
-	void **s;
-	for (i=0; i<e->length; i++) {
-		s = XMLVector_Get(e, i);
-		if (!strcmp((XMLCH*)*s, val)) return 1;
-	}
-	return 0;
+	if (e->length == 1) return (!strcmp(((XMLATTENUM*)XMLVector_Get(e, 0))->name, val));
+	return (bsearch(val, e->array, e->length, sizeof(XMLATTENUM), ecmp)!=NULL);
 }
 
 static int NameTokIter(XMLCH **next, int isNmToken)
@@ -591,11 +591,12 @@ static int NewIdRef(LPXMLDTDVALIDATOR v, XMLCH *idref, int len, int hasNul)
 	p = XMLHTable_Insert(v->idTable, idref, UNRESOLVED_ID);
 	if (!hasNul) idref[len]=' ';
 	if (!p) return 0;
-	if (p == RESOLVED_ID) v->idTable->bucket->data = p;
+	if (p == RESOLVED_ID) 
+		*((void**)XMLHTable_GetData(v->idTable, v->idTable->bucket)) = p;
 	return 1;
 }
 
-static int CheckIDREFS(char *key, void *data, void *userdata)
+static int CheckIDREFS(XMLCH *key, void *data, void *userdata)
 {	
 	LPXMLDTDVALIDATOR v = (LPXMLDTDVALIDATOR)userdata;
 	if (data == UNRESOLVED_ID) {
@@ -605,8 +606,7 @@ static int CheckIDREFS(char *key, void *data, void *userdata)
 				v->parser->errorHandler(v->parser);
 		}
 	}
-	XMLHTable_Remove(v->idTable, key);
-	return 0;
+	return XMLHTABLEDFLAG_FREETHISKEY;
 }
 
 static int ValidateAttsTok(LPXMLDTDVALIDATOR v, int type, XMLCH *eName, XMLCH *name, XMLCH *val)
@@ -637,8 +637,8 @@ static int ValidateAttsTok(LPXMLDTDVALIDATOR v, int type, XMLCH *eName, XMLCH *n
 			if (!(r = XMLHTable_Lookup(v->idTable, val))) {
 				if (!XMLHTable_Insert(v->idTable, val, RESOLVED_ID)) return 0;
 			}
-			else if (r == UNRESOLVED_ID) 
-				v->idTable->bucket->data = RESOLVED_ID;
+			else if (r == UNRESOLVED_ID)
+				*((void**)XMLHTable_GetData(v->idTable, v->idTable->bucket)) = RESOLVED_ID;
 			else {
 				Er_(v, NULL, ERR_XMLDTDV_DUPLICATE_ID, name, eName);
 				return 0;
@@ -698,7 +698,7 @@ static int ValidateAtts(LPXMLDTDVALIDATOR v,
 			 a->value = a->valBuf.str;
 		else {
 			da2 = (numAtts) ? bsearch(a->qname, da, numAtts, 
-				sizeof(XMLATTDECL), (int(*)(const void*, const void*))sattcmp) : NULL;
+				sizeof(XMLATTDECL), sattcmp) : NULL;
 			if (!da2) {
 				Er_(v, NULL, ERR_XMLDTDV_UNDECLARED_ATT, a->qname, e->name);
 				MAYRET(0);
@@ -840,9 +840,9 @@ static void FreeDTDValidator(LPXMLDTDVALIDATOR p, int ForReuse)
 	if (p->cpNodesPool) 
 		XMLPool_FreePool(p->cpNodesPool);
 	if (p->ElementTable) 
-		XMLHTable_Destroy(p->ElementTable, NULL, 1);
+		XMLHTable_Destroy(p->ElementTable, NULL, 0);
 	if (p->idTable)
-		XMLHTable_Destroy(p->idTable, NULL, 1);
+		XMLHTable_Destroy(p->idTable, NULL, 0);
 
 	if (ForReuse) {
 		if (p->StatePool && p->StatePool->blocksAllocated) {
@@ -865,41 +865,48 @@ int XMLAPI XMLParser_ParseValidateDTD(LPXMLDTDVALIDATOR dtd, LPXMLPARSER parser,
 {
 	int ret;
 	if (!dtd || !parser) return 0;
-	dtd->parser = parser;
-	dtd->ErrorCode = dtd->ErrorColumn = dtd->ErrorLine = 0; /* must be
-		set before FreeDTDValidator */
-	if (*dtd->ErrorString) dtd->ErrorString[0] = '\0';
 
-	if (dtd->ContextStack->length) 
-		_XMLVector_RemoveAll(dtd->ContextStack);
-	
-	if (dtd->cpNodesPool) {
-		FreeDTDValidator(dtd, 1);
-		if (dtd->ErrorCode) return 0;
-	}	
-	dtd->ElementTable = NULL;
-	dtd->cpNodesPool = NULL;
-	dtd->idTable = NULL;
-	
-	/* save handlers: */
-	dtd->startElementHandler = parser->startElementHandler;
-	dtd->endElementHandler = parser->endElementHandler;
-	dtd->charactersHandler = parser->charactersHandler;
-	dtd->ignorableWhitespaceHandler = parser->ignorableWhitespaceHandler;	
-	dtd->elementDeclHandler = parser->elementDeclHandler;
-	dtd->endDTDHandler = parser->endDTDHandler;
-	/* set the validating ones: */
-	parser->startElementHandler = dtd->startElementHandlerFilter;
-	parser->endElementHandler = dtd->endElementHandlerFilter;
-	parser->charactersHandler = dtd->charactersHandlerFilter;
-	parser->ignorableWhitespaceHandler = dtd->ignorableWhitespaceHandlerFilter;
-	parser->elementDeclHandler = DTDValidate_ElementDecl;
-	parser->endDTDHandler = DTDValidate_EndDTD;	
-	
-	_XMLParser_SetFlag(parser, XMLFLAG_REPORT_DTD_EXT, 1);
-	parser->UserData = dtd;
+	if (!inputSrc)
+		ret = (parser->ErrorCode==0);
+	else {
+		dtd->parser = parser;
+		dtd->ErrorCode = dtd->ErrorColumn = dtd->ErrorLine = 0; /* must be
+			set before FreeDTDValidator */
+		if (*dtd->ErrorString) dtd->ErrorString[0] = '\0';
 
-	ret = XMLParser_Parse(parser, inputSrc, inputData, encoding);
+		if (dtd->ContextStack->length) 
+			_XMLVector_RemoveAll(dtd->ContextStack);
+		
+		if (dtd->cpNodesPool) {
+			FreeDTDValidator(dtd, 1);
+			if (dtd->ErrorCode) return 0;
+		}	
+		dtd->ElementTable = NULL;
+		dtd->cpNodesPool = NULL;
+		dtd->idTable = NULL;
+		
+		/* save handlers: */
+		dtd->startElementHandler = parser->startElementHandler;
+		dtd->endElementHandler = parser->endElementHandler;
+		dtd->charactersHandler = parser->charactersHandler;
+		dtd->ignorableWhitespaceHandler = parser->ignorableWhitespaceHandler;	
+		dtd->elementDeclHandler = parser->elementDeclHandler;
+		dtd->endDTDHandler = parser->endDTDHandler;
+		/* set the validating ones: */
+		parser->startElementHandler = dtd->startElementHandlerFilter;
+		parser->endElementHandler = dtd->endElementHandlerFilter;
+		parser->charactersHandler = dtd->charactersHandlerFilter;
+		parser->ignorableWhitespaceHandler = dtd->ignorableWhitespaceHandlerFilter;
+		parser->elementDeclHandler = DTDValidate_ElementDecl;
+		parser->endDTDHandler = DTDValidate_EndDTD;	
+		
+		_XMLParser_SetFlag(parser, XMLFLAG_REPORT_DTD_EXT, 1);
+		parser->UserData = dtd;
+
+		ret = XMLParser_Parse(parser, inputSrc, inputData, encoding);
+		if (ret && _XMLParser_GetFlag(parser, XMLFLAG_USE_SIMPLEPULL)) return 1;
+	}
+	
 	if (!ret) {
 		/* Assign ElementTable and content particle pool 'cos validator 
 		will be responsible for freeing them and endDTD might not be called */
@@ -910,11 +917,9 @@ int XMLAPI XMLParser_ParseValidateDTD(LPXMLDTDVALIDATOR dtd, LPXMLPARSER parser,
 	}
 	else if (dtd->idTable) {
 		dtd->idTable->userdata = dtd;
-		XMLHTable_Enumerate(dtd->idTable, CheckIDREFS);
-		free(dtd->idTable->table);
-		free(dtd->idTable);
+		XMLHTable_Destroy(dtd->idTable, CheckIDREFS, 0);
 		dtd->idTable = NULL;
-		if (parser->ErrorCode) ret = 0;
+		ret = (parser->ErrorCode==0);
 	}
 	
 	if (parser->prt->doctypeStr) {

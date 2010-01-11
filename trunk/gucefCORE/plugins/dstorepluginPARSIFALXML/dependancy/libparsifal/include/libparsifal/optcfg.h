@@ -82,7 +82,7 @@ static INLINE XMLCH *ReadCh_Opt(LPXMLPARSER parser, int *chSize)
 	if (*chSize == 1) {
 		if (ISILLBYTE(*c)) {
 			*chSize = 0;
-			ErP_(parser, ERR_XMLP_ILLEGAL_CHAR, 1);
+			ErP_(parser, ERR_XMLP_ILLEGAL_CHAR, 0);
 			return (XMLCH*)NULL;
 		}
 

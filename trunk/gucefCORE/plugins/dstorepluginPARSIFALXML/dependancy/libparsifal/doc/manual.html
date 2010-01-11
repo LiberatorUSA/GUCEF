@@ -87,8 +87,8 @@
 <td>XML_EVENT_HANDLER</td>
 </tr>
 
-<td width="30%"><a href="manual.html#XML_DEFAULT_HANDLER">defaultHandler</a></td>
-<td>XML_CHARACTERS_HANDLER</td>
+<td width="30%"><a href="manual.html#XML_ENCODINGALIAS_HANDLER">encodingAliasHandler</a></td>
+<td>XML_ENCODINGALIAS_HANDLER</td>
 </tr>
 
 <td width="30%"><a href=
@@ -149,7 +149,8 @@ contains current parser as one of its members.</p>
 <pre><b>int (*XML_EVENT_HANDLER)(void *UserData);</b></pre>
 
 <p>startDocumentHandler reports (surprisingly!) start of document. This is quaranteed to be the first
-event that's triggered in the processing. There's one exception to this: if parser fails to detect the encoding for the
+event that's triggered in the processing (preceded by optional xmlDecl event). There's one exception to this: 
+if parser fails to detect the encoding for the
 document (by reading byte order mark and/or XML declaration or forced encoding given by <code>encoding</code>
 parameter to <code>XMLParser_Parse</code>) startDocumenentHandler/endDocumentHandler won't be called - this
 is special case because encoding must be known at startDocument stage.
@@ -400,6 +401,7 @@ info).</p>
 
 <p>resolveEntityHandler example:<br>
 (this example also takes special <code> xml:base</code> attribute into account)&nbsp;</p>
+<p><b>See xmlplint/uriresolver.h for more complete uri resolver</b></p>
 
 <div class="codebox">
   <code>
@@ -557,7 +559,7 @@ if they reside in the external DTD.
 <br>
 <br>
 <h4><a name="XML_ELEMENTDECL_HANDLER">elementDeclHandler</a></h4>
-<pre><b>typedef int (*XML_ELEMENTDECL_HANDLER)(void *UserData,
+<pre><b>int (*XML_ELEMENTDECL_HANDLER)(void *UserData,
     const XMLCH *name, void *contentModel);</b></pre>
 
 <p>Report an element type declaration.</p>
@@ -573,7 +575,7 @@ for more info.<p>
 <br>
 <br>
 <h4><a name="XML_ATTRIBUTEDECL_HANDLER">attributeDeclHandler</a></h4>
-<pre><b>typedef int (*XML_ATTRIBUTEDECL_HANDLER)(void *UserData, const XMLCH *eName,
+<pre><b>int (*XML_ATTRIBUTEDECL_HANDLER)(void *UserData, const XMLCH *eName,
     const XMLCH *aName, int type, const XMLCH *typeStr, int valueDef,
     const XMLCH *def);</b></pre>
 
@@ -624,7 +626,7 @@ for more info.<p>
 <br>
 <br>
 <h4><a name="XML_ENTITYDECL_HANDLER">entityDeclHandler</a></h4>
-<pre><b>typedef int (*XML_ENTITY_EVENT_HANDLER)(void *UserData, LPXMLENTITY entity);</b></pre>
+<pre><b>int (*XML_ENTITY_EVENT_HANDLER)(void *UserData, LPXMLENTITY entity);</b></pre>
 
 <p>Report an entity declaration.</p>
 <p><b>LPXMLENTITY members:</b></p>
@@ -665,7 +667,7 @@ for more info.</p>
 <br>
 <br>
 <h4><a name="XML_NOTATIONDECL_HANDLER">notationDeclHandler</a></h4>
-<pre><b>typedef int (*XML_NOTATIONDECL_HANDLER)(void *UserData, const XMLCH *name,
+<pre><b>int (*XML_NOTATIONDECL_HANDLER)(void *UserData, const XMLCH *name,
     const XMLCH *publicID, const XMLCH *systemID);</b></pre>
 
 <p>Report a notation declaration.</p>
@@ -674,10 +676,25 @@ for more info.</p>
 
 <br>
 <br>
-<h4><a name="XML_DEFAULT_HANDLER">defaultHandler</a></h4>
-<pre><b>int (*XML_CHARACTERS_HANDLER)(void *UserData, const XMLCH *Chars, int cbSize);</b></pre>
+<h4><a name="XML_ENCODINGALIAS_HANDLER">encodingAliasHandler</a></h4>
+<pre><b>XMLCH* (*XML_ENCODINGALIAS_HANDLER)(void *UserData, const XMLCH *enc);</b></pre>
 
-<p><b>Not used in the current version</b></p>
+<p>Sets encoding alias for encoding specified in <code>enc</code> parameter (this value comes
+from encoding detection). Return <code>NULL</code> if you don't want to set alias. This handler 
+can also be used to completely override document encoding by simply returning
+wanted encoding. Note that in that case you should also specify some bogus encoding
+in <code>XMLParser_Parse</code> to ensure that this handler gets called - this bogus encoding
+will then be the value of enc parameter. Note also that document might trigger
+multiple calls to this handler because of external entities/dtd etc. and they
+might all use different encoding.</p>
+<br>
+<div class="codebox">
+<code>
+<pre>XMLCH* encAlias(void *UserData, const XMLCH *enc)
+{
+  return (!strcmp(enc, "windows-1251")) ? "ISO-8859-1" : NULL;
+}</pre></code></div>
+
 
 <br>
 <br>
@@ -866,6 +883,22 @@ validation warning occurs or set some user flag to inform your handlers that fro
 you're only collecting warnings/parsing errors and not building any data model in your handlers.</td>
 </tr>
 
+
+<td>XMLFLAG_SPLIT_LARGE_CONTENT</td>
+<td>FALSE</td>
+<td>Splits character handler calls when content bytes grow larger than 4000 bytes (not exact value, you can't rely on that).
+When parsing for example documents that contain large binary content w/o this flag memory usage might become a problem and 
+performance might degrade. See also characters handler.</td>
+</tr>
+
+
+<td>XMLFLAG_USE_SIMPLEPULL</td>
+<td>FALSE</td>
+<td>Uses simple pull/progressive model for parsing. See <a href="#XMLParser_HasMoreEvents">XMLParser_HasMoreEvents</a></td>
+</tr>
+
+
+
 </table>
 </div>
 
@@ -923,7 +956,8 @@ function</td>
 
 
 <td width="30%"><code>encoding</code></td>
-<td>Sets document encoding. Note that forced encoding <b>doesn't override</b> encoding declaration or BOM and
+<td>Sets document encoding. Note that forced encoding <b>doesn't override</b> (see <a href="manual.html#XML_ENCODINGALIAS_HANDLER">encodingAliasHandler</a> for 
+ info about overriding encodings) encoding declaration or BOM and
 should be used only in situations when document doesn't contain encoding declaration and/or BOM i.e.
 encoding is specified in MIME header etc. Forced encoding can infact conflict with encoding set by bom or
 xml declaration.
@@ -980,12 +1014,17 @@ determined by following:</p>
 <p>
 <b>NOTE:</b> If you want to distinguish between an end of stream (EOF) and a stream error,
 you must return <code>BIS_ERR_INPUT</code> on stream error and <code>BIS_EOF</code> (or TRUE) on EOF condition. 
-BIS_ERR_INPUT is added into parser starting from version 0.7.4. Returning <code>BIS_ERR_INPUT</code> will trigger
+Returning <code>BIS_ERR_INPUT</code> will trigger
 <code>ERR_XMLP_IO</code> error accordingly. Stream error check makes code more explicit, for example
 document and more importantly external entity can be well-formed and parsing can be succesfull even though
 there was a stream error! For this reason it's always good practise to do error checking in
 inputsource callback.
 <p>
+<p>
+One option for error checking would be to check <code>feof(inputdata)</code> <b>after</b> parsing. Infact
+this is preferred method and works well when you wrap <code>XMLParser_Parse</code> call to handle
+different inputsources.  
+</p>
 <br>
 <p>Here's an example FILE* inputsrc that handles ferror() too:
 <br>
@@ -1025,6 +1064,9 @@ scope.
 Parsifal tracks also the scope for predefined <code>xml</code> prefix i.e. <code>xml:space</code>, 
 <code>xml:base</code> or <code>xml:whatever</code> can be retrieved by calling <code>
 XMLParser_GetPrefixMapping(parser, &quot;xml:space&quot;);</code></p>
+<p><b>Tip:</b> checking xml:space equals &apos;preserve&apos; in ignorableWhitespaceHandler
+and delegating call to charactersHandler is method for handling xml:space properly. 
+Of course using validation and declaring #PCDATA is the best way to handle whitespace.</p>
 
 <br>
 <br>
@@ -1098,6 +1140,16 @@ DTD from other external DTD in resolveEntityHandler.</p>
 <br>
 <br>
 
+<h4><a name="XMLParser_HasMoreEvents">XMLParser_HasMoreEvents</a></h4>
+<pre><b>int XMLAPI XMLParser_HasMoreEvents(LPXMLPARSER parser);</b></pre>
+<p>When <code>XMLFLAG_USE_SIMPLEPULL</code> flag is set <code>XMLParser_Parse</code> (or <code>ParseValidateDTD</code>) only initializes parser and comes out
+of the event loop without parsing. You then call this method to trigger/parse next event(s). This feature can be used 
+to implement pull parser (for language bindings or XMPP etc. parser) on top of Parsifal. See <code>xmlreader</code> sample which
+implements pull parser and <code>xmlreader README</code> which explains the technical details.
+
+<br>
+<br>
+
 <h4>XMLParser_Free</h4>
 <pre><b>void XMLParser_Free(LPXMLPARSER parser);</b></pre>
 <p>Frees parser and its resources.</p>
@@ -1123,20 +1175,23 @@ internally) use XMLVector as stack too. xmldef.h provides stack macro wrappers
 for XMLVector.</p>
 
 <br>
-<br>
 <h4>XMLStringbuf...</h4>
 <p>Simple stringbuffer implementation that is also exported/available for end-user
 of Parsifal. See XMLStringbuf.c and XMLStringbuf.h for details. Sample
 files demonstrate XMLStringbuf usage.</p>
 
 <br>
-<br>
 <h4>XMLPool...</h4>
 <p>Can be used in conjunction with XMLStrinbuf for allocating fixed length strings etc.
 See also <a href="csrchtml/test_pool_c.html">test_pool.c</a> for example of using XMLVector, XMLStringbuf
-ans XMLPool.</p>
+and XMLPool.</p>
 
 <br>
+<h4>XMLHtable...</h4>
+<p>Hashtable implementation. Can be used to store generic data. See xmlhash.h</p>
+<br>
+<br>
+
 <br>
 <h3><a name="VALIDATION">Validation</a></h3>
 <br>
@@ -1157,8 +1212,8 @@ XMLParser_Parse.</li>
 <p>
 You can reuse LPXMLDTDVALIDATOR objects and call 
 XMLParser_ParseValidateDTD multiple times without doing any
-cleaning up etc. LPXMLDTDVALIDATOR isn't "tied into" LPXMLPARSER
-in any way BEFORE or AFTER XMLParser_ParseValidateDTD call so
+cleaning up etc. LPXMLDTDVALIDATOR is "tied into" LPXMLPARSER
+only during parsing (during XMLParser_ParseValidateDTD call) so
 XMLParser_FreeDTDValidator can also be called independently of
 XMLParser_Free.</p>
 
@@ -1262,9 +1317,10 @@ other namespaces you must do the filtering.
 </p>
 
 <br>
-<p>Basic tutorials about DTDs:</p>
+<p>Basic tutorials/info about DTDs:</p>
+<p><a href="http://en.wikipedia.org/wiki/Document_Type_Definition" target="_top">Wikipedia about DTD</a></p>
 <p><a href="http://www.zvon.org" target="_top">ZVON.ORG XML tutorials</a></p>
-<p><a href="http://java.sun.com/xml/jaxp/dist/1.1/docs/tutorial/sax/5a_dtd.html" target="_top">Creating a Document Type Definition (DTD)</a></p>
+
 
 <br>
 <br>
@@ -1294,16 +1350,18 @@ multithreaded run-time library (option <code>-MT</code>).</p>
 <p>VC6 project file also contains target for building dll with libiconv support that
 is tested with binary distribution libiconv-1.9.1.bin.woe32. This builds parsifal.dll
 that is linked with dynamic multithreaded run-time library - using same RTL as
-libiconv is essential. 
+libiconv is essential. See also win_iconv option in links.
 </p>
 
-<p>If you aren't using VC6, you must build your Parsifal library by
-means specific to your C/C++ compiler. Just generate static or
-dynamic library from files in <b>src</b> directory, link your
-program with it and include <code>parsifal.h</code> in your
-source.</p>
+<p><font color="#FF0000">VC6 is quite old version of Microsoft's Visual C++. Microsoft
+offers versions of Visual C++ express for free</font> and you should be able
+to import VC6 projects into newer versions easily. Since Parsifal is a cross-platform project
+you might want to use gcc in windows too, see MinGW options below. 
+</p>
 <br>
 <p><b>MinGW:</b></p>
+<p>Directory <code>WIN32\MINGW\DLL</code> contains makefile for creating parsifal.dll. See makefile for options/usage. Sample
+	<code>SAMPLES\PULL\BUILD_MINGW.BAT</code> is a batch file example for linking with <code>WIN32\MINGW\DLL\PARSIFAL.DLL</code>.
 <p>Directory <code>WIN32\MINGW</code> etc. contains static library for mingw compiler
 and <a href="http://www.bloodshed.net" target="_top">Dev-Cpp IDE</a> project files. See README in that directory.</p>
 <br>
@@ -1311,6 +1369,13 @@ and <a href="http://www.bloodshed.net" target="_top">Dev-Cpp IDE</a> project fil
 <p>Directory <code>WIN32\BCC</code> etc. contains makefile for building static library for free BCC 5.5 compiler.
 Makefile was contributed by Carsten Heuer. Links with static and singlethreaded runtime library which is default
 for BCC. See README in that directory.</p>
+<br>
+<p><b>Other:</b></p>
+<p>If you aren't using compiler mentioned above, you must build your Parsifal library by
+means specific to your C compiler. Just generate static or
+dynamic library from files in <b>src</b> directory, link your
+program with it and include <code>parsifal.h</code> in your
+source. <code>WIN32\MINGW\DLL</code> makefile can also be a starting point for you</p>
 <br>
 <p>
 See also <a href="../README">README</A>
@@ -1340,6 +1405,9 @@ make install (optional, you can place executables in to directory of
 Samples aren't build when installing shared library. Library must be build and installed
 before making sample files of course.
 <br>
+<p>Startinng from version 1.1 configure offers <code>--disable-gccflags</code> for disabling default compiler flags for gcc.
+1.1 also contains <code>parsifal-config</code> tool for querying information about how
+    libparsifal was configured and installed.</p>
 <p>
 See also <a href="../README">README</A>
 </p>
@@ -1355,9 +1423,10 @@ Compiling options:
 
 <td>DTD_SUPPORT</td>
 <td>TRUE</td>
-<td>Compiles with DTD support. Compiling w/o DTD_SUPPORT defined makes much smaller parser which
+<td>Compiles with DTD support. Compiling w/o DTD_SUPPORT defined makes smaller parser which 
 doesn't support parsing DTDs at all (accepts simple DOCTYPE tag optionally containing PUBLIC and
-SYSTEM declared BUT NOT an internal subset of any sort). This has also effect on how character data is reported via <a href="#XML_CHARACTERS">charactersHandler</a>.</td>
+SYSTEM declared BUT NOT an internal subset of any sort). w/o DTD_SUPPORT library size will be around 48K with dynamic RTL 
+against 68K full dtd support build. This has also effect on how character data is reported via <a href="#XML_CHARACTERS">charactersHandler</a>.</td>
 </tr>
 
 <td>DTDVALID_SUPPORT</td>
@@ -1406,8 +1475,7 @@ older legacy encodings, primarily in the UTF-8 form."</i></p>
 <p>TIP: to enable UTF-8 support for xterm use<code><pre>
 xterm -u8
 </pre></code>
-Now you should see Parsifal output converted from UTF-8 to "normal" ISO-8859-1 
-latin characters. Read linux Unicode-HOWTO for more details/language/font support
+Read linux Unicode-HOWTO for more details/language/font support
 for xterm etc.
 <p>
 <br>
@@ -1499,9 +1567,9 @@ found a bug!
 <br>
 <br>
 <hr>
-<p><font color="#004040">Copyright &copy; 2002-2005 Toni
+<p><font color="#004040">Copyright &copy; 2002-2008 Toni
 Uusitalo.<br>
 Send mail, suggestions and bug reports to<br><img src="pics/semail.gif"><br>
-Last modified: 02.11.2005 20:00</font></p>
+Last modified: 04.10.2008 00:00</font></p>
 </body>
 </html>

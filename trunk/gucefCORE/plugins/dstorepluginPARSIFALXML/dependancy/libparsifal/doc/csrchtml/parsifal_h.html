@@ -8,7 +8,7 @@
 <body class="hl">
 <pre class="hl"><span class="com">/*===========================================================================</span>
 <span class="com">  Parsifal XML Parser</span>
-<span class="com">  Copyright (c) 2002-2005 Toni Uusitalo</span>
+<span class="com">  Copyright (c) 2002-2008 Toni Uusitalo</span>
 <span class="com">  released to the public domain 2002-11-15</span>
 <span class="com">  http://www.saunalahti.fi/~samiuus/toni/xmlproc/</span>
 <span class="com"></span>
@@ -34,6 +34,7 @@
    <span class="kwc">extern</span> <span class="str">&quot;C&quot;</span> <span class="sym">{</span>
 <span class="dir">#endif</span>
 
+<span class="dir">#include</span> <span class="dstr">&quot;pns.h&quot;</span><span class="dir"></span>
 <span class="dir">#include</span> <span class="dstr">&quot;bistream.h&quot;</span><span class="dir"></span>
 <span class="dir">#include</span> <span class="dstr">&quot;xmlhash.h&quot;</span><span class="dir"></span>
 <span class="dir">#include</span> <span class="dstr">&quot;xmlvect.h&quot;</span><span class="dir"></span>
@@ -148,6 +149,8 @@
 <span class="dir">#define XMLFLAG_PRESERVE_WS_ATTRIBUTES 0x20</span>
 <span class="dir">#define XMLFLAG_REPORT_DTD_EXT 0x40</span>
 <span class="dir">#define XMLFLAG_VALIDATION_WARNINGS 0x80</span>
+<span class="dir">#define XMLFLAG_SPLIT_LARGE_CONTENT 0x100</span>
+<span class="dir">#define XMLFLAG_USE_SIMPLEPULL 0x200</span>
 
 <span class="kwc">typedef</span> <span class="kwb">int</span> <span class="sym">(*</span>XML_EVENT_HANDLER<span class="sym">)(</span><span class="kwb">void</span> <span class="sym">*</span>UserData<span class="sym">);</span>
 <span class="kwc">typedef</span> <span class="kwb">int</span> <span class="sym">(*</span>XML_START_ELEMENT_HANDLER<span class="sym">)(</span><span class="kwb">void</span> <span class="sym">*</span>UserData<span class="sym">,</span> <span class="kwb">const</span> XMLCH <span class="sym">*</span>uri<span class="sym">,</span>
@@ -173,6 +176,7 @@
     <span class="kwb">void</span> <span class="sym">*</span>contentModel<span class="sym">);</span>
 <span class="kwc">typedef</span> <span class="kwb">int</span> <span class="sym">(*</span>XML_NOTATIONDECL_HANDLER<span class="sym">)(</span><span class="kwb">void</span> <span class="sym">*</span>UserData<span class="sym">,</span> <span class="kwb">const</span> XMLCH <span class="sym">*</span>name<span class="sym">,</span>
     <span class="kwb">const</span> XMLCH <span class="sym">*</span>publicID<span class="sym">,</span> <span class="kwb">const</span> XMLCH <span class="sym">*</span>systemID<span class="sym">);</span>
+<span class="kwc">typedef</span> XMLCH<span class="sym">* (*</span>XML_ENCODINGALIAS_HANDLER<span class="sym">)(</span><span class="kwb">void</span> <span class="sym">*</span>UserData<span class="sym">,</span> <span class="kwb">const</span> XMLCH <span class="sym">*</span>enc<span class="sym">);</span>
 
 <span class="kwc">typedef</span> <span class="kwb">struct</span> tagXMLPARSER
 <span class="sym">{</span>
@@ -193,7 +197,7 @@
     XML_CHARACTERS_HANDLER charactersHandler<span class="sym">;</span>
     XML_CHARACTERS_HANDLER ignorableWhitespaceHandler<span class="sym">;</span>
     XML_CHARACTERS_HANDLER commentHandler<span class="sym">;</span>
-    XML_CHARACTERS_HANDLER defaultHandler<span class="sym">;</span>
+    XML_ENCODINGALIAS_HANDLER encodingAliasHandler<span class="sym">;</span>
     XML_START_ELEMENT_HANDLER startElementHandler<span class="sym">;</span>
     XML_END_ELEMENT_HANDLER endElementHandler<span class="sym">;</span>
     XML_PI_HANDLER processingInstructionHandler<span class="sym">;</span>
@@ -245,6 +249,7 @@ XMLCH XMLAPI <span class="sym">*</span><span class="kwd">XMLParser_GetVersionStr
 <span class="kwb">int</span> XMLAPI <span class="kwd">XMLNormalizeBuf</span><span class="sym">(</span>XMLCH <span class="sym">*</span>buf<span class="sym">,</span> <span class="kwb">int</span> len<span class="sym">);</span>
 <span class="kwb">int</span> XMLAPI <span class="kwd">XMLIsNameStartChar</span><span class="sym">(</span>XMLCH <span class="sym">*</span>ch<span class="sym">,</span> <span class="kwb">int</span> chSize<span class="sym">);</span>
 <span class="kwb">int</span> XMLAPI <span class="kwd">XMLIsNameChar</span><span class="sym">(</span>XMLCH <span class="sym">*</span>ch<span class="sym">,</span> <span class="kwb">int</span> chSize<span class="sym">);</span>
+<span class="kwb">int</span> XMLAPI <span class="kwd">XMLParser_HasMoreEvents</span><span class="sym">(</span>LPXMLPARSER parser<span class="sym">);</span>
 
 <span class="dir">#ifdef __cplusplus</span>
    <span class="sym">}</span>

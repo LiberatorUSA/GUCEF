@@ -26,6 +26,21 @@
 #include "xmlpool.h"
 #include "xmlcfg.h"
 
+/******************************************************************************/
+
+/*
+ *  Dinand Vanvelzen edit:
+ *  Added this to build easily with CMake
+ */
+#ifdef PARSIFAL_CUSTOM_GUCEF_BUILD 
+ 
+#undef XMLAPI
+#define XMLAPI
+
+#endif /* PARSIFAL_CUSTOM_GUCEF_BUILD ? */
+
+/******************************************************************************/
+
 #define GROWSBUF(l) \
 if (sbuf->usePool) { \
   if ((sbuf->len + (l)) > sbuf->pool->itemSize) { \
@@ -123,7 +138,7 @@ int XMLAPI XMLStringbuf_SetLength(LPXMLSTRINGBUF sbuf, int len)
 XMLCH XMLAPI *XMLStringbuf_ToString(LPXMLSTRINGBUF sbuf)
 {	
 	GROWSBUF(1);
-	if (sbuf->str[sbuf->len]) sbuf->str[sbuf->len] = '\0';
+	sbuf->str[sbuf->len] = '\0';
 	return (sbuf->str);
 }
 

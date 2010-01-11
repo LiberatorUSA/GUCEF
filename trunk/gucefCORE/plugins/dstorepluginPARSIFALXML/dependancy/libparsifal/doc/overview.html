@@ -35,6 +35,8 @@ design parsifal can be easily compiled to support DTD validation or to perform o
 non-validating parsing etc. If you need higher level tools, for example
 dom/xpath processing, you should look for other libs of course. 
 </p>
+<p><font color="#FF0000"><b>NEW:</b> starting from version 1.1 parsifal offers progressive parsing feature
+	which can be used to implement pull parser on top of parsifal.</font> see <code>samples/pull</code></p>
 
 <p>You can <b>download Parsifal including source, documentation and
 samples</b> from <a href="download.html">here</a></p>
@@ -91,7 +93,7 @@ using methods similar to SAX attributes handling.</td>
 
 <tr>
 <td width="30%">errorHandler</td>
-<td>&nbsp;</td>
+<td>for errors/warnings</td>
 </tr>
 
 <tr>
@@ -100,8 +102,8 @@ using methods similar to SAX attributes handling.</td>
 </tr>
 
 <tr>
-<td width="30%">defaultHandler</td>
-<td>for miscellaneous character data</td>
+<td width="30%">encodingAliasHandler</td>
+<td>for aliasing/overriding encodings</td>
 </tr>
 
 <tr>
@@ -163,7 +165,8 @@ using methods similar to SAX attributes handling.</td>
 </tr>
 
 <tr>
-<td width="30%">see <a href="manual.html#FEATURES">XMLFlags</a> for info on Parsifal specific
+<td width="30%">XMLFLAG_VALIDATION_WARNINGS for handling validation errors as warnings,
+XMLFLAG_USE_SIMPLEPULL<br>for progressive/pull parsing. see <a href="manual.html#FEATURES">XMLFlags</a> for more info on Parsifal specific
   properties</td>
 </tr>
 </table>
@@ -219,9 +222,7 @@ GNU libiconv uses <a href="http://www.gnu.org/licenses/lgpl.txt">LGPL licence</a
 <h4>Conformance</h4>
 
 <br>
-Parsifal accepts only well-formed XML documents and despite of
-its small size Parsifal enforces strict rules for XML tag names,
-namespace declarations, XML declaration etc. See <a href="conformance.html">OASIS XML testsuite results</a>.
+Parsifal is highly conformant xml 1.0 parser. See <a href="conformance.html">OASIS XML testsuite results</a>.
 <br>
 <h4>How to use</h4>
 
@@ -230,7 +231,9 @@ namespace declarations, XML declaration etc. See <a href="conformance.html">OASI
 Read the <a href="manual.html">manual page</a>. Examine the samples
 that come with the <a href="download.html">download</a>.
 </p>
-<br>
+<p>Note that 1st priority for samples is to demonstrate xml 
+	parsing in a most easy way/portable manner NOT to show best practices
+	for using safe C etc.<br>
 <div>
 <table>
 <tr>
@@ -264,6 +267,12 @@ zenstory.c so this is good example about how validation simplifies SAX event han
 </tr>
 
 <tr>
+<td width="15%"><a href="src/samples/pull">pull</a></td>
+<td>Pull parser implementation. Example usage <a href="csrchtml/pull1_c.html">pull1.c</a></td>
+<td><a href="src/samples/pull/README">README</a> see also <a href="manual.html#XMLParser_HasMoreEvents" target="main">XMLParser_HasMoreEvents</a> feature</TD>
+</tr>
+
+<tr>
 <td width="15%"><a href="csrchtml/nsvalid_c.html">nsvalid.c</a></td>
 <td>Demostrates validation filtering; validating DTDs with namespace prefixes. Also
 shows some techiques for base uri/directory handling and setExternalSubset function.</td>
@@ -272,7 +281,7 @@ shows some techiques for base uri/directory handling and setExternalSubset funct
 
 <tr>
 <td width="15%"><a href="src/samples/xmlplint">xmlplint</a></td>
-<td>Command line tool for xml parsing/validation. Contains useful modules like curlread.c and catalogs.c</td>
+<td>Command line tool for xml parsing/validation. Contains useful modules like curlread.c, catalogs.c and uriresolver.c</td>
 <td>see <a href="xmlplint.html" target="main">xmlplint page</a></TD>
 </tr>
 
@@ -383,10 +392,10 @@ changes</a> too.
 <br>
 
 <hr>
-<p><font color="#004040">Copyright &copy; 2002-2005 Toni
+<p><font color="#004040">Copyright &copy; 2002-2008 Toni
 Uusitalo.<br>
 Send mail, suggestions and bug reports to<br><img src="pics/semail.gif"><br>
-Last modified: 02.11.2005 20:00</font></p>
+Last modified: 04.10.2008 00:00</font></p>
 </div>
 </body>
 </html>

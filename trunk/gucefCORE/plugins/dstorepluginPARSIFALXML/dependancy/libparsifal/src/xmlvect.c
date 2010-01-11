@@ -8,6 +8,21 @@
 #include "xmlvect.h"
 #include "xmlcfg.h"
 
+/******************************************************************************/
+
+/*
+ *  Dinand Vanvelzen edit:
+ *  Added this to build easily with CMake
+ */
+#ifdef PARSIFAL_CUSTOM_GUCEF_BUILD 
+ 
+#undef XMLAPI
+#define XMLAPI
+
+#endif /* PARSIFAL_CUSTOM_GUCEF_BUILD ? */
+
+/******************************************************************************/
+
 #define SETCAPACITY _SetCapacity
 #define _SetCapacity(v,newsize) \
 ( (((v)->array = (BYTE*)realloc((v)->array, \

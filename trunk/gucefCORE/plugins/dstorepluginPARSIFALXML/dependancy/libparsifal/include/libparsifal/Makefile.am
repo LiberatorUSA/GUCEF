@@ -1,5 +1,6 @@
 parsifaldir=$(prefix)/include/libparsifal
-parsifal_HEADERS = bistream.h \
+parsifal_HEADERS = pns.h \
+	bistream.h \
 	xmlhash.h \
 	parsifal.h \
 	xmlvect.h \

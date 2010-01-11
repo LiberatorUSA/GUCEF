@@ -1,4 +1,4 @@
-/* Limited implementation of XML catalogs for Parsifal XML Parser
+/* Basic implementation of XML catalogs for Parsifal XML Parser
    http://www.oasis-open.org/committees/entity/spec-2001-08-06.html
    see also http://www.xmlsoft.org/catalog.html
    Currently support only publicID/systemID mappings + xml:base + 
@@ -14,35 +14,36 @@
 #endif
 #include "libparsifal/parsifal.h"
 #include "libparsifal/dtdvalid.h"
+#include "uriresolver.h"
 
 #ifndef ASSERT_MEM_ABORT
 #define ASSERT_MEM_ABORT(p) \
   if (!(p)) { printf("Out of memory! Line: %d\n", __LINE__); return XML_ABORT; }
 #endif
 
-struct IDs
-{
+struct IDs {
 	XMLCH *id;
 	XMLCH *uri;
 };
 
-extern char AppBase[];
-extern XMLCH *ResolveBaseUri(LPXMLPARSER parser, XMLCH *systemID, XMLCH *base);
+extern char *AppBase;
+extern XMLSTRINGBUF uribuf;
 extern int filestream(BYTE *buf, int cBytes, int *cBytesActual, void *inputData);
 extern FILE *mfopen(const char *n, const char *m);
 
 static LPXMLPARSER parser;
 static LPXMLVECTOR publicIDS, systemIDS, nextCatalog;
 static XMLCH *doc;
+static struct uriresolver_input_t *curinput;
 
-static int idsort(const struct IDs *ID1, const struct IDs *ID2)
+static int idsort(const void *ID1, const void *ID2)
 {
-	return strcmp(ID1->id, ID2->id);
+	return strcmp(((struct IDs *)ID1)->id, ((struct IDs *)ID2)->id);
 }
 
-static int idsearch(const XMLCH *key, const struct IDs *ID)
+static int idsearch(const void *key, const void *ID)
 {
-	return strcmp(key, ID->id);
+	return strcmp((XMLCH*)key, ((struct IDs *)ID)->id);
 }
 
 static int GetUriAndBase(LPXMLRUNTIMEATT a, XMLCH **target)
@@ -125,33 +126,49 @@ static void ErrorHandler(LPXMLPARSER parser)
 	}
 }
 
-static int ResolveEntity(void *UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader)
+struct uriresolver_input_t *PrepNewInput(XMLCH *uri, XMLCH *base, int overridebase)
 {
-	FILE *f;
-	XMLCH r[FILENAME_MAX]; 
-	XMLCH *filename;
+	curinput = Uriresolver_AddInput(curinput, uri);
+	if (!curinput) goto EXITNOMEM;
 
+	if (curinput->src) {
+		if (uribuf.len) uribuf.len = 0;
+		if (!(!base && overridebase)) {
+			uri = (base) ? XMLStringbuf_Append(&uribuf, base, strlen(base)) :
+				XMLStringbuf_Append(&uribuf, curinput->absolute->base, curinput->absolute->baselen);
+			if (!uri) goto EXITNOMEM;
+		}
+		uri = XMLStringbuf_Append(&uribuf, curinput->src, strlen(curinput->src)+1);
+		if (!uri) goto EXITNOMEM;
+	}
+	if (!(curinput->src = mfopen(uri, "rb"))) {
+		fprintf(stderr, "Error opening file %s\n", uri);
+		return NULL;
+	}
+	return curinput;
+EXITNOMEM:
+	fputs("Out of memory\n", stderr);
+	return NULL;
+}
+
+static int ResolveEntity(void *UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader)
+{	
 	if (entity->publicID && !strcmp(entity->publicID,
 		"-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN")) 
 		return XML_OK;
 
-	filename = ResolveBaseUri(parser, entity->systemID, AppBase);
-	if (filename != entity->systemID) {
-		strcpy(r, filename);
-		filename = strcat(r, entity->systemID);
-	}
-	if (!(f = mfopen(filename, "rb"))) {
-		fprintf(stderr, "error opening file '%s'\n", filename);
-		return XML_ABORT;
-	}
-	reader->inputData = f; 
-	return XML_OK;
+	reader->inputData = (entity->type == XML_ENTITY_DOCTYPE) ?
+		PrepNewInput(entity->systemID, AppBase, 1) :
+		PrepNewInput(entity->systemID, XMLParser_GetPrefixMapping(parser, "xml:base"), 0); 
+	return (reader->inputData) ? XML_OK : XML_ABORT;
 }
 
 static int FreeInputData(void *UserData, LPXMLENTITY entity, LPBUFFEREDISTREAM reader)
-{
-	if (ferror((FILE*)reader->inputData)) fputs("\nFile error\n", stderr);
-	fclose((FILE*)reader->inputData);
+{	
+	struct uriresolver_input_t *inp = reader->inputData;
+	if (ferror((FILE*)inp->src)) fputs("\nFile error\n", stderr);
+	fclose(inp->src);
+	curinput = Uriresolver_RemoveInput(inp);
 	return XML_OK;
 }
 
@@ -160,12 +177,10 @@ XMLCH *Catalogs_ResolveUri(XMLCH *publicID, XMLCH *systemID)
 	struct IDs *id = NULL;
 	if (publicID && publicIDS && publicIDS->length)
 		id = bsearch(publicID, publicIDS->array, publicIDS->length, 
-			sizeof(struct IDs), 
-                          (int(*)(const void*, const void*))idsearch);
+			sizeof(struct IDs), idsearch);
 	else if (systemID && systemIDS && systemIDS->length)
 		id = bsearch(systemID, systemIDS->array, systemIDS->length, 
-			sizeof(struct IDs),
-			              (int(*)(const void*, const void*))idsearch);
+			sizeof(struct IDs), idsearch);
 	return (id) ? id->uri : NULL;
 }
 
@@ -221,11 +236,13 @@ static char *mstrtok(char **src, char *dst, size_t maxdst, int delim)
 int Catalogs_Init(void)
 {	
 	LPXMLDTDVALIDATOR dtd;
-	FILE *f;
 	int ret=1, i=0;
 	char t[FILENAME_MAX];
 	char *env = getenv("XML_CATALOG_FILES");
-	
+	struct uriresolver_input_t startinp = { NULL, NULL, 0, NULL, &startinp };
+	struct uriresolver_input_t *inp;
+
+	curinput = &startinp;
 	if (!env) doc = "/etc/xml/catalog";
 
 	if (!XMLParser_Create(&parser)) {
@@ -255,13 +272,13 @@ int Catalogs_Init(void)
 		}
 
 		while (doc) {
-			if (!(f = mfopen(doc, "rb"))) {
-				fprintf(stderr, "Error opening file %s\n", doc);
+			if (!(inp = PrepNewInput(doc, NULL, 0))) {
 				ret = 0;
 				break;
-			}
-			ret = XMLParser_ParseValidateDTD(dtd, parser, filestream, f, 0);
-			fclose(f);
+			}			
+			ret = XMLParser_ParseValidateDTD(dtd, parser, filestream, inp, 0);
+			fclose(inp->src);
+			curinput = Uriresolver_RemoveInput(inp);
 			
 			if (!ret || !nextCatalog || i == nextCatalog->length) 
 				doc = NULL;
@@ -274,11 +291,12 @@ int Catalogs_Init(void)
 	
 	if (ret) {
 		if (publicIDS && publicIDS->length > 1) 
-			qsort(publicIDS->array, publicIDS->length, sizeof(struct IDs), 
-            (int(*)(const void*, const void*))idsort);
+			qsort(publicIDS->array, publicIDS->length, sizeof(struct IDs), idsort);
 		if (systemIDS && systemIDS->length > 1) 
-			qsort(systemIDS->array, publicIDS->length, sizeof(struct IDs), 
-            (int(*)(const void*, const void*))idsort);
+			qsort(systemIDS->array, systemIDS->length, sizeof(struct IDs), idsort);
+	}
+	while (curinput != &startinp) {
+		curinput = Uriresolver_RemoveInput(curinput);
 	}
 	XMLParser_FreeDTDValidator(dtd);
 	XMLParser_Free(parser);

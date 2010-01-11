@@ -101,7 +101,7 @@ typedef struct tagBISREADERDATA
 {
 	LPXMLPARSER parser;
 	LPXMLENTITY curEnt; /* current entity (NULL for doc entity and internal entities) */
-	int iCurPE;
+	int iCurPE; /* NOT USED (entities only in hashtable not vector) */
 	int line;
 	int col;
 	int stackLevel;

@@ -1,6 +1,37 @@
 Changelog for parsifal
 ======================
 
+1.1.0, 19.9.2008
+    Features added:
+    - XMLFLAG_USE_SIMPLEPULL for progressive parsing - can be used to 
+      implement pull parser on top of parsifal.
+    - Xmlreader.c which implements/demostrates simple pull parsing see
+      samples/pull/README
+    - XMLFLAG_SPLIT_LARGE_CONTENT for controlling large binary content etc.
+    - libparsifal-config contributed by Tom Epperly (babel project)
+    - pns.h (public namespace) by Benjamin Allen (babel project) for 
+      specifying prefix for the public functions  in libparsifal 
+      (for avoiding dll hell etc.). See pns.h for details.
+    - encodingAliasHandler for defining for example windows-1251 means
+      use ISO-8859-1 or for complete override of encoding
+    - Xmlplint:
+      Implemented better uri resolver. Useful for complex/compound dtds
+      See xmlplint/uriresolver.h for details.
+      Removed all unsafe strcpy/strcat calls and other unsafe stuff
+      Added -F for setting any parser flag
+    - xmlhash.c has been rewritten to be generic container. This improves
+      portability and slightly performance too. see xmlhash.h
+    - Added win32/mingw/dll Makefile and binaries, see also
+      samples/pull/buildmimgw.bat
+    Bugs fixed:
+    - Configure ignores CFLAGS, added --disable-gccflags
+    - EndDocument return value
+    - ReadCh incremented character position when encountering illegal char¨
+    Portability improvements: 
+    - Removed ub in qsort/bsearch callback parameters
+    - Valgring warnings in XMLStringbuf_ToString
+    - lots of minor bug fixes and portability improvements
+
 1.0.0, 2.11.2005
     1.0 is here! Fixed GCC4 issues and linux/unix configure script to use
     iconv by default if present in the system.

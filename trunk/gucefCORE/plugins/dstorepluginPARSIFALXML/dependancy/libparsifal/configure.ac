@@ -1,4 +1,4 @@
-AC_INIT(parsifal, 1.0.0)
+AC_INIT(parsifal, 1.1.0)
 AC_CONFIG_AUX_DIR(conf)
 AC_CONFIG_SRCDIR(src/parsifal.c)
 
@@ -39,10 +39,12 @@ else
 fi
 ])
 
+AC_ARG_ENABLE(GCCFLAGS, AC_HELP_STRING([--disable-gccflags],[(default enabled).]), GCCFLAGS="", GCCFLAGS="-Wall -O3")
 if test $ac_cv_prog_gcc = yes; then
-  CFLAGS="-Wall -O3"
-  ACX_CHECK_CC_FLAGS(-Wno-pointer-sign, wnoptrsign, CFLAGS="$CFLAGS -Wno-pointer-sign") 
+  ACX_CHECK_CC_FLAGS(-Wno-pointer-sign, wnoptrsign, GCCFLAGS="$GCCFLAGS -Wno-pointer-sign")
+  CFLAGS="$GCCFLAGS $CFLAGS"
 fi
+
 
 AC_ARG_ENABLE(iconv, AC_HELP_STRING([--disable-iconv],[(default enabled).]), iconv="no", iconv="yes")
 if test "$iconv" = "yes"; then
@@ -71,7 +73,9 @@ AC_OUTPUT( Makefile \
 	src/Makefile \
 	include/Makefile \
 	include/libparsifal/Makefile \
+	parsifal-config \
 )
+chmod -f +x parsifal-config
 
 echo
 echo "==============================="

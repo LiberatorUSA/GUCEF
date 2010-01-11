@@ -541,7 +541,6 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-
 	if (!(f = fopen(argv[1], "rb"))) {
 		fprintf(PFERR, "Error opening input file %s\n", argv[1]);
 		return 1;
