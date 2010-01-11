@@ -15,8 +15,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
  */
  
-#ifndef DLLMAIN_H
-#define DLLMAIN_H
+#ifndef DLLMAINDSTOREPLUGINPARSIFALXML_H
+#define DLLMAINDSTOREPLUGINPARSIFALXML_H
 
 /*
  *      API for a DSTORE codec plugin module
@@ -55,7 +55,9 @@
 //-------------------------------------------------------------------------*/
 
 #ifdef DSTOREPLUGINPARSIFALXML_BUILD_MODULE
-  #define DSTOREPLUG_EXPORT_C GUCEFCORE_EXPORT
+  #define DSTOREPLUG_EXPORT_C GUCEF_EXPORT
+#else
+  #define DSTOREPLUG_EXPORT_C
 #endif 
  
 /*-------------------------------------------------------------------------//
@@ -193,7 +195,7 @@ DSTOREPLUG_Version( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* DLLMAIN_H ? */
+#endif /* DLLMAINDSTOREPLUGINPARSIFALXML_H ? */
 
 /*--------------------------------------------------------------------------//
 //                                                                          //
