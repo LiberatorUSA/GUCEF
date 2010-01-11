@@ -562,6 +562,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CTLinkedCloneableObj.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CTNotifyingMap.cpp"
 				>
 			</File>
