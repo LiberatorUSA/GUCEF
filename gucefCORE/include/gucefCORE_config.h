@@ -41,15 +41,15 @@
  *  Are we building the module itself or are we simply linking it ?
  *  If possible you can also set this define in your project instead of altering the switch below    
  */           
-/* #define GUCEFCORE_BUILD_MODULE */
+/* #define GUCEF_CORE_BUILD_MODULE */
 
 /*
  *      If we are building or using a DLL then it is sometimes desireable to
  *      export only C code or perhaps only C++ code. You can do this with the
  *      following defines
  */ 
-#define GUCEFCORE_EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
-#define GUCEFCORE_EXPORT_C_CODE   /* do you want to enable the C exports ? */
+#define GUCEF_CORE_EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
+#define GUCEF_CORE_EXPORT_C_CODE   /* do you want to enable the C exports ? */
 
 /*
  *      Wheter or not to use the build swiches here to specify manually what

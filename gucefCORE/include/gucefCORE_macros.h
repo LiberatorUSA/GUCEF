@@ -65,43 +65,40 @@
 
 /*-------------------------------------------------------------------------*/
 
+/* support for legacy define */
+#ifdef GUCEFCORE_BUILD_MODULE
+  #define GUCEF_CORE_BUILD_MODULE
+#endif
+
 /*
- *      Macros for dynamic linking. Use the switches in the
+ *      Macros for dynamic linking or static linking. Use the switches in the
  *      config file to control the export type.
  */
-#ifdef GUCEF_MSWIN_BUILD
-  #ifdef GUCEFCORE_BUILD_MODULE
-    #define GUCEFCORE_EXPORT GUCEF_EXPORT
-  #else
-    #define GUCEFCORE_EXPORT GUCEF_IMPORT
-  #endif /* GUCEFCORE_BUILD_MODULE ? */
-#else
-  #define GUCEFCORE_EXPORT   /* Linux does not need an additional directive */
-#endif /* GUCEF_MSWIN_BUILD ? */
 
-/*
- *  Are we exporting C++ code ?
- */
-#undef GUCEFCORE_EXPORT_CPP
-#ifdef GUCEFCORE_EXPORT_CPP_CODE
-  #define GUCEFCORE_EXPORT_CPP GUCEFCORE_EXPORT
+#undef GUCEF_EXPORTSPEC
+#ifdef GUCEF_CORE_BUILD_MODULE
+  #define GUCEF_EXPORTSPEC GUCEF_EXPORT
 #else
-  #define GUCEFCORE_EXPORT_CPP
-#endif /* GUCEFCORE_EXPORT_CPP_CODE ? */
+  #define GUCEF_EXPORTSPEC GUCEF_IMPORT
+#endif /* GUCEF_CORE_BUILD_MODULE ? */
 
-/*
- *  Are we exporting C code ?
- */
-#undef GUCEFCORE_EXPORT_C
-#ifdef GUCEFCORE_EXPORT_C_CODE
-  #define GUCEFCORE_EXPORT_C GUCEFCORE_EXPORT
+#undef GUCEF_CORE_EXPORT_CPP
+#ifdef GUCEF_CORE_EXPORT_CPP_CODE
+  #define GUCEF_CORE_EXPORT_CPP GUCEF_EXPORTSPEC
 #else
-  #define GUCEFCORE_EXPORT_C
-#endif /* GUCEFCORE_EXPORT_C_CODE ? */
+  #define GUCEF_CORE_EXPORT_CPP
+#endif /* GUCEF_CORE_EXPORT_CPP_CODE */
 
-/* legacy define */
-#define GUCEF_CORE_EXPORT_CPP GUCEFCORE_EXPORT_CPP 
-#define GUCEF_CORE_EXPORT_C GUCEFCORE_EXPORT_C 
+#undef GUCEF_CORE_EXPORT_C
+#ifdef GUCEF_CORE_EXPORT_C_CODE
+  #define GUCEF_CORE_EXPORT_C GUCEF_EXPORTSPEC  
+#else
+  #define GUCEF_CORE_EXPORT_C
+#endif /* GUCEF_CORE_EXPORT_C_CODE */
+
+/* support for legacy defines */
+#define GUCEFCORE_EXPORT_C GUCEF_CORE_EXPORT_C
+#define GUCEFCORE_EXPORT_CPP GUCEF_CORE_EXPORT_CPP
 
 /*-------------------------------------------------------------------------*/
 
