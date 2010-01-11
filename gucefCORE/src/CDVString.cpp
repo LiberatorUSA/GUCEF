@@ -813,8 +813,7 @@ CString::GetInt( void ) const
 
     if ( m_string )
     {
-        return Str_To_Int( m_string );
-            
+        return Str_To_Int( m_string );            
     }                        
     return 0;
 }
@@ -825,19 +824,23 @@ CString
 CString::Lowercase( void ) const
 {GUCEF_TRACE;
         
-    char* lcstr = new char[ m_length+1 ];
-    memcpy( lcstr, m_string, m_length+1 );
-    for ( UInt32 i=0; i<m_length; ++i )
+    if ( m_length > 0 )
     {
+        char* lcstr = new char[ m_length+1 ];
+        memcpy( lcstr, m_string, m_length+1 );
+        for ( UInt32 i=0; i<m_length; ++i )
+        {
             if ( ( lcstr[ i ] > 64 ) &&
                  ( lcstr[ i ] < 91 ) )
             {
-                    lcstr[ i ] += 32;
+                lcstr[ i ] += 32;
             }        
+        }
+        CString lower( lcstr, m_length );
+        delete []lcstr;
+        return lower;
     }
-    CString lower( lcstr, m_length );
-    delete []lcstr;
-    return lower;        
+    return CString();        
 }
 
 /*-------------------------------------------------------------------------*/
@@ -846,19 +849,23 @@ CString
 CString::Uppercase( void ) const
 {GUCEF_TRACE;
 
-    char* ucstr = new char[ m_length+1 ];
-    memcpy( ucstr, m_string, m_length+1 );
-    for ( UInt32 i=0; i<m_length; ++i )
+    if ( m_length > 0 )
     {
+        char* ucstr = new char[ m_length+1 ];
+        memcpy( ucstr, m_string, m_length+1 );
+        for ( UInt32 i=0; i<m_length; ++i )
+        {
             if ( ( ucstr[ i ] > 96 ) &&
                  ( ucstr[ i ] < 123 ) )
             {
-                    ucstr[ i ] -= 32;
+                ucstr[ i ] -= 32;
             }        
+        }
+        CString upper( ucstr, m_length );
+        delete []ucstr;
+        return upper;
     }
-    CString upper( ucstr, m_length );
-    delete []ucstr;
-    return upper;
+    return CString();
 }
 
 /*-------------------------------------------------------------------------*/
