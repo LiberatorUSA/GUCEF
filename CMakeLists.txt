@@ -243,6 +243,7 @@ add_subdirectory( gucefPATCHER )
 
 # Setup GUCEF plugin dependencies
 add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML/dependancy/libparsifal )
+add_subdirectory( gucefINPUT/plugins/inputdriverOIS/dependency/OIS )
 
 # Setup GUCEF Plugin modules
 add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML )
