@@ -1,0 +1,6 @@
+
+add_library( inputdriverMSWINMSG ${HEADER_FILES} ${SOURCE_FILES} )
+add_dependencies( inputdriverMSWINMSG gucefINPUT gucefCORE gucefMT )
+#target_link_libraries( inputdriverMSWINMSG )
+set_target_properties( inputdriverMSWINMSG PROPERTIES COMPILE_DEFINITIONS INPUTDRIVERMSWINMSG_BUILD_MODULE )
+GUCEF_config_plugin( inputdriverMSWINMSG )

@@ -1,0 +1,5 @@
+
+add_library( OIS ${HEADER_FILES} ${SOURCE_FILES} )
+#target_link_libraries( OIS )
+#set_target_properties( inputdriverOIS PROPERTIES COMPILE_DEFINITIONS INPUTDRIVEROIS_BUILD_MODULE )
+#GUCEF_config_plugin( inputdriverOIS )
