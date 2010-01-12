@@ -1,0 +1,6 @@
+
+add_library( inputdriverOIS ${HEADER_FILES} ${SOURCE_FILES} )
+add_dependencies( inputdriverOIS OIS gucefINPUT gucefCORE gucefMT )
+target_link_libraries( inputdriverOIS OIS )
+set_target_properties( inputdriverOIS PROPERTIES COMPILE_DEFINITIONS INPUTDRIVEROIS_BUILD_MODULE )
+GUCEF_config_plugin( inputdriverOIS )
