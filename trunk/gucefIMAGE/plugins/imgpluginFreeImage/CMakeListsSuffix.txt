@@ -1,0 +1,6 @@
+
+add_library( imgpluginsFreeImage ${HEADER_FILES} ${SOURCE_FILES} )
+add_dependencies( imgpluginsFreeImage FreeImage )
+target_link_libraries( imgpluginsFreeImage FreeImage )
+set_target_properties( imgpluginsFreeImage PROPERTIES COMPILE_DEFINITIONS "IMGPLUGINFREEIMAGE_BUILD_MODULE;BUILD_GUCEF_IMAGE_PLUGIN_DLL" )
+GUCEF_config_plugin( imgpluginsFreeImage )

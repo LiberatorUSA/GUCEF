@@ -2,5 +2,5 @@
 add_library( inputdriverDIRECTINPUT8 ${HEADER_FILES} ${SOURCE_FILES} )
 add_dependencies( inputdriverDIRECTINPUT8 gucefINPUT gucefCORE gucefMT )
 #target_link_libraries( inputdriverDIRECTINPUT8 )
-set_target_properties( inputdriverDIRECTINPUT8 PROPERTIES COMPILE_DEFINITIONS INPUTDRIVERDIRECTINPUT8_BUILD_MODULE )
+set_target_properties( inputdriverDIRECTINPUT8 PROPERTIES COMPILE_DEFINITIONS "INPUTDRIVERDIRECTINPUT8_BUILD_MODULE;BUILD_GUCEF_INPUT_PLUGIN_DLL" )
 GUCEF_config_plugin( inputdriverDIRECTINPUT8 )
