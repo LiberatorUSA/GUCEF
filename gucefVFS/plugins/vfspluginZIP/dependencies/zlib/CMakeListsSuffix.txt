@@ -1,0 +1,3 @@
+
+add_library( zlib ${HEADER_FILES} ${SOURCE_FILES} )
+set_target_properties( zlib PROPERTIES COMPILE_DEFINITIONS "ZLIB_DLL;ZLIB_INTERNAL" )
