@@ -1,0 +1,6 @@
+
+add_library( vfspluginVP ${HEADER_FILES} ${SOURCE_FILES} )
+add_dependencies( vfspluginVP gucefVFS gucefCORE gucefMT )
+target_link_libraries( vfspluginVP gucefVFS gucefCORE gucefMT )
+set_target_properties( vfspluginVP PROPERTIES COMPILE_DEFINITIONS "GUCEF_VFSPLUGIN_VP_BUILD_MODULE" )
+GUCEF_config_plugin( vfspluginVP )
