@@ -244,6 +244,9 @@ add_subdirectory( gucefPATCHER )
 # Setup GUCEF plugin dependencies
 add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML/dependancy/libparsifal )
 add_subdirectory( gucefINPUT/plugins/inputdriverOIS/dependency/OIS )
+add_subdirectory( gucefIMAGE/plugins/imgpluginFreeImage/dependencies/FreeImage/Source )
+add_subdirectory( gucefVFS/plugins/vfspluginZIP/dependencies/zlib )
+add_subdirectory( gucefVFS/plugins/vfspluginZIP/dependencies/zziplib/zzip )
 
 # Setup GUCEF Plugin modules
 add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML )
@@ -251,7 +254,7 @@ add_subdirectory( gucefVFS/plugins/vfspluginDVP )
 add_subdirectory( gucefVFS/plugins/vfspluginVP )
 add_subdirectory( gucefVFS/plugins/vfspluginZIP )
 add_subdirectory( gucefIMAGE/plugins/imgpluginFreeImage )
-add_subdirectory( gucefIMAGE/plugins/imgpluginDEVIL )
+#add_subdirectory( gucefIMAGE/plugins/imgpluginDEVIL )
 add_subdirectory( gucefINPUT/plugins/inputdriverOIS )
 add_subdirectory( gucefINPUT/plugins/inputdriverMSWINMSG )
 add_subdirectory( gucefINPUT/plugins/inputdriverDIRECTINPUT8 )
