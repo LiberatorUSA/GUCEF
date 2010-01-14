@@ -485,7 +485,8 @@ IsDirAPlatformDir( const CORE::CString& path )
 /*---------------------------------------------------------------------------*/
 
 std::vector< CORE::CString >
-ParseDependencies( const CORE::CString& fileSuffix )
+ParseDependencies( const CORE::CString& fileSuffix ,
+                   CORE::CString& moduleName       )
 {GUCEF_TRACE;
 
     CORE::CString testStr = fileSuffix.Lowercase();
@@ -499,6 +500,7 @@ ParseDependencies( const CORE::CString& fileSuffix )
         std::vector< CORE::CString > elements = dependenciesStr.ParseElements( ' ' );
         if ( !elements.empty() )
         {
+            moduleName = *(elements.begin());
             elements.erase( elements.begin() );
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::Int32ToString( elements.size() ) + " dependencies in suffix file" );
         }
@@ -727,6 +729,8 @@ void
 ProcessProjectDir( TModuleInfo& moduleInfo )
 {GUCEF_TRACE;
    
+    // Set a project name based off the module sub-dir name
+    // Best we can do unless we can get it from the suffix file later
     moduleInfo.name = CORE::LastSubDir( moduleInfo.rootDir ); 
     
     CORE::CString pathToSuffixFile = moduleInfo.rootDir;
@@ -735,7 +739,7 @@ ProcessProjectDir( TModuleInfo& moduleInfo )
     if ( CORE::LoadTextFileAsString( pathToSuffixFile, moduleInfo.cmakeListSuffixFileContent ) )
     {
         // Fill in the dependencies as specified in the suffix file
-        moduleInfo.dependencies = ParseDependencies( moduleInfo.cmakeListSuffixFileContent );
+        moduleInfo.dependencies = ParseDependencies( moduleInfo.cmakeListSuffixFileContent, moduleInfo.name );
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed suffix file for project " + moduleInfo.name );
     }
     else
