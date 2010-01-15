@@ -38,8 +38,7 @@
 //-------------------------------------------------------------------------*/
 
 // CPatcherGUIDlg dialog
-class CPatcherGUIDlg : public CDialog                                      ,
-                       private GUCEF::PATCHER::CPatchSetParserEventHandler
+class CPatcherGUIDlg : public CDialog
 {
 // Construction
 public:
