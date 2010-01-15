@@ -141,6 +141,31 @@ GetHeaderFileExtensions( void )
 /*---------------------------------------------------------------------------*/
 
 bool
+RemoveString( std::vector< CORE::CString >& list , 
+              const CORE::CString& searchStr     )
+{GUCEF_TRACE;
+
+    bool removedString = false;
+    std::vector< CORE::CString >::iterator i = list.begin();
+    while ( i != list.end() )
+    {
+        if ( (*i) == searchStr )
+        {
+            list.erase( i );
+            i = list.begin();
+            removedString = true;
+        }
+        else
+        {
+            ++i;
+        }
+    }
+    return removedString;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
 IsDirAProjectDir( CORE::CString dir )
 {GUCEF_TRACE;
 
@@ -163,7 +188,7 @@ IsDirAProjectDir( CORE::CString dir )
 /*---------------------------------------------------------------------------*/
 
 std::vector<CORE::CString>
-GetSubDirExcludeList( CORE::CString dir )
+GetExcludeList( CORE::CString dir )
 {GUCEF_TRACE;
 
     CORE::CString excludeFile = dir;
@@ -719,6 +744,19 @@ FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
 
     TStringVector fileList;
     PopulateFileListFromDir( curRootDir, fileTypes, fileList );
+    
+    // Remove excluded files from file list
+    std::vector< CORE::CString > excludeList = GetExcludeList( curRootDir );
+    std::vector< CORE::CString >::iterator n = excludeList.begin();
+    while ( n != excludeList.end() )
+    {
+        if ( RemoveString( fileList, (*n) ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the file \"" + (*n) + "\" based on the exclude list for this dir" );
+        }
+        ++n;
+    }    
+    
     if ( fileList.size() > 0 )
     {
         // found files in the current root
@@ -729,13 +767,6 @@ FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
     TStringVector dirList;
     PopulateDirListFromDir( curRootDir, dirList );
     
-    TStringVector dirExcludeList = GetSubDirExcludeList( curRootDir );
-    
-        if ( !dirExcludeList.empty() )
-        {
-         int a= 0;
-        }
-
     TStringVector::iterator i = dirList.begin();
     while ( i != dirList.end() )
     { 
@@ -743,7 +774,7 @@ FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
         CORE::AppendToPath( subDir, (*i) );
         
         // Honor the exclude list
-        if ( !IsStringInList( dirExcludeList, false, (*i) ) )
+        if ( !IsStringInList( excludeList, false, (*i) ) )
         {
             // Do not recurse into other project dirs or platform dirs
             if ( !IsDirAProjectDir( subDir ) && !IsDirAPlatformDir( subDir ) ) 
@@ -823,31 +854,6 @@ ProcessProjectDir( TModuleInfo& moduleInfo )
 
 /*---------------------------------------------------------------------------*/
 
-bool
-RemoveString( std::vector< CORE::CString >& list , 
-              const CORE::CString& searchStr     )
-{GUCEF_TRACE;
-
-    bool removedString = false;
-    std::vector< CORE::CString >::iterator i = list.begin();
-    while ( i != list.end() )
-    {
-        if ( (*i) == searchStr )
-        {
-            list.erase( i );
-            i = list.begin();
-            removedString = true;
-        }
-        else
-        {
-            ++i;
-        }
-    }
-    return removedString;
-}
-
-/*---------------------------------------------------------------------------*/
-
 void
 LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
                                        CORE::CString topLevelDir )
@@ -873,11 +879,11 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
     PopulateDirListFromDir( topLevelDir, dirList );
     
     // Get list of dirs to exclude
-    std::vector< CORE::CString > dirExcludeList = GetSubDirExcludeList( topLevelDir );
+    std::vector< CORE::CString > excludeList = GetExcludeList( topLevelDir );
     
     // Remove excluded dirs from dir list
-    std::vector< CORE::CString >::iterator i = dirExcludeList.begin();
-    while ( i != dirExcludeList.end() )
+    std::vector< CORE::CString >::iterator i = excludeList.begin();
+    while ( i != excludeList.end() )
     {
         if ( RemoveString( dirList, (*i) ) )
         {
