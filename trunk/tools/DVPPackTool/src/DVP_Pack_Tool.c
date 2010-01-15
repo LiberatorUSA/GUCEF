@@ -165,7 +165,7 @@ Create_Archive_Wizard( void )
          *      Wait for exit
          */
         printf( "\nPress any key to exit\n" )                           ;
-        getch()                                                         ;
+        _getch()                                                         ;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -221,7 +221,7 @@ Display_Header_Wizard( void )
                          *      Wait for exit
                          */
                         printf( "\nPress any key to exit\n" )           ;
-                        getch()                                         ;
+                        _getch()                                         ;
                 }
                 else
                 {
@@ -235,7 +235,7 @@ Display_Header_Wizard( void )
                          *      Wait for exit
                          */
                         printf( "\nPress any key to exit\n" )           ;
-                        getch()                                         ;
+                        _getch()                                         ;
                 }
                 fclose( fptr );
         }
@@ -250,7 +250,7 @@ Display_Header_Wizard( void )
                  *      Wait for exit
                  */
                 printf( "\nPress any key to exit\n" )                   ;
-                getch()                                                 ;
+                _getch()                                                 ;
         }        
         return                                                          ;
 }
@@ -329,7 +329,7 @@ Display_Index_Wizard( void )
                          *      Wait for exit
                          */
                         printf( "\nPress any key to exit\n" )           ;
-                        getch()                                         ;
+                        _getch()                                         ;
                         return                                          ;
                 }
         }
@@ -355,7 +355,7 @@ Display_Index_Wizard( void )
                  *      Wait for exit
                  */
                 printf( "\nPress any key to exit\n" )                   ;
-                getch()                                                 ;
+                _getch()                                                 ;
                 return                                                  ;
         }
 
@@ -366,7 +366,7 @@ Display_Index_Wizard( void )
          *      Wait for exit
          */
         printf( "\nPress any key to exit\n" )                           ;
-        getch()                                                         ;
+        _getch()                                                         ;
         return                                                          ;
 }
 
@@ -416,7 +416,7 @@ Extract_Index_File_Wizard( void )
                  *      Wait for exit
                  */
                 printf( "\nPress any key to exit\n" )                   ;
-                getch()                                                 ;
+                _getch()                                                 ;
                 free( archive )                                         ;
                 return                                                  ;
         }
@@ -444,7 +444,7 @@ Extract_Index_File_Wizard( void )
                  *      Wait for exit
                  */
                  printf( "\nPress any key to exit\n" )                  ;
-                 getch()                                                ;
+                 _getch()                                                ;
         }
         free( rbuffer )                                                 ;
 
@@ -463,7 +463,7 @@ Extract_Index_File_Wizard( void )
                  *      Wait for exit
                  */
                 printf( "\nPress any key to exit\n" )                   ;
-                getch()                                                 ;
+                _getch()                                                 ;
                 return                                                  ;
         }
 
@@ -473,7 +473,7 @@ Extract_Index_File_Wizard( void )
          *      Wait for exit
          */
         printf( "\nPress any key to exit\n" )                           ;
-        getch()                                                         ;
+        _getch()                                                         ;
         return                                                          ;
 }
 
@@ -514,7 +514,7 @@ Extract_All_Files_Wizard( void )
                  *      Wait for exit
                  */
                 printf( "\nPress any key to exit\n" )                   ;
-                getch()                                                 ;
+                _getch()                                                 ;
                 return                                                  ;
         }
 
@@ -534,7 +534,7 @@ Extract_All_Files_Wizard( void )
          *      Wait for exit
          */
         printf( "\nPress any key to exit\n" )                           ;
-        getch()                                                         ;
+        _getch()                                                         ;
         return                                                          ;
 }
 
@@ -577,7 +577,7 @@ Strip_Index_Wizard( void )
          *      Wait for exit
          */
         printf( "\nPress any key to exit\n" )                           ;
-        getch()                                                         ;
+        _getch()                                                         ;
         return                                                          ;
 }
 
@@ -619,7 +619,7 @@ Extract_File_Wizard( void )
                  *      Wait for exit
                  */
                 printf( "\nPress any key to exit\n" )                   ;
-                getch()                                                 ;
+                _getch()                                                 ;
                 return                                                  ;
         }
 
@@ -634,7 +634,7 @@ Extract_File_Wizard( void )
                  *      Wait for exit
                  */
                 printf( "\nPress any key to exit\n" )                   ;
-                getch()                                                 ;
+                _getch()                                                 ;
                 return                                                  ;
         }
         if ( entry->size == 0 )
@@ -645,7 +645,7 @@ Extract_File_Wizard( void )
                  *      Wait for exit
                  */
                 printf( "\nPress any key to exit\n" )                   ;
-                getch()                                                 ;
+                _getch()                                                 ;
                 return                                                  ;
         }
 
@@ -661,7 +661,7 @@ Extract_File_Wizard( void )
                  *      Wait for exit
                  */
                 printf( "\nPress any key to exit\n" )                   ;
-                getch()                                                 ;
+                _getch()                                                 ;
                 fclose( fptr )                                          ;
                 return                                                  ;
         }
@@ -672,7 +672,7 @@ Extract_File_Wizard( void )
          *      Wait for exit
          */
         printf( "\nPress any key to exit\n" )                           ;
-        getch()                                                         ;
+        _getch()                                                         ;
         return                                                          ;
 }
 
@@ -752,7 +752,7 @@ Display_Argument_Options( void )
         printf( " Then displays the index to provide a visual check\n" )                        ;
         printf( "\n" )                                                                          ;
         printf( "Press any key to exit...\n" )                                                  ;
-        getch()                                                                                 ;
+        _getch()                                                                                 ;
         return                                                                                  ;
 }
 
@@ -824,7 +824,7 @@ Display_Header( char *argv[] )
                          *      Wait for exit
                          */
                         printf( "\nPress any key to exit\n" )           ;
-                        getch()                                         ;
+                        _getch()                                         ;
                 }
                 else
                 {
@@ -838,7 +838,7 @@ Display_Header( char *argv[] )
                          *      Wait for exit
                          */
                         printf( "\nPress any key to exit\n" )           ;
-                        getch()                                         ;
+                        _getch()                                         ;
                 }
         }
         else
@@ -870,7 +870,7 @@ Create_Archive( char *argv[] )
          *      Exit
          */
         printf( "\nPress any key to exit...\n" )                        ;
-        getch()                                                         ;
+        _getch()                                                         ;
         return                                                          ;
 }
 
@@ -937,7 +937,7 @@ Display_Index( char *argv[] )
                          *      Wait for exit
                          */
                         printf( "\nPress any key to exit\n" )           ;
-                        getch()                                         ;
+                        _getch()                                         ;
                         return                                          ;
                 }
         }
@@ -958,7 +958,7 @@ Display_Index( char *argv[] )
                  *      Wait for exit
                  */
                 printf( "\nPress any key to exit\n" )                   ;
-                getch()                                                 ;
+                _getch()                                                 ;
                 return                                                  ;
         }
 
@@ -969,7 +969,7 @@ Display_Index( char *argv[] )
          *      Wait for exit
          */
         printf( "\nPress any key to exit\n" )                           ;
-        getch()                                                         ;
+        _getch()                                                         ;
         return                                                          ;
 
 }

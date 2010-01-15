@@ -127,7 +127,7 @@ INPUTDRIVERPLUG_GetMousePos( void* plugdata    ,
 
 /*---------------------------------------------------------------------------*/
 
-GUCEF_INPUT_PLUGIN_EXPORT_C UByte* GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_EXPORT_C UInt8* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_GetKeyBoardKeyStates( void* plugdata    , 
                                       void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
