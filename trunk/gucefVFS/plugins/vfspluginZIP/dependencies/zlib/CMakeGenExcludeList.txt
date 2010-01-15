@@ -7,3 +7,5 @@ old
 projects
 qnx
 win32
+example.c
+minigzip.c
