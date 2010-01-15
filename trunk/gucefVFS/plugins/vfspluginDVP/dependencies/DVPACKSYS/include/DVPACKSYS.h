@@ -43,8 +43,20 @@
 #include <string.h>           /* general string utils */
 #include <time.h>             /* needed for timestamp */
 #include "gucefCORE_ETypes.h" /* simple types used */
+#include "gucef_macros.h"     /* platform wide macros used */
+#include "ioaccess.h"         /* source independant I/O */
 
-#include "ioaccess.h"   /* source independant I/O */
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      MACROS                                                             //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef DVPACKSYS_BUILD_MODULE
+  #define DVPACKSYS_API GUCEF_EXPORT
+#else
+  #define DVPACKSYS_API GUCEF_IMPORT
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -157,7 +169,7 @@ extern "C" {
  *      The position of the file pointer will be reset to the original position
  *      after completion. The file fp should be open in rb mode.
  */
- UInt32
+ DVPACKSYS_API UInt32
 _DVP_IOA_Read_Header( TIOAccess *access        ,
                       TDVP_File_Header *header );
 
@@ -168,7 +180,7 @@ _DVP_IOA_Read_Header( TIOAccess *access        ,
  *      The position of the file pointer will be reset to the original position
  *      after completion. The file fp should be open in rb mode.
  */
- UInt32
+ DVPACKSYS_API UInt32
 _DVP_Read_Header( FILE *fp                 ,
                   TDVP_File_Header *header );
 
@@ -179,7 +191,7 @@ _DVP_Read_Header( FILE *fp                 ,
  *      The position of the file pointer will be reset to the original position
  *      after completion. The file fp should be open in rb mode.
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_IOA_Read_Header( TIOAccess *access       ,
                      char   *ID              ,
                      UInt32 *version         ,
@@ -195,7 +207,7 @@ DVP_IOA_Read_Header( TIOAccess *access       ,
  *      The position of the file pointer will be reset to the original position
  *      after completion. The file fp should be open in rb mode.
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Read_Header( FILE *fptr              ,
                  char   *ID              ,
                  UInt32 *version         ,
@@ -212,7 +224,7 @@ DVP_Read_Header( FILE *fptr              ,
  *      The position of the file pointer will be reset to the original position
  *      after completion. The file fp_out should be open in wb mode.
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Write_Header( FILE *fptr               ,
                   const char *ID           ,
                   UInt32 index_offset      ,
@@ -226,7 +238,7 @@ DVP_Write_Header( FILE *fptr               ,
 /**
  *      Extract the index of the archive into an external file
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_IOA_Extract_Index_File( TIOAccess *access   ,
                             const char *hfout   ,
                             UInt32 index_offset ,
@@ -239,7 +251,7 @@ DVP_IOA_Extract_Index_File( TIOAccess *access   ,
 /**
  *      Extract the index of the archive into an external file
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Extract_Index_File( FILE *dfile         ,
                         const char *hfout   ,
                         UInt32 index_offset ,
@@ -253,7 +265,7 @@ DVP_Extract_Index_File( FILE *dfile         ,
  *      Verion of DVP_Extract_Index_File() for lazy users. obtains the 2 other
  *      parameters for DVP_Extract_Index_File() itself.
  */
- UInt32
+DVPACKSYS_API UInt32
 _DVP_IOA_Extract_Index_File( TIOAccess *access    ,
                              const char *filename );
 
@@ -265,7 +277,7 @@ _DVP_IOA_Extract_Index_File( TIOAccess *access    ,
  *      Verion of DVP_Extract_Index_File() for lazy users. obtains the 2 other
  *      parameters for DVP_Extract_Index_File() itself.
  */
- UInt32
+DVPACKSYS_API UInt32
 _DVP_Extract_Index_File( FILE *dfile          ,
                          const char *filename );
 
@@ -277,7 +289,7 @@ _DVP_Extract_Index_File( FILE *dfile          ,
  *      Extracts a block ( file ) from the archive into a external file
  *      specified by filename
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_IOA_Extract_File( TIOAccess *access       ,
                       UInt32 offset           ,
                       UInt32 filesize         ,
@@ -292,7 +304,7 @@ DVP_IOA_Extract_File( TIOAccess *access       ,
  *      Extracts a block ( file ) from the archive into a external file
  *      specified by filename
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Extract_File( FILE *fptr              ,
                   UInt32 offset           ,
                   UInt32 filesize         ,
@@ -307,7 +319,7 @@ DVP_Extract_File( FILE *fptr              ,
  *      This is more or less a version of DVP_Extract_File() for lazy users.
  *      it obtains the 3 other parameters that DVP_Extract_File() needs itself.
  */
- UInt32
+DVPACKSYS_API UInt32
 _DVP_IOA_Extract_File( TIOAccess *access     ,
                        const char *filename  ,
                        const char *dest_file );
@@ -320,7 +332,7 @@ _DVP_IOA_Extract_File( TIOAccess *access     ,
  *      This is more or less a version of DVP_Extract_File() for lazy users.
  *      it obtains the 3 other parameters that DVP_Extract_File() needs itself.
  */
- UInt32
+DVPACKSYS_API UInt32
 _DVP_Extract_File( FILE *fptr            ,
                    const char *filename  ,
                    const char *dest_file );
@@ -333,7 +345,7 @@ _DVP_Extract_File( FILE *fptr            ,
  *      Extracts all files stored within the archive with their respective
  *      paths starting in the specified dest_dir dir.
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_IOA_Extract_All_Files( TIOAccess *access      ,
                            const char *dest_dir   );
 
@@ -345,7 +357,7 @@ DVP_IOA_Extract_All_Files( TIOAccess *access      ,
  *      Extracts all files stored within the archive with their respective
  *      paths starting in the specified dest_dir dir.
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Extract_All_Files( FILE *fptr             ,
                        const char *dest_dir   );
 
@@ -357,7 +369,7 @@ DVP_Extract_All_Files( FILE *fptr             ,
  *      Load a specified block ( file ) from the archive into a memory in a
  *      character buffer
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_IOA_Load_File_Into_Mem( TIOAccess *access ,
                             UInt32  offset    ,
                             UInt32  filesize  ,
@@ -371,7 +383,7 @@ DVP_IOA_Load_File_Into_Mem( TIOAccess *access ,
  *      Load a specified block ( file ) from the archive into a memory in a
  *      character buffer
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Load_File_Into_Mem( FILE *fpt        ,
                         UInt32  offset   ,
                         UInt32  filesize ,
@@ -388,7 +400,7 @@ DVP_Load_File_Into_Mem( FILE *fpt        ,
  *      The position of the file pointer will be reset to the original position
  *      after completion.
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Append_Index( FILE *datafile          ,
                   const char *indexfile   ,
                   UInt32 num_entrys       );
@@ -400,7 +412,7 @@ DVP_Append_Index( FILE *datafile          ,
 /**
  *      Packs a file into the archive data file and adds entry to index file
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Pack_File( FILE *dfpt            ,
                FILE *ifpt            ,
                const char *filespec  ,
@@ -418,7 +430,7 @@ DVP_Pack_File( FILE *dfpt            ,
  *      Note that istr must have a minimum length of DVP_MAX_INAME_LENGTH
  *      file fpt must be open in write mode wb
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Write_Index_Entry( UInt32 offset    ,
                        UInt32 eoffset   ,
                        UInt32 size      ,
@@ -433,7 +445,7 @@ DVP_Write_Index_Entry( UInt32 offset    ,
  *      Read a single entry out of an archive index
  *      file fpt must be open in read mode rb
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_IOA_Read_Index_Entry( UInt32 offset     ,
                           UInt32 *size      ,
                           UInt32 *i1        ,
@@ -447,7 +459,7 @@ DVP_IOA_Read_Index_Entry( UInt32 offset     ,
  *      Read a single entry out of an archive index
  *      file fpt must be open in read mode rb
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Read_Index_Entry( UInt32 offset ,
                       UInt32 *size  ,
                       UInt32 *i1    ,
@@ -461,7 +473,7 @@ DVP_Read_Index_Entry( UInt32 offset ,
  *      Read a single entry out of an archive index
  *      file fpt must be open in read mode rb
  */
- UInt32
+DVPACKSYS_API UInt32
 _DVP_IOA_Read_Index_Entry( UInt32 offset           ,
                            TDVP_Index_Entry *entry ,
                            TIOAccess *access       );
@@ -472,7 +484,7 @@ _DVP_IOA_Read_Index_Entry( UInt32 offset           ,
  *      Read a single entry out of an archive index
  *      file fpt must be open in read mode rb
  */
- UInt32
+DVPACKSYS_API UInt32
 _DVP_Read_Index_Entry( UInt32 offset           ,
                        TDVP_Index_Entry *entry ,
                        FILE *fptr              );
@@ -484,7 +496,7 @@ _DVP_Read_Index_Entry( UInt32 offset           ,
  *      Adds a directory and all files it contains to the archive,
  *      in other words : the directory gets packed.
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Pack_Directory( FILE *dfpt            ,
                     FILE *ifpt            ,
                     UInt32 *total_size    ,
@@ -499,7 +511,7 @@ DVP_Pack_Directory( FILE *dfpt            ,
 /**
  *      Appends a directory entry to a archive's index file
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Append_Directory( const char *path  ,
                       UInt32 total_size ,
                       FILE *fp          );
@@ -512,7 +524,7 @@ DVP_Append_Directory( const char *path  ,
  *      Creates an archive starting from the dir specified and
  *      with the name specified.
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Create_Archive( const char *archive_name ,
                     const char *src_dir      ,
                     const char *ID           );
@@ -523,7 +535,7 @@ DVP_Create_Archive( const char *archive_name ,
 /**
  *      Print archive index to console
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Display_Index( FILE *fptr           ,
                    UInt32 index_offset  ,
                    UInt32 entrys        );
@@ -535,7 +547,7 @@ DVP_Display_Index( FILE *fptr           ,
  *      if there are multiple occurences of the name the first instance
  *      will be returned. if not found 1 is returned otherwise 0.
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_IOA_Find_Entry_Data( TIOAccess *access       ,
                          const char *name        ,
                          TDVP_Index_Entry *entry );
@@ -547,7 +559,7 @@ DVP_IOA_Find_Entry_Data( TIOAccess *access       ,
  *      if there are multiple occurences of the name the first instance
  *      will be returned. if not found 1 is returned otherwise 0.
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Find_Entry_Data( FILE *fptr             ,
                      const char *name        ,
                      TDVP_Index_Entry *entry );
@@ -560,7 +572,7 @@ DVP_Find_Entry_Data( FILE *fptr             ,
  *      Might be usefull if you perhaps want to hardcode an index in memory
  *      preventing external reading from archive ( or at least making it harder )
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Strip_Index( const char *archive     ,
                  const char *new_archive );
 
@@ -572,7 +584,7 @@ DVP_Strip_Index( const char *archive     ,
  *      version an application was built with to the actually linked module
  *      version.
  */
- UInt32
+DVPACKSYS_API UInt32
 DVP_Version( void );
 
 /*---------------------------------------------------------------------------*/
@@ -583,10 +595,15 @@ DVP_Version( void );
  *      the file pointer itself can be passed without problems but you can only
  *      use the file pointer in the module that opened the file. !!!
  */
- FILE*
+DVPACKSYS_API FILE*
 DVP_Open_File( const char *filename, const char *mode );
 
- void
+/*---------------------------------------------------------------------------*/
+
+/**
+ *  Closes the file that was opened by DVP_Open_File()
+ */
+DVPACKSYS_API void
 DVP_Close_File( FILE *fptr );
 
 /*---------------------------------------------------------------------------*/
