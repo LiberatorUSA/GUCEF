@@ -175,6 +175,7 @@ GetSubDirExcludeList( CORE::CString dir )
         if ( CORE::LoadTextFileAsString( excludeFile        ,
                                          excludeFileContent ) )
         {
+            excludeFileContent = excludeFileContent.RemoveChar( '\r' );
             return excludeFileContent.ParseElements( '\n' );            
         } 
     }
@@ -511,6 +512,56 @@ ParseDependencies( const CORE::CString& fileSuffix ,
 
 /*---------------------------------------------------------------------------*/
 
+CORE::CString
+ParseModuleName( const CORE::CString& fileSuffix )
+{GUCEF_TRACE;
+
+    CORE::CString testStr = fileSuffix.Lowercase();
+    CORE::Int32 subStrIdx = testStr.HasSubstr( "add_library(", true );
+    if ( subStrIdx >= 0 )
+    {
+        CORE::CString dependenciesStr = fileSuffix.SubstrToChar( ')', (CORE::UInt32)subStrIdx+12, true );
+        dependenciesStr = dependenciesStr.CompactRepeatingChar( ' ' );
+        dependenciesStr = dependenciesStr.Trim( true );
+        dependenciesStr = dependenciesStr.Trim( false );
+        std::vector< CORE::CString > elements = dependenciesStr.ParseElements( ' ' );
+        if ( !elements.empty() )
+        {
+            return *(elements.begin());
+        }
+        
+        // Malformed file!
+        return CORE::CString();
+    }
+    else
+    {
+        subStrIdx = testStr.HasSubstr( "add_executable(", true );
+        if ( subStrIdx >= 0 )
+        {
+            CORE::CString dependenciesStr = fileSuffix.SubstrToChar( ')', (CORE::UInt32)subStrIdx+15, true );
+            dependenciesStr = dependenciesStr.CompactRepeatingChar( ' ' );
+            dependenciesStr = dependenciesStr.Trim( true );
+            dependenciesStr = dependenciesStr.Trim( false );
+            std::vector< CORE::CString > elements = dependenciesStr.ParseElements( ' ' );
+            if ( !elements.empty() )
+            {
+                return *(elements.begin());
+            }
+            
+            // Malformed file!
+            return CORE::CString();
+        }
+        else
+        {
+            CORE::CString moduleName;
+            ParseDependencies( fileSuffix, moduleName );
+            return moduleName;
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 const TModuleInfo*
 GetModuleInfo( const TProjectInfo& projectInfo ,
                const CORE::CString& moduleName )
@@ -680,6 +731,11 @@ FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
     
     TStringVector dirExcludeList = GetSubDirExcludeList( curRootDir );
     
+        if ( !dirExcludeList.empty() )
+        {
+         int a= 0;
+        }
+
     TStringVector::iterator i = dirList.begin();
     while ( i != dirList.end() )
     { 
@@ -739,7 +795,14 @@ ProcessProjectDir( TModuleInfo& moduleInfo )
     if ( CORE::LoadTextFileAsString( pathToSuffixFile, moduleInfo.cmakeListSuffixFileContent ) )
     {
         // Fill in the dependencies as specified in the suffix file
-        moduleInfo.dependencies = ParseDependencies( moduleInfo.cmakeListSuffixFileContent, moduleInfo.name );
+        CORE::CString actualModuleName;
+        moduleInfo.dependencies = ParseDependencies( moduleInfo.cmakeListSuffixFileContent, actualModuleName );
+        actualModuleName = ParseModuleName( moduleInfo.cmakeListSuffixFileContent );
+        if ( actualModuleName != moduleInfo.name )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Detected module name that differs from module sub-dir name, correcting module name from \"" + moduleInfo.name + "\" to \"" + actualModuleName + "\"" );
+            moduleInfo.name = actualModuleName;
+        }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed suffix file for project " + moduleInfo.name );
     }
     else

@@ -99,11 +99,7 @@ endif (APPLE)
 include(Dependencies)
 # definitions for samples
 set(GUCEF_LIBRARIES gucefCORE ) 
-#set(GUCEF_CEGUIRenderer_LIBRARIES CEGUIGUCEFRenderer)
-#set(GUCEF_Paging_LIBRARIES GUCEFPaging)
-#set(GUCEF_Terrain_LIBRARIES GUCEFTerrain)
-#set(GUCEF_Plugin_PCZSceneManager_LIBRARIES Plugin_PCZSceneManager)
-#set(GUCEF_Plugin_OctreeZone_LIBRARIES Plugin_OctreeZone)
+
 
 # Specify build paths
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${GUCEF_BINARY_DIR}/lib")
@@ -161,33 +157,6 @@ endif ()
 
 # Customise what to build
 option(GUCEF_STATIC "Static build" FALSE)
-#cmake_dependent_option(GUCEF_BUILD_RENDERSYSTEM_D3D9 "Build Direct3D9 RenderSystem" TRUE "WIN32;DirectX_FOUND" FALSE)
-#cmake_dependent_option(GUCEF_BUILD_RENDERSYSTEM_D3D10 "Build Direct3D10 RenderSystem" TRUE "WIN32;DirectX_D3D10_FOUND" #FALSE)
-#cmake_dependent_option(GUCEF_BUILD_RENDERSYSTEM_GL "Build OpenGL RenderSystem" TRUE "OPENGL_FOUND;NOT #GUCEF_BUILD_PLATFORM_IPHONE" FALSE)
-#cmake_dependent_option(GUCEF_BUILD_RENDERSYSTEM_GLES "Build OpenGL ES RenderSystem" FALSE "OPENGLES_FOUND" FALSE)
-#cmake_dependent_option(GUCEF_BUILD_PLATFORM_IPHONE "Build GUCEF for iPhone OS" FALSE "iPhoneSDK_FOUND;OPENGLES_FOUND" #FALSE)
-#option(GUCEF_BUILD_PLUGIN_BSP "Build BSP SceneManager plugin" TRUE)
-#option(GUCEF_BUILD_PLUGIN_OCTREE "Build Octree SceneManager plugin" TRUE)
-#option(GUCEF_BUILD_PLUGIN_PCZ "Build PCZ SceneManager plugin" TRUE)
-#option(GUCEF_BUILD_PLUGIN_PFX "Build ParticleFX plugin" TRUE)
-#option(GUCEF_BUILD_COMPONENT_PAGING "Build Paging component" TRUE)
-#option(GUCEF_BUILD_COMPONENT_TERRAIN "Build Terrain component" TRUE)
-#cmake_dependent_option(GUCEF_BUILD_COMPONENT_PROPERTY "Build Property component" TRUE "Boost_FOUND;NOT #GUCEF_BUILD_PLATFORM_IPHONE" FALSE)
-#cmake_dependent_option(GUCEF_BUILD_PLUGIN_CG "Build Cg plugin" TRUE "Cg_FOUND;NOT GUCEF_BUILD_PLATFORM_IPHONE" FALSE)
-#cmake_dependent_option(GUCEF_BUILD_CEGUIRENDERER "Build CEGUI renderer" TRUE "CEGUI_FOUND;NOT #GUCEF_BUILD_PLATFORM_IPHONE" FALSE)
-#option(GUCEF_BUILD_COMPONENT_RTSHADERSYSTEM "Build RTShader System component" FALSE)
-#option(GUCEF_BUILD_SAMPLES "Build GUCEF demos" TRUE)
-#cmake_dependent_option(GUCEF_BUILD_TOOLS "Build the command-line tools" TRUE "NOT GUCEF_BUILD_PLATFORM_IPHONE" FALSE)
-#option(GUCEF_BUILD_TESTS "Build the unit tests & PlayPen" FALSE)
-# Configure the build
-#option(GUCEF_CONFIG_PROFILING "Enable GUCEF profiling code" FALSE)
-#set(GUCEF_CONFIG_ASSERTMODE 0 CACHE STRING 
-#"Set GUCEF assertion mode. Possible values:
-#  0 - Regular asserts in debug, none in release
-#  1 - Regular asserts in debug, exceptions in release
-#  2 - Exceptions in debug and release"
-#)
-#option(GUCEF_CONFIG_DOUBLE "Use doubles instead of floats in GUCEF" FALSE)
 set(GUCEF_CONFIG_ALLOCATOR 2 CACHE STRING
 "Specify the memory allocator to use. Possible values:
   1 - Standard allocator
@@ -197,24 +166,6 @@ set(GUCEF_CONFIG_ALLOCATOR 2 CACHE STRING
 option(GUCEF_CONFIG_MEMTRACK_DEBUG "Enable GUCEF's memory tracker in debug mode" FALSE)
 option(GUCEF_CONFIG_MEMTRACK_RELEASE "Enable GUCEF's memory tracker in release mode" FALSE)
 
-# determine threading options
-#include(PrepareThreadingOptions)
-#cmake_dependent_option(GUCEF_CONFIG_DISABLE_FREEIMAGE "Don't build FreeImage codec. If you use this option, you need to #provide your own image handling codecs." FALSE "FreeImage_FOUND" TRUE)
-#option(GUCEF_CONFIG_DISABLE_DDS "Don't build DDS codec." FALSE)
-#cmake_dependent_option(GUCEF_CONFIG_DISABLE_ZIP "Don't build ZIP archive support. If you use this option, you cannot use #ZIP archives resource locations. The samples won't work." FALSE "ZZip_FOUND" TRUE)
-#option(GUCEF_CONFIG_NEW_COMPILERS "Use the new script compilers." TRUE)
-#cmake_dependent_option(GUCEF_USE_BOOST "Use Boost extensions" TRUE "Boost_FOUND" FALSE)
-
-# Customise what to install
-#option(GUCEF_INSTALL_PLUGINS_HEADERS "Install header files for GUCEF plugins." FALSE)
-#option(GUCEF_INSTALL_SAMPLES "Install GUCEF demos." FALSE)
-#option(GUCEF_INSTALL_TOOLS "Install GUCEF tools." TRUE)
-#option(GUCEF_INSTALL_DOCS "Install documentation." FALSE)
-#option(GUCEF_INSTALL_MEDIA "Install media files." FALSE)
-#option(GUCEF_INSTALL_SAMPLES_SOURCE "Install samples source files." FALSE)
-#cmake_dependent_option(GUCEF_INSTALL_PDB "Install debug pdb files" FALSE "MSVC" FALSE)
-#option(GUCEF_FULL_RPATH "Build executables with the full required RPATH to run from their install location." FALSE)
-#option(GUCEF_STANDALONE_BUILD "Generate build files that do not reference CMake (e.g. source distro)" FALSE)
 
 ###################################################################
 # configure global build settings based on selected build options
@@ -244,7 +195,7 @@ add_subdirectory( gucefPATCHER )
 # Setup GUCEF plugin dependencies
 add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML/dependancy/libparsifal )
 add_subdirectory( gucefINPUT/plugins/inputdriverOIS/dependency/OIS )
-add_subdirectory( gucefIMAGE/plugins/imgpluginFreeImage/dependencies/FreeImage/Source )
+add_subdirectory( gucefIMAGE/plugins/imgpluginFreeImage/dependencies/FreeImage )
 add_subdirectory( gucefVFS/plugins/vfspluginZIP/dependencies/zlib )
 add_subdirectory( gucefVFS/plugins/vfspluginZIP/dependencies/zziplib/zzip )
 
