@@ -1,3 +1,5 @@
+SET THEBATCHDIR=%CD%
+
 cd..
 cd..
 cd common
@@ -13,4 +15,8 @@ cd..
 
 CMakeListGenerator_d.exe
 
-PAUSE
+cd %THEBATCHDIR%
+
+IF NOT DEFINED NOPAUSE (
+  PAUSE
+)
