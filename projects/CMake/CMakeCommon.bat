@@ -12,9 +12,13 @@ IF ERRORLEVEL 1 (
 )
 ENDLOCAL
 
-ECHO *** Generate CMakeLists.txt files ***
-
-CALL GenerateCMakeLists.bat
+IF NOT DEFINED SKIP_GUCEF_CMAKELISTSFILEGENERATION (
+  ECHO *** Generate CMakeLists.txt files ***
+  CALL GenerateCMakeLists.bat
+)
+IF DEFINED SKIP_GUCEF_CMAKELISTSFILEGENERATION (
+  ECHO Skipping GUCEF's CMakeLists file generation
+)
 
 cd "%BATCHSTARTDIR%"
 
