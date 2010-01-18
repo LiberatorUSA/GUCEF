@@ -1,4 +1,4 @@
-SET THEBATCHDIR=%CD%
+SET GUCEF_THEBATCHDIR=%CD%
 
 cd..
 cd..
@@ -15,7 +15,7 @@ cd..
 
 CMakeListGenerator_d.exe
 
-cd %THEBATCHDIR%
+cd %GUCEF_THEBATCHDIR%
 
 IF NOT DEFINED NOPAUSE (
   PAUSE
