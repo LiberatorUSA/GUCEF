@@ -39,6 +39,7 @@ Features:
 - Automatically generates the include paths for each module's dependencies
 - Handles most include/source directory structures
 - Special processing for platform specific headers/sources is supported.
+- Support for combined processing of multipe source trees
 
 
 
@@ -73,6 +74,8 @@ The tool accepts the following command line parameters:
 Like most GU applications command line parameters accepted in the form:
 '<key>=<value>'
 
+Note that you can pass multiple instances of the rootDir argument in order
+to pass multiple root directories.
 
 Usage: Platform (O/S) specific processing
 ------------------------
@@ -97,9 +100,13 @@ Supported directories:
 History:
 ------------------------
 
-- 18'th Jan 2010: Exclude bugfix & feature
-     The exclude list functionality now properly accounts for different EOL
-     characters in the exclude text file if the file has multiple entries
-     In addition the exclude list can now be used to exclude specific files not
-     just folders
+- 18'th Jan 2010: Exclude bugfix & feature + Multiple roots
+     - The exclude list functionality now properly accounts for different EOL
+       characters in the exclude text file if the file has multiple entries
+     - In addition the exclude list can now be used to exclude specific files not
+       just folders
+     - Added support for multiple rootDir command line arguments in order to process
+       multiple roots. This is a nice feature for combining multiple source trees into
+       a single CMake project because it will automatically figure out the include directories
+       etc for you.
 - 12'th Jan 2010: First release
