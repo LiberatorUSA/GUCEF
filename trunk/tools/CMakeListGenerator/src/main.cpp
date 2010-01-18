@@ -1210,21 +1210,25 @@ main( int argc , char* argv[] )
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
                                               
-    CORE::CString topLevelProjectDir;
+    TStringVector rootDirs;
     try
     {
-        topLevelProjectDir = keyValueList.GetValue( "rootDir" );
+        rootDirs = keyValueList.GetValueVector( "rootDir" );
     }
     catch ( CORE::CValueList::EUnknownKey& )
     {
-        topLevelProjectDir = CORE::RelativePath( "$CURWORKDIR$" );
+        rootDirs.push_back( CORE::RelativePath( "$CURWORKDIR$" ) );
     }
     
     // Gather all the information
     TProjectInfo projectInfo;
-    LocateAndProcessProjectDirsRecusively( projectInfo, topLevelProjectDir );
-    
-    // Order the modules in the list such so that 
+    TStringVector::iterator i = rootDirs.begin();
+    while ( i != rootDirs.end() )
+    {
+        LocateAndProcessProjectDirsRecusively( projectInfo, (*i) );
+        ++i;
+    }
+    // Order the modules in the list such so that they are placed in the order they need to be build
     SortModulesInDependencyOrder( projectInfo );
     
     // Generate the contents of the CMakeLists files
