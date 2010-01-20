@@ -64,7 +64,7 @@ Chain of events:
 6: The connection is now fully routed and established
 [UltraVNC client] -> [SPE Server] -> [SPE Client] -> [UltraVNC Server]
 
-Note that is besides the NAT issue you are also limited to HTTP connections
+Note that if besides the NAT issue, you are also limited to HTTP connections,
 then you will have route the SPE via a HTTP tunnel. SPE does not include HTTP
 tunneling itself at this time.
 
