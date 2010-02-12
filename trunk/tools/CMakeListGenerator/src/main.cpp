@@ -78,6 +78,7 @@ struct SModuleInfo
 {
     TStringVector dependencies;    
     TStringVectorMap includeDirs;
+    TStringVector dependencyIncludeDirs;
     TStringVectorMap sourceDirs;
     CORE::CString name;
     CORE::CString rootDir;
@@ -636,17 +637,22 @@ GenerateModuleIncludes( const TProjectInfo& projectInfo ,
                         TModuleInfo& moduleInfo         )
 {GUCEF_TRACE;
 
+    // Add include dirs for each dependency we know about
     CORE::CString allRelDependencyPaths;
     TStringVector& dependencies = moduleInfo.dependencies;
     TStringVector::iterator i = dependencies.begin();
     while ( i != dependencies.end() )
     {
+        // Get a dependency module which is already fully processed
         const TModuleInfo* dependencyModule = GetModuleInfo( projectInfo, (*i) );
         if ( NULL != dependencyModule )
         {
+            // Determine the relative path to this other module
             CORE::CString relativePath = GetRelativePathToOtherPathRoot( moduleInfo.rootDir        , 
                                                                          dependencyModule->rootDir );
             
+            // Now construct the relative path to each of the dependency module's include dirs
+            // These dir will all become include dirs for this module
             TStringVectorMap::const_iterator n = dependencyModule->includeDirs.begin();
             while ( n != dependencyModule->includeDirs.end() )
             {
@@ -654,8 +660,31 @@ GenerateModuleIncludes( const TProjectInfo& projectInfo ,
                 CORE::AppendToPath( dependencyInclDir, (*n).first );
                 dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
                 
+                // Add the contructed include directory to the list of dependency directories
+                // for the current module. This can later be used again by other modules which
+                // include this one.
+                moduleInfo.dependencyIncludeDirs.push_back( dependencyInclDir );
+                
                 allRelDependencyPaths += dependencyInclDir + " ";
                 ++n;
+            }
+            
+            // On top of that we have to include all the include dirs that the dependency module
+            // was including itself since it's headers might be referring to those files.
+            TStringVector::const_iterator m = dependencyModule->dependencyIncludeDirs.begin();
+            while ( m != dependencyModule->dependencyIncludeDirs.end() )
+            {
+                CORE::CString dependencyInclDir = relativePath;
+                CORE::AppendToPath( dependencyInclDir, (*n).first );
+                dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
+                
+                // Add the contructed include directory to the list of dependency directories
+                // for the current module. This can later be used again by other modules which
+                // include this one.
+                moduleInfo.dependencyIncludeDirs.push_back( dependencyInclDir );
+                
+                allRelDependencyPaths += dependencyInclDir + " ";
+                ++m;
             }                         
         }
         ++i;
