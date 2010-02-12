@@ -1,4 +1,6 @@
 
 add_library( zziplib ${HEADER_FILES} ${SOURCE_FILES} )
-set_target_properties( zziplib PROPERTIES COMPILE_DEFINITIONS "IMGPLUGINFREEIMAGE_BUILD_MODULE;BUILD_GUCEF_IMAGE_PLUGIN_DLL" )
-include_directories( ../../zziplib )
+add_dependencies( zziplib zlib )
+target_link_libraries( zziplib zlib )
+set_target_properties( zziplib PROPERTIES COMPILE_DEFINITIONS ZZIP_DLL )
+
