@@ -30,8 +30,8 @@ REM -----------------------------------------------------
 
 :FIND_GUCEF_CMAKE_SLN_DEBUG_MVC9_CMAKELISTGENERATOR
 
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC9
-SET GENERATOREXE=CMakeListGenerator_d.exe
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC9\bin\Debug
+SET GENERATOREXE=CMakeListGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = %EXETEST%
