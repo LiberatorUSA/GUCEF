@@ -69,6 +69,7 @@ using namespace GUCEF;
 
 /*---------------------------------------------------------------------------*/
 
+typedef std::set< CORE::CString > TStringSet;
 typedef std::vector< CORE::CString > TStringVector;
 typedef std::map< CORE::CString, TStringVector > TStringVectorMap;
 
@@ -78,7 +79,7 @@ struct SModuleInfo
 {
     TStringVector dependencies;    
     TStringVectorMap includeDirs;
-    TStringVector dependencyIncludeDirs;
+    TStringSet dependencyIncludeDirs;
     TStringVectorMap sourceDirs;
     CORE::CString name;
     CORE::CString rootDir;
@@ -521,6 +522,58 @@ ParseFileLines( const CORE::CString& fileSuffix )
 
 /*---------------------------------------------------------------------------*/
 
+TStringSet
+ParseIncludeDirs( const CORE::CString& fileSuffix )
+{GUCEF_TRACE;
+
+    TStringSet includeDirs;
+    
+    TStringVector suffixFileLines = ParseFileLines( fileSuffix );    
+    TStringVector::iterator i = suffixFileLines.begin();
+    while ( i != suffixFileLines.end() )
+    {
+        CORE::CString testStr = (*i).Lowercase();
+        CORE::Int32 subStrIdx = testStr.HasSubstr( "include_directories(", true );
+        CORE::Int32 commentCharIdx = testStr.HasChar( '#', true );
+        
+        // Is this function call commented out?
+        if ( commentCharIdx > -1 && commentCharIdx < subStrIdx )
+        {
+            // Then ignore it
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Found include_directories function in suffix file but it is commented out, ignoring it" );
+            ++i;
+            continue;
+        }
+        
+        // Does this line have the function call we are looking for?
+        if ( subStrIdx >= 0 )
+        {
+            // It does, parse the parameters
+            CORE::CString dependenciesStr = (*i).SubstrToChar( ')', (CORE::UInt32)subStrIdx+20, true );
+            dependenciesStr = dependenciesStr.CompactRepeatingChar( ' ' );
+            dependenciesStr = dependenciesStr.Trim( true );
+            dependenciesStr = dependenciesStr.Trim( false );
+            TStringVector elements = dependenciesStr.ParseElements( ' ' );
+            if ( !elements.empty() )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::Int32ToString( elements.size() ) + " include dirs in suffix file" );
+            }
+            
+            // Add this collection to the list of all include dirs we found
+            TStringVector::iterator n = elements.begin();
+            while ( n != elements.end() )
+            {
+                includeDirs.insert( (*n) );
+                ++n;
+            }
+        }
+        ++i;
+    }
+    return includeDirs;
+}
+
+/*---------------------------------------------------------------------------*/
+
 TStringVector
 ParseDependencies( const CORE::CString& fileSuffix ,
                    CORE::CString& moduleName       )
@@ -664,8 +717,8 @@ GetRelativePathToOtherPathRoot( const CORE::CString& fromPath ,
         relativePath += "../";
     }
     CORE::AppendToPath( relativePath, toPathRemainder );
-    relativePath = relativePath.ReplaceChar( '\\', '/' );
-    return relativePath;
+    relativePath = CORE::RelativePath( relativePath );
+    return relativePath.ReplaceChar( '\\', '/' );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -696,12 +749,13 @@ GenerateModuleIncludes( const TProjectInfo& projectInfo ,
             {
                 CORE::CString dependencyInclDir = relativePath;
                 CORE::AppendToPath( dependencyInclDir, (*n).first );
+                dependencyInclDir = CORE::RelativePath( dependencyInclDir );
                 dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
                 
                 // Add the contructed include directory to the list of dependency directories
                 // for the current module. This can later be used again by other modules which
                 // include this one.
-                moduleInfo.dependencyIncludeDirs.push_back( dependencyInclDir );
+                moduleInfo.dependencyIncludeDirs.insert( dependencyInclDir );
                 
                 allRelDependencyPaths += dependencyInclDir + " ";
                 ++n;
@@ -709,17 +763,18 @@ GenerateModuleIncludes( const TProjectInfo& projectInfo ,
             
             // On top of that we have to include all the include dirs that the dependency module
             // was including itself since it's headers might be referring to those files.
-            TStringVector::const_iterator m = dependencyModule->dependencyIncludeDirs.begin();
+            TStringSet::const_iterator m = dependencyModule->dependencyIncludeDirs.begin();
             while ( m != dependencyModule->dependencyIncludeDirs.end() )
             {
                 CORE::CString dependencyInclDir = relativePath;
                 CORE::AppendToPath( dependencyInclDir, (*m) );
+                dependencyInclDir = CORE::RelativePath( dependencyInclDir );
                 dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
                 
                 // Add the contructed include directory to the list of dependency directories
                 // for the current module. This can later be used again by other modules which
                 // include this one.
-                moduleInfo.dependencyIncludeDirs.push_back( dependencyInclDir );
+                moduleInfo.dependencyIncludeDirs.insert( dependencyInclDir );
                 
                 allRelDependencyPaths += dependencyInclDir + " ";
                 ++m;
@@ -895,6 +950,7 @@ ProcessProjectDir( TModuleInfo& moduleInfo )
         // Fill in the dependencies as specified in the suffix file
         CORE::CString actualModuleName;
         moduleInfo.dependencies = ParseDependencies( moduleInfo.cmakeListSuffixFileContent, actualModuleName );
+        moduleInfo.dependencyIncludeDirs = ParseIncludeDirs( moduleInfo.cmakeListSuffixFileContent );  
         actualModuleName = ParseModuleName( moduleInfo.cmakeListSuffixFileContent );
         if ( actualModuleName != moduleInfo.name )
         {

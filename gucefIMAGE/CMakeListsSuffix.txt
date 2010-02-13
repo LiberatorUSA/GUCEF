@@ -1,5 +1,4 @@
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 add_library( gucefIMAGE ${HEADER_FILES} ${SOURCE_FILES} )
 add_dependencies( gucefIMAGE gucefCORE gucefMT)
 target_link_libraries( gucefIMAGE gucefCORE gucefMT )
