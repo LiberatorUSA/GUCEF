@@ -1,5 +1,4 @@
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/include )
 add_library( gucefMT ${HEADER_FILES} ${SOURCE_FILES} )
 
 # Add system specific libraries

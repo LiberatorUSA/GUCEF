@@ -79,19 +79,60 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CString
+ModuleDir( void )
+{
+    char buffer[ MAX_DIR_LENGTH ];
+    Module_Path( buffer, MAX_DIR_LENGTH );
+    Strip_Filename( buffer );
+    return buffer;   
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CurrentWorkingDir( void )
+{
+    char buffer[ MAX_DIR_LENGTH ];
+    Get_Current_Dir( buffer, MAX_DIR_LENGTH );
+    return buffer;   
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
 RelativePath( const CString& relpath )
 {GUCEF_TRACE;        
-        if ( relpath.Length() )
-        {
-                char buffer[ MAX_DIR_LENGTH ];
-                Relative_Path( relpath.C_String() ,
-                               buffer             ,
-                               MAX_DIR_LENGTH     );                               
-           
-                CString abspath( buffer );   
-                return abspath;                               
-        }                
-        return relpath;
+        
+    CString moduleDir = ModuleDir();
+    CString resultStr = relpath.ReplaceSubstr( "$MODULEDIR$", moduleDir );
+
+    CString currentWorkingDir = CurrentWorkingDir();
+    resultStr = resultStr.ReplaceSubstr( "$CURWORKDIR$", moduleDir );
+     
+    resultStr = resultStr.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR );
+    resultStr = resultStr.CompactRepeatingChar( DIRSEPCHAR ); 
+    
+    CString upDirSeg = CString( ".." ) + DIRSEPCHAR;
+    Int32 upDirIdx = resultStr.HasSubstr( upDirSeg, false );
+    while ( upDirIdx > -1 )
+    {
+        CString prefix( resultStr.C_String(), upDirIdx );
+        prefix = StripLastSubDir( prefix );
+        resultStr = prefix + (resultStr.C_String()+upDirIdx+3);
+        upDirIdx = resultStr.HasSubstr( upDirSeg, false );
+    } 
+    
+    upDirSeg = CString( "$UPDIR$" );
+    upDirIdx = resultStr.HasSubstr( upDirSeg, false );
+    while ( upDirIdx > -1 )
+    {
+        CString prefix( resultStr.C_String(), upDirIdx );
+        prefix = StripLastSubDir( prefix );
+        resultStr = prefix + (resultStr.C_String()+upDirIdx+7);
+        upDirIdx = resultStr.HasSubstr( upDirSeg, false );        
+    }
+
+    return resultStr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -101,20 +142,34 @@ AppendToPath( CString& path           ,
               const CString& addition )
 {GUCEF_TRACE;
 
+    if ( addition.Length() == 0 ) return;
+    
     if ( path.Length() == 0 )
     {
         path = addition;
         return;
+    }    
+    
+    char pathLastChar = path[ path.Length()-1 ];
+    if ( pathLastChar == '/' || pathLastChar == '\\' )
+    {
+        if ( addition[ 0 ] == '/' || addition[ 0 ] == '\\' )
+        {
+            path += (addition.C_String()+1);
+            return;
+        }
+        path += addition;
+        return;
     }
-    
-    char buffer[ MAX_DIR_LENGTH ];
-    
-    strncpy( buffer          , 
-             path.C_String() ,
-             path.Length()+1 );       
-    Append_To_Path( buffer              ,
-                    addition.C_String() );                        
-    path = buffer;                                
+    else
+    {
+        if ( addition[ 0 ] == '/' || addition[ 0 ] == '\\' )
+        {
+            path += addition;
+            return;
+        }        
+        path += DIRSEPCHAR + addition;
+    }                               
 }
 
 /*-------------------------------------------------------------------------*/
