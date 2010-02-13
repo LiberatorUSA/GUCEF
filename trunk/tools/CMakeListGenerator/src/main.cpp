@@ -511,29 +511,67 @@ IsDirAPlatformDir( const CORE::CString& path )
 
 /*---------------------------------------------------------------------------*/
 
-std::vector< CORE::CString >
+TStringVector
+ParseFileLines( const CORE::CString& fileSuffix )
+{
+    CORE::CString testStr = fileSuffix.ReplaceChar( '\r', '\n' );
+    testStr = testStr.CompactRepeatingChar( '\n' );
+    return testStr.ParseElements( '\n', false );
+}
+
+/*---------------------------------------------------------------------------*/
+
+TStringVector
 ParseDependencies( const CORE::CString& fileSuffix ,
                    CORE::CString& moduleName       )
 {GUCEF_TRACE;
 
-    CORE::CString testStr = fileSuffix.Lowercase();
-    CORE::Int32 subStrIdx = testStr.HasSubstr( "add_dependencies(", true );
-    if ( subStrIdx >= 0 )
+    TStringVector dependencies;
+    
+    TStringVector suffixFileLines = ParseFileLines( fileSuffix );    
+    TStringVector::iterator i = suffixFileLines.begin();
+    while ( i != suffixFileLines.end() )
     {
-        CORE::CString dependenciesStr = fileSuffix.SubstrToChar( ')', (CORE::UInt32)subStrIdx+17, true );
-        dependenciesStr = dependenciesStr.CompactRepeatingChar( ' ' );
-        dependenciesStr = dependenciesStr.Trim( true );
-        dependenciesStr = dependenciesStr.Trim( false );
-        std::vector< CORE::CString > elements = dependenciesStr.ParseElements( ' ' );
-        if ( !elements.empty() )
+        CORE::CString testStr = (*i).Lowercase();
+        CORE::Int32 subStrIdx = testStr.HasSubstr( "add_dependencies(", true );
+        CORE::Int32 commentCharIdx = testStr.HasChar( '#', true );
+        
+        // Is this function call commented out?
+        if ( commentCharIdx > -1 && commentCharIdx < subStrIdx )
         {
-            moduleName = *(elements.begin());
-            elements.erase( elements.begin() );
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::Int32ToString( elements.size() ) + " dependencies in suffix file" );
+            // Then ignore it
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Found add_dependencies function in suffix file but it is commented out, ignoring it" );
+            ++i;
+            continue;
         }
-        return elements;
+        
+        // Does this line have the function call we are looking for?
+        if ( subStrIdx >= 0 )
+        {
+            // It does, parse the parameters
+            CORE::CString dependenciesStr = (*i).SubstrToChar( ')', (CORE::UInt32)subStrIdx+17, true );
+            dependenciesStr = dependenciesStr.CompactRepeatingChar( ' ' );
+            dependenciesStr = dependenciesStr.Trim( true );
+            dependenciesStr = dependenciesStr.Trim( false );
+            TStringVector elements = dependenciesStr.ParseElements( ' ' );
+            if ( !elements.empty() )
+            {
+                moduleName = *(elements.begin());
+                elements.erase( elements.begin() );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::Int32ToString( elements.size() ) + " dependencies in suffix file" );
+            }
+            
+            // Add this collection to the list of all dependencies we found
+            TStringVector::iterator n = elements.begin();
+            while ( n != elements.end() )
+            {
+                dependencies.push_back( (*n) );
+                ++n;
+            }
+        }
+        ++i;
     }
-    return std::vector< CORE::CString >();
+    return dependencies;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -675,7 +713,7 @@ GenerateModuleIncludes( const TProjectInfo& projectInfo ,
             while ( m != dependencyModule->dependencyIncludeDirs.end() )
             {
                 CORE::CString dependencyInclDir = relativePath;
-                CORE::AppendToPath( dependencyInclDir, (*n).first );
+                CORE::AppendToPath( dependencyInclDir, (*m) );
                 dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
                 
                 // Add the contructed include directory to the list of dependency directories

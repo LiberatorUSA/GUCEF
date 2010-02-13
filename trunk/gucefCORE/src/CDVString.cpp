@@ -440,10 +440,12 @@ CString::Append( const char *appendstr ,
         }
         else
         {
+            delete []m_string;
             m_length = len;
             m_string = new char[ m_length+1 ];
             assert( m_string );                                                                                
-            memcpy( m_string, appendstr, m_length+1 );            
+            memcpy( m_string, appendstr, m_length );
+            m_string[ m_length ] = 0;
         } 
     }                                                                     
 }                 
@@ -525,7 +527,7 @@ CString::ReplaceChar( char oldchar ,
                         str[ i ] = newchar;
                 }
         }
-        CString newstr( str );
+        CString newstr( str, m_length );
         delete []str;
         return newstr;
     }
@@ -724,47 +726,27 @@ CString
 CString::CompactRepeatingChar( const char charToCompact ) const
 {GUCEF_TRACE;
     
-    CString newString;
+    char* newString = new char[ m_length+1 ];
+    UInt32 newStringLength = 0;
+    
     for ( UInt32 i=0; i<m_length; ++i )
     {
-        if ( m_string[ i ] != charToCompact )
-        {
-            newString += m_string[ i ];
-        }
-        else
-        {
-            if ( i+1 < m_length )
+        newString[ newStringLength ] = m_string[ i ];
+        ++newStringLength;
+        
+        if ( m_string[ i ] == charToCompact )
+        {            
+            while ( ( i+1 < m_length ) && 
+                    ( m_string[ i+1 ] == charToCompact ) )
             {
-                // Check if we are dealing with a sequence
-                if ( m_string[ i+1 ] != charToCompact )
-                {
-                    // Only one occurance, add it
-                    newString += m_string[ i ];
-                    continue;
-                }
-            }
-            else
-            {
-                break;
-            }
-            
-            // Skip over the repeating char until we hit a different char
-            ++i;
-            for ( i; i<m_length; ++i )
-            {
-                if ( m_string[ i ] == charToCompact )
-                {
-                    ++i;
-                }
-                else
-                {
-                    // end of the sequence
-                    break;
-                }
+                ++i;
             }
         }
     }
-    return newString;    
+    
+    CString returnStr( newString, newStringLength );    
+    delete []newString;
+    return returnStr;
 }
 
 /*-------------------------------------------------------------------------*/
