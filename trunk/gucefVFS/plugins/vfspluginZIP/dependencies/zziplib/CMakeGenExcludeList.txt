@@ -1,0 +1,11 @@
+bins
+docs
+m4
+msvc6
+msvc7
+msvc8
+msvc9
+SDL
+test
+uses
+zzipwrap

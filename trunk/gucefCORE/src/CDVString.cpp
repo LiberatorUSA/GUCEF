@@ -1018,7 +1018,7 @@ CString::HasSubstr( const CString& substr ,
         {
                 if ( memcmp( m_string+i, substr.m_string, slen ) == 0 )
                 {                                    
-                        return max-i;
+                        return i;
                 }
         }
         return -1;
