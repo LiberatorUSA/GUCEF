@@ -113,23 +113,15 @@ RelativePath( const CString& relpath )
     resultStr = resultStr.CompactRepeatingChar( DIRSEPCHAR ); 
     
     CString upDirSeg = CString( ".." ) + DIRSEPCHAR;
-    Int32 upDirIdx = resultStr.HasSubstr( upDirSeg, false );
-    while ( upDirIdx > -1 )
+    Int32 upDirIdx = resultStr.HasSubstr( upDirSeg, true );
+    while ( upDirIdx > 0 )
     {
         CString prefix( resultStr.C_String(), upDirIdx );
+        UInt32 lengthDelta = prefix.Length();
         prefix = StripLastSubDir( prefix );
-        resultStr = prefix + (resultStr.C_String()+upDirIdx+3);
-        upDirIdx = resultStr.HasSubstr( upDirSeg, false );
-    } 
-    
-    upDirSeg = CString( "$UPDIR$" );
-    upDirIdx = resultStr.HasSubstr( upDirSeg, false );
-    while ( upDirIdx > -1 )
-    {
-        CString prefix( resultStr.C_String(), upDirIdx );
-        prefix = StripLastSubDir( prefix );
-        resultStr = prefix + (resultStr.C_String()+upDirIdx+7);
-        upDirIdx = resultStr.HasSubstr( upDirSeg, false );        
+        lengthDelta = lengthDelta - prefix.Length();
+        resultStr = prefix + (resultStr.C_String()+upDirIdx+lengthDelta);
+        upDirIdx = resultStr.HasSubstr( upDirSeg, true );
     }
 
     return resultStr;

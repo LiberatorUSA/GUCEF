@@ -198,6 +198,15 @@ CZIPArchive::GetFileSize( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
+time_t
+CZIPArchive::GetFileModificationTime( const VFS::CString& filePath ) const
+{
+    // @todo: makeme
+    return 0;    
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CIOAccess*
 CZIPArchive::LoadFile( const VFS::CString& file      ,
                        const VFS::UInt32 memLoadSize ) const
