@@ -190,6 +190,7 @@ add_subdirectory( gucefAUDIO )
 add_subdirectory( gucefCOM )
 add_subdirectory( gucefMULTIPLAY )
 add_subdirectory( gucefDRN )
+add_subdirectory( gucefSMDRN )
 add_subdirectory( gucefPATCHER )
 
 # Setup GUCEF plugin dependencies
