@@ -488,8 +488,11 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo )
     CORE::CString sectionContent;
     
     bool validPlatform = true;
-    sectionContent += GenerateCMakeListsPlatformFilesSection( moduleInfo, "WIN32", "mswin", true, validPlatform );
-    sectionContent += GenerateCMakeListsPlatformFilesSection( moduleInfo, "UNIX", "linux", !validPlatform, validPlatform );
+    bool firstPlatform = true;
+    sectionContent += GenerateCMakeListsPlatformFilesSection( moduleInfo, "WIN32", "mswin", firstPlatform, validPlatform );
+    if ( firstPlatform && validPlatform ) { firstPlatform = false; }
+    sectionContent += GenerateCMakeListsPlatformFilesSection( moduleInfo, "UNIX", "linux", firstPlatform, validPlatform );
+    if ( firstPlatform && validPlatform ) { firstPlatform = false; }
     
     if ( sectionContent.Length() > 0 )
     {
@@ -507,7 +510,12 @@ IsDirAPlatformDir( const CORE::CString& path )
 {GUCEF_TRACE;
 
     CORE::CString lastSubDir = CORE::LastSubDir( path ).Lowercase();
-    return lastSubDir == "mswin" || lastSubDir == "linux";
+    return lastSubDir == "mswin" || 
+           lastSubDir == "linux" ||
+           lastSubDir == "osx" ||
+           lastSubDir == "iphone" ||
+           lastSubDir == "android" ||
+           lastSubDir == "symbian";
 }
 
 /*---------------------------------------------------------------------------*/
