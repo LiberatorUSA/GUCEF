@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_DRN_DLLINIT_H
-#define GUCEF_DRN_DLLINIT_H
+#ifndef GUCEF_SMDRN_DLLINIT_H
+#define GUCEF_SMDRN_DLLINIT_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -185,7 +185,7 @@
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_DRN_DLLINIT_H ? */
+#endif /* GUCEF_SMDRN_DLLINIT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
