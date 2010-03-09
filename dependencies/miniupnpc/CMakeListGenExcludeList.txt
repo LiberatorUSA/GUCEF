@@ -1,0 +1,5 @@
+testigddescparse.c
+testminixml.c
+testupnpigd.py
+testupnpreplyparse.c
+miniupnpcmodule.c

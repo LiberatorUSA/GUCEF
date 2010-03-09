@@ -8,19 +8,26 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/types.h>
 #ifdef WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <io.h>
+
+#ifndef uint16_t
+  #define uint16_t unsigned short;
+#endif
+
 /* Hack */
 #define UNIX_PATH_LEN   108
 struct sockaddr_un {
   uint16_t sun_family;
   char     sun_path[UNIX_PATH_LEN];
 };
+
+
 #else
+#include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #endif
