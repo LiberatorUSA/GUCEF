@@ -1,0 +1,4 @@
+
+add_library( miniupnpc ${HEADER_FILES} ${SOURCE_FILES} )
+set_target_properties( miniupnpc PROPERTIES COMPILE_DEFINITIONS MINIUPNP_EXPORTS )
+GUCEF_config_lib( miniupnpc )
