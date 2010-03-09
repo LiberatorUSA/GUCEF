@@ -200,6 +200,7 @@ add_subdirectory( gucefIMAGE/plugins/imgpluginFreeImage/dependencies/FreeImage )
 add_subdirectory( gucefVFS/plugins/vfspluginZIP/dependencies/zlib )
 add_subdirectory( gucefVFS/plugins/vfspluginZIP/dependencies/zziplib/zzip )
 add_subdirectory( gucefVFS/plugins/vfspluginDVP/dependencies/DVPACKSYS )
+add_subdirectory( dependencies/miniupnpc )
 
 # Setup GUCEF Plugin modules
 add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML )
