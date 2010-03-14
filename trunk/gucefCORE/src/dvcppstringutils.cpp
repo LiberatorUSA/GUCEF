@@ -481,15 +481,22 @@ CString
 StripLastSubDir( const CString& completePath )
 {GUCEF_TRACE;
 
-    CString path = completePath.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR );
-    CString remnamt = path.SubstrToChar( DIRSEPCHAR, false );
-    
-    if ( remnamt.Length() > 0 )
+    if ( 0 != completePath.Length() )
     {
-        return path.CutChars( remnamt.Length()+1, false );
+        CString path = completePath.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR );        
+        if ( path[ path.Length()-1 ] == DIRSEPCHAR )
+        {
+            path = path.CutChars( 1, false );
+        }        
+        
+        CString remnamt = path.SubstrToChar( DIRSEPCHAR, false );
+        if ( remnamt.Length() > 0 )
+        {
+            return path.CutChars( remnamt.Length()+1, false );
+        }        
+        return completePath;
     }
-    
-    return completePath;
+    return CString();   
 }
 
 /*-------------------------------------------------------------------------*/
