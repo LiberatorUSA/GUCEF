@@ -54,23 +54,25 @@ namespace CORE {
 
 CFileAccess::CFileAccess( const CString& file           ,
                           const char* mode /* = "rb" */ )
-        : _filename( file ) ,
+        : CIOAccess(),
+          m_filename( file ) ,
           m_mode( mode )
 {GUCEF_TRACE;
         
-        _readable = ( strchr( mode, 'r' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
-        _writeable = ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
-        
-        _size = Filesize( file.C_String() );
-        _file = fopen( file.C_String() ,
-                       mode            );                      
+    _readable = ( strchr( mode, 'r' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
+    _writeable = ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
+    
+    _size = Filesize( file.C_String() );
+    m_file = fopen( file.C_String() ,
+                    mode            );                      
 }
 
 /*-------------------------------------------------------------------------*/
 
 CFileAccess::~CFileAccess()
 {GUCEF_TRACE;
-        Close();    
+
+    Close();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -80,7 +82,7 @@ CFileAccess::Open( void )
 {GUCEF_TRACE;
         Close();
         
-        _file = fopen( _filename.C_String() ,
+        m_file = fopen( m_filename.C_String() ,
                        m_mode.C_String()    );                      
 }
 
@@ -89,11 +91,12 @@ CFileAccess::Open( void )
 void 
 CFileAccess::Close( void )
 {GUCEF_TRACE;
-        if ( _file )
-        { 
-                fclose( _file );
-                _file = NULL;
-        }
+
+    if ( NULL != m_file )
+    { 
+            fclose( m_file );
+            m_file = NULL;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -101,7 +104,8 @@ CFileAccess::Close( void )
 bool 
 CFileAccess::Opened( void ) const
 {GUCEF_TRACE;
-        return _file != NULL;
+
+    return m_file != NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -150,10 +154,15 @@ CFileAccess::Read( void *dest      ,
                     UInt32 esize    ,
                     UInt32 elements )
 {GUCEF_TRACE;
+    
+    if ( NULL != m_file )
+    {
         return (UInt32) fread( dest     ,
                                esize    ,
                                elements ,
-                               _file    );
+                               m_file   );
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -161,7 +170,12 @@ CFileAccess::Read( void *dest      ,
 UInt32 
 CFileAccess::Tell( void ) const
 {GUCEF_TRACE;
-        return ftell( _file );
+
+    if ( NULL != m_file )
+    {
+        return ftell( m_file );
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -170,9 +184,14 @@ Int32
 CFileAccess::Seek( Int32 offset ,
                    Int32 origin )
 {GUCEF_TRACE;
-        return fseek( _file     ,
-                      offset    ,
-                      origin    );
+
+    if ( NULL != m_file )
+    {
+        return fseek( m_file ,
+                      offset ,
+                      origin );
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -180,9 +199,14 @@ CFileAccess::Seek( Int32 offset ,
 UInt32 
 CFileAccess::Setpos( UInt32 position )
 {GUCEF_TRACE;
-        return fseek( _file     ,
+
+    if ( NULL != m_file )
+    {
+        return fseek( m_file    ,
                       position  ,
                       SEEK_SET  );
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -190,7 +214,12 @@ CFileAccess::Setpos( UInt32 position )
 char 
 CFileAccess::GetChar( void )
 {GUCEF_TRACE;
-        return (char) fgetc( _file );
+
+    if ( NULL != m_file )
+    {
+        return (char) fgetc( m_file );
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -199,7 +228,11 @@ bool
 CFileAccess::Eof( void ) const
 {GUCEF_TRACE;
 
-    return feof( _file ) != 0;
+    if ( NULL != m_file )
+    {
+        return feof( m_file ) != 0;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -227,10 +260,15 @@ CFileAccess::Write( const void* srcdata ,
                     UInt32 esize        ,
                     UInt32 elements     )
 {GUCEF_TRACE;
+
+    if ( NULL != m_file )
+    {
         return (UInt32) fwrite( srcdata  , 
                                 esize    , 
                                 elements , 
-                                _file    );
+                                m_file    );
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -247,7 +285,8 @@ CFileAccess::Write( CIOAccess& sourceData )
 bool 
 CFileAccess::IsValid( void )
 {GUCEF_TRACE;
-        return File_Exists( _filename.C_String() ) == 1;
+    
+    return File_Exists( m_filename.C_String() ) == 1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -255,11 +294,16 @@ CFileAccess::IsValid( void )
 UInt32 
 CFileAccess::GetSize( void ) const
 {GUCEF_TRACE;
-        if ( _file && _writeable )
+        
+    if ( NULL != m_file )
+    {        
+        if ( m_file && _writeable )
         {
-                fflush( _file );       
+                fflush( m_file );       
         }
-        return Filesize( _filename.C_String() );           
+        return Filesize( m_filename.C_String() );           
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -268,7 +312,10 @@ void
 CFileAccess::Flush( void )
 {GUCEF_TRACE;
 
-    fflush( _file );
+    if ( NULL != m_file )
+    {
+        fflush( m_file );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -276,13 +323,14 @@ CFileAccess::Flush( void )
 CICloneable* 
 CFileAccess::Clone( void ) const
 {GUCEF_TRACE;
-        if ( IsReadable() )
-        {
-                return new CFileAccess( _filename, "rb" );
-        }
-        
-        // Cannot be cloned
-        return NULL;
+
+    if ( IsReadable() )
+    {
+            return new CFileAccess( m_filename, "rb" );
+    }
+    
+    // Cannot be cloned
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -291,7 +339,7 @@ const CString&
 CFileAccess::GetFilename( void ) const
 {GUCEF_TRACE;
 
-    return _filename; 
+    return m_filename; 
 }
 
 /*-------------------------------------------------------------------------//

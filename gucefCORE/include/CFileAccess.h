@@ -152,8 +152,8 @@ class GUCEFCORE_EXPORT_CPP CFileAccess : public CIOAccess
         bool _writeable;
         bool _readable;
         CString m_mode;        
-        FILE* _file;
-        CString _filename;
+        FILE* m_file;
+        CString m_filename;
         UInt32 _size;
 };
 
