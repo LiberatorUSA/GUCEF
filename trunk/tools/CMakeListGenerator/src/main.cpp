@@ -136,7 +136,7 @@ GetHeaderFileExtensions( void )
     TStringVector fileTypes;
     fileTypes.push_back( "h" );
     fileTypes.push_back( "hpp" );
-    fileTypes.push_back( "asm" );
+
     return fileTypes;
 }
 
