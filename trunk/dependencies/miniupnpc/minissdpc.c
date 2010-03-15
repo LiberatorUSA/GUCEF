@@ -15,12 +15,17 @@
 #include <io.h>
 
 #ifndef uint16_t
-  #define uint16_t unsigned short;
+  #define uint16_t unsigned short
 #endif
+          
+#ifndef ssize_t
+  #define ssize_t signed int
+#endif 
 
 /* Hack */
 #define UNIX_PATH_LEN   108
-struct sockaddr_un {
+struct sockaddr_un  
+{
   uint16_t sun_family;
   char     sun_path[UNIX_PATH_LEN];
 };
