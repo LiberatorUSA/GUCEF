@@ -3,4 +3,3 @@ testminixml.c
 testupnpigd.py
 testupnpreplyparse.c
 miniupnpcmodule.c
-miniupnpcmodule.c
