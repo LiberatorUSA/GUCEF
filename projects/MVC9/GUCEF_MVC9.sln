@@ -215,6 +215,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CMakeListGenerator", "..\..\tools\CMakeListGenerator\projects\MVC9\CMakeListGenerator.vcproj", "{2A84F36E-D6F0-4419-AED1-1DC231614B78}"
 	ProjectSection(ProjectDependencies) = postProject
 		{60FFC659-4AA2-402E-8D14-A05D7198FECF} = {60FFC659-4AA2-402E-8D14-A05D7198FECF}
+		{B11FB695-0017-45B1-8FEE-29B64717BF24} = {B11FB695-0017-45B1-8FEE-29B64717BF24}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CallstackLogAnalyzer", "..\..\tools\CallstackLogAnalyzer\projects\MVC9\CallstackLogAnalyzer.vcproj", "{9443D680-F82C-42FA-B1DF-C068D21343EE}"
