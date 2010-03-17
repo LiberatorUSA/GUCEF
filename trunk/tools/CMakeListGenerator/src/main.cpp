@@ -464,6 +464,7 @@ GetSupportedPlatformDirs()
         platformDirs.insert( "iphone" );
         platformDirs.insert( "android" );
         platformDirs.insert( "symbian" );
+        platformDirs.insert( "osx" );
     }
     return platformDirs;
 }
@@ -492,6 +493,7 @@ GetAllPlatformFiles( TModuleInfo& moduleInfo )
     GetAllPlatformFiles( moduleInfo, "SYMBIAN", "symbian" );
     GetAllPlatformFiles( moduleInfo, "ANDROID", "android" );
     GetAllPlatformFiles( moduleInfo, "IPHONEOS", "iphone" );
+    GetAllPlatformFiles( moduleInfo, "OSX", "osx" );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -503,69 +505,77 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo           ,
                                             CORE::CString& sourceSection      )
 {GUCEF_TRACE;
     
-    const TStringVectorMap& platformHeaderFiles = moduleInfo.platformHeaderFiles[ platformName ];
-    if ( !platformHeaderFiles.empty() )
+    TStringVectorMapMap::iterator m = moduleInfo.platformHeaderFiles.find( platformName );
+    if ( m != moduleInfo.platformHeaderFiles.end() )
     {
-        headerSection = "  set( PLATFORM_HEADER_FILES \n";
-        
-        TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
-        while ( n != platformHeaderFiles.end() )
+        const TStringVectorMap& platformHeaderFiles = (*m).second;
+        if ( !platformHeaderFiles.empty() )
         {
-            const TStringVector& platformHeaderFilesDir = (*n).second; 
-            TStringVector::const_iterator i = platformHeaderFilesDir.begin();
-            while ( i != platformHeaderFilesDir.end() )
+            headerSection = "  set( PLATFORM_HEADER_FILES \n";
+            
+            TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
+            while ( n != platformHeaderFiles.end() )
             {
-                CORE::CString path = (*n).first;
-                CORE::AppendToPath( path, (*i) ); 
-                path = path.ReplaceChar( '\\', '/' );
-                
-                headerSection += "    " + path + "\n";
+                const TStringVector& platformHeaderFilesDir = (*n).second; 
+                TStringVector::const_iterator i = platformHeaderFilesDir.begin();
+                while ( i != platformHeaderFilesDir.end() )
+                {
+                    CORE::CString path = (*n).first;
+                    CORE::AppendToPath( path, (*i) ); 
+                    path = path.ReplaceChar( '\\', '/' );
                     
-                ++i;
+                    headerSection += "    " + path + "\n";
+                        
+                    ++i;
+                }
+                ++n;
             }
-            ++n;
-        }
-        headerSection += "  )\n\n";
-        
-        // Add additional platform specific includes
-        headerSection += "  include_directories(";
-        n = platformHeaderFiles.begin();
-        while ( n != platformHeaderFiles.end() )
-        {
-            headerSection += (*n).first;
-            ++n;
-        }        
-        headerSection += " )\n";
-        
-        headerSection += "  set( PLATFORM_HEADER_INSTALL \"" + platformName + "\" )\n";
-        headerSection += "  source_group( \"Platform Header Files\" FILES ${PLATFORM_HEADER_FILES} )\n\n";
-    }    
-    
-    const TStringVectorMap& platformSourceFiles = moduleInfo.platformSourceFiles[ platformName ];
-    if ( !platformSourceFiles.empty() )
-    {
-        sourceSection = "  set( PLATFORM_SOURCE_FILES \n";
-        
-        TStringVectorMap::const_iterator n = platformSourceFiles.begin();
-        while ( n != platformSourceFiles.end() )
-        {
-            const TStringVector& platformSourceFilesDir = (*n).second;
-            TStringVector::const_iterator i = platformSourceFilesDir.begin();
-            while ( i != platformSourceFilesDir.end() )
+            headerSection += "  )\n\n";
+            
+            // Add additional platform specific includes
+            headerSection += "  include_directories(";
+            n = platformHeaderFiles.begin();
+            while ( n != platformHeaderFiles.end() )
             {
-                CORE::CString path = (*n).first;
-                CORE::AppendToPath( path, (*i) ); 
-                path = path.ReplaceChar( '\\', '/' );
-                
-                sourceSection += "    " + path + "\n";
-                ++i;
+                headerSection += (*n).first;
+                ++n;
+            }        
+            headerSection += " )\n";
+            
+            headerSection += "  set( PLATFORM_HEADER_INSTALL \"" + platformName + "\" )\n";
+            headerSection += "  source_group( \"Platform Header Files\" FILES ${PLATFORM_HEADER_FILES} )\n\n";
+        }    
+    }
+    
+    m = moduleInfo.platformSourceFiles.find( platformName );
+    if ( m != moduleInfo.platformSourceFiles.end() )
+    {
+        const TStringVectorMap& platformSourceFiles = (*m).second;
+        if ( !platformSourceFiles.empty() )
+        {
+            sourceSection = "  set( PLATFORM_SOURCE_FILES \n";
+            
+            TStringVectorMap::const_iterator n = platformSourceFiles.begin();
+            while ( n != platformSourceFiles.end() )
+            {
+                const TStringVector& platformSourceFilesDir = (*n).second;
+                TStringVector::const_iterator i = platformSourceFilesDir.begin();
+                while ( i != platformSourceFilesDir.end() )
+                {
+                    CORE::CString path = (*n).first;
+                    CORE::AppendToPath( path, (*i) ); 
+                    path = path.ReplaceChar( '\\', '/' );
+                    
+                    sourceSection += "    " + path + "\n";
+                    ++i;
+                }
+                ++n;
             }
-            ++n;
+            sourceSection += "  )\n\n";
+            
+            sourceSection += "  set( PLATFORM_SOURCE_INSTALL \"" + platformName + "\" )\n";
+            sourceSection += "  source_group( \"Platform Source Files\" FILES ${PLATFORM_SOURCE_FILES} )\n\n";
         }
-        sourceSection += "  )\n\n";
-        
-        sourceSection += "  set( PLATFORM_SOURCE_INSTALL \"" + platformName + "\" )\n";
-        sourceSection += "  source_group( \"Platform Source Files\" FILES ${PLATFORM_SOURCE_FILES} )\n\n";
     }
 }
 
