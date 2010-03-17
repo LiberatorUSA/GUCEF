@@ -388,10 +388,12 @@ GetAllPlatformFiles( TModuleInfo& moduleInfo           ,
         // Build the include dir to check for a platform sub-dir
         CORE::CString includeDir = (*i).first;
         CORE::AppendToPath( includeDir, platformDir );
+        CORE::CString fullIncludeDir = moduleInfo.rootDir;
+        CORE::AppendToPath( fullIncludeDir, includeDir );
         
         // Try and get a list of files from the platform dir
         TStringVector platformFiles;
-        PopulateFileListFromDir( includeDir, GetHeaderFileExtensions(), platformFiles );
+        PopulateFileListFromDir( fullIncludeDir, GetHeaderFileExtensions(), platformFiles );
         
         if ( !platformFiles.empty() )
         {
@@ -419,10 +421,12 @@ GetAllPlatformFiles( TModuleInfo& moduleInfo           ,
         // Build the source dir to check for a platform sub-dir
         CORE::CString sourceDir = (*i).first;
         CORE::AppendToPath( sourceDir, platformDir );
+        CORE::CString fullSourceDir = moduleInfo.rootDir;
+        CORE::AppendToPath( fullSourceDir, sourceDir );
         
         // Try and get a list of files from the platform dir
         TStringVector platformFiles;
-        PopulateFileListFromDir( sourceDir, GetSourceFileExtensions(), platformFiles );
+        PopulateFileListFromDir( fullSourceDir, GetSourceFileExtensions(), platformFiles );
 
         if ( !platformFiles.empty() )
         {
@@ -493,10 +497,10 @@ GetAllPlatformFiles( TModuleInfo& moduleInfo )
 /*---------------------------------------------------------------------------*/
 
 void
-GenerateCMakeListsPlatformFilesSection( TModuleInfo& moduleInfo           ,
-                                        const CORE::CString& platformName ,
-                                        CORE::CString& headerSection      ,
-                                        CORE::CString& sourceSection      )
+GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo           ,
+                                            const CORE::CString& platformName ,
+                                            CORE::CString& headerSection      ,
+                                            CORE::CString& sourceSection      )
 {GUCEF_TRACE;
     
     const TStringVectorMap& platformHeaderFiles = moduleInfo.platformHeaderFiles[ platformName ];
@@ -567,137 +571,40 @@ GenerateCMakeListsPlatformFilesSection( TModuleInfo& moduleInfo           ,
 
 /*---------------------------------------------------------------------------*/
 
-void
-GenerateCMakeListsPlatformFilesSection( const TModuleInfo& moduleInfo     ,
-                                        const CORE::CString& platformName ,
-                                        CORE::CString& headerSection      ,
-                                        CORE::CString& sourceSection      )
-{GUCEF_TRACE;
-
- //    GenerateCMakeListsPlatformFilesSection
-
-    //bool hasPlatformIncludes = false;
-    //bool hasPlatformSrc = false;
-    //
-    //CORE::CString includeDir = moduleInfo.rootDir;
-    //CORE::AppendToPath( includeDir, "include" );
-    //CORE::CString srcDir = moduleInfo.rootDir;
-    //CORE::AppendToPath( srcDir, "src" );
-
-    //CORE::CString sectionContent;
-    //CORE::CString subDirLastSeg = CORE::LastSubDir( moduleInfo.rootDir ); 
-
-    //if ( firstPlatform )
-    //{
-    //    sectionContent = "if (" + platformName + ")\n";
-    //}
-    //else
-    //{
-    //    sectionContent = "elseif (" + platformName + ")\n";
-    //}
-    //
-    //CORE::CString platformSubDir = moduleInfo.rootDir;
-    //CORE::AppendToPath( platformSubDir, "include" );    
-    //CORE::AppendToPath( platformSubDir, platformDir );
-    //if ( CORE::IsPathValid( platformSubDir ) )
-    //{
-    //    hasPlatformIncludes = true;
-    //    sectionContent += "  set(PLATFORM_HEADER_FILES \n";
-    //    
-    //    CORE::CString platformSubDirSeg = "include";
-    //    CORE::AppendToPath( platformSubDirSeg, platformDir );
-    //    platformSubDirSeg = platformSubDirSeg.ReplaceChar( '\\', '/' );
-    //    
-    //    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir " + platformSubDirSeg );
-    //    
-    //    TStringVector subFiles;
-    //    PopulateFileListFromDir( platformSubDir, GetHeaderFileExtensions(), subFiles );
-    //    
-    //    moduleInfo.includeDirs.insert( std::pair< CORE::CString, TStringVector >( platformSubDirSeg, subFiles ) );        
-    //    
-    //    TStringVectorMap filesMap;
-    //    filesMap[ "  " + platformSubDirSeg ] = subFiles;
-    //    sectionContent = GenerateCMakeListsFileSection( sectionContent, filesMap );
-    //    
-    //    sectionContent += "  include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/" + platformSubDirSeg + " )\n";
-    //    sectionContent += "  set(PLATFORM_HEADER_INSTALL \"" + platformName + "\")\n";
-    //    sectionContent += "  source_group( \"Platform Header Files\" FILES ${PLATFORM_HEADER_FILES} )\n\n";
-    //}
-    //else
-    //{
-    //    hasPlatformIncludes = false;
-    //}
-    //
-    //platformSubDir = moduleInfo.rootDir;
-    //CORE::AppendToPath( platformSubDir, "src" );    
-    //CORE::AppendToPath( platformSubDir, platformDir );
-    //if ( CORE::IsPathValid( platformSubDir ) )
-    //{
-    //    hasPlatformSrc = true;
-    //    
-    //    if ( firstPlatform )
-    //    {
-    //        sectionContent += "  set(PLATFORM_SOURCE_FILES \n";
-    //    }
-    //    else
-    //    {
-    //        sectionContent += "elseif (" + platformName + ")\n  set(PLATFORM_SOURCE_FILES \n";
-    //    }
-    //    
-    //    CORE::CString platformSubDirSeg = "src";
-    //    CORE::AppendToPath( platformSubDirSeg, platformDir );        
-    //    platformSubDirSeg = platformSubDirSeg.ReplaceChar( '\\', '/' );
-
-    //    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir " + platformSubDirSeg );
-    //    
-    //    std::vector< CORE::CString > subFiles;
-    //    PopulateFileListFromDir( platformSubDir, GetSourceFileExtensions(), subFiles );
-    //    
-    //    moduleInfo.sourceDirs.insert( std::pair< CORE::CString, TStringVector >( platformSubDirSeg, subFiles ) );
-
-    //    TStringVectorMap filesMap;
-    //    filesMap[ "  " + platformSubDirSeg ] = subFiles;
-    //    sectionContent = GenerateCMakeListsFileSection( sectionContent, filesMap );
-    //    
-    //    sectionContent += "  set(PLATFORM_SOURCE_INSTALL \"" + platformName + "\")\n";
-    //    sectionContent += "  source_group( \"Platform Source Files\" FILES ${PLATFORM_SOURCE_FILES} )\n\n";
-    //}
-    //else
-    //{
-    //    hasPlatformSrc = false;
-    //}
-    //
-    //if ( hasPlatformIncludes || hasPlatformSrc )
-    //{
-    //    validPlatform = true;
-    //}
-    //
-    //return sectionContent;
-}
-
-/*---------------------------------------------------------------------------*/
-
 CORE::CString
 GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo )
 {GUCEF_TRACE;
 
-    //CORE::CString sectionContent;
-    //
-    //bool validPlatform = true;
-    //bool firstPlatform = true;
-    //sectionContent += GenerateCMakeListsPlatformFilesSection( moduleInfo, "WIN32", "mswin", firstPlatform, validPlatform );
-    //if ( firstPlatform && validPlatform ) { firstPlatform = false; }
-    //sectionContent += GenerateCMakeListsPlatformFilesSection( moduleInfo, "UNIX", "linux", firstPlatform, validPlatform );
-    //if ( firstPlatform && validPlatform ) { firstPlatform = false; }
-    //
-    //if ( sectionContent.Length() > 0 )
-    //{
-    //    // since we added data we have to close the section
-    //    sectionContent += "endif ()\n";
-    //}
-    //
-    //return sectionContent;
-    return "";
+    CORE::CString sectionContent;
+    bool firstPlatform = true;
+    TStringVectorMapMap::iterator i = moduleInfo.platformHeaderFiles.begin();
+    while ( i != moduleInfo.platformHeaderFiles.end() )
+    {
+        CORE::CString headerSection;
+        CORE::CString sourceSection;
+        const CORE::CString& platformName = (*i).first;
+        GenerateCMakeListsFilePlatformFilesSection( moduleInfo, platformName, headerSection, sourceSection );
+        
+        if ( firstPlatform )
+        {
+            sectionContent = "\n\nif (" + platformName + ")\n" + headerSection + sourceSection;
+            firstPlatform = false;
+        }
+        else
+        {
+            sectionContent += "elseif (" + platformName + ")\n" + headerSection + sourceSection;
+        }
+         
+        ++i;
+    }
+    
+    if ( !moduleInfo.platformHeaderFiles.empty() )
+    {
+        // since we added data we have to close the section
+        sectionContent += "endif ()\n\n";
+    }
+ 
+    return sectionContent;
 }
 
 /*---------------------------------------------------------------------------*/
