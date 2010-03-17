@@ -398,18 +398,18 @@ GetAllPlatformFiles( TModuleInfo& moduleInfo           ,
         if ( !platformFiles.empty() )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir " + includeDir );
-        }
-        
-        // Add the platform files to the list of platform files from all include dirs
-        TStringVectorMap& allFilesForThisPlatform = moduleInfo.platformHeaderFiles[ platformName ];
-        includeDir = includeDir.ReplaceChar( '\\', '/' );
-        TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ includeDir ];
-        
-        TStringVector::iterator n = platformFiles.begin();
-        while ( n != platformFiles.end() )
-        {
-            allFilesForThisPlatformDir.push_back( (*n) );
-            ++n;
+            
+            // Add the platform files to the list of platform files from all include dirs
+            TStringVectorMap& allFilesForThisPlatform = moduleInfo.platformHeaderFiles[ platformName ];
+            includeDir = includeDir.ReplaceChar( '\\', '/' );
+            TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ includeDir ];
+            
+            TStringVector::iterator n = platformFiles.begin();
+            while ( n != platformFiles.end() )
+            {
+                allFilesForThisPlatformDir.push_back( (*n) );
+                ++n;
+            }
         }
         ++i;
     } 
@@ -431,18 +431,18 @@ GetAllPlatformFiles( TModuleInfo& moduleInfo           ,
         if ( !platformFiles.empty() )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir " + sourceDir );
-        }
-        
-        // Add the platform files to the list of platform files from all source dirs
-        TStringVectorMap& allFilesForThisPlatform = moduleInfo.platformSourceFiles[ platformName ];
-        sourceDir = sourceDir.ReplaceChar( '\\', '/' );
-        TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ sourceDir ];
-        
-        TStringVector::iterator n = platformFiles.begin();
-        while ( n != platformFiles.end() )
-        {
-            allFilesForThisPlatformDir.push_back( (*n) );
-            ++n;
+            
+            // Add the platform files to the list of platform files from all source dirs
+            TStringVectorMap& allFilesForThisPlatform = moduleInfo.platformSourceFiles[ platformName ];
+            sourceDir = sourceDir.ReplaceChar( '\\', '/' );
+            TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ sourceDir ];
+            
+            TStringVector::iterator n = platformFiles.begin();
+            while ( n != platformFiles.end() )
+            {
+                allFilesForThisPlatformDir.push_back( (*n) );
+                ++n;
+            }
         }
         ++i;
     }    
@@ -506,7 +506,7 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo           ,
     const TStringVectorMap& platformHeaderFiles = moduleInfo.platformHeaderFiles[ platformName ];
     if ( !platformHeaderFiles.empty() )
     {
-        headerSection = "  set(PLATFORM_HEADER_FILES \n";
+        headerSection = "  set( PLATFORM_HEADER_FILES \n";
         
         TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
         while ( n != platformHeaderFiles.end() )
@@ -537,17 +537,17 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo           ,
         }        
         headerSection += " )\n";
         
-        headerSection += "  set( PLATFORM_HEADER_INSTALL \"" + platformName + "\")\n";
+        headerSection += "  set( PLATFORM_HEADER_INSTALL \"" + platformName + "\" )\n";
         headerSection += "  source_group( \"Platform Header Files\" FILES ${PLATFORM_HEADER_FILES} )\n\n";
     }    
     
     const TStringVectorMap& platformSourceFiles = moduleInfo.platformSourceFiles[ platformName ];
     if ( !platformSourceFiles.empty() )
     {
-        sourceSection = "  set(PLATFORM_SOURCE_FILES \n";
+        sourceSection = "  set( PLATFORM_SOURCE_FILES \n";
         
-        TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
-        while ( n != platformHeaderFiles.end() )
+        TStringVectorMap::const_iterator n = platformSourceFiles.begin();
+        while ( n != platformSourceFiles.end() )
         {
             const TStringVector& platformSourceFilesDir = (*n).second;
             TStringVector::const_iterator i = platformSourceFilesDir.begin();
@@ -564,7 +564,7 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo           ,
         }
         sourceSection += "  )\n\n";
         
-        sourceSection += "  set( PLATFORM_SOURCE_INSTALL \"" + platformName + "\")\n";
+        sourceSection += "  set( PLATFORM_SOURCE_INSTALL \"" + platformName + "\" )\n";
         sourceSection += "  source_group( \"Platform Source Files\" FILES ${PLATFORM_SOURCE_FILES} )\n\n";
     }
 }
@@ -1091,6 +1091,7 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
         moduleInfo.rootDir = topLevelDir;
         moduleInfo.buildOrder = 0;
         ProcessProjectDir( moduleInfo );        
+        GetAllPlatformFiles( moduleInfo );
         projectInfo.modules.push_back( moduleInfo );
     }
     
