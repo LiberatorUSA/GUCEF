@@ -70,6 +70,7 @@ using namespace GUCEF;
 /*---------------------------------------------------------------------------*/
 
 typedef std::set< CORE::CString > TStringSet;
+typedef std::map< CORE::CString, CORE::CString > TStringMap;
 typedef std::map< CORE::CString, TStringSet > TStringSetMap;
 typedef std::vector< CORE::CString > TStringVector;
 typedef std::map< CORE::CString, TStringVector > TStringVectorMap;
@@ -452,21 +453,44 @@ GetAllPlatformFiles( TModuleInfo& moduleInfo           ,
 
 /*---------------------------------------------------------------------------*/
 
+const TStringSetMap&
+GetSupportedPlatformDirMap( void )
+
+{GUCEF_TRACE;
+
+    static TStringSetMap platformMap;
+    if ( platformMap.empty() )
+    {
+        platformMap[ "WIN32" ].insert( "mswin" );
+        platformMap[ "WIN32" ].insert( "win32" );
+        platformMap[ "WIN64" ].insert( "win64" );
+        platformMap[ "UNIX" ].insert( "linux" );
+        platformMap[ "UNIX" ].insert( "unix" );
+        platformMap[ "IPHONEOS" ].insert( "iphone" );
+        platformMap[ "SYMBIAN" ].insert( "symbian" );
+        platformMap[ "OSX" ].insert( "osx" );
+        platformMap[ "ANDROID" ].insert( "android" );
+        platformMap[ "GLX" ].insert( "glx" );
+        platformMap[ "GTK" ].insert( "gtk" );
+    }
+    return platformMap;
+}
+
+/*---------------------------------------------------------------------------*/
+
 const TStringSet&
 GetSupportedPlatformDirs()
 {
     static TStringSet platformDirs;
     if ( platformDirs.empty() )
     {
-        platformDirs.insert( "mswin" );
-        platformDirs.insert( "win32" );
-        platformDirs.insert( "win64" );
-        platformDirs.insert( "linux" );
-        platformDirs.insert( "unix" );
-        platformDirs.insert( "iphone" );
-        platformDirs.insert( "android" );
-        platformDirs.insert( "symbian" );
-        platformDirs.insert( "osx" );
+        const TStringSetMap& dirMap = GetSupportedPlatformDirMap();
+        TStringSetMap::const_iterator i = dirMap.begin();
+        while ( i != dirMap.end() )
+        {
+            platformDirs.insert( (*i).first );
+            ++i;
+        }        
     }
     return platformDirs;
 }
@@ -487,15 +511,19 @@ IsDirAPlatformDir( const CORE::CString& path )
 void
 GetAllPlatformFiles( TModuleInfo& moduleInfo )
 {
-    GetAllPlatformFiles( moduleInfo, "WIN32", "mswin" );
-    GetAllPlatformFiles( moduleInfo, "WIN32", "win32" );
-    GetAllPlatformFiles( moduleInfo, "WIN64", "win64" );
-    GetAllPlatformFiles( moduleInfo, "UNIX", "linux" );
-    GetAllPlatformFiles( moduleInfo, "UNIX", "unix" );
-    GetAllPlatformFiles( moduleInfo, "SYMBIAN", "symbian" );
-    GetAllPlatformFiles( moduleInfo, "ANDROID", "android" );
-    GetAllPlatformFiles( moduleInfo, "IPHONEOS", "iphone" );
-    GetAllPlatformFiles( moduleInfo, "OSX", "osx" );
+    const TStringSetMap& dirMap = GetSupportedPlatformDirMap();
+    TStringSetMap::const_iterator i = dirMap.begin();
+    while ( i != dirMap.end() )
+    {
+        const TStringSet& dirs = (*i).second;
+        TStringSet::const_iterator n = dirs.begin();
+        while ( n != dirs.end() )
+        {
+            GetAllPlatformFiles( moduleInfo, (*i).first, (*n) );
+            ++n;
+        }
+        ++i;
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -943,7 +971,7 @@ GenerateModuleIncludesForAllPlatforms( const TProjectInfo& projectInfo ,
 
     CORE::CString sectionContent;
     
-    TStringSet relevantPlatformDirs = GetListOfRelevantPlatformsForModule( moduleInfo );
+    TStringSet relevantPlatformDirs = GetSupportedPlatformDirs();
     TStringSet::iterator i = relevantPlatformDirs.begin();
     while ( i != relevantPlatformDirs.end() )
     {
@@ -959,6 +987,11 @@ CORE::CString
 GenerateModuleIncludes( const TProjectInfo& projectInfo ,
                         TModuleInfo& moduleInfo         )
 {GUCEF_TRACE;
+
+    if ( moduleInfo.name == "CMakeListGenerator" )
+    {
+        int a = 0;
+    }
 
     // Add include dirs for each dependency we know about
     CORE::CString allRelDependencyPaths;
