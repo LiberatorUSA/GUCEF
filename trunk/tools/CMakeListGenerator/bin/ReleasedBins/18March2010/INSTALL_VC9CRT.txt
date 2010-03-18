@@ -1,0 +1,2 @@
+
+This application requires the MS WIndows Visual Studio 2008 (VC9) redistributables to be installed

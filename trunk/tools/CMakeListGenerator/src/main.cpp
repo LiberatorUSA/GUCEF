@@ -588,14 +588,14 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo           ,
             headerSection += "  )\n\n";
             
             // Add additional platform specific includes
-            headerSection += "  include_directories( ";
-            n = platformHeaderFiles.begin();
-            while ( n != platformHeaderFiles.end() )
-            {
-                headerSection += (*n).first + " ";
-                ++n;
-            }        
-            headerSection += ")\n";
+            //headerSection += "  include_directories( ";
+            //n = platformHeaderFiles.begin();
+            //while ( n != platformHeaderFiles.end() )
+            //{
+            //    headerSection += (*n).first + " ";
+            //    ++n;
+            //}        
+            //headerSection += ")\n";
             
             headerSection += "  set( PLATFORM_HEADER_INSTALL \"" + platformName + "\" )\n";
             headerSection += "  source_group( \"Platform Header Files\" FILES ${PLATFORM_HEADER_FILES} )\n\n";
@@ -1006,7 +1006,7 @@ GenerateModuleIncludesForAllPlatforms( const TProjectInfo& projectInfo ,
 
     CORE::CString sectionContent;
     
-    TStringSet relevantPlatformDirs = GetSupportedPlatformDirs();
+    TStringSet relevantPlatformDirs = GetSupportedPlatforms();
     TStringSet::iterator i = relevantPlatformDirs.begin();
     while ( i != relevantPlatformDirs.end() )
     {
@@ -1022,7 +1022,7 @@ CORE::CString
 GenerateModuleIncludes( const TProjectInfo& projectInfo ,
                         TModuleInfo& moduleInfo         )
 {GUCEF_TRACE;
-
+    
     // Add include dirs for each dependency we know about
     CORE::CString allRelDependencyPaths;
     TStringVector& dependencies = moduleInfo.dependencies;
