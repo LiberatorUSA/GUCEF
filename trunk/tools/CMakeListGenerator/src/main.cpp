@@ -479,6 +479,25 @@ GetSupportedPlatformDirMap( void )
 /*---------------------------------------------------------------------------*/
 
 const TStringSet&
+GetSupportedPlatforms( void )
+{
+    static TStringSet platforms;
+    if ( platforms.empty() )
+    {
+        const TStringSetMap& dirMap = GetSupportedPlatformDirMap();
+        TStringSetMap::const_iterator i = dirMap.begin();
+        while ( i != dirMap.end() )
+        {
+            platforms.insert( (*i).first );
+            ++i;
+        }        
+    }
+    return platforms;
+}
+
+/*---------------------------------------------------------------------------*/
+
+const TStringSet&
 GetSupportedPlatformDirs()
 {
     static TStringSet platformDirs;
@@ -488,7 +507,13 @@ GetSupportedPlatformDirs()
         TStringSetMap::const_iterator i = dirMap.begin();
         while ( i != dirMap.end() )
         {
-            platformDirs.insert( (*i).first );
+            const TStringSet& dirs = (*i).second;
+            TStringSet::const_iterator n = dirs.begin();
+            while ( n != dirs.end() )
+            { 
+                platformDirs.insert( (*n) );
+                ++n;
+            }
             ++i;
         }        
     }
@@ -563,14 +588,14 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo           ,
             headerSection += "  )\n\n";
             
             // Add additional platform specific includes
-            headerSection += "  include_directories(";
+            headerSection += "  include_directories( ";
             n = platformHeaderFiles.begin();
             while ( n != platformHeaderFiles.end() )
             {
-                headerSection += (*n).first;
+                headerSection += (*n).first + " ";
                 ++n;
             }        
-            headerSection += " )\n";
+            headerSection += ")\n";
             
             headerSection += "  set( PLATFORM_HEADER_INSTALL \"" + platformName + "\" )\n";
             headerSection += "  source_group( \"Platform Header Files\" FILES ${PLATFORM_HEADER_FILES} )\n\n";
@@ -931,6 +956,16 @@ GenerateModuleIncludesForPlatform( const TProjectInfo& projectInfo   ,
         ++i;
     }
 
+    // Add all the regular platform include dirs for this module
+    const TStringVectorMap& platformHeaderFiles = moduleInfo.platformHeaderFiles[ platformName ];
+    TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
+    while ( n != platformHeaderFiles.end() )
+    {
+        CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );        
+        allRelDependencyPaths += includeDir + " ";
+        ++n;
+    }
+
     CORE::CString sectionContent;
     if ( allRelDependencyPaths.Length() > 0 )
     {
@@ -988,11 +1023,6 @@ GenerateModuleIncludes( const TProjectInfo& projectInfo ,
                         TModuleInfo& moduleInfo         )
 {GUCEF_TRACE;
 
-    if ( moduleInfo.name == "CMakeListGenerator" )
-    {
-        int a = 0;
-    }
-
     // Add include dirs for each dependency we know about
     CORE::CString allRelDependencyPaths;
     TStringVector& dependencies = moduleInfo.dependencies;
@@ -1046,6 +1076,15 @@ GenerateModuleIncludes( const TProjectInfo& projectInfo ,
             }                         
         }
         ++i;
+    }
+
+    // Add all the regular include dirs for this module
+    TStringVectorMap::iterator n = moduleInfo.includeDirs.begin();
+    while ( n != moduleInfo.includeDirs.end() )
+    {
+        CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );        
+        allRelDependencyPaths += includeDir + " ";
+        ++n;
     }
 
     CORE::CString sectionContent;
