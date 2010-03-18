@@ -33,7 +33,7 @@ go through the code to check which files got added/deleted etc. Just re-run the
 generator and you will have up-to-date CMakeList.txt files for those projects.
 An additional advantage is the automatic generation of include_directories paths
 which can be a pain to get right, especially with a lot of modules in a complicated
-directory structure. Using this tool you can just mode the modules around and their
+directory structure. Using this tool you can just move the modules around and their
 include paths will be correct again as soon as you re-run the generator.
 
 Version:
