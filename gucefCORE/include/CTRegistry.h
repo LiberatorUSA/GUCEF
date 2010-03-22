@@ -76,6 +76,9 @@ class CTRegistry
     
     virtual TRegisteredObjPtr Lookup( const CString& name ) const;
     
+    virtual bool TryLookup( const CString& name           ,
+                            TRegisteredObjPtr& locatedObj ) const;
+    
     virtual void Register( const CString& name                ,
                            const TRegisteredObjPtr& sharedPtr );
                    
@@ -164,6 +167,7 @@ template< class T >
 bool 
 CTRegistry< T >::IsRegistered( const CString& name ) const
 {GUCEF_TRACE;
+    
     return m_list.find( name ) != m_list.end();
 }
 
@@ -173,6 +177,7 @@ template< class T >
 CTSharedPtr< T >
 CTRegistry< T >::Lookup( const CString& name ) const
 {GUCEF_TRACE;
+
     TRegisteredObjList::const_iterator i = m_list.find( name );
     if ( i != m_list.end() )
     {
@@ -184,12 +189,31 @@ CTRegistry< T >::Lookup( const CString& name ) const
 }
 
 /*-------------------------------------------------------------------------*/
+
+template< class T >
+bool
+CTRegistry< T >::TryLookup( const CString& name           ,
+                            TRegisteredObjPtr& locatedObj ) const
+{GUCEF_TRACE;
+
+    TRegisteredObjList::const_iterator i = m_list.find( name );
+    if ( i != m_list.end() )
+    {
+        locatedObj = *( (*i).second );
+        return true;
+    }
+    locatedObj = NULL;   
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
     
 template< class T >
 void 
 CTRegistry< T >::Register( const CString& name                ,
                            const TRegisteredObjPtr& sharedPtr )
 {GUCEF_TRACE;
+
     TRegisteredObjList::iterator i = m_list.find( name );
     if ( i == m_list.end() )
     {

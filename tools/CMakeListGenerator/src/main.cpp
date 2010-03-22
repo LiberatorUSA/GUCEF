@@ -25,6 +25,16 @@
 
 #include <stdio.h>
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
@@ -195,8 +205,48 @@ IsDirAProjectDir( CORE::CString dir )
 
 /*---------------------------------------------------------------------------*/
 
-std::vector<CORE::CString>
-GetExcludeList( CORE::CString dir )
+CORE::CDStoreCodecRegistry::TDStoreCodecPtr
+GetXmlDStoreCodec( void )
+{
+    static CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr;
+    if ( codecPtr.IsNULL() )
+    {
+        CORE::CDStoreCodecRegistry* registry  = CDStoreCodecRegistry::Instance();
+        registry->TryLookup( "XML", codecPtr );        
+    }
+    return codecPtr;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+GetProcessingInstructions( const CORE::CString& dir      ,
+                           CORE::CDataNode& instructions )
+{GUCEF_TRACE;
+
+    CORE::CString instructionsFile = dir;
+    CORE::AppendToPath( instructionsFile, "CMakeGenInstructions.xml" );
+    
+    if ( CORE::FileExists( instructionsFile ) )
+    {    
+        CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = GetXmlDStoreCodec();    
+        if ( !codecPtr.IsNULL() )
+        {
+            if ( codecPtr->BuildDataTree( &instructions    , 
+                                          instructionsFile ) )
+            {
+                return true;
+            }                                          
+        }
+            
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+TStringVector
+GetExcludeList( const CORE::CString& dir )
 {GUCEF_TRACE;
 
     CORE::CString excludeFile = dir;
