@@ -163,8 +163,14 @@ RemoveString( std::vector< CORE::CString >& list ,
               const CORE::CString& searchStr     )
 {GUCEF_TRACE;
 
+    //@TODO: make wildcard processing more advanced then this :)
+    if ( searchStr == "*" )
+    {
+        list.empty();
+    }
+    
     bool removedString = false;
-    std::vector< CORE::CString >::iterator i = list.begin();
+    TStringVector::iterator i = list.begin();
     while ( i != list.end() )
     {
         if ( (*i) == searchStr )
@@ -211,7 +217,7 @@ GetXmlDStoreCodec( void )
     static CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr;
     if ( codecPtr.IsNULL() )
     {
-        CORE::CDStoreCodecRegistry* registry  = CDStoreCodecRegistry::Instance();
+        CORE::CDStoreCodecRegistry* registry  = CORE::CDStoreCodecRegistry::Instance();
         registry->TryLookup( "XML", codecPtr );        
     }
     return codecPtr;
@@ -263,7 +269,118 @@ GetExcludeList( const CORE::CString& dir )
         } 
     }
     
-    return std::vector<CORE::CString>();
+    return TStringVector();
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
+                                          const CORE::CString& platform , 
+                                          TStringVector& allEntries     )
+{
+    // First we exclude based off of the simple exclude list
+    TStringVector excludeList = GetExcludeList( dir );
+    TStringVector::iterator n = excludeList.begin();
+    while ( n != excludeList.end() )
+    {
+        if ( RemoveString( allEntries, (*n) ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the entry \"" + (*n) + "\" based on the exclude list for this dir" );
+        }
+        ++n;
+    }
+    
+    // Now we exclude based on the processing instructions for this dir
+    // if any exist
+    CORE::CDataNode instructions;
+    if ( GetProcessingInstructions( dir, instructions ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Loaded processing instructions for directory \"" + dir + "\" in order to check for exclude directives" );
+        
+        // write down the tags we will parse for
+        static const CORE::CString rootNodeName = "CMAKELISTGENERATOR";
+        static const CORE::CString excludesNodeName = "EXCLUDES";
+        static const CORE::CString includesNodeName = "INCLUDES";
+        static const CORE::CString platformNodeName = "PLATFORM";
+        static const CORE::CString itemNodeName = "ITEM";
+        static const CORE::CString nameAttribName = "NAME";
+        
+        // Parse the instructions for the information we are looking for
+        CORE::CString leftOver;
+        CORE::CDataNode* rootNode = instructions.Find( rootNodeName );
+        if ( 0 != rootNode )
+        {
+            CORE::CDataNode::iterator i = rootNode->Begin();
+            while ( i != rootNode->End() )
+            {
+                CORE::CDataNode* curNode = (*i);
+                if ( curNode->GetName() == excludesNodeName )
+                {
+                    // Check if the instructions apply to our platform
+                    CORE::CString attribValue = curNode->GetAttributeValue( platformNodeName );
+                    if ( platform.IsNULLOrEmpty() ||
+                         platform == attribValue  ||
+                         attribValue.IsNULLOrEmpty() )
+                    {
+                        // These instructions apply to our platform... proceed
+                        CORE::CDataNode* excludesNode = curNode;
+                        CORE::CDataNode::iterator n = excludesNode->Begin();
+                        while ( n != excludesNode->End() )
+                        {
+                            // Process all the items in this instruction set
+                            CORE::CDataNode* curNode2 = (*n);
+                            if ( curNode2->GetName() == itemNodeName )
+                            {
+                                attribValue = curNode2->GetAttributeValue( platformNodeName );
+                                if ( !attribValue.IsNULLOrEmpty() )
+                                {
+                                    if ( RemoveString( allEntries, attribValue ) )
+                                    {
+                                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the entry \"" + attribValue + "\" based on the processing instructions for this dir" );
+                                    }
+                                }
+                            }
+                            ++n;
+                        }
+                    }
+                    
+                }
+                else
+                if ( curNode->GetName() == includesNodeName )
+                {
+                    // Check if the instructions apply to our platform
+                    CORE::CString attribValue = curNode->GetAttributeValue( platformNodeName );
+                    if ( platform.IsNULLOrEmpty() ||
+                         platform == attribValue  ||
+                         attribValue.IsNULLOrEmpty() )
+                    {
+                        // These instructions apply to our platform... proceed
+                        CORE::CDataNode* includesNode = curNode;
+                        CORE::CDataNode::iterator n = includesNode->Begin();
+                        while ( n != includesNode->End() )
+                        {
+                            // Process all the items in this instruction set
+                            CORE::CDataNode* curNode2 = (*n);
+                            if ( curNode2->GetName() == itemNodeName )
+                            {
+                                attribValue = curNode2->GetAttributeValue( platformNodeName );
+                                if ( !attribValue.IsNULLOrEmpty() )
+                                {
+                                    allEntries.push_back( attribValue );
+                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the entry \"" + attribValue + "\" based on the processing instructions for this dir" );
+                                }
+                            }
+                            ++n;
+                        }
+                    }
+                    
+                }
+
+                ++i;
+            }
+        }
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -513,6 +630,7 @@ GetSupportedPlatformDirMap( void )
     {
         platformMap[ "WIN32" ].insert( "mswin" );
         platformMap[ "WIN32" ].insert( "win32" );
+        platformMap[ "WIN64" ].insert( "mswin" );
         platformMap[ "WIN64" ].insert( "win64" );
         platformMap[ "UNIX" ].insert( "linux" );
         platformMap[ "UNIX" ].insert( "unix" );
@@ -1228,7 +1346,9 @@ FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the file \"" + (*n) + "\" based on the exclude list for this dir" );
         }
         ++n;
-    }    
+    }
+    
+    // @TODO: replace code above with more advanced processing    
     
     if ( fileList.size() > 0 )
     {
