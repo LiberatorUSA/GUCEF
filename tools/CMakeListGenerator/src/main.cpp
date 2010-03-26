@@ -125,6 +125,15 @@ typedef struct SProjectInfo TProjectInfo;
 
 typedef std::map< int, TModuleInfo* > TModulePrioMap;
 
+/*---------------------------------------------------------------------------*/
+
+struct SDirProcessingInstructions
+{
+    TStringVector simpleExcludeList;
+    CORE::CDataNode processingInstructions;
+};
+typedef struct SDirProcessingInstructions TDirProcessingInstructions;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -275,13 +284,14 @@ GetExcludeList( const CORE::CString& dir )
 /*---------------------------------------------------------------------------*/
 
 void
-ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
-                                          const CORE::CString& platform , 
-                                          TStringVector& allEntries     )
+ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir                          ,
+                                          const TDirProcessingInstructions& allInstructions ,
+                                          const CORE::CString& platform                     , 
+                                          TStringVector& allEntries                         )
 {
     // First we exclude based off of the simple exclude list
-    TStringVector excludeList = GetExcludeList( dir );
-    TStringVector::iterator n = excludeList.begin();
+    const TStringVector& excludeList = allInstructions.simpleExcludeList;
+    TStringVector::const_iterator n = excludeList.begin();
     while ( n != excludeList.end() )
     {
         if ( RemoveString( allEntries, (*n) ) )
@@ -293,8 +303,8 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
     
     // Now we exclude based on the processing instructions for this dir
     // if any exist
-    CORE::CDataNode instructions;
-    if ( GetProcessingInstructions( dir, instructions ) )
+    const CORE::CDataNode& instructions = allInstructions.processingInstructions;
+    if ( instructions.HasChildren() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Loaded processing instructions for directory \"" + dir + "\" in order to check for exclude directives" );
         
@@ -308,13 +318,13 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
         
         // Parse the instructions for the information we are looking for
         CORE::CString leftOver;
-        CORE::CDataNode* rootNode = instructions.Find( rootNodeName );
+        const CORE::CDataNode* rootNode = instructions.Find( rootNodeName );
         if ( 0 != rootNode )
         {
-            CORE::CDataNode::iterator i = rootNode->Begin();
+            CORE::CDataNode::const_iterator i = rootNode->ConstBegin();
             while ( i != rootNode->End() )
             {
-                CORE::CDataNode* curNode = (*i);
+                const CORE::CDataNode* curNode = (*i);
                 if ( curNode->GetName() == excludesNodeName )
                 {
                     // Check if the instructions apply to our platform
@@ -324,12 +334,12 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
                          attribValue.IsNULLOrEmpty() )
                     {
                         // These instructions apply to our platform... proceed
-                        CORE::CDataNode* excludesNode = curNode;
-                        CORE::CDataNode::iterator n = excludesNode->Begin();
-                        while ( n != excludesNode->End() )
+                        const CORE::CDataNode* excludesNode = curNode;
+                        CORE::CDataNode::const_iterator n = excludesNode->ConstBegin();
+                        while ( n != excludesNode->ConstEnd() )
                         {
                             // Process all the items in this instruction set
-                            CORE::CDataNode* curNode2 = (*n);
+                            const CORE::CDataNode* curNode2 = (*n);
                             if ( curNode2->GetName() == itemNodeName )
                             {
                                 attribValue = curNode2->GetAttributeValue( platformNodeName );
@@ -356,12 +366,12 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
                          attribValue.IsNULLOrEmpty() )
                     {
                         // These instructions apply to our platform... proceed
-                        CORE::CDataNode* includesNode = curNode;
-                        CORE::CDataNode::iterator n = includesNode->Begin();
+                        const CORE::CDataNode* includesNode = curNode;
+                        CORE::CDataNode::const_iterator n = includesNode->ConstBegin();
                         while ( n != includesNode->End() )
                         {
                             // Process all the items in this instruction set
-                            CORE::CDataNode* curNode2 = (*n);
+                            const CORE::CDataNode* curNode2 = (*n);
                             if ( curNode2->GetName() == itemNodeName )
                             {
                                 attribValue = curNode2->GetAttributeValue( platformNodeName );
@@ -381,6 +391,44 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
             }
         }
     }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
+                                          const CORE::CString& platform , 
+                                          TStringVector& allEntries     ,
+                                          TDirProcessingInstructions* instructionStorage = 0 )
+{
+    if ( 0 != instructionStorage )
+    {
+        // Fetch processing instructions from directory
+        instructionStorage->simpleExcludeList = GetExcludeList( dir );
+        GetProcessingInstructions( dir, instructionStorage->processingInstructions );
+        
+        // Carry out the process using the fecthed instructions
+        ExcludeOrIncludeEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, allEntries ); 
+    }
+    else
+    {
+        // Fetch processing instructions from directory
+        TDirProcessingInstructions instructions;
+        instructions.simpleExcludeList = GetExcludeList( dir );
+        GetProcessingInstructions( dir, instructions.processingInstructions );
+        
+        // Carry out the process using the fecthed instructions
+        ExcludeOrIncludeEntriesAsSpecifiedForDir( dir, instructions, platform, allEntries ); 
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
+                                          TStringVector& allEntries     )
+{
+    ExcludeOrIncludeEntriesAsSpecifiedForDir( dir, CORE::CString(), allEntries );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1329,26 +1377,18 @@ GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
 void
 FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
                           const TStringVector& fileTypes     ,
+                          const CORE::CString& platform      ,
                           const CORE::CString& curRootDir    ,
                           const CORE::CString& curRootDirSeg )
 {GUCEF_TRACE;
 
+    // First we build a list of all files for the directory for ease of handling
     TStringVector fileList;
     PopulateFileListFromDir( curRootDir, fileTypes, fileList );
-    
-    // Remove excluded files from file list
-    std::vector< CORE::CString > excludeList = GetExcludeList( curRootDir );
-    std::vector< CORE::CString >::iterator n = excludeList.begin();
-    while ( n != excludeList.end() )
-    {
-        if ( RemoveString( fileList, (*n) ) )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the file \"" + (*n) + "\" based on the exclude list for this dir" );
-        }
-        ++n;
-    }
-    
-    // @TODO: replace code above with more advanced processing    
+
+    // Now we add/substract from that list based on generator instructions
+    TDirProcessingInstructions instructionStorage;
+    ExcludeOrIncludeEntriesAsSpecifiedForDir( curRootDir, platform, fileList, &instructionStorage ); 
     
     if ( fileList.size() > 0 )
     {
@@ -1360,27 +1400,42 @@ FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
     TStringVector dirList;
     PopulateDirListFromDir( curRootDir, dirList );
     
+    // Now we add/substract from that list based on generator instructions
+    ExcludeOrIncludeEntriesAsSpecifiedForDir( curRootDir, instructionStorage, platform, dirList ); 
+    
     TStringVector::iterator i = dirList.begin();
     while ( i != dirList.end() )
     { 
         CORE::CString subDir = curRootDir;
         CORE::AppendToPath( subDir, (*i) );
         
-        // Honor the exclude list
-        if ( !IsStringInList( excludeList, false, (*i) ) )
+        // Do not recurse into other project dirs or platform dirs
+        if ( !IsDirAProjectDir( subDir ) && !IsDirAPlatformDir( subDir ) ) 
         {
-            // Do not recurse into other project dirs or platform dirs
-            if ( !IsDirAProjectDir( subDir ) && !IsDirAPlatformDir( subDir ) ) 
-            {
-                CORE::CString subDirSeg = curRootDirSeg;
-                CORE::AppendToPath( subDirSeg, (*i) );
-                subDirSeg.ReplaceChar( '\\', '/' );
-                
-                FindSubDirsWithFileTypes( fileMap, fileTypes, subDir, subDirSeg );
-            }
+            CORE::CString subDirSeg = curRootDirSeg;
+            CORE::AppendToPath( subDirSeg, (*i) );
+            subDirSeg.ReplaceChar( '\\', '/' );
+            
+            FindSubDirsWithFileTypes( fileMap, fileTypes, platform, subDir, subDirSeg );
         }
         ++i;
     }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
+                          const TStringVector& fileTypes     ,
+                          const CORE::CString& curRootDir    ,
+                          const CORE::CString& curRootDirSeg )
+{GUCEF_TRACE;
+
+    FindSubDirsWithFileTypes( fileMap         , 
+                              fileTypes       ,
+                              CORE::CString() ,
+                              curRootDir      ,
+                              curRootDirSeg   );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1473,22 +1528,11 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
     std::vector< CORE::CString > dirList;
     PopulateDirListFromDir( topLevelDir, dirList );
     
-    // Get list of dirs to exclude
-    std::vector< CORE::CString > excludeList = GetExcludeList( topLevelDir );
-    
-    // Remove excluded dirs from dir list
-    std::vector< CORE::CString >::iterator i = excludeList.begin();
-    while ( i != excludeList.end() )
-    {
-        if ( RemoveString( dirList, (*i) ) )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the sub-dir \"" + (*i) + "\" based on the exclude list for this dir" );
-        }
-        ++i;
-    }    
+    // Add/subtract dirs from the list based on generator instructions
+    ExcludeOrIncludeEntriesAsSpecifiedForDir( topLevelDir, CORE::CString(), dirList );  
     
     // Process all sub-dirs
-    i = dirList.begin();
+    std::vector< CORE::CString >::iterator i = dirList.begin();
     while ( i != dirList.end() )
     {
         CORE::CString subDir = topLevelDir;
