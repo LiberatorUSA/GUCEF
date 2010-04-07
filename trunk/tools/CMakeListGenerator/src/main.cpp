@@ -121,17 +121,6 @@ typedef struct SModuleInfo TModuleInfo;
 
 typedef std::vector< TModuleInfo > TModuleInfoVector;
 typedef std::vector< TModuleInfo* > TModuleInfoPtrVector;
-
-/*---------------------------------------------------------------------------*/
-
-struct SProjectInfo
-{
-    TModuleInfoVector modules;
-};
-typedef struct SProjectInfo TProjectInfo;
-
-/*---------------------------------------------------------------------------*/
-
 typedef std::map< int, TModuleInfo* > TModulePrioMap;
 
 /*---------------------------------------------------------------------------*/
@@ -147,34 +136,54 @@ struct SDirProcessingInstructions
 };
 typedef struct SDirProcessingInstructions TDirProcessingInstructions;
 
+/*---------------------------------------------------------------------------*/
+
+typedef std::map< CORE::CString, TDirProcessingInstructions > TDirProcessingInstructionsMap;
+
+/*---------------------------------------------------------------------------*/
+
+struct SProjectInfo
+{
+    TModuleInfoVector modules;                               // All generated module information
+    TDirProcessingInstructionsMap dirProcessingInstructions; // All loaded processing instructions mapped per path
+};
+typedef struct SProjectInfo TProjectInfo;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-TStringVector
+const TStringVector&
 GetSourceFileExtensions( void )
 {GUCEF_TRACE;
 
-    TStringVector fileTypes;
-    fileTypes.push_back( "c" );
-    fileTypes.push_back( "cpp" );
-    fileTypes.push_back( "cxx" );
-    fileTypes.push_back( "asm" );
+    static TStringVector fileTypes;
+    
+    if ( fileTypes.empty() )
+    {
+        fileTypes.push_back( "c" );
+        fileTypes.push_back( "cpp" );
+        fileTypes.push_back( "cxx" );
+        fileTypes.push_back( "asm" );
+    }
     return fileTypes;
 }
 
 /*---------------------------------------------------------------------------*/
 
-TStringVector
+const TStringVector&
 GetHeaderFileExtensions( void )
 {GUCEF_TRACE;
 
-    TStringVector fileTypes;
-    fileTypes.push_back( "h" );
-    fileTypes.push_back( "hpp" );
-
+    static TStringVector fileTypes;
+    
+    if ( fileTypes.empty() )
+    {
+        fileTypes.push_back( "h" );
+        fileTypes.push_back( "hpp" );
+    }
     return fileTypes;
 }
 
@@ -207,6 +216,45 @@ RemoveString( std::vector< CORE::CString >& list ,
         }
     }
     return removedString;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsStringInList( const TStringVector& list       ,
+                bool caseSensitive              ,
+                const CORE::CString& testString )
+{GUCEF_TRACE;
+
+    TStringVector::const_iterator i = list.begin();
+    while ( i != list.end() )
+    {
+        if ( (*i).Equals( testString, caseSensitive ) )
+        {
+            return true;
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+FilterStringVectorForFilesWithExtensions( TStringVector& outputVector         , 
+                                          const TStringVector& extensions     ,
+                                          const TStringVector& originalVector )
+{
+    TStringVector::const_iterator i = originalVector.begin();
+    while ( i != originalVector.end() )
+    {
+        CORE::CString foundExtension = CORE::ExtractFileExtention( (*i) );
+        if ( IsStringInList( extensions, false, foundExtension ) )
+        {
+            outputVector.push_back( (*i) );
+        }        
+        ++i;
+    }    
 }
 
 /*---------------------------------------------------------------------------*/
@@ -264,13 +312,22 @@ GetXmlDStoreCodec( void )
 
 /*---------------------------------------------------------------------------*/
 
+CORE::CString
+GetProcessingInstructionsPath( const CORE::CString& dir )
+{
+    CORE::CString instructionsFile = dir;
+    CORE::AppendToPath( instructionsFile, "CMakeGenInstructions.xml" );
+    return instructionsFile;
+}
+
+/*---------------------------------------------------------------------------*/
+
 bool
 GetProcessingInstructions( const CORE::CString& dir      ,
                            CORE::CDataNode& instructions )
 {GUCEF_TRACE;
 
-    CORE::CString instructionsFile = dir;
-    CORE::AppendToPath( instructionsFile, "CMakeGenInstructions.xml" );
+    CORE::CString instructionsFile = GetProcessingInstructionsPath( dir );
     
     if ( CORE::FileExists( instructionsFile ) )
     {    
@@ -290,12 +347,21 @@ GetProcessingInstructions( const CORE::CString& dir      ,
 
 /*---------------------------------------------------------------------------*/
 
+CORE::CString
+GetExcludeListPath( const CORE::CString& dir )
+{
+    CORE::CString excludeFile = dir;
+    CORE::AppendToPath( excludeFile, "CMakeGenExcludeList.txt" );
+    return excludeFile;
+}
+
+/*---------------------------------------------------------------------------*/
+
 TStringVector
 GetExcludeList( const CORE::CString& dir )
 {GUCEF_TRACE;
 
-    CORE::CString excludeFile = dir;
-    CORE::AppendToPath( excludeFile, "CMakeGenExcludeList.txt" );
+    CORE::CString excludeFile = GetExcludeListPath( dir );
     
     if ( CORE::FileExists( excludeFile ) )
     {
@@ -443,6 +509,80 @@ ParseProcessingInstructions( TDirProcessingInstructions& instructionStorage )
 
 /*---------------------------------------------------------------------------*/
 
+bool
+AreProcessingInstructionsOnDisk( const CORE::CString& dir )
+{
+    return CORE::FileExists( GetExcludeListPath( dir ) )         ||
+           CORE::FileExists( GetProcessingInstructionsPath( dir ) );
+}
+
+/*---------------------------------------------------------------------------*/
+
+TDirProcessingInstructions*
+GetProcessingInstructions( TProjectInfo& projectInfo ,
+                           const CORE::CString& dir  )
+{
+    // See if we have already stored instructions for this directory
+    TDirProcessingInstructionsMap::iterator i = projectInfo.dirProcessingInstructions.find( dir );
+    if ( i != projectInfo.dirProcessingInstructions.end() )
+    {
+        return &( (*i).second );
+    }
+    
+    if ( AreProcessingInstructionsOnDisk( dir ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located processing instructions for directory \"" + dir + "\"" );
+        
+        // See if we can load instructions for this directory
+        TDirProcessingInstructions& instructions = projectInfo.dirProcessingInstructions[ dir ];
+        instructions.excludeList = GetExcludeList( dir );
+        if ( GetProcessingInstructions( dir, instructions.processingInstructions ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Parsing advanced processing instructions for directory \"" + dir + "\"" );
+            ParseProcessingInstructions( instructions );
+        }
+        return &instructions;
+    }
+    
+    return NULL;    
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+LoadAllProcessingInstructions( TProjectInfo& projectInfo    ,
+                               const CORE::CString& rootDir )
+{    
+    // Load instructions for the root dir itself
+    GetProcessingInstructions( projectInfo, rootDir );
+    
+    // Recurse through sub-dirs to find more instructions
+    CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( rootDir.C_String() );
+    if ( NULL != sdiData )
+    {
+        do
+        {
+            // make sure we are dealing with a directory
+            if ( 0 == DI_Is_It_A_File( sdiData ) )
+            {
+                CORE::CString dirName = DI_Name( sdiData ); 
+                if ( ( dirName != "." ) && ( dirName != ".." ) )
+                {
+                    CORE::CString subRoot = rootDir;
+                    CORE::AppendToPath( subRoot, dirName );
+                    
+                    // Recurse into sub-dir
+                    LoadAllProcessingInstructions( projectInfo, subRoot );
+                }
+            }
+        }
+        while ( 0 != DI_Next_Dir_Entry( sdiData ) );
+        DI_Cleanup( sdiData );
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 void
 ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
                                           const CORE::CString& platform , 
@@ -485,26 +625,6 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
                                           TStringVector& allEntries     )
 {
     ExcludeOrIncludeEntriesAsSpecifiedForDir( dir, CORE::CString(), allEntries );
-}
-
-/*---------------------------------------------------------------------------*/
-
-bool
-IsStringInList( const TStringVector& list       ,
-                bool caseSensitive              ,
-                const CORE::CString& testString )
-{GUCEF_TRACE;
-
-    TStringVector::const_iterator i = list.begin();
-    while ( i != list.end() )
-    {
-        if ( (*i).Equals( testString, caseSensitive ) )
-        {
-            return true;
-        }
-        ++i;
-    }
-    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1915,14 +2035,23 @@ main( int argc , char* argv[] )
         rootDirs.push_back( CORE::RelativePath( "$CURWORKDIR$" ) );
     }
     
-    // Gather all the information
+    // Gather all processing instructions
     TProjectInfo projectInfo;
     TStringVector::iterator i = rootDirs.begin();
+    while ( i != rootDirs.end() )
+    {
+        LoadAllProcessingInstructions( projectInfo, (*i) );
+        ++i;
+    }
+    
+    // Gather all module information
+    i = rootDirs.begin();
     while ( i != rootDirs.end() )
     {
         LocateAndProcessProjectDirsRecusively( projectInfo, (*i) );
         ++i;
     }
+    
     // Order the modules in the list such so that they are placed in the order they need to be build
     SortModulesInDependencyOrder( projectInfo );
     
