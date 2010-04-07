@@ -288,13 +288,13 @@ GetXmlDStoreCodec( void )
     if ( codecPtr.IsNULL() )
     {
         CORE::CDStoreCodecRegistry* registry = CORE::CDStoreCodecRegistry::Instance();
-        if ( !registry->TryLookup( "XML", codecPtr ) )
+        if ( !registry->TryLookup( "XML", codecPtr, false ) )
         {
             // No codec is registered to handle XML, try and load a plugin for it
             
             CORE::CDStoreCodecPlugin* codecPlugin =
             
-                #ifdef GUCEF_CORE_DEBUG_BUILD
+                #ifdef GUCEF_CORE_DEBUG_MODE
                 CORE::CDStoreCodecPluginManager::Instance()->LoadCodecPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML_d" );
                 #else
                 CORE::CDStoreCodecPluginManager::Instance()->LoadCodecPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML" );
@@ -303,7 +303,7 @@ GetXmlDStoreCodec( void )
             if ( NULL != codecPlugin )
             {
                 // Now try and get the codec again
-                registry->TryLookup( "XML", codecPtr );
+                registry->TryLookup( "XML", codecPtr, false );
             }
         }
     }
@@ -416,6 +416,7 @@ ParseProcessingInstructions( TDirProcessingInstructions& instructionStorage )
         static const CORE::CString platformNodeName = "PLATFORM";
         static const CORE::CString itemNodeName = "ITEM";
         static const CORE::CString nameAttribName = "NAME";
+        static const CORE::CString allPlatformsValue = "ALL";
         
         // Parse the instructions for the information we are looking for
         CORE::CString leftOver;
@@ -445,7 +446,7 @@ ParseProcessingInstructions( TDirProcessingInstructions& instructionStorage )
                             if ( !itemName.IsNULLOrEmpty() )
                             {
                                 // We found an item to add to our list
-                                if ( platformName.IsNULLOrEmpty() )
+                                if ( platformName.IsNULLOrEmpty() || platformName.Equals( allPlatformsValue, false ) )
                                 {
                                     // Add as non-platform specific
                                     instructionStorage.excludeList.push_back( itemName );
@@ -483,7 +484,7 @@ ParseProcessingInstructions( TDirProcessingInstructions& instructionStorage )
                             if ( !itemName.IsNULLOrEmpty() )
                             {
                                 // We found an item to add to our list
-                                if ( platformName.IsNULLOrEmpty() )
+                                if ( platformName.IsNULLOrEmpty() || platformName.Equals( allPlatformsValue, false ) )
                                 {
                                     // Add as non-platform specific
                                     instructionStorage.includeList.push_back( itemName );
@@ -2040,6 +2041,7 @@ main( int argc , char* argv[] )
     TStringVector::iterator i = rootDirs.begin();
     while ( i != rootDirs.end() )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Recursively loading all processing instructions for root directory \"" + dir + "\"" );
         LoadAllProcessingInstructions( projectInfo, (*i) );
         ++i;
     }
@@ -2048,6 +2050,7 @@ main( int argc , char* argv[] )
     i = rootDirs.begin();
     while ( i != rootDirs.end() )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Identifying all modules for root directory \"" + dir + "\"" );
         LocateAndProcessProjectDirsRecusively( projectInfo, (*i) );
         ++i;
     }
