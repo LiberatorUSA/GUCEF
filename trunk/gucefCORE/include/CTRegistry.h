@@ -77,7 +77,8 @@ class CTRegistry
     virtual TRegisteredObjPtr Lookup( const CString& name ) const;
     
     virtual bool TryLookup( const CString& name           ,
-                            TRegisteredObjPtr& locatedObj ) const;
+                            TRegisteredObjPtr& locatedObj ,
+                            bool caseSensitive = true     ) const;
     
     virtual void Register( const CString& name                ,
                            const TRegisteredObjPtr& sharedPtr );
@@ -193,17 +194,36 @@ CTRegistry< T >::Lookup( const CString& name ) const
 template< class T >
 bool
 CTRegistry< T >::TryLookup( const CString& name           ,
-                            TRegisteredObjPtr& locatedObj ) const
+                            TRegisteredObjPtr& locatedObj ,
+                            bool caseSensitive            ) const
 {GUCEF_TRACE;
 
-    TRegisteredObjList::const_iterator i = m_list.find( name );
-    if ( i != m_list.end() )
+    if ( caseSensitive )
     {
-        locatedObj = *( (*i).second );
-        return true;
+        TRegisteredObjList::const_iterator i = m_list.find( name );
+        if ( i != m_list.end() )
+        {
+            locatedObj = *( (*i).second );
+            return true;
+        }
+        locatedObj = NULL;   
+        return false;
     }
-    locatedObj = NULL;   
-    return false;
+    else
+    {
+        TRegisteredObjList::const_iterator i = m_list.begin();
+        while ( i != m_list.end() )
+        {
+            if ( (*i).first.Equals( name, caseSensitive ) )
+            {
+                locatedObj = *( (*i).second );
+                return true;
+            }
+            ++i;
+        }
+        locatedObj = NULL;   
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
