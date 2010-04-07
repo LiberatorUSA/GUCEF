@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CDSTORECODECREGISTRY_H
 #endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H 
+#include "CDStoreCodecPluginManager.h"
+#define GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H ? */
+
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
@@ -91,12 +96,16 @@ typedef std::map< CORE::CString, TStringVectorMap > TStringVectorMapMap;
 struct SModuleInfo
 {
     TStringVector dependencies;                  // list of module names of all modules this module depends on
+    
     TStringVectorMap includeDirs;                // include directories of this module's own headers
-    TStringSet dependencyIncludeDirs;            // include directories needed for the headers of the dependencies
-    TStringSetMap dependencyPlatformIncludeDirs; // include directories needed for the headers of the dependencies which are platform specific 
     TStringVectorMap sourceDirs;                 // source directories of this module's own source
-    TStringVectorMapMap platformHeaderFiles;     // platform specific headers of this module
-    TStringVectorMapMap platformSourceFiles;     // platform specific source of this module
+    
+    TStringSet dependencyIncludeDirs;            // include directories needed for the headers of the dependencies, paths only no files
+    TStringSetMap dependencyPlatformIncludeDirs; // include directories needed for the headers of the dependencies which are platform specific, paths only no files 
+    
+    TStringVectorMapMap platformHeaderFiles;     // platform specific headers files of this module
+    TStringVectorMapMap platformSourceFiles;     // platform specific source files of this module
+    
     CORE::CString name;                          // the name of the module
     CORE::CString rootDir;                       // the absolute path to the root of this module's directory tree
     
@@ -129,8 +138,12 @@ typedef std::map< int, TModuleInfo* > TModulePrioMap;
 
 struct SDirProcessingInstructions
 {
-    TStringVector simpleExcludeList;
-    CORE::CDataNode processingInstructions;
+    TStringVector excludeList;              // list of directories that are to be excluded at all times
+    TStringVectorMap platformExcludeList;   // list of directories that are to be excluded for the given platform
+    TStringVector includeList;              // list of directories that are to be included at all times
+    TStringVectorMap platformIncludeList;   // list of directories that are to be included for the given platform
+    
+    CORE::CDataNode processingInstructions; // All unparsed processing intruction data
 };
 typedef struct SDirProcessingInstructions TDirProcessingInstructions;
 
@@ -226,8 +239,25 @@ GetXmlDStoreCodec( void )
     static CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr;
     if ( codecPtr.IsNULL() )
     {
-        CORE::CDStoreCodecRegistry* registry  = CORE::CDStoreCodecRegistry::Instance();
-        registry->TryLookup( "XML", codecPtr );        
+        CORE::CDStoreCodecRegistry* registry = CORE::CDStoreCodecRegistry::Instance();
+        if ( !registry->TryLookup( "XML", codecPtr ) )
+        {
+            // No codec is registered to handle XML, try and load a plugin for it
+            
+            CORE::CDStoreCodecPlugin* codecPlugin =
+            
+                #ifdef GUCEF_CORE_DEBUG_BUILD
+                CORE::CDStoreCodecPluginManager::Instance()->LoadCodecPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML_d" );
+                #else
+                CORE::CDStoreCodecPluginManager::Instance()->LoadCodecPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML" );
+                #endif
+
+            if ( NULL != codecPlugin )
+            {
+                // Now try and get the codec again
+                registry->TryLookup( "XML", codecPtr );
+            }
+        }
     }
     return codecPtr;
 }
@@ -290,7 +320,7 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir              
                                           TStringVector& allEntries                         )
 {
     // First we exclude based off of the simple exclude list
-    const TStringVector& excludeList = allInstructions.simpleExcludeList;
+    const TStringVector& excludeList = allInstructions.excludeList;
     TStringVector::const_iterator n = excludeList.begin();
     while ( n != excludeList.end() )
     {
@@ -301,13 +331,18 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir              
         ++n;
     }
     
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+ParseProcessingInstructions( TDirProcessingInstructions& instructionStorage )
+{
     // Now we exclude based on the processing instructions for this dir
     // if any exist
-    const CORE::CDataNode& instructions = allInstructions.processingInstructions;
+    const CORE::CDataNode& instructions = instructionStorage.processingInstructions;
     if ( instructions.HasChildren() )
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Loaded processing instructions for directory \"" + dir + "\" in order to check for exclude directives" );
-        
+    {        
         // write down the tags we will parse for
         static const CORE::CString rootNodeName = "CMAKELISTGENERATOR";
         static const CORE::CString excludesNodeName = "EXCLUDES";
@@ -327,70 +362,83 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir              
                 const CORE::CDataNode* curNode = (*i);
                 if ( curNode->GetName() == excludesNodeName )
                 {
-                    // Check if the instructions apply to our platform
-                    CORE::CString attribValue = curNode->GetAttributeValue( platformNodeName );
-                    if ( platform.IsNULLOrEmpty() ||
-                         platform == attribValue  ||
-                         attribValue.IsNULLOrEmpty() )
+                    // Store whether the instructions apply to a particular platform
+                    CORE::CString platformName = curNode->GetAttributeValue( platformNodeName );
+
+                    // Parse instructions
+                    const CORE::CDataNode* excludesNode = curNode;
+                    CORE::CDataNode::const_iterator n = excludesNode->ConstBegin();
+                    while ( n != excludesNode->ConstEnd() )
                     {
-                        // These instructions apply to our platform... proceed
-                        const CORE::CDataNode* excludesNode = curNode;
-                        CORE::CDataNode::const_iterator n = excludesNode->ConstBegin();
-                        while ( n != excludesNode->ConstEnd() )
+                        // Process all the items in this instruction set
+                        const CORE::CDataNode* curNode2 = (*n);
+                        if ( curNode2->GetName() == itemNodeName )
                         {
-                            // Process all the items in this instruction set
-                            const CORE::CDataNode* curNode2 = (*n);
-                            if ( curNode2->GetName() == itemNodeName )
+                            // Get the name of the item to add to the list
+                            CORE::CString itemName = curNode2->GetAttributeValue( nameAttribName );
+                            if ( !itemName.IsNULLOrEmpty() )
                             {
-                                attribValue = curNode2->GetAttributeValue( platformNodeName );
-                                if ( !attribValue.IsNULLOrEmpty() )
+                                // We found an item to add to our list
+                                if ( platformName.IsNULLOrEmpty() )
                                 {
-                                    if ( RemoveString( allEntries, attribValue ) )
-                                    {
-                                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the entry \"" + attribValue + "\" based on the processing instructions for this dir" );
-                                    }
+                                    // Add as non-platform specific
+                                    instructionStorage.excludeList.push_back( itemName );
+                                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                }
+                                else                                
+                                {
+                                    // Add for the given platform
+                                    instructionStorage.platformExcludeList[ platformName ].push_back( itemName );
+                                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
                                 }
                             }
-                            ++n;
                         }
+                        ++n;
                     }
                     
                 }
                 else
                 if ( curNode->GetName() == includesNodeName )
                 {
-                    // Check if the instructions apply to our platform
-                    CORE::CString attribValue = curNode->GetAttributeValue( platformNodeName );
-                    if ( platform.IsNULLOrEmpty() ||
-                         platform == attribValue  ||
-                         attribValue.IsNULLOrEmpty() )
+                    // Store whether the instructions apply to a particular platform
+                    CORE::CString platformName = curNode->GetAttributeValue( platformNodeName );
+
+                    // Parse instructions
+                    const CORE::CDataNode* includesNode = curNode;
+                    CORE::CDataNode::const_iterator n = includesNode->ConstBegin();
+                    while ( n != includesNode->ConstEnd() )
                     {
-                        // These instructions apply to our platform... proceed
-                        const CORE::CDataNode* includesNode = curNode;
-                        CORE::CDataNode::const_iterator n = includesNode->ConstBegin();
-                        while ( n != includesNode->End() )
+                        // Process all the items in this instruction set
+                        const CORE::CDataNode* curNode2 = (*n);
+                        if ( curNode2->GetName() == itemNodeName )
                         {
-                            // Process all the items in this instruction set
-                            const CORE::CDataNode* curNode2 = (*n);
-                            if ( curNode2->GetName() == itemNodeName )
+                            // Get the name of the item to add to the list
+                            CORE::CString itemName = curNode2->GetAttributeValue( nameAttribName );
+                            if ( !itemName.IsNULLOrEmpty() )
                             {
-                                attribValue = curNode2->GetAttributeValue( platformNodeName );
-                                if ( !attribValue.IsNULLOrEmpty() )
+                                // We found an item to add to our list
+                                if ( platformName.IsNULLOrEmpty() )
                                 {
-                                    allEntries.push_back( attribValue );
-                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the entry \"" + attribValue + "\" based on the processing instructions for this dir" );
+                                    // Add as non-platform specific
+                                    instructionStorage.includeList.push_back( itemName );
+                                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory include entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                }
+                                else                                
+                                {
+                                    // Add for the given platform
+                                    instructionStorage.platformIncludeList[ platformName ].push_back( itemName );
+                                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
                                 }
                             }
-                            ++n;
                         }
-                    }
-                    
+                        ++n;
+                    }                    
                 }
 
                 ++i;
             }
         }
-    }
+    }    
 }
 
 /*---------------------------------------------------------------------------*/
@@ -404,20 +452,28 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
     if ( 0 != instructionStorage )
     {
         // Fetch processing instructions from directory
-        instructionStorage->simpleExcludeList = GetExcludeList( dir );
-        GetProcessingInstructions( dir, instructionStorage->processingInstructions );
+        instructionStorage->excludeList = GetExcludeList( dir );
+        if ( GetProcessingInstructions( dir, instructionStorage->processingInstructions ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Parsing processing instructions for directory \"" + dir + "\" in order to check for exclude/include directives" );
+            ParseProcessingInstructions( *instructionStorage );
+        }
         
-        // Carry out the process using the fecthed instructions
+        // Carry out the process using the fetched instructions
         ExcludeOrIncludeEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, allEntries ); 
     }
     else
     {
         // Fetch processing instructions from directory
         TDirProcessingInstructions instructions;
-        instructions.simpleExcludeList = GetExcludeList( dir );
-        GetProcessingInstructions( dir, instructions.processingInstructions );
+        instructions.excludeList = GetExcludeList( dir );
+        if ( GetProcessingInstructions( dir, instructions.processingInstructions ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Parsing processing instructions for directory \"" + dir + "\" in order to check for exclude/include directives" );
+            ParseProcessingInstructions( instructions );
+        }
         
-        // Carry out the process using the fecthed instructions
+        // Carry out the process using the fetched instructions
         ExcludeOrIncludeEntriesAsSpecifiedForDir( dir, instructions, platform, allEntries ); 
     }
 }
