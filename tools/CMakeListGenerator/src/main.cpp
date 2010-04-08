@@ -396,7 +396,46 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir              
         }
         ++n;
     }
+
+    const TStringVector& includeList = allInstructions.includeList;
+    n = includeList.begin();
+    while ( n != includeList.end() )
+    {
+        allEntries.push_back( (*n) );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the entry \"" + (*n) + "\" based on the include list for this dir" );
+        ++n;
+    }    
     
+    if ( !platform.IsNULLOrEmpty() )
+    {
+        TStringVectorMap::const_iterator i = allInstructions.platformExcludeList.find( platform );
+        if ( i != allInstructions.platformExcludeList.end() )
+        {        
+            const TStringVector& excludeList = (*i).second;
+            TStringVector::const_iterator n = excludeList.begin();
+            while ( n != excludeList.end() )
+            {
+                if ( RemoveString( allEntries, (*n) ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the entry \"" + (*n) + "\" based on the exclude list for this dir" );
+                }
+                ++n;
+            }
+        }
+        
+        i = allInstructions.platformIncludeList.find( platform );
+        if ( i != allInstructions.platformIncludeList.end() )
+        {
+            const TStringVector& includeList = (*i).second;
+            TStringVector::const_iterator n = includeList.begin();
+            while ( n != includeList.end() )
+            {
+                allEntries.push_back( (*n) );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the entry \"" + (*n) + "\" based on the include list for this dir" );
+                ++n;
+            }
+        }
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -585,47 +624,32 @@ LoadAllProcessingInstructions( TProjectInfo& projectInfo    ,
 /*---------------------------------------------------------------------------*/
 
 void
-ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
+ExcludeOrIncludeEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
+                                          const CORE::CString& dir      ,
                                           const CORE::CString& platform , 
-                                          TStringVector& allEntries     ,
-                                          TDirProcessingInstructions* instructionStorage = 0 )
+                                          TStringVector& allEntries     )
 {
-    if ( 0 != instructionStorage )
+    // Fetch processing instructions from directory
+    TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, dir );
+    
+    if ( NULL != instructionStorage )
     {
-        // Fetch processing instructions from directory
-        instructionStorage->excludeList = GetExcludeList( dir );
-        if ( GetProcessingInstructions( dir, instructionStorage->processingInstructions ) )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Parsing processing instructions for directory \"" + dir + "\" in order to check for exclude/include directives" );
-            ParseProcessingInstructions( *instructionStorage );
-        }
-        
         // Carry out the process using the fetched instructions
-        ExcludeOrIncludeEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, allEntries ); 
-    }
-    else
-    {
-        // Fetch processing instructions from directory
-        TDirProcessingInstructions instructions;
-        instructions.excludeList = GetExcludeList( dir );
-        if ( GetProcessingInstructions( dir, instructions.processingInstructions ) )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Parsing processing instructions for directory \"" + dir + "\" in order to check for exclude/include directives" );
-            ParseProcessingInstructions( instructions );
-        }
-        
-        // Carry out the process using the fetched instructions
-        ExcludeOrIncludeEntriesAsSpecifiedForDir( dir, instructions, platform, allEntries ); 
+        ExcludeOrIncludeEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, allEntries );
     }
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir      ,
-                                          TStringVector& allEntries     )
+ExcludeOrIncludeEntriesAsSpecifiedForDir( TProjectInfo& projectInfo ,    
+                                          const CORE::CString& dir  ,
+                                          TStringVector& allEntries )
 {
-    ExcludeOrIncludeEntriesAsSpecifiedForDir( dir, CORE::CString(), allEntries );
+    ExcludeOrIncludeEntriesAsSpecifiedForDir( projectInfo, 
+                                              dir, 
+                                              CORE::CString(), 
+                                              allEntries );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1552,7 +1576,8 @@ GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 void
-FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
+FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
+                          TStringVectorMap& fileMap          ,
                           const TStringVector& fileTypes     ,
                           const CORE::CString& platform      ,
                           const CORE::CString& curRootDir    ,
@@ -1564,8 +1589,7 @@ FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
     PopulateFileListFromDir( curRootDir, fileTypes, fileList );
 
     // Now we add/substract from that list based on generator instructions
-    TDirProcessingInstructions instructionStorage;
-    ExcludeOrIncludeEntriesAsSpecifiedForDir( curRootDir, platform, fileList, &instructionStorage ); 
+    ExcludeOrIncludeEntriesAsSpecifiedForDir( projectInfo, curRootDir, platform, fileList ); 
     
     if ( fileList.size() > 0 )
     {
@@ -1578,7 +1602,7 @@ FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
     PopulateDirListFromDir( curRootDir, dirList );
     
     // Now we add/substract from that list based on generator instructions
-    ExcludeOrIncludeEntriesAsSpecifiedForDir( curRootDir, instructionStorage, platform, dirList ); 
+    ExcludeOrIncludeEntriesAsSpecifiedForDir( projectInfo, curRootDir, platform, dirList ); 
     
     TStringVector::iterator i = dirList.begin();
     while ( i != dirList.end() )
@@ -1593,7 +1617,7 @@ FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
             CORE::AppendToPath( subDirSeg, (*i) );
             subDirSeg.ReplaceChar( '\\', '/' );
             
-            FindSubDirsWithFileTypes( fileMap, fileTypes, platform, subDir, subDirSeg );
+            FindSubDirsWithFileTypes( projectInfo, fileMap, fileTypes, platform, subDir, subDirSeg );
         }
         ++i;
     }
@@ -1602,13 +1626,15 @@ FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
 /*---------------------------------------------------------------------------*/
 
 void
-FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
+FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
+                          TStringVectorMap& fileMap          ,
                           const TStringVector& fileTypes     ,
                           const CORE::CString& curRootDir    ,
                           const CORE::CString& curRootDirSeg )
 {GUCEF_TRACE;
 
-    FindSubDirsWithFileTypes( fileMap         , 
+    FindSubDirsWithFileTypes( projectInfo     ,
+                              fileMap         , 
                               fileTypes       ,
                               CORE::CString() ,
                               curRootDir      ,
@@ -1618,27 +1644,30 @@ FindSubDirsWithFileTypes( TStringVectorMap& fileMap          ,
 /*---------------------------------------------------------------------------*/
 
 void
-FindSubDirsWithHeaders( TModuleInfo& moduleInfo )
+FindSubDirsWithHeaders( TProjectInfo& projectInfo ,
+                        TModuleInfo& moduleInfo   )
 {GUCEF_TRACE;
 
     // Look into the root itself and recuse downwards
-    FindSubDirsWithFileTypes( moduleInfo.includeDirs, GetHeaderFileExtensions(), moduleInfo.rootDir, "" );  
+    FindSubDirsWithFileTypes( projectInfo, moduleInfo.includeDirs, GetHeaderFileExtensions(), moduleInfo.rootDir, "" );  
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-FindSubDirsWithSource( TModuleInfo& moduleInfo )
+FindSubDirsWithSource( TProjectInfo& projectInfo ,
+                       TModuleInfo& moduleInfo   )
 {GUCEF_TRACE;
 
     // Look into the root itself and recuse downwards
-    FindSubDirsWithFileTypes( moduleInfo.sourceDirs, GetSourceFileExtensions(), moduleInfo.rootDir, "" );
+    FindSubDirsWithFileTypes( projectInfo, moduleInfo.sourceDirs, GetSourceFileExtensions(), moduleInfo.rootDir, "" );
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-ProcessProjectDir( TModuleInfo& moduleInfo )
+ProcessProjectDir( TProjectInfo& projectInfo ,
+                   TModuleInfo& moduleInfo   )
 {GUCEF_TRACE;
    
     // Set a project name based off the module sub-dir name
@@ -1672,8 +1701,8 @@ ProcessProjectDir( TModuleInfo& moduleInfo )
         moduleInfo.cmakeListSuffixFileContent += "#gucef_config_tool(" + moduleInfo.name + ")\n";
     }
     
-    FindSubDirsWithHeaders( moduleInfo );
-    FindSubDirsWithSource( moduleInfo );
+    FindSubDirsWithHeaders( projectInfo, moduleInfo );
+    FindSubDirsWithSource( projectInfo, moduleInfo );
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generated CMake List file content for project dir: " + moduleInfo.rootDir );
 }
@@ -1685,7 +1714,7 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
                                        CORE::CString topLevelDir )
 {GUCEF_TRACE;
     
-    GUCEF_LOG( CORE::LOGLEVEL_EVERYTHING, "Recursively processing directory: " + topLevelDir );
+    GUCEF_LOG( CORE::LOGLEVEL_EVERYTHING, "Recursively processing directory for module info: " + topLevelDir );
     
     // Is this a project dir or some other dir?    
     if ( IsDirAProjectDir( topLevelDir ) )
@@ -1696,7 +1725,7 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
         TModuleInfo moduleInfo;
         moduleInfo.rootDir = topLevelDir;
         moduleInfo.buildOrder = 0;
-        ProcessProjectDir( moduleInfo );        
+        ProcessProjectDir( projectInfo, moduleInfo );        
         GetAllPlatformFiles( moduleInfo );
         projectInfo.modules.push_back( moduleInfo );
     }
@@ -1706,7 +1735,7 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
     PopulateDirListFromDir( topLevelDir, dirList );
     
     // Add/subtract dirs from the list based on generator instructions
-    ExcludeOrIncludeEntriesAsSpecifiedForDir( topLevelDir, CORE::CString(), dirList );  
+    ExcludeOrIncludeEntriesAsSpecifiedForDir( projectInfo, topLevelDir, dirList );  
     
     // Process all sub-dirs
     std::vector< CORE::CString >::iterator i = dirList.begin();
@@ -2041,7 +2070,7 @@ main( int argc , char* argv[] )
     TStringVector::iterator i = rootDirs.begin();
     while ( i != rootDirs.end() )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Recursively loading all processing instructions for root directory \"" + dir + "\"" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Recursively loading all processing instructions for root directory \"" + (*i) + "\"" );
         LoadAllProcessingInstructions( projectInfo, (*i) );
         ++i;
     }
@@ -2050,7 +2079,7 @@ main( int argc , char* argv[] )
     i = rootDirs.begin();
     while ( i != rootDirs.end() )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Identifying all modules for root directory \"" + dir + "\"" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Identifying all modules for root directory \"" + (*i) + "\"" );
         LocateAndProcessProjectDirsRecusively( projectInfo, (*i) );
         ++i;
     }
