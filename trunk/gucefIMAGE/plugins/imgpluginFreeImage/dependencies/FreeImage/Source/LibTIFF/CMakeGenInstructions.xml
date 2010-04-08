@@ -1,0 +1,22 @@
+<CMAKELISTGENERATOR>
+  <EXCLUDES PLATFORM="ALL">
+    <ITEM NAME="tif_win3.c" />
+    <ITEM NAME="tif_win32.c" />
+    <ITEM NAME="tif_wince.c" />
+    <ITEM NAME="tif_unix.c" />
+    <ITEM NAME="tif_msdos.c" />
+    <ITEM NAME="tif_vms.c" />
+    <ITEM NAME="tif_atari.c" />
+    <ITEM NAME="tif_apple.c" />
+    <ITEM NAME="tif_acorn.c" />
+  </EXCLUDES>
+  <INCLUDES PLATFORM="WIN32">
+    <ITEM NAME="tif_win32.c" />
+  </INCLUDES>
+  <INCLUDES PLATFORM="UNIX">
+    <ITEM NAME="tif_unix.c" />
+  </INCLUDES>
+  <INCLUDES PLATFORM="OSX">
+    <ITEM NAME="tif_apple.c" />
+  </INCLUDES>
+</CMAKELISTGENERATOR>
