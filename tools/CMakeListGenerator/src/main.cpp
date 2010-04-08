@@ -197,7 +197,8 @@ RemoveString( std::vector< CORE::CString >& list ,
     //@TODO: make wildcard processing more advanced then this :)
     if ( searchStr == "*" )
     {
-        list.empty();
+        list.clear();
+        return true;
     }
     
     bool removedString = false;
