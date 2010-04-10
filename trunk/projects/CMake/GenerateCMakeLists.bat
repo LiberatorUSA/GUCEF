@@ -8,13 +8,13 @@ REM -----------------------------------------------------
 
 :FIND_GUCEF_RELEASE_CMAKELISTGENERATOR
 
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\CMakeListGenerator\bin\ReleasedBins\15March2010\CMakeListGenerator
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\CMakeListGenerator\bin\ReleasedBins\18March2010\CMakeListGenerator
 SET GENERATOREXE=CMakeListGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = %EXETEST%
-IF EXIST %EXETEST% (
-  ECHO Using released version of CMakeListGenerator dated 15'th March 2010
+IF EXIST "%EXETEST%" (
+  ECHO Using released version of CMakeListGenerator dated 18'th March 2010
   GOTO RUN_CMAKELISTGENERATOR
 )
 
@@ -35,7 +35,7 @@ SET GENERATOREXE=CMakeListGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = %EXETEST%
-IF EXIST %EXETEST% (
+IF EXIST "%EXETEST%" (
   ECHO Warning: Using CMake debug development version of the CMakeListGenerator
   GOTO RUN_CMAKELISTGENERATOR
 )
@@ -57,12 +57,12 @@ SET GENERATOREXE=CMakeListGenerator_d.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = %EXETEST%
-IF EXIST %EXETEST% (
+IF EXIST "%EXETEST%" (
   ECHO Warning: Using debug development version of the CMakeListGenerator
   GOTO RUN_CMAKELISTGENERATOR
 )
 
-IF NOT EXIST %EXETEST% (
+IF NOT EXIST "%EXETEST%" (
   ECHO Cannot locate old sln debug development version of the CMakeListGenerator
   GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC9_CMAKELISTGENERATOR
 )
@@ -74,7 +74,7 @@ REM -----------------------------------------------------
 
 :RUN_CMAKELISTGENERATOR
 
-SET PATH=%GENERATORPATH%;%PATH%
+SET PATH="%GENERATORPATH%";%PATH%
 
 cd %GUCEF_THEBATCHDIR%\..\..\
 
