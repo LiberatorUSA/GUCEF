@@ -127,10 +127,15 @@ typedef std::map< int, TModuleInfo* > TModulePrioMap;
 
 struct SDirProcessingInstructions
 {
-    TStringVector excludeList;              // list of directories that are to be excluded at all times
-    TStringVectorMap platformExcludeList;   // list of directories that are to be excluded for the given platform
-    TStringVector includeList;              // list of directories that are to be included at all times
-    TStringVectorMap platformIncludeList;   // list of directories that are to be included for the given platform
+    TStringVector dirExcludeList;              // list of directories that are to be excluded at all times
+    TStringVectorMap dirPlatformExcludeList;   // list of directories that are to be excluded for the given platform
+    TStringVector dirIncludeList;              // list of directories that are to be included at all times
+    TStringVectorMap dirPlatformIncludeList;   // list of directories that are to be included for the given platform
+
+    TStringVector fileExcludeList;              // list of files that are to be excluded at all times
+    TStringVectorMap filePlatformExcludeList;   // list of files that are to be excluded for the given platform
+    TStringVector fileIncludeList;              // list of files that are to be included at all times
+    TStringVectorMap filePlatformIncludeList;   // list of files that are to be included for the given platform
     
     CORE::CDataNode processingInstructions; // All unparsed processing intruction data
 };
@@ -371,6 +376,8 @@ GetExcludeList( const CORE::CString& dir )
                                          excludeFileContent ) )
         {
             excludeFileContent = excludeFileContent.RemoveChar( '\r' );
+            
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Loaded simple exclude list for directory \"" + dir + "\"" );
             return excludeFileContent.ParseElements( '\n' );            
         } 
     }
@@ -384,56 +391,114 @@ void
 ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir                          ,
                                           const TDirProcessingInstructions& allInstructions ,
                                           const CORE::CString& platform                     , 
+                                          bool checkDirs                                    ,
                                           TStringVector& allEntries                         )
 {
-    // First we exclude based off of the simple exclude list
-    const TStringVector& excludeList = allInstructions.excludeList;
-    TStringVector::const_iterator n = excludeList.begin();
-    while ( n != excludeList.end() )
+    if ( checkDirs )
     {
-        if ( RemoveString( allEntries, (*n) ) )
+        // First we exclude based off of the simple exclude list
+        const TStringVector& excludeList = allInstructions.dirExcludeList;
+        TStringVector::const_iterator n = excludeList.begin();
+        while ( n != excludeList.end() )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the entry \"" + (*n) + "\" based on the exclude list for this dir" );
-        }
-        ++n;
-    }
-
-    const TStringVector& includeList = allInstructions.includeList;
-    n = includeList.begin();
-    while ( n != includeList.end() )
-    {
-        allEntries.push_back( (*n) );
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the entry \"" + (*n) + "\" based on the include list for this dir" );
-        ++n;
-    }    
-    
-    if ( !platform.IsNULLOrEmpty() )
-    {
-        TStringVectorMap::const_iterator i = allInstructions.platformExcludeList.find( platform );
-        if ( i != allInstructions.platformExcludeList.end() )
-        {        
-            const TStringVector& excludeList = (*i).second;
-            TStringVector::const_iterator n = excludeList.begin();
-            while ( n != excludeList.end() )
+            if ( RemoveString( allEntries, (*n) ) )
             {
-                if ( RemoveString( allEntries, (*n) ) )
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the directory \"" + (*n) + "\" based on the exclude list for this dir" );
+            }
+            ++n;
+        }
+
+        const TStringVector& includeList = allInstructions.dirIncludeList;
+        n = includeList.begin();
+        while ( n != includeList.end() )
+        {
+            allEntries.push_back( (*n) );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the directory \"" + (*n) + "\" based on the include list for this dir" );
+            ++n;
+        }    
+        
+        if ( !platform.IsNULLOrEmpty() )
+        {
+            TStringVectorMap::const_iterator i = allInstructions.dirPlatformExcludeList.find( platform );
+            if ( i != allInstructions.dirPlatformExcludeList.end() )
+            {        
+                const TStringVector& excludeList = (*i).second;
+                TStringVector::const_iterator n = excludeList.begin();
+                while ( n != excludeList.end() )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the entry \"" + (*n) + "\" based on the exclude list for this dir" );
+                    if ( RemoveString( allEntries, (*n) ) )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the directory \"" + (*n) + "\" based on the exclude list for this dir" );
+                    }
+                    ++n;
                 }
-                ++n;
+            }
+            
+            i = allInstructions.dirPlatformIncludeList.find( platform );
+            if ( i != allInstructions.dirPlatformIncludeList.end() )
+            {
+                const TStringVector& includeList = (*i).second;
+                TStringVector::const_iterator n = includeList.begin();
+                while ( n != includeList.end() )
+                {
+                    allEntries.push_back( (*n) );
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the directory \"" + (*n) + "\" based on the include list for this dir" );
+                    ++n;
+                }
             }
         }
-        
-        i = allInstructions.platformIncludeList.find( platform );
-        if ( i != allInstructions.platformIncludeList.end() )
+    }
+    else
+    {
+        // First we exclude based off of the simple exclude list
+        const TStringVector& excludeList = allInstructions.fileExcludeList;
+        TStringVector::const_iterator n = excludeList.begin();
+        while ( n != excludeList.end() )
         {
-            const TStringVector& includeList = (*i).second;
-            TStringVector::const_iterator n = includeList.begin();
-            while ( n != includeList.end() )
+            if ( RemoveString( allEntries, (*n) ) )
             {
-                allEntries.push_back( (*n) );
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the entry \"" + (*n) + "\" based on the include list for this dir" );
-                ++n;
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the file \"" + (*n) + "\" based on the exclude list for this dir" );
+            }
+            ++n;
+        }
+
+        const TStringVector& includeList = allInstructions.fileIncludeList;
+        n = includeList.begin();
+        while ( n != includeList.end() )
+        {
+            allEntries.push_back( (*n) );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the file \"" + (*n) + "\" based on the include list for this dir" );
+            ++n;
+        }    
+        
+        if ( !platform.IsNULLOrEmpty() )
+        {
+            TStringVectorMap::const_iterator i = allInstructions.filePlatformExcludeList.find( platform );
+            if ( i != allInstructions.filePlatformExcludeList.end() )
+            {        
+                const TStringVector& excludeList = (*i).second;
+                TStringVector::const_iterator n = excludeList.begin();
+                while ( n != excludeList.end() )
+                {
+                    if ( RemoveString( allEntries, (*n) ) )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the file \"" + (*n) + "\" based on the exclude list for this dir" );
+                    }
+                    ++n;
+                }
+            }
+            
+            i = allInstructions.filePlatformIncludeList.find( platform );
+            if ( i != allInstructions.filePlatformIncludeList.end() )
+            {
+                const TStringVector& includeList = (*i).second;
+                TStringVector::const_iterator n = includeList.begin();
+                while ( n != includeList.end() )
+                {
+                    allEntries.push_back( (*n) );
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the file \"" + (*n) + "\" based on the include list for this dir" );
+                    ++n;
+                }
             }
         }
     }
@@ -442,7 +507,92 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir              
 /*---------------------------------------------------------------------------*/
 
 void
-ParseProcessingInstructions( TDirProcessingInstructions& instructionStorage )
+ExcludeOrIncludeDirEntriesAsSpecifiedForDir( const CORE::CString& dir                          ,
+                                             const TDirProcessingInstructions& allInstructions ,
+                                             const CORE::CString& platform                     , 
+                                             TStringVector& allEntries                         )
+{
+    ExcludeOrIncludeEntriesAsSpecifiedForDir( dir             ,
+                                              allInstructions ,
+                                              platform        ,
+                                              true            ,
+                                              allEntries      );
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+ExcludeOrIncludeFileEntriesAsSpecifiedForDir( const CORE::CString& dir                          ,
+                                              const TDirProcessingInstructions& allInstructions ,
+                                              const CORE::CString& platform                     , 
+                                              TStringVector& allEntries                         )
+{
+    ExcludeOrIncludeEntriesAsSpecifiedForDir( dir             ,
+                                              allInstructions ,
+                                              platform        ,
+                                              false           ,
+                                              allEntries      );
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsProcessingInstructionsItemADir( const CORE::CString& instructionDir ,
+                                  const CORE::CString& itemName       )
+{
+    CORE::CString itemPath = instructionDir;
+    CORE::AppendToPath( itemPath, itemName );
+    
+    if ( CORE::FileExists( itemPath ) )
+    {
+        return false;
+    }
+    else
+    if ( CORE::IsPathValid( itemPath ) )
+    {
+        return true;
+    }
+    else
+    {
+        // Unable to determine by checking if the item exists on disk because it isnt there
+        // As a fallback we will try to check for an extension, its the best we can do
+        return CORE::ExtractFileExtention( itemName ).Length() == 0;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsProcessingInstructionsItemADir( const CORE::CString& instructionDir ,
+                                  const CORE::CString& itemName       ,
+                                  const CORE::CString& itemType       )
+{
+    if ( itemType.IsNULLOrEmpty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "The type of an item (\"" + itemName + "\") in the processing instructions is not specified, will try to auto-determine the type" );
+        if ( IsProcessingInstructionsItemADir( instructionDir, itemName ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that item \"" + itemName + "\" is a directory" );
+            return true;
+        }
+        else
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that item \"" + itemName + "\" is a file" );
+            return false;
+        }
+    }
+    else
+    {
+        static const CORE::CString typeAttribDirValue = "DIR";
+        return itemType.Equals( typeAttribDirValue, false );
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
+                             TDirProcessingInstructions& instructionStorage )
 {
     // Now we exclude based on the processing instructions for this dir
     // if any exist
@@ -456,6 +606,7 @@ ParseProcessingInstructions( TDirProcessingInstructions& instructionStorage )
         static const CORE::CString platformNodeName = "PLATFORM";
         static const CORE::CString itemNodeName = "ITEM";
         static const CORE::CString nameAttribName = "NAME";
+        static const CORE::CString typeAttribName = "TYPE";
         static const CORE::CString allPlatformsValue = "ALL";
         
         // Parse the instructions for the information we are looking for
@@ -481,22 +632,41 @@ ParseProcessingInstructions( TDirProcessingInstructions& instructionStorage )
                         const CORE::CDataNode* curNode2 = (*n);
                         if ( curNode2->GetName() == itemNodeName )
                         {
-                            // Get the name of the item to add to the list
-                            CORE::CString itemName = curNode2->GetAttributeValue( nameAttribName );
+                            // Get the name and type of the item to add to the list
+                            CORE::CString itemName = curNode2->GetAttributeValue( nameAttribName );                            
                             if ( !itemName.IsNULLOrEmpty() )
                             {
+                                CORE::CString itemType = curNode2->GetAttributeValue( typeAttribName );
+                                bool itemIsADir = IsProcessingInstructionsItemADir( instructionsDir, itemName, itemType );
+                            
                                 // We found an item to add to our list
                                 if ( platformName.IsNULLOrEmpty() || platformName.Equals( allPlatformsValue, false ) )
                                 {
                                     // Add as non-platform specific
-                                    instructionStorage.excludeList.push_back( itemName );
-                                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                    if ( itemIsADir )
+                                    {
+                                        instructionStorage.dirExcludeList.push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                    }
+                                    else
+                                    {
+                                        instructionStorage.fileExcludeList.push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                    }                                    
                                 }
                                 else                                
                                 {
                                     // Add for the given platform
-                                    instructionStorage.platformExcludeList[ platformName ].push_back( itemName );
-                                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                    if ( itemIsADir )
+                                    {
+                                        instructionStorage.dirPlatformExcludeList[ platformName ].push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                    }
+                                    else
+                                    {
+                                        instructionStorage.filePlatformExcludeList[ platformName ].push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                    }                                    
                                 }
                             }
                         }
@@ -520,21 +690,40 @@ ParseProcessingInstructions( TDirProcessingInstructions& instructionStorage )
                         if ( curNode2->GetName() == itemNodeName )
                         {
                             // Get the name of the item to add to the list
-                            CORE::CString itemName = curNode2->GetAttributeValue( nameAttribName );
+                            CORE::CString itemName = curNode2->GetAttributeValue( nameAttribName );                            
                             if ( !itemName.IsNULLOrEmpty() )
                             {
+                                CORE::CString itemType = curNode2->GetAttributeValue( typeAttribName );
+                                bool itemIsADir = IsProcessingInstructionsItemADir( instructionsDir, itemName, itemType );
+
                                 // We found an item to add to our list
                                 if ( platformName.IsNULLOrEmpty() || platformName.Equals( allPlatformsValue, false ) )
                                 {
                                     // Add as non-platform specific
-                                    instructionStorage.includeList.push_back( itemName );
-                                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory include entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                    if ( itemIsADir )
+                                    {
+                                        instructionStorage.dirIncludeList.push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory include entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                    }
+                                    else
+                                    {
+                                        instructionStorage.fileIncludeList.push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file include entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                    }
                                 }
                                 else                                
                                 {
                                     // Add for the given platform
-                                    instructionStorage.platformIncludeList[ platformName ].push_back( itemName );
-                                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                    if ( itemIsADir )
+                                    {
+                                        instructionStorage.dirPlatformIncludeList[ platformName ].push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                    }
+                                    else
+                                    {
+                                        instructionStorage.dirPlatformIncludeList[ platformName ].push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                    }
                                 }
                             }
                         }
@@ -576,11 +765,30 @@ GetProcessingInstructions( TProjectInfo& projectInfo ,
         
         // See if we can load instructions for this directory
         TDirProcessingInstructions& instructions = projectInfo.dirProcessingInstructions[ dir ];
-        instructions.excludeList = GetExcludeList( dir );
+        
+        // Load the simple exclude list and put the excludes in the correct list
+        TStringVector simpleExcludeList = GetExcludeList( dir );
+        TStringVector::iterator n = simpleExcludeList.begin();
+        while ( n != simpleExcludeList.end() )
+        {
+            if ( IsProcessingInstructionsItemADir( dir, (*n) ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that the simple exclude list item \"" + (*n) + "\" is a directory" );
+                instructions.dirExcludeList.push_back( (*n) );
+            }
+            else
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that the simple exclude list item \"" + (*n) + "\" is a file" );
+                instructions.fileExcludeList.push_back( (*n) );
+            }
+            ++n;
+        }        
+        
+        // Now process the more fancy processing instructions
         if ( GetProcessingInstructions( dir, instructions.processingInstructions ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Parsing advanced processing instructions for directory \"" + dir + "\"" );
-            ParseProcessingInstructions( instructions );
+            ParseProcessingInstructions( dir, instructions );
         }
         return &instructions;
     }
@@ -625,10 +833,10 @@ LoadAllProcessingInstructions( TProjectInfo& projectInfo    ,
 /*---------------------------------------------------------------------------*/
 
 void
-ExcludeOrIncludeEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
-                                          const CORE::CString& dir      ,
-                                          const CORE::CString& platform , 
-                                          TStringVector& allEntries     )
+ExcludeOrIncludeDirEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
+                                             const CORE::CString& dir      ,
+                                             const CORE::CString& platform , 
+                                             TStringVector& allEntries     )
 {
     // Fetch processing instructions from directory
     TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, dir );
@@ -636,21 +844,52 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
     if ( NULL != instructionStorage )
     {
         // Carry out the process using the fetched instructions
-        ExcludeOrIncludeEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, allEntries );
+        ExcludeOrIncludeDirEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, allEntries );
     }
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-ExcludeOrIncludeEntriesAsSpecifiedForDir( TProjectInfo& projectInfo ,    
-                                          const CORE::CString& dir  ,
-                                          TStringVector& allEntries )
+ExcludeOrIncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
+                                              const CORE::CString& dir      ,
+                                              const CORE::CString& platform , 
+                                              TStringVector& allEntries     )
 {
-    ExcludeOrIncludeEntriesAsSpecifiedForDir( projectInfo, 
-                                              dir, 
-                                              CORE::CString(), 
-                                              allEntries );
+    // Fetch processing instructions from directory
+    TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, dir );
+    
+    if ( NULL != instructionStorage )
+    {
+        // Carry out the process using the fetched instructions
+        ExcludeOrIncludeFileEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, allEntries );
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+ExcludeOrIncludeDirEntriesAsSpecifiedForDir( TProjectInfo& projectInfo ,    
+                                             const CORE::CString& dir  ,
+                                             TStringVector& allEntries )
+{
+    ExcludeOrIncludeDirEntriesAsSpecifiedForDir( projectInfo, 
+                                                 dir, 
+                                                 CORE::CString(), 
+                                                 allEntries );
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+ExcludeOrIncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo ,    
+                                              const CORE::CString& dir  ,
+                                              TStringVector& allEntries )
+{
+    ExcludeOrIncludeFileEntriesAsSpecifiedForDir( projectInfo, 
+                                                  dir, 
+                                                  CORE::CString(), 
+                                                  allEntries );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -796,9 +1035,9 @@ GenerateCMakeListsFileSrcSection( const TStringVectorMap& srcFiles )
 /*---------------------------------------------------------------------------*/
 
 void
-GetAllPlatformFiles( TModuleInfo& moduleInfo           ,
-                     const CORE::CString& platformName ,
-                     const CORE::CString& platformDir  )
+GetAllPlatformFilesInPlatformDirs( TModuleInfo& moduleInfo           ,
+                                   const CORE::CString& platformName ,
+                                   const CORE::CString& platformDir  )
 {GUCEF_TRACE;
 
     // First we check each of the project include dirs for a platform sub-sir
@@ -952,8 +1191,126 @@ IsDirAPlatformDir( const CORE::CString& path )
 /*---------------------------------------------------------------------------*/
 
 void
-GetAllPlatformFiles( TModuleInfo& moduleInfo )
+ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo         ,
+                                        TModuleInfo& moduleInfo           ,
+                                        const CORE::CString& fullDir      ,
+                                        const CORE::CString& moduleSubDir )
 {
+    TDirProcessingInstructions* instructions = GetProcessingInstructions( projectInfo, fullDir );
+    if ( NULL == instructions ) return;
+    
+    //ExcludeOrIncludeFileEntriesAsSpecifiedForDir
+    
+    //if ( !platform.IsNULLOrEmpty() )
+    //{
+    //    TStringVectorMap::const_iterator i = allInstructions.platformExcludeList.find( platform );
+    //    if ( i != allInstructions.platformExcludeList.end() )
+    //    {        
+    //        const TStringVector& excludeList = (*i).second;
+    //        TStringVector::const_iterator n = excludeList.begin();
+    //        while ( n != excludeList.end() )
+    //        {
+    //            if ( RemoveString( allEntries, (*n) ) )
+    //            {
+    //                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the entry \"" + (*n) + "\" based on the exclude list for this dir" );
+    //            }
+    //            ++n;
+    //        }
+    //    }
+    //    
+    //    i = allInstructions.platformIncludeList.find( platform );
+    //    if ( i != allInstructions.platformIncludeList.end() )
+    //    {
+    //        const TStringVector& includeList = (*i).second;
+    //        TStringVector::const_iterator n = includeList.begin();
+    //        while ( n != includeList.end() )
+    //        {
+    //            allEntries.push_back( (*n) );
+    //            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the entry \"" + (*n) + "\" based on the include list for this dir" );
+    //            ++n;
+    //        }
+    //    }
+    //}
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo ,
+                                        TModuleInfo& moduleInfo   )
+{
+    TStringVectorMap::iterator i = moduleInfo.includeDirs.begin();
+    while ( i != moduleInfo.includeDirs.end() )
+    {
+        CORE::CString fullDir = moduleInfo.rootDir;
+        CORE::AppendToPath( fullDir, (*i).first ); 
+        
+        ApplyDirProcessingInstructionsToModule( projectInfo ,
+                                                moduleInfo  ,
+                                                fullDir     ,
+                                                (*i).first  );        
+        ++i;
+    }
+    
+    i = moduleInfo.sourceDirs.begin();
+    while ( i != moduleInfo.sourceDirs.end() )
+    {
+        CORE::CString fullDir = moduleInfo.rootDir;
+        CORE::AppendToPath( fullDir, (*i).first ); 
+        
+        ApplyDirProcessingInstructionsToModule( projectInfo ,
+                                                moduleInfo  ,
+                                                fullDir     ,
+                                                (*i).first  );        
+        ++i;
+    }
+    
+    TStringVectorMapMap::iterator n = moduleInfo.platformHeaderFiles.begin();
+    while ( n != moduleInfo.platformHeaderFiles.end() )
+    {
+        TStringVectorMap& dirsForPlatform = (*n).second;
+        TStringVectorMap::iterator m = dirsForPlatform.begin();
+        while ( m != dirsForPlatform.end() )
+        {
+            CORE::CString fullDir = moduleInfo.rootDir;
+            CORE::AppendToPath( fullDir, (*m).first ); 
+            
+            ApplyDirProcessingInstructionsToModule( projectInfo ,
+                                                    moduleInfo  ,
+                                                    fullDir     ,
+                                                    (*m).first  );        
+
+            ++m;
+        }
+    }
+    
+    n = moduleInfo.platformSourceFiles.begin();
+    while ( n != moduleInfo.platformSourceFiles.end() )
+    {
+        TStringVectorMap& dirsForPlatform = (*n).second;
+        TStringVectorMap::iterator m = dirsForPlatform.begin();
+        while ( m != dirsForPlatform.end() )
+        {
+            CORE::CString fullDir = moduleInfo.rootDir;
+            CORE::AppendToPath( fullDir, (*m).first ); 
+            
+            ApplyDirProcessingInstructionsToModule( projectInfo ,
+                                                    moduleInfo  ,
+                                                    fullDir     ,
+                                                    (*m).first  );        
+
+            ++m;
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+GetAllPlatformFiles( const TProjectInfo& projectInfo ,
+                     TModuleInfo& moduleInfo         )
+{
+    // Look for supported platform dirs to find platform files
     const TStringSetMap& dirMap = GetSupportedPlatformDirMap();
     TStringSetMap::const_iterator i = dirMap.begin();
     while ( i != dirMap.end() )
@@ -962,7 +1319,7 @@ GetAllPlatformFiles( TModuleInfo& moduleInfo )
         TStringSet::const_iterator n = dirs.begin();
         while ( n != dirs.end() )
         {
-            GetAllPlatformFiles( moduleInfo, (*i).first, (*n) );
+            GetAllPlatformFilesInPlatformDirs( moduleInfo, (*i).first, (*n) );
             ++n;
         }
         ++i;
@@ -1590,7 +1947,7 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
     PopulateFileListFromDir( curRootDir, fileTypes, fileList );
 
     // Now we add/substract from that list based on generator instructions
-    ExcludeOrIncludeEntriesAsSpecifiedForDir( projectInfo, curRootDir, platform, fileList ); 
+    ExcludeOrIncludeFileEntriesAsSpecifiedForDir( projectInfo, curRootDir, platform, fileList ); 
     
     if ( fileList.size() > 0 )
     {
@@ -1603,7 +1960,7 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
     PopulateDirListFromDir( curRootDir, dirList );
     
     // Now we add/substract from that list based on generator instructions
-    ExcludeOrIncludeEntriesAsSpecifiedForDir( projectInfo, curRootDir, platform, dirList ); 
+    ExcludeOrIncludeDirEntriesAsSpecifiedForDir( projectInfo, curRootDir, platform, dirList ); 
     
     TStringVector::iterator i = dirList.begin();
     while ( i != dirList.end() )
@@ -1704,6 +2061,8 @@ ProcessProjectDir( TProjectInfo& projectInfo ,
     
     FindSubDirsWithHeaders( projectInfo, moduleInfo );
     FindSubDirsWithSource( projectInfo, moduleInfo );
+    GetAllPlatformFiles( projectInfo, moduleInfo );
+    ApplyDirProcessingInstructionsToModule( projectInfo, moduleInfo );
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generated CMake List file content for project dir: " + moduleInfo.rootDir );
 }
@@ -1711,8 +2070,8 @@ ProcessProjectDir( TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 void
-LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
-                                       CORE::CString topLevelDir )
+LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
+                                       const CORE::CString& topLevelDir )
 {GUCEF_TRACE;
     
     GUCEF_LOG( CORE::LOGLEVEL_EVERYTHING, "Recursively processing directory for module info: " + topLevelDir );
@@ -1726,8 +2085,7 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
         TModuleInfo moduleInfo;
         moduleInfo.rootDir = topLevelDir;
         moduleInfo.buildOrder = 0;
-        ProcessProjectDir( projectInfo, moduleInfo );        
-        GetAllPlatformFiles( moduleInfo );
+        ProcessProjectDir( projectInfo, moduleInfo );
         projectInfo.modules.push_back( moduleInfo );
     }
     
@@ -1736,7 +2094,9 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo ,
     PopulateDirListFromDir( topLevelDir, dirList );
     
     // Add/subtract dirs from the list based on generator instructions
-    ExcludeOrIncludeEntriesAsSpecifiedForDir( projectInfo, topLevelDir, dirList );  
+    // This early application (before module definition) of processing instructions allows us 
+    // to limit the number of directories that need to be processed and thus speed things up a bit
+    ExcludeOrIncludeDirEntriesAsSpecifiedForDir( projectInfo, topLevelDir, dirList );  
     
     // Process all sub-dirs
     std::vector< CORE::CString >::iterator i = dirList.begin();
