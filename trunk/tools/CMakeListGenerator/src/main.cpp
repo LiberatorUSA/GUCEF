@@ -250,7 +250,8 @@ void
 FilterStringVectorForFilesWithExtensions( TStringVector& outputVector         , 
                                           const TStringVector& extensions     ,
                                           const TStringVector& originalVector )
-{
+{GUCEF_TRACE;
+
     TStringVector::const_iterator i = originalVector.begin();
     while ( i != originalVector.end() )
     {
@@ -289,7 +290,8 @@ IsDirAProjectDir( CORE::CString dir )
 
 CORE::CDStoreCodecRegistry::TDStoreCodecPtr
 GetXmlDStoreCodec( void )
-{
+{GUCEF_TRACE;
+
     static CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr;
     if ( codecPtr.IsNULL() )
     {
@@ -320,7 +322,8 @@ GetXmlDStoreCodec( void )
 
 CORE::CString
 GetProcessingInstructionsPath( const CORE::CString& dir )
-{
+{GUCEF_TRACE;
+
     CORE::CString instructionsFile = dir;
     CORE::AppendToPath( instructionsFile, "CMakeGenInstructions.xml" );
     return instructionsFile;
@@ -355,7 +358,8 @@ GetProcessingInstructions( const CORE::CString& dir      ,
 
 CORE::CString
 GetExcludeListPath( const CORE::CString& dir )
-{
+{GUCEF_TRACE;
+
     CORE::CString excludeFile = dir;
     CORE::AppendToPath( excludeFile, "CMakeGenExcludeList.txt" );
     return excludeFile;
@@ -392,29 +396,34 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir              
                                           const TDirProcessingInstructions& allInstructions ,
                                           const CORE::CString& platform                     , 
                                           bool checkDirs                                    ,
+                                          bool applyPlatformChangesOnly                     ,
                                           TStringVector& allEntries                         )
-{
+{GUCEF_TRACE;
+
     if ( checkDirs )
     {
-        // First we exclude based off of the simple exclude list
-        const TStringVector& excludeList = allInstructions.dirExcludeList;
-        TStringVector::const_iterator n = excludeList.begin();
-        while ( n != excludeList.end() )
+        if ( !applyPlatformChangesOnly )
         {
-            if ( RemoveString( allEntries, (*n) ) )
+            // First we exclude based off of the simple exclude list
+            const TStringVector& excludeList = allInstructions.dirExcludeList;
+            TStringVector::const_iterator n = excludeList.begin();
+            while ( n != excludeList.end() )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the directory \"" + (*n) + "\" based on the exclude list for this dir" );
+                if ( RemoveString( allEntries, (*n) ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the directory \"" + (*n) + "\" based on the exclude list for this dir" );
+                }
+                ++n;
             }
-            ++n;
-        }
 
-        const TStringVector& includeList = allInstructions.dirIncludeList;
-        n = includeList.begin();
-        while ( n != includeList.end() )
-        {
-            allEntries.push_back( (*n) );
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the directory \"" + (*n) + "\" based on the include list for this dir" );
-            ++n;
+            const TStringVector& includeList = allInstructions.dirIncludeList;
+            n = includeList.begin();
+            while ( n != includeList.end() )
+            {
+                allEntries.push_back( (*n) );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the directory \"" + (*n) + "\" based on the include list for this dir" );
+                ++n;
+            }
         }    
         
         if ( !platform.IsNULLOrEmpty() )
@@ -450,25 +459,28 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const CORE::CString& dir              
     }
     else
     {
-        // First we exclude based off of the simple exclude list
-        const TStringVector& excludeList = allInstructions.fileExcludeList;
-        TStringVector::const_iterator n = excludeList.begin();
-        while ( n != excludeList.end() )
+        if ( !applyPlatformChangesOnly )
         {
-            if ( RemoveString( allEntries, (*n) ) )
+            // First we exclude based off of the simple exclude list
+            const TStringVector& excludeList = allInstructions.fileExcludeList;
+            TStringVector::const_iterator n = excludeList.begin();
+            while ( n != excludeList.end() )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the file \"" + (*n) + "\" based on the exclude list for this dir" );
+                if ( RemoveString( allEntries, (*n) ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the file \"" + (*n) + "\" based on the exclude list for this dir" );
+                }
+                ++n;
             }
-            ++n;
-        }
 
-        const TStringVector& includeList = allInstructions.fileIncludeList;
-        n = includeList.begin();
-        while ( n != includeList.end() )
-        {
-            allEntries.push_back( (*n) );
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the file \"" + (*n) + "\" based on the include list for this dir" );
-            ++n;
+            const TStringVector& includeList = allInstructions.fileIncludeList;
+            n = includeList.begin();
+            while ( n != includeList.end() )
+            {
+                allEntries.push_back( (*n) );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the file \"" + (*n) + "\" based on the include list for this dir" );
+                ++n;
+            }
         }    
         
         if ( !platform.IsNULLOrEmpty() )
@@ -510,13 +522,16 @@ void
 ExcludeOrIncludeDirEntriesAsSpecifiedForDir( const CORE::CString& dir                          ,
                                              const TDirProcessingInstructions& allInstructions ,
                                              const CORE::CString& platform                     , 
+                                             bool applyPlatformChangesOnly                     ,
                                              TStringVector& allEntries                         )
-{
-    ExcludeOrIncludeEntriesAsSpecifiedForDir( dir             ,
-                                              allInstructions ,
-                                              platform        ,
-                                              true            ,
-                                              allEntries      );
+{GUCEF_TRACE;
+
+    ExcludeOrIncludeEntriesAsSpecifiedForDir( dir                      ,
+                                              allInstructions          ,
+                                              platform                 ,
+                                              true                     ,
+                                              applyPlatformChangesOnly ,
+                                              allEntries               );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -525,13 +540,16 @@ void
 ExcludeOrIncludeFileEntriesAsSpecifiedForDir( const CORE::CString& dir                          ,
                                               const TDirProcessingInstructions& allInstructions ,
                                               const CORE::CString& platform                     , 
+                                              bool applyPlatformChangesOnly                     ,
                                               TStringVector& allEntries                         )
-{
-    ExcludeOrIncludeEntriesAsSpecifiedForDir( dir             ,
-                                              allInstructions ,
-                                              platform        ,
-                                              false           ,
-                                              allEntries      );
+{GUCEF_TRACE;
+
+    ExcludeOrIncludeEntriesAsSpecifiedForDir( dir                      ,
+                                              allInstructions          ,
+                                              platform                 ,
+                                              false                    ,
+                                              applyPlatformChangesOnly ,
+                                              allEntries               );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -539,7 +557,8 @@ ExcludeOrIncludeFileEntriesAsSpecifiedForDir( const CORE::CString& dir          
 bool
 IsProcessingInstructionsItemADir( const CORE::CString& instructionDir ,
                                   const CORE::CString& itemName       )
-{
+{GUCEF_TRACE;
+
     CORE::CString itemPath = instructionDir;
     CORE::AppendToPath( itemPath, itemName );
     
@@ -566,7 +585,8 @@ bool
 IsProcessingInstructionsItemADir( const CORE::CString& instructionDir ,
                                   const CORE::CString& itemName       ,
                                   const CORE::CString& itemType       )
-{
+{GUCEF_TRACE;
+
     if ( itemType.IsNULLOrEmpty() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "The type of an item (\"" + itemName + "\") in the processing instructions is not specified, will try to auto-determine the type" );
@@ -593,7 +613,8 @@ IsProcessingInstructionsItemADir( const CORE::CString& instructionDir ,
 void
 ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
                              TDirProcessingInstructions& instructionStorage )
-{
+{GUCEF_TRACE;
+
     // Now we exclude based on the processing instructions for this dir
     // if any exist
     const CORE::CDataNode& instructions = instructionStorage.processingInstructions;
@@ -643,29 +664,49 @@ ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
                                 if ( platformName.IsNULLOrEmpty() || platformName.Equals( allPlatformsValue, false ) )
                                 {
                                     // Add as non-platform specific
-                                    if ( itemIsADir )
+                                    if ( itemName.HasChar( '*' ) != -1 && itemType.IsNULLOrEmpty() )
                                     {
                                         instructionStorage.dirExcludeList.push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard directory exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                        instructionStorage.fileExcludeList.push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard file exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );                                        
                                     }
                                     else
                                     {
-                                        instructionStorage.fileExcludeList.push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                        if ( itemIsADir )
+                                        {
+                                            instructionStorage.dirExcludeList.push_back( itemName );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                        }
+                                        else
+                                        {
+                                            instructionStorage.fileExcludeList.push_back( itemName );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                        }
                                     }                                    
                                 }
                                 else                                
                                 {
                                     // Add for the given platform
-                                    if ( itemIsADir )
+                                    if ( itemName.HasChar( '*' ) != -1 && itemType.IsNULLOrEmpty() )
                                     {
                                         instructionStorage.dirPlatformExcludeList[ platformName ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard directory exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                        instructionStorage.filePlatformExcludeList[ platformName ].push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard file exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
                                     }
                                     else
                                     {
-                                        instructionStorage.filePlatformExcludeList[ platformName ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                        if ( itemIsADir )
+                                        {
+                                            instructionStorage.dirPlatformExcludeList[ platformName ].push_back( itemName );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                        }
+                                        else
+                                        {
+                                            instructionStorage.filePlatformExcludeList[ platformName ].push_back( itemName );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                        }
                                     }                                    
                                 }
                             }
@@ -700,6 +741,14 @@ ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
                                 if ( platformName.IsNULLOrEmpty() || platformName.Equals( allPlatformsValue, false ) )
                                 {
                                     // Add as non-platform specific
+                                    if ( itemName.HasChar( '*' ) != -1 && itemType.IsNULLOrEmpty() )
+                                    {
+                                        instructionStorage.dirIncludeList.push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard directory include entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                        instructionStorage.fileIncludeList.push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard file include entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                    }
+                                    else
                                     if ( itemIsADir )
                                     {
                                         instructionStorage.dirIncludeList.push_back( itemName );
@@ -714,15 +763,25 @@ ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
                                 else                                
                                 {
                                     // Add for the given platform
-                                    if ( itemIsADir )
+                                    if ( itemName.HasChar( '*' ) != -1 && itemType.IsNULLOrEmpty() )
                                     {
                                         instructionStorage.dirPlatformIncludeList[ platformName ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard directory include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                        instructionStorage.dirPlatformIncludeList[ platformName ].push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard file include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
                                     }
                                     else
                                     {
-                                        instructionStorage.dirPlatformIncludeList[ platformName ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                        if ( itemIsADir )
+                                        {
+                                            instructionStorage.dirPlatformIncludeList[ platformName ].push_back( itemName );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                        }
+                                        else
+                                        {
+                                            instructionStorage.dirPlatformIncludeList[ platformName ].push_back( itemName );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                        }
                                     }
                                 }
                             }
@@ -741,7 +800,8 @@ ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
 
 bool
 AreProcessingInstructionsOnDisk( const CORE::CString& dir )
-{
+{GUCEF_TRACE;
+
     return CORE::FileExists( GetExcludeListPath( dir ) )         ||
            CORE::FileExists( GetProcessingInstructionsPath( dir ) );
 }
@@ -751,7 +811,8 @@ AreProcessingInstructionsOnDisk( const CORE::CString& dir )
 TDirProcessingInstructions*
 GetProcessingInstructions( TProjectInfo& projectInfo ,
                            const CORE::CString& dir  )
-{
+{GUCEF_TRACE;
+
     // See if we have already stored instructions for this directory
     TDirProcessingInstructionsMap::iterator i = projectInfo.dirProcessingInstructions.find( dir );
     if ( i != projectInfo.dirProcessingInstructions.end() )
@@ -771,6 +832,14 @@ GetProcessingInstructions( TProjectInfo& projectInfo ,
         TStringVector::iterator n = simpleExcludeList.begin();
         while ( n != simpleExcludeList.end() )
         {
+            if ( (*n).HasChar( '*' ) != -1 )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that the simple exclude list wildcard item \"" + (*n) + "\" is a directory" );
+                instructions.dirExcludeList.push_back( (*n) );
+                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that the simple exclude list wildcard item \"" + (*n) + "\" is a file" );
+                instructions.fileExcludeList.push_back( (*n) );
+            }
+            else
             if ( IsProcessingInstructionsItemADir( dir, (*n) ) )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that the simple exclude list item \"" + (*n) + "\" is a directory" );
@@ -801,7 +870,8 @@ GetProcessingInstructions( TProjectInfo& projectInfo ,
 void
 LoadAllProcessingInstructions( TProjectInfo& projectInfo    ,
                                const CORE::CString& rootDir )
-{    
+{GUCEF_TRACE;
+    
     // Load instructions for the root dir itself
     GetProcessingInstructions( projectInfo, rootDir );
     
@@ -836,15 +906,17 @@ void
 ExcludeOrIncludeDirEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
                                              const CORE::CString& dir      ,
                                              const CORE::CString& platform , 
+                                             bool applyPlatformChangesOnly ,
                                              TStringVector& allEntries     )
-{
+{GUCEF_TRACE;
+
     // Fetch processing instructions from directory
     TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, dir );
     
     if ( NULL != instructionStorage )
     {
         // Carry out the process using the fetched instructions
-        ExcludeOrIncludeDirEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, allEntries );
+        ExcludeOrIncludeDirEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, applyPlatformChangesOnly, allEntries );
     }
 }
 
@@ -854,15 +926,17 @@ void
 ExcludeOrIncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
                                               const CORE::CString& dir      ,
                                               const CORE::CString& platform , 
+                                              bool applyPlatformChangesOnly ,
                                               TStringVector& allEntries     )
-{
+{GUCEF_TRACE;
+
     // Fetch processing instructions from directory
     TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, dir );
     
     if ( NULL != instructionStorage )
     {
         // Carry out the process using the fetched instructions
-        ExcludeOrIncludeFileEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, allEntries );
+        ExcludeOrIncludeFileEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, applyPlatformChangesOnly, allEntries );
     }
 }
 
@@ -872,10 +946,12 @@ void
 ExcludeOrIncludeDirEntriesAsSpecifiedForDir( TProjectInfo& projectInfo ,    
                                              const CORE::CString& dir  ,
                                              TStringVector& allEntries )
-{
+{GUCEF_TRACE;
+
     ExcludeOrIncludeDirEntriesAsSpecifiedForDir( projectInfo, 
                                                  dir, 
                                                  CORE::CString(), 
+                                                 false,
                                                  allEntries );
 }
 
@@ -885,10 +961,12 @@ void
 ExcludeOrIncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo ,    
                                               const CORE::CString& dir  ,
                                               TStringVector& allEntries )
-{
+{GUCEF_TRACE;
+
     ExcludeOrIncludeFileEntriesAsSpecifiedForDir( projectInfo, 
                                                   dir, 
-                                                  CORE::CString(), 
+                                                  CORE::CString(),
+                                                  false, 
                                                   allEntries );
 }
 
@@ -1137,7 +1215,8 @@ GetSupportedPlatformDirMap( void )
 
 const TStringSet&
 GetSupportedPlatforms( void )
-{
+{GUCEF_TRACE;
+
     static TStringSet platforms;
     if ( platforms.empty() )
     {
@@ -1156,7 +1235,8 @@ GetSupportedPlatforms( void )
 
 const TStringSet&
 GetSupportedPlatformDirs()
-{
+{GUCEF_TRACE;
+
     static TStringSet platformDirs;
     if ( platformDirs.empty() )
     {
@@ -1191,46 +1271,30 @@ IsDirAPlatformDir( const CORE::CString& path )
 /*---------------------------------------------------------------------------*/
 
 void
-ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo         ,
-                                        TModuleInfo& moduleInfo           ,
-                                        const CORE::CString& fullDir      ,
-                                        const CORE::CString& moduleSubDir )
-{
+ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo     ,
+                                        TModuleInfo& moduleInfo       ,
+                                        TStringVectorMap::iterator& i ,
+                                        const CORE::CString& platform ,
+                                        bool applyPlatformChangesOnly )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Applying processing instructions to module \"" + moduleInfo.name + "\" for module directory \"" + (*i).first + "\"" );
+    
+    // Create the full path in order to locate the processing instructions
+    CORE::CString fullDir = moduleInfo.rootDir;
+    CORE::AppendToPath( fullDir, (*i).first ); 
+    
+    // Get the processing instructions for this dir which we know is a module dir
     TDirProcessingInstructions* instructions = GetProcessingInstructions( projectInfo, fullDir );
-    if ( NULL == instructions ) return;
-    
-    //ExcludeOrIncludeFileEntriesAsSpecifiedForDir
-    
-    //if ( !platform.IsNULLOrEmpty() )
-    //{
-    //    TStringVectorMap::const_iterator i = allInstructions.platformExcludeList.find( platform );
-    //    if ( i != allInstructions.platformExcludeList.end() )
-    //    {        
-    //        const TStringVector& excludeList = (*i).second;
-    //        TStringVector::const_iterator n = excludeList.begin();
-    //        while ( n != excludeList.end() )
-    //        {
-    //            if ( RemoveString( allEntries, (*n) ) )
-    //            {
-    //                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the entry \"" + (*n) + "\" based on the exclude list for this dir" );
-    //            }
-    //            ++n;
-    //        }
-    //    }
-    //    
-    //    i = allInstructions.platformIncludeList.find( platform );
-    //    if ( i != allInstructions.platformIncludeList.end() )
-    //    {
-    //        const TStringVector& includeList = (*i).second;
-    //        TStringVector::const_iterator n = includeList.begin();
-    //        while ( n != includeList.end() )
-    //        {
-    //            allEntries.push_back( (*n) );
-    //            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the entry \"" + (*n) + "\" based on the include list for this dir" );
-    //            ++n;
-    //        }
-    //    }
-    //}
+    if ( NULL != instructions )
+    {
+        // Now we add/substract based on generator instructions
+        ExcludeOrIncludeFileEntriesAsSpecifiedForDir( fullDir                  , 
+                                                      *instructions            , 
+                                                      platform                 , 
+                                                      applyPlatformChangesOnly , 
+                                                      (*i).second              );
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1238,30 +1302,29 @@ ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo         ,
 void
 ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo ,
                                         TModuleInfo& moduleInfo   )
-{
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Applying processing instructions to module \"" + moduleInfo.name + "\"" );
+    
     TStringVectorMap::iterator i = moduleInfo.includeDirs.begin();
     while ( i != moduleInfo.includeDirs.end() )
     {
-        CORE::CString fullDir = moduleInfo.rootDir;
-        CORE::AppendToPath( fullDir, (*i).first ); 
-        
-        ApplyDirProcessingInstructionsToModule( projectInfo ,
-                                                moduleInfo  ,
-                                                fullDir     ,
-                                                (*i).first  );        
+        ApplyDirProcessingInstructionsToModule( projectInfo     ,
+                                                moduleInfo      ,
+                                                i               ,
+                                                CORE::CString() ,
+                                                false           );   
         ++i;
     }
     
     i = moduleInfo.sourceDirs.begin();
     while ( i != moduleInfo.sourceDirs.end() )
     {
-        CORE::CString fullDir = moduleInfo.rootDir;
-        CORE::AppendToPath( fullDir, (*i).first ); 
-        
-        ApplyDirProcessingInstructionsToModule( projectInfo ,
-                                                moduleInfo  ,
-                                                fullDir     ,
-                                                (*i).first  );        
+        ApplyDirProcessingInstructionsToModule( projectInfo     ,
+                                                moduleInfo      ,
+                                                i               ,
+                                                CORE::CString() ,
+                                                false           );   
         ++i;
     }
     
@@ -1272,16 +1335,15 @@ ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo ,
         TStringVectorMap::iterator m = dirsForPlatform.begin();
         while ( m != dirsForPlatform.end() )
         {
-            CORE::CString fullDir = moduleInfo.rootDir;
-            CORE::AppendToPath( fullDir, (*m).first ); 
-            
             ApplyDirProcessingInstructionsToModule( projectInfo ,
                                                     moduleInfo  ,
-                                                    fullDir     ,
-                                                    (*m).first  );        
+                                                    m           ,
+                                                    (*n).first  ,
+                                                    true        );       
 
             ++m;
         }
+        ++n;
     }
     
     n = moduleInfo.platformSourceFiles.begin();
@@ -1291,16 +1353,15 @@ ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo ,
         TStringVectorMap::iterator m = dirsForPlatform.begin();
         while ( m != dirsForPlatform.end() )
         {
-            CORE::CString fullDir = moduleInfo.rootDir;
-            CORE::AppendToPath( fullDir, (*m).first ); 
-            
             ApplyDirProcessingInstructionsToModule( projectInfo ,
                                                     moduleInfo  ,
-                                                    fullDir     ,
-                                                    (*m).first  );        
+                                                    m           ,
+                                                    (*n).first  ,
+                                                    true        );       
 
             ++m;
         }
+        ++n;
     }
 }
 
@@ -1309,7 +1370,8 @@ ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo ,
 void
 GetAllPlatformFiles( const TProjectInfo& projectInfo ,
                      TModuleInfo& moduleInfo         )
-{
+{GUCEF_TRACE;
+
     // Look for supported platform dirs to find platform files
     const TStringSetMap& dirMap = GetSupportedPlatformDirMap();
     TStringSetMap::const_iterator i = dirMap.begin();
@@ -1578,7 +1640,7 @@ ParseModuleName( const CORE::CString& fileSuffix )
         dependenciesStr = dependenciesStr.CompactRepeatingChar( ' ' );
         dependenciesStr = dependenciesStr.Trim( true );
         dependenciesStr = dependenciesStr.Trim( false );
-        std::vector< CORE::CString > elements = dependenciesStr.ParseElements( ' ' );
+        TStringVector elements = dependenciesStr.ParseElements( ' ' );
         if ( !elements.empty() )
         {
             return *(elements.begin());
@@ -1596,7 +1658,7 @@ ParseModuleName( const CORE::CString& fileSuffix )
             dependenciesStr = dependenciesStr.CompactRepeatingChar( ' ' );
             dependenciesStr = dependenciesStr.Trim( true );
             dependenciesStr = dependenciesStr.Trim( false );
-            std::vector< CORE::CString > elements = dependenciesStr.ParseElements( ' ' );
+            TStringVector elements = dependenciesStr.ParseElements( ' ' );
             if ( !elements.empty() )
             {
                 return *(elements.begin());
@@ -1938,6 +2000,7 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
                           TStringVectorMap& fileMap          ,
                           const TStringVector& fileTypes     ,
                           const CORE::CString& platform      ,
+                          bool applyOnlyPlatformInstructions ,
                           const CORE::CString& curRootDir    ,
                           const CORE::CString& curRootDirSeg )
 {GUCEF_TRACE;
@@ -1945,9 +2008,6 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
     // First we build a list of all files for the directory for ease of handling
     TStringVector fileList;
     PopulateFileListFromDir( curRootDir, fileTypes, fileList );
-
-    // Now we add/substract from that list based on generator instructions
-    ExcludeOrIncludeFileEntriesAsSpecifiedForDir( projectInfo, curRootDir, platform, fileList ); 
     
     if ( fileList.size() > 0 )
     {
@@ -1960,7 +2020,11 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
     PopulateDirListFromDir( curRootDir, dirList );
     
     // Now we add/substract from that list based on generator instructions
-    ExcludeOrIncludeDirEntriesAsSpecifiedForDir( projectInfo, curRootDir, platform, dirList ); 
+    ExcludeOrIncludeDirEntriesAsSpecifiedForDir( projectInfo                   , 
+                                                 curRootDir                    , 
+                                                 platform                      , 
+                                                 applyOnlyPlatformInstructions , 
+                                                 dirList                       ); 
     
     TStringVector::iterator i = dirList.begin();
     while ( i != dirList.end() )
@@ -1975,7 +2039,13 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
             CORE::AppendToPath( subDirSeg, (*i) );
             subDirSeg.ReplaceChar( '\\', '/' );
             
-            FindSubDirsWithFileTypes( projectInfo, fileMap, fileTypes, platform, subDir, subDirSeg );
+            FindSubDirsWithFileTypes( projectInfo                   , 
+                                      fileMap                       , 
+                                      fileTypes                     , 
+                                      platform                      , 
+                                      applyOnlyPlatformInstructions , 
+                                      subDir                        , 
+                                      subDirSeg                     );
         }
         ++i;
     }
@@ -1995,6 +2065,7 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
                               fileMap         , 
                               fileTypes       ,
                               CORE::CString() ,
+                              false           ,
                               curRootDir      ,
                               curRootDirSeg   );
 }
