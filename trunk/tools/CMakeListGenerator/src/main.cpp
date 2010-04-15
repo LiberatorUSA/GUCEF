@@ -767,7 +767,7 @@ ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
                                     {
                                         instructionStorage.dirPlatformIncludeList[ platformName ].push_back( itemName );
                                         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard directory include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
-                                        instructionStorage.dirPlatformIncludeList[ platformName ].push_back( itemName );
+                                        instructionStorage.filePlatformIncludeList[ platformName ].push_back( itemName );
                                         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard file include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
                                     }
                                     else
@@ -779,7 +779,7 @@ ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
                                         }
                                         else
                                         {
-                                            instructionStorage.dirPlatformIncludeList[ platformName ].push_back( itemName );
+                                            instructionStorage.filePlatformIncludeList[ platformName ].push_back( itemName );
                                             GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
                                         }
                                     }
@@ -1271,14 +1271,96 @@ IsDirAPlatformDir( const CORE::CString& path )
 /*---------------------------------------------------------------------------*/
 
 void
+GetListOfAllModuleDirs( TModuleInfo& moduleInfo   ,
+                        TStringSet& moduleDirs    ,
+                        bool relativePaths        )
+{GUCEF_TRACE;
+
+    TStringVectorMap::iterator i = moduleInfo.includeDirs.begin();
+    while ( i != moduleInfo.includeDirs.end() )
+    {
+        if ( relativePaths )
+        {
+            moduleDirs.insert( (*i).first );
+        }
+        else        
+        {
+            CORE::CString fullPath = moduleInfo.rootDir;
+            CORE::AppendToPath( fullPath, (*i).first );
+            
+            moduleDirs.insert( fullPath );
+        }
+        ++i;
+    }
+    i = moduleInfo.sourceDirs.begin();
+    while ( i != moduleInfo.sourceDirs.end() )
+    {
+        if ( relativePaths )
+        {
+            moduleDirs.insert( (*i).first );
+        }
+        else        
+        {
+            CORE::CString fullPath = moduleInfo.rootDir;
+            CORE::AppendToPath( fullPath, (*i).first );
+            
+            moduleDirs.insert( fullPath );
+        }
+        ++i;
+    }
+    TStringVectorMapMap::iterator n = moduleInfo.platformHeaderFiles.begin();
+    while ( n != moduleInfo.platformHeaderFiles.end() )
+    {        
+        i = (*n).second.begin();
+        while ( i != (*n).second.end() )
+        {
+            if ( relativePaths )
+            {
+                moduleDirs.insert( (*i).first );
+            }
+            else        
+            {
+                CORE::CString fullPath = moduleInfo.rootDir;
+                CORE::AppendToPath( fullPath, (*i).first );
+                
+                moduleDirs.insert( fullPath );
+            }
+            ++i;
+        }
+        ++n;
+    }
+    n = moduleInfo.platformSourceFiles.begin();
+    while ( n != moduleInfo.platformSourceFiles.end() )
+    {        
+        i = (*n).second.begin();
+        while ( i != (*n).second.end() )
+        {
+            if ( relativePaths )
+            {
+                moduleDirs.insert( (*i).first );
+            }
+            else        
+            {
+                CORE::CString fullPath = moduleInfo.rootDir;
+                CORE::AppendToPath( fullPath, (*i).first );
+                
+                moduleDirs.insert( fullPath );
+            }
+            ++i;
+        }
+        ++n;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
 ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo     ,
                                         TModuleInfo& moduleInfo       ,
                                         TStringVectorMap::iterator& i ,
                                         const CORE::CString& platform ,
                                         bool applyPlatformChangesOnly )
 {GUCEF_TRACE;
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Applying processing instructions to module \"" + moduleInfo.name + "\" for module directory \"" + (*i).first + "\"" );
     
     // Create the full path in order to locate the processing instructions
     CORE::CString fullDir = moduleInfo.rootDir;
@@ -1288,6 +1370,8 @@ ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo     ,
     TDirProcessingInstructions* instructions = GetProcessingInstructions( projectInfo, fullDir );
     if ( NULL != instructions )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Applying processing instructions to module \"" + moduleInfo.name + "\" for module directory \"" + (*i).first + "\"" );
+        
         // Now we add/substract based on generator instructions
         ExcludeOrIncludeFileEntriesAsSpecifiedForDir( fullDir                  , 
                                                       *instructions            , 
@@ -1304,8 +1388,12 @@ ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo ,
                                         TModuleInfo& moduleInfo   )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Applying processing instructions to module \"" + moduleInfo.name + "\"" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Applying processing instructions to module \"" + moduleInfo.name + "\" if any exist" );
     
+    // First we process all the instructions that apply to all platforms
+    // In order to do this we will iterate all the module dirs
+    
+    // Apply instructions to files in the include directories
     TStringVectorMap::iterator i = moduleInfo.includeDirs.begin();
     while ( i != moduleInfo.includeDirs.end() )
     {
@@ -1317,6 +1405,7 @@ ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo ,
         ++i;
     }
     
+    // Apply instructions to files in the source directories
     i = moduleInfo.sourceDirs.begin();
     while ( i != moduleInfo.sourceDirs.end() )
     {
@@ -1328,6 +1417,7 @@ ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo ,
         ++i;
     }
     
+    // Apply instructions to files in the platform include directories
     TStringVectorMapMap::iterator n = moduleInfo.platformHeaderFiles.begin();
     while ( n != moduleInfo.platformHeaderFiles.end() )
     {
@@ -1335,17 +1425,18 @@ ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo ,
         TStringVectorMap::iterator m = dirsForPlatform.begin();
         while ( m != dirsForPlatform.end() )
         {
-            ApplyDirProcessingInstructionsToModule( projectInfo ,
-                                                    moduleInfo  ,
-                                                    m           ,
-                                                    (*n).first  ,
-                                                    true        );       
+            ApplyDirProcessingInstructionsToModule( projectInfo     ,
+                                                    moduleInfo      ,
+                                                    m               ,
+                                                    CORE::CString() ,
+                                                    false           );       
 
             ++m;
         }
         ++n;
     }
     
+    // Apply instructions to files in the platform source directories
     n = moduleInfo.platformSourceFiles.begin();
     while ( n != moduleInfo.platformSourceFiles.end() )
     {
@@ -1353,23 +1444,128 @@ ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo ,
         TStringVectorMap::iterator m = dirsForPlatform.begin();
         while ( m != dirsForPlatform.end() )
         {
-            ApplyDirProcessingInstructionsToModule( projectInfo ,
-                                                    moduleInfo  ,
-                                                    m           ,
-                                                    (*n).first  ,
-                                                    true        );       
+            ApplyDirProcessingInstructionsToModule( projectInfo     ,
+                                                    moduleInfo      ,
+                                                    m               ,
+                                                    CORE::CString() ,
+                                                    false           );       
 
             ++m;
         }
         ++n;
+    }    
+    
+    // Now for platform support we need to do something different.
+    // For every directory that belongs to this module we have to
+    // check if we have instructions for specific platforms
+    
+    TStringSet allModuleDirs;
+    GetListOfAllModuleDirs( moduleInfo, allModuleDirs, false );
+    
+    // For each supported platform check if there is a dir with relevant instructions
+    // for that platform
+    const TStringSet& supportedPlatforms = GetSupportedPlatforms();
+    TStringSet::const_iterator r = supportedPlatforms.begin();
+    while ( r != supportedPlatforms.end() )
+    {        
+        TStringSet::iterator p = allModuleDirs.begin();
+        while ( p != allModuleDirs.end() )
+        {            
+            // Get the processing instructions for this dir which we know is a module dir
+            TDirProcessingInstructions* instructions = GetProcessingInstructions( projectInfo, (*p) );
+            if ( NULL != instructions )
+            {               
+                // See if we have any instructions for this specific platform
+                i = instructions->filePlatformExcludeList.find( (*r) );
+                if ( i != instructions->filePlatformExcludeList.end() )
+                {        
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Applying platfrom specific exclude instructions for platform \"" + (*r) + "\" to module \"" + moduleInfo.name + "\" for module directory \"" + (*i).first + "\"" );
+                    
+                    // Get all excludes
+                    TStringVector& excludeList = (*i).second;
+                    
+                    // Separate them into headers and sources
+                    TStringVector headerExcludeList;
+                    FilterStringVectorForFilesWithExtensions( headerExcludeList, GetHeaderFileExtensions(), excludeList ); 
+                    TStringVector sourceExcludeList;
+                    FilterStringVectorForFilesWithExtensions( sourceExcludeList, GetSourceFileExtensions(), excludeList ); 
+
+                    CORE::CString relativePathToSubDir = (*p).CutChars( moduleInfo.rootDir.Length(), true );
+                                      
+                    TStringVectorMap& platformHeaderFiles = moduleInfo.platformHeaderFiles[ (*r) ];
+                    TStringVector::iterator q = headerExcludeList.begin();
+                    while ( q != headerExcludeList.end() )
+                    {
+                        TStringVector& platformDirFiles = platformHeaderFiles[ relativePathToSubDir ];                        
+                        if ( RemoveString( platformDirFiles, (*q) ) )
+                        {
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the file \"" + (*q) + "\" for platform \"" + (*r) + "\" based on the exclude list for this dir" );
+                        }
+                        ++q;
+                    }
+                    
+                    TStringVectorMap& platformSourceFiles = moduleInfo.platformSourceFiles[ (*r) ];
+                    q = sourceExcludeList.begin();
+                    while ( q != sourceExcludeList.end() )
+                    {
+                        TStringVector& platformDirFiles = platformSourceFiles[ relativePathToSubDir ];
+                        if ( RemoveString( platformDirFiles, (*q) ) )
+                        {
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the file \"" + (*q) + "\" for platform \"" + (*r) + "\" based on the exclude list for this dir" );
+                        }
+                        ++q;
+                    }
+                }
+                
+                i = instructions->filePlatformIncludeList.find( (*r) );
+                if ( i != instructions->filePlatformIncludeList.end() )
+                {        
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Applying platform specific include instructions for platform \"" + (*r) + "\" to module \"" + moduleInfo.name + "\" for module directory \"" + (*i).first + "\"" );
+                    
+                    // Get all includes
+                    TStringVector& includeList = (*i).second;
+                    
+                    // Separate them into headers and sources
+                    TStringVector headerIncludeList;
+                    FilterStringVectorForFilesWithExtensions( headerIncludeList, GetHeaderFileExtensions(), includeList ); 
+                    TStringVector sourceIncludeList;
+                    FilterStringVectorForFilesWithExtensions( sourceIncludeList, GetSourceFileExtensions(), includeList ); 
+
+                    CORE::CString relativePathToSubDir = (*p).CutChars( moduleInfo.rootDir.Length()+1, true );
+                                      
+                    TStringVectorMap& platformHeaderFiles = moduleInfo.platformHeaderFiles[ (*r) ];
+                    TStringVector::iterator q = headerIncludeList.begin();
+                    while ( q != headerIncludeList.end() )
+                    {
+                        TStringVector& platformDirFiles = platformHeaderFiles[ relativePathToSubDir ];
+                        platformDirFiles.push_back( (*q) );
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the file \"" + (*q) + "\" for platform \"" + (*r) + "\" based on the include list for this dir" );
+                        ++q;
+                    }
+                    
+                    TStringVectorMap& platformSourceFiles = moduleInfo.platformSourceFiles[ (*r) ];
+                    q = sourceIncludeList.begin();
+                    while ( q != sourceIncludeList.end() )
+                    {
+                        TStringVector& platformDirFiles = platformSourceFiles[ relativePathToSubDir ];
+                        platformDirFiles.push_back( (*q) );
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the file \"" + (*q) + "\" for platform \"" + (*r) + "\" based on the include list for this dir" );
+                        ++q;
+                    }
+                }
+            }
+            ++p;
+        }
+        
+        ++r;
     }
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-GetAllPlatformFiles( const TProjectInfo& projectInfo ,
-                     TModuleInfo& moduleInfo         )
+GetAllPlatformFilesInPlatformDirs( const TProjectInfo& projectInfo ,
+                                   TModuleInfo& moduleInfo         )
 {GUCEF_TRACE;
 
     // Look for supported platform dirs to find platform files
@@ -1394,8 +1590,12 @@ void
 GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo           ,
                                             const CORE::CString& platformName ,
                                             CORE::CString& headerSection      ,
-                                            CORE::CString& sourceSection      )
+                                            CORE::CString& sourceSection      ,
+                                            bool& hasPlatformHeaderFiles      ,
+                                            bool& hasPlatformSourceFiles      )
 {GUCEF_TRACE;
+    
+
     
     TStringVectorMapMap::iterator m = moduleInfo.platformHeaderFiles.find( platformName );
     if ( m != moduleInfo.platformHeaderFiles.end() )
@@ -1403,6 +1603,7 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo           ,
         const TStringVectorMap& platformHeaderFiles = (*m).second;
         if ( !platformHeaderFiles.empty() )
         {
+            hasPlatformHeaderFiles = true;
             headerSection = "  set( PLATFORM_HEADER_FILES \n";
             
             TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
@@ -1445,6 +1646,7 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo           ,
         const TStringVectorMap& platformSourceFiles = (*m).second;
         if ( !platformSourceFiles.empty() )
         {
+            hasPlatformSourceFiles = true;
             sourceSection = "  set( PLATFORM_SOURCE_FILES \n";
             
             TStringVectorMap::const_iterator n = platformSourceFiles.begin();
@@ -1477,6 +1679,9 @@ CORE::CString
 GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo )
 {GUCEF_TRACE;
 
+    bool hasPlatformHeaderFiles = false;
+    bool hasPlatformSourceFiles = false;
+
     CORE::CString sectionContent;
     bool firstPlatform = true;
     TStringVectorMapMap::iterator i = moduleInfo.platformHeaderFiles.begin();
@@ -1485,7 +1690,12 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo )
         CORE::CString headerSection;
         CORE::CString sourceSection;
         const CORE::CString& platformName = (*i).first;
-        GenerateCMakeListsFilePlatformFilesSection( moduleInfo, platformName, headerSection, sourceSection );
+        GenerateCMakeListsFilePlatformFilesSection( moduleInfo             , 
+                                                    platformName           , 
+                                                    headerSection          , 
+                                                    sourceSection          , 
+                                                    hasPlatformHeaderFiles , 
+                                                    hasPlatformSourceFiles );
         
         if ( firstPlatform )
         {
@@ -1499,11 +1709,23 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo )
          
         ++i;
     }
-    
-    if ( !moduleInfo.platformHeaderFiles.empty() )
+   
+    if ( hasPlatformHeaderFiles || hasPlatformSourceFiles )
     {
         // since we added data we have to close the section
         sectionContent += "endif ()\n\n";
+    }
+    
+    // Make sure the variable is defined even if we have no platform files
+    // This allows people to always add the variable in the suffix file without knowing
+    // if there are platform files
+    if ( !hasPlatformHeaderFiles )
+    {
+        sectionContent += "# Make sure the PLATFORM_HEADER_FILES variable is always defined\n set( PLATFORM_HEADER_FILES \"\" )\n\n";
+    }
+    if ( !hasPlatformSourceFiles )
+    {
+        sectionContent += "# Make sure the PLATFORM_SOURCE_FILES variable is always defined\n set( PLATFORM_SOURCE_FILES \"\" )\n\n";
     }
  
     return sectionContent;
@@ -1978,6 +2200,8 @@ GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
     // Add all platform files, headers and source
     fileContent += GenerateCMakeListsFilePlatformFilesSection( moduleInfo );
     
+    fileContent += "# For ease of use make a variable that has all files for this module\nset( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )\n\n";
+    
     fileContent += GenerateAutoGenertedSeperator( true );
     
     // We have completed generating the file content and gathering info
@@ -2132,7 +2356,7 @@ ProcessProjectDir( TProjectInfo& projectInfo ,
     
     FindSubDirsWithHeaders( projectInfo, moduleInfo );
     FindSubDirsWithSource( projectInfo, moduleInfo );
-    GetAllPlatformFiles( projectInfo, moduleInfo );
+    GetAllPlatformFilesInPlatformDirs( projectInfo, moduleInfo );
     ApplyDirProcessingInstructionsToModule( projectInfo, moduleInfo );
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generated CMake List file content for project dir: " + moduleInfo.rootDir );
@@ -2471,7 +2695,7 @@ ParseParams( const int argc                 ,
 int
 main( int argc , char* argv[] )
 {GUCEF_TRACE;
-
+    
     CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
     CORE::AppendToPath( logFilename, "CMakeListsGenerator_Log.txt" );
     CORE::CFileAccess logFileAccess( logFilename, "w" );
@@ -2483,6 +2707,10 @@ main( int argc , char* argv[] )
     CORE::CMSWinConsoleLogger consoleOut;
     CORE::CLogManager::Instance()->AddLogger( &consoleOut );
     #endif /* GUCEF_MSWIN_BUILD ? */
+    
+    CORE::CString compilationDate(  __DATE__ );
+    CORE::CString compilationTime(  __TIME__ );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " + compilationDate + " @ " + compilationTime );
 
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );

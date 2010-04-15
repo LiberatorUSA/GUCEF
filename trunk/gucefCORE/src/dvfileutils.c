@@ -888,13 +888,16 @@ File_Exists( const char *filename )
         if ( filename )
         {
                 #ifdef GUCEF_MSWIN_BUILD
+                                
                 WIN32_FIND_DATA FileInfo;
                 HANDLE hFind;
                 hFind = FindFirstFile( filename, &FileInfo );
                 if ( hFind != INVALID_HANDLE_VALUE )
                 {
                         FindClose( hFind );
-                        return 1;
+                        
+                        /* make sure we found a file not a directory */                        
+                        return !( FileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY );
                 }
                 return 0;                        
                 

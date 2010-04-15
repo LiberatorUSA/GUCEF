@@ -1,0 +1,6 @@
+<CMAKELISTGENERATOR>
+  <EXCLUDES PLATFORM="ALL">
+    <ITEM NAME="openjpeg.c" TYPE="FILE" />
+    <ITEM NAME="t1_generate_luts.c" TYPE="FILE" />
+  </EXCLUDES>
+</CMAKELISTGENERATOR>
