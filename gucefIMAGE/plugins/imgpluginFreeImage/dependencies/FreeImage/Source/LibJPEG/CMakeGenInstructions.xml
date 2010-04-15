@@ -1,20 +1,21 @@
 <CMAKELISTGENERATOR>
   <EXCLUDES PLATFORM="ALL">
-    <ITEM NAME="jmemmac.c" />
-    <ITEM NAME="jmemdos.c" />
-    <ITEM NAME="jmemdosa.asm" />
-    <ITEM NAME="ansi2knr.c" />
-    <ITEM NAME="ckconfig.c" />
-    <ITEM NAME="cjpeg.c" />
-    <ITEM NAME="djpeg.c" />
-    <ITEM NAME="openjpeg.c" />
-    <ITEM NAME="jpegtran.c" />
-    <ITEM NAME="rdjpgcom.c" />
-    <ITEM NAME="wrjpgcom.c" />
-    <ITEM NAME="jmemname.c" />
-    <ITEM NAME="jmemnobs.c" />
+    <ITEM NAME="jmemmac.c" TYPE="FILE" />
+    <ITEM NAME="jmemdos.c" TYPE="FILE" />
+    <ITEM NAME="jmemdosa.asm" TYPE="FILE" />
+    <ITEM NAME="ansi2knr.c" TYPE="FILE" />
+    <ITEM NAME="ckconfig.c" TYPE="FILE" />
+    <ITEM NAME="cjpeg.c" TYPE="FILE" />
+    <ITEM NAME="djpeg.c" TYPE="FILE" />
+    <ITEM NAME="openjpeg.c" TYPE="FILE" />
+    <ITEM NAME="jpegtran.c" TYPE="FILE" />
+    <ITEM NAME="rdjpgcom.c" TYPE="FILE" />
+    <ITEM NAME="wrjpgcom.c" TYPE="FILE" />
+    <ITEM NAME="jmemname.c" TYPE="FILE" />
+    <ITEM NAME="jmemnobs.c" TYPE="FILE" />
+    <ITEM NAME="example.c" TYPE="FILE" />
   </EXCLUDES>
   <INCLUDES PLATFORM="OSX">
-    <ITEM NAME="jmemmac.c" />
+    <ITEM NAME="jmemmac.c" TYPE="FILE" />
   </INCLUDES>
 </CMAKELISTGENERATOR>

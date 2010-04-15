@@ -1,5 +1,5 @@
 
-add_library( miniupnpc ${HEADER_FILES} ${SOURCE_FILES} )
+add_library( miniupnpc ${ALL_FILES} )
 set_target_properties( miniupnpc PROPERTIES COMPILE_DEFINITIONS MINIUPNP_EXPORTS )
 target_link_libraries( miniupnpc WS2_32.lib )
 GUCEF_config_lib( miniupnpc )

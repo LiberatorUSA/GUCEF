@@ -1,0 +1,22 @@
+<CMAKELISTGENERATOR>
+  <EXCLUDES PLATFORM="ALL">
+    <ITEM NAME="IlmThreadMutexPosix.cpp" TYPE="FILE" />
+    <ITEM NAME="IlmThreadMutexWin32.cpp" TYPE="FILE" />
+    <ITEM NAME="IlmThreadSemaphorePosix.cpp" TYPE="FILE" />
+    <ITEM NAME="IlmThreadSemaphorePosixCompat.cpp" TYPE="FILE" />
+    <ITEM NAME="IlmThreadSemaphoreWin32.cpp" TYPE="FILE" />
+    <ITEM NAME="IlmThreadWin32.cpp" TYPE="FILE" />
+    <ITEM NAME="IlmThreadPosix.cpp" TYPE="FILE" />
+  </EXCLUDES>
+  <INCLUDES PLATFORM="WIN32">
+    <ITEM NAME="IlmThreadMutexWin32.cpp" TYPE="FILE" />
+    <ITEM NAME="IlmThreadWin32.cpp" TYPE="FILE" />
+    <ITEM NAME="IlmThreadSemaphoreWin32.cpp" TYPE="FILE" />
+  </INCLUDES>
+  <INCLUDES PLATFORM="UNIX">
+    <ITEM NAME="IlmThreadPosix.cpp" TYPE="FILE" />
+    <ITEM NAME="IlmThreadMutexPosix.cpp" TYPE="FILE" />
+    <ITEM NAME="IlmThreadSemaphorePosix.cpp" TYPE="FILE" />
+    <ITEM NAME="IlmThreadSemaphorePosixCompat.cpp" TYPE="FILE" />
+  </INCLUDES>
+</CMAKELISTGENERATOR>
