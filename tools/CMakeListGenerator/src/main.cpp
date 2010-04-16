@@ -1206,9 +1206,11 @@ GetSupportedPlatformDirMap( void )
         platformMap[ "IPHONEOS" ].insert( "iphone" );
         platformMap[ "SYMBIAN" ].insert( "symbian" );
         platformMap[ "OSX" ].insert( "osx" );
+        platformMap[ "OSX" ].insert( "mac" );
         platformMap[ "ANDROID" ].insert( "android" );
         platformMap[ "GLX" ].insert( "glx" );
         platformMap[ "GTK" ].insert( "gtk" );
+        platformMap[ "SDL" ].insert( "sdl" );
     }
     return platformMap;
 }
