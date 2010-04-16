@@ -152,6 +152,7 @@ Supported platform directories:
   "win64" for platform "WIN64"
   "linux" for platform "UNIX"
   "osx" for platform "OSX"
+  "mac" for platform "OSX"
   "android" for platform "ANDROID"
   "iphone" for platform "IPHONEOS"
   "glx" for platform "GLX"
