@@ -158,6 +158,7 @@ Supported platform directories:
   "glx" for platform "GLX"
   "gtK" for platform "GTK"
   "symbian" for platform "Symbian"
+  "sdl" for platform "SDL"
 
 Note that you can also influence/create platform specific processing by setting up
 processing instructions for the generator. This is especially usefull for projetcs 
