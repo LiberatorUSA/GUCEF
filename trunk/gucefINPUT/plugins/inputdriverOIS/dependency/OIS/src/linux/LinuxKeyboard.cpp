@@ -302,9 +302,9 @@ void LinuxKeyboard::capture()
 	LinuxInputManager* linMan = static_cast<LinuxInputManager*>(mCreator);
 
 	while( XPending(display) > 0 )
-	{
-		XNextEvent(display, &event);
-
+	{
+		XNextEvent(display, &event);
+
 		if( KeyPress == event.type )
 		{
 			unsigned int character = 0;
@@ -334,7 +334,7 @@ void LinuxKeyboard::capture()
 			//Check for Alt-Tab
 			if( event.xkey.state & Mod1Mask && key == XK_Tab )
 				linMan->_setGrabState(false);
-		}
+		}
 		else if( KeyRelease == event.type )
 		{
 			//Mask out the modifier states X sets.. or we will get improper values
@@ -343,7 +343,7 @@ void LinuxKeyboard::capture()
 
 			//Else, it is a valid key release
 			XLookupString(&event.xkey,NULL,0,&key,NULL);
-			_injectKeyUp(key);
+			_injectKeyUp(key);
 		}
 	}
 
