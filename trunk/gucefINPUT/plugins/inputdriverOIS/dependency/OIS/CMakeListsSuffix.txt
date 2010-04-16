@@ -1,5 +1,17 @@
 
 add_library( OIS ${ALL_FILES} )
 #target_link_libraries( OIS )
-set_target_properties( OIS PROPERTIES COMPILE_DEFINITIONS OIS_DYNAMIC_LIB )
+
+if (WIN32)
+  # platform define is auto detected for win32
+  set_target_properties( OIS PROPERTIES COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB" )
+elseif (OSX)
+  set_target_properties( OIS PROPERTIES COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB;OIS_APPLE_PLATFORM" )
+elseif (UNIX)
+  set_target_properties( OIS PROPERTIES COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB;OIS_LINUX_PLATFORM" )
+else ()
+  set_target_properties( OIS PROPERTIES COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB;OIS_SDL_PLATFORM" )
+endif ()
+
+
 GUCEF_config_plugin( OIS )
