@@ -1,10 +1,10 @@
 
 add_library( OIS ${ALL_FILES} )
-#target_link_libraries( OIS )
 
 if (WIN32)
   # platform define is auto detected for win32
   set_target_properties( OIS PROPERTIES COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB" )
+  target_link_libraries( OIS dinput8.lib )
 elseif (OSX)
   set_target_properties( OIS PROPERTIES COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB;OIS_APPLE_PLATFORM" )
 elseif (UNIX)
