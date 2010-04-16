@@ -103,11 +103,37 @@ CString
 RelativePath( const CString& relpath )
 {GUCEF_TRACE;        
         
-    CString moduleDir = ModuleDir();
-    CString resultStr = relpath.ReplaceSubstr( "$MODULEDIR$", moduleDir );
-
-    CString currentWorkingDir = CurrentWorkingDir();
-    resultStr = resultStr.ReplaceSubstr( "$CURWORKDIR$", moduleDir );
+    CString resultStr;
+   
+    Int32 idx = relpath.HasSubstr( "$MODULEDIR$", true );
+    if ( idx > -1 )
+    {
+        CString moduleDir = ModuleDir();
+        CString prefix = relpath.SubstrToIndex( idx, true );
+        CString postfix = relpath.CutChars( idx+11, true );
+        
+        resultStr = prefix; 
+        AppendToPath( resultStr, moduleDir );
+        AppendToPath( resultStr, postfix );
+    }
+    else
+    {
+        Int32 idx = relpath.HasSubstr( "$CURWORKDIR$", true );
+        if ( idx > -1 )
+        {
+            CString workingDir = CurrentWorkingDir();
+            CString prefix = relpath.SubstrToIndex( idx, true );
+            CString postfix = relpath.CutChars( idx+12, true );
+            
+            resultStr = prefix; 
+            AppendToPath( resultStr, workingDir );
+            AppendToPath( resultStr, postfix );
+        }
+        else
+        {
+            resultStr = relpath;
+        }
+    }
      
     resultStr = resultStr.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR );
     resultStr = resultStr.CompactRepeatingChar( DIRSEPCHAR ); 
@@ -120,7 +146,11 @@ RelativePath( const CString& relpath )
         UInt32 lengthDelta = prefix.Length();
         prefix = StripLastSubDir( prefix );
         lengthDelta = lengthDelta - prefix.Length();
-        resultStr = prefix + (resultStr.C_String()+upDirIdx+lengthDelta);
+        
+        CString newPath = prefix;
+        AppendToPath( newPath, (resultStr.C_String()+prefix.Length()+lengthDelta+3) ); 
+        resultStr = newPath;
+        
         upDirIdx = resultStr.HasSubstr( upDirSeg, true );
     }
 

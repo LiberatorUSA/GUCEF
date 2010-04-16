@@ -615,6 +615,22 @@ CString::SubstrToChar( char searchchar   ,
 /*-------------------------------------------------------------------------*/
 
 CString 
+CString::SubstrToIndex( UInt32 index     ,
+                        bool frontToBack ) const
+{GUCEF_TRACE;
+
+    UInt32 max = index+1 > m_length ? m_length-1 : index;
+    if ( frontToBack )
+    {          
+        return CString( m_string, max );
+    }
+    
+    return CString( m_string+m_length-max, max );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString 
 CString::SubstrToChar( char searchchar  ,
                        bool frontToBack ) const
 {GUCEF_TRACE;
