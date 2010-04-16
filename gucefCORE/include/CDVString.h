@@ -186,6 +186,9 @@ class GUCEFCORE_EXPORT_CPP CString
     CString SubstrToSubstr( const CString& searchstr ,
                             bool frontToBack = true  ) const;
 
+    CString SubstrToIndex( UInt32 index            ,
+                           bool frontToBack = true ) const;
+
     CString Trim( bool frontToBack ) const;
                             
     Int32 HasChar( char searchchar         ,
