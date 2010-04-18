@@ -37,7 +37,6 @@
 #include <stdlib.h>
 
 /* You need to have the DirectX SDK installed for the following dx headers */
-#include <d3d8.h>
 #include <dinput.h>
 
 #include "DLLMainInputDriverDI8.h"
@@ -429,13 +428,13 @@ ProcessMouseDI8( TDI8Data* data )
                                 case DIMOFS_X :
                                 {
                                         data->pMousePos->x += eventptr->dwData; 
-                                        data->callbacks.onMouseMove( data->callbacks.userData, data->pMousePos->x, data->pMousePos->y, eventptr->dwData, 0 );
+                                        data->callbacks.onMouseMove( data->callbacks.userData, i, data->pMousePos->x, data->pMousePos->y, eventptr->dwData, 0 );
                                         break;
                                 }
                                 case DIMOFS_Y :
                                 {
                                         data->pMousePos->y += eventptr->dwData; 
-                                        data->callbacks.onMouseMove( data->callbacks.userData, data->pMousePos->x, data->pMousePos->y, 0, eventptr->dwData );
+                                        data->callbacks.onMouseMove( data->callbacks.userData, i, data->pMousePos->x, data->pMousePos->y, 0, eventptr->dwData );
                                         break;
                                 }                                
                                 case DIMOFS_Z : /* mousewheel */
@@ -451,7 +450,7 @@ ProcessMouseDI8( TDI8Data* data )
                                                 --data->mouseWheelVar;
                                                 delta = -1;
                                         }
-                                        data->callbacks.onMouseVarChanged( data->callbacks.userData, 0, data->mouseWheelVar, delta );
+                                        data->callbacks.onMouseVarChanged( data->callbacks.userData, i, 0, data->mouseWheelVar, delta );
                                 }
                                 case DIMOFS_BUTTON0 :
                                 case DIMOFS_BUTTON1 :
@@ -464,11 +463,11 @@ ProcessMouseDI8( TDI8Data* data )
                                 {
                                         if ( BUTTONBOOL( eventptr->dwData ) )
                                         {
-                                                data->callbacks.onMouseButtonDown( data->callbacks.userData, BUTTONINDEX( (int) eventptr->dwOfs ) );
+                                                data->callbacks.onMouseButtonDown( data->callbacks.userData, i, BUTTONINDEX( (int) eventptr->dwOfs ) );
                                         }
                                         else
                                         {
-                                                data->callbacks.onMouseButtonUp( data->callbacks.userData, BUTTONINDEX( (int) eventptr->dwOfs ) );
+                                                data->callbacks.onMouseButtonUp( data->callbacks.userData, i, BUTTONINDEX( (int) eventptr->dwOfs ) );
                                         }
                                 }
                         }
@@ -589,7 +588,7 @@ ProcessKeyboardDI8( TDI8Data* data )
                                 } */
                                                             
                                
-                              data->callbacks.onKeyboardKeyDown( data->callbacks.userData, eventptr->dwOfs, data->keyModState );
+                              data->callbacks.onKeyboardKeyDown( data->callbacks.userData, eventptr->dwOfs, (KeyCode)data->keyModState );
                         }
                         else
                         {
@@ -597,7 +596,7 @@ ProcessKeyboardDI8( TDI8Data* data )
                               //  MapDIKeyToScancode( eventptr->dwOfs, &scanCode );                                 
                               //  data->callbacks.onKeyboardKeyUp( data->callbacks.userData, scanCode );
                               
-                              data->callbacks.onKeyboardKeyUp( data->callbacks.userData, eventptr->dwOfs, data->keyModState );
+                              data->callbacks.onKeyboardKeyUp( data->callbacks.userData, eventptr->dwOfs, (KeyCode)data->keyModState );
                         }
                 }
                 return S_OK;
@@ -632,12 +631,12 @@ ProcessKeyboardDI8( TDI8Data* data )
                                                 if ( KEYBOOL( keystatebuffer[ i ] ) )
                                                 {
                                                         data->keybuffer[ i ] = 1;
-                                                        data->callbacks.onKeyboardKeyDown( data->callbacks.userData, i, data->keyModState );        
+                                                        data->callbacks.onKeyboardKeyDown( data->callbacks.userData, i, (KeyCode)data->keyModState );        
                                                 }
                                                 else
                                                 {
                                                         data->keybuffer[ i ] = 0;
-                                                        data->callbacks.onKeyboardKeyUp( data->callbacks.userData, i, data->keyModState );
+                                                        data->callbacks.onKeyboardKeyUp( data->callbacks.userData, i, (KeyCode)data->keyModState );
                                                 }                                                        
                                         }
                                 }          
