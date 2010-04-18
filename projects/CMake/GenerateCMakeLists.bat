@@ -8,22 +8,22 @@ REM -----------------------------------------------------
 
 :FIND_GUCEF_RELEASE_CMAKELISTGENERATOR
 
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\CMakeListGenerator\bin\ReleasedBins\16April2010\CMakeListGenerator
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\CMakeListGenerator\bin\ReleasedBins\16April2010\
 SET GENERATOREXE=CMakeListGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
-ECHO Test path = %EXETEST%
+ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
   ECHO Using released version of CMakeListGenerator dated 16'th April 2010
   GOTO RUN_CMAKELISTGENERATOR
 )
 
-IF NOT EXIST %EXETEST% (
+IF NOT EXIST "%EXETEST%" (
   ECHO Error: Unable to locate GUCEF released CMakeListGenerator
   GOTO END
 )
     
-cd %GUCEF_THEBATCHDIR%
+cd "%GUCEF_THEBATCHDIR%"
 GOTO RUN_CMAKELISTGENERATOR
 
 REM -----------------------------------------------------
@@ -34,18 +34,18 @@ SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC9\bin\Debug
 SET GENERATOREXE=CMakeListGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
-ECHO Test path = %EXETEST%
+ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
   ECHO Warning: Using CMake debug development version of the CMakeListGenerator
   GOTO RUN_CMAKELISTGENERATOR
 )
 
-IF NOT EXIST %EXETEST% (
+IF NOT EXIST "%EXETEST%" (
   ECHO Cannot locate CMake debug development version of the CMakeListGenerator
   GOTO FIND_GUCEF_RELEASE_CMAKELISTGENERATOR
 )
 
-cd %GUCEF_THEBATCHDIR%
+cd "%GUCEF_THEBATCHDIR%"
 GOTO RUN_CMAKELISTGENERATOR
 
 REM -----------------------------------------------------
@@ -56,7 +56,7 @@ SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\Debug_MVC9
 SET GENERATOREXE=CMakeListGenerator_d.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
-ECHO Test path = %EXETEST%
+ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
   ECHO Warning: Using debug development version of the CMakeListGenerator
   GOTO RUN_CMAKELISTGENERATOR
@@ -67,7 +67,7 @@ IF NOT EXIST "%EXETEST%" (
   GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC9_CMAKELISTGENERATOR
 )
 
-cd %GUCEF_THEBATCHDIR%
+cd "%GUCEF_THEBATCHDIR%"
 GOTO RUN_CMAKELISTGENERATOR
 
 REM -----------------------------------------------------
@@ -85,7 +85,7 @@ IF NOT DEFINED GUCEF_HOME (
 )
 
 %GENERATOREXE% 'rootDir=%GUCEF_HOME%'
-cd %GUCEF_THEBATCHDIR%
+cd "%GUCEF_THEBATCHDIR%"
 GOTO END
 
 
