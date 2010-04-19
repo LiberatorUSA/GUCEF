@@ -33,12 +33,12 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
-#ifndef GUCEF_GUI_H
-#include "gucefGUI.h"
-#define GUCEF_GUI_H
-#endif /* GUCEF_GUI_H ? */
+#ifndef GUCEF_SMDRN_H
+#include "gucefSMDRN.h"
+#define GUCEF_SMDRN_H
+#endif /* GUCEF_SMDRN_H ? */
 
-#include "gucefGUI_CModule.h"
+#include "gucefSMDRN_CModule.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
