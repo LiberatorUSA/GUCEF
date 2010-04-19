@@ -21,12 +21,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "DLLMainVFSpluginDVP.h"    /* gucefVFS plugin API */
-
 #ifndef DVPACKSYS_H     
 #include "DVPACKSYS.h"  /* package handling code */
 #define DVPACKSYS_H
 #endif /* DVPACKSYS_H ? */
+
+#include "DLLMainVFSpluginDVP.h"    /* gucefVFS plugin API */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

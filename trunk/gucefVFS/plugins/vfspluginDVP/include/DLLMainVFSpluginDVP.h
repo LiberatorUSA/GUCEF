@@ -28,20 +28,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
-#ifndef IOACCESS_H
+#ifndef GUCEF_CORE_IOACCESS_H
 #include "ioaccess.h"           /* media independant recource I/O */
-#define IOACCESS_H
-#endif /* IOACCESS_H ? */
+#define GUCEF_CORE_IOACCESS_H
+#endif /* GUCEF_CORE_IOACCESS_H ? */
 
-#ifndef ESTRUCTS_H
+#ifndef GUCEF_CORE_ESTRUCTS_H
 #include "EStructs.h"           /* gucefCORE structures, needed for TVersion */
-#define ESTRUCTS_H
-#endif /* ESTRUCTS_H ? */
+#define GUCEF_CORE_ESTRUCTS_H
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef GUCEFVFS_MACROS_H
+#ifndef GUCEF_VFS_MACROS_H
 #include "gucefVFS_macros.h"    /* gucefVFS macros, used here for the export and callspec macros */
-#define GUCEFVFS_MACROS_H
-#endif /* GUCEFVFS_MACROS_H ? */ 
+#define GUCEF_VFS_MACROS_H
+#endif /* GUCEF_VFS_MACROS_H ? */ 
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
