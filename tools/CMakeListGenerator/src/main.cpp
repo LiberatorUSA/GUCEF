@@ -2024,7 +2024,8 @@ GenerateModuleIncludesForPlatform( const TProjectInfo& projectInfo   ,
     TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
     while ( n != platformHeaderFiles.end() )
     {
-        CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );        
+        CORE::CString includeDir = (*n).first;
+        includeDir = CORE::RelativePath( includeDir ).ReplaceChar( '\\', '/' );        
         allRelDependencyPaths += includeDir + " ";
         ++n;
     }
