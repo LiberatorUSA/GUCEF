@@ -113,34 +113,45 @@ CDStoreCodecPluginManager::IsPluginLoaded( const CString& path )
 
 void 
 CDStoreCodecPluginManager::LoadAll( void )
+{
+    LoadAll( GetPluginDir() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDStoreCodecPluginManager::LoadAll( const CString& pluginDir )
 {GUCEF_TRACE;
-        _datalock.Lock();        
-        
-        CORE::CString file;
-        CORE::CString filepath; 
-        CORE::CString path = GetPluginDir();
-        
-        struct SDI_Data* did = DI_First_Dir_Entry( path.C_String() );
-        if ( did )
-        {
-                do 
-                {                
-                        if ( DI_Is_It_A_File( did ) )
-                        {
-                                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Attempt to load " + CString( DI_Name( did ) ) + " as an DSTORE Codec plugin" );
-                                
-                                filepath = path; 
-                                file = DI_Name( did );
-                                AppendToPath( filepath, file );
-                                LoadCodecPlugin( filepath );
-                        }
+
+    _datalock.Lock();        
+    
+    CORE::CString file;
+    CORE::CString filepath;
+    
+    struct SDI_Data* did = DI_First_Dir_Entry( pluginDir.C_String() );
+    if ( 0 != did )
+    {
+        do 
+        {                
+            if ( DI_Is_It_A_File( did ) )
+            {       
+                file = DI_Name( did );
+                if ( 0 == file.HasSubstr( "dstoreplugin" ) && ExtractFileExtention( file ).Equals( "dll", false ) )
+                {                                
+                    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Attempt to load " + file + " as an DSTORE Codec plugin" );
+                    
+                    filepath = pluginDir;                                     
+                    AppendToPath( filepath, file );
+                    LoadCodecPlugin( filepath );
                 }
-                while ( DI_Next_Dir_Entry( did ) != 0 );
-                
-                DI_Cleanup( did );
+            }
         }
+        while ( DI_Next_Dir_Entry( did ) != 0 );
         
-        _datalock.Unlock();       
+        DI_Cleanup( did );
+    }
+    
+    _datalock.Unlock();       
 }
         
 /*-------------------------------------------------------------------------*/        

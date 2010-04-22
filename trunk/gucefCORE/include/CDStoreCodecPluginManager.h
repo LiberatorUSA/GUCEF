@@ -86,6 +86,8 @@ class GUCEFCORE_EXPORT_CPP CDStoreCodecPluginManager : public CPluginManager ,
     
     virtual void LoadAll( void );
     
+    virtual void LoadAll( const CString& pluginDir );
+    
     virtual void UnloadAll( void );
     
     /**
