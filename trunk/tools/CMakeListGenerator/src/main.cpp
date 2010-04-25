@@ -270,20 +270,11 @@ bool
 IsDirAProjectDir( CORE::CString dir )
 {GUCEF_TRACE;
 
-    // We detect module directories in 2 ways
-    // Either is has to have certain directories or
-    // it has to have a CMakeListsSuffix.txt file
-    
-    CORE::CString includeDir = dir;
-    CORE::AppendToPath( includeDir, "include" );
-    CORE::CString srcDir = dir;
-    CORE::AppendToPath( srcDir, "src" );
+    // The dir is a module dir if it has a suffix file in it    
     CORE::CString suffixFilePath = dir;
     CORE::AppendToPath( suffixFilePath, "CMakeListsSuffix.txt" );
     
-    return ( CORE::IsPathValid( includeDir ) &&
-             CORE::IsPathValid( srcDir )      ) ||
-           CORE::FileExists( suffixFilePath );  
+    return CORE::FileExists( suffixFilePath );  
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1130,18 +1121,18 @@ GetAllPlatformFilesInPlatformDirs( TModuleInfo& moduleInfo           ,
         CORE::CString fullIncludeDir = moduleInfo.rootDir;
         CORE::AppendToPath( fullIncludeDir, includeDir );
         
-        // Try and get a list of files from the platform dir
+        // Try and get a list of include files from the platform dir
         TStringVector platformFiles;
         PopulateFileListFromDir( fullIncludeDir, GetHeaderFileExtensions(), platformFiles );
         
         if ( !platformFiles.empty() )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir " + includeDir );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir which has header files" + includeDir );
             
             // Add the platform files to the list of platform files from all include dirs
             TStringVectorMap& allFilesForThisPlatform = moduleInfo.platformHeaderFiles[ platformName ];
-            includeDir = includeDir.ReplaceChar( '\\', '/' );
-            TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ includeDir ];
+            CORE::CString includeDirIndex = includeDir.ReplaceChar( '\\', '/' );
+            TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ includeDirIndex ];
             
             TStringVector::iterator n = platformFiles.begin();
             while ( n != platformFiles.end() )
@@ -1150,6 +1141,28 @@ GetAllPlatformFilesInPlatformDirs( TModuleInfo& moduleInfo           ,
                 ++n;
             }
         }
+        
+        // Try and get a list of source files from the platform dir
+        platformFiles.clear();
+        PopulateFileListFromDir( fullIncludeDir, GetSourceFileExtensions(), platformFiles );
+        
+        if ( !platformFiles.empty() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir which has source files" + includeDir );
+            
+            // Add the platform files to the list of platform files from all include dirs
+            TStringVectorMap& allFilesForThisPlatform = moduleInfo.platformSourceFiles[ platformName ];
+            CORE::CString includeDirIndex = includeDir.ReplaceChar( '\\', '/' );
+            TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ includeDirIndex ];
+            
+            TStringVector::iterator n = platformFiles.begin();
+            while ( n != platformFiles.end() )
+            {
+                allFilesForThisPlatformDir.push_back( (*n) );
+                ++n;
+            }
+        }
+        
         ++i;
     } 
     
@@ -1163,18 +1176,39 @@ GetAllPlatformFilesInPlatformDirs( TModuleInfo& moduleInfo           ,
         CORE::CString fullSourceDir = moduleInfo.rootDir;
         CORE::AppendToPath( fullSourceDir, sourceDir );
         
-        // Try and get a list of files from the platform dir
+        // Try and get a list of header files from the platform dir
         TStringVector platformFiles;
+        PopulateFileListFromDir( fullSourceDir, GetHeaderFileExtensions(), platformFiles );
+
+        if ( !platformFiles.empty() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir which has header files " + sourceDir );
+            
+            // Add the platform files to the list of platform files from all source dirs
+            TStringVectorMap& allFilesForThisPlatform = moduleInfo.platformHeaderFiles[ platformName ];
+            CORE::CString sourceDirIndex = sourceDir.ReplaceChar( '\\', '/' );
+            TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ sourceDirIndex ];
+            
+            TStringVector::iterator n = platformFiles.begin();
+            while ( n != platformFiles.end() )
+            {
+                allFilesForThisPlatformDir.push_back( (*n) );
+                ++n;
+            }
+        }
+        
+        // Try and get a list of files from the platform dir
+        platformFiles.clear();
         PopulateFileListFromDir( fullSourceDir, GetSourceFileExtensions(), platformFiles );
 
         if ( !platformFiles.empty() )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir " + sourceDir );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir which has source files " + sourceDir );
             
             // Add the platform files to the list of platform files from all source dirs
             TStringVectorMap& allFilesForThisPlatform = moduleInfo.platformSourceFiles[ platformName ];
-            sourceDir = sourceDir.ReplaceChar( '\\', '/' );
-            TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ sourceDir ];
+            CORE::CString sourceDirIndex = sourceDir.ReplaceChar( '\\', '/' );
+            TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ sourceDirIndex ];
             
             TStringVector::iterator n = platformFiles.begin();
             while ( n != platformFiles.end() )
@@ -2734,7 +2768,7 @@ main( int argc , char* argv[] )
     {
         rootDirs.push_back( CORE::RelativePath( "$CURWORKDIR$" ) );
     }
-    
+
     // Gather all processing instructions
     TProjectInfo projectInfo;
     TStringVector::iterator i = rootDirs.begin();

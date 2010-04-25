@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_DRN_ETYPES_H
-#define GUCEF_DRN_ETYPES_H
+#ifndef GUCEF_SMDRN_ETYPES_H
+#define GUCEF_SMDRN_ETYPES_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,20 +41,20 @@
  *      Maximum and minimal values for the simple types which we are about to
  *      define.
  */
-#define GUCEFDRN_INT8MAX     GUCEFCORE_INT8MAX
-#define GUCEFDRN_INT8MIN     GUCEFCORE_INT8MIN
-#define GUCEFDRN_UINT8MAX    GUCEFCORE_UINT8MAX
-#define GUCEFDRN_UINT8MIN    GUCEFCORE_UINT8MIN
-#define GUCEFDRN_INT16MAX    GUCEFCORE_INT16MAX
-#define GUCEFDRN_INT16MIN    GUCEFCORE_INT16MIN
-#define GUCEFDRN_UINT16MAX   GUCEFCORE_UINT16MAX
-#define GUCEFDRN_UINT16MIN   GUCEFCORE_UINT16MIN
-#define GUCEFDRN_INT32MAX    GUCEFCORE_INT32MAX
-#define GUCEFDRN_INT32MIN    GUCEFCORE_INT32MIN
-#define GUCEFDRN_UINT32MAX   GUCEFCORE_UINT32MAX
-#define GUCEFDRN_UINT32MIN   GUCEFCORE_UINT32MIN
-#define GUCEFDRN_FLOAT32MAX  GUCEFCORE_FLOAT32MAX
-#define GUCEFDRN_FLOAT32MIN  GUCEFCORE_FLOAT32MIN
+#define GUCEFSMDRN_INT8MAX     GUCEFCORE_INT8MAX
+#define GUCEFSMDRN_INT8MIN     GUCEFCORE_INT8MIN
+#define GUCEFSMDRN_UINT8MAX    GUCEFCORE_UINT8MAX
+#define GUCEFSMDRN_UINT8MIN    GUCEFCORE_UINT8MIN
+#define GUCEFSMDRN_INT16MAX    GUCEFCORE_INT16MAX
+#define GUCEFSMDRN_INT16MIN    GUCEFCORE_INT16MIN
+#define GUCEFSMDRN_UINT16MAX   GUCEFCORE_UINT16MAX
+#define GUCEFSMDRN_UINT16MIN   GUCEFCORE_UINT16MIN
+#define GUCEFSMDRN_INT32MAX    GUCEFCORE_INT32MAX
+#define GUCEFSMDRN_INT32MIN    GUCEFCORE_INT32MIN
+#define GUCEFSMDRN_UINT32MAX   GUCEFCORE_UINT32MAX
+#define GUCEFSMDRN_UINT32MIN   GUCEFCORE_UINT32MIN
+#define GUCEFSMDRN_FLOAT32MAX  GUCEFCORE_FLOAT32MAX
+#define GUCEFSMDRN_FLOAT32MIN  GUCEFCORE_FLOAT32MIN
 
 /*--------------------------------------------------------------------------*/
 
@@ -69,7 +69,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace DRN {
+namespace SMDRN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -100,11 +100,11 @@ typedef CORE::TBuildinDataType TBuildinDataType;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace DRN */
+}; /* namespace SMDRN */
 }; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/
 
 #endif /* __cplusplus ? */
 
-#endif /* GUCEF_DRN_ETYPES_H ? */
+#endif /* GUCEF_SMDRN_ETYPES_H ? */

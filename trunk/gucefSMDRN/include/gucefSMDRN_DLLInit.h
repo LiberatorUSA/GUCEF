@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_DRN_MACROS_H
-#include "gucefDRN_macros.h"         /* often used gucefDRN macros */
-#define GUCEF_DRN_MACROS_H
-#endif /* GUCEF_DRN_MACROS_H ? */
+#ifndef GUCEF_SMDRN_MACROS_H
+#include "gucefSMDRN_macros.h"         /* often used gucefDRN macros */
+#define GUCEF_SMDRN_MACROS_H
+#endif /* GUCEF_SMDRN_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
