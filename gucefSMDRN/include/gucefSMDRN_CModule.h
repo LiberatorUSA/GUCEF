@@ -17,28 +17,19 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
+#ifndef GUCEF_SMDRN_CMODULE_H
+#define GUCEF_SMDRN_CMODULE_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-#ifndef GUCEF_SMDRN_H
-#include "gucefSMDRN.h"
-#define GUCEF_SMDRN_H
-#endif /* GUCEF_SMDRN_H ? */
-
-#include "gucefSMDRN_CModule.h"
+#ifndef GUCEF_SMDRN_MACROS_H
+#include "gucefSMDRN_macros.h"         /* often used gucefSMDRN macros */
+#define GUCEF_SMDRN_MACROS_H
+#endif /* GUCEF_SMDRN_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,29 +42,24 @@ namespace SMDRN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool
-CModule::Load( void )
-{GUCEF_TRACE;
-
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefSMDRN Module loaded" );
-        
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
+class CModule
+{
+    public:
     
-bool
-CModule::Unload( void )
-{GUCEF_TRACE;
+    static bool Load( void );
     
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefSMDRN Module unloading" );
+    static bool Unload( void );
     
-    return true;
-}
+    private:
+    CModule( void );
+    CModule( const CModule& src );
+    ~CModule();
+    CModule& operator=( const CModule& src );
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -85,3 +71,16 @@ CModule::Unload( void )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+          
+#endif /* GUCEF_SMDRN_CMODULE_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 12-02-2005 :
+        - Initial implementation
+
+-----------------------------------------------------------------------------*/
