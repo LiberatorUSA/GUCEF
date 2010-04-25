@@ -1,0 +1,6 @@
+
+add_library( imgpluginDEVIL ${ALL_FILES} )
+#add_dependencies( imgpluginDEVIL DevIL )
+#target_link_libraries( imgpluginDEVIL DevIL )
+#set_target_properties( imgpluginDEVIL PROPERTIES COMPILE_DEFINITIONS "GUCEF_CODECPLUGIN_BUILD_MODULE" )
+GUCEF_config_plugin( imgpluginDEVIL )
