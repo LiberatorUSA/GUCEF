@@ -48,14 +48,36 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CEvent CMsWin32Window::WindowCloseEvent = "GUCEF::CORE::CMsWin32Window::WindowCloseEvent";
+const CEvent CMsWin32Window::WindowDestroyEvent = "GUCEF::CORE::CMsWin32Window::WindowDestroyEvent";
+const CEvent CMsWin32Window::WindowActivationEvent = "GUCEF::CORE::CMsWin32Window::WindowActivationEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILTIIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    WindowCloseEvent.Initialize();    
+    WindowDestroyEvent.Initialize();
+    WindowActivationEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
 
 CMsWin32Window::CMsWin32Window( void )
     : m_hwnd( 0 )
 {GUCEF_TRACE;
 
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -83,9 +105,15 @@ CMsWin32Window::WindowProc( const HWND hWnd     ,
     {
         case WM_CLOSE:
         {
+            NotifyObservers( WindowCloseEvent );
+            
             DestroyWindow( m_hwnd );
             m_hwnd = 0;
             break;
+        }
+        case WM_DESTROY:
+        {
+            NotifyObservers( WindowDestroyEvent );
         }
         default:
         {
@@ -150,9 +178,52 @@ CMsWin32Window::WndProc( HWND hwnd     ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+CMsWin32Window::Close( void )
+{GUCEF_TRACE;
+    
+    if ( 0 != m_hwnd )
+    {
+        CloseWindow( m_hwnd );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::SetText( const CString& text )
+{
+    SetWindowText( GetHwnd(), text.C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CString
+CMsWin32Window::GetText( void ) const
+{
+    int len = GetWindowTextLength( GetHwnd() );
+    if( len > 0 )
+    {
+        char* buf = (char*) GlobalAlloc( GPTR, len + 1 );
+        GetWindowText( GetHwnd(), buf, len + 1);
+
+        CString returnValue( buf, len );
+
+        GlobalFree( (HANDLE)buf );
+        
+        return returnValue;
+    }
+    return CString();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CMsWin32Window::WindowCreate( const CString& windowClassName ,
-                              const CString& windowTitle     )
+                              const CString& windowTitle     ,
+                              const UInt32 width             ,
+                              const UInt32 height            ,
+                              const HWND hWndParent          )
 {GUCEF_TRACE;
 
     if ( 0 != m_hwnd )
@@ -165,8 +236,8 @@ CMsWin32Window::WindowCreate( const CString& windowClassName ,
                              windowClassName.C_String(),
                              windowTitle.C_String(),
                              WS_OVERLAPPEDWINDOW,
-                             CW_USEDEFAULT, CW_USEDEFAULT, 240, 120,
-                             NULL, NULL, GetCurrentModuleHandle(), (LPVOID)this );
+                             CW_USEDEFAULT, CW_USEDEFAULT, (int)width, (int)height,
+                             hWndParent, NULL, GetCurrentModuleHandle(), (LPVOID)this );
     return m_hwnd != 0;
 }
 

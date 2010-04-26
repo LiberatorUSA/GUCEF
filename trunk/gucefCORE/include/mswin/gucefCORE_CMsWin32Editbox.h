@@ -68,13 +68,16 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32Editbox : public CMsWin32Window
        
     virtual const CString& GetClassTypeName( void ) const;
     
-    void SetText( const CString& text );
+    virtual void SetText( const CString& text );
     
-    CString GetText( void ) const;
+    virtual CString GetText( void ) const;
+
+    virtual bool EditboxCreate( const CString& windowTitle       ,
+                                const bool createAsMultilineEdit ,
+                                const UInt32 width               ,
+                                const UInt32 height              );
 
     protected:
-
-    virtual bool EditboxCreate( const CString& windowTitle );
     
     virtual LRESULT WindowProc( const HWND hWnd     ,
                                 const UINT nMsg     ,

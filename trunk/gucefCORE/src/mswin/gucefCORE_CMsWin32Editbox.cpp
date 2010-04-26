@@ -70,7 +70,7 @@ CMsWin32Editbox::~CMsWin32Editbox()
 void
 CMsWin32Editbox::SetText( const CString& text )
 {
-    SetDlgItemText( GetHwnd(), IDC_TEXT, text.C_String() );
+    SetWindowText( GetHwnd(), text.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -78,14 +78,11 @@ CMsWin32Editbox::SetText( const CString& text )
 CString
 CMsWin32Editbox::GetText( void ) const
 {
-    int len = GetWindowTextLength( GetDlgItem( GetHwnd(), IDC_TEXT ) );
+    int len = GetWindowTextLength( GetHwnd() );
     if( len > 0 )
     {
-        int i;
-        char* buf;
-
-        buf = (char*) GlobalAlloc( GPTR, len + 1 );
-        GetDlgItemText( GetHwnd(), IDC_TEXT, buf, len + 1);
+        char* buf = (char*) GlobalAlloc( GPTR, len + 1 );
+        GetWindowText( GetHwnd(), buf, len + 1);
 
         CString returnValue( buf, len );
 
@@ -110,7 +107,7 @@ CMsWin32Editbox::WindowProc( const HWND hWnd     ,
         case WM_COMMAND:
         {
             // Check if this is a text changed notification
-            if ( HIWORD( wParam ) == EN_CHANGE && LOWORD( wParam ) == nEditID )
+            if ( HIWORD( wParam ) == EN_CHANGE )
             {
                 NotifyObservers( TextChangedEvent );
                 break;
@@ -130,7 +127,10 @@ CMsWin32Editbox::WindowProc( const HWND hWnd     ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CMsWin32Editbox::EditboxCreate( const CString& windowTitle )
+CMsWin32Editbox::EditboxCreate( const CString& windowTitle       ,
+                                const bool createAsMultilineEdit ,
+                                const UInt32 width               ,
+                                const UInt32 height              )
 {GUCEF_TRACE;
 
     if ( 0 != GetHwnd() )
@@ -138,11 +138,21 @@ CMsWin32Editbox::EditboxCreate( const CString& windowTitle )
         DestroyWindow( GetHwnd() );
         SetHwnd( 0 );
     }
-    
-    SetHwnd( CreateWindow( "edit", 
-                           windowTitle.C_String(),
-                           WS_VISIBLE|WS_CHILD|WS_BORDER|ES_AUTOHSCROLL|ES_AUTOVSCROLL,
-                           0, 0, 200, 25, hwnd, (HMENU)nEditID, GetCurrentModuleHandle(), (LPVOID)this) );
+
+    if ( createAsMultilineEdit )
+    {
+        SetHwnd( CreateWindow( "edit", 
+                               windowTitle.C_String(),
+                               WS_VISIBLE|WS_CHILD|WS_BORDER|WS_VSCROLL|WS_HSCROLL|ES_MULTILINE|ES_WANTRETURN|ES_AUTOHSCROLL|ES_AUTOVSCROLL,
+                               0, 0, (int)width, (int)height, GetHwnd(), (HMENU)nEditID, GetCurrentModuleHandle(), (LPVOID)this ) );
+    }
+    else
+    {
+        SetHwnd( CreateWindow( "edit", 
+                               windowTitle.C_String(),
+                               WS_VISIBLE|WS_CHILD|WS_BORDER|ES_AUTOHSCROLL|ES_AUTOVSCROLL,
+                               0, 0, (int)width, (int)height, GetHwnd(), (HMENU)nEditID, GetCurrentModuleHandle(), (LPVOID)this ) );
+    }
     return GetHwnd() != 0;
 }
 
