@@ -24,17 +24,14 @@
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
+
+#include <set>
  
 #ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"           /* gucefMT mutex class */
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
-
-#ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"            /* dynamic array implementation */
-#define GUCEF_CORE_CDYNAMICARRAY_H
-#endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
 
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"                /* framework string implementation */
@@ -106,17 +103,22 @@ class GUCEFCORE_EXPORT_CPP CConfigStore
         static void Deinstance( void );
 
         private:
+        
         CConfigStore( void );
         CConfigStore( const CConfigStore& src );
         CConfigStore& operator=( const CConfigStore& src );
         ~CConfigStore();
+        
+        private:
+        
+        typedef std::set< CIConfigurable* > TConfigurableSet;
         
         static MT::CMutex _datalock;
         static CConfigStore* _instance;
         
         CString _codectype;
         CString _configfile;
-        CDynamicArray _configobjs;
+        TConfigurableSet _configobjs;
 };
 
 /*-------------------------------------------------------------------------//

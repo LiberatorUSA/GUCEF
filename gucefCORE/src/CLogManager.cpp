@@ -138,6 +138,8 @@ void
 CLogManager::FlushBootstrapLogEntriesToLogs( void )
 {GUCEF_TRACE;
 
+    Log( LOG_SYSTEM, LOGLEVEL_NORMAL, "LogManager: Flushing all bootstrap log entries to the currently registered loggers" );
+    
     g_dataLock.Lock();
     
     TBootstrapLogVector::iterator i = m_bootstrapLog.begin();
@@ -151,6 +153,8 @@ CLogManager::FlushBootstrapLogEntriesToLogs( void )
         ++i;
     }
     m_bootstrapLog.clear();
+    
+    Log( LOG_SYSTEM, LOGLEVEL_NORMAL, "LogManager: Finished flushing all bootstrap log entries to the currently registered loggers" );
     
     g_dataLock.Unlock();    
 }

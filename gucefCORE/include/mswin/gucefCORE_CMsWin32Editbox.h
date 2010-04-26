@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CWINDOWMSGHOOK_H
-#define GUCEF_CORE_CWINDOWMSGHOOK_H
+#ifndef GUCEF_CORE_CMSWIN32EDITBOX_H
+#define GUCEF_CORE_CMSWIN32EDITBOX_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,12 +26,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefCORE_macros.h"  /* module config macros */
+#ifndef GUCEF_CORE_CMSWIN32WINDOW_H
+#include "gucefCORE_CMsWin32Window.h"
+#define GUCEF_CORE_CMSWIN32WINDOW_H
+#endif /* GUCEF_CORE_CMSWIN32WINDOW_H ? */
 
 #ifdef GUCEF_MSWIN_BUILD
-
-#include <map>
-#include "gucefMT_CMutex.h"    /* needed for threadsafety */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -49,70 +49,46 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Class that should be used when performing instance subclassing of 
- *  windows. Using an uniform aproach minimizes the risks.
+ *  Class with basic utilities for creating a Win32 editbox
  */
-class GUCEFCORE_EXPORT_CPP CWindowMsgHook
+class GUCEF_CORE_EXPORT_CPP CMsWin32Editbox : public CMsWin32Window
 {
     public:
     
-    CWindowMsgHook();
+    static const CEvent EnterPressedEvent;
+    static const CEvent TextChangedEvent;
+    
+    static void RegisterEvents( void );
+    
+    public:
+    
+    CMsWin32Editbox();
 
-    virtual ~CWindowMsgHook();
-
-    /**
-     *  Subscribes the hook object to messages sent to the window
-     *  with the given handle
-     *
-     *  @param hWnd handle to the window you wish to instance subclass
-     *  @param userData optional pointer that will be passed when WindowProc is called
-     */
-    void Hook( const HWND hWnd       ,
-               void* userData = NULL );
-
-    /**
-     *  Unsubscribes the hook object from messages sent to the window
-     *  with the given handle
-     */
-    void Unhook( const HWND hWnd );
+    virtual ~CMsWin32Editbox();
+       
+    virtual const CString& GetClassTypeName( void ) const;
+    
+    void SetText( const CString& text );
+    
+    CString GetText( void ) const;
 
     protected:
+
+    virtual bool EditboxCreate( const CString& windowTitle );
     
-    //This is the function you need to override in your derived
-    //version of CWindowMsgHook so that you can handle the window messages
     virtual LRESULT WindowProc( const HWND hWnd     ,
                                 const UINT nMsg     ,
                                 const WPARAM wParam ,
-                                const LPARAM lParam ,
-                                void* userData      ,
-                                bool& consumeMsg    );
+                                const LPARAM lParam );
 
     private:
 
-    //The callback function through which all window messages
-    //will be handled when they are hooked by CHookWnd 
-    static LRESULT CALLBACK HookProc( HWND hWnd     ,
-                                      UINT nMsg     ,
-                                      WPARAM wParam ,
-                                      LPARAM lParam );
-
+    CMsWin32Editbox( const CMsWin32Editbox& src );       /**< cannot be copied */
+    CMsWin32Editbox& operator=( const CMsWin32Editbox ); /**< cannot be copied */
+    
     private:
-    typedef std::map< CWindowMsgHook*, void* > TWindowMsgHookList;
-    struct SWindowData
-    {
-        TWindowMsgHookList hookList;
-        WNDPROC orgWinProc;
-    };
-    typedef struct SWindowData TWindowData;
-    typedef std::map< HWND, TWindowData > TMappedWindowHookList;
-
-    static MT::CMutex s_globalDataLock;
-    static TMappedWindowHookList s_list;
-
-    private:
-
-    CWindowMsgHook( const CWindowMsgHook& src );       /**< cannot be copied */
-    CWindowMsgHook& operator=( const CWindowMsgHook ); /**< cannot be copied */
+    
+    HWND m_hwnd;
 };
 
 /*-------------------------------------------------------------------------//
@@ -128,7 +104,7 @@ class GUCEFCORE_EXPORT_CPP CWindowMsgHook
 
 #endif /* GUCEF_MSWIN_BUILD ? */
 
-#endif /* GUCEF_CORE_CWINDOWMSGHOOK_H ? */
+#endif /* GUCEF_CORE_CMSWIN32WINDOW_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

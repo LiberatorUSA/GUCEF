@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CWINDOWMSGHOOK_H
-#define GUCEF_CORE_CWINDOWMSGHOOK_H
+#ifndef GUCEF_CORE_MSWINUTILS_H
+#define GUCEF_CORE_MSWINUTILS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,12 +26,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"  /* module config macros */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifdef GUCEF_MSWIN_BUILD
-
-#include <map>
-#include "gucefMT_CMutex.h"    /* needed for threadsafety */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,76 +44,17 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILTIIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Class that should be used when performing instance subclassing of 
- *  windows. Using an uniform aproach minimizes the risks.
+/** 
+ *  Returns the handle of the current module the code is compiled in.
+ *  Nowadays in Win32 this means the same as getting the HINSTANCE for the
+ *  application. They are only different in 16-bit windows.
  */
-class GUCEFCORE_EXPORT_CPP CWindowMsgHook
-{
-    public:
-    
-    CWindowMsgHook();
-
-    virtual ~CWindowMsgHook();
-
-    /**
-     *  Subscribes the hook object to messages sent to the window
-     *  with the given handle
-     *
-     *  @param hWnd handle to the window you wish to instance subclass
-     *  @param userData optional pointer that will be passed when WindowProc is called
-     */
-    void Hook( const HWND hWnd       ,
-               void* userData = NULL );
-
-    /**
-     *  Unsubscribes the hook object from messages sent to the window
-     *  with the given handle
-     */
-    void Unhook( const HWND hWnd );
-
-    protected:
-    
-    //This is the function you need to override in your derived
-    //version of CWindowMsgHook so that you can handle the window messages
-    virtual LRESULT WindowProc( const HWND hWnd     ,
-                                const UINT nMsg     ,
-                                const WPARAM wParam ,
-                                const LPARAM lParam ,
-                                void* userData      ,
-                                bool& consumeMsg    );
-
-    private:
-
-    //The callback function through which all window messages
-    //will be handled when they are hooked by CHookWnd 
-    static LRESULT CALLBACK HookProc( HWND hWnd     ,
-                                      UINT nMsg     ,
-                                      WPARAM wParam ,
-                                      LPARAM lParam );
-
-    private:
-    typedef std::map< CWindowMsgHook*, void* > TWindowMsgHookList;
-    struct SWindowData
-    {
-        TWindowMsgHookList hookList;
-        WNDPROC orgWinProc;
-    };
-    typedef struct SWindowData TWindowData;
-    typedef std::map< HWND, TWindowData > TMappedWindowHookList;
-
-    static MT::CMutex s_globalDataLock;
-    static TMappedWindowHookList s_list;
-
-    private:
-
-    CWindowMsgHook( const CWindowMsgHook& src );       /**< cannot be copied */
-    CWindowMsgHook& operator=( const CWindowMsgHook ); /**< cannot be copied */
-};
+HMODULE
+GetCurrentModuleHandle( void );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -128,7 +69,7 @@ class GUCEFCORE_EXPORT_CPP CWindowMsgHook
 
 #endif /* GUCEF_MSWIN_BUILD ? */
 
-#endif /* GUCEF_CORE_CWINDOWMSGHOOK_H ? */
+#endif /* GUCEF_CORE_MSWINUTILS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

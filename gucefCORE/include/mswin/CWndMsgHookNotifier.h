@@ -101,6 +101,8 @@ class GUCEFCORE_EXPORT_CPP CWndMsgHookNotifier : public CNotifier      ,
     CWndMsgHookNotifier();
 
     virtual ~CWndMsgHookNotifier();
+    
+    virtual const CString& GetClassTypeName( void ) const;
 
     protected:
     
