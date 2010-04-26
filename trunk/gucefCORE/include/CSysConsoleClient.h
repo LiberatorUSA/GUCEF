@@ -64,52 +64,52 @@ class CISysConsoleCmdHandler;
  */
 class GUCEFCORE_EXPORT_CPP CSysConsoleClient
 {
-        protected:
-        
-        typedef std::vector< CString > TStringVector;
-        
-        CSysConsoleClient( void );
-        
-        CSysConsoleClient( const CSysConsoleClient& src );
-                      
-        virtual ~CSysConsoleClient();
-        
-        CSysConsoleClient& operator=( const CSysConsoleClient& src );
-        
-        bool RegisterCmd( const CString& path                ,
-                          const CString& command             ,
-                          const TStringVector& arglist       ,
-                          CISysConsoleCmdHandler* cmdhandler );                        
+    protected:
+    
+    typedef std::vector< CString > TStringVector;
+    
+    CSysConsoleClient( void );
+    
+    CSysConsoleClient( const CSysConsoleClient& src );
+                  
+    virtual ~CSysConsoleClient();
+    
+    CSysConsoleClient& operator=( const CSysConsoleClient& src );
+    
+    bool RegisterCmd( const CString& path                ,
+                      const CString& command             ,
+                      const TStringVector& arglist       ,
+                      CISysConsoleCmdHandler* cmdhandler );                        
 
-        void UnregisterCmd( const CString& path    ,
-                            const CString& command );
-        
-        void LeaveDir( void );
-        
-        bool EnterDir( const CString& dirname );
-        
-        bool JumpTo( const CString& path );
-        
-        const CString& GetPath( void ) const;
-        
-        bool Execute( const CString& funcname      ,
-                      const TStringVector& arglist ,
-                      TStringVector& resultdata    );
-        
-        TStringVector GetDirList( void ) const;
-        
-        TStringVector GetCmdList( void ) const;
-        
-        virtual void OnReturnData( const TStringVector& data );
-        
-        private:
-        friend class CSysConsole;
-                
-        void* channel;
-        CString _path;
-        
-        private:
-        CSysConsole* _system;         
+    void UnregisterCmd( const CString& path    ,
+                        const CString& command );
+    
+    void LeaveDir( void );
+    
+    bool EnterDir( const CString& dirname );
+    
+    bool JumpTo( const CString& path );
+    
+    const CString& GetPath( void ) const;
+    
+    bool Execute( const CString& funcname      ,
+                  const TStringVector& arglist ,
+                  TStringVector& resultdata    );
+    
+    TStringVector GetDirList( void ) const;
+    
+    TStringVector GetCmdList( void ) const;
+    
+    virtual void OnReturnData( const TStringVector& data );
+    
+    private:
+    friend class CSysConsole;
+            
+    void* channel;
+    CString _path;
+    
+    private:
+    CSysConsole* _system;         
                 
 };
 

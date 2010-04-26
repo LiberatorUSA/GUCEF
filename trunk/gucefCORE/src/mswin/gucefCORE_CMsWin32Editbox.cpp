@@ -23,19 +23,19 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"  /* module config macros */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#include "gucefCORE_CMsWin32Editbox.h"
 
 #ifdef GUCEF_MSWIN_BUILD
+
+#ifndef GUCEF_CORE_MSWINUTILS_H
+#include "gucefCORE_mswinutils.h"
+#define GUCEF_CORE_MSWINUTILS_H
+#endif /* GUCEF_CORE_MSWINUTILS_H ? */
 
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
-
-#include "CWndMsgHookNotifier.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,100 +48,112 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
+//      UTILTIIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CEvent CWndMsgHookNotifier::WindowActivationEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowActivationEvent";
-const CEvent CWndMsgHookNotifier::WindowSizeEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowSizeEvent";
-const CEvent CWndMsgHookNotifier::WindowDestroyEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowDestroyEvent";
+CMsWin32Editbox::CMsWin32Editbox( void )
+    : CMsWin32Window()
+{GUCEF_TRACE;
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      UTILITIES                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
+}
+
+/*-------------------------------------------------------------------------*/
+
+CMsWin32Editbox::~CMsWin32Editbox()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
 
 void
-CWndMsgHookNotifier::RegisterEvents( void )
-{GUCEF_TRACE;
-
-    WindowActivationEvent.Initialize();
-    WindowSizeEvent.Initialize();
-    WindowDestroyEvent.Initialize();
+CMsWin32Editbox::SetText( const CString& text )
+{
+    SetDlgItemText( GetHwnd(), IDC_TEXT, text.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
+    
+CString
+CMsWin32Editbox::GetText( void ) const
+{
+    int len = GetWindowTextLength( GetDlgItem( GetHwnd(), IDC_TEXT ) );
+    if( len > 0 )
+    {
+        int i;
+        char* buf;
 
-CWndMsgHookNotifier::CWndMsgHookNotifier( void )
-    : CNotifier()      ,
-      CWindowMsgHook()
-{GUCEF_TRACE;
+        buf = (char*) GlobalAlloc( GPTR, len + 1 );
+        GetDlgItemText( GetHwnd(), IDC_TEXT, buf, len + 1);
 
-    RegisterEvents();
-}
+        CString returnValue( buf, len );
 
-/*-------------------------------------------------------------------------*/
-
-CWndMsgHookNotifier::~CWndMsgHookNotifier()
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-const CString&
-CWndMsgHookNotifier::GetClassTypeName( void ) const
-{GUCEF_TRACE;
-
-    static CString classTypeName = "GUCEF::CORE::CWndMsgHookNotifier";
-    return classTypeName;
+        GlobalFree( (HANDLE)buf );
+        
+        return returnValue;
+    }
+    return CString();
 }
 
 /*-------------------------------------------------------------------------*/
 
 LRESULT
-CWndMsgHookNotifier::WindowProc( const HWND hWnd     ,
-                                 const UINT nMsg     ,
-                                 const WPARAM wParam ,
-                                 const LPARAM lParam ,
-                                 void* userData      ,
-                                 bool& consumeMsg    )
+CMsWin32Editbox::WindowProc( const HWND hWnd     ,
+                             const UINT nMsg     ,
+                             const WPARAM wParam ,
+                             const LPARAM lParam )
 {GUCEF_TRACE;
 
-    switch ( nMsg )
+    switch( nMsg )
     {
-        case WM_ACTIVATE :
+        case WM_COMMAND:
         {
-            struct SWindowActivationEventData data;
-            data.windowActiveState = wParam != WA_INACTIVE;
-            data.userData = userData;
-            TWindowActivationEventData eData( data );
-            NotifyObservers( WindowActivationEvent, &eData );
-            return 0;
+            // Check if this is a text changed notification
+            if ( HIWORD( wParam ) == EN_CHANGE && LOWORD( wParam ) == nEditID )
+            {
+                NotifyObservers( TextChangedEvent );
+                break;
+            }
         }
-        case WM_SIZE :
+        default:
         {
-            struct SWindowSizeEventData data;
-            data.windowVisible = wParam != SIZE_MINIMIZED;
-            data.windowWidth = LOWORD( lParam );
-            data.windowHeight = HIWORD( lParam );
-            data.userData = userData;
-            TWindowSizeEventData eData( data );
-            NotifyObservers( WindowSizeEvent, &eData );
-            return 0;
-        }
-        case WM_DESTROY :
-        {
-            TWindowDestroyEventData eData( userData );
-            NotifyObservers( WindowDestroyEvent, &eData );
-            return 0;
-        }
-        default : 
-        {
-            return 0;
+            return CMsWin32Window::WindowProc( hWnd   ,
+                                               nMsg   ,
+                                               wParam ,
+                                               lParam );
         }
     }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsWin32Editbox::EditboxCreate( const CString& windowTitle )
+{GUCEF_TRACE;
+
+    if ( 0 != GetHwnd() )
+    {
+        DestroyWindow( GetHwnd() );
+        SetHwnd( 0 );
+    }
+    
+    SetHwnd( CreateWindow( "edit", 
+                           windowTitle.C_String(),
+                           WS_VISIBLE|WS_CHILD|WS_BORDER|ES_AUTOHSCROLL|ES_AUTOVSCROLL,
+                           0, 0, 200, 25, hwnd, (HMENU)nEditID, GetCurrentModuleHandle(), (LPVOID)this) );
+    return GetHwnd() != 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CMsWin32Editbox::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString classTypeName = "GUCEF::CORE::CMsWin32Editbox";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

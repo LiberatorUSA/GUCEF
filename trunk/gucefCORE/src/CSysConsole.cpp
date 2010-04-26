@@ -53,6 +53,11 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #include "CSysConsole.h"
 
 /*-------------------------------------------------------------------------//
@@ -640,6 +645,8 @@ CSysConsole::RegisterAlias( const CString& aliasname ,
     TAliasList::iterator i = _aliases.find( aliasname );
     if ( i != _aliases.end() )
     {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "SysConsole: Failed to register alias \"" + aliasname + "\" for path \"" + path + "\" and function \"" + function + "\" because an alias with the given name already exists" );
+        
         _datalock.Unlock();
         return false;        
     }
@@ -652,6 +659,8 @@ CSysConsole::RegisterAlias( const CString& aliasname ,
     _aliases.insert( std::pair< CString, TAliasData >( aliasname, ad ) );
     
     _datalock.Unlock();
+    
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "SysConsole: Registered alias \"" + aliasname + "\" for path \"" + path + "\" and function \"" + function + "\"" );
     return true;
 }                            
 
@@ -672,11 +681,13 @@ CSysConsole::UnregisterAlias( const CString& aliasname ,
         // delete the alias entry
         _aliases.erase( i );
         _datalock.Unlock();
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "SysConsole: Unregistered alias \"" + aliasname + "\" for path \"" + path + "\" and function \"" + function + "\"" );
         return true;        
     }
     
     // Unable to find the alias
     _datalock.Unlock();
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "SysConsole: Failed to unregister alias \"" + aliasname + "\" for path \"" + path + "\" and function \"" + function + "\" because an alias with the given name cannot be found" );
     return false;
 }
 
@@ -727,6 +738,8 @@ bool
 CSysConsole::LoadConfig( const CDataNode& treeroot )
 {GUCEF_TRACE;
 
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Loading SysConsole configuration" );
+    
     const GUCEF::CORE::CDataNode* n = treeroot.Find( "ConsoleAliasList" );
     if ( n != NULL )
     {
@@ -760,6 +773,7 @@ CSysConsole::LoadConfig( const CDataNode& treeroot )
         }
     }
     
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Sucessfully Loaded SysConsole configuration" );
     return true;
 }
 

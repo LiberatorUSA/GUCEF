@@ -38,6 +38,11 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef INPUTDRIVERPLUGINSTRUCTS_H
 #include "inputdriverpluginstructs.h"   /* plugin API structs */
 #define INPUTDRIVERPLUGINSTRUCTS_H
@@ -371,69 +376,85 @@ bool
 CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
                                 const CORE::CValueList& params )
 {GUCEF_TRACE;
+
+    #ifdef GUCEF_INPUT_DEBUG_MODE
+    CString filenameExt = CORE::ExtractFileExtention( filename );
+    if ( 0 == filenameExt.Length() )
+    {
+        CString debugFilename = filename + "_d";
+        m_sohandle = CORE::LoadModuleDynamicly( debugFilename.C_String() );
+    }
+    else
+    {
         m_sohandle = CORE::LoadModuleDynamicly( filename.C_String() );
-        if ( !m_sohandle ) return false;               
-        
-        /*
-         *      Link up generic module utilities
-         */
-        m_fptable[ INPUTDRIVERPLUG_INIT ] = CORE::GetFunctionAddress( m_sohandle             ,
-                                                                      "INPUTDRIVERPLUG_Init" ,
-                                                                      2*sizeof(void*)        );
-        m_fptable[ INPUTDRIVERPLUG_SHUTDOWN ] = CORE::GetFunctionAddress( m_sohandle                 ,
-                                                                          "INPUTDRIVERPLUG_Shutdown" ,
-                                                                          1*sizeof(void*)            );
-        m_fptable[ INPUTDRIVERPLUG_NAME ] = CORE::GetFunctionAddress( m_sohandle             ,
-                                                                      "INPUTDRIVERPLUG_Name" ,
-                                                                      1*sizeof(void*)        );
-        m_fptable[ INPUTDRIVERPLUG_COPYRIGHT ] = CORE::GetFunctionAddress( m_sohandle                  ,
-                                                                           "INPUTDRIVERPLUG_Copyright" ,
-                                                                           1*sizeof(void*)             );
-        m_fptable[ INPUTDRIVERPLUG_VERSION ] = CORE::GetFunctionAddress( m_sohandle                ,
-                                                                         "INPUTDRIVERPLUG_Version" ,
-                                                                         1*sizeof(void*)           );
+    }    
+    #else
+    m_sohandle = CORE::LoadModuleDynamicly( filename.C_String() );
+    #endif 
+    
+    
+    if ( !m_sohandle ) return false;               
+    
+    /*
+     *      Link up generic module utilities
+     */
+    m_fptable[ INPUTDRIVERPLUG_INIT ] = CORE::GetFunctionAddress( m_sohandle             ,
+                                                                  "INPUTDRIVERPLUG_Init" ,
+                                                                  2*sizeof(void*)        );
+    m_fptable[ INPUTDRIVERPLUG_SHUTDOWN ] = CORE::GetFunctionAddress( m_sohandle                 ,
+                                                                      "INPUTDRIVERPLUG_Shutdown" ,
+                                                                      1*sizeof(void*)            );
+    m_fptable[ INPUTDRIVERPLUG_NAME ] = CORE::GetFunctionAddress( m_sohandle             ,
+                                                                  "INPUTDRIVERPLUG_Name" ,
+                                                                  1*sizeof(void*)        );
+    m_fptable[ INPUTDRIVERPLUG_COPYRIGHT ] = CORE::GetFunctionAddress( m_sohandle                  ,
+                                                                       "INPUTDRIVERPLUG_Copyright" ,
+                                                                       1*sizeof(void*)             );
+    m_fptable[ INPUTDRIVERPLUG_VERSION ] = CORE::GetFunctionAddress( m_sohandle                ,
+                                                                     "INPUTDRIVERPLUG_Version" ,
+                                                                     1*sizeof(void*)           );
 
 
-        /*
-         *      Link up driver utilities
-         */
+    /*
+     *      Link up driver utilities
+     */
 
-                                                          
-        m_fptable[ INPUTDRIVERPLUG_UPDATE ] = CORE::GetFunctionAddress( m_sohandle               ,
-                                                                        "INPUTDRIVERPLUG_Update" ,
-                                                                        2*sizeof(void*)          );
-        m_fptable[ INPUTDRIVERPLUG_CREATECONTEXT ] = CORE::GetFunctionAddress( m_sohandle                      ,
-                                                                               "INPUTDRIVERPLUG_CreateContext" ,
-                                                                               4*sizeof(void*)                 );
-        m_fptable[ INPUTDRIVERPLUG_DESTROYCONTEXT ] = CORE::GetFunctionAddress( m_sohandle                       ,
-                                                                                "INPUTDRIVERPLUG_DestroyContext" ,
-                                                                                2*sizeof(void*)                  );
-                                                                                                                       
-        
-        if ( ( !m_fptable[ INPUTDRIVERPLUG_INIT ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_SHUTDOWN ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_NAME ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_COPYRIGHT ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_VERSION ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_UPDATE ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_CREATECONTEXT ] ) ||
-             ( !m_fptable[ INPUTDRIVERPLUG_DESTROYCONTEXT ] ) )
-        {
-                CORE::UnloadModuleDynamicly( m_sohandle );
-                memset( m_fptable, NULL, sizeof(void*) * INPUTDRIVERPLUG_LASTPTR );
-                m_sohandle = NULL;
-                
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Invalid input driver module: " + filename );
-                return false;        
-        }
-        
-        /*
-         *      Intialize the plugin module
-         */
-        char*** argmatrix = CreateArgMatrix( params ); 
-        ( (TINPUTDRIVERPLUGFPTR_Init) m_fptable[ INPUTDRIVERPLUG_INIT ] )( &m_plugdata, const_cast< const char*** >( argmatrix ) );
-        DestroyArgMatrix( argmatrix );
-        return true;
+                                                      
+    m_fptable[ INPUTDRIVERPLUG_UPDATE ] = CORE::GetFunctionAddress( m_sohandle               ,
+                                                                    "INPUTDRIVERPLUG_Update" ,
+                                                                    2*sizeof(void*)          );
+    m_fptable[ INPUTDRIVERPLUG_CREATECONTEXT ] = CORE::GetFunctionAddress( m_sohandle                      ,
+                                                                           "INPUTDRIVERPLUG_CreateContext" ,
+                                                                           4*sizeof(void*)                 );
+    m_fptable[ INPUTDRIVERPLUG_DESTROYCONTEXT ] = CORE::GetFunctionAddress( m_sohandle                       ,
+                                                                            "INPUTDRIVERPLUG_DestroyContext" ,
+                                                                            2*sizeof(void*)                  );
+                                                                                                                   
+    
+    if ( ( !m_fptable[ INPUTDRIVERPLUG_INIT ] ) ||
+         ( !m_fptable[ INPUTDRIVERPLUG_SHUTDOWN ] ) ||
+         ( !m_fptable[ INPUTDRIVERPLUG_NAME ] ) ||
+         ( !m_fptable[ INPUTDRIVERPLUG_COPYRIGHT ] ) ||
+         ( !m_fptable[ INPUTDRIVERPLUG_VERSION ] ) ||
+         ( !m_fptable[ INPUTDRIVERPLUG_UPDATE ] ) ||
+         ( !m_fptable[ INPUTDRIVERPLUG_CREATECONTEXT ] ) ||
+         ( !m_fptable[ INPUTDRIVERPLUG_DESTROYCONTEXT ] ) )
+    {
+            CORE::UnloadModuleDynamicly( m_sohandle );
+            memset( m_fptable, NULL, sizeof(void*) * INPUTDRIVERPLUG_LASTPTR );
+            m_sohandle = NULL;
+            
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Invalid input driver module: " + filename );
+            return false;        
+    }
+    
+    /*
+     *      Intialize the plugin module
+     */
+    char*** argmatrix = CreateArgMatrix( params ); 
+    ( (TINPUTDRIVERPLUGFPTR_Init) m_fptable[ INPUTDRIVERPLUG_INIT ] )( &m_plugdata, const_cast< const char*** >( argmatrix ) );
+    DestroyArgMatrix( argmatrix );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

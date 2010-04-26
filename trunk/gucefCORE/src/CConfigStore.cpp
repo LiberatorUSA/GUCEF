@@ -152,11 +152,12 @@ CConfigStore::SetConfigFile( const CString& filepath )
         
 CString 
 CConfigStore::GetConfigFile( void ) const
-{GUCEF_TRACE;        
-        _datalock.Lock();
-        CString file( _configfile );
-        _datalock.Unlock();
-        return file;
+{GUCEF_TRACE;
+        
+    _datalock.Lock();
+    CString file( _configfile );
+    _datalock.Unlock();
+    return file;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -164,9 +165,10 @@ CConfigStore::GetConfigFile( void ) const
 void 
 CConfigStore::Register( CIConfigurable* configobj )
 {GUCEF_TRACE;
-        _datalock.Lock();
-        configobj->_configid = _configobjs.AddEntry( configobj );
-        _datalock.Unlock();
+
+    _datalock.Lock();
+    _configobjs.insert( configobj );
+    _datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -174,9 +176,10 @@ CConfigStore::Register( CIConfigurable* configobj )
 void 
 CConfigStore::Unregister( CIConfigurable* configobj )
 {GUCEF_TRACE;
-        _datalock.Lock();
-        _configobjs.SetEntry( configobj->_configid, NULL );
-        _datalock.Unlock();
+
+    _datalock.Lock();
+    _configobjs.erase( configobj );
+    _datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -213,20 +216,16 @@ CConfigStore::SaveConfig( const CString& name ,
                 }                        
         }
         
-        UInt32 count = _configobjs.GetCount();
-        CIConfigurable* c;
-        for ( UInt32 i=0; i<count; ++i )
+        TConfigurableSet::iterator i = _configobjs.begin();
+        while ( i != _configobjs.end() )
         {
-                c = static_cast<CIConfigurable*>( _configobjs[ i ] );
-                if ( c )
-                {
-                        if ( !c->SaveConfig( rootnode ) )
-                        {
-                                _datalock.Unlock();
-                                return false;                
-                        }
-                }
-        }        
+            if ( !(*i)->SaveConfig( rootnode ) )
+            {
+                _datalock.Unlock();
+                return false;                
+            }
+            ++i;
+        }
         
         try
         {
@@ -267,19 +266,15 @@ CConfigStore::LoadConfig( void )
                 if ( codec->BuildDataTree( &rootnode   ,
                                            _configfile ) )
                 {
-                        UInt32 count = _configobjs.GetCount();
-                        CIConfigurable* c;
-                        for ( UInt32 i=0; i<count; ++i )
+                        TConfigurableSet::iterator i = _configobjs.begin();
+                        while ( i != _configobjs.end() )
                         {
-                                c = static_cast<CIConfigurable*>( _configobjs[ i ] );
-                                if ( c )
-                                {
-                                        if ( !c->LoadConfig( rootnode ) )
-                                        {
-                                                _datalock.Unlock();
-                                                return false;                
-                                        }
-                                }
+                            if ( !(*i)->LoadConfig( rootnode ) )
+                            {
+                                    _datalock.Unlock();
+                                    return false;                
+                            }
+                            ++i;
                         }
                         _datalock.Unlock();
                         return true;

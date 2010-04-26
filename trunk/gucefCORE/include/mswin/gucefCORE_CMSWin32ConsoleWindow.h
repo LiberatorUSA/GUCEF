@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CWINDOWMSGHOOK_H
-#define GUCEF_CORE_CWINDOWMSGHOOK_H
+#ifndef GUCEF_CORE_CMSWIN32CONSOLEWINDOW_H
+#define GUCEF_CORE_CMSWIN32CONSOLEWINDOW_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,12 +26,22 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"  /* module config macros */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifdef GUCEF_MSWIN_BUILD
 
-#include <map>
-#include "gucefMT_CMutex.h"    /* needed for threadsafety */
+#ifndef GUCEF_CORE_CWNDMSGHOOKNOTIFIER_H
+#include "gucefCORE_CMsWin32Window.h"
+#define GUCEF_CORE_CWNDMSGHOOKNOTIFIER_H
+#endif /* GUCEF_CORE_CWNDMSGHOOKNOTIFIER_H ? */
+
+#ifndef GUCEF_CORE_CSYSCONSOLECLIENT_H
+#include "CSysConsoleClient.h"
+#define GUCEF_CORE_CSYSCONSOLECLIENT_H
+#endif /* GUCEF_CORE_CSYSCONSOLECLIENT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -49,70 +59,35 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Class that should be used when performing instance subclassing of 
- *  windows. Using an uniform aproach minimizes the risks.
+ *  Class which creates a Win32 API generated console window for communication
+ *  with the system console API.
  */
-class GUCEFCORE_EXPORT_CPP CWindowMsgHook
+class GUCEF_CORE_EXPORT_CPP CMsWin32ConsoleWindow : public CMsWin32Window ,
+                                                    public CSysConsoleClient
 {
     public:
     
-    CWindowMsgHook();
+    CMsWin32ConsoleWindow();
 
-    virtual ~CWindowMsgHook();
-
-    /**
-     *  Subscribes the hook object to messages sent to the window
-     *  with the given handle
-     *
-     *  @param hWnd handle to the window you wish to instance subclass
-     *  @param userData optional pointer that will be passed when WindowProc is called
-     */
-    void Hook( const HWND hWnd       ,
-               void* userData = NULL );
-
-    /**
-     *  Unsubscribes the hook object from messages sent to the window
-     *  with the given handle
-     */
-    void Unhook( const HWND hWnd );
+    virtual ~CMsWin32ConsoleWindow();
+    
+    virtual const CString& GetClassTypeName( void ) const;
 
     protected:
     
-    //This is the function you need to override in your derived
-    //version of CWindowMsgHook so that you can handle the window messages
     virtual LRESULT WindowProc( const HWND hWnd     ,
                                 const UINT nMsg     ,
                                 const WPARAM wParam ,
-                                const LPARAM lParam ,
-                                void* userData      ,
-                                bool& consumeMsg    );
+                                const LPARAM lParam );
 
     private:
 
-    //The callback function through which all window messages
-    //will be handled when they are hooked by CHookWnd 
-    static LRESULT CALLBACK HookProc( HWND hWnd     ,
-                                      UINT nMsg     ,
-                                      WPARAM wParam ,
-                                      LPARAM lParam );
-
+    CMsWin32ConsoleWindow( const CMsWin32ConsoleWindow& src );       /**< cannot be copied */
+    CMsWin32ConsoleWindow& operator=( const CMsWin32ConsoleWindow ); /**< cannot be copied */
+    
     private:
-    typedef std::map< CWindowMsgHook*, void* > TWindowMsgHookList;
-    struct SWindowData
-    {
-        TWindowMsgHookList hookList;
-        WNDPROC orgWinProc;
-    };
-    typedef struct SWindowData TWindowData;
-    typedef std::map< HWND, TWindowData > TMappedWindowHookList;
-
-    static MT::CMutex s_globalDataLock;
-    static TMappedWindowHookList s_list;
-
-    private:
-
-    CWindowMsgHook( const CWindowMsgHook& src );       /**< cannot be copied */
-    CWindowMsgHook& operator=( const CWindowMsgHook ); /**< cannot be copied */
+    
+    CMsWin32Editbox m_editbox;
 };
 
 /*-------------------------------------------------------------------------//
@@ -128,7 +103,7 @@ class GUCEFCORE_EXPORT_CPP CWindowMsgHook
 
 #endif /* GUCEF_MSWIN_BUILD ? */
 
-#endif /* GUCEF_CORE_CWINDOWMSGHOOK_H ? */
+#endif /* GUCEF_CORE_CMSWIN32CONSOLEWINDOW_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

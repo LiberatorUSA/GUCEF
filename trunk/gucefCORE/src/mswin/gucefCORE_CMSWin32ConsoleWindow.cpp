@@ -35,7 +35,7 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
-#include "CWndMsgHookNotifier.h"
+#include "gucefCORE_CMsWin32ConsoleWindow.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,9 +52,9 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CEvent CWndMsgHookNotifier::WindowActivationEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowActivationEvent";
-const CEvent CWndMsgHookNotifier::WindowSizeEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowSizeEvent";
-const CEvent CWndMsgHookNotifier::WindowDestroyEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowDestroyEvent";
+//const CEvent CWndMsgHookNotifier::WindowActivationEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowActivationEvent";
+//const CEvent CWndMsgHookNotifier::WindowSizeEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowSizeEvent";
+//const CEvent CWndMsgHookNotifier::WindowDestroyEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowDestroyEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,28 +62,27 @@ const CEvent CWndMsgHookNotifier::WindowDestroyEvent = "GUCEF::CORE::CWndMsgHook
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-void
-CWndMsgHookNotifier::RegisterEvents( void )
+//void
+//CWndMsgHookNotifier::RegisterEvents( void )
+//{GUCEF_TRACE;
+//
+//    WindowActivationEvent.Initialize();
+//    WindowSizeEvent.Initialize();
+//    WindowDestroyEvent.Initialize();
+//}
+
+/*-------------------------------------------------------------------------*/
+
+CMsWin32ConsoleWindow::CMsWin32ConsoleWindow( void )
+    : CMsWin32Window()
 {GUCEF_TRACE;
 
-    WindowActivationEvent.Initialize();
-    WindowSizeEvent.Initialize();
-    WindowDestroyEvent.Initialize();
+  //  RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CWndMsgHookNotifier::CWndMsgHookNotifier( void )
-    : CNotifier()      ,
-      CWindowMsgHook()
-{GUCEF_TRACE;
-
-    RegisterEvents();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CWndMsgHookNotifier::~CWndMsgHookNotifier()
+CMsWin32ConsoleWindow::~CMsWin32ConsoleWindow()
 {GUCEF_TRACE;
 
 }
@@ -91,57 +90,25 @@ CWndMsgHookNotifier::~CWndMsgHookNotifier()
 /*-------------------------------------------------------------------------*/
 
 const CString&
-CWndMsgHookNotifier::GetClassTypeName( void ) const
+CMsWin32ConsoleWindow::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static CString classTypeName = "GUCEF::CORE::CWndMsgHookNotifier";
+    static CString classTypeName = "GUCEF::CORE::CMsWin32ConsoleWindow";
     return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
 
 LRESULT
-CWndMsgHookNotifier::WindowProc( const HWND hWnd     ,
-                                 const UINT nMsg     ,
-                                 const WPARAM wParam ,
-                                 const LPARAM lParam ,
-                                 void* userData      ,
-                                 bool& consumeMsg    )
+CMsWin32ConsoleWindow::WindowProc( const HWND hWnd     ,
+                                   const UINT nMsg     ,
+                                   const WPARAM wParam ,
+                                   const LPARAM lParam ,
+                                   void* userData      ,
+                                   bool& consumeMsg    )
 {GUCEF_TRACE;
 
-    switch ( nMsg )
-    {
-        case WM_ACTIVATE :
-        {
-            struct SWindowActivationEventData data;
-            data.windowActiveState = wParam != WA_INACTIVE;
-            data.userData = userData;
-            TWindowActivationEventData eData( data );
-            NotifyObservers( WindowActivationEvent, &eData );
-            return 0;
-        }
-        case WM_SIZE :
-        {
-            struct SWindowSizeEventData data;
-            data.windowVisible = wParam != SIZE_MINIMIZED;
-            data.windowWidth = LOWORD( lParam );
-            data.windowHeight = HIWORD( lParam );
-            data.userData = userData;
-            TWindowSizeEventData eData( data );
-            NotifyObservers( WindowSizeEvent, &eData );
-            return 0;
-        }
-        case WM_DESTROY :
-        {
-            TWindowDestroyEventData eData( userData );
-            NotifyObservers( WindowDestroyEvent, &eData );
-            return 0;
-        }
-        default : 
-        {
-            return 0;
-        }
-    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------//
