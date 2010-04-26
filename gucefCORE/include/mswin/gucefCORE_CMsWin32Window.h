@@ -38,6 +38,11 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
+#ifndef GUCEF_CORE_CNOTIFIER_H
+#include "CNotifier.h"
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -56,13 +61,27 @@ namespace CORE {
 /**
  *  Class with basic utilities for creating a Win32 window
  */
-class GUCEF_CORE_EXPORT_CPP CMsWin32Window
+class GUCEF_CORE_EXPORT_CPP CMsWin32Window : public CNotifier
 {
+    public:
+    
+    static const CEvent WindowCloseEvent; 
+    static const CEvent WindowDestroyEvent;
+    static const CEvent WindowActivationEvent;
+    
+    static void RegisterEvents( void );
+    
     public:
     
     CMsWin32Window();
 
     virtual ~CMsWin32Window();
+    
+    void Close( void );
+    
+    virtual void SetText( const CString& text );
+    
+    virtual CString GetText( void ) const;
     
     HWND GetHwnd( void ) const;
     
@@ -71,7 +90,10 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32Window
     protected:
 
     virtual bool WindowCreate( const CString& windowClassName ,
-                               const CString& windowTitle     );
+                               const CString& windowTitle     ,
+                               const UInt32 width             ,
+                               const UInt32 height            ,
+                               const HWND hWndParent = NULL   );
     
     static bool RegisterWindowClass( const CString& windowClassName );
     

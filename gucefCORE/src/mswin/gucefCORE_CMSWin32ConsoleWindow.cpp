@@ -103,9 +103,7 @@ LRESULT
 CMsWin32ConsoleWindow::WindowProc( const HWND hWnd     ,
                                    const UINT nMsg     ,
                                    const WPARAM wParam ,
-                                   const LPARAM lParam ,
-                                   void* userData      ,
-                                   bool& consumeMsg    )
+                                   const LPARAM lParam )
 {GUCEF_TRACE;
 
     return 0;
