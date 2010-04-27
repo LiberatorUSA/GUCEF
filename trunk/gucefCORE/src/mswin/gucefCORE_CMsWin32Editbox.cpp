@@ -48,6 +48,15 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CEvent CMsWin32Editbox::EnterPressedEvent = "GUCEF::CORE::CMsWin32Editbox::EnterPressedEvent";
+const CEvent CMsWin32Editbox::TextChangedEvent = "GUCEF::CORE::CMsWin32Editbox::TextChangedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILTIIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -144,14 +153,14 @@ CMsWin32Editbox::EditboxCreate( const CString& windowTitle       ,
         SetHwnd( CreateWindow( "edit", 
                                windowTitle.C_String(),
                                WS_VISIBLE|WS_CHILD|WS_BORDER|WS_VSCROLL|WS_HSCROLL|ES_MULTILINE|ES_WANTRETURN|ES_AUTOHSCROLL|ES_AUTOVSCROLL,
-                               0, 0, (int)width, (int)height, GetHwnd(), (HMENU)nEditID, GetCurrentModuleHandle(), (LPVOID)this ) );
+                               0, 0, (int)width, (int)height, GetHwnd(), (HMENU)0, GetCurrentModuleHandle(), (LPVOID)this ) );
     }
     else
     {
         SetHwnd( CreateWindow( "edit", 
                                windowTitle.C_String(),
                                WS_VISIBLE|WS_CHILD|WS_BORDER|ES_AUTOHSCROLL|ES_AUTOVSCROLL,
-                               0, 0, (int)width, (int)height, GetHwnd(), (HMENU)nEditID, GetCurrentModuleHandle(), (LPVOID)this ) );
+                               0, 0, (int)width, (int)height, GetHwnd(), (HMENU)0, GetCurrentModuleHandle(), (LPVOID)this ) );
     }
     return GetHwnd() != 0;
 }

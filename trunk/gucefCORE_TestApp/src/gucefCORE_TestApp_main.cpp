@@ -80,11 +80,16 @@ WinMain( HINSTANCE hinstance     ,
         GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
         #endif /* GUCEF_MSWIN_BUILD ? */
 
-        PerformSharedPtrTests();
+        GUCEF::CORE::CMsWin32Window::RegisterWindowClass( "test" );
+
+        GUCEF::CORE::CMsWin32Window window;
+        window.WindowCreate( "test", "Hello", 400, 300 );
         
-        PerformCyclicDynamicBufferTests();
+        //PerformSharedPtrTests();
         
-        PerformNotifierObserverTests();
+        //PerformCyclicDynamicBufferTests();
+        
+        //PerformNotifierObserverTests();
         
         return 1;                                                                            
     }

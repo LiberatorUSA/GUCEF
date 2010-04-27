@@ -409,6 +409,16 @@
 #define GUCEF_CORE_CWINDOWMSGHOOK_H
 #endif /* GUCEF_CORE_CWINDOWMSGHOOK_H ? */
 
+#ifndef GUCEF_CORE_CMSWIN32WINDOW_H
+#include "gucefCORE_CMsWin32Window.h"
+#define GUCEF_CORE_CMSWIN32WINDOW_H
+#endif /* GUCEF_CORE_CMSWIN32WINDOW_H ? */
+
+#ifndef GUCEF_CORE_CMSWIN32EDITBOX_H
+#include "gucefCORE_CMsWin32Editbox.h"
+#define GUCEF_CORE_CMSWIN32EDITBOX_H
+#endif /* GUCEF_CORE_CMSWIN32EDITBOX_H ? */
+
 #endif /* GUCEF_MSWIN_BUILD ? */
 
 #endif /* __cplusplus ? */
