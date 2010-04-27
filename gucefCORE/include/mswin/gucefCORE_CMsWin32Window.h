@@ -87,15 +87,15 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32Window : public CNotifier
     
     virtual const CString& GetClassTypeName( void ) const;
 
-    protected:
-
     virtual bool WindowCreate( const CString& windowClassName ,
                                const CString& windowTitle     ,
                                const UInt32 width             ,
                                const UInt32 height            ,
                                const HWND hWndParent = NULL   );
-    
+
     static bool RegisterWindowClass( const CString& windowClassName );
+
+    protected:
     
     virtual LRESULT WindowProc( const HWND hWnd     ,
                                 const UINT nMsg     ,
