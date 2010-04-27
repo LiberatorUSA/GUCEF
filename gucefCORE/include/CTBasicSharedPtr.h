@@ -333,7 +333,13 @@ CTBasicSharedPtr< T >::Initialize( T* ptr                        ,
     assert( m_objectDestructor == NULL );
     assert( m_refCounter == NULL );
 
-    *this = CTBasicSharedPtr< T >( ptr, objectDestructor );
+    // Just in case we did not hit the asserts above because the code was compiled in release
+    // mode without asserts we will still allow the scenario by unlinking first
+    Unlink();
+    
+    m_ptr = ptr;
+    m_refCounter = new unsigned long( 1UL );
+    m_objectDestructor = objectDestructor;
 }
 
 /*-------------------------------------------------------------------------*/
