@@ -136,10 +136,12 @@ CMsWin32Editbox::WindowProc( const HWND hWnd     ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CMsWin32Editbox::EditboxCreate( const CString& windowTitle       ,
+CMsWin32Editbox::EditboxCreate( CMsWin32Window& parent           ,
+                                const CString& windowTitle       ,
                                 const bool createAsMultilineEdit ,
                                 const UInt32 width               ,
-                                const UInt32 height              )
+                                const UInt32 height              ,
+                                const bool readOnly              )
 {GUCEF_TRACE;
 
     if ( 0 != GetHwnd() )
@@ -148,18 +150,28 @@ CMsWin32Editbox::EditboxCreate( const CString& windowTitle       ,
         SetHwnd( 0 );
     }
 
-    if ( createAsMultilineEdit )
+    DWORD dwStyle = 0;
+    if ( readOnly )
     {
+        dwStyle |= ES_READONLY;
+    }
+    
+    if ( createAsMultilineEdit )
+    {        
+        dwStyle |= WS_VISIBLE|WS_CHILD|WS_BORDER|WS_VSCROLL|WS_HSCROLL|ES_MULTILINE|ES_WANTRETURN|ES_AUTOHSCROLL|ES_AUTOVSCROLL;
+        
         SetHwnd( CreateWindow( "edit", 
                                windowTitle.C_String(),
-                               WS_VISIBLE|WS_CHILD|WS_BORDER|WS_VSCROLL|WS_HSCROLL|ES_MULTILINE|ES_WANTRETURN|ES_AUTOHSCROLL|ES_AUTOVSCROLL,
+                               dwStyle,
                                0, 0, (int)width, (int)height, GetHwnd(), (HMENU)0, GetCurrentModuleHandle(), (LPVOID)this ) );
     }
     else
-    {
+    {        
+        dwStyle |= WS_VISIBLE|WS_CHILD|WS_BORDER|ES_AUTOHSCROLL|ES_AUTOVSCROLL;
+        
         SetHwnd( CreateWindow( "edit", 
                                windowTitle.C_String(),
-                               WS_VISIBLE|WS_CHILD|WS_BORDER|ES_AUTOHSCROLL|ES_AUTOVSCROLL,
+                               dwStyle,
                                0, 0, (int)width, (int)height, GetHwnd(), (HMENU)0, GetCurrentModuleHandle(), (LPVOID)this ) );
     }
     return GetHwnd() != 0;

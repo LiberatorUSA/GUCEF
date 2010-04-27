@@ -195,6 +195,26 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
      *  @throws ENotInitialized if the pointer is not initialized
      */
     inline const T* operator->( void ) const;
+    
+    // implemented inline as a workaround for VC6 issues
+    // The dummy param is a VC6 hack for templated member functions
+    template< class Derived >
+    CTSharedPtr< Derived >
+    StaticCast( bool dummy = true )
+    {
+        // The actual compile time check is the line of code below.
+        // You should get a casting error if 'Derived' is not a type that is
+        // derived from 'T'. After we made this check we can just reinterpret
+        // this object to be able to give out more pointer references as 'Derived'
+        // Note that we have to use the 'derivedClassPtr' variable otherwise the compiler
+        // will optimize out the code which is why the code is structured this way. 
+        Derived* derivedClassPtr = static_cast< Derived* >( GetPointer() );
+        if ( 0 != derivedClassPtr )
+        {
+            return reinterpret_cast< CTSharedPtr< Derived >& >( *this );
+        }
+        return CTSharedPtr< Derived >();
+    }
 };
 
 /*-------------------------------------------------------------------------//
@@ -323,7 +343,7 @@ inline bool
 CTSharedPtr< T >::operator==( const CTSharedPtr< T >& other ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T > >( *this ) == static_cast< const CTBasicSharedPtr< T > >( other );
+    return static_cast< const CTBasicSharedPtr< T >& >( *this ) == static_cast< const CTBasicSharedPtr< T >& >( other );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -333,7 +353,7 @@ inline bool
 CTSharedPtr< T >::operator==( const void* other ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T > >( *this ) == other;
+    return static_cast< const CTBasicSharedPtr< T >& >( *this ) == other;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -343,7 +363,7 @@ inline bool
 operator==( const void* ptr, const CTSharedPtr< T >& other )
 {GUCEF_TRACE;
 
-    return static_cast< CTBasicSharedPtr< T > >( other ) == ptr;
+    return static_cast< const CTBasicSharedPtr< T >& >( other ) == ptr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -356,7 +376,7 @@ inline bool
 operator==( const int ptr, const CTSharedPtr< T >& other )
 {GUCEF_TRACE;
 
-    return static_cast< const T* >( NULL ) == static_cast< CTBasicSharedPtr< T > >( other );
+    return static_cast< const T* >( NULL ) == static_cast< const CTBasicSharedPtr< T >& >( other );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -366,7 +386,7 @@ inline bool
 CTSharedPtr< T >::operator!=( const CTSharedPtr< T >& other ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T > >( *this ) != static_cast< const CTBasicSharedPtr< T > >( other );    
+    return static_cast< const CTBasicSharedPtr< T >& >( *this ) != static_cast< const CTBasicSharedPtr< T >& >( other );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -376,7 +396,7 @@ inline bool
 CTSharedPtr< T >::operator!=( const void* other ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T > >( *this ) != other;    
+    return static_cast< const CTBasicSharedPtr< T >& >( *this ) != other;    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -399,7 +419,7 @@ inline bool
 operator!=( const int ptr, const CTSharedPtr< T >& other )
 {GUCEF_TRACE;
 
-    return ptr != static_cast< const CTBasicSharedPtr< T > >( other);
+    return ptr != static_cast< const CTBasicSharedPtr< T >& >( other);
 }
 
 /*-------------------------------------------------------------------------*/
