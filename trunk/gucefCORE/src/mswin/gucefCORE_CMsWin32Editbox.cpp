@@ -61,10 +61,21 @@ const CEvent CMsWin32Editbox::TextChangedEvent = "GUCEF::CORE::CMsWin32Editbox::
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+void
+CMsWin32Editbox::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    EnterPressedEvent.Initialize();
+    TextChangedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CMsWin32Editbox::CMsWin32Editbox( void )
     : CMsWin32Window()
 {GUCEF_TRACE;
 
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -139,6 +150,8 @@ bool
 CMsWin32Editbox::EditboxCreate( CMsWin32Window& parent           ,
                                 const CString& windowTitle       ,
                                 const bool createAsMultilineEdit ,
+                                const Int32 xPosition            ,
+                                const Int32 yPosition            ,
                                 const UInt32 width               ,
                                 const UInt32 height              ,
                                 const bool readOnly              )
@@ -163,7 +176,8 @@ CMsWin32Editbox::EditboxCreate( CMsWin32Window& parent           ,
         SetHwnd( CreateWindow( "edit", 
                                windowTitle.C_String(),
                                dwStyle,
-                               0, 0, (int)width, (int)height, GetHwnd(), (HMENU)0, GetCurrentModuleHandle(), (LPVOID)this ) );
+                               xPosition, yPosition, (int)width, (int)height, 
+                               parent.GetHwnd(), (HMENU)this, GetCurrentModuleHandle(), (LPVOID)this ) );
     }
     else
     {        
@@ -172,7 +186,8 @@ CMsWin32Editbox::EditboxCreate( CMsWin32Window& parent           ,
         SetHwnd( CreateWindow( "edit", 
                                windowTitle.C_String(),
                                dwStyle,
-                               0, 0, (int)width, (int)height, GetHwnd(), (HMENU)0, GetCurrentModuleHandle(), (LPVOID)this ) );
+                               xPosition, yPosition, (int)width, (int)height, 
+                               parent.GetHwnd(), (HMENU)this, GetCurrentModuleHandle(), (LPVOID)this ) );
     }
     return GetHwnd() != 0;
 }

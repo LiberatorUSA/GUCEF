@@ -37,6 +37,13 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#include "CGUCEFApplication.h"
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -77,6 +84,8 @@ CMsWin32Window::CMsWin32Window( void )
     : m_hwnd( 0 )
 {GUCEF_TRACE;
 
+    SubscribeTo( &CGUCEFApplication::Instance()->GetPulseGenerator(), CPulseGenerator::PulseEvent );
+
     RegisterEvents();
 }
 
@@ -85,11 +94,15 @@ CMsWin32Window::CMsWin32Window( void )
 CMsWin32Window::~CMsWin32Window()
 {GUCEF_TRACE;
 
-    if ( 0 != m_hwnd )
-    {
-        DestroyWindow( m_hwnd );
-    }
-    m_hwnd = 0;
+    SetHwnd( 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::WindowDestroy( void )
+{
+    SetHwnd( 0 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -128,10 +141,46 @@ CMsWin32Window::WindowProc( const HWND hWnd     ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CMsWin32Window::Show( void )
+{
+    return ::ShowWindow( GetHwnd(), SW_SHOW ) == TRUE;
+}
+    
+/*-------------------------------------------------------------------------*/
+    
+bool
+CMsWin32Window::Hide( void )
+{
+    return ::ShowWindow( GetHwnd(), SW_HIDE ) == TRUE;
+}
+    
+/*-------------------------------------------------------------------------*/
+    
+bool
+CMsWin32Window::Maximize( void )
+{
+    return ::ShowWindow( GetHwnd(), SW_SHOWMAXIMIZED ) == TRUE;
+}
+    
+/*-------------------------------------------------------------------------*/
+    
+bool
+CMsWin32Window::Minimize( void )
+{
+    return ::ShowWindow( GetHwnd(), SW_MINIMIZE ) == TRUE;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CMsWin32Window::SetHwnd( HWND hwnd )
 {GUCEF_TRACE;
 
+    if ( 0 != m_hwnd )
+    {
+        ::DestroyWindow( m_hwnd );
+    }
     m_hwnd = hwnd;
 }
 
@@ -158,7 +207,7 @@ CMsWin32Window::WndProc( HWND hwnd     ,
     if ( msg == WM_NCCREATE )
     {
         windowObj = (CMsWin32Window*) ((LPCREATESTRUCT) lParam)->lpCreateParams;
-        SetWindowLong( hwnd, GWL_USERDATA, (long) windowObj );
+        ::SetWindowLong( hwnd, GWL_USERDATA, (long) windowObj );
 	
 	    //If you process any messages that are sent before CreateWindowEx returns
 	    //the HWND, you need something in the place of your HWND member.
@@ -166,14 +215,14 @@ CMsWin32Window::WndProc( HWND hwnd     ,
     }
     else
     {
-        windowObj = (CMsWin32Window*) GetWindowLong( hwnd, GWL_USERDATA );
+        windowObj = (CMsWin32Window*) ::GetWindowLong( hwnd, GWL_USERDATA );
     }
     
     if ( 0 != windowObj )
     {
         return windowObj->WindowProc( hwnd, msg, wParam, lParam );
     }
-    return DefWindowProc( hwnd, msg, wParam, lParam );
+    return ::DefWindowProc( hwnd, msg, wParam, lParam );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -184,7 +233,18 @@ CMsWin32Window::Close( void )
     
     if ( 0 != m_hwnd )
     {
-        CloseWindow( m_hwnd );
+        ::CloseWindow( m_hwnd );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::Resize( int x, int y, int width, int height )
+{
+    if ( 0 != m_hwnd )
+    {
+        ::MoveWindow( m_hwnd, x, y, width, height, TRUE );
     }
 }
 
@@ -193,7 +253,7 @@ CMsWin32Window::Close( void )
 void
 CMsWin32Window::SetText( const CString& text )
 {
-    SetWindowText( GetHwnd(), text.C_String() );
+    SetWindowText( m_hwnd, text.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -201,11 +261,11 @@ CMsWin32Window::SetText( const CString& text )
 CString
 CMsWin32Window::GetText( void ) const
 {
-    int len = GetWindowTextLength( GetHwnd() );
+    int len = GetWindowTextLength( m_hwnd );
     if( len > 0 )
     {
         char* buf = (char*) GlobalAlloc( GPTR, len + 1 );
-        GetWindowText( GetHwnd(), buf, len + 1);
+        GetWindowText( m_hwnd, buf, len + 1);
 
         CString returnValue( buf, len );
 
@@ -221,6 +281,8 @@ CMsWin32Window::GetText( void ) const
 bool
 CMsWin32Window::WindowCreate( const CString& windowClassName ,
                               const CString& windowTitle     ,
+                              const Int32 xPosition          ,
+                              const Int32 yPosition          ,
                               const UInt32 width             ,
                               const UInt32 height            ,
                               const HWND hWndParent          )
@@ -236,8 +298,13 @@ CMsWin32Window::WindowCreate( const CString& windowClassName ,
                              windowClassName.C_String(),
                              windowTitle.C_String(),
                              WS_OVERLAPPEDWINDOW,
-                             CW_USEDEFAULT, CW_USEDEFAULT, (int)width, (int)height,
+                             xPosition, yPosition, (int)width, (int)height,
                              hWndParent, NULL, GetCurrentModuleHandle(), (LPVOID)this );
+    if ( 0 == m_hwnd )
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_IMPORTANT, "CMsWin32Window::WindowCreate(): Failed to create a window" );
+    }
+                                 
     return m_hwnd != 0;
 }
 
@@ -261,7 +328,12 @@ CMsWin32Window::RegisterWindowClass( const CString& windowClassName )
     wc.lpszClassName = windowClassName.C_String();
     wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
 
-    return 0 == RegisterClassEx( &wc );
+    if ( 0 == RegisterClassEx( &wc ) )
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_IMPORTANT, "CMsWin32Window::RegisterWindowClass(): Failed to register a window class with name \"" + windowClassName + "\"" );
+        return false;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -272,6 +344,27 @@ CMsWin32Window::GetClassTypeName( void ) const
 
     static CString classTypeName = "GUCEF::CORE::CMsWin32Window";
     return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::OnNotify( CNotifier* notifier    ,
+                          const CEvent& eventid  ,
+                          CICloneable* eventdata )
+{
+    if ( eventid == CPulseGenerator::PulseEvent )
+    {
+        ::UpdateWindow( m_hwnd );
+        
+        MSG msg;
+	    while( ::PeekMessage( &msg, m_hwnd, 0U, 0U, PM_REMOVE ) )
+	    {
+		    ::TranslateMessage( &msg );
+		    ::DispatchMessage( &msg );
+	    }
+    }
+    
 }
 
 /*-------------------------------------------------------------------------//

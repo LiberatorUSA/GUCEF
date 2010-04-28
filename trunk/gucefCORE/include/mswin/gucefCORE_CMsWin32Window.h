@@ -38,10 +38,10 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
-#ifndef GUCEF_CORE_CNOTIFIER_H
-#include "CNotifier.h"
-#define GUCEF_CORE_CNOTIFIER_H
-#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -61,7 +61,7 @@ namespace CORE {
 /**
  *  Class with basic utilities for creating a Win32 window
  */
-class GUCEF_CORE_EXPORT_CPP CMsWin32Window : public CNotifier
+class GUCEF_CORE_EXPORT_CPP CMsWin32Window : public CObservingNotifier
 {
     public:
     
@@ -89,11 +89,25 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32Window : public CNotifier
 
     virtual bool WindowCreate( const CString& windowClassName ,
                                const CString& windowTitle     ,
+                               const Int32 xPosition          ,
+                               const Int32 yPosition          ,
                                const UInt32 width             ,
                                const UInt32 height            ,
                                const HWND hWndParent = NULL   );
 
+    void WindowDestroy( void );
+
     static bool RegisterWindowClass( const CString& windowClassName );
+
+    bool Show( void );
+    
+    bool Hide( void );
+    
+    bool Maximize( void );
+    
+    bool Minimize( void );
+    
+    void Resize( int x, int y, int width, int height );
 
     protected:
     
@@ -103,6 +117,10 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32Window : public CNotifier
                                 const LPARAM lParam );
 
     void SetHwnd( HWND hwnd );
+    
+    virtual void OnNotify( CNotifier* notifier           ,
+                           const CEvent& eventid         ,
+                           CICloneable* eventdata = NULL ); 
 
     private:
 

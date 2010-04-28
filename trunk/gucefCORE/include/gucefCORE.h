@@ -419,6 +419,11 @@
 #define GUCEF_CORE_CMSWIN32EDITBOX_H
 #endif /* GUCEF_CORE_CMSWIN32EDITBOX_H ? */
 
+#ifndef GUCEF_CORE_CMSWIN32CONSOLEWINDOW_H
+#include "gucefCORE_CMsWin32ConsoleWindow.h"
+#define GUCEF_CORE_CMSWIN32CONSOLEWINDOW_H
+#endif /* GUCEF_CORE_CMSWIN32CONSOLEWINDOW_H ? */
+
 #endif /* GUCEF_MSWIN_BUILD ? */
 
 #endif /* __cplusplus ? */
