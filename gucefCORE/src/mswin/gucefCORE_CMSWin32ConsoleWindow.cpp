@@ -74,7 +74,9 @@ namespace CORE {
 /*-------------------------------------------------------------------------*/
 
 CMsWin32ConsoleWindow::CMsWin32ConsoleWindow( void )
-    : CMsWin32Window()
+    : CMsWin32Window() ,
+      m_inputbox()     ,
+      m_outputbox()
 {GUCEF_TRACE;
 
   //  RegisterEvents();
@@ -85,6 +87,52 @@ CMsWin32ConsoleWindow::CMsWin32ConsoleWindow( void )
 CMsWin32ConsoleWindow::~CMsWin32ConsoleWindow()
 {GUCEF_TRACE;
 
+    m_inputbox.WindowDestroy();
+    m_outputbox.WindowDestroy();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsWin32ConsoleWindow::ConsoleWindowCreate( void )
+{                 
+    if ( RegisterWindowClass( GetClassTypeName() ) )
+    {
+        if ( WindowCreate( GetClassTypeName() ,
+                           "System Console"   ,
+                           CW_USEDEFAULT      ,
+                           CW_USEDEFAULT      ,
+                           420                , 
+                           360                ,
+                           0                  ) )
+        {
+            if ( m_outputbox.EditboxCreate( *this     ,
+                                            CString() ,
+                                            true      ,
+                                            0         ,
+                                            0         ,
+                                            400       ,
+                                            280       ,
+                                            true      ) )
+            {
+                if ( m_inputbox.EditboxCreate( *this     ,
+                                               CString() ,
+                                               false     ,
+                                               0         ,
+                                               300       ,
+                                               400       ,
+                                               60        ,
+                                               false     ) )
+                { 
+                    m_outputbox.Show();
+                    m_inputbox.Show();
+                    return true;                                 
+                }
+            }
+                                                                                            
+        }        
+    }    
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -106,7 +154,7 @@ CMsWin32ConsoleWindow::WindowProc( const HWND hWnd     ,
                                    const LPARAM lParam )
 {GUCEF_TRACE;
 
-    return 0;
+    return CMsWin32Window::WindowProc( hWnd, nMsg, wParam, lParam );
 }
 
 /*-------------------------------------------------------------------------//

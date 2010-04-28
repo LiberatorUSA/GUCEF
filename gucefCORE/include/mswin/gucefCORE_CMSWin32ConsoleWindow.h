@@ -76,6 +76,8 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32ConsoleWindow : public CMsWin32Window ,
 
     virtual ~CMsWin32ConsoleWindow();
     
+    bool ConsoleWindowCreate( void );
+    
     virtual const CString& GetClassTypeName( void ) const;
 
     protected:
@@ -92,7 +94,8 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32ConsoleWindow : public CMsWin32Window ,
     
     private:
     
-    CMsWin32Editbox m_editbox;
+    CMsWin32Editbox m_inputbox;
+    CMsWin32Editbox m_outputbox;
 };
 
 /*-------------------------------------------------------------------------//
