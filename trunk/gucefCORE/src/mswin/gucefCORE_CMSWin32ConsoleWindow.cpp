@@ -80,6 +80,9 @@ CMsWin32ConsoleWindow::CMsWin32ConsoleWindow( void )
 {GUCEF_TRACE;
 
   //  RegisterEvents();
+  
+    SubscribeTo( &m_inputbox );
+    SubscribeTo( &m_outputbox );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -93,9 +96,68 @@ CMsWin32ConsoleWindow::~CMsWin32ConsoleWindow()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CMsWin32ConsoleWindow::AppendLine( const CString& line )
+{GUCEF_TRACE;
+
+    m_outputbox.AppendLine( GetPath() + ">" + line ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32ConsoleWindow::AppendLines( const TStringVector& lines )
+{GUCEF_TRACE;
+
+    TStringVector::const_iterator i = lines.begin();
+    while ( i != lines.end() )
+    {
+        AppendLine( (*i) );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32ConsoleWindow::OnNotify( CNotifier* notifier    ,
+                                 const CEvent& eventid  ,
+                                 CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    if ( &m_inputbox == notifier )
+    {
+        if ( CMsWin32Editbox::EnterPressedEvent == eventid )
+        {
+            CString inputText = m_inputbox.GetText();
+            AppendLine( inputText );
+            
+            TStringVector resultdata;
+            if ( ProcessUserInput( inputText  ,
+                                   resultdata ) )
+            {
+                AppendLines( resultdata );
+            }
+        }
+    }
+    else
+    if ( &m_outputbox == notifier )
+    {
+    }
+    else
+    {
+        CMsWin32Window::OnNotify( notifier  ,
+                                  eventid   ,
+                                  eventdata );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CMsWin32ConsoleWindow::ConsoleWindowCreate( void )
-{                 
+{GUCEF_TRACE;
+                 
     if ( RegisterWindowClass( GetClassTypeName() ) )
     {
         if ( WindowCreate( GetClassTypeName() ,

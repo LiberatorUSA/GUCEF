@@ -87,11 +87,19 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32ConsoleWindow : public CMsWin32Window ,
                                 const WPARAM wParam ,
                                 const LPARAM lParam );
 
+    virtual void OnNotify( CNotifier* notifier           ,
+                           const CEvent& eventid         ,
+                           CICloneable* eventdata = NULL );
+
     private:
 
     CMsWin32ConsoleWindow( const CMsWin32ConsoleWindow& src );       /**< cannot be copied */
     CMsWin32ConsoleWindow& operator=( const CMsWin32ConsoleWindow ); /**< cannot be copied */
+
+    void AppendLines( const TStringVector& lines );
     
+    void AppendLine( const CString& line );
+        
     private:
     
     CMsWin32Editbox m_inputbox;

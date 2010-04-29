@@ -83,6 +83,9 @@ class GUCEFCORE_EXPORT_CPP CSysConsoleClient
 
     void UnregisterCmd( const CString& path    ,
                         const CString& command );
+                        
+    virtual bool ProcessUserInput( const CString& userInput  ,
+                                   TStringVector& resultdata );
     
     void LeaveDir( void );
     

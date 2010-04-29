@@ -115,6 +115,46 @@ CMsWin32Editbox::GetText( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CMsWin32Editbox::AppendLine( const CString& line )
+{GUCEF_TRACE;
+
+    CString currentText = GetText();
+    if ( currentText.Length() > 0 )
+    {
+        char lastChar = currentText[ currentText.Length()-1 ];
+        if ( lastChar == '\n' || lastChar == '\r' )
+        {
+            currentText += line;
+        }
+        else
+        {
+            currentText += "\r\n" + line;
+        }
+        SetText( currentText );
+    }
+    else
+    {
+        SetText( line );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Editbox::AppendLines( TStringVector& lines )
+{GUCEF_TRACE;
+
+    TStringVector::iterator i = lines.begin();
+    while ( i != lines.end() )
+    {
+        AppendLine( (*i) );
+        ++i;
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
 LRESULT
 CMsWin32Editbox::WindowProc( const HWND hWnd     ,
                              const UINT nMsg     ,
@@ -124,15 +164,22 @@ CMsWin32Editbox::WindowProc( const HWND hWnd     ,
 
     switch( nMsg )
     {
-        case WM_COMMAND:
+        case WM_KEYDOWN:
         {
-            // Check if this is a text changed notification
-            if ( HIWORD( wParam ) == EN_CHANGE )
+            if( VK_RETURN == wParam )
             {
-                NotifyObservers( TextChangedEvent );
-                break;
+                NotifyObservers( EnterPressedEvent );
             }
         }
+        //case WM_COMMAND:
+        //{
+        //    // Check if this is a text changed notification
+        //    if ( HIWORD( wParam ) == EN_CHANGE )
+        //    {
+        //        NotifyObservers( TextChangedEvent );
+        //        break;
+        //    }
+        //}
         default:
         {
             return CMsWin32Window::WindowProc( hWnd   ,
@@ -189,6 +236,15 @@ CMsWin32Editbox::EditboxCreate( CMsWin32Window& parent           ,
                                xPosition, yPosition, (int)width, (int)height, 
                                parent.GetHwnd(), (HMENU)this, GetCurrentModuleHandle(), (LPVOID)this ) );
     }
+
+    WNDPROC orgWinProc = (WNDPROC) ::GetWindowLongPtr( GetHwnd(), GWLP_WNDPROC );
+    if ( orgWinProc != (WNDPROC) WndProc )
+    {
+        ::SetWindowLongPtr( GetHwnd(), GWLP_WNDPROC, (LONG_PTR) WndProc );
+        SetOriginalWinProc( orgWinProc );
+    }
+    ::SetWindowLongPtr( GetHwnd(), GWLP_USERDATA, (LONG_PTR) this );
+    
     return GetHwnd() != 0;
 }
 
