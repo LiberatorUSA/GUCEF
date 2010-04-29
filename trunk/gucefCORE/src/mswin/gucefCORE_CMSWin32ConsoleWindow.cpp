@@ -58,30 +58,9 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-//const CEvent CWndMsgHookNotifier::WindowActivationEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowActivationEvent";
-//const CEvent CWndMsgHookNotifier::WindowSizeEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowSizeEvent";
-//const CEvent CWndMsgHookNotifier::WindowDestroyEvent = "GUCEF::CORE::CWndMsgHookNotifier::WindowDestroyEvent";
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-//void
-//CWndMsgHookNotifier::RegisterEvents( void )
-//{GUCEF_TRACE;
-//
-//    WindowActivationEvent.Initialize();
-//    WindowSizeEvent.Initialize();
-//    WindowDestroyEvent.Initialize();
-//}
-
-/*-------------------------------------------------------------------------*/
 
 CMsWin32ConsoleWindow::CMsWin32ConsoleWindow( void )
     : CMsWin32Window() ,
@@ -89,8 +68,6 @@ CMsWin32ConsoleWindow::CMsWin32ConsoleWindow( void )
       m_outputbox()
 {GUCEF_TRACE;
 
-  //  RegisterEvents();
-  
     SubscribeTo( &m_inputbox );
     SubscribeTo( &m_outputbox );
 }
@@ -110,9 +87,9 @@ void
 CMsWin32ConsoleWindow::AppendLine( const CString& line )
 {GUCEF_TRACE;
 
-    CString newLine( GetPath() + ">" + line );
+    CString newLine( GetPath() + " > " + line );
     m_outputbox.AppendLine( newLine ); 
-    GUCEF_CONSOLE_LOG( LOGLEVEL_NORMAL, "MsWin32ConsoleWindow(" + PointerToString( this ) + "): output: " + newLine );
+    GUCEF_CONSOLE_LOG( LOGLEVEL_NORMAL, "CMsWin32ConsoleWindow(" + PointerToString( this ) + "): output: " + newLine );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -142,7 +119,7 @@ CMsWin32ConsoleWindow::OnNotify( CNotifier* notifier    ,
         if ( CMsWin32Editbox::EnterPressedEvent == eventid )
         {
             CString inputText = m_inputbox.GetText();
-            GUCEF_CONSOLE_LOG( LOGLEVEL_NORMAL, "MsWin32ConsoleWindow(" + PointerToString( this ) + "): User entered the following: " + inputText );
+            GUCEF_CONSOLE_LOG( LOGLEVEL_NORMAL, "CMsWin32ConsoleWindow(" + PointerToString( this ) + "): User entered the following: " + inputText );
             
             AppendLine( inputText );
             
@@ -154,7 +131,7 @@ CMsWin32ConsoleWindow::OnNotify( CNotifier* notifier    ,
             }
             else
             {
-                GUCEF_CONSOLE_LOG( LOGLEVEL_NORMAL, "MsWin32ConsoleWindow(" + PointerToString( this ) + "): User input could not be successfully processed" );
+                GUCEF_CONSOLE_LOG( LOGLEVEL_NORMAL, "CMsWin32ConsoleWindow(" + PointerToString( this ) + "): User input could not be successfully processed" );
             }
             m_inputbox.Clear();
         }

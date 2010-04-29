@@ -475,6 +475,7 @@ CSysConsole::JumpTo( CSysConsoleClient* client ,
         channel = static_cast< TCmdChannel* >( client->channel );
     }
     
+    CString clientPath;
     CString dirname = thePath.SubstrToChar( '\\' );
     
     // Loop trough all the directories in the path
@@ -490,11 +491,34 @@ CSysConsole::JumpTo( CSysConsoleClient* client ,
                 // there are more sub dirs, prepare for another loop
                 thePath = thePath.CutChars( dirname.Length()+1, true );
                 dirname = thePath.SubstrToChar( '\\' );
+                if ( clientPath.Length() > 0 )
+                {
+                    clientPath += '\\' + dirname;
+                }
+                else
+                {
+                    clientPath = dirname;
+                }
             }
             else
             {
                 // have have processed the last sub dir
                 client->channel = channel;
+                if ( clientPath.Length() > 0 )
+                {
+                    client->_path += clientPath + '\\' + dirname;
+                }
+                else
+                {
+                    if ( client->_path.Length() > 0 ) 
+                    {
+                        client->_path += '\\' + dirname;
+                    }
+                    else
+                    {
+                        client->_path = dirname;
+                    }
+                }
                 _datalock.Unlock();
                 return true;
             }
