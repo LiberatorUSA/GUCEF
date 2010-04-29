@@ -80,11 +80,25 @@ WinMain( HINSTANCE hinstance     ,
         GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
         #endif /* GUCEF_MSWIN_BUILD ? */
 
-        GUCEF::CORE::CMsWin32Window::RegisterWindowClass( "test" );
+        //GUCEF::CORE::CMsWin32Window::RegisterWindowClass( "test" );
 
-        GUCEF::CORE::CMsWin32Window window;
-        window.WindowCreate( "test", "Hello", 400, 300 );
+        //GUCEF::CORE::CMsWin32Window window;
+        //window.WindowCreate( "test", "Hello", 400, 300 );
+        //
+        //GUCEF::CORE::CMsWin32Editbox editbox;
+        //editbox.EditboxCreate( window, "Test", true, 350, 250, false );
+        //
+        //window.Show();
+
+        GUCEF::CORE::CMsWin32ConsoleWindow test;
+        test.ConsoleWindowCreate();
+	    test.Show();
+	    	
+	//ShowWindow(window.GetHwnd(), ncmdshow);
+	//UpdateWindow(window.GetHwnd());
         
+        GUCEF::CORE::CGUCEFApplication::Instance()->Main( hinstance, lpcmdline, ncmdshow, true );
+              
         //PerformSharedPtrTests();
         
         //PerformCyclicDynamicBufferTests();

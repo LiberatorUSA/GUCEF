@@ -81,7 +81,8 @@ CMsWin32Window::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CMsWin32Window::CMsWin32Window( void )
-    : m_hwnd( 0 )
+    : m_hwnd( 0 ) ,
+      m_orgWinProc( 0 )
 {GUCEF_TRACE;
 
     SubscribeTo( &CGUCEFApplication::Instance()->GetPulseGenerator(), CPulseGenerator::PulseEvent );
@@ -116,6 +117,17 @@ CMsWin32Window::WindowProc( const HWND hWnd     ,
 
     switch( nMsg )
     {
+        //case WM_COMMAND:
+        //{
+        //    CMsWin32Window* child = (CMsWin32Window*) LOWORD( wParam );
+        //    
+        //    // Check if this is a text changed notification
+        //    if ( HIWORD( wParam ) == EN_CHANGE )
+        //    {
+        //        //NotifyObservers( TextChangedEvent );
+        //        break;
+        //    }
+        //}
         case WM_CLOSE:
         {
             NotifyObservers( WindowCloseEvent );
@@ -127,13 +139,14 @@ CMsWin32Window::WindowProc( const HWND hWnd     ,
         case WM_DESTROY:
         {
             NotifyObservers( WindowDestroyEvent );
+            break;
         }
         default:
         {
-            return DefWindowProc( hWnd   ,
-                                  nMsg   , 
-                                  wParam ,
-                                  lParam );
+            return GetOriginalWinProc()( hWnd   ,
+                                         nMsg   , 
+                                         wParam ,
+                                         lParam );
         }
     }
     return 0;
@@ -207,7 +220,7 @@ CMsWin32Window::WndProc( HWND hwnd     ,
     if ( msg == WM_NCCREATE )
     {
         windowObj = (CMsWin32Window*) ((LPCREATESTRUCT) lParam)->lpCreateParams;
-        ::SetWindowLong( hwnd, GWL_USERDATA, (long) windowObj );
+        ::SetWindowLongPtr( hwnd, GWL_USERDATA, (LONG_PTR) windowObj );
 	
 	    //If you process any messages that are sent before CreateWindowEx returns
 	    //the HWND, you need something in the place of your HWND member.
@@ -241,7 +254,8 @@ CMsWin32Window::Close( void )
 
 void
 CMsWin32Window::Resize( int x, int y, int width, int height )
-{
+{GUCEF_TRACE;
+
     if ( 0 != m_hwnd )
     {
         ::MoveWindow( m_hwnd, x, y, width, height, TRUE );
@@ -252,7 +266,8 @@ CMsWin32Window::Resize( int x, int y, int width, int height )
 
 void
 CMsWin32Window::SetText( const CString& text )
-{
+{GUCEF_TRACE;
+
     SetWindowText( m_hwnd, text.C_String() );
 }
 
@@ -260,7 +275,8 @@ CMsWin32Window::SetText( const CString& text )
     
 CString
 CMsWin32Window::GetText( void ) const
-{
+{GUCEF_TRACE;
+
     int len = GetWindowTextLength( m_hwnd );
     if( len > 0 )
     {
@@ -274,6 +290,28 @@ CMsWin32Window::GetText( void ) const
         return returnValue;
     }
     return CString();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::SetOriginalWinProc( WNDPROC originalWinProc )
+{GUCEF_TRACE;
+
+    m_orgWinProc = originalWinProc;
+}
+
+/*-------------------------------------------------------------------------*/
+
+WNDPROC
+CMsWin32Window::GetOriginalWinProc( void )
+{GUCEF_TRACE;
+
+    if ( 0 != m_orgWinProc )
+    {
+        return m_orgWinProc;
+    }
+    return DefWindowProc;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -303,9 +341,18 @@ CMsWin32Window::WindowCreate( const CString& windowClassName ,
     if ( 0 == m_hwnd )
     {
         GUCEF_SYSTEM_LOG( LOGLEVEL_IMPORTANT, "CMsWin32Window::WindowCreate(): Failed to create a window" );
+        return false;
     }
+
+    WNDPROC orgWinProc = (WNDPROC) ::GetWindowLongPtr( m_hwnd, GWLP_WNDPROC );
+    if ( orgWinProc != (WNDPROC) WndProc )
+    {
+        ::SetWindowLongPtr( m_hwnd, GWLP_WNDPROC, (LONG_PTR) WndProc );
+        m_orgWinProc = orgWinProc;
+    }
+    ::SetWindowLongPtr( m_hwnd, GWLP_USERDATA, (LONG_PTR) this );
                                  
-    return m_hwnd != 0;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

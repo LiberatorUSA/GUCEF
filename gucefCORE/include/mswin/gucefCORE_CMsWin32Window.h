@@ -118,23 +118,28 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32Window : public CObservingNotifier
 
     void SetHwnd( HWND hwnd );
     
+    void SetOriginalWinProc( WNDPROC originalWinProc );
+    
+    WNDPROC GetOriginalWinProc( void );
+    
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL ); 
+
+    static LRESULT WndProc( HWND hwnd     , 
+                            UINT msg      ,
+                            WPARAM wParam ,
+                            LPARAM lParam );
 
     private:
 
     CMsWin32Window( const CMsWin32Window& src );       /**< cannot be copied */
     CMsWin32Window& operator=( const CMsWin32Window ); /**< cannot be copied */
-    
-    static LRESULT WndProc( HWND hwnd     , 
-                            UINT msg      ,
-                            WPARAM wParam ,
-                            LPARAM lParam );
-    
+
     private:
     
     HWND m_hwnd;
+    WNDPROC m_orgWinProc;
 };
 
 /*-------------------------------------------------------------------------//

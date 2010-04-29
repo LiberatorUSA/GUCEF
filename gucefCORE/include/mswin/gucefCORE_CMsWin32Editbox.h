@@ -62,6 +62,8 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32Editbox : public CMsWin32Window
     
     public:
     
+    typedef std::vector< CString > TStringVector;
+    
     CMsWin32Editbox();
 
     virtual ~CMsWin32Editbox();
@@ -71,6 +73,10 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32Editbox : public CMsWin32Window
     virtual void SetText( const CString& text );
     
     virtual CString GetText( void ) const;
+    
+    void AppendLine( const CString& line );
+    
+    void AppendLines( TStringVector& lines );
 
     virtual bool EditboxCreate( CMsWin32Window& parent           ,
                                 const CString& windowTitle       ,

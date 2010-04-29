@@ -28,6 +28,11 @@
 #define GUCEF_CORE_CSYSCONSOLE_H 
 #endif /* GUCEF_CORE_CSYSCONSOLE_H ? */
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 #include "CSysConsoleClient.h"
 
 /*-------------------------------------------------------------------------//
@@ -47,31 +52,17 @@ namespace CORE {
 
 CSysConsoleClient::CSysConsoleClient( void )
         : _system( CSysConsole::Instance() )
-{
+{GUCEF_TRACE;
+
         _system->InitClient( this );        
 }
 
 /*-------------------------------------------------------------------------*/
 
-CSysConsoleClient::CSysConsoleClient( const CSysConsoleClient& src )
-{
-        /* dummy, do not use */
-}
-
-/*-------------------------------------------------------------------------*/
-
 CSysConsoleClient::~CSysConsoleClient()
-{
+{GUCEF_TRACE;
+
         _system->UnregClient( this );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CSysConsoleClient&
-CSysConsoleClient::operator=( const CSysConsoleClient& src )
-{
-        /* dummy, do not use */
-        return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -81,7 +72,8 @@ CSysConsoleClient::RegisterCmd( const CString& path                ,
                                 const CString& command             ,
                                 const std::vector< CString >& args ,
                                 CISysConsoleCmdHandler* cmdhandler )
-{                                          
+{GUCEF_TRACE;
+                                          
         return _system->RegisterCmd( path       ,
                                      command    ,
                                      args       ,
@@ -93,7 +85,8 @@ CSysConsoleClient::RegisterCmd( const CString& path                ,
 void 
 CSysConsoleClient::UnregisterCmd( const CString& path    ,
                                   const CString& command )
-{
+{GUCEF_TRACE;
+
         _system->UnregisterCmd( path    ,
                                 command );
 }
@@ -102,7 +95,8 @@ CSysConsoleClient::UnregisterCmd( const CString& path    ,
 
 void 
 CSysConsoleClient::LeaveDir( void )
-{
+{GUCEF_TRACE;
+
         _system->LeaveDir( this );
 }
 
@@ -110,7 +104,8 @@ CSysConsoleClient::LeaveDir( void )
 
 bool 
 CSysConsoleClient::EnterDir( const CString& dirname )
-{
+{GUCEF_TRACE;
+
         return _system->EnterDir( this, dirname );
 }
 
@@ -118,7 +113,8 @@ CSysConsoleClient::EnterDir( const CString& dirname )
 
 bool 
 CSysConsoleClient::JumpTo( const CString& path )
-{
+{GUCEF_TRACE;
+
         return _system->JumpTo( this , 
                                 path );
 }
@@ -127,7 +123,8 @@ CSysConsoleClient::JumpTo( const CString& path )
 
 const CString& 
 CSysConsoleClient::GetPath( void ) const
-{
+{GUCEF_TRACE;
+
         return _path;
 }
 
@@ -137,7 +134,8 @@ bool
 CSysConsoleClient::Execute( const CString& functionname            ,
                             const std::vector< CString >& arglist  ,
                             std::vector< CString >& resultdata     )
-{
+{GUCEF_TRACE;
+
         return _system->Execute( this         , 
                                  functionname ,
                                  arglist      ,
@@ -148,7 +146,8 @@ CSysConsoleClient::Execute( const CString& functionname            ,
 
 std::vector< CString > 
 CSysConsoleClient::GetDirList( void ) const
-{
+{GUCEF_TRACE;
+
         return _system->GetDirList( this );
 }
 
@@ -156,16 +155,71 @@ CSysConsoleClient::GetDirList( void ) const
 
 std::vector< CString > 
 CSysConsoleClient::GetCmdList( void ) const
-{
+{GUCEF_TRACE;
+
         return _system->GetCmdList( this );
 }
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CSysConsoleClient::ProcessUserInput( const CString& userInput  ,
+                                     TStringVector& resultdata )
+{GUCEF_TRACE;
+
+    Int32 subStrIndex = userInput.HasSubstr( "cd", true );
+    if ( subStrIndex == 0 )
+    {
+         CString dirString = userInput.CutChars( 3, true );
+         if ( dirString.Length() > 0 )
+         {  
+            if ( 0 == dirString.HasSubstr( "..", true ) )
+            {
+                LeaveDir();
+                return true;
+            }
+            dirString = dirString.ReplaceChar( '/', '\\' );
+            return JumpTo( dirString );           
+         }
+    }
+    else
+    {
+        subStrIndex = userInput.HasSubstr( "dirs", true );
+        if ( subStrIndex == 0 )
+        {
+            resultdata = GetDirList();
+            return true;
+        }
+        else
+        {
+            subStrIndex = userInput.HasSubstr( "cmds", true );
+            if ( subStrIndex == 0 )
+            {
+                resultdata = GetCmdList();
+                return true;
+            }
+        }
+    }
+    
+    TStringVector elements = userInput.ParseElements( ' ', false );
+    if ( elements.size() > 0 )
+    {
+        CString funcName = *elements.begin();
+        elements.erase( elements.begin() );
+        return Execute( funcName   ,
+                        elements   ,
+                        resultdata );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
-CSysConsoleClient::OnReturnData( const std::vector< CString >& data )
-{
-        /* dummy, to avoid mandatory implementation for descending classes */        
+CSysConsoleClient::OnReturnData( const TStringVector& data )
+{GUCEF_TRACE;
+
+    /* dummy, to avoid mandatory implementation for descending classes */        
 }
 
 /*-------------------------------------------------------------------------//
