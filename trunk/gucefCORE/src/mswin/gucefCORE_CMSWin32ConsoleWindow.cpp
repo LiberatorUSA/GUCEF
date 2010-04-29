@@ -35,6 +35,16 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #include "gucefCORE_CMsWin32ConsoleWindow.h"
 
 /*-------------------------------------------------------------------------//
@@ -100,7 +110,9 @@ void
 CMsWin32ConsoleWindow::AppendLine( const CString& line )
 {GUCEF_TRACE;
 
-    m_outputbox.AppendLine( GetPath() + ">" + line ); 
+    CString newLine( GetPath() + ">" + line );
+    m_outputbox.AppendLine( newLine ); 
+    GUCEF_CONSOLE_LOG( LOGLEVEL_NORMAL, "MsWin32ConsoleWindow(" + PointerToString( this ) + "): output: " + newLine );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -130,6 +142,8 @@ CMsWin32ConsoleWindow::OnNotify( CNotifier* notifier    ,
         if ( CMsWin32Editbox::EnterPressedEvent == eventid )
         {
             CString inputText = m_inputbox.GetText();
+            GUCEF_CONSOLE_LOG( LOGLEVEL_NORMAL, "MsWin32ConsoleWindow(" + PointerToString( this ) + "): User entered the following: " + inputText );
+            
             AppendLine( inputText );
             
             TStringVector resultdata;
@@ -138,6 +152,11 @@ CMsWin32ConsoleWindow::OnNotify( CNotifier* notifier    ,
             {
                 AppendLines( resultdata );
             }
+            else
+            {
+                GUCEF_CONSOLE_LOG( LOGLEVEL_NORMAL, "MsWin32ConsoleWindow(" + PointerToString( this ) + "): User input could not be successfully processed" );
+            }
+            m_inputbox.Clear();
         }
     }
     else
@@ -216,6 +235,24 @@ CMsWin32ConsoleWindow::WindowProc( const HWND hWnd     ,
                                    const LPARAM lParam )
 {GUCEF_TRACE;
 
+    switch ( nMsg )
+    {
+        case WM_SIZE:
+        {
+            // If the console window is resize then auto-resize the children to stay
+            // correctly sized within the window.
+            m_outputbox.WindowAreaResizeRelativeToParentClientArea( 0.0, 0.0, 1.0, 0.85, false );
+            
+            // Make sure the input box is correctly placed under the output box even if scrollbars are added
+            Float32 dummy, outputboxRelWindowHeight;
+            if ( m_outputbox.GetWindowAreaRelativeToParentClientArea( dummy, dummy, dummy, outputboxRelWindowHeight ) )
+            {
+                m_inputbox.WindowAreaResizeRelativeToParentClientArea( 0.0, outputboxRelWindowHeight, 1.0, 1.0 - outputboxRelWindowHeight, false );
+            }
+            Repaint();            
+            break;
+        }
+    }
     return CMsWin32Window::WindowProc( hWnd, nMsg, wParam, lParam );
 }
 

@@ -62,6 +62,7 @@ namespace CORE {
 const CEvent CMsWin32Window::WindowCloseEvent = "GUCEF::CORE::CMsWin32Window::WindowCloseEvent";
 const CEvent CMsWin32Window::WindowDestroyEvent = "GUCEF::CORE::CMsWin32Window::WindowDestroyEvent";
 const CEvent CMsWin32Window::WindowActivationEvent = "GUCEF::CORE::CMsWin32Window::WindowActivationEvent";
+const CEvent CMsWin32Window::WindowResizeEvent = "GUCEF::CORE::CMsWin32Window::WindowResizeEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -76,6 +77,7 @@ CMsWin32Window::RegisterEvents( void )
     WindowCloseEvent.Initialize();    
     WindowDestroyEvent.Initialize();
     WindowActivationEvent.Initialize();
+    WindowResizeEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -139,6 +141,11 @@ CMsWin32Window::WindowProc( const HWND hWnd     ,
         case WM_DESTROY:
         {
             NotifyObservers( WindowDestroyEvent );
+            break;
+        }
+        case WM_SIZE:
+        {
+            NotifyObservers( WindowResizeEvent );
             break;
         }
         default:
@@ -208,6 +215,19 @@ CMsWin32Window::GetHwnd( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+HWND
+CMsWin32Window::GetParentHwnd( void ) const
+{GUCEF_TRACE;
+    
+    if ( 0 != m_hwnd )
+    {
+        ::GetParent( m_hwnd );
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 LRESULT
 CMsWin32Window::WndProc( HWND hwnd     , 
                          UINT msg      ,
@@ -252,14 +272,272 @@ CMsWin32Window::Close( void )
 
 /*-------------------------------------------------------------------------*/
 
-void
-CMsWin32Window::Resize( int x, int y, int width, int height )
+bool
+CMsWin32Window::GetWindowAreaPosition( int& x, int& y ) const
 {GUCEF_TRACE;
 
     if ( 0 != m_hwnd )
     {
-        ::MoveWindow( m_hwnd, x, y, width, height, TRUE );
+        RECT rcWindow;
+        ::GetWindowRect( m_hwnd, &rcWindow );
+        x = rcWindow.left;
+        y = rcWindow.top;
+        return true;
     }
+    return false;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsWin32Window::GetClientAreaPosition( int& x, int& y ) const
+{GUCEF_TRACE;
+
+    if ( 0 != m_hwnd )
+    {
+        RECT rcClient;
+        ::GetClientRect( m_hwnd, &rcClient );
+        x = rcClient.left;
+        y = rcClient.top;
+        return true;
+    }
+    return false;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsWin32Window::GetClientArea( int& x, int& y, int& width, int& height ) const
+{GUCEF_TRACE;
+
+    if ( 0 != m_hwnd )
+    {
+        RECT rcClient;
+        ::GetClientRect( m_hwnd, &rcClient );
+        x = rcClient.left;
+        y = rcClient.top;
+        width = (rcClient.right - rcClient.left);
+        height = (rcClient.bottom - rcClient.top);
+        return true;
+    }
+    return false;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsWin32Window::GetWindowArea( int& x, int& y, int& width, int& height ) const
+{GUCEF_TRACE;
+
+    if ( 0 != m_hwnd )
+    {
+        RECT rcWindow;
+        ::GetWindowRect( m_hwnd, &rcWindow );
+        x = rcWindow.left;
+        y = rcWindow.top;
+        width = (rcWindow.right - rcWindow.left);
+        height = (rcWindow.bottom - rcWindow.top);
+        return true;
+    }
+    return false;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsWin32Window::GetWindowAreaRelativeToParentClientArea( Float32& x      , 
+                                                         Float32& y      ,
+                                                         Float32& width  , 
+                                                         Float32& height ) const
+{GUCEF_TRACE;
+
+    if ( 0 != m_hwnd )
+    {
+        HWND parentHwnd = ::GetParent( m_hwnd );
+        if ( 0 != parentHwnd )
+        {        
+            RECT rcWindow;
+            ::GetWindowRect( m_hwnd, &rcWindow );            
+            RECT rcParentClient;
+            ::GetClientRect( parentHwnd, &rcParentClient );
+
+            Float32 thisWidth = (Float32) rcWindow.right - rcWindow.left;
+            Float32 thisHeight = (Float32) rcWindow.bottom - rcWindow.top;            
+            Float32 parentWidth = (Float32) rcParentClient.right - rcParentClient.left;
+            Float32 parentHeight = (Float32) rcParentClient.bottom - rcParentClient.top;
+            
+            x = rcWindow.left / parentWidth;
+            y = rcWindow.top / parentHeight;
+            width = thisWidth / parentWidth;
+            height = thisHeight / parentHeight;
+            return true;
+        }
+    }
+    return false; 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::WindowAreaResize( int x, int y, int width, int height, bool repaint )
+{GUCEF_TRACE;
+
+    if ( 0 != m_hwnd )
+    {
+        ::MoveWindow( m_hwnd, x, y, width, height, repaint ? TRUE : FALSE );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::WindowAreaResize( int width, int height, bool repaint )
+{GUCEF_TRACE;
+
+    if ( 0 != m_hwnd )
+    {
+        RECT rcWindow;
+        ::GetWindowRect( m_hwnd, &rcWindow );
+
+        ::MoveWindow( m_hwnd, rcWindow.left, rcWindow.top, width, height, repaint ? TRUE : FALSE );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::ClientAreaResize( int x, int y, int width, int height, bool repaint )
+{GUCEF_TRACE;
+
+    if ( 0 != m_hwnd )
+    {
+        RECT rcClient, rcWindow;
+        POINT sizeDiff;
+        
+        ::GetClientRect( m_hwnd, &rcClient );
+        ::GetWindowRect( m_hwnd, &rcWindow );
+        
+        sizeDiff.x = (rcWindow.right - rcWindow.left) - rcClient.right;
+        sizeDiff.y = (rcWindow.bottom - rcWindow.top) - rcClient.bottom;
+        
+        ::MoveWindow( m_hwnd                 , 
+                      x + rcClient.left      , 
+                      y + rcClient.top       , 
+                      width + sizeDiff.x     ,
+                      height + sizeDiff.y    ,
+                      repaint ? TRUE : FALSE );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::ClientAreaResize( int width, int height, bool repaint )
+{GUCEF_TRACE;
+
+    if ( 0 != m_hwnd )
+    {
+        RECT rcClient;
+        ::GetClientRect( m_hwnd, &rcClient );
+        
+        ClientAreaResize( rcClient.left, rcClient.top, width, height, repaint );    
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline Float32
+ClampFloat( Float32 valueToClamp )
+{
+    if ( valueToClamp < 0.0 )
+    {
+        return 0.0;
+    }
+    else
+    if ( valueToClamp > 1.0 )
+    {
+        return 1.0;
+    }
+    return valueToClamp;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::ClientAreaResizeRelativeToParentClientArea( Float32 x      , 
+                                                            Float32 y      ,
+                                                            Float32 width  , 
+                                                            Float32 height ,
+                                                            bool repaint   )
+{GUCEF_TRACE;
+
+    if ( 0 != m_hwnd )
+    {
+        HWND parentWindow = ::GetParent( m_hwnd );
+        if ( 0 != parentWindow )
+        {
+            x = ClampFloat( x );
+            y = ClampFloat( y );
+            width = ClampFloat( width );
+            height = ClampFloat( height );
+            
+            RECT parentClientAreaSize;
+            ::GetClientRect( parentWindow, &parentClientAreaSize );
+            
+            int parentWidth = parentClientAreaSize.right - parentClientAreaSize.left;
+            int parentHeight = parentClientAreaSize.bottom - parentClientAreaSize.top;
+            
+            ClientAreaResize( (int) ( x * parentWidth )       ,
+                              (int) ( y * parentHeight )      , 
+                              (int) ( width * parentWidth )   ,
+                              (int) ( height * parentHeight ) ,
+                              repaint                         );
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::WindowAreaResizeRelativeToParentClientArea( Float32 x      , 
+                                                            Float32 y      ,
+                                                            Float32 width  , 
+                                                            Float32 height ,
+                                                            bool repaint   )
+{GUCEF_TRACE;
+
+    if ( 0 != m_hwnd )
+    {
+        HWND parentWindow = ::GetParent( m_hwnd );
+        if ( 0 != parentWindow )
+        {
+            x = ClampFloat( x );
+            y = ClampFloat( y );
+            width = ClampFloat( width );
+            height = ClampFloat( height );
+            
+            RECT parentClientAreaSize;
+            ::GetClientRect( parentWindow, &parentClientAreaSize );
+            
+            int parentWidth = parentClientAreaSize.right - parentClientAreaSize.left;
+            int parentHeight = parentClientAreaSize.bottom - parentClientAreaSize.top;
+            
+            WindowAreaResize( (int) ( x * parentWidth )       ,
+                              (int) ( y * parentHeight )      , 
+                              (int) ( width * parentWidth )   ,
+                              (int) ( height * parentHeight ) ,
+                              repaint                         );
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::Repaint( void )
+{GUCEF_TRACE;
+
+    ::InvalidateRect( m_hwnd, NULL, TRUE );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -343,6 +621,15 @@ CMsWin32Window::WindowCreate( const CString& windowClassName ,
         GUCEF_SYSTEM_LOG( LOGLEVEL_IMPORTANT, "CMsWin32Window::WindowCreate(): Failed to create a window" );
         return false;
     }
+    HookWndProc();                                 
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::HookWndProc( void )
+{GUCEF_TRACE;
 
     WNDPROC orgWinProc = (WNDPROC) ::GetWindowLongPtr( m_hwnd, GWLP_WNDPROC );
     if ( orgWinProc != (WNDPROC) WndProc )
@@ -351,8 +638,6 @@ CMsWin32Window::WindowCreate( const CString& windowClassName ,
         m_orgWinProc = orgWinProc;
     }
     ::SetWindowLongPtr( m_hwnd, GWLP_USERDATA, (LONG_PTR) this );
-                                 
-    return true;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -90,6 +90,7 @@ CLogManager::CLogManager( void )
     m_msgTypeEnablers[ LOG_PROTECTED ] = true;
     m_msgTypeEnablers[ LOG_CALLSTACK ] = true;
     m_msgTypeEnablers[ LOG_EXCEPTION ] = true;
+    m_msgTypeEnablers[ LOG_CONSOLE ] = true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -332,6 +333,11 @@ CLogManager::GetLogMsgTypeString( const TLogMsgType logMsgType )
         case CLogManager::LOG_EXCEPTION :
         {
             static CString typeStr = "EXCEPTION";
+            return typeStr;
+        }
+        case CLogManager::LOG_CONSOLE :
+        {
+            static CString typeStr = "CONSOLE";
             return typeStr;
         }
         default :

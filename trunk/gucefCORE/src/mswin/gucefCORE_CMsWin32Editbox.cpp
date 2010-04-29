@@ -88,6 +88,14 @@ CMsWin32Editbox::~CMsWin32Editbox()
 /*-------------------------------------------------------------------------*/
 
 void
+CMsWin32Editbox::Clear( void )
+{
+    SetWindowText( GetHwnd(), "" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CMsWin32Editbox::SetText( const CString& text )
 {
     SetWindowText( GetHwnd(), text.C_String() );
@@ -182,13 +190,14 @@ CMsWin32Editbox::WindowProc( const HWND hWnd     ,
         //}
         default:
         {
-            return CMsWin32Window::WindowProc( hWnd   ,
-                                               nMsg   ,
-                                               wParam ,
-                                               lParam );
+            break;
         }
     }
-    return 0;
+    
+    return CMsWin32Window::WindowProc( hWnd   ,
+                                       nMsg   ,
+                                       wParam ,
+                                       lParam );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -237,15 +246,12 @@ CMsWin32Editbox::EditboxCreate( CMsWin32Window& parent           ,
                                parent.GetHwnd(), (HMENU)this, GetCurrentModuleHandle(), (LPVOID)this ) );
     }
 
-    WNDPROC orgWinProc = (WNDPROC) ::GetWindowLongPtr( GetHwnd(), GWLP_WNDPROC );
-    if ( orgWinProc != (WNDPROC) WndProc )
+    if ( GetHwnd() != 0 )
     {
-        ::SetWindowLongPtr( GetHwnd(), GWLP_WNDPROC, (LONG_PTR) WndProc );
-        SetOriginalWinProc( orgWinProc );
-    }
-    ::SetWindowLongPtr( GetHwnd(), GWLP_USERDATA, (LONG_PTR) this );
-    
-    return GetHwnd() != 0;
+        HookWndProc();
+        return true;
+    }            
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
