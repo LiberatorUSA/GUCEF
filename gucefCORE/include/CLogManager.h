@@ -79,7 +79,8 @@ class GUCEFCORE_EXPORT_CPP CLogManager
         LOG_SERVICE,   /**< typically info useful to a service engineer */
         LOG_PROTECTED, /**< typically used for logging info that should be encrypted before being stored */
         LOG_CALLSTACK, /**< typically used for logging the call stack of a running application for debugging purposes */
-        LOG_EXCEPTION
+        LOG_EXCEPTION, /**< typically used for logging exception details just before throwing an exception, see exception macros */
+        LOG_CONSOLE    /**< typically used for logging input/output of the system console */
     };
     
     static CLogManager* Instance( void );
@@ -229,6 +230,11 @@ CString LogLevelToString( const Int32 logLevel );
 
 #undef GUCEF_EXCEPTION_LOG
 #define GUCEF_EXCEPTION_LOG( logLevel, logMessage ) GUCEF::CORE::CLogManager::Instance()->Log( GUCEF::CORE::CLogManager::LOG_EXCEPTION, logLevel, logMessage );
+
+/*-------------------------------------------------------------------------*/
+
+#undef GUCEF_CONSOLE_LOG
+#define GUCEF_CONSOLE_LOG( logLevel, logMessage ) GUCEF::CORE::CLogManager::Instance()->Log( GUCEF::CORE::CLogManager::LOG_CONSOLE, logLevel, logMessage );
 
 /*-------------------------------------------------------------------------*/
 

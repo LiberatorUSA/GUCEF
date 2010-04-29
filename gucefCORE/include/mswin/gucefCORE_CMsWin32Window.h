@@ -68,6 +68,7 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32Window : public CObservingNotifier
     static const CEvent WindowCloseEvent; 
     static const CEvent WindowDestroyEvent;
     static const CEvent WindowActivationEvent;
+    static const CEvent WindowResizeEvent;
     
     static void RegisterEvents( void );
     
@@ -84,6 +85,8 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32Window : public CObservingNotifier
     virtual CString GetText( void ) const;
     
     HWND GetHwnd( void ) const;
+    
+    HWND GetParentHwnd( void ) const;
     
     virtual const CString& GetClassTypeName( void ) const;
 
@@ -107,7 +110,40 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32Window : public CObservingNotifier
     
     bool Minimize( void );
     
-    void Resize( int x, int y, int width, int height );
+    void Repaint( void );
+    
+    bool GetWindowAreaPosition( int& x, int& y ) const;
+    
+    bool GetClientAreaPosition( int& x, int& y ) const;
+    
+    bool GetWindowArea( int& x, int& y, int& width, int& height ) const;
+    
+    bool GetWindowAreaRelativeToParentClientArea( Float32& x      , 
+                                                  Float32& y      ,
+                                                  Float32& width  , 
+                                                  Float32& height ) const;
+    
+    bool GetClientArea( int& x, int& y, int& width, int& height ) const;
+    
+    void WindowAreaResize( int x, int y, int width, int height, bool repaint = true );
+    
+    void WindowAreaResize( int width, int height, bool repaint = true );
+    
+    void ClientAreaResize( int x, int y, int width, int height, bool repaint = true );
+    
+    void ClientAreaResize( int width, int height, bool repaint = true );
+
+    void WindowAreaResizeRelativeToParentClientArea( Float32 x           , 
+                                                     Float32 y           ,
+                                                     Float32 width       , 
+                                                     Float32 height      ,
+                                                     bool repaint = true );
+    
+    void ClientAreaResizeRelativeToParentClientArea( Float32 x           ,
+                                                     Float32 y           ,
+                                                     Float32 width       , 
+                                                     Float32 height      ,
+                                                     bool repaint = true );
 
     protected:
     
@@ -130,6 +166,8 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32Window : public CObservingNotifier
                             UINT msg      ,
                             WPARAM wParam ,
                             LPARAM lParam );
+                            
+    void HookWndProc( void );
 
     private:
 

@@ -77,6 +77,8 @@ class GUCEF_CORE_EXPORT_CPP CMsWin32Editbox : public CMsWin32Window
     void AppendLine( const CString& line );
     
     void AppendLines( TStringVector& lines );
+    
+    void Clear( void );
 
     virtual bool EditboxCreate( CMsWin32Window& parent           ,
                                 const CString& windowTitle       ,
