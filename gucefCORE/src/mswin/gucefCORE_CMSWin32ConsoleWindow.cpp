@@ -224,7 +224,7 @@ CMsWin32ConsoleWindow::WindowProc( const HWND hWnd     ,
             Float32 dummy, outputboxRelWindowHeight;
             if ( m_outputbox.GetWindowAreaRelativeToParentClientArea( dummy, dummy, dummy, outputboxRelWindowHeight ) )
             {
-                m_inputbox.WindowAreaResizeRelativeToParentClientArea( 0.0, outputboxRelWindowHeight, 1.0, 1.0 - outputboxRelWindowHeight, false );
+                m_inputbox.WindowAreaResizeRelativeToParentClientArea( 0.0f, outputboxRelWindowHeight, 1.0f, 1.0f - outputboxRelWindowHeight, false );
             }
             Repaint();            
             break;
