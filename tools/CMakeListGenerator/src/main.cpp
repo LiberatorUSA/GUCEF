@@ -70,6 +70,11 @@
 #define GUCEF_CORE_CFILEACCESS_H
 #endif /* GUCEF_CORE_CFILEACCESS_H ? */
 
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H ? */
+
 #ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>
 #endif /* GUCEF_MSWIN_BUILD ? */
@@ -303,6 +308,13 @@ GetXmlDStoreCodec( void )
             {
                 // Now try and get the codec again
                 registry->TryLookup( "XML", codecPtr, false );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Request for data storage codec for xml file, succesfully loaded plugin to handle request" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Request for data storage codec for xml file but no plugin for it could be loaded!" );
+                CORE::ShowErrorMessage( "Missing codec support", 
+                                        "Request for data storage codec for xml file but no plugin for it could be loaded!" ); 
             }
         }
     }

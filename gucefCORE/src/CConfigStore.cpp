@@ -252,12 +252,16 @@ CConfigStore::SaveConfig( const CString& name ,
 bool 
 CConfigStore::LoadConfig( void )
 {GUCEF_TRACE;        
+        
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CConfigStore: Loading all config" );
+        
         _datalock.Lock();        
         
         if ( _codectype.Length() == 0 )
         {
             _codectype = Extract_File_Ext( _configfile.C_String() );
         }
+        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Will try to use codec " + _codectype + " for the config information in file " + _configfile );
         
         try 
         {
@@ -265,7 +269,9 @@ CConfigStore::LoadConfig( void )
                 CDataNode rootnode;
                 if ( codec->BuildDataTree( &rootnode   ,
                                            _configfile ) )
-                {
+                {                        
+                        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Used codec " + _codectype + " to successfully build a config data tree from file " + _configfile );
+                        
                         TConfigurableSet::iterator i = _configobjs.begin();
                         while ( i != _configobjs.end() )
                         {
@@ -278,11 +284,15 @@ CConfigStore::LoadConfig( void )
                         }
                         _datalock.Unlock();
                         return true;
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to build a config data tree using codec " + _codectype + " from file " + _configfile );
                 }                      
         }                
         catch ( CDStoreCodecRegistry::EUnregisteredName& )
         {
-        
+            GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to retrieve codec " + _codectype + " for the config information" );
         }
         _datalock.Unlock();
         return false;
