@@ -162,21 +162,21 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
     if ( infoNode != NULL )
     {
         // First we obtain the mandatory atributes
-        const CORE::CDataNode::TNodeAtt* att = infoNode->GetAttribute( "LocalRootDir" );
+        const CORE::CDataNode::TKeyValuePair* att = infoNode->GetAttribute( "LocalRootDir" );
         if ( att == NULL ) return false;
-        SetLocalRootDir( att->value );
+        SetLocalRootDir( att->second );
         
         att = infoNode->GetAttribute( "TempStorageRoot" );
         if ( att == NULL ) return false;
-        SetLocalTempStorageRootDir( att->value );
+        SetLocalTempStorageRootDir( att->second );
         
         att = infoNode->GetAttribute( "PatchListURL" );
         if ( att == NULL ) return false;
-        SetPatchListURL( att->value );
+        SetPatchListURL( att->second );
 
         att = infoNode->GetAttribute( "PatchListCodec" );
         if ( att == NULL ) return false;
-        SetPatchListCodec( att->value );
+        SetPatchListCodec( att->second );
         
         // Load optional attributes
         att = infoNode->GetAttribute( "StopOnFileReplacementFailure" );
@@ -186,7 +186,7 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
         }
         else
         {
-            SetStopOnFileReplacementFailure( CORE::StringToBool( att->value ) );
+            SetStopOnFileReplacementFailure( CORE::StringToBool( att->second ) );
         }
         
         // Try and find some optional engine trigger events
@@ -200,7 +200,7 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
                 att = infoNode->GetAttribute( "Event" );
                 if ( att != NULL )
                 {
-                    AddEngineStartTriggerEvent( att->value );
+                    AddEngineStartTriggerEvent( att->second );
                 }
             }
             else
@@ -209,7 +209,7 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
                 att = infoNode->GetAttribute( "Event" );
                 if ( att != NULL )
                 {
-                    AddEngineStopTriggerEvent( att->value );
+                    AddEngineStopTriggerEvent( att->second );
                 }
             }            
             ++i;

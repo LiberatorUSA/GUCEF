@@ -88,11 +88,11 @@ CPatchListParser::ParsePatchList( const CORE::CDataNode& patchListData ,
             if ( patchListEntry->GetName().Equals( "PatchSetEntry", false ) )
             {
                 // Validate that the patch set has a name property
-                const CORE::CDataNode::TNodeAtt* attData = patchListEntry->GetAttribute( "Name" );
+                const CORE::CDataNode::TKeyValuePair* attData = patchListEntry->GetAttribute( "Name" );
                 if ( attData != NULL )
                 {
                     // A name was found, we can continue on to parse the patch set's locations
-                    const CORE::CString& patchSetName = attData->value;
+                    const CORE::CString& patchSetName = attData->second;
                     
                     const CORE::CDataNode* patchSetLocEntry( NULL );
                     CORE::CDataNode::const_iterator n = patchListEntry->ConstBegin();
@@ -107,14 +107,14 @@ CPatchListParser::ParsePatchList( const CORE::CDataNode& patchListData ,
                             if ( attData != NULL )
                             {
                                 // We have a URL
-                                const CORE::CString& patchSetLocURL = attData->value;
+                                const CORE::CString& patchSetLocURL = attData->second;
                                 
                                 // Get the codec name for the patch set data
                                 attData = patchSetLocEntry->GetAttribute( "Codec" ); 
                                 if ( attData != NULL )
                                 {
                                     // We have the codec name
-                                    const CORE::CString& patchSetDataCodec = attData->value;
+                                    const CORE::CString& patchSetDataCodec = attData->second;
                                     
                                     // We have all the info we need for this location
                                     // we can now add the location to the list
