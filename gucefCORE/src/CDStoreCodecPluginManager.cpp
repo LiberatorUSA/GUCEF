@@ -271,16 +271,14 @@ CDStoreCodecPluginManager::SaveConfig( CDataNode& tree )
         _datalock.Lock();
         CDataNode* n = tree.Structure( "GUCEF%CORE%CDStoreCodecPluginManager" ,
                                        '%'                                    );
-        UInt32 count = _codecs.GetCount();
-        CDataNode::TNodeAtt att;
-                                                
-        CString tmp;
-        tmp.SetInt( count );                                        
-        n->SetAttribute( "plugincount", tmp );                                        
+
+        UInt32 count = _codecs.GetCount();                                        
+        n->SetAttribute( "plugincount", UInt32ToString( count ) );                                        
                                
         n->DelSubTree();
         CDataNode plugin( "CDStoreCodecPlugin" );
         CDStoreCodecPlugin* cp;        
+ 
         for ( UInt32 i=0; i<count; ++i )
         {
                 cp = static_cast<CDStoreCodecPlugin*>(_codecs[ i ]);
@@ -300,6 +298,9 @@ CDStoreCodecPluginManager::SaveConfig( CDataNode& tree )
 bool 
 CDStoreCodecPluginManager::LoadConfig( const CDataNode& tree )
 {GUCEF_TRACE;
+        
+        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CDStoreCodecPluginManager: Loading config" );
+        
         _datalock.Lock();
         CDataNode* n = tree.Search( "GUCEF%CORE%CDStoreCodecPluginManager", 
                                     '%'                                   ,
@@ -310,7 +311,7 @@ CDStoreCodecPluginManager::LoadConfig( const CDataNode& tree )
                 CDStoreCodecPlugin* cp;
                 CString path( "path" );
                 const CDataNode* c;
-                const CDataNode::TNodeAtt* att; 
+                const CDataNode::TKeyValuePair* att; 
                 CDataNode::const_iterator i = n->ConstBegin();
                 while ( i != n->ConstEnd() )
                 {
@@ -328,7 +329,7 @@ CDStoreCodecPluginManager::LoadConfig( const CDataNode& tree )
                                         for ( UInt32 n=0; n<count; ++n )
                                         {
                                                 cp = static_cast<CDStoreCodecPlugin*>(_codecs[ n ]);
-                                                if ( att->value == cp->GetLocation() )
+                                                if ( att->second == cp->GetLocation() )
                                                 {       
                                                         found = true;                                                 
                                                         break;        
@@ -340,7 +341,7 @@ CDStoreCodecPluginManager::LoadConfig( const CDataNode& tree )
                                                  *      This module is not loaded yet.
                                                  *      We will do so now.
                                                  */
-                                                LoadCodecPlugin( att->value ); 
+                                                LoadCodecPlugin( att->second ); 
                                         }                                                
                                 }       
                         }

@@ -74,52 +74,30 @@ CDataNode::CDataNode( const CString& name )
 /*-------------------------------------------------------------------------*/
 
 CDataNode::CDataNode( const CDataNode& src )
-        : _name( src._name )                ,
-          _atts( src._atts.GetArraySize() ) ,
-          _pparent( src._pparent )          ,
-          _pnext( src._pnext )              ,
-          _pprev( src._pprev )              ,
-          _pfchild( NULL )                  ,
+        : _name( src._name )       ,
+          _atts( src._atts )       ,
+          _pparent( src._pparent ) ,
+          _pnext( src._pnext )     ,
+          _pprev( src._pprev )     ,
+          _pfchild( NULL )         ,
           _plchild( NULL )
-{
-        GUCEF_BEGIN;        
-        TNodeAtt* srcatt;
-        TNodeAtt* att;
-        UInt32 count = src._atts.GetCount();
-        for ( UInt32 i=0; i<count; ++i )        
-        {
-                srcatt = static_cast<TNodeAtt*>( src._atts[ i ] );
-                att = new TNodeAtt;
-                *att = *srcatt;
-                _atts.SetEntry( i, att );
-                
-                CHECKMEM( att, sizeof(TNodeAtt) );       
-        }
-        
-        const CDataNode* n = src._pfchild;
-        while ( n )
-        {
-                AddChild( *n );
-                n = n->_pnext;
-        }
-        GUCEF_END;               
+{GUCEF_TRACE;
+    
+    const CDataNode* n = src._pfchild;
+    while ( 0 != n )
+    {
+        AddChild( *n );
+        n = n->_pnext;
+    }             
 }
 
 /*-------------------------------------------------------------------------*/
         
 CDataNode::~CDataNode()
-{        
-        GUCEF_BEGIN;
-        Detach();
+{GUCEF_TRACE;
         
-        UInt32 count = _atts.GetLast()+1;
-        for ( UInt32 i=0; i<count; ++i )
-        {
-                CHECKMEM( _atts[ i ], sizeof(TNodeAtt) );
-                delete static_cast<TNodeAtt*>( _atts[ i ] );
-        }                
-        DelSubTree();
-        GUCEF_END;        
+    Detach();             
+    DelSubTree();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -137,27 +115,25 @@ CDataNode::Clear( void )
 
 void       
 CDataNode::Detach( void )
-{
-        GUCEF_BEGIN;
-        if ( _pparent )
-        {
-                _pparent->DetachChild( this );                        
-        }
-        _pnext = NULL;
-        _pprev = NULL;
-        _pparent = NULL;
-        GUCEF_END;        
+{GUCEF_TRACE;
+
+    if ( 0 != _pparent )
+    {
+        _pparent->DetachChild( this );                        
+    }
+    _pnext = NULL;
+    _pprev = NULL;
+    _pparent = NULL;     
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CDataNode::DetachChild( CDataNode* child )
-{       
-        GUCEF_BEGIN;
+{GUCEF_TRACE;       
+
         if ( !child )
         {
-                GUCEF_END;
                 return;
         }
         
@@ -169,7 +145,6 @@ CDataNode::DetachChild( CDataNode* child )
         {
                 _pfchild = NULL;
                 _plchild = NULL;
-                GUCEF_END;
                 return;                
         }
         /*
@@ -179,7 +154,6 @@ CDataNode::DetachChild( CDataNode* child )
         {
                 _pfchild = _pfchild->_pnext;
                 _pfchild->_pprev = NULL;
-                GUCEF_END;
                 return;                        
         }
         /*
@@ -189,7 +163,6 @@ CDataNode::DetachChild( CDataNode* child )
         {
                 _plchild = _plchild->_pprev;
                 _plchild->_pnext = NULL;
-                GUCEF_END;
                 return;
         }
         
@@ -197,51 +170,35 @@ CDataNode::DetachChild( CDataNode* child )
          *      
          */
         child->_pnext->_pprev = child->_pprev;
-        child->_pprev->_pnext = child->_pnext;
-        GUCEF_END;                              
+        child->_pprev->_pnext = child->_pnext;                           
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode& 
 CDataNode::operator=( const CDataNode& src )
-{
-        GUCEF_BEGIN;
-        if ( this != &src )
-        {
-                // detach from our current tree
-                Detach();
-                DelSubTree();
-                
-                ClearAttributes();
-                
-                // copy new attribute values
-                TNodeAtt* srcatt;
-                TNodeAtt* att;
-                UInt32 count, i;
-                _name = src._name;
-                _atts.SetArraySize( src._atts.GetArraySize() );
-                count = src._atts.GetCount();
-                for ( i=0; i<count; ++i )        
-                {
-                        srcatt = static_cast<TNodeAtt*>( src._atts[ i ] );
-                        att = new TNodeAtt;
-                        *att = *srcatt;
-                        _atts.SetEntry( i, att );
-                        
-                        CHECKMEM( att, sizeof(TNodeAtt) );
-                }
-        }               
-        return *this;
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        // detach from our current tree
+        Detach();
+        DelSubTree();
+        
+        _name = src._name;
+        _atts = src._atts;
+
+    }               
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void 
 CDataNode::Copy( const CDataNode& root )
-{
+{GUCEF_TRACE;
+
     *this = root;
-    
     CopySubTree( root );
 }
 
@@ -249,10 +206,9 @@ CDataNode::Copy( const CDataNode& root )
         
 void 
 CDataNode::SetName( const CString& name )
-{
-        GUCEF_BEGIN;
-        _name = name;
-        GUCEF_END;
+{GUCEF_TRACE;
+
+    _name = name;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -261,99 +217,82 @@ const CString&
 CDataNode::GetName( void ) const
 {GUCEF_TRACE;
 
-        return _name;
+    return _name;
 }
 
 /*-------------------------------------------------------------------------*/
         
 bool 
 CDataNode::IsAttribute( const CString& name ) const
-{
-        GUCEF_BEGIN;
-        TNodeAtt* att;
-        UInt32 count = _atts.GetLast()+1;
-        for ( UInt32 i=0; i<count; ++i )
-        {
-                att = static_cast<TNodeAtt*>( _atts[ i ] );
-                CHECKMEM( att, sizeof(TNodeAtt) );
-                if ( att->name == name )
-                {
-                        GUCEF_END;
-                        return true;
-                }        
-        }
-        GUCEF_END;
-        return false;
+{GUCEF_TRACE;
+
+    return _atts.end() != _atts.find( name );
 }
 
 /*-------------------------------------------------------------------------*/
         
-const CDataNode::TNodeAtt* 
+const CDataNode::TKeyValuePair* 
 CDataNode::operator[]( UInt32 index ) const
-{        
-        GUCEF_BEGIN;
-        if ( index <= (UInt32)_atts.GetLast()+1 )
-        {                
-                GUCEF_END_RET( const CDataNode::TNodeAtt*, static_cast<TNodeAtt*>( _atts[ index ] ) );
-        }
-        GUCEF_END;
-        return NULL;
+{GUCEF_TRACE;
+        
+    UInt32 n = 0;
+    TAttributeMap::const_iterator i = _atts.begin();
+    while ( i != _atts.end() )
+    {
+        if ( n == index )
+        {
+            return const_cast< const CDataNode::TKeyValuePair* >( &(*i) );
+        }        
+        ++i;
+    }
+    return 0;        
 }
 
 /*-------------------------------------------------------------------------*/
         
-CDataNode::TNodeAtt* 
+CDataNode::TKeyValuePair* 
 CDataNode::operator[]( UInt32 index )
-{
-        GUCEF_BEGIN;
-        if ( index <= (UInt32)_atts.GetLast()+1 )
+{GUCEF_TRACE;
+
+    UInt32 n = 0;
+    TAttributeMap::iterator i = _atts.begin();
+    while ( i != _atts.end() )
+    {
+        if ( n == index )
         {
-                GUCEF_END_RET( TNodeAtt*, static_cast<TNodeAtt*>( _atts[ index ] ) );
-        }
-        GUCEF_END;     
-        return NULL;
+            return &(*i);
+        }        
+        ++i;
+    }
+    return 0;  
 }
 
 /*-------------------------------------------------------------------------*/
         
-const CDataNode::TNodeAtt* 
+const CDataNode::TKeyValuePair* 
 CDataNode::operator[]( const CString& name ) const
-{
-        GUCEF_BEGIN;
-        TNodeAtt* att;
-        UInt32 count = _atts.GetLast()+1;
-        for ( UInt32 i=0; i<count; ++i )
-        {
-                att = static_cast<TNodeAtt*>( _atts[ i ] );
-                if ( att->name == name )
-                {
-                        GUCEF_END;
-                        return att;
-                }        
-        }       
-        GUCEF_END;
-        return NULL;
+{GUCEF_TRACE;
+
+    TAttributeMap::const_iterator i = _atts.find( name );
+    if ( i != _atts.end() )
+    {
+        return &(*i);
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
         
-CDataNode::TNodeAtt* 
+CDataNode::TKeyValuePair* 
 CDataNode::operator[]( const CString& name )
-{
-        GUCEF_BEGIN;
-        TNodeAtt* att;
-        UInt32 count = _atts.GetLast()+1;
-        for ( UInt32 i=0; i<count; ++i )
-        {
-                att = static_cast<TNodeAtt*>( _atts[ i ] );
-                if ( att->name == name )
-                {
-                        GUCEF_END;
-                        return att;
-                }        
-        }       
-        GUCEF_END;
-        return NULL;
+{GUCEF_TRACE;
+
+    TAttributeMap::iterator i = _atts.find( name );
+    if ( i != _atts.end() )
+    {
+        return &(*i);
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -362,62 +301,33 @@ void
 CDataNode::ClearAttributes( void )
 {GUCEF_TRACE;
 
-    // erase all current attributes
-    UInt32 count = _atts.GetCount();                                        
-    for ( UInt32 i=0; i<count; ++i )
-    {
-        delete static_cast<TNodeAtt*>( _atts[ i ] );
-    }
-    _atts.Clear();
+    _atts.clear();
 }
 
 /*-------------------------------------------------------------------------*/
         
-const CDataNode::TNodeAtt* 
+const CDataNode::TKeyValuePair* 
 CDataNode::GetAttribute( UInt32 index ) const
 {
-        GUCEF_BEGIN;
-        if ( index <= (UInt32)_atts.GetLast()+1 )
-        {
-                GUCEF_END_RET( TNodeAtt*, static_cast<TNodeAtt*>( _atts[ index ] ) );
-        }
-        GUCEF_END;
-        return NULL;        
+    return this->operator[]( index );      
 }
 
 /*-------------------------------------------------------------------------*/
         
-CDataNode::TNodeAtt* 
+CDataNode::TKeyValuePair* 
 CDataNode::GetAttribute( UInt32 index )
-{
-        GUCEF_BEGIN;
-        if ( index <= (UInt32)_atts.GetLast()+1 )
-        {
-                GUCEF_END_RET( TNodeAtt*, static_cast<TNodeAtt*>( _atts[ index ] ) );
-        }
-        GUCEF_END;
-        return NULL;
+{GUCEF_TRACE;
+
+    return this->operator[]( index ); 
 }
 
 /*-------------------------------------------------------------------------*/
         
-const CDataNode::TNodeAtt* 
+const CDataNode::TKeyValuePair* 
 CDataNode::GetAttribute( const CString& name ) const
-{
-        GUCEF_BEGIN;
-        TNodeAtt* att;
-        UInt32 count = _atts.GetLast()+1;
-        for ( UInt32 i=0; i<count; ++i )
-        {
-                att = static_cast<TNodeAtt*>( _atts[ i ] );
-                if ( att->name == name )
-                {
-                        GUCEF_END;
-                        return att;
-                }        
-        }        
-        GUCEF_END;
-        return NULL;
+{GUCEF_TRACE;
+
+    return this->operator[]( name );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -426,48 +336,41 @@ CString
 CDataNode::GetAttributeValue( const CString& name ) const
 {GUCEF_TRACE;
 
-    const TNodeAtt* nodeAtt = GetAttribute( name );
-    if ( NULL != nodeAtt )
+    TAttributeMap::const_iterator i = _atts.find( name );
+    if ( i != _atts.end() )
     {
-        return nodeAtt->value;
+        return (*i).second;
     }
     return CString();
 }
 
 /*-------------------------------------------------------------------------*/
         
-CDataNode::TNodeAtt* 
+CDataNode::TKeyValuePair* 
 CDataNode::GetAttribute( const CString& name )
 {GUCEF_TRACE;
-        TNodeAtt* att;
-        UInt32 count = _atts.GetLast()+1;
-        for ( UInt32 i=0; i<count; ++i )
-        {
-                att = static_cast<TNodeAtt*>( _atts[ i ] );
-                if ( att->name == name )
-                {
-                        return att;
-                }        
-        }      
-        return NULL;
+
+    TAttributeMap::iterator i = _atts.find( name );
+    if ( i != _atts.end() )
+    {
+        return &(*i);
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
    
 bool
-CDataNode::AddAttribute( const TNodeAtt& att )
-{
-        GUCEF_BEGIN;
-        if ( att.name.Length() && att.value.Length() )
-        {
-                TNodeAtt* newatt = new TNodeAtt;
-                *newatt = att;
-                _atts.AppendEntry( newatt );
-                GUCEF_END;        
-                return true;
-        }  
-        GUCEF_END;
-        return false;                
+CDataNode::AddAttribute( const TKeyValuePair& att )
+{GUCEF_TRACE;
+
+    TAttributeMap::iterator i = _atts.find( att.first );
+    if ( i == _atts.end() )
+    {
+        _atts.insert( att );
+        return true;
+    }
+    return false;     
 }
 
 /*-------------------------------------------------------------------------*/   
@@ -475,20 +378,15 @@ CDataNode::AddAttribute( const TNodeAtt& att )
 bool 
 CDataNode::AddAttribute( const CString& name  ,
                          const CString& value )
-{
-        GUCEF_BEGIN;
-        if ( name.Length() && value.Length() )
-        {
-                TNodeAtt* att = new TNodeAtt;
-                CHECKMEM( att, sizeof(TNodeAtt) );
-                att->name = name;
-                att->value = value;
-                _atts.AppendEntry( att );
-                GUCEF_END;
-                return true;
-        }   
-        GUCEF_END;
-        return false;                        
+{GUCEF_TRACE;
+
+    TAttributeMap::iterator i = _atts.find( name );
+    if ( i == _atts.end() )
+    {
+        _atts.insert( TKeyValuePair( name, value ) );
+        return true;
+    }
+    return false;                       
 }
 
 /*-------------------------------------------------------------------------*/
@@ -497,17 +395,9 @@ bool
 CDataNode::SetAttribute( const CString& name  ,
                          const CString& value )
 {GUCEF_TRACE;
-        if ( name.Length() && value.Length() )
-        {
-                TNodeAtt* att = GetAttribute( name );
-                if ( att )
-                {                
-                        att->value = value;
-                        return true;
-                }
-                return AddAttribute( name, value );
-        }
-        return false;                        
+
+    _atts[ name ] = value;
+    return true;                      
 }
 
 /*-------------------------------------------------------------------------*/                         
@@ -515,7 +405,8 @@ CDataNode::SetAttribute( const CString& name  ,
 UInt32 
 CDataNode::GetAttCount( void ) const
 {GUCEF_TRACE;
-        return _atts.GetCount();
+
+    return _atts.size();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -538,22 +429,7 @@ CDataNode::CopySubTree( const CDataNode& root )
 void 
 CDataNode::DelAttribute( const CString& name )
 {
-        GUCEF_BEGIN;
-        TNodeAtt* att;
-        UInt32 count = _atts.GetLast()+1;
-        for ( UInt32 i=0; i<count; ++i )
-        {
-                att = static_cast<TNodeAtt*>( _atts[ i ] );
-                CHECKMEM( att, sizeof(TNodeAtt) );
-                if ( att->name == name )
-                {
-                        delete att;
-                        _atts.RemoveEntry( i );
-                        GUCEF_END;
-                        return;
-                }        
-        }
-        GUCEF_END;        
+    _atts.erase( name );      
 }
 
 /*-------------------------------------------------------------------------*/
@@ -602,6 +478,46 @@ CDataNode::FindChild( const CString& name ) const
 
 /*-------------------------------------------------------------------------*/
 
+CDataNode::TConstDataNodeSet
+CDataNode::FindChildrenOfType( const CString& name ) const
+{GUCEF_TRACE;
+
+    TConstDataNodeSet children;
+    CDataNode* child = _pfchild;
+    
+    while ( 0 != child && child != _pfchild )
+    {
+        if ( child->_name == name )
+        {
+            children.insert( child );            
+        }        
+        child = child->_pnext;
+    }
+    return children;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode::TDataNodeSet
+CDataNode::FindChildrenOfType( const CString& name )
+{GUCEF_TRACE;
+
+    TDataNodeSet children;
+    CDataNode* child = _pfchild;
+    
+    while ( 0 != child && child != _pfchild )
+    {
+        if ( child->_name == name )
+        {
+            children.insert( child );            
+        }        
+        child = child->_pnext;
+    }
+    return children;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDataNode*
 CDataNode::FindChild( const CString& name        ,
                       const CString& attribName  ,
@@ -617,11 +533,11 @@ CDataNode::FindChild( const CString& name        ,
             if ( node->_name == name )
             {
                 // See if the node has the attribute we want
-                TNodeAtt* att = node->GetAttribute( attribName );
+                TKeyValuePair* att = node->GetAttribute( attribName );
                 if ( att != NULL )
                 {
                     // See if the node attribute has the value we want
-                    if ( att->value == attribValue )
+                    if ( att->second == attribValue )
                     {
                         return node;
                     }
@@ -639,32 +555,32 @@ CDataNode::FindChild( const CString& name        ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CDataNode::Compare( const CDataNode& other         ,
-                    const CStringList& excludeList ) const
+CDataNode::Compare( const CDataNode& other        ,
+                    const TStringSet& excludeList ) const
 {GUCEF_TRACE;
 
     // identical nodes should of course have identical names
     if ( _name == other._name )
     {
-        const TNodeAtt* att;
-        const TNodeAtt* att2;
-        const UInt32 count = other._atts.GetCount();
+        const TKeyValuePair* att;
+        const TKeyValuePair* att2;
+        const UInt32 count = other._atts.size();
         
         // if one has a bigger list then the other then they cannot be the same
-        if ( _atts.GetCount() == count )
+        if ( _atts.size() == count )
         {
             // same number of entries in the lists, we will have to compare each item
             for ( UInt32 i=0; i<count; ++i )
             {
-                    att = static_cast<const TNodeAtt*>( other._atts[ i ] );
+                    att = other[ i ];
                     if ( att )
                     {
-                        if ( -1 == excludeList.Find( att->name ) )
+                        if ( excludeList.end() == excludeList.find( att->first ) )
                         {
-                            att2 = GetAttribute( att->name );
+                            att2 = GetAttribute( att->first );
                             if ( att2 )
                             {
-                                if ( att->value != att2->value )
+                                if ( att->second != att2->second )
                                 {
                                         return false;
                                 }
@@ -685,8 +601,8 @@ CDataNode::Compare( const CDataNode& other         ,
 /*-------------------------------------------------------------------------*/
 
 const CDataNode* 
-CDataNode::CompareChild( const CDataNode& other         ,
-                         const CStringList& excludeList ) const
+CDataNode::CompareChild( const CDataNode& other        ,
+                         const TStringSet& excludeList ) const
 {GUCEF_TRACE;
 
     const_iterator i( ConstBegin() );
@@ -709,8 +625,7 @@ bool
 CDataNode::operator==( const CDataNode& other ) const
 {GUCEF_TRACE;
     
-    CStringList excludeList;
-    return Compare( other, excludeList );
+    return Compare( other, TStringSet() );
 }
 
 /*-------------------------------------------------------------------------*/

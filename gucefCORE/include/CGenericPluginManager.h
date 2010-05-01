@@ -33,6 +33,11 @@
 #define GUCEF_CORE_CPLUGINMANAGER_H
 #endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
 
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -61,7 +66,8 @@ class CGenericPlugin;
  *  to be/do just about anything but with the drawback that it has to link to the GUCEF
  *  modules and as such has a more limited lifespan as a C-interface plugin.
  */
-class GUCEFCORE_EXPORT_CPP CGenericPluginManager : public CPluginManager
+class GUCEFCORE_EXPORT_CPP CGenericPluginManager : public CPluginManager ,
+                                                   public CIConfigurable
 {
     public:    
     
@@ -78,6 +84,25 @@ class GUCEFCORE_EXPORT_CPP CGenericPluginManager : public CPluginManager
     virtual bool Unload( const CString& pluginPath );
     
     virtual ~CGenericPluginManager();
+    
+    /**
+     *      Attempts to store the given tree in the file
+     *      given according to the method of the codec metadata
+     *
+     *      @param tree the data tree you wish to store
+     *      @return wheter storing the tree was successfull
+     */
+    virtual bool SaveConfig( CDataNode& tree );
+                                
+    /**
+     *      Attempts to load data from the given file to the 
+     *      root node given. The root data will be replaced 
+     *      and any children the node may already have will be deleted.
+     *
+     *      @param treeroot pointer to the node that is to act as root of the data tree
+     *      @return whether building the tree from the given file was successfull.
+     */                                    
+    virtual bool LoadConfig( const CDataNode& treeroot );
     
     private:
     friend class CGUCEFCOREModule;

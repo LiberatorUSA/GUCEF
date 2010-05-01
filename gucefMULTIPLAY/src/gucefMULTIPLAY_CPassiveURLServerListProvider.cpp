@@ -169,7 +169,7 @@ CPassiveURLServerListProvider::ParseList( const CORE::CDataNode& listRoot )
     if ( NULL != root )
     {
         TServerInfo serverInfo;
-        const CORE::CDataNode::TNodeAtt* att = NULL;
+        const CORE::CDataNode::TKeyValuePair* att = NULL;
         CORE::CDataNode::const_iterator i = root->ConstBegin();
         const CORE::CDataNode* entryNode = NULL;
         CORE::CValueList valueList;
@@ -182,15 +182,15 @@ CPassiveURLServerListProvider::ParseList( const CORE::CDataNode& listRoot )
                 att = entryNode->GetAttribute( "Name" );
                 if ( NULL != att )
                 {
-                    serverInfo.name = att->value;
+                    serverInfo.name = att->second;
                     att = entryNode->GetAttribute( "Address" );
                     if ( NULL != att )
                     {
-                        serverInfo.hostAddress.SetHostname( att->value );
+                        serverInfo.hostAddress.SetHostname( att->second );
                         att = entryNode->GetAttribute( "Port" );
                         if ( NULL != att )
                         {
-                            serverInfo.hostAddress.SetPortInHostByteOrder( CORE::StringToUInt16( att->value ) );
+                            serverInfo.hostAddress.SetPortInHostByteOrder( CORE::StringToUInt16( att->second ) );
                             
                             // We now have enough info to consider this a valid entry
                             // We will add the rest to the optional parameter list
@@ -198,12 +198,12 @@ CPassiveURLServerListProvider::ParseList( const CORE::CDataNode& listRoot )
                             for ( UInt32 n=0; n<entryNode->GetAttCount(); ++n )
                             {
                                 att = entryNode->GetAttribute( n );
-                                if ( ( "Name" != att->name )    &&
-                                     ( "Address" != att->name ) &&
-                                     ( "Port" != att->name )     )
+                                if ( ( "Name" != att->first )    &&
+                                     ( "Address" != att->first ) &&
+                                     ( "Port" != att->first )     )
                                 {
-                                    valueList.Set( att->name  ,
-                                                   att->value );
+                                    valueList.Set( att->first  ,
+                                                   att->second );
                                 }
                             }
                             

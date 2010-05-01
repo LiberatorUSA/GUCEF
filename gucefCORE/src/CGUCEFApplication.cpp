@@ -488,7 +488,9 @@ CGUCEFApplication::SaveConfig( CDataNode& tree )
 bool 
 CGUCEFApplication::LoadConfig( const CDataNode& tree )
 {GUCEF_TRACE;
-        return true;
+
+    GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CGUCEFApplication: Loading config" );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

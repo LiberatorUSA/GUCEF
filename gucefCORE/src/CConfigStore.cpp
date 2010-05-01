@@ -283,6 +283,8 @@ CConfigStore::LoadConfig( void )
                             ++i;
                         }
                         _datalock.Unlock();
+                        
+                        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Successfully loaded all config using codec " + _codectype + " to successfully build a config data tree from file " + _configfile );
                         return true;
                 }
                 else

@@ -395,7 +395,7 @@ CDStoreCodecPlugin::StoreNode( const CDataNode* n ,
 {GUCEF_TRACE;
         UInt32 count( n->GetAttCount() );
         const char* name( n->GetName().C_String() );
-        const CDataNode::TNodeAtt* att;     
+        const CDataNode::TKeyValuePair* att;     
         
         /*
          *      Begin storing the node
@@ -412,14 +412,14 @@ CDStoreCodecPlugin::StoreNode( const CDataNode* n ,
         for ( UInt32 i=0; i<count; ++i )
         {
                 att = n->GetAttribute( i );
-                ((TDSTOREPLUGFPTR_Store_Node_Att)_fptable[ DSTOREPLUG_STORE_NODE_ATT ])( &_plugdata            , 
-                                                                                         filedata              ,   
-                                                                                         name                  ,  
-                                                                                         count                 ,
-                                                                                         i                     ,
-                                                                                         att->name.C_String()  , 
-                                                                                         att->value.C_String() ,
-                                                                                         n->HasChildren()      );        
+                ((TDSTOREPLUGFPTR_Store_Node_Att)_fptable[ DSTOREPLUG_STORE_NODE_ATT ])( &_plugdata             , 
+                                                                                         filedata               ,   
+                                                                                         name                   ,  
+                                                                                         count                  ,
+                                                                                         i                      ,
+                                                                                         att->first.C_String()  , 
+                                                                                         att->second.C_String() ,
+                                                                                         n->HasChildren()       );        
         }
         
         /*

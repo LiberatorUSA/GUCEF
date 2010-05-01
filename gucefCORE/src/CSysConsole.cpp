@@ -762,7 +762,7 @@ bool
 CSysConsole::LoadConfig( const CDataNode& treeroot )
 {GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Loading SysConsole configuration" );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CSysConsole: Loading configuration" );
     
     const GUCEF::CORE::CDataNode* n = treeroot.Find( "ConsoleAliasList" );
     if ( n != NULL )
@@ -775,20 +775,20 @@ CSysConsole::LoadConfig( const CDataNode& treeroot )
             if ( m->GetName() == "Alias" )
             {
                 // Found an alias entry, parse values and add the alias
-                const GUCEF::CORE::CDataNode::TNodeAtt* att = m->GetAttribute( "name" );
+                const GUCEF::CORE::CDataNode::TKeyValuePair* att = m->GetAttribute( "name" );
                 if ( att != NULL )
                 {
-                    CString aliasName = att->value;
+                    CString aliasName = att->second;
                     att = m->GetAttribute( "path" );
                     if ( att != NULL )
                     {
-                        CString path = att->value;
+                        CString path = att->second;
                         att = m->GetAttribute( "function" );
                         if ( att != NULL )
                         {
-                            RegisterAlias( aliasName  ,
-                                           path       ,
-                                           att->value );
+                            RegisterAlias( aliasName   ,
+                                           path        ,
+                                           att->second );
                         }
                     }
                 }

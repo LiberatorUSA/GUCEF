@@ -48,6 +48,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
@@ -79,7 +84,8 @@ CGenericPluginManager* CGenericPluginManager::m_instance = NULL;
 //-------------------------------------------------------------------------*/
 
 CGenericPluginManager::CGenericPluginManager( void )
-    : CPluginManager()
+    : CPluginManager() ,
+      CIConfigurable( true )
 {GUCEF_TRACE;
 }
 
@@ -259,6 +265,43 @@ CGenericPluginManager::Unload( const CString& pluginPath )
     
     // Cannot find module
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGenericPluginManager::LoadConfig( const CDataNode& treeroot )
+{GUCEF_TRACE;
+
+    GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_BELOW_NORMAL, "GenericPluginManager: Loading config" );
+    
+    const CDataNode* m = treeroot.Search( "GUCEF%CORE%CGenericPluginManager" ,
+                                          '%'                                ,
+                                          false                              );
+
+    if ( NULL != m )
+    {
+        CDataNode::TConstDataNodeSet plugins = m->FindChildrenOfType( "Plugin" );
+        CDataNode::TConstDataNodeSet::const_iterator i = plugins.begin();
+        while ( i != plugins.end() )
+        {
+            const CDataNode* pluginNode = (*i);
+            CString pluginPath = pluginNode->GetAttributeValue( "pluginPath" );
+            Load( pluginPath );            
+            ++i;
+        }
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGenericPluginManager::SaveConfig( CDataNode& tree )
+{GUCEF_TRACE;
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

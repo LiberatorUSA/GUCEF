@@ -622,10 +622,10 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
                                              
     if ( n )
     {
-        const CORE::CDataNode::TNodeAtt* att = n->GetAttribute( "maxmemload" );
+        const CORE::CDataNode::TKeyValuePair* att = n->GetAttribute( "maxmemload" );
         if ( att )
         {
-            SetMemloadSize( att->value.GetInt() );
+            SetMemloadSize( att->second.GetInt() );
         }
         
         CORE::CString vfsroot( "vfsroot" );
