@@ -93,6 +93,8 @@ class GUCEF_GUI_EXPORT_CPP CGUIDriver : public CORE::CObservingNotifier ,
     
     virtual const CString& GetClassTypeName( void ) const;
     
+    virtual CString GetDriverProperty( const CString& propertyName ) const = 0;
+    
     protected:
     
     CGUIDriver( void );
