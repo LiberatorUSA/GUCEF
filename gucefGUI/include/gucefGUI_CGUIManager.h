@@ -75,6 +75,8 @@ class GUCEF_GUI_EXPORT_CPP CGUIManager : public CORE::CObservingNotifier
 {
     public:
     
+    static const CORE::CEvent DriverRegisteredEvent;
+    static const CORE::CEvent DriverUnregisteredEvent;
     static const CORE::CEvent FormFactoryRegisteredEvent;
     static const CORE::CEvent FormFactoryUnregisteredEvent;
     

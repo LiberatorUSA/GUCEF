@@ -204,12 +204,12 @@ CGenericPluginManager::Load( const CString& pluginPath )
     
     if ( !IsLoaded( pluginPath ) )
     {
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Attempting to load generic plugin: " + pluginPath );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Attempting to load generic plugin: " + pluginPath );
         
         CGenericPlugin* plugin = new CGenericPlugin();
         if ( plugin->Load( pluginPath ) )
         {
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Generic plugin loaded: " + pluginPath );
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Generic plugin loaded: " + pluginPath );
             
             // The file has been successfully loaded as a generic plugin module
             m_pluginList.push_back( plugin );
@@ -221,7 +221,7 @@ CGenericPluginManager::Load( const CString& pluginPath )
         }
         else
         {
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Failed to load module as a generic plugin: " + pluginPath );
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Failed to load module as a generic plugin: " + pluginPath );
             
             // Failed to load the file as a generic plugin
             delete plugin;
@@ -245,12 +245,12 @@ CGenericPluginManager::Unload( const CString& pluginPath )
     {
         if ( pluginPath == (*i)->GetModulePath() )
         {
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Attempting to unload generic plugin: " + pluginPath );
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Attempting to unload generic plugin: " + pluginPath );
 
             // Perform the actual unload
             if ( (*i)->Unload() )
             {
-                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Generic plugin unloaded: " + pluginPath );
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Generic plugin unloaded: " + pluginPath );
                 
                 // notify observers that we unloaded the module
                 NotifyObservers( PluginUnloadedEvent );
@@ -273,7 +273,7 @@ bool
 CGenericPluginManager::LoadConfig( const CDataNode& treeroot )
 {GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_BELOW_NORMAL, "GenericPluginManager: Loading config" );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Loading config" );
     
     const CDataNode* m = treeroot.Search( "GUCEF%CORE%CGenericPluginManager" ,
                                           '%'                                ,

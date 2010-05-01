@@ -47,6 +47,8 @@ namespace GUI {
 
 CGUIManager* CGUIManager::g_instance = NULL;
 
+const CORE::CEvent CGUIManager::DriverRegisteredEvent = "GUCEF::GUI::CGUIManager::DriverRegisteredEvent";
+const CORE::CEvent CGUIManager::DriverUnregisteredEvent = "GUCEF::GUI::CGUIManager::DriverUnregisteredEvent";
 const CORE::CEvent CGUIManager::FormFactoryRegisteredEvent = "GUCEF::GUI::CGUIManager::FormFactoryRegisteredEvent";
 const CORE::CEvent CGUIManager::FormFactoryUnregisteredEvent = "GUCEF::GUI::CGUIManager::FormFactoryUnregisteredEvent";
 
@@ -83,6 +85,8 @@ void
 CGUIManager::RegisterEvents( void )
 {GUCEF_TRACE;
 
+    DriverRegisteredEvent.Initialize();
+    DriverUnregisteredEvent.Initialize();
     FormFactoryRegisteredEvent.Initialize();
     FormFactoryUnregisteredEvent.Initialize();
 }
@@ -137,6 +141,8 @@ CGUIManager::RegisterGUIDriver( const CString& guiDriverName ,
 {GUCEF_TRACE;
 
     m_guiDrivers.insert( std::pair< CString, CGUIDriver* >( guiDriverName, guiDriver ) );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CGUIManager: Registered GUI driver (" + PointerToString( guiDriver ) + ") with name \"" + guiDriverName + "\"" );
+    NotifyObservers( DriverRegisteredEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -146,6 +152,8 @@ CGUIManager::UnregisterGUIDriverByName( const CString& guiDriverName )
 {GUCEF_TRACE;
 
     m_guiDrivers.erase( guiDriverName );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CGUIManager: Unregistered GUI driver with name \"" + guiDriverName + "\"" );
+    NotifyObservers( DriverUnregisteredEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -156,6 +164,7 @@ CGUIManager::RegisterGenericFormFactory( const CString& formTypeName   ,
 {GUCEF_TRACE;
 
     m_genericFormFactory.RegisterConcreteFactory( formTypeName, factory );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CGUIManager: Registered Generic form factory (" + PointerToString( factory ) + ") with type name \"" + formTypeName + "\"" );
 }    
 
 /*-------------------------------------------------------------------------*/
@@ -165,6 +174,7 @@ CGUIManager::UnregisterGenericFormFactory( const CString& formTypeName )
 {GUCEF_TRACE;
 
     m_genericFormFactory.UnregisterConcreteFactory( formTypeName );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CGUIManager: Unregistered Generic form factory with type name \"" + formTypeName + "\"" );
 }
 
 /*-------------------------------------------------------------------------*/
