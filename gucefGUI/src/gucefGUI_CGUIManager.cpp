@@ -142,7 +142,9 @@ CGUIManager::RegisterGUIDriver( const CString& guiDriverName ,
 
     m_guiDrivers.insert( std::pair< CString, CGUIDriver* >( guiDriverName, guiDriver ) );
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CGUIManager: Registered GUI driver (" + PointerToString( guiDriver ) + ") with name \"" + guiDriverName + "\"" );
-    NotifyObservers( DriverRegisteredEvent );
+    
+    GUCEF::CORE::TCloneableString driverName( guiDriverName );
+    NotifyObservers( DriverRegisteredEvent, &driverName );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -151,9 +153,25 @@ void
 CGUIManager::UnregisterGUIDriverByName( const CString& guiDriverName )
 {GUCEF_TRACE;
 
+    GUCEF::CORE::TCloneableString driverName( guiDriverName );
+    NotifyObservers( DriverUnregisteredEvent, &driverName );
+
     m_guiDrivers.erase( guiDriverName );
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CGUIManager: Unregistered GUI driver with name \"" + guiDriverName + "\"" );
-    NotifyObservers( DriverUnregisteredEvent );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGUIDriver*
+CGUIManager::GetGuiDriver( const CString& guiDriverName )
+{GUCEF_TRACE;
+
+    TGUIDriverMap::iterator i = m_guiDrivers.find( guiDriverName );    
+    if ( i != m_guiDrivers.end() )
+    {
+        return (*i).second;
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/

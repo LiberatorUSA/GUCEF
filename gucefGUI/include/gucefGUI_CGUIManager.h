@@ -115,6 +115,8 @@ class GUCEF_GUI_EXPORT_CPP CGUIManager : public CORE::CObservingNotifier
     
     void UnregisterGUIDriverByName( const CString& guiDriverName );
     
+    CGUIDriver* GetGuiDriver( const CString& guiDriverName );
+    
     private:
     friend class CModule;    
     
