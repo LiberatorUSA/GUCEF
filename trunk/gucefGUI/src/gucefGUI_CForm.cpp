@@ -137,7 +137,7 @@ CForm::LoadLayout( CORE::CIOAccess& layoutStorage )
         }
     }
     
-    if ( NULL == m_backend )
+    if ( NULL != m_backend )
     {
         OnPreLayoutLoad();
         if ( m_backend->LoadLayout( layoutStorage ) )
