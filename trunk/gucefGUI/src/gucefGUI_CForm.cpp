@@ -129,11 +129,14 @@ bool
 CForm::LoadLayout( CORE::CIOAccess& layoutStorage )
 {GUCEF_TRACE;
 
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CForm(" + CORE::PointerToString( this ) + "): Loading layout" );
+    
     if ( NULL != m_context )
     {
         if ( NULL == m_backend )
         {
             m_backend = m_context->CreateFormBackend();
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CForm(" + CORE::PointerToString( this ) + "): Created form backend" );
         }
     }
     
@@ -142,6 +145,8 @@ CForm::LoadLayout( CORE::CIOAccess& layoutStorage )
         OnPreLayoutLoad();
         if ( m_backend->LoadLayout( layoutStorage ) )
         {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CForm(" + CORE::PointerToString( this ) + "): Successfull loaded layout from resource" );
+            
             if ( NULL != m_parentWidget )
             {
                 SetParent( m_parentWidget );
@@ -150,6 +155,14 @@ CForm::LoadLayout( CORE::CIOAccess& layoutStorage )
             NotifyObservers( LayoutLoadedEvent );
             return true;
         }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CForm(" + CORE::PointerToString( this ) + "): Failed to load layout from resource" );
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CForm(" + CORE::PointerToString( this ) + "): Failed to load layout because no backend implementation is available" );
     }
     return false;
 }
