@@ -28,15 +28,20 @@
 
 #include <set>
 
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
 #ifndef GUCEF_GUI_CWIDGET_H
 #include "gucefGUI_CWidget.h"
 #define GUCEF_GUI_CWIDGET_H
 #endif /* GUCEF_GUI_CWIDGET_H ? */
 
-#ifndef GUCEF_GUI_CFORM_H
-#include "gucefGUI_CForm.h"
-#define GUCEF_GUI_CFORM_H
-#endif /* GUCEF_GUI_CFORM_H ? */
+#ifndef GUCEF_GUI_CFORMBACKEND_H
+#include "gucefGUI_CFormBackend.h"
+#define GUCEF_GUI_CFORMBACKEND_H
+#endif /* GUCEF_GUI_CFORMBACKEND_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -54,6 +59,7 @@ namespace GUI {
 //-------------------------------------------------------------------------*/
 
 class CGUIDriver;
+class CForm;
 
 /*-------------------------------------------------------------------------*/
 
@@ -95,6 +101,10 @@ class GUCEF_GUI_EXPORT_CPP CIGUIContext
     
     CIGUIContext( const CIGUIContext& src );    
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CIGUIContext > TGuiContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

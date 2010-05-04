@@ -36,10 +36,10 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
-#ifndef GUCEF_GUI_MACROS_H
-#include "gucefGUI_macros.h"
-#define GUCEF_GUI_MACROS_H
-#endif /* GUCEF_GUI_MACROS_H ? */
+#ifndef GUCEF_GUI_CIGUICONTEXT_H
+#include "gucefGUI_CIGUIContext.h"
+#define GUCEF_GUI_CIGUICONTEXT_H
+#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,10 +56,6 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIGUIContext;
-
-/*-------------------------------------------------------------------------*/
-
 class GUCEF_GUI_EXPORT_CPP CGUIDriver : public CORE::CObservingNotifier ,
                                         public CORE::CIConfigurable
 {    
@@ -73,13 +69,11 @@ class GUCEF_GUI_EXPORT_CPP CGUIDriver : public CORE::CObservingNotifier ,
     public:
     
     typedef std::set< CString > TStringSet;
-    typedef std::set< CIGUIContext* > TGUIContextSet;
+    typedef std::set< TGuiContextPtr > TGUIContextSet;
 
     virtual ~CGUIDriver();
     
-    virtual CIGUIContext* CreateGUIContext() = 0;
-    
-    virtual void DestroyGUIContext( CIGUIContext* context ) = 0;   
+    virtual TGuiContextPtr CreateGUIContext() = 0;
     
     virtual TGUIContextSet GetContextList( void ) = 0;
     

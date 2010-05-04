@@ -180,6 +180,8 @@ class CTBasicSharedPtr
     inline bool operator!=( const void* other ) const;
     
     inline bool operator!=( const CTBasicSharedPtr& other ) const;
+    
+    inline bool operator<( const CTBasicSharedPtr& other ) const;
  
     /**
      *  operator that implements '(*mySharedPtr)'
@@ -419,6 +421,16 @@ CTBasicSharedPtr< T >::operator=( const CTBasicSharedPtr< T >& src )
         }
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline bool 
+CTBasicSharedPtr< T >::operator<( const CTBasicSharedPtr< T >& other ) const
+{GUCEF_TRACE;
+    
+    return m_ptr < other.m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/

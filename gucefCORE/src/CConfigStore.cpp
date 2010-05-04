@@ -255,6 +255,12 @@ CConfigStore::LoadConfig( void )
         
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CConfigStore: Loading all config" );
         
+        if ( !FileExists( _configfile ) )
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to load config because the config file does not exist: " + _configfile );
+            return false;
+        }
+        
         _datalock.Lock();        
         
         if ( _codectype.Length() == 0 )

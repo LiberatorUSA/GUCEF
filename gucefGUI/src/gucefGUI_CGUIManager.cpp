@@ -111,7 +111,7 @@ CGUIManager::~CGUIManager()
 
 /*-------------------------------------------------------------------------*/
 
-CIGUIContext*
+TGuiContextPtr
 CGUIManager::CreateGUIContext( const CString& guiDriverName )
 {GUCEF_TRACE;
 
@@ -122,15 +122,6 @@ CGUIManager::CreateGUIContext( const CString& guiDriverName )
         return guiDriver->CreateGUIContext();
     }
     return NULL;
-}
-/*-------------------------------------------------------------------------*/
-
-void
-CGUIManager::DestroyGUIContext( CIGUIContext* context )
-{GUCEF_TRACE;
-
-    CGUIDriver* guiDriver = context->GetDriver();
-    guiDriver->DestroyGUIContext( context );
 }
 
 /*-------------------------------------------------------------------------*/
