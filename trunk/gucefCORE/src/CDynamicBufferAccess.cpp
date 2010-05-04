@@ -110,9 +110,21 @@ CString
 CDynamicBufferAccess::ReadLine( void )
 {GUCEF_TRACE;
 
-    // makeme
-    CString emptystr;
-    return emptystr;
+    CString returnString;
+    const char* bufferStr = static_cast< const char* >( m_buffer->GetConstBufferPtr( m_carat ) );
+    while ( m_carat+1 < m_buffer->GetDataSize() )
+    {
+        if ( ( bufferStr[ m_carat ] == '\n' ) ||
+             ( bufferStr[ m_carat ] == '\r' ) )
+        {
+            return returnString;
+        }
+        returnString += bufferStr[ m_carat ];
+        ++m_carat;
+    }
+    
+    m_carat = m_buffer->GetDataSize();
+    return returnString;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -121,9 +133,23 @@ CString
 CDynamicBufferAccess::ReadString( void )
 {GUCEF_TRACE;
 
-    // makeme
-    CString emptystr;
-    return emptystr;
+    CString returnString;
+    const char* bufferStr = static_cast< const char* >( m_buffer->GetConstBufferPtr( m_carat ) );
+    while ( m_carat+1 < m_buffer->GetDataSize() )
+    {
+        if ( ( bufferStr[ m_carat ] == ' ' )  ||
+             ( bufferStr[ m_carat ] == '\t' ) ||
+             ( bufferStr[ m_carat ] == '\n' ) ||
+             ( bufferStr[ m_carat ] == '\r' ) )
+        {
+            return returnString;
+        }
+        returnString += bufferStr[ m_carat ];
+        ++m_carat;
+    }
+    
+    m_carat = m_buffer->GetDataSize();
+    return returnString;
 }
 
 /*-------------------------------------------------------------------------*/
