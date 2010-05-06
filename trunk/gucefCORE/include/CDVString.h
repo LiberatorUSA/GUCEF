@@ -193,6 +193,10 @@ class GUCEFCORE_EXPORT_CPP CString
                             
     Int32 HasChar( char searchchar         ,
                    bool frontToBack = true ) const;                                
+
+    Int32 HasSubstr( const CString& substr   ,
+                     Int32 startIndex        ,
+                     bool frontToBack = true ) const;
                             
     Int32 HasSubstr( const CString& substr   ,
                      bool frontToBack = true ) const;
