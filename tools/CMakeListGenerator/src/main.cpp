@@ -2287,7 +2287,10 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
     if ( fileList.size() > 0 )
     {
         // found files in the current root
-        fileMap[ curRootDirSeg ] = fileList;
+        if ( !fileMap.insert( std::pair< CORE::CString, TStringVector >( curRootDirSeg, fileList ) ).second )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to add files to the file map for subdir \"" + curRootDirSeg + "\"" );
+        }
     }
     
     // Get a list of sub-dirs
@@ -2393,6 +2396,12 @@ ProcessProjectDir( TProjectInfo& projectInfo ,
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Detected module name that differs from module sub-dir name, correcting module name from \"" + moduleInfo.name + "\" to \"" + actualModuleName + "\"" );
             moduleInfo.name = actualModuleName;
         }
+        
+        if ( moduleInfo.name == "MyGUI.Common" )
+        {
+            int a = 0;
+        }
+        
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed suffix file for project " + moduleInfo.name );
     }
     else
