@@ -2397,11 +2397,6 @@ ProcessProjectDir( TProjectInfo& projectInfo ,
             moduleInfo.name = actualModuleName;
         }
         
-        if ( moduleInfo.name == "MyGUI.Common" )
-        {
-            int a = 0;
-        }
-        
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed suffix file for project " + moduleInfo.name );
     }
     else

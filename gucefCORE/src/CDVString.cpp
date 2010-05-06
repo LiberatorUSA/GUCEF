@@ -1002,47 +1002,63 @@ CString::FindMaxSubstrEquality( const CString& searchStr ,
                                 
 Int32 
 CString::HasSubstr( const CString& substr ,
+                    Int32 startIndex      ,
                     bool startfront       ) const
 {GUCEF_TRACE;
 
-        UInt32 slen = substr.Length();
-        
-        if ( slen > m_length )
+    // Sanity check on the startindex range
+    if ( startIndex < 0 || (UInt32)startIndex >= m_length ) return -1;
+
+    UInt32 subStrLength = substr.Length();
+    if ( subStrLength > m_length )
+    {
+        return -1;
+    }
+    
+    if ( startfront )
+    {
+        UInt32 max = m_length - subStrLength;
+        for ( UInt32 i=startIndex; i<=max; ++i )
         {
-                return -1;
-        }
-        
-        if ( substr.m_length == m_length )
-        {
-                if ( memcmp( m_string, substr.m_string, m_length ) == 0 )
-                {
-                        return 0;
-                }
-                return -1;
-        }
-        
-        if ( startfront )
-        {
-                UInt32 max = m_length - slen;
-                for ( UInt32 i=0; i<=max; ++i )
-                {
-                        if ( memcmp( m_string+i, substr.m_string, slen ) == 0 )
-                        {           
-                                return i;
-                        }
-                }
-                return -1;
-        }
-        
-        UInt32 max = m_length - slen;        
-        for ( Int32 i=max; i>=0; --i )
-        {
-                if ( memcmp( m_string+i, substr.m_string, slen ) == 0 )
-                {                                    
-                        return i;
-                }
+            if ( memcmp( m_string+i, substr.m_string, subStrLength ) == 0 )
+            {           
+                return i;
+            }
         }
         return -1;
+    }
+    
+    Int32 max = (Int32) ( m_length - subStrLength );
+    if ( startIndex-subStrLength < max )
+    {
+        max = startIndex-subStrLength;
+    }
+    for ( Int32 i=max; i>=0; --i )
+    {
+        if ( memcmp( m_string+i, substr.m_string, subStrLength ) == 0 )
+        {                                    
+            return i;
+        }
+    }
+    return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+                                
+Int32 
+CString::HasSubstr( const CString& substr ,
+                    bool startfront       ) const
+{GUCEF_TRACE;
+    
+    if ( startfront )
+    {
+        return HasSubstr( substr, 0, startfront );
+    }
+    if ( m_length > 0 )
+    {
+        return HasSubstr( substr, m_length-1, startfront );
+    }
+    return -1;
 }
 
 /*-------------------------------------------------------------------------*/

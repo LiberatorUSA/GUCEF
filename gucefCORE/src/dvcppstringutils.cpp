@@ -135,23 +135,41 @@ RelativePath( const CString& relpath )
         }
     }
      
+    // Now the up dir segments,...
+    // First make sure we use the same seperator char in both string across
+    // the entire strings uniformly. This simplyfies the algoritm
     resultStr = resultStr.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR );
+    
+    // Now make sure there are no multiple repeating seperators
+    // Not that unlikely if the string was human generated
     resultStr = resultStr.CompactRepeatingChar( DIRSEPCHAR ); 
     
+    // Now keep chopping away up dir segments until we run out of segments
+    // that meet our criterea. 
     CString upDirSeg = CString( ".." ) + DIRSEPCHAR;
-    Int32 upDirIdx = resultStr.HasSubstr( upDirSeg, true );
+    Int32 upDirIdx = resultStr.HasSubstr( upDirSeg, false );
     while ( upDirIdx > 0 )
     {
+        // Divide the path into 2 segments at the location of the updir segment
         CString prefix( resultStr.C_String(), upDirIdx );
-        UInt32 lengthDelta = prefix.Length();
-        prefix = StripLastSubDir( prefix );
-        lengthDelta = lengthDelta - prefix.Length();
         
-        CString newPath = prefix;
-        AppendToPath( newPath, (resultStr.C_String()+prefix.Length()+lengthDelta+3) ); 
-        resultStr = newPath;
-        
-        upDirIdx = resultStr.HasSubstr( upDirSeg, true );
+        // get the dir segment before the updir segment and check if it is
+        // another updir segment
+        CString lastSubdir = LastSubDir( prefix );        
+        if ( lastSubdir != upDirSeg )
+        {
+            // The segment before the updir segment is a regular dir
+            // This means we can strip that dir and thus resolve this updir segment
+            CString newPath = StripLastSubDir( prefix );
+            AppendToPath( newPath, resultStr.C_String()+upDirIdx+3 );
+            resultStr = newPath;
+            upDirIdx = resultStr.HasSubstr( upDirSeg, false );
+        }
+        else
+        {
+            // Skip this updir segment and go to the next one
+            upDirIdx = resultStr.HasSubstr( upDirSeg, upDirIdx, false );
+        }
     }
 
     return resultStr;
