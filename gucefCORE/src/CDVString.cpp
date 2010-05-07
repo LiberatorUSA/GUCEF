@@ -1029,7 +1029,7 @@ CString::HasSubstr( const CString& substr ,
     }
     
     Int32 max = (Int32) ( m_length - subStrLength );
-    if ( startIndex-subStrLength < max )
+    if ( startIndex-(Int32)subStrLength < max )
     {
         max = startIndex-subStrLength;
     }
