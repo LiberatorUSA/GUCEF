@@ -2192,8 +2192,22 @@ GenerateModuleIncludes( const TProjectInfo& projectInfo ,
     TStringVectorMap::iterator n = moduleInfo.includeDirs.begin();
     while ( n != moduleInfo.includeDirs.end() )
     {
-        CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );        
-        allRelDependencyPaths += includeDir + " ";
+        CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
+        if ( 0 != includeDir.Length() )
+        {
+            allRelDependencyPaths += includeDir + " ";
+        }
+        else
+        {
+            // Check if there is more then one include dir
+            // If so we have create an include for an empty include dir
+            // to ensure files in subdirs can include the file with the zero length
+            // subdir. 
+            if ( 1 < moduleInfo.includeDirs.size() )
+            {
+                allRelDependencyPaths += "../" + CORE::LastSubDir( moduleInfo.rootDir ) + " ";
+            }
+        }
         ++n;
     }
 
