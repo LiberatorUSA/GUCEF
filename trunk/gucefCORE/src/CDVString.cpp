@@ -1007,7 +1007,7 @@ CString::HasSubstr( const CString& substr ,
 {GUCEF_TRACE;
 
     // Sanity check on the startindex range
-    if ( startIndex < 0 || (UInt32)startIndex >= m_length ) return -1;
+    if ( startIndex < 0 || (UInt32)startIndex > m_length ) return -1;
 
     UInt32 subStrLength = substr.Length();
     if ( subStrLength > m_length )
@@ -1056,7 +1056,7 @@ CString::HasSubstr( const CString& substr ,
     }
     if ( m_length > 0 )
     {
-        return HasSubstr( substr, m_length-1, startfront );
+        return HasSubstr( substr, m_length, startfront );
     }
     return -1;
 }

@@ -290,9 +290,8 @@ CGenericPluginManager::LoadConfig( const CDataNode& treeroot )
             Load( pluginPath );            
             ++i;
         }
-        return true;
     }
-    return false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
