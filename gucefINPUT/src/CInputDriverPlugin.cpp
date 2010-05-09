@@ -381,8 +381,15 @@ CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
     CString filenameExt = CORE::ExtractFileExtention( filename );
     if ( 0 == filenameExt.Length() )
     {
-        CString debugFilename = filename + "_d";
-        m_sohandle = CORE::LoadModuleDynamicly( debugFilename.C_String() );
+        if ( filename.Length()-2 != filename.HasSubstr( "_d", false ) )
+        {
+            CString debugFilename = filename + "_d";
+            m_sohandle = CORE::LoadModuleDynamicly( debugFilename.C_String() );
+        }
+        else
+        {
+            m_sohandle = CORE::LoadModuleDynamicly( filename.C_String() );
+        }
     }
     else
     {
