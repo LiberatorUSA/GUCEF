@@ -174,6 +174,7 @@ GetSourceFileExtensions( void )
     if ( fileTypes.empty() )
     {
         fileTypes.push_back( "c" );
+        fileTypes.push_back( "cc" );
         fileTypes.push_back( "cpp" );
         fileTypes.push_back( "cxx" );
         fileTypes.push_back( "asm" );
