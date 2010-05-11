@@ -146,6 +146,9 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable
     bool GetActualFilePath( const CString& file ,
                             CString& path       ) const;
 
+    bool GetVfsPathForAbsolutePath( const CString& absolutePath ,
+                                    CString& relativePath       ) const;
+
     void SetMemloadSize( UInt32 bytesize );
     
     UInt32 GetMemloadSize( void ) const;

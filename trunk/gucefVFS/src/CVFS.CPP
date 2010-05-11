@@ -413,6 +413,49 @@ CVFS::GetActualFilePath( const CString& file ,
 /*-------------------------------------------------------------------------*/
 
 bool
+CVFS::GetVfsPathForAbsolutePath( const CString& absolutePath ,
+                                 CString& relativePath       ) const
+{GUCEF_TRACE;
+
+    // Make sure there are no more variables in the given absolute path
+    CString realAbsPath = CORE::RelativePath( absolutePath );
+    
+    m_datalock.Lock();
+    
+    // Try to match a mount entry 
+    TMountVector::const_iterator i = m_mountList.begin();
+    while ( i != m_mountList.end() )
+    {        
+        const TMountEntry& mountEntry = (*i);
+        Int32 subStrIndex = realAbsPath.HasSubstr( mountEntry.abspath, true );
+        if ( subStrIndex == 0 )
+        {
+            // This mount entry has at least a partially matching path
+            CString remainder = realAbsPath.CutChars( mountEntry.abspath.Length(), true );
+            
+            // Now we will try to locate a resource given that path so we can validate
+            // that this is not a coincidence
+            if ( mountEntry.archive->FileExists( remainder ) )
+            {
+                // We found a file given this remainer
+                // Now we construct the full relative path including mount path
+                relativePath = mountEntry.mountPath;
+                CORE::AppendToPath( relativePath, remainder );
+                
+                m_datalock.Unlock(); 
+                return true;                
+            }
+        }
+        ++i;
+    }
+    
+    m_datalock.Unlock();                
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CVFS::FileExists( const CString& file ) const
 {GUCEF_TRACE;       
 
@@ -674,6 +717,7 @@ CVFS::FilterValidation( const CORE::CString& filename ,
 
     if ( filter.Length() > 0 )
     {
+        //@TODO: add better wildcard support
         if ( filter[ 0 ] == '*' )
         {
             if ( filter.Length() == 1 )
@@ -688,10 +732,8 @@ CVFS::FilterValidation( const CORE::CString& filename ,
             return false;
         }
         else
-        {
-            CString subfilter;
-            subfilter.Set( filter.C_String(), filter.Length()-1 );                        
-            if ( filename.HasSubstr( subfilter, true ) == 0 )
+        {                     
+            if ( filename.HasSubstr( filter, true ) == 0 )
             {
                     return true;
             }
