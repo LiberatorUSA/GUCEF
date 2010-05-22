@@ -304,9 +304,14 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
         TDestFileData* fd = (TDestFileData*)*filedata;
         UInt32 linelen, len;
         
-        if ( !attname || !attvalue || !attscount ) return;
+        if ( NULL == attname || 0 == attscount ) return;
         
-        if ( !nodename )
+        if ( NULL == attvalue )
+        {
+            attvalue = "";
+        }
+        
+        if ( NULL == nodename )
         {
                 nodename = "noname";
         }
