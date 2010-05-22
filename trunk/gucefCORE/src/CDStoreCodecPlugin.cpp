@@ -463,7 +463,7 @@ CDStoreCodecPlugin::StoreDataTree( const CDataNode* tree   ,
                                    const CString& filename )
 {GUCEF_TRACE;
         
-    CFileAccess access( filename );
+    CFileAccess access( filename, "wb" );
     if ( access.IsValid() )
     {
         return StoreDataTree( tree     ,

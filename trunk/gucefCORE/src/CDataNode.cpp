@@ -242,7 +242,8 @@ CDataNode::operator[]( UInt32 index ) const
         if ( n == index )
         {
             return const_cast< const CDataNode::TKeyValuePair* >( &(*i) );
-        }        
+        }
+        ++n;        
         ++i;
     }
     return 0;        
@@ -261,7 +262,8 @@ CDataNode::operator[]( UInt32 index )
         if ( n == index )
         {
             return &(*i);
-        }        
+        }
+        ++n;        
         ++i;
     }
     return 0;  
