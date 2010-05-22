@@ -1996,13 +1996,59 @@ GetRelativePathToOtherPathRoot( const CORE::CString& fromPath ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
+GenerateCMakeModuleIncludesSectionForPlatform( const TProjectInfo& projectInfo   ,
+                                               const TModuleInfo& moduleInfo     ,
+                                               const CORE::CString& platformName )
+{GUCEF_TRACE;
+
+    CORE::CString allRelDependencyPaths;
+
+    // Add all the include dirs inherited from dependency modules
+    TStringSetMap::const_iterator m = moduleInfo.dependencyPlatformIncludeDirs.find( platformName );
+    if ( m != moduleInfo.dependencyPlatformIncludeDirs.end() )
+    {
+        const TStringSet& platformIncludes = (*m).second;
+        TStringSet::const_iterator i = platformIncludes.begin();
+        while ( i != platformIncludes.end() )
+        {
+            allRelDependencyPaths += (*i) + " ";
+            ++i;
+        }
+    }
+                                                                                      
+    // Add all the regular platform include dirs for this module itself
+    TStringVectorMapMap::const_iterator t = moduleInfo.platformHeaderFiles.find( platformName );
+    if ( t != moduleInfo.platformHeaderFiles.end() )
+    {
+        const TStringVectorMap& platformHeaderFiles = (*t).second;
+        TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
+        while ( n != platformHeaderFiles.end() )
+        {
+            CORE::CString includeDir = (*n).first;
+            includeDir = CORE::RelativePath( includeDir ).ReplaceChar( '\\', '/' );        
+            allRelDependencyPaths += includeDir + " ";
+            ++n;
+        }
+    }
+    
+    CORE::CString sectionContent;
+    if ( allRelDependencyPaths.Length() > 0 )
+    {
+        sectionContent = "\nif ( "+ platformName + " )\n  include_directories( " + allRelDependencyPaths + ")\nendif( "+ platformName + " )\n";
+    }
+    
+    return sectionContent;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
 GenerateModuleIncludesForPlatform( const TProjectInfo& projectInfo   ,
                                    TModuleInfo& moduleInfo           ,
                                    const CORE::CString& platformName )
 {GUCEF_TRACE;
 
     // Add include dirs for each dependency we know about
-    CORE::CString allRelDependencyPaths;
     TStringVector& dependencies = moduleInfo.dependencies;
     TStringVector::iterator i = dependencies.begin();
     while ( i != dependencies.end() )
@@ -2033,8 +2079,6 @@ GenerateModuleIncludesForPlatform( const TProjectInfo& projectInfo   ,
                     // for the current module. This can later be used again by other modules which
                     // include this one.
                     moduleInfo.dependencyPlatformIncludeDirs[ platformName ].insert( dependencyInclDir );
-                    
-                    allRelDependencyPaths += dependencyInclDir + " ";
                     ++n;
                 }
             }
@@ -2057,33 +2101,12 @@ GenerateModuleIncludesForPlatform( const TProjectInfo& projectInfo   ,
                     // for the current module. This can later be used again by other modules which
                     // include this one.
                     moduleInfo.dependencyPlatformIncludeDirs[ platformName ].insert( dependencyInclDir );
-                    
-                    allRelDependencyPaths += dependencyInclDir + " ";
                     ++m;
                 }
             }                         
         }
         ++i;
     }
-
-    // Add all the regular platform include dirs for this module
-    const TStringVectorMap& platformHeaderFiles = moduleInfo.platformHeaderFiles[ platformName ];
-    TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
-    while ( n != platformHeaderFiles.end() )
-    {
-        CORE::CString includeDir = (*n).first;
-        includeDir = CORE::RelativePath( includeDir ).ReplaceChar( '\\', '/' );        
-        allRelDependencyPaths += includeDir + " ";
-        ++n;
-    }
-
-    CORE::CString sectionContent;
-    if ( allRelDependencyPaths.Length() > 0 )
-    {
-        sectionContent = "\nif ( "+ platformName + " )\n  include_directories( " + allRelDependencyPaths + ")\nendif( "+ platformName + " )\n";
-    }
-    
-    return sectionContent;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2110,9 +2133,25 @@ GetListOfRelevantPlatformsForModule( TModuleInfo& moduleInfo )
 
 /*---------------------------------------------------------------------------*/
 
-CORE::CString
+void
 GenerateModuleIncludesForAllPlatforms( const TProjectInfo& projectInfo ,
                                        TModuleInfo& moduleInfo         )
+{GUCEF_TRACE;
+
+    TStringSet relevantPlatformDirs = GetSupportedPlatforms();
+    TStringSet::iterator i = relevantPlatformDirs.begin();
+    while ( i != relevantPlatformDirs.end() )
+    {
+        GenerateModuleIncludesForPlatform( projectInfo, moduleInfo, (*i) );
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeModuleIncludesSectionForAllPlatforms( const TProjectInfo& projectInfo ,
+                                                   const TModuleInfo& moduleInfo   )
 {GUCEF_TRACE;
 
     CORE::CString sectionContent;
@@ -2121,7 +2160,7 @@ GenerateModuleIncludesForAllPlatforms( const TProjectInfo& projectInfo ,
     TStringSet::iterator i = relevantPlatformDirs.begin();
     while ( i != relevantPlatformDirs.end() )
     {
-        sectionContent += GenerateModuleIncludesForPlatform( projectInfo, moduleInfo, (*i) );
+        sectionContent += GenerateCMakeModuleIncludesSectionForPlatform( projectInfo, moduleInfo, (*i) );
         ++i;
     }
     return sectionContent;
@@ -2130,67 +2169,22 @@ GenerateModuleIncludesForAllPlatforms( const TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateModuleIncludes( const TProjectInfo& projectInfo ,
-                        TModuleInfo& moduleInfo         )
+GenerateCMakeModuleIncludesSection( const TProjectInfo& projectInfo ,
+                                    const TModuleInfo& moduleInfo   )
 {GUCEF_TRACE;
     
     // Add include dirs for each dependency we know about
     CORE::CString allRelDependencyPaths;
-    TStringVector& dependencies = moduleInfo.dependencies;
-    TStringVector::iterator i = dependencies.begin();
-    while ( i != dependencies.end() )
+    const TStringSet& includeDirs = moduleInfo.dependencyIncludeDirs;
+    TStringSet::const_iterator i = includeDirs.begin();            
+    while ( i != includeDirs.end() )
     {
-        // Get a dependency module which is already fully processed
-        const TModuleInfo* dependencyModule = GetModuleInfo( projectInfo, (*i) );
-        if ( NULL != dependencyModule )
-        {
-            // Determine the relative path to this other module
-            CORE::CString relativePath = GetRelativePathToOtherPathRoot( moduleInfo.rootDir        , 
-                                                                         dependencyModule->rootDir );
-            
-            // Now construct the relative path to each of the dependency module's include dirs
-            // These dir will all become include dirs for this module
-            TStringVectorMap::const_iterator n = dependencyModule->includeDirs.begin();
-            while ( n != dependencyModule->includeDirs.end() )
-            {
-                CORE::CString dependencyInclDir = relativePath;
-                CORE::AppendToPath( dependencyInclDir, (*n).first );
-                dependencyInclDir = CORE::RelativePath( dependencyInclDir );
-                dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
-                
-                // Add the contructed include directory to the list of dependency directories
-                // for the current module. This can later be used again by other modules which
-                // include this one.
-                moduleInfo.dependencyIncludeDirs.insert( dependencyInclDir );
-                
-                allRelDependencyPaths += dependencyInclDir + " ";
-                ++n;
-            }
-            
-            // On top of that we have to include all the include dirs that the dependency module
-            // was including itself since it's headers might be referring to those files.
-            TStringSet::const_iterator m = dependencyModule->dependencyIncludeDirs.begin();
-            while ( m != dependencyModule->dependencyIncludeDirs.end() )
-            {
-                CORE::CString dependencyInclDir = relativePath;
-                CORE::AppendToPath( dependencyInclDir, (*m) );
-                dependencyInclDir = CORE::RelativePath( dependencyInclDir );
-                dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
-                
-                // Add the contructed include directory to the list of dependency directories
-                // for the current module. This can later be used again by other modules which
-                // include this one.
-                moduleInfo.dependencyIncludeDirs.insert( dependencyInclDir );
-                
-                allRelDependencyPaths += dependencyInclDir + " ";
-                ++m;
-            }                         
-        }
+        allRelDependencyPaths += (*i) + " ";
         ++i;
     }
 
     // Add all the regular include dirs for this module
-    TStringVectorMap::iterator n = moduleInfo.includeDirs.begin();
+    TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
     while ( n != moduleInfo.includeDirs.end() )
     {
         CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
@@ -2218,9 +2212,83 @@ GenerateModuleIncludes( const TProjectInfo& projectInfo ,
         sectionContent = "\ninclude_directories( " + allRelDependencyPaths + ")\n";
     }
     
-    sectionContent += GenerateModuleIncludesForAllPlatforms( projectInfo, moduleInfo );
+    sectionContent += GenerateCMakeModuleIncludesSectionForAllPlatforms( projectInfo, moduleInfo );
     
     return sectionContent;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+GenerateModuleIncludes( const TProjectInfo& projectInfo ,
+                        TModuleInfo& moduleInfo         )
+{GUCEF_TRACE;
+    
+    // Add include dirs for each dependency we know about
+    TStringVector& dependencies = moduleInfo.dependencies;
+    TStringVector::iterator i = dependencies.begin();
+    while ( i != dependencies.end() )
+    {
+        // Get a dependency module which is already fully processed
+        const TModuleInfo* dependencyModule = GetModuleInfo( projectInfo, (*i) );
+        if ( NULL != dependencyModule )
+        {
+            // Determine the relative path to this other module
+            CORE::CString relativePath = GetRelativePathToOtherPathRoot( moduleInfo.rootDir        , 
+                                                                         dependencyModule->rootDir );
+            
+            // Now construct the relative path to each of the dependency module's include dirs
+            // These dir will all become include dirs for this module
+            TStringVectorMap::const_iterator n = dependencyModule->includeDirs.begin();
+            while ( n != dependencyModule->includeDirs.end() )
+            {
+                CORE::CString dependencyInclDir = relativePath;
+                CORE::AppendToPath( dependencyInclDir, (*n).first );
+                dependencyInclDir = CORE::RelativePath( dependencyInclDir );
+                dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
+                
+                // Add the contructed include directory to the list of dependency directories
+                // for the current module. This can later be used again by other modules which
+                // include this one.
+                moduleInfo.dependencyIncludeDirs.insert( dependencyInclDir );
+                ++n;
+            }
+            
+            // On top of that we have to include all the include dirs that the dependency module
+            // was including itself since it's headers might be referring to those files.
+            TStringSet::const_iterator m = dependencyModule->dependencyIncludeDirs.begin();
+            while ( m != dependencyModule->dependencyIncludeDirs.end() )
+            {
+                CORE::CString dependencyInclDir = relativePath;
+                CORE::AppendToPath( dependencyInclDir, (*m) );
+                dependencyInclDir = CORE::RelativePath( dependencyInclDir );
+                dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
+                
+                // Add the contructed include directory to the list of dependency directories
+                // for the current module. This can later be used again by other modules which
+                // include this one.
+                moduleInfo.dependencyIncludeDirs.insert( dependencyInclDir );
+                ++m;
+            }                         
+        }
+        ++i;
+    }
+    
+    GenerateModuleIncludesForAllPlatforms( projectInfo, moduleInfo );
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+GenerateModuleIncludes( TProjectInfo& projectInfo )
+{GUCEF_TRACE;
+    
+    TModuleInfoVector::iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        GenerateModuleIncludes( projectInfo, (*i) );
+        ++i;
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2276,7 +2344,7 @@ GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
     fileContent = GenerateAutoGenertedSeperator( false );
     
     // Add all the include directories for this module
-    fileContent += GenerateModuleIncludes( projectInfo, moduleInfo );
+    fileContent += GenerateCMakeModuleIncludesSection( projectInfo, moduleInfo );
 
     fileContent += GenerateAutoGenertedSeperator( true );
     
@@ -2976,7 +3044,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         {
             CORE::CDataNode includeNode;
             includeNode.SetName( "Include" );
-            includesInfoNode.SetAttribute( "Path", (*h) );
+            includeNode.SetAttribute( "Path", (*h) );
             
             includesInfoNode.AddChild( includeNode );            
             ++h;
@@ -2997,7 +3065,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
             {
                 CORE::CDataNode includeNode;
                 includeNode.SetName( "Include" );
-                includesInfoNode.SetAttribute( "Path", (*h) );
+                includeNode.SetAttribute( "Path", (*h) );
                 
                 includesInfoNode.AddChild( includeNode );            
                 ++h;
@@ -3137,6 +3205,9 @@ main( int argc , char* argv[] )
     
     // Order the modules in the list such so that they are placed in the order they need to be build
     SortModulesInDependencyOrder( projectInfo );
+    
+    // Now that everything is sorted and we have all the info we can generate all the include paths
+    GenerateModuleIncludes( projectInfo );
 
     // Write all the project information we gathered to disk before doing any CMake specific output
     CORE::CString projectinfoFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
