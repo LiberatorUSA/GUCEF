@@ -42,7 +42,7 @@ include paths will be correct again as soon as you re-run the generator.
 Version:
 ----------------------------------------------
 
-This is a release build created on 6'th of May 2010.
+This is a release build created on 23'rd of May 2010.
 It is a 32-bit Microsoft Windows application. It depends on the CRT libraries of
 Microsoft Visual Studio 2008 (VC9) for the x86 platform.
 There should be no problem running this application in WINE on linux,
@@ -60,6 +60,7 @@ Features:
 - Handles most include/source directory structures
 - Special processing for platform specific headers/sources is supported.
 - Support for combined processing of multipe source trees
+- Generate XML project file with all gathered/generated information.
 
 
 
@@ -242,6 +243,10 @@ up the generator's processing time. As such processing instructions can also be 
 History:
 ----------------------------------------------
 
+- 23'rd May 2010:
+     - Added serialization of all project information into an XML project file called "Project.xml".
+       The idea being that this file can be used to generate other output files then just CMake files.
+       The main inspiration was generation of Android makefiles which CMake does not currently support.
 - 6'th May 2010:
      - Improved relative path processing to resolve as much of the up dir segments as possible.
        This greatly reduces the number of include dirs because duplicates can now more accurately be
