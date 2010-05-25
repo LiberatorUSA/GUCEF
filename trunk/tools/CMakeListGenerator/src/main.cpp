@@ -101,6 +101,7 @@ typedef std::map< CORE::CString, TStringVectorMap > TStringVectorMapMap;
 struct SModuleInfo
 {
     TStringVector dependencies;                  // list of module names of all modules this module depends on
+    TStringVector linkedLibraries;               // list of all libraries the module links against
     
     TStringVectorMap includeDirs;                // include directories of this module's own headers
     TStringVectorMap sourceDirs;                 // source directories of this module's own source
@@ -1787,7 +1788,8 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo )
 
 TStringVector
 ParseFileLines( const CORE::CString& fileSuffix )
-{
+{GUCEF_TRACE;
+
     CORE::CString testStr = fileSuffix.ReplaceChar( '\r', '\n' );
     testStr = testStr.CompactRepeatingChar( '\n' );
     return testStr.ParseElements( '\n', false );
@@ -1843,6 +1845,57 @@ ParseIncludeDirs( const CORE::CString& fileSuffix )
         ++i;
     }
     return includeDirs;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+ParseSuffixFile( TModuleInfo& moduleInfo )
+{GUCEF_TRACE;
+    
+    TStringVector suffixFileLines = ParseFileLines( moduleInfo.cmakeListSuffixFileContent );
+    TStringVector::iterator i = suffixFileLines.begin();
+    while ( i != suffixFileLines.end() )
+    {
+        CORE::CString testStr = (*i).Lowercase();
+        CORE::Int32 subStrIdx = testStr.HasSubstr( "target_link_libraries(", true );
+        CORE::Int32 commentCharIdx = testStr.HasChar( '#', true );
+        
+        // Is this function call commented out?
+        if ( commentCharIdx > -1 && commentCharIdx < subStrIdx )
+        {
+            // Then ignore it
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Found target_link_libraries function in suffix file but it is commented out, ignoring it" );
+            ++i;
+            continue;
+        }
+        
+        // Does this line have the function call we are looking for?
+        if ( subStrIdx >= 0 )
+        {
+            // It does, parse the parameters
+            CORE::CString dependenciesStr = (*i).SubstrToChar( ')', (CORE::UInt32)subStrIdx+22, true );
+            dependenciesStr = dependenciesStr.CompactRepeatingChar( ' ' );
+            dependenciesStr = dependenciesStr.Trim( true );
+            dependenciesStr = dependenciesStr.Trim( false );
+            TStringVector elements = dependenciesStr.ParseElements( ' ' );
+            if ( !elements.empty() )
+            {
+                // the first element is the name of the module, we don't need it
+                elements.erase( elements.begin() );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::Int32ToString( elements.size() ) + " libraries to link to in suffix file" );
+            }
+            
+            // Add this collection to the list of all linked libraries we found
+            TStringVector::iterator n = elements.begin();
+            while ( n != elements.end() )
+            {
+                moduleInfo.linkedLibraries.push_back( (*n) );
+                ++n;
+            }
+        }
+        ++i;
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2480,6 +2533,7 @@ ProcessProjectDir( TProjectInfo& projectInfo ,
         moduleInfo.dependencyIncludeDirs = ParseIncludeDirs( moduleInfo.cmakeListSuffixFileContent );
         moduleInfo.isExecutable = false;  
         ParseModuleProperties( moduleInfo.cmakeListSuffixFileContent, actualModuleName, moduleInfo.isExecutable );
+        ParseSuffixFile( moduleInfo );
         if ( actualModuleName != moduleInfo.name )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Detected module name that differs from module sub-dir name, correcting module name from \"" + moduleInfo.name + "\" to \"" + actualModuleName + "\"" );
@@ -3105,6 +3159,21 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
             ++m;
         }
         moduleInfoNode.AddChild( dependenciesNode );
+        
+        // Add all the libraries that are linked but not part of the overall project
+        CORE::CDataNode linkedLibrariesNode;
+        linkedLibrariesNode.SetName( "LinkedLibraries" );
+        linkedLibrariesNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.linkedLibraries.size() ) );
+        m = moduleInfo.linkedLibraries.begin();
+        while ( m != moduleInfo.linkedLibraries.end() )
+        {
+            CORE::CDataNode libraryNode;
+            libraryNode.SetName( "LinkedLibrary" );
+            libraryNode.SetAttribute( "Name", (*m) );
+            linkedLibrariesNode.AddChild( libraryNode );
+            ++m;
+        }
+        moduleInfoNode.AddChild( linkedLibrariesNode );
         
         // Add all the info for this module to the overall project
         outputInfo.AddChild( moduleInfoNode );
