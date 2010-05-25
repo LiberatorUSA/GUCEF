@@ -1,5 +1,5 @@
 /*
- *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
+ *  gucefSMDRN: GUCEF module providing sector managed DRN
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
