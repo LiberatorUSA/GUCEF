@@ -41,29 +41,36 @@ REM -----------------------------------------------------
 
 ECHO *** Creating .class files using Java SDK javac tool ***
 
-cd "%GENERATEJNIHEADERS_BATCHSTARTDIR%\..\src\com\VanvelzenSoftware\gucefANDROIDGLUE"
+SET SOURCE_PATH=%GENERATEJNIHEADERS_BATCHSTARTDIR%\..\src\
 ECHO Working dir = "%CD%"
-REM "%JAVA_SDK_TOOLS%\javac.exe" com\VanvelzenSofware\gucefANDROIDGLUE\GUCEFApplicationGlue.java -classpath %ANDROID_SDK_HOME%\out\host\common\obj\JAVA_LIBRARIES\layoutlib_intermediates\classes
-"%JAVA_SDK_TOOLS%\javac.exe" GUCEFApplicationGlue.java
+cd "%SOURCE_PATH%"
+"%JAVA_SDK_TOOLS%\javac.exe" -g -verbose -deprecation -d "%GENERATEJNIHEADERS_BATCHSTARTDIR%" -sourcepath "%SOURCE_PATH%" -classpath "%SOURCE_PATH%" @"%GENERATEJNIHEADERS_BATCHSTARTDIR%\sourcefiles.txt"
 
-IF EXIST GUCEFApplicationGlue.class (
-  ECHO Successfully generated GUCEFApplicationGlue.class from GUCEFApplicationGlue.java
-)
+ECHO Return value error level: %ERRORLEVEL%
 
-IF NOT EXIST GUCEFApplicationGlue.class (
-  ECHO Failed to generate GUCEFApplicationGlue.class from GUCEFApplicationGlue.java
+IF %ERRORLEVEL% NEQ 0 (
+  ECHO Failed to generate *.class files from *.java files
   GOTO :END
+) ELSE (
+  ECHO Successfully generated *.class files from *.java files
 )
 
 REM -----------------------------------------------------
 
 ECHO *** Creating .h files from .class files using Java SDK javah tool***
 
-cd "%GENERATEJNIHEADERS_BATCHSTARTDIR%\..\src\com\VanvelzenSoftware\gucefANDROIDGLUE"
+cd "%GENERATEJNIHEADERS_BATCHSTARTDIR%"
 ECHO Working dir = "%CD%"
+"%JAVA_SDK_TOOLS%\javah.exe" -verbose -force -stubs -d "%GENERATEJNIHEADERS_BATCHSTARTDIR%" -classpath "%GENERATEJNIHEADERS_BATCHSTARTDIR%"
 
-"%JAVA_SDK_TOOLS%\javah.exe" -jni GUCEFApplicationGlue
+ECHO Return value error level: %ERRORLEVEL%
 
+IF %ERRORLEVEL% NEQ 0 (
+  ECHO Failed to generate *.h files from *.class files
+  GOTO :END
+) ELSE (
+  ECHO Successfully generated *.h files from *.class files
+)
 
 REM -----------------------------------------------------
 
