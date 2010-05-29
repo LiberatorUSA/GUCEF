@@ -15,5 +15,5 @@ public class GUCEFApplicationGlue
     /**
      * Stops the application run loop
      */
-    public native Stop();
+    public native void Stop();
 }
