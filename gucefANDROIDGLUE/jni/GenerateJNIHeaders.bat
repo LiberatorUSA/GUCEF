@@ -61,7 +61,7 @@ ECHO *** Creating .h files from .class files using Java SDK javah tool***
 
 cd "%GENERATEJNIHEADERS_BATCHSTARTDIR%"
 ECHO Working dir = "%CD%"
-"%JAVA_SDK_TOOLS%\javah.exe" -verbose -force -stubs -d "%GENERATEJNIHEADERS_BATCHSTARTDIR%" -classpath "%GENERATEJNIHEADERS_BATCHSTARTDIR%"
+"%JAVA_SDK_TOOLS%\javah.exe" -verbose -force -d "%GENERATEJNIHEADERS_BATCHSTARTDIR%" -classpath "%GENERATEJNIHEADERS_BATCHSTARTDIR%" com.VanvelzenSoftware.gucefANDROIDGLUE.GUCEFApplicationGlue
 
 ECHO Return value error level: %ERRORLEVEL%
 
