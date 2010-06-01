@@ -17,7 +17,7 @@ SKIP_GUCEF_CMAKELISTSFILEGENERATION=${SKIP_GUCEF_CMAKELISTSFILEGENERATION:=undef
 if [ "$SKIP_GUCEF_CMAKELISTSFILEGENERATION" = "undefined" ];
 then 
   echo "*** Generate CMakeLists.txt files ***"
-  ./GenerateCMakeLists.sh
+  . GenerateCMakeLists.sh
 else 
   echo "Skipping GUCEF's CMakeLists file generation"
 fi
@@ -39,7 +39,7 @@ echo "SRCROOTDIR = $SRCROOTDIR"
 
 
 # Set the output directory in which the target directories will be placed for CMake
-OUTPUTDIR=${OUTPUTDIR:=undefined}
+export OUTPUTDIR=${OUTPUTDIR:=undefined}
 if [ "$OUTPUTDIR" = "undefined" ];
 then
   echo "OUTPUTDIR is undefined, setting it to default"
