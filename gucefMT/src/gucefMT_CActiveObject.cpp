@@ -162,9 +162,9 @@ CActiveObject::Activate( void* taskdata /* = NULL */               ,
     m_isDeactivationRequested = false;
     _suspend = false;
     _active = true;
-    _td = ThreadCreate( (void*) OnActivate ,
-                        this               );
-                        
+    _td = ThreadCreate( (TThreadFunc) OnActivate ,
+                        this                     );
+
     return true;
 }
 
@@ -189,13 +189,13 @@ CActiveObject::Deactivate( bool force )
              *      Kill the thread
              */
             ThreadKill( _td );
-            
+
             OnTaskEnd( _taskdata );
         }
         else
         {
             m_isDeactivationRequested = true;
-        }        
+        }
     }
 }
 

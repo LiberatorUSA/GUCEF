@@ -29,9 +29,14 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CONFIG_H
-#include "gucef_config.h"      /* GUCEF platform build configuration */
+#include "gucef_config.h"      /* GUCEF configuration */
 #define GUCEF_CONFIG_H
 #endif /* GUCEF_CONFIG_H ? */
+
+#ifndef GUCEF_PLATFORM_H
+#include "gucef_platform.h"      /* GUCEF platform build configuration */
+#define GUCEF_PLATFORM_H
+#endif /* GUCEF_PLATFORM_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,24 +53,9 @@
 /*-------------------------------------------------------------------------*/
 
 /*
- *      O/S Detection macro.
- */
-#if !( defined(GUCEF_LINUX_BUILD) || defined(GUCEF_MSWIN_BUILD) )
-  #if defined( WIN32 ) || defined( _WIN32 )
-    #define GUCEF_MSWIN_BUILD
-  #elif defined( linux )
-    #define GUCEF_LINUX_BUILD
-  #else
-    #error Cannot automaticly detect your operating system, please define
-  #endif
-#endif /* MANUAL_OS_DEFINE ? */
-
-/*-------------------------------------------------------------------------*/
-
-/*
  *      O/S Specific Switches
  */
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
     #define WIN32_LEAN_AND_MEAN     /* trim fat from windoze by default */
     #define WIN32_EXTRA_LEAN        /* trim additional tub of lard from windoze by default */
 
@@ -193,10 +183,10 @@
   #define GUCEF_PLUGIN_CALLSPEC_STD_PREFIX GUCEF_CALLSPEC_STD
   #define GUCEF_PLUGIN_CALLSPEC_STD_SUFFIX
 #else
-  #define GUCEF_CALLSPEC_STD_PREFIX
-  #define GUCEF_CALLSPEC_STD_SUFFIX  __attribute__((GUCEF_CALLSPEC_STD))
-  #define GUCEF_PLUGIN_CALLSPEC_STD_PREFIX
-  #define GUCEF_PLUGIN_CALLSPEC_STD_SUFFIX __attribute__((GUCEF_CALLSPEC_STD))
+  #define GUCEF_CALLSPEC_STD_PREFIX __attribute__((GUCEF_CALLSPEC_STD))
+  #define GUCEF_CALLSPEC_STD_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_STD_PREFIX __attribute__((GUCEF_CALLSPEC_STD))
+  #define GUCEF_PLUGIN_CALLSPEC_STD_SUFFIX
 #endif
 
 /*-------------------------------------------------------------------------*/

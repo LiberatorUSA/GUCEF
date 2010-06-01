@@ -43,10 +43,10 @@
 
 struct SMutexData
 {
-        #ifdef GUCEF_MSWIN_BUILD
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
         HANDLE id;
         #else
-        #ifdef GUCEF_LINUX_BUILD
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
         pthread_mutex_t id;
         #else
         #error Unsuported target platform
@@ -77,7 +77,7 @@ namespace MT {
 CMutex::CMutex( void )
         : _mutexdata( NULL )
 {
-        #ifdef GUCEF_MSWIN_BUILD
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
         TMutexData* md = new TMutexData;
         md->id = CreateMutex( NULL, FALSE, NULL );
         if ( !md->id )
@@ -111,7 +111,7 @@ CMutex::CMutex( void )
  */
 CMutex::~CMutex()
 {
-        #ifdef GUCEF_MSWIN_BUILD
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
         CloseHandle( ((TMutexData*)_mutexdata)->id );
         delete (TMutexData*)_mutexdata;
         #else
@@ -132,7 +132,7 @@ CMutex::~CMutex()
 bool
 CMutex::Lock( void ) const
 {
-        #ifdef GUCEF_MSWIN_BUILD
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
         if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id ,
                                   INFINITE                      ) == WAIT_FAILED ) return false;
         return true;
@@ -154,7 +154,7 @@ CMutex::Lock( void ) const
 bool
 CMutex::Unlock( void ) const
 {
-        #ifdef GUCEF_MSWIN_BUILD
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
         if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE ) return false;
         return true;
         #else

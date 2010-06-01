@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -24,7 +24,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_MT_DVMTOSWRAP_H
-#include "gucefMT_DVMTOSWRAP.h"
+#include "gucefMT_dvmtoswrap.h"
 #define GUCEF_MT_DVMTOSWRAP_H
 #endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
@@ -45,23 +45,23 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
+bool
 CGUCEFMTModule::Load( void )
 {
     // make sure the precision time is initialized
     PrecisionTimerInit();
-    
+
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
-        
-bool 
+
+bool
 CGUCEFMTModule::Unload( void )
 {
     // shutdown the performance timer last
     PrecisionTimerShutdown();
-    
+
     return true;
 }
 

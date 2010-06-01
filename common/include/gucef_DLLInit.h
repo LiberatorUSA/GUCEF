@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_DLLINIT_H
@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CONFIG_H
-#include "gucef_config.h"      /* GUCEF platform build configuration */
-#define GUCEF_CONFIG_H
-#endif /* GUCEF_CONFIG_H ? */
+#ifndef GUCEF_PLATFORM_H
+#include "gucef_platform.h"      /* GUCEF platform build configuration */
+#define GUCEF_PLATFORM_H
+#endif /* GUCEF_PLATFORM_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,7 +37,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
 
   #define WIN32_LEAN_AND_MEAN
   #include <windows.h>
@@ -108,7 +108,7 @@
         }
 
 #else
-#ifdef GUCEF_LINUX_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
 
   #define GUCEF_DLL_INIT_FUNC( ns ) \
                                     \

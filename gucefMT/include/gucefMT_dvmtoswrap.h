@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef GUCEF_MT_DVMTOSWRAP_H
@@ -55,6 +55,8 @@ namespace MT {
 
 struct TThreadData;
 
+typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TThreadFunc)( void* ) GUCEF_CALLSPEC_SUFFIX;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -90,8 +92,8 @@ ThreadDelay( UInt32 delay );
  *      @return structure containing O/S specific thread data.
  */
 GUCEFMT_EXPORT_C struct SThreadData*
-ThreadCreate( void* func ,
-              void* data );
+ThreadCreate( TThreadFunc func ,
+              void* data       );
 
 /*--------------------------------------------------------------------------*/
 
@@ -131,9 +133,9 @@ GetCurrentTaskID( void );
  *      Very accurate delay mechanism.
  *      Uses the target O/S to attempt to delay
  *      for the given number of milliseconds as accurately as possible.
- *      The CPU will be yielded whenever possible as long as possible 
+ *      The CPU will be yielded whenever possible as long as possible
  *      while attempting to guarantee a delay as close to the requested number
- *      of milliseconds as possible.      
+ *      of milliseconds as possible.
  *
  *      This function requires you to call PrecisionTimerInit() at
  *      application startup and PrecisionTimerShutdown() at application
@@ -142,7 +144,7 @@ GetCurrentTaskID( void );
  *      Note that for the MSWIN platform you will have to link to winmm.lib
  *      The code used for that platform is not linked to by default
  *
- *      @param delay the number of milliseconds you wish to delay the caller thread 
+ *      @param delay the number of milliseconds you wish to delay the caller thread
  */
 GUCEFMT_EXPORT_C void
 PrecisionDelay( UInt32 delay );
@@ -182,7 +184,7 @@ PrecisionTimerInit( void );
 /*--------------------------------------------------------------------------*/
 
 /**
- *      Cleans up whatever needs to be cleaned up after a class to 
+ *      Cleans up whatever needs to be cleaned up after a class to
  *      PrecisionTimerInit().
  *      MUST be called if you called PrecisionTimerInit() !!!
  *      call at application shutdown.
