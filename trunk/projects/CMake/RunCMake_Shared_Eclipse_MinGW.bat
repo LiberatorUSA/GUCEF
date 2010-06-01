@@ -1,0 +1,7 @@
+CALL CMakeCommon.bat
+
+ECHO *** Set Eclipse MinGW specifics and run CMake ***
+
+SET E_OUTPUTDIR="%OUTPUTDIR%\EMGW"
+CMake.exe -DBUILD_SHARED_LIBS=ON -G"Eclipse CDT4 - MinGW Makefiles" -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE -H"%SRCROOTDIR%" -B%E_OUTPUTDIR%
+PAUSE
