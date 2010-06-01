@@ -28,15 +28,14 @@
 
 #include "gucefMT_dvmtoswrap.h"         /* the function prototypes */
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
   #include <Mmsystem.h>  /* needed for timeBeginPeriod() etc */
-#else
-#ifdef GUCEF_LINUX_BUILD
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
   #include <stdio.h>
   #include <stdlib.h>
   #include <unistd.h>
   #include <pthread.h>
-#endif
+  #include <signal.h>
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -47,18 +46,16 @@
 
 struct SThreadData
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        DWORD threadid;
-        HANDLE threadhandle;
-        LPTHREAD_START_ROUTINE func;
-        void* data;
-        #else
-        #ifdef GUCEF_LINUX_BUILD
-        pthread_t thread;
-        void* func;
-        void* data;
-        #endif
-        #endif
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    DWORD threadid;
+    HANDLE threadhandle;
+    LPTHREAD_START_ROUTINE func;
+    void* data;
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    pthread_t thread;
+    TThreadFunc func;
+    void* data;
+    #endif
 };
 typedef struct SThreadData TThreadData;
 
@@ -72,7 +69,7 @@ typedef struct SThreadData TThreadData;
  *      needed for PrecisionDelay() and PrecisionTickCount()
  *      Initialized in PrecisionTimerInit()
  */
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
 static LARGE_INTEGER m_high_perf_timer_freq = { 0 };
 #endif
 
@@ -85,12 +82,10 @@ static LARGE_INTEGER m_high_perf_timer_freq = { 0 };
 void
 ThreadDelay( UInt32 delay )
 {
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
     Sleep( delay );
-    #else
-    #ifdef GUCEF_LINUX_BUILD
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
     sleep( delay );
-    #endif
     #endif
 }
 
@@ -100,50 +95,48 @@ ThreadDelay( UInt32 delay )
 static UInt32 GUCEF_CALLSPEC_STD_PREFIX
 ThreadMain( void* tdvptr ) GUCEF_CALLSPEC_STD_SUFFIX
 {
-        UInt32 retval = ( (TThreadData*)tdvptr)->func( ((TThreadData*)tdvptr)->data );
-        free( ((TThreadData*)tdvptr) );
-        return retval;
+    UInt32 retval = ( (TThreadData*)tdvptr)->func( ((TThreadData*)tdvptr)->data );
+    free( ((TThreadData*)tdvptr) );
+    return retval;
 }
 
 /*--------------------------------------------------------------------------*/
 
 TThreadData*
-ThreadCreate( void* func ,
-              void* data )
+ThreadCreate( TThreadFunc func ,
+              void* data       )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        TThreadData* td = malloc( sizeof( TThreadData ) );
-        td->func = (LPTHREAD_START_ROUTINE)func;
-        td->data = data;
-        td->threadhandle = CreateThread( NULL                                ,  /* Security Descriptor */
-                                         0                                   ,  /* initial stack size */
-                                         (LPTHREAD_START_ROUTINE) ThreadMain ,  /* thread function */
-                                         (LPVOID) td                         ,  /* thread argument */
-                                         0                                   ,  /* creation option */
-                                         &td->threadid                       ); /* thread identifier */
-        if ( td->threadhandle == NULL )
-        {
-                free( td );
-                return NULL;
-        }
-        return td;
-        #else
-        #ifdef GUCEF_LINUX_BUILD
-        TThreadData* td = malloc( sizeof( TThreadData ) );
-        td->data = data;
-        if ( 0 != pthread_create( &td->thread         ,
-                                  NULL                ,
-                                  (void*) ThreadMain  ,
-                                  (void*) td          ) )
-        {
-            free( td );
-            return NULL;
-        }
-        return td;
-        #else
-        #error unsupported target platform
-        #endif
-        #endif
+    #ifdef GUCEF_MSWIN_BUILD
+    TThreadData* td = malloc( sizeof( TThreadData ) );
+    td->func = (LPTHREAD_START_ROUTINE)func;
+    td->data = data;
+    td->threadhandle = CreateThread( NULL                                ,  /* Security Descriptor */
+                                     0                                   ,  /* initial stack size */
+                                     (LPTHREAD_START_ROUTINE) ThreadMain ,  /* thread function */
+                                     (LPVOID) td                         ,  /* thread argument */
+                                     0                                   ,  /* creation option */
+                                     &td->threadid                       ); /* thread identifier */
+    if ( td->threadhandle == NULL )
+    {
+        free( td );
+        return NULL;
+    }
+    return td;
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    TThreadData* td = malloc( sizeof( TThreadData ) );
+    td->data = data;
+    if ( 0 != pthread_create( &td->thread         ,
+                              NULL                ,
+                              (void*) ThreadMain  ,
+                              (void*) td          ) )
+    {
+        free( td );
+        return NULL;
+    }
+    return td;
+    #else
+    #error unsupported target platform
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -151,8 +144,10 @@ ThreadCreate( void* func ,
 GUCEFMT_EXPORT_C UInt32
 ThreadID( struct SThreadData* td )
 {
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
     return td->threadid;
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    return (UInt32) td->thread;
     #else
     #error unsupported target platform
     #endif
@@ -163,8 +158,10 @@ ThreadID( struct SThreadData* td )
 UInt32
 ThreadSuspend( struct SThreadData* td )
 {
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
     return ( -1 != SuspendThread( td->threadhandle ) );
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
     #else
     #error unsupported target platform
     #endif
@@ -175,8 +172,10 @@ ThreadSuspend( struct SThreadData* td )
 UInt32
 ThreadResume( struct SThreadData* td )
 {
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
     return ( -1 != ResumeThread( td->threadhandle ) );
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
     #else
     #error unsupported target platform
     #endif
@@ -187,11 +186,24 @@ ThreadResume( struct SThreadData* td )
 UInt32
 ThreadKill( struct SThreadData* td )
 {
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
     if ( td != NULL )
     {
         UInt32 retval = TerminateThread( td->threadhandle ,
                                          1                );
+        free( td );
+        return retval;
+    }
+    return 0;
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    if ( td != NULL )
+    {
+        Int32 retval = (Int32) pthread_kill( td->thread, 0 );
+        if ( 0 != retval )
+        {
+            /* an error occured */
+
+        }
         free( td );
         return retval;
     }
@@ -207,7 +219,7 @@ UInt32
 ThreadWait( struct SThreadData* td ,
             Int32 timeout          )
 {
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
     if ( timeout >= 0 )
     {
         return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
@@ -215,6 +227,8 @@ ThreadWait( struct SThreadData* td ,
     }
     return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
                                                    INFINITE         ) );
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
     #else
     #error unsupported target platform
     #endif
@@ -225,8 +239,10 @@ ThreadWait( struct SThreadData* td ,
 UInt32
 GetCurrentTaskID( void )
 {
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
     return GetCurrentThreadId();
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    return (UInt32) pthread_self();
     #else
     #error unsupported target platform
     #endif
@@ -237,7 +253,7 @@ GetCurrentTaskID( void )
 UInt64
 PrecisionTickCount( void )
 {
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
     LARGE_INTEGER t;
 
     assert( sizeof( LARGE_INTEGER ) <= sizeof( UInt64 ) );
@@ -250,6 +266,8 @@ PrecisionTickCount( void )
     {
         return GetTickCount();
     }
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
     #else
     #error unsupported target platform
     #endif
@@ -260,7 +278,7 @@ PrecisionTickCount( void )
 UInt64
 PrecisionTimerResolution( void )
 {
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
     ULARGE_INTEGER t;
     if ( QueryPerformanceFrequency( (LARGE_INTEGER*) &t ) == TRUE )
     {
@@ -270,6 +288,8 @@ PrecisionTimerResolution( void )
     {
         return 100; /* this is the WIN32 resolution of GetTickCount(); which has a time-slice size of about 10 ms */
     }
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
     #else
     #error unsupported target platform
     #endif
@@ -280,7 +300,7 @@ PrecisionTimerResolution( void )
 void
 PrecisionDelay( UInt32 delay )
 {
-        #ifdef GUCEF_MSWIN_BUILD
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
 
         /*
          *      Original code obtained from http://www.geisswerks.com/ryan/FAQS/timing.html
@@ -355,6 +375,8 @@ PrecisionDelay( UInt32 delay )
 
         m_prev_end_of_frame = t;
 
+        #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
         #else
         #error unsupported target platform
         #endif
@@ -365,7 +387,7 @@ PrecisionDelay( UInt32 delay )
 void
 PrecisionTimerInit( void )
 {
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
     if ( m_high_perf_timer_freq.QuadPart == 0 )
     {
         /*
@@ -390,15 +412,15 @@ PrecisionTimerInit( void )
 void
 PrecisionTimerShutdown( void )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        if ( m_high_perf_timer_freq.QuadPart != 0 )
-        {
-            /*
-             *      Undo timer resolution change
-             */
-            timeEndPeriod( 1 );
-        }
-        #endif
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    if ( m_high_perf_timer_freq.QuadPart != 0 )
+    {
+        /*
+         *      Undo timer resolution change
+         */
+        timeEndPeriod( 1 );
+    }
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/

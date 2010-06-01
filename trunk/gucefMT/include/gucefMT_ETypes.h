@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef GUCEF_MT_ETYPES_H
@@ -116,7 +116,7 @@ typedef enum TBuildinDataType
         DT_INT32       ,
         DT_UINT64      ,
         DT_INT64       ,
-        
+
         DT_UNKNOWN
 };
 
