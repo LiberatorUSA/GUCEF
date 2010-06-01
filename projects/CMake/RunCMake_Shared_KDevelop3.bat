@@ -1,0 +1,7 @@
+CALL CMakeCommon.bat
+
+ECHO *** Set MVC9 specifics and run CMake ***
+
+SET KDEV_OUTPUTDIR="%OUTPUTDIR%\KDEV"
+CMake.exe -DBUILD_SHARED_LIBS=ON -GKDevelop3 -H"%SRCROOTDIR%" -B%KDEV_OUTPUTDIR%
+PAUSE
