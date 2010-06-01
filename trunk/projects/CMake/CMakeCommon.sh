@@ -1,9 +1,14 @@
 #!/bin/bash
 #
+# Turn on tracing, we want to see what's going on
+#set -x
+#
+# Remember the dir where we started out since we use relative paths
 CMAKECOMMON_SCRIPTSTARTDIR=pwd
 #
 SKIP_GUCEF_CMAKELISTSFILEGENERATION=${SKIP_GUCEF_CMAKELISTSFILEGENERATION:=undefined}
-if [ SKIP_GUCEF_CMAKELISTSFILEGENERATION ne "undefined" ]; then 
+if [[ "$SKIP_GUCEF_CMAKELISTSFILEGENERATION" != "undefined" ]];
+then 
   echo "*** Generate CMakeLists.txt files ***"
   .GenerateCMakeLists.sh
 else 
@@ -14,8 +19,8 @@ cd "$CMAKECOMMON_SCRIPTSTARTDIR"
 #
 echo "*** Perform common CMake environment variable setup ***"
 #
-cd ..
-cd ..
+cd ".."
+cd ".."
 #
 GUCEF_HOME=pwd
 SRCROOTDIR=pwd
