@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CSTRINGLIST_H
@@ -107,35 +107,35 @@ class GUCEFCORE_EXPORT_CPP CStringList
         ~CStringList();
 
         CStringList& operator=( const CStringList& src );
-        
+
         CString& operator[]( UInt32 index );
-        
+
         CString operator[]( UInt32 index ) const;
-        
+
         void Merge( const CStringList& other ,
                     bool allow_duplicates    );
 
         UInt32 Append( const CString& string );
-        
+
         void AddAtIndex( const CString& string ,
                          const UInt32 index    );
-        
+
         Int32 Find( const CString& string ) const;
-        
+
         void SetAllowDuplicates( bool allow );
-        
+
         bool GetAllowDuplicates( void ) const;
 
         bool LoadFromFile( const CString& filename );
-        
+
         bool LoadFromFile( CIOAccess* file );
 
         void SaveToFile( const CString& filename );
 
         UInt32 GetCount( void ) const;
-        
+
         bool Delete( UInt32 index );
-        
+
         void Clear( void );
 
         class GUCEFCORE_EXPORT_CPP iterator
@@ -159,7 +159,7 @@ class GUCEFCORE_EXPORT_CPP CStringList
 
                 iterator& operator+=( Int32 offset );
 
-                iterator& operator-=( Int32 offset ); 
+                iterator& operator-=( Int32 offset );
 
                 iterator& operator++( void );
 
@@ -169,7 +169,7 @@ class GUCEFCORE_EXPORT_CPP CStringList
 
                 void Insert( const CString& string );
 
-                void Delete( void );                
+                void Delete( void );
 
                 private:
                 CStringList* _list;
@@ -207,13 +207,13 @@ class GUCEFCORE_EXPORT_CPP CStringList
 
                 private:
                 const CStringList* _list;
-                UInt32 _pos;                
+                UInt32 _pos;
         };
 
         iterator Begin( void );
 
         iterator End( void );
-        
+
         const_iterator Begin( void ) const;
 
         const_iterator End( void ) const;
@@ -223,8 +223,8 @@ class GUCEFCORE_EXPORT_CPP CStringList
         const_iterator ConstEnd( void ) const;
 
         private:
-        friend iterator;
-        friend const_iterator;
+        friend class iterator;
+        friend class const_iterator;
 
         CDynamicArray _entrys;
         bool _allowmultiple;
@@ -253,11 +253,11 @@ class GUCEFCORE_EXPORT_CPP CStringList
         - Added Clear()
         - Added Delete()
 - 01-05-2005 :
-        - Fixed a bug in the copy constructor, the copy stringlist has the 
+        - Fixed a bug in the copy constructor, the copy stringlist has the
           correct amount of storage but no entry's.
 - 26-11-2004 :
         - Redesigned and recoded this class. It now uses iterators and the
-          refrence counted string class. void* links are no longer available. 
+          refrence counted string class. void* links are no longer available.
 - 18-08-2003 :
         - Changed EXPORT into GUCEFCORE_EXPORT_CPP
 - 06-06-2003 :
