@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CMSGEXCEPTION_H
@@ -37,7 +37,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -63,18 +63,18 @@ class GUCEFCORE_EXPORT_CPP CMsgException : public CException
 
     CMsgException( const CMsgException& src );
 
-    virtual ~CMsgException();   
+    virtual ~CMsgException() throw();
 
     CMsgException& operator=( const CMsgException& src );
 
     const char* GetErrorMsg( void ) const;
-    
-    virtual const char* what( void ) const;
+
+    virtual const char* what( void ) const throw();
 
     private:
-    
+
     CMsgException( void );
-    
+
     private:
 
     const char* m_errorMsg;

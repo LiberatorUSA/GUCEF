@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_EXCEPTIONMACROS_H
@@ -45,7 +45,7 @@
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      MACROS                                                             //
@@ -54,8 +54,8 @@
 
 /*
  *  Macro for defining an exception class. Usefull for defining an exception
- *  class within the scope of your class definition. This makes exceptions 
- *  easy to find instead of hidden away in comment remarks but without 
+ *  class within the scope of your class definition. This makes exceptions
+ *  easy to find instead of hidden away in comment remarks but without
  *  mucking up your class definition readability with exception definitions
  */
 #define GUCEF_DEFINE_EXCEPTION( exportAPI, exceptionName )         \
@@ -77,10 +77,10 @@
 /*--------------------------------------------------------------------------*/
 
 /*
- *  Macro for defining a message exception class. 
- *  Usefull for defining an exception class within the scope of 
- *  your class definition. This makes exceptions 
- *  easy to find instead of hidden away in comment remarks but without 
+ *  Macro for defining a message exception class.
+ *  Usefull for defining an exception class within the scope of
+ *  your class definition. This makes exceptions
+ *  easy to find instead of hidden away in comment remarks but without
  *  mucking up your class definition readability with exception definitions
  */
 #define GUCEF_DEFINE_MSGEXCEPTION( exportAPI, exceptionName )         \
@@ -94,7 +94,7 @@
                                                                       \
         exceptionName( const exceptionName& src );                    \
                                                                       \
-        virtual ~exceptionName();                                     \
+        virtual ~exceptionName() throw();                             \
                                                                       \
         private:                                                      \
         exceptionName( void );                                        \
@@ -105,8 +105,8 @@
 
 /*
  *  Macro for defining a message exception class inlined
- *  This makes exceptions easy to find instead of hidden away in comment 
- *  remarks but without mucking up your class definition readability 
+ *  This makes exceptions easy to find instead of hidden away in comment
+ *  remarks but without mucking up your class definition readability
  *  with exception definitions
  */
 #define GUCEF_DEFINE_INLINED_MSGEXCEPTION( exceptionName )               \
@@ -131,7 +131,7 @@
                                                                          \
         }                                                                \
                                                                          \
-        virtual ~exceptionName()                                         \
+        virtual ~exceptionName() throw()                                 \
         {                                                                \
                                                                          \
         }                                                                \
@@ -146,7 +146,7 @@
 /*--------------------------------------------------------------------------*/
 
 /*
- *  macro for implementing an exception class within the scope of 
+ *  macro for implementing an exception class within the scope of
  *  your class. This allows you to use per class typed exceptions.
  *  The macro will help to implement a number of exceptions classes
  *  with ease and consistancy
@@ -172,7 +172,7 @@ ownerScopeClass::exceptionName::~exceptionName()                            \
 /*--------------------------------------------------------------------------*/
 
 /*
- *  macro for implementing an exception class within the scope of 
+ *  macro for implementing an exception class within the scope of
  *  your class. This allows you to use per class typed exceptions.
  *  The macro will help to implement a number of exceptions classes
  *  with ease and consistancy
@@ -229,7 +229,7 @@ ownerScopeClass::exceptionName::~exceptionName()                            \
 
 /*--------------------------------------------------------------------------*/
 
-#else /* GUCEF_LOG_EXCEPTIONS ? */ 
+#else /* GUCEF_LOG_EXCEPTIONS ? */
 
 /*--------------------------------------------------------------------------*/
 
@@ -243,7 +243,7 @@ ownerScopeClass::exceptionName::~exceptionName()                            \
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_LOG_EXCEPTIONS ? */ 
+#endif /* GUCEF_LOG_EXCEPTIONS ? */
 
 /*--------------------------------------------------------------------------*/
 
