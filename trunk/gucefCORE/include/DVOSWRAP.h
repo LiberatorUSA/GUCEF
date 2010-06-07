@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_DVOSWRAP_H
@@ -50,6 +50,15 @@ namespace GUCEF {
 namespace CORE {
 #endif /* __cplusplus ? */
 
+/*--------------------------------------------------------------------------*/
+
+/*
+ *      Prevent C++ Name mangeling
+ */
+#ifdef __cplusplus
+   extern "C" {
+#endif   /* __cplusplus */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      CONSTANTS                                                          //
@@ -61,18 +70,35 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+typedef void (*TDefaultFuncPtr) ();
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *  Union meant to provide storage that can be used to store either a
+ *  pointer-to-data or pointer-to-function. Conversion between the two types
+ *  is not allowed according to ISO C++ and is in fact undefined.
+ *  In some implementations a pointer-to-function will require more space then
+ *  a pointer-to-data. O/S functions however will often return a void*, which is
+ *  a pointer-to-data. The union below allows us to work around this problem.
+ */
+union anyPointer
+{
+    void* objPtr;
+    TDefaultFuncPtr funcPtr;
+};
+typedef union anyPointer TAnyPointer;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Prevent C++ Name mangeling
- */
-#ifdef __cplusplus
-   extern "C" {
-#endif   /* __cplusplus */
-
-/*--------------------------------------------------------------------------*/
 
 GUCEFCORE_EXPORT_C void*
 LoadModuleDynamicly( const char* filename );
@@ -93,10 +119,9 @@ UnloadModuleDynamicly( void *sohandle );
  *      Although C DLL's can be exchanged between different compilers in theory
  *      in practice they use different naming conventions. Unlike C++ the C
  *      exports are compatible if the same calling convention is used but the
- *      names tend to get mucked up. 
- *      Tnx for the mess M$ _|_
+ *      names tend to get mucked up.
  */
-GUCEFCORE_EXPORT_C void*
+GUCEFCORE_EXPORT_C TAnyPointer
 GetFunctionAddress( void *sohandle           ,
                     const char* functionname ,
                     UInt32 parambytes        );
@@ -146,14 +171,14 @@ GUCEFCORE_EXPORT_C UInt32
 StringFromClipboard( char *dest     ,
                      UInt32 size    ,
                      UInt32 *wbytes );
-                     
+
 /*--------------------------------------------------------------------------*/
 
 GUCEFCORE_EXPORT_C UInt32
 GUCEFSetEnv( const char* key   ,
              const char* value );
-        
-/*--------------------------------------------------------------------------*/        
+
+/*--------------------------------------------------------------------------*/
 
 GUCEFCORE_EXPORT_C const char*
 GUCEFGetEnv( const char* key );
@@ -164,7 +189,7 @@ GUCEFGetEnv( const char* key );
  *      Returns the application tickcount
  */
 GUCEFCORE_EXPORT_C UInt32
-GUCEFGetTickCount( void );   
+GUCEFGetTickCount( void );
 
 /*--------------------------------------------------------------------------*/
 
@@ -173,7 +198,7 @@ GUCEFGetTickCount( void );
  */
 GUCEFCORE_EXPORT_C void
 ShowErrorMessage( const char* message     ,
-                  const char* description );                  
+                  const char* description );
 
 /*--------------------------------------------------------------------------*/
 

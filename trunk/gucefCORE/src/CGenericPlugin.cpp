@@ -105,20 +105,20 @@ CGenericPlugin::Load( const CString& pluginPath )
             // We will now try to lookup the function pointers
             m_funcPointers[ GPLUGINFUNCPTR_LOAD ] = GetFunctionAddress( m_moduleHandle     ,
                                                                         "GUCEFPlugin_Load" ,
-                                                                        0                  );
+                                                                        0                  ).funcPtr;
             m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] = GetFunctionAddress( m_moduleHandle       ,
                                                                           "GUCEFPlugin_Unload" ,
-                                                                          0                    );
+                                                                          0                    ).funcPtr;
             m_funcPointers[ GPLUGINFUNCPTR_VERSION ] = GetFunctionAddress( m_moduleHandle           ,
                                                                            "GUCEFPlugin_GetVersion" ,
-                                                                           sizeof( TVersion* )      );
+                                                                           sizeof( TVersion* )      ).funcPtr;
             m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] = GetFunctionAddress( m_moduleHandle               ,
                                                                                "GUCEFPlugin_GetDescription" ,
-                                                                               0                            );
+                                                                               0                            ).funcPtr;
 
             m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] = GetFunctionAddress( m_moduleHandle           ,
                                                                              "GUCEFPlugin_GetCopyright" ,
-                                                                             0                        );
+                                                                             0                        ).funcPtr;
 
             // Verify that all function pointers are loaded correctly
             if ( ( NULL != m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )        &&

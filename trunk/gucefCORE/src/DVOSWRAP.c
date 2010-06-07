@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -81,7 +81,7 @@ LoadModuleDynamicly( const char* filename )
     char* fName = (char*) filename;
     const char* fileExt = Extract_File_Ext( filename );
     void* modulePtr = NULL;
-    
+
     /*
      *  If no module extension was given we will add the O/S default
      */
@@ -90,33 +90,33 @@ LoadModuleDynamicly( const char* filename )
         UInt32 sLen = (UInt32) strlen( filename );
         fName = malloc( sLen + 5 );
         memcpy( fName, filename, sLen );
-        
+
         #ifdef GUCEF_MSWIN_BUILD
-        memcpy( fName+sLen, ".dll\0", 5 );        
+        memcpy( fName+sLen, ".dll\0", 5 );
         #else
           #ifdef GUCEF_LINUX_BUILD
-          memcpy( fName+sLen, ".so\0", 4 ); 
+          memcpy( fName+sLen, ".so\0", 4 );
           #else
             #error Unsupported target platform
-          #endif  
+          #endif
         #endif
     }
-    
+
     #ifdef GUCEF_LINUX_BUILD
     modulePtr = (void*) dlopen( fName, RTLD_NOW );
     #else
-      #ifdef GUCEF_MSWIN_BUILD      
+      #ifdef GUCEF_MSWIN_BUILD
       modulePtr = (void*) LoadLibrary( fName );
       #else
         #error Unsupported target platform
       #endif
     #endif
-    
+
     if ( fileExt == NULL )
     {
         free( fName );
     }
-    
+
     return modulePtr;
 }
 
@@ -125,92 +125,88 @@ LoadModuleDynamicly( const char* filename )
 void
 UnloadModuleDynamicly( void *sohandle )
 {
-        if ( !sohandle ) return;
-        #ifdef GUCEF_LINUX_BUILD
-        dlclose( sohandle );
-        #elif defined( GUCEF_MSWIN_BUILD )
-        FreeLibrary( (HMODULE)sohandle );
-        #else
-        #error Unsupported target platform
-        #endif
+    if ( !sohandle ) return;
+    #ifdef GUCEF_LINUX_BUILD
+    dlclose( sohandle );
+    #elif defined( GUCEF_MSWIN_BUILD )
+    FreeLibrary( (HMODULE)sohandle );
+    #else
+    #error Unsupported target platform
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
 
-void*
+TAnyPointer
 GetFunctionAddress( void *sohandle           ,
                     const char* functionname ,
                     UInt32 parambytes        )
 {
+    /*
+     *      Calling Convention      Internal*       MSVC DLL (w/ DEF)       MSVC DLL (dllexport)  	DMC DLL         MinGW DLL       BCC DLL
+     *      __stdcall               _Function@n  	Function                _Function@n             _Function@n     Function@n      Function
+     *      __cdecl                 _Function       Function                Function                Function        Function        _Function
+     */
+    TAnyPointer fptr;
+    if ( !sohandle ) return NULL;
+    #if defined( GUCEF_LINUX_BUILD )
+    return fptr.objPtr = dlsym( sohandle     ,
+                                functionname );
+    #elif defined( GUCEF_MSWIN_BUILD )
+
+    /*
+     *      First we try a normal load using the given
+     *      functionname.
+     *
+     *      Type: Function
+     */
+    fptr.funcPtr = (TDefaultFuncPtr) GetProcAddress( (HMODULE)sohandle ,
+                                                     functionname      );
+    if ( fptr.funcPtr == NULL )
+    {
+        char buffer[ 1024 ];
+        UInt32 len = (UInt32)strlen( functionname );
+
         /*
-         *      Calling Convention      Internal*       MSVC DLL (w/ DEF)       MSVC DLL (dllexport)  	DMC DLL         MinGW DLL       BCC DLL
-         *      __stdcall               _Function@n  	Function                _Function@n             _Function@n     Function@n      Function
-         *      __cdecl                 _Function       Function                Function                Function        Function        _Function
-         */
-        void* fptr;
-        if ( !sohandle ) return NULL;
-        #if defined( GUCEF_LINUX_BUILD )
-        return (void*) dlsym( sohandle     ,
-                              functionname );
-        #elif defined( GUCEF_MSWIN_BUILD )
-        
-        #pragma warning( push )
-        #pragma warning( disable : 4054 ) /* warning C4054: 'type cast' : from function pointer 'FARPROC' to data pointer 'void *' */
-        
-        /*
-         *      First we try a normal load using the given
-         *      functionname.
+         *      Maybe without the param bytes then :(
          *
-         *      Type: Function         
+         *      Type: _Function
          */
-        fptr = (void*) GetProcAddress( (HMODULE)sohandle ,
-                                       functionname      );
-        if ( fptr == NULL )
+        strncpy( buffer+1, functionname, len+1 );
+        *buffer = '_';
+        fptr.funcPtr = (TDefaultFuncPtr) GetProcAddress( (HMODULE)sohandle ,
+                                                         buffer            );
+
+        /*
+         *      Try adding the param bytes value
+         *      ... So much for naming conventions :/
+         *
+         *      Type: _Function@n
+         */
+        if ( fptr.funcPtr == NULL )
         {
-                char buffer[ 1024 ];
-                UInt32 len = (UInt32)strlen( functionname );
-                
-                /*
-                 *      Maybe without the param bytes then :(
-                 *
-                 *      Type: _Function
-                 */                
-                strncpy( buffer+1, functionname, len+1 );
-                *buffer = '_';                
-                fptr = (void*) GetProcAddress( (HMODULE)sohandle ,
-                                               buffer            );                 
-                                        
-                /*
-                 *      Try adding the param bytes value
-                 *      ... So much for naming conventions :/
-                 *
-                 *      Type: _Function@n
-                 */
-                if ( fptr == NULL )
-                { 
-                        sprintf( buffer+len+1, "@%d", parambytes );
-                        fptr = (void*) GetProcAddress( (HMODULE)sohandle ,
-                                                       buffer            );
-                 
-                        /*
-                         *      Last but not least try..
-                         *
-                         *      Type: Function@n                 
-                         */
-                        if ( fptr == NULL )
-                        {
-                                fptr = (void*) GetProcAddress( (HMODULE)sohandle ,
-                                                                buffer+1         );
-                        } 
-                }                                                                             
-                                       
+            sprintf( buffer+len+1, "@%d", parambytes );
+            fptr.funcPtr = (TDefaultFuncPtr) GetProcAddress( (HMODULE)sohandle ,
+                                                             buffer            );
+
+            /*
+             *      Last but not least try..
+             *
+             *      Type: Function@n
+             */
+            if ( fptr.funcPtr == NULL )
+            {
+                fptr.funcPtr = (TDefaultFuncPtr) GetProcAddress( (HMODULE)sohandle ,
+                                                                  buffer+1         );
+            }
         }
-        return fptr;
-        #pragma warning( pop )
-                                       
-        #else
-        #error Unsupported target platform
-        #endif
+
+    }
+    return fptr;
+
+    #else
+    #error Unsupported target platform
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -222,47 +218,47 @@ GetCurrentHWND( void )
 {
         const char* hwndstr;
         HWND whandle = NULL;
-        
+
         #ifdef SDL_SUPPORT
 
         /*
          *      If SDL is supported we will try to get the HWND from SDL
-         */                
-        SDL_SysWMinfo winfo;                
+         */
+        SDL_SysWMinfo winfo;
         SDL_GetWMInfo( &winfo );
-        whandle = winfo.window;                                                               
-        
+        whandle = winfo.window;
+
         if ( !whandle ) {
-        
+
         #endif
 
         #pragma warning( disable: 4047 ) // 'HWND' differs in levels of indirection from 'Int32'
-                
+
         /*
          *      Try to get the HWND from the process environment settings
          */
         hwndstr = GUCEFGetEnv( "HWND" );
         if ( hwndstr )
         {
-                whandle = Str_To_Int( hwndstr ); 
+                whandle = Str_To_Int( hwndstr );
         }
         else
-        {                         
+        {
                 /*
                  *      If all previous attempts failed then try to use the previous
                  *      clipboard owner (if there is one).
                  */
                 whandle = GetClipboardOwner();
         }
-        
-        #ifdef SDL_SUPPORT                
+
+        #ifdef SDL_SUPPORT
         }
         #endif
-        
-        return whandle;                
+
+        return whandle;
 }
 
-#endif /* GUCEF_MSWIN_BUILD ? */ 
+#endif /* GUCEF_MSWIN_BUILD ? */
 
 /*--------------------------------------------------------------------------*/
 
@@ -272,9 +268,9 @@ StringToClipboard( const char *str )
         if ( str )
         {
                 UInt32 strlength = (UInt32) strlen( str );
-                
+
                 #ifdef GUCEF_MSWIN_BUILD
-                                                                                        
+
                 HWND whandle = GetCurrentHWND();
                 UInt32 success = OSWRAP_FALSE;
                 HGLOBAL hglbcopy;
@@ -290,18 +286,18 @@ StringToClipboard( const char *str )
                  *      clipboard which is needed for placing data on it.
                  */
                 EmptyClipboard();
-                
+
                 /*
                  *      Allocate global MS windows managed memory for the text
                  */
-                hglbcopy = GlobalAlloc( GMEM_MOVEABLE                 , 
+                hglbcopy = GlobalAlloc( GMEM_MOVEABLE                 ,
                                         (strlength+1) * sizeof(TCHAR) );
                 if ( hglbcopy == NULL )
                 {
                         CloseClipboard();
                         return OSWRAP_FALSE;
                 }
-                
+
                 /*
                  *      Now we have to lock the memory we just allocated so that
                  *      windows keeps it's paws off of it. After that we can copy
@@ -310,7 +306,7 @@ StringToClipboard( const char *str )
                 lptstrcopy = GlobalLock( hglbcopy );
                 memcpy( lptstrcopy, str, strlength+1 );
                 GlobalUnlock( hglbcopy );
-                                        
+
                 /*
                  *      We now attempt to set the string in the clipboard.
                  *      This will fail if the handle we used in OpenClipboard() is
@@ -324,21 +320,21 @@ StringToClipboard( const char *str )
                 {
                         success = OSWRAP_FALSE;
                 }
-                
+
                 /*
                  *      Close the clipboard so that other tasks have access again
                  */
                 CloseClipboard();
 
-                return success;                
+                return success;
         }
         return OSWRAP_FALSE;
-        
+
         #else /* GUCEF_MSWIN_BUILD */
 
         return OSWRAP_FALSE;
-        
-        #endif /* OS WRAPPING */                                   
+
+        #endif /* OS WRAPPING */
 }
 
 /*--------------------------------------------------------------------------*/
@@ -360,17 +356,17 @@ StringFromClipboard( char *dest     ,
                      UInt32 *wbytes )
 {
         #ifdef GUCEF_MSWIN_BUILD
-        
+
         HWND whandle = GetCurrentHWND();
         HGLOBAL hglb;
         UInt32 success = OSWRAP_FALSE;
-        
+
         #ifdef SDL_SUPPORT
-        
+
         SDL_SysWMinfo winfo;
-        
+
         #endif /* SDL_SUPPORT */
-        
+
         if ( IsClipboardFormatAvailable( CF_TEXT ) )
         {
                 /*
@@ -388,40 +384,40 @@ StringFromClipboard( char *dest     ,
                 {
                         LPTSTR lptstr = GlobalLock( hglb );
                         if ( lptstr != NULL )
-                        {                           
+                        {
                                 UInt32 offset = *wbytes;
                                 UInt32 dsize = (UInt32) strlen( lptstr );
                                 if ( dsize > offset )
-                                {                               
+                                {
                                         dsize -= offset;
                                         if ( dsize > size-1 ) dsize = size-1;
                                         strncpy( dest, lptstr+offset, dsize );
                                         *wbytes += dsize;
-                                        
+
                                         success = OSWRAP_TRUE;
                                 }
-                                GlobalUnlock( hglb );                               
+                                GlobalUnlock( hglb );
                         }
-                        else 
+                        else
                         {
                                 *wbytes = 0;
-                        }        
-                }                                       
+                        }
+                }
 
                 /*
                  *      Close the clipboard so that other tasks have access again
-                 */                
+                 */
                 CloseClipboard();
 
                 return success;
         }
         return OSWRAP_FALSE;
-        
+
         #else /* GUCEF_MSWIN_BUILD */
-        
+
         return OSWRAP_FALSE;
-        
-        #endif /* OS WRAPPING */                
+
+        #endif /* OS WRAPPING */
 }
 
 /*--------------------------------------------------------------------------*/
@@ -431,19 +427,19 @@ GUCEFSetEnv( const char* key   ,
              const char* value )
 {
         #ifdef GUCEF_MSWIN_BUILD
-        
-        UInt32 retval;        
+
+        UInt32 retval;
         char* envstr = malloc( strlen( key ) + strlen( value )+2 );
         sprintf( envstr, "%s=%s", key, value );
         retval = _putenv( envstr );
         free( envstr );
         return retval == 0;
-        
+
         #else
-        
+
         return setenv( key, value ) == 0;
-        
-        #endif        
+
+        #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -451,19 +447,19 @@ GUCEFSetEnv( const char* key   ,
 const char*
 GUCEFGetEnv( const char* key )
 {
-        return getenv( key );        
+        return getenv( key );
 }
 
-/*--------------------------------------------------------------------------*/        
+/*--------------------------------------------------------------------------*/
 
 /**
  *      Returns the application tickcount
  */
 UInt32
 GUCEFGetTickCount( void )
-{          
-        return GetTickCount();        
-}  
+{
+        return GetTickCount();
+}
 
 /*--------------------------------------------------------------------------*/
 
@@ -478,19 +474,19 @@ ShowErrorMessage( const char* message     ,
                     MB_OK | MB_ICONERROR | MB_TASKMODAL );
         #else
         fprintf( stderr, "%s : %s\n", message, description );
-        #endif                    
+        #endif
 }
 
 /*--------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 GetCPUCountPerPackage( void )
 {
     /* Number of Logical Cores per Physical Processor */
     UInt32 coreCount = 1;
-    
+
     /* Initialize to 1 to support older processors. */
-    _asm 
+    _asm
     {
         mov		eax, 1
         cpuid
@@ -503,7 +499,7 @@ GetCPUCountPerPackage( void )
         and		eax, 0x00FF0000 /* Mask the "logical core counter" byte */
         shr		eax, 16 // Shift byte to be least-significant
         mov		coreCount, eax
-        /* Uniprocessor (i.e. Pentium III or any AMD CPU excluding their new 
+        /* Uniprocessor (i.e. Pentium III or any AMD CPU excluding their new
         dual-core A64)  */
         Unp:
         /* coreCount will contain 1. */
@@ -530,7 +526,7 @@ GetLogicalCPUCount( void )
     return systemInfo.dwNumberOfProcessors;
     #else
     return 1;
-    #endif    
+    #endif
 }
 
 /*-------------------------------------------------------------------------//

@@ -275,77 +275,77 @@ CDStoreCodecPlugin::CDStoreCodecPlugin( const CString& pluginfile )
 
         _fptable[ DSTOREPLUG_INIT ] = GetFunctionAddress( _sohandle         ,
                                                           "DSTOREPLUG_Init" ,
-                                                          1*sizeof(void*)   );
+                                                          1*sizeof(void*)   ).funcPtr;
         _fptable[ DSTOREPLUG_SHUTDOWN ] = GetFunctionAddress( _sohandle             ,
                                                               "DSTOREPLUG_Shutdown" ,
-                                                              1*sizeof(void*)       );
+                                                              1*sizeof(void*)       ).funcPtr;
         _fptable[ DSTOREPLUG_NAME ] = GetFunctionAddress( _sohandle         ,
                                                           "DSTOREPLUG_Name" ,
-                                                          1*sizeof(void*)   );
+                                                          1*sizeof(void*)   ).funcPtr;
         _fptable[ DSTOREPLUG_COPYRIGHT ] = GetFunctionAddress( _sohandle              ,
                                                                "DSTOREPLUG_Copyright" ,
-                                                               1*sizeof(void*)        );
+                                                               1*sizeof(void*)        ).funcPtr;
         _fptable[ DSTOREPLUG_VERSION ] = GetFunctionAddress( _sohandle            ,
                                                              "DSTOREPLUG_Version" ,
-                                                             1*sizeof(void*)      );
+                                                             1*sizeof(void*)      ).funcPtr;
         _fptable[ DSTOREPLUG_TYPE ] = GetFunctionAddress( _sohandle         ,
                                                           "DSTOREPLUG_Type" ,
-                                                          1*sizeof(void*)   );
+                                                          1*sizeof(void*)   ).funcPtr;
         _fptable[ DSTOREPLUG_DEST_FILE_OPEN ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_Dest_File_Open" ,
-                                                                    3*sizeof(void*)             );
+                                                                    3*sizeof(void*)             ).funcPtr;
         _fptable[ DSTOREPLUG_DEST_FILE_CLOSE ] = GetFunctionAddress( _sohandle                    ,
                                                                      "DSTOREPLUG_Dest_File_Close" ,
-                                                                     2*sizeof(void*)              );
+                                                                     2*sizeof(void*)              ).funcPtr;
         _fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] = GetFunctionAddress( _sohandle                    ,
                                                                      "DSTOREPLUG_Begin_Node_Store" ,
-                                                                     3*sizeof(void*)+8             );
+                                                                     3*sizeof(void*)+8             ).funcPtr;
         _fptable[ DSTOREPLUG_END_NODE_STORE ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_End_Node_Store" ,
-                                                                    3*sizeof(void*)+8           );
+                                                                    3*sizeof(void*)+8           ).funcPtr;
         _fptable[ DSTOREPLUG_STORE_NODE_ATT ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_Store_Node_Att" ,
-                                                                    5*sizeof(void*)+12          );
+                                                                    5*sizeof(void*)+12          ).funcPtr;
         _fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ] = GetFunctionAddress( _sohandle                        ,
                                                                          "DSTOREPLUG_Begin_Node_Children" ,
-                                                                         3*sizeof(void*)                  );
+                                                                         3*sizeof(void*)                  ).funcPtr;
         _fptable[ DSTOREPLUG_END_NODE_CHILDREN ] = GetFunctionAddress( _sohandle                      ,
                                                                        "DSTOREPLUG_End_Node_Children" ,
-                                                                       3*sizeof(void*)                );
+                                                                       3*sizeof(void*)                ).funcPtr;
         _fptable[ DSTOREPLUG_SRC_FILE_OPEN ] = GetFunctionAddress( _sohandle                  ,
                                                                    "DSTOREPLUG_Src_File_Open" ,
-                                                                   2*sizeof(void*)            );
+                                                                   2*sizeof(void*)            ).funcPtr;
         _fptable[ DSTOREPLUG_SRC_FILE_CLOSE ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_Src_File_Close" ,
-                                                                    2*sizeof(void*)                   );
+                                                                    2*sizeof(void*)             ).funcPtr;
         _fptable[ DSTOREPLUG_SET_READ_HANDLERS ] = GetFunctionAddress( _sohandle                      ,
                                                                        "DSTOREPLUG_Set_Read_Handlers" ,
-                                                                       4*sizeof(void*)                );
+                                                                       4*sizeof(void*)                ).funcPtr;
         _fptable[ DSTOREPLUG_START_READING ] = GetFunctionAddress( _sohandle                  ,
                                                                    "DSTOREPLUG_Start_Reading" ,
-                                                                   2*sizeof(void*)            );
+                                                                   2*sizeof(void*)            ).funcPtr;
 
 
-        if ( ( !_fptable[ DSTOREPLUG_INIT ] ) ||
-             ( !_fptable[ DSTOREPLUG_SHUTDOWN ] ) ||
-             ( !_fptable[ DSTOREPLUG_NAME ] ) ||
-             ( !_fptable[ DSTOREPLUG_COPYRIGHT ] ) ||
-             ( !_fptable[ DSTOREPLUG_VERSION ] ) ||
-             ( !_fptable[ DSTOREPLUG_TYPE ] ) ||
-             ( !_fptable[ DSTOREPLUG_DEST_FILE_OPEN ] ) ||
-             ( !_fptable[ DSTOREPLUG_DEST_FILE_CLOSE ] ) ||
-             ( !_fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] ) ||
-             ( !_fptable[ DSTOREPLUG_END_NODE_STORE ] ) ||
-             ( !_fptable[ DSTOREPLUG_STORE_NODE_ATT ] ) ||
-             ( !_fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ] ) ||
-             ( !_fptable[ DSTOREPLUG_END_NODE_CHILDREN ] ) ||
-             ( !_fptable[ DSTOREPLUG_SRC_FILE_OPEN ] ) ||
-             ( !_fptable[ DSTOREPLUG_SRC_FILE_CLOSE ] ) ||
-             ( !_fptable[ DSTOREPLUG_SET_READ_HANDLERS ] ) ||
-             ( !_fptable[ DSTOREPLUG_START_READING ] ) )
+        if ( ( _fptable[ DSTOREPLUG_INIT ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_SHUTDOWN ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_NAME ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_COPYRIGHT ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_VERSION ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_TYPE ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_DEST_FILE_OPEN ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_DEST_FILE_CLOSE ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_END_NODE_STORE ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_STORE_NODE_ATT ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_END_NODE_CHILDREN ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_SRC_FILE_OPEN ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_SRC_FILE_CLOSE ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_SET_READ_HANDLERS ] != NULL ) ||
+             ( _fptable[ DSTOREPLUG_START_READING ] != NULL ) )
         {
                 UnloadModuleDynamicly( _sohandle );
-                memset( _fptable, NULL, sizeof(void*) * DSTOREPLUG_LASTFPTR );
+                memset( _fptable, NULL, sizeof(anyPointer) * DSTOREPLUG_LASTFPTR );
                 _sohandle = NULL;
 
                 GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Invalid codec module" );
@@ -403,11 +403,11 @@ CDStoreCodecPlugin::StoreNode( const CDataNode* n ,
         /*
          *      Begin storing the node
          */
-        ((TDSTOREPLUGFPTR_Begin_Node_Store)_fptable[ DSTOREPLUG_BEGIN_NODE_STORE ])( &_plugdata       ,
-                                                                                     filedata         ,
-                                                                                     name             ,
-                                                                                     count            ,
-                                                                                     n->HasChildren() );
+        ((TDSTOREPLUGFPTR_Begin_Node_Store)_fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] )( &_plugdata       ,
+                                                                                      filedata         ,
+                                                                                      name             ,
+                                                                                      count            ,
+                                                                                      n->HasChildren() );
 
         /*
          *      Store all node attributes

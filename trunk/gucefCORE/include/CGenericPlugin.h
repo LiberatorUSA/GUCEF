@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CGENERICPLUGIN_H
-#define GUCEF_CORE_CGENERICPLUGIN_H 
+#define GUCEF_CORE_CGENERICPLUGIN_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,6 +37,11 @@
 #include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
 #ifndef GUCEF_CORE_CIPLUGIN_H
 #include "CIPlugin.h"
@@ -74,37 +79,37 @@ class CGenericPluginManager;
 class GUCEFCORE_EXPORT_CPP CGenericPlugin : public CIPlugin
 {
     public:
-    
+
     CGenericPlugin( void );
-    
+
     virtual ~CGenericPlugin();
-    
+
     virtual CString GetDescription( void ) const;
 
     virtual CString GetCopyright( void ) const;
-    
+
     virtual TVersion GetVersion( void ) const;
-    
+
     virtual CString GetModulePath( void ) const;
-    
+
     virtual bool IsLoaded( void ) const;
-    
+
     virtual bool Load( const CString& pluginPath );
-    
+
     virtual bool Unload( void );
-        
+
     private:
-    
+
     static void Deinstance( void );
-    
-    private:    
-    CGenericPlugin( const CGenericPlugin& src );        
+
+    private:
+    CGenericPlugin( const CGenericPlugin& src );
     CGenericPlugin& operator=( const CGenericPlugin& src );
-    
-    private:    
+
+    private:
 
     void* m_moduleHandle;
-    void* m_funcPointers[ 5 ];
+    TDefaultFuncPtr m_funcPointers[ 5 ];
     CString m_modulePath;
 };
 
