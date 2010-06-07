@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -46,7 +46,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -75,14 +75,14 @@ CMsgException::CMsgException( const CMsgException& src )
 
 /*-------------------------------------------------------------------------*/
 
-CMsgException::~CMsgException()
+CMsgException::~CMsgException() throw()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CMsgException& 
+CMsgException&
 CMsgException::operator=( const CMsgException& src )
 {GUCEF_TRACE;
 
@@ -94,8 +94,8 @@ CMsgException::operator=( const CMsgException& src )
 }
 
 /*-------------------------------------------------------------------------*/
-    
-const char* 
+
+const char*
 CMsgException::GetErrorMsg( void ) const
 {GUCEF_TRACE;
 
@@ -105,7 +105,7 @@ CMsgException::GetErrorMsg( void ) const
 /*-------------------------------------------------------------------------*/
 
 const char*
-CMsgException::what( void ) const
+CMsgException::what( void ) const throw()
 {GUCEF_TRACE;
 
     static CString whatStr;

@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
-#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H 
+#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CNOTIFIER_H
 #include "CNotifier.h"
@@ -77,37 +77,37 @@ class CTEventHandlerFunctor : public CIEventHandlerFunctorBase
     public:
 
     // Member function pointer type definition.
-    typedef typename void (IObserverDerived::*TMemberFunctionType)( CNotifier* notifier   , 
-                                                                    const CEvent& event   , 
-                                                                    CICloneable* evenData );
-    
+    typedef void (IObserverDerived::*TMemberFunctionType)( CNotifier* notifier   ,
+                                                           const CEvent& event   ,
+                                                           CICloneable* evenData );
+
     CTEventHandlerFunctor( IObserverDerived* observer  ,
                            TMemberFunctionType functor );
-    
+
     CTEventHandlerFunctor( const CTEventHandlerFunctor& src );
-    
+
     virtual ~CTEventHandlerFunctor();
-    
+
     CTEventHandlerFunctor& operator=( const CTEventHandlerFunctor& src );
-    
+
     virtual CICloneable* Clone( void ) const;
-        
+
     virtual const CString& GetClassTypeName( void ) const;
-    
+
     protected:
-    
-    virtual void OnNotify( CNotifier* notifier          , 
+
+    virtual void OnNotify( CNotifier* notifier          ,
                            const CEvent& eventID        ,
                            CICloneable* evenData = NULL );
-    
+
     void SetMemberFunctionPointer( TMemberFunctionType functor );
 
     private:
-    
+
     CTEventHandlerFunctor( void );
-    
+
     private:
-    
+
     IObserverDerived* m_observer;
     TMemberFunctionType m_functor;
 };
@@ -157,7 +157,7 @@ CTEventHandlerFunctor< IObserverDerived >::operator=( const CTEventHandlerFuncto
     if ( &src != this )
     {
         CIEventHandlerFunctorBase::operator=( src );
-        
+
         m_observer = src.m_observer;
         m_functor = src.m_functor;
     }
@@ -170,7 +170,7 @@ template< class IObserverDerived >
 const CString&
 CTEventHandlerFunctor< IObserverDerived >::GetClassTypeName( void ) const
 {GUCEF_TRACE;
-    
+
     static const CString typeName = "GUCEF::CORE::CTEventHandlerFunctor< IObserverDerived >";
     return typeName;
 }
@@ -179,13 +179,13 @@ CTEventHandlerFunctor< IObserverDerived >::GetClassTypeName( void ) const
 
 template< class IObserverDerived >
 void
-CTEventHandlerFunctor< IObserverDerived >::OnNotify( CNotifier* notifier   , 
+CTEventHandlerFunctor< IObserverDerived >::OnNotify( CNotifier* notifier   ,
                                                      const CEvent& eventID ,
                                                      CICloneable* evenData )
-{GUCEF_TRACE; 
-    
+{GUCEF_TRACE;
+
     GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CTEventHandlerFunctor(" + CORE::PointerToString( this ) + "): Class " + notifier->GetClassTypeName() + ": Dispatching event \"" + eventID.GetName() + "\" to " + m_observer->GetClassTypeName() + "(" + CORE::PointerToString( m_observer ) + ")" );
-    
+
     (m_observer->*m_functor)( notifier ,
                               eventID  ,
                               evenData );

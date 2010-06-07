@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CTNUMERICIDGENERATOR_H
-#define GUCEF_CORE_CINUMERICIDGENERATOR_H 
+#define GUCEF_CORE_CINUMERICIDGENERATOR_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -49,7 +49,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -62,33 +62,33 @@ namespace CORE {
  *  class template for a numeric ID generator
  *  The IDs generated per generator are guaranteed to be unique
  *
- *  Note that the generator template is meant to be used with 
+ *  Note that the generator template is meant to be used with
  *  integer arguments, nothing else.
  */
 template < typename intType >
 class CTNumericIDGenerator : public CINumericIDGeneratorBase
 {
     public:
-    
-    typedef typename CTNumericID< intType >   TNumericID;
+
+    typedef CTNumericID< intType >   TNumericID;
 
     CTNumericIDGenerator( void );
-    
+
     virtual ~CTNumericIDGenerator();
 
     TNumericID GenerateID( const bool releaseIDOnDestruction = true );
-    
+
     virtual void ReleaseID( void* idObj );
-    
+
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( EMaximumReached );
-    
+
     private:
-    
+
     CTNumericIDGenerator( const CTNumericIDGenerator& src );            /**< not implemented, makes no sense */
     CTNumericIDGenerator& operator=( const CTNumericIDGenerator& src ); /**< not implemented, makes no sense */
-    
+
     private:
-    
+
     intType m_lastID;
     intType m_maxValue;
     std::set< intType > m_availableIDs;
@@ -107,13 +107,13 @@ CTNumericIDGenerator< intType >::CTNumericIDGenerator( void )
 {GUCEF_TRACE;
 
     // simple version of pow(), we multiple until
-    // we have the maximum value for this type. 
-    // Note that an overflow is not a problem due to the way we check 
+    // we have the maximum value for this type.
+    // Note that an overflow is not a problem due to the way we check
     // against the max value
     for ( unsigned int i=0; i<sizeof( intType ); ++i )
     {
         m_maxValue *= 256;
-    } 
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -132,13 +132,13 @@ CTNumericIDGenerator< intType >::GenerateID( const bool releaseIDOnDestruction /
 {GUCEF_TRACE;
 
     // Check against the max value
-    // Note that if T is a signed type max will most likely be a negative value 
+    // Note that if T is a signed type max will most likely be a negative value
     // so we cannot use > or < operators
     if ( m_lastID+1 != m_maxValue )
     {
         ++m_lastID;
         return TNumericID( m_lastID, releaseIDOnDestruction ? this : NULL );
-    } 
+    }
 
     // We ran out of numbers we can dish out in a fast manner.
     // Now we have to do some more work and check which ID is still available
@@ -151,7 +151,7 @@ CTNumericIDGenerator< intType >::GenerateID( const bool releaseIDOnDestruction /
         }
         ++idValue;
     }
-    
+
     // If we get here then we ran out of IDs and we also ran out of options
     GUCEF_EMSGTHROW( EMaximumReached, "GUCEF::CORE::CTNumericIDGenerator: ID maximum reached, no more IDs are available" );
 }

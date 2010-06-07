@@ -14,14 +14,16 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
+
+#include <string.h>
 
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
@@ -33,7 +35,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,7 +52,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-UInt32 GUCEF_CALLSPEC_PREFIX 
+UInt32 GUCEF_CALLSPEC_PREFIX
 fa_open( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         ( (CIOAccess*) access->privdata )->Open();
@@ -59,7 +61,7 @@ fa_open( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 GUCEF_CALLSPEC_PREFIX 
+UInt32 GUCEF_CALLSPEC_PREFIX
 fa_opened( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->Opened();
@@ -76,8 +78,8 @@ fa_close( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 GUCEF_CALLSPEC_PREFIX 
-fa_readl( struct SIOAccess* access , 
+UInt32 GUCEF_CALLSPEC_PREFIX
+fa_readl( struct SIOAccess* access ,
           char **dest              ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         CString str = ( (CIOAccess*) access->privdata )->ReadLine();
@@ -88,22 +90,22 @@ fa_readl( struct SIOAccess* access ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 GUCEF_CALLSPEC_PREFIX 
-fa_reads( struct SIOAccess* access , 
+UInt32 GUCEF_CALLSPEC_PREFIX
+fa_reads( struct SIOAccess* access ,
           char **dest              ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         CString str = ( (CIOAccess*) access->privdata )->ReadString();
         *dest = new char[ str.Length()+1 ];
-        memcpy( *dest, str.C_String(), str.Length() );        
+        memcpy( *dest, str.C_String(), str.Length() );
         return str.Length();
 }
 
 /*-------------------------------------------------------------------------*/
 
 UInt32 GUCEF_CALLSPEC_PREFIX
-fa_write( struct SIOAccess* access , 
-          const void *srcData      , 
-          UInt32 esize             , 
+fa_write( struct SIOAccess* access ,
+          const void *srcData      ,
+          UInt32 esize             ,
           UInt32 elements          ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->Write( srcData  ,
@@ -112,11 +114,11 @@ fa_write( struct SIOAccess* access ,
 }
 
 /*-------------------------------------------------------------------------*/
-           
+
 UInt32 GUCEF_CALLSPEC_PREFIX
-fa_read( struct SIOAccess* access , 
-         void *dest               , 
-         UInt32 esize             , 
+fa_read( struct SIOAccess* access ,
+         void *dest               ,
+         UInt32 esize             ,
          UInt32 elements          ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->Read( dest     ,
@@ -125,7 +127,7 @@ fa_read( struct SIOAccess* access ,
 }
 
 /*-------------------------------------------------------------------------*/
-          
+
 UInt32 GUCEF_CALLSPEC_PREFIX
 fa_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
@@ -136,8 +138,8 @@ fa_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 /*-------------------------------------------------------------------------*/
 
 Int32 GUCEF_CALLSPEC_PREFIX
-fa_seek( struct SIOAccess* access , 
-         Int32 offset             , 
+fa_seek( struct SIOAccess* access ,
+         Int32 offset             ,
          Int32 origin             ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->Seek( offset ,
@@ -145,17 +147,17 @@ fa_seek( struct SIOAccess* access ,
 }
 
 /*-------------------------------------------------------------------------*/
-          
-UInt32 GUCEF_CALLSPEC_PREFIX 
-fa_setpos( struct SIOAccess* access , 
+
+UInt32 GUCEF_CALLSPEC_PREFIX
+fa_setpos( struct SIOAccess* access ,
            UInt32 pos               ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->Setpos( pos );
 }
 
 /*-------------------------------------------------------------------------*/
-            
-Int32 GUCEF_CALLSPEC_PREFIX 
+
+Int32 GUCEF_CALLSPEC_PREFIX
 fa_getc( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->GetChar();
@@ -171,7 +173,7 @@ fa_eof( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 /*-------------------------------------------------------------------------*/
 
-void GUCEF_CALLSPEC_PREFIX 
+void GUCEF_CALLSPEC_PREFIX
 fa_free( void* mem ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         delete []((char*)mem);
@@ -203,7 +205,7 @@ CIOAccess::~CIOAccess()
 
 /*-------------------------------------------------------------------------*/
 
-CIOAccess& 
+CIOAccess&
 CIOAccess::operator=( const CIOAccess& src )
 {
     if ( this != &src )
@@ -220,11 +222,11 @@ CIOAccess::LinkCStyleAccess( void )
 {GUCEF_TRACE;
 
     memset( &m_cStyleAccess, 0, sizeof( TIOAccess ) );
-    
+
     m_cStyleAccess.close = fa_close;
     m_cStyleAccess.open = fa_open;
     m_cStyleAccess.write = fa_write;
-    m_cStyleAccess.close = fa_close;                       
+    m_cStyleAccess.close = fa_close;
     m_cStyleAccess.opened = fa_opened;
     m_cStyleAccess.readl = fa_readl;
     m_cStyleAccess.reads = fa_reads;
@@ -240,39 +242,39 @@ CIOAccess::LinkCStyleAccess( void )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CIOAccess::ReadUntill( void *dest            ,
                        UInt32 bsize          ,
                        const void* delimiter ,
                        UInt32 delimsize      )
 {
         //DEBUGOUTPUT( "CIOAccess::ReadUntill()" );
-        
+
         GUCEF_BEGIN;
         if ( !bsize )
         {
                 GUCEF_END;
                 return 0;
-        }        
+        }
         if ( !delimsize )
         {
                 GUCEF_END_RET( UInt32, Read( dest  ,
                                                 bsize ,
-                                                1     ) );                                                 
+                                                1     ) );
         }
-                
+
         char* buffer = new char[ delimsize ];
         char* bufwritepos = buffer;
         char* destbuf = static_cast<char*>( dest );
-        UInt32 i;     
+        UInt32 i;
         for ( i=0; i<bsize; ++i )
         {
                 if ( !Eof() )
-                {                    
+                {
                         /*
                          *      Add a byte to our read buffer
-                         */    
-                        if ( bufwritepos - buffer < (Int32)delimsize-1 ) 
+                         */
+                        if ( bufwritepos - buffer < (Int32)delimsize-1 )
                         {
                                 *bufwritepos = GetChar();
                                 ++bufwritepos;
@@ -281,11 +283,11 @@ CIOAccess::ReadUntill( void *dest            ,
                         {
                                 for ( UInt32 n=0; n<delimsize-1; ++n )
                                 {
-                                        buffer[ n ] = buffer[ n+1 ];                                        
+                                        buffer[ n ] = buffer[ n+1 ];
                                 }
                                 *bufwritepos = GetChar();
                         }
-                        
+
                         /*
                          *      Have we reached the delimiter ?
                          */
@@ -295,9 +297,9 @@ CIOAccess::ReadUntill( void *dest            ,
                                 destbuf[ i ] = '\0';
                                 GUCEF_END;
                                 return i;
-                                
+
                         }
-                        destbuf[ i ] = *bufwritepos;     
+                        destbuf[ i ] = *bufwritepos;
                 }
                 else
                 {
@@ -305,12 +307,12 @@ CIOAccess::ReadUntill( void *dest            ,
                         destbuf[ i ] = '\0';
                         GUCEF_END;
                         return i;
-                }                                        
+                }
         }
         delete []buffer;
-        destbuf[ bsize-i ] = '\0';        
+        destbuf[ bsize-i ] = '\0';
         GUCEF_END;
-        return i;          
+        return i;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -323,28 +325,28 @@ CIOAccess::ReadUntill( void *dest            ,
  *      @param delimiter the delimiter bytes
  *      @param delimsize size of the delimiter segment
  *      @return the actual number of bytes skipped.
- */                           
-UInt32 
+ */
+UInt32
 CIOAccess::SkipUntill( const void* delimiter ,
                        UInt32 delimsize      )
 {
         //DEBUGOUTPUT( "CIOAccess::SkipUntill()" );
-        
-        GUCEF_BEGIN;       
+
+        GUCEF_BEGIN;
         if ( !delimsize )
         {
-                Seek( 0, SEEK_END );                                             
+                Seek( 0, SEEK_END );
         }
-                
+
         char* buffer = new char[ delimsize ];
         char* bufwritepos = buffer;
         UInt32 pos = Tell();
         while( !Eof() )
-        {                    
+        {
                 /*
                  *      Add a byte to our read buffer
-                 */    
-                if ( bufwritepos - buffer < (Int32)delimsize-1 ) 
+                 */
+                if ( bufwritepos - buffer < (Int32)delimsize-1 )
                 {
                         *bufwritepos = GetChar();
                         ++bufwritepos;
@@ -353,11 +355,11 @@ CIOAccess::SkipUntill( const void* delimiter ,
                 {
                         for ( UInt32 n=0; n<delimsize-1; ++n )
                         {
-                                buffer[ n ] = buffer[ n+1 ];                                        
+                                buffer[ n ] = buffer[ n+1 ];
                         }
                         *bufwritepos = GetChar();
                 }
-                
+
                 /*
                  *      Have we reached the delimiter ?
                  */
@@ -365,11 +367,11 @@ CIOAccess::SkipUntill( const void* delimiter ,
                 {
                         delete []buffer;
                         GUCEF_END_RET( UInt32, Tell() - pos );
-                }    
+                }
         }
         delete []buffer;
-        GUCEF_END_RET( UInt32, Tell() - pos );                                            
-}                       
+        GUCEF_END_RET( UInt32, Tell() - pos );
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -379,19 +381,19 @@ CIOAccess::Read( CDynamicBuffer& dest ,
                  UInt32 elements      )
 {GUCEF_TRACE;
 
-    // First we ensure that we have enough space in the buffer to copy our data 
+    // First we ensure that we have enough space in the buffer to copy our data
     // into the buffer manually
     dest.SetBufferSize( dest.GetDataSize() + ( esize * elements ) ,
                         false                                     );
-                        
+
     // Perform the actual read
     UInt32 nrOfBytesRead = Read( static_cast< UInt8* >( dest.GetBufferPtr() ) + dest.GetDataSize() ,
                                  esize                                                             ,
                                  elements                                                          );
-                                 
+
     // Correct the data delimiter in the buffer
     dest.SetDataSize( dest.GetDataSize() + nrOfBytesRead );
-    
+
     return nrOfBytesRead;
 }
 
@@ -425,7 +427,7 @@ CIOAccess::Write( CIOAccess& sourceData )
     UInt32 byteCount=0, totalByteCount=0;
     CDynamicBuffer readBuffer( 1024, true );
     readBuffer.SetDataSize( 1024 );
-    
+
     while ( !sourceData.Eof() )
     {
         byteCount = sourceData.Read( readBuffer.GetBufferPtr(), 1, 1024 );
@@ -439,7 +441,7 @@ CIOAccess::Write( CIOAccess& sourceData )
             return totalByteCount;
         }
     }
-    
+
     return totalByteCount;
 }
 
@@ -448,7 +450,7 @@ CIOAccess::Write( CIOAccess& sourceData )
 UInt32
 CIOAccess::GetSize( void ) const
 {GUCEF_TRACE;
-    
+
     UInt32 pos = Tell();
     const_cast< CIOAccess* >( this )->Seek( 0, SEEK_END );
     UInt32 size = Tell();

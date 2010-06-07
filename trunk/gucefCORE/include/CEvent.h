@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CEVENT_H
 #define GUCEF_CORE_CEVENT_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -37,7 +37,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -53,33 +53,37 @@ class CNotificationIDRegistry;
 /**
  *  Event object
  *  Used to identify an event within the GUCEF event system.
- *  
- *  For performance reasons numeric ID's are used for event comparison 
+ *
+ *  For performance reasons numeric ID's are used for event comparison
  *  operations. Note that a call must be made to Initialize() before the
  *  event object is used. This initialization procedure is required to give you
  *  the performance required plus the ability to define event objects as global
- *  variables. 
+ *  variables.
  */
 class GUCEFCORE_EXPORT_CPP CEvent
 {
     public:
-    
+
     CEvent( void );
-    
+
     CEvent( const CString& eventName );
+
+    CEvent( const char* eventName );
 
     CEvent( const CEvent& src );
 
     ~CEvent();
 
     CEvent& operator=( const CEvent& src );
-    
+
     CEvent& operator=( const CString& eventName );
 
+    CEvent& operator=( const char* eventName );
+
     bool operator==( const CEvent& other ) const;
-    
+
     bool operator!=( const CEvent& other ) const;
-    
+
     /**
      *  This operator is only implemented for sorting/list
      *  containers and has no real meaning since the actual
@@ -89,7 +93,7 @@ class GUCEFCORE_EXPORT_CPP CEvent
     bool operator<( const CEvent& other ) const;
 
     UInt32 GetID( void ) const;
-    
+
     CString GetName( void ) const;
 
     /**
@@ -98,19 +102,19 @@ class GUCEFCORE_EXPORT_CPP CEvent
      *  It registers the event if needed and initializes the numeric event ID.
      */
     void Initialize( void ) const;
-    
+
     bool IsInitialized( void ) const;
-    
+
     private:
     friend class CNotificationIDRegistry;
-    
+
     CEvent( const UInt32 eventID     ,
             const CString& eventName );
-    
+
     private:
-    
+
     UInt32 m_eventID;
-    CString m_eventName;    
+    CString m_eventName;
 };
 
 /*-------------------------------------------------------------------------//
@@ -134,5 +138,5 @@ class GUCEFCORE_EXPORT_CPP CEvent
 
 - 07-10-2006 :
         - Initial implementation
-          
+
 ---------------------------------------------------------------------------*/

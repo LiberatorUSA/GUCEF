@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CPROPERTYLIST
@@ -31,7 +31,7 @@
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
 #ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_Macros.h"       /* Library specific & generic macros */
+#include "gucefCORE_macros.h"       /* Library specific & generic macros */
 #endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifndef GUCEF_CORE_CDVSTRING_H
@@ -39,7 +39,7 @@
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
 #ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"      /* generic dynamic array */ 
+#include "CDynamicArray.h"      /* generic dynamic array */
 #endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
 
 /*-------------------------------------------------------------------------//
@@ -71,7 +71,7 @@ typedef enum
         PROPERTYTYPE_FLOAT16     ,
         PROPERTYTYPE_FLOAT32     ,
         PROPERTYTYPE_FLOAT64     ,
-        PROPERTYTYPE_STRING      
+        PROPERTYTYPE_STRING
 } TPropertyType;
 
 /*-------------------------------------------------------------------------//
@@ -116,9 +116,9 @@ class GUCEFCORE_EXPORT_CPP CPropertyList
 
         /**
          *      @brief  If found sets the named property to the given value
-         *      @param  name    name of the property  
+         *      @param  name    name of the property
          *      @param  value   the new value you wish to set
-         *      @return Wheter setting the property was successfull.     
+         *      @return Wheter setting the property was successfull.
          */
         bool
         Set( const CString& name  ,
@@ -126,9 +126,9 @@ class GUCEFCORE_EXPORT_CPP CPropertyList
 
         /**
          *      @brief  If found sets the named property to the given value
-         *      @param  pindex  index of the property in the list.  
+         *      @param  pindex  index of the property in the list.
          *      @param  value   the new value you wish to set
-         *      @return Wheter setting the property was successfull.     
+         *      @return Wheter setting the property was successfull.
          */
         bool
         Set( UInt32 pindex        ,
@@ -175,4 +175,3 @@ class GUCEFCORE_EXPORT_CPP CPropertyList
 
 #endif /* GUCEF_CORE_CPROPERTYLIST ? */
 
- 
