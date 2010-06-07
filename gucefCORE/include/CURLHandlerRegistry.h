@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CURLHANDLERREGISTRY_H
@@ -55,34 +55,30 @@ namespace CORE {
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
- 
-template GUCEFCORE_EXPORT_CPP CTRegistry< CURLHandler >;
-
-/*-------------------------------------------------------------------------*/
 
 class GUCEFCORE_EXPORT_CPP CURLHandlerRegistry : public CTRegistry< CURLHandler >
 {
         public:
-        
+
         static CURLHandlerRegistry* Instance( void );
-        
+
         protected:
         virtual void LockData( void ) const;
-        virtual void UnlockData( void ) const;        
-        
+        virtual void UnlockData( void ) const;
+
         private:
         friend class CGUCEFCOREModule;
-        
+
         static void Deinstance( void );
-        
+
         private:
         CURLHandlerRegistry( void );
-        CURLHandlerRegistry( const CURLHandlerRegistry& src );        
+        CURLHandlerRegistry( const CURLHandlerRegistry& src );
         virtual ~CURLHandlerRegistry();
         CURLHandlerRegistry& operator=( const CURLHandlerRegistry& src );
-        
+
         static CURLHandlerRegistry* _instance;
-        static MT::CMutex _datalock;        
+        static MT::CMutex _datalock;
 };
 
 /*-------------------------------------------------------------------------//
@@ -106,5 +102,5 @@ class GUCEFCORE_EXPORT_CPP CURLHandlerRegistry : public CTRegistry< CURLHandler 
 
 - 24-04-2005 :
         - Initial implementation
-          
+
 ---------------------------------------------------------------------------*/
