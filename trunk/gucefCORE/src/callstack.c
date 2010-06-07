@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -25,6 +25,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifndef GUCEF_MT_DVMTOSWRAP_H
 #include "gucefMT_dvmtoswrap.h"
@@ -61,7 +62,7 @@ namespace CORE {
   #define EOL                   "\r\n"
 #else
   #define EOL                   "\n"
-#endif    
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -70,10 +71,10 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 struct SCallStack
-{        
+{
         const char** file;
         int* linenr;
-        UInt64* entryTickCount; 
+        UInt64* entryTickCount;
         UInt32 items;
         UInt32 stacksize;
         UInt32 threadid;
@@ -152,7 +153,7 @@ Log( const char* logtype ,
         }
         fflush( logFile );
     }
-}     
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -164,45 +165,45 @@ Push( TCallStack* stack ,
     /* if the stack heap is full we will enlarge it */
     if ( stack->items == stack->stacksize )
     {
-        stack->stacksize += STACK_RESIZE_AMOUNT; 
-        stack->file = (const char**)realloc( (char**)stack->file, stack->stacksize*sizeof(const char*) );         
+        stack->stacksize += STACK_RESIZE_AMOUNT;
+        stack->file = (const char**)realloc( (char**)stack->file, stack->stacksize*sizeof(const char*) );
         stack->linenr = (int*)realloc( stack->linenr, stack->stacksize*sizeof(int) );
         stack->entryTickCount = (UInt64*)realloc( stack->entryTickCount, stack->stacksize*sizeof(UInt64) );
     }
-    
+
     /* record the new call on the stack */
     stack->file[ stack->items ] = file;
     stack->linenr[ stack->items ] = line;
     stack->entryTickCount[ stack->items ] = PrecisionTickCount();
     ++stack->items;
-    
+
     Log( "PUSH", stack->threadid, stack->items, file, line, 0 );
-        
+
     if ( pushCallback != NULL )
     {
         pushCallback( file            ,
                       line            ,
                       stack->threadid ,
                       stack->items    );
-    } 
-}          
+    }
+}
 
 /*-------------------------------------------------------------------------*/
 
 static void
 Pop( TCallStack* stack )
-{    
+{
     Int32 itemCount;
     if ( stack->items > 0 )
     {
         UInt32 ticksSpent;
-        
+
         --stack->items;
         itemCount = stack->items;
         ticksSpent = (UInt32) (PrecisionTickCount() - stack->entryTickCount[ itemCount ]);
-        
-        Log( " POP", stack->threadid, itemCount+1, stack->file[ itemCount ], stack->linenr[ itemCount ], ticksSpent );                                                
-    
+
+        Log( " POP", stack->threadid, itemCount+1, stack->file[ itemCount ], stack->linenr[ itemCount ], ticksSpent );
+
         if ( popCallback != NULL )
         {
             popCallback( stack->file[ itemCount ]   ,
@@ -210,23 +211,23 @@ Pop( TCallStack* stack )
                          stack->threadid            ,
                          stack->items               ,
                          ticksSpent                 );
-        } 
+        }
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 GUCEF_UtilityCodeBegin( const char* file ,
                         int line         )
 {
     if ( isInitialized == 1 )
     {
         UInt32 i, threadid;
-        
+
         MutexLock( mutex );
 
-        /* try to find a stack for the caller thread */        
+        /* try to find a stack for the caller thread */
         threadid = GetCurrentTaskID();
         for ( i=0; i<stackcount; ++i )
         {
@@ -236,48 +237,48 @@ GUCEF_UtilityCodeBegin( const char* file ,
                               file          ,
                               line          );
                         MutexUnlock( mutex );
-                        return;      
+                        return;
                 }
         }
-                
+
         /* no stack found for the caller thread,.. make one */
         _stacks = (TCallStack*) realloc( _stacks, (stackcount+1)*sizeof(TCallStack) );
         _stacks[ stackcount ].threadid = threadid;
         _stacks[ stackcount ].items = 0;
         _stacks[ stackcount ].stacksize = 0;
         _stacks[ stackcount ].file = NULL;
-        _stacks[ stackcount ].linenr = NULL;        
+        _stacks[ stackcount ].linenr = NULL;
         _stacks[ stackcount ].entryTickCount = NULL;
         Push( &_stacks[ stackcount ] ,
               file                   ,
               line                   );
         stackcount++;
-        
+
         MutexUnlock( mutex );
-    }             
-}                        
+    }
+}
 
 /*-------------------------------------------------------------------------*/
-                       
-void                        
+
+void
 GUCEF_UtilityCodeEnd( void )
 {
     if ( isInitialized == 1 )
     {
         UInt32 i, threadid;
-        
+
         MutexLock( mutex );
-        
+
         threadid = GetCurrentTaskID();
         for ( i=0; i<stackcount; ++i )
         {
             if ( _stacks[ i ].threadid == threadid )
             {
                 Pop( &_stacks[ i ] );
-                break; 
+                break;
             }
         }
-        
+
         MutexUnlock( mutex );
     }
 }
@@ -305,22 +306,22 @@ PrintCallstack( FILE* dest )
         else
         {
             fprintf( dest, ">>> no items on stack <<<%s%s", EOL, EOL );
-            fprintf( dest, "------------------------------%s%s", EOL, EOL );        
-        }                                                
+            fprintf( dest, "------------------------------%s%s", EOL, EOL );
+        }
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-void                      
+void
 GUCEF_PrintCallstack( void )
 {
     if ( isInitialized == 1 )
     {
         MutexLock( mutex );
-        
+
         PrintCallstack( stdout );
-        
+
         MutexUnlock( mutex );
     }
 }
@@ -333,18 +334,18 @@ GUCEF_DumpCallstack( const char* filename )
     if ( isInitialized == 1 )
     {
         FILE* fptr = NULL;
-        
+
         MutexLock( mutex );
-        
+
         fptr = fopen( filename, "wb" );
         if ( fptr )
         {
                 PrintCallstack( fptr );
-                fclose( fptr );  
+                fclose( fptr );
         }
-        
-        MutexUnlock( mutex ); 
-    }          
+
+        MutexUnlock( mutex );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -363,7 +364,7 @@ GUCEF_InitCallstackUtility( void )
 
 void
 GUCEF_ShutdowntCallstackUtility( void )
-{   
+{
     if ( isInitialized == 1 )
     {
         MutexLock( mutex );
@@ -373,7 +374,7 @@ GUCEF_ShutdowntCallstackUtility( void )
         }
         free( logFilename );
         logFilename = NULL;
-        
+
         isInitialized = 0;
         MutexDestroy( mutex );
     }
@@ -421,7 +422,7 @@ void
 GUCEF_LogStackToStdOut( void )
 {
     if ( isInitialized == 1 )
-    {    
+    {
         MutexLock( mutex );
         if ( ( logFile != NULL )  &&
              ( logFile != stdout ) )
@@ -471,9 +472,9 @@ void
 GUCEF_LogStackTo( const char* filename )
 {
     if ( isInitialized == 1 )
-    {    
+    {
         UInt32 strLen;
-        
+
         MutexLock( mutex );
         if ( ( logFile != stdout ) && ( logFile != NULL ) )
         {
@@ -481,14 +482,14 @@ GUCEF_LogStackTo( const char* filename )
         }
         free( logFilename );
         logFilename = NULL;
-        
+
         strLen = (UInt32) strlen( filename )+1;
         logFilename = (char*) malloc( strLen );
         memcpy( logFilename, filename, strLen );
         logFile = fopen( logFilename, "ab" );
-        
+
         MutexUnlock( mutex );
-    }   
+    }
 }
 
 /*-------------------------------------------------------------------------//

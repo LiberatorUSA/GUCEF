@@ -14,14 +14,14 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #include "CCPPWrapFileAccess.h" /* definition of the class implemented here */
 
@@ -49,7 +49,7 @@ CCPPWrapFileAccess::CCPPWrapFileAccess( TIOAccess *access )
         : _access( access )
 {
         GUCEF_BEGIN;
-        GUCEF_END;                            
+        GUCEF_END;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -57,12 +57,12 @@ CCPPWrapFileAccess::CCPPWrapFileAccess( TIOAccess *access )
 CCPPWrapFileAccess::~CCPPWrapFileAccess()
 {
         GUCEF_BEGIN;
-        GUCEF_END;        
+        GUCEF_END;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CCPPWrapFileAccess::Open( void )
 {
         GUCEF_BEGIN;
@@ -72,17 +72,17 @@ CCPPWrapFileAccess::Open( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CCPPWrapFileAccess::Close( void )
 {
         GUCEF_BEGIN;
-        _access->close( _access ); 
+        _access->close( _access );
         GUCEF_END;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CCPPWrapFileAccess::Opened( void ) const
 {
         GUCEF_BEGIN;
@@ -91,17 +91,17 @@ CCPPWrapFileAccess::Opened( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CCPPWrapFileAccess::GetSize( void ) const
-{        
+{
         GUCEF_BEGIN;
         GUCEF_END;
-        return 0;  
+        return 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CString
 CCPPWrapFileAccess::ReadLine( void )
 {
         GUCEF_BEGIN;
@@ -114,8 +114,8 @@ CCPPWrapFileAccess::ReadLine( void )
                 _access->memfree( str );
                 GUCEF_END;
                 return fstr;
-        }                 
-        
+        }
+
         CString emptystr;
         GUCEF_END;
         return emptystr;
@@ -123,7 +123,7 @@ CCPPWrapFileAccess::ReadLine( void )
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CString
 CCPPWrapFileAccess::ReadString( void )
 {
         GUCEF_BEGIN;
@@ -136,8 +136,8 @@ CCPPWrapFileAccess::ReadString( void )
                 _access->memfree( str );
                 GUCEF_END;
                 return fstr;
-        }                 
-        
+        }
+
         CString emptystr;
         GUCEF_END;
         return emptystr;
@@ -145,13 +145,13 @@ CCPPWrapFileAccess::ReadString( void )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CCPPWrapFileAccess::Read( void *dest      ,
                           UInt32 esize    ,
                           UInt32 elements )
 {
         GUCEF_BEGIN;
-        GUCEF_END_RET( UInt32, _access->read( _access  , 
+        GUCEF_END_RET( UInt32, _access->read( _access  ,
                                               dest     ,
                                               esize    ,
                                               elements ) );
@@ -159,7 +159,7 @@ CCPPWrapFileAccess::Read( void *dest      ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CCPPWrapFileAccess::Tell( void ) const
 {
         GUCEF_BEGIN;
@@ -168,7 +168,7 @@ CCPPWrapFileAccess::Tell( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-Int32 
+Int32
 CCPPWrapFileAccess::Seek( Int32 offset ,
                           Int32 origin )
 {
@@ -180,26 +180,26 @@ CCPPWrapFileAccess::Seek( Int32 offset ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CCPPWrapFileAccess::Setpos( UInt32 position )
 {
         GUCEF_BEGIN;
-        GUCEF_END_RET( UInt32, _access->setpos( _access  , 
-                                                position ) ); 
+        GUCEF_END_RET( UInt32, _access->setpos( _access  ,
+                                                position ) );
 }
 
 /*-------------------------------------------------------------------------*/
 
-char 
+char
 CCPPWrapFileAccess::GetChar( void )
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( char, (char) _access->getc( _access ) );
+{GUCEF_TRACE;
+
+    return ((TIOAccessfunction_getc)_access->getc)( _access );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CCPPWrapFileAccess::Eof( void ) const
 {
         GUCEF_BEGIN;
@@ -208,7 +208,7 @@ CCPPWrapFileAccess::Eof( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CCPPWrapFileAccess::IsReadable( void ) const
 {
     return true;
@@ -216,7 +216,7 @@ CCPPWrapFileAccess::IsReadable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CCPPWrapFileAccess::IsWriteable( void ) const
 {GUCEF_TRACE;
 
@@ -224,8 +224,8 @@ CCPPWrapFileAccess::IsWriteable( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-       
-UInt32 
+
+UInt32
 CCPPWrapFileAccess::Write( const void* srcdata ,
                            UInt32 esize        ,
                            UInt32 elements     )
@@ -235,12 +235,12 @@ CCPPWrapFileAccess::Write( const void* srcdata ,
 
 /*-------------------------------------------------------------------------*/
 
-TIOAccess* 
+TIOAccess*
 CCPPWrapFileAccess::CStyleAccess( void )
 {
         GUCEF_BEGIN;
         GUCEF_END;
-        return _access;        
+        return _access;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -249,7 +249,7 @@ CCPPWrapFileAccess::CStyleAccess( void )
  *      Is the access to the resource a valid one or
  *      has something gone wrong ?
  */
-bool 
+bool
 CCPPWrapFileAccess::IsValid( void )
 {
         GUCEF_BEGIN;

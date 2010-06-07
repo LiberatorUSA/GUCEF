@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CTONREGISTRY_H
 #define GUCEF_CORE_CTONREGISTRY_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -63,17 +63,17 @@ namespace CORE {
 class GUCEFCORE_EXPORT_CPP CTONRegistryEvents
 {
     public:
-    
+
     static const CEvent ItemRegisteredEvent;
     static const CEvent ItemUnregisteredEvent;
-    
+
     typedef TCloneableString ItemRegisteredEventData;
     typedef TCloneableString ItemUnregisteredEventData;
-    
+
     static void RegisterEvents( void );
-    
+
     public:
-    
+
     CTONRegistryEvents( void );
     CTONRegistryEvents( const CTONRegistryEvents& src );
     virtual ~CTONRegistryEvents();
@@ -91,25 +91,26 @@ class CTONRegistry : public CTObservingNotifierExpansion< CTRegistry< T > > ,
                      public CTONRegistryEvents /* <- interface */
 {
     public:
-    
+
     typedef typename CTObservingNotifierExpansion< CTRegistry< T > >::TRegisteredObjPtr TRegisteredObjPtr;
     typedef typename CTObservingNotifierExpansion< CTRegistry< T > >::TStringList TStringList;
-    
+    typedef CTObservingNotifierExpansion< CTRegistry< T > > TExpansionBase;
+
     CTONRegistry( void );
-    
+
     CTONRegistry( const CTONRegistry& src );
-    
+
     virtual ~CTONRegistry();
-    
+
     CTONRegistry& operator=( const CTONRegistry& src );
-    
+
     virtual void Register( const CString& name                ,
                            const TRegisteredObjPtr& sharedPtr );
-                   
-    virtual void Unregister( const CString& name );                   
-    
+
+    virtual void Unregister( const CString& name );
+
     virtual void UnregisterAll( void );
-    
+
     virtual const CString& GetClassTypeName( void ) const;
 };
 
@@ -127,7 +128,7 @@ CTONRegistry< T >::CTONRegistry( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class T >
 CTONRegistry< T >::CTONRegistry( const CTONRegistry& src )
     : CTObservingNotifierExpansion< CTRegistry< T > >( src )
@@ -136,7 +137,7 @@ CTONRegistry< T >::CTONRegistry( const CTONRegistry& src )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class T >
 CTONRegistry< T >::~CTONRegistry()
 {GUCEF_TRACE;
@@ -144,9 +145,9 @@ CTONRegistry< T >::~CTONRegistry()
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class T >
-CTONRegistry< T >& 
+CTONRegistry< T >&
 CTONRegistry< T >::operator=( const CTONRegistry& src )
 {GUCEF_TRACE;
 
@@ -154,7 +155,7 @@ CTONRegistry< T >::operator=( const CTONRegistry& src )
     {
         CTObservingNotifierExpansion< CTRegistry< T > >::operator=( src );
     }
-    return *this;        
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -169,36 +170,36 @@ CTONRegistry< T >::GetClassTypeName( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class T >
-void 
+void
 CTONRegistry< T >::Register( const CString& name                ,
                              const TRegisteredObjPtr& sharedPtr )
 {GUCEF_TRACE;
 
-    LockData();
-    
+    TExpansionBase::LockData();
+
     CTObservingNotifierExpansion< CTRegistry< T > >::Register( name, sharedPtr );
     ItemRegisteredEventData eData( name );
-    NotifyObservers( ItemRegisteredEvent, &eData );
-    
-    UnlockData();
+    TExpansionBase::NotifyObservers( ItemRegisteredEvent, &eData );
+
+    TExpansionBase::UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
-                   
+
 template< class T >
-void 
+void
 CTONRegistry< T >::Unregister( const CString& name )
 {GUCEF_TRACE;
 
-    LockData();
-    
+    TExpansionBase::LockData();
+
     CTObservingNotifierExpansion< CTRegistry< T > >::Unregister( name );
     ItemRegisteredEventData eData( name );
-    NotifyObservers( ItemRegisteredEvent, &eData );
-    
-    UnlockData();
+    TExpansionBase::NotifyObservers( ItemRegisteredEvent, &eData );
+
+    TExpansionBase::UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -208,17 +209,17 @@ void
 CTONRegistry< T >::UnregisterAll( void )
 {GUCEF_TRACE;
 
-    LockData();
-    
+    TExpansionBase::LockData();
+
     TStringList list;
     GetList( list );
-    
+
     for ( UInt32 i=0; i<list.size(); ++i )
     {
         Unregister( list[ i ] );
     }
-    
-    UnlockData();
+
+    TExpansionBase::UnlockData();
 }
 
 /*-------------------------------------------------------------------------//

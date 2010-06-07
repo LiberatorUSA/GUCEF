@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CTSHAREDPTR_H
 #define GUCEF_CORE_CTSHAREDPTR_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -44,7 +44,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -58,15 +58,15 @@ namespace CORE {
  *
  *  A shared pointer adds some safety to pointers that get passed
  *  around where objects keep a reference to object instances independent
- *  of each other. In such situations it can become unclear who is responsible 
+ *  of each other. In such situations it can become unclear who is responsible
  *  for destroying the referenced object instance.
- *  The shared pointer will reference count the pointer and ensure that even 
- *  though the original owner has no knowledge of other classes referencing the 
+ *  The shared pointer will reference count the pointer and ensure that even
+ *  though the original owner has no knowledge of other classes referencing the
  *  object it can safely manage object destruction as desired.
  *
  *  Note that the default behavior of this template is to delete the referenced
- *  object instance when the reference count hits zero. This raises some 
- *  "out-of-scope-memory-management" concerns. While this can be the intended 
+ *  object instance when the reference count hits zero. This raises some
+ *  "out-of-scope-memory-management" concerns. While this can be the intended
  *  behavior, it is advised to alter this behavior to provide an in-scope mechanism
  *  ( ie delegating destruction responsibilities to the original creator of the object ).
  *
@@ -79,19 +79,19 @@ namespace CORE {
  *          for the given type. Pass the owner in when creating the pointer object.
  *          This will result in in-scope memory management.
  *
- *  Note that this shared pointer implementation is by no means threadsafe and should 
+ *  Note that this shared pointer implementation is by no means threadsafe and should
  *  never be used across thread-boundries.
  */
 template< typename T >
 class CTSharedPtr : public CTBasicSharedPtr< T >
 {
-    public:   
+    public:
 
-    typedef CTBasicSharedPtr< T >::TDestructor TDestructor;
-        
+    typedef CTDynamicDestructorBase< T > TDestructor;
+
     /**
      *  Constructor that allows you to create an 'uninitialized' pointer.
-     *  You will have to assign a valid shared pointer at a later time 
+     *  You will have to assign a valid shared pointer at a later time
      *  to initialize the shared pointer.
      *
      *  Note that if you attempt to use the shared pointer before it
@@ -99,60 +99,60 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
      *
      */
     CTSharedPtr( void );
-    
+
     CTSharedPtr( const int NULLvalue );
-    
-    CTSharedPtr( T* ptr                               ,
-                 TDestructor* objectDestructor = NULL );
- 
-    CTSharedPtr( T& ptr                               ,
-                 TDestructor* objectDestructor = NULL );
+
+    CTSharedPtr( T* ptr                                                ,
+                 CTDynamicDestructorBase< T >* objectDestructor = NULL );
+
+    CTSharedPtr( T& ptr                                                ,
+                 CTDynamicDestructorBase< T >* objectDestructor = NULL );
 
     /**
      *  Conversion constructor making it possible to pass
      *  a CTBasicSharedPtr to a function which requires a
      *  CTSharedPtr thanks to an implicit cast using this constructor.
      */
-    explicit CTSharedPtr( const CTBasicSharedPtr< T >& src );    
+    explicit CTSharedPtr( const CTBasicSharedPtr< T >& src );
 
     // inlined copy constructor, has to be inlined in class definition for now due to VC6 limitations
     template< class Derived >
     CTSharedPtr( const CTSharedPtr< Derived >& src )
         : CTBasicSharedPtr< T >( reinterpret_cast< const CTSharedPtr& >( src ) )
     {GUCEF_TRACE;
-       
+
         // regarding the initializer list:
         //   We use reinterpret_cast to make use of the automatic same-class-friend-relationship
         //   which allows us to access the data members of the given src.
 
         // Cast performed for safety reasons:
         // Allows us to catch unlawful casts compile time.
-        // If you get an error here then 'Derived' is not actually in the same 
+        // If you get an error here then 'Derived' is not actually in the same
         // inheritance chain as 'T'
         Derived* testPtrDerived = NULL;
         T* testPtrT = static_cast< Derived* >( testPtrDerived );
         testPtrT = NULL;
     }
-    
+
     CTSharedPtr( const CTSharedPtr& src );
 
-    virtual ~CTSharedPtr();    
+    virtual ~CTSharedPtr();
 
     // implemented inline as a workaround for VC6 issues
     template< class Derived >
     CTSharedPtr& operator=( const CTSharedPtr< Derived >& src )
     {GUCEF_TRACE;
-    
+
         if ( &reinterpret_cast< const CTSharedPtr& >( src ) != this )
         {
             // Cast performed for safety reasons:
             // Allows us to catch unlawful casts compile time.
-            // If you get an error here then 'Derived' is not actually in the same 
+            // If you get an error here then 'Derived' is not actually in the same
             // inheritance chain as 'T'
             Derived* testPtrDerived( NULL );
             T* testPtrT( static_cast< Derived* >( testPtrDerived ) );
             testPtrT = NULL;
-            
+
             CTBasicSharedPtr< T >::operator=( reinterpret_cast< const CTSharedPtr& >( src ) );
         }
         return *this;
@@ -161,26 +161,26 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
     CTSharedPtr& operator=( const CTSharedPtr& src );
 
     bool operator==( const void* other ) const;
-    
+
     bool operator==( const CTSharedPtr& other ) const;
- 
+
     bool operator!=( const void* other ) const;
-    
+
     bool operator!=( const CTSharedPtr& other ) const;
-    
+
     bool operator<( const CTSharedPtr& other ) const;
- 
+
     /**
      *  operator that implements '(*mySharedPtr)'
      *
-     *  @throws ENotInitialized if the pointer is not initialized 
+     *  @throws ENotInitialized if the pointer is not initialized
      */
     inline T& operator*( void );
-    
+
     /**
      *  operator that implements '(*mySharedPtr)'
      *
-     *  @throws ENotInitialized if the pointer is not initialized 
+     *  @throws ENotInitialized if the pointer is not initialized
      */
     inline const T& operator*( void ) const;
 
@@ -197,7 +197,7 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
      *  @throws ENotInitialized if the pointer is not initialized
      */
     inline const T* operator->( void ) const;
-    
+
     // implemented inline as a workaround for VC6 issues
     // The dummy param is a VC6 hack for templated member functions
     template< class Derived >
@@ -209,8 +209,8 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
         // derived from 'T'. After we made this check we can just reinterpret
         // this object to be able to give out more pointer references as 'Derived'
         // Note that we have to use the 'derivedClassPtr' variable otherwise the compiler
-        // will optimize out the code which is why the code is structured this way. 
-        Derived* derivedClassPtr = static_cast< Derived* >( GetPointer() );
+        // will optimize out the code which is why the code is structured this way.
+        Derived* derivedClassPtr = static_cast< Derived* >( CTBasicSharedPtr< T >::GetPointer() );
         if ( 0 != derivedClassPtr )
         {
             return reinterpret_cast< CTSharedPtr< Derived >& >( *this );
@@ -242,17 +242,17 @@ CTSharedPtr< T >::CTSharedPtr( const int NULLvalue )
 
     // Note that if this constructor is used an assignment is required at
     // a later time to initialize the shared pointer
-    assert( NULLvalue == NULL );    
+    assert( NULLvalue == NULL );
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-CTSharedPtr< T >::CTSharedPtr( T* ptr                                     ,
-                               TDestructor* objectDestructor /* = NULL */ )
+CTSharedPtr< T >::CTSharedPtr( T* ptr                                                      ,
+                               CTDynamicDestructorBase< T >* objectDestructor /* = NULL */ )
         : CTBasicSharedPtr< T >()
 {GUCEF_TRACE;
-    
+
     if ( NULL != objectDestructor )
     {
         Initialize( ptr, objectDestructor );
@@ -266,10 +266,9 @@ CTSharedPtr< T >::CTSharedPtr( T* ptr                                     ,
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-CTSharedPtr< T >::CTSharedPtr( T& ptr                                     ,
-                               TDestructor* objectDestructor /* = NULL */ )
-        : CTBasicSharedPtr< T >() ,
-          m_localDestructor()    
+CTSharedPtr< T >::CTSharedPtr( T& ptr                                                      ,
+                               CTDynamicDestructorBase< T >* objectDestructor /* = NULL */ )
+        : CTBasicSharedPtr< T >()
 {GUCEF_TRACE;
 
     if ( NULL != objectDestructor )
@@ -288,7 +287,7 @@ template< typename T >
 CTSharedPtr< T >::CTSharedPtr( const CTSharedPtr< T >& src )
         : CTBasicSharedPtr< T >( src )
 {GUCEF_TRACE;
-       
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -297,11 +296,11 @@ template< typename T >
 CTSharedPtr< T >::CTSharedPtr( const CTBasicSharedPtr< T >& src )
     : CTBasicSharedPtr< T >( src )
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
-   
+
 template< typename T >
 CTSharedPtr< T >::~CTSharedPtr()
 {GUCEF_TRACE;
@@ -309,9 +308,9 @@ CTSharedPtr< T >::~CTSharedPtr()
 }
 
 /*-------------------------------------------------------------------------*/
-  
+
 template< typename T >
-CTSharedPtr< T >& 
+CTSharedPtr< T >&
 CTSharedPtr< T >::operator=( const CTSharedPtr< T >& src )
 {GUCEF_TRACE;
 
@@ -332,17 +331,17 @@ CTSharedPtr< T >::operator=( const CTSharedPtr< Derived >& src )
     if ( this != &src )
     {
         CTSharedPtr< T > basePtr( static_cast );
-        
+
         CTBasicSharedPtr< T >::operator=( src );
     }
-    return *this;    
+    return *this;
 }
 */
 
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-inline bool 
+inline bool
 CTSharedPtr< T >::operator<( const CTSharedPtr< T >& other ) const
 {GUCEF_TRACE;
 
@@ -352,7 +351,7 @@ CTSharedPtr< T >::operator<( const CTSharedPtr< T >& other ) const
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-inline bool 
+inline bool
 CTSharedPtr< T >::operator==( const CTSharedPtr< T >& other ) const
 {GUCEF_TRACE;
 
@@ -362,7 +361,7 @@ CTSharedPtr< T >::operator==( const CTSharedPtr< T >& other ) const
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-inline bool 
+inline bool
 CTSharedPtr< T >::operator==( const void* other ) const
 {GUCEF_TRACE;
 
@@ -372,7 +371,7 @@ CTSharedPtr< T >::operator==( const void* other ) const
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-inline bool 
+inline bool
 operator==( const void* ptr, const CTSharedPtr< T >& other )
 {GUCEF_TRACE;
 
@@ -382,10 +381,10 @@ operator==( const void* ptr, const CTSharedPtr< T >& other )
 /*-------------------------------------------------------------------------*/
 
 /*
- *  workaround for comparison to NULL, since NULL is a integer by default 
+ *  workaround for comparison to NULL, since NULL is a integer by default
  */
 template< typename T >
-inline bool 
+inline bool
 operator==( const int ptr, const CTSharedPtr< T >& other )
 {GUCEF_TRACE;
 
@@ -393,29 +392,29 @@ operator==( const int ptr, const CTSharedPtr< T >& other )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< typename T >
-inline bool 
+inline bool
 CTSharedPtr< T >::operator!=( const CTSharedPtr< T >& other ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >& >( *this ) != static_cast< const CTBasicSharedPtr< T >& >( other );    
+    return static_cast< const CTBasicSharedPtr< T >& >( *this ) != static_cast< const CTBasicSharedPtr< T >& >( other );
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-inline bool 
+inline bool
 CTSharedPtr< T >::operator!=( const void* other ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >& >( *this ) != other;    
+    return static_cast< const CTBasicSharedPtr< T >& >( *this ) != other;
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-inline bool 
+inline bool
 operator!=( const void* ptr, const CTSharedPtr< T >& other )
 {GUCEF_TRACE;
 
@@ -425,10 +424,10 @@ operator!=( const void* ptr, const CTSharedPtr< T >& other )
 /*-------------------------------------------------------------------------*/
 
 /*
- *  workaround for comparison to NULL, since NULL is a integer by default 
+ *  workaround for comparison to NULL, since NULL is a integer by default
  */
 template< typename T >
-inline bool 
+inline bool
 operator!=( const int ptr, const CTSharedPtr< T >& other )
 {GUCEF_TRACE;
 
@@ -438,7 +437,7 @@ operator!=( const int ptr, const CTSharedPtr< T >& other )
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-inline T& 
+inline T&
 CTSharedPtr< T >::operator*( void )
 {GUCEF_TRACE;
 
@@ -448,7 +447,7 @@ CTSharedPtr< T >::operator*( void )
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-inline const T& 
+inline const T&
 CTSharedPtr< T >::operator*( void ) const
 {GUCEF_TRACE;
 
@@ -456,7 +455,7 @@ CTSharedPtr< T >::operator*( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< typename T >
 inline T*
 CTSharedPtr< T >::operator->( void )
@@ -466,13 +465,13 @@ CTSharedPtr< T >::operator->( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< typename T >
-inline const T* 
+inline const T*
 CTSharedPtr< T >::operator->( void ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >* >( this )->operator->();  
+    return static_cast< const CTBasicSharedPtr< T >* >( this )->operator->();
 }
 
 /*-------------------------------------------------------------------------//
@@ -495,7 +494,7 @@ CTSharedPtr< T >::operator->( void ) const
           Instead of using a local object to delete the shared object we now use
           a self-deleting destructor delegator. This allows us to copy the destructor
           pointer safely in all scenario's since it's guaranteed to be kept alive as
-          long as the reference count does not hit zero. This could actually cause 
+          long as the reference count does not hit zero. This could actually cause
           nasty crashes in the previous implementation because the local destructor
           mechanism broke down when a CTSharedPtr got converted into a CTBasicSharedPtr
           which could result in an invalid destructor object being invoked.

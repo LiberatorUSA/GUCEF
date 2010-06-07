@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CLOGMANAGER_H
-#define GUCEF_CORE_CLOGMANAGER_H 
+#define GUCEF_CORE_CLOGMANAGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #include <set>
 #include <map>
@@ -67,8 +67,8 @@ class CString;
 class GUCEFCORE_EXPORT_CPP CLogManager
 {
     public:
-    
-    typedef enum TLogMsgType
+
+    enum ELogMsgType
     {
         LOG_ERROR,     /**< I strongly suggest you use this for logging serious errors only */
         LOG_STANDARD,  /**< can be anything */
@@ -82,24 +82,25 @@ class GUCEFCORE_EXPORT_CPP CLogManager
         LOG_EXCEPTION, /**< typically used for logging exception details just before throwing an exception, see exception macros */
         LOG_CONSOLE    /**< typically used for logging input/output of the system console */
     };
-    
+    typedef enum ELogMsgType TLogMsgType;
+
     static CLogManager* Instance( void );
-    
+
     void AddLogger( CILogger* loggerImp );
-    
+
     void RemoveLogger( CILogger* loggerImp );
-    
+
     void ClearLoggers( void );
-    
+
     bool IsLoggingEnabled( const TLogMsgType logMsgType ,
                            const Int32 logLevel         ) const;
-                           
+
     void Log( const TLogMsgType logMsgType ,
               const Int32 logLevel         ,
               const CString& logMessage    );
 
     void FlushLogs( void );
-    
+
     /**
      *  About the bootstrap log:
      *  At application startup there will be log messages entered before any logger
@@ -109,27 +110,27 @@ class GUCEFCORE_EXPORT_CPP CLogManager
      *
      *  This function will flush all the bootstrap log entries to the attached loggers and clear
      *  the LogManager in-memory bootstrap log.
-     */    
+     */
     void FlushBootstrapLogEntriesToLogs( void );
-    
+
     static const CString& GetLogMsgTypeString( const TLogMsgType logMsgType );
-    
+
     private:
     friend class CGUCEFCOREModule;
-    
+
     static void Deinstance( void );
-    
+
     private:
-    
+
     CLogManager( void );
     ~CLogManager();
     CLogManager( const CLogManager& src );              /**< not implemented, don't use */
     CLogManager& operator=( const CLogManager& src );   /**< not implemented, don't use */
-    
+
     private:
-    
+
     typedef std::set< CILogger* > TLoggerList;
-    
+
     struct SBootstrapLogEntry
     {
         TLogMsgType logMsgType;
@@ -138,7 +139,7 @@ class GUCEFCORE_EXPORT_CPP CLogManager
     };
     typedef struct SBootstrapLogEntry TBootstrapLogEntry;
     typedef std::vector< TBootstrapLogEntry > TBootstrapLogVector;
-    
+
     TLoggerList m_loggers;
     std::map< TLogMsgType, bool > m_msgTypeEnablers;
     Int32 m_maxLogLevel;
@@ -151,7 +152,7 @@ class GUCEFCORE_EXPORT_CPP CLogManager
 
 // A number of optional constants that can be used to define log levels.
 // These levels are used by the library itself. The lower the importance of the log level
-// the more likely it will be filtered out by most logging backends   
+// the more likely it will be filtered out by most logging backends
 extern "C"
 {
 
