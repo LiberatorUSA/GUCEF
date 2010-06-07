@@ -148,7 +148,12 @@ GetFunctionAddress( void *sohandle           ,
      *      __cdecl                 _Function       Function                Function                Function        Function        _Function
      */
     TAnyPointer fptr;
-    if ( !sohandle ) return NULL;
+    if ( NULL == sohandle )
+    {
+        fptr.funcPtr = 0;
+        return fptr;
+    }
+    
     #if defined( GUCEF_LINUX_BUILD )
     return fptr.objPtr = dlsym( sohandle     ,
                                 functionname );
