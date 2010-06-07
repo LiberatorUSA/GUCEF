@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,8 +23,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <string.h>
+
 #ifndef GUCEF_CORE_DVOSWRAP_H
-#include "dvoswrap.h"
+#include "DVOSWRAP.h"
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
@@ -62,7 +64,7 @@ enum TGenericPluginFuncPtrType
     GPLUGINFUNCPTR_VERSION     ,
     GPLUGINFUNCPTR_COPYRIGHT   ,
     GPLUGINFUNCPTR_DESCRIPTION ,
-    
+
     GPLUGINFUNCPTR_COUNT
 };
 
@@ -76,7 +78,7 @@ CGenericPlugin::CGenericPlugin( void )
     : m_moduleHandle( NULL ) ,
       m_modulePath()
 {GUCEF_TRACE;
-    
+
     memset( m_funcPointers, 0, GPLUGINFUNCPTR_COUNT );
 }
 
@@ -93,7 +95,7 @@ CGenericPlugin::~CGenericPlugin()
 bool
 CGenericPlugin::Load( const CString& pluginPath )
 {GUCEF_TRACE;
-    
+
     if ( !IsLoaded() )
     {
         m_moduleHandle = LoadModuleDynamicly( pluginPath.C_String() );
@@ -106,13 +108,13 @@ CGenericPlugin::Load( const CString& pluginPath )
                                                                         0                  );
             m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] = GetFunctionAddress( m_moduleHandle       ,
                                                                           "GUCEFPlugin_Unload" ,
-                                                                          0                    );            
+                                                                          0                    );
             m_funcPointers[ GPLUGINFUNCPTR_VERSION ] = GetFunctionAddress( m_moduleHandle           ,
                                                                            "GUCEFPlugin_GetVersion" ,
-                                                                           sizeof( TVersion* )      );            
+                                                                           sizeof( TVersion* )      );
             m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] = GetFunctionAddress( m_moduleHandle               ,
                                                                                "GUCEFPlugin_GetDescription" ,
-                                                                               0                            );            
+                                                                               0                            );
 
             m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] = GetFunctionAddress( m_moduleHandle           ,
                                                                              "GUCEFPlugin_GetCopyright" ,
@@ -127,11 +129,11 @@ CGenericPlugin::Load( const CString& pluginPath )
             {
                 // Call the module's Load()
                 static_cast< TGUCEFGENERICPLUGFPTR_Load >( m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )();
-                
+
                 // We have loaded & linked our plugin module
                 return true;
             }
-                        
+
             // We failed to link the functions :(
             memset( m_funcPointers, 0, GPLUGINFUNCPTR_COUNT );
             UnloadModuleDynamicly( m_moduleHandle );
@@ -139,7 +141,7 @@ CGenericPlugin::Load( const CString& pluginPath )
             return false;
         }
     }
-    
+
     // Unloading->Loading must be done explicitly
     return false;
 }
@@ -159,22 +161,22 @@ CGenericPlugin::Unload( void )
         memset( m_funcPointers, 0, GPLUGINFUNCPTR_COUNT );
         UnloadModuleDynamicly( m_moduleHandle );
         m_moduleHandle = NULL;
-    }    
-    
+    }
+
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CGenericPlugin::IsLoaded( void ) const
 {GUCEF_TRACE;
-    
+
     return NULL != m_moduleHandle;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CString
 CGenericPlugin::GetDescription( void ) const
 {GUCEF_TRACE;
@@ -183,7 +185,7 @@ CGenericPlugin::GetDescription( void ) const
     {
         return static_cast< TGUCEFGENERICPLUGFPTR_GetDescription >( m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] )();
     }
-    
+
     GUCEF_EMSGTHROW( ENotLoaded, "CGenericPlugin::GetDescription(): No module is loaded" );
 }
 
@@ -197,12 +199,12 @@ CGenericPlugin::GetCopyright( void ) const
     {
         return static_cast< TGUCEFGENERICPLUGFPTR_GetCopyright >( m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] )();
     }
-    
+
     GUCEF_EMSGTHROW( ENotLoaded, "CGenericPlugin::GetCopyright(): No module is loaded" );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 TVersion
 CGenericPlugin::GetVersion( void ) const
 {GUCEF_TRACE;
@@ -211,10 +213,10 @@ CGenericPlugin::GetVersion( void ) const
     {
         TVersion versionInfo;
         static_cast< TGUCEFGENERICPLUGFPTR_GetVersion >( m_funcPointers[ GPLUGINFUNCPTR_VERSION ] )( &versionInfo );
-        
+
         return versionInfo;
     }
-    
+
     GUCEF_EMSGTHROW( ENotLoaded, "CGenericPlugin::GetVersion(): No module is loaded" );
 }
 
@@ -223,12 +225,12 @@ CGenericPlugin::GetVersion( void ) const
 CString
 CGenericPlugin::GetModulePath( void ) const
 {GUCEF_TRACE;
-    
+
     if ( IsLoaded() )
     {
         return m_modulePath;
     }
-    
+
     GUCEF_EMSGTHROW( ENotLoaded, "CGenericPlugin::GetModulePath(): No module is loaded" );
 }
 

@@ -165,7 +165,7 @@ ownerScopeClass::exceptionName::exceptionName( const exceptionName& src )   \
 {                                                                           \
 }                                                                           \
                                                                             \
-ownerScopeClass::exceptionName::~exceptionName()                            \
+ownerScopeClass::exceptionName::~exceptionName() throw()                    \
 {                                                                           \
 }
 
@@ -193,7 +193,7 @@ ownerScopeClass::exceptionName::exceptionName( const exceptionName& src )   \
 {                                                                           \
 }                                                                           \
                                                                             \
-ownerScopeClass::exceptionName::~exceptionName()                            \
+ownerScopeClass::exceptionName::~exceptionName() throw()                    \
 {                                                                           \
 }
 
