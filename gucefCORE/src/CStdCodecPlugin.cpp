@@ -386,34 +386,34 @@ CStdCodecPlugin::Load( const CString& pluginPath )
     // let's see if it is a codec plugin
     m_fpTable[ STDCODEC_DESCRIPTION ] = GetFunctionAddress( m_soHandle                ,
                                                             "CODECPLUGIN_Description" ,
-                                                            sizeof(void*)             );
+                                                            sizeof(void*)             ).funcPtr;
     m_fpTable[ STDCODEC_COPYRIGHT ] = GetFunctionAddress( m_soHandle              ,
                                                           "CODECPLUGIN_Copyright" ,
-                                                          sizeof(void*)           );
+                                                          sizeof(void*)           ).funcPtr;
     m_fpTable[ STDCODEC_VERSION ] = GetFunctionAddress( m_soHandle            ,
                                                         "CODECPLUGIN_Version" ,
-                                                        sizeof(void*)         );
+                                                        sizeof(void*)         ).funcPtr;
     m_fpTable[ STDCODEC_INIT ] = GetFunctionAddress( m_soHandle                      ,
                                                      "CODECPLUGIN_Init"              ,
-                                                     2*sizeof(void*)+sizeof(char***) );
+                                                     2*sizeof(void*)+sizeof(char***) ).funcPtr;
     m_fpTable[ STDCODEC_SHUTDOWN ] = GetFunctionAddress( m_soHandle             ,
                                                          "CODECPLUGIN_Shutdown" ,
-                                                         sizeof(void*)          );
+                                                         sizeof(void*)          ).funcPtr;
     m_fpTable[ STDCODEC_CODECSETBEGIN ] = GetFunctionAddress( m_soHandle                     ,
                                                               "CODECPLUGIN_GetCodecSetBegin" ,
-                                                              sizeof(void*)+sizeof(void**)   );
+                                                              sizeof(void*)+sizeof(void**)   ).funcPtr;
     m_fpTable[ STDCODEC_CODECLINK ] = GetFunctionAddress( m_soHandle                                 ,
                                                           "CODECPLUGIN_GetCodecLink"                 ,
-                                                          2*sizeof(void*)+sizeof(TCodecPluginLink**) );
+                                                          2*sizeof(void*)+sizeof(TCodecPluginLink**) ).funcPtr;
     m_fpTable[ STDCODEC_FREECODECLINK ] = GetFunctionAddress( m_soHandle                              ,
                                                               "CODECPLUGIN_FreeCodecLink"             ,
-                                                              sizeof(void*)+sizeof(TCodecPluginLink*) );
+                                                              sizeof(void*)+sizeof(TCodecPluginLink*) ).funcPtr;
     m_fpTable[ STDCODEC_FREECODECITERATOR ] = GetFunctionAddress( m_soHandle                      ,
                                                                   "CODECPLUGIN_FreeCodecIterator" ,
-                                                                  2*sizeof(void*)                 );
+                                                                  2*sizeof(void*)                 ).funcPtr;
     m_fpTable[ STDCODEC_CODECSETNEXT ] = GetFunctionAddress( m_soHandle                        ,
                                                              "CODECPLUGIN_GetCodecSetNextItem" ,
-                                                             2*sizeof(void*)                   );
+                                                             2*sizeof(void*)                   ).funcPtr;
 
     // Verify that we have obtained a function address for each of the functions
     if ( ( !m_fpTable[ STDCODEC_INIT ] )              ||
