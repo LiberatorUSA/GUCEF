@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -26,7 +26,7 @@
 #include <assert.h>
 
 #ifndef GUCEF_CORE_DVOSWRAP_H
-#include "dvoswrap.h" 
+#include "DVOSWRAP.h"
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
@@ -36,7 +36,7 @@
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h"   /* Additional utilities for manipulating string class objects */ 
+#include "dvcppstringutils.h"   /* Additional utilities for manipulating string class objects */
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
@@ -70,7 +70,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -105,13 +105,13 @@ CGUCEFApplication::Instance( void )
 
     m_mutex.Lock();
     if ( !_instance )
-    {                
+    {
              /*
               *     Instantiate the GUCEF application class
               */
             _instance = new CGUCEFApplication();
             CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
-            
+
             GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CGUCEFApplication Singleton created" );
     }
     m_mutex.Unlock();
@@ -120,7 +120,7 @@ CGUCEFApplication::Instance( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CGUCEFApplication::Deinstance( void )
 {GUCEF_TRACE;
 
@@ -141,20 +141,20 @@ CGUCEFApplication::CGUCEFApplication( void )
       m_pulseGenerator()                                     ,
       m_busyWaitPulseDriver()
 {GUCEF_TRACE;
-                                           
+
     RegisterEvents();
-    
+
     /*
-     *      Set an initial app dir just in case we have trouble getting one 
+     *      Set an initial app dir just in case we have trouble getting one
      *      at a later stage
      */
-    _appdir = RelativePath( "$MODULEDIR$" );                                                    
-                                        
+    _appdir = RelativePath( "$MODULEDIR$" );
+
     /*
      *      Initialize our plugin control center
-     */                                      
+     */
     CPluginControl::Instance();
-    
+
     /*
      *      Register some functionality at the system console
      */
@@ -168,10 +168,10 @@ CGUCEFApplication::CGUCEFApplication( void )
                              "GetApplicationDir"              ,
                              args                             ,
                              this                             );
-                             
+
     // Set the busy wait pulse driver as the default driver for the
     // pulse generator
-    m_pulseGenerator.SetPulseGeneratorDriver( &m_busyWaitPulseDriver );                                                  
+    m_pulseGenerator.SetPulseGeneratorDriver( &m_busyWaitPulseDriver );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -208,11 +208,11 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
                          int ncmdshow            ,
                          bool run                )
 {GUCEF_TRACE;
-        
+
     /*
      *      ensure that we have an instance of this class
      */
-    m_mutex.Lock(); 
+    m_mutex.Lock();
     if ( !_instance )
     {
         int retval = Instance()->Main( hinstance     ,
@@ -221,8 +221,8 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
                                        run           );
         m_mutex.Unlock();
         return retval;
-    }        
-    
+    }
+
     /*
      *      Set the application dir
      *      This is pure MSWIN code and is not portable !!!
@@ -231,33 +231,33 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         /*
          *      Set the given values as environment vars
          */
-        #pragma warning( disable: 4311 ) 
+        #pragma warning( disable: 4311 )
         char intstr[ 10 ];
-        sprintf( intstr, "%d", (UInt32)hinstance );  
-        GUCEFSetEnv( "HINSTANCE", intstr );                 
+        sprintf( intstr, "%d", (UInt32)hinstance );
+        GUCEFSetEnv( "HINSTANCE", intstr );
 
         char apppath[ MAX_PATH ];
 
         if ( GetModuleFileNameA( hinstance, apppath, MAX_PATH ) )
         {
                 _appdir = apppath;
-        }                        
-    }                
+        }
+    }
 
     struct SAppInitEventData data;
-    
+
     // Copy the MSWIN params
     data.hinstance = hinstance;
     data.lpcmdline = lpcmdline;
     data.ncmdshow = ncmdshow;
-    
+
     // Parse the MSWIN param into the old style param list
     std::vector< CString > argList;
     if ( NULL != lpcmdline )
     {
         argList = CString( lpcmdline ).ParseElements( ' ' );
     }
-    
+
     data.argc = (int)argList.size();
     if ( data.argc > 0 )
     {
@@ -271,27 +271,27 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
     {
         data.argv = NULL;
     }
-    
+
     // Set shutdown to false before we emit the init event so that observers can
     // request a shutdown if something went wrong
     m_shutdownRequested = false;
-    
+
     // Dispatch the initialization event
-    TAppInitEventData cloneableData( data );                
+    TAppInitEventData cloneableData( data );
     if ( !NotifyObservers( AppInitEvent, &cloneableData ) ) return 0;
 
     // Check if we need to abort because a shutdown was requested
     if ( !m_shutdownRequested )
     {
         _initialized = true;
-        
+
         if ( run )
-        {            
+        {
             m_pulseGenerator.AllowPeriodicPulses();
             m_mutex.Unlock();
-            
+
             m_pulseGenerator.RequestPeriodicPulses();
-            
+
             // Unless the pulse drive is overridden we will now start the loop
             if ( m_pulseGenerator.GetPulseGeneratorDriver() == &m_busyWaitPulseDriver )
             {
@@ -308,44 +308,44 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         m_mutex.Unlock();
     }
 
-    delete []data.argv; 
-    return 0;      
+    delete []data.argv;
+    return 0;
 }
 #endif
 
 /*-------------------------------------------------------------------------*/
 
-int 
+int
 CGUCEFApplication::main( int argc    ,
                          char** argv ,
                          bool run    )
 {GUCEF_TRACE;
-        
+
     /*
      *      ensure that we have an instance of this class
      */
-    m_mutex.Lock(); 
+    m_mutex.Lock();
     if ( !_instance )
     {
         int retval = Instance()->main( argc ,
                                        argv ,
-                                       run  );                                               
+                                       run  );
         return retval;
     }
-    
+
     /*
      *      Set the given values as environment vars
      */
     if ( argc > 0 )
-    { 
+    {
         char intstr[ 10 ];
-        sprintf( intstr, "%d", argc );  
+        sprintf( intstr, "%d", argc );
         GUCEFSetEnv( "argc", intstr );
-        GUCEFSetEnv( "argv", (char*)argv );                 
+        GUCEFSetEnv( "argv", (char*)argv );
     }
-    
+
     _initialized = false;
-    
+
     // Set shutdown to false before we emit the init event so that observers can
     // request a shutdown if something went wrong
     m_shutdownRequested = false;
@@ -360,10 +360,10 @@ CGUCEFApplication::main( int argc    ,
      */
     {
         struct SAppInitEventData data;
-        
+
         data.argc = argc;
         data.argv = argv;
-        
+
         TAppInitEventData cloneableData( data );
         if ( !NotifyObservers( AppInitEvent, &cloneableData ) ) return 0;
     }
@@ -372,14 +372,14 @@ CGUCEFApplication::main( int argc    ,
     if ( !m_shutdownRequested )
     {
         _initialized = true;
-        
+
         if ( run )
-        {            
+        {
             m_pulseGenerator.AllowPeriodicPulses();
             m_mutex.Unlock();
-            
+
             m_pulseGenerator.RequestPeriodicPulses();
-            
+
             // Unless the pulse drive is overridden we will now start the loop
             if ( m_pulseGenerator.GetPulseGeneratorDriver() == &m_busyWaitPulseDriver )
             {
@@ -395,15 +395,15 @@ CGUCEFApplication::main( int argc    ,
     {
         m_mutex.Unlock();
     }
-    return 0;      
-}                        
+    return 0;
+}
 
 /*-------------------------------------------------------------------------*/
 
 void
 CGUCEFApplication::RegisterEvents( void )
 {GUCEF_TRACE;
-    
+
     AppInitEvent.Initialize();
     AppShutdownEvent.Initialize();
 }
@@ -422,7 +422,7 @@ CGUCEFApplication::Update( void )
 void
 CGUCEFApplication::Stop( void )
 {GUCEF_TRACE;
-    
+
     LockData();
 
     if ( !m_shutdownRequested )
@@ -431,36 +431,36 @@ CGUCEFApplication::Stop( void )
         m_pulseGenerator.ForceStopOfPeriodicPulses();
         if ( !NotifyObservers( AppShutdownEvent ) ) return;
     }
-    
+
     UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CGUCEFApplication::SetPluginDir( const CString& plugindir )
 {GUCEF_TRACE;
 
     LockData();
-    
+
     CPluginControl* pc = CPluginControl::Instance();
     pc->SetPluginDir( plugindir );
     pc->LoadAll();
-    
+
     UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
-                       
-CString 
+
+CString
 CGUCEFApplication::GetPluginDir( void ) const
 {GUCEF_TRACE;
         return CPluginControl::Instance()->GetPluginDir();
 }
 
 /*-------------------------------------------------------------------------*/
-        
-CString 
+
+CString
 CGUCEFApplication::GetApplicationDir( void ) const
 {GUCEF_TRACE;
         return _appdir;
@@ -468,24 +468,24 @@ CGUCEFApplication::GetApplicationDir( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CGUCEFApplication::SaveConfig( CDataNode& tree )
 {GUCEF_TRACE;
 
     LockData();
-    
+
     CDataNode* n = tree.Structure( "GUCEF%CORE%CGUCEFApplication" ,
-                                   '%'                            );                     
+                                   '%'                            );
     n->SetAttribute( "appdir" ,
-                     _appdir  );                        
-                     
+                     _appdir  );
+
     UnlockData();
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CGUCEFApplication::LoadConfig( const CDataNode& tree )
 {GUCEF_TRACE;
 
@@ -495,7 +495,7 @@ CGUCEFApplication::LoadConfig( const CDataNode& tree )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CGUCEFApplication::OnSysConsoleCommand( const CString& path                ,
                                         const CString& command             ,
                                         const std::vector< CString >& args ,
@@ -503,12 +503,12 @@ CGUCEFApplication::OnSysConsoleCommand( const CString& path                ,
 {GUCEF_TRACE;
 
     LockData();
-    
+
     if ( command == "Stop" )
     {
             Stop();
             UnlockData();
-            return true;        
+            return true;
     }
     else
     if ( command == "GetApplicationDir" )
@@ -523,29 +523,29 @@ CGUCEFApplication::OnSysConsoleCommand( const CString& path                ,
 
 /*-------------------------------------------------------------------------*/
   /*
-void 
+void
 CGUCEFApplication::OnUpdate( const UInt64 tickcount               ,
                              const Float64 updateDeltaInMilliSecs )
 {GUCEF_TRACE;
-        
+
         #ifdef GUCEF_MSWIN_BUILD
     	MSG  msg;
         while( ::PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
-        {                
+        {
                 ::TranslateMessage( &msg );
                 ::DispatchMessage( &msg );
         }
-        #endif /* GUCEF_MSWIN_BUILD ? *//*        
-        
+        #endif /* GUCEF_MSWIN_BUILD ? *//*
+
         if ( updateDeltaInMilliSecs <= m_minimalCycleDeltaInMilliSecs )
         {
                 /*
                  *      Not much action ATM, so we should
-                 *      avoid hogging the system resources 
+                 *      avoid hogging the system resources
                  *
-                MT::PrecisionDelay( m_cycleDelayInMilliSecs );                
+                MT::PrecisionDelay( m_cycleDelayInMilliSecs );
         }
-}                                
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -557,7 +557,7 @@ CGUCEFApplication::LockData( void )
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 void
 CGUCEFApplication::UnlockData( void )
 {GUCEF_TRACE;

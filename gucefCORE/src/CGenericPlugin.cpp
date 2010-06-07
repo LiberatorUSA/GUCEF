@@ -128,7 +128,7 @@ CGenericPlugin::Load( const CString& pluginPath )
                  ( NULL != m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] )    )
             {
                 // Call the module's Load()
-                static_cast< TGUCEFGENERICPLUGFPTR_Load >( m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )();
+                reinterpret_cast< TGUCEFGENERICPLUGFPTR_Load >( m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )();
 
                 // We have loaded & linked our plugin module
                 return true;
@@ -155,7 +155,7 @@ CGenericPlugin::Unload( void )
     if ( IsLoaded() )
     {
         // Call the module's Unload()
-        static_cast< TGUCEFGENERICPLUGFPTR_Unload >( m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] )();
+        reinterpret_cast< TGUCEFGENERICPLUGFPTR_Unload >( m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] )();
 
         // Cleanup recources
         memset( m_funcPointers, 0, GPLUGINFUNCPTR_COUNT );
@@ -183,7 +183,7 @@ CGenericPlugin::GetDescription( void ) const
 
     if ( IsLoaded() )
     {
-        return static_cast< TGUCEFGENERICPLUGFPTR_GetDescription >( m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] )();
+        return reinterpret_cast< TGUCEFGENERICPLUGFPTR_GetDescription >( m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] )();
     }
 
     GUCEF_EMSGTHROW( ENotLoaded, "CGenericPlugin::GetDescription(): No module is loaded" );
@@ -197,7 +197,7 @@ CGenericPlugin::GetCopyright( void ) const
 
     if ( IsLoaded() )
     {
-        return static_cast< TGUCEFGENERICPLUGFPTR_GetCopyright >( m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] )();
+        return reinterpret_cast< TGUCEFGENERICPLUGFPTR_GetCopyright >( m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] )();
     }
 
     GUCEF_EMSGTHROW( ENotLoaded, "CGenericPlugin::GetCopyright(): No module is loaded" );
@@ -212,7 +212,7 @@ CGenericPlugin::GetVersion( void ) const
     if ( IsLoaded() )
     {
         TVersion versionInfo;
-        static_cast< TGUCEFGENERICPLUGFPTR_GetVersion >( m_funcPointers[ GPLUGINFUNCPTR_VERSION ] )( &versionInfo );
+        reinterpret_cast< TGUCEFGENERICPLUGFPTR_GetVersion >( m_funcPointers[ GPLUGINFUNCPTR_VERSION ] )( &versionInfo );
 
         return versionInfo;
     }
