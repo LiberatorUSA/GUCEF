@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 /*
@@ -25,7 +25,7 @@
  */
 
 #ifndef GUCEF_MT_GUCEFMT_H
-#define GUCEF_MT_GUCEFMT_H 
+#define GUCEF_MT_GUCEFMT_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -34,7 +34,7 @@
 //-------------------------------------------------------------------------*/
 
 /*
- *      Library build configuration      
+ *      Library build configuration
  */
 #ifndef GUCEF_MT_GUCEFMT_CONFIG_H
 #include "gucefMT_config.h"
@@ -66,7 +66,7 @@
  *      C implementation of a readers writers lock.
  */
 #ifndef GUCEF_MT_DVRWLOCK_H
-#include "gucefMT_dvrwlock.h"
+#include "gucefMT_DVRWLOCK.h"
 #define GUCEF_MT_DVRWLOCK_H
 #endif /* GUCEF_MT_DVRWLOCK_H ? */
 
@@ -104,7 +104,7 @@
 
 /*
  *      implementation of a thread mailbox.
- *      basicly just a tread-safe stack for event data 
+ *      basicly just a tread-safe stack for event data
  */
 #ifndef GUCEF_MT_CTMAILBOX_H
 #include "gucefMT_CTMailBox.h"
