@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,8 +23,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <string.h>
+
 #ifndef GUCEF_CORE_DVOSWRAP_H
-#include "dvoswrap.h"            /* OS wrapping functionality */
+#include "DVOSWRAP.h"            /* OS wrapping functionality */
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
@@ -90,20 +92,20 @@ enum
         DSTOREPLUG_COPYRIGHT             ,
         DSTOREPLUG_VERSION               ,
         DSTOREPLUG_TYPE                  ,
-        
+
         DSTOREPLUG_DEST_FILE_OPEN        ,
         DSTOREPLUG_DEST_FILE_CLOSE       ,
         DSTOREPLUG_BEGIN_NODE_STORE      ,
         DSTOREPLUG_END_NODE_STORE        ,
         DSTOREPLUG_STORE_NODE_ATT        ,
         DSTOREPLUG_BEGIN_NODE_CHILDREN   ,
-        DSTOREPLUG_END_NODE_CHILDREN     ,        
-        
+        DSTOREPLUG_END_NODE_CHILDREN     ,
+
         DSTOREPLUG_SRC_FILE_OPEN         ,
         DSTOREPLUG_SRC_FILE_CLOSE        ,
-        DSTOREPLUG_SET_READ_HANDLERS     ,                                     
+        DSTOREPLUG_SET_READ_HANDLERS     ,
         DSTOREPLUG_START_READING         ,
-        
+
         DSTOREPLUG_LASTFPTR
 };
 
@@ -121,7 +123,7 @@ typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Dest_File_Close )  
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Begin_Node_Store )      ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_End_Node_Store )        ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Store_Node_Att )        ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 attindex, const char* attname, const char* attvalue, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Begin_Node_Children )   ( void** plugdata, void** filedata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX; 
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Begin_Node_Children )   ( void** plugdata, void** filedata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_End_Node_Children )     ( void** plugdata, void** filedata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Src_File_Open )       ( void** plugdata, void** filedata, TIOAccess* file ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
@@ -138,15 +140,16 @@ typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Start_Reading )  
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
 OnTreeBeginHandler( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
-        TParserData* pd = static_cast<TParserData*>(privdata);
-        pd->errorcode = 0;
-        pd->error = NULL;
-        pd->curnode = NULL;
+
+    TParserData* pd = static_cast<TParserData*>(privdata);
+    pd->errorcode = 0;
+    pd->error = NULL;
+    pd->curnode = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 OnTreeEndHandler( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         /* currently not used */
@@ -154,8 +157,8 @@ OnTreeEndHandler( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 
 /*-------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-OnNodeBeginHandler( void* privdata       , 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
+OnNodeBeginHandler( void* privdata       ,
                     const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         TParserData* pd = static_cast<TParserData*>(privdata);
@@ -167,19 +170,19 @@ OnNodeBeginHandler( void* privdata       ,
                         pd->curnode = pd->curnode->AddChild( newchild );
                         return;
                 }
-                
+
                 /*
                 *      First node
                 */
                 pd->curnode = pd->root;
-                pd->curnode->SetName( nodename ); 
-        }                
+                pd->curnode->SetName( nodename );
+        }
 }
 
 /*-------------------------------------------------------------------------*/
-                    
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-OnNodeEndHandler( void* privdata       , 
+
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
+OnNodeEndHandler( void* privdata       ,
                   const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         TParserData* pd = static_cast<TParserData*>(privdata);
@@ -188,16 +191,16 @@ OnNodeEndHandler( void* privdata       ,
                 if ( pd->curnode )
                 {
                         pd->curnode = pd->curnode->GetParent();
-                }        
+                }
         }
 }
 
 /*-------------------------------------------------------------------------*/
-                  
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-OnNodeAttHandler( void* privdata       , 
-                  const char* nodename , 
-                  const char* attname  , 
+
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
+OnNodeAttHandler( void* privdata       ,
+                  const char* nodename ,
+                  const char* attname  ,
                   const char* attvalue ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         TParserData* pd = static_cast<TParserData*>(privdata);
@@ -206,23 +209,23 @@ OnNodeAttHandler( void* privdata       ,
                 if ( pd->curnode )
                 {
                         pd->curnode->SetAttribute( attname, attvalue );
-                }                        
+                }
         }
 }
 
 /*-------------------------------------------------------------------------*/
-                  
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 OnNodeChildrenBeginHandler( void* privdata       ,
                             const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         /* currently not used */
 }
-                                          
+
 /*-------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-OnNodeChildrenEndHandler( void* privdata       , 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
+OnNodeChildrenEndHandler( void* privdata       ,
                           const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         /* currently not used */
@@ -232,28 +235,28 @@ OnNodeChildrenEndHandler( void* privdata       ,
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
 OnParserErrorHandler( void* privdata          ,
-                      Int32 errorcode         , 
+                      Int32 errorcode         ,
                       const char* description ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         TParserData* pd = static_cast<TParserData*>(privdata);
         pd->error = description;
         pd->errorcode = errorcode;
-        
+
         GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "DStore Codec error: " + CString( description ) );
-}                      
+}
 
 /*-------------------------------------------------------------------------*/
 
 CDStoreCodecPlugin::CDStoreCodecPlugin( const CDStoreCodecPlugin& src )
 {GUCEF_TRACE;
-        
+
         /* dummy, don't use */
-}                   
+}
 
 /*-------------------------------------------------------------------------*/
 
 CDStoreCodecPlugin::CDStoreCodecPlugin( void )
-{GUCEF_TRACE;        
+{GUCEF_TRACE;
         /* dummy, don't use */
 }
 
@@ -264,12 +267,12 @@ CDStoreCodecPlugin::CDStoreCodecPlugin( const CString& pluginfile )
           _sohandle( NULL )         ,
           _pluginfile( pluginfile )
 {GUCEF_TRACE;
-        
+
         _ref._plugin = this;
-     
+
         _sohandle = LoadModuleDynamicly( pluginfile.C_String() );
-        if ( !_sohandle ) return;               
-        
+        if ( !_sohandle ) return;
+
         _fptable[ DSTOREPLUG_INIT ] = GetFunctionAddress( _sohandle         ,
                                                           "DSTOREPLUG_Init" ,
                                                           1*sizeof(void*)   );
@@ -284,7 +287,7 @@ CDStoreCodecPlugin::CDStoreCodecPlugin( const CString& pluginfile )
                                                                1*sizeof(void*)        );
         _fptable[ DSTOREPLUG_VERSION ] = GetFunctionAddress( _sohandle            ,
                                                              "DSTOREPLUG_Version" ,
-                                                             1*sizeof(void*)      );                                                               
+                                                             1*sizeof(void*)      );
         _fptable[ DSTOREPLUG_TYPE ] = GetFunctionAddress( _sohandle         ,
                                                           "DSTOREPLUG_Type" ,
                                                           1*sizeof(void*)   );
@@ -296,33 +299,33 @@ CDStoreCodecPlugin::CDStoreCodecPlugin( const CString& pluginfile )
                                                                      2*sizeof(void*)              );
         _fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] = GetFunctionAddress( _sohandle                    ,
                                                                      "DSTOREPLUG_Begin_Node_Store" ,
-                                                                     3*sizeof(void*)+8             );                                                                                                                                                                                                   
+                                                                     3*sizeof(void*)+8             );
         _fptable[ DSTOREPLUG_END_NODE_STORE ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_End_Node_Store" ,
                                                                     3*sizeof(void*)+8           );
         _fptable[ DSTOREPLUG_STORE_NODE_ATT ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_Store_Node_Att" ,
-                                                                    5*sizeof(void*)+12          );                                                                                                                                                                                                            
+                                                                    5*sizeof(void*)+12          );
         _fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ] = GetFunctionAddress( _sohandle                        ,
                                                                          "DSTOREPLUG_Begin_Node_Children" ,
                                                                          3*sizeof(void*)                  );
         _fptable[ DSTOREPLUG_END_NODE_CHILDREN ] = GetFunctionAddress( _sohandle                      ,
                                                                        "DSTOREPLUG_End_Node_Children" ,
-                                                                       3*sizeof(void*)                );                                                                         
+                                                                       3*sizeof(void*)                );
         _fptable[ DSTOREPLUG_SRC_FILE_OPEN ] = GetFunctionAddress( _sohandle                  ,
                                                                    "DSTOREPLUG_Src_File_Open" ,
                                                                    2*sizeof(void*)            );
         _fptable[ DSTOREPLUG_SRC_FILE_CLOSE ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_Src_File_Close" ,
-                                                                    2*sizeof(void*)                   ); 
+                                                                    2*sizeof(void*)                   );
         _fptable[ DSTOREPLUG_SET_READ_HANDLERS ] = GetFunctionAddress( _sohandle                      ,
                                                                        "DSTOREPLUG_Set_Read_Handlers" ,
                                                                        4*sizeof(void*)                );
         _fptable[ DSTOREPLUG_START_READING ] = GetFunctionAddress( _sohandle                  ,
                                                                    "DSTOREPLUG_Start_Reading" ,
-                                                                   2*sizeof(void*)            );                                                                                                                                                                                                                      
-                                                                                                                       
-        
+                                                                   2*sizeof(void*)            );
+
+
         if ( ( !_fptable[ DSTOREPLUG_INIT ] ) ||
              ( !_fptable[ DSTOREPLUG_SHUTDOWN ] ) ||
              ( !_fptable[ DSTOREPLUG_NAME ] ) ||
@@ -344,16 +347,16 @@ CDStoreCodecPlugin::CDStoreCodecPlugin( const CString& pluginfile )
                 UnloadModuleDynamicly( _sohandle );
                 memset( _fptable, NULL, sizeof(void*) * DSTOREPLUG_LASTFPTR );
                 _sohandle = NULL;
-                
+
                 GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Invalid codec module" );
-                return;        
+                return;
         }
-        
+
         /*
          *      Intialize the plugin module
          */
         ( (TDSTOREPLUGFPTR_Init) _fptable[ DSTOREPLUG_INIT ] )( &_plugdata );
-        
+
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "DStoreCodec plugin initialized\n" );
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Name: " + GetName() );
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Copyright/EULA: " + GetCopyright() );
@@ -362,7 +365,7 @@ CDStoreCodecPlugin::CDStoreCodecPlugin( const CString& pluginfile )
 /*-------------------------------------------------------------------------*/
 
 CDStoreCodecPlugin::~CDStoreCodecPlugin()
-{GUCEF_TRACE;        
+{GUCEF_TRACE;
         if ( _sohandle )
         {
                 ( (TDSTOREPLUGFPTR_Shutdown) _fptable[ DSTOREPLUG_SHUTDOWN ] )( &_plugdata );
@@ -379,11 +382,11 @@ CDStoreCodecPlugin::operator=( const CDStoreCodecPlugin& src )
         return *this;
 }
 
-/*-------------------------------------------------------------------------*/      
+/*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDStoreCodecPlugin::IsValid( void ) const
-{GUCEF_TRACE;       
+{GUCEF_TRACE;
         return _sohandle != NULL;
 }
 
@@ -395,74 +398,74 @@ CDStoreCodecPlugin::StoreNode( const CDataNode* n ,
 {GUCEF_TRACE;
         UInt32 count( n->GetAttCount() );
         const char* name( n->GetName().C_String() );
-        const CDataNode::TKeyValuePair* att;     
-        
+        const CDataNode::TKeyValuePair* att;
+
         /*
          *      Begin storing the node
          */
-        ((TDSTOREPLUGFPTR_Begin_Node_Store)_fptable[ DSTOREPLUG_BEGIN_NODE_STORE ])( &_plugdata       , 
-                                                                                     filedata         , 
-                                                                                     name             , 
-                                                                                     count            , 
+        ((TDSTOREPLUGFPTR_Begin_Node_Store)_fptable[ DSTOREPLUG_BEGIN_NODE_STORE ])( &_plugdata       ,
+                                                                                     filedata         ,
+                                                                                     name             ,
+                                                                                     count            ,
                                                                                      n->HasChildren() );
-                                                                                     
+
         /*
          *      Store all node attributes
-         */                
+         */
         for ( UInt32 i=0; i<count; ++i )
         {
                 att = n->GetAttribute( i );
-                ((TDSTOREPLUGFPTR_Store_Node_Att)_fptable[ DSTOREPLUG_STORE_NODE_ATT ])( &_plugdata             , 
-                                                                                         filedata               ,   
-                                                                                         name                   ,  
+                ((TDSTOREPLUGFPTR_Store_Node_Att)_fptable[ DSTOREPLUG_STORE_NODE_ATT ])( &_plugdata             ,
+                                                                                         filedata               ,
+                                                                                         name                   ,
                                                                                          count                  ,
                                                                                          i                      ,
-                                                                                         att->first.C_String()  , 
+                                                                                         att->first.C_String()  ,
                                                                                          att->second.C_String() ,
-                                                                                         n->HasChildren()       );        
+                                                                                         n->HasChildren()       );
         }
-        
+
         /*
          *      If the node has any children we will store them and their children ect.
          */
         if ( n->HasChildren() )
-        { 
-                ((TDSTOREPLUGFPTR_Begin_Node_Children)_fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ])( &_plugdata , 
+        {
+                ((TDSTOREPLUGFPTR_Begin_Node_Children)_fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ])( &_plugdata ,
                                                                                                    filedata   ,
                                                                                                    name       );
 
                 /*
                  *      Iterate the child node recursively storing each node level
-                 */                                                                                              
+                 */
                 CDataNode::const_iterator i = n->ConstBegin();
                 while ( i != n->ConstEnd() )
                 {
                         StoreNode( (*i), filedata );
                         ++i;
                 }
-                                                                                                              
-                ((TDSTOREPLUGFPTR_End_Node_Children)_fptable[ DSTOREPLUG_END_NODE_CHILDREN ])( &_plugdata , 
+
+                ((TDSTOREPLUGFPTR_End_Node_Children)_fptable[ DSTOREPLUG_END_NODE_CHILDREN ])( &_plugdata ,
                                                                                                filedata   ,
-                                                                                               name       );                                                                                                                        
+                                                                                               name       );
         }
-        
+
         /*
          *      We are finished with this node
          */
-        ((TDSTOREPLUGFPTR_End_Node_Store)_fptable[ DSTOREPLUG_END_NODE_STORE ])( &_plugdata       , 
-                                                                                 filedata         , 
+        ((TDSTOREPLUGFPTR_End_Node_Store)_fptable[ DSTOREPLUG_END_NODE_STORE ])( &_plugdata       ,
+                                                                                 filedata         ,
                                                                                  name             ,
                                                                                  count            ,
-                                                                                 n->HasChildren() );                                                                                                                                                                                               
+                                                                                 n->HasChildren() );
 }
 
-/*-------------------------------------------------------------------------*/ 
-             
-bool 
+/*-------------------------------------------------------------------------*/
+
+bool
 CDStoreCodecPlugin::StoreDataTree( const CDataNode* tree   ,
                                    const CString& filename )
 {GUCEF_TRACE;
-        
+
     CFileAccess access( filename, "wb" );
     if ( access.IsValid() )
     {
@@ -470,49 +473,49 @@ CDStoreCodecPlugin::StoreDataTree( const CDataNode* tree   ,
                               &access  );
     }
     return false;
-}                                   
+}
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDStoreCodecPlugin::StoreDataTree( const CDataNode* tree   ,
                                    CIOAccess* file         )
 {GUCEF_TRACE;
 
-    if ( !_sohandle ) 
-    { 
-            return false; 
+    if ( !_sohandle )
+    {
+            return false;
     }
-    
+
     /*
      *      Open the destination file
      */
-    void* filedata;       
-    if ( !((TDSTOREPLUGFPTR_Dest_File_Open)_fptable[ DSTOREPLUG_DEST_FILE_OPEN ])( &_plugdata, &filedata, file->CStyleAccess() ) ) 
-    {  
-            return false; 
+    void* filedata;
+    if ( !((TDSTOREPLUGFPTR_Dest_File_Open)_fptable[ DSTOREPLUG_DEST_FILE_OPEN ])( &_plugdata, &filedata, file->CStyleAccess() ) )
+    {
+            return false;
     }
-    
+
     /*
      *      Recursively traverse the tree storing each node and sub-triers as we go
      */
     StoreNode( tree      ,
-               &filedata ); 
-    
+               &filedata );
+
     /*
      *      We are finished,.. close the file
      */
     ((TDSTOREPLUGFPTR_Dest_File_Close)_fptable[ DSTOREPLUG_DEST_FILE_CLOSE ])( &_plugdata, &filedata );
     return true;
 }
-                                    
+
 /*-------------------------------------------------------------------------*/
 
 bool
 CDStoreCodecPlugin::BuildDataTree( CDataNode* treeroot     ,
                                    const CString& filename )
-                                   
-{GUCEF_TRACE;       
+
+{GUCEF_TRACE;
         CFileAccess access( filename );
         if ( access.IsValid() )
         {
@@ -522,86 +525,86 @@ CDStoreCodecPlugin::BuildDataTree( CDataNode* treeroot     ,
         return false;
 }
 
-/*-------------------------------------------------------------------------*/               
-                                                                   
-bool 
+/*-------------------------------------------------------------------------*/
+
+bool
 CDStoreCodecPlugin::BuildDataTree( CDataNode* treeroot ,
                                    CIOAccess* file     )
 {GUCEF_TRACE;
 
-        if ( !_sohandle ) 
-        {  
-                return false; 
+        if ( !_sohandle )
+        {
+                return false;
         }
-        
+
         /*
          *      Open the source file
          */
-        void* filedata;       
-        if ( !((TDSTOREPLUGFPTR_Src_File_Open)_fptable[ DSTOREPLUG_SRC_FILE_OPEN ])( &_plugdata, &filedata, file->CStyleAccess() ) ) 
-        { 
-                return false; 
+        void* filedata;
+        if ( !((TDSTOREPLUGFPTR_Src_File_Open)_fptable[ DSTOREPLUG_SRC_FILE_OPEN ])( &_plugdata, &filedata, file->CStyleAccess() ) )
+        {
+                return false;
         }
 
         /*
          *      Hook up our read event handlers
-         */      
-        void* privdata = new TParserData; 
-        static_cast<TParserData*>(privdata)->root = treeroot;             
+         */
+        void* privdata = new TParserData;
+        static_cast<TParserData*>(privdata)->root = treeroot;
         TReadHandlers rhandlers;
         rhandlers.OnTreeBegin = OnTreeBeginHandler;
         rhandlers.OnTreeEnd = OnTreeEndHandler;
         rhandlers.OnNodeBegin = OnNodeBeginHandler;
-        rhandlers.OnNodeEnd = OnNodeEndHandler;        
+        rhandlers.OnNodeEnd = OnNodeEndHandler;
         rhandlers.OnNodeAtt = OnNodeAttHandler;
         rhandlers.OnNodeChildrenBegin = OnNodeChildrenBeginHandler;
         rhandlers.OnNodeChildrenEnd = OnNodeChildrenEndHandler;
         rhandlers.OnError = OnParserErrorHandler;
-        ((TDSTOREPLUGFPTR_Set_Read_Handlers)_fptable[ DSTOREPLUG_SET_READ_HANDLERS ])( &_plugdata, &filedata, &rhandlers, privdata );                
-        
+        ((TDSTOREPLUGFPTR_Set_Read_Handlers)_fptable[ DSTOREPLUG_SET_READ_HANDLERS ])( &_plugdata, &filedata, &rhandlers, privdata );
+
         /*
          *      So far so good,.. delete whatever children the treeroot may alreay have
          *      and start reading the data. This should cause the handlers to be called when
          *      needed and they in turn construct our tree based on the events.
          */
-        treeroot->DelSubTree(); 
+        treeroot->DelSubTree();
         ((TDSTOREPLUGFPTR_Start_Reading)_fptable[ DSTOREPLUG_START_READING ])( &_plugdata, &filedata );
         delete static_cast<TParserData*>(privdata);
-        
+
         /*
          *      We are finished,.. close the file
          */
-        ((TDSTOREPLUGFPTR_Src_File_Close)_fptable[ DSTOREPLUG_SRC_FILE_CLOSE ])( &_plugdata, &filedata );        
+        ((TDSTOREPLUGFPTR_Src_File_Close)_fptable[ DSTOREPLUG_SRC_FILE_CLOSE ])( &_plugdata, &filedata );
         return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CString
 CDStoreCodecPlugin::GetTypeName( void ) const
 {GUCEF_TRACE;
         return ((TDSTOREPLUGFPTR_Type)_fptable[ DSTOREPLUG_TYPE ])( _plugdata );
 }
-        
-/*-------------------------------------------------------------------------*/        
-        
-CString 
+
+/*-------------------------------------------------------------------------*/
+
+CString
 CDStoreCodecPlugin::GetName( void ) const
 {GUCEF_TRACE;
-        return ((TDSTOREPLUGFPTR_Name)_fptable[ DSTOREPLUG_NAME ])( _plugdata );        
-}
-        
-/*-------------------------------------------------------------------------*/        
-        
-CString 
-CDStoreCodecPlugin::GetCopyright( void ) const
-{GUCEF_TRACE;
-        return ((TDSTOREPLUGFPTR_Copyright)_fptable[ DSTOREPLUG_COPYRIGHT ])( _plugdata );        
+        return ((TDSTOREPLUGFPTR_Name)_fptable[ DSTOREPLUG_NAME ])( _plugdata );
 }
 
 /*-------------------------------------------------------------------------*/
 
-const TVersion* 
+CString
+CDStoreCodecPlugin::GetCopyright( void ) const
+{GUCEF_TRACE;
+        return ((TDSTOREPLUGFPTR_Copyright)_fptable[ DSTOREPLUG_COPYRIGHT ])( _plugdata );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const TVersion*
 CDStoreCodecPlugin::GetVersion( void ) const
 {GUCEF_TRACE;
         return ((TDSTOREPLUGFPTR_Version)_fptable[ DSTOREPLUG_VERSION ])( _plugdata );
@@ -609,9 +612,9 @@ CDStoreCodecPlugin::GetVersion( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CDStoreCodecPlugin::SetPluginID( UInt32 pluginid )
-{GUCEF_TRACE;        
+{GUCEF_TRACE;
         _id = pluginid;
 }
 

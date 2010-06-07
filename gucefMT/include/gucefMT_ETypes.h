@@ -104,7 +104,7 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 /**
  *      Build-in data types as part of an enumeration set
  */
-typedef enum TBuildinDataType
+enum EBuildinDataType
 {
         DT_FLOAT32 = 1 ,
         DT_FLOAT64     ,
@@ -119,6 +119,7 @@ typedef enum TBuildinDataType
 
         DT_UNKNOWN
 };
+typedef enum EBuildinDataType TBuildinDataType;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -98,11 +98,11 @@ class CTBasicSharedPtr
      */
     CTBasicSharedPtr( void );
 
-    CTBasicSharedPtr( T* ptr                        ,
-                      TDestructor* objectDestructor );
+    CTBasicSharedPtr( T* ptr                                         ,
+                      CTDynamicDestructorBase< T >* objectDestructor );
 
-    CTBasicSharedPtr( T& ptr                        ,
-                      TDestructor* objectDestructor );
+    CTBasicSharedPtr( T& ptr                                         ,
+                      CTDynamicDestructorBase< T >* objectDestructor );
 
     // inlined copy constructor, has to be inlined in class definition for now due to VC6 limitations
     template< class Derived >
@@ -164,7 +164,7 @@ class CTBasicSharedPtr
             CTBasicSharedPtr< Derived > retVal;
             retVal.m_ptr = static_cast< Derived* >( m_ptr );
             retVal.m_refCounter = m_refCounter;
-            retVal.m_objectDestructor = reinterpret_cast< CTBasicSharedPtr< Derived >::TDestructor* >( m_objectDestructor );
+            retVal.m_objectDestructor = reinterpret_cast< CTDynamicDestructorBase< Derived >* >( m_objectDestructor );
 
             return retVal;
     }
