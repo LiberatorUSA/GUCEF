@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CTNUMERICID_H
-#define GUCEF_CORE_CTNUMERICID_H 
+#define GUCEF_CORE_CTNUMERICID_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,7 +47,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -60,42 +60,47 @@ template < typename intType >
 class CTNumericID
 {
     public:
-    
+
     CTNumericID( void );
-    
-    CTNumericID( CTNumericID& src );
-    
+
+    /**
+     *  Implementation of a copy constructor which takes a const
+     *  but in reallity the src will be altered to invalidate it
+     *  Only provided as const to allow for certain assignment operations
+     */
+    CTNumericID( const CTNumericID& src );
+
     CTNumericID( intType id                            ,
                  CINumericIDGeneratorBase* idGenerator );
-    
+
     ~CTNumericID();
-    
+
     CTNumericID& operator=( CTNumericID& src );
-    
+
     bool operator<( const CTNumericID& other ) const;
-    
+
     bool operator>( const CTNumericID& other ) const;
 
     bool operator==( const CTNumericID& other ) const;
-    
+
     bool operator!=( const CTNumericID& other ) const;
-    
+
     bool IsInitialized( void ) const;
-    
+
     /**
-     *  Conversion operator that allows the numeric ID object to 
+     *  Conversion operator that allows the numeric ID object to
      *  be used as if it where of type T.
      */
     operator intType() const;
-    
+
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( ENotInitialized );
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( EIllegalOperation );
-    
+
     private:
-    
+
     intType m_id;
     bool m_initialized;
-    CINumericIDGeneratorBase* m_idGenerator;    
+    CINumericIDGeneratorBase* m_idGenerator;
 };
 
 /*-------------------------------------------------------------------------//
@@ -117,16 +122,22 @@ CTNumericID< intType >::CTNumericID( void )
 /*-------------------------------------------------------------------------*/
 
 template < typename intType >
-CTNumericID< intType >::CTNumericID( CTNumericID& src )
-    : m_idGenerator( src.m_idGenerator ) ,
-      m_id( src.m_id )                   ,
-      m_initialized( src.m_initialized )
+CTNumericID< intType >::CTNumericID( const CTNumericID& src )
+    : m_idGenerator( NULL )  ,
+      m_id( 0 )              ,
+      m_initialized( false )
 {GUCEF_TRACE;
 
+    CTNumericID& nonConstSrc = const_cast< CTNumericID< intType >& >( src );
+
+    m_idGenerator = nonConstSrc.m_idGenerator;
+    m_id = nonConstSrc.m_id;
+    m_initialized = nonConstSrc.m_initialized;
+
     // Assume ownership of the ID and invalidate the source ID
-    src.m_initialized = false;
-    src.m_idGenerator = NULL;
-    src.m_id = 0;
+    nonConstSrc.m_initialized = false;
+    nonConstSrc.m_idGenerator = NULL;
+    nonConstSrc.m_id = 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -168,11 +179,11 @@ CTNumericID< intType >::operator=( CTNumericID& src )
             m_initialized = src.m_initialized;
             m_idGenerator = src.m_idGenerator;
             m_id = src.m_id;
-            
+
             // Assume ownership of the ID and invalidate the source ID
             src.m_initialized = false;
             src.m_idGenerator = NULL;
-            src.m_id = 0;        
+            src.m_id = 0;
         }
         else
         {
@@ -188,7 +199,7 @@ template < typename intType >
 bool
 CTNumericID< intType >::operator<( const CTNumericID& other ) const
 {GUCEF_TRACE;
-    
+
     if ( m_initialized )
     {
         return m_id < other.m_id;
@@ -202,7 +213,7 @@ template < typename intType >
 bool
 CTNumericID< intType >::operator>( const CTNumericID& other ) const
 {GUCEF_TRACE;
-    
+
     if ( m_initialized )
     {
         return m_id > other.m_id;
@@ -216,7 +227,7 @@ template < typename intType >
 bool
 CTNumericID< intType >::operator==( const CTNumericID& other ) const
 {GUCEF_TRACE;
-    
+
     if ( m_initialized )
     {
         return m_id == other.m_id;
@@ -225,7 +236,7 @@ CTNumericID< intType >::operator==( const CTNumericID& other ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template < typename intType >
 bool
 CTNumericID< intType >::operator!=( const CTNumericID& other ) const
