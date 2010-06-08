@@ -59,18 +59,17 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CSTDOStreamAdapterBuffer : public std::ostream::_Mysb
+class CSTDOStreamAdapterBuffer : public std::basic_streambuf< char, std::char_traits< char > >
 {
     public:
 
-    typedef std::ostream::_Mysb             base;
-    typedef base::int_type                  int_type;
+    typedef std::basic_streambuf< char, std::char_traits< char > > base;
 
     CSTDOStreamAdapterBuffer( CIOAccess& access );
 
     protected:
 
-    virtual int_type overflow( int_type value );
+    virtual char overflow( char value );
 
     private:
 
@@ -89,22 +88,24 @@ class CSTDOStreamAdapterBuffer : public std::ostream::_Mysb
 //-------------------------------------------------------------------------*/
 
 CSTDOStreamAdapterBuffer::CSTDOStreamAdapterBuffer( CIOAccess& access )
-        : base( std::_Noinit ) ,
+        : base()              ,
           m_access( &access )
 {GUCEF_TRACE;
-        assert( m_access );
+
+    assert( m_access );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CSTDOStreamAdapterBuffer::int_type
-CSTDOStreamAdapterBuffer::overflow( int_type value )
+char
+CSTDOStreamAdapterBuffer::overflow( char value )
 {GUCEF_TRACE;
-        // put a character to stream
-        if ( m_access->Write( &value, 1, 1 ) == 1 )
-        {
-        }
-        return traits_type::eof();
+
+    // put a character to stream
+    if ( m_access->Write( &value, 1, 1 ) == 1 )
+    {
+    }
+    return traits_type::eof();
 }
 
 /*-------------------------------------------------------------------------//
@@ -114,17 +115,19 @@ CSTDOStreamAdapterBuffer::overflow( int_type value )
 //-------------------------------------------------------------------------*/
 
 CSTDOStreamAdapter::CSTDOStreamAdapter( CIOAccess& access )
-        : std::ostream( std::_Noinit )                     ,
-          m_buffer( new CSTDOStreamAdapterBuffer( access ) )
+    : std::ostream( 0 )                                   ,
+      m_buffer( new CSTDOStreamAdapterBuffer( access ) )
 {GUCEF_TRACE;
-        std::ostream::_Myios::init( m_buffer, false );
+
+    std::ostream::init( m_buffer );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CSTDOStreamAdapter::~CSTDOStreamAdapter()
 {GUCEF_TRACE;
-        delete m_buffer;
+    
+    delete m_buffer;
 }
 
 /*-------------------------------------------------------------------------//
