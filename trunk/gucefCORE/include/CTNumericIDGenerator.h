@@ -137,7 +137,8 @@ CTNumericIDGenerator< intType >::GenerateID( const bool releaseIDOnDestruction /
     if ( m_lastID+1 != m_maxValue )
     {
         ++m_lastID;
-        return TNumericID( m_lastID, releaseIDOnDestruction ? this : NULL );
+        typename CTNumericIDGenerator< intType >::TNumericID id( m_lastID, releaseIDOnDestruction ? this : NULL );
+        return id;
     }
 
     // We ran out of numbers we can dish out in a fast manner.
@@ -147,7 +148,8 @@ CTNumericIDGenerator< intType >::GenerateID( const bool releaseIDOnDestruction /
     {
         if ( m_availableIDs.find( idValue ) != m_availableIDs.end() )
         {
-            return TNumericID( idValue, releaseIDOnDestruction ? this : NULL );
+            typename CTNumericIDGenerator< intType >::TNumericID id( idValue, releaseIDOnDestruction ? this : NULL );
+            return id;
         }
         ++idValue;
     }
