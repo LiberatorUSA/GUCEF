@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -39,12 +39,12 @@
 #ifdef GUCEF_MSWIN_BUILD
   #include <windows.h>		/* WIN32 API */
   #undef min
-  #undef max  
+  #undef max
   /* #include <dir.h>: obsolete *//* needed for MAXFILE define */
   #include <io.h>                 /* Dir itteration: findfirst ect. */
   #include <direct.h>             /* dir tools */
   #define MAX_DIR_LENGTH MAX_PATH
-#elif GUCEF_LINUX_BUILD
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
   #include <dirent.h>             /* needed for dirent strcture */
   #include <unistd.h>             /* POSIX utilities */
   #include <limits.h>             /* Linux OS limits */
@@ -58,7 +58,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -158,7 +158,7 @@ DI_First_Dir_Entry( const char *path )
          *	Successfully obtained first entry so we return the struct
          *	pointer
          */
-        return data; 
+        return data;
 
         #else
         #ifdef GUCEF_LINUX_BUILD
@@ -205,7 +205,7 @@ DI_First_Dir_Entry( const char *path )
                          *	We found either a regular file or a directory
                          *	entry which is now our current entry.
                          */
-                        return data; 
+                        return data;
                 }
 
                 /*
@@ -229,7 +229,7 @@ DI_First_Dir_Entry( const char *path )
          */
         return NULL;
 
-        #endif /* GUCEF_LINUX_BUILD */        
+        #endif /* GUCEF_LINUX_BUILD */
         #endif /* WIN32_BUILD */
 }
 
@@ -410,7 +410,7 @@ DI_Name( struct SDI_Data *data )
          */
 
         #endif /* GUCEF_LINUX_BUILD ? */
-        #endif /* WIN32_BUILD ? */         
+        #endif /* WIN32_BUILD ? */
 }
 
 /*-------------------------------------------------------------------------*/
@@ -441,7 +441,7 @@ DI_Cleanup( struct SDI_Data *data )
          */
 
         #endif /* GUCEF_LINUX_BUILD ? */
-        #endif /* WIN32_BUILD ? */           
+        #endif /* WIN32_BUILD ? */
 }
 
 /*-------------------------------------------------------------------------*/
@@ -458,7 +458,7 @@ Get_Current_Dir( char* dest_buffer, UInt32 buf_length )
         return _getcwd( dest_buffer, buf_length );
         #endif /* WIN32_BUILD */
         #ifdef GUCEF_LINUX_BUILD
-        
+
         /*
          *	This call can actually fail: if another process has succeeded
          *	in removing the current directory of a process
@@ -511,7 +511,7 @@ create_directory( const char *new_dir, UInt32 offset )
     if ( idx > 0 )
     {
         char* dir = NULL;
-        
+
         /*
          *      Check for drive letter.
          */
@@ -543,7 +543,7 @@ create_directory( const char *new_dir, UInt32 offset )
             }
         }
         free( dir );
-        
+
         return create_directory( new_dir, idx+1 );
     }
     else
@@ -650,7 +650,7 @@ Remove_Directory( const char *dir  ,
         /*
          *      Attempt to remove the directory itself. We can call the WIN32
          *      function directly here because it won't delete any files in the
-         *      dir. 
+         *      dir.
          */
         return RemoveDirectory( dir );
         #else
@@ -676,12 +676,12 @@ UInt32
 Module_Path( char *dest, UInt32 dest_size )
 {
         #ifdef GUCEF_MSWIN_BUILD
-        return !GetModuleFileName( NULL, dest, dest_size ); 
-        #else 
+        return !GetModuleFileName( NULL, dest, dest_size );
+        #else
         #ifdef GUCEF_LINUX_BUILD
         #endif /* WIN32_BUILD ? */
         #endif /* GUCEF_LINUX_BUILD ? */
-} 
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -747,7 +747,7 @@ Copy_File( const char *dst, const char *src )
 
 /**
  *	moves a file from one location to the other
- *	If successfull true (1) is returned, otherwise false (0). 
+ *	If successfull true (1) is returned, otherwise false (0).
  */
 UInt32
 Move_File( const char *dst, const char *src )
@@ -838,42 +838,40 @@ Execute_Program( const char *filename ,
 UInt32
 Filesize( const char *filename )
 {
-        if ( filename )
+    if ( filename )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+        UInt32 lfilesize;
+        WIN32_FIND_DATA FileInfo;
+        HANDLE hFind;
+        hFind = FindFirstFile( filename, &FileInfo );
+        if ( hFind == INVALID_HANDLE_VALUE )
         {
-                #ifdef GUCEF_MSWIN_BUILD
-                UInt32 lfilesize;
-                WIN32_FIND_DATA FileInfo;
-                HANDLE hFind;
-                hFind = FindFirstFile( filename, &FileInfo );
-                if ( hFind == INVALID_HANDLE_VALUE )
-                {
-                        lfilesize = 0;
-                }
-                else
-                {
-                        lfilesize = FileInfo.nFileSizeLow;
-                }
-                FindClose( hFind );
-                return lfilesize;
-                #else
-                #ifdef GUCEF_LINUX_BUILD
-                struct _stat buf;
-                UInt32 filesize;
-                int result;
-                result = _stat( filename, &buf );
-                if ( result == 0 ) return buf.st_size;
-                return 0;
-                #else
-                UInt32 filesize = 0;
-                FILE *fptr = fopen( filename, "rb" );
-                fseek( fptr, 0, SEEK_END );
-                filesize = ftell( fptr );
-                fclose( fptr );
-                return filesize;
-                #endif /* WIN32_BUILD ? */
-                #endif /* GUCEF_LINUX_BUILD ? */                
+            lfilesize = 0;
         }
+        else
+        {
+            lfilesize = FileInfo.nFileSizeLow;
+        }
+        FindClose( hFind );
+        return lfilesize;
+        #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+        struct stat buf;
+        UInt32 filesize;
+        int result;
+        result = _stat( filename, &buf );
+        if ( result == 0 ) return buf.st_size;
         return 0;
+        #else
+        UInt32 filesize = 0;
+        FILE *fptr = fopen( filename, "rb" );
+        fseek( fptr, 0, SEEK_END );
+        filesize = ftell( fptr );
+        fclose( fptr );
+        return filesize;
+        #endif
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -888,33 +886,33 @@ File_Exists( const char *filename )
         if ( filename )
         {
                 #ifdef GUCEF_MSWIN_BUILD
-                                
+
                 WIN32_FIND_DATA FileInfo;
                 HANDLE hFind;
                 hFind = FindFirstFile( filename, &FileInfo );
                 if ( hFind != INVALID_HANDLE_VALUE )
                 {
                         FindClose( hFind );
-                        
-                        /* make sure we found a file not a directory */                        
+
+                        /* make sure we found a file not a directory */
                         return !( FileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY );
                 }
-                return 0;                        
-                
-                
+                return 0;
+
+
                 #else
                 #ifdef GUCEF_LINUX_BUILD
-                struct _stat buf;
+                struct stat buf;
                 if ( _stat( filename, &buf ) == -1 )
                 return errno == ENOENT;
-                
-                                
+
+
                 #else
                 FILE *fptr = fopen( filename, "rb" );
                 fclose( fptr );
                 return fptr > 0;
                 #endif /* WIN32_BUILD ? */
-                #endif /* GUCEF_LINUX_BUILD ? */                
+                #endif /* GUCEF_LINUX_BUILD ? */
         }
         return 0;
 }
@@ -933,21 +931,21 @@ GetUpCount( const char* pathstr ,
     const char* cp = pathstr;
     Int32 i, max = pstrlen - 7;
     UInt32 count=0;
-    
+
     *offset = 0;
     for ( i=0; i<max; ++i )
     {
         if ( memcmp( cp, "$UPDIR$", 7 ) == 0 )
-        {                        
+        {
             ++count;
-            *offset = i+7;        
+            *offset = i+7;
         }
         ++cp;
     }
     return count;
 }
 
-/*-------------------------------------------------------------------------*/            
+/*-------------------------------------------------------------------------*/
 
 /**
  *      Writes a relative path into dest build from pathstr.
@@ -955,13 +953,13 @@ GetUpCount( const char* pathstr ,
  *        $CURWORKDIR$ : this will be replaced with the current working dir.
  *        $MODULEDIR$ : this will be replaced with the module dir.
  *      The following tag can be placed after one of the above mentioned tags
- *        $UPDIR$ : go up one dir 
+ *        $UPDIR$ : go up one dir
  *      Dir seperator chars will be forced to that of the the target O/S.
  *      It is assumed dest is large enough to store the data.
  *      The function returns the total number of bytes written to dest.
  */
 UInt32
-Relative_Path( const char *pathstr ,               
+Relative_Path( const char *pathstr ,
                char *dest          ,
                UInt32 buffersize   )
 {
@@ -969,9 +967,9 @@ Relative_Path( const char *pathstr ,
 
         UInt32 tagfound = 0;
         char tmpbuffer[ MAX_DIR_LENGTH ];
-        const char* addition = "\0"; 
+        const char* addition = "\0";
         UInt32 i, upOffset=0, upcount=0, pstrlen = (UInt32) strlen( pathstr );
-        
+
         /*
          *      Check for the root dir tags that are to be prefixed
          */
@@ -979,39 +977,39 @@ Relative_Path( const char *pathstr ,
         {
                 if ( memcmp( pathstr, "$MODULEDIR$", 11 ) == 0 )
                 {
-                        Module_Path( tmpbuffer      ,  
+                        Module_Path( tmpbuffer      ,
                                      MAX_DIR_LENGTH );
-                        Strip_Filename( tmpbuffer );             
+                        Strip_Filename( tmpbuffer );
                         upcount = GetUpCount( pathstr+11 ,
                                               pstrlen-11 ,
-                                              &upOffset  );                                              
+                                              &upOffset  );
                         addition = pathstr+11+upOffset;
                         tagfound = 1;
                 }
                 else
                 if ( pstrlen >= 12 )
                 {
-                        if ( memcmp( pathstr, "$CURWORKDIR$", 12 ) == 0 )        
+                        if ( memcmp( pathstr, "$CURWORKDIR$", 12 ) == 0 )
                         {
-                                Get_Current_Dir( tmpbuffer      ,  
+                                Get_Current_Dir( tmpbuffer      ,
                                                  MAX_DIR_LENGTH );
                                 upcount = GetUpCount( pathstr+12 ,
                                                       pstrlen-12 ,
                                                       &upOffset  );
-                                addition = pathstr+12+upOffset; 
-                                tagfound = 1;                    
+                                addition = pathstr+12+upOffset;
+                                tagfound = 1;
                         }
                 }
         }
-        
+
         if ( !tagfound )
         {
                 UInt32 max = pstrlen+1;
                 if ( max > buffersize ) max = buffersize;
                 memcpy( dest, pathstr, max );
-                return max;           
+                return max;
         }
-                        
+
         /*
          *      Apply the $UPDIR$ tags
          */
@@ -1019,22 +1017,22 @@ Relative_Path( const char *pathstr ,
         {
                 Strip_Last_Subdir( tmpbuffer );
         }
-       
-        
+
+
         /*
          *      Combine the parsed tag section with the rest of the path
          */
         Append_To_Path( tmpbuffer ,
-                        addition  );                                
+                        addition  );
 
         /*
          *      Copy into the buffer provided by the user
          */
-        i = (UInt32) strlen(tmpbuffer)+1;         
+        i = (UInt32) strlen(tmpbuffer)+1;
         memcpy( dest      ,
                 tmpbuffer ,
                 i         );
-                
+
         return i;
 }
 
@@ -1056,7 +1054,7 @@ Is_Path_Valid( const char* path )
 
 #ifdef GUCEF_MSWIN_BUILD
 
-time_t 
+time_t
 FileTimeToUnixTime( const FILETIME* ft )
 {
 	/* the reverse of http://support.microsoft.com/kb/167296/en-us */
@@ -1075,26 +1073,26 @@ time_t
 Get_Modification_Time( const char* path )
 {
     #ifdef GUCEF_MSWIN_BUILD
-    
+
     WIN32_FILE_ATTRIBUTE_DATA data;
     if ( 0 != GetFileAttributesEx( path, GetFileExInfoStandard, &data ) )
     {
         return FileTimeToUnixTime( &data.ftLastWriteTime );
     }
     return -1;
-    
-    #else
-    
-    struct _stat buf;
 
-    /* Get File Statistics for stat.c. */ 
+    #else
+
+    struct stat buf;
+
+    /* Get File Statistics for stat.c. */
     if( _stat( path, &buf ) == 0 )
     {
-        /* get the date/time last modified */ 
+        /* get the date/time last modified */
         return buf.st_mtime;
     }
     return -1;
-    
+
     #endif
 }
 

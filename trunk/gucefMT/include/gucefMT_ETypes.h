@@ -106,18 +106,18 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
  */
 enum EBuildinDataType
 {
-        DT_FLOAT32 = 1 ,
-        DT_FLOAT64     ,
-        DT_UINT8       ,
-        DT_INT8        ,
-        DT_UINT16      ,
-        DT_INT16       ,
-        DT_UINT32      ,
-        DT_INT32       ,
-        DT_UINT64      ,
-        DT_INT64       ,
+        DATATYPE_FLOAT32 = 1 ,
+        DATATYPE_FLOAT64     ,
+        DATATYPE_UINT8       ,
+        DATATYPE_INT8        ,
+        DATATYPE_UINT16      ,
+        DATATYPE_INT16       ,
+        DATATYPE_UINT32      ,
+        DATATYPE_INT32       ,
+        DATATYPE_UINT64      ,
+        DATATYPE_INT64       ,
 
-        DT_UNKNOWN
+        DATATYPE_UNKNOWN
 };
 typedef enum EBuildinDataType TBuildinDataType;
 

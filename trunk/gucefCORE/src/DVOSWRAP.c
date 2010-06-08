@@ -25,6 +25,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"       /* build configuration */
@@ -51,7 +52,7 @@
 #define GUCEF_CORE_DVSTRUTILS_H
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
-#include "dvoswrap.h"               /* O/S Wrapping function prototypes*/
+#include "DVOSWRAP.h"               /* O/S Wrapping function prototypes*/
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
@@ -153,10 +154,11 @@ GetFunctionAddress( void *sohandle           ,
         fptr.funcPtr = 0;
         return fptr;
     }
-    
+
     #if defined( GUCEF_LINUX_BUILD )
-    return fptr.objPtr = dlsym( sohandle     ,
-                                functionname );
+    fptr.objPtr = dlsym( sohandle     ,
+                         functionname );
+    return fptr;
     #elif defined( GUCEF_MSWIN_BUILD )
 
     /*
@@ -270,76 +272,76 @@ GetCurrentHWND( void )
 UInt32
 StringToClipboard( const char *str )
 {
-        if ( str )
+    #ifdef GUCEF_MSWIN_BUILD
+
+    if ( str )
+    {
+        UInt32 strlength = (UInt32) strlen( str );
+
+        HWND whandle = GetCurrentHWND();
+        UInt32 success = OSWRAP_FALSE;
+        HGLOBAL hglbcopy;
+        LPTSTR lptstrcopy;
+
+        /*
+         *      Open the clipboard with the current task as the owner
+         */
+        if ( !OpenClipboard( whandle ) ) return OSWRAP_FALSE;
+
+        /*
+         *      Try to empty the clipboard so that we can get ownership of the
+         *      clipboard which is needed for placing data on it.
+         */
+        EmptyClipboard();
+
+        /*
+         *      Allocate global MS windows managed memory for the text
+         */
+        hglbcopy = GlobalAlloc( GMEM_MOVEABLE                 ,
+                                (strlength+1) * sizeof(TCHAR) );
+        if ( hglbcopy == NULL )
         {
-                UInt32 strlength = (UInt32) strlen( str );
-
-                #ifdef GUCEF_MSWIN_BUILD
-
-                HWND whandle = GetCurrentHWND();
-                UInt32 success = OSWRAP_FALSE;
-                HGLOBAL hglbcopy;
-                LPTSTR lptstrcopy;
-
-                /*
-                 *      Open the clipboard with the current task as the owner
-                 */
-                if ( !OpenClipboard( whandle ) ) return OSWRAP_FALSE;
-
-                /*
-                 *      Try to empty the clipboard so that we can get ownership of the
-                 *      clipboard which is needed for placing data on it.
-                 */
-                EmptyClipboard();
-
-                /*
-                 *      Allocate global MS windows managed memory for the text
-                 */
-                hglbcopy = GlobalAlloc( GMEM_MOVEABLE                 ,
-                                        (strlength+1) * sizeof(TCHAR) );
-                if ( hglbcopy == NULL )
-                {
-                        CloseClipboard();
-                        return OSWRAP_FALSE;
-                }
-
-                /*
-                 *      Now we have to lock the memory we just allocated so that
-                 *      windows keeps it's paws off of it. After that we can copy
-                 *      our text into the global memory buffer
-                 */
-                lptstrcopy = GlobalLock( hglbcopy );
-                memcpy( lptstrcopy, str, strlength+1 );
-                GlobalUnlock( hglbcopy );
-
-                /*
-                 *      We now attempt to set the string in the clipboard.
-                 *      This will fail if the handle we used in OpenClipboard() is
-                 *      NULL or incorrect.
-                 */
-                if ( SetClipboardData( CF_TEXT, hglbcopy ) )
-                {
-                        success = OSWRAP_TRUE;
-                }
-                else
-                {
-                        success = OSWRAP_FALSE;
-                }
-
-                /*
-                 *      Close the clipboard so that other tasks have access again
-                 */
                 CloseClipboard();
-
-                return success;
+                return OSWRAP_FALSE;
         }
-        return OSWRAP_FALSE;
 
-        #else /* GUCEF_MSWIN_BUILD */
+        /*
+         *      Now we have to lock the memory we just allocated so that
+         *      windows keeps it's paws off of it. After that we can copy
+         *      our text into the global memory buffer
+         */
+        lptstrcopy = GlobalLock( hglbcopy );
+        memcpy( lptstrcopy, str, strlength+1 );
+        GlobalUnlock( hglbcopy );
 
-        return OSWRAP_FALSE;
+        /*
+         *      We now attempt to set the string in the clipboard.
+         *      This will fail if the handle we used in OpenClipboard() is
+         *      NULL or incorrect.
+         */
+        if ( SetClipboardData( CF_TEXT, hglbcopy ) )
+        {
+            success = OSWRAP_TRUE;
+        }
+        else
+        {
+            success = OSWRAP_FALSE;
+        }
 
-        #endif /* OS WRAPPING */
+        /*
+         *      Close the clipboard so that other tasks have access again
+         */
+        CloseClipboard();
+
+        return success;
+    }
+    return OSWRAP_FALSE;
+
+    #else /* GUCEF_MSWIN_BUILD */
+
+    return OSWRAP_FALSE;
+
+    #endif /* OS WRAPPING */
 }
 
 /*--------------------------------------------------------------------------*/
@@ -442,7 +444,7 @@ GUCEFSetEnv( const char* key   ,
 
         #else
 
-        return setenv( key, value ) == 0;
+        return setenv( key, value, 1 ) == 0;
 
         #endif
 }
@@ -491,6 +493,7 @@ GetCPUCountPerPackage( void )
     UInt32 coreCount = 1;
 
     /* Initialize to 1 to support older processors. */
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
     _asm
     {
         mov		eax, 1
@@ -509,6 +512,8 @@ GetCPUCountPerPackage( void )
         Unp:
         /* coreCount will contain 1. */
     }
+    #endif
+
     return coreCount;
 }
 
