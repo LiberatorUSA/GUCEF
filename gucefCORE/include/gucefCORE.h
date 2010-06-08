@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*
@@ -65,7 +65,7 @@
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
 #ifndef GUCEF_CORE_DVOSWRAP_H
-#include "dvoswrap.h"
+#include "DVOSWRAP.h"
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
@@ -137,7 +137,7 @@
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h" 
+#include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
@@ -229,7 +229,7 @@
 #ifndef GUCEF_CORE_CICLONEABLE_H
 #include "CICloneAble.h"
 #define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */ 
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
 #ifndef GUCEF_CORE_CPLUGINCONTROL_H
 #include "CPluginControl.h"
@@ -257,17 +257,17 @@
 #endif /* GUCEF_CORE_CONFIGSTORE_H ? */
 
 #ifndef GUCEF_CORE_CDSTORECODEC_H
-#include "CDStoreCodec.h" 
+#include "CDStoreCodec.h"
 #define GUCEF_CORE_CDSTORECODEC_H
 #endif /* GUCEF_CORE_CDSTORECODEC_H */
 
 #ifndef GUCEF_CORE_CDSTORECODECPLUGIN_H
-#include "CDStoreCodecPlugin.h" 
+#include "CDStoreCodecPlugin.h"
 #define GUCEF_CORE_CDSTORECODECPLUGIN_H
 #endif /* GUCEF_CORE_CDSTORECODECPLUGIN_H */
 
 #ifndef GUCEF_CORE_CDSTORECODECPLUGINREF_H
-#include "CDStoreCodecPluginRef.h" 
+#include "CDStoreCodecPluginRef.h"
 #define GUCEF_CORE_CDSTORECODECPLUGINREF_H
 #endif /* GUCEF_CORE_CDSTORECODECPLUGINREF_H */
 
@@ -277,7 +277,7 @@
 #endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
 
 #ifndef GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
-#include "CDStoreCodecPluginManager.h" 
+#include "CDStoreCodecPluginManager.h"
 #define GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
 #endif /* GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H ? */
 
@@ -336,7 +336,7 @@
 #define GUCEF_CORE_CTCLONEABLEOBJ_H
 #endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
 
-#ifndef GUCEF_CORE_CTBASICSHAREDPTR_H 
+#ifndef GUCEF_CORE_CTBASICSHAREDPTR_H
 #include "CTBasicSharedPtr.h"
 #define GUCEF_CORE_CTBASICSHAREDPTR_H
 #endif /* GUCEF_CORE_CTBASICSHAREDPTR_H ? */

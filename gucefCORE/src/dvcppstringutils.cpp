@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,10 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <stdio.h>
+
 #ifndef GUCEF_CORE_DVSTRUTILS_H
 #include "dvstrutils.h"         /* C string utils */
 #define GUCEF_CORE_DVSTRUTILS_H
-#endif /* GUCEF_CORE_DVSTRUTILS_H ? */ 
+#endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
 #ifndef GUCEF_CORE_DVMD5UTILS_H
 #include "dvmd5utils.h"
@@ -43,12 +45,12 @@
   #define MAX_DIR_LENGTH MAX_PATH
   #define DIRSEPCHAROPPOSITE '/'
   #define DIRSEPCHAR '\\'
-#elif GUCEF_LINUX_BUILD
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
   #include <unistd.h>             /* POSIX utilities */
   #include <limits.h>             /* Linux OS limits */
   #define MAX_DIR_LENGTH PATH_MAX
   #define DIRSEPCHAROPPOSITE '\\'
-  #define DIRSEPCHAR '/'  
+  #define DIRSEPCHAR '/'
 #else
   #error Unsupported OS
 #endif
@@ -61,7 +63,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -84,7 +86,7 @@ ModuleDir( void )
     char buffer[ MAX_DIR_LENGTH ];
     Module_Path( buffer, MAX_DIR_LENGTH );
     Strip_Filename( buffer );
-    return buffer;   
+    return buffer;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -94,25 +96,25 @@ CurrentWorkingDir( void )
 {
     char buffer[ MAX_DIR_LENGTH ];
     Get_Current_Dir( buffer, MAX_DIR_LENGTH );
-    return buffer;   
+    return buffer;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CString
 RelativePath( const CString& relpath )
-{GUCEF_TRACE;        
-        
+{GUCEF_TRACE;
+
     CString resultStr;
-   
+
     Int32 idx = relpath.HasSubstr( "$MODULEDIR$", true );
     if ( idx > -1 )
     {
         CString moduleDir = ModuleDir();
         CString prefix = relpath.SubstrToIndex( idx, true );
         CString postfix = relpath.CutChars( idx+11, true );
-        
-        resultStr = prefix; 
+
+        resultStr = prefix;
         AppendToPath( resultStr, moduleDir );
         AppendToPath( resultStr, postfix );
     }
@@ -124,8 +126,8 @@ RelativePath( const CString& relpath )
             CString workingDir = CurrentWorkingDir();
             CString prefix = relpath.SubstrToIndex( idx, true );
             CString postfix = relpath.CutChars( idx+12, true );
-            
-            resultStr = prefix; 
+
+            resultStr = prefix;
             AppendToPath( resultStr, workingDir );
             AppendToPath( resultStr, postfix );
         }
@@ -134,28 +136,28 @@ RelativePath( const CString& relpath )
             resultStr = relpath;
         }
     }
-     
+
     // Now the up dir segments,...
     // First make sure we use the same seperator char in both string across
     // the entire strings uniformly. This simplyfies the algoritm
     resultStr = resultStr.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR );
-    
+
     // Now make sure there are no multiple repeating seperators
     // Not that unlikely if the string was human generated
-    resultStr = resultStr.CompactRepeatingChar( DIRSEPCHAR ); 
-    
+    resultStr = resultStr.CompactRepeatingChar( DIRSEPCHAR );
+
     // Now keep chopping away up dir segments until we run out of segments
-    // that meet our criterea. 
+    // that meet our criterea.
     CString upDirSeg = CString( ".." ) + DIRSEPCHAR;
     Int32 upDirIdx = resultStr.HasSubstr( upDirSeg, false );
     while ( upDirIdx > 0 )
     {
         // Divide the path into 2 segments at the location of the updir segment
         CString prefix( resultStr.C_String(), upDirIdx );
-        
+
         // get the dir segment before the updir segment and check if it is
         // another updir segment
-        CString lastSubdir = LastSubDir( prefix );        
+        CString lastSubdir = LastSubDir( prefix );
         if ( lastSubdir != upDirSeg )
         {
             // The segment before the updir segment is a regular dir
@@ -183,13 +185,13 @@ AppendToPath( CString& path           ,
 {GUCEF_TRACE;
 
     if ( addition.Length() == 0 ) return;
-    
+
     if ( path.Length() == 0 )
     {
         path = addition;
         return;
-    }    
-    
+    }
+
     char pathLastChar = path[ path.Length()-1 ];
     if ( pathLastChar == '/' || pathLastChar == '\\' )
     {
@@ -207,9 +209,9 @@ AppendToPath( CString& path           ,
         {
             path += addition;
             return;
-        }        
+        }
         path += DIRSEPCHAR + addition;
-    }                               
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -247,7 +249,7 @@ VersionToString( const TVersion& version )
 
     char verstr[ 25 ];
     sprintf( verstr, "%d.%d.%d.%d", version.major, version.minor, version.patch, version.release );
-    return verstr;        
+    return verstr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -255,7 +257,7 @@ VersionToString( const TVersion& version )
 GUCEFCORE_EXPORT_CPP CString
 BoolToString( const bool value )
 {GUCEF_TRACE;
-    
+
     return Boolint_To_String( value ? 1 : 0 );
 }
 
@@ -280,8 +282,8 @@ StringToInt64( const CString& str )
     #else
     sscanf( str.C_String(), "%d", &value );
     #endif
-    
-    return value;        
+
+    return value;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -296,7 +298,7 @@ Int64ToString( const Int64 value )
     #else
     sprintf( intBuffer, "%d", value );
     #endif
-    
+
     return CString( intBuffer );
 }
 
@@ -312,8 +314,8 @@ StringToUInt64( const CString& str )
     #else
     sscanf( str.C_String(), "%u", &value );
     #endif
-    
-    return value;        
+
+    return value;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -328,7 +330,7 @@ UInt64ToString( const UInt64 value )
     #else
     sprintf( intBuffer, "%u", value );
     #endif
-    
+
     return CString( intBuffer );
 }
 
@@ -340,7 +342,7 @@ StringToInt32( const CString& str )
 
     Int32 value;
     sscanf( str.C_String(), "%d", &value );
-    return value;        
+    return value;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -450,7 +452,7 @@ PointerToString( const void* value )
 
     char addrBuffer[ 12 ];
     sprintf( addrBuffer, "%p", value );
-    return CString( addrBuffer );    
+    return CString( addrBuffer );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -458,12 +460,12 @@ PointerToString( const void* value )
 CString
 StringToMD5String( const CString& str )
 {GUCEF_TRACE;
-        UInt8 md5digest[ 16 ];        
-        
+        UInt8 md5digest[ 16 ];
+
         md5fromstring( str.C_String() ,
                        md5digest      );
-        
-        return MD5ToString( md5digest );                               
+
+        return MD5ToString( md5digest );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -472,13 +474,13 @@ GUCEFCORE_EXPORT_CPP CString
 MD5ToString( const UInt8 md5Digest[ 16 ] )
 {
         char md5string[ 48 ];
-        
+
         md5tostring( md5Digest ,
                      md5string );
-                     
+
         CString md5str;
         md5str.Set( md5string, 48 );
-        
+
         return md5str;
 }
 
@@ -489,8 +491,8 @@ FloatToString( const float value )
 {GUCEF_TRACE;
         char floatChars[ 16 ];
         sprintf( floatChars, "%f", value );
-        
-        return floatChars; 
+
+        return floatChars;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -500,8 +502,8 @@ DoubleToString( const double value )
 {GUCEF_TRACE;
         char doubleChars[ 16 ];
         sprintf( doubleChars, "%f", value );
-        
-        return doubleChars; 
+
+        return doubleChars;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -531,20 +533,20 @@ StripLastSubDir( const CString& completePath )
 
     if ( 0 != completePath.Length() )
     {
-        CString path = completePath.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR );        
+        CString path = completePath.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR );
         if ( path[ path.Length()-1 ] == DIRSEPCHAR )
         {
             path = path.CutChars( 1, false );
-        }        
-        
+        }
+
         CString remnamt = path.SubstrToChar( DIRSEPCHAR, false );
         if ( remnamt.Length() > 0 )
         {
             return path.CutChars( remnamt.Length()+1, false );
-        }        
+        }
         return completePath;
     }
-    return CString();   
+    return CString();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -584,7 +586,7 @@ bool
 IsPathValid( const CString& path  )
 {GUCEF_TRACE;
 
-    return 0 != Is_Path_Valid( path.C_String() ); 
+    return 0 != Is_Path_Valid( path.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -599,7 +601,7 @@ ExtractFileExtention( const CString& path )
 /*-------------------------------------------------------------------------*/
 
 bool
-IsFileInDir( const CString& dirPath  , 
+IsFileInDir( const CString& dirPath  ,
              const CString& filePath )
 {GUCEF_TRACE;
 
@@ -629,10 +631,10 @@ IsFileInDir( const CString& dirPath  ,
 /*-------------------------------------------------------------------------*/
 
 bool
-WriteStringAsTextFile( const CString& filePath    , 
+WriteStringAsTextFile( const CString& filePath    ,
                        const CString& fileContent )
 {GUCEF_TRACE;
-    
+
     FILE* fptr = fopen( filePath.C_String(), "wb" );
     if ( NULL != fptr )
     {
@@ -640,10 +642,10 @@ WriteStringAsTextFile( const CString& filePath    ,
         // Turn everything into "\n" in case of a mixed EOL char string
         CString content = fileContent.ReplaceSubstr( "\r\n", "\n" );
         content = fileContent.ReplaceSubstr( "\r", "\n" );
-        
+
         // Now turn "\n" into the windows variant which is "\r\n"
         content = fileContent.ReplaceSubstr( "\n", "\r\n" );
-        
+
         fwrite( content.C_String(), content.Length(), 1, fptr );
         fclose( fptr );
         #else
@@ -658,12 +660,12 @@ WriteStringAsTextFile( const CString& filePath    ,
 /*-------------------------------------------------------------------------*/
 
 bool
-LoadTextFileAsString( const CString& filePath , 
+LoadTextFileAsString( const CString& filePath ,
                       CString& fileContent    )
 {GUCEF_TRACE;
 
     fileContent.Clear();
-    
+
     FILE* fptr = fopen( filePath.C_String(), "rb" );
     if ( NULL != fptr )
     {
@@ -671,10 +673,10 @@ LoadTextFileAsString( const CString& filePath ,
 
         size_t bytesRead = 0;
         do
-        {        
+        {
             // read a block
             bytesRead = fread( charBuffer, 1, 1024, fptr );
-            
+
             // Look for a null terminator
             size_t delimter = bytesRead;
             for ( size_t i=0; i<bytesRead; ++i )
@@ -684,19 +686,19 @@ LoadTextFileAsString( const CString& filePath ,
                     delimter = (int) i;
                 }
             }
-            
+
             if ( delimter != bytesRead )
             {
                 // This is not a text file
                 fclose( fptr );
                 return false;
             }
-            
+
             // Append what we can
             fileContent.Append( charBuffer, (UInt32)delimter );
         }
         while ( bytesRead == 1024 );
-        
+
         fclose( fptr );
         return true;
     }

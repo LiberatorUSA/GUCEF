@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CTRANSACTIONEVENTCONTROL_H
@@ -27,7 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_MT_CTMAILBOX_H
-#include "gucefMT_CTMailbox.h"
+#include "gucefMT_CTMailBox.h"
 #define GUCEF_MT_CTMAILBOX_H
 #endif /* GUCEF_MT_CTMAILBOX_H ? */
 
@@ -44,7 +44,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -56,7 +56,7 @@ namespace CORE {
 /**
  *  This is a building block that can be used internally by classes that handle and/or
  *  emit events.
- *  
+ *
  *  Sometimes a class performes actions on sub-system(s) that trigger events
  *  to which the class in question is actually subscribed. The intermediate events
  *  emitted might not be of any interest and/or should not be handled untill the
@@ -68,23 +68,23 @@ namespace CORE {
 class GUCEFCORE_EXPORT_CPP CTransactionEventControl : public CForwardingNotifier
 {
     public:
-    
+
     typedef enum TEventFilterAction
     {
         EVENTFILTER_DELETE_EVENT ,   /**< mainly usefull if you listnen to all events of an object but want to exclude a few specific ones */
         EVENTFILTER_GROUP_EVENT      /**< this will group events of the same type as 1 event, updating to the latest occurance */
     };
-    
+
     public:
-    
+
     CTransactionEventControl( void );
-    
-    virtual ~CTransactionEventControl();    
-    
+
+    virtual ~CTransactionEventControl();
+
     void StartTransaction( void );
-    
+
     void FinishTransaction( void );
-    
+
     bool AddEventFilter( const CEvent& eventID                 ,
                          const TEventFilterAction filterAction ,
                          const TEventOriginFilter originFilter ,
@@ -93,7 +93,7 @@ class GUCEFCORE_EXPORT_CPP CTransactionEventControl : public CForwardingNotifier
 
     bool RemoveEventFilter( const CEvent& eventID           ,
                             const CNotifier* sender = NULL  );
-                         
+
     bool IsEventFiltered( const CEvent& eventID   ,
                           const CNotifier* sender ) const;
 
@@ -108,13 +108,13 @@ class GUCEFCORE_EXPORT_CPP CTransactionEventControl : public CForwardingNotifier
     void ClearAllFilters( void );
 
     protected:
-    
+
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );    
+                           CICloneable* eventdata = NULL );
 
     private:
-    
+
     struct SFilterData
     {
         TEventFilterAction filterAction;
@@ -122,7 +122,7 @@ class GUCEFCORE_EXPORT_CPP CTransactionEventControl : public CForwardingNotifier
         bool preserveEventData;
     };
     typedef struct SFilterData TFilterData;
-    
+
     typedef std::map< CEvent, TFilterData > TFilterMap;
     typedef std::map< const CNotifier*, TFilterMap > TSenderFilterMap;
 
@@ -137,7 +137,7 @@ class GUCEFCORE_EXPORT_CPP CTransactionEventControl : public CForwardingNotifier
     CTransactionEventControl& operator=( const CTransactionEventControl& src );  /**< not implemented */
 
     private:
-    
+
     TFilterMap m_filterMap;
     TSenderFilterMap m_senderFilterMap;
     MT::CTMailBox< CEvent > m_mailbox;

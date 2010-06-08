@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CTABSTRACTFACTORYWITHPARAM_H
 #define GUCEF_CORE_CTABSTRACTFACTORYWITHPARAM_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -31,13 +31,18 @@
 #include "CTFactoryBaseWithParam.h"
 #include "CMsgException.h"
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -47,10 +52,10 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Abstract factory template for the selection and utilization of concrete 
+ *  Abstract factory template for the selection and utilization of concrete
  *  factories based on a criteria.
  *
- *  Note that when using this template it is mandatory for BaseClassType 
+ *  Note that when using this template it is mandatory for BaseClassType
  *  classes to define the following member function:
  *      SelectionCriteriaType GetType( void ) const;
  *
@@ -60,15 +65,15 @@ class CTAbstractFactoryWithParam
 {
     public:
     typedef CTFactoryBaseWithParam< BaseClassType, ConstructionParamType > TConcreteFactory;
-    
+
     explicit CTAbstractFactoryWithParam( const bool assumeFactoryOwnership = false );
-    
+
     CTAbstractFactoryWithParam( const CTAbstractFactoryWithParam& src );
-    
+
     virtual ~CTAbstractFactoryWithParam();
-    
+
     CTAbstractFactoryWithParam& operator=( const CTAbstractFactoryWithParam& src );
-    
+
     /**
      *  Constructs the concrete factory product
      *
@@ -76,14 +81,14 @@ class CTAbstractFactoryWithParam
      */
     BaseClassType* Create( const SelectionCriteriaType& selectedType ,
                            const ConstructionParamType& param        );
-    
+
     /**
      *  Destroys the concrete factory product
      *
      *  @param factoryProduct pointer to the base class of the constructed factory product
      */
     void Destroy( BaseClassType* factoryProduct );
-    
+
     void RegisterConcreteFactory( const SelectionCriteriaType& selectedType ,
                                   TConcreteFactory* concreteFactory         );
 
@@ -93,7 +98,7 @@ class CTAbstractFactoryWithParam
 
     private:
     typedef std::map< SelectionCriteriaType, TConcreteFactory* >  TFactoryList;
-    
+
     TFactoryList m_concreteFactoryList;
     bool m_assumeFactoryOwnership;
 };
@@ -107,64 +112,64 @@ class CTAbstractFactoryWithParam
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType >
 CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType >::CTAbstractFactoryWithParam( const bool assumeFactoryOwnership /* = false */ )
     : m_assumeFactoryOwnership( assumeFactoryOwnership )
-{
-    
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType >
 CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType >::CTAbstractFactoryWithParam( const CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType >& /* src */ )
-{
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
-   
+
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType >
 CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType >::~CTAbstractFactoryWithParam()
-{
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType >
-CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType >& 
+CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType >&
 CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType >::operator=( const CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType >& /* src */ )
-{
-    if ( &src != this )
-    {
-    }
+{GUCEF_TRACE;
+
     return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType >
-BaseClassType* 
+BaseClassType*
 CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType >::Create( const SelectionCriteriaType& selectedType ,
 																                                   const ConstructionParamType& param        )
-{
-    TFactoryList::iterator i( m_concreteFactoryList.find( selectedType ) );
+{GUCEF_TRACE;
+
+    typename TFactoryList::iterator i( m_concreteFactoryList.find( selectedType ) );
     if ( i != m_concreteFactoryList.end() )
     {
-        return (*i).second->Create( param ); 
+        return (*i).second->Create( param );
     }
     return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType >
-void 
+void
 CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType >::Destroy( BaseClassType* factoryProduct )
-{
-    TFactoryList::iterator i( m_concreteFactoryList.find( factoryProduct->GetType() ) );
+{GUCEF_TRACE;
+
+    typename TFactoryList::iterator i( m_concreteFactoryList.find( factoryProduct->GetType() ) );
     if ( i != m_concreteFactoryList.end() )
     {
         (*i).second->Destroy( factoryProduct );
-        return; 
+        return;
     }
     throw CMsgException( __FILE__, __LINE__, "CTAbstractFactory: Cannot find concrete factory capable of destroying the given product" );
 }
@@ -174,27 +179,30 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType >
 bool
 CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType >::IsConstructible( const SelectionCriteriaType& selectedType ) const
-{
+{GUCEF_TRACE;
+
     return m_concreteFactoryList.find( selectedType ) != m_concreteFactoryList.end();
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType >
-void 
+void
 CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType >::RegisterConcreteFactory( const SelectionCriteriaType& selectedType ,
                                                                                                                     TConcreteFactory* concreteFactory         )
-{
+{GUCEF_TRACE;
+
     m_concreteFactoryList[ selectedType ] = concreteFactory;
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType >
-void 
+void
 CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType >::UnregisterConcreteFactory( const SelectionCriteriaType& selectedType )
-{
-    TFactoryList::iterator i = m_concreteFactoryList.find( selectedType );
+{GUCEF_TRACE;
+
+    typename TFactoryList::iterator i = m_concreteFactoryList.find( selectedType );
     if ( i != m_concreteFactoryList.end() )
     {
         if ( m_assumeFactoryOwnership )

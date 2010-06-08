@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CTNOTIFYINGMAP_H
@@ -49,7 +49,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -72,61 +72,61 @@ class CTNotifyingMap : public CNotifier           ,
 
     typedef indexType key_type;       /**< 	The map's key type, Key. */
     typedef mappedType data_type;     /**< The type of object associated with the keys. */
-    
+
     typedef typename std::map< indexType, mappedType > TWrappedMap;
     typedef typename TWrappedMap::value_type value_type;
-    typedef typename TWrappedMap::const_iterator const_iterator;        
-    typedef typename TWrappedMap::const_reverse_iterator const_reverse_iterator;    
+    typedef typename TWrappedMap::const_iterator const_iterator;
+    typedef typename TWrappedMap::const_reverse_iterator const_reverse_iterator;
     typedef typename TWrappedMap::_Pairib _Pairib;
     typedef typename TWrappedMap::size_type size_type;
-    
-    typedef CTCloneableObj< typename const_iterator > TItemModifiedEventData;
-    
-    
+
+    typedef CTCloneableObj< const_iterator > TItemModifiedEventData;
+
+
     CTNotifyingMap( void );
-    
+
     CTNotifyingMap( const CTNotifyingMap& src );
-    
+
     ~CTNotifyingMap();
-    
+
     const_iterator find( const key_type& indexValue ) const;
-    
+
     const_iterator operator[]( const key_type& indexValue ) const;
-   
+
     size_type count( const key_type& k );
-    
+
     void erase( const key_type& indexValue );
-    
+
     void erase( const const_iterator& itemPos );
-    
+
     void insert( const key_type& indexValue ,
                  const data_type& dataValue );
-    
+
     void insert( const const_iterator& itemPos ,
                  const key_type& indexValue    ,
                  const data_type& dataValue    );
-    
+
     bool modify( const key_type& indexValue ,
                  const data_type& dataValue );
-    
+
     const_iterator begin( void ) const;
-    
+
     const_iterator end( void ) const;
-    
+
     const_reverse_iterator rbegin( void ) const;
-    
+
     const_reverse_iterator rend( void ) const;
 
     bool empty( void ) const;
-    
+
     void clear( void );
-    
+
     size_type max_size( void ) const;
-    
+
     virtual CString GetType( void ) const;
 
     private:
-   
+
     std::map< indexType, mappedType > m_map;
 };
 
@@ -146,7 +146,7 @@ CTNotifyingMap< indexType, mappedType >::CTNotifyingMap( void )
 
 template< class indexType, class mappedType >
 CTNotifyingMap< indexType, mappedType >::CTNotifyingMap( const CTNotifyingMap< indexType, mappedType >& src )
-    : m_map( src.m_map )   
+    : m_map( src.m_map )
 {GUCEF_TRACE;
 }
 
@@ -184,28 +184,28 @@ CTNotifyingMap< indexType, mappedType >::count( const key_type& k )
     return m_map.count( k );
 }
 
-/*-------------------------------------------------------------------------*/    
+/*-------------------------------------------------------------------------*/
 
 template< class indexType, class mappedType >
 void
 CTNotifyingMap< indexType, mappedType >::erase( const key_type& indexValue )
 {GUCEF_TRACE;
-    
+
     m_map.erase( indexValue );
     NotifyObservers( ItemErasedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class indexType, class mappedType >
 void
 CTNotifyingMap< indexType, mappedType >::erase( const const_iterator& itemPos )
 {GUCEF_TRACE;
-    
-    m_map.erase( itemPos );    
+
+    m_map.erase( itemPos );
     NotifyObservers( ItemErasedEvent );
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 template< class indexType, class mappedType >
@@ -214,8 +214,8 @@ CTNotifyingMap< indexType, mappedType >::insert( const const_iterator& itemPos ,
                                                  const key_type& indexValue    ,
                                                  const data_type& dataValue    )
 {GUCEF_TRACE;
-    
-    m_map.insert( itemPos, _Pairib( indexValue, dataValue ) );    
+
+    m_map.insert( itemPos, _Pairib( indexValue, dataValue ) );
     NotifyObservers( ItemAddedEvent );
 }
 
@@ -235,9 +235,9 @@ CTNotifyingMap< indexType, mappedType >::insert( const key_type& indexValue ,
     }
     else
     {
-        m_map.insert( itemPos, _Pairib( indexValue, dataValue ) ); 
+        m_map.insert( indexValue, dataValue );
         NotifyObservers( ItemAddedEvent );
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -260,7 +260,7 @@ CTNotifyingMap< indexType, mappedType >::modify( const key_type& indexValue ,
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class indexType, class mappedType >
 typename CTNotifyingMap< indexType, mappedType >::const_iterator
 CTNotifyingMap< indexType, mappedType >::begin( void ) const
@@ -269,7 +269,7 @@ CTNotifyingMap< indexType, mappedType >::begin( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class indexType, class mappedType >
 typename CTNotifyingMap< indexType, mappedType >::const_iterator
 CTNotifyingMap< indexType, mappedType >::end( void ) const
@@ -278,7 +278,7 @@ CTNotifyingMap< indexType, mappedType >::end( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class indexType, class mappedType >
 typename CTNotifyingMap< indexType, mappedType >::const_reverse_iterator
 CTNotifyingMap< indexType, mappedType >::rbegin( void ) const
@@ -287,7 +287,7 @@ CTNotifyingMap< indexType, mappedType >::rbegin( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class indexType, class mappedType >
 typename CTNotifyingMap< indexType, mappedType >::const_reverse_iterator
 CTNotifyingMap< indexType, mappedType >::rend( void ) const
@@ -305,7 +305,7 @@ CTNotifyingMap< indexType, mappedType >::empty( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class indexType, class mappedType >
 void
 CTNotifyingMap< indexType, mappedType >::clear( void )
@@ -314,7 +314,7 @@ CTNotifyingMap< indexType, mappedType >::clear( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class indexType, class mappedType >
 typename CTNotifyingMap< indexType, mappedType >::size_type
 CTNotifyingMap< indexType, mappedType >::max_size( void ) const
