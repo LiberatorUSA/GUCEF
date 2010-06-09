@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef GUCEF_VFS_CVFSHANDLE_H
@@ -72,23 +72,23 @@ class EXPORT_CPP CVFSHandle
 
     typedef CORE::CTSharedPtr< CORE::CDynamicBuffer > TDynamicBufferPtr;
 
-    CVFSHandle( CORE::CIOAccess* fileAccess   ,
-                const CORE::CString& filename ,
-                const CORE::CString& filePath );
-    
-    CVFSHandle( CORE::CIOAccess* fileAccess   ,
-                const CORE::CString& filename ,
-                const CORE::CString& filePath ,
-                TDynamicBufferPtr& bufferPtr  );
+    CVFSHandle( CORE::CIOAccess* fileAccess ,
+                const CString& filename     ,
+                const CString& filePath     );
+
+    CVFSHandle( CORE::CIOAccess* fileAccess  ,
+                const CString& filename      ,
+                const CString& filePath      ,
+                TDynamicBufferPtr& bufferPtr );
 
     ~CVFSHandle();
-    
+
     CORE::CIOAccess* GetAccess( void );
-    
-    const CORE::CString& GetFilename( void ) const;
-    
-    const CORE::CString& GetFilePath( void ) const;
-    
+
+    const CString& GetFilename( void ) const;
+
+    const CString& GetFilePath( void ) const;
+
     bool IsLoadedInMemory( void ) const;
 
     private:
@@ -96,13 +96,13 @@ class EXPORT_CPP CVFSHandle
     CVFSHandle( void );                              /**< not implemented */
     CVFSHandle( const CVFSHandle& src );             /**< not implemented */
     CVFSHandle& operator=( const CVFSHandle& src );  /**< not implemented */
-    
+
     private:
 
     TDynamicBufferPtr m_bufferPtr;
     CORE::CIOAccess* m_fileAccess;
-    CORE::CString m_filename;
-    CORE::CString m_filePath;
+    CString m_filename;
+    CString m_filePath;
 };
 
 /*-------------------------------------------------------------------------//
@@ -115,7 +115,7 @@ VFS_NAMESPACE_END
 GUCEF_NAMESPACE_END
 
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_VFS_CVFSHANDLE_H ? */
 
 /*-------------------------------------------------------------------------//

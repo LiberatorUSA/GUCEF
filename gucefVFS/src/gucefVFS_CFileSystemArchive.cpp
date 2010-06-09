@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -28,7 +28,7 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
-#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
@@ -44,7 +44,7 @@
 #endif /* GUCEF_CORE_CFILEACCESS_H ? */
 
 #ifndef GUCEF_CORE_DVMD5UTILS_H
-#include "dvmd5utils.h"	     
+#include "dvmd5utils.h"
 #define GUCEF_CORE_DVMD5UTILS_H
 #endif /* GUCEF_CORE_DVMD5UTILS_H ? */
 
@@ -121,31 +121,31 @@ CFileSystemArchive::GetFile( const CString& file      ,
                              const bool overwrite     )
 
 {GUCEF_TRACE;
-        
-    /* 
-     *      Try to locate the file using the rootdirs as 
+
+    /*
+     *      Try to locate the file using the rootdirs as
      *      a prefix
      */
     CVFSHandle* fh = LoadFromDisk( file        ,
                                    mode        ,
                                    memLoadSize ,
                                    overwrite   );
-    
+
     if ( fh != NULL )
     {
         return CVFSHandlePtr( fh, this );
     }
 
     /*
-     *      If we get here then the file was not found in one 
+     *      If we get here then the file was not found in one
      *      of the rootdirs. or in any of the packfiles
      */
-    return CVFSHandlePtr();                             
+    return CVFSHandlePtr();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CFileSystemArchive::GetListFromRoot( const CORE::CString& root  ,
                                      bool recursive             ,
                                      bool includePathInFilename ,
@@ -158,7 +158,7 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& root  ,
     CORE::CString filename;
     struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( root.C_String() );
     if ( did != NULL )
-    {                
+    {
         /*
          *      Iterate the dir content adding the file entries from
          *      the dir to the list
@@ -166,10 +166,10 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& root  ,
         do
         {
             if ( CORE::DI_Is_It_A_File( did ) != 0 )
-            {                           
+            {
                 if ( addFiles )
                 {
-                    filename = CORE::DI_Name( did );     
+                    filename = CORE::DI_Name( did );
                     if ( filename != '.' && filename != ".." )
                     {
                         if ( CVFS::FilterValidation( filename ,
@@ -183,11 +183,11 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& root  ,
                             {
                                 CORE::CString filePath( root );
                                 CORE::AppendToPath( filePath, filename );
-                                outputList.insert( filePath );                        
+                                outputList.insert( filePath );
                             }
                         }
                     }
-                }                                        
+                }
             }
             else
             {
@@ -198,7 +198,7 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& root  ,
                     {
                         outputList.insert( dirName );
                     }
-                
+
                     if ( recursive )
                     {
                         /*
@@ -206,7 +206,7 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& root  ,
                          */
                         CORE::CString subdir( root );
                         CORE::AppendToPath( subdir, dirName );
-                        
+
                         /*
                          *      Recursively process the sub-dir
                          */
@@ -216,39 +216,39 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& root  ,
                                          filter                ,
                                          outputList            ,
                                          true                  ,
-                                         false                 ); 
+                                         false                 );
                     }
                 }
-            }        
+            }
         }
         while ( CORE::DI_Next_Dir_Entry( did ) );
-        
+
         CORE::DI_Cleanup( did );
-    }                
+    }
 }
 
 /*-------------------------------------------------------------------------*/
-                                  
+
 void
 CFileSystemArchive::GetList( TStringSet& outputList     ,
-                             const CString& location    , 
+                             const CString& location    ,
                              bool recursive             ,
                              bool includePathInFilename ,
                              const CString& filter      ,
                              bool addFiles              ,
                              bool addDirs               ) const
 {GUCEF_TRACE;
-    
+
     /*
      *      Switch dir separator chars if needed
      */
-    CString loc( location.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );              
-    
+    CString loc( location.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );
+
     /*
      *      Make the combo path string
      */
     CString rootdir = m_rootDir;
-    AppendToPath( rootdir, location );                 
+    AppendToPath( rootdir, location );
 
     /*
      *      Process the root
@@ -261,9 +261,9 @@ CFileSystemArchive::GetList( TStringSet& outputList     ,
                      addFiles              ,
                      addDirs               );
 }
- 
+
 /*-------------------------------------------------------------------------*/
- 
+
 bool
 CFileSystemArchive::FileExists( const CString& filePath ) const
 {GUCEF_TRACE;
@@ -274,7 +274,7 @@ CFileSystemArchive::FileExists( const CString& filePath ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 UInt32
 CFileSystemArchive::GetFileSize( const CString& filePath ) const
 {GUCEF_TRACE;
@@ -289,25 +289,25 @@ CFileSystemArchive::GetFileSize( const CString& filePath ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CString
 CFileSystemArchive::GetFileHash( const CString& file ) const
 {GUCEF_TRACE;
-   
+
     CString path = m_rootDir;
     CORE::AppendToPath( path, file );
     if ( CORE::File_Exists( path.C_String() ) != 0 )
     {
         CORE::CFileAccess fileAccess( path );
-        
+
         UInt8 md5Hash[ 16 ];
-        if ( CORE::md5frommfile( fileAccess.CStyleAccess() , 
+        if ( CORE::md5frommfile( fileAccess.CStyleAccess() ,
                                  md5Hash                   ) == 1 )
         {
             return CORE::MD5ToString( md5Hash );
         }
     }
-    
+
     return CString();
 }
 
@@ -320,7 +320,7 @@ CFileSystemArchive::GetFileModificationTime( const CString& filePath ) const
     CString path = m_rootDir;
     CORE::AppendToPath( path, filePath );
     if ( CORE::File_Exists( path.C_String() ) != 0 )
-    {    
+    {
         return CORE::Get_Modification_Time( path.C_String() );
     }
     return -1;
@@ -331,7 +331,7 @@ CFileSystemArchive::GetFileModificationTime( const CString& filePath ) const
 const CString&
 CFileSystemArchive::GetArchiveName( void ) const
 {GUCEF_TRACE;
-    
+
     return m_archiveName;
 }
 
@@ -356,10 +356,10 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
     // Create a file path for this root
     CString filepath = m_rootDir;
     CORE::AppendToPath( filepath, file );
-    
-    bool needwriteable( ( strchr( mode, 'a' ) != NULL ) || ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, '+' ) != NULL )); 
 
-    // Check if we can perform read-only access which allows us 
+    bool needwriteable( ( strchr( mode, 'a' ) != NULL ) || ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, '+' ) != NULL ));
+
+    // Check if we can perform read-only access which allows us
     // to share the resource
     if ( ( strcmp( mode, "rb" ) == 0 ) ||
          ( strcmp( mode, "r" ) == 0 )   )
@@ -370,20 +370,20 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
         {
             // We found the file in our cache, we will link to the existing buffer.
             TDynamicBufferPtr bufferPtr = (*n).second;
-            return new CVFSHandle( new CORE::CDynamicBufferAccess( bufferPtr.GetPointer() , 
+            return new CVFSHandle( new CORE::CDynamicBufferAccess( bufferPtr.GetPointer() ,
                                                                    false                  ) ,
                                    file                                                     ,
                                    filepath                                                 ,
                                    bufferPtr                                                );
         }
     }
-    
+
     // Check if we can proceed under these circumstances
     bool exists( CORE::File_Exists( filepath.C_String() ) > 0 );
-    if ( ( exists && overwrite && needwriteable ) || 
+    if ( ( exists && overwrite && needwriteable ) ||
          ( !exists && needwriteable )             ||
          ( exists && !needwriteable )              )
-    {                        
+    {
         // Attempt to get access to the file
         CORE::CIOAccess* fa = new CORE::CFileAccess( filepath, mode );
         if ( !fa->IsValid() )
@@ -392,7 +392,7 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
             delete fa;
             return NULL;
         }
-        
+
         if ( ( strcmp( mode, "rb" ) == 0 ) ||
              ( strcmp( mode, "r" ) == 0 )   )
         {
@@ -403,24 +403,24 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
                 // Create the memory buffer
                 TDynamicBufferPtr bufferPtr( new CORE::CDynamicBuffer() );
                 CORE::CIOAccess* bufferAccess = new CORE::CDynamicBufferAccess( bufferPtr.GetPointer(), false );
-                
+
                 // Copy the file into the buffer
                 if ( fsize == bufferAccess->Write( *fa ) )
                 {
                     delete fa;
                     fa = NULL;
-                    
+
                     // reset the carat so the user can access the file from the beginning
                     bufferAccess->Setpos( 0 );
-                    
+
                     // Add the file to our buffered files list
                     m_diskCacheList.insert( std::pair< CORE::CString, TDynamicBufferPtr >( filepath, bufferPtr ) );
-                    
+
                     // return the file handle
                     return new CVFSHandle( bufferAccess ,
                                            file         ,
                                            filepath     ,
-                                           bufferPtr    );                  
+                                           bufferPtr    );
                 }
                 else
                 {
@@ -431,15 +431,14 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
                 }
             }
         }
-                    
+
         // return the file handle
-        return new CVFSHandle( fa                  ,
-                               file                ,
-                               filepath            ,
-                               TDynamicBufferPtr() );                
-                              
+        return new CVFSHandle( fa       ,
+                               file     ,
+                               filepath );
+
     }
-    
+
     return NULL;
 }
 
@@ -452,7 +451,7 @@ CFileSystemArchive::DestroyObject( CVFSHandle* vfshandle )
     if ( vfshandle != NULL )
     {
         delete vfshandle->GetAccess();
-        
+
         if ( vfshandle->IsLoadedInMemory() )
         {
             TFileMemCache::iterator n = m_diskCacheList.find( vfshandle->GetFilePath() );
@@ -464,9 +463,9 @@ CFileSystemArchive::DestroyObject( CVFSHandle* vfshandle )
                     // nobody else is using the memory buffer anymore
                     m_diskCacheList.erase( n );
                 }
-            }            
+            }
         }
-        
+
         delete vfshandle;
     }
 }
