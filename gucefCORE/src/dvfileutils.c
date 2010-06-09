@@ -27,6 +27,7 @@
 #include <stdio.h>              /* standard I/O utils */
 #include <string.h>             /* standard string utils */
 #include <assert.h>
+#include <limits.h>
 
 #ifndef GUCEF_CORE_CONFIG_H
 #include "gucefCORE_config.h"     /* build defines */
