@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -60,12 +60,16 @@ namespace CORE {
 CLogManager* CLogManager::g_instance = NULL;
 MT::CMutex CLogManager::g_dataLock;
 
+extern "C" {
+
 const Int32 LOGLEVEL_CRITICAL = GUCEFCORE_INT32MAX - 1;
 const Int32 LOGLEVEL_VERY_IMPORTANT = 250000;
 const Int32 LOGLEVEL_IMPORTANT = 100000;
 const Int32 LOGLEVEL_NORMAL = 50000;
 const Int32 LOGLEVEL_BELOW_NORMAL = 25000;
 const Int32 LOGLEVEL_EVERYTHING = 0;
+
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -107,7 +111,7 @@ CLogManager::Instance( void )
 {GUCEF_TRACE;
 
     if ( g_instance == NULL )
-    {        
+    {
         g_dataLock.Lock();
         if ( g_instance == NULL )
         {
@@ -115,7 +119,7 @@ CLogManager::Instance( void )
         }
         g_dataLock.Unlock();
     }
-    
+
     return g_instance;
 }
 
@@ -126,10 +130,10 @@ CLogManager::Deinstance( void )
 {GUCEF_TRACE;
 
     g_dataLock.Lock();
-    
+
     delete g_instance;
     g_instance = NULL;
-    
+
     g_dataLock.Unlock();
 }
 
@@ -140,9 +144,9 @@ CLogManager::FlushBootstrapLogEntriesToLogs( void )
 {GUCEF_TRACE;
 
     Log( LOG_SYSTEM, LOGLEVEL_NORMAL, "LogManager: Flushing all bootstrap log entries to the currently registered loggers" );
-    
+
     g_dataLock.Lock();
-    
+
     TBootstrapLogVector::iterator i = m_bootstrapLog.begin();
     while ( i != m_bootstrapLog.end() )
     {
@@ -150,14 +154,14 @@ CLogManager::FlushBootstrapLogEntriesToLogs( void )
         Log( entry.logMsgType ,
              entry.logLevel   ,
              entry.logMessage );
-             
+
         ++i;
     }
     m_bootstrapLog.clear();
-    
+
     Log( LOG_SYSTEM, LOGLEVEL_NORMAL, "LogManager: Finished flushing all bootstrap log entries to the currently registered loggers" );
-    
-    g_dataLock.Unlock();    
+
+    g_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -168,16 +172,16 @@ CLogManager::AddLogger( CILogger* loggerImp )
 
     // Do not add bogus loggers
     assert( NULL != loggerImp );
-    
+
     g_dataLock.Lock();
     m_loggers.insert( loggerImp );
     g_dataLock.Unlock();
-    
+
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Added logger" );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CLogManager::RemoveLogger( CILogger* loggerImp )
 {GUCEF_TRACE;
@@ -186,14 +190,14 @@ CLogManager::RemoveLogger( CILogger* loggerImp )
     assert( NULL != loggerImp );
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Removing logger" );
-    
+
     g_dataLock.Lock();
     m_loggers.erase( loggerImp );
     g_dataLock.Unlock();
 }
-    
+
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CLogManager::ClearLoggers( void )
 {GUCEF_TRACE;
@@ -204,24 +208,24 @@ CLogManager::ClearLoggers( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
  bool
  CLogManager::IsLoggingEnabled( const TLogMsgType logMsgType ,
                                 const Int32 logLevel         ) const
 {GUCEF_TRACE;
 
     g_dataLock.Lock();
-    
+
     bool retValue = false;
     if ( logLevel < m_maxLogLevel )
     {
         retValue = (*m_msgTypeEnablers.find( logMsgType )).second;
     }
-    
+
     g_dataLock.Unlock();
     return retValue;
 }
-                           
+
 /*-------------------------------------------------------------------------*/
 
 void
@@ -231,13 +235,13 @@ CLogManager::Log( const TLogMsgType logMsgType ,
 {GUCEF_TRACE;
 
     g_dataLock.Lock();
-    
+
     if ( logLevel < m_maxLogLevel )
     {
         if ( (*m_msgTypeEnablers.find( logMsgType )).second )
         {
             if ( m_loggers.size() > 0 )
-            {            
+            {
                 TLoggerList::const_iterator i = m_loggers.begin();
                 while ( i != m_loggers.end() )
                 {
@@ -250,7 +254,7 @@ CLogManager::Log( const TLogMsgType logMsgType ,
                     }
                     ++i;
                 }
-                
+
                 // We want to make certain that errors are always in the log file.
                 // We might crash moments later which might cause some loggers not
                 // to write the error entry to their respective output media
@@ -261,19 +265,19 @@ CLogManager::Log( const TLogMsgType logMsgType ,
             }
             else
             {
-                // We do not have any loggers yet so we will add the log entry to 
-                // the bootstrap log                
+                // We do not have any loggers yet so we will add the log entry to
+                // the bootstrap log
                 TBootstrapLogEntry entry;
                 entry.logLevel = logLevel;
                 entry.logMsgType = logMsgType;
-                entry.logMessage = logMessage;                
+                entry.logMessage = logMessage;
                 m_bootstrapLog.push_back( entry );
             }
         }
     }
-    
 
-    
+
+
     g_dataLock.Unlock();
 }
 
@@ -294,7 +298,7 @@ CLogManager::GetLogMsgTypeString( const TLogMsgType logMsgType )
         {
             static CString typeStr = "STANDARD";
             return typeStr;
-        }        
+        }
         case CLogManager::LOG_USER :
         {
             static CString typeStr = "USER";
@@ -353,9 +357,9 @@ CLogManager::GetLogMsgTypeString( const TLogMsgType logMsgType )
 void
 CLogManager::FlushLogs( void )
 {GUCEF_TRACE;
-    
+
     g_dataLock.Lock();
-    
+
     TLoggerList::const_iterator i = m_loggers.begin();
     while ( i != m_loggers.end() )
     {
@@ -366,7 +370,7 @@ CLogManager::FlushLogs( void )
         }
         ++i;
     }
-    
+
     g_dataLock.Unlock();
 }
 
