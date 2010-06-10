@@ -405,19 +405,19 @@ CPixelMap::GetPixelChannelSize( const TBuildinDataType pixelComponentDataType )
 
     switch ( pixelComponentDataType )
     {
-        case GUCEF::MT::DT_INT8 :
-        case GUCEF::MT::DT_UINT8 :
+        case GUCEF::MT::DATATYPE_INT8 :
+        case GUCEF::MT::DATATYPE_UINT8 :
         {
             return 1;
         }
-        case GUCEF::MT::DT_INT16 :
-        case GUCEF::MT::DT_UINT16 :
+        case GUCEF::MT::DATATYPE_INT16 :
+        case GUCEF::MT::DATATYPE_UINT16 :
         {
             return 2;
         }        
-        case GUCEF::MT::DT_INT32 :
-        case GUCEF::MT::DT_UINT32 :
-        case GUCEF::MT::DT_FLOAT32 :
+        case GUCEF::MT::DATATYPE_INT32 :
+        case GUCEF::MT::DATATYPE_UINT32 :
+        case GUCEF::MT::DATATYPE_FLOAT32 :
         {
             return 4;
         }

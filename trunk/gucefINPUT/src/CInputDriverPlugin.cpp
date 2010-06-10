@@ -407,19 +407,19 @@ CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
      */
     m_fptable[ INPUTDRIVERPLUG_INIT ] = CORE::GetFunctionAddress( m_sohandle             ,
                                                                   "INPUTDRIVERPLUG_Init" ,
-                                                                  2*sizeof(void*)        );
+                                                                  2*sizeof(void*)        ).funcPtr;
     m_fptable[ INPUTDRIVERPLUG_SHUTDOWN ] = CORE::GetFunctionAddress( m_sohandle                 ,
                                                                       "INPUTDRIVERPLUG_Shutdown" ,
-                                                                      1*sizeof(void*)            );
+                                                                      1*sizeof(void*)            ).funcPtr;
     m_fptable[ INPUTDRIVERPLUG_NAME ] = CORE::GetFunctionAddress( m_sohandle             ,
                                                                   "INPUTDRIVERPLUG_Name" ,
-                                                                  1*sizeof(void*)        );
+                                                                  1*sizeof(void*)        ).funcPtr;
     m_fptable[ INPUTDRIVERPLUG_COPYRIGHT ] = CORE::GetFunctionAddress( m_sohandle                  ,
                                                                        "INPUTDRIVERPLUG_Copyright" ,
-                                                                       1*sizeof(void*)             );
+                                                                       1*sizeof(void*)             ).funcPtr;
     m_fptable[ INPUTDRIVERPLUG_VERSION ] = CORE::GetFunctionAddress( m_sohandle                ,
                                                                      "INPUTDRIVERPLUG_Version" ,
-                                                                     1*sizeof(void*)           );
+                                                                     1*sizeof(void*)           ).funcPtr;
 
 
     /*
@@ -429,13 +429,13 @@ CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
                                                       
     m_fptable[ INPUTDRIVERPLUG_UPDATE ] = CORE::GetFunctionAddress( m_sohandle               ,
                                                                     "INPUTDRIVERPLUG_Update" ,
-                                                                    2*sizeof(void*)          );
+                                                                    2*sizeof(void*)          ).funcPtr;
     m_fptable[ INPUTDRIVERPLUG_CREATECONTEXT ] = CORE::GetFunctionAddress( m_sohandle                      ,
                                                                            "INPUTDRIVERPLUG_CreateContext" ,
-                                                                           4*sizeof(void*)                 );
+                                                                           4*sizeof(void*)                 ).funcPtr;
     m_fptable[ INPUTDRIVERPLUG_DESTROYCONTEXT ] = CORE::GetFunctionAddress( m_sohandle                       ,
                                                                             "INPUTDRIVERPLUG_DestroyContext" ,
-                                                                            2*sizeof(void*)                  );
+                                                                            2*sizeof(void*)                  ).funcPtr;
                                                                                                                    
     
     if ( ( !m_fptable[ INPUTDRIVERPLUG_INIT ] ) ||

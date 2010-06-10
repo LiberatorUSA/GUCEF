@@ -92,22 +92,22 @@ LinkICMPModule( const char* moduleName )
         {
             IcmpCreateFile = (TIcmpCreateFilePtr) CORE::GetFunctionAddress( DllHandle         ,
                                                                             "IcmpCreateFile"  ,
-                                                                            0                 );
+                                                                            0                 ).funcPtr;
             IcmpCloseHandle = (TIcmpCloseHandlePtr) CORE::GetFunctionAddress( DllHandle         ,
                                                                               "IcmpCloseHandle" ,
-                                                                              sizeof( HANDLE )  );
+                                                                              sizeof( HANDLE )  ).funcPtr;
             IcmpParseReplies = (TIcmpParseRepliesPtr) CORE::GetFunctionAddress( DllHandle         ,
                                                                                 "IcmpParseReplies" ,
-                                                                                sizeof(LPVOID) + sizeof(DWORD) );
+                                                                                sizeof(LPVOID) + sizeof(DWORD) ).funcPtr;
             IcmpSendEcho = (TIcmpSendEchoPtr) CORE::GetFunctionAddress( DllHandle         ,
                                                                         "IcmpSendEcho"    ,
-                                                                        sizeof( HANDLE ) + sizeof( IPAddr ) + 2*sizeof( LPVOID ) + sizeof( WORD ) + sizeof( PIP_OPTION_INFORMATION ) + 2*sizeof( DWORD ) );
+                                                                        sizeof( HANDLE ) + sizeof( IPAddr ) + 2*sizeof( LPVOID ) + sizeof( WORD ) + sizeof( PIP_OPTION_INFORMATION ) + 2*sizeof( DWORD ) ).funcPtr;
             IcmpSendEcho2Vista = (TIcmpSendEcho2VistaPtr) CORE::GetFunctionAddress( DllHandle         ,
                                                                                     "IcmpSendEcho2"    ,
-                                                                                    2*sizeof( HANDLE ) + sizeof( PIO_APC_ROUTINE_NEW ) + sizeof( PVOID ) + sizeof( IPAddr ) + 2*sizeof( LPVOID ) + sizeof( WORD ) + sizeof( PIP_OPTION_INFORMATION ) + 2*sizeof( DWORD ) );
+                                                                                    2*sizeof( HANDLE ) + sizeof( PIO_APC_ROUTINE_NEW ) + sizeof( PVOID ) + sizeof( IPAddr ) + 2*sizeof( LPVOID ) + sizeof( WORD ) + sizeof( PIP_OPTION_INFORMATION ) + 2*sizeof( DWORD ) ).funcPtr;
             IcmpSendEcho2 = (TIcmpSendEcho2Ptr) CORE::GetFunctionAddress( DllHandle         ,
                                                                           "IcmpSendEcho2"    ,
-                                                                          2*sizeof( HANDLE ) + sizeof( PIO_APC_ROUTINE_OLD ) + sizeof( PVOID ) + sizeof( IPAddr ) + 2*sizeof( LPVOID ) + sizeof( WORD ) + sizeof( PIP_OPTION_INFORMATION ) + 2*sizeof( DWORD ) );
+                                                                          2*sizeof( HANDLE ) + sizeof( PIO_APC_ROUTINE_OLD ) + sizeof( PVOID ) + sizeof( IPAddr ) + 2*sizeof( LPVOID ) + sizeof( WORD ) + sizeof( PIP_OPTION_INFORMATION ) + 2*sizeof( DWORD ) ).funcPtr;
                                                                           
             bool foundFunctions = ( IcmpCreateFile != NULL ) && ( IcmpCloseHandle != NULL ) && ( IcmpSendEcho != NULL ) && ( IcmpParseReplies != NULL );
             if ( !foundFunctions )
