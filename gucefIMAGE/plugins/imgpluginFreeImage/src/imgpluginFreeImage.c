@@ -178,56 +178,56 @@ ConvertToPCDT( const FREE_IMAGE_TYPE imageType )
     {
         case FIT_BITMAP :
         {
-            return DT_UINT8;
+            return DATATYPE_UINT8;
         }
         case FIT_COMPLEX :
         case FIT_UNKNOWN :
         {
-            return DT_UNKNOWN;
+            return DATATYPE_UNKNOWN;
         }
         case FIT_UINT32 :
         {
-            return DT_UINT32;
+            return DATATYPE_UINT32;
         }        
         case FIT_INT32 :
         {
-            return DT_INT32;
+            return DATATYPE_INT32;
         }        
         case FIT_FLOAT :
         {
-            return DT_FLOAT32;
+            return DATATYPE_FLOAT32;
         }
         case FIT_DOUBLE :
         {
-            return DT_FLOAT64;
+            return DATATYPE_FLOAT64;
         }        
         case FIT_UINT16 :
         {
-            return DT_UINT16;
+            return DATATYPE_UINT16;
         }        
         case FIT_INT16 :
         {
-            return DT_INT16;
+            return DATATYPE_INT16;
         }
         case FIT_RGBF :
         {
-            return DT_FLOAT32;
+            return DATATYPE_FLOAT32;
         }        
         case FIT_RGB16 :
         {
-            return DT_UINT16;
+            return DATATYPE_UINT16;
         }
         case FIT_RGBAF :
         {
-            return DT_FLOAT32;
+            return DATATYPE_FLOAT32;
         }        
         case FIT_RGBA16 :
         {
-            return DT_UINT16;
+            return DATATYPE_UINT16;
         }
         default :
         {
-            return DT_UNKNOWN;
+            return DATATYPE_UNKNOWN;
         }
     }    
 }
@@ -328,19 +328,19 @@ GetPixelChannelSize( const int pixelComponentDataType )
 {
     switch ( pixelComponentDataType )
     {
-        case DT_INT8 :
-        case DT_UINT8 :
+        case DATATYPE_INT8 :
+        case DATATYPE_UINT8 :
         {
             return 1;
         }
-        case DT_INT16 :
-        case DT_UINT16 :
+        case DATATYPE_INT16 :
+        case DATATYPE_UINT16 :
         {
             return 2;
         }        
-        case DT_INT32 :
-        case DT_UINT32 :
-        case DT_FLOAT32 :
+        case DATATYPE_INT32 :
+        case DATATYPE_UINT32 :
+        case DATATYPE_FLOAT32 :
         {
             return 4;
         }
