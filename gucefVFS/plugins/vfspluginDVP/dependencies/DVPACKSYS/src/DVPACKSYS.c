@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -46,13 +46,14 @@
 #ifdef GUCEF_MSWIN_BUILD
   #include <windows.h>		/* WIN32 API */
   #define MAX_DIR_LENGTH MAX_PATH
-#else 
+#else
   #ifdef GUCEF_LINUX_BUILD
+    #include <limits.h>
     #include <unistd.h>             /* POSIX utilities */
     #define MAX_DIR_LENGTH PATH_MAX
-  #else 
+  #else
     #error Unsupported OS
-  #endif  
+  #endif
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -82,7 +83,7 @@ DVP_Close_File( FILE *fptr )
 	/*
          *	Close the file
          */
-        fclose( fptr ); 
+        fclose( fptr );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -126,7 +127,7 @@ DVP_IOA_Extract_Index_File( TIOAccess *access   ,
                 fwrite( tmp_data , 1 , DVP_INDEX_ENTRY_SIZE, out_file );
         }
         fclose( out_file );
-        
+
         if ( total != num_entrys*DVP_INDEX_ENTRY_SIZE ) return 1;
 
         return 0;
@@ -170,7 +171,7 @@ DVP_Extract_Index_File( FILE *dfile         ,
                 fwrite( tmp_data , 1 , DVP_INDEX_ENTRY_SIZE, out_file );
         }
         fclose( out_file );
-        
+
         if ( total != num_entrys*DVP_INDEX_ENTRY_SIZE ) return 1;
 
         return 0;
@@ -249,7 +250,7 @@ DVP_Strip_Index( const char *archive, const char *new_archive )
         char ID[ DVP_ID_LENGTH+1 ];
         FILE *fptr, *nfptr;
 
-    /*    #if defined( DEBUG_MODE ) 
+    /*    #if defined( DEBUG_MODE )
         tsprintf( "DVP_Strip_Index( %s, %s )\n", archive, new_archive );
         #endif */
 
@@ -289,7 +290,7 @@ DVP_Strip_Index( const char *archive, const char *new_archive )
 
         /*
          *      Do the stripping,
-         *      which is simply copying the data up to the index into a new file       
+         *      which is simply copying the data up to the index into a new file
          */
         data = malloc( index_offset );
         if ( !data ) return 1;
@@ -345,7 +346,7 @@ DVP_Read_Header( FILE  *fp                ,
         /*
          *      Place file pointer back
          */
-        fseek( fp, pos, SEEK_SET ); 
+        fseek( fp, pos, SEEK_SET );
 
         /*
          *      Check checksum to make sure we have a valid pack file
@@ -396,7 +397,7 @@ DVP_IOA_Read_Header( TIOAccess *access      ,
         access->read( access, lastchange , 1 , 4 );
         access->read( access, &checksum , 1 , 4 );
 
-    /*    #if defined( DEBUG_MODE ) 
+    /*    #if defined( DEBUG_MODE )
         tsprintf( "Header data:\n ID %s\n version %d\n index_offset %d\n num_files %d\n num_dirs %d\n lastchange %d\n checksum %d\n", ID, *version, *index_offset, *num_files, *num_dirs, *lastchange, checksum );
         #endif */
 
@@ -429,11 +430,11 @@ UInt32
 _DVP_IOA_Read_Header( TIOAccess *access        ,
                       TDVP_File_Header *header )
 {
-      /*  #if defined( DEBUG_MODE ) 
+      /*  #if defined( DEBUG_MODE )
         tsprintf( "_DVP_IOA_Read_Header( %d, %d )\n", (UInt32)access, (UInt32)header );
         #endif */
 
-        return DVP_IOA_Read_Header( access, header->ID, &header->version, &header->index_offset, &header->num_files, &header->num_dirs, &header->lastchange );        
+        return DVP_IOA_Read_Header( access, header->ID, &header->version, &header->index_offset, &header->num_files, &header->num_dirs, &header->lastchange );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -450,8 +451,8 @@ _DVP_Read_Header( FILE   *fp               ,
       /*  #if defined( DEBUG_MODE )
         tsprintf( "_DVP_Read_Header( %d, %d )\n", (UInt32)fp, (UInt32)header );
         #endif */
-        
-        return DVP_Read_Header( fp, header->ID, &header->version, &header->index_offset, &header->num_files, &header->num_dirs, &header->lastchange );   
+
+        return DVP_Read_Header( fp, header->ID, &header->version, &header->index_offset, &header->num_files, &header->num_dirs, &header->lastchange );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -664,7 +665,7 @@ DVP_Read_Index_Entry( UInt32 offset , UInt32 *eoffset , UInt32 *size , UInt32 *t
          *      filepointer fpt
          */
 
-     /*   #if defined( DEBUG_MODE ) 
+     /*   #if defined( DEBUG_MODE )
         tsprintf( "DVP_Read_Index_Entry( %d, NA, NA, NA, NA, %d )\n", offset, (UInt32) fpt );
         #endif */
 
@@ -699,7 +700,7 @@ _DVP_IOA_Read_Index_Entry( UInt32 offset           ,
 
       /*  #ifdef DEBUG_MODE
         tsprintf( "_DVP_IOA_Read_Index_Entry( %d, %d, %d )\n", offset, (UInt32)entry, (UInt32) access );
-        #endif /* DEBUG_MODE ? */ 
+        #endif /* DEBUG_MODE ? */
 
         return DVP_IOA_Read_Index_Entry( offset, &entry->offset, &entry->size, &entry->timestamp, entry->name, access );
 }
@@ -951,7 +952,7 @@ DVP_IOA_Extract_File( TIOAccess *access       ,
                 if ( nbytes > 0 )
                 {
                         nbytes_read += nbytes;
-                        
+
                         /*
                          *      Prevent writing to much data.
                          */
@@ -969,7 +970,7 @@ DVP_IOA_Extract_File( TIOAccess *access       ,
                          */
                         break;
                 }
-    
+
         } while( nbytes_read < filesize );
 
         /*
@@ -993,7 +994,7 @@ DVP_IOA_Extract_File( TIOAccess *access       ,
                  */
                 return( 1 );
         }
-        return( 0 );        
+        return( 0 );
 }
 
 #endif
@@ -1052,7 +1053,7 @@ DVP_Extract_File( FILE *fpt              ,
                 if ( nbytes > 0 )
                 {
                         nbytes_read += nbytes;
-                        
+
                         /*
                          *      Prevent writing to much data.
                          */
@@ -1070,7 +1071,7 @@ DVP_Extract_File( FILE *fpt              ,
                          */
                         break;
                 }
-    
+
         } while( nbytes_read < filesize );
 
         /*
@@ -1214,7 +1215,7 @@ DVP_IOA_Extract_All_Files( TIOAccess *access      ,
                                 /*
                                  *      Error extracting file
                                  */
-                                return 1; 
+                                return 1;
                         }
                 }
                 else
@@ -1307,7 +1308,7 @@ DVP_Extract_All_Files( FILE *fptr, const char *dest_dir )
                                 /*
                                  *      Error extracting file
                                  */
-                                return 1; 
+                                return 1;
                         }
                 }
                 else
@@ -1394,7 +1395,7 @@ DVP_Append_Index( FILE *datafile , const char *indexfile , UInt32 num_entrys )
 	 *	d is the filepointer of the datafile
 	 *	h is the filepointer of the index file
          *
-         *      on error 1 is returned, otherwise 0 
+         *      on error 1 is returned, otherwise 0
 	 */
 
         UInt32  i                                                          ;
@@ -1410,7 +1411,7 @@ DVP_Append_Index( FILE *datafile , const char *indexfile , UInt32 num_entrys )
         /*
          *	Move to end of data file
          */
-        fseek( datafile, 0, SEEK_END ); 
+        fseek( datafile, 0, SEEK_END );
 
         /*
          *      Open files
@@ -1469,7 +1470,7 @@ DVP_Append_Index( FILE *datafile , const char *indexfile , UInt32 num_entrys )
         /*
          *	Put file pointer back where we found it
          */
-        fseek( datafile, pos, SEEK_SET ); 
+        fseek( datafile, pos, SEEK_SET );
 
         /*
          *      Everything worked correctly
@@ -1533,13 +1534,13 @@ DVP_Pack_File( FILE *dfpt       ,
 	{
 		return	1						;
 	}
-	
+
 	/*
 	 *	fill the path string with 0's.
 	 *	this initializes the memory space.
 	 */
 	memset( path , 0 , 1024 )				;
-	
+
 	/*
 	 *	filename is copyed into path
 	 */
@@ -1569,7 +1570,7 @@ DVP_Pack_File( FILE *dfpt       ,
         	/*
                  *	Incorrect index entry size
                  */
-                return 1; 
+                return 1;
         }
 
         /*
@@ -1620,7 +1621,7 @@ DVP_Append_Directory( const char *path   ,
 	UInt32 	i = 0;
         UInt32 start;
 
-       /* #if defined( DEBUG_MODE ) 
+       /* #if defined( DEBUG_MODE )
         tsprintf( "DVP_Append_Directory( %s, %d, %d )\n", path, total_size, (UInt32)fp );
         #endif  */
 
@@ -1639,7 +1640,7 @@ DVP_Append_Directory( const char *path   ,
         start = ftell( fp );
 	fwrite( &total_size , 1 , 4, fp );
 	fwrite( &i , 1 , 4, fp );
-	
+
 	/*
 	 *	Write second part of index directory entry
 	 */
@@ -1672,7 +1673,7 @@ DVP_Pack_Directory( FILE *dfpt, FILE *ifpt, UInt32 *total_size, const char *path
        /* #if defined( DEBUG_MODE )
         tsprintf( "DVP_Pack_Directory( %d, %d, %d, %s, %d, %d )\n", (UInt32)dfpt, (UInt32)ifpt, *total_size, path, *num_files, *num_dirs );
         #endif */
-        
+
 	/*
 	 *	Setup dir string
 	 */
@@ -1738,9 +1739,9 @@ DVP_Pack_Directory( FILE *dfpt, FILE *ifpt, UInt32 *total_size, const char *path
                                          *	There was an error packing a
                                          *	lower level dir.
                                          */
-                                        return 1; 
+                                        return 1;
                                 }
-			}                         
+			}
                 }
                 if ( !DI_Next_Dir_Entry( data ) )
                 {
@@ -1748,7 +1749,7 @@ DVP_Pack_Directory( FILE *dfpt, FILE *ifpt, UInt32 *total_size, const char *path
                          *	No more entry's in dir.
                          */
                         DI_Cleanup( data );
-                        data = NULL; 
+                        data = NULL;
                 }
         }
 
@@ -1799,9 +1800,9 @@ DVP_Display_Index( FILE *fptr              ,
       /*  #if defined( DEBUG_MODE )
         tsprintf( "DVP_Display_Index( %d, %d, %d )\n", (UInt32)fptr, index_offset, entrys );
         #endif */
-        
+
         /*
-         *      Jump to beginning of index        
+         *      Jump to beginning of index
          */
         fseek( fptr, index_offset, SEEK_SET );
 
@@ -1932,13 +1933,13 @@ DVP_Create_Archive( const char *archive_name , const char *src_dir , const char 
 	{
 		/*
 		 *	Error writing header
-		 */		
+		 */
 		return 1				     	   	;
 	}
         total_size = DVP_HEADER_SIZE;
 
 	/*
-	 *	Add data to pack file and and index entry's to index 
+	 *	Add data to pack file and and index entry's to index
 	 */
         fseek( fp_out, DVP_HEADER_SIZE, SEEK_SET );
 	if ( DVP_Pack_Directory( fp_out         ,
@@ -1950,7 +1951,7 @@ DVP_Create_Archive( const char *archive_name , const char *src_dir , const char 
 	{
 		/*
 		 *	Error packing directory
-		 */	
+		 */
 		return  1						;
 	}
 
@@ -1961,7 +1962,7 @@ DVP_Create_Archive( const char *archive_name , const char *src_dir , const char 
 	{
 		/*
 		 *	Error writing header
-		 */		
+		 */
 		return 1				     	   	;
 	}
 
@@ -1985,8 +1986,8 @@ DVP_Create_Archive( const char *archive_name , const char *src_dir , const char 
 
 	/*
 	 *	All operations where successful, return written bytes
-	 */		
-	return 0;	
+	 */
+	return 0;
 }
 
 #endif

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -36,12 +36,12 @@
 
 #include <stdlib.h>     /* standard utils */
 #include <stdio.h>      /* standard I/O */
-#include <conio.h>      /* console i/o */
 
 #include "DVPACKSYS.h"  /* Pack sys utils */
 
 #ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>
+#include <conio.h>      /* console i/o */
 #endif /* GUCEF_MSWIN_BUILD ? */
 
 #include "dvstrutils.h" /* My own string tools */
@@ -72,22 +72,22 @@ void cls( void )
 
     /* get the output console handle */
     HANDLE hConsole=GetStdHandle(STD_OUTPUT_HANDLE);
-    
+
     /* get the number of character cells in the current buffer */
-    GetConsoleScreenBufferInfo(hConsole, &csbi);    
+    GetConsoleScreenBufferInfo(hConsole, &csbi);
     dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
-    
+
     /* fill the entire screen with blanks */
     FillConsoleOutputCharacter(hConsole, (TCHAR) ' ',
       dwConSize, coordScreen, &cCharsWritten);
-      
+
     /* get the current text attribute */
     GetConsoleScreenBufferInfo(hConsole, &csbi);
-    
+
     /* now set the buffer's attributes accordingly */
     FillConsoleOutputAttribute(hConsole, csbi.wAttributes,
       dwConSize, coordScreen, &cCharsWritten);
-      
+
     /* put the cursor at (0, 0) */
     SetConsoleCursorPosition(hConsole, coordScreen);
     return;
@@ -112,7 +112,7 @@ Create_Archive_Wizard( void )
         /*
          *      Get a archive name from user
          */
-        rbuffer[ 0 ] = 0; 
+        rbuffer[ 0 ] = 0;
         while ( strlen( rbuffer ) < MIN_ARCHIVE_NAME_LENGTH )
         {
                 printf( "\nPlease enter a name for the archive :\n" );
@@ -146,12 +146,12 @@ Create_Archive_Wizard( void )
         /*
          *      free unneeded input buffer
          */
-        free( rbuffer )                                                 ; 
+        free( rbuffer )                                                 ;
 
         /*
          *      Do the actual creation of the archive
          */
-        printf( "Creating Archive...\n" )                               ; 
+        printf( "Creating Archive...\n" )                               ;
         if ( !DVP_Create_Archive( archive, dir_root, ID ) )
         {
                 printf( "Process completed\n" )                         ;
@@ -251,7 +251,7 @@ Display_Header_Wizard( void )
                  */
                 printf( "\nPress any key to exit\n" )                   ;
                 _getch()                                                 ;
-        }        
+        }
         return                                                          ;
 }
 
@@ -337,7 +337,7 @@ Display_Index_Wizard( void )
         /*
          *      Free unneeded buffer
          */
-        free( rbuffer )                                                 ; 
+        free( rbuffer )                                                 ;
 
         /*
          *      Output index to console
@@ -381,14 +381,14 @@ Extract_Index_File_Wizard( void )
          */
 
         long num_files = 0                                               ;
-        long num_dirs = 0                                                ;       
+        long num_dirs = 0                                                ;
         long version                                                     ;
         long index_offset                                               ;
         long lastchange                                                 ;
         char *rbuffer = calloc( 1024, sizeof( char ) )                  ;
         char *archive = NULL                                            ;
         char *target = NULL                                             ;
-        FILE *fptr = NULL                                               ;      
+        FILE *fptr = NULL                                               ;
 
         /*
          *      Get needed data from user
@@ -652,11 +652,11 @@ Extract_File_Wizard( void )
         /*
          *      Do the actual extracting
          */
-        blocksize = 1024                                                ; 
+        blocksize = 1024                                                ;
         if ( DVP_Extract_File( fptr, entry->offset, entry->size, blocksize, filename ) )
         {
                 printf( "\nError extracting file\n" )                   ;
-                
+
                 /*
                  *      Wait for exit
                  */
@@ -667,7 +667,7 @@ Extract_File_Wizard( void )
         }
         printf( "...process completed\n" )                              ;
         fclose( fptr )                                                  ;
-        
+
         /*
          *      Wait for exit
          */
@@ -686,7 +686,7 @@ Print_Info_Header( void )
          */
         char versionStr[ 16 ];
         sprintf( versionStr, "%d.%d.%d.%d", DVP_MAJOR_VERSION, DVP_MINOR_VERSION, DVP_RELEASE_VERSION, DVP_PATCH_VERSION );
-        
+
         /*
          *      Output logo to console
          */
@@ -707,7 +707,7 @@ Print_Info_Header( void )
                 printf( "   use the -args switch to view options\n" )   ;
         #else
                 printf( " - Command line arguments are disabled\n" )    ;
-        #endif        
+        #endif
         printf( "\n" )                                                  ;
 }
 
@@ -798,7 +798,7 @@ Display_Header( char *argv[] )
         long  num_files                                                  ;
         long  num_dirs                                                   ;
         long lastchange = 0                                             ;
-        char ID[ DVP_ID_LENGTH+1 ]                                      ; 
+        char ID[ DVP_ID_LENGTH+1 ]                                      ;
         FILE *fptr = fopen( argv[2], "rb" )                             ;
         if ( fptr )
         {
@@ -1016,7 +1016,7 @@ int main( void )
 #endif // SUPPORT_ARGS ?
 
         int mchoice = -1        ;
-        
+
         /*
          *      Print Logo
          */
@@ -1031,7 +1031,7 @@ int main( void )
 	{
 
         #endif // SUPPORT_ARGS ?
-        
+
                 /*
                  *      Start at main menu
                  */
@@ -1044,7 +1044,7 @@ int main( void )
                                  *      run create archive wizard
                                  */
                                 Create_Archive_Wizard()                 ;
-                                break                                   ; 
+                                break                                   ;
                         }
                         case 2  :
                         {
@@ -1052,7 +1052,7 @@ int main( void )
                                  *      Unpack an archive
                                  */
                                 Extract_All_Files_Wizard()              ;
-                                break                                   ;                                 
+                                break                                   ;
                         }
                         case 3  :
                         {
@@ -1084,7 +1084,7 @@ int main( void )
                                  *      Extract index file out of archive
                                  */
                                 Extract_File_Wizard()                   ;
-                                break                                   ;  
+                                break                                   ;
                         }
                         case 7  :
                         {
@@ -1092,7 +1092,7 @@ int main( void )
                                  *      Extract index file out of archive
                                  */
                                 Extract_Index_File_Wizard()             ;
-                                break;  
+                                break;
                         }
                         case 8  :
                         {
@@ -1113,12 +1113,12 @@ int main( void )
         else
         {
                 /*
-                 *      handle the comand line swicthes 
+                 *      handle the comand line swicthes
                  */
                 if ( strcmp( argv[ 1 ], "-args" ) == 0  )
                 {
                         Display_Argument_Options()                      ;
-                }                               
+                }
                 else
                 {
                         if ( strcmp( argv[ 1 ], "-p" ) == 0 )
@@ -1156,7 +1156,7 @@ int main( void )
                                         if ( strcmp( argv[ 1 ], "-i" ) == 0 )
                                         {
                                                 /*
-                                                 *      Display archive index 
+                                                 *      Display archive index
                                                  */
                                                 if ( argc == 4 )
                                                 {

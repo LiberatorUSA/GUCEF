@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 // This tool is meant for testing purposes, allowing you to test the behaviour
@@ -25,6 +25,9 @@
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#include <stdio.h>
+#include <cstdlib>
 
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
@@ -46,9 +49,9 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const GUCEF::CORE::UInt32 BLOCKSIZE = 1024000;  
+const GUCEF::CORE::UInt32 BLOCKSIZE = 1024000;
 const GUCEF::CORE::UInt32 MAXBLOCKS = ( GUCEFCORE_UINT32MAX / BLOCKSIZE ) -1;
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -63,8 +66,8 @@ main( int argc , char* argv[] )
     GUCEF::CORE::UInt32 fileCount = 0;
     GUCEF::CORE::UInt32 writtenBytes = 0;
     bool writeSuccess = true;
-    
-    // Fill the block with random values, just in case someone wants 
+
+    // Fill the block with random values, just in case someone wants
     // to use this tool for security purposes
     GUCEF::CORE::UInt8 randomChar = GUCEF::CORE::UInt8( std::rand() / (RAND_MAX / 256 + 1) );
     std::srand( randomChar );
@@ -73,12 +76,12 @@ main( int argc , char* argv[] )
         randomChar = GUCEF::CORE::UInt8( std::rand() / (RAND_MAX / 256 + 1) );
         buffer[ i ] = randomChar;
     }
-    
+
     while ( writeSuccess )
     {
         GUCEF::CORE::CString filename = "HDfillerFile" + GUCEF::CORE::UInt32ToString( fileCount ) + ".tmp";
         FILE* fptr = fopen( filename.C_String(), "wb" );
-        
+
         // Check if we do not overflow out of our 32 bit addressing range
         for ( GUCEF::CORE::UInt32 i=0; i<MAXBLOCKS; ++i )
         {
@@ -87,17 +90,17 @@ main( int argc , char* argv[] )
             {
                 // Fill the last partial block
                 fwrite( buffer, 1, BLOCKSIZE-writtenBytes, fptr );
-                
+
                 // HD is now full
                 writeSuccess = false;
                 break;
             }
         }
-        
+
         fclose( fptr );
         ++fileCount;
     }
-    
+
     delete []buffer;
 }
 
