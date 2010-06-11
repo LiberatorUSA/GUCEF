@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_SMDRN_CSECTORGRID_H
-#define GUCEF_SMDRN_CSECTORGRID_H
+#ifndef GUCEF_SMDRN_CZONE_H
+#define GUCEF_SMDRN_CZONE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_SMDRN_CSECTOR_H
-#include "gucefSMDRN_CSector.h"
-#define GUCEF_SMDRN_CSECTOR_H
-#endif /* GUCEF_SMDRN_CSECTOR_H ? */
+#ifndef GUCEF_DRN_CDRNNODE_H
+#include "gucefDRN_CDRNNode.h"
+#define GUCEF_DRN_CDRNNODE_H
+#endif /* GUCEF_DRN_CDRNNODE_H ? */
 
-#ifndef GUCEF_SMDRN_CSECTORPOSITION_H
-#include "gucefSMDRN_CSectorPosition.h"
-#define GUCEF_SMDRN_CSECTORPOSITION_H
-#endif /* GUCEF_SMDRN_CSECTORPOSITION_H ? */
+#ifndef GUCEF_SMDRN_MACROS_H
+#include "gucefSMDRN_macros.h"         /* often used gucefSMDRN macros */
+#define GUCEF_SMDRN_MACROS_H
+#endif /* GUCEF_SMDRN_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,38 +51,16 @@ namespace SMDRN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_SMDRN_EXPORT_CPP CSectorGrid
+class GUCEF_SMDRN_EXPORT_CPP CZone
 {
     public:
     
-    CSectorGrid( void );
     
-    CSectorGrid( const UInt16 gridWidth  ,
-                 const UInt16 gridHeight ,
-                 const UInt16 gridDepth  );
-                 
-    ~CSectorGrid();
-    
-    void SetGridSize( const UInt16 gridWidth  ,
-                      const UInt16 gridHeight ,
-                      const UInt16 gridDepth  );
-                      
-    CSector* GetSector( const UInt16 x ,
-                        const UInt16 y ,
-                        const UInt16 z );
-                        
-    CSector* GetSector( const CSectorPosition& position );
-                        
-    void MoveObjectTo( const CSectorPosition& position );
-    
-    void MoveObject( void );
  
     private:
 
-    CSectorGrid( const CSectorGrid& src );    
-    CSectorGrid& operator=( const CSectorGrid& src );
-    
-    
+    CZone( const CZone& src );    
+    CZone& operator=( const CZone& src );
 
 };
 
@@ -97,7 +75,7 @@ class GUCEF_SMDRN_EXPORT_CPP CSectorGrid
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_SMDRN_CSECTORGRID_H ? */
+#endif /* GUCEF_SMDRN_CZONE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
