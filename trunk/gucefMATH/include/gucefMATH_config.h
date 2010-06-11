@@ -17,13 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_SMDRN_MACROS_H
-#define GUCEF_SMDRN_MACROS_H
-
-/*
- *      Build configuration specific macros.
- *      Also includes the generic macros which are build config independant.
- */
+#ifndef GUCEF_MATH_CONFIG_H
+#define GUCEF_MATH_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -31,64 +26,24 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_BASICMACROS_H
-#include "macros.h"                 /* generic often used macros */
-#define GUCEF_CORE_BASICMACROS_H
-#endif /* GUCEF_CORE_BASICMACROS_H ? */
-
-#ifndef GUCEF_MACROS_H
-#include "gucef_macros.h"       /* platform macros */
-#define GUCEF_MACROS_H
-#endif /* GUCEF_MACROS_H ? */
-
-#ifndef GUCEF_MATH_ETYPES_H
-#include "gucefMATH_ETypes.h"        /* simple types */
-#define GUCEF_MATH_ETYPES_H
-#endif /* GUCEF_MATH_ETYPES_H ? */
-
-#ifndef GUCEF_MATH_CONFIG_H
-#include "gucefMATH_config.h"        /* Module build configuration */
-#define GUCEF_MATH_CONFIG_H
-#endif /* GUCEF_MATH_CONFIG_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GENERAL MACROS                                                     //
+//      BUILD DEFINES                                                      //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Macros for dynamic linking or static linking. Use the switches in the
- *      config file to control the export type.
- */
-#ifdef GUCEFMATH_BUILD_MODULE
-  #define GUCEF_MATH_BUILD_MODULE
-#endif /* GUCEFSMATH_BUILD_MODULE ? */
- 
-#undef GUCEF_MATH_EXPORTSPEC
-#ifdef GUCEF_MATH_BUILD_MODULE
-  #define GUCEF_MATH_EXPORTSPEC GUCEF_EXPORT
-#else
-  #define GUCEF_MATH_EXPORTSPEC GUCEF_IMPORT
-#endif /* GUCEF_MATH_BUILD_MODULE ? */
-
-#undef GUCEF_MATH_EXPORT_CPP
-#ifdef GUCEF_MATH_EXPORT_CPP_CODE
-  #define GUCEF_MATH_EXPORT_CPP GUCEF_SMDRN_EXPORTSPEC
-#else
-  #define GUCEF_MATH_EXPORT_CPP
-#endif /* GUCEF_MATH_EXPORT_CPP_CODE */
-
-#undef GUCEF_MATH_EXPORT_C
-#ifdef GUCEF_MATH_EXPORT_C_CODE
-  #define GUCEF_MATH_EXPORT_C GUCEF_SMDRN_EXPORTSPEC
-#else
-  #define GUCEF_MATH_EXPORT_C
-#endif /* GUCEF_MATH_EXPORT_C_CODE */
+/* Switches for the export of C++ and/or C code */
+#define GUCEF_MATH_EXPORT_CPP_CODE
+#define GUCEF_MATH_EXPORT_C_CODE
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MATH_MACROS_H ? */
+#endif /* GUCEF_MATH_CONFIG_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -96,7 +51,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 02-03-2007 :
-        - Dinand: re-added this header
+- 18-08-2007 :
+       - Initial version of this file.
 
 -----------------------------------------------------------------------------*/
+ 
