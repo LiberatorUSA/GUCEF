@@ -1,5 +1,5 @@
 /*
- *  gucefSMDRN: GUCEF module providing sector managed DRN
+ *  gucefMATH: GUCEF module providing basic math classes
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -9,7 +9,7 @@
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_SMDRN_CMODULE_H
-#define GUCEF_SMDRN_CMODULE_H
+#ifndef GUCEF_MATH_CMODULE_H
+#define GUCEF_MATH_CMODULE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_SMDRN_MACROS_H
-#include "gucefSMDRN_macros.h"         /* often used gucefSMDRN macros */
-#define GUCEF_SMDRN_MACROS_H
-#endif /* GUCEF_SMDRN_MACROS_H ? */
+#ifndef GUCEF_MATH_MACROS_H
+#include "gucefMATH_macros.h"         /* often used gucefMATH macros */
+#define GUCEF_MATH_MACROS_H
+#endif /* GUCEF_MATH_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,7 +38,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace SMDRN {
+namespace MATH {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,12 +67,12 @@ class CModule
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace SMDRN */
+}; /* namespace MATH */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_SMDRN_CMODULE_H ? */
+#endif /* GUCEF_MATH_CMODULE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
