@@ -271,7 +271,7 @@ CDStoreCodecPlugin::CDStoreCodecPlugin( const CString& pluginfile )
         _ref._plugin = this;
 
         _sohandle = LoadModuleDynamicly( pluginfile.C_String() );
-        if ( !_sohandle ) return;
+        if ( NULL == _sohandle ) return;
 
         _fptable[ DSTOREPLUG_INIT ] = GetFunctionAddress( _sohandle         ,
                                                           "DSTOREPLUG_Init" ,
@@ -326,29 +326,29 @@ CDStoreCodecPlugin::CDStoreCodecPlugin( const CString& pluginfile )
                                                                    2*sizeof(void*)            ).funcPtr;
 
 
-        if ( ( _fptable[ DSTOREPLUG_INIT ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_SHUTDOWN ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_NAME ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_COPYRIGHT ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_VERSION ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_TYPE ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_DEST_FILE_OPEN ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_DEST_FILE_CLOSE ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_END_NODE_STORE ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_STORE_NODE_ATT ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_END_NODE_CHILDREN ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_SRC_FILE_OPEN ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_SRC_FILE_CLOSE ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_SET_READ_HANDLERS ] != NULL ) ||
-             ( _fptable[ DSTOREPLUG_START_READING ] != NULL ) )
+        if ( ( _fptable[ DSTOREPLUG_INIT ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_SHUTDOWN ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_NAME ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_COPYRIGHT ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_VERSION ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_TYPE ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_DEST_FILE_OPEN ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_DEST_FILE_CLOSE ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_END_NODE_STORE ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_STORE_NODE_ATT ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_END_NODE_CHILDREN ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_SRC_FILE_OPEN ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_SRC_FILE_CLOSE ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_SET_READ_HANDLERS ] == NULL ) ||
+             ( _fptable[ DSTOREPLUG_START_READING ] == NULL ) )
         {
                 UnloadModuleDynamicly( _sohandle );
                 memset( _fptable, NULL, sizeof(anyPointer) * DSTOREPLUG_LASTFPTR );
                 _sohandle = NULL;
 
-                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Invalid codec module" );
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Invalid codec module: One or more functions could not be located in the plugin module" );
                 return;
         }
 
