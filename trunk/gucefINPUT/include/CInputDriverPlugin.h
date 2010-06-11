@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_INPUT_CINPUTDRIVERPLUGIN_H
@@ -25,6 +25,11 @@
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#ifndef DVOSWRAP_H
+#include "DVOSWRAP.h"            /* OS wrapping functionality */
+#define DVOSWRAP_H
+#endif /* DVOSWRAP_H ? */
 
 #ifndef GUCEF_INPUT_CINPUTDRIVER_H
 #include "gucefINPUT_CInputDriver.h"
@@ -53,45 +58,45 @@ namespace INPUT {
 class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CInputDriver
 {
         public:
-        
-        CInputDriverPlugin( void );
-        
-        virtual ~CInputDriverPlugin();        
 
-        bool LoadModule( const CORE::CString& filename  , 
+        CInputDriverPlugin( void );
+
+        virtual ~CInputDriverPlugin();
+
+        bool LoadModule( const CORE::CString& filename  ,
                          const CORE::CValueList& params );
-        
+
         void UnloadModule( void );
-                
+
         virtual const CORE::TVersion* GetVersion( void );
-                                                
+
         protected:
-        
+
         virtual bool OnUpdate( const UInt64 tickcount               ,
                                const Float64 updateDeltaInMilliSecs ,
                                CInputContext* context               );
 
         virtual CInputContext* CreateContext( const CORE::CValueList& params );
-        
+
         virtual void DeleteContext( CInputContext* context );
 
         private:
-        
+
         static char*** CreateArgMatrix( const CORE::CValueList& params );
         static void DestroyArgMatrix( char*** argmatrix );
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnMouseButtonDown( void* userData           , 
+        OnMouseButtonDown( void* userData           ,
                            const Int32 deviceID     ,
                            const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnMouseButtonUp( void* userData           , 
+        OnMouseButtonUp( void* userData           ,
                          const Int32 deviceID     ,
                          const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnMouseMove( void* userData        , 
+        OnMouseMove( void* userData        ,
                      const Int32 deviceID  ,
                      const Int32 xPos      ,
                      const Int32 yPos      ,
@@ -99,70 +104,70 @@ class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CInputDriver
                      const Int32 yDelta    ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnMouseVarChanged( void* userData         , 
+        OnMouseVarChanged( void* userData         ,
                            const Int32 deviceID   ,
                            const UInt32 varIndex  ,
                            const Int32 value      ,
                            const Int32 valueDelta ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnKeyboardKeyDown( void* userData        , 
+        OnKeyboardKeyDown( void* userData        ,
                            const Int32 deviceID  ,
                            const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnKeyboardKeyUp( void* userData        , 
+        OnKeyboardKeyUp( void* userData        ,
                          const Int32 deviceID  ,
                          const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnDeviceBooleanOff( void* userData          , 
+        OnDeviceBooleanOff( void* userData          ,
                             const Int32 deviceID    ,
                             const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnDeviceBooleanOn( void* userData          , 
+        OnDeviceBooleanOn( void* userData          ,
                            const Int32 deviceID    ,
                            const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnDeviceVarChanged( void* userData          , 
-                            const Int32 deviceID    , 
-                            const UInt32 stateindex , 
+        OnDeviceVarChanged( void* userData          ,
+                            const Int32 deviceID    ,
+                            const UInt32 stateindex ,
                             const Float32 value     ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnMouseAttached( void* userData       , 
-                         const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-                         
-        static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnMouseDetached( void* userData       , 
+        OnMouseAttached( void* userData       ,
                          const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnKeyboardAttached( void* userData       , 
+        OnMouseDetached( void* userData       ,
+                         const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+        static void GUCEF_PLUGIN_CALLSPEC_PREFIX
+        OnKeyboardAttached( void* userData       ,
                             const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnKeyboardDetached( void* userData       , 
+        OnKeyboardDetached( void* userData       ,
                             const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnDeviceAttached( void* userData       , 
+        OnDeviceAttached( void* userData       ,
                           const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
         static void GUCEF_PLUGIN_CALLSPEC_PREFIX
-        OnDeviceDetached( void* userData        , 
+        OnDeviceDetached( void* userData        ,
                           const Int32 deviceID  ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-        
-        CInputDriverPlugin( const CInputDriverPlugin& src );            /**< dummy, do not use */ 
-        CInputDriverPlugin& operator=( const CInputDriverPlugin& src ); /**< dummy, do not use */ 
-        
+
+        CInputDriverPlugin( const CInputDriverPlugin& src );            /**< dummy, do not use */
+        CInputDriverPlugin& operator=( const CInputDriverPlugin& src ); /**< dummy, do not use */
+
         private:
-        
+
         void* m_sohandle;
         void* m_plugdata;
-        void* m_fptable[ 8 ];
+        CORE::TDefaultFuncPtr m_fptable[ 8 ];
 };
 
 /*-------------------------------------------------------------------------//
@@ -175,7 +180,7 @@ class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CInputDriver
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_INPUT_CINPUTDRIVERPLUGIN_H ? */
 
 /*-------------------------------------------------------------------------//
@@ -188,4 +193,3 @@ class GUCEF_INPUT_EXPORT_CPP CInputDriverPlugin : public CInputDriver
         - Initial implementation
 
 -----------------------------------------------------------------------------*/
-                                                

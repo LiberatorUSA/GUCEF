@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,10 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef DVOSWRAP_H
-#include "dvoswrap.h"            /* OS wrapping functionality */
-#define DVOSWRAP_H
-#endif /* DVOSWRAP_H ? */
+#include <string.h>
 
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
@@ -72,12 +69,12 @@ enum
         INPUTDRIVERPLUG_NAME                       ,
         INPUTDRIVERPLUG_COPYRIGHT                  ,
         INPUTDRIVERPLUG_VERSION                    ,
-        
+
         INPUTDRIVERPLUG_UPDATE                     ,
-        
+
         INPUTDRIVERPLUG_CREATECONTEXT              ,
         INPUTDRIVERPLUG_DESTROYCONTEXT             ,
-        
+
         INPUTDRIVERPLUG_LASTPTR
 };
 
@@ -108,10 +105,10 @@ class CPluginInputContext : public CInputContext
 {
     private:
     CInputDriverPlugin* m_pluginAPI;
-    void* m_contextData;    
+    void* m_contextData;
 
-    public:  
-    
+    public:
+
     CPluginInputContext( CInputDriverPlugin* pluginAPI  ,
                          const CORE::CValueList& params ,
                          void* data = NULL              )
@@ -119,25 +116,25 @@ class CPluginInputContext : public CInputContext
        m_pluginAPI( pluginAPI ) ,
        m_contextData( data )
     {GUCEF_TRACE;
-    }                
-    
+    }
+
     virtual ~CPluginInputContext()
     {GUCEF_TRACE;
-    
+
     }
-    
+
     inline CInputDriverPlugin* GetPluginAPI( void )
     {GUCEF_TRACE;
-    
+
         return m_pluginAPI;
     }
-    
+
     inline void* GetContextData( void )
     {GUCEF_TRACE;
-    
+
         return m_contextData;
     }
-    
+
     inline void** GetContextDataPtr( void )
     {
         return &m_contextData;
@@ -151,80 +148,80 @@ class CPluginInputContext : public CInputContext
 //-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnMouseAttached( void* userData       , 
+CInputDriverPlugin::OnMouseAttached( void* userData       ,
                                      const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->AddMouse( deviceID ); 
+    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->AddMouse( deviceID );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnMouseDetached( void* userData       , 
+CInputDriverPlugin::OnMouseDetached( void* userData       ,
                                      const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->RemoveMouse( deviceID ); 
+    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->RemoveMouse( deviceID );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnKeyboardAttached( void* userData       , 
+CInputDriverPlugin::OnKeyboardAttached( void* userData       ,
                                         const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->AddKeyboard( deviceID ); 
+    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->AddKeyboard( deviceID );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnKeyboardDetached( void* userData       , 
+CInputDriverPlugin::OnKeyboardDetached( void* userData       ,
                                         const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->RemoveKeyboard( deviceID ); 
+    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->RemoveKeyboard( deviceID );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnDeviceAttached( void* userData       , 
+CInputDriverPlugin::OnDeviceAttached( void* userData       ,
                                       const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->AddDevice( deviceID ); 
+    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->AddDevice( deviceID );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnDeviceDetached( void* userData       , 
+CInputDriverPlugin::OnDeviceDetached( void* userData       ,
                                       const Int32 deviceID ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->RemoveDevice( deviceID ); 
+    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->RemoveDevice( deviceID );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnMouseButtonDown( void* userData           , 
+CInputDriverPlugin::OnMouseButtonDown( void* userData           ,
                                        const Int32 deviceID     ,
                                        const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->InjectMouseButtonChange( deviceID    ,
                                                                                             buttonindex ,
-                                                                                            true        ); 
+                                                                                            true        );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnMouseButtonUp( void* userData           , 
+CInputDriverPlugin::OnMouseButtonUp( void* userData           ,
                                      const Int32 deviceID     ,
                                      const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
@@ -237,7 +234,7 @@ CInputDriverPlugin::OnMouseButtonUp( void* userData           ,
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnMouseMove( void* userData        , 
+CInputDriverPlugin::OnMouseMove( void* userData        ,
                                  const Int32 deviceID  ,
                                  const Int32 xPos      ,
                                  const Int32 yPos      ,
@@ -255,7 +252,7 @@ CInputDriverPlugin::OnMouseMove( void* userData        ,
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnMouseVarChanged( void* userData         , 
+CInputDriverPlugin::OnMouseVarChanged( void* userData         ,
                                        const Int32 deviceID   ,
                                        const UInt32 varIndex  ,
                                        const Int32 value      ,
@@ -268,13 +265,13 @@ CInputDriverPlugin::OnMouseVarChanged( void* userData         ,
                                                                         varIndex   ,
                                                                         value      ,
                                                                         valueDelta );
-        }  */      
-}        
+        }  */
+}
 
 /*-------------------------------------------------------------------------*/
-        
+
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnKeyboardKeyDown( void* userData        , 
+CInputDriverPlugin::OnKeyboardKeyDown( void* userData        ,
                                        const Int32 deviceID  ,
                                        const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
@@ -283,11 +280,11 @@ CInputDriverPlugin::OnKeyboardKeyDown( void* userData        ,
                                                                                             keyCode  ,
                                                                                             true     );
 }
-        
+
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnKeyboardKeyUp( void* userData        , 
+CInputDriverPlugin::OnKeyboardKeyUp( void* userData        ,
                                      const Int32 deviceID  ,
                                      const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
@@ -296,35 +293,35 @@ CInputDriverPlugin::OnKeyboardKeyUp( void* userData        ,
                                                                                             keyCode  ,
                                                                                             false    );
 }
-        
+
 /*-------------------------------------------------------------------------*/
-        
+
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnDeviceBooleanOff( void* userData          , 
-                                        const Int32 deviceid    , 
+CInputDriverPlugin::OnDeviceBooleanOff( void* userData          ,
+                                        const Int32 deviceid    ,
                                         const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     //@TODO
 }
-        
+
 /*-------------------------------------------------------------------------*/
-        
+
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnDeviceBooleanOn( void* userData          , 
-                                       const Int32 deviceid    , 
+CInputDriverPlugin::OnDeviceBooleanOn( void* userData          ,
+                                       const Int32 deviceid    ,
                                        const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     //@TODO
 }
-        
+
 /*-------------------------------------------------------------------------*/
-        
+
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnDeviceVarChanged( void* userData          , 
-                                        const Int32 deviceid    , 
-                                        const UInt32 stateindex , 
+CInputDriverPlugin::OnDeviceVarChanged( void* userData          ,
+                                        const Int32 deviceid    ,
+                                        const UInt32 stateindex ,
                                         const Float32 value     ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
@@ -336,8 +333,8 @@ CInputDriverPlugin::OnDeviceVarChanged( void* userData          ,
 CInputDriverPlugin::CInputDriverPlugin( void )
         : CInputDriver()     ,
           m_sohandle( NULL ) ,
-          m_plugdata( NULL ) 
-{GUCEF_TRACE;    
+          m_plugdata( NULL )
+{GUCEF_TRACE;
 
     memset( m_fptable, NULL, sizeof( m_fptable ) );
 }
@@ -372,7 +369,7 @@ CInputDriverPlugin::GetVersion( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
                                 const CORE::CValueList& params )
 {GUCEF_TRACE;
@@ -394,14 +391,14 @@ CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
     else
     {
         m_sohandle = CORE::LoadModuleDynamicly( filename.C_String() );
-    }    
+    }
     #else
     m_sohandle = CORE::LoadModuleDynamicly( filename.C_String() );
-    #endif 
-    
-    
-    if ( !m_sohandle ) return false;               
-    
+    #endif
+
+
+    if ( !m_sohandle ) return false;
+
     /*
      *      Link up generic module utilities
      */
@@ -426,7 +423,7 @@ CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
      *      Link up driver utilities
      */
 
-                                                      
+
     m_fptable[ INPUTDRIVERPLUG_UPDATE ] = CORE::GetFunctionAddress( m_sohandle               ,
                                                                     "INPUTDRIVERPLUG_Update" ,
                                                                     2*sizeof(void*)          ).funcPtr;
@@ -436,8 +433,8 @@ CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
     m_fptable[ INPUTDRIVERPLUG_DESTROYCONTEXT ] = CORE::GetFunctionAddress( m_sohandle                       ,
                                                                             "INPUTDRIVERPLUG_DestroyContext" ,
                                                                             2*sizeof(void*)                  ).funcPtr;
-                                                                                                                   
-    
+
+
     if ( ( !m_fptable[ INPUTDRIVERPLUG_INIT ] ) ||
          ( !m_fptable[ INPUTDRIVERPLUG_SHUTDOWN ] ) ||
          ( !m_fptable[ INPUTDRIVERPLUG_NAME ] ) ||
@@ -450,27 +447,27 @@ CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
             CORE::UnloadModuleDynamicly( m_sohandle );
             memset( m_fptable, NULL, sizeof(void*) * INPUTDRIVERPLUG_LASTPTR );
             m_sohandle = NULL;
-            
+
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Invalid input driver module: " + filename );
-            return false;        
+            return false;
     }
-    
+
     /*
      *      Intialize the plugin module
      */
-    char*** argmatrix = CreateArgMatrix( params ); 
+    char*** argmatrix = CreateArgMatrix( params );
     ( (TINPUTDRIVERPLUGFPTR_Init) m_fptable[ INPUTDRIVERPLUG_INIT ] )( &m_plugdata, const_cast< const char*** >( argmatrix ) );
     DestroyArgMatrix( argmatrix );
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
-        
-void 
+
+void
 CInputDriverPlugin::UnloadModule( void )
 {GUCEF_TRACE;
         ( (TINPUTDRIVERPLUGFPTR_Shutdown) m_fptable[ INPUTDRIVERPLUG_SHUTDOWN ] )( m_plugdata );
-        
+
         CORE::UnloadModuleDynamicly( m_sohandle );
         memset( m_fptable, NULL, sizeof(void*) * INPUTDRIVERPLUG_LASTPTR );
         m_sohandle = NULL;
@@ -478,12 +475,12 @@ CInputDriverPlugin::UnloadModule( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CInputDriverPlugin::OnUpdate( const UInt64 tickcount               ,
                               const Float64 updateDeltaInMilliSecs ,
                               CInputContext* context               )
 {GUCEF_TRACE;
-        
+
         return ( (TINPUTDRIVERPLUGFPTR_Update) m_fptable[ INPUTDRIVERPLUG_UPDATE ] )( m_plugdata, static_cast<CPluginInputContext*>( context )->GetContextData() ) > 0;
 }
 
@@ -498,26 +495,26 @@ CInputDriverPlugin::CreateArgMatrix( const CORE::CValueList& params )
         {
                 value = params.GetValue( i );
                 key = params.GetKey( i );
-                
+
                 argmatrix[ i ] = new char*[ 2 ];
                 argmatrix[ i ][ 0 ] = new char[ key.Length()+1 ];
-                memcpy( argmatrix[ i ][ 0 ], key.C_String(), key.Length()+1 );  
+                memcpy( argmatrix[ i ][ 0 ], key.C_String(), key.Length()+1 );
                 argmatrix[ i ][ 1 ] = new char[ value.Length()+1 ];
                 memcpy( argmatrix[ i ][ 1 ], value.C_String(), value.Length()+1 );
         }
         argmatrix[ params.GetCount() ] = NULL;
-        
+
         return argmatrix;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CInputDriverPlugin::DestroyArgMatrix( char*** argmatrix )
 {GUCEF_TRACE;
         for ( UInt32 i=0; argmatrix[ i ]>NULL; ++i )
         {
-                delete [](argmatrix[ i ][ 0 ]);                
+                delete [](argmatrix[ i ][ 0 ]);
                 delete [](argmatrix[ i ][ 1 ]);
                 delete [](argmatrix[ i ]);
         }
@@ -526,12 +523,12 @@ CInputDriverPlugin::DestroyArgMatrix( char*** argmatrix )
 
 /*-------------------------------------------------------------------------*/
 
-CInputContext* 
+CInputContext*
 CInputDriverPlugin::CreateContext( const CORE::CValueList& params )
 {GUCEF_TRACE;
-       
-    CPluginInputContext* context( new CPluginInputContext( this, params ) ); 
-    
+
+    CPluginInputContext* context( new CPluginInputContext( this, params ) );
+
     TInputCallbacks callbacks;
     callbacks.onMouseButtonDown  = OnMouseButtonDown;
     callbacks.onMouseButtonUp    = OnMouseButtonUp;
@@ -549,21 +546,21 @@ CInputDriverPlugin::CreateContext( const CORE::CValueList& params )
     callbacks.onKeyboardDetached = OnKeyboardDetached;
     callbacks.onDeviceDetached   = OnDeviceDetached;
     callbacks.userData = context;
-    
+
     char*** argmatrix = CreateArgMatrix( params );
     if ( ( (TINPUTDRIVERPLUGFPTR_CreateContext) m_fptable[ INPUTDRIVERPLUG_CREATECONTEXT ] )( m_plugdata, context->GetContextDataPtr(), const_cast<const char***>( argmatrix ), &callbacks ) )
-    {        
-            DestroyArgMatrix( argmatrix );          
+    {
+            DestroyArgMatrix( argmatrix );
             return context;
     }
     delete context;
     DestroyArgMatrix( argmatrix );
-    return NULL;                
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
-        
-void 
+
+void
 CInputDriverPlugin::DeleteContext( CInputContext* context )
 {GUCEF_TRACE;
         ( (TINPUTDRIVERPLUGFPTR_DestroyContext) m_fptable[ INPUTDRIVERPLUG_DESTROYCONTEXT ] )( m_plugdata, static_cast<CPluginInputContext*>( context )->GetContextData() );
