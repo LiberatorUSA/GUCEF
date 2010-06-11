@@ -1,5 +1,5 @@
 /*
- *  gucefSMDRN: GUCEF module providing sector managed DRN
+ *  gucefMATH: GUCEF module providing basic math classes
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -9,7 +9,7 @@
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public
@@ -17,19 +17,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_SMDRN_CMODULE_H
-#define GUCEF_SMDRN_CMODULE_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_SMDRN_MACROS_H
-#include "gucefSMDRN_macros.h"         /* often used gucefSMDRN macros */
-#define GUCEF_SMDRN_MACROS_H
-#endif /* GUCEF_SMDRN_MACROS_H ? */
+#include "gucefMATH_CModule.h" 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,28 +32,27 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace SMDRN {
+namespace MATH {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILTIIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CModule
-{
-    public:
+bool
+CModule::Load( void )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
     
-    static bool Load( void );
-    
-    static bool Unload( void );
-    
-    private:
-    CModule( void );
-    CModule( const CModule& src );
-    ~CModule();
-    CModule& operator=( const CModule& src );
-};
+bool
+CModule::Unload( void )
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,20 +60,7 @@ class CModule
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace SMDRN */
+}; /* namespace MATH */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_SMDRN_CMODULE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
------------------------------------------------------------------------------*/

@@ -41,15 +41,15 @@
 #define GUCEF_MACROS_H
 #endif /* GUCEF_MACROS_H ? */
 
-#ifndef GUCEF_SMDRN_ETYPES_H
-#include "gucefSMDRN_ETypes.h"        /* simple types */
-#define GUCEF_SMDRN_ETYPES_H
-#endif /* GUCEF_SMDRN_ETYPES_H ? */
+#ifndef GUCEF_MATH_ETYPES_H
+#include "gucefMATH_ETypes.h"        /* simple types */
+#define GUCEF_MATH_ETYPES_H
+#endif /* GUCEF_MATH_ETYPES_H ? */
 
-#ifndef GUCEF_SMDRN_CONFIG_H
-#include "gucefSMDRN_config.h"        /* Module build configuration */
-#define GUCEF_SMDRN_CONFIG_H
-#endif /* GUCEF_SMDRN_CONFIG_H ? */
+#ifndef GUCEF_MATH_CONFIG_H
+#include "gucefMATH_config.h"        /* Module build configuration */
+#define GUCEF_MATH_CONFIG_H
+#endif /* GUCEF_MATH_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -61,34 +61,34 @@
  *      Macros for dynamic linking or static linking. Use the switches in the
  *      config file to control the export type.
  */
-#ifdef GUCEFSMDRN_BUILD_MODULE
-  #define GUCEF_SMDRN_BUILD_MODULE
-#endif /* GUCEFSMDRN_BUILD_MODULE ? */
+#ifdef GUCEFMATH_BUILD_MODULE
+  #define GUCEF_MATH_BUILD_MODULE
+#endif /* GUCEFSMATH_BUILD_MODULE ? */
  
-#undef GUCEF_SMDRN_EXPORTSPEC
-#ifdef GUCEF_SMDRN_BUILD_MODULE
-  #define GUCEF_SMDRN_EXPORTSPEC GUCEF_EXPORT
+#undef GUCEF_MATH_EXPORTSPEC
+#ifdef GUCEF_MATH_BUILD_MODULE
+  #define GUCEF_MATH_EXPORTSPEC GUCEF_EXPORT
 #else
-  #define GUCEF_SMDRN_EXPORTSPEC GUCEF_IMPORT
-#endif /* GUCEF_SMDRN_BUILD_MODULE ? */
+  #define GUCEF_MATH_EXPORTSPEC GUCEF_IMPORT
+#endif /* GUCEF_MATH_BUILD_MODULE ? */
 
-#undef GUCEF_SMDRN_EXPORT_CPP
-#ifdef GUCEF_SMDRN_EXPORT_CPP_CODE
-  #define GUCEF_SMDRN_EXPORT_CPP GUCEF_SMDRN_EXPORTSPEC
+#undef GUCEF_MATH_EXPORT_CPP
+#ifdef GUCEF_MATH_EXPORT_CPP_CODE
+  #define GUCEF_MATH_EXPORT_CPP GUCEF_SMDRN_EXPORTSPEC
 #else
-  #define GUCEF_SMDRN_EXPORT_CPP
-#endif /* GUCEF_SMDRN_EXPORT_CPP_CODE */
+  #define GUCEF_MATH_EXPORT_CPP
+#endif /* GUCEF_MATH_EXPORT_CPP_CODE */
 
-#undef GUCEF_SMDRN_EXPORT_C
-#ifdef GUCEF_SMDRN_EXPORT_C_CODE
-  #define GUCEF_SMDRN_EXPORT_C GUCEF_SMDRN_EXPORTSPEC
+#undef GUCEF_MATH_EXPORT_C
+#ifdef GUCEF_MATH_EXPORT_C_CODE
+  #define GUCEF_MATH_EXPORT_C GUCEF_SMDRN_EXPORTSPEC
 #else
-  #define GUCEF_SMDRN_EXPORT_C
-#endif /* GUCEF_SMDRN_EXPORT_C_CODE */
+  #define GUCEF_MATH_EXPORT_C
+#endif /* GUCEF_MATH_EXPORT_C_CODE */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_SMDRN_MACROS_H ? */
+#endif /* GUCEF_MATH_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
