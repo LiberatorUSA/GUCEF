@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #include "gucefMATH_CModule.h" 
 
 /*-------------------------------------------------------------------------//
@@ -44,6 +49,7 @@ bool
 CModule::Load( void )
 {GUCEF_TRACE;
 
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -52,6 +58,7 @@ bool
 CModule::Unload( void )
 {GUCEF_TRACE;
 
+    return true;
 }
 
 /*-------------------------------------------------------------------------//
