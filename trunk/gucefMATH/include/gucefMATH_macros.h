@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_SMDRN_MACROS_H
-#define GUCEF_SMDRN_MACROS_H
+#ifndef GUCEF_MATH_MACROS_H
+#define GUCEF_MATH_MACROS_H
 
 /*
  *      Build configuration specific macros.
