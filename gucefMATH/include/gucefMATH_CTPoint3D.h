@@ -26,7 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "common.h"
+#ifndef GUCEF_MATH_CTVECTOR3D_H
+#include "gucefMATH_CTVector3D.h"
+#define GUCEF_MATH_CTVECTOR3D_H
+#endif /* GUCEF_MATH_CTVECTOR3D_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,91 +49,52 @@ namespace MATH {
 template < typename T >
 class CTPoint3D
 {
-    friend class Vector;
-
-    //----------------------------------------------------------
-    // Lots of Constructors (add more as needed)
+    public:
+    
+    typedef CTVector3D< T > TRelatedVector3D;
+    
     CTPoint3D( void );
+    
+    CTPoint3D( const CTPoint3D& other );
+    
+    CTPoint3D( const Int32 x ,
+               const Int32 y ,
+               const Int32 z );
 
-    // 3D Point
-    Point( int a, int b, int c) {
-    dimn=3; x=a; y=b; z=c; err=Enot; }
-    Point( double a, double b, double c) {
-    dimn=3; x=a; y=b; z=c; err=Enot; }
-    // n-dim Point
-    Point( int n, int a[]);
-    Point( int n, double a[]);
-    // Destructor
-    ~Point() {};
+    CTPoint3D( const UInt32 x ,
+               const UInt32 y ,
+               const UInt32 z );
 
-    //----------------------------------------------------------
-    // Input/Output streams
-    friend istream& operator>>( istream&, Point&);
-    friend ostream& operator<<( ostream&, Point);
+    CTPoint3D( const Float32 x ,
+               const Float32 y ,
+               const Float32 z );
 
-    //----------------------------------------------------------
-    // Comparison (dimension must match, or not)
-    int operator==( Point);
-    int operator!=( Point);
+    CTPoint3D( const Float64 x ,
+               const Float64 y ,
+               const Float64 z );
 
-    //----------------------------------------------------------
-    // Point and Vector Operations (always valid) 
-    Vector operator-( Point);       // Vector difference
-    Point  operator+( Vector);      // +translate
-    Point  operator-( Vector);      // -translate
-    Point& operator+=( Vector);     // inc translate
-    Point& operator-=( Vector);     // dec translate
+    ~CTPoint3D();
+    
+    CTPoint3D& operator=( const CTPoint3D& other );
 
-    //----------------------------------------------------------
-    // Point Scalar Operations (convenient but often illegal)
-    // using any type of scalar (int, float, or double)
-    //    are not valid for points in general,
-    //    unless they are 'affine' as coeffs of 
-    //    a sum in which all the coeffs add to 1,
-    //    such as: the sum (a*P + b*Q) with (a+b == 1).
-    //    The programmer must enforce this (if they want to).
+    bool operator==( const CTPoint3D& other ) const;
+    
+    bool operator!=( const CTPoint3D& other ) const;
 
-    // Scalar Multiplication
-    friend Point operator*( int, Point);
-    friend Point operator*( double, Point);
-    friend Point operator*( Point, int);
-    friend Point operator*( Point, double);
-    // Scalar Division
-    friend Point operator/( Point, int);
-    friend Point operator/( Point, double);
-
-    //----------------------------------------------------------
-    // Point Addition (also convenient but often illegal)
-    //    is not valid unless part of an affine sum.
-    //    The programmer must enforce this (if they want to).
-    friend Point operator+( Point, Point);     // add points
-
-    // Affine Sum
-    // Returns weighted sum, even when not affine, but...
-    // Tests if coeffs add to 1.  If not, sets: err = Esum.
-    friend Point asum( int, int[], Point[]);
-    friend Point asum( int, double[], Point[]);
-
-    //----------------------------------------------------------
-    // Point Relations
-    friend double d( Point, Point);         // Distance
-    friend double d2( Point, Point);        // Distance^2
-    double isLeft( Point, Point);           // 2D only
-    double Area( Point, Point); 		// any dim for triangle PPP
-
-    // Collinearity Conditions (any dim n)
-    boolean isOnLine( Point, Point, char);  // is On line (char= flag)
-    boolean isOnLine( Point, Point);        // is On line (flag= all)
-    boolean isBefore( Point, Point);        // is On line (flag= before)
-    boolean isBetween( Point, Point);       // is On line (flag= between)
-    boolean isAfter( Point, Point);         // is On line (flag= after)
-    boolean isOnRay( Point, Point);         // is On line (flag= between|after)
-
-    //----------------------------------------------------------
-    // Error Handling
-    void  clerr() { err = Enot;}            // clear error
-    int   geterr() { return err;}           // get error
-    char* errstr();                         // return error string
+    // Vector difference
+    TRelatedVector3D operator-( const CTPoint3D& other ) const; 
+    
+    // +translate
+    CTPoint3D operator+( const TRelatedVector3D& translateVector ) const;
+    
+    // -translate
+    CTPoint3D operator-( const TRelatedVector3D& translateVector ) const;
+    
+    // incremental +translate
+    CTPoint3D& operator+=( const TRelatedVector3D& translateVector );
+    
+    // decremental -translate
+    CTPoint3D& operator-=( const TRelatedVector3D& translateVector );
     
     private:
     
@@ -157,6 +121,208 @@ CTPoint3D< T >::CTPoint3D( void )
 
 /*-------------------------------------------------------------------------*/
 
+template < typename T >
+CTPoint3D< T >::CTPoint3D( const CTPoint3D< T >& src )
+    : m_x( src.m_x )  ,
+      m_y( src.m_y )  ,
+      m_z( src.m_z )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >::~CTPoint3D( void )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >::CTPoint3D( const Int32 x ,
+                           const Int32 y ,
+                           const Int32 z )
+    : m_x( x ) ,
+      m_y( y ) ,
+      m_z( z )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >::CTPoint3D( const UInt32 x ,
+                           const UInt32 y ,
+                           const UInt32 z )
+    : m_x( x ) ,
+      m_y( y ) ,
+      m_z( z )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >::CTPoint3D( const Float32 x ,
+                           const Float32 y ,
+                           const Float32 z )
+    : m_x( x ) ,
+      m_y( y ) ,
+      m_z( z )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >::CTPoint3D( const Float64 x ,
+                           const Float64 y ,
+                           const Float64 z )
+    : m_x( x ) ,
+      m_y( y ) ,
+      m_z( z )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >::CTPoint3D( const Float32* xyz )
+    : m_x( xyz[ 0 ] ) ,
+      m_y( xyz[ 1 ] ) ,
+      m_z( xyz[ 2 ] )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >::CTPoint3D( const Float64* xyz )
+    : m_x( xyz[ 0 ] ) ,
+      m_y( xyz[ 1 ] ) ,
+      m_z( xyz[ 2 ] )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >::CTPoint3D( const UInt32* xyz )
+    : m_x( xyz[ 0 ] ) ,
+      m_y( xyz[ 1 ] ) ,
+      m_z( xyz[ 2 ] )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >::CTPoint3D( const Int32* xyz )
+    : m_x( xyz[ 0 ] ) ,
+      m_y( xyz[ 1 ] ) ,
+      m_z( xyz[ 2 ] )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >
+CTPoint3D& operator=( const CTPoint3D< T >& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        m_x = src.m_x;
+        m_y = src.m_y;
+        m_z = src.m_z;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+bool
+CTPoint3D< T >::operator==( const CTPoint3D& other ) const
+{GUCEF_TRACE;
+    
+    return m_x == other.m_x &&
+           m_y == other.m_y &&
+           m_z == other.m_z;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+bool
+CTPoint3D< T >::operator!=( const CTPoint3D& other ) const
+{GUCEF_TRACE;
+    
+    return m_x != other.m_x ||
+           m_y != other.m_y ||
+           m_z != other.m_z;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >::TRelatedVector3D
+CTPoint3D< T >::operator-( const CTPoint3D& other ) const
+{GUCEF_TRACE;
+
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >
+CTPoint3D< T >::operator+( const TRelatedVector3D& translateVector ) const
+{GUCEF_TRACE;
+
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >
+CTPoint3D< T >::operator-( const TRelatedVector3D& translateVector ) const
+{GUCEF_TRACE;
+
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >&
+CTPoint3D< T >::operator+=( const TRelatedVector3D& translateVector )
+{GUCEF_TRACE;
+
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+CTPoint3D< T >&
+CTPoint3D< T >::operator-=( const TRelatedVector3D& translateVector )
+{GUCEF_TRACE;
+
+    
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

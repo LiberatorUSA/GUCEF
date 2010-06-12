@@ -1,5 +1,5 @@
 /*
- *  gucefDRN: GUCEF module providing RAD networking trough data replication
+ *  gucefMATH: GUCEF module providing basic math classes
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -18,16 +18,13 @@
  */
 
 /*
- *      This is the main include header for the gucefDRN library.
+ *      This is the main include header for the gucefMATH library.
  *      It is part of a framework called GUCEF.
- *      All classes in this library have to do with RAD networking functionality
- *      The facilities in this library are designed to make it easy to setup
- *      a networking infrastructure without having to worry about the details
- *      of low-level networking.
+ *      All classes in this library have to do basic math functionality
  */
 
-#ifndef GUCEF_DRN_H
-#define GUCEF_DRN_H
+#ifndef GUCEF_MATH_H
+#define GUCEF_MATH_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,26 +35,26 @@
 /*
  *      Library build configuration      
  */
-#ifndef GUCEF_DRN_CONFIG_H
-#include "gucefDRN_config.h"
-#define GUCEF_DRN_CONFIG_H
-#endif /* GUCEF_DRN_CONFIG_H ? */
+#ifndef GUCEF_MATH_CONFIG_H
+#include "gucefMATH_config.h"
+#define GUCEF_MATH_CONFIG_H
+#endif /* GUCEF_MATH_CONFIG_H ? */
 
 /*
  *      Library specific macros and generic macros
  */
-#ifndef GUCEF_DRN_MACROS_H
-#include "gucefDRN_macros.h"
-#define GUCEF_DRN_MACROS_H
-#endif /* GUCEF_DRN_MACROS_H ? */
+#ifndef GUCEF_MATH_MACROS_H
+#include "gucefMATH_macros.h"
+#define GUCEF_MATH_MACROS_H
+#endif /* GUCEF_MATH_MACROS_H ? */
 
 /*
  *      Simple types
  */
-#ifndef GUCEF_DRN_ETYPES_H
-#include "gucefDRN_ETypes.h"
-#define GUCEF_DRN_ETYPES_H
-#endif /* GUCEF_DRN_ETYPES_H ? */
+#ifndef GUCEF_MATH_ETYPES_H
+#include "gucefMATH_ETypes.h"
+#define GUCEF_MATH_ETYPES_H
+#endif /* GUCEF_MATH_ETYPES_H ? */
 
 /*---------------------------------------------------------------------------/
 
@@ -66,45 +63,30 @@
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 
-#ifndef GUCEF_DRN_CDRNNODE_H
-#include "gucefDRN_CDRNNode.h"
-#define GUCEF_DRN_CDRNNODE_H
-#endif /* GUCEF_DRN_CDRNNODE_H ? */
+#ifndef GUCEF_MATH_POINTS_H
+#include "gucefMATH_points.h"
+#define GUCEF_MATH_POINTS_H
+#endif /* GUCEF_MATH_POINTS_H ? */
 
-#ifndef GUCEF_DRN_CDRNPEERLINK_H
-#include "gucefDRN_CDRNPeerLink.h"
-#define GUCEF_DRN_CDRNPEERLINK_H
-#endif /* GUCEF_DRN_CDRNPEERLINK_H ? */
+#ifndef GUCEF_MATH_VECTORS_H
+#include "gucefMATH_vectors.h"
+#define GUCEF_MATH_VECTORS_H
+#endif /* GUCEF_MATH_VECTORS_H ? */
 
-#ifndef GUCEF_DRN_CDRNDATAGROUP_H
-#include "gucefDRN_CDRNDataGroup.h"
-#define GUCEF_DRN_CDRNDATAGROUP_H
-#endif /* GUCEF_DRN_CDRNDATAGROUP_H ? */
+#ifndef GUCEF_MATH_CTPOINT3D_H
+#include "gucefMATH_CTPoint3D.h"
+#define GUCEF_MATH_CTPOINT3D_H
+#endif /* GUCEF_MATH_CTPOINT3D_H ? */
 
-#ifndef GUCEF_DRN_CDRNDATAGROUPPROPERTIES_H
-#include "gucefDRN_CDRNDataGroupProperties.h"
-#define GUCEF_DRN_CDRNDATAGROUPPROPERTIES_H
-#endif /* GUCEF_DRN_CDRNDATAGROUPPROPERTIES_H ? */
-
-#ifndef GUCEF_DRN_CDRNDATASTREAM_H
-#include "gucefDRN_CDRNDataStream.h"
-#define GUCEF_DRN_CDRNDATASTREAM_H
-#endif /* GUCEF_DRN_CDRNDATASTREAM_H ? */
-
-#ifndef GUCEF_DRN_CIDRNPEERVALIDATOR_H
-#include "gucefDRN_CIDRNPeerValidator.h"
-#define GUCEF_DRN_CIDRNPEERVALIDATOR_H
-#endif /* GUCEF_DRN_CIDRNPEERVALIDATOR_H ? */
-
-#ifndef GUCEF_DRN_CIDRNPEERLINKCRYPTER_H
-#include "gucefDRN_CIDRNPeerLinkCrypter.h"
-#define GUCEF_DRN_CIDRNPEERLINKCRYPTER_H
-#endif /* GUCEF_DRN_CIDRNPEERVALIDATOR_H ? */
+#ifndef GUCEF_MATH_CTVECTOR3D_H
+#include "gucefMATH_CTVector3D.h"
+#define GUCEF_MATH_CTVECTOR3D_H
+#endif /* GUCEF_MATH_CTVECTOR3D_H ? */
 
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_DRN_H ? */
+#endif /* GUCEF_MATH_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
