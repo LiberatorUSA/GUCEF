@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CFILEURLHANDLER_H
@@ -51,37 +51,37 @@ namespace CORE {
  *      Handlers for HTTP for example should inherit and implement the
  *      interface from this and lower classes.
  */
-class GUCEFCORE_EXPORT_CPP CFileURLHandler : public CURLHandler
+class GUCEF_CORE_PUBLIC_CPP CFileURLHandler : public CURLHandler
 {
         public:
-        
+
         /**
          *      Doesnt do anything special atm.
-         */        
+         */
         CFileURLHandler( void );
-        
+
         /**
          *      Doesnt do anything special atm.
-         */        
+         */
         CFileURLHandler( const CFileURLHandler& src );
-        
+
         /**
          *      Doesnt do anything special atm.
          */
         virtual ~CFileURLHandler();
-        
+
         /**
          *      Doesnt do anything special atm.
-         */        
+         */
         CFileURLHandler& operator=( const CFileURLHandler& src );
 
         virtual bool Activate( CURL& url );
-        
+
         virtual void Deactivate( CURL& url );
-                         
+
         virtual bool IsActive( const CURL& url ) const;
-        
-        virtual CICloneable* Clone( void ) const;        
+
+        virtual CICloneable* Clone( void ) const;
 };
 
 /*-------------------------------------------------------------------------//
@@ -105,5 +105,5 @@ class GUCEFCORE_EXPORT_CPP CFileURLHandler : public CURLHandler
 
 - 24-04-2005 :
         - Initial implementation
-          
+
 ---------------------------------------------------------------------------*/

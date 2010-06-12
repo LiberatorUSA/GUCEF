@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CNOTIFIEROBSERVINGCOMPONENT_H
 #define GUCEF_CORE_CNOTIFIEROBSERVINGCOMPONENT_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -34,7 +34,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -51,35 +51,35 @@ class CObservingNotifier;
  *  Class for internal use only.
  *  Implements the observer component of the CObservingNotifier class.
  */
-class GUCEFCORE_EXPORT_CPP CNotifierObservingComponent : public CObserver
-{     
+class GUCEF_CORE_PUBLIC_CPP CNotifierObservingComponent : public CObserver
+{
     protected:
-    
+
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
-                           
+
     virtual void LockData( void );
-    
+
     virtual void UnlockData( void );
 
     private:
     friend class CObservingNotifier;
-    
+
     CNotifierObservingComponent( void );
-    
+
     CNotifierObservingComponent( const CNotifierObservingComponent& src );
-    
+
     virtual ~CNotifierObservingComponent();
-    
+
     CNotifierObservingComponent& operator=( const CNotifierObservingComponent& src );
-    
+
     void SetOwner( CObservingNotifier* owner );
-    
+
     virtual const CString& GetClassTypeName( void ) const;
-    
+
     private:
-    
+
     CObservingNotifier* m_owner;
 };
 

@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CIPLUGIN_H
-#define GUCEF_CORE_CIPLUGIN_H 
+#define GUCEF_CORE_CIPLUGIN_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,33 +59,33 @@ namespace CORE {
 /**
  *  Interface class for plugins
  */
-class GUCEFCORE_EXPORT_CPP CIPlugin
+class GUCEF_CORE_PUBLIC_CPP CIPlugin
 {
     public:
-    
+
     CIPlugin( void );
-    
+
     CIPlugin( const CIPlugin& src );
-    
+
     virtual ~CIPlugin();
-    
+
     CIPlugin& operator=( const CIPlugin& src );
-    
+
     virtual CString GetDescription( void ) const = 0;
 
     virtual CString GetCopyright( void ) const = 0;
-    
+
     virtual TVersion GetVersion( void ) const = 0;
-    
+
     virtual CString GetModulePath( void ) const = 0;
-    
+
     virtual bool IsLoaded( void ) const = 0;
-    
+
     virtual bool Load( const CString& pluginPath ) = 0;
-    
+
     virtual bool Unload( void ) = 0;
 
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, ENotLoaded );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, ENotLoaded );
 };
 
 /*-------------------------------------------------------------------------//

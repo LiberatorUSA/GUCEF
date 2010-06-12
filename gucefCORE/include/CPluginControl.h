@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CPLUGINCONTROL_H
@@ -32,13 +32,13 @@
 #endif /* GUCEF_MT_GUCEFMT_H ? */
 
 #ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"                /* platform string implementation */  
+#include "CDVString.h"                /* platform string implementation */
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
 #ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"            /* platform dynamic array implementation */  
-#define GUCEF_CORE_CDYNAMICARRAY_H 
+#include "CDynamicArray.h"            /* platform dynamic array implementation */
+#define GUCEF_CORE_CDYNAMICARRAY_H
 #endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
 
 #ifndef GUCEF_CORE_MACROS_H
@@ -72,44 +72,44 @@ class CString;
 /**
  *      Global framework plugin control center
  *      All plugin managers derived from CPluginManager automaticly register here.
- *      
+ *
  */
-class GUCEFCORE_EXPORT_CPP CPluginControl
+class GUCEF_CORE_PUBLIC_CPP CPluginControl
 {
         public:
-        
-        static CPluginControl* Instance( void );             
-        
+
+        static CPluginControl* Instance( void );
+
         void LoadAll( void );
-        
+
         void UnloadAll( void );
-        
+
         void SetPluginDir( const CString& path );
-        
-        CString GetPluginDir( void ) const;   
-        
+
+        CString GetPluginDir( void ) const;
+
         private:
         friend class CPluginManager;
-        
+
         void Register( CPluginManager* pman );
-        
+
         void Unregister( CPluginManager* pman );
-        
+
         private:
         friend class CGUCEFCOREModule;
-        
+
         static void Deinstance( void );
-        
+
         private:
-        
+
         CPluginControl( void );
         CPluginControl( const CPluginControl& src );
         ~CPluginControl();
         CPluginControl& operator=( const CPluginControl& src );
-        
+
         static MT::CMutex _mutex;
         static CPluginControl* _instance;
-        
+
         CString _plugindir;
         CDynamicArray _managers;
 };

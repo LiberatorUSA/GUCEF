@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CTRACER_H
@@ -44,7 +44,7 @@ namespace CORE {
 //                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 /**
  *      Very simply class that calls the GUCEF callstack functions.
@@ -55,21 +55,21 @@ namespace CORE {
  *      Note that it is recommended to use the TRACER macro instead of using the class
  *      directly
  */
-class GUCEFCORE_EXPORT_CPP CTracer
+class GUCEF_CORE_PUBLIC_CPP CTracer
 {
     public:
-    
+
     CTracer( const char* file ,
              const int line   );
-    
+
     ~CTracer();
-    
+
     private:
-    
+
     CTracer( void );
-    
+
     CTracer( const CTracer& src );
-    
+
     CTracer& operator=( const CTracer& src );
 };
 
@@ -86,17 +86,17 @@ class GUCEFCORE_EXPORT_CPP CTracer
 //                                                                         //
 //      MACROS                                                             //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 /**
  *      Macro that creates a tracer object and fills in the file and line
  *      precompiler directives. This should save you some typing.
  */
-#ifdef GUCEF_CALLSTACK_TRACKING    
+#ifdef GUCEF_CALLSTACK_TRACKING
   #define GUCEF_TRACE GUCEF::CORE::CTracer GUCEFStackTracerObject( __FILE__, __LINE__ );
 #else
   #define GUCEF_TRACE
-#endif  
+#endif
 
 /*-------------------------------------------------------------------------*/
 

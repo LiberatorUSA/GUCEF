@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CCPPWRAPFILEACCESS_H
-#define GUCEF_CORE_CCPPWRAPFILEACCESS_H 
+#define GUCEF_CORE_CCPPWRAPFILEACCESS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CIOACCESS_H
 #include "CIOAccess.h"        /* base class for all media manipulators */
@@ -46,10 +46,10 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CCPPWrapFileAccess : public CIOAccess
+class GUCEF_CORE_PUBLIC_CPP CCPPWrapFileAccess : public CIOAccess
 {
         public:
-        
+
         CCPPWrapFileAccess( TIOAccess *access );
 
         virtual ~CCPPWrapFileAccess();
@@ -68,11 +68,11 @@ class GUCEFCORE_EXPORT_CPP CCPPWrapFileAccess : public CIOAccess
          *      is the resource opened for reading ?
          */
         virtual bool Opened( void ) const;
-        
+
         /**
          *      returns the size of the resource in bytes
          */
-        virtual UInt32 GetSize( void ) const;        
+        virtual UInt32 GetSize( void ) const;
 
         /**
          *      read a line of text
@@ -94,11 +94,11 @@ class GUCEFCORE_EXPORT_CPP CCPPWrapFileAccess : public CIOAccess
         /**
          *      Attempts to write the specified number of bytes to the recourse
          *      using srcdata as the data source.
-         */        
+         */
         virtual UInt32 Write( const void* srcdata ,
                               UInt32 esize        ,
                               UInt32 elements     );
-                              
+
         /**
          *      Get the current offset in bytes
          */
@@ -124,30 +124,30 @@ class GUCEFCORE_EXPORT_CPP CCPPWrapFileAccess : public CIOAccess
          *      are we at the end of the resource ?
          */
         virtual bool Eof( void ) const;
-        
+
         virtual bool IsReadable( void ) const;
-        
+
         /**
          *      Is the only allowed access method writing ?
          *      if true the resource cannot be read.
          */
         virtual bool IsWriteable( void ) const;
-        
+
         /**
          *      Is the access to the resource a valid one or
          *      has something gone wrong ?
          */
         virtual bool IsValid( void );
-        
+
         virtual void Flush( void );
 
         virtual TIOAccess* CStyleAccess( void );
-        
+
         virtual CICloneable* Clone( void ) const;
-        
+
         private:
         CCPPWrapFileAccess( void );
-                
+
         TIOAccess* _access;
 };
 

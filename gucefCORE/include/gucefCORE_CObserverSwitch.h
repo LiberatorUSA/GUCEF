@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_COBSERVERSWITCH_H
 #define GUCEF_CORE_COBSERVERSWITCH_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -40,7 +40,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -53,32 +53,32 @@ namespace CORE {
  *  Class that forwards events as if they where send from the notifiers the switch
  *  is subscribed to for the active observer group.
  */
-class GUCEF_CORE_EXPORT_CPP CObserverSwitch : public CObservingNotifier
+class GUCEF_CORE_PUBLIC_CPP CObserverSwitch : public CObservingNotifier
 {
     public:
-    
+
     CObserverSwitch( void );
-    
+
     CObserverSwitch( const CObserverSwitch& src );
-    
+
     virtual ~CObserverSwitch();
-    
+
     CObserverSwitch& operator=( const CObserverSwitch& src );
-    
+
     void SetActiveGroup( const CString& groupName );
-    
+
     const CString& GetActiveGroup( void ) const;
-    
+
     void AddObserverToGroup( const CString& groupName ,
                              CObserver& observer      );
 
     void RemoveObserverFromGroup( const CString& groupName ,
                                   CObserver& observer      );
-    
+
     virtual const CString& GetClassTypeName( void ) const;
-    
+
     protected:
-    
+
     /**
      *  Event callback member function.
      *  Implement this in your descending class to handle
@@ -90,13 +90,13 @@ class GUCEF_CORE_EXPORT_CPP CObserverSwitch : public CObservingNotifier
      */
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );                          
+                           CICloneable* eventdata = NULL );
 
     private:
-    
+
     typedef std::set< CObserver* > TObserverSet;
     typedef std::map< CString, TObserverSet > TObserverGroupMap;
-    
+
     TObserverGroupMap m_observerGroups;
     CString m_activeGroupName;
     TObserverSet* m_activeGroup;

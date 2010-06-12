@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_MEMORYSEGMENT_H
@@ -37,7 +37,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -48,10 +48,10 @@ namespace CORE {
 
 /**
  *  Very simple utility class that is used internally by certain memory pool
- *  implementations for sorting and storing memory pool administration related 
+ *  implementations for sorting and storing memory pool administration related
  *  data. Basicly a data container with a configurable compare functionality
  */
-class GUCEFCORE_EXPORT_CPP CMemorySegment
+class GUCEF_CORE_PUBLIC_CPP CMemorySegment
 {
     public:
 
@@ -80,14 +80,14 @@ class GUCEFCORE_EXPORT_CPP CMemorySegment
     void SetOffset( unsigned long newoffset );
 
     unsigned long GetOffset( void ) const;
-    
+
     private:
     CMemorySegment( void );
 
 
     unsigned long m_size;
     unsigned long m_offset;
-    bool m_sizecompare; 
+    bool m_sizecompare;
 };
 
 /*-------------------------------------------------------------------------//

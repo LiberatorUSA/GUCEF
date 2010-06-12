@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CSTDLOGGER_H
-#define GUCEF_CORE_CSTDLOGGER_H 
+#define GUCEF_CORE_CSTDLOGGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CILOGGER_H
 #include "CILogger.h"
@@ -54,35 +54,35 @@ class CIOAccess;
  *  Standard GUCEF logger implementation.
  *  Just your run of the mill logging, nothing fancy.
  */
-class GUCEFCORE_EXPORT_CPP CStdLogger : public CILogger
+class GUCEF_CORE_PUBLIC_CPP CStdLogger : public CILogger
 {
     public:
-    
-    CStdLogger( void );    
-    
+
+    CStdLogger( void );
+
     CStdLogger( CIOAccess& output );
-    
+
     virtual ~CStdLogger();
 
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
                       const CString& logMessage    );
-    
+
     virtual void FlushLog( void );
-    
+
     void SetOutput( CIOAccess& output );
-    
+
     void SetMinimalLogLevel( const Int32 minimalLogLevel );
-    
+
     Int32 GetMinimalLogLevel( void ) const;
-    
+
     private:
-    
+
     CStdLogger& operator=( const CStdLogger& src );
     CStdLogger( const CStdLogger& src );
-    
+
     private:
-    
+
     CIOAccess* m_output;
     Int32 m_minimalLogLevel;
 };

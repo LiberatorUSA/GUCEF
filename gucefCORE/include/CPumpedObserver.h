@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CPUMPEDOBSERVER_H
 #define GUCEF_CORE_CPUMPEDOBSERVER_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -60,33 +60,33 @@ class CPulseGenerator;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
+class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
 {
     public:
-    
+
     CPumpedObserver( void );
 
     CPumpedObserver( CPulseGenerator& pulsGenerator );
-    
+
     CPumpedObserver( const CPumpedObserver& src );
-    
+
     virtual ~CPumpedObserver();
-    
+
     CPumpedObserver& operator=( const CPumpedObserver& src );
-    
-    virtual const CString& GetClassTypeName( void ) const;    
-    
+
+    virtual const CString& GetClassTypeName( void ) const;
+
     protected:
-    
+
     /**
      *  Event callback member function.
      *  Implement this in your descending class to handle
-     *  notification events. 
+     *  notification events.
      *
      *  Note that in contrast to OnNotify, which is performed in
      *  the calling thread, this call is always made in the main
      *  application thread. As such it is well suited for linking
-     *  non-tread safe code via an observer to a notifier that 
+     *  non-tread safe code via an observer to a notifier that
      *  operates from within another thread.
      *
      *  @param notifier the notifier that sent the notification
@@ -96,15 +96,15 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
     virtual void OnPumpedNotify( CNotifier* notifier           ,
                                  const CEvent& eventid         ,
                                  CICloneable* eventdata = NULL );
-    
+
     protected:
-    
+
     /**
      *  Event callback member function.
      *  Places the given event in the mailbox where is awaits
      *  the next pump cycle.
      *
-     *  Note: DO NOT OVERRIDE !!!     
+     *  Note: DO NOT OVERRIDE !!!
      *
      *  @param notifier the notifier that sent the notification
      *  @param eventid the unique event id for an event
@@ -115,12 +115,12 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
                            CICloneable* eventdata = NULL );
 
     virtual void LockData( void ) const;
-    
+
     virtual void UnlockData( void ) const;
 
-    private:    
+    private:
     typedef CTEventHandlerFunctor< CPumpedObserver > TEventCallback;
-    
+
     void OnPulse( CNotifier* notifier           ,
                   const CEvent& eventid         ,
                   CICloneable* eventdata = NULL );
@@ -128,9 +128,9 @@ class GUCEFCORE_EXPORT_CPP CPumpedObserver : public CObserver
     void OnPulseGeneratorDestruction( CNotifier* notifier           ,
                                       const CEvent& eventid         ,
                                       CICloneable* eventdata = NULL );
-    
-    private:   
-    
+
+    private:
+
     CPulseGenerator* m_pulsGenerator;
     MT::CTMailBox< CEvent > m_mailbox;
     MT::CMutex m_mutex;

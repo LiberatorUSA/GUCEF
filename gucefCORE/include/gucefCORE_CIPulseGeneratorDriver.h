@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CIPULSEGENERATORDRIVER_H
 #define GUCEF_CORE_CIPULSEGENERATORDRIVER_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -37,7 +37,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -46,30 +46,30 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_EXPORT_CPP CIPulseGeneratorDriver
+class GUCEF_CORE_PUBLIC_CPP CIPulseGeneratorDriver
 {
     public:
-    
+
     CIPulseGeneratorDriver( void );
-    
+
     CIPulseGeneratorDriver( const CIPulseGeneratorDriver& src );
-    
+
     virtual ~CIPulseGeneratorDriver();
-    
+
     CIPulseGeneratorDriver& operator=( const CIPulseGeneratorDriver& src );
-    
+
     virtual void RequestPulse( CPulseGenerator& pulseGenerator ) = 0;
-    
+
     virtual void RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
                                         const UInt32 pulseDeltaInMilliSecs ) = 0;
 
     virtual void RequestPulseInterval( CPulseGenerator& pulseGenerator    ,
                                        const UInt32 pulseDeltaInMilliSecs ) = 0;
-    
+
     virtual void RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator ) = 0;
-    
+
     protected:
-    
+
     /**
      *  Simply proxy to the generator intended to force the implementation of a proper
      *  pulse generator driver

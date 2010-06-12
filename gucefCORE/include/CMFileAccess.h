@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CMFILEACCESS_H
-#define GUCEF_CORE_CMFILEACCESS_H 
+#define GUCEF_CORE_CMFILEACCESS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_MFILE_H
 #include "MFILE.h"
@@ -51,14 +51,14 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CMFileAccess : public CROIOAccess
+class GUCEF_CORE_PUBLIC_CPP CMFileAccess : public CROIOAccess
 {
         public:
-        
+
         CMFileAccess( const void* memblock ,
                       const UInt32 size    );
-                      
-        CMFileAccess( const CMFileAccess& src );                      
+
+        CMFileAccess( const CMFileAccess& src );
 
         virtual ~CMFileAccess();
 
@@ -109,11 +109,11 @@ class GUCEFCORE_EXPORT_CPP CMFileAccess : public CROIOAccess
          *      jump to the given offset in the resource
          */
         virtual UInt32 Setpos( UInt32 position );
-        
+
         /**
          *      returns the size of the resource in bytes
          */
-        virtual UInt32 GetSize( void ) const;         
+        virtual UInt32 GetSize( void ) const;
 
         /**
          *      Read a single character
@@ -123,8 +123,8 @@ class GUCEFCORE_EXPORT_CPP CMFileAccess : public CROIOAccess
         /**
          *      are we at the end of the resource ?
          */
-        virtual bool Eof( void ) const;       
-        
+        virtual bool Eof( void ) const;
+
         /**
          *      Is the access to the resource a valid one or
          *      has something gone wrong ?
@@ -132,12 +132,12 @@ class GUCEFCORE_EXPORT_CPP CMFileAccess : public CROIOAccess
         virtual bool IsValid( void );
 
         virtual TIOAccess* CStyleAccess( void );
-        
+
         virtual CICloneable* Clone( void ) const;
-        
+
         private:
         CMFileAccess( void );
-        
+
         MFILE _mfile;
 };
 

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef GUCEF_MT_CSEMAPHORE_H
@@ -67,7 +67,7 @@ namespace MT {
  *      The usage of this class allows you to forgo having to type the same
  *      tests and allocation/de-allocation code all the time.
  */
-class GUCEFMT_EXPORT_CPP CSemaphore
+class GUCEF_MT_PUBLIC_CPP CSemaphore
 {
         public:
 

@@ -72,7 +72,7 @@ class CTaskDelegator;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_EXPORT_CPP CTaskManager : public CObservingNotifier
+class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 {
     public:
 

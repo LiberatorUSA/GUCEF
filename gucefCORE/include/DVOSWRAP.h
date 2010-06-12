@@ -100,12 +100,12 @@ typedef union anyPointer TAnyPointer;
 //-------------------------------------------------------------------------*/
 
 
-GUCEFCORE_EXPORT_C void*
+GUCEF_CORE_PUBLIC_C void*
 LoadModuleDynamicly( const char* filename );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 UnloadModuleDynamicly( void *sohandle );
 
 /*--------------------------------------------------------------------------*/
@@ -121,7 +121,7 @@ UnloadModuleDynamicly( void *sohandle );
  *      exports are compatible if the same calling convention is used but the
  *      names tend to get mucked up.
  */
-GUCEFCORE_EXPORT_C TAnyPointer
+GUCEF_CORE_PUBLIC_C TAnyPointer
 GetFunctionAddress( void *sohandle           ,
                     const char* functionname ,
                     UInt32 parambytes        );
@@ -141,7 +141,7 @@ GetFunctionAddress( void *sohandle           ,
  *              "HWND" environment setting after creating your primary window using
  *              the GUCEFSetEnv() function.
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 StringToClipboard( const char *str );
 
 /*--------------------------------------------------------------------------*/
@@ -167,20 +167,20 @@ StringToClipboard( const char *str );
  *              "HWND" environment setting after creating your primary window using
  *              the GUCEFSetEnv() function.
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 StringFromClipboard( char *dest     ,
                      UInt32 size    ,
                      UInt32 *wbytes );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 GUCEFSetEnv( const char* key   ,
              const char* value );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_C const char*
+GUCEF_CORE_PUBLIC_C const char*
 GUCEFGetEnv( const char* key );
 
 /*--------------------------------------------------------------------------*/
@@ -188,7 +188,7 @@ GUCEFGetEnv( const char* key );
 /**
  *      Returns the application tickcount
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 GUCEFGetTickCount( void );
 
 /*--------------------------------------------------------------------------*/
@@ -196,18 +196,18 @@ GUCEFGetTickCount( void );
 /**
  *      Displays an O/S error message/dialog
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 ShowErrorMessage( const char* message     ,
                   const char* description );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_CORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 GetPhysicalCPUCount( void );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_CORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 GetLogicalCPUCount( void );
 
 /*--------------------------------------------------------------------------*/

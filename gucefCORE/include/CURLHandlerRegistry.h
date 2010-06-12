@@ -56,7 +56,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CURLHandlerRegistry : public CTRegistry< CURLHandler >
+class GUCEF_CORE_PUBLIC_CPP CURLHandlerRegistry : public CTRegistry< CURLHandler >
 {
         public:
 

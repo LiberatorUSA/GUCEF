@@ -96,7 +96,7 @@ typedef enum
  *
  *      @deprecated
  */
-class GUCEFCORE_EXPORT_CPP CStringList
+class GUCEF_CORE_PUBLIC_CPP CStringList
 {
         public:
 
@@ -138,7 +138,7 @@ class GUCEFCORE_EXPORT_CPP CStringList
 
         void Clear( void );
 
-        class GUCEFCORE_EXPORT_CPP iterator
+        class GUCEF_CORE_PUBLIC_CPP iterator
         {
                 public:
 
@@ -176,7 +176,7 @@ class GUCEFCORE_EXPORT_CPP CStringList
                 UInt32 _pos;
         };
 
-        class GUCEFCORE_EXPORT_CPP const_iterator
+        class GUCEF_CORE_PUBLIC_CPP const_iterator
         {
                 public:
 
@@ -259,7 +259,7 @@ class GUCEFCORE_EXPORT_CPP CStringList
         - Redesigned and recoded this class. It now uses iterators and the
           refrence counted string class. void* links are no longer available.
 - 18-08-2003 :
-        - Changed EXPORT into GUCEFCORE_EXPORT_CPP
+        - Changed EXPORT into GUCEF_CORE_PUBLIC_CPP
 - 06-06-2003 :
         - Moved more functionality into this abstarct base class from it's
           decendants.

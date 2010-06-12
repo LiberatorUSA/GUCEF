@@ -82,18 +82,18 @@ typedef struct md5_state_s {
 } md5_state_t;
 
 #ifdef __cplusplus
-extern "C" 
+extern "C"
 {
 #endif
 
 /* Initialize the algorithm. */
-void GUCEFCORE_EXPORT_C md5_init(md5_state_t *pms);
+void GUCEF_CORE_PUBLIC_C md5_init(md5_state_t *pms);
 
 /* Append a string to the message. */
-void GUCEFCORE_EXPORT_C md5_append(md5_state_t *pms, const md5_byte_t *data, int nbytes);
+void GUCEF_CORE_PUBLIC_C md5_append(md5_state_t *pms, const md5_byte_t *data, int nbytes);
 
 /* Finish the message and return the digest. */
-void GUCEFCORE_EXPORT_C md5_finish(md5_state_t *pms, md5_byte_t digest[16]);
+void GUCEF_CORE_PUBLIC_C md5_finish(md5_state_t *pms, md5_byte_t digest[16]);
 
 #ifdef __cplusplus
 };  /* end extern "C" */

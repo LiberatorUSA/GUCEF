@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_MT_CACTIVEOBJECT_H
@@ -59,7 +59,7 @@ struct SThreadData;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFMT_EXPORT_CPP CActiveObject
+class GUCEF_MT_PUBLIC_CPP CActiveObject
 {
     public:
 
@@ -73,18 +73,18 @@ class GUCEFMT_EXPORT_CPP CActiveObject
      *  Flag that indicates whether the thread is active
      */
     bool IsActive( void ) const;
-    
+
     /**
      *  Flag that indicates whether the thread has been asked to gracefully deactivate
      */
     bool IsDeactivationRequested( void ) const;
-    
+
     /**
      *  Flag that indicates whether the thread has been asked to pause on the next available thread cycle.
      */
     bool IsPauseRequested( void ) const;
 
-    /** 
+    /**
      *  Activates the object (if it is not active already).
      *  This operation will spawn a thread.
      */
@@ -92,7 +92,7 @@ class GUCEFMT_EXPORT_CPP CActiveObject
                    const UInt32 cycleDelay = 10        ,
                    const UInt32 minimalCycleDelta = 10 );
 
-    /** 
+    /**
      *  Deactivates the active object
      *  If 'force' is false then the thread will deactivate on the next available thread cycle.
      *  If 'force' is true then the thread will be killed immediatly regardless of whether it is busy processing a cycle.
@@ -110,14 +110,14 @@ class GUCEFMT_EXPORT_CPP CActiveObject
     void Pause( bool force );
 
     void Resume( void );
-    
+
     UInt32 GetThreadID( void ) const;
 
     protected:
 
     virtual bool OnTaskStart( void* taskdata ) = 0;
 
-    /** 
+    /**
      *  Perorm all your main task work in this function.
      *  It will be called repeatedly until true is returned indicating that the task has been completed.
      *  Thus for ongoing tasks you can write this function to take care of a single interation of the task.
@@ -125,7 +125,7 @@ class GUCEFMT_EXPORT_CPP CActiveObject
     virtual bool OnTaskCycle( void* taskdata ) = 0;
 
     virtual void OnTaskEnd( void* taskdata ) = 0;
-    
+
     virtual void OnTaskPausedForcibly( void* taskdata );
 
     void* GetTaskData( void ) const;

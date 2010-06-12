@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CSINGLETASKDELEGATOR_H
 #define GUCEF_CORE_CSINGLETASKDELEGATOR_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -37,7 +37,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -51,32 +51,32 @@ class CTaskConsumer;
 
 /*-------------------------------------------------------------------------*/
 
-/** 
+/**
  *  This is an internally used class for the CTaskManager class.
  *  It is not meant to be used beyond that use-case.
  */
-class GUCEF_CORE_EXPORT_CPP CSingleTaskDelegator : public CTaskDelegator
-{ 
+class GUCEF_CORE_PUBLIC_CPP CSingleTaskDelegator : public CTaskDelegator
+{
     private:
     friend class CTaskManager;
-    
+
     CSingleTaskDelegator( CTaskConsumer* taskConsumer ,
                           TTaskID& taskId             ,
                           CICloneable* taskData       ,
                           CObserver* taskObserver     );
-    
+
     virtual ~CSingleTaskDelegator();
 
     virtual bool OnTaskCycle( void* taskdata );
 
     private:
-    
+
     CSingleTaskDelegator( void );
     CSingleTaskDelegator( const CSingleTaskDelegator& src );
     CSingleTaskDelegator& operator=( const CSingleTaskDelegator& src );
-    
+
     private:
-    
+
     CICloneable* m_taskData;
     CObserver* m_taskObserver;
 };

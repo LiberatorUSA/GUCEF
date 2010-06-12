@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef GUCEF_MT_CREADWRITELOCK_H
@@ -64,7 +64,7 @@ namespace MT {
 /**
  *      Wrapper class for my C implementation of a readers/writers lock
  */
-class GUCEFMT_EXPORT_CPP CReadWriteLock
+class GUCEF_MT_PUBLIC_CPP CReadWriteLock
 {
         public:
 

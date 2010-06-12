@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CVALUELIST_H
 #define GUCEF_CORE_CVALUELIST_H
 
@@ -59,20 +59,20 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CValueList
+class GUCEF_CORE_PUBLIC_CPP CValueList
 {
     public:
-    
+
     typedef std::vector< CString > TStringVector;
-    
+
     CValueList( void );
-    
+
     CValueList( const CValueList& src );
-    
-    CValueList& operator=( const CValueList& src );        
-    
+
+    CValueList& operator=( const CValueList& src );
+
     virtual ~CValueList();
-    
+
     /**
      *  Returns the first value associated with the
      *  given key.
@@ -80,7 +80,7 @@ class GUCEFCORE_EXPORT_CPP CValueList
      *  @exception EUnknownKey thrown if the given key is unknown
      */
     CString& operator[]( const CString& key );
-           
+
     /**
      *  Returns the first value associated with the
      *  given key.
@@ -88,15 +88,15 @@ class GUCEFCORE_EXPORT_CPP CValueList
      *  @exception EUnknownKey thrown if the given key is unknown
      */
     const CString& operator[]( const CString& key ) const;
-    
+
     void SetMultiple( const CString& keyandvalue ,
                       const char seperator       );
-    
+
     void Set( const CString& keyAndValue );
-    
+
     void Set( const CString& key   ,
               const CString& value );
-    
+
     /**
      *  Returns the first value associated with the
      *  given key.
@@ -112,7 +112,7 @@ class GUCEFCORE_EXPORT_CPP CValueList
      *  @exception EUnknownKey thrown if the given key is unknown
      */
     const CString& GetValue( const CString& key ) const;
-    
+
     /**
      *  Returns the first value associated with the
      *  given key. This GetValue version differs from the others in
@@ -128,7 +128,7 @@ class GUCEFCORE_EXPORT_CPP CValueList
      *  @exception EIndexOutOfRange thrown if the given key index is invalid
      */
     CString& GetValue( const UInt32 index );
-    
+
     /**
      *  Returns the first value associated with the
      *  given key index.
@@ -136,7 +136,7 @@ class GUCEFCORE_EXPORT_CPP CValueList
      *  @exception EIndexOutOfRange thrown if the given key index is invalid
      */
     const CString& GetValue( const UInt32 index ) const;
-    
+
     /**
      *  Returns the value vector associated with the
      *  given key.
@@ -144,7 +144,7 @@ class GUCEFCORE_EXPORT_CPP CValueList
      *  @exception EUnknownKey thrown if the given key is unknown
      */
     TStringVector& GetValueVector( const CString& key );
-    
+
     /**
      *  Returns the value vector associated with the
      *  given key.
@@ -154,7 +154,7 @@ class GUCEFCORE_EXPORT_CPP CValueList
     const TStringVector& GetValueVector( const CString& key ) const;
 
     CString GetPair( const CString& key ) const;
-    
+
     CString GetPair( const UInt32 index ) const;
 
     /**
@@ -162,31 +162,31 @@ class GUCEFCORE_EXPORT_CPP CValueList
      *
      *  @exception EIndexOutOfRange thrown if the given key index is invalid
      */
-    const CString& GetKey( const UInt32 index ) const;                
-    
+    const CString& GetKey( const UInt32 index ) const;
+
     bool HasKey( const CString& key ) const;
-    
+
     void Delete( const CString& key );
-    
+
     void DeleteAll( void );
-    
+
     UInt32 GetCount( void ) const;
-    
+
     void SetAllowDuplicates( const bool allowDuplicates );
-    
+
     bool GetAllowDuplicates( void ) const;
-    
+
     void SetAllowMultipleValues( const bool allowMultipleValues );
-    
+
     bool GetAllowMultipleValues( void ) const;
-    
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EUnknownKey );    
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EIndexOutOfRange );
-    
-    private:                       
-    
+
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EUnknownKey );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EIndexOutOfRange );
+
+    private:
+
     typedef std::map< CString, TStringVector > TValueMap;
-            
+
     TValueMap m_list;
     bool m_allowDuplicates;
     bool m_allowMultipleValues;
@@ -215,7 +215,7 @@ class GUCEFCORE_EXPORT_CPP CValueList
         - Updated to use STL containers and added the ability to map multiple
           values to a single key.
         - Instead of empty strings an exception will now be thrown if an invalid
-          key name or index is used to access an entry.  
+          key name or index is used to access an entry.
 - 21-09-2005 :
         - initial version
 

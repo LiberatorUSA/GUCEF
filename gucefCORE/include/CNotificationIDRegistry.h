@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
 #define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -44,7 +44,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -54,19 +54,19 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  The CNotificationIDRegistry is used to obtain unique event id's for 
- *  events name strings. 
+ *  The CNotificationIDRegistry is used to obtain unique event id's for
+ *  events name strings.
  *
- *  Note that it is strongly recommended to include the various namespaces 
+ *  Note that it is strongly recommended to include the various namespaces
  *  in the event strings. For example:
  *      "GUCEF::CORE::CNotificationIDRegistry::FooBarEvent"
  *  If you follow this rule you should never have to worry about naming
  *  conflicts, while keeping the ease of use that comes from integer id's
  */
-class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
+class GUCEF_CORE_PUBLIC_CPP CNotificationIDRegistry
 {
     public:
-           
+
     /**
      *  Standard singleton Instance()
      *  creates the singleton object if it does not exist yet
@@ -74,7 +74,7 @@ class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
      *  @return pointer to the singleton object
      */
     static CNotificationIDRegistry* Instance( void );
-    
+
     /**
      *  Registers string identifiers and returns a unique event ID which can be used
      *  in it's place.
@@ -86,17 +86,17 @@ class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
      */
     CEvent Register( const CString& keyvalue                  ,
                      const bool okIfAlreadyRegistered = false );
-    
+
     /**
      *  Unregisters the string identifier. The ascociated event id should not longer be used.
-     *  
+     *
      *  @param keyvalue the key string identifier you wish to unregister
      *  @param okIfUnknownKeyGiven indicates whether an unregister action using an unknown key string identifier should be handled silently
      *  @throw EUnknownKey thrown when the given key string is unknown and okIfUnknownKeyGiven is false or an empty key string is given
      */
     void Unregister( const CString& keyvalue                ,
                      const bool okIfUnknownKeyGiven = false );
-    
+
     /**
      *  Performs a lookup operation for the given key and if possible returns the
      *  associated unique notification event ID.
@@ -106,8 +106,8 @@ class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
      *  @throw EUnknownKey thrown when the requested item is not found and registerUnknown == false.
      */
     CEvent Lookup( const CString& keyvalue            ,
-                   const bool registerUnknown = false );    
-    
+                   const bool registerUnknown = false );
+
     /**
      *  Performs a lookup operation for the given notification id and attempts to
      *  locate a matching identifier string. Verry usefull for translation into human readable
@@ -121,35 +121,35 @@ class GUCEFCORE_EXPORT_CPP CNotificationIDRegistry
      *  @return the notification event identifier for the given id.
      */
     CString Lookup( const CEvent& eventID ) const;
-    
-    bool IsRegistered( const CString& keyvalue ) const;    
 
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EKeyAlreadyRegistered );
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EEmptyKeyString );
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EUnknownKey );
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EInvalidKey );
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEFCORE_EXPORT_CPP, EInvalidEventID );
-    
+    bool IsRegistered( const CString& keyvalue ) const;
+
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EKeyAlreadyRegistered );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EEmptyKeyString );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EUnknownKey );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EInvalidKey );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EInvalidEventID );
+
     private:
     friend class CGUCEFCOREModule;
-        
+
     static void Deinstance( void );
-    
-    private:   
-    
-    CNotificationIDRegistry( void );
-    
-    CNotificationIDRegistry( const CNotificationIDRegistry& src );
-    
-    virtual ~CNotificationIDRegistry();
-    
-    CNotificationIDRegistry& operator=( const CNotificationIDRegistry& src );
-    
+
     private:
-    
+
+    CNotificationIDRegistry( void );
+
+    CNotificationIDRegistry( const CNotificationIDRegistry& src );
+
+    virtual ~CNotificationIDRegistry();
+
+    CNotificationIDRegistry& operator=( const CNotificationIDRegistry& src );
+
+    private:
+
     static CNotificationIDRegistry* m_instance;
     static MT::CMutex m_dataLock;
-    
+
     typedef std::map<const CString,UInt32> TRegistryList;
     TRegistryList m_list;
     UInt32 m_lastid;

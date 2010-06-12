@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef GUCEF_MT_MACROS_H
@@ -64,38 +64,34 @@
  *      GUCEF_EXPORT_C_CODE
  *      GUCEF_EXPORT_CPP_CODE
  */
-#ifdef GUCEFMT_BUILD_MODULE
-    #if !(defined(GUCEFMT_EXPORT_C_CODE) | defined(GUCEFMT_EXPORT_CPP_CODE))
-        #define GUCEFMT_EXPORT_C_CODE
-        #define GUCEFMT_EXPORT_CPP_CODE
-    #endif
-    #define GUCEFMT_EXPORT GUCEF_EXPORT
+#ifdef GUCEF_MT_BUILD_MODULE
+  #define GUCEF_MT_EXPORTSPEC GUCEF_EXPORT
 #else
-    #define GUCEFMT_EXPORT GUCEF_IMPORT
-#endif /* GUCEF_BUILD_DLL */
+  #define GUCEF_MT_EXPORTSPEC GUCEF_IMPORT
+#endif /* GUCEF_MT_BUILD_MODULE */
 
 /*-------------------------------------------------------------------------*/
 
 /*
  *  Seperate switch for C++ exports
  */
-#undef GUCEFMT_EXPORT_CPP
-#ifdef GUCEFMT_EXPORT_CPP_CODE
-  #define GUCEFMT_EXPORT_CPP GUCEFMT_EXPORT
+#undef GUCEF_MT_PUBLIC_CPP
+#ifdef GUCEF_MT_PUBLIC_CPP_CODE
+  #define GUCEF_MT_PUBLIC_CPP GUCEF_MT_EXPORTSPEC
 #else
-  #define GUCEFMT_EXPORT_CPP
-#endif /* GUCEFMT_EXPORT_CPP_CODE */
+  #define GUCEF_MT_PUBLIC_CPP GUCEF_HIDDEN
+#endif /* GUCEF_MT_PUBLIC_CPP_CODE */
 
 /*-------------------------------------------------------------------------*/
 
 /*
  *  Seperate switch for C exports
  */
-#undef GUCEFMT_EXPORT_C
-#ifdef GUCEFMT_EXPORT_C_CODE
-  #define GUCEFMT_EXPORT_C GUCEFMT_EXPORT
+#undef GUCEF_MT_PUBLIC_C
+#ifdef GUCEF_MT_PUBLIC_C_CODE
+  #define GUCEF_MT_PUBLIC_C GUCEF_MT_EXPORTSPEC
 #else
-  #define GUCEFMT_EXPORT_C
+  #define GUCEF_MT_PUBLIC_C GUCEF_HIDDEN
 #endif /* GUCEFMT_EXPORT_C_CODE */
 
 /*-------------------------------------------------------------------------*/

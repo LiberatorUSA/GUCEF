@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CEXCLUSIVEACTIVEOBJ_H
 #define GUCEF_CORE_CEXCLUSIVEACTIVEOBJ_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -39,7 +39,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -53,27 +53,27 @@ class CExclusiveActivationManager;
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Abstract base class for any object that should be active exclusively 
+ *  Abstract base class for any object that should be active exclusively
  *  for it's type ( ie familiy ). Calling Activate() on an object of type 'x'
  *  will cause all other registerd objects of type 'x' to be deactivated.
  */
-class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
+class GUCEF_CORE_PUBLIC_CPP CExclusiveActiveObj
 {
     public:
-    
+
     /**
-     *  Constructs and registers the object at the manager as an mutual 
+     *  Constructs and registers the object at the manager as an mutual
      *  exclusive activation family member for family 'objTypeName'
      *
      *  @param objTypeName the type name of the mutual exclusive activation family
      */
-    explicit CExclusiveActiveObj( const CString& objTypeName );        
-    
+    explicit CExclusiveActiveObj( const CString& objTypeName );
+
     /**
      *  Destructs the object and unregisters the object at the manager
      */
     virtual ~CExclusiveActiveObj();
-    
+
     /**
      *  Attempts to set the object of it's type as the exclusively activated
      *  instance.
@@ -84,7 +84,7 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
      *  @return whether the object was successfuly activated.
      */
     bool Activate( void );
-    
+
     /**
      *  Attempts to deactivate the object, this will cause a switch to the default
      *  object for the exclusive activation family. If no default has been set then
@@ -109,7 +109,7 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
     /**
      *  Returns the active state of the object
      *
-     *  @return the current active state of the object  
+     *  @return the current active state of the object
      */
     bool IsActive( void ) const;
 
@@ -119,16 +119,16 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
      *  @return whether the object is the default instance for it's family
      */
     bool IsTheDefault( void ) const;
-    
+
     /**
-     *  Returns whether the instance is currently registered as a 
+     *  Returns whether the instance is currently registered as a
      *  mutual exclusive activation object.
      *
      *  Note that if an instance is not registered calls made to
      *  Activate() will always fail !!!
      */
     bool IsRegistered( void ) const;
-    
+
     /**
      *  Returns the objects name.
      *
@@ -138,19 +138,19 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
      *  @return the name of the derived class instance
      */
     virtual CString GetObjName( void ) const = 0;
-    
+
     /**
      *  Returns the name of the mutual exclusive activation family of which
      *  the object instance is a member.
      *
-     *  @return the type name of the mutual exclusive activation family  
+     *  @return the type name of the mutual exclusive activation family
      */
     const CString& GetObjTypeName( void ) const;
-    
+
     protected:
-    
+
     void RegisterAsExclusiveActiveObj( void );
-    
+
     void UnregisterAsExclusiveActiveObj( void );
 
     protected:
@@ -176,7 +176,7 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
      *  @param whether the activation sequence was successful.
      */
     virtual void OnPostActivate( const bool activationSuccessful );
-    
+
     /**
      *  Handler for the deactivation sequence
      *  If successful (ie true is returned) this object will yield
@@ -188,7 +188,7 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
 
     /**
      *  Handler for post-deactivation-sequence operations
-     *  Allows you to perform operations based on whether 
+     *  Allows you to perform operations based on whether
      *  a deactivation state change has occured.
      *
      *  Note that this event callback is not manditory, it's default
@@ -202,17 +202,17 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActiveObj
     friend class CExclusiveActivationManager;
 
     void SetActiveState( const bool active );
-    
+
     private:
-    
+
     CExclusiveActiveObj( void );                                      /**< canot be used: a typename is manditory */
     CExclusiveActiveObj( const CExclusiveActiveObj& src );            /**< an exclusive object suggests it is unique, so why would you want to copy it ? */
     CExclusiveActiveObj& operator=( const CExclusiveActiveObj& src ); /**< an exclusive object suggests it is unique, so why would you want to copy it ? */
-    
+
     private:
-    
+
     CString m_objTypeName;
-    bool m_active;    
+    bool m_active;
     bool m_registered;
 };
 

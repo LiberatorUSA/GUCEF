@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
-#define GUCEF_CORE_CGUCEFAPPLICATION_H 
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -94,7 +94,7 @@ class CIGUCEFApplicationDriver;
 /*-------------------------------------------------------------------------*/
 
 /**
- *      
+ *
  *      Dispatches the following events:
  *       - AppInitEvent:
  *              Indicates that the application is now initialized
@@ -102,9 +102,9 @@ class CIGUCEFApplicationDriver;
  *              now begin initialization.
  *       - AppShutdownEvent
  *              Signals that the application is shutting down at the
- *              GUCEF level. All higher level code should shutdown as well 
+ *              GUCEF level. All higher level code should shutdown as well
  */
-class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CNotifier             , 
+class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
                                                public CIConfigurable        ,
                                                public CISysConsoleCmdHandler
 {
@@ -114,22 +114,22 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CNotifier             ,
     static const CEvent AppShutdownEvent;
 
     static void RegisterEvents( void );
-           
+
     struct SAppInitEventData
     {
         #ifdef GUCEF_MSWIN_BUILD
         HINSTANCE hinstance;
         LPSTR lpcmdline;
         int ncmdshow;
-        #endif 
-        
+        #endif
+
         int argc;
-        char** argv;                
+        char** argv;
     };
     typedef CTCloneableObj< struct SAppInitEventData > TAppInitEventData;
 
-    public:        
-    
+    public:
+
     static CGUCEFApplication* Instance( void );
 
     #ifdef GUCEF_MSWIN_BUILD
@@ -138,22 +138,22 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CNotifier             ,
               int ncmdshow            ,
               bool run                );
     #endif
-    
+
     int main( int argc    ,
               char** argv ,
               bool run    );
-    
+
 
     void Update( void );
 
     void Stop( void );
-            
-    void SetPluginDir( const CString& plugindir );        
-                   
+
+    void SetPluginDir( const CString& plugindir );
+
     CString GetPluginDir( void ) const;
-    
-    CString GetApplicationDir( void ) const;                          
-    
+
+    CString GetApplicationDir( void ) const;
+
     /**
      *      Attempts to store the given tree in the file
      *      given according to the method of the codec meta data
@@ -162,52 +162,52 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CNotifier             ,
      *      @return whether storing the tree was successful
      */
     virtual bool SaveConfig( CDataNode& tree );
-                                
+
     /**
-     *      Attempts to load data from the given file to the 
-     *      root node given. The root data will be replaced 
+     *      Attempts to load data from the given file to the
+     *      root node given. The root data will be replaced
      *      and any children the node may already have will be deleted.
      *
      *      @param treeroot pointer to the node that is to act as root of the data tree
      *      @return whether building the tree from the given file was successful
-     */                                    
+     */
     virtual bool LoadConfig( const CDataNode& treeroot );
-    
+
     CPulseGenerator& GetPulseGenerator( void );
-    
+
     CBusyWaitPulseGeneratorDriver& GetBusyWaitPulseGeneratorDriver( void );
-    
+
     protected:
 
     virtual bool OnSysConsoleCommand( const CString& path                ,
                                       const CString& command             ,
                                       const std::vector< CString >& args ,
                                       std::vector< CString >& resultdata );
-                           
+
     virtual void LockData( void );
-    
-    virtual void UnlockData( void );                                                                                 
-    
+
+    virtual void UnlockData( void );
+
     private:
     friend class CGUCEFCOREModule;
-    
+
     static void Deinstance( void );
 
     private:
-                               
+
     CGUCEFApplication( void );
     CGUCEFApplication( const CGUCEFApplication& src );
     virtual ~CGUCEFApplication();
     CGUCEFApplication& operator=( const CGUCEFApplication& src ); /**< not implemented */
-    
+
     private:
-            
+
     bool _initialized;
     bool m_shutdownRequested;
     CString _appdir;
     CPulseGenerator m_pulseGenerator;
     CBusyWaitPulseGeneratorDriver m_busyWaitPulseDriver;
-    
+
     static CGUCEFApplication* _instance;
     static MT::CMutex m_mutex;
 };
@@ -238,4 +238,3 @@ class GUCEFCORE_EXPORT_CPP CGUCEFApplication : public CNotifier             ,
         - Designed and implemented this class.
 
 -----------------------------------------------------------------------------*/
- 

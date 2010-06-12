@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CEVENTBASEDTASKCONSUMER_H
 #define GUCEF_CORE_CEVENTBASEDTASKCONSUMER_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -37,7 +37,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -50,10 +50,10 @@ namespace CORE {
  *  If you want to do event based processing within a thread then this class
  *  offers a convenience interface beyond that of the CITaskConsumer interface
  */
-class GUCEF_CORE_EXPORT_CPP CEventBasedTaskConsumer : public CITaskConsumer
+class GUCEF_CORE_PUBLIC_CPP CEventBasedTaskConsumer : public CITaskConsumer
 {
     public:
-    
+
     struct SEventBasedTaskData
     {
         CNotifier* notifier;
@@ -61,8 +61,8 @@ class GUCEF_CORE_EXPORT_CPP CEventBasedTaskConsumer : public CITaskConsumer
         CICloneable* eventData;
     };
     typedef struct SEventBasedTaskData TEventBasedTaskData;
-    typedef CTCloneableObj< TEventBasedTaskData > TCloneableEventBasedTaskData;  
-    
+    typedef CTCloneableObj< TEventBasedTaskData > TCloneableEventBasedTaskData;
+
     virtual ~CEventBasedTaskConsumer();
 
     /**
@@ -71,7 +71,7 @@ class GUCEF_CORE_EXPORT_CPP CEventBasedTaskConsumer : public CITaskConsumer
      *  TCloneableEventBasedTaskData
      */
     virtual bool ProcessTask( CICloneable* taskData );
-    
+
     virtual bool ProcessTask( CNotifier* notifier    ,
                               const CEvent eventID   ,
                               CICloneable* eventData ) = 0;

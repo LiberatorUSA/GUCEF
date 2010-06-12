@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CURL_H
@@ -71,61 +71,61 @@ class CPulseGenerator;
 /**
  *  class that allows you to retrieve data using URL's
  */
-class GUCEFCORE_EXPORT_CPP CURL : public CForwardingNotifier ,
+class GUCEF_CORE_PUBLIC_CPP CURL : public CForwardingNotifier ,
                                   public CIURLEvents
 {
         public:
-        
+
         CURL( void );
-        
+
         CURL( CPulseGenerator& pulseGenerator );
-        
+
         CURL( const CString& url );
-        
+
         CURL( const CString& url              ,
               CPulseGenerator& pulseGenerator );
-        
+
         virtual ~CURL();
-        
+
         CURL& operator=( const CURL& src );
-        
+
         bool operator==( const CURL& other ) const;
-        
+
         bool operator!=( const CURL& other ) const;
-        
+
         bool SetURL( const CString& newurl );
-        
+
         const CString& GetURL( void ) const;
-        
+
         bool Activate( void );
-        
+
         void Deactivate( void );
-        
+
         /**
          *      Is a URL resource retrieval action in progress
          */
         bool IsActive( void ) const;
-        
+
         void Refresh( void );
-        
+
         CPulseGenerator& GetPulseGenerator( void );
-        
+
         virtual const CString& GetClassTypeName( void ) const;
 
         protected:
-        
+
         virtual void OnNotify( CNotifier* notifier           ,
                                const CEvent& eventid         ,
                                CICloneable* eventdata = NULL );
 
         private:
-        
+
         CURLHandler* GetHandlerForURL( const CString& url ) const;
-        
+
         void Initialize( void );
-        
-        private:        
-       
+
+        private:
+
         CString m_url;             /**< the URL string */
         CURLHandler* m_handler;    /**< URL handler for the specified URL protocol */
         CPulseGenerator* m_pulseGenerator; /** pulse generator to be used by handlers */
@@ -152,5 +152,5 @@ class GUCEFCORE_EXPORT_CPP CURL : public CForwardingNotifier ,
 
 - 24-04-2005 :
         - Initial implementation
-          
+
 ---------------------------------------------------------------------------*/

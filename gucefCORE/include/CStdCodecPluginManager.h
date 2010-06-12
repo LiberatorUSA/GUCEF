@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CSTDCODECPLUGINMANAGER_H
@@ -49,27 +49,27 @@ namespace CORE {
 /**
  *  plugin manager for GUCEF codec plugins
  */
-class GUCEFCORE_EXPORT_CPP CStdCodecPluginManager : public CPluginManager
+class GUCEF_CORE_PUBLIC_CPP CStdCodecPluginManager : public CPluginManager
 {
     public:
-    
+
     static CStdCodecPluginManager* Instance( void );
 
     virtual void UnloadAll( void );
-    
+
     virtual TPluginPtr LoadPlugin( const CString& pluginPath );
 
     private:
     friend class CGUCEFCOREModule;
-    
+
     static void Deinstance( void );
-    
+
     private:
     CStdCodecPluginManager( void );
     CStdCodecPluginManager( const CStdCodecPluginManager& src );
-    virtual ~CStdCodecPluginManager();    
+    virtual ~CStdCodecPluginManager();
     CStdCodecPluginManager& operator=( const CStdCodecPluginManager& src );
-    
+
     private:
 
     std::vector< TPluginPtr > m_plugins;

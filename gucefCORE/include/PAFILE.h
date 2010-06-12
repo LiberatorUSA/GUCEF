@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*
@@ -100,7 +100,7 @@ extern "C" {
  *      padestroy() to deallocate the data.
  *      This function is in itself not threadsafe.
  */
-GUCEFCORE_EXPORT_C TPAFILEControl*
+GUCEF_CORE_PUBLIC_C TPAFILEControl*
 pacreate( const char *filename ,
           const char *mode     );
 
@@ -113,7 +113,7 @@ pacreate( const char *filename ,
  *      The file on disk will be closed.
  *      This function is in itself not threadsafe.
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 padestroy( TPAFILEControl *control );
 
 /*-------------------------------------------------------------------------*/
@@ -122,7 +122,7 @@ padestroy( TPAFILEControl *control );
  *      Creates an additional link to the file. After you are done using the
  *      file you should call paunlink().
  */
-GUCEFCORE_EXPORT_C PAFILE*
+GUCEF_CORE_PUBLIC_C PAFILE*
 palink( PAFILE *pafile );
 
 /*-------------------------------------------------------------------------*/
@@ -131,7 +131,7 @@ palink( PAFILE *pafile );
  *      Creates an additional link to the file. After you are done using the
  *      file you should call paunlink().
  */
-GUCEFCORE_EXPORT_C PAFILE*
+GUCEF_CORE_PUBLIC_C PAFILE*
 palinktocontrol( TPAFILEControl *control );
 
 /*-------------------------------------------------------------------------*/
@@ -144,7 +144,7 @@ palinktocontrol( TPAFILEControl *control );
  *      file. A chunk size of 0 causes the remainder of the file from the given
  *      offset to be used as the file size.
  */
-GUCEFCORE_EXPORT_C PAFILE*
+GUCEF_CORE_PUBLIC_C PAFILE*
 palinkchunktocontrol( TPAFILEControl *control ,
                       UInt32 start_offset     ,
                       UInt32 chunk_size       );
@@ -155,7 +155,7 @@ palinkchunktocontrol( TPAFILEControl *control ,
  *      Clean's up a PAFILE structure which was created using palink() or
  *      using palinktocontrol().
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 paunlink( PAFILE *pafile );
 
 /*-------------------------------------------------------------------------*/
@@ -165,7 +165,7 @@ paunlink( PAFILE *pafile );
  *      in this context. If the PAFILE is no longer linked then the control
  *      has been destroyed and the PAFILE should be cleaned up using paunlink()
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 palinked( PAFILE *pafile );
 
 /*-------------------------------------------------------------------------*/
@@ -173,7 +173,7 @@ palinked( PAFILE *pafile );
 /**
  *      Returns the current file pointer, which is a void*
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 paftell( PAFILE *pafile );
 
 /*-------------------------------------------------------------------------*/
@@ -181,7 +181,7 @@ paftell( PAFILE *pafile );
 /**
  *      Returns the size of the file
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 pafsize( PAFILE *pafile );
 
 /*-------------------------------------------------------------------------*/
@@ -190,7 +190,7 @@ pafsize( PAFILE *pafile );
  *      Set the file pointer to the given offset from the origin
  *      provided, origin can be : SEEK_CUR, SEEK_END, SEEK_SET
  */
-GUCEFCORE_EXPORT_C Int32
+GUCEF_CORE_PUBLIC_C Int32
 pafseek( PAFILE *pafile ,
          Int32 offset   ,
          Int32 origin   );
@@ -201,7 +201,7 @@ pafseek( PAFILE *pafile ,
  *      Set the file pointer to the given offset from the beginning of
  *      the file
  */
-GUCEFCORE_EXPORT_C Int32
+GUCEF_CORE_PUBLIC_C Int32
 pafsetpos( PAFILE *pafile ,
            UInt32 offset  );
 
@@ -210,7 +210,7 @@ pafsetpos( PAFILE *pafile ,
 /**
  *	MFILE version of getc()
  */
-GUCEFCORE_EXPORT_C Int32
+GUCEF_CORE_PUBLIC_C Int32
 pafgetc( PAFILE *pafile );
 
 
@@ -219,7 +219,7 @@ pafgetc( PAFILE *pafile );
 /**
  *	Identical to mfgetc()
  */
-GUCEFCORE_EXPORT_C Int32
+GUCEF_CORE_PUBLIC_C Int32
 pagetc( PAFILE *pafile );
 
 
@@ -229,7 +229,7 @@ pagetc( PAFILE *pafile );
  *      Check if the filepointer has reached the end of the file
  *      if so returns true
  */
-GUCEFCORE_EXPORT_C Int32
+GUCEF_CORE_PUBLIC_C Int32
 pafeof( PAFILE *pafile );
 
 /*-------------------------------------------------------------------------*/
@@ -238,7 +238,7 @@ pafeof( PAFILE *pafile );
  *      Binary read the maximum number of elements of esize each
  *      from current position
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 pafread( void *dest      ,
          UInt32 esize    ,
          UInt32 elements ,
@@ -251,7 +251,7 @@ pafread( void *dest      ,
  *      from current position. Note that this function allocates
  *      memory that should be freed using mfree()
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 pafreadl( char **dest    ,
           PAFILE *pafile );
 
@@ -263,7 +263,7 @@ pafreadl( char **dest    ,
  *      works from current position. Note that this function allocates
  *      memory that should be freed using mfree()
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 pafreads( char **dest    ,
           PAFILE *pafile );
 
@@ -273,7 +273,7 @@ pafreads( char **dest    ,
  *      Free a block of memory that was allocated using pafreadl() or
  *      pafreads()
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 pafree( void *mem );
 
 /*-------------------------------------------------------------------------*/

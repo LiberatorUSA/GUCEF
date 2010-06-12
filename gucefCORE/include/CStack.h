@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CSTACK_H
@@ -50,7 +50,7 @@ namespace CORE {
 /*
  *      Forward declarations of classes used
  */
-class CLLNode; 
+class CLLNode;
 
 /*-------------------------------------------------------------------------*/
 
@@ -59,7 +59,7 @@ class CLLNode;
  *      and FILO ( First In Last Out ) are supported, uses a linked list
  *      implementation internally with the CLLNode class
  */
-class GUCEFCORE_EXPORT_CPP CStack
+class GUCEF_CORE_PUBLIC_CPP CStack
 {
         private :
         CLLNode *first;                      /* bottom node of stack, which is the first in our linked list */

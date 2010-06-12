@@ -60,7 +60,7 @@ class CNotificationIDRegistry;
  *  the performance required plus the ability to define event objects as global
  *  variables.
  */
-class GUCEFCORE_EXPORT_CPP CEvent
+class GUCEF_CORE_PUBLIC_CPP CEvent
 {
     public:
 

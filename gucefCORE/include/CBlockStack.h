@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CBLOCKSTACK_H
@@ -46,10 +46,10 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CBlockStack
+class GUCEF_CORE_PUBLIC_CPP CBlockStack
 {
         public:
-        
+
         CBlockStack( void );
 
         CBlockStack( UInt32 capacity  ,
@@ -60,20 +60,20 @@ class GUCEFCORE_EXPORT_CPP CBlockStack
         void Push( const void *srcdata );
 
         bool Pop( void* datadest );
-        
+
         void SetTop( const void *srcdata );
 
         bool GetTop( void* datadest );
-        
+
         void* PeekTop( void ) const;
-        
+
         void* Peek( void ) const;
 
         UInt32 GetItemCount( void ) const;
 
         private:
         UInt32 _itemcount;
-        CMemoryBlockPool _pool;        
+        CMemoryBlockPool _pool;
 };
 
 /*-------------------------------------------------------------------------//
@@ -99,4 +99,3 @@ class GUCEFCORE_EXPORT_CPP CBlockStack
         - Designed and implemented this class.
 
 -----------------------------------------------------------------------------*/
- 

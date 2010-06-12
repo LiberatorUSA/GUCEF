@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CDSTORECODECPLUGINREF_H
@@ -50,23 +50,23 @@ class CDStoreCodecPlugin;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CDStoreCodecPluginRef : public CDStoreCodec 
+class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginRef : public CDStoreCodec
 {
         public:
-        
+
         CDStoreCodecPluginRef( void );
-        
+
         CDStoreCodecPluginRef( const CDStoreCodecPluginRef& src );
-        
+
         virtual ~CDStoreCodecPluginRef();
-        
+
         /**
          *      Wheter or not the codec is currently valid
          *
          *      @return validity of the codec
          */
         virtual bool IsValid( void ) const;
-        
+
         /**
          *      Attempts to store the given tree in the file
          *      given according to the method of the codec metadata
@@ -88,31 +88,31 @@ class GUCEFCORE_EXPORT_CPP CDStoreCodecPluginRef : public CDStoreCodec
          */
         virtual bool StoreDataTree( const CDataNode* tree   ,
                                     CIOAccess* file         );
-                                    
+
         /**
-         *      Attempts to load data from the given file to the 
-         *      root node given. The root data will be replaced 
+         *      Attempts to load data from the given file to the
+         *      root node given. The root data will be replaced
          *      and any children the node may already have will be deleted.
          *
          *      @param treeroot pointer to the node that is to act as root of the data tree
          *      @param filename path and name of the file from which the data tree information should be loaded
          *      @return whether building the tree from the given file was successfull.
-         */                                    
+         */
         virtual bool BuildDataTree( CDataNode* treeroot     ,
                                     const CString& filename );
-                                    
+
         /**
-         *      Attempts to load data from the given file to the 
-         *      root node given. The root data will be replaced 
+         *      Attempts to load data from the given file to the
+         *      root node given. The root data will be replaced
          *      and any children the node may already have will be deleted.
          *
          *      @param treeroot pointer to the node that is to act as root of the data tree
          *      @param file media independant access to the data source from which the data tree information should be loaded
          *      @return whether building the tree from the given file was successfull.
-         */                                    
+         */
         virtual bool BuildDataTree( CDataNode* treeroot ,
-                                    CIOAccess* file     );                                                                        
-        
+                                    CIOAccess* file     );
+
         /**
          *      Returns the name of the codec
          *      The author of the codec can give an codec a name that the user can
@@ -121,31 +121,31 @@ class GUCEFCORE_EXPORT_CPP CDStoreCodecPluginRef : public CDStoreCodec
          *      @return name of the codec
          */
         virtual CString GetName( void ) const;
-        
+
         virtual CString GetTypeName( void ) const;
-        
+
         /**
-         *      Returns the copyright of the codec 
+         *      Returns the copyright of the codec
          *      The author of the codec can give an codec a copyright notice that the user can
          *      obtain using this member function.
          *
          *      @return copyright notice of the codec
          */
         virtual CString GetCopyright( void ) const;
-        
+
         /**
          *      Returns the codec version
          *
          *      @return the version of the codec
          */
         virtual const TVersion* GetVersion( void ) const;
-        
+
         virtual CICloneable* Clone( void ) const;
-        
+
         private:
         friend class CDStoreCodecPlugin;
-        
-        CDStoreCodecPlugin* _plugin;                 
+
+        CDStoreCodecPlugin* _plugin;
 };
 
 /*-------------------------------------------------------------------------//

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CONFIG_H
@@ -39,23 +39,23 @@
 
 /*
  *  Are we building the module itself or are we simply linking it ?
- *  If possible you can also set this define in your project instead of altering the switch below    
- */           
+ *  If possible you can also set this define in your project instead of altering the switch below
+ */
 /* #define GUCEF_CORE_BUILD_MODULE */
 
 /*
  *      If we are building or using a DLL then it is sometimes desireable to
  *      export only C code or perhaps only C++ code. You can do this with the
  *      following defines
- */ 
-#define GUCEF_CORE_EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
-#define GUCEF_CORE_EXPORT_C_CODE   /* do you want to enable the C exports ? */
+ */
+#define GUCEF_CORE_PUBLIC_CPP_CODE /* do you want to enable the C++ exports ? */
+#define GUCEF_CORE_PUBLIC_C_CODE   /* do you want to enable the C exports ? */
 
 /*
  *      Wheter or not to use the build swiches here to specify manually what
  *      the bit target is.
  */
-#undef MANUAL_BITTARGET_DEFINE      /* do not change this line */  
+#undef MANUAL_BITTARGET_DEFINE      /* do not change this line */
 #define MANUAL_BITTARGET_DEFINE
 
 /*
@@ -63,7 +63,7 @@
  *      These switches have no effect if MANUAL_BITTARGET_DEFINE is not defined.
  */
 #undef GUCEF32BIT      /* do not change this line */
-#undef GUCEF64BIT      /* do not change this line */ 
+#undef GUCEF64BIT      /* do not change this line */
 #define GUCEF32BIT
 /* #define GUCEF64BIT */
 
@@ -72,7 +72,7 @@
  *      If you enable this manual setting of debug mode then the next setting
  *      is the one that determines wheter we are in debug mode or not.
  */
-#undef MANUAL_DEBUG_MODE_DEFINE      /* do not change this line */  
+#undef MANUAL_DEBUG_MODE_DEFINE      /* do not change this line */
 /* #define MANUAL_DEBUG_MODE_DEFINE */
 
 /*
@@ -80,19 +80,19 @@
  *      generated run-time. This will howerver slow down program excecution and
  *      use more memory.
  */
-#undef GUCEF_CORE_DEBUG_MODE      /* do not change this line */ 
+#undef GUCEF_CORE_DEBUG_MODE      /* do not change this line */
 /* #define GUCEF_CORE_DEBUG_MODE */
 
 /*
  *      If enabled extra information like line and file information is added to
  *      the DEBUGOUTPUT() macro.
  */
-#undef ADD_EXTRA_INFO_TO_DEBUGOUTPUT    /* do not change this line */ 
+#undef ADD_EXTRA_INFO_TO_DEBUGOUTPUT    /* do not change this line */
 /* #define ADD_EXTRA_INFO_TO_DEBUGOUTPUT */
 
 /*
  *      Switch that adds or removes the memory manager code from
- *      the module. If no modules use the memory manager then 
+ *      the module. If no modules use the memory manager then
  *      comment this switch to get rid of the then unused code.
  */
 #undef ADD_MEMORY_MANAGER     /* do not change this line */
@@ -101,7 +101,7 @@
 /*
  *      Switch that activates or deactivates the module memory manager.
  *      This is a debugging tool that will allow you to search for
- *      memory leaks and bounds violations. 
+ *      memory leaks and bounds violations.
  */
 #undef ACTIVATE_MEMORY_MANAGER  /* do not change this line */
 //#define ACTIVATE_MEMORY_MANAGER
@@ -127,4 +127,4 @@
        - Dinand: Initial version of this file.
 
 -----------------------------------------------------------------------------*/
- 
+

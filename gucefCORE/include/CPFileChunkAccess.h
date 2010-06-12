@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CPFILECHUNKACCESS_H
-#define GUCEF_CORE_CPFILECHUNKACCESS_H 
+#define GUCEF_CORE_CPFILECHUNKACCESS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CPFILEACCESS_H
 #include "CPFileAccess.h"       /* class with access to the entire recource */
@@ -46,16 +46,16 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CPFileChunkAccess : public CROIOAccess
+class GUCEF_CORE_PUBLIC_CPP CPFileChunkAccess : public CROIOAccess
 {
         public:
-        
+
         CPFileChunkAccess( CPFileAccess& pafileaccess ,
                            UInt32 startoffset         ,
                            UInt32 size                );
 
         CPFileChunkAccess( const CPFileChunkAccess& src );
-        
+
         virtual ~CPFileChunkAccess();
 
         /**
@@ -105,11 +105,11 @@ class GUCEFCORE_EXPORT_CPP CPFileChunkAccess : public CROIOAccess
          *      jump to the given offset in the resource
          */
         virtual UInt32 Setpos( UInt32 position );
-        
+
         /**
          *      returns the size of the resource in bytes
          */
-        virtual UInt32 GetSize( void ) const;         
+        virtual UInt32 GetSize( void ) const;
 
         /**
          *      Read a single character
@@ -120,7 +120,7 @@ class GUCEFCORE_EXPORT_CPP CPFileChunkAccess : public CROIOAccess
          *      are we at the end of the resource ?
          */
         virtual bool Eof( void ) const;
-               
+
         /**
          *      Is the access to the resource a valid one or
          *      has something gone wrong ?
@@ -128,16 +128,16 @@ class GUCEFCORE_EXPORT_CPP CPFileChunkAccess : public CROIOAccess
         virtual bool IsValid( void );
 
         virtual TIOAccess* CStyleAccess( void );
-        
+
         virtual CORE::CICloneable* Clone( void ) const;
-        
-        private:        
+
+        private:
         CPFileChunkAccess( void );
-        
+
         CPFileAccess* m_pafileaccess;
         UInt32 m_startOffset;
         UInt32 m_size;
-        
+
         PAFILE* _pafile;
 };
 

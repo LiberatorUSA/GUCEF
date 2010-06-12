@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_DVSTRUTILS_H
@@ -23,7 +23,7 @@
 /*
  *      PORTABILITY :
  *       - Win32
- *       - Linux 
+ *       - Linux
  */
 
 /*-------------------------------------------------------------------------//
@@ -70,7 +70,7 @@ namespace CORE {
  *	what you want. This function compairs the data bytes and does not care
  *	about the actual content.
  */
-GUCEFCORE_EXPORT_C Int32
+GUCEF_CORE_PUBLIC_C Int32
 Pos( const char *substr   ,
      UInt32 slength       ,
      const char *wholestr ,
@@ -81,7 +81,7 @@ Pos( const char *substr   ,
 /**
  *      return the file extension length
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 File_Ext_Length( const char *filename );
 
 /*--------------------------------------------------------------------------*/
@@ -90,7 +90,7 @@ File_Ext_Length( const char *filename );
  *      Extract the file extension.
  *      It creates a new const char* with the appropriate offset.
  */
-GUCEFCORE_EXPORT_C const char*
+GUCEF_CORE_PUBLIC_C const char*
 Extract_File_Ext( const char *filename );
 
 /*--------------------------------------------------------------------------*/
@@ -98,7 +98,7 @@ Extract_File_Ext( const char *filename );
 /**
  *      Extract the filename, removing path
  */
-GUCEFCORE_EXPORT_C const char*
+GUCEF_CORE_PUBLIC_C const char*
 Extract_Filename( const char *filepath );
 
 /*--------------------------------------------------------------------------*/
@@ -110,7 +110,7 @@ Extract_Filename( const char *filepath );
  *	is the last non-zero char in the string. works for both win32 and Linux
  *	offcourse.
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 Strip_Last_Subdir( char *path );
 
 /*--------------------------------------------------------------------------*/
@@ -121,7 +121,7 @@ Strip_Last_Subdir( char *path );
  *	This function basicly returns the index of the section that would get
  *	stripped by Strip_Last_Subdir()
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 Last_Subdir( const char *path );
 
 /*--------------------------------------------------------------------------*/
@@ -132,28 +132,28 @@ Last_Subdir( const char *path );
  *      the filename then it will be removed aswell. The length of the path
  *      copyed into dest is returned.
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 _Strip_Filename( char *dest, const char *src_filepath );
 
 /*--------------------------------------------------------------------------*/
 
 /**
  *      Removes the filename (if present) from the given file path.
- *      Removal is done by means of setting char to '\0'. 
- *      If there is a seperator char prefexed to the filename then it 
+ *      Removal is done by means of setting char to '\0'.
+ *      If there is a seperator char prefexed to the filename then it
  *      will be removed aswell. The new length of the path
  *      is returned.
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 Strip_Filename( char* filepath );
 
 /*--------------------------------------------------------------------------*/
 
 /**
  *      Converts any dir seperators that may be present in the given path string
- *      to a seperator which is valid for the current O/S. 
+ *      to a seperator which is valid for the current O/S.
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 Convert_Dir_Seperators( char *path );
 
 /*--------------------------------------------------------------------------*/
@@ -166,7 +166,7 @@ Convert_Dir_Seperators( char *path );
  *      don't have to do this yourself. Dir seperation chars will be forced to
  *      the correct char for the current O/S.
  */
-GUCEFCORE_EXPORT_C void 
+GUCEF_CORE_PUBLIC_C void
 Append_To_Path( char *path           ,
                 const char *addition );
 
@@ -177,7 +177,7 @@ Append_To_Path( char *path           ,
  *      and returns the new string
  *      This allocates memory that should be deallocated with free !!!.
  */
-GUCEFCORE_EXPORT_C char*
+GUCEF_CORE_PUBLIC_C char*
 Remove_Char( char rchar         ,
              const char *buffer );
 
@@ -188,7 +188,7 @@ Remove_Char( char rchar         ,
  *      the result is placed in a new buffer that's returned
  *	This allocates memory that should be deallocated with free !!!.
  */
-GUCEFCORE_EXPORT_C char*
+GUCEF_CORE_PUBLIC_C char*
 _Replace_Char( char oldc          ,
                char newc          ,
                const char *buffer );
@@ -198,7 +198,7 @@ _Replace_Char( char oldc          ,
 /**
  *      replace all occurences of the specified char with the new char
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 Replace_Char( char oldc    ,
               char newc    ,
               char *buffer );
@@ -208,9 +208,9 @@ Replace_Char( char oldc    ,
 /**
  *      if the range submitted is valid this function will copy
  *      that section out of the submitted string and return it
- *	This allocates memory that should be deallocated with free !!!. 
+ *	This allocates memory that should be deallocated with free !!!.
  */
-GUCEFCORE_EXPORT_C char*
+GUCEF_CORE_PUBLIC_C char*
 Get_Substr( UInt32 start         ,
             UInt32 end           ,
             const char *wholestr );
@@ -221,7 +221,7 @@ Get_Substr( UInt32 start         ,
  *      Find the offset of the given char, if not found returns -1
  *	starts looking at the front of the buffer
  */
-GUCEFCORE_EXPORT_C Int32
+GUCEF_CORE_PUBLIC_C Int32
 Find_Char( char a             ,
            const char *buffer ,
            UInt32 size        );
@@ -234,7 +234,7 @@ Find_Char( char a             ,
  *	boolean indicating wheter we start looking from the front of the string or
  *	from the end.
  */
-GUCEFCORE_EXPORT_C Int32
+GUCEF_CORE_PUBLIC_C Int32
 _Find_Char( UInt32 offset      ,
             UInt32 front       ,
             char a             ,
@@ -247,7 +247,7 @@ _Find_Char( UInt32 offset      ,
  *      Remove trailing spaces and end of line chars
  *	This allocates memory that should be deallocated with free !!!.
  */
-GUCEFCORE_EXPORT_C char*
+GUCEF_CORE_PUBLIC_C char*
 Trim( const char *str );
 
 /*--------------------------------------------------------------------------*/
@@ -255,9 +255,9 @@ Trim( const char *str );
 /**
  *      Remove trailing spaces and end of line chars,
  *      Same as Trim but replaces the old string
- *	This allocates memory that should be deallocated with free !!!. 
+ *	This allocates memory that should be deallocated with free !!!.
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 _Trim( char **str );
 
 /*--------------------------------------------------------------------------*/
@@ -266,7 +266,7 @@ _Trim( char **str );
  *      Remove leading spaces
  *	This allocates memory that should be deallocated with free !!!.
  */
-GUCEFCORE_EXPORT_C char*
+GUCEF_CORE_PUBLIC_C char*
 LTrim( char *str );
 
 /*--------------------------------------------------------------------------*/
@@ -274,9 +274,9 @@ LTrim( char *str );
 /**
  *      Remove leading spaces,
  *      Same as FTrim but replaces the old string
- *	This allocates memory that should be deallocated with free !!!. 
+ *	This allocates memory that should be deallocated with free !!!.
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 _LTrim( char **str );
 
 /*--------------------------------------------------------------------------*/
@@ -285,7 +285,7 @@ _LTrim( char **str );
  *      String to boolint conversion
  *      "true" or "false" OR "on" or "off" give 1 and 0 respectivly
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 String_To_Boolint( const char *teststr );
 
 /*--------------------------------------------------------------------------*/
@@ -294,7 +294,7 @@ String_To_Boolint( const char *teststr );
  *      boolint to string conversion
  *      returns "true" or "false"
  */
-GUCEFCORE_EXPORT_C const char*
+GUCEF_CORE_PUBLIC_C const char*
 Boolint_To_String( Int32 b );
 
 /*--------------------------------------------------------------------------*/
@@ -302,7 +302,7 @@ Boolint_To_String( Int32 b );
 /**
  *      Makes the given string uppercase
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 Uppercase( char *str );
 
 /*--------------------------------------------------------------------------*/
@@ -310,7 +310,7 @@ Uppercase( char *str );
 /**
  *      Makes the given string lowercase
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 Lowercase( char *str );
 
 /*--------------------------------------------------------------------------*/
@@ -318,7 +318,7 @@ Lowercase( char *str );
 /**
  *      Converts an null-terminated string to a int
  */
-GUCEFCORE_EXPORT_C Int32
+GUCEF_CORE_PUBLIC_C Int32
 Str_To_Int( const char *digits );
 
 /*--------------------------------------------------------------------------*/
@@ -326,7 +326,7 @@ Str_To_Int( const char *digits );
 /**
  *      Converts an null-terminated string to a float
  */
-GUCEFCORE_EXPORT_C Float32
+GUCEF_CORE_PUBLIC_C Float32
 Str_To_Float( const char *digits );
 
 /*--------------------------------------------------------------------------*/
@@ -337,7 +337,7 @@ Str_To_Float( const char *digits );
  *	buffer_size is the size of the char array
  *	t is the char we are counting.
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 Count_Char( const char *buffer  ,
             UInt32 buffer_size  ,
             char t              );
@@ -347,7 +347,7 @@ Count_Char( const char *buffer  ,
 /**
  *      Change all tabs into space chars
  */
-GUCEFCORE_EXPORT_C char*
+GUCEF_CORE_PUBLIC_C char*
 Tab_To_Space( char *buffer    ,
               UInt32 numspace );
 
@@ -356,7 +356,7 @@ Tab_To_Space( char *buffer    ,
 /**
  *      Reverse the string
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 Reverse( char *buffer );
 
 /*--------------------------------------------------------------------------*/
@@ -366,7 +366,7 @@ Reverse( char *buffer );
  *      string form or something else, a host name for example.
  *      returns 1 if it's an IP address otherwise 0.
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 Check_If_IP( const char *buffer );
 
 /*--------------------------------------------------------------------------*/
@@ -375,7 +375,7 @@ Check_If_IP( const char *buffer );
  *	Copyes size char's from src to destination.
  *	This does not care about a null terminator !!!.
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 Buffer_Copy( char *dest      ,
              const char *src ,
              UInt32 size     );
@@ -387,7 +387,7 @@ Buffer_Copy( char *dest      ,
  *	string. The maximum length of the string is provided. If no null
  *	terminator is found then -1 is returned.
  */
-GUCEFCORE_EXPORT_C Int32
+GUCEF_CORE_PUBLIC_C Int32
 Find_Null( UInt32 start_at_front  ,
            const char *src        ,
            UInt32 size            );
@@ -398,14 +398,14 @@ Find_Null( UInt32 start_at_front  ,
  *      Converts the given pointer value into a 32 bit integer
  *      Data may be lost if the pointer is 64 bit
  */
-GUCEFCORE_EXPORT_C Int32
+GUCEF_CORE_PUBLIC_C Int32
 PtrToInt32( const void* ptr );
 
 /*--------------------------------------------------------------------------*/
 
 #ifdef __cplusplus
    };
-#endif /* __cplusplus */ 
+#endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -441,7 +441,7 @@ PtrToInt32( const void* ptr );
 - 12-06-2004 :
         - Added support in Find_NULL() to select which side to start seaching.
         - Added support in Find_Char() for non-null-terminated strings.
-        - Added support in _Find_Char() for non-null-terminated strings.        
+        - Added support in _Find_Char() for non-null-terminated strings.
 - 26-03-2004 :
         - Added Convert_Dir_Seperators() which makes sure the given path string
           has valid dir seperation chars for the current O/S.
@@ -456,7 +456,7 @@ PtrToInt32( const void* ptr );
           crashing my server by sending a string without a '\0' :o)
 - 18-08-2003 :
         - Added some stuff to comments.
-        - Changed EXPORT into GUCEFCORE_EXPORT_C
+        - Changed EXPORT into GUCEF_CORE_PUBLIC_C
 - 13-08-2003 :
         - Added this section
         - replaced all simple types ( int ect. ) with my own.

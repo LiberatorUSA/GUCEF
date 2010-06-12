@@ -60,7 +60,7 @@ namespace CORE {
  *  Interface class for the events emitted by CTONRegistry template
  *  instantiations.
  */
-class GUCEFCORE_EXPORT_CPP CTONRegistryEvents
+class GUCEF_CORE_PUBLIC_CPP CTONRegistryEvents
 {
     public:
 

@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CTASKDELEGATOR_H
 #define GUCEF_CORE_CTASKDELEGATOR_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -47,7 +47,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -61,46 +61,46 @@ class CTaskConsumer;
 
 /*-------------------------------------------------------------------------*/
 
-/** 
+/**
  *  This is an internally used class for the CTaskManager class.
  *  It is not meant to be used beyond that use-case.
  */
-class GUCEF_CORE_EXPORT_CPP CTaskDelegator : public MT::CActiveObject
-{ 
+class GUCEF_CORE_PUBLIC_CPP CTaskDelegator : public MT::CActiveObject
+{
     public:
-    
+
     typedef CTNumericID< UInt32 > TTaskID;
-    
+
     CTaskManager& GetTaskManager( void ) const;
-    
+
     CTaskConsumer* GetTaskConsumer( void );
-    
+
     protected:
     friend class CTaskManager;
-    
+
     CTaskDelegator( void );
-    
+
     virtual ~CTaskDelegator();
-    
+
     virtual bool OnTaskStart( void* taskdata );
 
     virtual bool OnTaskCycle( void* taskdata );
 
-    virtual void OnTaskEnd( void* taskdata );    
-    
+    virtual void OnTaskEnd( void* taskdata );
+
     void PerformTaskCleanup( CTaskConsumer* taskConsumer ,
                              CICloneable* taskData        ) const;
-                             
+
     void SetTaskData( TTaskID& taskId             ,
                       CTaskConsumer* taskConsumer );
 
     private:
-    
+
     CTaskDelegator( const CTaskDelegator& src );
     CTaskDelegator& operator=( const CTaskDelegator& src );
-    
+
     private:
-    
+
     CTaskConsumer* m_taskConsumer;
     CTaskManager* m_taskManager;
 };

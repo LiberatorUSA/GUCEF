@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_TSPRINTING_H
@@ -75,7 +75,7 @@ namespace CORE {
  *	in which the output is generated from multiple threads but it does
  *	prevent output from getting mixed.
  */
-GUCEFCORE_EXPORT_C int
+GUCEF_CORE_PUBLIC_C int
 tsprintf( const char* __format, ... );
 
 /*-------------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ tsprintf( const char* __format, ... );
  *	in which the output is generated from multiple threads but it does
  *	prevent output from getting mixed.
  */
-GUCEFCORE_EXPORT_C int 
+GUCEF_CORE_PUBLIC_C int
 tsfprintf( FILE* __stream, const char* __format, ... );
 
 /*-------------------------------------------------------------------------*/
@@ -95,7 +95,7 @@ tsfprintf( FILE* __stream, const char* __format, ... );
  *	The console output file will be used if tsusecoutfile() was called
  *	with argument true.
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 tssetcoutfile( const char *cout_file );
 
 /*-------------------------------------------------------------------------*/
@@ -104,7 +104,7 @@ tssetcoutfile( const char *cout_file );
  *	Set wheter or not to use a file for console output.
  *	the file specified with tssetcoutfile() will be used.
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 tsusecoutfile( UInt32 use );
 
 /*-------------------------------------------------------------------------*/
@@ -112,7 +112,7 @@ tsusecoutfile( UInt32 use );
 /**
  *      Set wheter tsprintf() should output to console.
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 tspconsoleout( UInt32 use );
 
 /*-------------------------------------------------------------------------*/
@@ -124,16 +124,16 @@ tspconsoleout( UInt32 use );
  *      reopened for a non-console application so you can't clear the console
  *      window using a standard O/S function.
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 console_clrscr( void );
 
 /*-------------------------------------------------------------------------*/
 
 /**
  *	Initializes the mutex's needed for the threadsafe printing functions to
- *	work. 
+ *	work.
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 tspinit( void );
 
 /*-------------------------------------------------------------------------*/
@@ -141,7 +141,7 @@ tspinit( void );
 /**
  *	Cleanup after a tspinit() has been used.
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 tspshutdown( void );
 
 /*--------------------------------------------------------------------------*/

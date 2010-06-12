@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CABSTRACTFACTORYBASE_H
 #define GUCEF_CORE_CABSTRACTFACTORYBASE_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -37,7 +37,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -46,22 +46,22 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_EXPORT_CPP CAbstractFactoryBase : public CNotifier
+class GUCEF_CORE_PUBLIC_CPP CAbstractFactoryBase : public CNotifier
 {
     public:
-    
+
     static const CEvent ConcreteFactoryRegisteredEvent;
     static const CEvent ConcreteFactoryUnregisteredEvent;
-    
+
     static void RegisterEvents( void );
-    
+
     protected:
-    
+
     CAbstractFactoryBase( void );
     virtual ~CAbstractFactoryBase();
-    
+
     private:
-    
+
     CAbstractFactoryBase( const CAbstractFactoryBase& src );
     CAbstractFactoryBase& operator=( const CAbstractFactoryBase& src );
 };

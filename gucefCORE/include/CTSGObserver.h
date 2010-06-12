@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CTSGOBSERVER_H
 #define GUCEF_CORE_CTSGOBSERVER_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -34,7 +34,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -52,10 +52,10 @@ class CTSGNotifier;
  *  class to add observer behavior to the CTSGNotifier. To use the mechanism create
  *  CTSGNotifier object.
  */
-class GUCEFCORE_EXPORT_CPP CTSGObserver : public CPumpedObserver
+class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
 {
     protected:
-    
+
     /**
      *  Event handler that simply forwards the eventid and the
      *  eventdata to the parent notifier.
@@ -70,31 +70,31 @@ class GUCEFCORE_EXPORT_CPP CTSGObserver : public CPumpedObserver
 
     private:
     friend class CTSGNotifier;
-    
-    CTSGObserver( CPulseGenerator& pulsGenerator );                           
-    
+
+    CTSGObserver( CPulseGenerator& pulsGenerator );
+
     virtual ~CTSGObserver();
-    
+
     void SetParent( CTSGNotifier* parentNotifier );
-    
+
     void AddEventToMailbox( CNotifier* notifier           ,
                             const CEvent& eventid         ,
                             CICloneable* eventdata = NULL );
-                            
+
     void DoLockData( void ) const;
-    
+
     void DoUnlockData( void ) const;
-    
+
     private:
-    
+
     CTSGObserver( void );
-    
+
     CTSGObserver( const CTSGObserver& src );
-    
+
     CTSGObserver& operator=( const CTSGObserver& src );
-    
+
     private:
-    
+
     CTSGNotifier* m_parentNotifier;
 };
 

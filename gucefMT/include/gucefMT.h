@@ -177,7 +177,7 @@
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFMT_EXPORT_C const char* GUCEF_MT_ModuleCompileTimeStamp( void );
+GUCEF_MT_PUBLIC_C const char* GUCEF_MT_ModuleCompileTimeStamp( void );
 
 /*-------------------------------------------------------------------------*/
 

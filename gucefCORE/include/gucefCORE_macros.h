@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_MACROS_H
@@ -82,23 +82,21 @@
   #define GUCEF_CORE_EXPORTSPEC GUCEF_IMPORT
 #endif /* GUCEF_CORE_BUILD_MODULE ? */
 
-#undef GUCEF_CORE_EXPORT_CPP
-#ifdef GUCEF_CORE_EXPORT_CPP_CODE
-  #define GUCEF_CORE_EXPORT_CPP GUCEF_CORE_EXPORTSPEC
+#undef GUCEF_CORE_PUBLIC_CPP
+#ifdef GUCEF_CORE_PUBLIC_CPP_CODE
+  #define GUCEF_CORE_PUBLIC_CPP GUCEF_CORE_EXPORTSPEC
 #else
-  #define GUCEF_CORE_EXPORT_CPP
+  #define GUCEF_CORE_PUBLIC_CPP GUCEF_HIDDEN
 #endif /* GUCEF_CORE_EXPORT_CPP_CODE */
 
-#undef GUCEF_CORE_EXPORT_C
-#ifdef GUCEF_CORE_EXPORT_C_CODE
-  #define GUCEF_CORE_EXPORT_C GUCEF_CORE_EXPORTSPEC  
-#else
-  #define GUCEF_CORE_EXPORT_C
-#endif /* GUCEF_CORE_EXPORT_C_CODE */
+#define GUCEF_CORE_PRIVATE_CPP GUCEF_HIDDEN
 
-/* support for legacy defines */
-#define GUCEFCORE_EXPORT_C GUCEF_CORE_EXPORT_C
-#define GUCEFCORE_EXPORT_CPP GUCEF_CORE_EXPORT_CPP
+#undef GUCEF_CORE_PUBLIC_C
+#ifdef GUCEF_CORE_PUBLIC_C_CODE
+  #define GUCEF_CORE_PUBLIC_C GUCEF_CORE_EXPORTSPEC
+#else
+  #define GUCEF_CORE_PUBLIC_C GUCEF_HIDDEN
+#endif /* GUCEF_CORE_PUBLIC_C_CODE */
 
 /*-------------------------------------------------------------------------*/
 
@@ -107,11 +105,11 @@
     #include "tsprinting.h"
     #define TSPRINTING_H
   #endif /* TSPRINTING_H ? */
-#endif /* GUCEF_CORE_DEBUG_MODE ? */  
+#endif /* GUCEF_CORE_DEBUG_MODE ? */
 
 /*-------------------------------------------------------------------------*/
 
-#undef DEBUGOUTPUT 
+#undef DEBUGOUTPUT
 #undef DEBUGOUTPUTs
 #undef DEBUGOUTPUTi
 #undef DEBUGOUTPUTss
@@ -122,22 +120,22 @@
   #ifdef ADD_EXTRA_INFO_TO_DEBUGOUTPUT
     #define DEBUGOUTPUT( c_str ) ( GUCEF::CORE::tsprintf( "%s @ Line %d File %s\n", c_str, __LINE__, __FILE__ ) )
     #define DEBUGOUTPUTs DEBUGOUTPUT
-    #define DEBUGOUTPUTi( intval ) ( GUCEF::CORE::tsprintf( "%i @ Line %d File %s\n", intval, __LINE__, __FILE__ ) )    
+    #define DEBUGOUTPUTi( intval ) ( GUCEF::CORE::tsprintf( "%i @ Line %d File %s\n", intval, __LINE__, __FILE__ ) )
     #define DEBUGOUTPUTss( c_str1, c_str2 ) ( GUCEF::CORE::tsprintf( "%s%s @ Line %d File %s\n", c_str1, c_str2, __LINE__, __FILE__ ) )
     #define DEBUGOUTPUTis( intval, c_str ) ( GUCEF::CORE::tsprintf( "%i%s @ Line %d File %s\n", intval, c_str, __LINE__, __FILE__ ) )
-    #define DEBUGOUTPUTsi( c_str, intval ) ( GUCEF::CORE::tsprintf( "%s%i @ Line %d File %s\n", c_str, intval, __LINE__, __FILE__ ) )    
+    #define DEBUGOUTPUTsi( c_str, intval ) ( GUCEF::CORE::tsprintf( "%s%i @ Line %d File %s\n", c_str, intval, __LINE__, __FILE__ ) )
     #define DEBUGOUTPUTsss( c_str1, c_str2, c_str3 ) ( CORE::tsprintf( "%s%s%s @ Line %d File %s\n", c_str1, c_str2, c_str3, __LINE__, __FILE__ ) )
     #define DEBUGOUTPUTsss( c_str1, c_str2, c_str3, c_str4 ) ( GUCEF::CORE::tsprintf( "%s%s%s%s @ Line %d File %s\n", c_str1, c_str2, c_str3, c_str4, __LINE__, __FILE__ ) )
   #else
     #define DEBUGOUTPUT( c_str ) ( GUCEF::CORE::tsprintf( "%s\n", c_str ) )
     #define DEBUGOUTPUTs DEBUGOUTPUT
-    #define DEBUGOUTPUTi( intval ) ( GUCEF::CORE::tsprintf( "%i\n", intval ) )    
+    #define DEBUGOUTPUTi( intval ) ( GUCEF::CORE::tsprintf( "%i\n", intval ) )
     #define DEBUGOUTPUTss( c_str1, c_str2 ) ( GUCEF::CORE::tsprintf( "%s%s\n", c_str1, c_str2 ) )
     #define DEBUGOUTPUTis( intval, c_str ) ( GUCEF::CORE::tsprintf( "%i%s\n", intval, c_str ) )
     #define DEBUGOUTPUTsi( c_str, intval ) ( GUCEF::CORE::tsprintf( "%s%i\n", c_str, intval ) )
     #define DEBUGOUTPUTsss( c_str1, c_str2, c_str3 ) ( GUCEF::CORE::tsprintf( "%s%s%s\n", c_str1, c_str2, c_str3 ) )
     #define DEBUGOUTPUTssss( c_str1, c_str2, c_str3, c_str4 ) ( GUCEF::CORE::tsprintf( "%s%s%s%s\n", c_str1, c_str2, c_str3, c_str4 ) )
-  #endif  
+  #endif
 #else
   #define DEBUGOUTPUT( c_str ) ( )
   #define DEBUGOUTPUTi ( intval ) ( )
@@ -147,7 +145,7 @@
   #define DEBUGOUTPUTis( intval, c_str ) ( )
   #define DEBUGOUTPUTsss( c_str1, c_str2, c_str3 ) ( )
   #define DEBUGOUTPUTssss( c_str1, c_str2, c_str3, c_str4 ) ( )
-#endif /* GUCEF_CORE_DEBUG_MODE ? */  
+#endif /* GUCEF_CORE_DEBUG_MODE ? */
 
 /*-------------------------------------------------------------------------*/
 

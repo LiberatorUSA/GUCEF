@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
@@ -58,23 +58,23 @@ class CDataNode;
 /**
  *      Abstract base class for adding a configuration API to decending classes.
  *      Defines a uniform interface for loading and saving configuration data.
- *      Optionally the global CConfigStore can be used to load/unload the config of  
+ *      Optionally the global CConfigStore can be used to load/unload the config of
  *      all configurable classes that have the 'use global config' switch set.
  */
-class GUCEFCORE_EXPORT_CPP CIConfigurable
+class GUCEF_CORE_PUBLIC_CPP CIConfigurable
 {
         public:
-        
+
         CIConfigurable( void );
-        
+
         CIConfigurable( const CIConfigurable& src );
-        
+
         CIConfigurable( bool useglobalconfig );
-        
+
         virtual ~CIConfigurable();
-        
+
         CIConfigurable& operator=( const CIConfigurable& src );
-       
+
         /**
          *      Attempts to store the given tree in the file
          *      given according to the method of the codec metadata
@@ -83,24 +83,24 @@ class GUCEFCORE_EXPORT_CPP CIConfigurable
          *      @return wheter storing the tree was successfull
          */
         virtual bool SaveConfig( CDataNode& tree ) = 0;
-                                    
+
         /**
-         *      Attempts to load data from the given file to the 
-         *      root node given. The root data will be replaced 
+         *      Attempts to load data from the given file to the
+         *      root node given. The root data will be replaced
          *      and any children the node may already have will be deleted.
          *
          *      @param treeroot pointer to the node that is to act as root of the data tree
          *      @return whether building the tree from the given file was successfull.
-         */                                    
+         */
         virtual bool LoadConfig( const CDataNode& treeroot ) = 0;
-        
+
         void SetUseGlobalConfig( bool use );
-        
+
         bool GetUseGlobalConfig( void ) const;
 
         private:
         friend class CConfigStore;
-                
+
         UInt32 _configid;       /**< used by the CConfigStore class to speed up lookup ops */
         bool _useglobal;        /**< wheter this configurable object reacts to global config events */
 };
@@ -128,5 +128,5 @@ class GUCEFCORE_EXPORT_CPP CIConfigurable
         - Modified to use the new CDataNode class
 - 08-02-2005 :
         - Initial implementation
-          
+
 ---------------------------------------------------------------------------*/

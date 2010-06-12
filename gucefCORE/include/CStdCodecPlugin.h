@@ -54,7 +54,7 @@ namespace CORE {
 /**
  *  GUCEF CORE module plugin implementation for codecs
  */
-class GUCEFCORE_EXPORT_CPP CStdCodecPlugin : public CICodecPlugin
+class GUCEF_CORE_PUBLIC_CPP CStdCodecPlugin : public CICodecPlugin
 {
     public:
 

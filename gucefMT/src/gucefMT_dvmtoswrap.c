@@ -141,7 +141,7 @@ ThreadCreate( TThreadFunc func ,
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFMT_EXPORT_C UInt32
+GUCEF_MT_PUBLIC_C UInt32
 ThreadID( struct SThreadData* td )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
