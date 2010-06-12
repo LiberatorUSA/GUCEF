@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CTIMER_H
 #define GUCEF_CORE_CTIMER_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -52,7 +52,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -66,27 +66,27 @@ class CPulseGenerator;
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Timer implementation that attempts to provide a timing mechanism with a 
+ *  Timer implementation that attempts to provide a timing mechanism with a
  *  millisecond resolution.
  *
  *  Note that timer calls are performed in the main application thread
  *  (Assuming you are calling the CGUCEFApplication Update() from your main thread).
- *  As such operations by handlers will suspend the message handling 
+ *  As such operations by handlers will suspend the message handling
  *  in the application for their duration. Keep this in mind when hooking
  *  up a lengthy process to a timer in an GUI based application.
  *
  *  Note that the timer resolution is NOT guaranteed. An attempt is made to
- *  provide the theoretical minimum resolution of 1 millisecond. 
+ *  provide the theoretical minimum resolution of 1 millisecond.
  */
-class GUCEFCORE_EXPORT_CPP CTimer : public CObservingNotifier
+class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
 {
     public:
-    
+
     static const CEvent TimerStartedEvent;
     static const CEvent TimerUpdateEvent;
     static const CEvent TimerStoppedEvent;
     static const CEvent TimerIntervalChangedEvent;
-    
+
     struct STimerUpdateData
     {
         UInt64 tickCount;
@@ -95,54 +95,54 @@ class GUCEFCORE_EXPORT_CPP CTimer : public CObservingNotifier
     typedef struct STimerUpdateData TTimerUpdateData;
     typedef CTCloneableObj< TTimerUpdateData > TimerUpdateEventData;
     typedef TCloneableUInt32 TimerIntervalChangedEventData;
-        
+
     static void RegisterEvents( void );
-    
+
     public:
-    
+
     CTimer( CPulseGenerator& pulseGenerator          ,
             const UInt32 updateDeltaInMilliSecs = 10 );
 
-    CTimer( const UInt32 updateDeltaInMilliSecs = 10 );        
-    
+    CTimer( const UInt32 updateDeltaInMilliSecs = 10 );
+
     CTimer( const CTimer& src );
-    
-    ~CTimer();    
+
+    ~CTimer();
 
     CTimer& operator=( const CTimer& src );
-    
+
     void SetInterval( const UInt32 updateDeltaInMilliSecs );
-    
+
     UInt32 GetInterval( void ) const;
-    
+
     void SetEnabled( const bool enabled );
-    
+
     bool GetEnabled( void ) const;
-    
+
     /**
      *  Returns the tick count since the start of the timer.
-     *  
-     *  Note that reseting the timer alters the timer count 
+     *
+     *  Note that reseting the timer alters the timer count
      *  but not the run ticks since the timer didn't actually stop.
      */
     UInt64 GetRunTicks( void ) const;
-    
+
     Float64 GetRunTimeInMilliSecs( void ) const;
 
     /**
      *  Returns the actual tick count of the timer.
      *
-     *  Note that the tick count gets reset by either the start 
+     *  Note that the tick count gets reset by either the start
      *  of a timer or trough the use of an explicit Reset() call.
      */
     UInt64 GetTickCount( void ) const;
-    
+
     Float64 GetTimeInMilliSecs( void ) const;
-	
+
 	void Reset( void );
-	
+
 	const CString& GetClassTypeName( void ) const;
-	
+
 	/**
 	 *  Returns the approximated maximum timer resolution in milliseconds
 	 *
@@ -152,8 +152,8 @@ class GUCEFCORE_EXPORT_CPP CTimer : public CObservingNotifier
 	 *  @return approximated maximum timer resolution in milliseconds
 	 */
 	static Float64 GetApproxMaxTimerResolutionInMilliSecs( void );
-    
-    private:    
+
+    private:
     typedef CTEventHandlerFunctor< CTimer > TEventCallback;
 
     void OnPulse( CNotifier* notifier           ,
@@ -163,7 +163,7 @@ class GUCEFCORE_EXPORT_CPP CTimer : public CObservingNotifier
     void OnPulseGeneratorDestruction( CNotifier* notifier           ,
                                       const CEvent& eventid         ,
                                       CICloneable* eventdata = NULL );
-    
+
     private:
 
     Float64 m_timerFreq;
@@ -192,7 +192,7 @@ class GUCEFCORE_EXPORT_CPP CTimer : public CObservingNotifier
 
 - 03-03-2007 :
         - Dinand: Added this section.
-        - Dinand: Converted class from callback interface based mechanics to 
+        - Dinand: Converted class from callback interface based mechanics to
           notification
 
 -----------------------------------------------------------------------------*/

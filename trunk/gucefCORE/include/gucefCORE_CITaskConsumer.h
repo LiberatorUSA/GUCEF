@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CTASKCONSUMER_H
 #define GUCEF_CORE_CTASKCONSUMER_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -42,7 +42,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -55,44 +55,44 @@ class CTaskDelegator;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_EXPORT_CPP CTaskConsumer : public CNotifier
+class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CNotifier
 {
     public:
-    
+
     typedef CTNumericID< UInt32 > TTaskID;
-    
+
     CTaskConsumer( void );
 
     virtual ~CTaskConsumer();
-    
+
     virtual CString GetType( void ) const = 0;
-    
+
     virtual bool ProcessTask( CICloneable* taskData ) = 0;
-    
+
     CTaskDelegator* GetTaskDelegator( void ) const;
-    
+
     const TTaskID& GetTaskID( void ) const;
-    
+
     virtual const CString& GetClassTypeName( void ) const;
-    
+
     private:
     friend class CTaskDelegator;
-    
+
     void SetTaskData( TTaskID& taskId           ,
                       CTaskDelegator* delegator );
 
     protected:
     friend class CTaskManager;
-    
+
     TTaskID& GetMutableTaskId( void );
-    
+
     private:
-    
+
     CTaskConsumer( const CTaskConsumer& src  );
     CTaskConsumer& operator=( const CTaskConsumer& src );
-    
+
     private:
-    
+
     CTaskDelegator* m_delegator;
     TTaskID m_taskId;
 };

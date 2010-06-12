@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CSYSCONSOLE_H
@@ -79,29 +79,29 @@ class CSysConsoleClient;
  *
  *      Think of it as a DOS-console/Bash but instead of a storage
  *      medium you can move trough a tree of system commands.
- */ 
-class GUCEFCORE_EXPORT_CPP CSysConsole : public CIConfigurable         ,
+ */
+class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CIConfigurable         ,
                                          public CISysConsoleCmdHandler
 {
         public:
-        
+
         static CSysConsole* Instance( void );
-                                    
+
         bool RegisterCmd( const CString& path                ,
                           const CString& command             ,
                           const std::vector< CString >& args ,
-                          CISysConsoleCmdHandler* cmdhandler );                             
+                          CISysConsoleCmdHandler* cmdhandler );
 
         void UnregisterCmd( const CString& path    ,
                             const CString& command );
-                            
+
         bool RegisterAlias( const CString& aliasname ,
                             const CString& path      ,
                             const CString& function  );
-                            
+
         bool UnregisterAlias( const CString& aliasname ,
                               const CString& path      ,
-                              const CString& function  );                                                        
+                              const CString& function  );
 
         /**
          *      Attempts to store the given tree in the file
@@ -111,51 +111,51 @@ class GUCEFCORE_EXPORT_CPP CSysConsole : public CIConfigurable         ,
          *      @return wheter storing the tree was successfull
          */
         virtual bool SaveConfig( CDataNode& tree );
-                                    
+
         /**
-         *      Attempts to load data from the given file to the 
-         *      root node given. The root data will be replaced 
+         *      Attempts to load data from the given file to the
+         *      root node given. The root data will be replaced
          *      and any children the node may already have will be deleted.
          *
          *      @param treeroot pointer to the node that is to act as root of the data tree
          *      @return whether building the tree from the given file was successfull.
-         */                                    
+         */
         virtual bool LoadConfig( const CDataNode& treeroot );
 
         public:
-        
+
         struct SCmdChannel;
         struct SFunctionHook;
-                        
+
         private:
-        friend class CSysConsoleClient;        
+        friend class CSysConsoleClient;
 
         void LeaveDir( CSysConsoleClient* client );
-        
+
         bool EnterDir( CSysConsoleClient* client ,
                        const CString& dirname );
-        
+
         bool JumpTo( CSysConsoleClient* client ,
                      const CString& path );
-        
+
         bool Execute( CSysConsoleClient* client             ,
                       const CString& funcname               ,
                       const std::vector< CString >& arglist ,
                       std::vector< CString >& resultdata    );
-        
+
         std::vector< CString > GetDirList( const CSysConsoleClient* client ) const;
-        
+
         std::vector< CString > GetCmdList( const CSysConsoleClient* client ) const;
-        
+
         void InitClient( CSysConsoleClient* client );
-        
+
         void UnregClient( CSysConsoleClient* client );
 
         private:
         friend class CGUCEFCOREModule;
-        
+
         static void Deinstance( void );
-        
+
         private:
 
         struct SAliasData
@@ -165,37 +165,37 @@ class GUCEFCORE_EXPORT_CPP CSysConsole : public CIConfigurable         ,
         };
         typedef struct SAliasData TAliasData;
         typedef std::map< CString, TAliasData > TAliasList;
-        
+
         CSysConsole( void );
-        CSysConsole( const CSysConsole& src );        
+        CSysConsole( const CSysConsole& src );
         ~CSysConsole();
         CSysConsole& operator=( const CSysConsole& src );
-        
+
         struct SCmdChannel* FindChannel( struct SCmdChannel* curchannel ,
                                          const CString& name            );
 
         struct SCmdChannel* BuildTree( struct SCmdChannel* curchannel ,
                                        const CString& path            );
-                                       
-        void DelTree( struct SCmdChannel* tree );                                                
-                                          
+
+        void DelTree( struct SCmdChannel* tree );
+
         struct SCmdChannel* WalkTree( struct SCmdChannel* curchannel ,
                                       const CString& path            ,
                                       CString& leftover              );
-                                         
+
         struct SFunctionHook* FindFunction( const struct SCmdChannel* curchannel ,
                                             const CString& functionname          );
-                                            
+
         TAliasData* FindAliasFunction( const CString& aliasname );
-        
+
         bool OnSysConsoleCommand( const CString& path                ,
                                   const CString& command             ,
                                   const std::vector< CString >& args ,
                                   std::vector< CString >& resultdata );
-        
+
         struct SCmdChannel* _root;
         TAliasList _aliases;
-        
+
         static CSysConsole* _instance;
         static MT::CMutex _datalock;
 };

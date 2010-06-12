@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CALLSTACK_H
 #define GUCEF_CORE_CALLSTACK_H
 
@@ -65,54 +65,54 @@ namespace CORE {
  *      @param file filename of the source file from where this function is called
  *      @param line line number in the caller source file
  */
-GUCEFCORE_EXPORT_C void 
+GUCEF_CORE_PUBLIC_C void
 GUCEF_UtilityCodeBegin( const char* file ,
                         int line         );
 
 /*-------------------------------------------------------------------------*/
-         
+
 /**
  *      Should be called at the end of a function.
  */
-GUCEFCORE_EXPORT_C void                        
+GUCEF_CORE_PUBLIC_C void
 GUCEF_UtilityCodeEnd( void );
 
 /*-------------------------------------------------------------------------*/
-           
+
 /**
  *      Prints the current call stack to stdout
  */
-GUCEFCORE_EXPORT_C void                      
+GUCEF_CORE_PUBLIC_C void
 GUCEF_PrintCallstack( void );
 
-/*-------------------------------------------------------------------------*/ 
+/*-------------------------------------------------------------------------*/
 
 /**
  *      Dumps the current call stack to the file with the given name
  *
  *      @param filename path and name of the output file.
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 GUCEF_DumpCallstack( const char* filename );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 GUCEF_LogStackTo( const char* filename );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 GUCEF_LogStackToStdOut( void );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 GUCEF_SetStackLogging( const UInt32 logStackBool );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 GUCEF_SetStackLoggingInCvsFormat( const UInt32 logAsCvsBool );
 
 /*-------------------------------------------------------------------------*/
@@ -122,7 +122,7 @@ typedef void (*TStackPushCallback) ( const char* fileName     ,
                                      const UInt32 threadId    ,
                                      const UInt32 stackHeight );
 
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 GUCEF_SetStackPushCallback( TStackPushCallback callback );
 
 /*-------------------------------------------------------------------------*/
@@ -133,29 +133,29 @@ typedef void (*TStackPopCallback) ( const char* fileName     ,
                                     const UInt32 stackHeight ,
                                     const UInt32 ticksSpent  );
 
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 GUCEF_SetStackPopCallback( TStackPopCallback callback );
 
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Initializes the call stack utility, should be called before using any of 
+ *  Initializes the call stack utility, should be called before using any of
  *  the functions.
- */  
-GUCEFCORE_EXPORT_C void
+ */
+GUCEF_CORE_PUBLIC_C void
 GUCEF_InitCallstackUtility( void );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 GUCEF_ShutdowntCallstackUtility( void );
-                                            
+
 /*--------------------------------------------------------------------------*/
 
 #ifdef __cplusplus
    }
 #endif /* __cplusplus */
-                      
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -182,9 +182,9 @@ GUCEF_ShutdowntCallstackUtility( void );
     #define GUCEF_CALLSTACK_TRACKING
   #endif
 #endif
-  
+
 /*-------------------------------------------------------------------------*/
-  
+
 #ifdef GUCEF_CALLSTACK_TRACKING
   #define GUCEF_BEGIN { GUCEF_UtilityCodeBegin( __FILE__, __LINE__ ); }
   #define GUCEF_END { GUCEF_UtilityCodeEnd(); }
@@ -193,7 +193,7 @@ GUCEF_ShutdowntCallstackUtility( void );
   #define GUCEF_BEGIN
   #define GUCEF_END
   #define GUCEF_END_RET( retvaltype, retval ) return (retval);
-#endif    
+#endif
 
 /*-------------------------------------------------------------------------*/
 

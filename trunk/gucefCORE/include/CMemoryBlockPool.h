@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CMEMORYBLOCKPOOL_H
@@ -51,7 +51,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CMemoryBlockPool
+class GUCEF_CORE_PUBLIC_CPP CMemoryBlockPool
 {
         public:
 
@@ -69,9 +69,9 @@ class GUCEFCORE_EXPORT_CPP CMemoryBlockPool
     void SetBlock( UInt32 blockindex ,
                    const void* src   ,
                    UInt32 size       );
-                   
+
     void SetBlock( UInt32 blockindex ,
-                   const void* src   );                       
+                   const void* src   );
 
     void* GetBlock( UInt32 blockindex ) const;
 

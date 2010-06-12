@@ -53,7 +53,7 @@ namespace CORE {
  *  Off course you can always inherit from this class to create specific exception
  *  sub-sets which may or may not provide additional information.
  */
-class GUCEFCORE_EXPORT_CPP CMsgException : public CException
+class GUCEF_CORE_PUBLIC_CPP CMsgException : public CException
 {
 	public:
 

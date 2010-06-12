@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 /*
@@ -94,7 +94,7 @@ namespace MT {
  *      a higher priority then readers. If 0 then readers will have priority
  *      over writers.
  */
-GUCEFMT_EXPORT_C TRWLock*
+GUCEF_MT_PUBLIC_C TRWLock*
 rwl_create( UInt32 writer_overrules );
 
 /*-------------------------------------------------------------------------*/
@@ -104,7 +104,7 @@ rwl_create( UInt32 writer_overrules );
  *      This function should only be called when all threads using the lock have
  *      finished using it. There are some safeguards but they are not fullproof.
  */
-GUCEFMT_EXPORT_C void
+GUCEF_MT_PUBLIC_C void
 rwl_destroy( TRWLock *rwlock );
 
 /*-------------------------------------------------------------------------*/
@@ -113,7 +113,7 @@ rwl_destroy( TRWLock *rwlock );
  *      Returns a boolean value. 1 if writers have priority and 0 if readers
  *      have priority.
  */
-GUCEFMT_EXPORT_C UInt32
+GUCEF_MT_PUBLIC_C UInt32
 rwl_writer_overrules( const TRWLock *rwlock );
 
 /*-------------------------------------------------------------------------*/
@@ -123,7 +123,7 @@ rwl_writer_overrules( const TRWLock *rwlock );
  *      is meant for output to humans. It has no use in relation with
  *      the other rwl_ functions.
  */
-GUCEFMT_EXPORT_C UInt32
+GUCEF_MT_PUBLIC_C UInt32
 rwl_writers( const TRWLock *rwlock );
 
 /*-------------------------------------------------------------------------*/
@@ -133,7 +133,7 @@ rwl_writers( const TRWLock *rwlock );
  *      is meant for output to humans. It has no use in relation with
  *      the other rwl_ functions.
  */
-GUCEFMT_EXPORT_C UInt32
+GUCEF_MT_PUBLIC_C UInt32
 rwl_readers( const TRWLock *rwlock );
 
 /*--------------------------------------------------------------------------*/
@@ -144,7 +144,7 @@ rwl_readers( const TRWLock *rwlock );
  *      the given rwlock. If it fails you should no longer access the given
  *      rwlock.
  */
-GUCEFMT_EXPORT_C UInt32
+GUCEF_MT_PUBLIC_C UInt32
 rwl_reader_start( TRWLock *rwlock );
 
 /*--------------------------------------------------------------------------*/
@@ -153,7 +153,7 @@ rwl_reader_start( TRWLock *rwlock );
  *      Call this function when a reader task finished using data that is
  *      protected by the given rwlock.
  */
-GUCEFMT_EXPORT_C void
+GUCEF_MT_PUBLIC_C void
 rwl_reader_stop( TRWLock *rwlock );
 
 /*--------------------------------------------------------------------------*/
@@ -164,7 +164,7 @@ rwl_reader_stop( TRWLock *rwlock );
  *      the given rwlock. If it fails you should no longer access the given
  *      rwlock. A return value of 1 indicates success and 0 failure.
  */
-GUCEFMT_EXPORT_C UInt32
+GUCEF_MT_PUBLIC_C UInt32
 rwl_writer_start( TRWLock *rwlock );
 
 /*--------------------------------------------------------------------------*/
@@ -173,7 +173,7 @@ rwl_writer_start( TRWLock *rwlock );
  *      Call this function when a writer task finished using data that is
  *      protected by the given rwlock.
  */
-GUCEFMT_EXPORT_C void
+GUCEF_MT_PUBLIC_C void
 rwl_writer_stop( TRWLock *rwlock );
 
 /*--------------------------------------------------------------------------*/

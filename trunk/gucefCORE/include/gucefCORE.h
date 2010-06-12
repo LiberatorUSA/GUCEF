@@ -434,7 +434,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_C const char* GUCEF_CORE_ModuleCompileTimeStamp( void );
+GUCEF_CORE_PUBLIC_C const char* GUCEF_CORE_ModuleCompileTimeStamp( void );
 
 /*-------------------------------------------------------------------------*/
 

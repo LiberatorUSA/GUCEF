@@ -81,7 +81,7 @@ class CNotifierImplementor;
  *  notifying you is to schedule the notifier for deletion after the notification
  *  finishes.
  */
-class GUCEFCORE_EXPORT_CPP CObserver : public CIObserver
+class GUCEF_CORE_PUBLIC_CPP CObserver : public CIObserver
 {
     public:
 

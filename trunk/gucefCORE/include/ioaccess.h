@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_IOACCESS_H
@@ -70,7 +70,7 @@ namespace CORE {
 
 #if !defined( IOACCESS_PAFILE_SUPPORT ) && !defined( IOACCESS_MFILE_SUPPORT ) && !defined( IOACCESS_FILE_SUPPORT )
 #error You have to select at least one supported source type
-#endif 
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -100,7 +100,7 @@ typedef enum
 
 /**
  *      Forward declaration required of the I/O access data structure to
- *      avoid mutual calling. 
+ *      avoid mutual calling.
  */
 struct SIOAccess;
 
@@ -172,7 +172,7 @@ extern "C" {
  *      specified in type. Should be used in combination with
  *      IOA_Destroy_IOAccess()
  */
-GUCEFCORE_EXPORT_C TIOAccess*
+GUCEF_CORE_PUBLIC_C TIOAccess*
 IOA_Create_IOAccess( void *source, TIOType type );
 
 /*-------------------------------------------------------------------------*/
@@ -180,7 +180,7 @@ IOA_Create_IOAccess( void *source, TIOType type );
 /**
  *      De-allocate storage created with IOA_Create_IOAccess().
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 IOA_Destroy_IOAccess( TIOAccess *access );
 
 /*-------------------------------------------------------------------------*/
@@ -195,7 +195,7 @@ IOA_Destroy_IOAccess( TIOAccess *access );
  *      combination with the IOACCESS_FILEPATH source type because the IOA
  *      functions will manage the cleanup.
  */
-GUCEFCORE_EXPORT_C void* 
+GUCEF_CORE_PUBLIC_C void*
 IOA_Source( TIOAccess *access );
 
 /*-------------------------------------------------------------------------*/
@@ -203,10 +203,10 @@ IOA_Source( TIOAccess *access );
 /**
  *      Returns the type of recource this access point current wraps.
  *      The type returned may differ from that which was passed to
- *      IOA_Create_IOAccess() due to internal conversions. 
+ *      IOA_Create_IOAccess() due to internal conversions.
  *
  */
-GUCEFCORE_EXPORT_C TIOType
+GUCEF_CORE_PUBLIC_C TIOType
 IOA_Type( TIOAccess *access );
 
 /*-------------------------------------------------------------------------*/
@@ -240,7 +240,7 @@ IOA_Type( TIOAccess *access );
 //-------------------------------------------------------------------------//
 
 - 17-10-2004 :
-        - Added a precompiler error condition if no source type is enabled. 
+        - Added a precompiler error condition if no source type is enabled.
 - 06-09-2004 :
         - Fixed a bug when creating access with source type IOACCESS_FILEPATH.
         - Added build switches to remove support for certain types in

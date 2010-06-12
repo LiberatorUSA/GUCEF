@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
-#define GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H 
+#define GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CIOBSERVER_H
 #include "gucefCORE_CIObserver.h"
@@ -50,17 +50,17 @@ namespace CORE {
  *  Interface class for all instantiations of the CTEventHandlerFunctor template
  *  It provides an identifier and the combined observer and cloneable interface
  */
-class GUCEF_CORE_EXPORT_CPP CIEventHandlerFunctorBase : public CIObserver  ,
+class GUCEF_CORE_PUBLIC_CPP CIEventHandlerFunctorBase : public CIObserver  ,
                                                         public CICloneable
 {
     public:
 
     CIEventHandlerFunctorBase( void );
-    
+
     CIEventHandlerFunctorBase( const CIEventHandlerFunctorBase& src );
-    
+
     virtual ~CIEventHandlerFunctorBase();
-    
+
     CIEventHandlerFunctorBase& operator=( const CIEventHandlerFunctorBase& src );
 };
 

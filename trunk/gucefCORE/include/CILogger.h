@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CILOGGER_H
-#define GUCEF_CORE_CILOGGER_H 
+#define GUCEF_CORE_CILOGGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CLOGMANAGER_H
 #include "CLogManager.h"
@@ -53,19 +53,19 @@ class CString;
 /**
  *  Interface class for implementors of logging.
  */
-class GUCEFCORE_EXPORT_CPP CILogger
+class GUCEF_CORE_PUBLIC_CPP CILogger
 {
     public:
-    
+
     typedef CLogManager::TLogMsgType TLogMsgType;
-                           
+
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
                       const CString& logMessage    ) = 0;
-    
+
     virtual void FlushLog( void ) = 0;
-    
-    
+
+
     CILogger( void );                             /**< interface class: no-op */
     virtual ~CILogger();                          /**< interface class: no-op */
     CILogger( const CILogger& src );              /**< interface class: no-op */

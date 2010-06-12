@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CPULSEGENERATOR_H
 #define GUCEF_CORE_CPULSEGENERATOR_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -49,7 +49,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -62,68 +62,68 @@ class CIPulseGeneratorDriver;
 
 /*--------------------------------------------------------------------------*/
 
-class GUCEF_CORE_EXPORT_CPP CPulseGenerator : public CNotifier
+class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
 {
     public:
-    
+
     static const CEvent PulseEvent;
-    
+
     static void RegisterEvents( void );
-    
+
     typedef CPulseData TPulseEventData;
-    
+
     public:
-    
+
     CPulseGenerator( void );
-    
+
     virtual ~CPulseGenerator();
-    
+
     void RequestPulse( void );
 
     void RequestPeriodicPulses( void* requestor );
-    
+
     void RequestPeriodicPulses( void* requestor                           ,
                                 const UInt32 minimalPulseDeltaInMilliSecs );
 
     void RequestPeriodicPulses( void );
 
     void RequestStopOfPeriodicUpdates( void* requestor );
-    
+
     void RequestPulseInterval( const UInt32 minimalPulseDeltaInMilliSecs );
-    
+
     bool IsPulsingPeriodicly( void ) const;
-    
+
     UInt32 GetRequiredPulseDeltaInMilliSecs( void ) const;
-    
+
     Float64 GetActualPulseDeltaInMilliSecs( void ) const;
-    
+
     UInt64 GetTickCountAtLastPulse( void ) const;
-    
+
     void SetPulseGeneratorDriver( CIPulseGeneratorDriver* driver );
-    
+
     CIPulseGeneratorDriver* GetPulseGeneratorDriver( void ) const;
-    
+
     bool IsForcedStopOfPeriodicPulsesRequested( void ) const;
-    
+
     void ForceStopOfPeriodicPulses( void );
-    
+
     void AllowPeriodicPulses( void );
-    
+
     virtual const CString& GetClassTypeName( void ) const;
 
     protected:
-    
+
     virtual void LockData( void ) const;
-    
+
     virtual void UnlockData( void ) const;
-    
-    private:    
-    friend class CIPulseGeneratorDriver;
-    
-    void OnDriverPulse( void );    
-    
+
     private:
-    
+    friend class CIPulseGeneratorDriver;
+
+    void OnDriverPulse( void );
+
+    private:
+
     /**
      *  returns the minimal required resolution for the application
      *  update interval in milliseconds as requested by the application
@@ -132,11 +132,11 @@ class GUCEF_CORE_EXPORT_CPP CPulseGenerator : public CNotifier
      *  @return the minimal required update frequency in milliseconds
      */
     UInt32 DetermineRequiredPulseInterval( void ) const;
-    
+
     private:
-    
+
     typedef std::map< void*, UInt32 > TPeriodicPulseRequestorMap;
-   
+
     UInt64 m_lastCycleTickCount;
     UInt32 m_updateDeltaInMilliSecs;
     Float64 m_timerFreq;

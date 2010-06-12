@@ -61,10 +61,18 @@
 
     #define GUCEF_EXPORT __declspec( dllexport )
     #define GUCEF_IMPORT __declspec( dllimport )
+    #define GUCEF_HIDDEN
 #else
-    #define GUCEF_EXPORT
-    #define GUCEF_IMPORT
-#endif /* GUCEF_MSWIN_BUILD ? */
+    #if ( GUCEF_COMPILER == GUCEF_COMPILER_GNUC ) && ( __GNUC__ >= 4 )
+        #define GUCEF_EXPORT __attribute__ ((__visibility__("default")))
+        #define GUCEF_IMPORT __attribute__ ((__visibility__("default")))
+        #define GUCEF_HIDDEN __attribute__ ((__visibility__("hidden")))
+    #else
+        #define GUCEF_EXPORT
+        #define GUCEF_IMPORT
+        #define GUCEF_HIDDEN
+    #endif
+#endif
 
 /*-------------------------------------------------------------------------*/
 

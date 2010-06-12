@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CSUBFILEACCESS_H
-#define GUCEF_CORE_CSUBFILEACCESS_H 
+#define GUCEF_CORE_CSUBFILEACCESS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #include <stdio.h>
 
@@ -48,10 +48,10 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_EXPORT_CPP CSubFileAccess : public CIOAccess
+class GUCEF_CORE_PUBLIC_CPP CSubFileAccess : public CIOAccess
 {
     public:
-    
+
     CSubFileAccess( void );
 
     virtual ~CSubFileAccess();
@@ -91,14 +91,14 @@ class GUCEF_CORE_EXPORT_CPP CSubFileAccess : public CIOAccess
     virtual UInt32 Read( void *dest      ,
                          UInt32 esize    ,
                          UInt32 elements );
-                         
+
     /**
      *      Attempts to write the specified number of bytes to the recourse
      *      using srcdata as the data source.
-     */        
+     */
     virtual UInt32 Write( const void* srcdata ,
                           UInt32 esize        ,
-                          UInt32 elements     );                             
+                          UInt32 elements     );
 
     virtual UInt32 Write( CIOAccess& sourceData );
 
@@ -106,10 +106,10 @@ class GUCEF_CORE_EXPORT_CPP CSubFileAccess : public CIOAccess
      *      Get the current offset in bytes
      */
     virtual UInt32 Tell( void ) const;
-    
+
     /**
      *      Get the size of the resource in bytes
-     */        
+     */
     virtual UInt32 GetSize( void ) const;
 
     /**
@@ -132,25 +132,25 @@ class GUCEF_CORE_EXPORT_CPP CSubFileAccess : public CIOAccess
      *      are we at the end of the recource ?
      */
     virtual bool Eof( void ) const;
-    
+
     virtual bool IsReadable( void ) const;
-    
-    virtual bool IsWriteable( void ) const;       
-    
+
+    virtual bool IsWriteable( void ) const;
+
     /**
      *      Is the access to the resource a valid one or
      *      has something gone wrong ?
      */
     virtual bool IsValid( void );
-    
+
     virtual void Flush( void );
-    
+
     virtual CICloneable* Clone( void ) const;
-    
+
     const CString& GetFilename( void ) const;
-    
+
     private:
-   
+
     FILE* m_file;
     CString m_filename;
     UInt32 m_size;

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CNOTIFYINGMAPEVENTS_H
@@ -37,7 +37,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -50,18 +50,18 @@ namespace CORE {
  *  Events that can be dispatched by instantiations of the CTNotifyingMap
  *  class template
  */
-class GUCEFCORE_EXPORT_CPP CNotifyingMapEvents
+class GUCEF_CORE_PUBLIC_CPP CNotifyingMapEvents
 {
     public:
-    
+
     static const CEvent ItemErasedEvent;
     static const CEvent ItemAddedEvent;
     static const CEvent ItemModifiedEvent;
-    
+
     static void RegisterEvents( void );
-    
+
     protected:
-    
+
     CNotifyingMapEvents( void );
     CNotifyingMapEvents( const CNotifyingMapEvents& src );
     ~CNotifyingMapEvents();

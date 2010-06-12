@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CDSTORECODEC_H
@@ -34,7 +34,7 @@
 #ifndef GUCEF_CORE_ESTRUCTS_H
 #include "EStructs.h"        /* globally used generic data structures */
 #define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */ 
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"        /* framework string implementation */
@@ -62,25 +62,25 @@ class CIOAccess;
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Abstract base class for an codec for storing an data tree 
+ *      Abstract base class for an codec for storing an data tree
  *      and reading from a resource to a data tree.
  *      A codec is meta data that converts data from one type to another.
  */
-class GUCEFCORE_EXPORT_CPP CDStoreCodec : public CICloneable 
+class GUCEF_CORE_PUBLIC_CPP CDStoreCodec : public CICloneable
 {
         public:
-        
+
         CDStoreCodec( void );
 
         virtual ~CDStoreCodec();
-        
+
         /**
          *      Whether or not the codec is currently valid
          *
          *      @return validity of the codec
          */
         virtual bool IsValid( void ) const = 0;
-        
+
         /**
          *      Attempts to store the given tree in the file
          *      given according to the method of the codec meta data
@@ -102,32 +102,32 @@ class GUCEFCORE_EXPORT_CPP CDStoreCodec : public CICloneable
          */
         virtual bool StoreDataTree( const CDataNode* tree   ,
                                     CIOAccess* file         ) = 0;
-                                    
-                                    
+
+
         /**
-         *      Attempts to load data from the given file to the 
-         *      root node given. The root data will be replaced 
+         *      Attempts to load data from the given file to the
+         *      root node given. The root data will be replaced
          *      and any children the node may already have will be deleted.
          *
          *      @param treeroot pointer to the node that is to act as root of the data tree
          *      @param filename path and name of the file from which the data tree information should be loaded
          *      @return whether building the tree from the given file was successful.
-         */                                    
+         */
         virtual bool BuildDataTree( CDataNode* treeroot     ,
                                     const CString& filename ) = 0;
-                                    
+
         /**
-         *      Attempts to load data from the given file to the 
-         *      root node given. The root data will be replaced 
+         *      Attempts to load data from the given file to the
+         *      root node given. The root data will be replaced
          *      and any children the node may already have will be deleted.
          *
          *      @param treeroot pointer to the node that is to act as root of the data tree
          *      @param file media independent access to the data source from which the data tree information should be loaded
          *      @return whether building the tree from the given file was successful.
-         */                                    
+         */
         virtual bool BuildDataTree( CDataNode* treeroot ,
                                     CIOAccess* file     ) = 0;
-        
+
         /**
          *      Returns the name of the codec
          *      The author of the codec can give an codec a name that the user can
@@ -136,34 +136,34 @@ class GUCEFCORE_EXPORT_CPP CDStoreCodec : public CICloneable
          *      @return name of the codec
          */
         virtual CString GetName( void ) const = 0;
-        
+
         /**
-         *      Get the name of the type that this codec implements 
+         *      Get the name of the type that this codec implements
          *      support for
          *
          *      @return the name of the resource type supported by this codec
          */
         virtual CString GetTypeName( void ) const = 0;
-        
+
         /**
-         *      Returns the copyright of the codec 
+         *      Returns the copyright of the codec
          *      The author of the codec can give an codec a copyright notice that the user can
          *      obtain using this member function.
          *
          *      @return copyright notice of the codec
          */
         virtual CString GetCopyright( void ) const = 0;
-        
+
         /**
          *      Returns the codec version
          *
          *      @return the version of the codec
          */
         virtual const TVersion* GetVersion( void ) const = 0;
-        
+
         private:
         CDStoreCodec( const CDStoreCodec& src );             /**< no sense in an copied codec */
-        CDStoreCodec& operator=( const CDStoreCodec& src );  /**< no sense in an copied codec */                 
+        CDStoreCodec& operator=( const CDStoreCodec& src );  /**< no sense in an copied codec */
 };
 
 /*-------------------------------------------------------------------------//

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_DVMD5UTILS_H
@@ -58,7 +58,7 @@ namespace CORE {
  *	Function that returns an MD5 digest generated from the resource given
  *	Returns 1 on success and 0 on failure.
  */
-GUCEFCORE_EXPORT_C UInt32
+GUCEF_CORE_PUBLIC_C UInt32
 md5frommfile( TIOAccess* access  ,
               UInt8 digest[ 16 ] );
 
@@ -69,19 +69,19 @@ md5frommfile( TIOAccess* access  ,
  *	Each digest value is converted to 3 characters.
  *	A null terminator is not included.
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 md5tostring( const UInt8 digest[ 16 ] ,
              char md5_str[ 48 ]       );
 
 /*--------------------------------------------------------------------------*/
-                      
+
 /**
- *	Converts the given null-terminated string 
- *      into an md5 digest 
+ *	Converts the given null-terminated string
+ *      into an md5 digest
  */
-GUCEFCORE_EXPORT_C void
+GUCEF_CORE_PUBLIC_C void
 md5fromstring( const char* string ,
-               UInt8 digest[ 16 ] );                      
+               UInt8 digest[ 16 ] );
 
 /*--------------------------------------------------------------------------*/
 

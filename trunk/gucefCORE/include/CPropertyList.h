@@ -81,7 +81,7 @@ typedef enum
 //-------------------------------------------------------------------------*/
 
 //@deprecated
-class GUCEFCORE_EXPORT_CPP CPropertyList
+class GUCEF_CORE_PUBLIC_CPP CPropertyList
 {
 
         public:

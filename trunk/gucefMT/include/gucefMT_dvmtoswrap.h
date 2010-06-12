@@ -77,7 +77,7 @@ typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TThreadFunc)( void* ) GUCEF_CALLSPEC_SUF
  *
  *      @param delay the minimum delay in miliseconds
  */
-GUCEFMT_EXPORT_C void
+GUCEF_MT_PUBLIC_C void
 ThreadDelay( UInt32 delay );
 
 /*--------------------------------------------------------------------------*/
@@ -91,39 +91,39 @@ ThreadDelay( UInt32 delay );
  *      @param data data argument for the thread function
  *      @return structure containing O/S specific thread data.
  */
-GUCEFMT_EXPORT_C struct SThreadData*
+GUCEF_MT_PUBLIC_C struct SThreadData*
 ThreadCreate( TThreadFunc func ,
               void* data       );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFMT_EXPORT_C UInt32
+GUCEF_MT_PUBLIC_C UInt32
 ThreadID( struct SThreadData* td );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFMT_EXPORT_C UInt32
+GUCEF_MT_PUBLIC_C UInt32
 ThreadSuspend( struct SThreadData* td );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFMT_EXPORT_C UInt32
+GUCEF_MT_PUBLIC_C UInt32
 ThreadResume( struct SThreadData* td );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFMT_EXPORT_C UInt32
+GUCEF_MT_PUBLIC_C UInt32
 ThreadKill( struct SThreadData* td );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFMT_EXPORT_C UInt32
+GUCEF_MT_PUBLIC_C UInt32
 ThreadWait( struct SThreadData* td ,
             Int32 timeout          );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEFMT_EXPORT_C UInt32
+GUCEF_MT_PUBLIC_C UInt32
 GetCurrentTaskID( void );
 
 /*--------------------------------------------------------------------------*/
@@ -146,7 +146,7 @@ GetCurrentTaskID( void );
  *
  *      @param delay the number of milliseconds you wish to delay the caller thread
  */
-GUCEFMT_EXPORT_C void
+GUCEF_MT_PUBLIC_C void
 PrecisionDelay( UInt32 delay );
 
 /*--------------------------------------------------------------------------*/
@@ -155,7 +155,7 @@ PrecisionDelay( UInt32 delay );
  *  Returns the application tick count in ticks.
  *  The time a single tick represents can be obtained with PrecisionTimerResolution()
  */
-GUCEFMT_EXPORT_C UInt64
+GUCEF_MT_PUBLIC_C UInt64
 PrecisionTickCount( void );
 
 /*--------------------------------------------------------------------------*/
@@ -167,7 +167,7 @@ PrecisionTickCount( void );
  *  of about 1 millisecond. This means that each 'tick' will count for about 1 milliseconds in this
  *  example.
  */
-GUCEFMT_EXPORT_C UInt64
+GUCEF_MT_PUBLIC_C UInt64
 PrecisionTimerResolution( void );
 
 /*--------------------------------------------------------------------------*/
@@ -178,7 +178,7 @@ PrecisionTimerResolution( void );
  *      MUST be called at application startup.
  *      Also see PrecisionTimerShutdown()
  */
-GUCEFMT_EXPORT_C void
+GUCEF_MT_PUBLIC_C void
 PrecisionTimerInit( void );
 
 /*--------------------------------------------------------------------------*/
@@ -189,7 +189,7 @@ PrecisionTimerInit( void );
  *      MUST be called if you called PrecisionTimerInit() !!!
  *      call at application shutdown.
  */
-GUCEFMT_EXPORT_C void
+GUCEF_MT_PUBLIC_C void
 PrecisionTimerShutdown( void );
 
 /*--------------------------------------------------------------------------*/

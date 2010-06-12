@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CIURLEVENTS_H
@@ -53,9 +53,9 @@ namespace CORE {
 
 /**
  *  Interface class defining URL related events and a namespace'd global utility
- *  for registering those events.         
+ *  for registering those events.
  */
-class GUCEFCORE_EXPORT_CPP CIURLEvents
+class GUCEF_CORE_PUBLIC_CPP CIURLEvents
 {
         public:
 
@@ -64,13 +64,13 @@ class GUCEFCORE_EXPORT_CPP CIURLEvents
         static const CEvent URLDataRecievedEvent;
         static const CEvent URLAllDataRecievedEvent;
         static const CEvent URLDataRetrievalErrorEvent;
-        
+
         typedef CLinkedTransferBuffer    TURLDataRecievedEventData;
-        
-        static void RegisterEvents( void );                                    
-        
+
+        static void RegisterEvents( void );
+
         protected:
-        
+
         CIURLEvents( void );
         CIURLEvents( const CIURLEvents& src );
         virtual ~CIURLEvents();
@@ -97,5 +97,5 @@ class GUCEFCORE_EXPORT_CPP CIURLEvents
 
 - 24-04-2005 :
         - Initial implementation
-          
+
 ---------------------------------------------------------------------------*/

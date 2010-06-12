@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CNODE_H
@@ -46,7 +46,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CNode
+class GUCEF_CORE_PUBLIC_CPP CNode
 {
         public:
 	bool IsFirst( void ) const;
@@ -61,9 +61,9 @@ class GUCEFCORE_EXPORT_CPP CNode
         void AppendChildNode( CNode *pnewchild  ); /* attach new child to end of list */
 	void AttachToNode( CNode *pnewparent );    /* attach to new parent */
 	void DetachNode();
-	
+
 	CNode* FindRootNode( void );
-        
+
         /*
          *      The following member functions allow you mutate the ordering
          *      of nodes and subsequently there children. the child node is
@@ -79,12 +79,12 @@ class GUCEFCORE_EXPORT_CPP CNode
 	CNode( void );
 	CNode( CNode *pnode );
 	virtual ~CNode();
-	
+
         protected:
 	CNode* _pparent;
 	CNode* _pchild;
         CNode* _pprev;
-	CNode* _pnext;	
+	CNode* _pnext;
 };
 
 /*-------------------------------------------------------------------------//

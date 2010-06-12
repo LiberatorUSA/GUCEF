@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CCODECREGISTRY_H
-#define GUCEF_CORE_CCODECREGISTRY_H 
+#define GUCEF_CORE_CCODECREGISTRY_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CTONREGISTRY_H
 #include "CTONRegistry.h"
@@ -51,31 +51,31 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< CICodec > >
+class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< CICodec > >
 {
     public:
-    
+
     typedef CTONRegistry< CICodec > TCodecFamilyRegistry;
     typedef CTSharedPtr< TCodecFamilyRegistry > TCodecFamilyRegistryPtr;
     typedef CTONRegistry< CICodec >::TStringList TStringList;
     typedef CTONRegistry< CICodec >::TRegisteredObjPtr TICodecPtr;
-    
+
     static CCodecRegistry* Instance( void );
-    
+
     private:
     friend class CGUCEFCOREModule;
-    
+
     static void Deinstance( void );
-    
+
     private:
-    
+
     CCodecRegistry( void );
     virtual ~CCodecRegistry();
     CCodecRegistry( const CCodecRegistry& src );              /**< not implemented, don't use */
     CCodecRegistry& operator=( const CCodecRegistry& src );   /**< not implemented, don't use */
-    
+
     private:
-    
+
     static CCodecRegistry* m_instance;
 };
 

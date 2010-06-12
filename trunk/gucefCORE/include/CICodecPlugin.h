@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CICODECPLUGIN_H
-#define GUCEF_CORE_CICODECPLUGIN_H 
+#define GUCEF_CORE_CICODECPLUGIN_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -61,29 +61,29 @@ namespace CORE {
 /**
  *  Interface class for plugin's that provide a number of codec's
  *
- *  Note that the CTCodecPluginItem template can be used by the class 
- *  decending from this class to specify it's codec's delegation to the 
+ *  Note that the CTCodecPluginItem template can be used by the class
+ *  decending from this class to specify it's codec's delegation to the
  *  plugin module with ease. This allows you to use a more generic class
  *  as the utility interface and base class for the given codec family.
  */
-class GUCEFCORE_EXPORT_CPP CICodecPlugin : public CIPlugin
+class GUCEF_CORE_PUBLIC_CPP CICodecPlugin : public CIPlugin
 {
     public:
-    
+
     typedef CTSharedPtr< CICodec > CCodecPtr;
     typedef std::map< CString, CCodecPtr > CCodecFamilySet;
     typedef std::map< CString, CCodecFamilySet > CCodecSet;
-    typedef std::vector< CString > CCodecFamilyList;    
+    typedef std::vector< CString > CCodecFamilyList;
     typedef std::map< CString, CCodecFamilyList > CCodecList;
-            
+
     public:
-    
+
     CICodecPlugin( void );
-    
+
     virtual ~CICodecPlugin();
-    
+
     virtual bool GetCodecs( CCodecSet& codecSet ) = 0;
-    
+
     virtual bool GetCodecList( CCodecList& codecList ) = 0;
 
     virtual bool Encode( CIOAccess& source         ,
@@ -95,7 +95,7 @@ class GUCEFCORE_EXPORT_CPP CICodecPlugin : public CIPlugin
                          CIOAccess& dest           ,
                          const CString& familyName ,
                          const CString& typeName   ) = 0;
-                 
+
     private:
 
     CICodecPlugin( const CICodecPlugin& src );

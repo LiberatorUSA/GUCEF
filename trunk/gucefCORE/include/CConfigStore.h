@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CONFIGSTORE_H
-#define GUCEF_CORE_CONFIGSTORE_H 
- 
+#define GUCEF_CORE_CONFIGSTORE_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -27,7 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <set>
- 
+
 #ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"           /* gucefMT mutex class */
 #define GUCEF_MT_CMUTEX_H
@@ -57,10 +57,10 @@ namespace CORE {
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-  
+
 /*
  *      Forward declaration of the abstract base for configurable items.
- */ 
+ */
 class CIConfigurable;
 
 /*-------------------------------------------------------------------------*/
@@ -70,52 +70,52 @@ class CIConfigurable;
  *      Allows you load and save the config of all configureable items that
  *      have global config usage enabled.
  */
-class GUCEFCORE_EXPORT_CPP CConfigStore
+class GUCEF_CORE_PUBLIC_CPP CConfigStore
 {
         public:
-        
+
         static CConfigStore* Instance( void );
-        
+
         void SetConfigFile( const CString& filepath );
-        
+
         CString GetConfigFile( void ) const;
 
         bool SaveConfig( const CString& name  ,
                          bool preserve = true );
-        
+
         bool LoadConfig( void );
-        
+
         void SetCodec( const CString& codectype );
-        
+
         CString GetCodec( void ) const;
-        
+
         private:
-        
+
         friend class CIConfigurable;
-        
+
         void Register( CIConfigurable* configobj );
-        
+
         void Unregister( CIConfigurable* configobj );
-        
+
         private:
         friend class CGUCEFCOREModule;
-        
+
         static void Deinstance( void );
 
         private:
-        
+
         CConfigStore( void );
         CConfigStore( const CConfigStore& src );
         CConfigStore& operator=( const CConfigStore& src );
         ~CConfigStore();
-        
+
         private:
-        
+
         typedef std::set< CIConfigurable* > TConfigurableSet;
-        
+
         static MT::CMutex _datalock;
         static CConfigStore* _instance;
-        
+
         CString _codectype;
         CString _configfile;
         TConfigurableSet _configobjs;

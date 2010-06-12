@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CCLLNODE_H
@@ -51,7 +51,7 @@ namespace CORE {
  *      list. Note that this is not a cyclic linked list, thus the last and prev
  *      nodes will be NULL at either end of the list.
  */
-class GUCEFCORE_EXPORT_CPP CLLNode
+class GUCEF_CORE_PUBLIC_CPP CLLNode
 {
         private :
         CLLNode *next;  /* next node in list */
@@ -67,7 +67,7 @@ class GUCEFCORE_EXPORT_CPP CLLNode
         void SetNext( CLLNode *set_next );         /* Set next node in list */
         CLLNode* GetPrev( void );                  /* Get previous node in list */
         void SetPrev( CLLNode *set_prev );         /* Set previuos node in list */
-        void* GetLink( void ) { return link; }     /* Get our linked data */ 
+        void* GetLink( void ) { return link; }     /* Get our linked data */
 
         /*
          *      Linked list manipulation utils
@@ -79,7 +79,7 @@ class GUCEFCORE_EXPORT_CPP CLLNode
         /*
          *      Con & Destructor
          */
-        CLLNode( void ); 
+        CLLNode( void );
         CLLNode( void* set_link );
         virtual ~CLLNode();
 };

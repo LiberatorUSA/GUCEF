@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CSYSCONSOLECLIENT_H
@@ -62,58 +62,58 @@ class CISysConsoleCmdHandler;
 /**
  *
  */
-class GUCEFCORE_EXPORT_CPP CSysConsoleClient
+class GUCEF_CORE_PUBLIC_CPP CSysConsoleClient
 {
     protected:
-    
+
     typedef std::vector< CString > TStringVector;
-    
+
     CSysConsoleClient( void );
-    
+
     CSysConsoleClient( const CSysConsoleClient& src );
-                  
+
     virtual ~CSysConsoleClient();
-    
+
     CSysConsoleClient& operator=( const CSysConsoleClient& src );
-    
+
     bool RegisterCmd( const CString& path                ,
                       const CString& command             ,
                       const TStringVector& arglist       ,
-                      CISysConsoleCmdHandler* cmdhandler );                        
+                      CISysConsoleCmdHandler* cmdhandler );
 
     void UnregisterCmd( const CString& path    ,
                         const CString& command );
-                        
+
     virtual bool ProcessUserInput( const CString& userInput  ,
                                    TStringVector& resultdata );
-    
+
     void LeaveDir( void );
-    
+
     bool EnterDir( const CString& dirname );
-    
+
     bool JumpTo( const CString& path );
-    
+
     const CString& GetPath( void ) const;
-    
+
     bool Execute( const CString& funcname      ,
                   const TStringVector& arglist ,
                   TStringVector& resultdata    );
-    
+
     TStringVector GetDirList( void ) const;
-    
+
     TStringVector GetCmdList( void ) const;
-    
+
     virtual void OnReturnData( const TStringVector& data );
-    
+
     private:
     friend class CSysConsole;
-            
+
     void* channel;
     CString _path;
-    
+
     private:
-    CSysConsole* _system;         
-                
+    CSysConsole* _system;
+
 };
 
 /*-------------------------------------------------------------------------//

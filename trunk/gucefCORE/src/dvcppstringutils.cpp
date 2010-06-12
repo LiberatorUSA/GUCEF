@@ -254,7 +254,7 @@ VersionToString( const TVersion& version )
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 BoolToString( const bool value )
 {GUCEF_TRACE;
 
@@ -470,7 +470,7 @@ StringToMD5String( const CString& str )
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 MD5ToString( const UInt8 md5Digest[ 16 ] )
 {
         char md5string[ 48 ];
@@ -564,7 +564,7 @@ StripFilename( const CString& pathPlusFilename )
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 ExtractFilename( const CString& pathPlusFilename )
 {GUCEF_TRACE;
 

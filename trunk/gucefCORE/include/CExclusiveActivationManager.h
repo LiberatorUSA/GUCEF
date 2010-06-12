@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CEXCLUSIVEACTIVATIONMANAGER_H
 #define GUCEF_CORE_CEXCLUSIVEACTIVATIONMANAGER_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -53,37 +53,37 @@ class CExclusiveActiveObj;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CExclusiveActivationManager
+class GUCEF_CORE_PUBLIC_CPP CExclusiveActivationManager
 {
     public:
-    
+
     static CExclusiveActivationManager* Instance( void );
-    
+
     bool SetActivateObj( const CString& objTypeName ,
                          const CString& objName     );
-    
+
     bool DisableActivateObj( const CString& objTypeName );
 
     CExclusiveActiveObj* GetActiveObject( const CString& objTypeName ) const;
-    
+
     bool SetDefaultObjForType( const CString& objTypeName ,
                                const CString& objName     );
 
     bool GetDefaultObjForType( const CString& objTypeName ,
                                CString& objName           );
-    
-    UInt32 GetRegisteredTypeCount( void ) const;    
+
+    UInt32 GetRegisteredTypeCount( void ) const;
 
     private:
     friend class CExclusiveActiveObj;
-    
+
     void RegisterObj( CExclusiveActiveObj* newObj );
-    
+
     void UnregisterObj( CExclusiveActiveObj* theObj );
-    
+
     private:
     friend class CGUCEFCOREModule;
-    
+
     static void Deinstance( void );
 
     private:
@@ -92,7 +92,7 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActivationManager
     CExclusiveActivationManager( const CExclusiveActivationManager& src );
     ~CExclusiveActivationManager();
     CExclusiveActivationManager& operator=( const CExclusiveActivationManager& src );
-    
+
     private:
     typedef std::map< CString, CExclusiveActiveObj* >   TTypedObjList;
     struct SExclusiveObjList
@@ -103,7 +103,7 @@ class GUCEFCORE_EXPORT_CPP CExclusiveActivationManager
     };
     typedef struct SExclusiveObjList                    TExclusiveObjList;
     typedef std::map< CString, TExclusiveObjList >      TObjTypeList;
-    
+
     TObjTypeList m_typeList;
 
     private:

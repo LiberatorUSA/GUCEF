@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CISYSCONSOLECMDHANDLER_H
@@ -27,7 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h" 
+#include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
@@ -49,12 +49,12 @@ namespace CORE {
 /**
  *      Abstract interface base class for classes implementing an handler for
  *      system console command triggers.
- */ 
-class GUCEFCORE_EXPORT_CPP CISysConsoleCmdHandler
+ */
+class GUCEF_CORE_PUBLIC_CPP CISysConsoleCmdHandler
 {
         protected:
         friend class CSysConsole;
-        
+
         virtual bool OnSysConsoleCommand( const CString& path                ,
                                           const CString& command             ,
                                           const std::vector< CString >& args ,

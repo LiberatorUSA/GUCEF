@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef GUCEF_MT_CSCOPEMUTEX_H
@@ -55,7 +55,7 @@ class CMutex;
  *      Simply create an object of this class to lock the scope with a mutex.
  *      Perfect if you don't want to make Unlock() calls all over the place.
  */
-class GUCEFMT_EXPORT_CPP CScopeMutex
+class GUCEF_MT_PUBLIC_CPP CScopeMutex
 {
         public:
 

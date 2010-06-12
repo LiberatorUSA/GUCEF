@@ -14,10 +14,10 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 
 /*-------------------------------------------------------------------------//
@@ -54,163 +54,163 @@ namespace CORE {
 /**
  *      Turns the given relative path into an absolute path
  */
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 RelativePath( const CString& relpath );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP void
+GUCEF_CORE_PUBLIC_CPP void
 AppendToPath( CString& path           ,
               const CString& addition );
-              
+
 /*-------------------------------------------------------------------------*/
-              
-GUCEFCORE_EXPORT_CPP CString
+
+GUCEF_CORE_PUBLIC_CPP CString
 StripFilename( const CString& pathPlusFilename );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 StripLastSubDir( const CString& completePath );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 ExtractFilename( const CString& pathPlusFilename );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP bool
+GUCEF_CORE_PUBLIC_CPP bool
 FileExists( const CString& filename );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP const TVersion
+GUCEF_CORE_PUBLIC_CPP const TVersion
 StringToVersion( const CString& version );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 VersionToString( const TVersion& version );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 BoolToString( const bool value );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP bool
+GUCEF_CORE_PUBLIC_CPP bool
 StringToBool( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP UInt64
+GUCEF_CORE_PUBLIC_CPP UInt64
 StringToUInt64( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 UInt64ToString( const UInt64 value );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP Int64
+GUCEF_CORE_PUBLIC_CPP Int64
 StringToInt64( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 Int64ToString( const Int64 value );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP Int32
+GUCEF_CORE_PUBLIC_CPP Int32
 StringToInt32( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 Int32ToString( const Int32 value );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP UInt32
+GUCEF_CORE_PUBLIC_CPP UInt32
 StringToUInt32( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 UInt32ToString( const UInt32 value );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP UInt16
+GUCEF_CORE_PUBLIC_CPP UInt16
 StringToUInt16( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 UInt16ToString( const UInt16 value );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP Int8
+GUCEF_CORE_PUBLIC_CPP Int8
 StringToInt8( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 UInt8ToString( const UInt8 value );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP UInt8
+GUCEF_CORE_PUBLIC_CPP UInt8
 StringToUInt8( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 Int8ToString( const Int8 value );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 PointerToString( const void* value );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 StringToMD5String( const CString& str );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 MD5ToString( const UInt8 md5Digest[ 16 ] );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 FloatToString( const float value );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 DoubleToString( const double value );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 LastSubDir( const CString& path );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP bool
+GUCEF_CORE_PUBLIC_CPP bool
 IsPathValid( const CString& path );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEFCORE_EXPORT_CPP CString
+GUCEF_CORE_PUBLIC_CPP CString
 ExtractFileExtention( const CString& path );
 
 /*-------------------------------------------------------------------------*/
@@ -218,17 +218,17 @@ ExtractFileExtention( const CString& path );
 /**
  *  Checks whether the file path points to a file in the exact given dir path
  */
-GUCEF_CORE_EXPORT_CPP bool
-IsFileInDir( const CString& dirPath  , 
+GUCEF_CORE_PUBLIC_CPP bool
+IsFileInDir( const CString& dirPath  ,
              const CString& filePath );
-             
+
 /*-------------------------------------------------------------------------*/
 
 /**
  *  Attempts to load the text file into a string
  */
-GUCEF_CORE_EXPORT_CPP bool
-LoadTextFileAsString( const CString& filePath , 
+GUCEF_CORE_PUBLIC_CPP bool
+LoadTextFileAsString( const CString& filePath ,
                       CString& fileContent    );
 
 /*-------------------------------------------------------------------------*/
@@ -236,8 +236,8 @@ LoadTextFileAsString( const CString& filePath ,
 /**
  *  Attempts to write the string as a text file
  */
-GUCEF_CORE_EXPORT_CPP bool
-WriteStringAsTextFile( const CString& filePath    , 
+GUCEF_CORE_PUBLIC_CPP bool
+WriteStringAsTextFile( const CString& filePath    ,
                        const CString& fileContent );
 
 /*-------------------------------------------------------------------------//
@@ -271,11 +271,11 @@ WriteStringAsTextFile( const CString& filePath    ,
         - Dinand: Added StringToBool()
 - 26-04-2005 :
         - Dinand: Fixed RelativePath() so that strings that do not have any tags don't
-          cause a problem. 
+          cause a problem.
 - 03-04-2005 :
         - Dinand: Initial version of this file.
           Meant to hold string class utilities that do not belong in the class
           or in the class header itself.
-        - Dinand: Added RelativePath()  
+        - Dinand: Added RelativePath()
 
 -----------------------------------------------------------------------------*/

@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CIOACCESS_H
-#define GUCEF_CORE_CIOACCESS_H 
+#define GUCEF_CORE_CIOACCESS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #include <stdio.h>
 
@@ -65,16 +65,16 @@ class CDynamicBuffer;
 /**
  *      Abstract base class for media independent resource access
  */
-class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
+class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
 {
         public:
-        
+
         CIOAccess( void );
-        
+
         CIOAccess( const CIOAccess& src );
 
         virtual ~CIOAccess();
-        
+
         CIOAccess& operator=( const CIOAccess& src );
 
         /**
@@ -98,7 +98,7 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
          *      delimiter.
          */
         virtual CString ReadLine( void ) = 0;
-                
+
         /**
          *      reads data until the specified delimiter is reached.
          *      The data is written into the destination buffer until the
@@ -115,7 +115,7 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
                            UInt32 bsize          ,
                            const void* delimiter ,
                            UInt32 delimsize      );
-                           
+
         /**
          *      Skips bytesuntil the delimiter is reached or
          *      until the end of the file is reached.
@@ -124,9 +124,9 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
          *      @param delimiter the delimiter bytes
          *      @param delimsize size of the delimiter segment
          *      @return the actual number of bytes skipped.
-         */                           
+         */
         UInt32 SkipUntill( const void* delimiter ,
-                           UInt32 delimsize      );                                   
+                           UInt32 delimsize      );
 
         /**
          *      Reads a string from the resource
@@ -143,11 +143,11 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
         UInt32 Read( CDynamicBuffer& dest ,
                      UInt32 esize         ,
                      UInt32 elements      );
-                             
+
         /**
          *      Attempts to write the specified number of bytes to the resource
          *      using srcdata as the data source.
-         */        
+         */
         virtual UInt32 Write( const void* srcdata ,
                               UInt32 esize        ,
                               UInt32 elements     );
@@ -179,41 +179,41 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
          *      are we at the end of the resource ?
          */
         virtual bool Eof( void ) const = 0;
-        
+
         /**
          *      Can we read from this resource?
          */
         virtual bool IsReadable( void ) const = 0;
-        
+
         /**
          *      Can we write to this resource?
          */
-        virtual bool IsWriteable( void ) const = 0;               
-        
+        virtual bool IsWriteable( void ) const = 0;
+
         /**
          *      Is the access to the resource a valid one or
          *      has something gone wrong ?
          */
         virtual bool IsValid( void ) = 0;
-        
+
         /**
          *  @return returns the size of the resource if possible.
          */
         virtual UInt32 GetSize( void ) const;
-        
-        /** 
+
+        /**
          *  Flushes all outstanding mutations on the I/O device
          */
         virtual void Flush( void ) = 0;
 
         virtual TIOAccess* CStyleAccess( void );
-        
+
         private:
-        
+
         void LinkCStyleAccess( void );
-        
+
         private:
-        
+
         TIOAccess m_cStyleAccess;
 };
 
@@ -238,10 +238,9 @@ class GUCEFCORE_EXPORT_CPP CIOAccess : public CICloneable
 
 - 01-05-2005 :
         - Added ReadUntill()
-          This member function will read data untill the given delimiter is 
+          This member function will read data untill the given delimiter is
           reached or the end of the file is reached.
 - 25-11-2004 :
         - Designed and implemented this class.
 
 -----------------------------------------------------------------------------*/
- 

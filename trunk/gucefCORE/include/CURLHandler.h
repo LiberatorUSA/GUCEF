@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CURLHANDLER_H
@@ -73,37 +73,37 @@ class CIURLDataHandler;
  *      The descending handler implementation is expected to emit event
  *      notifications as declared in CIURLEvents
  */
-class GUCEFCORE_EXPORT_CPP CURLHandler : public CObservingNotifier   ,
+class GUCEF_CORE_PUBLIC_CPP CURLHandler : public CObservingNotifier   ,
                                          public CICloneable          ,
-                                         public CIURLEvents 
+                                         public CIURLEvents
 {
         public:
-        
+
         /**
          *      Doesn't do anything special atm.
-         */        
+         */
         CURLHandler( void );
-        
+
         /**
          *      Doesn't do anything special atm.
-         */        
+         */
         CURLHandler( const CURLHandler& src );
-        
+
         /**
          *      Doesn't do anything special atm.
          */
         virtual ~CURLHandler();
-        
+
         /**
          *      Doesn't do anything special atm.
-         */        
+         */
         CURLHandler& operator=( const CURLHandler& src );
 
         virtual bool Activate( CURL& url ) = 0;
-        
+
         virtual void Deactivate( CURL& url ) = 0;
-                         
-        virtual bool IsActive( const CURL& url ) const = 0;       
+
+        virtual bool IsActive( const CURL& url ) const = 0;
 };
 
 /*-------------------------------------------------------------------------//
@@ -127,5 +127,5 @@ class GUCEFCORE_EXPORT_CPP CURLHandler : public CObservingNotifier   ,
 
 - 24-04-2005 :
         - Initial implementation
-          
+
 ---------------------------------------------------------------------------*/

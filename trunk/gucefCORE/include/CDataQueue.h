@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CDATAQUEUE_H
@@ -58,48 +58,48 @@ namespace CORE {
  *      retrieve a pointer to it. When your done with the queued item you drop
  *      it from the queue.
  */
-class GUCEFCORE_EXPORT_CPP CDataQueue
+class GUCEF_CORE_PUBLIC_CPP CDataQueue
 {
         public:
-        
+
         /**
          *      Simply constructs a dataqueue, nothing special
          */
         CDataQueue( void );
 
         /**
-         *      Deallocates all remaining buffers and thus invalidates 
+         *      Deallocates all remaining buffers and thus invalidates
          *      all outstanding pointers retrieved with Get()
          */
         ~CDataQueue();
 
         /**
-         *      Adds the data given in src to the data queue. 
+         *      Adds the data given in src to the data queue.
          *      If no buffer is available to store the data one will be created
          */
         void Set( const void* src ,
                   UInt32 datasize );
-                       
+
         /**
-         *      Retrieves a pointer to queued data and the 
+         *      Retrieves a pointer to queued data and the
          *      size of the queued item.
          *      If there is no more queued data the datasize will be set to 0
          *      Note that Get() only retrieves a pointer to a queued item, it does
-         *      not remove the item from the queue. Use Drop() to drop the item from 
+         *      not remove the item from the queue. Use Drop() to drop the item from
          *      the queue. This will invalidate the pointer retrieved with Get()
-         */                                                 
+         */
         void Get( const void** dataptr ,
                   UInt32* datasize     );
-        
+
         /**
          *      Drops the item last retrieved with Get() from the data queue
          *      This free's up the buffer for reuse.
          */
-        void Drop( void );       
+        void Drop( void );
 
-        private:        
+        private:
         CBlockStack _queue;
-        CBlockStack _freebuffers;      
+        CBlockStack _freebuffers;
 };
 
 /*-------------------------------------------------------------------------//
@@ -125,4 +125,3 @@ class GUCEFCORE_EXPORT_CPP CDataQueue
         - Designed and implemented this class.
 
 -----------------------------------------------------------------------------*/
- 

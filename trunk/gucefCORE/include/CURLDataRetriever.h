@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CURLDATARETRIEVER_H
@@ -55,46 +55,46 @@ namespace CORE {
  *  class that allows you to retrieve and subsequently store data
  *  using URL's
  */
-class GUCEFCORE_EXPORT_CPP CURLDataRetriever : public CForwardingNotifier ,
+class GUCEF_CORE_PUBLIC_CPP CURLDataRetriever : public CForwardingNotifier ,
                                                public CIURLEvents
 {
     public:
-    
+
     CURLDataRetriever( void );
-    
+
     CURLDataRetriever( CPulseGenerator& pulseGenerator );
-    
+
     virtual ~CURLDataRetriever();
-    
+
     CURL& GetURL( void );
-    
+
     void SetIOAccess( CIOAccess* ioAccess );
 
-    CIOAccess* GetIOAccess( void ) const;  
-    
+    CIOAccess* GetIOAccess( void ) const;
+
     UInt64 GetTotalBytesReceived( void ) const;
-    
+
     // Returns the total size of the resource in bytes if known
     // returns -1 if unknown
     Int64 GetTotalResourceBytes( void ) const;
-    
+
     // returns the progress of the transfer as a %
     Float32 GetTransferProgress( void ) const;
 
     protected:
-    
+
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
-    
+
     private:
-    
+
     CURLDataRetriever( const CURLDataRetriever& src );
     CURLDataRetriever& operator=( CURLDataRetriever& src );
     void Initialize( void );
-    
+
     private:
-    
+
     CIOAccess* m_ioAccess;
     CURL m_url;
     UInt64 m_totalBytesReceived;
@@ -123,5 +123,5 @@ class GUCEFCORE_EXPORT_CPP CURLDataRetriever : public CForwardingNotifier ,
 
 - 08-10-2006 :
         - Initial implementation
-          
+
 ---------------------------------------------------------------------------*/

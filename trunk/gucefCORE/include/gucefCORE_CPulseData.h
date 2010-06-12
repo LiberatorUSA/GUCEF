@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CPULSEDATA_H
 #define GUCEF_CORE_CPULSEDATA_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -37,7 +37,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -46,36 +46,36 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_EXPORT_CPP CPulseData : public CICloneable
+class GUCEF_CORE_PUBLIC_CPP CPulseData : public CICloneable
 {
     public:
-    
+
     CPulseData( const UInt64 tickCount               ,
                 const UInt64 deltaTicks              ,
                 const Float64 updateDeltaInMilliSecs );
-    
+
     CPulseData( const CPulseData& src );
-    
+
     virtual ~CPulseData();
-    
+
     UInt64 GetTickCount( void ) const;
-    
+
     UInt64 GetTickDelta( void ) const;
-    
+
     Float64 GetUpdateDeltaInMilliSecs( void ) const;
-    
+
     virtual CICloneable* Clone( void ) const;
-    
+
     private:
-    
+
     CPulseData( void );
     CPulseData& operator=( const CPulseData& src );
-    
+
     private:
-    
+
     UInt64 m_tickCount;
     UInt64 m_tickDelta;
-    Float64 m_updateDeltaInMilliSecs;    
+    Float64 m_updateDeltaInMilliSecs;
 };
 
 /*-------------------------------------------------------------------------//

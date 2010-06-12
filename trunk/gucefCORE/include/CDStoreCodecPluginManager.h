@@ -14,18 +14,18 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
-#ifndef GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H 
+
+#ifndef GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
 #define GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
- 
+//-------------------------------------------------------------------------*/
+
 #ifndef GUCEF_MT_CMUTEX_H
 #include "CMutex.h"             /* MT library mutex implementation */
 #define GUCEF_MT_CMUTEX_H
@@ -34,9 +34,9 @@
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"   /* often used gucefCORE macros */
 #define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */ 
- 
-#ifndef GUCEF_CORE_CPLUGINMANAGER_H 
+#endif /* GUCEF_CORE_MACROS_H ? */
+
+#ifndef GUCEF_CORE_CPLUGINMANAGER_H
 #include "CPluginManager.h"    /* base class for plugin managers */
 #define GUCEF_CORE_CPLUGINMANAGER_H
 #endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
@@ -47,7 +47,7 @@
 #endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
 
 #ifndef GUCEF_CORE_CDSTORECODECPLUGIN_H
-#include "CDStoreCodecPlugin.h" 
+#include "CDStoreCodecPlugin.h"
 #define GUCEF_CORE_CDSTORECODECPLUGIN_H
 #endif /* GUCEF_CORE_CDSTORECODECPLUGIN_H */
 
@@ -69,27 +69,27 @@ namespace CORE {
 //                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
-//-------------------------------------------------------------------------*/  
- 
-class GUCEFCORE_EXPORT_CPP CDStoreCodecPluginManager : public CPluginManager ,
+//-------------------------------------------------------------------------*/
+
+class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginManager : public CPluginManager ,
                                                        public CIConfigurable
 {
     public:
-    
+
     static CDStoreCodecPluginManager* Instance( void );
-    
+
     CDStoreCodecPlugin* LoadCodecPlugin( const CString& filename );
-    
+
     void UnloadCodecPlugin( CDStoreCodecPlugin* plugin );
-    
+
     CDStoreCodecPlugin* GetCodec( const CString& codectype ) const;
-    
+
     virtual void LoadAll( void );
-    
+
     virtual void LoadAll( const CString& pluginDir );
-    
+
     virtual void UnloadAll( void );
-    
+
     /**
      *      Attempts to store the given tree in the file
      *      given according to the method of the codec metadata
@@ -98,39 +98,39 @@ class GUCEFCORE_EXPORT_CPP CDStoreCodecPluginManager : public CPluginManager ,
      *      @return wheter storing the tree was successfull
      */
     virtual bool SaveConfig( CDataNode& tree );
-                                
+
     /**
-     *      Attempts to load data from the given file to the 
-     *      root node given. The root data will be replaced 
+     *      Attempts to load data from the given file to the
+     *      root node given. The root data will be replaced
      *      and any children the node may already have will be deleted.
      *
      *      @param treeroot pointer to the node that is to act as root of the data tree
      *      @return whether building the tree from the given file was successfull.
-     */                                    
-    virtual bool LoadConfig( const CDataNode& treeroot );        
-    
+     */
+    virtual bool LoadConfig( const CDataNode& treeroot );
+
     protected:
-    
-    virtual void OnSetPluginDir( const CString& path );        
+
+    virtual void OnSetPluginDir( const CString& path );
 
     private:
     friend class CGUCEFCOREModule;
-    
+
     static void Deinstance( void );
-    
+
     private:
-    
+
     static MT::CMutex _datalock;
     static CDStoreCodecPluginManager* _instance;
-    
+
     bool IsPluginLoaded( const CString& path );
-    
+
     CDStoreCodecPluginManager( void );
-    CDStoreCodecPluginManager( const CDStoreCodecPluginManager& src );        
+    CDStoreCodecPluginManager( const CDStoreCodecPluginManager& src );
     ~CDStoreCodecPluginManager();
     CDStoreCodecPluginManager& operator=( const CDStoreCodecPluginManager& src );
-    
-    CDynamicArray _codecs;        
+
+    CDynamicArray _codecs;
 };
 
 /*-------------------------------------------------------------------------//

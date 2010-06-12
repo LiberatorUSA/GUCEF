@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CMEMORYPOOL_H
@@ -34,7 +34,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -46,26 +46,26 @@ namespace CORE {
 /**
  *  Abstract base class for memory pool implementations.
  *  Provides a basic interface of manditory functionality and
- *  certain optional functionality. By default all strategy 
+ *  certain optional functionality. By default all strategy
  *  specific member functions simply call the default version.
- *  Descending classes should implement at least one of the 
- *  allocation strategies and direct the Allocate() member 
- *  function to the member function for the chosen default 
+ *  Descending classes should implement at least one of the
+ *  allocation strategies and direct the Allocate() member
+ *  function to the member function for the chosen default
  *  strategy for that specific pool implementation.
  */
-class GUCEFCORE_EXPORT_CPP CMemoryPool
+class GUCEF_CORE_PUBLIC_CPP CMemoryPool
 {
 	public:
-	
-    /**
-     *  Does nothing special at the moment 
-     */
-    CMemoryPool( void );    	
 
     /**
      *  Does nothing special at the moment
      */
-    virtual ~CMemoryPool();   
+    CMemoryPool( void );
+
+    /**
+     *  Does nothing special at the moment
+     */
+    virtual ~CMemoryPool();
 
     /**
      *  Standard memory allocation strategy.
@@ -74,19 +74,19 @@ class GUCEFCORE_EXPORT_CPP CMemoryPool
 	virtual void* Allocate( unsigned long bytesize ) = 0;
 
     /**
-     *  Override with a specific handler if desired. 
+     *  Override with a specific handler if desired.
      *  At this level the default version is simply called
      */
     virtual void* AllocateBestFit( unsigned long bytesize );
 
     /**
-     *  Override with a specific handler if desired. 
+     *  Override with a specific handler if desired.
      *  At this level the default version is simply called
      */
     virtual void* AllocateFirstFit( unsigned long bytesize );
 
     /**
-     *  Override with a specific handler if desired. 
+     *  Override with a specific handler if desired.
      *  At this level the default version is simply called
      */
     virtual void* AllocateWorstFit( unsigned long bytesize );
@@ -98,7 +98,7 @@ class GUCEFCORE_EXPORT_CPP CMemoryPool
      *
      *  @param bytesize size of the memory block you wish to allocate
      *  @param preferredaddress the preferred block starting address
-     *  @param allowotheraddress whether to allow allocation at a different  
+     *  @param allowotheraddress whether to allow allocation at a different
      *  @param allowotheraddress address if the given one is not available
      */
     virtual void* Allocate( unsigned long bytesize ,
@@ -112,13 +112,13 @@ class GUCEFCORE_EXPORT_CPP CMemoryPool
 	virtual void Deallocate( void* ptr ) = 0;
 
     /**
-     *  Override with a specific handler if desired. 
+     *  Override with a specific handler if desired.
      *  At this level the default version is simply called
      */
     virtual void DeallocateLogicalUnit( void* ptr );
 
     /**
-     *  Override with a specific handler if desired. 
+     *  Override with a specific handler if desired.
      *  At this level the default version is simply called
      */
     virtual void DeallocateAndMerge( void* ptr );
@@ -140,7 +140,7 @@ class GUCEFCORE_EXPORT_CPP CMemoryPool
      *  Returns the state of the always claim flag which indicates
      *  whether the pool's hold on it's memory buffer is maintaned
      *  even though there are no longer any outstanding allocations.
-     */   
+     */
     virtual bool GetAlwaysClaimMemory( void ) const = 0;
 
     /**
@@ -154,19 +154,19 @@ class GUCEFCORE_EXPORT_CPP CMemoryPool
     virtual unsigned long GetUsedBytes( void ) const = 0;
 
     /**
-     *  Returns the number of free useable bytes. 
+     *  Returns the number of free useable bytes.
      *
      *  For example: Certain indexing methods may add an overhead cost per allocation
      *  reducing the number of useable bytes in a non 1:1 ratio.
      *
-     *  Note that not all of the bytes returned may be useable. As a guideline you 
-     *  should assume that this is the number of usable bytes when all remaining 
+     *  Note that not all of the bytes returned may be useable. As a guideline you
+     *  should assume that this is the number of usable bytes when all remaining
      *  memory is allocated using 1 byte allocations.
      */
     virtual unsigned long GetFreeBytes( void ) const = 0;
 
     /**
-     *  As the name suggests it simply returns the size of the 
+     *  As the name suggests it simply returns the size of the
      *  largest free block. No garantee is given on the speed and/or
      *  efficiency of this member function.
      */

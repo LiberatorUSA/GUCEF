@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef CMFILEACCESS_H
-#define CMFILEACCESS_H 
+#define CMFILEACCESS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef MFILE_H
 #include "MFILE.h"
@@ -51,10 +51,10 @@ CORE_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CMFileAccess : public CIOAccess
+class GUCEF_CORE_PUBLIC_CPP CMFileAccess : public CIOAccess
 {
         public:
-        
+
         CMFileAccess( const void* memblock ,
                       UInt32 size          );
 
@@ -117,14 +117,14 @@ class GUCEFCORE_EXPORT_CPP CMFileAccess : public CIOAccess
          *      are we at the end of the recource ?
          */
         virtual bool Eof( void ) const;
-        
+
         virtual bool IsReadOnly( void ) const;
 
         virtual TIOAccess* CStyleAccess( void );
-        
+
         private:
         CMFileAccess( void );
-        
+
         MFILE _mfile;
         TIOAccess _access;
 };

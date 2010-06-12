@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CISTREAMABLE_H
@@ -24,7 +24,7 @@
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
@@ -51,30 +51,30 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CIStreamable
+class GUCEF_CORE_PUBLIC_CPP CIStreamable
 {
     public:
-    
+
     CIStreamable( void );
-    
+
     CIStreamable( const CIStreamable& src );
-    
+
     virtual ~CIStreamable();
-    
+
     CIStreamable& operator=( const CIStreamable& src );
-    
+
     virtual bool StreamTo( void* destBuffer            ,
                            const UInt32 destBufferSize ) const = 0;
-                    
+
     virtual bool StreamFrom( const void* srcBuffer      ,
                              const UInt32 srcBufferSize ) = 0;
-    
+
     virtual UInt32 GetStreamedSize( void ) const = 0;
-    
+
     virtual bool StreamToBuffer( CDynamicBuffer& buffer ) const = 0;
-    
+
     virtual bool StreamFromBuffer( const CDynamicBuffer& buffer ) = 0;
-        
+
 };
 
 /*-------------------------------------------------------------------------//

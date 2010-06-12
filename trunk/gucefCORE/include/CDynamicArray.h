@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CDYNAMICARRAY_H
@@ -52,12 +52,12 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *      Simply implementation of a resize-able array. 
+ *      Simply implementation of a resize-able array.
  *      This class is NOT thread safe.
  *
  *      @deprecated
  */
-class GUCEFCORE_EXPORT_CPP CDynamicArray
+class GUCEF_CORE_PUBLIC_CPP CDynamicArray
 {
         public:
 
@@ -66,7 +66,7 @@ class GUCEFCORE_EXPORT_CPP CDynamicArray
          *      if found it will return index
          */
         Int32 FindNULLEntry( void ) const;
-        
+
         /**
          *      Searches the array for the specified pointer value
          */
@@ -78,7 +78,7 @@ class GUCEFCORE_EXPORT_CPP CDynamicArray
          *      things first.
          */
         void SetArraySize( UInt32 size );
-        
+
         UInt32 GetArraySize( void ) const;
 
         /**
@@ -102,41 +102,41 @@ class GUCEFCORE_EXPORT_CPP CDynamicArray
         UInt32 AddEntry( void *entry );
 
         /**
-         *      Removes the entry at the given index by moving the entry's 
+         *      Removes the entry at the given index by moving the entry's
          *      with a higher index down by one.
          */
         void RemoveEntry( UInt32 index );
-        
+
         /**
          *      Removes entry by moving the entry's with a higher index down
          *      by one.
          */
-        bool RemoveEntry( void* entry );        
+        bool RemoveEntry( void* entry );
 
         /**
          *      Returns index of last entry in array. The array itself may
          *      actually be larger then this.
          */
         Int32 GetLast( void ) const;
-        
+
         /**
-         *      Returns index of number of entries in the array. 
+         *      Returns index of number of entries in the array.
          *      The array itself may actually be larger then this.
          */
         UInt32 GetCount( void ) const;
-        
+
         /**
          *      NULLs all array entrys and sets the usage count to 0
          *      The actual storage space is not affected.
          */
         void Clear( void );
-        
+
         /**
          *      Inserts the given value at the given index.
-         *      the index must be smaller or equal to the index of the last item.         
+         *      the index must be smaller or equal to the index of the last item.
          */
-        bool Insert( const UInt32 index , 
-                     void* value        );                            
+        bool Insert( const UInt32 index ,
+                     void* value        );
 
         /**
          *      Resize change, affects array size when using Append_Entry()
@@ -151,12 +151,12 @@ class GUCEFCORE_EXPORT_CPP CDynamicArray
          *      NULL will be returned.
          */
         void* operator[]( UInt32 index ) const;
-        
+
         /**
          *      Returns entry pointer with index given. If the index is invalid
          *      NULL will be returned.
          */
-        void*& operator[]( UInt32 index );        
+        void*& operator[]( UInt32 index );
 
         /**
          *      Set's the pointer of the entry with the index given to
@@ -165,20 +165,20 @@ class GUCEFCORE_EXPORT_CPP CDynamicArray
          */
         void SetEntry( UInt32 index    ,
                        void *new_value );
-                       
+
         /**
-         *      Get's the pointer of the entry with the index given 
-         */                       
-        void* GetEntry( UInt32 index ) const;    
-        
+         *      Get's the pointer of the entry with the index given
+         */
+        void* GetEntry( UInt32 index ) const;
+
         void ShiftDown( UInt32 startpos );
-        
+
         void ShiftUp( UInt32 startpos );
 
         UInt32 GetNonNULLCount( void ) const;
-        
+
         /**
-         *      Shifts items down into NULL pointer 'gaps'         
+         *      Shifts items down into NULL pointer 'gaps'
          */
         void FillNULLGaps( void );
 
@@ -193,7 +193,7 @@ class GUCEFCORE_EXPORT_CPP CDynamicArray
         UInt32 _resize_change;   /* size by which array gets resized if there is no more room when using Append_Entry */
         void **_entrys;          /* array of void* */
         Int32 _last;             /* last entry, used in combo with Append_Entry */
-        UInt32 _max;             /* actual size of array */        
+        UInt32 _max;             /* actual size of array */
 };
 
 /*-------------------------------------------------------------------------//
@@ -215,7 +215,7 @@ class GUCEFCORE_EXPORT_CPP CDynamicArray
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 26-08-2005 : 
+- 26-08-2005 :
         - Fixed a bug in Clear()
 - 17-07-2005 :
         - Added Find()
@@ -236,9 +236,9 @@ class GUCEFCORE_EXPORT_CPP CDynamicArray
         - Fixed access overun when using [] operator on with an index of
           the same size as the array.
 - 19-07-2003 :
-        - Changed EXPORT into GUCEFCORE_EXPORT_CPP
+        - Changed EXPORT into GUCEF_CORE_PUBLIC_CPP
 - 18-07-2003 :
         - Added this section.
         - Fixed a bug in Append_Entry() when appending to an empty array.
-          
+
 ---------------------------------------------------------------------------*/

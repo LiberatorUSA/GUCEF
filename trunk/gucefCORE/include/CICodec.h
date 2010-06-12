@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CICODEC_H
-#define GUCEF_CORE_CICODEC_H 
+#define GUCEF_CORE_CICODEC_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #include <vector>
 
@@ -57,18 +57,18 @@ class CIOAccess;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable
+class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable
 {
     public:
-    
+
     CICodec( void );
-    
+
     CICodec( const CICodec& src );
-    
+
     CICodec& operator=( const CICodec& src );
-    
+
     virtual ~CICodec();
-    
+
     virtual bool Encode( CIOAccess& source ,
                          CIOAccess& dest   ) = 0;
 
@@ -76,7 +76,7 @@ class GUCEFCORE_EXPORT_CPP CICodec : public CICloneable
                          CIOAccess& dest   ) = 0;
 
     virtual CString GetType( void ) const = 0;
-                         
+
     virtual CString GetFamilyName( void ) const = 0;
 };
 

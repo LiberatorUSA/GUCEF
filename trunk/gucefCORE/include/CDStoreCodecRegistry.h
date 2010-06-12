@@ -56,7 +56,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CDStoreCodecRegistry : public CTRegistry< CDStoreCodec >
+class GUCEF_CORE_PUBLIC_CPP CDStoreCodecRegistry : public CTRegistry< CDStoreCodec >
 {
         public:
         typedef TRegisteredObjPtr TDStoreCodecPtr;

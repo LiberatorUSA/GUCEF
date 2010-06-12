@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CSTRINGMAP_H
@@ -53,42 +53,42 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE { 
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
- 
+
 /**
  *      Class that maps string names to a pointer.
  *
  *      @deprecated
  */
-class GUCEFCORE_EXPORT_CPP CStringMap
+class GUCEF_CORE_PUBLIC_CPP CStringMap
 {
         public:
-        
+
         /**
          *      Default constructor, does nothing atm.
          */
         CStringMap( void );
-        
+
         /**
-         *      Creates this string map as an exact copy 
+         *      Creates this string map as an exact copy
          *      of the given string map.
          *      Note that both link pointers will point to
          *      the same address for each entry, take this
          *      into account when making copys
          */
         CStringMap( const CStringMap& src );
-        
+
         /**
          *      Destructor, de-allocates all mapped links
          */
         ~CStringMap();
-        
+
         /**
          *      Creates an exact copy of the given string map
          *      Note that both link pointers will point to
@@ -96,33 +96,33 @@ class GUCEFCORE_EXPORT_CPP CStringMap
          *      into account when making copys
          */
         CStringMap& operator=( const CStringMap& src );
-        
+
         /**
          *      Retrieves the pointer for the given name
          *      If the name is not found NULL will be returned.
          *
          *      @param name for the pointer you wish to obtain
          *      @return pointer related to the name given.
-         */        
-        void* operator[]( const CString& name ) const;  
-        
+         */
+        void* operator[]( const CString& name ) const;
+
         /**
          *      index operator for finding the string for the given data
          *
          *      @param data pointer for the string you wish to obtain
          *      @return pointer related to the given map entry index.
-         */        
-        CString operator[]( const void* data ) const;               
-        
+         */
+        CString operator[]( const void* data ) const;
+
         /**
          *      index operator for array-like access
          *      Retrieves the pointer for the given index
          *
          *      @param index for the pointer you wish to obtain
          *      @return pointer related to the given map entry index.
-         */        
-        void* operator[]( const UInt32 index ) const;                                    
-        
+         */
+        void* operator[]( const UInt32 index ) const;
+
         /**
          *      Retrieves the pointer for the given name
          *      If the name is not found NULL will be returned.
@@ -132,24 +132,24 @@ class GUCEFCORE_EXPORT_CPP CStringMap
          *      @return pointer related to the name given.
          */
         void* Get( const CString& name ) const;
-        
+
         CString GetKey( const UInt32 index ) const;
-        
+
         Int32 GetKeyIndex( const CString& name ) const;
-        
+
         CStringList GetKeyList( void ) const;
 
         Int32 Add( const CString& name ,
                    void* linkeddata    );
-                  
+
         void Delete( const CString& name );
-        
+
         void DeleteAll( void );
-        
+
         UInt32 GetCount( void ) const;
-        
-        private:        
-        
+
+        private:
+
         CDynamicArray _items;
 };
 
@@ -174,5 +174,5 @@ class GUCEFCORE_EXPORT_CPP CStringMap
 
 - 08-02-2005 :
         - Initial implementation
-          
+
 ---------------------------------------------------------------------------*/

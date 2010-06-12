@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CPFILEACCESS_H
-#define GUCEF_CORE_CPFILEACCESS_H 
+#define GUCEF_CORE_CPFILEACCESS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_PAFILE_H
 #include "PAFILE.h"          /* C implementation of paralell file access */
@@ -55,10 +55,10 @@ class CPFileChunkAccess;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CPFileAccess : public CROIOAccess
+class GUCEF_CORE_PUBLIC_CPP CPFileAccess : public CROIOAccess
 {
         public:
-        
+
         CPFileAccess( const CString& file );
 
         virtual ~CPFileAccess();
@@ -110,11 +110,11 @@ class GUCEFCORE_EXPORT_CPP CPFileAccess : public CROIOAccess
          *      jump to the given offset in the resource
          */
         virtual UInt32 Setpos( UInt32 position );
-        
+
         /**
          *      returns the size of the resource in bytes
          */
-        virtual UInt32 GetSize( void ) const;        
+        virtual UInt32 GetSize( void ) const;
 
         /**
          *      Read a single character
@@ -124,8 +124,8 @@ class GUCEFCORE_EXPORT_CPP CPFileAccess : public CROIOAccess
         /**
          *      are we at the end of the resource ?
          */
-        virtual bool Eof( void ) const;       
-        
+        virtual bool Eof( void ) const;
+
         /**
          *      Is the access to the resource a valid one or
          *      has something gone wrong ?
@@ -133,14 +133,14 @@ class GUCEFCORE_EXPORT_CPP CPFileAccess : public CROIOAccess
         virtual bool IsValid( void );
 
         virtual TIOAccess* CStyleAccess( void );
-        
+
         virtual CORE::CICloneable* Clone( void ) const;
-        
+
         private:
         friend class CPFileChunkAccess;
-        
+
         CPFileAccess( void );
-        
+
         TPAFILEControl* _pafilecontrol;
         PAFILE* _pafile;
         CString _filename;

@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CGENERICPLUGINMANAGER_H
-#define GUCEF_CORE_CGENERICPLUGINMANAGER_H 
+#define GUCEF_CORE_CGENERICPLUGINMANAGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,25 +66,25 @@ class CGenericPlugin;
  *  to be/do just about anything but with the drawback that it has to link to the GUCEF
  *  modules and as such has a more limited lifespan as a C-interface plugin.
  */
-class GUCEFCORE_EXPORT_CPP CGenericPluginManager : public CPluginManager ,
+class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager ,
                                                    public CIConfigurable
 {
-    public:    
-    
+    public:
+
     static CGenericPluginManager* Instance( void );
-    
+
     virtual void LoadAll( void );
-    
+
     virtual void UnloadAll( void );
-    
+
     virtual bool IsLoaded( const CString& pluginPath );
-    
+
     virtual bool Load( const CString& pluginPath );
-    
+
     virtual bool Unload( const CString& pluginPath );
-    
+
     virtual ~CGenericPluginManager();
-    
+
     /**
      *      Attempts to store the given tree in the file
      *      given according to the method of the codec metadata
@@ -93,32 +93,32 @@ class GUCEFCORE_EXPORT_CPP CGenericPluginManager : public CPluginManager ,
      *      @return wheter storing the tree was successfull
      */
     virtual bool SaveConfig( CDataNode& tree );
-                                
+
     /**
-     *      Attempts to load data from the given file to the 
-     *      root node given. The root data will be replaced 
+     *      Attempts to load data from the given file to the
+     *      root node given. The root data will be replaced
      *      and any children the node may already have will be deleted.
      *
      *      @param treeroot pointer to the node that is to act as root of the data tree
      *      @return whether building the tree from the given file was successfull.
-     */                                    
+     */
     virtual bool LoadConfig( const CDataNode& treeroot );
-    
+
     private:
     friend class CGUCEFCOREModule;
-    
+
     static void Deinstance( void );
-    
+
     private:
     CGenericPluginManager( void );
-    CGenericPluginManager( const CGenericPluginManager& src );        
+    CGenericPluginManager( const CGenericPluginManager& src );
     CGenericPluginManager& operator=( const CGenericPluginManager& src );
-    
-    private:    
+
+    private:
     typedef std::vector< CGenericPlugin* > TPluginList;
-    
+
     TPluginList m_pluginList;
-    
+
     static CGenericPluginManager* m_instance;
 };
 

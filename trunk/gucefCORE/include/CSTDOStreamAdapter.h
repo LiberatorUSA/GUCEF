@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CSTDOSTREAMADAPTER_H
-#define GUCEF_CORE_CSTDOSTREAMADAPTER_H 
+#define GUCEF_CORE_CSTDOSTREAMADAPTER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #include <iostream>
 
@@ -66,22 +66,22 @@ class CSTDOStreamAdapterBuffer;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEFCORE_EXPORT_CPP CSTDOStreamAdapter : public std::ostream
+class GUCEF_CORE_PUBLIC_CPP CSTDOStreamAdapter : public std::ostream
 {
         public:
-        
+
         CSTDOStreamAdapter( CIOAccess& access );
-        
+
         virtual ~CSTDOStreamAdapter();
-        
+
         private:
-        
+
         CSTDOStreamAdapter( void );
         CSTDOStreamAdapter( const CSTDOStreamAdapter& src );
         CSTDOStreamAdapter& operator=( const CSTDOStreamAdapter& src );
-        
+
         private:
-        
+
         CSTDOStreamAdapterBuffer* m_buffer;
         CIOAccess* m_access;
 };

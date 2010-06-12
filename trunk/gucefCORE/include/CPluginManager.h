@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CPLUGINMANAGER_H
@@ -72,7 +72,7 @@ class CPluginControl;
 /**
  *      Generic base class for plugin managers
  */
-class GUCEFCORE_EXPORT_CPP CPluginManager : public CObservingNotifier
+class GUCEF_CORE_PUBLIC_CPP CPluginManager : public CObservingNotifier
 {
     public:
 
@@ -80,28 +80,28 @@ class GUCEFCORE_EXPORT_CPP CPluginManager : public CObservingNotifier
     static const CEvent PluginUnloadedEvent;
 
     static void RegisterEvents( void );
-    
+
     public:
-    
+
     typedef CTSharedPtr< CIPlugin > TPluginPtr;
-    
+
     CPluginManager( void );
-    
+
     CPluginManager( const CPluginManager& src );
-    
-    virtual ~CPluginManager();              
-    
-    CString GetPluginDir( void ) const;        
-    
+
+    virtual ~CPluginManager();
+
+    CString GetPluginDir( void ) const;
+
     virtual void LoadAll( void );
-    
+
     virtual void UnloadAll( void ) = 0;
-    
+
     virtual TPluginPtr LoadPlugin( const CString& pluginPath );
-    
+
     protected:
     friend class CPluginControl;
-    
+
     virtual void OnSetPluginDir( const CString& path );
 
     /**
@@ -118,12 +118,12 @@ class GUCEFCORE_EXPORT_CPP CPluginManager : public CObservingNotifier
                            CICloneable* eventdata = NULL );
 
     private:
-    
+
     CPluginManager& operator=( const CPluginManager& src );
-    
+
     private:
     friend class CPluginControl;
-    
+
     UInt32 _managerid; /**< ID used to quickly manage this manager at the plugin control center */
 };
 

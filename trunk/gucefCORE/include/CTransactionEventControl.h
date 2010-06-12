@@ -65,7 +65,7 @@ namespace CORE {
  *  Define your interactions with sub-system(s) as transactions and add filters
  *  to achieve the desired behaviour.
  */
-class GUCEFCORE_EXPORT_CPP CTransactionEventControl : public CForwardingNotifier
+class GUCEF_CORE_PUBLIC_CPP CTransactionEventControl : public CForwardingNotifier
 {
     public:
 

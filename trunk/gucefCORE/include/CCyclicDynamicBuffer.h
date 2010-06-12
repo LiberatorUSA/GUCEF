@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
-#define GUCEF_CORE_CCYCLICDYNAMICBUFFER_H 
+#define GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #include <vector>
 
@@ -56,29 +56,29 @@ namespace CORE {
 /**
  *  Cyclic buffer implementation.
  *  The read and write operations behave like a stream.
- *  Unused buffer space will be reused, if no unused space exists for storage 
+ *  Unused buffer space will be reused, if no unused space exists for storage
  *  of data the buffer will be automatically enlarged.
  */
-class GUCEFCORE_EXPORT_CPP CCyclicDynamicBuffer
+class GUCEF_CORE_PUBLIC_CPP CCyclicDynamicBuffer
 {
     public:
-    
+
     CCyclicDynamicBuffer( const UInt32 initialBufferSize = 0 );
-    
+
     virtual ~CCyclicDynamicBuffer();
-    
+
     CCyclicDynamicBuffer( const CCyclicDynamicBuffer& src );
-    
+
     CCyclicDynamicBuffer& operator=( const CCyclicDynamicBuffer& src );
-    
-    // Copies an entire block, resulting from an original write action, 
+
+    // Copies an entire block, resulting from an original write action,
     // into the given buffer. The target buffer will be overwritten and not appended.
     UInt32 ReadBlockTo( CDynamicBuffer& buffer );
-    
+
     UInt32 Read( void* destBuffer             ,
                  const UInt32 bytesPerElement ,
                  const UInt32 elementsToRead  );
-    
+
     UInt32 Write( const void* srcBuffer        ,
                   const UInt32 bytesPerElement ,
                   const UInt32 elementsToWrite );
@@ -93,44 +93,44 @@ class GUCEFCORE_EXPORT_CPP CCyclicDynamicBuffer
                                 const UInt32 elementsToWrite );
 
     void Clear( const bool logicalClearOnly = false );
-    
+
     UInt32 GetBufferedDataSizeInBytes( void ) const;
-    
+
     Float32 GetBufferUsagePercentage( void ) const;
-    
+
     UInt32 GetTotalBufferSizeInBytes( void ) const;
-    
+
     UInt32 GetNrOfFreeBlocks( void ) const;
-    
+
     UInt32 GetNrOfUsedBlocks( void ) const;
-    
+
     bool HasBufferedData( void ) const;
-    
+
     protected:
-    
+
     virtual void LockData( void ) const;
-    
+
     virtual void UnlockData( void ) const;
 
     private:
-    
+
     void TidyFreeBlocks( void );
-    
+
     UInt32 WriteImp( const void* srcBuffer        ,
                      const UInt32 bytesPerElement ,
                      const UInt32 elementsToWrite ,
                      bool writeToBack             );
-    
+
     private:
-    
+
     struct SDataChunk
-    {   
+    {
         UInt32 startOffset;
         UInt32 blockSize;
     };
     typedef struct SDataChunk TDataChunk;
     typedef std::vector< TDataChunk > TBlockList;
-    
+
     TBlockList m_usedBlocks;
     TBlockList m_freeBlocks;
     CDynamicBuffer m_buffer;
