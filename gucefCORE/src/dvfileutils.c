@@ -860,7 +860,7 @@ Filesize( const char *filename )
         struct stat buf;
         UInt32 filesize;
         int result;
-        result = _stat( filename, &buf );
+        result = stat( filename, &buf );
         if ( result == 0 ) return buf.st_size;
         return 0;
         #else
@@ -904,7 +904,7 @@ File_Exists( const char *filename )
                 #else
                 #ifdef GUCEF_LINUX_BUILD
                 struct stat buf;
-                if ( _stat( filename, &buf ) == -1 )
+                if ( stat( filename, &buf ) == -1 )
                 return errno == ENOENT;
 
 
@@ -1087,7 +1087,7 @@ Get_Modification_Time( const char* path )
     struct stat buf;
 
     /* Get File Statistics for stat.c. */
-    if( _stat( path, &buf ) == 0 )
+    if( stat( path, &buf ) == 0 )
     {
         /* get the date/time last modified */
         return buf.st_mtime;

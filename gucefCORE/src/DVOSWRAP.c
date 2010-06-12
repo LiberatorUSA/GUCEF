@@ -32,20 +32,23 @@
 #define GUCEFCORE_MACROS_H
 #endif /* GUCEFCORE_MACROS_H ? */
 
-#ifdef GUCEF_MSWIN_BUILD
-/* Do not use WIN32_LEAN_AND_MEAN because it will remove timeBeginPeriod() etc. */
-#undef  WIN32_LEAN_AND_MEAN
-#include <windows.h>                /* Windows API */
-#undef min
-#undef max
-#define MAX_DIR_LENGTH MAX_PATH
-#endif /* GUCEF_MSWIN_BUILD ? */
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
 
-#ifdef GUCEF_LINUX_BUILD
+  /* Do not use WIN32_LEAN_AND_MEAN because it will remove timeBeginPeriod() etc. */
+  #undef  WIN32_LEAN_AND_MEAN
+  #include <windows.h>                /* Windows API */
+  #undef min
+  #undef max
+  #define MAX_DIR_LENGTH MAX_PATH
+
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
+  #include <sys/times.h>
   #include <limits.h>                 /* Linux OS limits */
   #include <dlfcn.h>                  /* dynamic linking utilities */
   #define MAX_DIR_LENGTH PATH_MAX
-#endif /* GUCEF_LINUX_BUILD ? */
+
+#endif
 
 #ifndef GUCEF_CORE_DVSTRUTILS_H
 #include "dvstrutils.h"               /* needed for str to int */
@@ -465,7 +468,14 @@ GUCEFGetEnv( const char* key )
 UInt32
 GUCEFGetTickCount( void )
 {
-        return GetTickCount();
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    return GetTickCount();
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    struct tms timeStorage;
+    return (UInt32) times( &timeStorage );
+    #else
+    #error unsupported platform
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
