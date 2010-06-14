@@ -38,13 +38,23 @@ namespace INPUT {} }
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_INPUT_ETYPES_H
+#include "gucefINPUT_ETypes.h"
+#define GUCEF_INPUT_ETYPES_H
+#endif /* GUCEF_INPUT_ETYPES_H ? */
+
+#ifndef GUCEF_INPUT_CONFIG_H
+#include "gucefINPUT_config.h"
+#define GUCEF_INPUT_CONFIG_H
+#endif /* GUCEF_INPUT_CONFIG_H ? */
+
 /*
  *      Library specific macros and generic macros
  */
-#ifndef GUCEFINPUT_MACROS_H
+#ifndef GUCEF_INPUT_MACROS_H
 #include "gucefINPUT_macros.h"
-#define GUCEFINPUT_MACROS_H
-#endif /* GUCEFINPUT_MACROS_H ? */
+#define GUCEF_INPUT_MACROS_H
+#endif /* GUCEF_INPUT_MACROS_H ? */
 
 /*---------------------------------------------------------------------------/
 
@@ -53,20 +63,95 @@ namespace INPUT {} }
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 
-#ifndef CINPUTCONTROLLER_H
+#ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
 #include "CInputController.h"
-#define CINPUTCONTROLLER_H
-#endif /* CINPUTCONTROLLER_H ? */
+#define GUCEF_INPUT_CINPUTCONTROLLER_H
+#endif /* GUCEF_INPUT_CINPUTCONTROLLER_H ? */
 
-#ifndef CINPUTCONTEXT_H
+#ifndef GUCEF_INPUT_CINPUTCONTEXT_H
 #include "CInputContext.h"
-#define CINPUTCONTEXT_H
-#endif /* CINPUTCONTEXT_H ? */
+#define GUCEF_INPUT_CINPUTCONTEXT_H
+#endif /* GUCEF_INPUT_CINPUTCONTEXT_H ? */
 
-#ifndef CINPUTACTIONMAP_H
+#ifndef GUCEF_INPUT_CINPUTACTIONMAP_H
 #include "CInputActionMap.h"
-#define CINPUTACTIONMAP_H
-#endif /* CINPUTACTIONMAP_H ? */
+#define GUCEF_INPUT_CINPUTACTIONMAP_H
+#endif /* GUCEF_INPUT_CINPUTACTIONMAP_H ? */
+
+#ifndef GUCEF_INPUT_CINPUTDRIVERPLUGIN_H
+#include "CInputDriverPluginMap.h"
+#define GUCEF_INPUT_CINPUTDRIVERPLUGIN_H
+#endif /* GUCEF_INPUT_CINPUTDRIVERPLUGIN_H ? */
+
+#ifndef GUCEF_INPUT_ACTIONEVENTDATA_H
+#include "gucefINPUT_ActionEventData.h"
+#define GUCEF_INPUT_ACTIONEVENTDATA_H
+#endif /* GUCEF_INPUT_ACTIONEVENTDATA_H ? */
+
+#ifndef GUCEF_INPUT_CTCONCRETEACTIONEVENTDATA_H
+#include "gucefINPUT_CTConcreteActionEventData.h"
+#define GUCEF_INPUT_CTCONCRETEACTIONEVENTDATA_H
+#endif /* GUCEF_INPUT_CTCONCRETEACTIONEVENTDATA_H ? */
+
+#ifndef GUCEF_INPUT_CACTIONEVENTDATA_H
+#include "gucefINPUT_CActionEventData.h"
+#define GUCEF_INPUT_CACTIONEVENTDATA_H
+#endif /* GUCEF_INPUT_CACTIONEVENTDATA_H ? */
+
+#ifndef GUCEF_INPUT_CINPUTDEVICE_H
+#include "gucefINPUT_CInputDevice.h"
+#define GUCEF_INPUT_CINPUTDEVICE_H
+#endif /* GUCEF_INPUT_CINPUTDEVICE_H ? */
+
+#ifndef GUCEF_INPUT_CINPUTDRIVER_H
+#include "gucefINPUT_CInputDriver.h"
+#define GUCEF_INPUT_CINPUTDRIVER_H
+#endif /* GUCEF_INPUT_CINPUTDRIVER_H ? */
+
+#ifndef GUCEF_INPUT_CINPUTOBSERVERSWITCH_H
+#include "gucefINPUT_CInputObserverSwitch.h"
+#define GUCEF_INPUT_CINPUTOBSERVERSWITCH_H
+#endif /* GUCEF_INPUT_CINPUTOBSERVERSWITCH_H ? */
+
+#ifndef GUCEF_INPUT_CKEYBOARD_H
+#include "gucefINPUT_CKeyboard.h"
+#define GUCEF_INPUT_CKEYBOARD_H
+#endif /* GUCEF_INPUT_CKEYBOARD_H ? */
+
+#ifndef GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H
+#include "gucefINPUT_CKeyModStateChangedEventData.h"
+#define GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H
+#endif /* GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H ? */
+
+#ifndef GUCEF_INPUT_CKEYSTATECHANGEDEVENTDATA_H
+#include "gucefINPUT_CKeyStateChangedEventData.h"
+#define GUCEF_INPUT_CKEYSTATECHANGEDEVENTDATA_H
+#endif /* GUCEF_INPUT_CKEYSTATECHANGEDEVENTDATA_H ? */
+
+#ifndef GUCEF_INPUT_CMOUSE_H
+#include "gucefINPUT_CMouse.h"
+#define GUCEF_INPUT_CMOUSE_H
+#endif /* GUCEF_INPUT_CMOUSE_H ? */
+
+#ifndef GUCEF_INPUT_CMOUSEBUTTONEVENTDATA_H
+#include "gucefINPUT_CMouseButtonEventData.h"
+#define GUCEF_INPUT_CMOUSEBUTTONEVENTDATA_H
+#endif /* GUCEF_INPUT_CMOUSEBUTTONEVENTDATA_H ? */
+
+#ifndef GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H
+#include "gucefINPUT_CMouseMovedEventData.h"
+#define GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H
+#endif /* GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H ? */
+
+#ifndef GUCEF_INPUT_KEYBOARD_H
+#include "gucefINPUT_keyboard.h"
+#define GUCEF_INPUT_KEYBOARD_H
+#endif /* GUCEF_INPUT_KEYBOARD_H ? */
+
+#ifndef GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H
+#include "inputdriverpluginstructs.h"
+#define GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H
+#endif /* GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H ? */
 
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/

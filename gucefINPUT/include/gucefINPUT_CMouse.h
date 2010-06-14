@@ -61,7 +61,7 @@ namespace INPUT {
 /**
  *  In-software representation of a mouse hardware input device
  */
-class GUCEF_INPUT_EXPORT_CPP CMouse : public CORE::CNotifier
+class GUCEF_INPUT_PUBLIC_CPP CMouse : public CORE::CNotifier
 {
     public:
     

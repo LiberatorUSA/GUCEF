@@ -31,10 +31,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef MACROS_H
-#include "macros.h"                /* generic often used macros */
-#define MACROS_H
-#endif /* MACROS_H ? */
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"                /* generic often used macros */
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
 
 #ifndef GUCEF_INPUT_ETYPES_H
 #include "gucefINPUT_ETypes.h"      /* simple types */
@@ -58,37 +58,8 @@
 #ifndef GUCEF_INPUT_DEBUG_MODE
   #if defined( _DEBUG ) || !defined( NDEBUG )
     #define GUCEF_INPUT_DEBUG_MODE
-  #else
-    #undef GUCEF_INPUT_DEBUG_MODE
   #endif /* compiler DEBUG switches */
 #endif /* GUCEF_INPUT_DEBUG_MODE ? */
-
-/*-------------------------------------------------------------------------*/
-
-/*
- *      In debug mode we will include the core module's tracer
- */
-#ifdef __cplusplus
-  #ifdef GUCEF_INPUT_DEBUG_MODE
-    #ifndef GUCEF_CORE_CTRACER_H
-      #include "CTracer.h"
-      #define GUCEF_CORE_CTRACER_H
-    #endif /* GUCEF_CORE_CTRACER_H ? */
-  #else
-    #define GUCEF_TRACE
-  #endif
-#endif /* __cplusplus ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      INCLUDES                                                           //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_INPUT_CONFIG_H
-#include "gucefINPUT_config.h"      /* Module build configuration */
-#define GUCEF_INPUT_CONFIG_H
-#endif /* GUCEF_INPUT_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------*/
 
@@ -101,42 +72,59 @@
  *      When compiling the gucefINPUT library you should define BUILD_GUCEF_INPUT_DLL
  *      before including this macro file.
  */
-#undef GUCEF_INPUT_EXPORT
-#ifdef BUILD_GUCEF_INPUT_DLL
-  #define GUCEF_INPUT_EXPORT GUCEF_EXPORT
+#undef GUCEF_INPUT_EXPORTSPEC
+#ifdef GUCEF_INPUT_BUILD_MODULE
+  #define GUCEF_INPUT_EXPORTSPEC GUCEF_EXPORT
 #else
-  #define GUCEF_INPUT_EXPORT GUCEF_IMPORT
+  #define GUCEF_INPUT_EXPORTSPEC GUCEF_IMPORT
 #endif
 
 /*-------------------------------------------------------------------------*/
 
-#undef GUCEF_INPUT_PLUGIN_EXPORT
+#undef GUCEF_INPUT_PLUGIN_EXPORTSPEC
 #ifdef BUILD_GUCEF_INPUT_PLUGIN_DLL
-  #define GUCEF_INPUT_PLUGIN_EXPORT GUCEF_EXPORT
+  #define GUCEF_INPUT_PLUGIN_EXPORTSPEC GUCEF_EXPORT
 #else
-  #define GUCEF_INPUT_PLUGIN_EXPORT GUCEF_IMPORT
+  #define GUCEF_INPUT_PLUGIN_EXPORTSPEC GUCEF_IMPORT
 #endif
 
 /*-------------------------------------------------------------------------*/
 
-#undef GUCEF_INPUT_EXPORT_CPP
-#ifdef GUCEF_INPUT_EXPORT_CPP_CODE
-  #define GUCEF_INPUT_EXPORT_CPP GUCEF_INPUT_EXPORT
+#undef GUCEF_INPUT_PUBLIC_CPP
+#ifdef GUCEF_INPUT_PUBLIC_CPP_CODE
+  #define GUCEF_INPUT_PUBLIC_CPP GUCEF_INPUT_EXPORTSPEC
 #else
-  #define GUCEF_INPUT_EXPORT_CPP
-#endif /* GUCEF_INPUT_EXPORT_CPP_CODE */
+  #define GUCEF_INPUT_PUBLIC_CPP GUCEF_HIDDEN
+#endif /* GUCEF_INPUT_PUBLIC_CPP_CODE */
 
-#undef GUCEF_INPUT_EXPORT_C 
-#ifdef GUCEF_INPUT_EXPORT_C_CODE
-  #define GUCEF_INPUT_EXPORT_C GUCEF_INPUT_EXPORT
+#undef GUCEF_INPUT_PUBLIC_C 
+#ifdef GUCEF_INPUT_PUBLIC_C_CODE
+  #define GUCEF_INPUT_PUBLIC_C GUCEF_INPUT_EXPORTSPEC
 #else
-  #define GUCEF_INPUT_EXPORT_C
-#endif /* GUCEF_INPUT_EXPORT_C_CODE */
+  #define GUCEF_INPUT_PUBLIC_C GUCEF_HIDDEN
+#endif /* GUCEF_INPUT_PUBLIC_C_CODE */
+
+#define GUCEF_INPUT_PRIVATE_CPP GUCEF_HIDDEN
+#define GUCEF_INPUT_PRIVATE_C GUCEF_HIDDEN
 
 /*-------------------------------------------------------------------------*/
 
-#define GUCEF_INPUT_PLUGIN_EXPORT_C GUCEF_INPUT_PLUGIN_EXPORT
-#define GUCEF_INPUT_PLUGIN_EXPORT_CPP GUCEF_INPUT_PLUGIN_EXPORT
+#undef GUCEF_INPUT_PLUGIN_PUBLIC_CPP
+#ifdef GUCEF_INPUT_PLUGIN_PUBLIC_CPP_CODE
+  #define GUCEF_INPUT_PLUGIN_PUBLIC_CPP GUCEF_INPUT_PLUGIN_EXPORTSPEC
+#else
+  #define GUCEF_INPUT_PLUGIN_PUBLIC_CPP GUCEF_HIDDEN
+#endif /* GUCEF_INPUT_PLUGIN_PUBLIC_CPP_CODE */
+
+#undef GUCEF_INPUT_PLUGIN_PUBLIC_C 
+#ifdef GUCEF_INPUT_PLUGIN_PUBLIC_C_CODE
+  #define GUCEF_INPUT_PLUGIN_PUBLIC_C GUCEF_INPUT_PLUGIN_EXPORTSPEC
+#else
+  #define GUCEF_INPUT_PLUGIN_PUBLIC_C GUCEF_HIDDEN
+#endif /* GUCEF_INPUT_PLUGIN_PUBLIC_C_CODE */
+
+#define GUCEF_INPUT_PLUGIN_PRIVATE_CPP GUCEF_HIDDEN
+#define GUCEF_INPUT_PLUGIN_PRIVATE_C GUCEF_HIDDEN
 
 /*-------------------------------------------------------------------------*/
 

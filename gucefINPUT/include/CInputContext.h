@@ -51,7 +51,7 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_INPUT_EXPORT_CPP CInputContext
+class GUCEF_INPUT_PUBLIC_CPP CInputContext
 {
         public:
                         

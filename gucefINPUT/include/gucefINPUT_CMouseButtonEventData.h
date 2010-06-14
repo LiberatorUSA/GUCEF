@@ -51,7 +51,7 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_INPUT_EXPORT_CPP CMouseButtonEventData : public CORE::CICloneable
+class GUCEF_INPUT_PUBLIC_CPP CMouseButtonEventData : public CORE::CICloneable
 {
     public:
     

@@ -52,7 +52,7 @@ namespace INPUT {
  *  In-software representation of a hardware input device
  *  This representation will typically be used for things like joysticks
  */
-class GUCEF_INPUT_EXPORT_CPP CInputDevice : public CORE::CNotifier
+class GUCEF_INPUT_PUBLIC_CPP CInputDevice : public CORE::CNotifier
 {
     public:
     
