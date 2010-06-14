@@ -84,7 +84,7 @@ class CInputDriver;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CObservingNotifier
+class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
 {
     public:                
 
@@ -140,7 +140,7 @@ class GUCEF_INPUT_EXPORT_CPP CInputController : public CORE::CObservingNotifier
     
     virtual const CString& GetClassTypeName( void ) const;
     
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_INPUT_EXPORT_CPP, EInvalidIndex );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_INPUT_PUBLIC_CPP, EInvalidIndex );
     
     protected:
         

@@ -54,7 +54,7 @@ namespace INPUT {
 /**
  *  Class that acts as an observer switch for input events
  */
-class GUCEF_INPUT_EXPORT_CPP CInputObserverSwitch : public CORE::CObserverSwitch
+class GUCEF_INPUT_PUBLIC_CPP CInputObserverSwitch : public CORE::CObserverSwitch
 {
     public:
     

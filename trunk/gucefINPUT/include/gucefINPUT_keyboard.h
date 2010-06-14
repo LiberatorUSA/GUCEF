@@ -229,19 +229,19 @@ typedef enum KeyModifier KeyModifier;
 #ifdef __cplusplus
 /*-------------------------------------------------------------------------*/
 
-CString GUCEF_INPUT_EXPORT_CPP KeyModifierToString( const KeyModifier keyModifier );
+CString GUCEF_INPUT_PUBLIC_CPP KeyModifierToString( const KeyModifier keyModifier );
 
 /*-------------------------------------------------------------------------*/
 
-KeyModifier GUCEF_INPUT_EXPORT_CPP StringToKeyModifier( const CString& keyModStr );
+KeyModifier GUCEF_INPUT_PUBLIC_CPP StringToKeyModifier( const CString& keyModStr );
 
 /*-------------------------------------------------------------------------*/
 
-CString GUCEF_INPUT_EXPORT_CPP KeyCodeToString( const KeyCode keyCode );
+CString GUCEF_INPUT_PUBLIC_CPP KeyCodeToString( const KeyCode keyCode );
 
 /*-------------------------------------------------------------------------*/
 
-KeyCode GUCEF_INPUT_EXPORT_CPP StringToKeyCode( const CString& keyCodeStr );
+KeyCode GUCEF_INPUT_PUBLIC_CPP StringToKeyCode( const CString& keyCodeStr );
 
 /*-------------------------------------------------------------------------*/
 #endif /* __cplusplus ? */

@@ -69,7 +69,7 @@ class CInputController;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_INPUT_EXPORT_CPP CInputDriver
+class GUCEF_INPUT_PUBLIC_CPP CInputDriver
 {
     public:
     

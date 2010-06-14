@@ -65,7 +65,7 @@ class CInputController;
 /**
  *  In-software representation of a keyboard hardware input device
  */
-class GUCEF_INPUT_EXPORT_CPP CKeyboard : public CORE::CNotifier
+class GUCEF_INPUT_PUBLIC_CPP CKeyboard : public CORE::CNotifier
 {
     public:
     

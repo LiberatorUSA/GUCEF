@@ -64,7 +64,7 @@ namespace INPUT {
  *  If you build your clients to be triggered by actions rather then specific
  *  input device events you will be able to customize the mappings with ease.
  */
-class GUCEF_INPUT_EXPORT_CPP CInputActionMap : public CORE::CObservingNotifier
+class GUCEF_INPUT_PUBLIC_CPP CInputActionMap : public CORE::CObservingNotifier
 {
     public:
     

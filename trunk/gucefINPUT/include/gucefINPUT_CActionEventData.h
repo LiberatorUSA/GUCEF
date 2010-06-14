@@ -56,7 +56,7 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_INPUT_EXPORT_CPP CActionEventData : public CORE::CICloneable
+class GUCEF_INPUT_PUBLIC_CPP CActionEventData : public CORE::CICloneable
 {
     public:
     
