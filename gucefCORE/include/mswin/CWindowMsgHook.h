@@ -52,7 +52,7 @@ namespace CORE {
  *  Class that should be used when performing instance subclassing of 
  *  windows. Using an uniform aproach minimizes the risks.
  */
-class GUCEFCORE_EXPORT_CPP CWindowMsgHook
+class GUCEF_CORE_PUBLIC_CPP CWindowMsgHook
 {
     public:
     

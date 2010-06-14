@@ -51,7 +51,7 @@ namespace CORE {
 /**
  *  Class with basic utilities for creating a Win32 editbox
  */
-class GUCEF_CORE_EXPORT_CPP CMsWin32Editbox : public CMsWin32Window
+class GUCEF_CORE_PUBLIC_CPP CMsWin32Editbox : public CMsWin32Window
 {
     public:
     

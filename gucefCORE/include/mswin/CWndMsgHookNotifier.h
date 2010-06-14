@@ -67,8 +67,8 @@ namespace CORE {
  *  Class that translates MS Windows events obtained from instance sub-classing
  *  a window into GUCEF events for easy processing
  */
-class GUCEFCORE_EXPORT_CPP CWndMsgHookNotifier : public CNotifier      ,
-                                                 public CWindowMsgHook
+class GUCEF_CORE_PUBLIC_CPP CWndMsgHookNotifier : public CNotifier      ,
+                                                  public CWindowMsgHook
 {
     public:
     

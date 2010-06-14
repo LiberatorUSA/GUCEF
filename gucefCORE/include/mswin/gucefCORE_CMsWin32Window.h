@@ -61,7 +61,7 @@ namespace CORE {
 /**
  *  Class with basic utilities for creating a Win32 window
  */
-class GUCEF_CORE_EXPORT_CPP CMsWin32Window : public CObservingNotifier
+class GUCEF_CORE_PUBLIC_CPP CMsWin32Window : public CObservingNotifier
 {
     public:
     

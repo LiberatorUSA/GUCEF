@@ -51,7 +51,7 @@ namespace CORE {
  *  GUCEF logger implementation for MS Windows that displays log output
  *  in a console window.
  */
-class GUCEFCORE_EXPORT_CPP CMSWinConsoleLogger : public CILogger
+class GUCEF_CORE_PUBLIC_CPP CMSWinConsoleLogger : public CILogger
 {
     public:
     

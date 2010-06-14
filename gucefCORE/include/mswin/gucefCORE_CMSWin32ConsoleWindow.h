@@ -67,7 +67,7 @@ namespace CORE {
  *  Class which creates a Win32 API generated console window for communication
  *  with the system console API.
  */
-class GUCEF_CORE_EXPORT_CPP CMsWin32ConsoleWindow : public CMsWin32Window ,
+class GUCEF_CORE_PUBLIC_CPP CMsWin32ConsoleWindow : public CMsWin32Window ,
                                                     public CSysConsoleClient
 {
     public:
