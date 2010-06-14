@@ -50,7 +50,7 @@ class CTabControl;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CTabContentPane : public CWidget
+class GUCEF_GUI_PUBLIC_CPP CTabContentPane : public CWidget
 {    
     public:
     

@@ -31,6 +31,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"                 /* generic often used macros */
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
+
 #ifndef GUCEF_CORE_BASICMACROS_H
 #include "macros.h"                 /* generic often used macros */
 #define GUCEF_CORE_BASICMACROS_H
@@ -61,30 +66,31 @@
  *      Macros for dynamic linking or static linking. Use the switches in the
  *      config file to control the export type.
  */
-#ifdef GUCEFGUI_BUILD_MODULE 
-  #define GUCEF_GUI_BUILD_MODULE
-#endif /* GUCEFGUI_BUILD_MODULE ? */
 
-#undef GUCEF_EXPORTSPEC
+#undef GUCEF_GUI_EXPORTSPEC
 #ifdef GUCEF_GUI_BUILD_MODULE
-  #define GUCEF_EXPORTSPEC GUCEF_EXPORT
+  #define GUCEF_GUI_EXPORTSPEC GUCEF_EXPORT
 #else
-  #define GUCEF_EXPORTSPEC GUCEF_IMPORT
-#endif /* GUCEF_DRN_BUILD_MODULE ? */
+  #define GUCEF_GUI_EXPORTSPEC GUCEF_IMPORT
+#endif /* GUCEF_GUI_BUILD_MODULE ? */
 
-#undef GUCEF_GUI_EXPORT_CPP
-#ifdef GUCEF_GUI_EXPORT_CPP_CODE
-  #define GUCEF_GUI_EXPORT_CPP GUCEF_EXPORTSPEC
+#undef GUCEF_GUI_PUBLIC_CPP
+#ifdef GUCEF_GUI_PUBLIC_CPP_CODE
+  #define GUCEF_GUI_PUBLIC_CPP GUCEF_GUI_EXPORTSPEC
 #else
-  #define GUCEF_GUI_EXPORT_CPP
+  #define GUCEF_GUI_PUBLIC_CPP GUCEF_HIDDEN
 #endif /* GUCEF_GUI_EXPORT_CPP_CODE */
 
-#undef GUCEF_GUI_EXPORT_C
-#ifdef GUCEF_GUI_EXPORT_C_CODE
-  #define GUCEF_GUI_EXPORT_C GUCEF_EXPORTSPEC
+#define GUCEF_GUI_PRIVATE_CPP GUCEF_HIDDEN
+
+#undef GUCEF_GUI_PUBLIC_C
+#ifdef GUCEF_GUI_PUBLIC_C_CODE
+  #define GUCEF_GUI_PUBLIC_C GUCEF_GUI_EXPORTSPEC
 #else
-  #define GUCEF_GUI_EXPORT_C
-#endif /* GUCEF_GUI_EXPORT_C_CODE */
+  #define GUCEF_GUI_PUBLIC_C GUCEF_HIDDEN
+#endif /* GUCEF_GUI_PUBLIC_C_CODE */
+
+#define GUCEF_GUI_PRIVATE_C GUCEF_HIDDEN
 
 /*-------------------------------------------------------------------------*/
 

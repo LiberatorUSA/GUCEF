@@ -63,7 +63,7 @@ class CForm;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CIGUIContext
+class GUCEF_GUI_PUBLIC_CPP CIGUIContext
 {    
     public:
     

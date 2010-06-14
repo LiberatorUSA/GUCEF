@@ -46,7 +46,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CUDim
+class GUCEF_GUI_PUBLIC_CPP CUDim
 {
     public:
     

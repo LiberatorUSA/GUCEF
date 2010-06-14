@@ -106,7 +106,7 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 add_library( gucefGUI ${HEADER_FILES} ${SOURCE_FILES} )
 add_dependencies( gucefGUI gucefCORE gucefMT gucefVFS gucefIMAGE )
 target_link_libraries( gucefGUI gucefCORE gucefMT gucefVFS )
-set_target_properties( gucefGUI PROPERTIES COMPILE_DEFINITIONS GUCEFGUI_BUILD_MODULE )
+set_target_properties( gucefGUI PROPERTIES COMPILE_DEFINITIONS GUCEF_GUI_BUILD_MODULE )
 GUCEF_config_lib( gucefGUI )
 
 

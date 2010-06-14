@@ -46,7 +46,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CSpinner : public CWidget
+class GUCEF_GUI_PUBLIC_CPP CSpinner : public CWidget
 {
     public:
 

@@ -46,7 +46,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CFormEx : public CForm
+class GUCEF_GUI_PUBLIC_CPP CFormEx : public CForm
 {
     public:
     

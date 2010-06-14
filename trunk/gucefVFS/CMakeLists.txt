@@ -26,7 +26,7 @@ set(HEADER_FILES
 
 set(SOURCE_FILES 
   src/CGUCEFVFSModule.cpp
-  src/CVFS.CPP
+  src/CVFS.cpp
   src/CVFSHandle.cpp
   src/CVFSURLHandler.cpp
   src/gucefVFS.cpp

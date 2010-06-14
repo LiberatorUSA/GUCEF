@@ -61,7 +61,7 @@ namespace GUI {
  *  This allows you to descend from the CForm class as you wish without having
  *  to create a matching backend implementation for every form type.
  */
-class GUCEF_GUI_EXPORT_CPP CFormBackend
+class GUCEF_GUI_PUBLIC_CPP CFormBackend
 {
     public:
     
