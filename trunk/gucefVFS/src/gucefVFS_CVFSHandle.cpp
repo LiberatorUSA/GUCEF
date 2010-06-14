@@ -23,22 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CURLHANDLERREGISTRY_H
-#include "CURLHandlerRegistry.h"      /* gucefCORE registry for URL handlers */
-#define GUCEF_CORE_CURLHANDLERREGISTRY_H
-#endif /* GUCEF_CORE_CURLHANDLERREGISTRY_H ? */
-
-#ifndef GUCEF_VFS_MACROS_H
-#include "gucefVFS_macros.h"          /* often used gucefVFS macros */
-#define GUCEF_VFS_MACROS_H
-#endif /* GUCEF_VFS_MACROS_H ? */
-
-#ifndef CVFS_H
-#include "CVFS.h"
-#define CVFS_H
-#endif /* CVFS_H ? */
-
-#include "CVFSURLHandler.h"
+#include "gucefVFS_CVFSHandle.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,115 +40,73 @@ VFS_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CVFSURLHandler::CVFSURLHandler( void )
-        : m_vfs( CVFS::Instance() )           
+CVFSHandle::CVFSHandle( CORE::CIOAccess* fileAccess   ,
+                        const CORE::CString& filename ,
+                        const CORE::CString& filePath )
+    : m_fileAccess( fileAccess ) ,
+      m_filename( filename )     ,
+      m_bufferPtr()              ,
+      m_filePath( filePath )
 {GUCEF_TRACE;
-        
-}
-        
-/*-------------------------------------------------------------------------*/        
-        
-CVFSURLHandler::CVFSURLHandler( const CVFSURLHandler& src )
-        : m_vfs( CVFS::Instance() ) 
-{GUCEF_TRACE;
-  
+                  
 }
 
 /*-------------------------------------------------------------------------*/
 
-CVFSURLHandler::~CVFSURLHandler()
+CVFSHandle::CVFSHandle( CORE::CIOAccess* fileAccess   ,
+                        const CORE::CString& filename ,
+                        const CORE::CString& filePath ,
+                        TDynamicBufferPtr& bufferPtr  )
+    : m_fileAccess( fileAccess ) ,
+      m_filename( filename )     ,
+      m_bufferPtr( bufferPtr )   ,
+      m_filePath( filePath )
 {GUCEF_TRACE;
+                  
 }
 
 /*-------------------------------------------------------------------------*/
 
-CVFSURLHandler&
-CVFSURLHandler::operator=( const CVFSURLHandler& src )
+CVFSHandle::~CVFSHandle()
 {GUCEF_TRACE;
-        return *this;
+    
+    /* dont do anything here, this is just a storage / encapsulation class */
 }
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CICloneable* 
-CVFSURLHandler::Clone( void ) const
+const CORE::CString&
+CVFSHandle::GetFilename( void ) const
 {GUCEF_TRACE;
-        return new CVFSURLHandler( *this );
+
+    return m_filename;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CVFSURLHandler::Register( void )
+const CORE::CString&
+CVFSHandle::GetFilePath( void ) const
 {GUCEF_TRACE;
-        CORE::CURLHandlerRegistry* registry = CORE::CURLHandlerRegistry::Instance();
-        if ( !registry->IsRegistered( "vfs" ) )
-        {
-                registry->Register( "vfs", new CVFSURLHandler() );
-        }
+
+    return m_filePath;
 }
 
 /*-------------------------------------------------------------------------*/
-        
-void 
-CVFSURLHandler::Unregister( void )
+
+CORE::CIOAccess* 
+CVFSHandle::GetAccess( void )
 {GUCEF_TRACE;
-        CORE::CURLHandlerRegistry::Instance()->Unregister( "vfs" );
+    
+    return m_fileAccess;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CVFSURLHandler::Activate( CORE::CURL& url )
+CVFSHandle::IsLoadedInMemory( void ) const
 {GUCEF_TRACE;
-        assert( &url );
-        
-        // Tell the data handlers we have begun our activation sequence
-        NotifyObservers( URLActivateEvent );
-        
-        // Obtain the file
-        CVFS::CVFSHandlePtr handle = m_vfs->GetFile( url.GetURL().SubstrToSubstr( "://" ), "rb", false );        
-        if ( NULL != handle )
-        {                
-                CORE::CIOAccess* access = handle->GetAccess();
-                if ( NULL == access )
-                {
-                    NotifyObservers( URLDataRetrievalErrorEvent );
-                    return false;
-                }
-                else
-                {
-                    // Pass the file data on to the data handlers
-                    NotifyObservers( URLDataRecievedEvent, access );
-                    
-                    NotifyObservers( URLAllDataRecievedEvent );
-                }
-                
-                return true;
-        }
-        else
-        {
-            NotifyObservers( URLDataRetrievalErrorEvent );
-            return false;        
-        } 
-}
 
-/*-------------------------------------------------------------------------*/
-        
-void
-CVFSURLHandler::Deactivate( CORE::CURL& url )
-{GUCEF_TRACE;
-        /*
-         *      This URL handler works instantly and need not be deactivated
-         */
-}
-
-/*-------------------------------------------------------------------------*/
-                         
-bool 
-CVFSURLHandler::IsActive( const CORE::CURL& url ) const
-{GUCEF_TRACE;
-        return false;
+    return m_bufferPtr != NULL;
 }
 
 /*-------------------------------------------------------------------------//

@@ -35,7 +35,7 @@
 #endif /* GUCEF_CORE_CTBASICSHAREDPTR_H ? */
 
 #ifndef GUCEF_VFS_CVFSHANDLE_H
-#include "CVFSHandle.h"              /* handle for VFS ref counted recources */
+#include "gucefVFS_CVFSHandle.h"     /* handle for VFS ref counted recources */
 #define GUCEF_VFS_CVFSHANDLE_H
 #endif /* GUCEF_VFS_CVFSHANDLE_H ? */
 

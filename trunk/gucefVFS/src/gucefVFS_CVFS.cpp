@@ -73,7 +73,7 @@
 #define GUCEF_VFS_CFILESYSTEMARCHIVE_H
 #endif /* GUCEF_VFS_CFILESYSTEMARCHIVE_H ? */
 
-#include "CVFS.h"                /* definition of the file implemented here */
+#include "gucefVFS_CVFS.h"           /* definition of the file implemented here */
 
 #ifdef ACTIVATE_MEMORY_MANAGER
   #ifndef GUCEF_NEW_ON_H
