@@ -13,6 +13,7 @@
 set(HEADER_FILES 
   include/gucefMATH.h
   include/gucefMATH_CModule.h
+  include/gucefMATH_config.h
   include/gucefMATH_CTDirectionVector2D.h
   include/gucefMATH_CTDirectionVector3D.h
   include/gucefMATH_CTMatrix3D.h

@@ -182,7 +182,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_GUI_EXPORT_C const char* GUCEF_GUI_ModuleCompileTimeStamp( void );
+GUCEF_GUI_PUBLIC_C const char* GUCEF_GUI_ModuleCompileTimeStamp( void );
 
 /*-------------------------------------------------------------------------*/
 

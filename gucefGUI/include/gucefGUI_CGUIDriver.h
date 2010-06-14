@@ -56,7 +56,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CGUIDriver : public CORE::CObservingNotifier ,
+class GUCEF_GUI_PUBLIC_CPP CGUIDriver : public CORE::CObservingNotifier ,
                                         public CORE::CIConfigurable
 {    
     public:

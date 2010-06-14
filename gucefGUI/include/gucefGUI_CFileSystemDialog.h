@@ -76,7 +76,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CFileSystemDialog : public CFormEx
+class GUCEF_GUI_PUBLIC_CPP CFileSystemDialog : public CFormEx
 {
     public:
     

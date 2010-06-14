@@ -51,7 +51,7 @@ namespace GUI {
 /**
  *  Interface that allows GUI widgets to obtain file system information.
  */
-class GUCEF_GUI_EXPORT_CPP CIFileSystemInfoProvider
+class GUCEF_GUI_PUBLIC_CPP CIFileSystemInfoProvider
 {
     public:
     

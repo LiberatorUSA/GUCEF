@@ -51,7 +51,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CTabControl : public CWidget
+class GUCEF_GUI_PUBLIC_CPP CTabControl : public CWidget
 {
     public:
 

@@ -71,7 +71,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CGUIManager : public CORE::CObservingNotifier
+class GUCEF_GUI_PUBLIC_CPP CGUIManager : public CORE::CObservingNotifier
 {
     public:
     

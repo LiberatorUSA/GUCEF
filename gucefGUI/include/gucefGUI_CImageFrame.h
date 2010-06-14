@@ -51,7 +51,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CImageFrame : public CWidget
+class GUCEF_GUI_PUBLIC_CPP CImageFrame : public CWidget
 {
     public:
     

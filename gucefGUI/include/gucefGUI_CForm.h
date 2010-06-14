@@ -61,7 +61,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_EXPORT_CPP CForm : public CORE::CObservingNotifier
+class GUCEF_GUI_PUBLIC_CPP CForm : public CORE::CObservingNotifier
 {
     public:    
     
