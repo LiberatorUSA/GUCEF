@@ -28,7 +28,7 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifdef GUCEF_MSWIN_BUILD
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32
 
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"

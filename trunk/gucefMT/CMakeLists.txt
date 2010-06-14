@@ -74,7 +74,7 @@ if (UNIX)
 endif()
 
 target_link_libraries( gucefMT ${PLATFORM_LIBS} )
-set_target_properties( gucefMT PROPERTIES COMPILE_DEFINITIONS GUCEFMT_BUILD_MODULE )
+set_target_properties( gucefMT PROPERTIES COMPILE_DEFINITIONS GUCEF_MT_BUILD_MODULE )
 
 GUCEF_config_lib( gucefMT )
 

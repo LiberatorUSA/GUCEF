@@ -31,15 +31,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CONFIG_H
-#include "gucefMT_config.h"        /* Module build configuration */
-#define GUCEF_MT_CONFIG_H
-#endif /* GUCEF_MT_CONFIG_H ? */
-
 #ifndef GUCEF_MACROS_H
 #include "gucef_macros.h"          /* GUCEF platform wide macros */
 #define GUCEF_MACROS_H
 #endif /* GUCEF_MACROS_H ? */
+
+#ifndef GUCEF_MT_CONFIG_H
+#include "gucefMT_config.h"        /* Module build configuration */
+#define GUCEF_MT_CONFIG_H
+#endif /* GUCEF_MT_CONFIG_H ? */
 
 #ifndef GUCEF_MT_ETYPES_H
 #include "gucefMT_ETypes.h"        /* type definitions of simple types */

@@ -38,12 +38,12 @@
 //-------------------------------------------------------------------------*/
 
 /*
- *      GUCEFMT_BUILD_MODULE
+ *      GUCEF_MT_BUILD_MODULE
  *
  *      It is best to set this in your project/make file, you can however
  *      set this here if your environment does not allow
  */
-// #define GUCEFMT_BUILD_MODULE
+/* #define GUCEF_MT_BUILD_MODULE */
 
 #define GUCEF_MT_PUBLIC_C_CODE
 #define GUCEF_MT_PUBLIC_CPP_CODE
