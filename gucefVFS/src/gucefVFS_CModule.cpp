@@ -33,17 +33,17 @@
 #define GUCEF_CORE_CCODECREGISTRY_H
 #endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
 
-#include "CGUCEFVFSModule.h"  /* definition of the class implemented here */
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
 
-#ifndef CVFS_H
-#include "CVFS.h"
-#define CVFS_H
-#endif /* CVFS_H ? */
+#ifndef GUCEF_VFS_CVFSURLHANDLER_H
+#include "gucefVFS_CVFSURLHandler.h"     /* URL handler for URL's with protocol "vfs" */
+#define GUCEF_VFS_CVFSURLHANDLER_H
+#endif /* GUCEF_VFS_CVFSURLHANDLER_H ? */
 
-#ifndef CVFSURLHANDLER_H
-#include "CVFSURLHandler.h"     /* URL handler for URL's with protocol "vfs" */
-#define CVFSURLHANDLER_H
-#endif /* CVFSURLHANDLER_H ? */
+#include "gucefVFS_CModule.h"  /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
