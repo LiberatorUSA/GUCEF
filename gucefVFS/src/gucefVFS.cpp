@@ -23,15 +23,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFVFSDLLINIT_H
-#include "gucefVFSDLLInit.h"
-#define GUCEFCOREDLLINIT_H
-#endif /* GUCEFVFSDLLINIT_H ? */
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
 
-#ifndef CGUCEFVFSMODULE_H
-#include "CGUCEFVFSModule.h"
-#define CGUCEFVFSEMODULE_H
-#endif /* CGUCEFVFSMODULE_H ? */
+#ifndef GUCEF_VFS_CMODULE_H
+#include "gucefVFS_CModule.h"
+#define GUCEF_VFS_CMODULE_H
+#endif /* GUCEF_VFS_CMODULE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -39,6 +39,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-DLL_INIT_FUNC_BEG_END( GUCEF::VFS::CGUCEFVFSModule )
+DLL_INIT_FUNC_BEG_END( GUCEF::VFS::CModule )
 
 /*-------------------------------------------------------------------------*/

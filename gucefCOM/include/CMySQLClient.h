@@ -58,7 +58,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_NAMESPACE_BEGIN
+namespace GUCEF {
 COM_NAMESPACE_BEGIN
 
 /*-------------------------------------------------------------------------//
@@ -250,7 +250,7 @@ class GUCEFCOM_EXPORT_CPP CMySQLClient : public CORE::CObservingNotifier
 //-------------------------------------------------------------------------*/
 
 COM_NAMESPACE_END
-GUCEF_NAMESPACE_END
+}; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/
 

@@ -46,7 +46,7 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CFileSystemArchive : public CIArchive
+class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
 {
     public:
     

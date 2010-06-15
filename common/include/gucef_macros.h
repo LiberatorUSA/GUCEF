@@ -29,7 +29,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CONFIG_H
-#include "gucef_config.h"      /* GUCEF configuration */
+#include "gucef_config.h"        /* GUCEF configuration */
 #define GUCEF_CONFIG_H
 #endif /* GUCEF_CONFIG_H ? */
 
@@ -37,6 +37,11 @@
 #include "gucef_platform.h"      /* GUCEF platform build configuration */
 #define GUCEF_PLATFORM_H
 #endif /* GUCEF_PLATFORM_H ? */
+
+#ifndef GUCEF_DLLINIT_H
+#include "gucef_DLLInit.h"       /* Platform dependent shared library entry point macros */
+#define GUCEF_DLLINIT_H
+#endif /* GUCEF_DLLINIT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

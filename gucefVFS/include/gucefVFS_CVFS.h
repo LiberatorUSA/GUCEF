@@ -46,6 +46,11 @@
 #define GUCEF_VFS_CIARCHIVE_H
 #endif /* GUCEF_VFS_CIARCHIVE_H ? */
 
+#ifndef GUCEF_VFS_CIARCHIVE_H
+#include "gucefVFS_CVFSURLHandler.h"
+#define GUCEF_VFS_CIARCHIVE_H
+#endif /* GUCEF_VFS_CIARCHIVE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -64,7 +69,7 @@ namespace VFS {
 /**
  *      Threadsafe Virtual File System
  */
-class EXPORT_CPP CVFS : public CORE::CIConfigurable
+class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
 {
     public:
     
@@ -176,7 +181,7 @@ class EXPORT_CPP CVFS : public CORE::CIConfigurable
                                   const CString& filter   );
 
     private:
-    friend class CGUCEFVFSModule;
+    friend class CModule;
     
     static void Deinstance( void );
     
