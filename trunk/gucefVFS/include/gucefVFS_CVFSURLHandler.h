@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
 
-#ifndef CVFSURLHANDLER_H
-#define CVFSURLHANDLER_H
+#ifndef GUCEF_VFS_CVFSURLHANDLER_H
+#define GUCEF_VFS_CVFSURLHANDLER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,8 +42,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_NAMESPACE_BEGIN
-VFS_NAMESPACE_BEGIN
+namespace GUCEF {
+namespace VFS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -61,45 +61,45 @@ class CVFS;
  *  
  *      For internal use, no need to export this class
  */
-class CVFSURLHandler : public CORE::CURLHandler
+class GUCEF_VFS_PRIVATE_CPP CVFSURLHandler : public CORE::CURLHandler
 {
-        public:
-        
-        /**
-         *      Doesnt do anything special atm.
-         */        
-        CVFSURLHandler( void );
-        
-        /**
-         *      Doesnt do anything special atm.
-         */        
-        CVFSURLHandler( const CVFSURLHandler& src );
-        
-        /**
-         *      Doesnt do anything special atm.
-         */
-        virtual ~CVFSURLHandler();
-        
-        /**
-         *      Doesnt do anything special atm.
-         */        
-        CVFSURLHandler& operator=( const CVFSURLHandler& src );
+    public:
+    
+    /**
+     *      Doesnt do anything special atm.
+     */        
+    CVFSURLHandler( void );
+    
+    /**
+     *      Doesnt do anything special atm.
+     */        
+    CVFSURLHandler( const CVFSURLHandler& src );
+    
+    /**
+     *      Doesnt do anything special atm.
+     */
+    virtual ~CVFSURLHandler();
+    
+    /**
+     *      Doesnt do anything special atm.
+     */        
+    CVFSURLHandler& operator=( const CVFSURLHandler& src );
 
-        virtual bool Activate( CORE::CURL& url );
-        
-        virtual void Deactivate( CORE::CURL& url );
-                         
-        virtual bool IsActive( const CORE::CURL& url ) const;        
+    virtual bool Activate( CORE::CURL& url );
+    
+    virtual void Deactivate( CORE::CURL& url );
+                     
+    virtual bool IsActive( const CORE::CURL& url ) const;        
 
-        virtual CORE::CICloneable* Clone( void ) const;
-        
-        static void Register( void );
-        
-        static void Unregister( void );        
-        
-        private:
-        
-        CVFS* m_vfs;        
+    virtual CORE::CICloneable* Clone( void ) const;
+    
+    static void Register( void );
+    
+    static void Unregister( void );        
+    
+    private:
+    
+    CVFS* m_vfs;        
 };
 
 /*-------------------------------------------------------------------------//
@@ -108,12 +108,12 @@ class CVFSURLHandler : public CORE::CURLHandler
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-VFS_NAMESPACE_END
-GUCEF_NAMESPACE_END
+}; /* namespace VFS */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* CVFSURLHANDLER_H ? */
+#endif /* GUCEF_VFS_CVFSURLHANDLER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

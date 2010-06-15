@@ -51,8 +51,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_NAMESPACE_BEGIN
-VFS_NAMESPACE_BEGIN
+namespace GUCEF {
+namespace VFS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -61,43 +61,43 @@ VFS_NAMESPACE_BEGIN
 //-------------------------------------------------------------------------*/
 
 bool 
-CGUCEFVFSModule::Load( void )
+CModule::Load( void )
 {GUCEF_TRACE;
 
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefVFS Module loaded" );
-        
-        try
-        {
-            CORE::CCodecRegistry::Instance()->Register( "VFSPackCodec", new CORE::CCodecRegistry::TCodecFamilyRegistry() );
-        }
-        catch ( CORE::CCodecRegistry::EAlreadyRegistered& )
-        {
-        }
-        
-        /*
-         *      Instantiate all singletons
-         */
-        CVFS::Instance();
-        
-        /*
-         *      register all codecs/handlers/notifiers
-         */
-        CVFSURLHandler::Register();
-        return true;
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefVFS Module loaded" );
+    
+    try
+    {
+        CORE::CCodecRegistry::Instance()->Register( "VFSPackCodec", new CORE::CCodecRegistry::TCodecFamilyRegistry() );
+    }
+    catch ( CORE::CCodecRegistry::EAlreadyRegistered& )
+    {
+    }
+    
+    /*
+     *      Instantiate all singletons
+     */
+    CVFS::Instance();
+    
+    /*
+     *      register all codecs/handlers/notifiers
+     */
+    CVFSURLHandler::Register();
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
         
 bool 
-CGUCEFVFSModule::Unload( void )
+CModule::Unload( void )
 {GUCEF_TRACE;
 
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefVFS Module unloading" );
-        
-        CVFSURLHandler::Unregister();
-        
-        CVFS::Deinstance();
-        return true;
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefVFS Module unloading" );
+    
+    CVFSURLHandler::Unregister();
+    
+    CVFS::Deinstance();
+    return true;
 }
 
 /*-------------------------------------------------------------------------//
@@ -106,7 +106,7 @@ CGUCEFVFSModule::Unload( void )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-VFS_NAMESPACE_END
-GUCEF_NAMESPACE_END
+}; /* namespace VFS */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

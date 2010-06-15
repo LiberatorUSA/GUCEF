@@ -85,14 +85,14 @@
 /*
  *      Macro for enabling/disabling the GUCEF namespace
  */
-#undef GUCEF_NAMESPACE_BEGIN
-#undef GUCEF_NAMESPACE_END   
+#undef namespace GUCEF {
+#undef }; /* namespace GUCEF */   
 #ifdef USE_GUCEF_NAMESPACE
-  #define GUCEF_NAMESPACE_BEGIN   namespace GUCEF {
-  #define GUCEF_NAMESPACE_END     }
+  #define namespace GUCEF {   namespace GUCEF {
+  #define }; /* namespace GUCEF */     }
 #else
-  #define GUCEF_NAMESPACE_BEGIN
-  #define GUCEF_NAMESPACE_END
+  #define namespace GUCEF {
+  #define }; /* namespace GUCEF */
 #endif /* USE_GUCEF_NAMESPACE ? */
 
 /*-------------------------------------------------------------------------*/

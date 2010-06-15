@@ -54,7 +54,7 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_VFS_EXPORT_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVFSHandle >
+class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVFSHandle >
 {
     public:
 

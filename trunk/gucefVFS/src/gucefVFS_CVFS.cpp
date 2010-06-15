@@ -88,8 +88,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_NAMESPACE_BEGIN
-VFS_NAMESPACE_BEGIN
+namespace GUCEF {
+namespace VFS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -1011,7 +1011,7 @@ CVFS::UnregisterArchiveFactory( const CString& archiveType )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-VFS_NAMESPACE_END
-GUCEF_NAMESPACE_END
+}; /* namespace VFS */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

@@ -57,8 +57,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_NAMESPACE_BEGIN
-VFS_NAMESPACE_BEGIN
+namespace GUCEF {
+namespace VFS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,7 +66,7 @@ VFS_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class EXPORT_CPP CVFSHandle
+class GUCEF_VFS_PUBLIC_CPP CVFSHandle
 {
     public:
 
@@ -111,8 +111,8 @@ class EXPORT_CPP CVFSHandle
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-VFS_NAMESPACE_END
-GUCEF_NAMESPACE_END
+}; /* namespace VFS */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 

@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
 
-#ifndef CGUCEFVFSMODULE_H
-#define CGUCEFVFSMODULE_H
+#ifndef GUCEF_VFS_CMODULE_H
+#define GUCEF_VFS_CMODULE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFVFS_MACROS_H
+#ifndef GUCEF_VFS_MACROS_H
 #include "gucefVFS_macros.h"         /* often used gucefVFS macros */
-#define GUCEFVFS_MACROS_H
-#endif /* GUCEFVFS_MACROS_H ? */
+#define GUCEF_VFS_MACROS_H
+#endif /* GUCEF_VFS_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,8 +37,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_NAMESPACE_BEGIN
-VFS_NAMESPACE_BEGIN
+namespace GUCEF {
+namespace VFS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,19 +46,19 @@ VFS_NAMESPACE_BEGIN
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUCEFVFSModule
+class GUCEF_VFS_PRIVATE_CPP CModule
 {
-        public:
-        
-        static bool Load( void );
-        
-        static bool Unload( void );
-        
-        private:
-        CGUCEFVFSModule( void );
-        CGUCEFVFSModule( const CGUCEFVFSModule& src );
-        ~CGUCEFVFSModule();
-        CGUCEFVFSModule& operator=( const CGUCEFVFSModule& src );
+    public:
+    
+    static bool Load( void );
+    
+    static bool Unload( void );
+    
+    private:
+    CModule( void );
+    CModule( const CModule& src );
+    ~CModule();
+    CModule& operator=( const CModule& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -67,12 +67,12 @@ class CGUCEFVFSModule
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-VFS_NAMESPACE_END
-GUCEF_NAMESPACE_END
+}; /* namespace VFS */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CGUCEFVFSMODULE_H ? */
+#endif /* GUCEF_VFS_CMODULE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
