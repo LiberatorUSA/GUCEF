@@ -656,9 +656,7 @@ PrintHelp( void )
     printf( " - Program arguments:\n" );
     printf( "  Arguments should be passed in the form \'key=value\'\n" );
     printf( "    'TemplateArchiveIndex'  : path to patch set containing the index of the template archive\n" );
-    printf( "    'TemplateArchivePath'   : path on disk to the template archive\n" );
     printf( "    'MainArchiveIndex'      : path to patch set containing the index of the main SVN archive\n" );
-    printf( "    'MainArchivePath'       : path on disk to the main SVN archive\n" );
     printf( "    'Plugins'               : optional parameter: comman seperated list of plugins to load\n" );
 }
 
@@ -725,9 +723,7 @@ main( int argc , char* argv[] )
 	                 argList ); 
 	                 
         if ( !argList.HasKey( "TemplateArchiveIndex" ) ||
-             !argList.HasKey( "TemplateArchivePath" )  ||
-             !argList.HasKey( "MainArchiveIndex" )     ||
-             !argList.HasKey( "MainArchivePath" )       )
+             !argList.HasKey( "MainArchiveIndex" )      )
         {
             printf( "ERROR: Not enough parameters where provided\n\n" );
             PrintHelp();
@@ -736,9 +732,7 @@ main( int argc , char* argv[] )
         }
         
         CORE::CString templateArchiveIndex = argList[ "TemplateArchiveIndex" ];
-        CORE::CString templateArchivePath = argList[ "TemplateArchivePath" ];
         CORE::CString mainArchiveIndex = argList[ "MainArchiveIndex" ];
-        CORE::CString mainArchivePath = argList[ "MainArchivePath" ];
         CORE::CString pluginsListStr = argList.GetValueAlways( "Plugins" );
         CORE::CString diffOutputDir = argList.GetValueAlways( "DiffOutputDir" );
         if ( 0 == diffOutputDir.Length() )
