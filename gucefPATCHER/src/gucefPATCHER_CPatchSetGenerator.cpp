@@ -99,7 +99,7 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
         }
     }
     
-    CORE::CString URLRootDir = URLRoot + '/' + subDir;
+    CORE::CString URLRootDir = URLRoot + '/' + subDir.ReplaceSubstr( " ", "%20" );
     
     TDirEntry dirEntry;
     dirEntry.name = subDir;
@@ -155,7 +155,7 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
                     
                     CORE::CString subDirPath = localRoot;
                     CORE::AppendToPath( subDirPath, subDirs.name );
-                    CORE::CString URLRootPlusDir = URLRoot + '/' + subDirs.name;
+                    CORE::CString URLRootPlusDir = URLRoot + '/' + subDirs.name.ReplaceSubstr( " ", "%20" );
                     
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Found sub-dir to generate patch set entries from: " + subDirPath );
                     
@@ -207,7 +207,7 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
                     currentDir.sizeInBytes += fileEntry.sizeInBytes;
                     
                     TFileLocation location;
-                    location.URL = URLRoot + '/' + fileEntry.name;
+                    location.URL = URLRoot + '/' + fileEntry.name.ReplaceSubstr( " ", "%20" );
                     fileEntry.fileLocations.push_back( location );                
                     currentDir.files.push_back( fileEntry );
                 }
