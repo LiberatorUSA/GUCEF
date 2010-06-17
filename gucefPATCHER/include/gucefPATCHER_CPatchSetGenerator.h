@@ -26,6 +26,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <set>
+
 #ifndef GUCEF_CORE_CIOACCESS_H
 #include "CIOAccess.h"
 #define GUCEF_CORE_CIOACCESS_H
@@ -64,33 +66,38 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetGenerator
     typedef CPatchSetParser::TFileEntry TFileEntry;
     typedef CPatchSetParser::TDirEntry TDirEntry;
     typedef CPatchSetParser::TPatchSet TPatchSet;
+    typedef std::set< CORE::CString > TStringSet;
     
     public :
     
     CPatchSetGenerator( void );
     ~CPatchSetGenerator();
     
-    bool GeneratePatchSet( const CORE::CString& localRoot ,
-                           const CORE::CString& URLRoot   ,
-                           TPatchSet& patchSet            ) const;
+    bool GeneratePatchSet( const CORE::CString& localRoot        ,
+                           const CORE::CString& URLRoot          ,
+                           TPatchSet& patchSet                   ,
+                           const TStringSet* dirsToIgnore = NULL ) const;
 
-    bool GeneratePatchSet( const CORE::CString& localRoot ,
-                           const CORE::CString& URLRoot   ,
-                           CORE::CDataNode& patchSet      ) const;
+    bool GeneratePatchSet( const CORE::CString& localRoot        ,
+                           const CORE::CString& URLRoot          ,
+                           CORE::CDataNode& patchSet             ,
+                           const TStringSet* dirsToIgnore = NULL ) const;
 
-    bool GeneratePatchSet( const CORE::CString& localRoot    ,
-                           const CORE::CString& URLRoot      ,
-                           const CORE::CString& storageCodec ,
-                           CORE::CIOAccess& patchSetStorage  ) const;
+    bool GeneratePatchSet( const CORE::CString& localRoot        ,
+                           const CORE::CString& URLRoot          ,
+                           const CORE::CString& storageCodec     ,
+                           CORE::CIOAccess& patchSetStorage      ,
+                           const TStringSet* dirsToIgnore = NULL ) const;
                            
     private:
     
     CPatchSetGenerator( const CPatchSetGenerator& src );
     CPatchSetGenerator& operator=( const CPatchSetGenerator& src );
     
-    bool GeneratePatchSet( const CORE::CString& localRoot ,
-                           const CORE::CString& URLRoot   ,
-                           TDirEntry& currentDir          ) const;
+    bool GeneratePatchSet( const CORE::CString& localRoot        ,
+                           const CORE::CString& URLRoot          ,
+                           TDirEntry& currentDir                 ,
+                           const TStringSet* dirsToIgnore = NULL ) const;
 };
 
 /*-------------------------------------------------------------------------//

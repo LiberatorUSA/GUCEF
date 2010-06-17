@@ -64,11 +64,19 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+typedef std::vector< GUCEF::CORE::CString > TStringVector;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      CONSTANTS                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define VERSION_NUMBER  1.0
+#define VERSION_NUMBER  1.1
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -258,6 +266,19 @@ main( int argc , char* argv[] )
         GUCEF::CORE::CString URLRoot = argList[ "URLRoot" ];
         GUCEF::CORE::CString patchSetOutCodec = argList[ "PatchSetOutCodec" ];
         GUCEF::CORE::CString pluginDir = argList[ "PluginDir" ];
+        GUCEF::CORE::CString dirsToIgnoreStr = argList[ "DirsToIgnore" ];
+        GUCEF::PATCHER::CPatchSetGenerator::TStringSet dirsToIgnore;
+        if ( dirsToIgnoreStr.Length() != 0 )
+        { 
+            TStringVector dirsToIgnoreVector = dirsToIgnoreStr.ParseElements( ';', false );
+            TStringVector::iterator i = dirsToIgnoreVector.begin();
+            while ( i != dirsToIgnoreVector.end() )
+            {
+                dirsToIgnore.insert( (*i) );
+                ++i;
+            }
+        }
+        dirsToIgnoreStr.Clear();
         
         if ( patchSetOutCodec.Length() == 0 )
         {
@@ -287,7 +308,8 @@ main( int argc , char* argv[] )
                 if ( psGenerator.GeneratePatchSet( rootDirPath      ,
                                                    URLRoot          ,
                                                    patchSetOutCodec ,
-                                                   fileAccess       ) )
+                                                   fileAccess       ,
+                                                   &dirsToIgnore    ) )
                 {
                     printf( "SUCCESS: The patch set generation process has been successfully completed\n" );
                     return 0;
