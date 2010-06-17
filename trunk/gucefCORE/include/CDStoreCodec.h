@@ -159,7 +159,7 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodec : public CICloneable
          *
          *      @return the version of the codec
          */
-        virtual const TVersion* GetVersion( void ) const = 0;
+        virtual TVersion GetVersion( void ) const = 0;
 
         private:
         CDStoreCodec( const CDStoreCodec& src );             /**< no sense in an copied codec */

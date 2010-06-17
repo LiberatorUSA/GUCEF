@@ -156,11 +156,11 @@ CDStoreCodecPluginRef::GetCopyright( void ) const
 
 /*-------------------------------------------------------------------------*/
         
-const TVersion* 
+TVersion 
 CDStoreCodecPluginRef::GetVersion( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( const TVersion*, _plugin->GetVersion() );
+{GUCEF_TRACE;
+
+    return _plugin->GetVersion();
 }
 
 /*-------------------------------------------------------------------------*/  

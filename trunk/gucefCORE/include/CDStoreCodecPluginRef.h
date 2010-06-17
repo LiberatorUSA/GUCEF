@@ -138,7 +138,7 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginRef : public CDStoreCodec
          *
          *      @return the version of the codec
          */
-        virtual const TVersion* GetVersion( void ) const;
+        virtual TVersion GetVersion( void ) const;
 
         virtual CICloneable* Clone( void ) const;
 

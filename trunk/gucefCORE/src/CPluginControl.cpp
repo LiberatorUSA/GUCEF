@@ -199,6 +199,31 @@ CPluginControl::GetPluginDir( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CPluginControl::Load( const CString& pluginPath )
+{GUCEF_TRACE;
+
+    _mutex.Lock();        
+    CPluginManager* pman;
+    for ( Int32 i=0; i<=_managers.GetLast(); ++i )
+    {
+        pman = static_cast<CPluginManager*> (_managers[ i ]);
+        if ( pman )
+        {       
+           CPluginManager::TPluginPtr plugin = pman->LoadPlugin( pluginPath );
+           if ( NULL != plugin )
+           {
+                _mutex.Unlock();
+                return true;
+           }
+        }
+    }
+    _mutex.Unlock();
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CPluginControl::LoadAll( void )
 {

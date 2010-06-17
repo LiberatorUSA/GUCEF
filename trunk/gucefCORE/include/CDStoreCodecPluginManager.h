@@ -72,7 +72,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginManager : public CPluginManager ,
-                                                       public CIConfigurable
+                                                        public CIConfigurable
 {
     public:
 
@@ -89,6 +89,8 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginManager : public CPluginManager ,
     virtual void LoadAll( const CString& pluginDir );
 
     virtual void UnloadAll( void );
+    
+    virtual TPluginPtr LoadPlugin( const CString& pluginPath );
 
     /**
      *      Attempts to store the given tree in the file

@@ -37,6 +37,11 @@
 #define GUCEF_CORE_CFILEACCESS_H
 #endif /* GUCEF_CORE_CFILEACCESS_H ? */
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #ifndef GUCEF_CORE_CPLUGINCONTROL_H
 #include "CPluginControl.h"
 #define GUCEF_CORE_CPLUGINCONTROL_H
@@ -201,7 +206,7 @@ ParseParams( const int argc                        ,
             argString += ( ' ' + argv[ i ] );
         }
         
-        keyValueList.SetMultiple( argString, '"' );
+        keyValueList.SetMultiple( argString, '\'' );
     }
 }
 
@@ -233,7 +238,23 @@ main( int argc , char* argv[] )
 {GUCEF_TRACE;
 
 #endif
+    
+    GUCEF::CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
+    GUCEF::CORE::AppendToPath( logFilename, "PatchSetGenerator_Log.txt" );
+    GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
 
+    GUCEF::CORE::CStdLogger logger( logFileAccess );
+    GUCEF::CORE::CLogManager::Instance()->AddLogger( &logger );
+
+    #ifdef GUCEF_MSWIN_BUILD
+    GUCEF::CORE::CMSWinConsoleLogger consoleOut;
+    GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
+    #endif /* GUCEF_MSWIN_BUILD ? */
+    
+    GUCEF::CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
+
+    GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
+    
 	if ( 0 == argc )
 	{
 	    #ifdef GUCEF_MSWIN_BUILD
@@ -264,9 +285,10 @@ main( int argc , char* argv[] )
         GUCEF::CORE::CString rootDirPath = argList[ "RootDirPath" ];
         GUCEF::CORE::CString patchSetOutFile = argList[ "PatchSetOutFile" ];
         GUCEF::CORE::CString URLRoot = argList[ "URLRoot" ];
-        GUCEF::CORE::CString patchSetOutCodec = argList[ "PatchSetOutCodec" ];
-        GUCEF::CORE::CString pluginDir = argList[ "PluginDir" ];
-        GUCEF::CORE::CString dirsToIgnoreStr = argList[ "DirsToIgnore" ];
+        GUCEF::CORE::CString patchSetOutCodec = argList.GetValueAlways( "PatchSetOutCodec" );
+        GUCEF::CORE::CString pluginDir = argList.GetValueAlways( "PluginDir" );
+        GUCEF::CORE::CString plugins = argList.GetValueAlways( "Plugins" );
+        GUCEF::CORE::CString dirsToIgnoreStr = argList.GetValueAlways( "DirsToIgnore" );
         GUCEF::PATCHER::CPatchSetGenerator::TStringSet dirsToIgnore;
         if ( dirsToIgnoreStr.Length() != 0 )
         { 
@@ -285,17 +307,27 @@ main( int argc , char* argv[] )
             // Use our codec default which is xml
             patchSetOutCodec = "xml";
         }
-        if ( pluginDir.Length() == 0 )
+        if ( pluginDir.Length() != 0 )
         {
-            // Use our codec default plugin path
-            pluginDir = GUCEF::CORE::RelativePath( "$MODULEDIR$\\plugins" );
+            // Load all plugins, this allows us to support multiple codec's
+            // with our minimal console interface
+            GUCEF::CORE::CPluginControl* pluginControl = GUCEF::CORE::CPluginControl::Instance();
+            pluginControl->SetPluginDir( pluginDir );
+            pluginControl->LoadAll();
+        }
+        if ( plugins.Length() != 0 )
+        {
+            // Load all plugins that where specifically specified
+            TStringVector pluginList = plugins.ParseElements( ';', false );
+            GUCEF::CORE::CPluginControl* pluginControl = GUCEF::CORE::CPluginControl::Instance();
+            TStringVector::iterator i = pluginList.begin();
+            while ( i != pluginList.end() )
+            {
+                pluginControl->Load( (*i) );
+                ++i;
+            }
         }
 
-        // Load all plugins, this allows us to support multiple codec's
-        // with our minimal console interface
-        GUCEF::CORE::CPluginControl* pluginControl = GUCEF::CORE::CPluginControl::Instance();
-        pluginControl->SetPluginDir( pluginDir );
-        pluginControl->LoadAll();
 
         // Validate in advance that we have a codec loaded of the desired type
         // This will save us some work if it is not available

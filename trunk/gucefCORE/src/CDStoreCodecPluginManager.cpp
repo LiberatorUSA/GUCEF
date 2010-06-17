@@ -101,7 +101,7 @@ CDStoreCodecPluginManager::IsPluginLoaded( const CString& path )
         for ( UInt32 i=0; i<count; ++i )
         {
                 cp = static_cast<CDStoreCodecPlugin*>(_codecs[ i ]);
-                if ( cp->GetLocation() == path )
+                if ( cp->GetModulePath() == path )
                 {
                         return true;
                 }
@@ -201,28 +201,38 @@ CDStoreCodecPluginManager::Deinstance( void )
 
 /*-------------------------------------------------------------------------*/
 
+CPluginManager::TPluginPtr
+CDStoreCodecPluginManager::LoadPlugin( const CString& pluginPath )
+{GUCEF_TRACE;
+
+    return TPluginPtr( LoadCodecPlugin( pluginPath ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDStoreCodecPlugin* 
 CDStoreCodecPluginManager::LoadCodecPlugin( const CString& filename )
 {GUCEF_TRACE;
-        CString path = RelativePath( filename );
-        if ( !IsPluginLoaded( path ) )
+
+    CString path = RelativePath( filename );
+    if ( !IsPluginLoaded( path ) )
+    {
+        CDStoreCodecPlugin* cp = new CDStoreCodecPlugin( path );
+        CHECKMEM( cp, sizeof(CDStoreCodecPlugin) );
+        if ( cp->IsValid() )
         {
-                CDStoreCodecPlugin* cp = new CDStoreCodecPlugin( path );
-                CHECKMEM( cp, sizeof(CDStoreCodecPlugin) );
-                if ( cp->IsValid() )
-                {
-                        _datalock.Lock();
-                        cp->SetPluginID( _codecs.AddEntry( cp ) );                
-                        _datalock.Unlock();
-                        CDStoreCodecRegistry::Instance()->Register( cp->GetTypeName().C_String() , 
-                                                                    &cp->_ref                    );
-                        
-                        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Loaded Data Storage codec plugin with name: " + cp->GetTypeName() );
-                        return cp;
-                }
-                delete cp;
-        }                
-        return NULL;
+            _datalock.Lock();
+            cp->SetPluginID( _codecs.AddEntry( cp ) );                
+            _datalock.Unlock();
+            CDStoreCodecRegistry::Instance()->Register( cp->GetTypeName().C_String() , 
+                                                        &cp->_ref                    );
+            
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Loaded Data Storage codec plugin with name: " + cp->GetTypeName() );
+            return cp;
+        }
+        delete cp;
+    }                
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -284,8 +294,8 @@ CDStoreCodecPluginManager::SaveConfig( CDataNode& tree )
                 cp = static_cast<CDStoreCodecPlugin*>(_codecs[ i ]);
                 plugin.SetAttribute( "name", cp->GetName() );
                 plugin.SetAttribute( "type", cp->GetTypeName() );
-                plugin.SetAttribute( "version", VersionToString( *cp->GetVersion() ) );
-                plugin.SetAttribute( "path", cp->GetLocation() );
+                plugin.SetAttribute( "version", VersionToString( cp->GetVersion() ) );
+                plugin.SetAttribute( "path", cp->GetModulePath() );
                 plugin.SetAttribute( "copyright", cp->GetCopyright() );
                 n->AddChild( plugin );
         }
@@ -329,7 +339,7 @@ CDStoreCodecPluginManager::LoadConfig( const CDataNode& tree )
                                         for ( UInt32 n=0; n<count; ++n )
                                         {
                                                 cp = static_cast<CDStoreCodecPlugin*>(_codecs[ n ]);
-                                                if ( att->second == cp->GetLocation() )
+                                                if ( att->second == cp->GetModulePath() )
                                                 {       
                                                         found = true;                                                 
                                                         break;        
