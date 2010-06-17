@@ -96,17 +96,17 @@ CDStoreCodecPluginManager::~CDStoreCodecPluginManager()
 bool 
 CDStoreCodecPluginManager::IsPluginLoaded( const CString& path )
 {GUCEF_TRACE;
-        UInt32 count = _codecs.GetCount();
-        CDStoreCodecPlugin* cp;
-        for ( UInt32 i=0; i<count; ++i )
+        
+    TDStoreCodecPluginSet::iterator i = _codecs.begin();
+    while ( i != _codecs.end() )
+    {
+        if ( (*i)->GetModulePath() == path )
         {
-                cp = static_cast<CDStoreCodecPlugin*>(_codecs[ i ]);
-                if ( cp->GetModulePath() == path )
-                {
-                        return true;
-                }
+            return true;
         }
-        return false; 
+        ++i;
+    }
+    return false; 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -142,7 +142,7 @@ CDStoreCodecPluginManager::LoadAll( const CString& pluginDir )
                     
                     filepath = pluginDir;                                     
                     AppendToPath( filepath, file );
-                    LoadCodecPlugin( filepath );
+                    LoadPlugin( filepath );
                 }
             }
         }
@@ -205,72 +205,47 @@ CPluginManager::TPluginPtr
 CDStoreCodecPluginManager::LoadPlugin( const CString& pluginPath )
 {GUCEF_TRACE;
 
-    return TPluginPtr( LoadCodecPlugin( pluginPath ) );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CDStoreCodecPlugin* 
-CDStoreCodecPluginManager::LoadCodecPlugin( const CString& filename )
-{GUCEF_TRACE;
-
-    CString path = RelativePath( filename );
+    CString path = RelativePath( pluginPath );
     if ( !IsPluginLoaded( path ) )
     {
-        CDStoreCodecPlugin* cp = new CDStoreCodecPlugin( path );
-        CHECKMEM( cp, sizeof(CDStoreCodecPlugin) );
-        if ( cp->IsValid() )
+        CDStoreCodecPlugin* plugin = new CDStoreCodecPlugin( path );
+        CHECKMEM( plugin, sizeof(CDStoreCodecPlugin) );
+        if ( plugin->IsValid() )
         {
-            _datalock.Lock();
-            cp->SetPluginID( _codecs.AddEntry( cp ) );                
-            _datalock.Unlock();
-            CDStoreCodecRegistry::Instance()->Register( cp->GetTypeName().C_String() , 
-                                                        &cp->_ref                    );
+            TDStoreCodecPluginPtr pluginPtr( plugin );
             
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Loaded Data Storage codec plugin with name: " + cp->GetTypeName() );
-            return cp;
+            _datalock.Lock();
+            _codecs.insert( pluginPtr );
+            _datalock.Unlock();
+            CDStoreCodecRegistry::Instance()->Register( plugin->GetTypeName() , 
+                                                        pluginPtr             );
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Loaded Data Storage codec plugin with name: " + plugin->GetTypeName() );
+            return pluginPtr;
         }
-        delete cp;
+        delete plugin;
     }                
     return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
         
-void 
-CDStoreCodecPluginManager::UnloadCodecPlugin( CDStoreCodecPlugin* plugin )
-{GUCEF_TRACE;
-        if ( plugin )
-        {
-                _datalock.Lock();
-                CHECKMEM( plugin, sizeof(CDStoreCodecPlugin) );
-                _codecs.SetEntry( plugin->GetPluginID(), NULL );                
-                delete plugin;
-                _datalock.Unlock();
-                CDStoreCodecRegistry::Instance()->Unregister( plugin->GetTypeName() );
-        }               
-}
-
-/*-------------------------------------------------------------------------*/
-        
-CDStoreCodecPlugin* 
+CDStoreCodecPluginManager::TDStoreCodecPluginPtr 
 CDStoreCodecPluginManager::GetCodec( const CString& codectype ) const
 {GUCEF_TRACE;
-        _datalock.Lock();
-        UInt32 count = _codecs.GetCount();
-        CDStoreCodecPlugin* cp;
-        for ( UInt32 i=0; i<count; ++i )
+
+    _datalock.Lock();
+    TDStoreCodecPluginSet::const_iterator i = _codecs.begin();
+    while ( i != _codecs.end() )
+    {
+        if ( (*i)->GetTypeName() == codectype )
         {
-                cp = static_cast<CDStoreCodecPlugin*>(_codecs[ i ]);
-                CHECKMEM( cp, sizeof(CDStoreCodecPlugin) );
-                if ( cp->GetTypeName() == codectype )
-                {
-                        _datalock.Unlock();
-                        return cp;
-                }
-        }        
-        _datalock.Unlock();
-        return NULL;
+            _datalock.Unlock();
+            return (*i);
+        }
+        ++i;
+    }
+    _datalock.Unlock();
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -278,29 +253,33 @@ CDStoreCodecPluginManager::GetCodec( const CString& codectype ) const
 bool 
 CDStoreCodecPluginManager::SaveConfig( CDataNode& tree )
 {GUCEF_TRACE;
-        _datalock.Lock();
-        CDataNode* n = tree.Structure( "GUCEF%CORE%CDStoreCodecPluginManager" ,
-                                       '%'                                    );
 
-        UInt32 count = _codecs.GetCount();                                        
-        n->SetAttribute( "plugincount", UInt32ToString( count ) );                                        
-                               
-        n->DelSubTree();
-        CDataNode plugin( "CDStoreCodecPlugin" );
-        CDStoreCodecPlugin* cp;        
- 
-        for ( UInt32 i=0; i<count; ++i )
-        {
-                cp = static_cast<CDStoreCodecPlugin*>(_codecs[ i ]);
-                plugin.SetAttribute( "name", cp->GetName() );
-                plugin.SetAttribute( "type", cp->GetTypeName() );
-                plugin.SetAttribute( "version", VersionToString( cp->GetVersion() ) );
-                plugin.SetAttribute( "path", cp->GetModulePath() );
-                plugin.SetAttribute( "copyright", cp->GetCopyright() );
-                n->AddChild( plugin );
-        }
-        _datalock.Unlock();                         
-        return true;
+    _datalock.Lock();
+    CDataNode* n = tree.Structure( "GUCEF%CORE%CDStoreCodecPluginManager" ,
+                                   '%'                                    );
+                              
+    n->SetAttribute( "plugincount", UInt32ToString( _codecs.size() ) );                                        
+                           
+    n->DelSubTree();
+    CDataNode plugin( "CDStoreCodecPlugin" );
+    TDStoreCodecPluginPtr cp;        
+
+    TDStoreCodecPluginSet::const_iterator i = _codecs.begin();
+    while ( i != _codecs.end() )
+    {
+        cp = (*i);
+        plugin.SetAttribute( "name", cp->GetName() );
+        plugin.SetAttribute( "type", cp->GetTypeName() );
+        plugin.SetAttribute( "version", VersionToString( cp->GetVersion() ) );
+        plugin.SetAttribute( "path", cp->GetModulePath() );
+        plugin.SetAttribute( "copyright", cp->GetCopyright() );
+        n->AddChild( plugin );
+        
+        ++i;
+    }
+
+    _datalock.Unlock();                         
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -309,57 +288,56 @@ bool
 CDStoreCodecPluginManager::LoadConfig( const CDataNode& tree )
 {GUCEF_TRACE;
         
-        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CDStoreCodecPluginManager: Loading config" );
-        
-        _datalock.Lock();
-        CDataNode* n = tree.Search( "GUCEF%CORE%CDStoreCodecPluginManager", 
-                                    '%'                                   ,
-                                    false                                 );
-        if ( n )
+    GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CDStoreCodecPluginManager: Loading config" );
+    
+    _datalock.Lock();
+    CDataNode* n = tree.Search( "GUCEF%CORE%CDStoreCodecPluginManager", 
+                                '%'                                   ,
+                                false                                 );
+    if ( n )
+    {
+        CString cmpstr( "CDStoreCodecPlugin" );
+        CString path( "path" );
+        const CDataNode* c;
+        const CDataNode::TKeyValuePair* att; 
+        CDataNode::const_iterator i = n->ConstBegin();
+        while ( i != n->ConstEnd() )
         {
-                CString cmpstr( "CDStoreCodecPlugin" );
-                CDStoreCodecPlugin* cp;
-                CString path( "path" );
-                const CDataNode* c;
-                const CDataNode::TKeyValuePair* att; 
-                CDataNode::const_iterator i = n->ConstBegin();
-                while ( i != n->ConstEnd() )
+            c = (*i);
+            if ( c->GetName() == cmpstr )
+            {
+                att = c->GetAttribute( path );
+                if ( att )
                 {
-                        c = (*i);
-                        if ( c->GetName() == cmpstr )
-                        {
-                                att = c->GetAttribute( path );
-                                if ( att )
-                                {
-                                        /*
-                                         *      Test if this module is already loaded
-                                         */
-                                        bool found = false;
-                                        UInt32 count = _codecs.GetCount();
-                                        for ( UInt32 n=0; n<count; ++n )
-                                        {
-                                                cp = static_cast<CDStoreCodecPlugin*>(_codecs[ n ]);
-                                                if ( att->second == cp->GetModulePath() )
-                                                {       
-                                                        found = true;                                                 
-                                                        break;        
-                                                }                                                                                                
-                                        }
-                                        if ( !found )
-                                        {
-                                                /*
-                                                 *      This module is not loaded yet.
-                                                 *      We will do so now.
-                                                 */
-                                                LoadCodecPlugin( att->second ); 
-                                        }                                                
-                                }       
+                    /*
+                     *      Test if this module is already loaded
+                     */
+                    bool found = false;
+                    TDStoreCodecPluginSet::const_iterator i = _codecs.begin();
+                    while ( i != _codecs.end() )
+                    {
+                        if ( att->second == (*i)->GetModulePath() )
+                        {       
+                            found = true;                                                 
+                            break;        
                         }
-                        ++i;
-                }
-        }                                     
-        _datalock.Unlock();
-        return true;
+                        ++i;                                                                                                
+                    }
+                    if ( !found )
+                    {
+                        /*
+                         *      This module is not loaded yet.
+                         *      We will do so now.
+                         */
+                        LoadPlugin( att->second ); 
+                    }                                                
+                }       
+            }
+            ++i;
+        }
+    }                                     
+    _datalock.Unlock();
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

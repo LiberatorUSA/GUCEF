@@ -271,10 +271,10 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot    ,
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Found storage codec \"" + storageCodec + "\", generating patch set" );
 
             CORE::CDataNode patchSet;
-            if ( GeneratePatchSet( localRoot    ,
-                                   URLRoot      ,
-                                   patchSet     ,
-                                   dirsToIgnore ) )
+            //if ( GeneratePatchSet( localRoot    ,
+            //                       URLRoot      ,
+            //                       patchSet     ,
+            //                       dirsToIgnore ) )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Successfully completed patch set generation, serializing patch set" );
                 
@@ -282,10 +282,10 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot    ,
                 return codecPtr->StoreDataTree( &patchSet        ,
                                                 &patchSetStorage );
             }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Failed to complete patch set generation" );
-            }
+            //else
+            //{
+            //    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Failed to complete patch set generation" );
+            //}
         }
         else
         {
