@@ -83,10 +83,21 @@ CPatchSetGenerator::~CPatchSetGenerator()
 bool
 CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
                                       const CORE::CString& URLRoot   ,
-                                      TPatchSet& patchSet            ) const
+                                      TPatchSet& patchSet            ,
+                                      const TStringSet* dirsToIgnore ) const
 {GUCEF_TRACE;
 
     CORE::CString subDir = CORE::LastSubDir( localRoot );
+    
+    if ( NULL != dirsToIgnore )
+    {       
+        if ( dirsToIgnore->find( subDir ) != dirsToIgnore->end() )
+        {
+            // the current subDir is a dir we are instructed to ignore
+            return false;
+        }
+    }
+    
     CORE::CString URLRootDir = URLRoot + '/' + subDir;
     
     TDirEntry dirEntry;
@@ -107,7 +118,8 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
 bool
 CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
                                       const CORE::CString& URLRoot   ,
-                                      TDirEntry& currentDir          ) const
+                                      TDirEntry& currentDir          ,
+                                      const TStringSet* dirsToIgnore ) const
 {GUCEF_TRACE;
 
     currentDir.sizeInBytes = 0;
@@ -134,7 +146,8 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
                     
                     if ( GeneratePatchSet( subDirPath     ,
                                            URLRootPlusDir ,
-                                           subDirs        ) )
+                                           subDirs        ,
+                                           dirsToIgnore   ) )
                     {
                         currentDir.sizeInBytes += subDirs.sizeInBytes;
                         currentDir.hash += subDirs.hash;
@@ -191,13 +204,15 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
 bool
 CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
                                       const CORE::CString& URLRoot   ,
-                                      CORE::CDataNode& patchSet      ) const
+                                      CORE::CDataNode& patchSet      ,
+                                      const TStringSet* dirsToIgnore ) const
 {GUCEF_TRACE;
 
     TPatchSet patchSetData;
     if ( GeneratePatchSet( localRoot    ,
                            URLRoot      ,
-                           patchSetData ) )
+                           patchSetData ,
+                           dirsToIgnore ) )
     {
         CPatchSetParser parser;
         return parser.ParsePatchSet( patchSetData ,
@@ -212,13 +227,15 @@ bool
 CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot    ,
                                       const CORE::CString& URLRoot      ,
                                       const CORE::CString& storageCodec ,
-                                      CORE::CIOAccess& patchSetStorage  ) const
+                                      CORE::CIOAccess& patchSetStorage  ,
+                                      const TStringSet* dirsToIgnore    ) const
 {GUCEF_TRACE;
 
     CORE::CDataNode patchSet;
-    if ( GeneratePatchSet( localRoot ,
-                           URLRoot   ,
-                           patchSet  ) )
+    if ( GeneratePatchSet( localRoot    ,
+                           URLRoot      ,
+                           patchSet     ,
+                           dirsToIgnore ) )
     {
         // Get the required codec for the patch set storage conversion
         CORE::CDStoreCodecRegistry* codecRegistry = CORE::CDStoreCodecRegistry::Instance();
