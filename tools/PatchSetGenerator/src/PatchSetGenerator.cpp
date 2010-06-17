@@ -177,7 +177,7 @@ PrintHelp( void )
 
     printf( "\n" );
     printf( " - Program arguments:\n" );
-    printf( "  Arguments should be passed in the form \"key=value\"\n" );
+    printf( "  Arguments should be passed in the form \'key=value\'\n" );
     printf( "    'RootDirPath'     : the root directory of the patch set\n" );
     printf( "    'PatchSetOutFile' : the output patch set file\n" );
     printf( "    'URLRoot'         : the root of the URL to which the paths will be appended\n" );
