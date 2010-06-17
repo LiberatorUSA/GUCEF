@@ -247,17 +247,102 @@ OnParserErrorHandler( void* privdata          ,
 
 /*-------------------------------------------------------------------------*/
 
-CDStoreCodecPlugin::CDStoreCodecPlugin( const CDStoreCodecPlugin& src )
+bool
+CDStoreCodecPlugin::Load( const CString& pluginPath )
 {GUCEF_TRACE;
 
-        /* dummy, don't use */
-}
+    _ref._plugin = this;
 
-/*-------------------------------------------------------------------------*/
+    _sohandle = LoadModuleDynamicly( pluginPath.C_String() );
+    if ( NULL == _sohandle ) return false;
 
-CDStoreCodecPlugin::CDStoreCodecPlugin( void )
-{GUCEF_TRACE;
-        /* dummy, don't use */
+    _fptable[ DSTOREPLUG_INIT ] = GetFunctionAddress( _sohandle         ,
+                                                      "DSTOREPLUG_Init" ,
+                                                      1*sizeof(void*)   ).funcPtr;
+    _fptable[ DSTOREPLUG_SHUTDOWN ] = GetFunctionAddress( _sohandle             ,
+                                                          "DSTOREPLUG_Shutdown" ,
+                                                          1*sizeof(void*)       ).funcPtr;
+    _fptable[ DSTOREPLUG_NAME ] = GetFunctionAddress( _sohandle         ,
+                                                      "DSTOREPLUG_Name" ,
+                                                      1*sizeof(void*)   ).funcPtr;
+    _fptable[ DSTOREPLUG_COPYRIGHT ] = GetFunctionAddress( _sohandle              ,
+                                                           "DSTOREPLUG_Copyright" ,
+                                                           1*sizeof(void*)        ).funcPtr;
+    _fptable[ DSTOREPLUG_VERSION ] = GetFunctionAddress( _sohandle            ,
+                                                         "DSTOREPLUG_Version" ,
+                                                         1*sizeof(void*)      ).funcPtr;
+    _fptable[ DSTOREPLUG_TYPE ] = GetFunctionAddress( _sohandle         ,
+                                                      "DSTOREPLUG_Type" ,
+                                                      1*sizeof(void*)   ).funcPtr;
+    _fptable[ DSTOREPLUG_DEST_FILE_OPEN ] = GetFunctionAddress( _sohandle                   ,
+                                                                "DSTOREPLUG_Dest_File_Open" ,
+                                                                3*sizeof(void*)             ).funcPtr;
+    _fptable[ DSTOREPLUG_DEST_FILE_CLOSE ] = GetFunctionAddress( _sohandle                    ,
+                                                                 "DSTOREPLUG_Dest_File_Close" ,
+                                                                 2*sizeof(void*)              ).funcPtr;
+    _fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] = GetFunctionAddress( _sohandle                    ,
+                                                                 "DSTOREPLUG_Begin_Node_Store" ,
+                                                                 3*sizeof(void*)+8             ).funcPtr;
+    _fptable[ DSTOREPLUG_END_NODE_STORE ] = GetFunctionAddress( _sohandle                   ,
+                                                                "DSTOREPLUG_End_Node_Store" ,
+                                                                3*sizeof(void*)+8           ).funcPtr;
+    _fptable[ DSTOREPLUG_STORE_NODE_ATT ] = GetFunctionAddress( _sohandle                   ,
+                                                                "DSTOREPLUG_Store_Node_Att" ,
+                                                                5*sizeof(void*)+12          ).funcPtr;
+    _fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ] = GetFunctionAddress( _sohandle                        ,
+                                                                     "DSTOREPLUG_Begin_Node_Children" ,
+                                                                     3*sizeof(void*)                  ).funcPtr;
+    _fptable[ DSTOREPLUG_END_NODE_CHILDREN ] = GetFunctionAddress( _sohandle                      ,
+                                                                   "DSTOREPLUG_End_Node_Children" ,
+                                                                   3*sizeof(void*)                ).funcPtr;
+    _fptable[ DSTOREPLUG_SRC_FILE_OPEN ] = GetFunctionAddress( _sohandle                  ,
+                                                               "DSTOREPLUG_Src_File_Open" ,
+                                                               2*sizeof(void*)            ).funcPtr;
+    _fptable[ DSTOREPLUG_SRC_FILE_CLOSE ] = GetFunctionAddress( _sohandle                   ,
+                                                                "DSTOREPLUG_Src_File_Close" ,
+                                                                2*sizeof(void*)             ).funcPtr;
+    _fptable[ DSTOREPLUG_SET_READ_HANDLERS ] = GetFunctionAddress( _sohandle                      ,
+                                                                   "DSTOREPLUG_Set_Read_Handlers" ,
+                                                                   4*sizeof(void*)                ).funcPtr;
+    _fptable[ DSTOREPLUG_START_READING ] = GetFunctionAddress( _sohandle                  ,
+                                                               "DSTOREPLUG_Start_Reading" ,
+                                                               2*sizeof(void*)            ).funcPtr;
+
+
+    if ( ( _fptable[ DSTOREPLUG_INIT ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_SHUTDOWN ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_NAME ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_COPYRIGHT ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_VERSION ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_TYPE ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_DEST_FILE_OPEN ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_DEST_FILE_CLOSE ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_END_NODE_STORE ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_STORE_NODE_ATT ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_END_NODE_CHILDREN ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_SRC_FILE_OPEN ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_SRC_FILE_CLOSE ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_SET_READ_HANDLERS ] == NULL ) ||
+         ( _fptable[ DSTOREPLUG_START_READING ] == NULL ) )
+    {
+            UnloadModuleDynamicly( _sohandle );
+            memset( _fptable, NULL, sizeof(anyPointer) * DSTOREPLUG_LASTFPTR );
+            _sohandle = NULL;
+
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Invalid codec module: One or more functions could not be located in the plugin module" );
+            return false;
+    }
+
+    /*
+     *      Intialize the plugin module
+     */
+    ( (TDSTOREPLUGFPTR_Init) _fptable[ DSTOREPLUG_INIT ] )( &_plugdata );
+
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "DStoreCodec plugin initialized\n" );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Name: " + GetName() );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Copyright/EULA: " + GetCopyright() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -268,118 +353,29 @@ CDStoreCodecPlugin::CDStoreCodecPlugin( const CString& pluginfile )
           _pluginfile( pluginfile )
 {GUCEF_TRACE;
 
-        _ref._plugin = this;
+    Load( pluginfile );
+}
 
-        _sohandle = LoadModuleDynamicly( pluginfile.C_String() );
-        if ( NULL == _sohandle ) return;
+/*-------------------------------------------------------------------------*/
 
-        _fptable[ DSTOREPLUG_INIT ] = GetFunctionAddress( _sohandle         ,
-                                                          "DSTOREPLUG_Init" ,
-                                                          1*sizeof(void*)   ).funcPtr;
-        _fptable[ DSTOREPLUG_SHUTDOWN ] = GetFunctionAddress( _sohandle             ,
-                                                              "DSTOREPLUG_Shutdown" ,
-                                                              1*sizeof(void*)       ).funcPtr;
-        _fptable[ DSTOREPLUG_NAME ] = GetFunctionAddress( _sohandle         ,
-                                                          "DSTOREPLUG_Name" ,
-                                                          1*sizeof(void*)   ).funcPtr;
-        _fptable[ DSTOREPLUG_COPYRIGHT ] = GetFunctionAddress( _sohandle              ,
-                                                               "DSTOREPLUG_Copyright" ,
-                                                               1*sizeof(void*)        ).funcPtr;
-        _fptable[ DSTOREPLUG_VERSION ] = GetFunctionAddress( _sohandle            ,
-                                                             "DSTOREPLUG_Version" ,
-                                                             1*sizeof(void*)      ).funcPtr;
-        _fptable[ DSTOREPLUG_TYPE ] = GetFunctionAddress( _sohandle         ,
-                                                          "DSTOREPLUG_Type" ,
-                                                          1*sizeof(void*)   ).funcPtr;
-        _fptable[ DSTOREPLUG_DEST_FILE_OPEN ] = GetFunctionAddress( _sohandle                   ,
-                                                                    "DSTOREPLUG_Dest_File_Open" ,
-                                                                    3*sizeof(void*)             ).funcPtr;
-        _fptable[ DSTOREPLUG_DEST_FILE_CLOSE ] = GetFunctionAddress( _sohandle                    ,
-                                                                     "DSTOREPLUG_Dest_File_Close" ,
-                                                                     2*sizeof(void*)              ).funcPtr;
-        _fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] = GetFunctionAddress( _sohandle                    ,
-                                                                     "DSTOREPLUG_Begin_Node_Store" ,
-                                                                     3*sizeof(void*)+8             ).funcPtr;
-        _fptable[ DSTOREPLUG_END_NODE_STORE ] = GetFunctionAddress( _sohandle                   ,
-                                                                    "DSTOREPLUG_End_Node_Store" ,
-                                                                    3*sizeof(void*)+8           ).funcPtr;
-        _fptable[ DSTOREPLUG_STORE_NODE_ATT ] = GetFunctionAddress( _sohandle                   ,
-                                                                    "DSTOREPLUG_Store_Node_Att" ,
-                                                                    5*sizeof(void*)+12          ).funcPtr;
-        _fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ] = GetFunctionAddress( _sohandle                        ,
-                                                                         "DSTOREPLUG_Begin_Node_Children" ,
-                                                                         3*sizeof(void*)                  ).funcPtr;
-        _fptable[ DSTOREPLUG_END_NODE_CHILDREN ] = GetFunctionAddress( _sohandle                      ,
-                                                                       "DSTOREPLUG_End_Node_Children" ,
-                                                                       3*sizeof(void*)                ).funcPtr;
-        _fptable[ DSTOREPLUG_SRC_FILE_OPEN ] = GetFunctionAddress( _sohandle                  ,
-                                                                   "DSTOREPLUG_Src_File_Open" ,
-                                                                   2*sizeof(void*)            ).funcPtr;
-        _fptable[ DSTOREPLUG_SRC_FILE_CLOSE ] = GetFunctionAddress( _sohandle                   ,
-                                                                    "DSTOREPLUG_Src_File_Close" ,
-                                                                    2*sizeof(void*)             ).funcPtr;
-        _fptable[ DSTOREPLUG_SET_READ_HANDLERS ] = GetFunctionAddress( _sohandle                      ,
-                                                                       "DSTOREPLUG_Set_Read_Handlers" ,
-                                                                       4*sizeof(void*)                ).funcPtr;
-        _fptable[ DSTOREPLUG_START_READING ] = GetFunctionAddress( _sohandle                  ,
-                                                                   "DSTOREPLUG_Start_Reading" ,
-                                                                   2*sizeof(void*)            ).funcPtr;
+bool
+CDStoreCodecPlugin::Unload( void )
+{GUCEF_TRACE;
 
-
-        if ( ( _fptable[ DSTOREPLUG_INIT ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_SHUTDOWN ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_NAME ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_COPYRIGHT ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_VERSION ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_TYPE ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_DEST_FILE_OPEN ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_DEST_FILE_CLOSE ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_END_NODE_STORE ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_STORE_NODE_ATT ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_END_NODE_CHILDREN ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_SRC_FILE_OPEN ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_SRC_FILE_CLOSE ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_SET_READ_HANDLERS ] == NULL ) ||
-             ( _fptable[ DSTOREPLUG_START_READING ] == NULL ) )
-        {
-                UnloadModuleDynamicly( _sohandle );
-                memset( _fptable, NULL, sizeof(anyPointer) * DSTOREPLUG_LASTFPTR );
-                _sohandle = NULL;
-
-                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Invalid codec module: One or more functions could not be located in the plugin module" );
-                return;
-        }
-
-        /*
-         *      Intialize the plugin module
-         */
-        ( (TDSTOREPLUGFPTR_Init) _fptable[ DSTOREPLUG_INIT ] )( &_plugdata );
-
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "DStoreCodec plugin initialized\n" );
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Name: " + GetName() );
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Copyright/EULA: " + GetCopyright() );
+    if ( _sohandle )
+    {
+        ( (TDSTOREPLUGFPTR_Shutdown) _fptable[ DSTOREPLUG_SHUTDOWN ] )( &_plugdata );
+        UnloadModuleDynamicly( _sohandle );
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDStoreCodecPlugin::~CDStoreCodecPlugin()
 {GUCEF_TRACE;
-        if ( _sohandle )
-        {
-                ( (TDSTOREPLUGFPTR_Shutdown) _fptable[ DSTOREPLUG_SHUTDOWN ] )( &_plugdata );
-                UnloadModuleDynamicly( _sohandle );
-        }
-}
-
-/*-------------------------------------------------------------------------*/
-
-CDStoreCodecPlugin&
-CDStoreCodecPlugin::operator=( const CDStoreCodecPlugin& src )
-{GUCEF_TRACE;
-        /* dummy, don't use */
-        return *this;
+    
+    Unload();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -388,6 +384,24 @@ bool
 CDStoreCodecPlugin::IsValid( void ) const
 {GUCEF_TRACE;
         return _sohandle != NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDStoreCodecPlugin::IsLoaded( void ) const
+{GUCEF_TRACE;
+
+    return _sohandle != NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CDStoreCodecPlugin::GetDescription( void ) const
+{GUCEF_TRACE;
+
+    return GetName();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -604,10 +618,11 @@ CDStoreCodecPlugin::GetCopyright( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-const TVersion*
+TVersion
 CDStoreCodecPlugin::GetVersion( void ) const
 {GUCEF_TRACE;
-        return ((TDSTOREPLUGFPTR_Version)_fptable[ DSTOREPLUG_VERSION ])( _plugdata );
+
+    return *((TDSTOREPLUGFPTR_Version)_fptable[ DSTOREPLUG_VERSION ])( _plugdata );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -629,7 +644,7 @@ CDStoreCodecPlugin::GetPluginID( void ) const
 /*-------------------------------------------------------------------------*/
 
 CString
-CDStoreCodecPlugin::GetLocation( void ) const
+CDStoreCodecPlugin::GetModulePath( void ) const
 {GUCEF_TRACE;
         return _pluginfile;
 }

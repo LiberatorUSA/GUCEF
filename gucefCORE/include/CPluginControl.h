@@ -83,6 +83,8 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl
         void LoadAll( void );
 
         void UnloadAll( void );
+        
+        bool Load( const CString& pluginPath );
 
         void SetPluginDir( const CString& path );
 
