@@ -68,8 +68,8 @@ class CDStoreCodecPluginManager;
  *      and reading from a recource to a data tree.
  *      A codec is metadata that converts data from one type to another.
  */
-class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CIPlugin ,
-                                                 public CDStoreCodec
+class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CDStoreCodec ,
+                                                 public CIPlugin
 {
     public:
 
@@ -84,7 +84,7 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CIPlugin ,
      *
      *      @return validity of the codec
      */
-    bool IsValid( void ) const;
+    virtual bool IsValid( void ) const;
 
     /**
      *      Attempts to store the given tree in the file
@@ -94,8 +94,8 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CIPlugin ,
      *      @param filename path and name of the file you wish to store the data in.
      *      @return wheter storing the tree was successfull
      */
-    bool StoreDataTree( const CDataNode* tree   ,
-                        const CString& filename );
+   virtual bool StoreDataTree( const CDataNode* tree   ,
+                               const CString& filename );
 
     /**
      *      Attempts to store the given tree in the file
@@ -117,8 +117,8 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CIPlugin ,
      *      @param filename path and name of the file from which the data tree information should be loaded
      *      @return whether building the tree from the given file was successfull.
      */
-    bool BuildDataTree( CDataNode* treeroot     ,
-                        const CString& filename );
+    virtual bool BuildDataTree( CDataNode* treeroot     ,
+                                const CString& filename );
 
     /**
      *      Attempts to load data from the given file to the
@@ -129,8 +129,8 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CIPlugin ,
      *      @param file media independant access to the data source from which the data tree information should be loaded
      *      @return whether building the tree from the given file was successfull.
      */
-    bool BuildDataTree( CDataNode* treeroot ,
-                        CIOAccess* file     );
+    virtual bool BuildDataTree( CDataNode* treeroot ,
+                                CIOAccess* file     );
 
     /**
      *      Returns the codec type
@@ -138,7 +138,7 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CIPlugin ,
      *
      *      @return the codec type
      */
-    CString GetTypeName( void ) const;
+    virtual CString GetTypeName( void ) const;
 
     /**
      *      Returns the name of the codec
@@ -147,14 +147,7 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CIPlugin ,
      *
      *      @return name of the codec
      */
-    CString GetName( void ) const;
-
-    /**
-     *      Returns the current plugin id
-     *
-     *      @return the current plugin ID
-     */
-    UInt32 GetPluginID( void ) const;
+    virtual CString GetName( void ) const;
 
     virtual CString GetDescription( void ) const;
 
@@ -188,11 +181,6 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CIPlugin ,
     virtual bool Unload( void );
     
     virtual CICloneable* Clone( void ) const;
-
-    private:
-    friend class CDStoreCodecPluginManager;
-
-    void SetPluginID( UInt32 pluginid );
 
     private:
     

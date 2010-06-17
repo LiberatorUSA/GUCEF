@@ -637,22 +637,6 @@ CDStoreCodecPlugin::GetVersion( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void
-CDStoreCodecPlugin::SetPluginID( UInt32 pluginid )
-{GUCEF_TRACE;
-        _id = pluginid;
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt32
-CDStoreCodecPlugin::GetPluginID( void ) const
-{GUCEF_TRACE;
-        return _id;
-}
-
-/*-------------------------------------------------------------------------*/
-
 CString
 CDStoreCodecPlugin::GetModulePath( void ) const
 {GUCEF_TRACE;
