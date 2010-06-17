@@ -12,7 +12,6 @@
 
 set(HEADER_FILES 
   include/gucefVFS.h
-  include/gucefVFSDLLInit.h
   include/gucefVFS_CFileSystemArchive.h
   include/gucefVFS_CIArchive.h
   include/gucefVFS_CModule.h

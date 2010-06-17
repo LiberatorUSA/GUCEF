@@ -83,36 +83,6 @@
 /*-------------------------------------------------------------------------*/
 
 /*
- *      Macro for enabling/disabling the GUCEF namespace
- */
-#undef namespace GUCEF {
-#undef }; /* namespace GUCEF */   
-#ifdef USE_GUCEF_NAMESPACE
-  #define namespace GUCEF {   namespace GUCEF {
-  #define }; /* namespace GUCEF */     }
-#else
-  #define namespace GUCEF {
-  #define }; /* namespace GUCEF */
-#endif /* USE_GUCEF_NAMESPACE ? */
-
-/*-------------------------------------------------------------------------*/
-
-/*
- *      Macro for enabling/disabling the CORE namespace
- */
-#undef COM_NAMESPACE_BEGIN
-#undef COM_NAMESPACE_END   
-#ifdef USE_COM_NAMESPACE
-  #define COM_NAMESPACE_BEGIN   namespace COM {
-  #define COM_NAMESPACE_END     }
-#else
-  #define COM_NAMESPACE_BEGIN
-  #define COM_NAMESPACE_END
-#endif /* USE_COM_NAMESPACE ? */
-
-/*-------------------------------------------------------------------------*/
-
-/*
  *      Macros for dynamic linking. Use the switches in the
  *      config file to control the export type.
  */
