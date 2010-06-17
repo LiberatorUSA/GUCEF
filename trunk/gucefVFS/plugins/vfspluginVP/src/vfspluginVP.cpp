@@ -29,7 +29,7 @@
 #endif /* GUCEF_CORE_CTFACTORY_H ? */
 
 #ifndef GUCEF_VFS_CVFS_H
-#include "CVFS.h"
+#include "gucefVFS_CVFS.h"
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
