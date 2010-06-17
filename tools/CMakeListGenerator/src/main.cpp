@@ -299,12 +299,12 @@ GetXmlDStoreCodec( void )
         {
             // No codec is registered to handle XML, try and load a plugin for it
 
-            CORE::CDStoreCodecPlugin* codecPlugin =
+            CORE::CPluginManager::TPluginPtr codecPlugin =
 
                 #ifdef GUCEF_CORE_DEBUG_MODE
-                CORE::CDStoreCodecPluginManager::Instance()->LoadCodecPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML_d" );
+                CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML_d" );
                 #else
-                CORE::CDStoreCodecPluginManager::Instance()->LoadCodecPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML" );
+                CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML" );
                 #endif
 
             if ( NULL != codecPlugin )

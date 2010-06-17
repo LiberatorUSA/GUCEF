@@ -251,8 +251,6 @@ bool
 CDStoreCodecPlugin::Load( const CString& pluginPath )
 {GUCEF_TRACE;
 
-    _ref._plugin = this;
-
     _sohandle = LoadModuleDynamicly( pluginPath.C_String() );
     if ( NULL == _sohandle ) return false;
 
@@ -343,6 +341,18 @@ CDStoreCodecPlugin::Load( const CString& pluginPath )
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "DStoreCodec plugin initialized\n" );
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Name: " + GetName() );
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Copyright/EULA: " + GetCopyright() );
+    
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDStoreCodecPlugin::CDStoreCodecPlugin( void )
+    : _id( 0 )          ,
+      _sohandle( NULL ) ,
+      _pluginfile()
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -374,7 +384,7 @@ CDStoreCodecPlugin::Unload( void )
 
 CDStoreCodecPlugin::~CDStoreCodecPlugin()
 {GUCEF_TRACE;
-    
+
     Unload();
 }
 
@@ -647,6 +657,15 @@ CString
 CDStoreCodecPlugin::GetModulePath( void ) const
 {GUCEF_TRACE;
         return _pluginfile;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CICloneable*
+CDStoreCodecPlugin::Clone( void ) const
+{GUCEF_TRACE;
+
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------//

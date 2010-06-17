@@ -26,11 +26,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CDSTORECODECPLUGINREF_H
-#include "CDStoreCodecPluginRef.h"       /* abstract data storage codec base class */
-#define GUCEF_CORE_CDSTORECODECPLUGINREF_H
-#endif /* GUCEF_CORE_CDSTORECODECPLUGINREF_H ? */
-
 #ifndef GUCEF_CORE_DVOSWRAP_H
 #include "DVOSWRAP.h"
 #define GUCEF_CORE_DVOSWRAP_H
@@ -40,6 +35,11 @@
 #include "CIPlugin.h"
 #define GUCEF_CORE_CIPLUGIN_H
 #endif /* GUCEF_CORE_CIPLUGIN_H ? */
+
+#ifndef GUCEF_CORE_CDSTORECODEC_H
+#include "CDStoreCodec.h"
+#define GUCEF_CORE_CDSTORECODEC_H
+#endif /* GUCEF_CORE_CDSTORECODEC_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -68,10 +68,15 @@ class CDStoreCodecPluginManager;
  *      and reading from a recource to a data tree.
  *      A codec is metadata that converts data from one type to another.
  */
-class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CIPlugin
+class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CIPlugin ,
+                                                 public CDStoreCodec
 {
     public:
 
+    CDStoreCodecPlugin( void );
+    
+    CDStoreCodecPlugin( const CString& pluginfile );
+    
     virtual ~CDStoreCodecPlugin();
 
     /**
@@ -181,23 +186,22 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CIPlugin
     virtual bool Load( const CString& pluginPath );
 
     virtual bool Unload( void );
+    
+    virtual CICloneable* Clone( void ) const;
 
     private:
     friend class CDStoreCodecPluginManager;
 
-    CDStoreCodecPlugin( const CString& pluginfile );
-
     void SetPluginID( UInt32 pluginid );
 
     private:
-    CDStoreCodecPlugin( void ); /**< can't use: we need a codec filename */
+    
     CDStoreCodecPlugin( const CDStoreCodecPlugin& src ); /**< don't copy plugin objects */
     CDStoreCodecPlugin& operator=( const CDStoreCodecPlugin& src ); /**< don't copy plugin objects */
 
     void StoreNode( const CDataNode* n ,
                     void** filedata    ); /**< recursive node storage algorithm */
 
-    CDStoreCodecPluginRef _ref;     /**< cloneable codec plugin refrence class */
     CString _pluginfile;            /**< location of the codec plugin */
     UInt32 _id;                     /**< codec id, typicly used by manager classes */
     TDefaultFuncPtr _fptable[ 17 ]; /**< function pointer table */
