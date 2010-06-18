@@ -1,5 +1,5 @@
 /*
- *  SVNMagicMerge: Little tool to help merge 2 convoluted archives
+ *  ArchiveDiffLib: library with some archive diff util functions
  *
  *  Copyright (C) 2002 - 2010.  Dinand Vanvelzen
  *
@@ -24,49 +24,19 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_LOGGING_H
-#include "gucefCORE_Logging.h"
-#define GUCEF_CORE_LOGGING_H
-#endif /* GUCEF_CORE_LOGGING_H ? */
-
-#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
-#include "CDStoreCodecRegistry.h"
-#define GUCEF_CORE_CDSTORECODECREGISTRY_H
-#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
-
-#ifndef GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
-#include "CDStoreCodecPluginManager.h"
-#define GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CFILEACCESS_H
-#include "CFileAccess.h"
-#define GUCEF_CORE_CFILEACCESS_H
-#endif /* GUCEF_CORE_CFILEACCESS_H ? */
-
-#ifndef GUCEF_CORE_CPLUGINCONTROL_H
-#include "CPluginControl.h"
-#define GUCEF_CORE_CPLUGINCONTROL_H
-#endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
-
-#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h"
-#define GUCEF_CORE_DVCPPSTRINGUTILS_H
-#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
-
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
-
-#ifndef GUCEF_PATCHER_CPATCHSETGENERATOR_H
-#include "gucefPATCHER_CPatchSetGenerator.h"
-#define GUCEF_PATCHER_CPATCHSETGENERATOR_H
-#endif /* GUCEF_PATCHER_CPATCHSETGENERATOR_H ? */
+#include "ArchiveDiffLib.h"
 
 /*-------------------------------------------------------------------------*/
 
 using namespace GUCEF;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace ARCHIVEDIFF {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -75,41 +45,6 @@ using namespace GUCEF;
 //-------------------------------------------------------------------------*/
 
 #define VERSION_NUMBER  1.1
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      TYPES                                                              //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-enum EResourceState
-{
-    RESOURCESTATE_FILE_UNCHANGED           ,
-    RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED ,
-    RESOURCESTATE_FILE_CHANGED             ,
-    RESOURCESTATE_FILE_ADDED               ,
-    RESOURCESTATE_FILE_MISSING             ,
-    
-    RESOURCESTATE_UNKNOWN
-};
-typedef enum EResourceState TResourceState;
-
-/*-------------------------------------------------------------------------*/
-
-struct SFileStatus
-{
-    TResourceState resourceState;
-    
-    PATCHER::CPatchSetParser::TFileEntry templateArchiveInfo;
-    CORE::CString templateArchiveFilePath;
-    PATCHER::CPatchSetParser::TFileEntry mainSvnArchiveInfo;
-    CORE::CString mainSvnArchivePath;
-};
-typedef struct SFileStatus TFileStatus;
-
-/*-------------------------------------------------------------------------*/
-
-typedef std::vector< TFileStatus > TFileStatusVector;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -540,239 +475,12 @@ LoadPatchSet( const CORE::CString& filePath                 ,
     return false;
 }
 
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
 
-/*-------------------------------------------------------------------------*/
-
-#ifdef GUCEF_MSWIN_BUILD
-
-void 
-cls( void )
-{GUCEF_TRACE;
-
-    COORD coordScreen = { 0, 0 }; /* here's where we'll home the cursor */
-    DWORD cCharsWritten;
-    CONSOLE_SCREEN_BUFFER_INFO csbi; /* to get buffer info */
-    DWORD dwConSize; /* number of character cells in the current buffer */
-
-    /* get the output console handle */
-    HANDLE hConsole=GetStdHandle(STD_OUTPUT_HANDLE);
-    
-    /* get the number of character cells in the current buffer */
-    GetConsoleScreenBufferInfo(hConsole, &csbi);    
-    dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
-    
-    /* fill the entire screen with blanks */
-    FillConsoleOutputCharacter(hConsole, (TCHAR) ' ',
-      dwConSize, coordScreen, &cCharsWritten);
-      
-    /* get the current text attribute */
-    GetConsoleScreenBufferInfo(hConsole, &csbi);
-    
-    /* now set the buffer's attributes accordingly */
-    FillConsoleOutputAttribute(hConsole, csbi.wAttributes,
-      dwConSize, coordScreen, &cCharsWritten);
-      
-    /* put the cursor at (0, 0) */
-    SetConsoleCursorPosition(hConsole, coordScreen);
-    return;
-}
-
-/*---------------------------------------------------------------------------*/
-
-class CMSWin32ConsoleWindow
-{
-    public:
-    
-    CMSWin32ConsoleWindow( void )
-    {
-        AllocConsole();
-        
-        /* reopen stdin handle as console window input */
-        freopen( "CONIN$", "rb", stdin );
-        
-        /* reopen stout handle as console window output */
-        freopen( "CONOUT$", "wb", stdout );
-        
-        /* reopen stderr handle as console window output */
-        freopen( "CONOUT$", "wb", stderr );        
-    }
-    
-    ~CMSWin32ConsoleWindow()
-    {
-        FreeConsole();
-    }
-};
-
-#endif /* GUCEF_MSWIN_BUILD ? */
-
-/*-------------------------------------------------------------------------*/
-
-void
-ParseParams( const int argc                        , 
-             char* argv[]                          ,
-             GUCEF::CORE::CValueList& keyValueList )
-{GUCEF_TRACE;
-    
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Parsing parameters" );
-    
-    keyValueList.DeleteAll();
-    GUCEF::CORE::CString argString;
-    if ( argc > 0 )
-    {
-        argString = *argv;
-
-        for ( int i=1; i<argc; ++i )
-        {
-            argString += ( ' ' + argv[ i ] );
-        }
-        
-        keyValueList.SetMultiple( argString, '\'' );
-    }
-}
-
-/*---------------------------------------------------------------------------*/
-
-void
-PrintHeader( void )
-{GUCEF_TRACE;
-
-    cls();
-    printf( "*****************************************\n" );
-    printf( "*                                       *\n" );
-    printf( "*  SVN Magic Merge                      *\n" );
-    printf( "*                                       *\n" );
-    printf( "*****************************************\n" );
-    printf( "\n" );
-    printf( " - Tool Version %f\n" , VERSION_NUMBER );    
-}
-
-/*---------------------------------------------------------------------------*/
-
-void
-PrintHelp( void )
-{GUCEF_TRACE;
-
-    printf( "\n" );
-    printf( " - Program arguments:\n" );
-    printf( "  Arguments should be passed in the form \'key=value\'\n" );
-    printf( "    'TemplateArchiveIndex'  : path to patch set containing the index of the template archive\n" );
-    printf( "    'MainArchiveIndex'      : path to patch set containing the index of the main SVN archive\n" );
-    printf( "    'Plugins'               : optional parameter: comman seperated list of plugins to load\n" );
-}
-
-/*-------------------------------------------------------------------------*/
-
-#ifdef GUCEF_MSWIN_BUILD
-
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
-{GUCEF_TRACE;
-
-    int argc = 0;
-    char** argv = &lpcmdline;
-    if ( lpcmdline != NULL )
-    {
-        if ( *lpcmdline != '\0' )
-        {
-            argc = 1;
-        }
-    }
-    
-#else
-
-int
-main( int argc , char* argv[] )
-{GUCEF_TRACE;
-
-#endif
-
-    CORE::CString logFilename = CORE::RelativePath( "$CURWORKDIR$" );
-    CORE::AppendToPath( logFilename, "SVNMagicMerge_Log.txt" );
-    CORE::CFileAccess logFileAccess( logFilename, "w" );
-
-    CORE::CStdLogger logger( logFileAccess );
-    CORE::CLogManager::Instance()->AddLogger( &logger );
-
-    #ifdef GUCEF_MSWIN_BUILD
-    CORE::CMSWinConsoleLogger consoleOut;
-    CORE::CLogManager::Instance()->AddLogger( &consoleOut );
-    #endif /* GUCEF_MSWIN_BUILD ? */
-    
-    CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
-
-	if ( 0 == argc )
-	{
-	    #ifdef GUCEF_MSWIN_BUILD
-	    CMSWin32ConsoleWindow console;
-	    #endif
-	    
-	    PrintHeader();
-	    PrintHelp();
-	    getchar();
-	}
-	else
-	{
-	    GUCEF::CORE::CValueList argList;
-	    ParseParams( argc    ,
-	                 argv    ,
-	                 argList ); 
-	                 
-        if ( !argList.HasKey( "TemplateArchiveIndex" ) ||
-             !argList.HasKey( "MainArchiveIndex" )      )
-        {
-            printf( "ERROR: Not enough parameters where provided\n\n" );
-            PrintHelp();
-            getchar();
-            return 1;
-        }
-        
-        CORE::CString templateArchiveIndex = argList[ "TemplateArchiveIndex" ];
-        CORE::CString mainArchiveIndex = argList[ "MainArchiveIndex" ];
-        CORE::CString pluginsListStr = argList.GetValueAlways( "Plugins" );
-        CORE::CString diffOutputDir = argList.GetValueAlways( "DiffOutputDir" );
-        if ( 0 == diffOutputDir.Length() )
-        {
-            diffOutputDir = CORE::RelativePath( "$MODULEDIR$" );
-        }
-        
-        PATCHER::CPatchSetParser::TPatchSet templatePatchset;
-        PATCHER::CPatchSetParser::TPatchSet mainArchivePatchset;
-        
-        if ( LoadPatchSet( templateArchiveIndex , 
-                           templatePatchset     ) )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded and parsed the index for the template archive" );
-            
-            if ( LoadPatchSet( mainArchiveIndex    , 
-                               mainArchivePatchset ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded and parsed the index for the main SVN archive" );
-                
-                TFileStatusVector fileStatusList;
-                if ( PerformArchiveDiff( templatePatchset    ,
-                                         mainArchivePatchset ,
-                                         fileStatusList      ) )
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully completed determination of differences between the two archives" );    
-                }
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load and parse the index for the main SVN archive" );
-            }
-        }
-        else
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load and parse the index for the template archive" );
-        }
-        
-    }
-	return 0;
-}
+}; /* namespace ARCHIVEDIFF */
 
 /*-------------------------------------------------------------------------*/
