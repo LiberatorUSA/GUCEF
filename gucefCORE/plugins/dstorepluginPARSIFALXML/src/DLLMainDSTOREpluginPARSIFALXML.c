@@ -278,13 +278,16 @@ HandleEscapeCharacters( const char* srcStr       ,
         entries[ 4 ].escapeChar = '\"';
         entries[ 4 ].replacementStr = "&quot;";
         entries[ 4 ].replacementStrLen = 6;
+        entries[ 5 ].escapeChar = '»'
+        entries[ 5 ].replacementStr = " ";
+        entries[ 5 ].replacementStrLen = 1;
         
         HandleEscapeCharacterSet( srcStr           ,
                                   srcStrLen        ,
                                   destBuffer       ,
                                   destBufferLength ,
                                   entries          ,
-                                  5                ,
+                                  6                ,
                                   strLen           );
     }
     else
