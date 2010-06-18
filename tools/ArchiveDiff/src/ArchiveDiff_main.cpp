@@ -40,7 +40,7 @@ using namespace ARCHIVEDIFF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define VERSION_NUMBER  1
+#define VERSION_NUMBER  1.0
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -160,9 +160,12 @@ PrintHelp( void )
     printf( "\n" );
     printf( " - Program arguments:\n" );
     printf( "  Arguments should be passed in the form \'key=value\'\n" );
-    printf( "    'TemplateArchiveIndex'  : path to patch set containing the index of the template archive\n" );
-    printf( "    'MainArchiveIndex'      : path to patch set containing the index of the main SVN archive\n" );
-    printf( "    'Plugins'               : optional parameter: comman seperated list of plugins to load\n" );
+    printf( "    'TemplateArchiveIndex'  : path to patch set containing the index of the\n" ); 
+    printf( "                              template archive\n" );
+    printf( "    'MainArchiveIndex'      : path to patch set containing the index of the\n" );
+    printf( "                              main SVN archive\n" );
+    printf( "    'Plugins'               : optional parameter: comman seperated list of\n" );
+    printf( "                              plugins to load\n" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -264,6 +267,24 @@ main( int argc , char* argv[] )
                                          fileStatusList      ) )
                 {
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully completed determination of differences between the two archives" );    
+                    
+                    CORE::CString diffFilePath = diffOutputDir;
+                    CORE::AppendToPath( diffFilePath, "ArchiveDiff.xml" );
+                    
+                    if ( SaveFileStatusList( diffFilePath   , 
+                                             fileStatusList ) )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved the archive diff to file: " + diffFilePath );
+                        return 1;
+                    }
+                    else
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to save the diff list to file: " + diffFilePath );
+                    }
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to diff the archives" );
                 }
             }
             else

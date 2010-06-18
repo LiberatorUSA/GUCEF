@@ -432,8 +432,39 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TPatchSet& templatePatchset 
 /*---------------------------------------------------------------------------*/
 
 bool
-LoadPatchSet( const CORE::CString& filePath  ,
-              CORE::CDataNode& patchSet      )
+SaveXmlFile( const CORE::CString& filePath   ,
+             const CORE::CDataNode& dataTree )
+{GUCEF_TRACE;
+
+    if ( CORE::FileExists( filePath ) )
+    {
+        if ( 0 != CORE::Delete_File( filePath.C_String() ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "A file already exists and it could not be deleted: " + filePath );
+            return false;
+        }
+    }
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = GetXmlDStoreCodec();
+    if ( !codecPtr.IsNULL() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully located codec: " + codecPtr->GetTypeName() );
+        
+        if ( codecPtr->StoreDataTree( &dataTree ,
+                                      filePath  ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully stored data tree to file using codec " + codecPtr->GetTypeName() + " at location " + filePath );
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+LoadXmlFile( const CORE::CString& filePath  ,
+             CORE::CDataNode& dataTree      )
 {GUCEF_TRACE;
 
     if ( CORE::FileExists( filePath ) )
@@ -445,7 +476,7 @@ LoadPatchSet( const CORE::CString& filePath  ,
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully located codec: " + codecPtr->GetTypeName() );
             
-            if ( codecPtr->BuildDataTree( &patchSet ,
+            if ( codecPtr->BuildDataTree( &dataTree ,
                                           filePath  ) )
             {
                 return true;
@@ -463,14 +494,215 @@ LoadPatchSet( const CORE::CString& filePath                 ,
 {GUCEF_TRACE;
 
     CORE::CDataNode patchSetTree;
-    if ( LoadPatchSet( filePath     ,
-                       patchSetTree ) )
+    if ( LoadXmlFile( filePath     ,
+                      patchSetTree ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the raw patch set data from file, parsing data into strongly typed data structures" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the xml data from file, parsing data into strongly typed data structures" );
         
         PATCHER::CPatchSetParser parser;
         return parser.ParsePatchSet( patchSetTree ,
                                      patchSet     );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const char*
+ResourceStateToString( TResourceState state )
+{GUCEF_TRACE;
+    
+    switch ( state )
+    {
+        case RESOURCESTATE_FILE_UNCHANGED : return "Unchanged";
+        case RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED : return "UnchangedButMoved";
+        case RESOURCESTATE_FILE_CHANGED : return "Changed";
+        case RESOURCESTATE_FILE_ADDED : return "Added";
+        case RESOURCESTATE_FILE_MISSING : return "Missing";
+        default:
+        {
+            return "Unknown";
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+TResourceState
+StringToResourceState( const CORE::CString& state )
+{GUCEF_TRACE;
+
+    if ( state.Equals( "Unchanged", false ) ) return RESOURCESTATE_FILE_UNCHANGED;
+    if ( state.Equals( "UnchangedButMoved", false ) ) return RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED;
+    if ( state.Equals( "Changed", false ) ) return RESOURCESTATE_FILE_CHANGED;
+    if ( state.Equals( "Added", false ) ) return RESOURCESTATE_FILE_ADDED;
+    if ( state.Equals( "Missing", false ) ) return RESOURCESTATE_FILE_MISSING;
+    if ( state.Equals( "Unknown", false ) ) return RESOURCESTATE_UNKNOWN;
+
+    return RESOURCESTATE_UNKNOWN;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+SerializeFileStatus( const TFileStatus& fileStatus ,
+                     CORE::CDataNode& parentNode   )
+{GUCEF_TRACE;
+
+    static PATCHER::CPatchSetParser parser;
+    
+    CORE::CDataNode fileStatusNode;
+    fileStatusNode.SetName( "FileStatus" );
+    fileStatusNode.SetAttribute( "State", ResourceStateToString( fileStatus.resourceState ) );
+    
+    CORE::CDataNode templateFileInfo;
+    templateFileInfo.SetName( "TemplateInfo" );    
+    parser.SerializeFileEntry( fileStatus.templateArchiveInfo ,
+                               templateFileInfo               );
+    fileStatusNode.AddChild( templateFileInfo );
+    templateFileInfo.Clear();
+    
+    CORE::CDataNode mainFileInfo;
+    mainFileInfo.SetName( "MainInfo" );    
+    parser.SerializeFileEntry( fileStatus.mainSvnArchiveInfo ,
+                               mainFileInfo                  );
+    fileStatusNode.AddChild( mainFileInfo );
+    mainFileInfo.Clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DeserializeFileInfo( const CORE::CDataNode& fileStatusNode           ,
+                     const CORE::CString& name                       ,
+                     PATCHER::CPatchSetParser::TFileEntry& fileEntry )
+{GUCEF_TRACE;
+
+    static PATCHER::CPatchSetParser parser;    
+    const CORE::CDataNode* infoNodeParent = fileStatusNode.FindChild( name );
+    if ( NULL != infoNodeParent )
+    {
+        const CORE::CDataNode* infoNode = infoNodeParent->GetFirstChild();
+        if ( NULL != infoNode )
+        {
+            if ( parser.ValidateAndParseFileEntry( *infoNode ,
+                                                   fileEntry ) )
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DeserializeFileStatus( const CORE::CDataNode& fileStatusNode ,
+                       TFileStatus& fileStatus               )
+{GUCEF_TRACE;
+
+    if ( fileStatusNode.GetName().Equals( "FileStatus", false ) )
+    {
+        // This is an actual file status entry
+        fileStatus.resourceState = StringToResourceState( fileStatusNode.GetAttributeValue( "State" ) );
+        
+        if ( DeserializeFileInfo( fileStatusNode                 ,
+                                  "TemplateInfo"                 ,
+                                  fileStatus.templateArchiveInfo ) )
+        {
+            if ( DeserializeFileInfo( fileStatusNode                ,
+                                      "MainInfo"                    ,
+                                      fileStatus.mainSvnArchiveInfo ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully deserialized an entire file status object for: " + fileStatus.templateArchiveInfo.name );
+                return true;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to deserialize the main file info" );
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to deserialize the template file info" );
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "The given node in the XML document is not a file status node" );
+    }
+    
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+SaveFileStatusList( const CORE::CString& filePath           ,
+                    const TFileStatusVector& fileStatusList )
+{GUCEF_TRACE;
+
+    CORE::CDataNode fileStatusTree;
+    fileStatusTree.SetName( "FileStatusList" );
+    fileStatusTree.SetAttribute( "ItemCount", CORE::UInt32ToString( fileStatusList.size() ) );
+    
+    TFileStatusVector::const_iterator i = fileStatusList.begin();
+    while ( i != fileStatusList.end() )
+    {
+        const TFileStatus& fileStatus = (*i);
+        SerializeFileStatus( fileStatus, fileStatusTree );
+        ++i;
+    }
+    
+    if ( SaveXmlFile( filePath       ,
+                      fileStatusTree ) )
+    {   
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved the generated data tree to file " + filePath );
+        return true;
+    }
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to save the generated data tree to file " + filePath );
+    return false;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+LoadFileStatusList( const CORE::CString& filePath     ,
+                    TFileStatusVector& fileStatusList )
+{GUCEF_TRACE;
+
+    CORE::CDataNode fileStatusTree;
+    if ( LoadXmlFile( filePath       ,
+                      fileStatusTree ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the xml data from file, parsing data into strongly typed data structures" );
+
+        const CORE::CDataNode* rootNode = fileStatusTree.Find( "FileStatusList" );
+        if ( NULL != rootNode )
+        {
+            CORE::CDataNode::const_iterator i = rootNode->ConstBegin();
+            while ( i != rootNode->ConstEnd() )
+            {
+                const CORE::CDataNode* childNode = (*i);
+                TFileStatus fileStatus;
+                if ( DeserializeFileStatus( *childNode ,
+                                            fileStatus ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully deserialized a file status entry" );
+                    fileStatusList.push_back( fileStatus );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to deserialize a file status entry" );
+                }
+                ++i;
+            } 
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to locate file status list root node in XML document" );
+        }
     }
     return false;
 }
