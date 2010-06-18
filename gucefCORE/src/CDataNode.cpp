@@ -643,30 +643,31 @@ CDataNode::operator!=( const CDataNode& other ) const
 const CDataNode* 
 CDataNode::FindSibling( const CString& name ) const
 {GUCEF_TRACE;
-        if ( name == _name )
-        {
-                return this;
-        }
-        
-        CDataNode* n = _pnext;
-        while ( n )
-        {
-                if ( n->_name == name )
-                {       
-                        return n;
-                }
-                n = n->_pnext;
-        }
-        n = _pprev;
-        while ( n )
-        {
-                if ( n->_name == name )
-                {       
-                        return n;
-                }
-                n = n->_pprev;
-        }        
-        return NULL;        
+
+    if ( name == _name )
+    {
+            return this;
+    }
+    
+    CDataNode* n = _pnext;
+    while ( n )
+    {
+            if ( n->_name == name )
+            {       
+                    return n;
+            }
+            n = n->_pnext;
+    }
+    n = _pprev;
+    while ( n )
+    {
+            if ( n->_name == name )
+            {       
+                    return n;
+            }
+            n = n->_pprev;
+    }        
+    return NULL;        
 }
 
 /*-------------------------------------------------------------------------*/
@@ -674,30 +675,31 @@ CDataNode::FindSibling( const CString& name ) const
 CDataNode* 
 CDataNode::FindSibling( const CString& name )
 {GUCEF_TRACE;
-        if ( name == _name )
-        {
-                return this;
-        }
-        
-        CDataNode* n = _pnext;
-        while ( n )
-        {
-                if ( n->_name == name )
-                {       
-                        return n;
-                }
-                n = n->_pnext;
-        }
-        n = _pprev;
-        while ( n )
-        {
-                if ( n->_name == name )
-                {       
-                        return n;
-                }
-                n = n->_pprev;
-        }        
-        return NULL;        
+
+    if ( name == _name )
+    {
+            return this;
+    }
+    
+    CDataNode* n = _pnext;
+    while ( n )
+    {
+            if ( n->_name == name )
+            {       
+                    return n;
+            }
+            n = n->_pnext;
+    }
+    n = _pprev;
+    while ( n )
+    {
+            if ( n->_name == name )
+            {       
+                    return n;
+            }
+            n = n->_pprev;
+    }        
+    return NULL;        
 }
 
 /*-------------------------------------------------------------------------*/
@@ -750,6 +752,31 @@ CDataNode::Find( const CString& name ) const
         n = n->_pnext;
     }
     return NULL;      
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CDataNode::GetNrOfChildNodes( void ) const
+{GUCEF_TRACE;
+
+    UInt32 count = 0;
+    const CDataNode* childNode = _pfchild;
+    while ( childNode != NULL )
+    {
+        count += childNode->GetNrOfChildNodes()+1;
+        childNode = childNode->_pnext;
+    }
+    return count;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CDataNode::GetNrOfTreeNodes( void ) const
+{GUCEF_TRACE;
+
+    return FindRoot()->GetNrOfChildNodes()+1;    
 }
 
 /*-------------------------------------------------------------------------*/
