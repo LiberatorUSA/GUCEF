@@ -234,35 +234,35 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
                        bool fromcurrent     ) const;
 
     /**
-     *      'Walks' the data node tree to find the sequence
-     *      of nodes given. The algorith will attempt to get as 'deep'
-     *      as possible using the specified node sequence.
-     *      If no nodes where found that have an name as specified in the sequence
-     *      at the correct location then that part of the sequence is considdered to
-     *      be a leftover. An pointer to the 'deepest' node is returned.
+     *  'Walks' the data node tree to find the sequence
+     *  of nodes given. The algorith will attempt to get as 'deep'
+     *  as possible using the specified node sequence.
+     *  If no nodes where found that have an name as specified in the sequence
+     *  at the correct location then that part of the sequence is considdered to
+     *  be a leftover. An pointer to the 'deepest' node is returned.
      *
-     *      @param sequence the sequence of node names you are looking for, each name seperated with a seperator char
-     *      @param seperator char that is used to seperate the different node names
-     *      @param sleftover outputvar: the section of the sequence that could not be resolved.
-     *      @return pointer to the deepest node found.
+     *  @param sequence the sequence of node names you are looking for, each name seperated with a seperator char
+     *  @param seperator char that is used to seperate the different node names
+     *  @param sleftover outputvar: the section of the sequence that could not be resolved.
+     *  @return pointer to the deepest node found.
      */
     CDataNode* WalkTree( const CString& sequence ,
                          char seperator          ,
                          CString& sleftover      ) const;
 
     /**
-     *      Returns wheter the current node has any children
+     *  Returns wheter the current node has any children
      *
-     *      @return whether the current node has any children
+     *  @return whether the current node has any children
      */
     bool HasChildren( void ) const;
 
     /**
-     *      Adds an child node to the given node using the
-     *      given newnode as a template.
+     *  Adds an child node to the given node using the
+     *  given newnode as a template.
      *
-     *      @param newnode node that is to be used as an template
-     *      @return pointer to the new child.
+     *  @param newnode node that is to be used as an template
+     *  @return pointer to the new child.
      */
     CDataNode* AddChild( const CDataNode& newnode );
 
@@ -273,14 +273,27 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     void CopySubTree( const CDataNode& root );
 
     /**
-     *      Deletes the entire sub-tree from the current node.
-     *      So in essense the child nodes and their children ect.
-     *      are deleted.
+     *  Deletes the entire sub-tree from the current node.
+     *  So in essense the child nodes and their children ect.
+     *  are deleted.
      */
     void DelSubTree( void );
 
     /**
-     *      Attempts to delete this node from the tree.
+     *  Counts all the child nodes for the node the 
+     *  request is made on.
+     */
+    UInt32 GetNrOfChildNodes( void ) const;
+    
+    /**
+     *  Counts all the nodes in the data tree
+     *  This includes nodes above and below the node the
+     *  request is made on.
+     */
+    UInt32 GetNrOfTreeNodes( void ) const;
+
+    /**
+     *  Attempts to delete this node from the tree.
      */
     void Delete( void );
 
@@ -296,64 +309,64 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
 
     class GUCEF_CORE_PUBLIC_CPP iterator
     {
-            public:
+        public:
 
-            iterator( CDataNode* parent );
+        iterator( CDataNode* parent );
 
-            iterator( const iterator& src );
+        iterator( const iterator& src );
 
-            ~iterator();
+        ~iterator();
 
-            iterator& operator=( const iterator& src );
+        iterator& operator=( const iterator& src );
 
-            CDataNode* operator*( void ) const;
+        CDataNode* operator*( void ) const;
 
-            iterator& operator++( void );
+        iterator& operator++( void );
 
-            iterator& operator--( void );
+        iterator& operator--( void );
 
-            bool operator!=( const iterator& src ) const;
+        bool operator!=( const iterator& src ) const;
 
-            bool operator==( const iterator& src ) const;
+        bool operator==( const iterator& src ) const;
 
-            private:
-            friend class CDataNode;
+        private:
+        friend class CDataNode;
 
-            const CDataNode* _pfchild;   /**< first child node */
-            CDataNode* _pos;             /**< current child node */
-            bool _atend;                 /**< has the iterator reached the right end pos */
-            bool _atstart;               /**< has the iterator reached the left end pos */
+        const CDataNode* _pfchild;   /**< first child node */
+        CDataNode* _pos;             /**< current child node */
+        bool _atend;                 /**< has the iterator reached the right end pos */
+        bool _atstart;               /**< has the iterator reached the left end pos */
     };
 
     class GUCEF_CORE_PUBLIC_CPP const_iterator
     {
-            public:
+        public:
 
-            const_iterator( const CDataNode* parent );
+        const_iterator( const CDataNode* parent );
 
-            const_iterator( const const_iterator& src );
+        const_iterator( const const_iterator& src );
 
-            ~const_iterator();
+        ~const_iterator();
 
-            const_iterator& operator=( const const_iterator& src );
+        const_iterator& operator=( const const_iterator& src );
 
-            const CDataNode* operator*( void ) const;
+        const CDataNode* operator*( void ) const;
 
-            const_iterator& operator++( void );
+        const_iterator& operator++( void );
 
-            const_iterator& operator--( void );
+        const_iterator& operator--( void );
 
-            bool operator!=( const const_iterator& src ) const;
+        bool operator!=( const const_iterator& src ) const;
 
-            bool operator==( const const_iterator& src ) const;
+        bool operator==( const const_iterator& src ) const;
 
-            private:
-            friend class CDataNode;
+        private:
+        friend class CDataNode;
 
-            const CDataNode* _pfchild;   /**< first child node */
-            const CDataNode* _pos;       /**< current child node */
-            bool _atend;                 /**< has the iterator reached the right end pos */
-            bool _atstart;               /**< has the iterator reached the left end pos */
+        const CDataNode* _pfchild;   /**< first child node */
+        const CDataNode* _pos;       /**< current child node */
+        bool _atend;                 /**< has the iterator reached the right end pos */
+        bool _atstart;               /**< has the iterator reached the left end pos */
     };
 
     iterator Begin( void );

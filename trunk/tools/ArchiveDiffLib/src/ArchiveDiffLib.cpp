@@ -252,6 +252,7 @@ GetPathForFile( const PATCHER::CPatchSetParser::TFileEntry& fileEntry )
         {
             return location.URL;
         }
+        ++i;
     }
     return CORE::CString();
 }
@@ -267,6 +268,16 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templatePatchset
 
     CORE::CString templateFilePath = relTemplatePatchsetDirPath;
     CORE::AppendToPath( templateFilePath, templatePatchsetFileEntry.name );
+    CORE::Int32 firstSlashIndex = templateFilePath.HasChar( '\\' );
+    CORE::CString templateFilePathMinuxRoot;
+    if ( firstSlashIndex < 0 )
+    {
+        templateFilePathMinuxRoot = templateFilePath;
+    }
+    else
+    {
+        templateFilePathMinuxRoot = templateFilePath.CutChars( firstSlashIndex+1, true ); 
+    }
        
     // First locate all files in the main archive that have the same name as
     // our template archive file
@@ -284,13 +295,24 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templatePatchset
     while ( i != filesWithSameName.end() )
     {        
         PATCHER::CPatchSetParser::TFileEntry& fileEntry = (*i);
+
+        CORE::CString relPathForMainArchiveFile = GetPathForFile( fileEntry );
+        firstSlashIndex = relPathForMainArchiveFile.HasChar( '\\' );
+        CORE::CString relPathForMainArchiveFileMinusRoot;
+        if ( firstSlashIndex < 0 )
+        {
+            relPathForMainArchiveFileMinusRoot = relPathForMainArchiveFile;
+        }
+        else
+        {
+            relPathForMainArchiveFileMinusRoot = relPathForMainArchiveFile.CutChars( firstSlashIndex+1, true ); 
+        }
         
         if ( ( templatePatchsetFileEntry.hash == fileEntry.hash )               &&
              ( templatePatchsetFileEntry.sizeInBytes == fileEntry.sizeInBytes )  )
         {
             // File content is identical
-            CORE::CString relPathForMainArchiveFile = GetPathForFile( fileEntry );
-            if ( templateFilePath.Equals( relPathForMainArchiveFile, false ) )
+            if ( templateFilePathMinuxRoot.Equals( relPathForMainArchiveFileMinusRoot, false ) )
             {                
                 TFileStatus fileStatus;
                 InitializeFileStatus( fileStatus );
@@ -320,7 +342,7 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templatePatchset
                 templateLocation.URL = templateFilePath;
                 fileStatus.templateArchiveInfo.fileLocations.push_back( templateLocation );
 
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + templateFilePath + "\" was unchanged but moved to \"" +  + "\"" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + templateFilePath + "\" was unchanged but moved to \"" + relPathForMainArchiveFile + "\"" );
                 
                 fileStatusList.push_back( fileStatus );
             }
@@ -339,7 +361,7 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templatePatchset
             templateLocation.URL = templateFilePath;
             fileStatus.templateArchiveInfo.fileLocations.push_back( templateLocation );
             
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + templateFilePath + "\" was changed at location \"" +  + "\"" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + templateFilePath + "\" was changed at location \"" + relPathForMainArchiveFile + "\"" );
             
             fileStatusList.push_back( fileStatus );
         }
@@ -488,6 +510,38 @@ LoadXmlFile( const CORE::CString& filePath  ,
 
 /*---------------------------------------------------------------------------*/
 
+CORE::UInt32
+GetFileCount( const PATCHER::CPatchSetParser::TDirEntry& patchDir )
+{GUCEF_TRACE;
+
+    CORE::UInt32 count = patchDir.files.size();
+    PATCHER::CPatchSetParser::TDirEntryList::const_iterator i = patchDir.subDirs.begin();
+    while ( i != patchDir.subDirs.end() )
+    {
+        count += GetFileCount( (*i) );
+        ++i;
+    }
+    return count;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::UInt32
+GetFileCount( const PATCHER::CPatchSetParser::TPatchSet& patchSet )
+{GUCEF_TRACE;
+
+    CORE::UInt32 count = 0;
+    PATCHER::CPatchSetParser::TPatchSet::const_iterator i = patchSet.begin();
+    while ( i != patchSet.end() )
+    {
+        count += GetFileCount( (*i) );
+        ++i;
+    }
+    return count;    
+}
+
+/*---------------------------------------------------------------------------*/
+
 bool
 LoadPatchSet( const CORE::CString& filePath                 ,
               PATCHER::CPatchSetParser::TPatchSet& patchSet )
@@ -497,11 +551,19 @@ LoadPatchSet( const CORE::CString& filePath                 ,
     if ( LoadXmlFile( filePath     ,
                       patchSetTree ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the xml data from file, parsing data into strongly typed data structures" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the xml data from file totalling " + 
+                                          CORE::UInt32ToString( patchSetTree.GetNrOfTreeNodes() ) + 
+                                          " nodes, parsing data into strongly typed data structures" );
         
         PATCHER::CPatchSetParser parser;
-        return parser.ParsePatchSet( patchSetTree ,
-                                     patchSet     );
+        if ( parser.ParsePatchSet( patchSetTree ,
+                                   patchSet     ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully parsed the data tree into " +
+                                              CORE::UInt32ToString( GetFileCount( patchSet ) ) + 
+                                              " patch set entries" );
+            return true;
+        }
     }
     return false;
 }
@@ -591,6 +653,14 @@ DeserializeFileInfo( const CORE::CDataNode& fileStatusNode           ,
                 return true;
             }
         }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to locate child node with file info" );
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to locate child node with name " + name );
     }
     return false;
 }

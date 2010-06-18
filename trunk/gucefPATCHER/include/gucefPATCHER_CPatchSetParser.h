@@ -81,8 +81,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetParser
     };
     typedef struct SDirEntry TDirEntry;
     typedef std::vector< TDirEntry >  TDirEntryList;
-
-    typedef std::vector< TDirEntry > TPatchSet;
+    typedef TDirEntryList TPatchSet;
     
     public:
     

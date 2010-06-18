@@ -24,7 +24,6 @@ set(HEADER_FILES
   include/CDStoreCodec.h
   include/CDStoreCodecPlugin.h
   include/CDStoreCodecPluginManager.h
-  include/CDStoreCodecPluginRef.h
   include/CDStoreCodecRegistry.h
   include/CDVString.h
   include/CDynamicArray.h
@@ -190,7 +189,6 @@ set(SOURCE_FILES
   src/CDStoreCodec.cpp
   src/CDStoreCodecPlugin.cpp
   src/CDStoreCodecPluginManager.cpp
-  src/CDStoreCodecPluginRef.cpp
   src/CDStoreCodecRegistry.cpp
   src/CDVString.cpp
   src/CDynamicArray.cpp

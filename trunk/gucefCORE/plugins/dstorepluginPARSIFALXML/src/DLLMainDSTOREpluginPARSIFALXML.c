@@ -62,10 +62,13 @@
 
 struct SDestFileData
 {
-        TIOAccess* fptr;
-        Int32 indent;
-        char* line;
-        UInt32 linelen;
+    TIOAccess* fptr;
+    Int32 indent;
+    char* line;
+    UInt32 linelen;
+    
+    char* buffer;
+    UInt32 bufferSize;
 };
 
 typedef struct SDestFileData TDestFileData;
@@ -74,13 +77,24 @@ typedef struct SDestFileData TDestFileData;
 
 struct SSrcFileData
 {
-        TIOAccess* access;
-        LPXMLPARSER parser;
-        TReadHandlers handlers;
-        void* privdata; 
+    TIOAccess* access;
+    LPXMLPARSER parser;
+    TReadHandlers handlers;
+    void* privdata; 
 };
 
 typedef struct SSrcFileData TSrcFileData;
+
+/*---------------------------------------------------------------------------*/
+
+struct SEscapeEntry
+{
+    char escapeChar;
+    const char* replacementStr;
+    char replacementStrLen;
+};
+
+typedef struct SEscapeEntry TEscapeEntry;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -156,6 +170,135 @@ ParsifalElementStart( void* userdata         ,
 
 /*---------------------------------------------------------------------------*/
 
+void
+GaranteeMinBufferSize( char** destBuffer        ,
+                       UInt32* destBufferLength ,
+                       UInt32 desiredSize       )
+{
+    if ( NULL != destBuffer && NULL != destBufferLength )
+    {
+        if ( NULL != *destBuffer )
+        {
+            if ( desiredSize > *destBufferLength )
+            {
+                *destBuffer = realloc( *destBuffer, desiredSize );
+                *destBufferLength = desiredSize;
+            }
+        }
+        else
+        {
+            *destBuffer = malloc( desiredSize );
+            *destBufferLength = desiredSize;
+        }
+    }    
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+HandleEscapeCharacterSet( const char* srcStr         ,
+                          UInt32 srcStrLen           , 
+                          char** destBuffer          ,
+                          UInt32* destBufferLength   ,
+                          TEscapeEntry* escapeEntry  ,
+                          UInt32 escapeEntryCount    ,
+                          UInt32* strLen             )
+{
+    UInt32 n = 0;
+    UInt32 i = 0;
+    UInt32 replCount = 0;
+    UInt32 replSize = 0;
+    char* bufferPtr = NULL;
+    
+    for ( i=0; i<srcStrLen; ++i )
+    {
+        for ( n=0; n<escapeEntryCount; ++n )
+        {
+            if ( srcStr[ i ] == escapeEntry[ n ].escapeChar )
+            {
+                replCount++;
+                replSize += escapeEntry[ n ].replacementStrLen;
+                break;
+            }
+        }
+    }    
+    
+    *strLen = srcStrLen-replCount+replSize;
+    GaranteeMinBufferSize( destBuffer, destBufferLength, (*strLen)+1 );
+    bufferPtr = *destBuffer;
+    memset( bufferPtr, 0, (*strLen)+1 );
+   
+    for ( i=0; i<srcStrLen; ++i )
+    {
+        char foundEscChar = 0;
+        for ( n=0; n<escapeEntryCount; ++n )
+        {
+            if ( srcStr[ i ] == escapeEntry[ n ].escapeChar )
+            {
+                foundEscChar = 1;
+                memcpy( bufferPtr, escapeEntry[ n ].replacementStr, escapeEntry[ n ].replacementStrLen );
+                bufferPtr += escapeEntry[ n ].replacementStrLen;
+                break;
+            }
+        }
+        
+        if ( 0 == foundEscChar )
+        {
+            *bufferPtr = srcStr[ i ];
+            ++bufferPtr;
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+HandleEscapeCharacters( const char* srcStr       ,
+                        char** destBuffer        ,
+                        UInt32* destBufferLength ,
+                        UInt32* strLen           )
+{
+    if ( NULL != srcStr )
+    {        
+        TEscapeEntry entries[ 5 ];
+        UInt32 srcStrLen = (UInt32) strlen( srcStr ); 
+        
+        entries[ 0 ].escapeChar = '<';
+        entries[ 0 ].replacementStr = "&lt;";
+        entries[ 0 ].replacementStrLen = 4;
+        entries[ 1 ].escapeChar = '>';
+        entries[ 1 ].replacementStr = "&gt;";
+        entries[ 1 ].replacementStrLen = 4;
+        entries[ 2 ].escapeChar = '&';
+        entries[ 2 ].replacementStr = "&amp;";
+        entries[ 2 ].replacementStrLen = 5;
+        entries[ 3 ].escapeChar = '\'';
+        entries[ 3 ].replacementStr = "&apos;";
+        entries[ 3 ].replacementStrLen = 6;
+        entries[ 4 ].escapeChar = '\"';
+        entries[ 4 ].replacementStr = "&quot;";
+        entries[ 4 ].replacementStrLen = 6;
+        
+        HandleEscapeCharacterSet( srcStr           ,
+                                  srcStrLen        ,
+                                  destBuffer       ,
+                                  destBufferLength ,
+                                  entries          ,
+                                  5                ,
+                                  strLen           );
+    }
+    else
+    {
+        *strLen = 0;
+        if ( *destBufferLength > 0 )
+        {
+            memset( *destBuffer, 0, *destBufferLength );
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 static int
 ParsifalElementEnd( void* userdata         , 
                     const XMLCH *uri       ,
@@ -201,6 +344,8 @@ DSTOREPLUG_Dest_File_Open( void** plugdata    ,
                 fd->indent = 0;
                 fd->line = NULL;
                 fd->linelen = 0;
+                fd->buffer = NULL;
+                fd->bufferSize = 0;
                 *filedata = fd;
                 
                 sprintf( outBuffer, "<?xml version=\"1.0\"?>\r\n" );
@@ -218,16 +363,25 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 DSTOREPLUG_Dest_File_Close( void** plugdata , 
                             void** filedata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        if ( filedata )
-        { 
-                if ( *filedata )
-                {       
-                        TDestFileData* fd = (TDestFileData*)*filedata;
-                        fd->fptr->close( fd->fptr );
-                        if ( fd->line && fd->linelen ) free( fd->line );
-                        free( fd );
-                }
-        }                                
+    if ( filedata )
+    { 
+        if ( *filedata )
+        {       
+            TDestFileData* fd = (TDestFileData*)*filedata;
+            fd->fptr->close( fd->fptr );
+            if ( fd->line && fd->linelen ) 
+            {
+                free( fd->line );
+                fd->line = NULL;                            
+            }
+            if ( fd->buffer && fd->bufferSize )
+            {
+                free( fd->buffer );
+                fd->buffer = NULL;
+            }
+            free( fd );
+        }
+    }                                
 }                            
                             
 /*---------------------------------------------------------------------------*/
@@ -239,32 +393,41 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
                              UInt32 attscount     ,
                              UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        TDestFileData* fd = (TDestFileData*)*filedata;        
-        UInt32 max, len;
-        
-        if ( !fd ) return;
+    TDestFileData* fd = (TDestFileData*)*filedata;        
+    UInt32 max, len, strLen=0;
+    char* escNodeName = NULL;
+            
+    if ( !fd ) return;
 
-        if ( !nodename )
-        {
-                nodename = "noname";
-        }
-                
-        len = (UInt32)strlen( nodename );
-        max = len + 5*attscount + 6 + fd->indent;
-        if ( fd->linelen < max )
-        {
-                fd->line = realloc( fd->line, max );
-                *(fd->line) = 0;
-                fd->linelen = max;
-        }                
-        memset( fd->line, INDENT_CHAR, fd->indent );
-        if ( attscount > 0 )
-        {
-                sprintf( fd->line+fd->indent, "<%s ", nodename );
-                return;
-        }
-        haschildren ? sprintf( fd->line+fd->indent, "<%s>\r\n", nodename ) : sprintf( fd->line+fd->indent, "<%s/>\r\n", nodename );
-        fd->fptr->write( fd->fptr, fd->line, (UInt32)strlen( fd->line ), 1 );       
+    if ( !nodename )
+    {
+        nodename = "noname";
+    }
+
+    HandleEscapeCharacters( nodename, &fd->buffer, &fd->bufferSize, &strLen );
+    escNodeName = (char*) malloc( strLen+1 );
+    memcpy( escNodeName, fd->buffer, strLen+1 );
+            
+    len = (UInt32)strlen( escNodeName );
+    max = len + 5*attscount + 6 + fd->indent;
+    if ( fd->linelen < max )
+    {
+        fd->line = realloc( fd->line, max );
+        *(fd->line) = 0;
+        fd->linelen = max;
+    }                
+    memset( fd->line, INDENT_CHAR, fd->indent );
+    if ( attscount > 0 )
+    {
+        sprintf( fd->line+fd->indent, "<%s ", escNodeName );
+    }
+    else
+    {
+        haschildren ? sprintf( fd->line+fd->indent, "<%s>\r\n", escNodeName ) : sprintf( fd->line+fd->indent, "<%s/>\r\n", escNodeName );
+        fd->fptr->write( fd->fptr, fd->line, (UInt32)strlen( fd->line ), 1 );
+    }
+    
+    free( escNodeName );
 }                             
 
 /*---------------------------------------------------------------------------*/
@@ -276,17 +439,26 @@ DSTOREPLUG_End_Node_Store( void** plugdata      ,
                            UInt32 attscount     ,
                            UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        if ( !nodename )
-        {
-                nodename = "noname";
-        }
-        if ( haschildren )
-        {
-                TDestFileData* fd = (TDestFileData*)*filedata;
-                memset( fd->line, INDENT_CHAR, fd->indent );
-                sprintf( fd->line+fd->indent, "</%s>\r\n", nodename );
-                fd->fptr->write( fd->fptr, fd->line, (UInt32)strlen( fd->line ), 1 );                
-        }
+    if ( !nodename )
+    {
+        nodename = "noname";
+    }
+    if ( haschildren )
+    {
+        TDestFileData* fd = (TDestFileData*)*filedata;
+        UInt32 strLen = 0;
+        char* escNodeName = NULL;
+        
+        HandleEscapeCharacters( nodename, &fd->buffer, &fd->bufferSize, &strLen );
+        escNodeName = (char*) malloc( strLen+1 );
+        memcpy( escNodeName, fd->buffer, strLen+1 );
+                
+        memset( fd->line, INDENT_CHAR, fd->indent );
+        sprintf( fd->line+fd->indent, "</%s>\r\n", escNodeName );
+        fd->fptr->write( fd->fptr, fd->line, (UInt32)strlen( fd->line ), 1 );
+        
+        free( escNodeName );                
+    }
 }                           
                            
 /*---------------------------------------------------------------------------*/
@@ -301,41 +473,53 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
                            const char* attvalue ,
                            UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX  
 {
-        TDestFileData* fd = (TDestFileData*)*filedata;
-        UInt32 linelen, len;
-        
-        if ( NULL == attname || 0 == attscount ) return;
-        
-        if ( NULL == attvalue )
-        {
-            attvalue = "";
-        }
-        
-        if ( NULL == nodename )
-        {
-                nodename = "noname";
-        }
-        
-        linelen = (UInt32)strlen( fd->line );
-        len = (UInt32)strlen( attname )+strlen( attvalue )+2;
-        if ( fd->linelen < linelen+10+len )
-        {
-                fd->line = realloc( fd->line, linelen+11+len );
-        }
-        if ( attindex+1 < attscount )
-        {
-                sprintf( fd->line+linelen, "%s=\"%s\" ", attname, attvalue );
-                return;                
-        }
-        if ( haschildren ) 
-        {
-                sprintf( fd->line+linelen, "%s=\"%s\" >\r\n", attname, attvalue ); 
-        }
-        else
-        {
-                sprintf( fd->line+linelen, "%s=\"%s\" />\r\n", attname, attvalue );
-        }                
-        fd->fptr->write( fd->fptr, fd->line, (UInt32)strlen( fd->line ), 1 );
+    TDestFileData* fd = (TDestFileData*)*filedata;
+    UInt32 linelen, len;
+    UInt32 strLen = 0;
+    char* escAttName = NULL;
+    char* escAttValue = NULL;
+    
+    if ( NULL == attname || 0 == attscount ) return;
+    
+    if ( NULL == attvalue )
+    {
+        attvalue = "";
+    }        
+    if ( NULL == nodename )
+    {
+        nodename = "noname";
+    }
+
+    HandleEscapeCharacters( attname, &fd->buffer, &fd->bufferSize, &strLen );
+    escAttName = (char*) malloc( strLen+1 );
+    memcpy( escAttName, fd->buffer, strLen+1 );
+    HandleEscapeCharacters( attvalue, &fd->buffer, &fd->bufferSize, &strLen );
+    escAttValue = (char*) malloc( strLen+1 );
+    memcpy( escAttValue, fd->buffer, strLen+1 );
+    
+    linelen = (UInt32)strlen( fd->line );
+    len = (UInt32)strlen( escAttName )+strlen( escAttValue )+2;
+    if ( fd->linelen < linelen+10+len )
+    {
+        fd->line = realloc( fd->line, linelen+11+len );
+    }
+    if ( attindex+1 < attscount )
+    {
+        sprintf( fd->line+linelen, "%s=\"%s\" ", escAttName, escAttValue );
+        return;                
+    }
+    if ( haschildren ) 
+    {
+        sprintf( fd->line+linelen, "%s=\"%s\" >\r\n", escAttName, escAttValue ); 
+    }
+    else
+    {
+        sprintf( fd->line+linelen, "%s=\"%s\" />\r\n", escAttName, escAttValue );
+    }                
+    fd->fptr->write( fd->fptr, fd->line, (UInt32)strlen( fd->line ), 1 );
+    
+    free( escAttName );
+    free( escAttValue );
 }                           
                            
 /*---------------------------------------------------------------------------*/
