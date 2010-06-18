@@ -350,6 +350,38 @@ CPatchSetParser::ParsePatchSet( const CORE::CDataNode& patchSetData ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+CPatchSetParser::SerializeFileEntry( const TFileEntry& fileEntry ,
+                                     CORE::CDataNode& parentNode ) const
+{GUCEF_TRACE;
+
+    // Now we add the files
+    CORE::CDataNode fileNode;
+    fileNode.SetName( "File" );
+
+    fileNode.SetAttribute( "Name", fileEntry.name );
+    fileNode.SetAttribute( "Hash", fileEntry.hash );
+    fileNode.SetAttribute( "Size", CORE::Int32ToString( fileEntry.sizeInBytes ) );
+    
+    const TFileLocations& locList = fileEntry.fileLocations;
+    const TFileLocation* fileLoc = NULL;
+    CORE::CDataNode fileLocNode;
+    fileLocNode.SetName( "FileLocation" );
+    for ( UInt32 n=0; n<locList.size(); ++n )
+    {
+        fileLoc = &locList[ n ];
+        fileLocNode.SetAttribute( "URL", fileLoc->URL );
+        fileLocNode.SetAttribute( "Codec", fileLoc->codec );
+        fileLocNode.SetAttribute( "CodecParams", fileLoc->codecParams );
+        
+        fileNode.AddChild( fileLocNode );
+    }
+    
+    parentNode.AddChild( fileNode );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPatchSetParser::ParseAndWalkDirTree( const TDirEntry& patchSetDir   ,
                                       CORE::CDataNode& parentDirNode ) const
@@ -373,32 +405,11 @@ CPatchSetParser::ParseAndWalkDirTree( const TDirEntry& patchSetDir   ,
     }
     
     // Now we add the files
-    const TFileEntry* fileEntry = NULL;
     CORE::CDataNode fileNode;
     fileNode.SetName( "File" );
     for ( UInt32 i=0; i<patchSetDir.files.size(); ++i )
     {
-        fileEntry = &patchSetDir.files[ i ];
-        fileNode.SetAttribute( "Name", fileEntry->name );
-        fileNode.SetAttribute( "Hash", fileEntry->hash );
-        fileNode.SetAttribute( "Size", CORE::Int32ToString( fileEntry->sizeInBytes ) );
-        
-        const TFileLocations& locList = fileEntry->fileLocations;
-        const TFileLocation* fileLoc = NULL;
-        CORE::CDataNode fileLocNode;
-        fileLocNode.SetName( "FileLocation" );
-        for ( UInt32 n=0; n<locList.size(); ++n )
-        {
-            fileLoc = &locList[ n ];
-            fileLocNode.SetAttribute( "URL", fileLoc->URL );
-            fileLocNode.SetAttribute( "Codec", fileLoc->codec );
-            fileLocNode.SetAttribute( "CodecParams", fileLoc->codecParams );
-            
-            fileNode.AddChild( fileLocNode );
-        }
-        
-        newNode.AddChild( fileNode );
-        fileNode.DelSubTree();
+        SerializeFileEntry( patchSetDir.files[ i ], newNode );
     }
     
     // Now we copy our entire 'newNode' tree below the parent node

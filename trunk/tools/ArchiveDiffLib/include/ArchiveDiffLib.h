@@ -135,8 +135,14 @@ LoadPatchSet( const GUCEF::CORE::CString& filePath                 ,
 /*-------------------------------------------------------------------------*/
               
 bool ARCHIVEDIFFLIB_PUBLIC_CPP
-LoadPatchSet( const GUCEF::CORE::CString& filePath ,
-              GUCEF::CORE::CDataNode& patchSet     );
+LoadXmlFile( const GUCEF::CORE::CString& filePath ,
+             GUCEF::CORE::CDataNode& dataTree     );
+
+/*-------------------------------------------------------------------------*/
+             
+bool ARCHIVEDIFFLIB_PUBLIC_CPP
+SaveXmlFile( const GUCEF::CORE::CString& filePath   ,
+             const GUCEF::CORE::CDataNode& dataTree );
               
 /*-------------------------------------------------------------------------*/
 
@@ -144,6 +150,18 @@ bool ARCHIVEDIFFLIB_PUBLIC_CPP
 PerformArchiveDiff( const GUCEF::PATCHER::CPatchSetParser::TPatchSet& templatePatchset    ,
                     const GUCEF::PATCHER::CPatchSetParser::TPatchSet& mainArchivePatchset ,
                     TFileStatusVector& fileStatusList                                     );
+
+/*-------------------------------------------------------------------------*/
+
+bool ARCHIVEDIFFLIB_PUBLIC_CPP
+LoadFileStatusList( const GUCEF::CORE::CString& filePath ,
+                    TFileStatusVector& fileStatusList    );
+
+/*-------------------------------------------------------------------------*/
+                    
+bool ARCHIVEDIFFLIB_PUBLIC_CPP
+SaveFileStatusList( const GUCEF::CORE::CString& filePath    ,
+                    const TFileStatusVector& fileStatusList );
                     
 /*-------------------------------------------------------------------------//
 //                                                                         //

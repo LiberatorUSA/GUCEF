@@ -96,6 +96,18 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetParser
     bool ParsePatchSet( const TPatchSet& patchSetData ,
                         CORE::CDataNode& patchSet     ) const;
 
+    bool ValidateAndParseFileEntry( const CORE::CDataNode& patchSetFileNode ,
+                                    TFileEntry& fileEntry                   ) const;
+
+    bool ValidateAndParseFileLocEntries( const CORE::CDataNode& patchSetFileNode ,
+                                         TFileEntry& fileEntry                   ) const;
+
+    bool ValidateAndParseDirEntry( const CORE::CDataNode& patchSetDirNode ,
+                                   TDirEntry& dirEntry                    ) const;
+
+    void SerializeFileEntry( const TFileEntry& fileEntry ,
+                             CORE::CDataNode& parentNode ) const;
+
     private:
     
     CPatchSetParser( const CPatchSetParser& src );
@@ -109,15 +121,6 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetParser
 
     bool ParseAndWalkDirTree( const CORE::CDataNode& patchSetDirNode ,
                               TDirEntry& parentDir                   ) const;
-                   
-    bool ValidateAndParseFileEntry( const CORE::CDataNode& patchSetFileNode ,
-                                    TFileEntry& fileEntry                   ) const;
-
-    bool ValidateAndParseFileLocEntries( const CORE::CDataNode& patchSetFileNode ,
-                                         TFileEntry& fileEntry                   ) const;
-
-    bool ValidateAndParseDirEntry( const CORE::CDataNode& patchSetDirNode ,
-                                   TDirEntry& dirEntry                    ) const;
 };
 
 /*-------------------------------------------------------------------------//
