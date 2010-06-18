@@ -18,6 +18,7 @@ add_subdirectory(PatchSetGenerator)
 add_subdirectory(ServerPortExtender)
 add_subdirectory(CMakeListGenerator)
 add_subdirectory(CallstackLogAnalyzer)
+add_subdirectory(ArchiveDiffLib)
 add_subdirectory(ArchiveDiff)
 add_subdirectory(SVNMagicMerge)
 
