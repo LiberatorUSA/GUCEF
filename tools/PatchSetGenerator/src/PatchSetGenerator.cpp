@@ -183,6 +183,7 @@ PrintHelp( void )
     printf( "    'URLRoot'         : the root of the URL to which the paths will be appended\n" );
     printf( "    'PluginDir'       : optional parameter: path to a dir where plugins can be\n" );
     printf( "                        found\n" );
+    printf( "    'Plugins'         : optional param: comma seperated list of plugins to load\n" );
     printf( "    'PatchSetOutCodec': optional parameter: the codec to use for the output\n" );
     printf( "                        patch set file, the default codec is 'xml'\n" );
 }

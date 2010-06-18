@@ -278,9 +278,9 @@ HandleEscapeCharacters( const char* srcStr       ,
         entries[ 4 ].escapeChar = '\"';
         entries[ 4 ].replacementStr = "&quot;";
         entries[ 4 ].replacementStrLen = 6;
-        entries[ 5 ].escapeChar = '»'
-        entries[ 5 ].replacementStr = " ";
-        entries[ 5 ].replacementStrLen = 1;
+        entries[ 5 ].escapeChar = '»';
+        entries[ 5 ].replacementStr = "&175";
+        entries[ 5 ].replacementStrLen = 4;
         
         HandleEscapeCharacterSet( srcStr           ,
                                   srcStrLen        ,
@@ -341,7 +341,7 @@ DSTOREPLUG_Dest_File_Open( void** plugdata    ,
         *filedata = NULL;
         if ( outFile != NULL )
         {
-                char outBuffer[ 250 ];
+                char outBuffer[ 275 ];
                 TDestFileData* fd = (TDestFileData*) malloc( sizeof( TDestFileData ) );
                 fd->fptr = outFile;
                 fd->indent = 0;
@@ -350,8 +350,8 @@ DSTOREPLUG_Dest_File_Open( void** plugdata    ,
                 fd->buffer = NULL;
                 fd->bufferSize = 0;
                 *filedata = fd;
-                
-                sprintf( outBuffer, "<?xml version=\"1.0\"?>\r\n" );
+
+                sprintf( outBuffer, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\r\n" );
                 outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
                 sprintf( outBuffer, "<!-- Generated using dstorepluginXMLPARSIFAL (v%d.%d.%d.%d) for the GUCEF platform - Copyright (C) Dinand Vanvelzen. All rights reserved -->\r\n", VERSION_MAJOR_FIELD, VERSION_MINOR_FIELD, VERSION_PATCH_FIELD, VERSION_RELEASE_FIELD );
                 outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
