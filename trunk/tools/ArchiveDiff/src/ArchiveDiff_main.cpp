@@ -198,7 +198,7 @@ main( int argc , char* argv[] )
 #endif
 
     CORE::CString logFilename = CORE::RelativePath( "$CURWORKDIR$" );
-    CORE::AppendToPath( logFilename, "SVNMagicMerge_Log.txt" );
+    CORE::AppendToPath( logFilename, "ArchiveDiff_Log.txt" );
     CORE::CFileAccess logFileAccess( logFilename, "w" );
 
     CORE::CStdLogger logger( logFileAccess );
