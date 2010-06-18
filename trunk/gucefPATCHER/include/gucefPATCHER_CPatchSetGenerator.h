@@ -73,31 +73,35 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetGenerator
     CPatchSetGenerator( void );
     ~CPatchSetGenerator();
     
-    bool GeneratePatchSet( const CORE::CString& localRoot        ,
-                           const CORE::CString& URLRoot          ,
-                           TPatchSet& patchSet                   ,
-                           const TStringSet* dirsToIgnore = NULL ) const;
+    bool GeneratePatchSet( const CORE::CString& localRoot             ,
+                           const CORE::CString& URLRoot               ,
+                           TPatchSet& patchSet                        ,
+                           const TStringSet* dirsToIgnore = NULL      ,
+                           const TStringSet* fileTypesToIgnore = NULL ) const;
 
-    bool GeneratePatchSet( const CORE::CString& localRoot        ,
-                           const CORE::CString& URLRoot          ,
-                           CORE::CDataNode& patchSet             ,
-                           const TStringSet* dirsToIgnore = NULL ) const;
+    bool GeneratePatchSet( const CORE::CString& localRoot             ,
+                           const CORE::CString& URLRoot               ,
+                           CORE::CDataNode& patchSet                  ,
+                           const TStringSet* dirsToIgnore = NULL      ,
+                           const TStringSet* fileTypesToIgnore = NULL ) const;
 
-    bool GeneratePatchSet( const CORE::CString& localRoot        ,
-                           const CORE::CString& URLRoot          ,
-                           const CORE::CString& storageCodec     ,
-                           CORE::CIOAccess& patchSetStorage      ,
-                           const TStringSet* dirsToIgnore = NULL ) const;
+    bool GeneratePatchSet( const CORE::CString& localRoot             ,
+                           const CORE::CString& URLRoot               ,
+                           const CORE::CString& storageCodec          ,
+                           CORE::CIOAccess& patchSetStorage           ,
+                           const TStringSet* dirsToIgnore = NULL      ,
+                           const TStringSet* fileTypesToIgnore = NULL ) const;
                            
     private:
     
     CPatchSetGenerator( const CPatchSetGenerator& src );
     CPatchSetGenerator& operator=( const CPatchSetGenerator& src );
     
-    bool GeneratePatchSet( const CORE::CString& localRoot        ,
-                           const CORE::CString& URLRoot          ,
-                           TDirEntry& currentDir                 ,
-                           const TStringSet* dirsToIgnore = NULL ) const;
+    bool GeneratePatchSet( const CORE::CString& localRoot             ,
+                           const CORE::CString& URLRoot               ,
+                           TDirEntry& currentDir                      ,
+                           const TStringSet* dirsToIgnore = NULL      ,
+                           const TStringSet* fileTypesToIgnore = NULL ) const;
 };
 
 /*-------------------------------------------------------------------------//

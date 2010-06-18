@@ -183,9 +183,10 @@ PrintHelp( void )
     printf( "    'URLRoot'         : the root of the URL to which the paths will be appended\n" );
     printf( "    'PluginDir'       : optional parameter: path to a dir where plugins can be\n" );
     printf( "                        found\n" );
-    printf( "    'Plugins'         : optional param: comma seperated list of plugins to load\n" );
+    printf( "    'Plugins'         : optional param: ; seperated list of plugins to load\n" );
     printf( "    'PatchSetOutCodec': optional parameter: the codec to use for the output\n" );
     printf( "                        patch set file, the default codec is 'xml'\n" );
+    printf( "    'DirsToIgnore     : optional param: ; seperated list of dirs to ignore\n" );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -290,6 +291,9 @@ main( int argc , char* argv[] )
         GUCEF::CORE::CString pluginDir = argList.GetValueAlways( "PluginDir" );
         GUCEF::CORE::CString plugins = argList.GetValueAlways( "Plugins" );
         GUCEF::CORE::CString dirsToIgnoreStr = argList.GetValueAlways( "DirsToIgnore" );
+        GUCEF::CORE::CString fileTypesToIgnoreStr = argList.GetValueAlways( "FileTypesToIgnore" );
+        
+        // parse list of dirs to ignore
         GUCEF::PATCHER::CPatchSetGenerator::TStringSet dirsToIgnore;
         if ( dirsToIgnoreStr.Length() != 0 )
         { 
@@ -302,6 +306,20 @@ main( int argc , char* argv[] )
             }
         }
         dirsToIgnoreStr.Clear();
+        
+        // parse list of file types to ignore
+        GUCEF::PATCHER::CPatchSetGenerator::TStringSet fileTypesToIgnore;
+        if ( fileTypesToIgnoreStr.Length() != 0 )
+        { 
+            TStringVector fileTypesToIgnoreVector = fileTypesToIgnoreStr.ParseElements( ';', false );
+            TStringVector::iterator i = fileTypesToIgnoreVector.begin();
+            while ( i != fileTypesToIgnoreVector.end() )
+            {
+                fileTypesToIgnore.insert( (*i).Lowercase() );
+                ++i;
+            }
+        }
+        fileTypesToIgnoreStr.Clear();
         
         if ( patchSetOutCodec.Length() == 0 )
         {
@@ -338,11 +356,12 @@ main( int argc , char* argv[] )
             if ( fileAccess.Opened() && fileAccess.IsValid() )
             {        
                 GUCEF::PATCHER::CPatchSetGenerator psGenerator;
-                if ( psGenerator.GeneratePatchSet( rootDirPath      ,
-                                                   URLRoot          ,
-                                                   patchSetOutCodec ,
-                                                   fileAccess       ,
-                                                   &dirsToIgnore    ) )
+                if ( psGenerator.GeneratePatchSet( rootDirPath        ,
+                                                   URLRoot            ,
+                                                   patchSetOutCodec   ,
+                                                   fileAccess         ,
+                                                   &dirsToIgnore      ,
+                                                   &fileTypesToIgnore ) )
                 {
                     printf( "SUCCESS: The patch set generation process has been successfully completed\n" );
                     return 0;

@@ -81,10 +81,11 @@ CPatchSetGenerator::~CPatchSetGenerator()
 /*-------------------------------------------------------------------------*/
 
 bool
-CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
-                                      const CORE::CString& URLRoot   ,
-                                      TPatchSet& patchSet            ,
-                                      const TStringSet* dirsToIgnore ) const
+CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
+                                      const CORE::CString& URLRoot        ,
+                                      TPatchSet& patchSet                 ,
+                                      const TStringSet* dirsToIgnore      ,
+                                      const TStringSet* fileTypesToIgnore ) const
 {GUCEF_TRACE;
 
     CORE::CString subDir = CORE::LastSubDir( localRoot );
@@ -103,10 +104,11 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
     
     TDirEntry dirEntry;
     dirEntry.name = subDir;
-    if ( GeneratePatchSet( localRoot    ,
-                           URLRootDir   ,
-                           dirEntry     ,
-                           dirsToIgnore ) )
+    if ( GeneratePatchSet( localRoot         ,
+                           URLRootDir        ,
+                           dirEntry          ,
+                           dirsToIgnore      ,
+                           fileTypesToIgnore ) )
     {
         patchSet.push_back( dirEntry );
         return true;
@@ -118,10 +120,11 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
-                                      const CORE::CString& URLRoot   ,
-                                      TDirEntry& currentDir          ,
-                                      const TStringSet* dirsToIgnore ) const
+CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
+                                      const CORE::CString& URLRoot        ,
+                                      TDirEntry& currentDir               ,
+                                      const TStringSet* dirsToIgnore      ,
+                                      const TStringSet* fileTypesToIgnore ) const
 {GUCEF_TRACE;
 
     currentDir.sizeInBytes = 0;
@@ -159,10 +162,11 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
                     
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Found sub-dir to generate patch set entries from: " + subDirPath );
                     
-                    if ( GeneratePatchSet( subDirPath     ,
-                                           URLRootPlusDir ,
-                                           subDirs        ,
-                                           dirsToIgnore   ) )
+                    if ( GeneratePatchSet( subDirPath        ,
+                                           URLRootPlusDir    ,
+                                           subDirs           ,
+                                           dirsToIgnore      ,
+                                           fileTypesToIgnore ) )
                     {
                         currentDir.sizeInBytes += subDirs.sizeInBytes;
                         currentDir.hash += subDirs.hash;
@@ -171,7 +175,18 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
                 }
                 else
                 {
-                    // We found a file in this dir
+                    // We found a file in this dir, check if we should ignore the file based on file type
+                    if ( NULL != fileTypesToIgnore )
+                    {
+                        CORE::CString fileExtention = CORE::ExtractFileExtention( entryName );
+                        if ( fileTypesToIgnore->find( fileExtention ) != fileTypesToIgnore->end() )
+                        {
+                            // the current file is of a type we are instructed to ignore
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Ignoring file based on it's type as instructed: " + entryName );
+                            continue;
+                        }
+                    }                    
+                    
                     TFileEntry fileEntry;
                     fileEntry.name = entryName;
                     fileEntry.sizeInBytes = CORE::DI_Size( dirEntry );
@@ -229,17 +244,19 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
-                                      const CORE::CString& URLRoot   ,
-                                      CORE::CDataNode& patchSet      ,
-                                      const TStringSet* dirsToIgnore ) const
+CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
+                                      const CORE::CString& URLRoot        ,
+                                      CORE::CDataNode& patchSet           ,
+                                      const TStringSet* dirsToIgnore      ,
+                                      const TStringSet* fileTypesToIgnore ) const
 {GUCEF_TRACE;
 
     TPatchSet patchSetData;
-    if ( GeneratePatchSet( localRoot    ,
-                           URLRoot      ,
-                           patchSetData ,
-                           dirsToIgnore ) )
+    if ( GeneratePatchSet( localRoot         ,
+                           URLRoot           ,
+                           patchSetData      ,
+                           dirsToIgnore      ,
+                           fileTypesToIgnore ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Successfully completed patch set generation, generating data tree from raw data" );
         
@@ -253,11 +270,12 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot    ,
-                                      const CORE::CString& URLRoot      ,
-                                      const CORE::CString& storageCodec ,
-                                      CORE::CIOAccess& patchSetStorage  ,
-                                      const TStringSet* dirsToIgnore    ) const
+CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
+                                      const CORE::CString& URLRoot        ,
+                                      const CORE::CString& storageCodec   ,
+                                      CORE::CIOAccess& patchSetStorage    , 
+                                      const TStringSet* dirsToIgnore      ,
+                                      const TStringSet* fileTypesToIgnore ) const
 {GUCEF_TRACE;
         
     // Get the required codec for the patch set storage conversion
@@ -271,10 +289,11 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot    ,
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Found storage codec \"" + storageCodec + "\", generating patch set" );
 
             CORE::CDataNode patchSet;
-            if ( GeneratePatchSet( localRoot    ,
-                                   URLRoot      ,
-                                   patchSet     ,
-                                   dirsToIgnore ) )
+            if ( GeneratePatchSet( localRoot         ,
+                                   URLRoot           ,
+                                   patchSet          ,
+                                   dirsToIgnore      ,
+                                   fileTypesToIgnore ) )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Successfully completed patch set generation, serializing patch set" );
                 
