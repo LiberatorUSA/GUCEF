@@ -374,7 +374,7 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templatePatchset
         // Unable to locate such a file in the other archive
         TFileStatus fileStatus;
         InitializeFileStatus( fileStatus );
-        fileStatus.resourceState = RESOURCESTATE_FILE_ADDED;
+        fileStatus.resourceState = RESOURCESTATE_FILE_MISSING_IN_MAIN;
         fileStatus.templateArchiveInfo = templatePatchsetFileEntry;
 
         PATCHER::CPatchSetParser::TFileLocation templateLocation;
@@ -579,8 +579,8 @@ ResourceStateToString( TResourceState state )
         case RESOURCESTATE_FILE_UNCHANGED : return "Unchanged";
         case RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED : return "UnchangedButMoved";
         case RESOURCESTATE_FILE_CHANGED : return "Changed";
-        case RESOURCESTATE_FILE_ADDED : return "Added";
-        case RESOURCESTATE_FILE_MISSING : return "Missing";
+        case RESOURCESTATE_FILE_MISSING_IN_MAIN : return "MissingInMain";
+        case RESOURCESTATE_FILE_MISSING_IN_TEMPLATE : return "MissingInTemplate";
         default:
         {
             return "Unknown";
@@ -597,8 +597,8 @@ StringToResourceState( const CORE::CString& state )
     if ( state.Equals( "Unchanged", false ) ) return RESOURCESTATE_FILE_UNCHANGED;
     if ( state.Equals( "UnchangedButMoved", false ) ) return RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED;
     if ( state.Equals( "Changed", false ) ) return RESOURCESTATE_FILE_CHANGED;
-    if ( state.Equals( "Added", false ) ) return RESOURCESTATE_FILE_ADDED;
-    if ( state.Equals( "Missing", false ) ) return RESOURCESTATE_FILE_MISSING;
+    if ( state.Equals( "MissingInMain", false ) ) return RESOURCESTATE_FILE_MISSING_IN_MAIN;
+    if ( state.Equals( "MissingInTemplate", false ) ) return RESOURCESTATE_FILE_MISSING_IN_TEMPLATE;
     if ( state.Equals( "Unknown", false ) ) return RESOURCESTATE_UNKNOWN;
 
     return RESOURCESTATE_UNKNOWN;

@@ -91,8 +91,8 @@ enum EResourceState
     RESOURCESTATE_FILE_UNCHANGED           ,
     RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED ,
     RESOURCESTATE_FILE_CHANGED             ,
-    RESOURCESTATE_FILE_ADDED               ,
-    RESOURCESTATE_FILE_MISSING             ,
+    RESOURCESTATE_FILE_MISSING_IN_TEMPLATE ,
+    RESOURCESTATE_FILE_MISSING_IN_MAIN     ,
     
     RESOURCESTATE_UNKNOWN
 };
@@ -162,6 +162,11 @@ LoadFileStatusList( const GUCEF::CORE::CString& filePath ,
 bool ARCHIVEDIFFLIB_PUBLIC_CPP
 SaveFileStatusList( const GUCEF::CORE::CString& filePath    ,
                     const TFileStatusVector& fileStatusList );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF::CORE::CString ARCHIVEDIFFLIB_PUBLIC_CPP
+GetPathForFile( const GUCEF::PATCHER::CPatchSetParser::TFileEntry& fileEntry );
                     
 /*-------------------------------------------------------------------------//
 //                                                                         //
