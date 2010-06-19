@@ -76,7 +76,7 @@ CreatePathToUnchangedFileDiff( const CORE::CString& dir )
 {GUCEF_TRACE;
     
     CORE::CString path = dir;
-    CORE::AppendToPath( path, "UnchangedFiles.xml" );
+    CORE::AppendToPath( path, "SVNMagicMerge_UnchangedFiles.xml" );
     return path;
 }
 
@@ -87,7 +87,7 @@ CreatePathToUnchangedButMovedFileDiff( const CORE::CString& dir )
 {GUCEF_TRACE;
     
     CORE::CString path = dir;
-    CORE::AppendToPath( path, "UnchangedButMovedFiles.xml" );
+    CORE::AppendToPath( path, "SVNMagicMerge_UnchangedButMovedFiles.xml" );
     return path;
 }
 
@@ -98,7 +98,7 @@ CreatePathToChangedFileDiff( const CORE::CString& dir )
 {GUCEF_TRACE;
     
     CORE::CString path = dir;
-    CORE::AppendToPath( path, "ChangedFiles.xml" );
+    CORE::AppendToPath( path, "SVNMagicMerge_ChangedFiles.xml" );
     return path;
 }
 
@@ -109,7 +109,7 @@ CreatePathToMissingInTemplateFileDiff( const CORE::CString& dir )
 {GUCEF_TRACE;
     
     CORE::CString path = dir;
-    CORE::AppendToPath( path, "MissingInTemplateFiles.xml" );
+    CORE::AppendToPath( path, "SVNMagicMerge_MissingInTemplateFiles.xml" );
     return path;
 }
 
@@ -120,7 +120,7 @@ CreatePathToMissingInMainFileDiff( const CORE::CString& dir )
 {GUCEF_TRACE;
     
     CORE::CString path = dir;
-    CORE::AppendToPath( path, "MissingInMainFiles.xml" );
+    CORE::AppendToPath( path, "SVNMagicMerge_MissingInMainFiles.xml" );
     return path;
 }
 
@@ -131,7 +131,19 @@ CreatePathToUnknownStatusFileDiff( const CORE::CString& dir )
 {GUCEF_TRACE;
     
     CORE::CString path = dir;
-    CORE::AppendToPath( path, "UnknownStatusFiles.xml" );
+    CORE::AppendToPath( path, "SVNMagicMerge_UnknownStatusFiles.xml" );
+    return path;
+
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+CreatePathToMergeExceptionsFile( const CORE::CString& dir )
+{GUCEF_TRACE;
+    
+    CORE::CString path = dir;
+    CORE::AppendToPath( path, "SVNMagicMerge_MergeExceptions.xml" );
     return path;
 
 }
@@ -916,6 +928,77 @@ ProcessFiles( const CORE::CString& InfoOutputDir           ,
 /*-------------------------------------------------------------------------*/
 
 bool
+SerializeMergeException( const TMergeException& mergeException ,
+                         CORE::CDataNode& parentNode           )
+{GUCEF_TRACE;
+
+    CORE::CDataNode mergeExceptionNode;
+    mergeExceptionNode.SetName( "MergeException" );
+    mergeExceptionNode.SetAttribute( "Reason", mergeException.exceptionReason );
+
+    if ( !SerializeFileStatus( mergeException.fileStatus ,
+                               mergeExceptionNode        ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failure trying to serialize a merge exception's file status. Exception has reason: " + mergeException.exceptionReason );
+        return false;
+    }
+
+    parentNode.AddChild( mergeExceptionNode );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+SaveMergeExceptions( const TMergeExceptionList& mergeExceptions ,
+                     CORE::CDataNode& dataTree                  )
+{GUCEF_TRACE;
+
+    TMergeExceptionList::const_iterator i = mergeExceptions.begin();
+    while ( i != mergeExceptions.end() )
+    {
+        if ( !SerializeMergeException( (*i)     ,
+                                       dataTree ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failure trying to serialize merge exception with reason: " + (*i).exceptionReason );
+            return false;
+        }
+        ++i;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+SaveMergeExceptions( const TMergeExceptionList& mergeExceptions ,
+                     const CORE::CString& InfoOutputDir         )
+{GUCEF_TRACE;    
+    
+    CORE::CDataNode dataTree;
+    dataTree.SetName( "SVNMagicMergeMergeExceptions" );
+    
+    if ( SaveMergeExceptions( mergeExceptions ,
+                              dataTree        ) )
+    {
+        CORE::CString mergeExceptionsFilePath = CreatePathToMergeExceptionsFile( InfoOutputDir );
+        if ( SaveXmlFile( mergeExceptionsFilePath ,
+                          dataTree                ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved merged conditions data tree to file: " + mergeExceptionsFilePath );
+            return true;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failure writing merge exceptions data tree to file: " + mergeExceptionsFilePath );
+        }
+    }
+    return false;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList ,
                                   const CORE::CString& InfoOutputDir      )
 {GUCEF_TRACE;
@@ -1148,14 +1231,25 @@ main( int argc , char* argv[] )
                 fileStatusList.clear();
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully seperated file status list into subsets" );
                 
+                // Process sub-sets
                 TMergeExceptionList mergeExceptions;
                 if ( ProcessFiles( infoOutputDir           ,
                                    mainArchiveRootPath     ,
                                    templateArchiveRootPath ,
                                    mergeExceptions         ) )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully processed all files" );
-                    return 1;
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully processed all files without fatal errors, saving merge exceptions totalling " + CORE::UInt32ToString( mergeExceptions.size() ) );
+                    
+                    if ( SaveMergeExceptions( mergeExceptions ,
+                                              infoOutputDir   ) )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved a list of merge exceptions in dir: " + infoOutputDir );
+                        return 1;
+                    }
+                    else
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failure trying to save merge exceptions to file in dir: " + infoOutputDir );
+                    }
                 }
                 else
                 {
