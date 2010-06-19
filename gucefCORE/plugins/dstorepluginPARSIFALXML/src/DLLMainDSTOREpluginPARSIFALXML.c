@@ -260,7 +260,7 @@ HandleEscapeCharacters( const char* srcStr       ,
 {
     if ( NULL != srcStr )
     {        
-        TEscapeEntry entries[ 5 ];
+        TEscapeEntry entries[ 6 ];
         UInt32 srcStrLen = (UInt32) strlen( srcStr ); 
         
         entries[ 0 ].escapeChar = '<';
@@ -279,8 +279,8 @@ HandleEscapeCharacters( const char* srcStr       ,
         entries[ 4 ].replacementStr = "&quot;";
         entries[ 4 ].replacementStrLen = 6;
         entries[ 5 ].escapeChar = '»';
-        entries[ 5 ].replacementStr = "&175";
-        entries[ 5 ].replacementStrLen = 4;
+        entries[ 5 ].replacementStr = "&175;";
+        entries[ 5 ].replacementStrLen = 5;
         
         HandleEscapeCharacterSet( srcStr           ,
                                   srcStrLen        ,
