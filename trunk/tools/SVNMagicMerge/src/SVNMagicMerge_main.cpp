@@ -454,7 +454,6 @@ PerformSvnLastSubDirAdd( const CORE::CString& path    ,
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
             return false;
         }
-        
     }
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Last subdir of " + path + " is already under version control thus no need to add it" );
@@ -581,25 +580,44 @@ bool
 PerformSvnDeleteFile( const CORE::CString& path    ,
                       CORE::CString& failureReason )
 {
-    if ( PerformSvnIsFileVersionedCheck( path          ,
-                                         failureReason ) )
+    if ( CORE::FileExists( path ) )
     {
-        // svn delete
-        return false;
-    }
-    else
-    {
-        if ( 0 != CORE::Delete_File( path.C_String() ) )
+        if ( PerformSvnIsFileVersionedCheck( path          ,
+                                             failureReason ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Deleted unversioned file at : " + path );
-            return true;
+            // we are now ready to perform the actual SVN delete
+            CORE::CString params = "delete \"" + path + "\"";
+            if ( 0 != CORE::Execute_Program( "svn"             , 
+                                             params.C_String() ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SVN client reported success in deleting file: " + path );
+                return true;
+            }
+            else
+            {
+                failureReason += "SVN tool reported failure executing add dir for: " + path + ";";
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
+                return false;
+            }
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to delete unversioned file at : " + path );
-        }
-    }    
-    return false;
+            if ( 0 != CORE::Delete_File( path.C_String() ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Deleted unversioned file at : " + path );
+                return true;
+            }
+            else
+            {
+                failureReason += "Failed to delete unversioned file at : " + path + ";";
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason );
+            }
+        }    
+        return false;
+    }
+    
+    // No such file, thus delete sucecssfull since we dont have to delete it
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
