@@ -158,6 +158,12 @@ LoadFileStatusList( const GUCEF::CORE::CString& filePath ,
                     TFileStatusVector& fileStatusList    );
 
 /*-------------------------------------------------------------------------*/
+
+bool ARCHIVEDIFFLIB_PUBLIC_CPP
+SerializeFileStatus( const TFileStatus& fileStatus      ,
+                     GUCEF::CORE::CDataNode& parentNode );
+
+/*-------------------------------------------------------------------------*/
                     
 bool ARCHIVEDIFFLIB_PUBLIC_CPP
 SaveFileStatusList( const GUCEF::CORE::CString& filePath    ,

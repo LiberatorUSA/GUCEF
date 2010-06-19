@@ -606,7 +606,7 @@ StringToResourceState( const CORE::CString& state )
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 SerializeFileStatus( const TFileStatus& fileStatus ,
                      CORE::CDataNode& parentNode   )
 {GUCEF_TRACE;
@@ -630,6 +630,8 @@ SerializeFileStatus( const TFileStatus& fileStatus ,
                                mainFileInfo                  );
     fileStatusNode.AddChild( mainFileInfo );
     mainFileInfo.Clear();
+    
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
