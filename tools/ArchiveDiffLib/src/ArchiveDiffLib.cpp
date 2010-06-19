@@ -430,6 +430,89 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TDirEntry& templatePatchsetD
     return true;
 }
 
+
+/*-------------------------------------------------------------------------*/
+
+const char*
+ResourceStateToString( TResourceState state )
+{GUCEF_TRACE;
+    
+    switch ( state )
+    {
+        case RESOURCESTATE_FILE_UNCHANGED : return "Unchanged";
+        case RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED : return "UnchangedButMoved";
+        case RESOURCESTATE_FILE_CHANGED : return "Changed";
+        case RESOURCESTATE_FILE_MISSING_IN_MAIN : return "MissingInMain";
+        case RESOURCESTATE_FILE_MISSING_IN_TEMPLATE : return "MissingInTemplate";
+        default:
+        {
+            return "Unknown";
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+TResourceState
+StringToResourceState( const CORE::CString& state )
+{GUCEF_TRACE;
+
+    if ( state.Equals( "Unchanged", false ) ) return RESOURCESTATE_FILE_UNCHANGED;
+    if ( state.Equals( "UnchangedButMoved", false ) ) return RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED;
+    if ( state.Equals( "Changed", false ) ) return RESOURCESTATE_FILE_CHANGED;
+    if ( state.Equals( "MissingInMain", false ) ) return RESOURCESTATE_FILE_MISSING_IN_MAIN;
+    if ( state.Equals( "MissingInTemplate", false ) ) return RESOURCESTATE_FILE_MISSING_IN_TEMPLATE;
+    if ( state.Equals( "Unknown", false ) ) return RESOURCESTATE_UNKNOWN;
+
+    return RESOURCESTATE_UNKNOWN;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+MarkDuplicatesAsUnknownStatus( TFileStatusVector& fileStatusList )
+{GUCEF_TRACE;
+
+    // If there are multiple actions noted for files with the same name
+    // then this tool has very little choices left to it. There is hardly any way 
+    // to determine what to do so the status in such an event will be set to 'unknown'
+        
+    TFileStatusVector::iterator i = fileStatusList.begin();
+    while ( i != fileStatusList.end() )
+    {
+        TFileStatus& fileStatus = (*i);
+        
+        if ( fileStatus.resourceState != RESOURCESTATE_UNKNOWN )
+        {
+            const CORE::CString& itemName = fileStatus.templateArchiveInfo.name;
+            bool firstDuplicate = true;
+            
+            TFileStatusVector::iterator n = fileStatusList.begin();
+            while ( n != fileStatusList.end() )
+            {
+                // Make sure we don't compare with ourselves
+                if ( n != i )
+                {
+                    TFileStatus& otherFileStatus = (*n);                
+                    if ( ( otherFileStatus.templateArchiveInfo.name == itemName ) ||
+                         ( otherFileStatus.mainSvnArchiveInfo.name == itemName )   )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found multiple entries for a file with name \"" + itemName + 
+                                     "\" one entry has resource state " + CORE::CString( ResourceStateToString( fileStatus.resourceState ) ) +
+                                     " and the other has resource state " + CORE::CString( ResourceStateToString( otherFileStatus.resourceState ) ) );
+                        
+                        fileStatus.resourceState = RESOURCESTATE_UNKNOWN;
+                        otherFileStatus.resourceState = RESOURCESTATE_UNKNOWN;
+                    }
+                }
+                
+                ++n;
+            }
+        }
+        ++i;
+    }
+}
+
 /*---------------------------------------------------------------------------*/
 
 bool
@@ -448,6 +531,10 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TPatchSet& templatePatchset 
         
         ++i;
     }
+    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished perfoming a diff between two patchs sets, commencing search for ambigous entries" );
+    
+    MarkDuplicatesAsUnknownStatus( fileStatusList );
     return true;
 }
 
@@ -566,42 +653,6 @@ LoadPatchSet( const CORE::CString& filePath                 ,
         }
     }
     return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-const char*
-ResourceStateToString( TResourceState state )
-{GUCEF_TRACE;
-    
-    switch ( state )
-    {
-        case RESOURCESTATE_FILE_UNCHANGED : return "Unchanged";
-        case RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED : return "UnchangedButMoved";
-        case RESOURCESTATE_FILE_CHANGED : return "Changed";
-        case RESOURCESTATE_FILE_MISSING_IN_MAIN : return "MissingInMain";
-        case RESOURCESTATE_FILE_MISSING_IN_TEMPLATE : return "MissingInTemplate";
-        default:
-        {
-            return "Unknown";
-        }
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-TResourceState
-StringToResourceState( const CORE::CString& state )
-{GUCEF_TRACE;
-
-    if ( state.Equals( "Unchanged", false ) ) return RESOURCESTATE_FILE_UNCHANGED;
-    if ( state.Equals( "UnchangedButMoved", false ) ) return RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED;
-    if ( state.Equals( "Changed", false ) ) return RESOURCESTATE_FILE_CHANGED;
-    if ( state.Equals( "MissingInMain", false ) ) return RESOURCESTATE_FILE_MISSING_IN_MAIN;
-    if ( state.Equals( "MissingInTemplate", false ) ) return RESOURCESTATE_FILE_MISSING_IN_TEMPLATE;
-    if ( state.Equals( "Unknown", false ) ) return RESOURCESTATE_UNKNOWN;
-
-    return RESOURCESTATE_UNKNOWN;
 }
 
 /*-------------------------------------------------------------------------*/
