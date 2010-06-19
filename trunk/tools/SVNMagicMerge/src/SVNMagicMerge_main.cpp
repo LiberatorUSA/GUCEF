@@ -24,6 +24,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_DVFILEUTILS_H
+#include "dvfileutils.h"
+#define GUCEF_CORE_DVFILEUTILS_H
+#endif /* GUCEF_CORE_DVFILEUTILS_H ? */
+
 #ifndef ARCHIVEDIFFLIB_H
 #include "ArchiveDiffLib.h"
 #define ARCHIVEDIFFLIB_H
@@ -55,6 +60,10 @@ struct SMergeException
 };
 typedef struct SMergeException TMergeException;
 typedef std::vector< TMergeException > TMergeExceptionList;
+
+/*-------------------------------------------------------------------------*/
+
+typedef std::vector< CORE::CString > TStringVector;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -113,7 +122,6 @@ CreatePathToMissingInMainFileDiff( const CORE::CString& dir )
     CORE::CString path = dir;
     CORE::AppendToPath( path, "MissingInMainFiles.xml" );
     return path;
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -392,12 +400,112 @@ PerformSvnCommit( const CORE::CString& svnCommitRoot )
 /*-------------------------------------------------------------------------*/
 
 bool
-PerformSvnMakeSurePathExists( const CORE::CString& path )
+DoesDirHasSvnSubDir( const CORE::CString& path )
 {GUCEF_TRACE;
     
-   // CORE::Create_Directory(
+    CORE::CString svnSubDir = path;
+    CORE::AppendToPath( svnSubDir, ".svn" );
+    if ( !CORE::IsPathValid( svnSubDir ) )
+    {
+        svnSubDir = path;
+        CORE::AppendToPath( svnSubDir, "_svn" );
+        if ( !CORE::IsPathValid( svnSubDir ) )
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PerformSvnLastSubDirAdd( const CORE::CString& path    ,
+                         CORE::CString& failureReason )
+{GUCEF_TRACE;
+
+    if ( !DoesDirHasSvnSubDir( path ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Last subdir of " + path + " is not under version control, thus we need to add it" );
+        
+        // we are now ready to perform the actual SVN add
+        CORE::CString params = "add \"" + path + "\"";
+        if ( 0 != CORE::Execute_Program( "svn"             , 
+                                         params.C_String() ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SVN client reported success in adding directory: " + path );
+            return true;
+        }
+        else
+        {
+            failureReason += "SVN tool reported failure executing add dir for: " + path + ";";
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
+            return false;
+        }
+        
+    }
     
-    return false;
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Last subdir of " + path + " is already under version control thus no need to add it" );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PerformSvnMakeSurePathExists( const CORE::CString& path        ,
+                              const CORE::CString& archiveRoot ,
+                              CORE::CString& failureReason     )
+{GUCEF_TRACE;
+    
+    // First check if the path exists on disk at all
+    if ( !CORE::IsPathValid( path ) )
+    {
+        if ( 0 == CORE::Create_Directory( path.C_String() ) )
+        {
+            // Failed to create the path using O/S
+            failureReason += "garanteeing versioned path exists failed because the path could not be created using O/S functions at " + path + ";";
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason );
+            return false;
+        }
+        else
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Used O/S functions to create path: " + path );
+        }
+    }
+    
+    // Now check if the path is versioned from the archive root down
+    CORE::UInt32 equality = path.FindMaxSubstrEquality( archiveRoot, 0, true );
+    CORE::CString relativePath = path.CutChars( equality, true );
+    TStringVector relativePathSegments = relativePath.ParseElements( '\\', false );
+        
+    // test archive root first
+    CORE::CString testPath = archiveRoot;    
+    if ( !PerformSvnLastSubDirAdd( testPath      ,
+                                   failureReason ) )
+    {
+        failureReason += "garanteeing versioned path exists failed because the last subdir of " + testPath + " could not be added as a versioned directory;";
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason );
+        return false;
+    }
+    
+    // iterate down testing each sub-dir       
+    TStringVector::iterator i = relativePathSegments.begin();
+    while ( i != relativePathSegments.end() )
+    {
+        CORE::AppendToPath( testPath, (*i) );
+        if ( !PerformSvnLastSubDirAdd( testPath      ,
+                                       failureReason ) )
+        {
+            failureReason += "garanteeing versioned path exists failed because the last subdir of " + testPath + " could not be added as a versioned directory;";
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason );
+            return false;
+        }
+        
+        ++i;
+    }
+    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully garanteed that path \"" + path + "\" exists and is versioned");
+    return true;
 }
 /*-------------------------------------------------------------------------*/
 
@@ -458,8 +566,8 @@ PerformSvnIsFileVersionedCheck( const CORE::CString& path    ,
 /*-------------------------------------------------------------------------*/
 
 bool
-PerformSvnDelete( const CORE::CString& path    ,
-                  CORE::CString& failureReason )
+PerformSvnDeleteFile( const CORE::CString& path    ,
+                      CORE::CString& failureReason )
 {
     if ( PerformSvnIsFileVersionedCheck( path          ,
                                          failureReason ) )
@@ -485,19 +593,78 @@ PerformSvnDelete( const CORE::CString& path    ,
 /*-------------------------------------------------------------------------*/
 
 bool
-PerformSvnAdd( const CORE::CString& source      ,
-               const CORE::CString& destination ,
-               CORE::CString& failureReason     )
+PerformSvnAddFile( const CORE::CString& source      ,
+                   const CORE::CString& destination ,
+                   CORE::CString& failureReason     )
 {GUCEF_TRACE;
 
     // source must exist
     if ( CORE::FileExists( source ) )
     {
         // destination must be available
-        if ( !CORE::FileExists( destination ) )
+        if ( CORE::FileExists( destination ) )
         {
-            
+            // Check if destination file is under version control
+            if ( PerformSvnIsFileVersionedCheck( destination   ,
+                                                 failureReason ) )
+            {
+                failureReason += "Cannot SVN add file from " + source + " to " + destination + " because the there is already a versioned file at that location;";
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
+                return false;
+            }
+            else
+            {
+                // Since we are going to replace the file anyway with new content we can delete the
+                // file at this location.
+                if ( 0 != CORE::Delete_File( destination.C_String() ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "deleted unversioned file at destination location: " + destination );
+                }
+                else
+                {
+                    failureReason += "Cannot SVN add file from " + source + " to " + destination + " because a unversioned file already exists at the destination location and an attempt to delete it failed;";
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
+                    return false;
+                }
+            }
         }
+        else
+        {
+            failureReason += "Cannot SVN add file from " + source + " to " + destination + " because the there is already a versioned file at that location;";
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
+            return false;
+        }
+        
+        // Copy the file locally
+        if ( 0 != CORE::Copy_File( source.C_String()      ,
+                                   destination.C_String() ) )
+        {
+            // we are now ready to perform the actual SVN add
+            CORE::CString params = "add \"" + destination + "\"";
+            if ( 0 != CORE::Execute_Program( "svn"             , 
+                                             params.C_String() ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SVN client reported success in adding file from " + source + " to " + destination );
+                return true;
+            }
+            else
+            {
+                failureReason += "SVN tool reported failure executing adding file from " + source + " to " + destination + ";";
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
+                return false;
+            }
+        }
+        else
+        {
+            failureReason += "Failed to perform an O/S file copy from " + source + " to " + destination + ";";
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
+            return false;
+        }
+    }
+    else
+    {
+        failureReason += "Cannot SVN add file from " + source + " to " + destination + " because the source file does not exist;";
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
     }
     return false;
 }
@@ -505,15 +672,16 @@ PerformSvnAdd( const CORE::CString& source      ,
 /*-------------------------------------------------------------------------*/
 
 bool
-PerformSvnMove( const CORE::CString& source      ,
-                const CORE::CString& destination ,
-                CORE::CString& failureReason     )
+PerformSvnMoveFile( const CORE::CString& source                 ,
+                    const CORE::CString& destination            ,
+                    const CORE::CString& destinationArchiveRoot ,
+                    CORE::CString& failureReason                )
 {GUCEF_TRACE;
     
     // sanity check
     if ( !CORE::FileExists( source ) )
     {
-        failureReason = "Cannot SVN move file from " + source + " to " + destination + " because the source file does not exist";
+        failureReason += "Cannot SVN move file from " + source + " to " + destination + " because the source file does not exist;";
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
         return false;
     }
@@ -535,14 +703,14 @@ PerformSvnMove( const CORE::CString& source      ,
             }
             else
             {
-                failureReason = "Cannot SVN move file from " + source + " to " + destination + " because a unversioned file already exists at the destination location and an attempt to delete it failed";
+                failureReason += "Cannot SVN move file from " + source + " to " + destination + " because a unversioned file already exists at the destination location and an attempt to delete it failed;";
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
                 return false;
             }
         }
         else
         {
-            failureReason = "Cannot SVN move file from " + source + " to " + destination + " because a versioned file already exists at the destination location";
+            failureReason += "Cannot SVN move file from " + source + " to " + destination + " because a versioned file already exists at the destination location;";
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
             return false;
         }
@@ -550,16 +718,30 @@ PerformSvnMove( const CORE::CString& source      ,
     }
     
     // Make sure we have someplace to move the file to that is versioned
-    if ( PerformSvnMakeSurePathExists( destination ) )
+    if ( PerformSvnMakeSurePathExists( destination            ,
+                                       destinationArchiveRoot ,
+                                       failureReason          ) )
     {
         // we are now ready to perform the actual SVN move
-        
-        // invoke svn move
-       // if ()
+        CORE::CString params = "move \"" + source + "\" \"" + destination + "\"";
+        if ( 0 != CORE::Execute_Program( "svn"             , 
+                                         params.C_String() ) )
         {
-         //   return true;
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SVN client reported success in move file from " + source + " to " + destination );
+            return true;
         }
-        
+        else
+        {
+            failureReason += "SVN tool reported failure executing move file from " + source + " to " + destination + ";";
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
+            return false;
+        }
+    }
+    else
+    {
+        failureReason += "SVN tool reported failure executing move file from " + source + " to " + destination + ";";
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, failureReason  );
+        return false;
     }
     
     return false;
@@ -574,6 +756,8 @@ ProcessUnchangedButMovedFiles( const CORE::CString& InfoOutputDir           ,
                                TMergeExceptionList& mergeExceptions         )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Commening processing of unchanged but moved files" );
+    
     TFileStatusVector fileStatusList;
     CORE::CString indexFilePath = CreatePathToUnchangedButMovedFileDiff( InfoOutputDir );    
     if ( LoadFileStatusList( indexFilePath  ,
@@ -595,23 +779,24 @@ ProcessUnchangedButMovedFiles( const CORE::CString& InfoOutputDir           ,
             CORE::AppendToPath( absPathToFileInMain, relPathToFileInMain );
             
             // Note that because the files ifs unchanged we can use the root of the main archive
-            CORE::CString absPathToFileInTemplate = mainArchiveRootPath;
-            CORE::AppendToPath( absPathToFileInTemplate, relPathToFileInTemplate );
+            CORE::CString absPathToFileAsInTemplate = mainArchiveRootPath;
+            CORE::AppendToPath( absPathToFileAsInTemplate, relPathToFileInTemplate );
             
             // Peform SVN move of file within the same archive
-            CORE::CString info;
-            if ( PerformSvnMove( absPathToFileInMain     , 
-                                 absPathToFileInTemplate ,
-                                 info                    ) )
+            CORE::CString failureReason;
+            if ( PerformSvnMoveFile( absPathToFileInMain       , 
+                                     absPathToFileAsInTemplate ,
+                                     mainArchiveRootPath       ,
+                                     failureReason             ) )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully moved unchanged file from " + absPathToFileInMain + " to " + absPathToFileInTemplate );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully moved unchanged file from " + absPathToFileInMain + " to " + absPathToFileAsInTemplate );
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to SVN move unchanged but moved file from " + absPathToFileInMain + " to " + absPathToFileInTemplate  );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to SVN move unchanged but moved file from " + absPathToFileInMain + " to " + absPathToFileAsInTemplate  );
 
                 TMergeException mergeException;
-                mergeException.exceptionReason = info;                
+                mergeException.exceptionReason = failureReason;                
                 mergeException.fileStatus = fileStatus;
                 mergeExceptions.push_back( mergeException );
             }
@@ -637,6 +822,8 @@ ProcessMissingInMainFiles( const CORE::CString& InfoOutputDir           ,
                            TMergeExceptionList& mergeExceptions         )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Commening processing of files that are missing in the main archive" );
+    
     TFileStatusVector fileStatusList;
     CORE::CString indexFilePath = CreatePathToMissingInMainFileDiff( InfoOutputDir );    
     if ( LoadFileStatusList( indexFilePath  ,
@@ -662,9 +849,9 @@ ProcessMissingInMainFiles( const CORE::CString& InfoOutputDir           ,
             
             // Peform SVN add for this file
             CORE::CString info;
-            if ( PerformSvnAdd( absPathToFileInTemplate , 
-                                absPathToFileInMain     ,
-                                info                    ) )
+            if ( PerformSvnAddFile( absPathToFileInTemplate , 
+                                    absPathToFileInMain     ,
+                                    info                    ) )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully added file from " + absPathToFileInMain + " to " + absPathToFileInTemplate );
             }
