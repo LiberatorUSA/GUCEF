@@ -579,7 +579,8 @@ PerformSvnIsFileVersionedCheck( const CORE::CString& path    ,
 bool
 PerformSvnDeleteFile( const CORE::CString& path    ,
                       CORE::CString& failureReason )
-{
+{GUCEF_TRACE;
+
     if ( CORE::FileExists( path ) )
     {
         if ( PerformSvnIsFileVersionedCheck( path          ,
