@@ -153,62 +153,60 @@ GetXmlDStoreCodec( void )
     return codecPtr;
 }
 
+
 /*---------------------------------------------------------------------------*/
 
 void
-LocateFileEntriesUsingName( const PATCHER::CPatchSetParser::TFileEntry& patchsetFileEntry ,
-                            const CORE::CString& relMainArchivePath                       ,
-                            PATCHER::CPatchSetParser::TFileEntryList& fileList            ,
-                            const CORE::CString& name                                     )
+BuildSortedFileEntryMaps( PATCHER::CPatchSetParser::TFileEntry& patchsetFileEntry ,
+                          TSortedFileEntryMaps& sortedFileMaps                    ,
+                          const CORE::CString& relativePath                       )
 {GUCEF_TRACE;
 
-    if ( patchsetFileEntry.name.Equals( name, false ) )
-    {        
-        CORE::CString relFilePath = relMainArchivePath;
-        CORE::AppendToPath( relFilePath, patchsetFileEntry.name );
-        
-        PATCHER::CPatchSetParser::TFileEntry entry = patchsetFileEntry;
-        PATCHER::CPatchSetParser::TFileLocation diskLocation;
-        diskLocation.codec = "FILE"; //<- so we can differentiate from the original location item
-        diskLocation.URL = relFilePath;
-        entry.fileLocations.push_back( diskLocation );
-        
-        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Found file entry with the same name at " + relFilePath );
-        
-        fileList.push_back( entry );
-    }
+    CORE::CString relFilePath = relativePath;
+    CORE::AppendToPath( relFilePath, patchsetFileEntry.name );
+    
+    // Add the relative path to the file as a file location
+    // If we put the entry in a flat sorted list we need to still be able to know
+    // where the entry came from
+    PATCHER::CPatchSetParser::TFileLocation diskLocation;
+    diskLocation.codec = "FILE";
+    diskLocation.URL = relFilePath;
+    patchsetFileEntry.fileLocations.push_back( diskLocation );
+    
+    sortedFileMaps.hashMap[ patchsetFileEntry.hash ].insert( &patchsetFileEntry );
+    sortedFileMaps.nameMap[ patchsetFileEntry.name ].insert( &patchsetFileEntry );        
+    
+    GUCEF_LOG( CORE::LOGLEVEL_EVERYTHING, "Added relative path file location to file entry and added entry to sorting maps for file at " + relFilePath );
+
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-LocateFileEntriesUsingName( const PATCHER::CPatchSetParser::TDirEntry& patchsetDirEntry ,
-                            const CORE::CString& relMainArchivePath                     ,
-                            PATCHER::CPatchSetParser::TFileEntryList& fileList          ,
-                            const CORE::CString& name                                   )
+BuildSortedFileEntryMaps( PATCHER::CPatchSetParser::TDirEntry& patchsetDirEntry ,
+                          TSortedFileEntryMaps& sortedFileMaps                  ,
+                          const CORE::CString& relativePath                     )
 {GUCEF_TRACE;
 
-    PATCHER::CPatchSetParser::TFileEntryList::const_iterator i = patchsetDirEntry.files.begin();
+    PATCHER::CPatchSetParser::TFileEntryList::iterator i = patchsetDirEntry.files.begin();
     while ( i != patchsetDirEntry.files.end() )       
     {
-        LocateFileEntriesUsingName( (*i)               ,
-                                    relMainArchivePath ,
-                                    fileList           ,
-                                    name               );
+        BuildSortedFileEntryMaps( (*i)           ,
+                                  sortedFileMaps ,
+                                  relativePath   );
         
         ++i;
     }
     
-    PATCHER::CPatchSetParser::TPatchSet::const_iterator n = patchsetDirEntry.subDirs.begin(); 
+    PATCHER::CPatchSetParser::TPatchSet::iterator n = patchsetDirEntry.subDirs.begin(); 
     while ( n != patchsetDirEntry.subDirs.end() )        
     {
-        CORE::CString subDirPath = relMainArchivePath;
+        CORE::CString subDirPath = relativePath;
         CORE::AppendToPath( subDirPath, (*n).name );
         
-        LocateFileEntriesUsingName( (*n)       ,
-                                    subDirPath ,
-                                    fileList   ,
-                                    name       );
+        BuildSortedFileEntryMaps( (*n)           ,
+                                  sortedFileMaps ,
+                                  subDirPath     );
         
         ++n;
     }
@@ -216,26 +214,37 @@ LocateFileEntriesUsingName( const PATCHER::CPatchSetParser::TDirEntry& patchsetD
 
 /*---------------------------------------------------------------------------*/
 
-void
-LocateFileEntriesUsingName( const PATCHER::CPatchSetParser::TPatchSet& patchSet ,
-                            const CORE::CString& relMainArchivePath             ,
-                            PATCHER::CPatchSetParser::TFileEntryList& fileList  ,
-                            const CORE::CString& name                           )
+bool
+BuildSortedFileEntryMaps( PATCHER::CPatchSetParser::TPatchSet& patchSet ,
+                          TSortedFileEntryMaps& sortedFileMaps          ,
+                          const CORE::CString& relativePath             )
 {GUCEF_TRACE;
 
-    PATCHER::CPatchSetParser::TPatchSet::const_iterator i = patchSet.begin();
+    PATCHER::CPatchSetParser::TPatchSet::iterator i = patchSet.begin();
     while ( i != patchSet.end() )        
     {
-        CORE::CString subDirPath = relMainArchivePath;
+        CORE::CString subDirPath = relativePath;
         CORE::AppendToPath( subDirPath, (*i).name );
 
-        LocateFileEntriesUsingName( (*i)       ,
-                                    subDirPath ,
-                                    fileList   ,
-                                    name       );
+        BuildSortedFileEntryMaps( (*i)           ,
+                                  sortedFileMaps ,
+                                  subDirPath     );
         
         ++i;
     }
+    return true;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+BuildSortedFileEntryMaps( PATCHER::CPatchSetParser::TPatchSet& patchSet ,
+                          TSortedFileEntryMaps& sortedFileMaps          )
+{GUCEF_TRACE;
+
+    return BuildSortedFileEntryMaps( patchSet        ,
+                                     sortedFileMaps  ,
+                                     CORE::CString() );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -256,180 +265,6 @@ GetPathForFile( const PATCHER::CPatchSetParser::TFileEntry& fileEntry )
     }
     return CORE::CString();
 }
-
-/*---------------------------------------------------------------------------*/
-
-bool
-PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templatePatchsetFileEntry ,
-                    const CORE::CString& relTemplatePatchsetDirPath                       ,
-                    const PATCHER::CPatchSetParser::TPatchSet& mainArchivePatchset        ,
-                    TFileStatusVector& fileStatusList                                     )
-{GUCEF_TRACE;
-
-    CORE::CString templateFilePath = relTemplatePatchsetDirPath;
-    CORE::AppendToPath( templateFilePath, templatePatchsetFileEntry.name );
-    CORE::Int32 firstSlashIndex = templateFilePath.HasChar( '\\' );
-    CORE::CString templateFilePathMinuxRoot;
-    if ( firstSlashIndex < 0 )
-    {
-        templateFilePathMinuxRoot = templateFilePath;
-    }
-    else
-    {
-        templateFilePathMinuxRoot = templateFilePath.CutChars( firstSlashIndex+1, true ); 
-    }
-       
-    // First locate all files in the main archive that have the same name as
-    // our template archive file
-    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Commencing search for files with the same name as template file: " + templateFilePath );
-    PATCHER::CPatchSetParser::TFileEntryList filesWithSameName;
-    LocateFileEntriesUsingName( mainArchivePatchset            , 
-                                CORE::CString()                ,
-                                filesWithSameName              ,
-                                templatePatchsetFileEntry.name );
-
-    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Found " + CORE::UInt32ToString( filesWithSameName.size() ) + " files with the same name as our template file in the main archive" );                                
-    
-    // Now check the resource state for each of those files
-    PATCHER::CPatchSetParser::TFileEntryList::iterator i = filesWithSameName.begin();
-    while ( i != filesWithSameName.end() )
-    {        
-        PATCHER::CPatchSetParser::TFileEntry& fileEntry = (*i);
-
-        CORE::CString relPathForMainArchiveFile = GetPathForFile( fileEntry );
-        firstSlashIndex = relPathForMainArchiveFile.HasChar( '\\' );
-        CORE::CString relPathForMainArchiveFileMinusRoot;
-        if ( firstSlashIndex < 0 )
-        {
-            relPathForMainArchiveFileMinusRoot = relPathForMainArchiveFile;
-        }
-        else
-        {
-            relPathForMainArchiveFileMinusRoot = relPathForMainArchiveFile.CutChars( firstSlashIndex+1, true ); 
-        }
-        
-        if ( ( templatePatchsetFileEntry.hash == fileEntry.hash )               &&
-             ( templatePatchsetFileEntry.sizeInBytes == fileEntry.sizeInBytes )  )
-        {
-            // File content is identical
-            if ( templateFilePathMinuxRoot.Equals( relPathForMainArchiveFileMinusRoot, false ) )
-            {                
-                TFileStatus fileStatus;
-                InitializeFileStatus( fileStatus );
-                fileStatus.resourceState = RESOURCESTATE_FILE_UNCHANGED;
-                fileStatus.templateArchiveInfo = templatePatchsetFileEntry;
-                fileStatus.mainSvnArchiveInfo = fileEntry;
-                
-                PATCHER::CPatchSetParser::TFileLocation templateLocation;
-                templateLocation.codec = "FILE";
-                templateLocation.URL = templateFilePath;
-                fileStatus.templateArchiveInfo.fileLocations.push_back( templateLocation );
-                
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + templateFilePath + "\" was unchanged" );
-                
-                fileStatusList.push_back( fileStatus );
-            }
-            else
-            {
-                TFileStatus fileStatus;
-                InitializeFileStatus( fileStatus );
-                fileStatus.resourceState = RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED;
-                fileStatus.templateArchiveInfo = templatePatchsetFileEntry;
-                fileStatus.mainSvnArchiveInfo = fileEntry;
-                
-                PATCHER::CPatchSetParser::TFileLocation templateLocation;
-                templateLocation.codec = "FILE";
-                templateLocation.URL = templateFilePath;
-                fileStatus.templateArchiveInfo.fileLocations.push_back( templateLocation );
-
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + templateFilePath + "\" was unchanged but moved to \"" + relPathForMainArchiveFile + "\"" );
-                
-                fileStatusList.push_back( fileStatus );
-            }
-        }
-        else
-        {
-            // File content is different
-            TFileStatus fileStatus;
-            InitializeFileStatus( fileStatus );
-            fileStatus.resourceState = RESOURCESTATE_FILE_CHANGED;
-            fileStatus.templateArchiveInfo = templatePatchsetFileEntry;
-            fileStatus.mainSvnArchiveInfo = fileEntry;
-
-            PATCHER::CPatchSetParser::TFileLocation templateLocation;
-            templateLocation.codec = "FILE";
-            templateLocation.URL = templateFilePath;
-            fileStatus.templateArchiveInfo.fileLocations.push_back( templateLocation );
-            
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + templateFilePath + "\" was changed at location \"" + relPathForMainArchiveFile + "\"" );
-            
-            fileStatusList.push_back( fileStatus );
-        }
-        
-        ++i;
-    }
-    
-    if ( 0 == filesWithSameName.size() )
-    {
-        // Unable to locate such a file in the other archive
-        TFileStatus fileStatus;
-        InitializeFileStatus( fileStatus );
-        fileStatus.resourceState = RESOURCESTATE_FILE_MISSING_IN_MAIN;
-        fileStatus.templateArchiveInfo = templatePatchsetFileEntry;
-
-        PATCHER::CPatchSetParser::TFileLocation templateLocation;
-        templateLocation.codec = "FILE";
-        templateLocation.URL = templateFilePath;
-        fileStatus.templateArchiveInfo.fileLocations.push_back( templateLocation );
-        
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + templateFilePath + "\" was added in the template archive" );
-        
-        fileStatusList.push_back( fileStatus );
-    }
-        
-    return true;
-}
-
-/*---------------------------------------------------------------------------*/
-
-bool
-PerformArchiveDiff( const PATCHER::CPatchSetParser::TDirEntry& templatePatchsetDirEntry ,
-                    const CORE::CString& relTemplatePatchsetDirPath                     ,
-                    const PATCHER::CPatchSetParser::TPatchSet& mainArchivePatchset      ,
-                    TFileStatusVector& fileStatusList                                   )
-{GUCEF_TRACE;
-
-    // process all files in this dir
-    PATCHER::CPatchSetParser::TFileEntryList::const_iterator i = templatePatchsetDirEntry.files.begin();
-    while ( i != templatePatchsetDirEntry.files.end() )
-    {
-        PerformArchiveDiff( (*i)                          ,
-                            relTemplatePatchsetDirPath    ,
-                            mainArchivePatchset           ,
-                            fileStatusList                );
-        
-        ++i;
-    }
-
-    PATCHER::CPatchSetParser::TDirEntryList::const_iterator n = templatePatchsetDirEntry.subDirs.begin();
-    while ( n != templatePatchsetDirEntry.subDirs.end() )        
-    {
-        // create relative path to sub-dir
-        CORE::CString fullPathToSubDir = relTemplatePatchsetDirPath;
-        CORE::AppendToPath( fullPathToSubDir, (*n).name );
-        
-        // do the same for the sub-dir
-        PerformArchiveDiff( (*n)                ,
-                            fullPathToSubDir    ,
-                            mainArchivePatchset ,
-                            fileStatusList      );
-        
-        ++n;
-    }
-
-    return true;
-}
-
 
 /*-------------------------------------------------------------------------*/
 
@@ -469,73 +304,260 @@ StringToResourceState( const CORE::CString& state )
 
 /*---------------------------------------------------------------------------*/
 
-void
-MarkDuplicatesAsUnknownStatus( TFileStatusVector& fileStatusList )
+CORE::CString
+GetPathForFileMinusRoot( const PATCHER::CPatchSetParser::TFileEntry& fileEntry )
 {GUCEF_TRACE;
 
-    // If there are multiple actions noted for files with the same name
-    // then this tool has very little choices left to it. There is hardly any way 
-    // to determine what to do so the status in such an event will be set to 'unknown'
-        
-    TFileStatusVector::iterator i = fileStatusList.begin();
-    while ( i != fileStatusList.end() )
+    CORE::CString filePath = GetPathForFile( fileEntry );
+    CORE::Int32 firstSlashIndex = filePath.HasChar( '\\' );
+    CORE::CString filePathMinuxRoot;
+    if ( firstSlashIndex < 0 )
     {
-        TFileStatus& fileStatus = (*i);
-        
-        if ( fileStatus.resourceState != RESOURCESTATE_UNKNOWN )
-        {
-            const CORE::CString& itemName = fileStatus.templateArchiveInfo.name;
-            bool firstDuplicate = true;
-            
-            TFileStatusVector::iterator n = fileStatusList.begin();
-            while ( n != fileStatusList.end() )
-            {
-                // Make sure we don't compare with ourselves
-                if ( n != i )
-                {
-                    TFileStatus& otherFileStatus = (*n);                
-                    if ( ( otherFileStatus.templateArchiveInfo.name == itemName ) ||
-                         ( otherFileStatus.mainSvnArchiveInfo.name == itemName )   )
-                    {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found multiple entries for a file with name \"" + itemName + 
-                                     "\" one entry has resource state " + CORE::CString( ResourceStateToString( fileStatus.resourceState ) ) +
-                                     " and the other has resource state " + CORE::CString( ResourceStateToString( otherFileStatus.resourceState ) ) );
-                        
-                        fileStatus.resourceState = RESOURCESTATE_UNKNOWN;
-                        otherFileStatus.resourceState = RESOURCESTATE_UNKNOWN;
-                    }
-                }
-                
-                ++n;
-            }
-        }
-        ++i;
+        return filePath;
     }
+    else
+    {
+        return filePath.CutChars( firstSlashIndex+1, true ); 
+    }    
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool
-PerformArchiveDiff( const PATCHER::CPatchSetParser::TPatchSet& templatePatchset    ,
-                    const PATCHER::CPatchSetParser::TPatchSet& mainArchivePatchset ,
-                    TFileStatusVector& fileStatusList                              )
+PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templateFileEntry ,
+                    const TSortedFileEntryMaps& mainPatchsetSearchMap             ,
+                    TFileStatusVector& fileStatusList                             )
 {GUCEF_TRACE;
 
-    PATCHER::CPatchSetParser::TPatchSet::const_iterator i = templatePatchset.begin();
-    while ( i != templatePatchset.end() )        
+    CORE::CString pathOfEntry = GetPathForFileMinusRoot( templateFileEntry );
+    
+    TFileEntryPtrMap::const_iterator i = mainPatchsetSearchMap.hashMap.find( templateFileEntry.hash );
+    if ( i != mainPatchsetSearchMap.hashMap.end() )
     {
-        PerformArchiveDiff( (*i)                ,
-                            (*i).name           ,
-                            mainArchivePatchset ,
-                            fileStatusList      );
+        const TFileEntrySet& entries = (*i).second;
+        TFileEntrySet::const_iterator n = entries.begin();
+        while ( n != entries.end() )
+        {
+            const PATCHER::CPatchSetParser::TFileEntry* otherEntry = (*n);
+            
+            // We already know any entry here will have the same hash.
+            // what else do they have in common?
+            CORE::CString pathOfOtherEntry = GetPathForFileMinusRoot( *otherEntry );
+            if ( pathOfOtherEntry.Equals( pathOfEntry, false ) )
+            {
+                // The files have the same path & hash
+                // We can say with some measure of certainty that this file was unchanged
+                TFileStatus fileStatus;
+                InitializeFileStatus( fileStatus );
+                fileStatus.resourceState = RESOURCESTATE_FILE_UNCHANGED;
+                fileStatus.templateArchiveInfo = templateFileEntry;
+                fileStatus.mainSvnArchiveInfo = *otherEntry;
+
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfOtherEntry + "\" was unchanged" );
+                
+                fileStatusList.push_back( fileStatus );
+                return true;
+            }
+            
+            ++n;
+        }
         
-        ++i;
+        // If we get here then although files where found with the same hash they do not have the same path
+        // So perhaps the file was moved but not changed. Note that if there are multiple entries with the same
+        // hash this won't suffice since then the risk is too great that we might confuse different files.
+        if ( entries.size() == 1 )
+        {
+            // Since there is only 1 file with the same hash and we can assume with fair certainty that
+            // this is the same file but it was moved (including renames)
+            const PATCHER::CPatchSetParser::TFileEntry* otherEntry = (*entries.begin());
+            TFileStatus fileStatus;
+            InitializeFileStatus( fileStatus );
+            fileStatus.resourceState = RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED;
+            fileStatus.templateArchiveInfo = templateFileEntry;
+            fileStatus.mainSvnArchiveInfo = *otherEntry;
+
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was unchanged but its path changed from " + GetPathForFileMinusRoot( *otherEntry ) );
+            
+            fileStatusList.push_back( fileStatus );
+            return true;
+        }
+        else
+        {
+            // We can use 1 other criterea, what if there are multiple entries with the same hash
+            // all at different locations then the original, but what if only 1 has the same name as
+            // the original? The odds are then pretty good that this is a positive match
+            const PATCHER::CPatchSetParser::TFileEntry* entryWithSameName = NULL;
+            CORE::UInt32 matchCount = 0;
+            while ( n != entries.end() )
+            {
+                const PATCHER::CPatchSetParser::TFileEntry* otherEntry = (*n);
+                
+                // We already know any entry here will have the same hash.
+                // We also know they won't have the same path. We want to find exactly 1 name match
+                if ( templateFileEntry.name == otherEntry->name )
+                {
+                    if ( 0 == matchCount )
+                    {
+                        ++matchCount;
+                        entryWithSameName = otherEntry;
+                    }
+                    else
+                    {
+                        // Too many matches, this isnt going to work
+                        // no point in continueing
+                        ++matchCount;
+                        break;
+                    }
+                }
+                ++n;
+            }
+            
+            // remember we only want 1 match
+            if ( 1 == matchCount )
+            {
+                // Yay, we found a file that has the same hash and although there where multiple
+                // files for which this was true only 1 had the same name so we found our file
+                TFileStatus fileStatus;
+                InitializeFileStatus( fileStatus );
+                fileStatus.resourceState = RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED;
+                fileStatus.templateArchiveInfo = templateFileEntry;
+                fileStatus.mainSvnArchiveInfo = *entryWithSameName;
+
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was unchanged but its path changed from " + GetPathForFileMinusRoot( *entryWithSameName ) );
+                
+                fileStatusList.push_back( fileStatus );
+                return true;
+            }
+        }
     }
     
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished perfoming a diff between two patchs sets, commencing search for ambigous entries" );
+    // If we get here then it's going to be harder to find a match
+    // Aparently using hash equavalancy did not yield a match so if the file is in the other 
+    // archive then it must have been changed. 
+    i = mainPatchsetSearchMap.nameMap.find( templateFileEntry.name );
+    if ( i != mainPatchsetSearchMap.nameMap.end() )
+    {
+        // We know that all entries in here will be files with the same name, 
+        // we also know we can't count on the hash to help us.
+        // We can grab onto path equavalancy,..
+        // If the file was altered but kept in the same location then we can still find it
+        const TFileEntrySet& entries = (*i).second;
+        TFileEntrySet::const_iterator n = entries.begin();
+        while ( n != entries.end() )
+        {
+            const PATCHER::CPatchSetParser::TFileEntry* otherEntry = (*n);
+            CORE::CString pathToOtherFile = GetPathForFileMinusRoot( *otherEntry );
+            
+            if ( pathOfEntry.Equals( pathToOtherFile, false ) )
+            {
+                // found altered file in same location, bingo
+                TFileStatus fileStatus;
+                InitializeFileStatus( fileStatus );
+                fileStatus.resourceState = RESOURCESTATE_FILE_CHANGED;
+                fileStatus.templateArchiveInfo = templateFileEntry;
+                fileStatus.mainSvnArchiveInfo = *otherEntry;
+
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was changed" );
+                
+                fileStatusList.push_back( fileStatus );
+                return true;
+            }
+            
+            ++n;
+        }
+        
+        // What if there is only 1 file in the other archive with the same name?
+        // If thats the case then we might be able to guess that this is in face the same file
+        // but it was moved and altered,.. lets hope they used unique names...
+        if ( 1 == entries.size() )
+        {
+            // Few that was a close one, we have a match
+            const PATCHER::CPatchSetParser::TFileEntry* otherEntry = (*entries.begin());
+            
+            TFileStatus fileStatus;
+            InitializeFileStatus( fileStatus );
+            fileStatus.resourceState = RESOURCESTATE_FILE_CHANGED;
+            fileStatus.templateArchiveInfo = templateFileEntry;
+            fileStatus.mainSvnArchiveInfo = *otherEntry;
+
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was changed and moved from " + GetPathForFileMinusRoot( *otherEntry ) );
+            
+            fileStatusList.push_back( fileStatus );            
+        }
+        
+    }
     
-    MarkDuplicatesAsUnknownStatus( fileStatusList );
+    // If we get here then we are out of ideas on how to match files and this one will
+    // need human intervention
+    TFileStatus fileStatus;
+    InitializeFileStatus( fileStatus );
+    fileStatus.resourceState = RESOURCESTATE_UNKNOWN;
+    fileStatus.templateArchiveInfo = templateFileEntry;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unable to match file \"" + pathOfEntry + "\", its status is unknown" );
+
+    fileStatusList.push_back( fileStatus );
     return true;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+PerformArchiveDiff( const TSortedFileEntryMaps& templateArchivePatchsetSearchMap ,
+                    const TSortedFileEntryMaps& mainArchivePatchsetSearchMap     ,
+                    TFileStatusVector& fileStatusList                            )
+{GUCEF_TRACE;
+
+    TFileEntryPtrMap::const_iterator i = templateArchivePatchsetSearchMap.hashMap.begin();
+    while ( i != templateArchivePatchsetSearchMap.hashMap.end() )
+    {
+        const TFileEntrySet& entries = (*i).second;
+        TFileEntrySet::const_iterator n = entries.begin();
+        while ( n != entries.end() )
+        {        
+            PerformArchiveDiff( *(*n)                        , 
+                                mainArchivePatchsetSearchMap ,
+                                fileStatusList               );
+            ++n;
+        }
+        ++i;
+    }
+    return true;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+PerformArchiveDiff( PATCHER::CPatchSetParser::TPatchSet& templatePatchset    ,
+                    PATCHER::CPatchSetParser::TPatchSet& mainArchivePatchset ,
+                    TFileStatusVector& fileStatusList                        )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Commencing creation of a sorted map for the template patch set" );
+    
+    TSortedFileEntryMaps templateArchivePatchsetSearchMap;
+    BuildSortedFileEntryMaps( templatePatchset, templateArchivePatchsetSearchMap );
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Sucessfully finished creation of a sorted map for the template patch set" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Commencing creation of a sorted map for the main patch set" );
+    
+    TSortedFileEntryMaps mainArchivePatchsetSearchMap;
+    BuildSortedFileEntryMaps( mainArchivePatchset, mainArchivePatchsetSearchMap );
+    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Sucessfully finished creation of a sorted map for the template patch set" );
+        
+    if ( PerformArchiveDiff( templateArchivePatchsetSearchMap ,
+                             mainArchivePatchsetSearchMap     ,
+                             fileStatusList                   ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished perfoming a diff between two patchs sets, commencing search for ambigous entries" );
+        return true;
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to perform a diff of the archives using the sorted maps" );
+    }
+    return false;
 }
 
 /*---------------------------------------------------------------------------*/

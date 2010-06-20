@@ -107,10 +107,21 @@ struct SFileStatus
     GUCEF::PATCHER::CPatchSetParser::TFileEntry mainSvnArchiveInfo;
 };
 typedef struct SFileStatus TFileStatus;
+typedef std::vector< TFileStatus > TFileStatusVector;
 
 /*-------------------------------------------------------------------------*/
 
-typedef std::vector< TFileStatus > TFileStatusVector;
+typedef std::set< GUCEF::PATCHER::CPatchSetParser::TFileEntry* > TFileEntrySet;
+typedef std::map< GUCEF::CORE::CString, TFileEntrySet > TFileEntryPtrMap;
+
+/*-------------------------------------------------------------------------*/
+
+struct SSortedFileEntryMaps
+{
+    TFileEntryPtrMap hashMap;
+    TFileEntryPtrMap nameMap;
+};
+typedef struct SSortedFileEntryMaps TSortedFileEntryMaps;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -125,6 +136,12 @@ InitializeFileStatus( TFileStatus& fileStatus );
 
 GUCEF::CORE::CDStoreCodecRegistry::TDStoreCodecPtr ARCHIVEDIFFLIB_PUBLIC_CPP
 GetXmlDStoreCodec( void );
+
+/*-------------------------------------------------------------------------*/
+
+bool ARCHIVEDIFFLIB_PUBLIC_CPP
+BuildSortedFileEntryMaps( GUCEF::PATCHER::CPatchSetParser::TPatchSet& patchSet ,
+                          TSortedFileEntryMaps& sortedFileMaps                 );
 
 /*-------------------------------------------------------------------------*/
 
@@ -147,9 +164,16 @@ SaveXmlFile( const GUCEF::CORE::CString& filePath   ,
 /*-------------------------------------------------------------------------*/
 
 bool ARCHIVEDIFFLIB_PUBLIC_CPP
-PerformArchiveDiff( const GUCEF::PATCHER::CPatchSetParser::TPatchSet& templatePatchset    ,
-                    const GUCEF::PATCHER::CPatchSetParser::TPatchSet& mainArchivePatchset ,
-                    TFileStatusVector& fileStatusList                                     );
+PerformArchiveDiff( const TFileEntryPtrMap& templatePatchsetSortedMap    ,
+                    const TFileEntryPtrMap& mainArchivePatchsetSortedMap ,
+                    TFileStatusVector& fileStatusList                    );
+
+/*-------------------------------------------------------------------------*/
+
+bool ARCHIVEDIFFLIB_PUBLIC_CPP
+PerformArchiveDiff( GUCEF::PATCHER::CPatchSetParser::TPatchSet& templatePatchset    ,
+                    GUCEF::PATCHER::CPatchSetParser::TPatchSet& mainArchivePatchset ,
+                    TFileStatusVector& fileStatusList                               );
 
 /*-------------------------------------------------------------------------*/
 
