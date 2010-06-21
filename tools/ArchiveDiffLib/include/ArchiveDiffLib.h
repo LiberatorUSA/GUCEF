@@ -111,6 +111,7 @@ typedef std::vector< TFileStatus > TFileStatusVector;
 
 /*-------------------------------------------------------------------------*/
 
+typedef std::set< const GUCEF::PATCHER::CPatchSetParser::TFileEntry* > TConstFileEntrySet;
 typedef std::set< GUCEF::PATCHER::CPatchSetParser::TFileEntry* > TFileEntrySet;
 typedef std::map< GUCEF::CORE::CString, TFileEntrySet > TFileEntryPtrMap;
 
