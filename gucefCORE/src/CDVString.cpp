@@ -715,8 +715,8 @@ CString::SubstrToSubstr( const CString& searchstr ,
                 if ( memcmp( m_string+i, searchstr.m_string, slen ) == 0 )
                 {
                         CString substr;
-                        substr.Set( m_string+(max-i) ,
-                                    i               );
+                        substr.Set( m_string+i+slen ,
+                                    max-i           );
                         return substr;
                 }
         }

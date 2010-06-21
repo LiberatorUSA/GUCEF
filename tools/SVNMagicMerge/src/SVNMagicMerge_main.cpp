@@ -1026,8 +1026,9 @@ SaveMergeExceptions( const TMergeExceptionList& mergeExceptions ,
 /*-------------------------------------------------------------------------*/
 
 bool
-BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList ,
-                                  const CORE::CString& InfoOutputDir      )
+BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList    ,
+                                  const CORE::CString& InfoOutputDir         ,
+                                  const GUCEF::CORE::Int32 maxEntriesPerFile )
 {GUCEF_TRACE;
 
     // First we break up the large list into smaller more manageable ones
@@ -1038,7 +1039,8 @@ BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList ,
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully seperated list of unchanged files from the file status list" );
         CORE::CString subSetFilePath = CreatePathToUnchangedFileDiff( InfoOutputDir );
         if ( SaveFileStatusList( subSetFilePath       ,  
-                                 subSetFileStatusList ) )
+                                 subSetFileStatusList ,
+                                 maxEntriesPerFile    ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved list of unchanged files to " + subSetFilePath );
             
@@ -1049,7 +1051,8 @@ BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList ,
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully seperated list of unchanged but moved files from the file status list" );
                 subSetFilePath = CreatePathToUnchangedButMovedFileDiff( InfoOutputDir );
                 if ( SaveFileStatusList( subSetFilePath       ,  
-                                         subSetFileStatusList ) )
+                                         subSetFileStatusList ,
+                                         maxEntriesPerFile    ) )
                 {
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved list of unchanged but moved files to " + subSetFilePath );
                     
@@ -1060,7 +1063,8 @@ BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList ,
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully seperated list of changed files from the file status list" );
                         subSetFilePath = CreatePathToChangedFileDiff( InfoOutputDir );
                         if ( SaveFileStatusList( subSetFilePath       ,  
-                                                 subSetFileStatusList ) )
+                                                 subSetFileStatusList ,
+                                                 maxEntriesPerFile    ) )
                         {
                             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved list of changed files to " + subSetFilePath );
                             
@@ -1071,7 +1075,8 @@ BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList ,
                                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully seperated list of files missing from the template archive out of the file status list" );
                                 subSetFilePath = CreatePathToMissingInTemplateFileDiff( InfoOutputDir );
                                 if ( SaveFileStatusList( subSetFilePath       ,  
-                                                         subSetFileStatusList ) )
+                                                         subSetFileStatusList ,
+                                                         maxEntriesPerFile    ) )
                                 {
                                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved list of files missing from the template archive to " + subSetFilePath );
                                     
@@ -1082,7 +1087,8 @@ BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList ,
                                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully seperated list of files missing from the main archive out of the file status list" );
                                         subSetFilePath = CreatePathToMissingInMainFileDiff( InfoOutputDir  );
                                         if ( SaveFileStatusList( subSetFilePath       ,  
-                                                                 subSetFileStatusList ) )
+                                                                 subSetFileStatusList ,
+                                                                 maxEntriesPerFile    ) )
                                         {
                                             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved list of files missing from the main archive to " + subSetFilePath );
                                             
@@ -1093,7 +1099,8 @@ BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList ,
                                                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully seperated list of files with an unknown status out of the file status list" );
                                                 subSetFilePath = CreatePathToUnknownStatusFileDiff( InfoOutputDir  );
                                                 if ( SaveFileStatusList( subSetFilePath       ,  
-                                                                         subSetFileStatusList ) )
+                                                                         subSetFileStatusList ,
+                                                                         maxEntriesPerFile    ) )
                                                 {
                                                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved list of files with an unknown status to " + subSetFilePath );
                                                     
@@ -1240,6 +1247,12 @@ main( int argc , char* argv[] )
         CORE::CString pluginsListStr = argList.GetValueAlways( "Plugins" );
         CORE::CString infoOutputDir = argList.GetValueAlways( "InfoOutputDir" );
         CORE::CString splitDiffOnlyStr = argList.GetValueAlways( "SplitDiffOnly" );
+        CORE::CString maxEntriesPerDiffFileStr = argList.GetValueAlways( "MaxEntriesPerDiffFile" );
+        CORE::Int32 maxEntriesPerFile = -1;
+        if ( 0 != maxEntriesPerDiffFileStr.Length() )
+        {
+            maxEntriesPerFile = CORE::StringToInt32( maxEntriesPerDiffFileStr );
+        }
         if ( 0 == infoOutputDir.Length() )
         {
             infoOutputDir = CORE::RelativePath( "$MODULEDIR$" );
@@ -1258,8 +1271,9 @@ main( int argc , char* argv[] )
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the file status list" );
             
             // First we break up the large list into smaller more manageable ones
-            if ( BreakUpFileStatusListIntoSubsets( fileStatusList ,
-                                                   infoOutputDir  ) )
+            if ( BreakUpFileStatusListIntoSubsets( fileStatusList    ,
+                                                   infoOutputDir     ,
+                                                   maxEntriesPerFile ) )
             {
                 // Reduce memory footprint
                 fileStatusList.clear();
