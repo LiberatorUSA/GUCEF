@@ -632,12 +632,12 @@ PerformArchiveDiff( PATCHER::CPatchSetParser::TPatchSet& templatePatchset    ,
                                                unmatchedEntriesInMain           ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Sucessfully completed the entire diff" );
+            return true;
         }
         else
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to perform a diff of main to template using the sorted maps" );
         }
-        return false;
     }
     else
     {
