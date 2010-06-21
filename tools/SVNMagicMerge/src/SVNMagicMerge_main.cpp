@@ -405,6 +405,8 @@ PrintHelp( void )
     printf( "                         to load\n" );
     printf( "    'SplitDiffOnly'    : optional param: boolean, if true all the tool will do\n" );
     printf( "                         is split the diff file into catagories, default false\n" );
+    printf( "    'SvnToolDir'       : optional param: Allows you to specify the system dir\n");
+    printf( "                         containing the SVN binaries (default = no path)\n" );
 }
 
 /*-------------------------------------------------------------------------*/

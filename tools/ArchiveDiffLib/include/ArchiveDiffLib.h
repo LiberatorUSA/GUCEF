@@ -190,9 +190,17 @@ SerializeFileStatus( const TFileStatus& fileStatus      ,
 
 /*-------------------------------------------------------------------------*/
                     
+/**
+ *  Saves the status list given to the file indicated by filePath
+ *  Note that if maxEntriesPerFile is greater then -1 it will count as 
+ *  a limit on the number of entries allowed in a file. If the file status
+ *  entries do not fit in a single files multiple files will be created holding
+ *  up to 'maxEntriesPerFile' entries.
+ */
 bool ARCHIVEDIFFLIB_PUBLIC_CPP
-SaveFileStatusList( const GUCEF::CORE::CString& filePath    ,
-                    const TFileStatusVector& fileStatusList );
+SaveFileStatusList( const GUCEF::CORE::CString& filePath       ,
+                    const TFileStatusVector& fileStatusList    ,
+                    const GUCEF::CORE::Int32 maxEntriesPerFile );
 
 /*-------------------------------------------------------------------------*/
 

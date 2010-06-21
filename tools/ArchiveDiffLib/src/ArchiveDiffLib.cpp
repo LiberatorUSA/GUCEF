@@ -655,9 +655,9 @@ SaveXmlFile( const CORE::CString& filePath   ,
 
     if ( CORE::FileExists( filePath ) )
     {
-        if ( 0 != CORE::Delete_File( filePath.C_String() ) )
+        if ( 0 == CORE::Delete_File( filePath.C_String() ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "A file already exists and it could not be deleted: " + filePath );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "A file already exists and it could not be deleted: " + filePath );
             return false;
         }
     }
@@ -872,22 +872,75 @@ DeserializeFileStatus( const CORE::CDataNode& fileStatusNode ,
 
 bool
 SaveFileStatusList( const CORE::CString& filePath           ,
-                    const TFileStatusVector& fileStatusList )
+                    const TFileStatusVector& fileStatusList ,
+                    const CORE::Int32 maxEntriesPerFile     )
 {GUCEF_TRACE;
 
     CORE::CDataNode fileStatusTree;
     fileStatusTree.SetName( "FileStatusList" );
-    fileStatusTree.SetAttribute( "ItemCount", CORE::UInt32ToString( fileStatusList.size() ) );
+    fileStatusTree.SetAttribute( "TotalItemCount", CORE::UInt32ToString( fileStatusList.size() ) );
     
+    CORE::UInt32 fileCounter = 1;
+    CORE::UInt32 nrOfFiles = 1;
+    if ( maxEntriesPerFile >= 0 )
+    {
+        CORE::Float32 nrOfFilesFl = fileStatusList.size() / ( maxEntriesPerFile * 1.0f);
+        nrOfFiles = (CORE::UInt32) nrOfFilesFl;
+        if ( nrOfFilesFl > nrOfFiles )
+        {
+            nrOfFiles++;
+        }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "A maximum number of entries per file has been specified, as a result " + CORE::UInt32ToString( nrOfFiles ) + " files be created instead of 1" );       
+    }
+    fileStatusTree.SetAttribute( "TotalNrOfFileStatusListFiles", CORE::UInt32ToString( nrOfFiles ) );
+    fileStatusTree.SetAttribute( "IndexOfFileStatusListFile", CORE::UInt32ToString( fileCounter ) );
+    
+    CORE::CString actualFilePath;
+    CORE::Int32 entryCount = 0;
     TFileStatusVector::const_iterator i = fileStatusList.begin();
     while ( i != fileStatusList.end() )
     {
         const TFileStatus& fileStatus = (*i);
         SerializeFileStatus( fileStatus, fileStatusTree );
+        ++entryCount;
+        
+        if ( ( maxEntriesPerFile >= 0 )         &&
+             ( entryCount >= maxEntriesPerFile ) )        
+        {
+            actualFilePath = filePath + ".(part" + CORE::UInt32ToString( fileCounter ) + 
+                             "of" + CORE::UInt32ToString( nrOfFiles ) + ").xml";
+            
+            if ( !SaveXmlFile( actualFilePath ,
+                               fileStatusTree ) )
+            {   
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to save the generated data tree (part " + CORE::UInt32ToString( fileCounter ) + 
+                                                        " of " + CORE::UInt32ToString( nrOfFiles ) + ") to file " + filePath );
+                return false;
+            }
+            
+            // reset counter and tree
+            fileStatusTree.DelSubTree();
+            entryCount = 0;
+            
+            // Prepare for next file
+            ++fileCounter;
+            fileStatusTree.SetAttribute( "IndexOfFileStatusListFile", CORE::UInt32ToString( fileCounter ) );
+        }
         ++i;
     }
-    
-    if ( SaveXmlFile( filePath       ,
+
+    if ( nrOfFiles > 1 )
+    {
+        actualFilePath = filePath + ".(part" + CORE::UInt32ToString( fileCounter ) + 
+                         "of" + CORE::UInt32ToString( nrOfFiles ) + ").xml";
+    }
+    else
+    {   
+        actualFilePath = filePath;
+    }
+        
+    // Save the remaining entries
+    if ( SaveXmlFile( actualFilePath ,
                       fileStatusTree ) )
     {   
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved the generated data tree to file " + filePath );
