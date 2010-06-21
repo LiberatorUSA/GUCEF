@@ -178,9 +178,23 @@ PerformArchiveDiff( GUCEF::PATCHER::CPatchSetParser::TPatchSet& templatePatchset
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Loads file status information for the specific file given if the file given
+ *  is a single part file status list. If it is part of a set it will load each
+ *  set entry automatically and append to the file status
+ */
 bool ARCHIVEDIFFLIB_PUBLIC_CPP
 LoadFileStatusList( const GUCEF::CORE::CString& filePath ,
                     TFileStatusVector& fileStatusList    );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Loads file status information for the specific file given
+ */
+bool ARCHIVEDIFFLIB_PUBLIC_CPP
+LoadFileStatusListSegment( const GUCEF::CORE::CString& filePath ,
+                           TFileStatusVector& fileStatusList    );
 
 /*-------------------------------------------------------------------------*/
 

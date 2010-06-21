@@ -48,6 +48,14 @@ namespace ARCHIVEDIFF {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+typedef std::set< CORE::CString > TStringSet;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -953,8 +961,8 @@ SaveFileStatusList( const CORE::CString& filePath           ,
 /*-------------------------------------------------------------------------*/
 
 bool
-LoadFileStatusList( const CORE::CString& filePath     ,
-                    TFileStatusVector& fileStatusList )
+LoadFileStatusListSegment( const CORE::CString& filePath     ,
+                           TFileStatusVector& fileStatusList )
 {GUCEF_TRACE;
 
     CORE::CDataNode fileStatusTree;
@@ -983,13 +991,139 @@ LoadFileStatusList( const CORE::CString& filePath     ,
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to deserialize a file status entry" );
                 }
                 ++i;
-            } 
+            }
+            return true; 
         }
         else
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to locate file status list root node in XML document" );
         }
     }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetListOfMultiPartFiles( const CORE::CString& filePath ,
+                         TStringSet& multiPartFiles    )
+{GUCEF_TRACE;
+
+    CORE::CString rootDir = CORE::StripFilename( filePath );
+    CORE::CString rootFilename = CORE::ExtractFilename( filePath );
+    
+    struct CORE::SDI_Data* dirEntry = CORE::DI_First_Dir_Entry( rootDir.C_String() );
+    if ( dirEntry != NULL )    
+    {
+        do 
+        {
+            CORE::CString entryName = CORE::DI_Name( dirEntry );
+            if ( ( entryName != "." )  &&
+                 ( entryName != ".." )  )
+            {
+                if ( 0 != CORE::DI_Is_It_A_File( dirEntry ) )
+                {
+                    // We found a file lets check if it has our rootFilename in it
+                    if ( entryName.HasSubstr( rootFilename, 0, true ) == 0 )
+                    {
+                        // This file has our rootFilename it it's name
+                        CORE::CString fullPathToSegmentFile = rootDir;
+                        CORE::AppendToPath( fullPathToSegmentFile, entryName );
+                        
+                        multiPartFiles.insert( fullPathToSegmentFile );
+                    }
+                }
+            }            
+        } 
+        while ( CORE::DI_Next_Dir_Entry( dirEntry ) != 0 );
+        
+        // clean up our toys
+        CORE::DI_Cleanup( dirEntry );
+        
+        // If this is a correct multi-part set we should have 2 files or more
+        return multiPartFiles.size() > 1;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetMultiPartFileInfoFromPath( const CORE::CString& filePath ,
+                              CORE::UInt32& fileIndex       ,
+                              CORE::UInt32& totalFiles      )
+{GUCEF_TRACE;
+
+    // Cut such that we get the 'partXofY' segment
+    CORE::CString remainder = filePath.CutChars( 5, false );
+    remainder = remainder.SubstrToSubstr( ".(part", false );
+    
+    // remainder should now be 'XofY'
+    CORE::CString indexStr = remainder.SubstrToSubstr( "of", true );
+    CORE::CString totalStr = remainder.SubstrToSubstr( "of", false );
+    
+    if ( ( indexStr.Length() > 0 ) && 
+         ( totalStr.Length() > 0 )  )
+    {
+        fileIndex = CORE::StringToUInt32( indexStr );
+        totalFiles = CORE::StringToUInt32( totalStr );
+        return true;
+    }
+    return false;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+LoadFileStatusList( const CORE::CString& filePath     ,
+                    TFileStatusVector& fileStatusList )
+{GUCEF_TRACE;
+
+    if ( CORE::FileExists( filePath ) )
+    {
+        // The given file exists as given so it is not a multi-part file
+        // loading a single segment loads everything
+        return LoadFileStatusListSegment( filePath       ,
+                                          fileStatusList );
+    }
+    
+    // If we get here we have to test for a multi-part diff list
+    TStringSet multiPartFiles;
+    if ( GetListOfMultiPartFiles( filePath       ,
+                                  multiPartFiles ) )
+    {
+        CORE::UInt32 fileIndex = 0;
+        CORE::UInt32 totalFiles = 0;
+        CORE::CString& aFileFromSet = *multiPartFiles.begin();        
+        if ( GetMultiPartFileInfoFromPath( aFileFromSet ,
+                                           fileIndex    ,
+                                           totalFiles   ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully located a set of file status files consisting of " + CORE::UInt32ToString( totalFiles ) + " files total" );
+            
+            for ( CORE::UInt32 i=1; i<=totalFiles; ++i )
+            {
+                // first create file path to segment
+                CORE::CString segmentFilePath = filePath + ".(part" + CORE::UInt32ToString( i ) + "of" + CORE::UInt32ToString( totalFiles ) + ").xml";                
+                if ( !LoadFileStatusListSegment( segmentFilePath ,
+                                                 fileStatusList  ) )
+                {
+                    // failed to load segment
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file status list segment file \"" + segmentFilePath + "\"" );
+                    return false;
+                }
+            }
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded a set of file status files consisting of " + 
+                                        CORE::UInt32ToString( totalFiles ) + " files total containing a combined total of " +
+                                        CORE::UInt32ToString( fileStatusList.size() ) + " status entries" );
+            return true;
+        }
+    }
+    
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file as either a single file of a multi-part set: \"" + filePath + "\"" );
     return false;
 }
 
