@@ -395,10 +395,16 @@ PrintHelp( void )
     printf( " - Program arguments:\n" );
     printf( "  Arguments should be passed in the form \'key=value\'\n" );
     printf( "    'ArchiveDiffFile'         : path to a archive diff file\n" );
-    printf( "    'MainArchiveRootPath'     : path to root of the main archive the diff file applies too\n" );
-    printf( "    'TemplateArchiveRootPath' : path to root of the template archive the diff file applies too\n" );
-    printf( "    'InfoOutputDir'    : optional param: path to dir where you want to tool output to be stored\n" );
-    printf( "    'Plugins'          : optional param: comma seperated list of plugins to load\n" );
+    printf( "    'MainArchiveRootPath'     : path to root of the main archive the diff file\n" );
+    printf( "                                applies too\n" );
+    printf( "    'TemplateArchiveRootPath' : path to root of the template archive the diff\n" ); 
+    printf( "                                file applies too\n" );
+    printf( "    'InfoOutputDir'    : optional param: path to dir where you want to tool\n" ); 
+    printf( "                         output to be stored\n" );
+    printf( "    'Plugins'          : optional param: comma seperated list of plugins\n" );
+    printf( "                         to load\n" );
+    printf( "    'SplitDiffOnly'    : optional param: boolean, if true all the tool will do\n" );
+    printf( "                         is split the diff file into catagories, default false\n" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1231,9 +1237,16 @@ main( int argc , char* argv[] )
         CORE::CString templateArchiveRootPath = argList[ "TemplateArchiveRootPath" ];
         CORE::CString pluginsListStr = argList.GetValueAlways( "Plugins" );
         CORE::CString infoOutputDir = argList.GetValueAlways( "InfoOutputDir" );
+        CORE::CString splitDiffOnlyStr = argList.GetValueAlways( "SplitDiffOnly" );
         if ( 0 == infoOutputDir.Length() )
         {
             infoOutputDir = CORE::RelativePath( "$MODULEDIR$" );
+        }
+        
+        bool splitDiffOnly = false;
+        if ( splitDiffOnlyStr.Length() > 0 )
+        {
+            splitDiffOnly = CORE::StringToBool( splitDiffOnlyStr );
         }
         
         TFileStatusVector fileStatusList;
@@ -1249,6 +1262,12 @@ main( int argc , char* argv[] )
                 // Reduce memory footprint
                 fileStatusList.clear();
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully seperated file status list into subsets" );
+                
+                if ( splitDiffOnly )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SplitDiffOnly is set to true so no further processing will take place" );
+                    return 1;
+                }
                 
                 // Process sub-sets
                 TMergeExceptionList mergeExceptions;

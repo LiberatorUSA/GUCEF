@@ -908,7 +908,8 @@ LoadFileStatusList( const CORE::CString& filePath     ,
     if ( LoadXmlFile( filePath       ,
                       fileStatusTree ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the xml data from file, parsing data into strongly typed data structures" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the xml data from file totalling " + CORE::UInt32ToString( fileStatusTree.GetNrOfTreeNodes() ) + 
+                                          " nodes, parsing data into strongly typed data structures" );
 
         const CORE::CDataNode* rootNode = fileStatusTree.Find( "FileStatusList" );
         if ( NULL != rootNode )
