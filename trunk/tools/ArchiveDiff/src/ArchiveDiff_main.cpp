@@ -171,6 +171,8 @@ PrintHelp( void )
     printf( "                              plugins to load\n" );
     printf( "    'DiffOutputDir'         : optional param to set diff file output dir,\n" );
     printf( "                              default is the tool executable dir\n" );
+    printf( "    'MaxEntriesPerDiffFile' : optional param specifying the entries in diff\n" );
+    printf( "                              file after which multiple files will be used\n" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -248,10 +250,17 @@ main( int argc , char* argv[] )
         CORE::CString mainArchiveIndex = argList[ "MainArchiveIndex" ];
         CORE::CString pluginsListStr = argList.GetValueAlways( "Plugins" );
         CORE::CString diffOutputDir = argList.GetValueAlways( "DiffOutputDir" );
+        CORE::CString maxEntriesPerDiffFileStr = argList.GetValueAlways( "MaxEntriesPerDiffFile" );
         if ( 0 == diffOutputDir.Length() )
         {
             diffOutputDir = CORE::RelativePath( "$MODULEDIR$" );
         }
+        
+        CORE::Int32 maxEntriesPerDiffFile = -1;
+        if ( 0 != maxEntriesPerDiffFileStr )
+        {
+            maxEntriesPerDiffFile = CORE::StringToInt32( maxEntriesPerDiffFileStr );
+        }        
         
         PATCHER::CPatchSetParser::TPatchSet templatePatchset;
         PATCHER::CPatchSetParser::TPatchSet mainArchivePatchset;
@@ -276,8 +285,9 @@ main( int argc , char* argv[] )
                     CORE::CString diffFilePath = diffOutputDir;
                     CORE::AppendToPath( diffFilePath, "ArchiveDiff.xml" );
                     
-                    if ( SaveFileStatusList( diffFilePath   , 
-                                             fileStatusList ) )
+                    if ( SaveFileStatusList( diffFilePath          , 
+                                             fileStatusList        ,
+                                             maxEntriesPerDiffFile ) )
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved the archive diff to file: " + diffFilePath );
                         return 1;
