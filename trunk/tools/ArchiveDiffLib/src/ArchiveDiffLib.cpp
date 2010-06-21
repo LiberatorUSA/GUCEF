@@ -324,9 +324,10 @@ GetPathForFileMinusRoot( const PATCHER::CPatchSetParser::TFileEntry& fileEntry )
 /*---------------------------------------------------------------------------*/
 
 bool
-PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templateFileEntry ,
-                    const TSortedFileEntryMaps& mainPatchsetSearchMap             ,
-                    TFileStatusVector& fileStatusList                             )
+PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& templateFileEntry ,
+                                  const TSortedFileEntryMaps& mainPatchsetSearchMap             ,
+                                  TFileStatusVector& fileStatusList                             ,
+                                  TConstFileEntrySet& matchedEntriesInMain                      )
 {GUCEF_TRACE;
 
     CORE::CString pathOfEntry = GetPathForFileMinusRoot( templateFileEntry );
@@ -355,6 +356,7 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templateFileEntr
 
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfOtherEntry + "\" was unchanged" );
                 
+                matchedEntriesInMain.insert( otherEntry );
                 fileStatusList.push_back( fileStatus );
                 return true;
             }
@@ -378,6 +380,7 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templateFileEntr
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was unchanged but its path changed from " + GetPathForFileMinusRoot( *otherEntry ) );
             
+            matchedEntriesInMain.insert( otherEntry );
             fileStatusList.push_back( fileStatus );
             return true;
         }
@@ -425,6 +428,7 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templateFileEntr
 
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was unchanged but its path changed from " + GetPathForFileMinusRoot( *entryWithSameName ) );
                 
+                matchedEntriesInMain.insert( entryWithSameName );
                 fileStatusList.push_back( fileStatus );
                 return true;
             }
@@ -459,6 +463,7 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templateFileEntr
 
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was changed" );
                 
+                matchedEntriesInMain.insert( otherEntry );
                 fileStatusList.push_back( fileStatus );
                 return true;
             }
@@ -467,7 +472,7 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templateFileEntr
         }
         
         // What if there is only 1 file in the other archive with the same name?
-        // If thats the case then we might be able to guess that this is in face the same file
+        // If thats the case then we might be able to guess that this is in fact the same file
         // but it was moved and altered,.. lets hope they used unique names...
         if ( 1 == entries.size() )
         {
@@ -482,7 +487,9 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templateFileEntr
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was changed and moved from " + GetPathForFileMinusRoot( *otherEntry ) );
             
-            fileStatusList.push_back( fileStatus );            
+            matchedEntriesInMain.insert( otherEntry );
+            fileStatusList.push_back( fileStatus );
+            return true;            
         }
         
     }
@@ -503,9 +510,10 @@ PerformArchiveDiff( const PATCHER::CPatchSetParser::TFileEntry& templateFileEntr
 /*---------------------------------------------------------------------------*/
 
 bool
-PerformArchiveDiff( const TSortedFileEntryMaps& templateArchivePatchsetSearchMap ,
-                    const TSortedFileEntryMaps& mainArchivePatchsetSearchMap     ,
-                    TFileStatusVector& fileStatusList                            )
+PerformArchiveDiffTemplateToMain( const TSortedFileEntryMaps& templateArchivePatchsetSearchMap ,
+                                  const TSortedFileEntryMaps& mainArchivePatchsetSearchMap     ,
+                                  TFileStatusVector& fileStatusList                            ,
+                                  TConstFileEntrySet& matchedEntriesInMain                     )
 {GUCEF_TRACE;
 
     TFileEntryPtrMap::const_iterator i = templateArchivePatchsetSearchMap.hashMap.begin();
@@ -515,13 +523,71 @@ PerformArchiveDiff( const TSortedFileEntryMaps& templateArchivePatchsetSearchMap
         TFileEntrySet::const_iterator n = entries.begin();
         while ( n != entries.end() )
         {        
-            PerformArchiveDiff( *(*n)                        , 
-                                mainArchivePatchsetSearchMap ,
-                                fileStatusList               );
+            PerformArchiveDiffTemplateToMain( *(*n)                        , 
+                                              mainArchivePatchsetSearchMap ,
+                                              fileStatusList               ,
+                                              matchedEntriesInMain         );
             ++n;
         }
         ++i;
     }
+    return true;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+BuildListOfUnmatchedItemsInMain( const TSortedFileEntryMaps& mainArchivePatchsetSearchMap ,
+                                 const TConstFileEntrySet& matchedEntriesInMain           ,
+                                 TConstFileEntrySet& unmatchedEntriesInMain               )
+{GUCEF_TRACE;
+
+    TFileEntryPtrMap::const_iterator i = mainArchivePatchsetSearchMap.hashMap.begin();
+    while ( i != mainArchivePatchsetSearchMap.hashMap.end() )
+    {
+        const TFileEntrySet& entries = (*i).second;
+        TFileEntrySet::const_iterator n = entries.begin();
+        while ( n != entries.end() )
+        {        
+            const PATCHER::CPatchSetParser::TFileEntry* entryInMain = (*n);
+            
+            if ( matchedEntriesInMain.find( entryInMain ) == matchedEntriesInMain.end() )
+            {
+                // This entry is not in the list of items in main that where matched up against
+                // a template version. As such we will add it to the list of unmatched items
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + GetPathForFileMinusRoot( *entryInMain ) + "\" was not matched against a template file" );
+                unmatchedEntriesInMain.insert( entryInMain );
+            }
+            ++n;
+        }
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+PerformArchiveDiffMainToTemplate( const TSortedFileEntryMaps& templateArchivePatchsetSearchMap ,
+                                  const TSortedFileEntryMaps& mainArchivePatchsetSearchMap     ,
+                                  TFileStatusVector& fileStatusList                            ,
+                                  const TConstFileEntrySet& unmatchedEntriesInMain             )
+{GUCEF_TRACE;
+
+    // For now just add unmatched items in main as 'unknown' status
+    // We can come up with something smart to do for those some other time
+    TConstFileEntrySet::const_iterator i = unmatchedEntriesInMain.begin();
+    while ( i != unmatchedEntriesInMain.end() )
+    {
+        TFileStatus fileStatus;
+        InitializeFileStatus( fileStatus );
+        fileStatus.resourceState = RESOURCESTATE_UNKNOWN;
+        fileStatus.mainSvnArchiveInfo = *(*i);
+
+        fileStatusList.push_back( fileStatus );
+        
+        ++i;
+    }
+    
     return true;
 }
 
@@ -546,16 +612,36 @@ PerformArchiveDiff( PATCHER::CPatchSetParser::TPatchSet& templatePatchset    ,
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Sucessfully finished creation of a sorted map for the template patch set" );
         
-    if ( PerformArchiveDiff( templateArchivePatchsetSearchMap ,
-                             mainArchivePatchsetSearchMap     ,
-                             fileStatusList                   ) )
+    TConstFileEntrySet matchedEntriesInMain;
+    if ( PerformArchiveDiffTemplateToMain( templateArchivePatchsetSearchMap ,
+                                           mainArchivePatchsetSearchMap     ,
+                                           fileStatusList                   ,
+                                           matchedEntriesInMain             ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished perfoming a diff between two patchs sets, commencing search for ambigous entries" );
-        return true;
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished perfoming a diff between two patchs sets, commencing search entries in main that where not matched" );
+        
+        TConstFileEntrySet unmatchedEntriesInMain;
+        BuildListOfUnmatchedItemsInMain( mainArchivePatchsetSearchMap ,
+                                         matchedEntriesInMain         ,
+                                         unmatchedEntriesInMain       );
+        matchedEntriesInMain.clear();
+                
+        if ( PerformArchiveDiffMainToTemplate( templateArchivePatchsetSearchMap ,
+                                               mainArchivePatchsetSearchMap     ,
+                                               fileStatusList                   ,
+                                               unmatchedEntriesInMain           ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Sucessfully completed the entire diff" );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to perform a diff of main to template using the sorted maps" );
+        }
+        return false;
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to perform a diff of the archives using the sorted maps" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to perform a diff of template to main using the sorted maps" );
     }
     return false;
 }
@@ -704,6 +790,7 @@ SerializeFileStatus( const TFileStatus& fileStatus ,
     fileStatusNode.AddChild( mainFileInfo );
     mainFileInfo.Clear();
     
+    parentNode.AddChild( fileStatusNode );    
     return true;
 }
 

@@ -1,5 +1,5 @@
 /*
- *  SVNMagicMerge: Little tool to help merge 2 convoluted archives
+ *  ArchiveDiff: Little tool to help diff 2 patch sets
  *
  *  Copyright (C) 2002 - 2010.  Dinand Vanvelzen
  *
@@ -146,6 +146,9 @@ PrintHeader( void )
     printf( "*                                       *\n" );
     printf( "*  Archive Diff                         *\n" );
     printf( "*                                       *\n" );
+    printf( "*    Copyright (C) Dinand Vanvelzen     *\n" );
+    printf( "*    2002 - 2010. LGPL Licenced.        *\n" );
+    printf( "*                                       *\n" );
     printf( "*****************************************\n" );
     printf( "\n" );
     printf( " - Tool Version %f\n" , VERSION_NUMBER );    
@@ -164,8 +167,10 @@ PrintHelp( void )
     printf( "                              template archive\n" );
     printf( "    'MainArchiveIndex'      : path to patch set containing the index of the\n" );
     printf( "                              main SVN archive\n" );
-    printf( "    'Plugins'               : optional parameter: comman seperated list of\n" );
+    printf( "    'Plugins'               : optional parameter: comma seperated list of\n" );
     printf( "                              plugins to load\n" );
+    printf( "    'DiffOutputDir'         : optional param to set diff file output dir,\n" );
+    printf( "                              default is the tool executable dir\n" );
 }
 
 /*-------------------------------------------------------------------------*/

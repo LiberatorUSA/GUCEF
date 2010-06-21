@@ -162,7 +162,7 @@ PrintHeader( void )
     printf( "*  Patch Set Generator                  *\n" );
     printf( "*                                       *\n" );
     printf( "*    Copyright (C) Dinand Vanvelzen     *\n");
-    printf( "*    2002 - 2007. All rights reserved.  *\n");
+    printf( "*    2002 - 2010. LGPL Licenced.        *\n");
     printf( "*                                       *\n" );
     printf( "*****************************************\n" );
     printf( "\n" );
