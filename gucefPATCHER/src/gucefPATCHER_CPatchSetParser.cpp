@@ -90,7 +90,8 @@ CPatchSetParser::operator=( const CPatchSetParser& src )
 
 bool
 CPatchSetParser::ValidateAndParseFileLocEntries( const CORE::CDataNode& patchSetFileNode ,
-                                                 TFileEntry& fileEntry                   ) const
+                                                 TFileEntry& fileEntry                   ,
+                                                 bool mustHaveLocationEntries            ) const
 {GUCEF_TRACE;
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetParser: Parsing patch set" );
@@ -135,20 +136,25 @@ CPatchSetParser::ValidateAndParseFileLocEntries( const CORE::CDataNode& patchSet
         ++i;
     }
     
-    // A file entry must have at least 1 file location entry
-    if ( fileEntry.fileLocations.size() >= 1 )
+    if ( mustHaveLocationEntries )
     {
-        return true;
+        // A file entry must have at least 1 file location entry
+        if ( fileEntry.fileLocations.size() >= 1 )
+        {
+            return true;
+        }
+        
+        return false;
     }
-    
-    return false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
 CPatchSetParser::ValidateAndParseFileEntry( const CORE::CDataNode& patchSetFileNode ,
-                                            TFileEntry& fileEntry                   ) const
+                                            TFileEntry& fileEntry                   ,
+                                            bool mustHaveLocationEntries            ) const
 {GUCEF_TRACE;
 
     // Validate that the file has a name property
@@ -174,8 +180,9 @@ CPatchSetParser::ValidateAndParseFileEntry( const CORE::CDataNode& patchSetFileN
                 
                 // Our file entry has everything we expected
                 // We will now parse the file location entries for this file
-                if ( ValidateAndParseFileLocEntries( patchSetFileNode ,
-                                                     fileEntry        ) )
+                if ( ValidateAndParseFileLocEntries( patchSetFileNode        ,
+                                                     fileEntry               ,
+                                                     mustHaveLocationEntries ) )
                 {
                     // Success,.. the file and it's locations have been parsed
                     fileEntry.hash = fileHash;
