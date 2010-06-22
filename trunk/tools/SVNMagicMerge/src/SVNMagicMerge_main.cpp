@@ -407,6 +407,8 @@ PrintHelp( void )
     printf( "                         is split the diff file into catagories, default false\n" );
     printf( "    'SvnToolDir'       : optional param: Allows you to specify the system dir\n");
     printf( "                         containing the SVN binaries (default = no path)\n" );
+    printf( "    'ReuseCatagorizedOutput'  : optional param: Allows you to specify whether\n");
+    printf( "                                the catagorized output should be reused\n" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1171,6 +1173,74 @@ BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList    ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+AreCatagorizedSubsetsOnDisk( const CORE::CString& InfoOutputDir )
+{GUCEF_TRACE;
+    
+    CORE::CString unchangedFileDiff = CreatePathToUnchangedFileDiff( InfoOutputDir );
+    CORE::CString unchangedButMovedFileDiff = CreatePathToUnchangedButMovedFileDiff( InfoOutputDir );
+    CORE::CString changedFileDiff = CreatePathToChangedFileDiff( InfoOutputDir );
+    CORE::CString missingInTemplateFileDiff = CreatePathToMissingInTemplateFileDiff( InfoOutputDir );
+    CORE::CString missingInMainFileDiff = CreatePathToMissingInMainFileDiff( InfoOutputDir );
+    CORE::CString unknownFileDiff = CreatePathToUnknownStatusFileDiff( InfoOutputDir );
+    
+    return IsFileStatusListOnDisk( unchangedFileDiff ) &&
+           IsFileStatusListOnDisk( unchangedButMovedFileDiff ) &&
+           IsFileStatusListOnDisk( changedFileDiff ) &&
+           IsFileStatusListOnDisk( missingInTemplateFileDiff ) &&
+           IsFileStatusListOnDisk( missingInMainFileDiff ) &&
+           IsFileStatusListOnDisk( unknownFileDiff );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CreateCatagorizedSubsets( const CORE::CString& archiveDiffFile ,
+                          const CORE::CString& infoOutputDir   ,
+                          const CORE::Int32 maxEntriesPerFile  ,
+                          bool reuseCatagorizedOutput          )
+{GUCEF_TRACE;
+
+    if ( reuseCatagorizedOutput )
+    {
+        // test if files exist. If they do then do not re-generate
+        if ( AreCatagorizedSubsetsOnDisk( infoOutputDir ) )
+        {
+            // The files already exist, skip this step
+            return true;
+        }
+    }
+
+    TFileStatusVector fileStatusList;
+    if ( LoadFileStatusList( archiveDiffFile , 
+                             fileStatusList  ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the file status list" );
+        
+        // First we break up the large list into smaller more manageable ones
+        if ( BreakUpFileStatusListIntoSubsets( fileStatusList    ,
+                                               infoOutputDir     ,
+                                               maxEntriesPerFile ) )
+        {
+            // Reduce memory footprint
+            fileStatusList.clear();
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully seperated file status list into subsets" );
+            return true;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failure trying to break up the files list into action based subsets" );
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load and parse the index for the template archive" );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 #ifdef GUCEF_MSWIN_BUILD
 
 int __stdcall
@@ -1247,7 +1317,14 @@ main( int argc , char* argv[] )
         CORE::CString pluginsListStr = argList.GetValueAlways( "Plugins" );
         CORE::CString infoOutputDir = argList.GetValueAlways( "InfoOutputDir" );
         CORE::CString splitDiffOnlyStr = argList.GetValueAlways( "SplitDiffOnly" );
+        CORE::CString reuseCatagorizedOutputStr = argList.GetValueAlways( "ReuseCatagorizedOutput" );
         CORE::CString maxEntriesPerDiffFileStr = argList.GetValueAlways( "MaxEntriesPerDiffFile" );
+        
+        bool reuseCatagorizedOutput = false;
+        if ( reuseCatagorizedOutputStr.Length() > 0 )
+        {
+            reuseCatagorizedOutput = CORE::StringToBool( reuseCatagorizedOutputStr );
+        }        
         CORE::Int32 maxEntriesPerFile = -1;
         if ( 0 != maxEntriesPerDiffFileStr.Length() )
         {
@@ -1262,64 +1339,50 @@ main( int argc , char* argv[] )
         if ( splitDiffOnlyStr.Length() > 0 )
         {
             splitDiffOnly = CORE::StringToBool( splitDiffOnlyStr );
-        }
+        }        
         
-        TFileStatusVector fileStatusList;
-        if ( LoadFileStatusList( archiveDiffFile , 
-                                 fileStatusList  ) )
+        if ( CreateCatagorizedSubsets( archiveDiffFile        , 
+                                       infoOutputDir          ,
+                                       maxEntriesPerFile      ,
+                                       reuseCatagorizedOutput ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the file status list" );
-            
-            // First we break up the large list into smaller more manageable ones
-            if ( BreakUpFileStatusListIntoSubsets( fileStatusList    ,
-                                                   infoOutputDir     ,
-                                                   maxEntriesPerFile ) )
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully located (and created?) catagory subset files" );
+
+            if ( splitDiffOnly )
             {
-                // Reduce memory footprint
-                fileStatusList.clear();
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully seperated file status list into subsets" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SplitDiffOnly is set to true so no further processing will take place" );
+                return 1;
+            }
+            
+            // Process sub-sets
+            TMergeExceptionList mergeExceptions;
+            if ( ProcessFiles( infoOutputDir           ,
+                               mainArchiveRootPath     ,
+                               templateArchiveRootPath ,
+                               mergeExceptions         ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully processed all files without fatal errors, saving merge exceptions totalling " + CORE::UInt32ToString( mergeExceptions.size() ) );
                 
-                if ( splitDiffOnly )
+                if ( SaveMergeExceptions( mergeExceptions ,
+                                          infoOutputDir   ) )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SplitDiffOnly is set to true so no further processing will take place" );
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved a list of merge exceptions in dir: " + infoOutputDir );
                     return 1;
-                }
-                
-                // Process sub-sets
-                TMergeExceptionList mergeExceptions;
-                if ( ProcessFiles( infoOutputDir           ,
-                                   mainArchiveRootPath     ,
-                                   templateArchiveRootPath ,
-                                   mergeExceptions         ) )
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully processed all files without fatal errors, saving merge exceptions totalling " + CORE::UInt32ToString( mergeExceptions.size() ) );
-                    
-                    if ( SaveMergeExceptions( mergeExceptions ,
-                                              infoOutputDir   ) )
-                    {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved a list of merge exceptions in dir: " + infoOutputDir );
-                        return 1;
-                    }
-                    else
-                    {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failure trying to save merge exceptions to file in dir: " + infoOutputDir );
-                    }
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failure trying to process the files" );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failure trying to save merge exceptions to file in dir: " + infoOutputDir );
                 }
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failure trying to break up the files list into action based subsets" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failure trying to process the files" );
             }
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load and parse the index for the template archive" );
-        }
-        
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failure trying to create catagorized subsets of the diff" );
+        }        
     }
 	return 0;
 }

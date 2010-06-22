@@ -96,10 +96,12 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetParser
                         CORE::CDataNode& patchSet     ) const;
 
     bool ValidateAndParseFileEntry( const CORE::CDataNode& patchSetFileNode ,
-                                    TFileEntry& fileEntry                   ) const;
+                                    TFileEntry& fileEntry                   ,
+                                    bool mustHaveLocationEntries = true     ) const;
 
     bool ValidateAndParseFileLocEntries( const CORE::CDataNode& patchSetFileNode ,
-                                         TFileEntry& fileEntry                   ) const;
+                                         TFileEntry& fileEntry                   ,
+                                         bool mustHaveLocationEntries = true     ) const;
 
     bool ValidateAndParseDirEntry( const CORE::CDataNode& patchSetDirNode ,
                                    TDirEntry& dirEntry                    ) const;

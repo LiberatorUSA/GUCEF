@@ -225,6 +225,11 @@ GetPathForFile( const GUCEF::PATCHER::CPatchSetParser::TFileEntry& fileEntry );
 
 TResourceState ARCHIVEDIFFLIB_PUBLIC_CPP
 StringToResourceState( const GUCEF::CORE::CString& state );
+
+/*-------------------------------------------------------------------------*/
+
+bool ARCHIVEDIFFLIB_PUBLIC_CPP
+IsFileStatusListOnDisk( const GUCEF::CORE::CString& filePath );
                     
 /*-------------------------------------------------------------------------//
 //                                                                         //

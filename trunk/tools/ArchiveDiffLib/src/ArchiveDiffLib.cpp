@@ -818,7 +818,8 @@ DeserializeFileInfo( const CORE::CDataNode& fileStatusNode           ,
         if ( NULL != infoNode )
         {
             if ( parser.ValidateAndParseFileEntry( *infoNode ,
-                                                   fileEntry ) )
+                                                   fileEntry ,
+                                                   false     ) )
             {
                 return true;
             }
@@ -1125,6 +1126,24 @@ LoadFileStatusList( const CORE::CString& filePath     ,
     
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file as either a single file of a multi-part set: \"" + filePath + "\"" );
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+IsFileStatusListOnDisk( const CORE::CString& filePath )
+{GUCEF_TRACE;
+    
+    // single file?
+    if ( CORE::FileExists( filePath ) )
+    {
+        return true;
+    }
+    
+    // maybe a multi-part set?
+    TStringSet multiPartFiles;
+    return GetListOfMultiPartFiles( filePath       , 
+                                    multiPartFiles );
 }
 
 /*-------------------------------------------------------------------------//
