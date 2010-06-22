@@ -218,6 +218,12 @@ SaveFileStatusList( const GUCEF::CORE::CString& filePath       ,
 
 /*-------------------------------------------------------------------------*/
 
+void ARCHIVEDIFFLIB_PUBLIC_CPP
+SetPathForFile( GUCEF::PATCHER::CPatchSetParser::TFileEntry& fileEntry ,
+                const GUCEF::CORE::CString& path                       );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF::CORE::CString ARCHIVEDIFFLIB_PUBLIC_CPP
 GetPathForFile( const GUCEF::PATCHER::CPatchSetParser::TFileEntry& fileEntry );
 

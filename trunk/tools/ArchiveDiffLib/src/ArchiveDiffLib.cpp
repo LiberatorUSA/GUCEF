@@ -257,6 +257,33 @@ BuildSortedFileEntryMaps( PATCHER::CPatchSetParser::TPatchSet& patchSet ,
 
 /*---------------------------------------------------------------------------*/
 
+void
+SetPathForFile( GUCEF::PATCHER::CPatchSetParser::TFileEntry& fileEntry ,
+                const GUCEF::CORE::CString& path                       )
+{GUCEF_TRACE;
+
+    // See if we can overwrite an existing entry
+    PATCHER::CPatchSetParser::TFileLocations::iterator i = fileEntry.fileLocations.begin();
+    while ( i != fileEntry.fileLocations.end() )
+    {
+        PATCHER::CPatchSetParser::TFileLocation& location = (*i);
+        if ( "FILE" == location.codec )
+        {
+            location.URL = path;
+            return;
+        }
+        ++i;
+    }
+    
+    // no entry found, create one
+    PATCHER::CPatchSetParser::TFileLocation fileLocation;
+    fileLocation.codec = "FILE";
+    fileLocation.URL = path;
+    fileEntry.fileLocations.push_back( fileLocation );
+}
+
+/*---------------------------------------------------------------------------*/
+
 CORE::CString
 GetPathForFile( const PATCHER::CPatchSetParser::TFileEntry& fileEntry )
 {GUCEF_TRACE;
@@ -362,6 +389,10 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
                 fileStatus.templateArchiveInfo = templateFileEntry;
                 fileStatus.mainSvnArchiveInfo = *otherEntry;
 
+                // Patch files include the root dir, diff files should not
+                SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry ); 
+                SetPathForFile( fileStatus.mainSvnArchiveInfo, pathOfOtherEntry );
+
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfOtherEntry + "\" was unchanged" );
                 
                 matchedEntriesInMain.insert( otherEntry );
@@ -385,6 +416,10 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
             fileStatus.resourceState = RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED;
             fileStatus.templateArchiveInfo = templateFileEntry;
             fileStatus.mainSvnArchiveInfo = *otherEntry;
+
+            // Patch files include the root dir, diff files should not
+            SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry ); 
+            SetPathForFile( fileStatus.mainSvnArchiveInfo, GetPathForFileMinusRoot( *otherEntry ) );
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was unchanged but its path changed from " + GetPathForFileMinusRoot( *otherEntry ) );
             
@@ -433,6 +468,10 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
                 fileStatus.resourceState = RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED;
                 fileStatus.templateArchiveInfo = templateFileEntry;
                 fileStatus.mainSvnArchiveInfo = *entryWithSameName;
+                
+                // Patch files include the root dir, diff files should not
+                SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry ); 
+                SetPathForFile( fileStatus.mainSvnArchiveInfo, GetPathForFileMinusRoot( *entryWithSameName ) );
 
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was unchanged but its path changed from " + GetPathForFileMinusRoot( *entryWithSameName ) );
                 
@@ -469,6 +508,10 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
                 fileStatus.templateArchiveInfo = templateFileEntry;
                 fileStatus.mainSvnArchiveInfo = *otherEntry;
 
+                // Patch files include the root dir, diff files should not
+                SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry ); 
+                SetPathForFile( fileStatus.mainSvnArchiveInfo, pathToOtherFile );
+
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was changed" );
                 
                 matchedEntriesInMain.insert( otherEntry );
@@ -492,6 +535,10 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
             fileStatus.resourceState = RESOURCESTATE_FILE_CHANGED;
             fileStatus.templateArchiveInfo = templateFileEntry;
             fileStatus.mainSvnArchiveInfo = *otherEntry;
+            
+            // Patch files include the root dir, diff files should not
+            SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry ); 
+            SetPathForFile( fileStatus.mainSvnArchiveInfo, GetPathForFileMinusRoot( *otherEntry ) );
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was changed and moved from " + GetPathForFileMinusRoot( *otherEntry ) );
             
@@ -508,6 +555,9 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
     InitializeFileStatus( fileStatus );
     fileStatus.resourceState = RESOURCESTATE_UNKNOWN;
     fileStatus.templateArchiveInfo = templateFileEntry;
+
+    // Patch files include the root dir, diff files should not
+    SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry );
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unable to match file \"" + pathOfEntry + "\", its status is unknown" );
 
@@ -590,6 +640,9 @@ PerformArchiveDiffMainToTemplate( const TSortedFileEntryMaps& templateArchivePat
         InitializeFileStatus( fileStatus );
         fileStatus.resourceState = RESOURCESTATE_UNKNOWN;
         fileStatus.mainSvnArchiveInfo = *(*i);
+
+        // Patch files include the root dir, diff files should not
+        SetPathForFile( fileStatus.mainSvnArchiveInfo, GetPathForFileMinusRoot( fileStatus.mainSvnArchiveInfo ) );
 
         fileStatusList.push_back( fileStatus );
         

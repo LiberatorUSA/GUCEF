@@ -422,7 +422,7 @@ PerformSvnCommit( const CORE::CString& svnCommitRoot )
 /*-------------------------------------------------------------------------*/
 
 bool
-DoesDirHasSvnSubDir( const CORE::CString& path )
+DoesDirHaveSvnSubDir( const CORE::CString& path )
 {GUCEF_TRACE;
     
     CORE::CString svnSubDir = path;
@@ -446,7 +446,7 @@ PerformSvnLastSubDirAdd( const CORE::CString& path    ,
                          CORE::CString& failureReason )
 {GUCEF_TRACE;
 
-    if ( !DoesDirHasSvnSubDir( path ) )
+    if ( !DoesDirHaveSvnSubDir( path ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Last subdir of " + path + " is not under version control, thus we need to add it" );
         
@@ -473,10 +473,13 @@ PerformSvnLastSubDirAdd( const CORE::CString& path    ,
 /*-------------------------------------------------------------------------*/
 
 bool
-PerformSvnMakeSurePathExists( const CORE::CString& path        ,
+PerformSvnMakeSurePathExists( const CORE::CString& givenPath   ,
                               const CORE::CString& archiveRoot ,
                               CORE::CString& failureReason     )
 {GUCEF_TRACE;
+    
+    // Make sure the given path does not include a filename
+    CORE::CString path = CORE::StripFilename( givenPath );
     
     // First check if the path exists on disk at all
     if ( !CORE::IsPathValid( path ) )
@@ -934,17 +937,19 @@ ProcessFiles( const CORE::CString& InfoOutputDir           ,
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully processed unchanged but moved files" );
         
-        if ( ProcessMissingInMainFiles( InfoOutputDir           ,
-                                        mainArchiveRootPath     ,
-                                        templateArchiveRootPath ,
-                                        mergeExceptions         ) )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully processed files that where missing in the main archive" );
-        }
-        else
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failure trying to process files that are missing in the main archive" );
-        }
+        return true;
+        
+        //if ( ProcessMissingInMainFiles( InfoOutputDir           ,
+        //                                mainArchiveRootPath     ,
+        //                                templateArchiveRootPath ,
+        //                                mergeExceptions         ) )
+        //{
+        //    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully processed files that where missing in the main archive" );
+        //}
+        //else
+        //{
+        //    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failure trying to process files that are missing in the main archive" );
+        //}
     }
     else
     {
