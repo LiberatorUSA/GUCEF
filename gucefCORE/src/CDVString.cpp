@@ -963,7 +963,7 @@ CString::FindMaxSubstrEquality( const CString& searchStr ,
         {            
             // Loop trough the buffer growing our comparison string
             UInt32 subLength=1;
-            while ( subLength<max )
+            while ( subLength<=max )
             {
                 if ( memcmp( m_string+startOffset, searchStr.m_string, subLength ) != 0 )
                 {
