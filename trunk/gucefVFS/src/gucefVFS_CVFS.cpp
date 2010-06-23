@@ -158,7 +158,7 @@ CVFS::GetFile( const CORE::CString& file          ,
 
     m_datalock.Lock();
 
-    CString filepath( file.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );
+    CString filepath( file.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
     bool fileMustExist = *mode == 'r';    
     
     // Get a list of all eligable mounts
@@ -803,7 +803,7 @@ CVFS::GetList( TStringSet& outputList                   ,
     m_datalock.Lock();
     
     // Switch dir separator chars if needed
-    CString path( location.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );
+    CString path( location.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
     
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -855,8 +855,8 @@ CVFS::GetList( CORE::CDataNode& outputDataTree        ,
     while ( i != outputList.end() )
     {
         // First we build the path structure in the data tree
-        CString path = (*i).SubstrToChar( DIRSEPCHAR, false );
-        CORE::CDataNode* pathRootNode = outputDataTree.Structure( "DIR", "Name", path, DIRSEPCHAR );
+        CString path = (*i).SubstrToChar( GUCEF_DIRSEPCHAR, false );
+        CORE::CDataNode* pathRootNode = outputDataTree.Structure( "DIR", "Name", path, GUCEF_DIRSEPCHAR );
         
         // Extract the filename from the path
         CORE::CString filename( (*i).C_String() + path.Length() , 
@@ -887,7 +887,7 @@ CVFS::GetFileModificationTime( const CString& filename ) const
 {GUCEF_TRACE;
 
     // Switch dir separator chars if needed
-    CString path( filename.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );
+    CString path( filename.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
     m_datalock.Lock();
     
@@ -920,7 +920,7 @@ CVFS::GetFileHash( const CORE::CString& file ) const
 {GUCEF_TRACE;
 
     // Switch dir separator chars if needed
-    CString path( file.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );
+    CString path( file.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
     m_datalock.Lock();
     
@@ -956,7 +956,7 @@ CVFS::GetFileSize( const CORE::CString& file ) const
     m_datalock.Lock();
 
     // Switch dir separator chars if needed
-    CString path( file.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );
+    CString path( file.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
     
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;

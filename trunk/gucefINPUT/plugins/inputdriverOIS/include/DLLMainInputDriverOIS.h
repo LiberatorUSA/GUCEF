@@ -75,39 +75,39 @@ extern "C" {
 
 /*---------------------------------------------------------------------------*/
 
-GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Init( void** plugdata    , 
                       const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-GUCEF_INPUT_PLUGIN_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Name( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-GUCEF_INPUT_PLUGIN_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-GUCEF_INPUT_PLUGIN_EXPORT_C const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_PUBLIC_C const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Update( void* plugdata    , 
                         void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
-GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                                void** contextdata               ,
                                const char*** args               ,
@@ -115,7 +115,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
 
 /*---------------------------------------------------------------------------*/
 
-GUCEF_INPUT_PLUGIN_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_DestroyContext( void* plugdata    , 
                                 void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
