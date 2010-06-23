@@ -242,7 +242,7 @@ CFileSystemArchive::GetList( TStringSet& outputList     ,
     /*
      *      Switch dir separator chars if needed
      */
-    CString loc( location.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR ) );
+    CString loc( location.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
     /*
      *      Make the combo path string

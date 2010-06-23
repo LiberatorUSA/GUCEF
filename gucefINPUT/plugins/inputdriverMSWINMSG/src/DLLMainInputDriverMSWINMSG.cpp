@@ -128,9 +128,9 @@ ParseArgListItemUInt32( const char*** args ,
 void
 UpdateKeyModState( TContextData* data )
 {         
-        GetKeyState( VK_SHIFT ) & 0x80 ? SETBITXON( data->keyModState, 4 ) : SETBITXOFF( data->keyModState, 4 );
-        GetKeyState( VK_MENU ) & 0x80 ? SETBITXON( data->keyModState, 0 ) : SETBITXOFF( data->keyModState, 0 );
-        GetKeyState( VK_CONTROL ) & 0x80 ? SETBITXON( data->keyModState, 2 ) : SETBITXOFF( data->keyModState, 2 );     
+    GetKeyState( VK_SHIFT ) & 0x80 ? GUCEF_SETBITXON( data->keyModState, 4 ) : GUCEF_SETBITXOFF( data->keyModState, 4 );
+    GetKeyState( VK_MENU ) & 0x80 ? GUCEF_SETBITXON( data->keyModState, 0 ) : GUCEF_SETBITXOFF( data->keyModState, 0 );
+    GetKeyState( VK_CONTROL ) & 0x80 ? GUCEF_SETBITXON( data->keyModState, 2 ) : GUCEF_SETBITXOFF( data->keyModState, 2 );     
 }
 
 /*---------------------------------------------------------------------------*/
@@ -301,20 +301,20 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
                         {
                                 case VK_SHIFT :
                                 {
-                                        SETBITXOFF( data->keyModState, 4 );
-                                        SETBITXOFF( data->keyModState, 5 );
+                                        GUCEF_SETBITXOFF( data->keyModState, 4 );
+                                        GUCEF_SETBITXOFF( data->keyModState, 5 );
                                         break;                                        
                                 }
                                 case VK_MENU :
                                 {
-                                        SETBITXOFF( data->keyModState, 0 );
-                                        SETBITXOFF( data->keyModState, 1 );
+                                        GUCEF_SETBITXOFF( data->keyModState, 0 );
+                                        GUCEF_SETBITXOFF( data->keyModState, 1 );
                                         break;                                        
                                 } 
                                 case VK_CONTROL :
                                 {
-                                        SETBITXOFF( data->keyModState, 2 );
-                                        SETBITXOFF( data->keyModState, 3 );
+                                        GUCEF_SETBITXOFF( data->keyModState, 2 );
+                                        GUCEF_SETBITXOFF( data->keyModState, 3 );
                                         break;                                        
                                 }                                                               
                                 default :
@@ -333,25 +333,25 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
                                 case VK_CAPITAL :
                                 {
                                         /* the capital or CAPS key is a toggle key and should be handled as such */
-                                        GETBITX( data->keyModState, 6 ) ? SETBITXOFF( data->keyModState, 6 ) : SETBITXON( data->keyModState, 6 );
+                                        GUCEF_GETBITX( data->keyModState, 6 ) ? GUCEF_SETBITXOFF( data->keyModState, 6 ) : GUCEF_SETBITXON( data->keyModState, 6 );
                                         break;
                                 }
                                 case VK_SHIFT :
                                 {
-                                        SETBITXON( data->keyModState, 4 );
-                                        SETBITXON( data->keyModState, 5 );
+                                        GUCEF_SETBITXON( data->keyModState, 4 );
+                                        GUCEF_SETBITXON( data->keyModState, 5 );
                                         break;                                        
                                 }
                                 case VK_MENU :
                                 {
-                                        SETBITXON( data->keyModState, 0 );
-                                        SETBITXON( data->keyModState, 1 );
+                                        GUCEF_SETBITXON( data->keyModState, 0 );
+                                        GUCEF_SETBITXON( data->keyModState, 1 );
                                         break;                                        
                                 } 
                                 case VK_CONTROL :
                                 {
-                                        SETBITXON( data->keyModState, 2 );
-                                        SETBITXON( data->keyModState, 3 );
+                                        GUCEF_SETBITXON( data->keyModState, 2 );
+                                        GUCEF_SETBITXON( data->keyModState, 3 );
                                         break;                                        
                                 }                                                               
                                 default :

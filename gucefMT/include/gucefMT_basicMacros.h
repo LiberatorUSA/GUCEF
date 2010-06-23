@@ -64,19 +64,6 @@
 /*-------------------------------------------------------------------------*/
 
 /*
- *      Bit operations.
- *      Use the following macro's to set/get a bit in an integer.
- */
-#undef GETBITX
-#define GETBITX( var, x ) ( var & ( 1<<x ) )
-#undef SETBITXON
-#define SETBITXON( var, x ) ( var |= 1<<x )
-#undef SETBITXOFF
-#define SETBITXOFF( var, x ) ( var &= ~( 1<<x ) )
-
-/*-------------------------------------------------------------------------*/
-
-/*
  *      Macros to get the smallest or largest of 2 values.
  */
 #define SMALLEST(a,b) (((a) < (b)) ? (a) : (b))

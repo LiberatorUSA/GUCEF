@@ -204,6 +204,33 @@
 
 /*-------------------------------------------------------------------------*/
 
+/*
+ *  Macros that defines the correct character to be used for directory
+ *  seperation in a path depending on the platform we are building for.
+ */
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+  #define GUCEF_DIRSEPCHAROPPOSITE '/'
+  #define GUCEF_DIRSEPCHAR '\\'
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+  #define GUCEF_DIRSEPCHAROPPOSITE \\'
+  #define GUCEF_DIRSEPCHAR '/'
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+/*
+ *      Bit operations.
+ *      Use the following macro's to set/get a bit in an integer.
+ */
+#undef GUCEF_GETBITX
+#define GUCEF_GETBITX( var, x ) ( var & ( 1<<x ) )
+#undef GUCEF_SETBITXON
+#define GUCEF_SETBITXON( var, x ) ( var |= 1<<x )
+#undef GUCEF_SETBITXOFF
+#define GUCEF_SETBITXOFF( var, x ) ( var &= ~( 1<<x ) )
+
+/*-------------------------------------------------------------------------*/
+
 #ifdef __cplusplus
 #undef GUCEF_DECLARE_SINGLETON_INTERFACE
 #define GUCEF_DECLARE_SINGLETON_INTERFACE( identifier )          \

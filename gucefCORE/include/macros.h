@@ -65,12 +65,12 @@
  *      Bit operations.
  *      Use the following macro's to set/get a bit in an integer.
  */
-#undef GETBITX
-#define GETBITX( var, x ) ( var & ( 1<<x ) )
-#undef SETBITXON
-#define SETBITXON( var, x ) ( var |= 1<<x )
-#undef SETBITXOFF
-#define SETBITXOFF( var, x ) ( var &= ~( 1<<x ) )
+#undef GUCEF_GETBITX
+#define GUCEF_GETBITX( var, x ) ( var & ( 1<<x ) )
+#undef GUCEF_SETBITXON
+#define GUCEF_SETBITXON( var, x ) ( var |= 1<<x )
+#undef GUCEF_SETBITXOFF
+#define GUCEF_SETBITXOFF( var, x ) ( var &= ~( 1<<x ) )
 
 /*-------------------------------------------------------------------------*/
 

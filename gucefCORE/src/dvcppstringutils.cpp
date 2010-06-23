@@ -43,14 +43,14 @@
   #undef min
   #undef max
   #define MAX_DIR_LENGTH MAX_PATH
-  #define DIRSEPCHAROPPOSITE '/'
-  #define DIRSEPCHAR '\\'
+  #define GUCEF_DIRSEPCHAROPPOSITE '/'
+  #define GUCEF_DIRSEPCHAR '\\'
 #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
   #include <unistd.h>             /* POSIX utilities */
   #include <limits.h>             /* Linux OS limits */
   #define MAX_DIR_LENGTH PATH_MAX
-  #define DIRSEPCHAROPPOSITE '\\'
-  #define DIRSEPCHAR '/'
+  #define GUCEF_DIRSEPCHAROPPOSITE '\\'
+  #define GUCEF_DIRSEPCHAR '/'
 #else
   #error Unsupported OS
 #endif
@@ -140,15 +140,15 @@ RelativePath( const CString& relpath )
     // Now the up dir segments,...
     // First make sure we use the same seperator char in both string across
     // the entire strings uniformly. This simplyfies the algoritm
-    resultStr = resultStr.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR );
+    resultStr = resultStr.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR );
 
     // Now make sure there are no multiple repeating seperators
     // Not that unlikely if the string was human generated
-    resultStr = resultStr.CompactRepeatingChar( DIRSEPCHAR );
+    resultStr = resultStr.CompactRepeatingChar( GUCEF_DIRSEPCHAR );
 
     // Now keep chopping away up dir segments until we run out of segments
     // that meet our criterea.
-    CString upDirSeg = CString( ".." ) + DIRSEPCHAR;
+    CString upDirSeg = CString( ".." ) + GUCEF_DIRSEPCHAR;
     Int32 upDirIdx = resultStr.HasSubstr( upDirSeg, false );
     while ( upDirIdx > 0 )
     {
@@ -210,7 +210,7 @@ AppendToPath( CString& path           ,
             path += addition;
             return;
         }
-        path += DIRSEPCHAR + addition;
+        path += GUCEF_DIRSEPCHAR + addition;
     }
 }
 
@@ -533,13 +533,13 @@ StripLastSubDir( const CString& completePath )
 
     if ( 0 != completePath.Length() )
     {
-        CString path = completePath.ReplaceChar( DIRSEPCHAROPPOSITE, DIRSEPCHAR );
-        if ( path[ path.Length()-1 ] == DIRSEPCHAR )
+        CString path = completePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR );
+        if ( path[ path.Length()-1 ] == GUCEF_DIRSEPCHAR )
         {
             path = path.CutChars( 1, false );
         }
 
-        CString remnamt = path.SubstrToChar( DIRSEPCHAR, false );
+        CString remnamt = path.SubstrToChar( GUCEF_DIRSEPCHAR, false );
         if ( remnamt.Length() > 0 )
         {
             return path.CutChars( remnamt.Length()+1, false );
