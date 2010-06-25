@@ -2037,7 +2037,7 @@ GetRelativePathToOtherPathRoot( const CORE::CString& fromPath ,
     CORE::Int32 pathEquality = (CORE::Int32) fromPath.FindMaxSubstrEquality( toPath, 0, true );
     CORE::CString toPathRemainder = toPath.ReplaceChar( '\\', '/' );
     CORE::CString fromPathRemainder = fromPath.ReplaceChar( '\\', '/' );
-    pathEquality -= toPathRemainder.SubstrToChar( '/', pathEquality, false ).Length() - 1;
+    pathEquality -= toPathRemainder.HasChar( '/', pathEquality, false ) - 1;
     toPathRemainder = toPathRemainder.CutChars( pathEquality, true );
     fromPathRemainder = fromPathRemainder.CutChars( pathEquality, true );
     TStringVector upDirElements = fromPathRemainder.ParseElements( '/', false );
@@ -2282,6 +2282,11 @@ void
 GenerateModuleIncludes( const TProjectInfo& projectInfo ,
                         TModuleInfo& moduleInfo         )
 {GUCEF_TRACE;
+
+    if ( moduleInfo.name == "gucefINPUT_TestApp" )
+    {
+        int a=0;
+    }
 
     // Add include dirs for each dependency we know about
     TStringVector& dependencies = moduleInfo.dependencies;

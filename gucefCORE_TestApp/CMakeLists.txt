@@ -12,8 +12,9 @@
 
 set(HEADER_FILES 
   include/TestCyclicDynamicBuffer.h
-  src/TestNotifierObserver.h
-  src/TestSharedPtr.h
+  include/TestNotifierObserver.h
+  include/TestSharedPtr.h
+  include/TestString.h
 )
 
 set(SOURCE_FILES 
@@ -21,6 +22,7 @@ set(SOURCE_FILES
   src/TestCyclicDynamicBuffer.cpp
   src/TestNotifierObserver.cpp
   src/TestSharedPtr.cpp
+  src/TestString.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -53,7 +55,7 @@ GUCEF_config_tool( gucefCORE_TestApp )
 
 
 
-include_directories( ../gucefCORE/include ../gucefMT/include include src )
+include_directories( ../gucefCORE/include ../gucefMT/include include )
 
 if ( WIN32 )
   include_directories( ../gucefCORE/include/mswin )

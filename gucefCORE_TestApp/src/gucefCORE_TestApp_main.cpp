@@ -37,6 +37,11 @@
 #define GUCEF_CORE_TESTAPP_TESTSHAREDPTR_H
 #endif /* GUCEF_CORE_TESTAPP_TESTSHAREDPTR_H ? */
 
+#ifndef GUCEF_CORE_TESTAPP_TESTSTRING_H
+#include "TestString.h"
+#define GUCEF_CORE_TESTAPP_TESTSTRING_H
+#endif /* GUCEF_CORE_TESTAPP_TESTSTRING_H ? */
+
 #ifndef GUCEF_CORE_TESTAPP_TESTNOTIFIEROBSERVER_H
 #include "TestNotifierObserver.h"
 #define GUCEF_CORE_TESTAPP_TESTNOTIFIEROBSERVER_H
@@ -79,13 +84,15 @@ main( int argc, char** argv )
         GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
         #endif /* GUCEF_MSWIN_BUILD ? */
 
-        GUCEF::CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
+        //GUCEF::CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
 
-        PerformSharedPtrTests();
+        PerformStringTests();
+        
+        //PerformSharedPtrTests();
 
-        PerformCyclicDynamicBufferTests();
+        //PerformCyclicDynamicBufferTests();
 
-        PerformNotifierObserverTests();
+        //PerformNotifierObserverTests();
 
         return 1;
     }

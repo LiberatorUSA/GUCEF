@@ -873,30 +873,52 @@ CString::Uppercase( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+Int32
+CString::HasChar( char searchchar         ,
+                  const UInt32 startIndex ,
+                  bool frontToBack        ) const
+{GUCEF_TRACE;
+
+    if ( frontToBack )
+    {
+        for ( UInt32 i=startIndex; i<m_length; ++i )
+        {
+            if ( m_string[ i ] == searchchar )
+            {
+                return i;
+            }                
+        }
+        return -1;
+    }
+
+    UInt32 max = startIndex > m_length-1 ? m_length-1 : startIndex;
+    for ( Int32 i=max; i>=0; --i )
+    {
+        if ( m_string[ i ] == searchchar )
+        {
+            return m_length-i;
+        }                
+    }
+    return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+
 Int32 
 CString::HasChar( char searchchar  ,
                   bool startfront  ) const
 {GUCEF_TRACE;
-        if ( startfront )
-        {
-                for ( UInt32 i=0; i<m_length; ++i )
-                {
-                        if ( m_string[ i ] == searchchar )
-                        {
-                                return i;
-                        }                
-                }
-                return -1;
-        }
-        
-        for ( Int32 i=m_length-1; i>=0; --i )
-        {
-                if ( m_string[ i ] == searchchar )
-                {
-                        return m_length-i;
-                }                
-        }
-        return -1;        
+    
+    if ( startfront )
+    {
+        return HasChar( searchchar, 0, startfront );
+    }
+    
+    if ( m_length > 0 )
+    {
+        return HasChar( searchchar, m_length-1, startfront );
+    }
+    return -1;
 }
 
 /*-------------------------------------------------------------------------*/
