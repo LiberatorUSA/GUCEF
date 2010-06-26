@@ -2037,19 +2037,23 @@ GetRelativePathToOtherPathRoot( const CORE::CString& fromPath ,
     CORE::Int32 pathEquality = (CORE::Int32) fromPath.FindMaxSubstrEquality( toPath, 0, true );
     CORE::CString toPathRemainder = toPath.ReplaceChar( '\\', '/' );
     CORE::CString fromPathRemainder = fromPath.ReplaceChar( '\\', '/' );
-    pathEquality -= toPathRemainder.HasChar( '/', pathEquality, false ) - 1;
-    toPathRemainder = toPathRemainder.CutChars( pathEquality, true );
-    fromPathRemainder = fromPathRemainder.CutChars( pathEquality, true );
-    TStringVector upDirElements = fromPathRemainder.ParseElements( '/', false );
-
-    CORE::CString relativePath;
-    for ( CORE::UInt32 i=0; i<upDirElements.size(); ++i )
+    pathEquality = toPathRemainder.HasChar( '/', pathEquality, false );
+    if ( pathEquality >= 0 )
     {
-        relativePath += "../";
+        toPathRemainder = toPathRemainder.CutChars( pathEquality+1, true );
+        fromPathRemainder = fromPathRemainder.CutChars( pathEquality+1, true );
+        TStringVector upDirElements = fromPathRemainder.ParseElements( '/', false );
+
+        CORE::CString relativePath;
+        for ( CORE::UInt32 i=0; i<upDirElements.size(); ++i )
+        {
+            relativePath += "../";
+        }
+        CORE::AppendToPath( relativePath, toPathRemainder );
+        relativePath = CORE::RelativePath( relativePath );
+        return relativePath.ReplaceChar( '\\', '/' );
     }
-    CORE::AppendToPath( relativePath, toPathRemainder );
-    relativePath = CORE::RelativePath( relativePath );
-    return relativePath.ReplaceChar( '\\', '/' );
+    return toPathRemainder;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2282,11 +2286,6 @@ void
 GenerateModuleIncludes( const TProjectInfo& projectInfo ,
                         TModuleInfo& moduleInfo         )
 {GUCEF_TRACE;
-
-    if ( moduleInfo.name == "gucefINPUT_TestApp" )
-    {
-        int a=0;
-    }
 
     // Add include dirs for each dependency we know about
     TStringVector& dependencies = moduleInfo.dependencies;
