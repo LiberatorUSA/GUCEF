@@ -684,44 +684,40 @@ CString::SubstrToSubstr( const CString& searchstr ,
                          bool startfront          ) const
 {GUCEF_TRACE;
 
-        UInt32 slen = searchstr.Length();
-        
-        if ( slen > m_length )
+    UInt32 slen = searchstr.Length();    
+    if ( slen > m_length )
+    {
+        return *this;
+    }
+    
+    if ( startfront )
+    {
+        UInt32 max = m_length - slen;
+        for ( UInt32 i=0; i<max; ++i )
         {
-                CString substr( *this );
+            if ( memcmp( m_string+i, searchstr.m_string, slen ) == 0 )
+            {
+                CString substr;
+                substr.Set( m_string ,
+                            i       );
                 return substr;
+            }
         }
-        
-        if ( startfront )
+        return *this;
+    }
+    
+    UInt32 max = m_length - slen;        
+    for ( Int32 i=max-1; i>=0; --i )
+    {
+        if ( memcmp( m_string+i, searchstr.m_string, slen ) == 0 )
         {
-                UInt32 max = m_length - slen;
-                for ( UInt32 i=0; i<max; ++i )
-                {
-                        if ( memcmp( m_string+i, searchstr.m_string, slen ) == 0 )
-                        {
-                                CString substr;
-                                substr.Set( m_string ,
-                                            i       );
-                                return substr;
-                        }
-                }
-                CString substr( *this );
-                return substr;
+            CString substr;
+            substr.Set( m_string+i+slen ,
+                        max-i           );
+            return substr;
         }
-        
-        UInt32 max = m_length - slen;        
-        for ( Int32 i=max-1; i>=0; --i )
-        {
-                if ( memcmp( m_string+i, searchstr.m_string, slen ) == 0 )
-                {
-                        CString substr;
-                        substr.Set( m_string+i+slen ,
-                                    max-i           );
-                        return substr;
-                }
-        }
-        CString substr( *this );
-        return substr; 
+    }
+    return *this; 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -896,7 +892,7 @@ CString::HasChar( char searchchar         ,
     {
         if ( m_string[ i ] == searchchar )
         {
-            return m_length-i;
+            return i;
         }                
     }
     return -1;
@@ -1003,7 +999,7 @@ CString::FindMaxSubstrEquality( const CString& searchStr ,
             const char* otherString = searchStr.m_string + searchStr.m_length; 
              
             UInt32 subLength=1;
-            while ( subLength<max )
+            while ( subLength<=max )
             {
                 if ( memcmp( string-subLength, otherString-subLength, subLength ) != 0 )
                 {

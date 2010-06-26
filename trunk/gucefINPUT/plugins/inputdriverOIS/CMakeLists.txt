@@ -51,22 +51,22 @@ GUCEF_config_plugin( inputdriverOIS )
 
 
 
-include_directories( ../../../gucefCORE/include ../../../gucefINPUT/include ../../../gucefMT/include ../inputdriverOIS/dependency/OIS/includes ../inputdriverOIS/dependency/OIS/src/extras/LIRC include )
+include_directories( ../../../gucefCORE/include ../../../gucefINPUT/include ../../../gucefMT/include dependency/OIS/includes dependency/OIS/src/extras/LIRC include )
 
 if ( OSX )
-  include_directories( ../inputdriverOIS/dependency/OIS/includes/mac )
+  include_directories( dependency/OIS/includes/mac )
 endif( OSX )
 
 if ( SDL )
-  include_directories( ../inputdriverOIS/dependency/OIS/includes/sdl )
+  include_directories( dependency/OIS/includes/sdl )
 endif( SDL )
 
 if ( UNIX )
-  include_directories( ../inputdriverOIS/dependency/OIS/includes/linux )
+  include_directories( dependency/OIS/includes/linux )
 endif( UNIX )
 
 if ( WIN32 )
-  include_directories( ../../../gucefCORE/include/mswin ../inputdriverOIS/dependency/OIS/includes/win32 )
+  include_directories( ../../../gucefCORE/include/mswin dependency/OIS/includes/win32 )
 endif( WIN32 )
 
 if ( WIN64 )
