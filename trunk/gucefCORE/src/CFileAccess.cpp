@@ -282,6 +282,15 @@ CFileAccess::Write( CIOAccess& sourceData )
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+CFileAccess::Write( const CString& string )
+{GUCEF_TRACE;
+
+    return CIOAccess::Write( string );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CFileAccess::IsValid( void )
 {GUCEF_TRACE;

@@ -153,6 +153,8 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
                               UInt32 elements     );
 
         virtual UInt32 Write( CIOAccess& sourceData );
+        
+        virtual UInt32 Write( const CString& string );
 
         /**
          *      Get the current offset in bytes
