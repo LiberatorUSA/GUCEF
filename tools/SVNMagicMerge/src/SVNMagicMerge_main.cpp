@@ -1051,6 +1051,11 @@ BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList    ,
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved list of unchanged files to " + subSetFilePath );
             
+            CORE::CString pathsOnlyFile = subSetFilePath + ".TemplatePathsOnly.txt";
+            SaveFileStatusListRelativePaths( pathsOnlyFile, subSetFileStatusList, true );
+            pathsOnlyFile = subSetFilePath + ".MainPathsOnly.txt";
+            SaveFileStatusListRelativePaths( pathsOnlyFile, subSetFileStatusList, false );
+                        
             subSetFileStatusList.clear();
             if ( CreateUnchangedButMovedFilesList( fileStatusList       ,
                                                    subSetFileStatusList ) )
@@ -1062,6 +1067,11 @@ BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList    ,
                                          maxEntriesPerFile    ) )
                 {
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved list of unchanged but moved files to " + subSetFilePath );
+
+                    pathsOnlyFile = subSetFilePath + ".TemplatePathsOnly.txt";
+                    SaveFileStatusListRelativePaths( pathsOnlyFile, subSetFileStatusList, true );
+                    pathsOnlyFile = subSetFilePath + ".MainPathsOnly.txt";
+                    SaveFileStatusListRelativePaths( pathsOnlyFile, subSetFileStatusList, false );
                     
                     subSetFileStatusList.clear();
                     if ( CreateChangedFilesList( fileStatusList       ,
@@ -1075,6 +1085,11 @@ BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList    ,
                         {
                             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved list of changed files to " + subSetFilePath );
                             
+                            pathsOnlyFile = subSetFilePath + ".TemplatePathsOnly.txt";
+                            SaveFileStatusListRelativePaths( pathsOnlyFile, subSetFileStatusList, true );
+                            pathsOnlyFile = subSetFilePath + ".MainPathsOnly.txt";
+                            SaveFileStatusListRelativePaths( pathsOnlyFile, subSetFileStatusList, false );
+
                             subSetFileStatusList.clear();
                             if ( CreateMissingInTemplateFilesList( fileStatusList       ,
                                                                    subSetFileStatusList ) )
@@ -1087,6 +1102,11 @@ BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList    ,
                                 {
                                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved list of files missing from the template archive to " + subSetFilePath );
                                     
+                                    pathsOnlyFile = subSetFilePath + ".TemplatePathsOnly.txt";
+                                    SaveFileStatusListRelativePaths( pathsOnlyFile, subSetFileStatusList, true );
+                                    pathsOnlyFile = subSetFilePath + ".MainPathsOnly.txt";
+                                    SaveFileStatusListRelativePaths( pathsOnlyFile, subSetFileStatusList, false );
+
                                     subSetFileStatusList.clear();
                                     if ( CreateMissingInMainFilesList( fileStatusList       ,
                                                                        subSetFileStatusList ) )
@@ -1099,6 +1119,11 @@ BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList    ,
                                         {
                                             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved list of files missing from the main archive to " + subSetFilePath );
                                             
+                                            pathsOnlyFile = subSetFilePath + ".TemplatePathsOnly.txt";
+                                            SaveFileStatusListRelativePaths( pathsOnlyFile, subSetFileStatusList, true );
+                                            pathsOnlyFile = subSetFilePath + ".MainPathsOnly.txt";
+                                            SaveFileStatusListRelativePaths( pathsOnlyFile, subSetFileStatusList, false );
+
                                             subSetFileStatusList.clear();
                                             if ( CreateUnknownStatusFilesList( fileStatusList       ,
                                                                                subSetFileStatusList ) )
@@ -1111,6 +1136,11 @@ BreakUpFileStatusListIntoSubsets( const TFileStatusVector& fileStatusList    ,
                                                 {
                                                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved list of files with an unknown status to " + subSetFilePath );
                                                     
+                                                    pathsOnlyFile = subSetFilePath + ".TemplatePathsOnly.txt";
+                                                    SaveFileStatusListRelativePaths( pathsOnlyFile, subSetFileStatusList, true );
+                                                    pathsOnlyFile = subSetFilePath + ".MainPathsOnly.txt";
+                                                    SaveFileStatusListRelativePaths( pathsOnlyFile, subSetFileStatusList, false );
+
                                                     subSetFileStatusList.clear();
                                                     return true;
                                                 }

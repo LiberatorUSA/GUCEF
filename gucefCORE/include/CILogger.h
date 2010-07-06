@@ -61,7 +61,8 @@ class GUCEF_CORE_PUBLIC_CPP CILogger
 
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
-                      const CString& logMessage    ) = 0;
+                      const CString& logMessage    ,
+                      const UInt32 threadId        ) = 0;
 
     virtual void FlushLog( void ) = 0;
 

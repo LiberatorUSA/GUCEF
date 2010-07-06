@@ -127,6 +127,11 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     CLogManager( const CLogManager& src );              /**< not implemented, don't use */
     CLogManager& operator=( const CLogManager& src );   /**< not implemented, don't use */
 
+    void Log( const TLogMsgType logMsgType ,
+              const Int32 logLevel         ,
+              const CString& logMessage    ,
+              const UInt32 threadId        );
+
     private:
 
     typedef std::set< CILogger* > TLoggerList;
@@ -136,6 +141,7 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
         TLogMsgType logMsgType;
         Int32 logLevel;
         CString logMessage;
+        UInt32 threadId;
     };
     typedef struct SBootstrapLogEntry TBootstrapLogEntry;
     typedef std::vector< TBootstrapLogEntry > TBootstrapLogVector;

@@ -1015,6 +1015,46 @@ SaveFileStatusList( const CORE::CString& filePath           ,
 /*-------------------------------------------------------------------------*/
 
 bool
+SaveFileStatusListRelativePaths( const CORE::CString& filePath           ,
+                                 const TFileStatusVector& fileStatusList ,
+                                 bool templateInsteadOfMainPaths         )
+{GUCEF_TRACE;
+
+    CORE::CFileAccess file( filePath, "w" );
+    file.Open();
+    
+    if ( !file.IsValid() )
+    {
+        return false;
+    }
+    
+    TFileStatusVector::const_iterator i = fileStatusList.begin();
+    while ( i != fileStatusList.end() )
+    {
+        const TFileStatus& fileStatus = (*i);
+        CORE::CString relativePath;
+        
+        if ( templateInsteadOfMainPaths )
+        {
+            relativePath = GetPathForFile( fileStatus.templateArchiveInfo );
+        }
+        else
+        {
+            relativePath = GetPathForFile( fileStatus.mainSvnArchiveInfo );
+        }
+        if ( relativePath.Length() > 0 )
+        {
+            file.Write( relativePath );
+        }
+        ++i;
+    }
+    file.Close();
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 LoadFileStatusListSegment( const CORE::CString& filePath     ,
                            TFileStatusVector& fileStatusList )
 {GUCEF_TRACE;

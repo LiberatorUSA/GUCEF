@@ -25,6 +25,11 @@
 
 #include <assert.h>
 
+#ifndef GUCEF_MT_DVMTOSWRAP_H
+#include "gucefMT_dvmtoswrap.h"
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
+
 #ifndef GUCEF_CORE_CILOGGER_H
 #include "CILogger.h"
 #define GUCEF_CORE_CILOGGER_H
@@ -147,19 +152,27 @@ CLogManager::FlushBootstrapLogEntriesToLogs( void )
 
     g_dataLock.Lock();
 
-    TBootstrapLogVector::iterator i = m_bootstrapLog.begin();
-    while ( i != m_bootstrapLog.end() )
+    if ( m_loggers.size() > 0 )
     {
-        TBootstrapLogEntry& entry = (*i);
-        Log( entry.logMsgType ,
-             entry.logLevel   ,
-             entry.logMessage );
+        TBootstrapLogVector::iterator i = m_bootstrapLog.begin();
+        while ( i != m_bootstrapLog.end() )
+        {
+            TBootstrapLogEntry& entry = (*i);
+            Log( entry.logMsgType ,
+                 entry.logLevel   ,
+                 entry.logMessage ,
+                 entry.threadId   );
 
-        ++i;
+            ++i;
+        }
+        m_bootstrapLog.clear();
+
+        Log( LOG_SYSTEM, LOGLEVEL_NORMAL, "LogManager: Finished flushing all bootstrap log entries to the currently registered loggers" );
     }
-    m_bootstrapLog.clear();
-
-    Log( LOG_SYSTEM, LOGLEVEL_NORMAL, "LogManager: Finished flushing all bootstrap log entries to the currently registered loggers" );
+    else
+    {
+        Log( LOG_ERROR, LOGLEVEL_NORMAL, "LogManager: Unable to flush bootstrap log entries since no loggers are currently registered" );
+    }
 
     g_dataLock.Unlock();
 }
@@ -234,6 +247,21 @@ CLogManager::Log( const TLogMsgType logMsgType ,
                   const CString& logMessage    )
 {GUCEF_TRACE;
 
+    Log( logMsgType             ,
+         logLevel               ,
+         logMessage             ,
+         MT::GetCurrentTaskID() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogManager::Log( const TLogMsgType logMsgType ,
+                  const Int32 logLevel         ,
+                  const CString& logMessage    ,
+                  const UInt32 threadId        )
+{GUCEF_TRACE;
+
     g_dataLock.Lock();
 
     if ( logLevel < m_maxLogLevel )
@@ -250,7 +278,8 @@ CLogManager::Log( const TLogMsgType logMsgType ,
                     {
                         logger->Log( logMsgType ,
                                      logLevel   ,
-                                     logMessage );
+                                     logMessage ,
+                                     threadId   );
                     }
                     ++i;
                 }
@@ -271,6 +300,7 @@ CLogManager::Log( const TLogMsgType logMsgType ,
                 entry.logLevel = logLevel;
                 entry.logMsgType = logMsgType;
                 entry.logMessage = logMessage;
+                entry.threadId = threadId;
                 m_bootstrapLog.push_back( entry );
             }
         }

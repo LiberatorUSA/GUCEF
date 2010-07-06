@@ -219,6 +219,20 @@
 /*-------------------------------------------------------------------------*/
 
 /*
+ *  Macros that defines the correct end of line string to be used 
+ *  depending on the platform we are building for.
+ */
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+  #define GUCEF_EOL "\r\n"
+  #define GUCEF_EOL_LENGTH 2
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+  #define GUCEF_EOL "\n"
+  #define GUCEF_EOL_LENGTH 1
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+/*
  *      Bit operations.
  *      Use the following macro's to set/get a bit in an integer.
  */

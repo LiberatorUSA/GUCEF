@@ -448,6 +448,20 @@ CIOAccess::Write( CIOAccess& sourceData )
 /*-------------------------------------------------------------------------*/
 
 UInt32
+CIOAccess::Write( const CString& string )
+{GUCEF_TRACE;
+
+    UInt32 bytesWritten = Write( string.C_String(), 1, string.Length() );
+    if ( bytesWritten == string.Length() ) 
+    {
+        bytesWritten += Write( GUCEF_EOL, 1, GUCEF_EOL_LENGTH );
+    }
+    return bytesWritten;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
 CIOAccess::GetSize( void ) const
 {GUCEF_TRACE;
 

@@ -100,14 +100,19 @@ CStdLogger::SetOutput( CIOAccess& output )
 void
 CStdLogger::Log( const TLogMsgType logMsgType ,
                  const Int32 logLevel         ,
-                 const CString& logMessage    )
+                 const CString& logMessage    ,
+                 const UInt32 threadId        )
 {GUCEF_TRACE;
 
     if ( m_output != NULL )
     {
         if ( logLevel >= m_minimalLogLevel )
         {
-            CString actualLogMsg( "[" + CLogManager::GetLogMsgTypeString( logMsgType ) + "] [LVL " + LogLevelToString( logLevel ) + "] " + logMessage + "\n" );
+            CString actualLogMsg( "[THREAD=" + UInt32ToString( threadId ) +
+                 "][TYPE=" + CLogManager::GetLogMsgTypeString( logMsgType ) +
+                 "] [LVL=" + LogLevelToString( logLevel ) + "] " + 
+                 logMessage + "\n" );
+             
             m_output->Write( actualLogMsg.C_String() ,
                              actualLogMsg.Length()   ,
                              1                       );
