@@ -155,6 +155,7 @@ set(HEADER_FILES
   include/gucefCORE_CTaskDelegator.h
   include/gucefCORE_CTaskManager.h
   include/gucefCORE_CTEventHandlerFunctor.h
+  include/gucefCORE_CThreadedLogger.h
   include/gucefCORE_ETypes.h
   include/gucefCORE_GenericPluginAPI.h
   include/gucefCORE_Logging.h
@@ -306,6 +307,7 @@ set(SOURCE_FILES
   src/gucefCORE_CTaskDelegator.cpp
   src/gucefCORE_CTaskManager.cpp
   src/gucefCORE_CTEventHandlerFunctor.cpp
+  src/gucefCORE_CThreadedLogger.cpp
   src/IOACCESS.c
   src/md5.c
   src/MemoryManager.cpp

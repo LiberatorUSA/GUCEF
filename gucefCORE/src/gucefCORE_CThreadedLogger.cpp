@@ -1,4 +1,4 @@
-                                                                                                                                        /*
+/*
  *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
@@ -41,13 +41,15 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CThreadedLogger::CThreadedLogger( void )
+    : m_loggerBackend( NULL )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CThreadedLogger::CThreadedLogger()
+CThreadedLogger::CThreadedLogger( CILogger* loggerBackend )
+    : m_loggerBackend( loggerBackend )
 {GUCEF_TRACE;
 
 }
@@ -68,7 +70,11 @@ CThreadedLogger::Log( const TLogMsgType logMsgType ,
                       const UInt32 threadId        )
 {GUCEF_TRACE;
 
-    
+    CLoggingMail logMsg;
+    logMsg.logLevel = logLevel;
+    logMsg.logMessage = logMessage;
+    logMsg.logMsgType = logMsgType;
+    logMsg.threadId = threadId;
     
     m_mailbox.AddMail( MAILTYPE_NEWLOGMSG, &logMsg );
 }
@@ -89,7 +95,82 @@ CThreadedLogger::SetBackend( CILogger* loggerBackend )
 {GUCEF_TRACE;
 
     // Atomic assignment of backend implementation
+    m_mailbox.LockData();
     m_loggerBackend = loggerBackend;
+    m_mailbox.UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadedLogger::OnTaskStart( void* taskdata )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadedLogger::OnTaskCycle( void* taskdata )
+{GUCEF_TRACE;
+
+    LockData();
+
+    if ( NULL != m_loggerBackend )
+    {
+        TMailType mailType;
+        CLoggingMail* loggingMail = NULL;
+        if ( m_mailbox.GetMail( mailType     , 
+                                &loggingMail ) )
+        {
+            switch ( mailType )
+            {
+                case MAILTYPE_NEWLOGMSG :
+                {
+                    m_loggerBackend->Log( loggingMail->logMsgType , 
+                                          loggingMail->logLevel   ,
+                                          loggingMail->logMsgType ,
+                                          loggingMail->threadId   );
+                    
+                    break;
+                }
+                case MAILTYPE_FLUSHLOG :
+                {
+                    m_loggerBackend->FlushLog();
+                    break;
+                }
+                
+            }
+        }
+    }
+    
+    UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadedLogger::LockData( void )
+{GUCEF_TRACE;
+
+    m_mailbox.LockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadedLogger::UnlockData( void )
+{GUCEF_TRACE;
+
+    m_mailbox.UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadedLogger::OnTaskEnd( void* taskdata )
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------//
