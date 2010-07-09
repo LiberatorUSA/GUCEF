@@ -63,11 +63,6 @@
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef GUCEFINPUT_BUILD_MODULE
-  #define BUILD_GUCEF_INPUT_DLL
-  #define GUCEF_INPUT_BUILD_MODULE
-#endif /* GUCEFINPUT_BUILD_MODULE ? */ 
-
 /*
  *      When compiling the gucefVFS library you should define GUCEF_VFS_BUILD_MODULE
  *      before including this macro file.
