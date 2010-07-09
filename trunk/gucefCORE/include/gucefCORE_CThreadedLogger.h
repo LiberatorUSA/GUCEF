@@ -26,20 +26,25 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CACTIVEOBJECT_H
+#include "gucefMT_CActiveObject.h"
+#define GUCEF_MT_CACTIVEOBJECT_H
+#endif /* GUCEF_MT_CACTIVEOBJECT_H */
+
 #ifndef GUCEF_MT_CTMAILBOX_H
 #include "gucefMT_CTMailBox.h"
 #define GUCEF_MT_CTMAILBOX_H
 #endif /* GUCEF_MT_CTMAILBOX_H ? */
 
+#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
+#include "CTCloneableObj.h"
+#define GUCEF_CORE_CTCLONEABLEOBJ_H
+#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+
 #ifndef GUCEF_CORE_CILOGGER_H
 #include "CILogger.h"
 #define GUCEF_CORE_CILOGGER_H
 #endif /* GUCEF_CORE_CILOGGER_H ? */
-
-#ifndef GUCEF_CORE_CTASKCONSUMER_H
-#include "gucefCORE_CITaskConsumer.h"
-#define GUCEF_CORE_CTASKCONSUMER_H
-#endif /* GUCEF_CORE_CTASKCONSUMER_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,7 +64,7 @@ namespace CORE {
 /**
  *  class which provides a threaded wrapper for logging backends
  */
-class GUCEF_CORE_PUBLIC_CPP CThreadedLogger : public CTaskConsumer ,
+class GUCEF_CORE_PUBLIC_CPP CThreadedLogger : public MT::CActiveObject ,
                                               public CILogger
 {
     public:
@@ -80,6 +85,17 @@ class GUCEF_CORE_PUBLIC_CPP CThreadedLogger : public CTaskConsumer ,
     
     void SetBackend( CILogger* loggerBackend );
 
+    protected:
+
+    virtual bool OnTaskStart( void* taskdata );
+
+    virtual bool OnTaskCycle( void* taskdata );
+
+    virtual void OnTaskEnd( void* taskdata );
+    
+    void LockData( void );
+    
+    void UnlockData( void );
 
     private:
     
@@ -92,6 +108,18 @@ class GUCEF_CORE_PUBLIC_CPP CThreadedLogger : public CTaskConsumer ,
     };
     typedef enum EMailType TMailType;
     typedef MT::CTMailBox< TMailType > TLoggingMailBox;
+    
+    class CLoggingMail : public CICloneable
+    {
+        public:
+        
+        TLogMsgType logMsgType;
+        Int32 logLevel;
+        CString logMessage;
+        UInt32 threadId;
+        
+        virtual CICloneable* Clone( void ) const;
+    };
     
     private:
     

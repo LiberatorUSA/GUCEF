@@ -55,6 +55,15 @@ template < typename T >
 class CTMailBox
 {
     public:
+    
+    struct SMailElement
+    {
+        T eventid;
+        CICloneable* data;
+    };
+    typedef struct SMailElement TMailElement;
+    
+    typedef std::vector< TMailElement > TMailList;
 
     CTMailBox( void );
 
@@ -84,6 +93,21 @@ class CTMailBox
     bool GetMail( T& eventid         ,
                   CICloneable** data );
 
+    /**
+     *  Attempts to retrieve mail from the mailbox.
+     *
+     *  Note that if data given as part of a mail entry is non-NULL 
+     *  then you should delete the object after handling the mail 
+     *  message or you will create a memory-leak.
+     *
+     *  @param mailList storage where mail items will be placed
+     *  @param maxMailItems if greater then -1 will place a maximum on 
+     *  @param maxMailItems the number of mail items that can be placed in the mail list
+     *  @return whether mail was successfully retrieved from the mailbox.
+     */
+    bool GetMailList( TMailList& mailList     ,
+                      Int32 maxMailItems = -1 );
+
     void Clear( void );
 
     void ClearAllExcept( const T& eventid );
@@ -91,8 +115,6 @@ class CTMailBox
     void Delete( const T& eventid );
 
     bool HasMail( void ) const;
-    
-    protected:
     
     void LockData() const;
     
@@ -105,15 +127,8 @@ class CTMailBox
     CTMailBox& operator=( const CTMailBox& src );
 
     private:
-    struct SMailElement
-    {
-        T eventid;
-        CICloneable* data;
-    };
-    typedef struct SMailElement TMailElement;
-    typedef std::vector<TMailElement> TMailStack;
-
-    TMailStack m_mailStack;
+    
+    TMailList m_mailStack;
     CMutex m_datalock;
 };
 
@@ -199,6 +214,31 @@ CTMailBox< T >::GetMail( T& eventid         ,
     *data = NULL;
     m_datalock.Unlock();
     return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
+bool
+CTMailBox< T >::GetMailList( TMailList& mailList ,
+                             Int32 maxMailItems  )
+{
+    m_datalock.Lock();
+    
+    Int32 mailItemsRead = 0;
+    while ( mailItemsRead < maxMailItems && maxMailItems > -1 )
+    {    
+        if ( !m_mailStack.empty() )
+        {
+            mailList.push_back( m_mailStack[ m_mailStack.size()-1 ] );
+            m_mailStack.pop_back();
+            
+            ++mailItemsRead;
+        }
+    }
+    
+    m_datalock.Unlock();
+    return mailItemsRead > 0;
 }
 
 /*--------------------------------------------------------------------------*/
