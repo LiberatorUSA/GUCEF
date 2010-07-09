@@ -1,6 +1,6 @@
 /*
  *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CTASKDELEGATOR_H
-#define GUCEF_CORE_CTASKDELEGATOR_H
+#ifndef GUCEF_CORE_CTHREADEDLOGGER_H
+#define GUCEF_CORE_CTHREADEDLOGGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,20 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CACTIVEOBJECT_H
-#include "gucefMT_CActiveObject.h"
-#define GUCEF_MT_CACTIVEOBJECT_H
-#endif /* GUCEF_MT_CACTIVEOBJECT_H ? */
+#ifndef GUCEF_MT_CTMAILBOX_H
+#include "gucefMT_CTMailBox.h"
+#define GUCEF_MT_CTMAILBOX_H
+#endif /* GUCEF_MT_CTMAILBOX_H ? */
 
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+#ifndef GUCEF_CORE_CILOGGER_H
+#include "CILogger.h"
+#define GUCEF_CORE_CILOGGER_H
+#endif /* GUCEF_CORE_CILOGGER_H ? */
 
-#ifndef GUCEF_CORE_CTNUMERICID_H
-#include "CTNumericID.h"
-#define GUCEF_CORE_CTNUMERICID_H
-#endif /* GUCEF_CORE_CTNUMERICID_H ? */
+#ifndef GUCEF_CORE_CTASKCONSUMER_H
+#include "gucefCORE_CITaskConsumer.h"
+#define GUCEF_CORE_CTASKCONSUMER_H
+#endif /* GUCEF_CORE_CTASKCONSUMER_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,53 +56,47 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CTaskManager;
-class CTaskConsumer;
-
-/*-------------------------------------------------------------------------*/
-
 /**
- *  This is an internally used class for the CTaskManager class.
- *  It is not meant to be used beyond that use-case.
+ *  class which provides a threaded wrapper for logging backends
  */
-class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject
+class GUCEF_CORE_PUBLIC_CPP CThreadedLogger : public CTaskConsumer ,
+                                              public CILogger
 {
     public:
+    
+    CThreadedLogger( void );
 
-    typedef CTNumericID< UInt32 > TTaskID;
+    CThreadedLogger( CILogger* loggerBackend );
 
-    CTaskManager& GetTaskManager( void ) const;
+    /** 
+     *
+     */
+    virtual void Log( const TLogMsgType logMsgType ,
+                      const Int32 logLevel         ,
+                      const CString& logMessage    ,
+                      const UInt32 threadId        );
 
-    CTaskConsumer* GetTaskConsumer( void );
+    virtual void FlushLog( void );
+    
+    void SetBackend( CILogger* loggerBackend );
 
-    protected:
-    friend class CTaskManager;
-
-    CTaskDelegator( void );
-
-    virtual ~CTaskDelegator();
-
-    virtual bool OnTaskStart( void* taskdata );
-
-    virtual bool OnTaskCycle( void* taskdata );
-
-    virtual void OnTaskEnd( void* taskdata );
-
-    void PerformTaskCleanup( CTaskConsumer* taskConsumer ,
-                             CICloneable* taskData        ) const;
-
-    void SetTaskData( TTaskID& taskId             ,
-                      CTaskConsumer* taskConsumer );
 
     private:
-
-    CTaskDelegator( const CTaskDelegator& src );
-    CTaskDelegator& operator=( const CTaskDelegator& src );
-
+    
+    enum EMailType
+    {
+        MAILTYPE_NEWLOGMSG ,
+        MAILTYPE_FLUSHLOG  ,
+        
+        MAILTYPE_UNKNOWN
+    };
+    typedef enum EMailType TMailType;
+    typedef MT::CTMailBox< TMailType > TLoggingMailBox;
+    
     private:
-
-    CTaskConsumer* m_taskConsumer;
-    CTaskManager* m_taskManager;
+    
+    CILogger* m_loggerBackend;
+    TLoggingMailBox m_mailbox;    
 };
 
 /*-------------------------------------------------------------------------//
@@ -116,7 +110,7 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CTASKDELEGATOR_H ? */
+#endif /* GUCEF_CORE_CTHREADEDLOGGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -124,8 +118,7 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 20-02-2005 :
-        - Dinand: Added this class, it is based on some older C implementation
-          I made once. Ported but not tested.
+- 16-02-2007 :
+        - Dinand: Added this class
 
-----------------------------------------------------------------------------*/
+-----------------------------------------------------------------------------*/

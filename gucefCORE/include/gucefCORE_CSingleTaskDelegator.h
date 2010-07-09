@@ -55,7 +55,7 @@ class CTaskConsumer;
  *  This is an internally used class for the CTaskManager class.
  *  It is not meant to be used beyond that use-case.
  */
-class GUCEF_CORE_PUBLIC_CPP CSingleTaskDelegator : public CTaskDelegator
+class GUCEF_CORE_PRIVATE_CPP CSingleTaskDelegator : public CTaskDelegator
 {
     private:
     friend class CTaskManager;
