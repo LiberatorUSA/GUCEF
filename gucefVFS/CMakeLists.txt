@@ -52,7 +52,7 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 add_library( gucefVFS ${ALL_FILES} )
 add_dependencies( gucefVFS gucefCORE gucefMT)
 target_link_libraries( gucefVFS gucefCORE gucefMT )
-set_target_properties( gucefVFS PROPERTIES COMPILE_DEFINITIONS GUCEFVFS_BUILD_MODULE )
+set_target_properties( gucefVFS PROPERTIES COMPILE_DEFINITIONS GUCEF_VFS_BUILD_MODULE )
 GUCEF_config_lib( gucefVFS )
 
 
