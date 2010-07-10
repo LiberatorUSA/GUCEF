@@ -68,13 +68,15 @@ class GUCEF_CORE_PUBLIC_CPP CThreadedLogger : public MT::CActiveObject ,
                                               public CILogger
 {
     public:
-    
-    CThreadedLogger( void );
 
-    CThreadedLogger( CILogger* loggerBackend );
+    CThreadedLogger( CILogger& loggerBackend );
+    
+    virtual ~CThreadedLogger();
 
     /** 
-     *
+     *  Adds a log message to the mailbox of the threaded logger.
+     *  The actual logging backend invocation will be performed within
+     *  the thread dedicated to logging.
      */
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
@@ -82,8 +84,6 @@ class GUCEF_CORE_PUBLIC_CPP CThreadedLogger : public MT::CActiveObject ,
                       const UInt32 threadId        );
 
     virtual void FlushLog( void );
-    
-    void SetBackend( CILogger* loggerBackend );
 
     protected:
 
@@ -108,6 +108,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadedLogger : public MT::CActiveObject ,
     };
     typedef enum EMailType TMailType;
     typedef MT::CTMailBox< TMailType > TLoggingMailBox;
+    typedef MT::CTMailBox< TMailType >::TMailList TMailList;
     
     class CLoggingMail : public CICloneable
     {
@@ -119,12 +120,17 @@ class GUCEF_CORE_PUBLIC_CPP CThreadedLogger : public MT::CActiveObject ,
         UInt32 threadId;
         
         virtual CICloneable* Clone( void ) const;
+        
+        CLoggingMail( void );
+        
+        CLoggingMail( const CLoggingMail& src );
     };
     
     private:
     
     CILogger* m_loggerBackend;
-    TLoggingMailBox m_mailbox;    
+    TLoggingMailBox m_mailbox;
+    TMailList m_mailList;    
 };
 
 /*-------------------------------------------------------------------------//

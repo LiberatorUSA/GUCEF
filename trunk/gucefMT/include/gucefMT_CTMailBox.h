@@ -146,29 +146,19 @@ CTMailBox< T >::CTMailBox( void )
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-CTMailBox< T >::CTMailBox( const CTMailBox& src )
-    : m_mailStack( src.m_mailStack )
-{
-}
-
-/*--------------------------------------------------------------------------*/
-
-template< typename T >
 CTMailBox< T >::~CTMailBox()
 {
-}
-
-/*--------------------------------------------------------------------------*/
-
-template< typename T >
-CTMailBox< T >&
-CTMailBox< T >::operator=( const CTMailBox& src )
-{
-    if ( this != &src )
+    m_datalock.Lock();
+    TMailElement* entry;
+    typename TMailList::iterator i( m_mailStack.begin() );
+    while ( i != m_mailStack.end() )
     {
-        m_mailStack = src.m_mailStack;
+        entry = &(*i);
+        delete entry->data;
+        m_mailStack.erase( i );
+        i = m_mailStack.begin();
     }
-    return *this;
+    m_datalock.Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -203,7 +193,7 @@ CTMailBox< T >::GetMail( T& eventid         ,
     m_datalock.Lock();
     if ( !m_mailStack.empty() )
     {
-        TMailElement entry( m_mailStack[ m_mailStack.size()-1 ] );
+        TMailElement& entry = m_mailStack[ m_mailStack.size()-1 ];
         eventid = entry.eventid;
         *data = entry.data;
 
@@ -248,7 +238,7 @@ void
 CTMailBox< T >::Clear( void )
 {
     m_datalock.Lock();
-    typename TMailStack::iterator i( m_mailStack.begin() );
+    typename TMailList::iterator i( m_mailStack.begin() );
     while ( i != m_mailStack.end() )
     {
         delete (*i).data;
@@ -266,7 +256,7 @@ CTMailBox< T >::ClearAllExcept( const T& eventid )
 {
     m_datalock.Lock();
     TMailElement* entry;
-    typename TMailStack::iterator i( m_mailStack.begin() );
+    typename TMailList::iterator i( m_mailStack.begin() );
     while ( i != m_mailStack.end() )
     {
         entry = &(*i);
@@ -290,7 +280,7 @@ CTMailBox< T >::Delete( const T& eventid )
 {
     m_datalock.Lock();
     TMailElement* entry;
-    typename TMailStack::iterator i( m_mailStack.begin() );
+    typename TMailList::iterator i( m_mailStack.begin() );
     while ( i != m_mailStack.end() )
     {
         entry = &(*i);
