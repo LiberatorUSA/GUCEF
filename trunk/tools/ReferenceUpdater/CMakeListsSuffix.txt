@@ -1,0 +1,9 @@
+
+if (WIN32)
+  add_executable( ReferenceUpdater WIN32 ${ALL_FILES} )
+else()
+  add_executable( ReferenceUpdater ${ALL_FILES} )
+endif()
+add_dependencies( ReferenceUpdater gucefCORE gucefMT)
+target_link_libraries( ReferenceUpdater gucefCORE gucefMT )
+GUCEF_config_tool( ReferenceUpdater )
