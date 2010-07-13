@@ -714,7 +714,7 @@ UInt32
 Copy_File( const char *dst, const char *src )
 {
         #ifdef GUCEF_MSWIN_BUILD
-        return !CopyFile( dst, src, 0 );
+        return 0 != CopyFile( src, dst, TRUE ) ? 1 : 0;
         #else
         char buffer[ 1024*512 ];
         UInt32 rbytes = 1;
