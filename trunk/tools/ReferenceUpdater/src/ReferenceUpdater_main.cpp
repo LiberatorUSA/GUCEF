@@ -455,8 +455,8 @@ PrintHelp( void )
     printf( "    'DstIncludeDir' : path to the destination dir with the includes\n" );
     printf( "    'SrcBinDir'     : path to the source dir with the binaries\n" );
     printf( "    'DstBinDir'     : path to the destination dir with the binaries\n" );
-    printf( "    'DirsToIgnore'  : optional param of ; seperated directory names\" );
-    printf( "                      of directories that should be ignored\" );
+    printf( "    'DirsToIgnore'  : optional param of ; seperated directory names\n" );
+    printf( "                      of directories that should be ignored\n" );
 }
 
 /*-------------------------------------------------------------------------*/
