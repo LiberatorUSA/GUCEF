@@ -198,6 +198,7 @@ GetBinaryFileTypes( void )
         fileTypes.insert( "pdb" );
         fileTypes.insert( "dll" );
         fileTypes.insert( "so" );
+        fileTypes.insert( "lib" );
         fileTypes.insert( "manifest" );
     }
     return fileTypes;
@@ -298,6 +299,67 @@ LocateFileMatches( const CORE::CString& srcDir    ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+DeleteFileBackup( const CORE::CString& filepath )
+{GUCEF_TRACE;
+
+    CORE::CString newFilepath = filepath + ".backup";
+    
+    if ( 0 != CORE::Delete_File( newFilepath.C_String() ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "File \"" + newFilepath + "\" has been deleted" );
+        return true;
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to delete file \"" + newFilepath + "\"" );
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+UndoRenameFileAsBackup( const CORE::CString& filepath )
+{GUCEF_TRACE;
+
+    CORE::CString newFilepath = filepath + ".backup";
+     
+    if ( 0 != CORE::Move_File( filepath.C_String()    , 
+                               newFilepath.C_String() ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "File \"" + filepath + "\" has been renamed to \"" + newFilepath + "\"" );
+        return true;
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to rename file \"" + filepath + "\" to \"" + newFilepath + "\"" );
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RenameFileAsBackup( const CORE::CString& filepath )
+{GUCEF_TRACE;
+
+    CORE::CString newFilepath = filepath + ".backup";     
+    if ( 0 != CORE::Move_File( newFilepath.C_String() , 
+                               filepath.C_String()    ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "File \"" + filepath + "\" has been renamed to \"" + newFilepath + "\"" );
+        return true;
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to rename file \"" + filepath + "\" to \"" + newFilepath + "\"" );
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CopyOverMatchedFiles( TMatchEntryVector& matches )
 {GUCEF_TRACE;
@@ -328,18 +390,20 @@ CopyOverMatchedFiles( TMatchEntryVector& matches )
                 
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Preparing to copy file from \"" + sourceFilePath + "\" to \"" + destFilePath + "\"" );            
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Deleting destination file \"" + destFilePath + "\"" ); 
-                if ( 0 != CORE::Delete_File( destFilePath.C_String() ) )
+                if ( RenameFileAsBackup( destFilePath ) )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully deleted destination file \"" + destFilePath + "\"" );
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully renamed destination file \"" + destFilePath + "\"" );
                     
                     if ( 0 != CORE::Copy_File( destFilePath.C_String()   , 
                                                sourceFilePath.C_String() ) )
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully copied file from \"" + sourceFilePath + "\" to \"" + destFilePath + "\"" );
+                        DeleteFileBackup( destFilePath );
                     }
                     else
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Failed to copy file from \"" + sourceFilePath + "\" to \"" + destFilePath + "\"" );
+                        UndoRenameFileAsBackup( destFilePath );
                     }
                 }
                 else
