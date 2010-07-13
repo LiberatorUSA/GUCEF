@@ -120,12 +120,15 @@ BuildFileList( const CORE::CString& srcDir    ,
                  ( entryName != ".." )  )
             {
                 // Check if this is a dir we have to ignore
-                if ( NULL != dirsToIgnore )
+                if ( 0 == CORE::DI_Is_It_A_File( dirEntry ) )
                 {
-                    if ( dirsToIgnore->find( entryName.Lowercase() ) != dirsToIgnore->end() )
+                    if ( NULL != dirsToIgnore )
                     {
-                        // do not process further
-                        break;
+                        if ( dirsToIgnore->find( entryName.Lowercase() ) != dirsToIgnore->end() )
+                        {
+                            // do not process further
+                            break;
+                        }
                     }
                 }
                 
@@ -232,12 +235,15 @@ FindMatchesForFile( const TFileEntryVector& totalSet ,
                     TFileEntryVector& matches        )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to match file \"" + filename + "\"" );
+    
     TFileEntryVector::const_iterator i = totalSet.begin();
     while ( i != totalSet.end() ) 
     {
         const TFileEntry& fileEntry = (*i);        
         if ( fileEntry.filename == filename )
         {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully matched file \"" + filename + "\" to file at \"" + fileEntry.filedir + "\"" );
             matches.push_back( fileEntry );
         }
         ++i;
@@ -256,6 +262,9 @@ FindMatchesForSourceFiles( TMatchEntryVector& matches     ,
     // get a list of all destination files
     TFileEntryVector destFiles;
     BuildFileList( destDir, destFiles, fileTypes, dirsToIgnore );
+    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to match " + CORE::UInt32ToString( matches.size() ) + " files to " + 
+                                        CORE::UInt32ToString( destFiles.size() ) + " destination files" );
     
     // Find destination matches for each source file
     TMatchEntryVector::iterator i = matches.begin();
@@ -302,36 +311,44 @@ CopyOverMatchedFiles( TMatchEntryVector& matches )
         CORE::AppendToPath( sourceFilePath, matchEntry.source.filename );
         
         TFileEntryVector& destinations = matchEntry.destinations;
-        TFileEntryVector::iterator n = destinations.begin(); 
-        while ( n != destinations.end() )
+
+        if ( destinations.empty() )
         {
-            TFileEntry& destEntry = (*n);
-            
-            CORE::CString destFilePath = destEntry.filedir;
-            CORE::AppendToPath( destFilePath, destEntry.filename );
-            
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Preparing to copy file from \"" + sourceFilePath + "\" to \"" + destFilePath + "\"" );            
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Deleting destination file \"" + destFilePath + "\"" ); 
-            if ( 0 != CORE::Delete_File( destFilePath.C_String() ) )
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "File \"" + sourceFilePath + "\" cannot be copied since it doesnt have any destination locations" );
+        }
+        else
+        { 
+            TFileEntryVector::iterator n = destinations.begin();
+            while ( n != destinations.end() )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully deleted destination file \"" + destFilePath + "\"" );
+                TFileEntry& destEntry = (*n);
                 
-                if ( 0 != CORE::Copy_File( destFilePath.C_String()   , 
-                                           sourceFilePath.C_String() ) )
+                CORE::CString destFilePath = destEntry.filedir;
+                CORE::AppendToPath( destFilePath, destEntry.filename );
+                
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Preparing to copy file from \"" + sourceFilePath + "\" to \"" + destFilePath + "\"" );            
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Deleting destination file \"" + destFilePath + "\"" ); 
+                if ( 0 != CORE::Delete_File( destFilePath.C_String() ) )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully copied file from \"" + sourceFilePath + "\" to \"" + destFilePath + "\"" );
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully deleted destination file \"" + destFilePath + "\"" );
+                    
+                    if ( 0 != CORE::Copy_File( destFilePath.C_String()   , 
+                                               sourceFilePath.C_String() ) )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully copied file from \"" + sourceFilePath + "\" to \"" + destFilePath + "\"" );
+                    }
+                    else
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Failed to copy file from \"" + sourceFilePath + "\" to \"" + destFilePath + "\"" );
+                    }
                 }
                 else
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Failed to copy file from \"" + sourceFilePath + "\" to \"" + destFilePath + "\"" );
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Failed to delete destination file \"" + destFilePath + "\"" );
                 }
+                
+                ++n;
             }
-            else
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Failed to delete destination file \"" + destFilePath + "\"" );
-            }
-            
-            ++n;
         }        
         ++i;
     }
@@ -454,7 +471,7 @@ PrintHelp( void )
     printf( "    'SrcIncludeDir' : path to the source dir with the includes\n" );
     printf( "    'DstIncludeDir' : path to the destination dir with the includes\n" );
     printf( "    'SrcBinDir'     : path to the source dir with the binaries\n" );
-    printf( "    'DstBinDir'     : path to the destination dir with the binaries\n" );
+    printf( "    'DestBinDir'    : path to the destination dir with the binaries\n" );
     printf( "    'DirsToIgnore'  : optional param of ; seperated directory names\n" );
     printf( "                      of directories that should be ignored\n" );
 }
@@ -540,7 +557,7 @@ main( int argc , char* argv[] )
         if ( !argList.HasKey( "SrcIncludeDir" )  ||
              !argList.HasKey( "DestIncludeDir" ) ||
              !argList.HasKey( "SrcBinDir" )      ||
-             !argList.HasKey( "DstBinDir" )       )
+             !argList.HasKey( "DestBinDir" )      )
         {
             printf( "ERROR: Not enough parameters where provided\n\n" );
             PrintHelp();
@@ -553,8 +570,7 @@ main( int argc , char* argv[] )
         CORE::CString srcBinDir = argList.GetValueAlways( "SrcBinDir" );
         CORE::CString destBinDir = argList.GetValueAlways( "DestBinDir" );
         TStringSet dirsToIgnore = VectorToSet( argList.GetValueAlways( "DirsToIgnore" ).ParseElements( ';', false ) );
-        
-        
+                
         // match the includes
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Locating file matches for the include files" );
         TMatchEntryVector includeMatches;
@@ -572,6 +588,8 @@ main( int argc , char* argv[] )
         
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Commencing copy of binary files,..." );
         CopyOverMatchedFiles( binaryMatches );
+        
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished all application operations" );
     }
     return 0;
 }
