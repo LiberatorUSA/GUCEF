@@ -104,10 +104,11 @@ typedef std::vector< CORE::CString > TStringVector;
 //-------------------------------------------------------------------------*/
 
 void
-BuildFileList( const CORE::CString& srcDir    ,
-               TFileEntryVector& files        ,
-               const TStringSet* fileTypes    ,
-               const TStringSet* dirsToIgnore )
+BuildFileList( const CORE::CString& srcDir         ,
+               const CORE::CString& relativeSrcDir ,
+               TFileEntryVector& files             ,
+               const TStringSet* fileTypes         ,
+               const TStringSet* dirsToIgnore      )
 {GUCEF_TRACE;
 
     struct CORE::SDI_Data* dirEntry = CORE::DI_First_Dir_Entry( srcDir.C_String() );
@@ -146,7 +147,7 @@ BuildFileList( const CORE::CString& srcDir    ,
                     }
                     
                     TFileEntry fileEntry;
-                    fileEntry.filedir = srcDir;
+                    fileEntry.filedir = relativeSrcDir;
                     fileEntry.filename = entryName;
                     
                     files.push_back( fileEntry );
@@ -157,7 +158,11 @@ BuildFileList( const CORE::CString& srcDir    ,
                     CORE::CString subDirPath = srcDir;
                     CORE::AppendToPath( subDirPath, entryName );
                     
+                    CORE::CString subRelSrcDir = relativeSrcDir;
+                    CORE::AppendToPath( subRelSrcDir, entryName );
+                    
                     BuildFileList( subDirPath   ,
+                                   subRelSrcDir ,
                                    files        ,
                                    fileTypes    ,
                                    dirsToIgnore );
@@ -169,6 +174,22 @@ BuildFileList( const CORE::CString& srcDir    ,
         // clean up our toys
         CORE::DI_Cleanup( dirEntry );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+BuildFileList( const CORE::CString& srcDir         ,
+               TFileEntryVector& files             ,
+               const TStringSet* fileTypes         ,
+               const TStringSet* dirsToIgnore      )
+{GUCEF_TRACE;
+
+    BuildFileList( srcDir          ,
+                   CORE::CString() ,
+                   files           ,
+                   fileTypes       ,
+                   dirsToIgnore    );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -361,7 +382,9 @@ RenameFileAsBackup( const CORE::CString& filepath )
 /*-------------------------------------------------------------------------*/
 
 void
-CopyOverMatchedFiles( TMatchEntryVector& matches )
+CopyOverMatchedFiles( const CORE::CString& srcDirRoot  ,
+                      const CORE::CString& destDirRoot ,
+                      TMatchEntryVector& matches       )
 {GUCEF_TRACE;
 
     TMatchEntryVector::iterator i = matches.begin();
@@ -369,7 +392,8 @@ CopyOverMatchedFiles( TMatchEntryVector& matches )
     {
         TMatchEntry& matchEntry = (*i);
         
-        CORE::CString sourceFilePath = matchEntry.source.filedir;
+        CORE::CString sourceFilePath = srcDirRoot;
+        CORE::AppendToPath( sourceFilePath, matchEntry.source.filedir );
         CORE::AppendToPath( sourceFilePath, matchEntry.source.filename );
         
         TFileEntryVector& destinations = matchEntry.destinations;
@@ -385,11 +409,12 @@ CopyOverMatchedFiles( TMatchEntryVector& matches )
             {
                 TFileEntry& destEntry = (*n);
                 
-                CORE::CString destFilePath = destEntry.filedir;
+                CORE::CString destFilePath = destDirRoot;
+                CORE::AppendToPath( destFilePath, destEntry.filedir );
                 CORE::AppendToPath( destFilePath, destEntry.filename );
                 
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Preparing to copy file from \"" + sourceFilePath + "\" to \"" + destFilePath + "\"" );            
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Deleting destination file \"" + destFilePath + "\"" ); 
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Backing up destination file \"" + destFilePath + "\"" ); 
                 if ( RenameFileAsBackup( destFilePath ) )
                 {
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully renamed destination file \"" + destFilePath + "\"" );
@@ -414,6 +439,96 @@ CopyOverMatchedFiles( TMatchEntryVector& matches )
                 ++n;
             }
         }        
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+MirrorDirsAndFiles( const CORE::CString& srcDir    ,
+                    const CORE::CString& dstDir    ,
+                    bool mirrorExistingFilesOnly   ,
+                    const TStringSet* fileTypes    ,
+                    const TStringSet* dirsToIgnore )
+{GUCEF_TRACE;
+
+    // Get a list of all source files
+    TFileEntryVector files;
+    BuildFileList( srcDir       ,
+                   files        ,
+                   fileTypes    ,
+                   dirsToIgnore );
+
+    // Iterate the list of files and make sure we mirror all of them
+    TFileEntryVector::iterator i = files.begin();
+    while ( i != files.end() )
+    {
+        TFileEntry& fileEntry = (*i);
+
+        CORE::CString srcFilePath = srcDir;
+        CORE::AppendToPath( srcFilePath, fileEntry.filedir );
+        CORE::AppendToPath( srcFilePath, fileEntry.filename );
+        
+        CORE::CString destFilePath = dstDir;
+        CORE::AppendToPath( destFilePath, fileEntry.filedir );
+        
+        // Make sure destination directory exists
+        if ( 0 != CORE::Create_Directory( destFilePath.C_String() ) )
+        {
+            CORE::AppendToPath( destFilePath, fileEntry.filename );
+            
+            bool fileExisted = CORE::FileExists( destFilePath );
+            
+            if ( mirrorExistingFilesOnly && !fileExisted )
+            {
+                // Skip this one, we are configured to only mirror files for which 
+                // a target file already exists
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping file \"" + srcFilePath + "\" because 'mirrorExistingFilesOnly' flag is set and the destination file does not exist" );
+                ++i;
+                continue;
+            }
+            
+            if ( fileExisted )
+            {
+                if ( !RenameFileAsBackup( destFilePath ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to rename existing destination file: " + destFilePath );
+                    ++i;
+                    continue;
+                }
+            }
+            
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully renamed destination file \"" + destFilePath + "\"" );
+            
+            if ( 0 != CORE::Copy_File( destFilePath.C_String()  , 
+                                       srcFilePath.C_String() ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully copied file from \"" + srcFilePath + "\" to \"" + destFilePath + "\"" );
+                if ( fileExisted )
+                {
+                    if ( DeleteFileBackup( destFilePath ) )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully deleted backup file after successfull copy for file \"" + destFilePath + "\"" );
+                    }
+                }
+            }
+            else
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Failed to copy file from \"" + srcFilePath + "\" to \"" + destFilePath + "\"" );
+                if ( fileExisted )
+                {
+                    if ( !UndoRenameFileAsBackup( destFilePath ) )
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to undo renaming of file: " + destFilePath );
+                    }
+                }
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to create directory: " + destFilePath );
+        }
         ++i;
     }
 }
@@ -618,10 +733,11 @@ main( int argc , char* argv[] )
                      argv    ,
                      argList ); 
 	                 
-        if ( !argList.HasKey( "SrcIncludeDir" )  ||
-             !argList.HasKey( "DestIncludeDir" ) ||
-             !argList.HasKey( "SrcBinDir" )      ||
-             !argList.HasKey( "DestBinDir" )      )
+        // Check if we have at least 1 of the two pairs
+        if ( ( !argList.HasKey( "SrcIncludeDir" )  ||
+               !argList.HasKey( "DestIncludeDir" )  ) &&
+             ( !argList.HasKey( "SrcBinDir" )      ||
+               !argList.HasKey( "DestBinDir" )      ) )
         {
             printf( "ERROR: Not enough parameters where provided\n\n" );
             PrintHelp();
@@ -634,24 +750,35 @@ main( int argc , char* argv[] )
         CORE::CString srcBinDir = argList.GetValueAlways( "SrcBinDir" );
         CORE::CString destBinDir = argList.GetValueAlways( "DestBinDir" );
         TStringSet dirsToIgnore = VectorToSet( argList.GetValueAlways( "DirsToIgnore" ).ParseElements( ';', false ) );
+        CORE::CString mirrorExistingFilesOnlyStr = argList.GetValueAlways( "MirrorExistingFilesOnly" );
+        bool mirrorExistingFilesOnly = true;
+        if ( !mirrorExistingFilesOnlyStr.IsNULLOrEmpty() )
+        {
+            mirrorExistingFilesOnly = CORE::StringToBool( mirrorExistingFilesOnlyStr );
+        }
                 
-        // match the includes
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Locating file matches for the include files" );
-        TMatchEntryVector includeMatches;
-        LocateFileMatches( srcIncludeDir, destIncludeDir, includeMatches, &GetIncludeFileTypes(), &dirsToIgnore );
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Matched " + CORE::UInt32ToString( includeMatches.size() ) + " include files" );
-        
-        // match the binaries
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Locating file matches for the binary files" );
-        TMatchEntryVector binaryMatches;
-        LocateFileMatches( srcIncludeDir, destIncludeDir, binaryMatches, &GetBinaryFileTypes(), &dirsToIgnore );
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Matched " + CORE::UInt32ToString( binaryMatches.size() ) + " binary files" );
-        
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Commencing copy of include files,..." );
-        CopyOverMatchedFiles( includeMatches );
-        
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Commencing copy of binary files,..." );
-        CopyOverMatchedFiles( binaryMatches );
+        if ( !srcIncludeDir.IsNULLOrEmpty() && !destIncludeDir.IsNULLOrEmpty() )
+        {
+            // match the includes
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Mirroring the include files and their directory structure" );
+            MirrorDirsAndFiles( srcIncludeDir           , 
+                                destIncludeDir          , 
+                                mirrorExistingFilesOnly ,
+                                &GetIncludeFileTypes()  ,
+                                &dirsToIgnore           ); 
+        }
+                
+        if ( !srcBinDir.IsNULLOrEmpty() && !destBinDir.IsNULLOrEmpty() )
+        {
+            // mirror the binaries
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Locating file matches for the binary files" );
+            TMatchEntryVector binaryMatches;
+            LocateFileMatches( srcBinDir, destBinDir, binaryMatches, &GetBinaryFileTypes(), &dirsToIgnore );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Matched " + CORE::UInt32ToString( binaryMatches.size() ) + " binary files" );
+
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Commencing copy of binary files,..." );
+            CopyOverMatchedFiles( srcBinDir, destBinDir, binaryMatches );
+        }
         
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished all application operations" );
     }
