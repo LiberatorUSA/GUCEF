@@ -113,9 +113,9 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
      *  Queues a task for execution as soon as a thread is available
      *  to execute it.
      */
-    void QueueTask( const CString& taskType ,
-                    CICloneable* taskData   ,
-                    CObserver* taskObserver );
+    void QueueTask( const CString& taskType      ,
+                    CICloneable* taskData = NULL ,
+                    CTaskConsumer** task = NULL  );
 
     /**
      *  Immediatly starts executing a task using the task

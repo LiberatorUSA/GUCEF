@@ -407,10 +407,10 @@ CTaskManager::UnlockData( void ) const
 void
 CTaskManager::QueueTask( const CString& taskType ,
                          CICloneable* taskData   ,
-                         CObserver* taskObserver )
+                         CTaskConsumer** task    )
 {GUCEF_TRACE;
 
-    CTaskQueueItem* queueItem = new CTaskQueueItem( uniqueTaskId ,
+    CTaskQueueItem* queueItem = new CTaskQueueItem( ,
                                                     taskData     ,
                                                     taskObserver );
     g_mutex.Lock();
