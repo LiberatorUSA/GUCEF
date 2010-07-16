@@ -94,7 +94,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
     static const CEvent TaskQueuedEvent;
     static const CEvent QueuedTaskStartedEvent;
-    static const CEvent TaskStartedImmediatelyEvent;
+    static const CEvent TaskStartedEvent;
+    static const CEvent TaskStartupFailedEvent;
     static const CEvent TaskKilledEvent;
     static const CEvent TaskStoppedEvent;
     static const CEvent TaskPausedEvent;
@@ -178,8 +179,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
     
     void UnregisterTaskDelegator( CTaskDelegator& delegator );
     
-    bool GetQueuedTask( CTaskConsumer** taskConsumer   ,
-                        CICloneable** taskData         );
+    bool GetQueuedTask( CTaskConsumer** taskConsumer ,
+                        CICloneable** taskData       );
 
     void TaskCleanup( CTaskConsumer* taskConsumer ,
                       CICloneable* taskData       );
