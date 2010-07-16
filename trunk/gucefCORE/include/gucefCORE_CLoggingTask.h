@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CTHREADEDLOGGER_H
-#define GUCEF_CORE_CTHREADEDLOGGER_H
+#ifndef GUCEF_CORE_CLOGGINGTASK_H
+#define GUCEF_CORE_CLOGGINGTASK_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CACTIVEOBJECT_H
-#include "gucefMT_CActiveObject.h"
-#define GUCEF_MT_CACTIVEOBJECT_H
-#endif /* GUCEF_MT_CACTIVEOBJECT_H */
-
 #ifndef GUCEF_MT_CTMAILBOX_H
 #include "gucefMT_CTMailBox.h"
 #define GUCEF_MT_CTMAILBOX_H
 #endif /* GUCEF_MT_CTMAILBOX_H ? */
+
+#ifndef GUCEF_CORE_CTASKCONSUMER_H
+#include "gucefCORE_CTaskConsumer.h"
+#define GUCEF_CORE_CTASKCONSUMER_H
+#endif /* GUCEF_CORE_CTASKCONSUMER_H ? */
 
 #ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
 #include "CTCloneableObj.h"
@@ -64,14 +64,14 @@ namespace CORE {
 /**
  *  class which provides a threaded wrapper for logging backends
  */
-class GUCEF_CORE_PUBLIC_CPP CThreadedLogger : public MT::CActiveObject ,
-                                              public CILogger
+class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
+                                           public CILogger
 {
     public:
 
-    CThreadedLogger( CILogger& loggerBackend );
+    CLoggingTask( CILogger& loggerBackend );
     
-    virtual ~CThreadedLogger();
+    virtual ~CLoggingTask();
 
     /** 
      *  Adds a log message to the mailbox of the threaded logger.
@@ -84,6 +84,12 @@ class GUCEF_CORE_PUBLIC_CPP CThreadedLogger : public MT::CActiveObject ,
                       const UInt32 threadId        );
 
     virtual void FlushLog( void );
+    
+    /**
+     *  Utility function for convenience, launches the task using 
+     *  the taskmanager
+     */
+    bool StartTask( void );
 
     protected:
 
@@ -144,7 +150,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadedLogger : public MT::CActiveObject ,
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CTHREADEDLOGGER_H ? */
+#endif /* GUCEF_CORE_CLOGGINGTASK_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

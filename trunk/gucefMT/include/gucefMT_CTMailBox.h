@@ -64,6 +64,8 @@ class CTMailBox
     typedef struct SMailElement TMailElement;
     
     typedef std::vector< TMailElement > TMailList;
+    typedef typename std::vector< TMailElement >::iterator iterator;
+    typedef typename std::vector< TMailElement >::const_iterator const_iterator;
 
     CTMailBox( void );
 
@@ -119,6 +121,16 @@ class CTMailBox
     void LockData() const;
     
     void UnlockData() const;
+    
+    typename TMailList::iterator begin( void );
+    
+    typename TMailList::iterator end( void );
+    
+    void erase( typename TMailList::iterator& index );
+
+    typename TMailList::const_iterator begin( void ) const;
+    
+    typename TMailList::const_iterator end( void ) const;
 
     private:
 
@@ -321,6 +333,51 @@ void
 CTMailBox< T >::UnlockData( void ) const
 {
     m_datalock.Unlock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
+void
+CTMailBox< T >::erase( typename TMailList::iterator& index )
+{
+    m_mailStack.erase( index );
+}
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
+typename CTMailBox< T >::TMailList::iterator
+CTMailBox< T >::begin( void )
+{
+    return m_mailStack.begin();
+}
+
+/*--------------------------------------------------------------------------*/
+    
+template< typename T >
+typename CTMailBox< T >::TMailList::iterator
+CTMailBox< T >::end( void )
+{
+    return m_mailStack.end();
+}
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
+typename CTMailBox< T >::TMailList::const_iterator
+CTMailBox< T >::begin( void ) const
+{
+    return m_mailStack.begin();
+}
+    
+/*--------------------------------------------------------------------------*/
+    
+template< typename T >
+typename CTMailBox< T >::TMailList::const_iterator
+CTMailBox< T >::end( void ) const
+{
+    return m_mailStack.end();
 }
 
 /*-------------------------------------------------------------------------//

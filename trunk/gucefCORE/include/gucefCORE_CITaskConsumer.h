@@ -55,37 +55,86 @@ class CTaskDelegator;
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Base class for classes that carry out tasks within a threaded environment
+ *
+ *  The method used to invoke the functionatility of decending task classes
+ *  is not defined by this class but it is assumed to by one means or another
+ *  the task is performed within a thread that is exclusve to the task for the 
+ *  duration of the task.
+ */
 class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CNotifier
 {
     public:
 
-    typedef CTNumericID< UInt32 > TTaskID;
+    static const CEvent TaskKilledEvent;
+    static const CEvent TaskStartedEvent;
+    static const CEvent TaskStartupFailedEvent;
+    static const CEvent TaskPausedEvent;
+    static const CEvent TaskResumedEvent;
+    static const CEvent TaskFinishedEvent;
+
+    static void RegisterEvents( void );
+
+    public:
+
+    typedef CTNumericID< UInt32 > TTaskId;
 
     CTaskConsumer( void );
 
     virtual ~CTaskConsumer();
 
     virtual CString GetType( void ) const = 0;
+    
+    void SetTaskDelegator( CTaskDelegator* delegator );
+    
+    CTaskDelegator* GetTaskDelegator( void );
 
-    virtual bool ProcessTask( CICloneable* taskData ) = 0;
-
-    CTaskDelegator* GetTaskDelegator( void ) const;
-
-    const TTaskID& GetTaskID( void ) const;
+    UInt32 GetTaskId( void ) const;
 
     virtual const CString& GetClassTypeName( void ) const;
+    
+    bool IsOwnedByTaskManager( void ) const;
+    
+    /**
+     *  Startup routine for the task. You should return true if startup succeeded and the task can commence
+     *  cycling.
+     */
+    virtual bool OnTaskStart( CICloneable* taskdata ) = 0;
+    
+    /**
+     *  Called after a successfull call to OnTaskStart
+     */
+    virtual void OnTaskStarted( CICloneable* taskdata );
+    
+    /**
+     *  Called after a failed call to OnTaskStart
+     */
+    virtual void OnTaskStartupFailed( CICloneable* taskdata );
 
-    private:
-    friend class CTaskDelegator;
+    /**
+     *  Perorm all your main task work in this function.
+     *  It will be called repeatedly until true is returned indicating that the task has been completed.
+     *  Thus for ongoing tasks you can write this function to take care of a single interation of the task.
+     */
+    virtual bool OnTaskCycle( CICloneable* taskdata ) = 0;
 
-    void SetTaskData( TTaskID& taskId           ,
-                      CTaskDelegator* delegator );
+    /**
+     *  This is where all the cleanup should be done for task data
+     *  Note that this member function will be called from within the spawned thread when ending gracefully
+     *  but in the case of a forcefull termination of the spawned thread this member function will be called
+     *  from the thread that triggered the forcefull termination.
+     */
+    virtual void OnTaskEnd( CICloneable* taskdata ) = 0;
 
-    protected:
-    friend class CTaskManager;
-
-    TTaskID& GetMutableTaskId( void );
-
+    virtual void OnTaskPaused( CICloneable* taskdata ,
+                               bool forced           );
+    
+    virtual void OnTaskResumed( CICloneable* taskdata );
+    
+    virtual void OnTaskEnded( CICloneable* taskdata ,
+                              bool forced           );
+    
     private:
 
     CTaskConsumer( const CTaskConsumer& src  );
@@ -93,8 +142,9 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CNotifier
 
     private:
 
+    TTaskId m_taskId;
     CTaskDelegator* m_delegator;
-    TTaskID m_taskId;
+    bool m_ownedByTaskManager;
 };
 
 /*-------------------------------------------------------------------------//

@@ -103,6 +103,8 @@ CActiveObject::OnActivate( void* thisobject )
 
     if ( tao->OnTaskStart( taskdata ) )
     {
+        tao->OnTaskStarted( taskdata );
+       
         Float64 timerRes = ( PrecisionTimerResolution() * 1.0 );
         UInt64 tickCount = PrecisionTickCount();
         UInt64 newTime = tickCount;
@@ -179,6 +181,31 @@ CActiveObject::OnTaskPausedForcibly( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 void
+CActiveObject::OnTaskResumed( void* taskdata )
+{
+    // Dummy to avoid mandatory implementation in decending classes
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CActiveObject::OnTaskEnded( void* taskdata ,
+                            bool forced    )
+{
+    // Dummy to avoid mandatory implementation in decending classes
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CActiveObject::OnTaskStarted( void* taskdata )
+{
+    // Dummy to avoid mandatory implementation in decending classes
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CActiveObject::Deactivate( bool force )
 {
     if ( _active )
@@ -191,6 +218,7 @@ CActiveObject::Deactivate( bool force )
             ThreadKill( _td );
 
             OnTaskEnd( _taskdata );
+            OnTaskEnded( _taskdata, true );
         }
         else
         {
@@ -234,6 +262,7 @@ CActiveObject::Resume( void )
     {
         _active = true;
         ThreadResume( _td );
+        OnTaskResumed( _taskdata );
     }
 }
 

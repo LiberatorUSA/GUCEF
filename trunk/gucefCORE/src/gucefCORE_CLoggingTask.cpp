@@ -23,7 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefCORE_CThreadedLogger.h"
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
+#include "gucefCORE_CLoggingTask.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,8 +53,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CThreadedLogger::CThreadedLogger( CILogger& loggerBackend )
-    : MT::CActiveObject()               ,
+CLoggingTask::CLoggingTask( CILogger& loggerBackend )
+    : CTaskConsumer()                   ,
       CILogger()                        ,
       m_loggerBackend( &loggerBackend ) ,
       m_mailbox()                       ,
@@ -61,19 +66,18 @@ CThreadedLogger::CThreadedLogger( CILogger& loggerBackend )
 
 /*-------------------------------------------------------------------------*/
 
-CThreadedLogger::~CThreadedLogger()
+CLoggingTask::~CLoggingTask()
 {GUCEF_TRACE;
     
-    Deactivate( true );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CThreadedLogger::Log( const TLogMsgType logMsgType ,
-                      const Int32 logLevel         ,
-                      const CString& logMessage    ,
-                      const UInt32 threadId        )
+CLoggingTask::Log( const TLogMsgType logMsgType ,
+                   const Int32 logLevel         ,
+                   const CString& logMessage    ,
+                   const UInt32 threadId        )
 {GUCEF_TRACE;
 
     CLoggingMail logMsg;
@@ -87,8 +91,17 @@ CThreadedLogger::Log( const TLogMsgType logMsgType ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CLoggingTask::StartTask( void )
+{GUCEF_TRACE;
+
+    return CTaskManager::Instance()->StartTask( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
-CThreadedLogger::FlushLog( void )
+CLoggingTask::FlushLog( void )
 {GUCEF_TRACE;
 
     m_mailbox.AddMail( MAILTYPE_FLUSHLOG, NULL );
@@ -97,16 +110,17 @@ CThreadedLogger::FlushLog( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadedLogger::OnTaskStart( void* taskdata )
+CLoggingTask::OnTaskStart( void* taskdata )
 {GUCEF_TRACE;
 
+    // This task does not need to perform any initialization/setup
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadedLogger::OnTaskCycle( void* taskdata )
+CLoggingTask::OnTaskCycle( void* taskdata )
 {GUCEF_TRACE;
 
     CLoggingMail* loggingMail = NULL;
@@ -152,7 +166,7 @@ CThreadedLogger::OnTaskCycle( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 void
-CThreadedLogger::LockData( void )
+CLoggingTask::LockData( void )
 {GUCEF_TRACE;
 
     m_mailbox.LockData();
@@ -161,7 +175,7 @@ CThreadedLogger::LockData( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CThreadedLogger::UnlockData( void )
+CLoggingTask::UnlockData( void )
 {GUCEF_TRACE;
 
     m_mailbox.UnlockData();
@@ -170,7 +184,7 @@ CThreadedLogger::UnlockData( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CThreadedLogger::OnTaskEnd( void* taskdata )
+CLoggingTask::OnTaskEnd( void* taskdata )
 {GUCEF_TRACE;
 
     TLoggingMailBox::TMailElement* entry;
@@ -186,7 +200,7 @@ CThreadedLogger::OnTaskEnd( void* taskdata )
 
 /*-------------------------------------------------------------------------*/
 
-CThreadedLogger::CLoggingMail::CLoggingMail( void )
+CLoggingTask::CLoggingMail::CLoggingMail( void )
     : CICloneable()                              ,
       logMsgType( CLogManager::LOG_UNKNOWNTYPE ) ,
       logLevel( LOGLEVEL_NORMAL )                ,
@@ -198,7 +212,7 @@ CThreadedLogger::CLoggingMail::CLoggingMail( void )
 
 /*-------------------------------------------------------------------------*/
 
-CThreadedLogger::CLoggingMail::CLoggingMail( const CLoggingMail& src )
+CLoggingTask::CLoggingMail::CLoggingMail( const CLoggingMail& src )
     : CICloneable()                ,
       logMsgType( src.logMsgType ) ,
       logLevel( src.logLevel )     ,
@@ -211,7 +225,7 @@ CThreadedLogger::CLoggingMail::CLoggingMail( const CLoggingMail& src )
 /*-------------------------------------------------------------------------*/
 
 MT::CICloneable*
-CThreadedLogger::CLoggingMail::Clone( void ) const
+CLoggingTask::CLoggingMail::Clone( void ) const
 {GUCEF_TRACE;
 
     return new CLoggingMail( *this );

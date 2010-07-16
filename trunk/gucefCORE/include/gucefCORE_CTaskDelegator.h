@@ -31,10 +31,10 @@
 #define GUCEF_MT_CACTIVEOBJECT_H
 #endif /* GUCEF_MT_CACTIVEOBJECT_H ? */
 
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+#ifndef GUCEF_CORE_CNOTIFIER_H
+#include "CNotifier.h"
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CTNUMERICID_H
 #include "CTNumericID.h"
@@ -62,16 +62,31 @@ class CTaskConsumer;
 /*-------------------------------------------------------------------------*/
 
 /**
- *  This is an internally used class for the CTaskManager class.
- *  It is not meant to be used beyond that use-case.
+ *  This is an internally used class and is tightly coupled with the 
+ *  CTaskManager class. It should not be used directly.
+ *
+ *  This class implements an active object that delegates the actual logic to 
+ *  be threaded to a task consumer implementor. Thus seperating thread lifecycle
+ *  management from task lifecycle management. A delegator can execute as many
+ *  tasks by invoking as many consumers as desired without having to (re)create
+ *  a thread.
  */
-class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject
+class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject ,
+                                              public CNotifier
 {
     public:
+    
+    static const CEvent ThreadKilledEvent;
+    static const CEvent ThreadStartedEvent;
+    static const CEvent ThreadPausedEvent;
+    static const CEvent ThreadResumedEvent;
+    static const CEvent ThreadFinishedEvent;
+    
+    static void RegisterEvents( void );
+    
+    public:
 
-    typedef CTNumericID< UInt32 > TTaskID;
-
-    CTaskManager& GetTaskManager( void ) const;
+    bool SetTaskConsumer( CTaskConsumer* taskConsumer );
 
     CTaskConsumer* GetTaskConsumer( void );
 
@@ -82,17 +97,44 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject
 
     virtual ~CTaskDelegator();
 
+    /**
+     *  Startup routine for the task. You should return true if startup succeeded and the task can commence
+     *  cycling.
+     */
     virtual bool OnTaskStart( void* taskdata );
+    
+    /**
+     *  Called after a successfull call to OnTaskStart
+     */
+    virtual void OnTaskStarted( void* taskdata );
 
+    /**
+     *  Perorm all your main task work in this function.
+     *  It will be called repeatedly until true is returned indicating that the task has been completed.
+     *  Thus for ongoing tasks you can write this function to take care of a single interation of the task.
+     */
     virtual bool OnTaskCycle( void* taskdata );
 
+    /**
+     *  This is where all the cleanup should be done for task data
+     *  Note that this member function will be called from within the spawned thread when ending gracefully
+     *  but in the case of a forcefull termination of the spawned thread this member function will be called
+     *  from the thread that triggered the forcefull termination.
+     */
     virtual void OnTaskEnd( void* taskdata );
 
-    void PerformTaskCleanup( CTaskConsumer* taskConsumer ,
-                             CICloneable* taskData        ) const;
+    virtual void OnTaskPausedForcibly( void* taskdata );
+    
+    virtual void OnTaskResumed( void* taskdata );
+    
+    virtual void OnTaskEnded( void* taskdata ,
+                              bool forced    );
 
-    void SetTaskData( TTaskID& taskId             ,
-                      CTaskConsumer* taskConsumer );
+    virtual bool ProcessTask( CTaskConsumer& taskConsumer ,
+                              CICloneable* taskData       );
+                              
+    virtual void TaskCleanup( CTaskConsumer* taskConsumer ,
+                              CICloneable* taskData       );
 
     private:
 
@@ -102,7 +144,7 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject
     private:
 
     CTaskConsumer* m_taskConsumer;
-    CTaskManager* m_taskManager;
+    bool m_consumerBusy;
 };
 
 /*-------------------------------------------------------------------------//

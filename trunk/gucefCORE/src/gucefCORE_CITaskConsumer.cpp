@@ -33,6 +33,11 @@
 #define GUCEF_CORE_CTASKDELEGATOR_H
 #endif /* GUCEF_CORE_CTASKDELEGATOR_H ? */
 
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
 #include "gucefCORE_CITaskConsumer.h"
 
 /*-------------------------------------------------------------------------//
@@ -46,16 +51,46 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CEvent CTaskConsumer::TaskKilledEvent = "GUCEF::CORE::CTaskConsumer::TaskKilledEvent";
+const CEvent CTaskConsumer::TaskStartedEvent = "GUCEF::CORE::CTaskConsumer::TaskStartedEvent";
+const CEvent CTaskConsumer::TaskStartupFailedEvent = "GUCEF::CORE::CTaskConsumer::TaskStartupFailedEvent";
+const CEvent CTaskConsumer::TaskPausedEvent = "GUCEF::CORE::CTaskConsumer::TaskPausedEvent";
+const CEvent CTaskConsumer::TaskResumedEvent = "GUCEF::CORE::CTaskConsumer::TaskResumedEvent";
+const CEvent CTaskConsumer::TaskFinishedEvent = "GUCEF::CORE::CTaskConsumer::TaskFinishedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CTaskConsumer::CTaskConsumer( void )
-    : CNotifier()         ,
-      m_delegator( NULL ) ,
-      m_taskId()
+void
+CTaskConsumer::RegisterEvents( void )
 {GUCEF_TRACE;
 
+    TaskKilledEvent.Initialize();
+    TaskStartedEvent.Initialize();
+    TaskStartupFailedEvent.Initialize();
+    TaskPausedEvent.Initialize();
+    TaskResumedEvent.Initialize();
+    TaskFinishedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTaskConsumer::CTaskConsumer( void )
+    : CNotifier()                   ,
+      m_delegator( NULL )           ,
+      m_taskId()                    ,
+      m_ownedByTaskManager( false )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+    CTaskManager::Instance()->RegisterTaskConsumer( *this, m_taskId );
 }
     
 /*-------------------------------------------------------------------------*/    
@@ -63,17 +98,7 @@ CTaskConsumer::CTaskConsumer( void )
 CTaskConsumer::~CTaskConsumer()
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskConsumer::SetTaskData( TTaskID& taskId           ,
-                            CTaskDelegator* delegator )
-{GUCEF_TRACE;
-
-    m_delegator = delegator;
-    m_taskId = taskId;
+    CTaskManager::Instance()->UnregisterTaskConsumer( *this, m_taskId );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -87,17 +112,8 @@ CTaskConsumer::GetTaskDelegator( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-const CTaskConsumer::TTaskID&
-CTaskConsumer::GetTaskID( void ) const
-{GUCEF_TRACE;
-
-    return m_taskId;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTaskConsumer::TTaskID&
-CTaskConsumer::GetMutableTaskId( void )
+UInt32
+CTaskConsumer::GetTaskId( void ) const
 {GUCEF_TRACE;
 
     return m_taskId;
@@ -111,6 +127,71 @@ CTaskConsumer::GetClassTypeName( void ) const
 
     static CString typeName = "GUCEF::CORE::CTaskConsumer";
     return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskConsumer::SetTaskDelegator( CTaskDelegator* delegator )
+{GUCEF_TRACE;
+
+    m_delegator = delegator;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CTaskDelegator*
+CTaskConsumer::GetTaskDelegator( void )
+{GUCEF_TRACE;
+    
+    return m_delegator;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskConsumer::OnTaskStarted( CICloneable* taskdata )
+{GUCEF_TRACE;
+
+    NotifyObservers( TaskStartedEvent );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskConsumer::OnTaskStartupFailed( CICloneable* taskdata )
+{GUCEF_TRACE;
+
+    NotifyObservers( TaskStartupFailedEvent );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskConsumer::OnTaskPaused( CICloneable* taskdata ,
+                              bool forced          )
+{GUCEF_TRACE;
+
+    NotifyObservers( TaskPausedEvent );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CTaskConsumer::OnTaskResumed( CICloneable* taskdata )
+{GUCEF_TRACE;
+    
+    NotifyObservers( TaskResumedEvent );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CTaskConsumer::OnTaskEnded( CICloneable* taskdata ,
+                            bool forced           )
+{GUCEF_TRACE;                             
+
+    NotifyObservers( TaskFinishedEvent );
 }
 
 /*-------------------------------------------------------------------------//

@@ -51,15 +51,12 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CSingleTaskDelegator::CSingleTaskDelegator( CTaskConsumer* taskConsumer ,
-                                            TTaskID& taskId             ,
-                                            CICloneable* taskData       ,
-                                            CObserver* taskObserver     )
+                                            CICloneable* taskData       )
     : CTaskDelegator()               ,
       m_taskData( taskData )         ,
-      m_taskObserver( taskObserver )
+      m_taskConsumer( taskConsumer )
 {GUCEF_TRACE;
 
-    SetTaskData( taskId, taskConsumer );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -75,13 +72,10 @@ bool
 CSingleTaskDelegator::OnTaskCycle( void* taskdata )
 {GUCEF_TRACE;
 
-    CTaskConsumer* taskConsumer = GetTaskConsumer();
-    if ( NULL != m_taskObserver )
-    {
-        taskConsumer->Subscribe( m_taskObserver );
-    }
-    bool result = taskConsumer->ProcessTask( m_taskData );
-    PerformTaskCleanup( taskConsumer, m_taskData );
+    bool result = CTaskDelegator::ProcessTask( *m_taskConsumer, m_taskData );
+    TaskCleanup( m_taskConsumer, m_taskData );
+    m_taskConsumer = NULL;
+    m_taskData = NULL;
     return result;
 }
 
