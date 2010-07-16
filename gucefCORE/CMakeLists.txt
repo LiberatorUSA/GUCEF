@@ -146,6 +146,7 @@ set(HEADER_FILES
   include/gucefCORE_CIPulseGeneratorDriver.h
   include/gucefCORE_CITaskConsumer.h
   include/gucefCORE_CLinkedTransferBuffer.h
+  include/gucefCORE_CLoggingTask.h
   include/gucefCORE_CObserverSwitch.h
   include/gucefCORE_config.h
   include/gucefCORE_CPulseData.h
@@ -155,7 +156,6 @@ set(HEADER_FILES
   include/gucefCORE_CTaskDelegator.h
   include/gucefCORE_CTaskManager.h
   include/gucefCORE_CTEventHandlerFunctor.h
-  include/gucefCORE_CThreadedLogger.h
   include/gucefCORE_ETypes.h
   include/gucefCORE_GenericPluginAPI.h
   include/gucefCORE_Logging.h
@@ -299,6 +299,7 @@ set(SOURCE_FILES
   src/gucefCORE_CIPulseGeneratorDriver.cpp
   src/gucefCORE_CITaskConsumer.cpp
   src/gucefCORE_CLinkedTransferBuffer.cpp
+  src/gucefCORE_CLoggingTask.cpp
   src/gucefCORE_CObserverSwitch.cpp
   src/gucefCORE_CPulseData.cpp
   src/gucefCORE_CPulseGenerator.cpp
@@ -307,7 +308,6 @@ set(SOURCE_FILES
   src/gucefCORE_CTaskDelegator.cpp
   src/gucefCORE_CTaskManager.cpp
   src/gucefCORE_CTEventHandlerFunctor.cpp
-  src/gucefCORE_CThreadedLogger.cpp
   src/IOACCESS.c
   src/md5.c
   src/MemoryManager.cpp

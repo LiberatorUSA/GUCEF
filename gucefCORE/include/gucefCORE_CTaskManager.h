@@ -72,9 +72,25 @@ class CTaskDelegator;
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  The task manager provides centralized managent of tasks and more importantly
+ *  the threads that execute those tasks. A task is defined as the logic you wish to
+ *  have executed in a seperare thread. Instead of creating the thread yourself you
+ *  create a task consumer and then decide when your task needs to be executed. The
+ *  task manager will deal with threads themselves. This seperation of concerns allows
+ *  for optimal thread reuse and schedueling. Threads have a global effect on your process
+ *  and as such should be tracked globally within your process which is what the task 
+ *  manager does
+ */
 class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 {
     public:
+
+    static const CEvent ThreadKilledEvent;
+    static const CEvent ThreadStartedEvent;
+    static const CEvent ThreadPausedEvent;
+    static const CEvent ThreadResumedEvent;
+    static const CEvent ThreadFinishedEvent;
 
     static const CEvent TaskQueuedEvent;
     static const CEvent QueuedTaskStartedEvent;
@@ -93,14 +109,29 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
     static CTaskManager* Instance( void );
 
+    /**
+     *  Queues a task for execution as soon as a thread is available
+     *  to execute it.
+     */
     void QueueTask( const CString& taskType ,
                     CICloneable* taskData   ,
                     CObserver* taskObserver );
 
-    bool StartTask( const CString& taskType ,
-                    CICloneable* taskData   ,
-                    CObserver* taskObserver ,
-                    UInt32* taskID = NULL   );
+    /**
+     *  Immediatly starts executing a task using the task
+     *  information provided. Based on the provided information
+     *  a task consumer will be constructed to actually carry out the task
+     */
+    bool StartTask( const CString& taskType      ,
+                    CICloneable* taskData = NULL ,
+                    CTaskConsumer** task = NULL  );
+
+    /**
+     *  Immediatly starts executing a task using the task
+     *  consumer provided.
+     */
+    bool StartTask( CTaskConsumer& task          ,
+                    CICloneable* taskData = NULL );
 
     bool PauseTask( const UInt32 taskID ,
                     const bool force    );
@@ -123,12 +154,44 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
     void UnregisterTaskConsumerFactory( const CString& taskType );
 
     virtual const CString& GetClassTypeName( void ) const;
+    
+    bool GetTaskIdForThreadId( const UInt32 threadId ,
+                               UInt32& taskId        ) const;
+
+    bool GetThreadIdForTaskId( const UInt32 taskId ,
+                               UInt32& threadId    ) const;
 
     protected:
 
+    virtual void LockData( void ) const;
+    
+    virtual void UnlockData( void ) const;
+    
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
+
+    private:
+    friend class CTaskDelegator;
+    
+    void RegisterTaskDelegator( CTaskDelegator& delegator );
+    
+    void UnregisterTaskDelegator( CTaskDelegator& delegator );
+    
+    bool GetQueuedTask( CTaskConsumer** taskConsumer   ,
+                        CICloneable** taskData         );
+
+    void TaskCleanup( CTaskConsumer* taskConsumer ,
+                      CICloneable* taskData       );
+    
+    private:
+    friend class CTaskConsumer;
+
+    void RegisterTaskConsumer( CTaskConsumer& consumer        ,
+                               CTaskConsumer::TTaskId& taskId );
+    
+    void UnregisterTaskConsumer( CTaskConsumer& consumer        ,
+                                 CTaskConsumer::TTaskId& taskId );
 
     private:
 
@@ -136,44 +199,23 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
     {
         public:
 
-        CTaskQueueItem( CTaskConsumer::TTaskID& taskId ,
-                        CICloneable* taskData          ,
-                        CObserver* taskObserver        );
+        CTaskQueueItem( CTaskConsumer* consumer ,
+                        CICloneable* taskData   );
 
         CTaskQueueItem( CTaskQueueItem& src );
 
         virtual ~CTaskQueueItem();
 
-        CObserver* GetTaskObserver( void );
+        CTaskConsumer* GetTaskConsumer( void );
 
         CICloneable* GetTaskData( void );
 
-        const CTaskConsumer::TTaskID& GetTaskId( void ) const;
-
         virtual CICloneable* Clone( void ) const;
-
-        CTaskConsumer::TTaskID& GetMutableTaskId( void );
 
         private:
         CICloneable* m_taskData;
-        CObserver* m_taskObserver;
-        CTaskConsumer::TTaskID m_taskId;
+        CTaskConsumer* m_taskConsumer;
     };
-
-    private:
-    friend class CTaskDelegator;
-
-    bool GetQueuedTask( CTaskConsumer** taskConsumer   ,
-                        CTaskConsumer::TTaskID* taskId ,
-                        CICloneable** taskData         ,
-                        CObserver** taskObserver       );
-
-    void TaskCleanup( CTaskConsumer* taskConsumer ,
-                      CICloneable* taskData       );
-
-    void FlagTaskAsActive( CTaskDelegator& task );
-
-    void FlagTaskAsNonActive( CTaskDelegator& task );
 
     private:
     friend class CGUCEFCOREModule;
@@ -182,7 +224,10 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
     private:
 
-    void EnforceDesiredNrOfThreads( void );
+    void EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
+                                    bool gracefullEnforcement );
+    
+    void RemoveConsumerFromQueue( CTaskConsumer* consumer );
 
     CTaskManager( void );
     CTaskManager( const CTaskManager& src );
@@ -192,15 +237,18 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
     private:
 
     typedef CTAbstractFactory< CString, CTaskConsumer > TAbstractTaskConsumerFactory;
-    typedef std::map< UInt32, CTaskDelegator* > TTaskMap;
-    typedef std::pair< UInt32, CTaskDelegator* > TTaskEntry;
+    typedef MT::CTMailBox< CString > TTaskMailbox;
+    typedef std::map< UInt32, CTaskConsumer* > TTaskConsumerMap;
+    typedef std::set< CTaskDelegator* > TTaskDelegatorSet;
 
     TAbstractTaskConsumerFactory m_consumerFactory;
-    TTaskMap m_activeTasks;
-    TTaskMap m_nonactiveTasks;
     UInt32 m_desiredNrOfThreads;
-    MT::CTMailBox< CString > m_taskQueue;
-    CTNumericIDGenerator< UInt32 > m_taskIdGenerator;
+    UInt32 m_activeNrOfThreads;
+    TTaskMailbox m_taskQueue;
+    CTNumericIDGenerator< UInt32 > m_taskIdGenerator;    
+    TTaskConsumerMap m_taskConsumerMap;
+    TTaskDelegatorSet m_taskDelegators;
+    
     static MT::CMutex g_mutex;
     static CTaskManager* g_instance;
 };

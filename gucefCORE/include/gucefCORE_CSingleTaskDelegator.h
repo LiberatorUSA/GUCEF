@@ -61,24 +61,28 @@ class GUCEF_CORE_PRIVATE_CPP CSingleTaskDelegator : public CTaskDelegator
     friend class CTaskManager;
 
     CSingleTaskDelegator( CTaskConsumer* taskConsumer ,
-                          TTaskID& taskId             ,
-                          CICloneable* taskData       ,
-                          CObserver* taskObserver     );
+                          CICloneable* taskData       );
 
     virtual ~CSingleTaskDelegator();
+    
+    protected:
 
+    /**
+     *  Overloads the cycle of the regular task delegator to only
+     *  execute the already known task within a thread and then exit.
+     */
     virtual bool OnTaskCycle( void* taskdata );
 
     private:
 
-    CSingleTaskDelegator( void );
-    CSingleTaskDelegator( const CSingleTaskDelegator& src );
-    CSingleTaskDelegator& operator=( const CSingleTaskDelegator& src );
+    CSingleTaskDelegator( void );                                       /**< not implemented, makes no sense */
+    CSingleTaskDelegator( const CSingleTaskDelegator& src );            /**< not implemented, makes no sense */
+    CSingleTaskDelegator& operator=( const CSingleTaskDelegator& src ); /**< not implemented, makes no sense */
 
     private:
 
     CICloneable* m_taskData;
-    CObserver* m_taskObserver;
+    CTaskConsumer* m_taskConsumer;
 };
 
 /*-------------------------------------------------------------------------//

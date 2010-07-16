@@ -115,7 +115,16 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject
 
     protected:
 
+    /**
+     *  Startup routine for the task. You should return true if startup succeeded and the task can commence
+     *  cycling.
+     */
     virtual bool OnTaskStart( void* taskdata ) = 0;
+    
+    /**
+     *  Called after a successfull call to OnTaskStart
+     */
+    virtual void OnTaskStarted( void* taskdata );
 
     /**
      *  Perorm all your main task work in this function.
@@ -124,9 +133,20 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject
      */
     virtual bool OnTaskCycle( void* taskdata ) = 0;
 
+    /**
+     *  This is where all the cleanup should be done for task data
+     *  Note that this member function will be called from within the spawned thread when ending gracefully
+     *  but in the case of a forcefull termination of the spawned thread this member function will be called
+     *  from the thread that triggered the forcefull termination.
+     */
     virtual void OnTaskEnd( void* taskdata ) = 0;
 
     virtual void OnTaskPausedForcibly( void* taskdata );
+    
+    virtual void OnTaskResumed( void* taskdata );
+    
+    virtual void OnTaskEnded( void* taskdata ,
+                              bool forced    );
 
     void* GetTaskData( void ) const;
 
