@@ -103,8 +103,26 @@ CTaskConsumer::~CTaskConsumer()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CTaskConsumer::SetIsOwnedByTaskManager( bool ownedByTaskManager )
+{GUCEF_TRACE;
+
+    m_ownedByTaskManager = ownedByTaskManager;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskConsumer::IsOwnedByTaskManager( void ) const
+{GUCEF_TRACE;
+
+    return m_ownedByTaskManager;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CTaskDelegator*
-CTaskConsumer::GetTaskDelegator( void ) const
+CTaskConsumer::GetTaskDelegator( void )
 {GUCEF_TRACE;
 
     return m_delegator;
@@ -136,15 +154,6 @@ CTaskConsumer::SetTaskDelegator( CTaskDelegator* delegator )
 {GUCEF_TRACE;
 
     m_delegator = delegator;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CTaskDelegator*
-CTaskConsumer::GetTaskDelegator( void )
-{GUCEF_TRACE;
-    
-    return m_delegator;
 }
 
 /*-------------------------------------------------------------------------*/
