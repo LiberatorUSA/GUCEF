@@ -158,7 +158,7 @@ CPatchManager::PauseTask( const CString& taskName )
     TTaskMap::iterator i = m_taskMap.find( taskName );
     if ( i != m_taskMap.end() )
     {
-        UInt32 taskID = (*i).second->GetTaskID();
+        UInt32 taskID = (*i).second->GetTaskId();
         UnlockData();
         
         if ( m_taskManager->PauseTask( taskID, false ) )
@@ -183,7 +183,7 @@ CPatchManager::ResumeTask( const CString& taskName )
     TTaskMap::iterator i = m_taskMap.find( taskName );
     if ( i != m_taskMap.end() )
     {
-        UInt32 taskID = (*i).second->GetTaskID();
+        UInt32 taskID = (*i).second->GetTaskId();
         UnlockData();
         
         if ( m_taskManager->ResumeTask( taskID ) )
@@ -208,7 +208,7 @@ CPatchManager::RequestTaskToStop( const CString& taskName )
     TTaskMap::iterator i = m_taskMap.find( taskName );
     if ( i != m_taskMap.end() )
     {
-        UInt32 taskID = (*i).second->GetTaskID();        
+        UInt32 taskID = (*i).second->GetTaskId();        
         UnlockData();
         
         if ( m_taskManager->RequestTaskToStop( taskID ) )

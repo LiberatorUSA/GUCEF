@@ -91,9 +91,26 @@ CPatchTaskConsumer::GetTypeString( void )
 }
 
 /*-------------------------------------------------------------------------*/
+
+bool
+CPatchTaskConsumer::OnTaskStart( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatchTaskConsumer::OnTaskEnd( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
     
 bool
-CPatchTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
+CPatchTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
     
     CPatchTaskData* ptData = static_cast< CPatchTaskData* >( taskData );
@@ -103,9 +120,8 @@ CPatchTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
         ptData->GetPatchManager().RegisterTask( this );        
         m_patchEngine->Start();
         ptData->GetPatchManager().UnregisterTask( this );
-        return true;
     }
-    return false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -147,7 +147,11 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     
     virtual const CString& GetClassTypeName( void ) const;
     
-    virtual bool ProcessTask( CORE::CICloneable* taskData );
+    virtual bool OnTaskStart( CORE::CICloneable* taskData );
+    
+    virtual bool OnTaskCycle( CORE::CICloneable* taskData );
+    
+    virtual void OnTaskEnd( CORE::CICloneable* taskData );
     
     private:
     
