@@ -134,6 +134,11 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CNotifier
     
     virtual void OnTaskEnded( CICloneable* taskdata ,
                               bool forced           );
+
+    private:
+    friend class CTaskManager;
+    
+    void SetIsOwnedByTaskManager( bool ownedByTaskManager );
     
     private:
 
