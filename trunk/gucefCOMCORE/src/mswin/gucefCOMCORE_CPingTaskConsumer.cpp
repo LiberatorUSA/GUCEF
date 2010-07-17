@@ -392,9 +392,26 @@ CPingTaskConsumer::IcmpCallback( void* vdata )
 }
 
 /*-------------------------------------------------------------------------*/
+
+bool
+CPingTaskConsumer::OnTaskStart( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPingTaskConsumer::OnTaskEnd( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
     
 bool
-CPingTaskConsumer::ProcessTask( CORE::CICloneable* taskData )
+CPingTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: Starting to process the task" );

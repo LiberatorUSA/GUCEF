@@ -193,7 +193,8 @@ CPing::CPing( CORE::CPulseGenerator& pulsGenerator )
       m_bytesToSend( 32 )           ,
       m_timeout( 1000 )             ,
       m_minimalPingDelta( 500 )     ,
-      m_taskId( 0 )
+      m_taskId( 0 )                 ,
+      m_pingTaskConsumer()
 {GUCEF_TRACE;
 
     RegisterEvents();    
@@ -273,10 +274,8 @@ CPing::Start( const TStringVector& remoteHosts          ,
         m_minimalPingDelta = minimalPingDelta;
         
         CPingTaskConsumer::CPingTaskData taskData( remoteHosts, maxPings, bytesToSend, timeout, minimalPingDelta ); 
-        return CORE::CTaskManager::Instance()->StartTask( CPingTaskConsumer::GetTypeString() , 
-                                                          &taskData                          , 
-                                                          &AsObserver()                      ,
-                                                          &m_taskId                          );
+        return CORE::CTaskManager::Instance()->StartTask( m_pingTaskConsumer , 
+                                                          &taskData          );
     }
     return false;
 }

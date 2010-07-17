@@ -51,6 +51,15 @@
 #define GUCEF_COMCORE_CHOSTADDRESS_H
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
+#ifdef GUCEF_MSWIN_BUILD
+
+  #ifndef GUCEF_COMCORE_CPINGTASKCONSUMER_H
+  #include "gucefCOMCORE_CPingTaskConsumer.h"
+  #define GUCEF_COMCORE_CPINGTASKCONSUMER_H
+  #endif /* GUCEF_COMCORE_CPINGTASKCONSUMER_H ? */
+  
+#endif /* GUCEF_MSWIN_BUILD ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -169,6 +178,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CTSGNotifier
     void* m_osData;
     void* m_userData;
     UInt32 m_taskId;
+    CPingTaskConsumer m_pingTaskConsumer;
 };
 
 /*-------------------------------------------------------------------------//

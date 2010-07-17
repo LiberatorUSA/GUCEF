@@ -75,7 +75,11 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchTaskConsumer : public CORE::CTaskConsumer
     
     static const CString& GetTypeString( void );
     
-    virtual bool ProcessTask( CORE::CICloneable* taskData );
+    virtual bool OnTaskStart( CORE::CICloneable* taskData );
+    
+    virtual bool OnTaskCycle( CORE::CICloneable* taskData );
+    
+    virtual void OnTaskEnd( CORE::CICloneable* taskData );
     
     CPatchEngine& GetPatchEngine( void );
     
