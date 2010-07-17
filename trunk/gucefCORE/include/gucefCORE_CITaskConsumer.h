@@ -31,10 +31,10 @@
 #define GUCEF_CORE_CNOTIFIER_H
 #endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
-#ifndef GUCEF_CORE_CTNUMERICID_H
-#include "CTNumericID.h"
-#define GUCEF_CORE_CTNUMERICID_H
-#endif /* GUCEF_CORE_CTNUMERICID_H ? */
+#ifndef GUCEF_CORE_CTNUMERICIDGENERATOR_H
+#include "CTNumericIDGenerator.h"
+#define GUCEF_CORE_CTNUMERICIDGENERATOR_H
+#endif /* GUCEF_CORE_CTNUMERICIDGENERATOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,7 +60,7 @@ class CTaskDelegator;
  *
  *  The method used to invoke the functionatility of decending task classes
  *  is not defined by this class but it is assumed to by one means or another
- *  the task is performed within a thread that is exclusve to the task for the 
+ *  the task is performed within a thread that is exclusve to the task for the
  *  duration of the task.
  */
 class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CNotifier
@@ -78,35 +78,36 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CNotifier
 
     public:
 
-    typedef CTNumericID< UInt32 > TTaskId;
+    typedef CTNumericIDGenerator< UInt32 > TTaskIdGenerator;
+    typedef TTaskIdGenerator::TNumericID TTaskId;
 
     CTaskConsumer( void );
 
     virtual ~CTaskConsumer();
 
     virtual CString GetType( void ) const = 0;
-    
+
     void SetTaskDelegator( CTaskDelegator* delegator );
-    
+
     CTaskDelegator* GetTaskDelegator( void );
 
     UInt32 GetTaskId( void ) const;
 
     virtual const CString& GetClassTypeName( void ) const;
-    
+
     bool IsOwnedByTaskManager( void ) const;
-    
+
     /**
      *  Startup routine for the task. You should return true if startup succeeded and the task can commence
      *  cycling.
      */
     virtual bool OnTaskStart( CICloneable* taskdata ) = 0;
-    
+
     /**
      *  Called after a successfull call to OnTaskStart
      */
     virtual void OnTaskStarted( CICloneable* taskdata );
-    
+
     /**
      *  Called after a failed call to OnTaskStart
      */
@@ -129,17 +130,17 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CNotifier
 
     virtual void OnTaskPaused( CICloneable* taskdata ,
                                bool forced           );
-    
+
     virtual void OnTaskResumed( CICloneable* taskdata );
-    
+
     virtual void OnTaskEnded( CICloneable* taskdata ,
                               bool forced           );
 
     private:
     friend class CTaskManager;
-    
+
     void SetIsOwnedByTaskManager( bool ownedByTaskManager );
-    
+
     private:
 
     CTaskConsumer( const CTaskConsumer& src  );
