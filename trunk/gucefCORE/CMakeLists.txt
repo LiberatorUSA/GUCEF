@@ -409,7 +409,7 @@ add_library( gucefCORE ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} 
 add_dependencies( gucefCORE gucefMT )
 target_link_libraries( gucefCORE gucefMT )
 if (UNIX)
-  target_link_libraries( gucefCORE ${CMAKE_DL_LIBS} )
+  target_link_libraries( gucefCORE ${CMAKE_DL_LIBS} util )
 endif()
 set_target_properties( gucefCORE PROPERTIES COMPILE_DEFINITIONS GUCEFCORE_BUILD_MODULE )
 GUCEF_config_lib( gucefCORE )

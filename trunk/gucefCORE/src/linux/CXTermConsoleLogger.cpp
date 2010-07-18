@@ -42,13 +42,9 @@
 
 #ifdef GUCEF_LINUX_BUILD
 
-#define _XOPEN_SOURCE
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-//#include <util.h>    // for platforms that don't have pty.h
-//#include <libutil.h> // for platforms that don't have pty.h
-//#include <pty.h>
 
 
 
@@ -95,6 +91,11 @@ CXTermConsoleLogger::CXTermConsoleLogger( bool initialize )
 CXTermConsoleLogger::~CXTermConsoleLogger()
 {GUCEF_TRACE;
 
+    if ( NULL != m_slaveFptr )
+    {
+        fclose( m_slaveFptr );
+        m_slaveFptr = NULL;
+    }
     if ( m_masterfd != -1 )
     {
         close( m_masterfd );
@@ -104,11 +105,6 @@ CXTermConsoleLogger::~CXTermConsoleLogger()
     {
         close( m_slavefd );
         m_slavefd = -1;
-    }
-    if ( NULL != m_slaveFptr )
-    {
-        fclose( m_slaveFptr );
-        m_slaveFptr = NULL;
     }
 }
 
@@ -121,6 +117,7 @@ CXTermConsoleLogger::Initialize( void )
     if ( ( m_masterfd != -1 ) || ( m_slavefd != -1 ) )
     {
         // Do not initialize twice, already initialized
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CXTermConsoleLogger: Initialize() called but initialization already occured" );
         return true;
     }
 
@@ -133,6 +130,8 @@ CXTermConsoleLogger::Initialize( void )
         return false;
     }
 
+    GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CXTermConsoleLogger: opened pseudo terminal master and slave" );
+
     m_slaveFptr = fdopen( m_slavefd, "w" );
     if ( NULL == m_slaveFptr )
     {
@@ -143,66 +142,62 @@ CXTermConsoleLogger::Initialize( void )
         GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CXTermConsoleLogger: failed to open file stream based on slave file descriptor" );
         return false;
     }
-    return true;
 
-//    if ( ( m_masterfd != -1 ) || ( m_slavefd != -1 ) )
-//    {
-//        // Do not initialize twice, already initialized
-//        return true;
-//    }
-//
-//    // try to open master for pseudo terminal
-//    m_masterfd = ptym_open( ptsname,  );
-//    if ( 0 > m_masterfd )
-//    {
-//        // error opening pseudo terminal
-//        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CXTermConsoleLogger: ptym_open: failed to open pseudo terminal" );
-//        return false;
-//    }
-//
-//    // try to open slave for pseudo terminal
-//    m_slavefd = ptys_open( m_masterfd, m_ptsname );
-//
-//    // HERE: do any termios reconfiguration which is required
-//    // If you don't want the windowid to be echoed, you must
-//    // at least switch off echo here.
-//
-//    // Fire up an xterm on the master side of the pseudo tty
-//    sprintf( sopt, "-Sxx%d", m_masterfd );
-//    fflush( stderr );
-//    fflush( stdout );
-//    m_xtermpid = fork();
-//
-//    switch( m_xtermpid )
-//    {
-//        case -1:
-//        {
-//            close( m_slavefd );
-//            m_slavefd = -1;
-//            close( m_masterfd );
-//            m_masterfd = -1;
-//
-//            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CXTermConsoleLogger: failed fork a xterm" );
-//            return false;
-//        }
-//        case 0:
-//        {
-//            for (i=0; i<100; i++)
-//            {
-//                if ( i != STDERR_FILENO && i != m_masterfd )
-//                {
-//                    close(i);
-//                }
-//            }
-//            execl("/usr/openwin/bin/xterm", "xterm", sopt, NULL);
-//            perror("/usr/openwin/bin/xterm");
-//            return false;
-//        }
-//        default:
-//        {
-//            close( m_masterfd );
-//            fprintf( stderr, "starting xterm (pid %d) on %s\n", m_xtermpid, pts_name );
-//
+
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CXTermConsoleLogger: opened file stream to pseudo terminal slave" );
+
+    // HERE: do any termios reconfiguration which is required
+    // If you don't want the windowid to be echoed, you must
+    // at least switch off echo here.
+
+
+    char sopt[ 17+20 ];
+
+    // Fire up an xterm on the master side of the pseudo tty
+    //sprintf( sopt, "-title Logging -Sxx%d", m_masterfd );
+    sprintf( sopt, "-Sxx%d", m_masterfd );
+
+    fflush( stderr );
+    fflush( stdout );
+    m_xtermpid = fork();
+
+    switch( m_xtermpid )
+    {
+        case -1:
+        {
+            close( m_slavefd );
+            m_slavefd = -1;
+            close( m_masterfd );
+            m_masterfd = -1;
+
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CXTermConsoleLogger: failed fork a xterm, fork returned -1" );
+            return false;
+        }
+        case 0:
+        {
+            for (int i=0; i<100; i++)
+            {
+                if ( i != STDERR_FILENO && i != m_masterfd )
+                {
+                    close(i);
+                }
+            }
+            execl("/usr/bin/xterm", "xterm", sopt, NULL);
+            perror("/usr/bin/xterm");
+
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CXTermConsoleLogger: failed fork a xterm, fork returned 0" );
+            return false;
+        }
+        default:
+        {
+            CString pts_name = ptsname( m_masterfd );
+
+            //close( m_masterfd );
+            //m_masterfd = -1;
+
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CXTermConsoleLogger: starting xterm (pid " + Int32ToString( m_xtermpid ) + ") on " + pts_name );
+            //fprintf( stderr, "starting xterm (pid %d) on %s\n", m_xtermpid, pts_name.C_String() );
+
 //            // Discard windowid, which comes back as first line from xterm
 //            // (this over-simple bit of code isn't really good enough...)
 //            if ( read( m_slavefd, pts_name, sizeof(pts_name) - 1 ) < 0 )
@@ -210,11 +205,12 @@ CXTermConsoleLogger::Initialize( void )
 //                perror( "read slavefd" );
 //                return false;
 //            }
-//        }
-//    }
-//
-//    // now do i/o on slavefd to read/write the xterm
-//    return true;
+        }
+    }
+
+    // now do i/o on slavefd to read/write the xterm
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CXTermConsoleLogger: Successfully initialized" );
+    return true;
 
 }
 
@@ -227,7 +223,7 @@ CXTermConsoleLogger::Log( const TLogMsgType logMsgType ,
                           const UInt32 threadId        )
 {GUCEF_TRACE;
 
-    if ( m_slavefd != -1 )
+    if ( m_slavefd != -1 && m_xtermpid != -1 && m_slaveFptr != NULL )
     {
         if ( logLevel >= m_minimalLogLevel )
         {
@@ -247,7 +243,7 @@ void
 CXTermConsoleLogger::FlushLog( void )
 {GUCEF_TRACE;
 
-    if ( m_slavefd != -1 )
+    if ( m_slavefd != -1 && m_slaveFptr != NULL )
     {
         fflush( m_slaveFptr );
     }
