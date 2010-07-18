@@ -1,19 +1,25 @@
 /*
- *      $COPYRIGHT$
+ *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
- *      Software for Humanity
- *      Public Domain
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- *      This program is freely distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
  *
- *	$Id: pty.c,v 6.3 1999/06/19 03:19:47 jsquyres Exp $
- *
- *	Function:	- pseudo terminal support
- *			- derived from Steven's "Advanced Programming
- *			  in the Unix Environment".
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+
+#include "gucefCORE_pty.h"
+
+#ifdef GUCEF_LINUX_BUILD
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -22,8 +28,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdio.h>
 
-#include "gucefCORE_pty.h"
+//#define HAVE_SYSV_PTYS
+//#define HAVE_STROPTS_H
+//#define HAVE_PTY_H
 
 /*
  * Some OS's don't seem to prototype these functions properly
@@ -32,8 +41,54 @@ extern int grantpt( int __fd );
 extern int unlockpt( int __fd );
 extern char *ptsname( int __fd );
 
+#if ( _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600 )
 
-#if HAVE_SYSV_PTYS && HAVE_STROPTS_H
+int
+GUCEF_pty_open( int* fdm, int* fds )
+{
+    int masterfd, slavefd;
+    char *slavedevice;
+
+    /*
+     *  O_RDWR = Open the device for both reading and writing. It is usual to specify this flag.
+     *  O_NOCTTY = Do not make this device the controlling terminal for the process.
+     */
+    masterfd = posix_openpt( O_RDWR | O_NOCTTY );
+
+    if ( masterfd == -1 ||
+         grantpt (masterfd) == -1 ||
+         unlockpt (masterfd) == -1 ||
+         (slavedevice = ptsname (masterfd)) == NULL)
+        return 1;
+
+    slavefd = open(slavedevice, O_RDWR|O_NOCTTY);
+    if (slavefd < 0)
+        return 1;
+
+    /* success */
+    *fdm = masterfd;
+    *fds = slavefd;
+    return 0;
+}
+
+#elif defined( HAVE_PTY_H )
+
+#include <pty.h>
+
+int
+GUCEF_pty_open(int *fdm, int *fds)
+{
+    if ( -1 == openpty( fdm, fds, NULL, NULL, NULL ) )
+    {
+        /* something went wrong, no pseudo terminals available? */
+        return 1;
+    }
+    return 0;
+}
+
+#else
+
+#if defined( HAVE_SYSV_PTYS ) && defined( HAVE_STROPTS_H )
 
 #include <stropts.h>
 
@@ -86,7 +141,7 @@ ptys_open(int fdm, char *pts_name)
     return(fds);
 }
 
-#elif HAVE_BSD_PTYS && HAVE_GRP_H
+#elif defined( HAVE_BSD_PTYS ) && defined( HAVE_GRP_H )
 
 #include <grp.h>
 
@@ -166,3 +221,7 @@ GUCEF_pty_open(int *fdm, int *fds)
 
     return 0;
 }
+
+#endif
+
+#endif /* GUCEF_LINUX_BUILD ? */
