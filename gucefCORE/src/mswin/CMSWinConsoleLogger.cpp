@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -68,9 +68,9 @@ CMSWinConsoleLogger::CMSWinConsoleLogger( void )
     : CILogger()                                 ,
       m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL )
 {GUCEF_TRACE;
-    
+
     AllocConsole();
-    
+
     /* reopen stout handle as console window output */
     freopen( "CONOUT$", "wb", stdout );
 }
@@ -93,14 +93,14 @@ CMSWinConsoleLogger::Log( const TLogMsgType logMsgType ,
 {GUCEF_TRACE;
 
     if ( logLevel >= m_minimalLogLevel )
-    {    
+    {
         CString actualLogMsg( "[THREAD=" + UInt32ToString( threadId ) +
-             "][TYPE=" + CLogManager::GetLogMsgTypeString( logMsgType ) +
-             "] [LVL=" + LogLevelToString( logLevel ) + "] " + 
+             "] [TYPE=" + CLogManager::GetLogMsgTypeString( logMsgType ) +
+             "] [LVL=" + LogLevelToString( logLevel ) + "] " +
              logMessage + "\n" );
-            
+
         fprintf( stdout, actualLogMsg.C_String() );
-    } 
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -117,12 +117,12 @@ CMSWinConsoleLogger::FlushLog( void )
 void
 CMSWinConsoleLogger::SetMinimalLogLevel( const Int32 minimalLogLevel )
 {GUCEF_TRACE;
-    
+
     m_minimalLogLevel = minimalLogLevel;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 Int32
 CMSWinConsoleLogger::GetMinimalLogLevel( void ) const
 {GUCEF_TRACE;

@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CXTERMCONSOLELOGGER_H
-#define GUCEF_CORE_CXTERMCONSOLELOGGER_H
+#ifndef GUCEF_CORE_PTY_H
+#define GUCEF_CORE_PTY_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,81 +26,39 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <stdio.h>
-
-#ifndef GUCEF_CORE_CILOGGER_H
-#include "CILogger.h"
-#define GUCEF_CORE_CILOGGER_H
-#endif /* GUCEF_CORE_CILOGGER_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifdef GUCEF_LINUX_BUILD
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-namespace GUCEF {
-namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  GUCEF logger implementation for Linux's X-Widows environment which
- *  displays log output in a console window.
- */
-class GUCEF_CORE_PUBLIC_CPP CXTermConsoleLogger : public CILogger
+#ifdef __cplusplus
+extern "C"
 {
-    public:
+#endif
 
-    CXTermConsoleLogger( bool initialize = true );
+/*-------------------------------------------------------------------------*/
 
-    virtual ~CXTermConsoleLogger();
+GUCEF_CORE_PUBLIC_C int
+GUCEF_pty_open( int *fdm, int *fds );
 
-    virtual void Log( const TLogMsgType logMsgType ,
-                      const Int32 logLevel         ,
-                      const CString& logMessage    ,
-                      const UInt32 threadId        );
+/*-------------------------------------------------------------------------*/
 
-    virtual void FlushLog( void );
-
-    void SetMinimalLogLevel( const Int32 minimalLogLevel );
-
-    Int32 GetMinimalLogLevel( void ) const;
-
-    bool Initialize( void );
-
-    private:
-
-    CXTermConsoleLogger& operator=( const CXTermConsoleLogger& src );
-    CXTermConsoleLogger( const CXTermConsoleLogger& src );
-
-    private:
-
-    Int32 m_minimalLogLevel;
-    int m_xtermpid;
-    int m_masterfd;
-    int m_slavefd;
-    FILE* m_slaveFptr;
-};
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-}; /* namespace CORE */
-}; /* namespace GUCEF */
+#ifdef __cplusplus
+};  /* end extern "C" */
+#endif
 
 /*-------------------------------------------------------------------------*/
 #endif /* GUCEF_LINUX_BUILD ? */
 
-#endif /* GUCEF_CORE_CXTERMCONSOLELOGGER_H ? */
+#endif /* GUCEF_CORE_PTY_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -112,3 +70,4 @@ class GUCEF_CORE_PUBLIC_CPP CXTermConsoleLogger : public CILogger
         - Dinand: Added this class
 
 ---------------------------------------------------------------------------*/
+

@@ -298,14 +298,40 @@ GetXmlDStoreCodec( void )
         if ( !registry->TryLookup( "XML", codecPtr, false ) )
         {
             // No codec is registered to handle XML, try and load a plugin for it
+            #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
 
-            CORE::CPluginManager::TPluginPtr codecPlugin =
+              #ifdef GUCEF_CORE_DEBUG_MODE
+              const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML_d";
+              #else
+              const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML";
+              #endif
 
-                #ifdef GUCEF_CORE_DEBUG_MODE
-                CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML_d" );
-                #else
-                CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML" );
-                #endif
+              CORE::CPluginManager::TPluginPtr codecPlugin =
+                  CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( pathToPlugin );
+
+            #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
+              #ifdef GUCEF_CORE_DEBUG_MODE
+              const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML_d";
+              #else
+              const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML";
+              #endif
+
+              CORE::CPluginManager::TPluginPtr codecPlugin =
+                  CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( pathToPlugin );
+
+              if ( NULL == codecPlugin )
+              {
+                  #ifdef GUCEF_CORE_DEBUG_MODE
+                  const char* pathToPlugin = "$MODULEDIR$/../lib/dstorepluginPARSIFALXML_d";
+                  #else
+                  const char* pathToPlugin = "$MODULEDIR$/../lib/dstorepluginPARSIFALXML";
+                  #endif
+
+                  codecPlugin = CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( pathToPlugin );
+              }
+
+            #endif
 
             if ( NULL != codecPlugin )
             {
@@ -3266,10 +3292,13 @@ main( int argc , char* argv[] )
     CORE::CStdLogger logger( logFileAccess );
     CORE::CLogManager::Instance()->AddLogger( &logger );
 
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
     CORE::CMSWinConsoleLogger consoleOut;
     CORE::CLogManager::Instance()->AddLogger( &consoleOut );
-    #endif /* GUCEF_MSWIN_BUILD ? */
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    CORE::CXTermConsoleLogger consoleOut;
+    CORE::CLogManager::Instance()->AddLogger( &consoleOut );
+    #endif
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
 

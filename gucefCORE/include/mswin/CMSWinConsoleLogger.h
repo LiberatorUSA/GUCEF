@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CMSWINCONSOLELOGGER_H
-#define GUCEF_CORE_CMSWINCONSOLELOGGER_H 
+#define GUCEF_CORE_CMSWINCONSOLELOGGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CILOGGER_H
 #include "CILogger.h"
@@ -54,9 +54,9 @@ namespace CORE {
 class GUCEF_CORE_PUBLIC_CPP CMSWinConsoleLogger : public CILogger
 {
     public:
-    
-    CMSWinConsoleLogger( void );    
-    
+
+    CMSWinConsoleLogger( void );
+
     virtual ~CMSWinConsoleLogger();
 
     virtual void Log( const TLogMsgType logMsgType ,
@@ -65,18 +65,18 @@ class GUCEF_CORE_PUBLIC_CPP CMSWinConsoleLogger : public CILogger
                       const UInt32 threadId        );
 
     virtual void FlushLog( void );
-    
+
     void SetMinimalLogLevel( const Int32 minimalLogLevel );
-    
-    Int32 GetMinimalLogLevel( void ) const; 
-    
+
+    Int32 GetMinimalLogLevel( void ) const;
+
     private:
-    
+
     CMSWinConsoleLogger& operator=( const CMSWinConsoleLogger& src );
     CMSWinConsoleLogger( const CMSWinConsoleLogger& src );
-    
+
     private:
-    
+
     Int32 m_minimalLogLevel;
 };
 
@@ -103,4 +103,4 @@ class GUCEF_CORE_PUBLIC_CPP CMSWinConsoleLogger : public CILogger
 - 19-05-2007 :
         - Dinand: Added this class
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/
