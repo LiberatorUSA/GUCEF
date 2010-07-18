@@ -92,28 +92,22 @@ LoadModuleDynamicly( const char* filename )
     if ( fileExt == NULL )
     {
         UInt32 sLen = (UInt32) strlen( filename );
-        fName = malloc( sLen + 5 );
+        fName = malloc( sLen + 7 );
         memcpy( fName, filename, sLen );
 
-        #ifdef GUCEF_MSWIN_BUILD
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
         memcpy( fName+sLen, ".dll\0", 5 );
-        #else
-          #ifdef GUCEF_LINUX_BUILD
-          memcpy( fName+sLen, ".so\0", 4 );
-          #else
-            #error Unsupported target platform
-          #endif
+        #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+        memcpy( fName+sLen, ".so\0", 4 );
+        #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_APPLE )
+        memcpy( fName+sLen, ".dylib\0", 7 );
         #endif
     }
 
-    #ifdef GUCEF_LINUX_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
     modulePtr = (void*) dlopen( fName, RTLD_NOW );
-    #else
-      #ifdef GUCEF_MSWIN_BUILD
-      modulePtr = (void*) LoadLibrary( fName );
-      #else
-        #error Unsupported target platform
-      #endif
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    modulePtr = (void*) LoadLibrary( fName );
     #endif
 
     if ( fileExt == NULL )

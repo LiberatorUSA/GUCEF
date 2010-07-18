@@ -676,12 +676,65 @@ Remove_Directory( const char *dir  ,
 UInt32
 Module_Path( char *dest, UInt32 dest_size )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        return !GetModuleFileName( NULL, dest, dest_size );
-        #else
-        #ifdef GUCEF_LINUX_BUILD
-        #endif /* WIN32_BUILD ? */
-        #endif /* GUCEF_LINUX_BUILD ? */
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+
+    return !GetModuleFileName( NULL, dest, dest_size );
+
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_APPLE )
+
+    std::string get_basepath() {
+    std::string path = "./";
+    ProcessSerialNumber PSN;
+    ProcessInfoRec pinfo;
+    FSSpec pspec;
+    FSRef fsr;
+    OSStatus err;
+    /* set up process serial number */
+    PSN.highLongOfPSN = 0;
+    PSN.lowLongOfPSN = kCurrentProcess;
+    /* set up info block */
+    pinfo.processInfoLength = sizeof(pinfo);
+    pinfo.processName = NULL;
+    pinfo.processAppSpec = &pspec;
+    /* grab the vrefnum and directory */
+    err = GetProcessInformation(&PSN, &pinfo);
+    if (! err ) {
+    char c_path[2048];
+    FSSpec fss2;
+    int tocopy;
+    err = FSMakeFSSpec(pspec.vRefNum, pspec.parID, 0, &fss2);
+    if ( ! err ) {
+    err = FSpMakeFSRef(&fss2, &fsr);
+    if ( ! err ) {
+    char c_path[2049];
+    err = (OSErr)FSRefMakePath(&fsr, (UInt8*)c_path, 2048);
+    if (! err ) {
+    path = c_path;
+    }
+    }
+    }
+    }
+
+    return (path);
+    }
+
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
+    pid_t pid = getpid();
+
+    char linkStr[ 24 ];
+    sprintf( linkStr, "%s%d%s", "/proc/", pid, "/exe\0" );
+
+    int ch = readlink( linkStr, dest, dest_size );
+    if ( -1 != ch )
+    {
+        dest[ ch ] = 0;
+        return 0;
+    }
+    return 1;
+
+    #endif
+
 }
 
 /*-------------------------------------------------------------------------*/
