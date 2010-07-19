@@ -158,6 +158,7 @@ struct SProjectInfo
 {
     TModuleInfoVector modules;                               // All generated module information
     TDirProcessingInstructionsMap dirProcessingInstructions; // All loaded processing instructions mapped per path
+    TStringVector globalDirExcludeList;                      // Dirs that should never be included in processing regardless of path
 };
 typedef struct SProjectInfo TProjectInfo;
 
@@ -945,8 +946,19 @@ ExcludeOrIncludeDirEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
     // Fetch processing instructions from directory
     TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, dir );
 
-    if ( NULL != instructionStorage )
+    // Perform processing of global dir excludes
+    TStringVector::iterator n = projectInfo.globalDirExcludeList.begin();
+    while ( n != projectInfo.globalDirExcludeList.end() )
     {
+        if ( RemoveString( allEntries, (*n) ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the file \"" + (*n) + "\" based on the global dir exclude list" );
+        }
+        ++n;
+    }
+
+    if ( NULL != instructionStorage )
+    {        
         // Carry out the process using the fetched instructions
         ExcludeOrIncludeDirEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, applyPlatformChangesOnly, allEntries );
     }
@@ -3317,9 +3329,13 @@ main( int argc , char* argv[] )
         rootDirs.push_back( CORE::RelativePath( "$CURWORKDIR$" ) );
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Using current working directory since no rootDir arguments where passed from the command line" );
     }
-
-    // Gather all processing instructions
+    
+    // Set any global dir excludes that where passed as cmd parameters
     TProjectInfo projectInfo;
+    projectInfo.globalDirExcludeList = keyValueList.GetValueAlways( "dirsToIgnore" ).ParseElements( ';', false );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::UInt32ToString( projectInfo.globalDirExcludeList.size() ) + " dirs in the global dir ignore list" );
+
+    // Gather all processing instructions    
     TStringVector::iterator i = rootDirs.begin();
     while ( i != rootDirs.end() )
     {
