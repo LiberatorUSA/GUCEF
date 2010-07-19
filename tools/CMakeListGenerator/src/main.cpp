@@ -3275,7 +3275,8 @@ ParseParams( const int argc                 ,
         }
 
         // Parse the param list based on the ' symbol
-        keyValueList.SetMultiple( argString, '\'' );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Application parameters: " + argString );
+        keyValueList.SetMultiple( argString, '*' );
     }
 }
 
