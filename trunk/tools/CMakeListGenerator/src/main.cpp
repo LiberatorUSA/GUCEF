@@ -3309,10 +3309,12 @@ main( int argc , char* argv[] )
     try
     {
         rootDirs = keyValueList.GetValueVector( "rootDir" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Number of rootDir arguments passed from command line: " + CORE::UInt32ToString( rootDirs.size() ) );
     }
     catch ( CORE::CValueList::EUnknownKey& )
     {
         rootDirs.push_back( CORE::RelativePath( "$CURWORKDIR$" ) );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Using current working directory since no rootDir arguments where passed from the command line" );
     }
 
     // Gather all processing instructions
