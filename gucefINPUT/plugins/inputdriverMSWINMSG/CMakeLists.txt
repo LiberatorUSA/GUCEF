@@ -47,6 +47,10 @@ GUCEF_config_plugin( inputdriverMSWINMSG )
 
 include_directories( ../../../gucefCORE/include ../../../gucefINPUT/include ../../../gucefMT/include include )
 
+if ( UNIX )
+  include_directories( ../../../gucefCORE/include/linux )
+endif( UNIX )
+
 if ( WIN32 )
   include_directories( ../../../gucefCORE/include/mswin )
 endif( WIN32 )

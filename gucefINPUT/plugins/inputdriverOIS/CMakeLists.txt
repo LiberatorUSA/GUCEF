@@ -62,7 +62,7 @@ if ( SDL )
 endif( SDL )
 
 if ( UNIX )
-  include_directories( ../inputdriverOIS/dependency/OIS/includes/linux )
+  include_directories( ../../../gucefCORE/include/linux ../inputdriverOIS/dependency/OIS/includes/linux )
 endif( UNIX )
 
 if ( WIN32 )

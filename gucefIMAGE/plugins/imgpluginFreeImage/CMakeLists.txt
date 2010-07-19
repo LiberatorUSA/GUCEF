@@ -47,6 +47,10 @@ GUCEF_config_plugin( imgpluginFreeImage )
 
 include_directories( ../../../gucefCORE/include ../../../gucefIMAGE/include ../../../gucefMT/include ../imgpluginFreeImage/dependencies/FreeImage/Source ../imgpluginFreeImage/dependencies/FreeImage/Source/DeprecationManager ../imgpluginFreeImage/dependencies/FreeImage/Source/FreeImageToolkit ../imgpluginFreeImage/dependencies/FreeImage/Source/LibJPEG ../imgpluginFreeImage/dependencies/FreeImage/Source/LibMNG ../imgpluginFreeImage/dependencies/FreeImage/Source/LibOpenJPEG ../imgpluginFreeImage/dependencies/FreeImage/Source/LibPNG ../imgpluginFreeImage/dependencies/FreeImage/Source/LibTIFF ../imgpluginFreeImage/dependencies/FreeImage/Source/Metadata ../imgpluginFreeImage/dependencies/FreeImage/Source/OpenEXR ../imgpluginFreeImage/dependencies/FreeImage/Source/OpenEXR/Half ../imgpluginFreeImage/dependencies/FreeImage/Source/OpenEXR/Iex ../imgpluginFreeImage/dependencies/FreeImage/Source/OpenEXR/IlmImf ../imgpluginFreeImage/dependencies/FreeImage/Source/OpenEXR/IlmThread ../imgpluginFreeImage/dependencies/FreeImage/Source/OpenEXR/Imath ../imgpluginFreeImage/dependencies/FreeImage/Source/ZLib include )
 
+if ( UNIX )
+  include_directories( ../../../gucefCORE/include/linux )
+endif( UNIX )
+
 if ( WIN32 )
   include_directories( ../../../gucefCORE/include/mswin )
 endif( WIN32 )

@@ -47,6 +47,10 @@ GUCEF_config_plugin( vfspluginDVP )
 
 include_directories( ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include ../vfspluginDVP/dependencies/DVPACKSYS/include include )
 
+if ( UNIX )
+  include_directories( ../../../gucefCORE/include/linux )
+endif( UNIX )
+
 if ( WIN32 )
   include_directories( ../../../gucefCORE/include/mswin )
 endif( WIN32 )

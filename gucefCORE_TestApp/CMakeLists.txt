@@ -57,6 +57,10 @@ GUCEF_config_tool( gucefCORE_TestApp )
 
 include_directories( ../gucefCORE/include ../gucefMT/include include )
 
+if ( UNIX )
+  include_directories( ../gucefCORE/include/linux )
+endif( UNIX )
+
 if ( WIN32 )
   include_directories( ../gucefCORE/include/mswin )
 endif( WIN32 )

@@ -58,6 +58,10 @@ GUCEF_config_lib( gucefMULTIPLAY )
 
 include_directories( ../gucefCOM/include ../gucefCOMCORE/include ../gucefCORE/include ../gucefMT/include include )
 
+if ( UNIX )
+  include_directories( ../gucefCORE/include/linux )
+endif( UNIX )
+
 if ( WIN32 )
   include_directories( ../gucefCOMCORE/include/mswin ../gucefCORE/include/mswin )
 endif( WIN32 )

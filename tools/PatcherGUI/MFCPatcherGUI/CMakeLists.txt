@@ -61,6 +61,10 @@ endif()
 
 include_directories( ../../../gucefCOM/include ../../../gucefCOMCORE/include ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefPATCHER/include ../../../gucefVFS/include include projects/MVC8/res projects/MVC9/res )
 
+if ( UNIX )
+  include_directories( ../../../gucefCORE/include/linux )
+endif( UNIX )
+
 if ( WIN32 )
   include_directories( ../../../gucefCOMCORE/include/mswin ../../../gucefCORE/include/mswin )
 endif( WIN32 )
