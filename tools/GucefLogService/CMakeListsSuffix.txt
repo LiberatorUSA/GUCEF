@@ -1,0 +1,10 @@
+
+if (WIN32)
+  add_executable( GucefLogService WIN32 ${HEADER_FILES} ${SOURCE_FILES} )
+else()
+  add_executable( GucefLogService ${HEADER_FILES} ${SOURCE_FILES} )
+endif()
+add_dependencies( GucefLogService gucefCOM gucefCOMCORE gucefCORE gucefMT )
+target_link_libraries( GucefLogService gucefCOM gucefCOMCORE gucefCORE gucefMT )
+set_target_properties( GucefLogService PROPERTIES COMPILE_DEFINITIONS GUCEFLOGSERVICE_BUILD_MODULE )
+GUCEF_config_tool( GucefLogService )
