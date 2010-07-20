@@ -952,13 +952,13 @@ ExcludeOrIncludeDirEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
     {
         if ( RemoveString( allEntries, (*n) ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the file \"" + (*n) + "\" based on the global dir exclude list" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the dir \"" + (*n) + "\" based on the global dir exclude list" );
         }
         ++n;
     }
 
     if ( NULL != instructionStorage )
-    {        
+    {
         // Carry out the process using the fetched instructions
         ExcludeOrIncludeDirEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, applyPlatformChangesOnly, allEntries );
     }
@@ -3329,13 +3329,13 @@ main( int argc , char* argv[] )
         rootDirs.push_back( CORE::RelativePath( "$CURWORKDIR$" ) );
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Using current working directory since no rootDir arguments where passed from the command line" );
     }
-    
+
     // Set any global dir excludes that where passed as cmd parameters
     TProjectInfo projectInfo;
     projectInfo.globalDirExcludeList = keyValueList.GetValueAlways( "dirsToIgnore" ).ParseElements( ';', false );
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::UInt32ToString( projectInfo.globalDirExcludeList.size() ) + " dirs in the global dir ignore list" );
 
-    // Gather all processing instructions    
+    // Gather all processing instructions
     TStringVector::iterator i = rootDirs.begin();
     while ( i != rootDirs.end() )
     {
