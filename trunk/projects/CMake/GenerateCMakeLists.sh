@@ -76,11 +76,8 @@ if [ "$GENERATORPATH" = "undefined" ]; then
 fi
 echo "GENERATORPATH = $TEST_PATH"
 
-# Enable monitor job control
-#set -o monitor
-
 # invoke the generator
-$GENERATORPATH 'rootDir=$GUCEF_HOME'
+$GENERATORPATH *rootDir=$GUCEF_HOME* *dirsToIgnore=.svn;_svn*
 
 
 
