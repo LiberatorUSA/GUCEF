@@ -22,6 +22,9 @@ add_subdirectory(CallstackLogAnalyzer)
 #add_subdirectory(ArchiveDiff)
 #add_subdirectory(SVNMagicMerge)
 #add_subdirectory(ReferenceUpdater)
+add_subdirectory(GucefLogServiceLib)
+add_subdirectory(GucefLogServiceClientPlugin)
 add_subdirectory(GucefLogService)
+
 
 

@@ -1,6 +1,6 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  GucefLogServiceLib: Library containing the main logic for the Logging service
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CILOGGER_H
-#define GUCEF_CORE_CILOGGER_H
+#ifndef GUCEF_LOGSERVICECLIENTPLUGIN_H
+#define GUCEF_LOGSERVICECLIENTPLUGIN_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+#ifndef GUCEF_CORE_ESTRUCTS_H
+#include "EStructs.h"
+#define GUCEF_CORE_ESTRUCTS_H
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+
+#ifndef GUCEF_VFSPLUGIN_VP_MACROS_H
+#include "vfspluginVP_macros.h"
+#define GUCEF_VFSPLUGIN_VP_MACROS_H
+#endif /* GUCEF_VFSPLUGIN_VP_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,40 +43,51 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace LOGSERVICECLIENTPLUGIN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CString;
+/*
+ *      Prevent C++ name mangling
+ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *  Interface class for implementors of logging.
- */
-class GUCEF_CORE_PUBLIC_CPP CILogger
-{
-    public:
+GUCEF_VFSPLUGIN_VP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Load( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-    typedef CLogManager::TLogMsgType TLogMsgType;
+/*-------------------------------------------------------------------------*/
 
-    virtual void Log( const TLogMsgType logMsgType ,
-                      const Int32 logLevel         ,
-                      const CString& logMessage    ,
-                      const UInt32 threadId        ) = 0;
+GUCEF_VFSPLUGIN_VP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-    virtual void FlushLog( void ) = 0;
+/*-------------------------------------------------------------------------*/
 
+GUCEF_VFSPLUGIN_VP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-    CILogger( void );                             /**< interface class: no-op */
-    virtual ~CILogger();                          /**< interface class: no-op */
-    CILogger( const CILogger& src );              /**< interface class: no-op */
-    CILogger& operator=( const CILogger& src );   /**< interface class: no-op */
-};
+/*-------------------------------------------------------------------------*/
+
+GUCEF_VFSPLUGIN_VP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_VFSPLUGIN_VP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*-------------------------------------------------------------------------*/                 
+
+#ifdef __cplusplus
+   }
+#endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -79,12 +95,12 @@ class GUCEF_CORE_PUBLIC_CPP CILogger
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace LOGSERVICECLIENTPLUGIN */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CILOGGER_H ? */
+#endif /* GUCEF_LOGSERVICECLIENTPLUGIN_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -92,7 +108,7 @@ class GUCEF_CORE_PUBLIC_CPP CILogger
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 16-02-2007 :
-        - Dinand: Added this class
+- 04-05-2005 :
+        - Dinand: Initial version.
 
 ---------------------------------------------------------------------------*/

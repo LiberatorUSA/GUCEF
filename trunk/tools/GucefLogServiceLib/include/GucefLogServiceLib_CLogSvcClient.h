@@ -1,6 +1,6 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  GucefLogServiceLib: Library containing the main logic for the Logging service
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CILOGGER_H
-#define GUCEF_CORE_CILOGGER_H
+#ifndef GUCEF_LOGSERVICELIB_CLOGSVCCLIENT_H
+#define GUCEF_LOGSERVICELIB_CLOGSVCCLIENT_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+#ifndef GUCEF_LOGSERVICELIB_MACROS_H
+#include "GucefLogServiceLib_macros.h"
+#define GUCEF_LOGSERVICELIB_MACROS_H
+#endif /* GUCEF_LOGSERVICELIB_MACROS_H ? */
+
+#ifndef GUCEF_CORE_CILOGGER_H
+#include "CILogger.h"
+#define GUCEF_CORE_CILOGGER_H
+#endif /* GUCEF_CORE_CILOGGER_H ? */
+
+#ifndef GUCEF_COMCORE_CTCPCLIENTSOCKET_H
+#include "CTCPClientSocket.h"
+#define GUCEF_COMCORE_CTCPCLIENTSOCKET_H
+#endif /* GUCEF_COMCORE_CTCPCLIENTSOCKET_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,7 +48,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace LOGSERVICELIB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,31 +56,49 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CString;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *  Interface class for implementors of logging.
- */
-class GUCEF_CORE_PUBLIC_CPP CILogger
+class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CILogger
 {
     public:
+    
+    static const CORE::CEvent ConnectingEvent;
+    static const CORE::CEvent ConnectedEvent;
+    static const CORE::CEvent DisconnectedEvent;
+    static const CORE::CEvent SocketErrorEvent;
+    
+    static void RegisterEvents( void );
+    
+    public:
+        
+    CLogSvcClient( void );
+    
+    CLogSvcClient( CORE::CPulseGenerator& pulseGenerator ); 
+    
+    virtual ~CLogSvcClient();
+    
+    bool ConnectTo( const CORE::CString& address , 
+                    CORE::UInt16 port            ); 
 
-    typedef CLogManager::TLogMsgType TLogMsgType;
+    bool ConnectTo( const CORE::CHostAddress& address );
 
-    virtual void Log( const TLogMsgType logMsgType ,
-                      const Int32 logLevel         ,
-                      const CString& logMessage    ,
-                      const UInt32 threadId        ) = 0;
+    /**
+     *      Attempts to reconnect to the server provided with
+     *      ConnectTo(). If ConnectTo() has not yet been called then this
+     *      member function has no effect.
+     */
+    bool Reconnect( void );
+    
+    void Close( void );
+    
+    virtual void Log( const TLogMsgType logMsgType    ,
+                      const CORE::Int32 logLevel      ,
+                      const CORE::CString& logMessage ,
+                      const CORE::UInt32 threadId     );
 
-    virtual void FlushLog( void ) = 0;
-
-
-    CILogger( void );                             /**< interface class: no-op */
-    virtual ~CILogger();                          /**< interface class: no-op */
-    CILogger( const CILogger& src );              /**< interface class: no-op */
-    CILogger& operator=( const CILogger& src );   /**< interface class: no-op */
+    virtual void FlushLog( void );
+    
+    private:
+    
+    COMCORE::CTCPClientSocket m_tcpClient;
 };
 
 /*-------------------------------------------------------------------------//
@@ -79,12 +107,12 @@ class GUCEF_CORE_PUBLIC_CPP CILogger
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace LOGSERVICELIB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CILOGGER_H ? */
+#endif /* GUCEF_LOGSERVICELIB_CLOGSVCCLIENT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -92,7 +120,7 @@ class GUCEF_CORE_PUBLIC_CPP CILogger
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 16-02-2007 :
-        - Dinand: Added this class
+- 04-05-2005 :
+        - Dinand: Initial version.
 
 ---------------------------------------------------------------------------*/
