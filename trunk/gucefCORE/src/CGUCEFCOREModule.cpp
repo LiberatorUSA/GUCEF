@@ -128,6 +128,11 @@
 #define GUCEF_CORE_CPULSEGENERATOR_H
 #endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
 
+#ifndef GUCEF_CORE_CTASKDELEGATOR_H
+#include "gucefCORE_CTaskDelegator.h"
+#define GUCEF_CORE_CTASKDELEGATOR_H
+#endif /* GUCEF_CORE_CTASKDELEGATOR_H ? */
+
 #ifndef GUCEF_CORE_TSPRINTING_H
 #include "tsprinting.h"
 #define GUCEF_CORE_TSPRINTING_H
@@ -208,6 +213,8 @@ CGUCEFCOREModule::Load( void )
         CIURLEvents::RegisterEvents();
         CNotifyingMapEvents::RegisterEvents();
         CGUCEFApplication::RegisterEvents();
+        CTaskDelegator::RegisterEvents();
+        CTaskConsumer::RegisterEvents();
         CTaskManager::RegisterEvents();        
 
         /*

@@ -128,7 +128,10 @@ BuildFileList( const CORE::CString& srcDir         ,
                         if ( dirsToIgnore->find( entryName.Lowercase() ) != dirsToIgnore->end() )
                         {
                             // do not process further
-                            break;
+                            CORE::CString ignoredDir = srcDir;
+                            CORE::AppendToPath( ignoredDir, entryName );
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Ignoring directory \"" + ignoredDir + "\"" );
+                            continue;
                         }
                     }
                 }
@@ -325,17 +328,20 @@ DeleteFileBackup( const CORE::CString& filepath )
 {GUCEF_TRACE;
 
     CORE::CString newFilepath = filepath + ".backup";
-    
-    if ( 0 != CORE::Delete_File( newFilepath.C_String() ) )
+    if ( CORE::FileExists( newFilepath ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "File \"" + newFilepath + "\" has been deleted" );
-        return true;
+        if ( 0 != CORE::Delete_File( newFilepath.C_String() ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "File \"" + newFilepath + "\" has been deleted" );
+            return true;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to delete file \"" + newFilepath + "\"" );
+            return false;
+        }
     }
-    else
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to delete file \"" + newFilepath + "\"" );
-        return false;
-    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -412,6 +418,9 @@ CopyOverMatchedFiles( const CORE::CString& srcDirRoot  ,
                 CORE::CString destFilePath = destDirRoot;
                 CORE::AppendToPath( destFilePath, destEntry.filedir );
                 CORE::AppendToPath( destFilePath, destEntry.filename );
+                
+                // Delete whatever backup file might have gotten left behind from a previous run                
+                DeleteFileBackup( destFilePath );
                 
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Preparing to copy file from \"" + sourceFilePath + "\" to \"" + destFilePath + "\"" );            
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Backing up destination file \"" + destFilePath + "\"" ); 
@@ -749,7 +758,7 @@ main( int argc , char* argv[] )
         CORE::CString destIncludeDir = argList.GetValueAlways( "DestIncludeDir" );
         CORE::CString srcBinDir = argList.GetValueAlways( "SrcBinDir" );
         CORE::CString destBinDir = argList.GetValueAlways( "DestBinDir" );
-        TStringSet dirsToIgnore = VectorToSet( argList.GetValueAlways( "DirsToIgnore" ).ParseElements( ';', false ) );
+        TStringSet dirsToIgnore = VectorToSet( argList.GetValueAlways( "DirsToIgnore" ).Lowercase().ParseElements( ';', false ) );
         CORE::CString mirrorExistingFilesOnlyStr = argList.GetValueAlways( "MirrorExistingFilesOnly" );
         bool mirrorExistingFilesOnly = true;
         if ( !mirrorExistingFilesOnlyStr.IsNULLOrEmpty() )

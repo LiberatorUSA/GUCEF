@@ -62,12 +62,27 @@ const CEvent CTaskDelegator::ThreadFinishedEvent = "GUCEF::CORE::CTaskDelegator:
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+void
+CTaskDelegator::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    ThreadKilledEvent.Initialize();
+    ThreadStartedEvent.Initialize();
+    ThreadPausedEvent.Initialize();
+    ThreadResumedEvent.Initialize();
+    ThreadFinishedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CTaskDelegator::CTaskDelegator( void )
     : MT::CActiveObject()    ,
       CNotifier()            ,
       m_taskConsumer( NULL )
 {GUCEF_TRACE;
 
+    RegisterEvents();
+    
     CTaskManager::Instance()->RegisterTaskDelegator( *this );
 
 }
