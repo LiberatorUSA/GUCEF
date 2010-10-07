@@ -44,6 +44,16 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
 #ifndef GUCEF_CORE_CFILEACCESS_H
 #include "CFileAccess.h"
 #define GUCEF_CORE_CFILEACCESS_H
@@ -96,6 +106,7 @@ typedef std::vector< TMatchEntry > TMatchEntryVector;
 
 typedef std::set< CORE::CString > TStringSet;
 typedef std::vector< CORE::CString > TStringVector;
+typedef std::map< CORE::CString, TStringVector > TStringVectorMap;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -228,6 +239,199 @@ GetBinaryFileTypes( void )
     return fileTypes;
 }
 
+/*---------------------------------------------------------------------------*/
+
+CORE::CDStoreCodecRegistry::TDStoreCodecPtr
+GetXmlDStoreCodec( void )
+{GUCEF_TRACE;
+
+    static CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr;
+    if ( codecPtr.IsNULL() )
+    {
+        CORE::CDStoreCodecRegistry* registry = CORE::CDStoreCodecRegistry::Instance();
+        if ( !registry->TryLookup( "XML", codecPtr, false ) )
+        {
+            // No codec is registered to handle XML, try and load a plugin for it
+
+            CORE::CPluginManager::TPluginPtr codecPlugin =
+
+                #ifdef GUCEF_CORE_DEBUG_MODE
+                CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML_d" );
+                #else
+                CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML" );
+                #endif
+
+            if ( NULL != codecPlugin )
+            {
+                // Now try and get the codec again
+                registry->TryLookup( "XML", codecPtr, false );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Request for data storage codec for xml file, succesfully loaded plugin to handle request" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Request for data storage codec for xml file but no plugin for it could be loaded!" );
+                CORE::ShowErrorMessage( "Missing codec support",
+                                        "Request for data storage codec for xml file but no plugin for it could be loaded!" );
+            }
+        }
+    }
+    return codecPtr;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+LoadXmlFile( const CORE::CString& filePath  ,
+             CORE::CDataNode& dataTree      )
+{GUCEF_TRACE;
+
+    if ( CORE::FileExists( filePath ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully located file: " + filePath );
+        
+        CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = GetXmlDStoreCodec();
+        if ( !codecPtr.IsNULL() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully located codec: " + codecPtr->GetTypeName() );
+            
+            if ( codecPtr->BuildDataTree( &dataTree ,
+                                          filePath  ) )
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ParseDirPackageMap( const CORE::CDataNode& rootNode ,
+                    TStringVectorMap& packageMap    )
+{GUCEF_TRACE;
+    const CDataNode* packageListRoot = rootNode.Find( "PackageList" );
+    if ( NULL == packageListRoot ) return false;
+    
+    CDataNode::TConstDataNodeSet packageNodes = packageListRoot->FindChildrenOfType( "Package" );
+    CDataNode::TConstDataNodeSet::iterator i = packageNodes.begin();
+    while ( i != packageNodes.end() )
+    {        
+        const CDataNode* packageNode = (*i);
+        
+        CORE::CString packageName = packageNode->GetAttributeValue( "name" );
+        TStringVector& dirVector = packageMap[ packageName ];
+        
+        CDataNode::TConstDataNodeSet dirNodes = packageNode->FindChildrenOfType( "Dir" );
+        CDataNode::TConstDataNodeSet::iterator n = dirNodes.begin();
+        while ( n != dirNodes.end() )
+        {
+            dirVector.push_back( (*n)->GetAttributeValue( "name" ); );            
+            ++n;
+        }
+        ++i;
+    }
+    return true;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ParseDirPackageMap( const CString& packageDefinitionsFilePath ,
+                    TStringVectorMap& packageMap              )
+{GUCEF_TRACE;
+
+    CORE::CDataNode dataTree;
+    if ( LoadXmlFile( packageDefinitionsFilePath, dataTree ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded package definitions xml from: " + packageDefinitionsFilePath );
+        
+        if ( ParseDirPackageMap( dataTree, packageMap ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully parsed " + CORE::UInt32ToString( packageMap.size() ) + " package definition lists" );
+            return true;
+        }        
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load package definitions from: " + packageDefinitionsFilePath );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+GetPackagesUsedByTarget( const CString& destRootDir             ,
+                         const TStringVectorMap& sourcePackages ,
+                         TStringVectorMap& destPackageList      )
+{GUCEF_TRACE;
+
+    TStringVectorMap::const_iterator i = sourcePackages.begin();
+    while ( i != sourcePackageMap.end() )
+    {
+        CORE::CString destPackagePath = destRootDir;
+        CORE::AppendToPath( destPackagePath, (*i).first );
+        
+        if ( CORE::IsPathValid( destPackagePath ) )
+        {
+            // present and accounted for at destination location
+            destPackageList.push_back( (*i).first );
+        }
+        
+        ++i;
+    }
+        
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetListOfApplicablePackages( const CORE::CString& srcDir        ,
+                             const CString& destRootDir         ,
+                             TStringVectorMap& packageList      )
+{GUCEF_TRACE;
+
+    CORE::CString packageDefinitionsFilePath = srcDir;
+    CORE::AppendToPath( packageDefinitionsFilePath, "PackageDefinitions.xml" );
+    
+    TStringVectorMap sourcePackageMap;
+    if ( ParseDirPackageMap( packageDefinitionsFilePath, sourcePackageMap ) )
+    {
+        GetPackagesUsedByTarget( destDir, sourcePackageMap, destPackageList );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetListOfApplicablePackageDirs( const CORE::CString& srcDir ,
+                                const CString& destRootDir  ,
+                                TStringVector& packagDirs   )
+{GUCEF_TRACE;
+
+    TStringVectorMap fullPackageList;
+    if ( GetListOfApplicablePackages( srcDir, destRootDir, fullPackageList ) )
+    {
+        TStringVectorMap::iterator i = fullPackageList.begin();
+        while ( i != fullPackageList.end() )
+        {
+            TStringVector& subList = (*i).second;
+            TStringVector::iterator n = subList.begin();
+            while ( n != subList.end() )
+            {
+                packagDirs.push_back( (*n) );                
+                ++n;
+            }            
+            ++i;
+        }
+        return true;
+    }
+    return false;
+}
+
 /*-------------------------------------------------------------------------*/
 
 void
@@ -240,6 +444,56 @@ BuildSourceFileList( const CORE::CString& srcDir    ,
     // get a list of all the files
     TFileEntryVector files;
     BuildFileList( srcDir, files, fileTypes, dirsToIgnore );
+    
+    // add entry for each file
+    TFileEntryVector::iterator i = files.begin();
+    while ( i != files.end() ) 
+    {
+        TMatchEntry matchEntry;
+        matchEntry.source = (*i);        
+        matches.push_back( matchEntry );        
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+BuildSourceFileList( const CORE::CString& srcDir                 ,
+                     const TStringVector& listOfRootSubDirsToUse ,
+                     TMatchEntryVector& matches                  ,
+                     const TStringSet* fileTypes                 ,
+                     const TStringSet* dirsToIgnore              )
+{GUCEF_TRACE;
+
+    // get a list of all the files
+    TFileEntryVector files;
+    BuildFileList( srcDir, files, fileTypes, dirsToIgnore );
+    
+    TStringVector::const_iterator i = listOfRootSubDirsToUse.begin();
+    while ( i != listOfRootSubDirsToUse.end() )
+    {
+        CORE::CString subRoot = srcDir;
+        CORE::AppendToPath( subRoot, (*i) );
+
+        // get a list of all the files
+        TFileEntryVector subFiles;
+        BuildFileList( subRoot, subFiles, fileTypes, dirsToIgnore );
+        
+        // Fix relative paths to include rootdir
+        TFileEntryVector::iterator n = subFiles.begin();
+        while ( n != subFiles.end() )
+        {
+            // Put root dir prefix in place again to fix relative path
+            CORE::CString actualRelPath = (*i);
+            CORE::AppendToPath( actualRelPath, (*n).filedir );
+            (*n).filedir = actualRelPath;
+            
+            ++n;
+        }
+        
+        ++i;
+    }
     
     // add entry for each file
     TFileEntryVector::iterator i = files.begin();
@@ -278,10 +532,10 @@ FindMatchesForFile( const TFileEntryVector& totalSet ,
 /*-------------------------------------------------------------------------*/
 
 void
-FindMatchesForSourceFiles( TMatchEntryVector& matches     ,
-                           const CORE::CString& destDir   ,
-                           const TStringSet* fileTypes    ,
-                           const TStringSet* dirsToIgnore )
+FindMatchesForSourceFiles( TMatchEntryVector& matches        ,
+                           const CORE::CString& destDir      ,
+                           const TStringSet* fileTypes       ,
+                           const TStringSet* dirsToIgnore    )
 {GUCEF_TRACE;
 
     // get a list of all destination files
@@ -307,18 +561,35 @@ FindMatchesForSourceFiles( TMatchEntryVector& matches     ,
 /*-------------------------------------------------------------------------*/
 
 void
-LocateFileMatches( const CORE::CString& srcDir    ,
-                   const CORE::CString& destDir   , 
-                   TMatchEntryVector& matches     ,
-                   const TStringSet* fileTypes    ,
-                   const TStringSet* dirsToIgnore )
+LocateFileMatches( const CORE::CString& srcDir       ,
+                   const CORE::CString& destDir      , 
+                   TMatchEntryVector& matches        ,
+                   const TStringSet* fileTypes       ,
+                   const TStringSet* dirsToIgnore    ,
+                   bool usePackageDefinitions = true )
 {GUCEF_TRACE;
-
-    // first build a list of source files
-    BuildSourceFileList( srcDir, matches, fileTypes, dirsToIgnore );
     
-    // match source files to destination files
-    FindMatchesForSourceFiles( matches, destDir, fileTypes, dirsToIgnore );
+    if ( usePackageDefinitions )
+    {
+        TStringVector packageDirs;
+        if ( GetListOfApplicablePackageDirs( srcDir, destDir, packageDirs ) )
+        {
+            // Build source list taking into account that we only need/want the dirs
+            // for the applicable packages
+            BuildSourceFileList( srcDir, packageDirs, matches, fileTypes, dirsToIgnore );  
+            
+            // match source files to destination files
+            FindMatchesForSourceFiles( matches, destDir, fileTypes, dirsToIgnore );
+        }
+    }
+    else
+    {
+        // first build a list of source files
+        BuildSourceFileList( srcDir, matches, fileTypes, dirsToIgnore );
+
+        // match source files to destination files
+        FindMatchesForSourceFiles( matches, destDir, fileTypes, dirsToIgnore );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
