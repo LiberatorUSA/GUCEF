@@ -1,5 +1,5 @@
 
-add_library( gucefCORE ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
+add_library( gucefCORE ${ALL_FILES} )
 add_dependencies( gucefCORE gucefMT )
 target_link_libraries( gucefCORE gucefMT )
 if (UNIX)
