@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CLOGGINGTASK_H
-#define GUCEF_CORE_CLOGGINGTASK_H
+#ifndef GUCEFLOGSERVICECLIENTPLUGIN_CLOGGER_H
+#define GUCEFLOGSERVICECLIENTPLUGIN_CLOGGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,25 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CTMAILBOX_H
-#include "gucefMT_CTMailBox.h"
-#define GUCEF_MT_CTMAILBOX_H
-#endif /* GUCEF_MT_CTMAILBOX_H ? */
+#ifndef GUCEF_COMCORE_CTCPCLIENTSOCKET_H
+#include "CTCPClientSocket.h"
+#define GUCEF_COMCORE_CTCPCLIENTSOCKET_H
+#endif /* GUCEF_COMCORE_CTCPCLIENTSOCKET_H ? */
 
-#ifndef GUCEF_CORE_CTASKCONSUMER_H
-#include "gucefCORE_CTaskConsumer.h"
-#define GUCEF_CORE_CTASKCONSUMER_H
-#endif /* GUCEF_CORE_CTASKCONSUMER_H ? */
-
-#ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
-#include "CTCloneableObj.h"
-#define GUCEF_CORE_CTCLONEABLEOBJ_H
-#endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
-
-#ifndef GUCEF_CORE_CILOGGER_H
-#include "CILogger.h"
-#define GUCEF_CORE_CILOGGER_H
-#endif /* GUCEF_CORE_CILOGGER_H ? */
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace LOGSERVICECLIENTPLUGIN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,22 +52,13 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  class which provides a threaded wrapper for logging backends
+ *  Logger implementation which writes log statements to the log service
+ *  over TCP/IP
  */
-class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
-                                           public CILogger
+class CLogger : public CORE::CILogger
 {
     public:
 
-    CLoggingTask( CILogger& loggerBackend );
-    
-    virtual ~CLoggingTask();
-
-    /** 
-     *  Adds a log message to the mailbox of the threaded logger.
-     *  The actual logging backend invocation will be performed within
-     *  the thread dedicated to logging.
-     */
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
                       const CString& logMessage    ,
@@ -85,58 +66,9 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
 
     virtual void FlushLog( void );
     
-    /**
-     *  Utility function for convenience, launches the task using 
-     *  the taskmanager
-     */
-    bool StartTask( void );
-
-    protected:
-
-    virtual bool OnTaskStart( void* taskdata );
-
-    virtual bool OnTaskCycle( void* taskdata );
-
-    virtual void OnTaskEnd( void* taskdata );
-    
-    void LockData( void );
-    
-    void UnlockData( void );
-
     private:
     
-    enum EMailType
-    {
-        MAILTYPE_NEWLOGMSG ,
-        MAILTYPE_FLUSHLOG  ,
-        
-        MAILTYPE_UNKNOWN
-    };
-    typedef enum EMailType TMailType;
-    typedef MT::CTMailBox< TMailType > TLoggingMailBox;
-    typedef MT::CTMailBox< TMailType >::TMailList TMailList;
-    
-    class CLoggingMail : public CICloneable
-    {
-        public:
-        
-        TLogMsgType logMsgType;
-        Int32 logLevel;
-        CString logMessage;
-        UInt32 threadId;
-        
-        virtual CICloneable* Clone( void ) const;
-        
-        CLoggingMail( void );
-        
-        CLoggingMail( const CLoggingMail& src );
-    };
-    
-    private:
-    
-    CILogger* m_loggerBackend;
-    TLoggingMailBox m_mailbox;
-    TMailList m_mailList;    
+    GUCEF::COMCORE::CTCPClientSocket m_clientSocket;
 };
 
 /*-------------------------------------------------------------------------//
@@ -145,12 +77,12 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace LOGSERVICECLIENTPLUGIN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CLOGGINGTASK_H ? */
+#endif /* GUCEFLOGSERVICECLIENTPLUGIN_CLOGGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -161,4 +93,4 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
 - 16-02-2007 :
         - Dinand: Added this class
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/
