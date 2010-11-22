@@ -152,6 +152,7 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     std::map< TLogMsgType, bool > m_msgTypeEnablers;
     Int32 m_maxLogLevel;
     TBootstrapLogVector m_bootstrapLog;
+    bool m_busyLogging;
     static CLogManager* g_instance;
     static MT::CMutex g_dataLock;
 };

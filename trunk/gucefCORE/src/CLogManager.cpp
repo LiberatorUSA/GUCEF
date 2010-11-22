@@ -86,7 +86,8 @@ CLogManager::CLogManager( void )
     : m_loggers()                         ,
       m_msgTypeEnablers()                 ,
       m_maxLogLevel( GUCEFCORE_INT32MAX ) ,
-      m_bootstrapLog()
+      m_bootstrapLog()                    ,
+      m_busyLogging( false )
 {GUCEF_TRACE;
 
     m_msgTypeEnablers[ LOG_ERROR ] = true;
@@ -263,8 +264,15 @@ CLogManager::Log( const TLogMsgType logMsgType ,
 {GUCEF_TRACE;
 
     g_dataLock.Lock();
-
-    if ( logLevel < m_maxLogLevel )
+    
+    // The loglevel must be such so that the message given falls under the global logging
+    // cut off. 
+    // Additionally if a thread generates log message via logging logic then this 
+    // would result in a endless loop. To this end the "m_busyLogging" flag is used 
+    // if this flag is true then log messages will be dropped since the thread is within
+    // the logger->Log() call and thus the message is generated due to the logging 
+    // activity itself.
+    if ( logLevel < m_maxLogLevel && !m_busyLogging )
     {
         if ( (*m_msgTypeEnablers.find( logMsgType )).second )
         {
@@ -276,10 +284,14 @@ CLogManager::Log( const TLogMsgType logMsgType ,
                     CILogger* logger = (*i);
                     if ( NULL != logger )
                     {
+                        m_busyLogging = true;
+                        
                         logger->Log( logMsgType ,
                                      logLevel   ,
                                      logMessage ,
                                      threadId   );
+                                     
+                        m_busyLogging = false;
                     }
                     ++i;
                 }
