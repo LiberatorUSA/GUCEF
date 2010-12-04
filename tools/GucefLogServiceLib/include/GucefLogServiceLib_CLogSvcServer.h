@@ -102,6 +102,12 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServer : public CORE::CObservingNoti
     
     void RegisterServerSocketEventHandlers( void );
     
+    void RegisterClientConnectionEventHandlers( COMCORE::CTCPServerConnection* connection );
+    
+    void OnClientConnectionDataReceived( CORE::CNotifier* notifier           ,
+                                         const CORE::CEvent& eventid         ,
+                                         CORE::CICloneable* eventdata = NULL );
+    
     void OnServerSocketClientConnected( CORE::CNotifier* notifier           ,
                                         const CORE::CEvent& eventid         ,
                                         CORE::CICloneable* eventdata = NULL );
