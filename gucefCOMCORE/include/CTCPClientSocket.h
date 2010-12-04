@@ -41,6 +41,11 @@
 #define GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CCYCLICDYNAMICBUFFER_H ? */
 
+#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
+#include "CHostAddress.h"
+#define GUCEF_COMCORE_CHOSTADDRESS_H
+#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
+
 #ifndef GUCEF_COMCORE_CTCPCONNECTION_H
 #include "CTCPConnection.h"                     /* TCP connection base class */
 #define GUCEF_COMCORE_CTCPCONNECTION_H

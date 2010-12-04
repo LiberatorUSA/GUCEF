@@ -56,14 +56,19 @@ namespace LOGSERVICELIB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CILogger
+class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CILogger           ,
+                                                     public CORE::CObservingNotifier
 {
     public:
+
+    static const CORE::CString ClientVersion;
     
     static const CORE::CEvent ConnectingEvent;
     static const CORE::CEvent ConnectedEvent;
     static const CORE::CEvent DisconnectedEvent;
     static const CORE::CEvent SocketErrorEvent;
+    static const CORE::CEvent ConnectionInitializedEvent;
+    static const CORE::CEvent IncompatibleWithServerEvent;
     
     static void RegisterEvents( void );
     
@@ -78,7 +83,7 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CILogger
     bool ConnectTo( const CORE::CString& address , 
                     CORE::UInt16 port            ); 
 
-    bool ConnectTo( const CORE::CHostAddress& address );
+    bool ConnectTo( const COMCORE::CHostAddress& address );
 
     /**
      *      Attempts to reconnect to the server provided with
@@ -96,9 +101,45 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CILogger
 
     virtual void FlushLog( void );
     
+    void SetApplicationName( const CORE::CString& applicationName );
+    
+    const CORE::CString& GetApplicationName( void ) const;
+    
+    protected:
+    
+    /**
+     *  Event callback member function. Processes events form other
+     *  entities
+     *
+     *  @param notifier the notifier that sent the notification
+     *  @param eventid the unique event id for an event
+     *  @param eventdata optional notifier defined userdata
+     */
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );
+    
+    private:
+    
+    struct SLogMessage
+    {
+        CORE::UInt8 msgHeader[ 15 ];
+        CORE::CString logMsg;
+    };
+    typedef struct SLogMessage TLogMessage;
+    
+    typedef std::vector< TLogMessage > TLogMsgStack;
+    
+    private:
+    
+    void SendAllQueuedItems( void );
+    
     private:
     
     COMCORE::CTCPClientSocket m_tcpClient;
+    CORE::CString m_appName;
+    bool m_connectionInitialized;
+    TLogMsgStack m_logQueue;
 };
 
 /*-------------------------------------------------------------------------//

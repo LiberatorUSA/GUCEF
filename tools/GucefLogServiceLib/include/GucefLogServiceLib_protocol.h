@@ -48,11 +48,13 @@ namespace LOGSERVICELIB {
 
 enum EGucefLogServiceMsgType
 {
-    LOGSVCMSGTYPE_CLIENTINFO ,
-    LOGSVCMSGTYPE_LOGMSG     ,
-    LOGSVCMSGTYPE_FLUSHLOG
+    LOGSVCMSGTYPE_CLIENTINFO   ,
+    LOGSVCMSGTYPE_INITIALIZED  ,
+    LOGSVCMSGTYPE_LOGMSG       ,
+    LOGSVCMSGTYPE_FLUSHLOG     ,
+    LOGSVCMSGTYPE_INCOMPATIBLE
 };
-typedef enum enum EGucefLogServiceMsgType TGucefLogServiceMsgType;
+typedef enum EGucefLogServiceMsgType TGucefLogServiceMsgType;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
