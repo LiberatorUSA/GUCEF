@@ -95,6 +95,22 @@ CLogSvcServer::RegisterServerSocketEventHandlers( void )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CLogSvcServer::RegisterClientConnectionEventHandlers( COMCORE::CTCPServerConnection* connection )
+{GUCEF_TRACE;
+
+    SubscribeTo( connection                                                              ,
+                 COMCORE::CTCPServerConnection::DataRecievedEvent                        ,
+                 &TEventCallback( this, &CLogSvcServer::OnClientConnectionDataReceived ) );
+
+    //static const CORE::CEvent ConnectedEvent;
+    //static const CORE::CEvent DisconnectedEvent;
+    //static const CORE::CEvent DataSentEvent;
+    //static const CORE::CEvent SocketErrorEvent;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CLogSvcServer::~CLogSvcServer()
 {GUCEF_TRACE;
 
@@ -103,11 +119,27 @@ CLogSvcServer::~CLogSvcServer()
 
 /*-------------------------------------------------------------------------*/
 
-void
-CLogSvcServer::OnConnectionDataReceived( CORE::CNotifier* notifier    ,
-                                         const CORE::CEvent& eventid  ,
-                                         CORE::CICloneable* eventdata )
+const CORE::CString&
+CLogSvcServer::GetClassTypeName( void ) const
 {GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::LOGSERVICELIB::CLogSvcServer";
+    return classTypeName; 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogSvcServer::OnClientConnectionDataReceived( CORE::CNotifier* notifier    ,
+                                               const CORE::CEvent& eventid  ,
+                                               CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    // Get access to the event data
+    COMCORE::CTCPServerConnection::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPServerConnection::TDataRecievedEventData* >( eventdata );
+    const CORE::CDynamicBuffer& buffer = eData->GetData();
+    
+    
 
 }
 
@@ -133,6 +165,8 @@ CLogSvcServer::OnServerSocketClientConnected( CORE::CNotifier* notifier    ,
     initialClientInfo.connected = true;
     
     m_clientInfoMap[ eventData.connectionIndex ] = initialClientInfo;
+    
+    RegisterClientConnectionEventHandlers( eventData.connection );
 }
 
 /*-------------------------------------------------------------------------*/
