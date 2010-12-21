@@ -142,6 +142,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
 
     virtual ~CTCPServerConnection();
     
+    UInt32 GetConnectionIndex( void ) const;
+    
     protected:
     friend class CTCPServerSocket;
 

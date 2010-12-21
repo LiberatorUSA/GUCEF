@@ -221,10 +221,13 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
         /**
          *  Copies size number of bytes from src to the buffer at the offset given.
          *  Note that if the buffer is linked this operation will result in the creation of a private copy
+         *
+         *  "destinationOffset" is the offset in this buffer where you want the data to be copied to
+         *  if the buffer is not large enough it will be enlarged if auto-enlarge is enabled.
          */
-        UInt32 CopyFrom( UInt32 offset   ,
-                         UInt32 size     ,
-                         const void* src );
+        UInt32 CopyFrom( UInt32 destinationOffset ,
+                         UInt32 size              ,
+                         const void* src          );
 
         /**
          *  Copies size number of bytes from src to the buffer
@@ -293,6 +296,25 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
          */
         template< typename T >
         const T& AsConstType( const UInt32 byteOffset = 0 ) const;
+        
+        /**
+         *  Utility member function:
+         *  Performs easy casting to the given type as a pointer at the given offset
+         *
+         *  @throw EIllegalCast thrown when the cast cannot be performed with the data available in the buffer
+         */
+        template< typename T >
+        const T* AsConstTypePtr( const UInt32 byteOffset /* = 0 */ ) const;
+
+        /**
+         *  Utility member function:
+         *  Performs easy casting to the given type as a pointer at the given offset while also taking into account
+         *  the minimal memory size available as pointed to by T specified as requiredSizeOfT
+         *
+         *  @throw EIllegalCast thrown when the cast cannot be performed with the data available in the buffer
+         */
+        template< typename T >
+        const T* AsConstTypePtr( const UInt32 byteOffse, const UInt32 requiredSizeOfT ) const;
 
         GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EIllegalCast );
 
@@ -357,6 +379,38 @@ CDynamicBuffer::AsConstType( const UInt32 byteOffset /* = 0 */ ) const
     }
 
     GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstType(): Cannot cast to the given type" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+const T*
+CDynamicBuffer::AsConstTypePtr( const UInt32 byteOffset /* = 0 */ ) const
+{GUCEF_TRACE;
+
+    // We should have room for at least 1 element of T before the end of the buffer
+    if ( byteOffset + sizeof( T ) <= GetDataSize() )
+    {
+        return reinterpret_cast< const T* >( static_cast< const char* >( GetConstBufferPtr() ) + byteOffset );
+    }
+    
+    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstTypePtr(): Cannot cast to the given type" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+const T*
+CDynamicBuffer::AsConstTypePtr( const UInt32 byteOffset, const UInt32 requiredSizeOfT ) const
+{GUCEF_TRACE;
+
+    // We should have room for at least 1 element of T before the end of the buffer
+    if ( byteOffset + requiredSizeOfT <= GetDataSize() )
+    {
+        return reinterpret_cast< const T* >( static_cast< const char* >( GetConstBufferPtr() ) + byteOffset );
+    }
+    
+    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstTypePtr(): Cannot cast to the given type" );
 }
 
 /*-------------------------------------------------------------------------//

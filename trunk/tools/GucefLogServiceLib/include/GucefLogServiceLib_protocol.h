@@ -48,6 +48,8 @@ namespace LOGSERVICELIB {
 
 enum EGucefLogServiceMsgType
 {
+    LOGSVCMSGTYPE_DELIMITER    ,       
+    
     LOGSVCMSGTYPE_CLIENTINFO   ,
     LOGSVCMSGTYPE_INITIALIZED  ,
     LOGSVCMSGTYPE_LOGMSG       ,

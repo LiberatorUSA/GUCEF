@@ -1,6 +1,6 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  GucefLogServiceLib: Library containing the main logic for the Logging service
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CSTDLOGGER_H
-#define GUCEF_CORE_CSTDLOGGER_H
+#ifndef GUCEF_LOGSERVICELIB_CLOGSVCSERVERFILELOGGER_H
+#define GUCEF_LOGSERVICELIB_CLOGSVCSERVERFILELOGGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CILOGGER_H
-#include "CILogger.h"
-#define GUCEF_CORE_CILOGGER_H
-#endif /* GUCEF_CORE_CILOGGER_H ? */
+#ifndef GUCEF_LOGSERVICELIB_CILOGSVCSERVERLOGGER_H
+#include "GucefLogServiceLib_CILogSvcServerLogger.h"
+#define GUCEF_LOGSERVICELIB_CILOGSVCSERVERLOGGER_H
+#endif /* GUCEF_LOGSERVICELIB_CILOGSVCSERVERLOGGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,7 +38,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace LOGSERVICELIB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,42 +50,54 @@ class CIOAccess;
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *  Standard GUCEF logger implementation.
- *  Just your run of the mill logging, nothing fancy.
- */
-class GUCEF_CORE_PUBLIC_CPP CStdLogger : public CILogger
+class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServerFileLogger : public CILogSvcServerLogger
 {
     public:
 
-    CStdLogger( void );
-
-    CStdLogger( CIOAccess& output );
-
-    virtual ~CStdLogger();
-
-    virtual void Log( const TLogMsgType logMsgType ,
-                      const Int32 logLevel         ,
-                      const CString& logMessage    ,
-                      const UInt32 threadId        );
-
+    CLogSvcServerFileLogger( void );
+    
+    CLogSvcServerFileLogger( CORE::CIOAccess& output );
+                                            
+    virtual ~CLogSvcServerFileLogger();
+    
+    virtual void Log( const CLogSvcServer::TClientInfo& clientInfo ,
+                      const TLogMsgType logMsgType                 ,
+                      const CORE::Int32 logLevel                   ,
+                      const CORE::CString& logMessage              ,
+                      const CORE::UInt32 threadId                  );
+                      
     virtual void FlushLog( void );
 
-    void SetOutput( CIOAccess& output );
+    void SetOutput( CORE::CIOAccess& output );
 
-    void SetMinimalLogLevel( const Int32 minimalLogLevel );
+    void SetMinimalLogLevel( const CORE::Int32 minimalLogLevel );
 
-    Int32 GetMinimalLogLevel( void ) const;
+    CORE::Int32 GetMinimalLogLevel( void ) const;
+    
+    void SetWhetherAppNameIsLogged( bool logAppName );
+    
+    bool GetWhetherAppNameIsLogged( void ) const;
 
+    void SetWhetherProcessNameIsLogged( bool logProcessName );
+    
+    bool GetWhetherProcessNameIsLogged( void ) const;
+    
+    void SetWhetherProcessIdIsLogged( bool logProcessId );
+    
+    bool GetWhetherProcessIdIsLogged( void ) const;
+    
     private:
-
-    CStdLogger& operator=( const CStdLogger& src );
-    CStdLogger( const CStdLogger& src );
-
+                                         
+    CLogSvcServerFileLogger( const CLogSvcServerFileLogger& src );             /** <- not implemented */
+    CLogSvcServerFileLogger& operator=( const CLogSvcServerFileLogger& src );  /** <- not implemented */
+    
     private:
-
-    CIOAccess* m_output;
-    Int32 m_minimalLogLevel;
+    
+    CORE::CIOAccess* m_output;
+    CORE::Int32 m_minimalLogLevel;
+    bool m_logAppName;
+    bool m_logProcessName;
+    bool m_logProcessId;
 };
 
 /*-------------------------------------------------------------------------//
@@ -94,12 +106,12 @@ class GUCEF_CORE_PUBLIC_CPP CStdLogger : public CILogger
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace LOGSERVICELIB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CSTDLOGGER_H ? */
+#endif /* GUCEF_LOGSERVICELIB_CLOGSVCSERVERFILELOGGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -107,7 +119,7 @@ class GUCEF_CORE_PUBLIC_CPP CStdLogger : public CILogger
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 16-02-2007 :
-        - Dinand: Added this class
+- 04-05-2005 :
+        - Dinand: Initial version.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

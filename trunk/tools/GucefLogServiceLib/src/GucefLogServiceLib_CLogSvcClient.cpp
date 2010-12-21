@@ -159,19 +159,21 @@ CLogSvcClient::Log( const TLogMsgType logMsgType    ,
 {GUCEF_TRACE;
 
     CORE::Int16 logMsgTypeValue = logMsgType;
-    CORE::Int8 msgHeader[ 1+2+4+4+4 ];
-    CORE::UInt32 logMsgLength = logMessage.Length();
+    CORE::Int8 msgHeader[ 16 ];  // 16 = 1+4+1+2+4+4
+    CORE::UInt32 logMsgLength = logMessage.Length() + 16;
     
-    msgHeader[ 0 ] = LOGSVCMSGTYPE_LOGMSG;      // set TCP msg type: 1 byte
-    memcpy( msgHeader+1, &logMsgTypeValue, 2 ); // set log msg type: 2 bytes
-    memcpy( msgHeader+3, &logLevel, 4 );        // set log level: 4 bytes
-    memcpy( msgHeader+7, &threadId, 4 );        // set thread id: 4 bytes
-    memcpy( msgHeader+11, &logMsgLength, 4 );   // set length of log msg: 4 bytes
+    
+    msgHeader[ 0 ] = LOGSVCMSGTYPE_DELIMITER;   // set delimiter for message: 1 byte 
+    memcpy( msgHeader+1, &logMsgLength, 4 );    // set the total message length : 4 bytes
+    msgHeader[ 4 ] = LOGSVCMSGTYPE_LOGMSG;      // set TCP msg type: 1 byte
+    memcpy( msgHeader+6, &logMsgTypeValue, 2 ); // set log msg type: 2 bytes
+    memcpy( msgHeader+8, &logLevel, 4 );        // set log level: 4 bytes
+    memcpy( msgHeader+14, &threadId, 4 );       // set thread id: 4 bytes
     
     if ( m_connectionInitialized )
     {
         // Send the logging msg header
-        if ( m_tcpClient.Send( msgHeader, 15 ) )
+        if ( m_tcpClient.Send( msgHeader, 16 ) )
         {
             // Now send the logging text
             m_tcpClient.Send( logMessage.C_String() , 
@@ -184,7 +186,7 @@ CLogSvcClient::Log( const TLogMsgType logMsgType    ,
         // queue the msg until the connection is initialized
         
         TLogMessage queueItem;
-        memcpy( queueItem.msgHeader, msgHeader, 15 );
+        memcpy( queueItem.msgHeader, msgHeader, 16 );
         queueItem.logMsg = logMessage;
         
         m_logQueue.push_back( queueItem );
@@ -199,8 +201,12 @@ CLogSvcClient::FlushLog( void )
 
     if ( m_connectionInitialized )
     {
-        CORE::Int8 msg = LOGSVCMSGTYPE_FLUSHLOG;
-        m_tcpClient.Send( &msg, 1 );
+        char msg[ 6 ];
+        msg[ 0 ] = LOGSVCMSGTYPE_DELIMITER;   // set delimiter for message: 1 byte
+        CORE::UInt32 size = 6;
+        memcpy( msg+1, &size, 4 );            // set the total message length : 4 bytes
+        msg[ 5 ] = LOGSVCMSGTYPE_FLUSHLOG;    // set message type for message: 1 byte
+        m_tcpClient.Send( &msg, 6 );
     }
 }
 
@@ -269,8 +275,8 @@ CLogSvcClient::OnNotify( CORE::CNotifier* notifier    ,
             // Now that we connected we should send the inital info
             // introducing who we are to the logging service
             // First we gather the info we need
-            
-            CORE::UInt8 msgType = LOGSVCMSGTYPE_CLIENTINFO;
+            static const CORE::UInt8 delimiter = LOGSVCMSGTYPE_DELIMITER;
+            static const CORE::UInt8 msgType = LOGSVCMSGTYPE_CLIENTINFO;
             CORE::CString processName = "Unknown";   // @TODO
             CORE::CString processId = "Unknown";
             
@@ -285,6 +291,8 @@ CLogSvcClient::OnNotify( CORE::CNotifier* notifier    ,
             // Construct the message
             CORE::UInt32 strLength = 0;
             CORE::UInt32 offset = 0;
+            buffer.CopyFrom( offset, 1, &delimiter );
+            offset += 5; // <- we will offset an extra 4 bytes here to reserve room for the message length
             buffer.CopyFrom( offset, 1, &msgType );
             offset += 1;
             strLength = ClientVersion.Length();
@@ -307,6 +315,12 @@ CLogSvcClient::OnNotify( CORE::CNotifier* notifier    ,
             offset += 4; 
             buffer.CopyFrom( offset, strLength, processId.C_String() );
 
+            // Now that we contructed the whole message write the message length itself into 
+            // its reserved slot
+            CORE::UInt32 msgSize = buffer.GetDataSize();
+            buffer.CopyFrom( 1, 4, &msgSize );
+
+            // Now actually send the message
             m_tcpClient.Send( buffer.GetBufferPtr(), totalMsgSize );
         }
     }

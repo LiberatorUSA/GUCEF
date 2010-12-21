@@ -73,7 +73,7 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServer : public CORE::CObservingNoti
     static void RegisterEvents( void );
     
     public:
-    
+        
     struct SClientInfo
     {
         CORE::CString appName;
@@ -82,9 +82,10 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServer : public CORE::CObservingNoti
         CORE::CString logClientVersion;
         bool initialized;
         bool connected;
+        CORE::CCyclicDynamicBuffer receiveBuffer;
     };
     typedef struct SClientInfo TClientInfo;
-        
+
     CLogSvcServer( void );
     
     CLogSvcServer( CORE::CPulseGenerator& pulseGenerator ); 
@@ -131,6 +132,14 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServer : public CORE::CObservingNoti
     void OnServerSocketServerSocketClientError( CORE::CNotifier* notifier           ,
                                                 const CORE::CEvent& eventid         ,
                                                 CORE::CICloneable* eventdata = NULL );    
+
+    void ProcessReceivedMessage( TClientInfo& clientInfo                   ,
+                                 COMCORE::CTCPServerConnection* connection ,
+                                 const CORE::CDynamicBuffer& messageBuffer );
+    
+    void ProcessReceivedData( TClientInfo& clientInfo                   ,
+                              COMCORE::CTCPServerConnection* connection );
+    
     private:
     
     typedef std::map< CORE::UInt32, TClientInfo > TClientInfoMap;

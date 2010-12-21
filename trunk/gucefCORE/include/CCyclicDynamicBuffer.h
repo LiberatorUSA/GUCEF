@@ -84,6 +84,13 @@ class GUCEF_CORE_PUBLIC_CPP CCyclicDynamicBuffer
                   const UInt32 elementsToWrite );
 
     /**
+     *  Writes the entire logical content of the buffer into the cyclic buffer
+     *  The total number of bytes written is returned
+     */
+    UInt32 Write( const CDynamicBuffer& buffer    ,
+                  const UInt32 offsetInBuffer = 0 );
+
+    /**
      *  Writes data at the front of the queue bypassing normal
      *  read-write FIFO making it for the purpose of this single write
      *  a FILO operation instead

@@ -166,9 +166,6 @@ CDynamicBuffer::CDynamicBuffer( const char* externalBuffer    ,
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Destructor, de-alloctes the buffer.
- */
 CDynamicBuffer::~CDynamicBuffer()
 {GUCEF_TRACE;
         
@@ -177,9 +174,6 @@ CDynamicBuffer::~CDynamicBuffer()
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Returns the unsigned byte located at the index given.
- */
 UInt8&
 CDynamicBuffer::GetUByte( UInt32 index )
 {GUCEF_TRACE;
@@ -195,9 +189,6 @@ CDynamicBuffer::GetUByte( UInt32 index )
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Sets the unsigned byte located at the index given.
- */
 void
 CDynamicBuffer::SetUByte( UInt32 index ,
                           UInt8 data   )
@@ -214,9 +205,6 @@ CDynamicBuffer::SetUByte( UInt32 index ,
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Returns the signed byte located at the index given.
- */
 char&
 CDynamicBuffer::GetChar( UInt32 index )
 {GUCEF_TRACE;
@@ -394,22 +382,22 @@ CDynamicBuffer::GetAutoEnlarge( void ) const
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CDynamicBuffer::CopyFrom( UInt32 offset   ,
-                          UInt32 size     ,
-                          const void* src )
+CDynamicBuffer::CopyFrom( UInt32 destinationOffset   ,
+                          UInt32 size                ,
+                          const void* src            )
 {GUCEF_TRACE;
 
     SecureLinkBeforeMutation();
 
-    if ( _bsize < offset+size )         
+    if ( _bsize < destinationOffset+size )         
     {
             if ( _autoenlarge )
             {
-                    SetBufferSize( offset+size );
+                    SetBufferSize( destinationOffset+size );
             }
             else
             {       
-                    Int32 max = (Int32)_bsize - (Int32)offset - (Int32)size;
+                    Int32 max = (Int32)_bsize - (Int32)destinationOffset - (Int32)size;
                     if ( max < 0 ) 
                     {
                             return 0;
@@ -418,11 +406,11 @@ CDynamicBuffer::CopyFrom( UInt32 offset   ,
             }                
     }                                                
     
-    if ( offset + size > m_dataSize )
+    if ( destinationOffset + size > m_dataSize )
     {
-        m_dataSize = offset + size;
+        m_dataSize = destinationOffset + size;
     }
-    memcpy( _buffer+offset, src, size );
+    memcpy( _buffer+destinationOffset, src, size );
     return size;
 }
 
