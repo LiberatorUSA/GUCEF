@@ -31,10 +31,10 @@
 #define GUCEF_CORE_ESTRUCTS_H
 #endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef GUCEF_VFSPLUGIN_VP_MACROS_H
-#include "vfspluginVP_macros.h"
-#define GUCEF_VFSPLUGIN_VP_MACROS_H
-#endif /* GUCEF_VFSPLUGIN_VP_MACROS_H ? */
+#ifndef GUCEF_LOGSERVICECLIENTPLUGIN_MACROS_H
+#include "GucefLogServiceClientPlugin_macros.h"
+#define GUCEF_LOGSERVICECLIENTPLUGIN_MACROS_H
+#endif /* GUCEF_LOGSERVICECLIENTPLUGIN_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,27 +60,27 @@ extern "C" {
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_VFSPLUGIN_VP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_Load( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_VFSPLUGIN_VP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_VFSPLUGIN_VP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_VFSPLUGIN_VP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_VFSPLUGIN_VP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/                 

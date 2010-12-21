@@ -94,13 +94,13 @@ main( int argc, char* argv[] )
 {GUCEF_TRACE;
 
     #ifdef GUCEF_CALLSTACK_TRACING
-    CORE::GUCEF_LogStackTo( "SPE_Callstack.cvs" );
+    CORE::GUCEF_LogStackTo( "GucefLogServiceApp_Callstack.cvs" );
     CORE::GUCEF_SetStackLoggingInCvsFormat( 1 );
     CORE::GUCEF_SetStackLogging( 1 );
     #endif /* GUCEF_CALLSTACK_TRACING ? */    
     
     CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
-    CORE::AppendToPath( logFilename, "GucefLogService_Log.txt" );
+    CORE::AppendToPath( logFilename, "GucefLogServiceApp_Log.txt" );
     CORE::CFileAccess logFileAccess( logFilename, "w" );
     
     CORE::CStdLogger logger( logFileAccess );

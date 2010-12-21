@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_VFSPLUGIN_VP_MACROS_H
-#define GUCEF_VFSPLUGIN_VP_MACROS_H
+#ifndef GUCEF_LOGSERVICECLIENTPLUGIN_MACROS_H
+#define GUCEF_LOGSERVICECLIENTPLUGIN_MACROS_H
 
 /*
  *      Build configuration specific macros.
@@ -36,20 +36,20 @@
 #define GUCEF_CORE_BASICMACROS_H
 #endif /* GUCEF_CORE_BASICMACROS_H ? */
 
-#ifndef GUCEF_VFS_ETYPES_H
-#include "gucefVFS_ETypes.h"      /* simple types */
-#define GUCEF_VFS_ETYPES_H
-#endif /* GUCEF_VFS_ETYPES_H ? */
+#ifndef GUCEF_CORE_ETYPES_H
+#include "gucefCORE_ETypes.h"      /* simple types */
+#define GUCEF_CORE_ETYPES_H
+#endif /* GUCEF_CORE_ETYPES_H ? */
 
-#ifndef GUCEF_VFS_MACROS_H
-#include "gucefVFS_macros.h"      /* VFS Module build configuration */
-#define GUCEF_VFS_MACROS_H
-#endif /* GUCEF_VFS_MACROS_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"      /* CORE Module build configuration */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifndef GUCEF_VFSPLUGIN_VP_CONFIG_H
-#include "vfspluginVP_config.h"
-#define GUCEF_VFSPLUGIN_VP_CONFIG_H
-#endif /* GUCEF_VFSPLUGIN_VP_CONFIG_H ? */
+#ifndef GUCEF_LOGSERVICECLIENTPLUGIN_CONFIG_H
+#include "GucefLogServiceClientPlugin_config.h"
+#define GUCEF_LOGSERVICECLIENTPLUGIN_CONFIG_H
+#endif /* GUCEF_LOGSERVICECLIENTPLUGIN_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,30 +57,30 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#undef GUCEF_VFSPLUGIN_VP_EXPORT
-#ifdef GUCEF_VFSPLUGIN_VP_BUILD_MODULE
-  #define GUCEF_VFSPLUGIN_VP_EXPORT GUCEF_EXPORT
+#undef GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT
+#ifdef GUCEF_LOGSERVICECLIENTPLUGIN_BUILD_MODULE
+  #define GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT GUCEF_EXPORT
 #else
-  #define GUCEF_VFSPLUGIN_VP_EXPORT GUCEF_IMPORT
-#endif /* GUCEF_VFSPLUGIN_VP_BUILD_MODULE ? */
+  #define GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT GUCEF_IMPORT
+#endif /* GUCEF_LOGSERVICECLIENTPLUGIN_BUILD_MODULE ? */
 
-#undef GUCEF_VFSPLUGIN_VP_EXPORT_CPP
-#ifdef GUCEF_VFSPLUGIN_VP_EXPORT_CPP_CODE
-  #define GUCEF_VFSPLUGIN_VP_EXPORT_CPP GUCEF_VFSPLUGIN_VP_EXPORT  
+#undef GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_CPP
+#ifdef GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_CPP_CODE
+  #define GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_CPP GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT  
 #else
-  #define GUCEF_VFSPLUGIN_VP_EXPORT_CPP
-#endif /* GUCEF_VFSPLUGIN_VP_EXPORT_CPP_CODE */
+  #define GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_CPP
+#endif /* GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_CPP_CODE */
 
-#undef GUCEF_VFSPLUGIN_VP_EXPORT_C 
-#ifdef GUCEF_VFSPLUGIN_VP_EXPORT_C_CODE
-  #define GUCEF_VFSPLUGIN_VP_EXPORT_C GUCEF_VFSPLUGIN_VP_EXPORT
+#undef GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_C 
+#ifdef GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_C_CODE
+  #define GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_C GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT
 #else
-  #define GUCEF_VFSPLUGIN_VP_EXPORT_C
-#endif /* GUCEF_VFSPLUGIN_VP_EXPORT_C_CODE */
+  #define GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_C
+#endif /* GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_C_CODE */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_VFSPLUGIN_VP_MACROS_H ? */
+#endif /* GUCEF_LOGSERVICECLIENTPLUGIN_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -91,4 +91,4 @@
 - 26-03-2005 :
        - Initial version of this file.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

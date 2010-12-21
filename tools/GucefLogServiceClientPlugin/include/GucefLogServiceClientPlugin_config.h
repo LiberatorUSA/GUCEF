@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_LOGSERVICELIB_CONFIG_H
-#define GUCEF_LOGSERVICELIB_CONFIG_H
+#ifndef GUCEF_LOGSERVICECLIENTPLUGIN_CONFIG_H
+#define GUCEF_LOGSERVICECLIENTPLUGIN_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,12 +26,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define GUCEF_LOGSERVICELIB_EXPORT_CPP_CODE
-#define GUCEF_LOGSERVICELIB_EXPORT_C_CODE
+#define GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_CPP_CODE
+#define GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_C_CODE
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_LOGSERVICELIB_CONFIG_H ? */
+#endif /* GUCEF_LOGSERVICECLIENTPLUGIN_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,4 +42,4 @@
 - 26-03-2005 :
        - Initial version of this file.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

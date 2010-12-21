@@ -26,77 +26,40 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+#ifndef GUCEF_LOGSERVICELIB_CONFIG_H
+#include "GucefLogServiceLib_config.h"
+#define GUCEF_LOGSERVICELIB_CONFIG_H
+#endif /* GUCEF_LOGSERVICELIB_CONFIG_H ? */
 
-#ifndef GUCEF_VFSPLUGIN_VP_MACROS_H
-#include "vfspluginVP_macros.h"
-#define GUCEF_VFSPLUGIN_VP_MACROS_H
-#endif /* GUCEF_VFSPLUGIN_VP_MACROS_H ? */
+#ifndef GUCEF_LOGSERVICELIB_MACROS_H
+#include "GucefLogServiceLib_macros.h"
+#define GUCEF_LOGSERVICELIB_MACROS_H
+#endif /* GUCEF_LOGSERVICELIB_MACROS_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
+#ifndef GUCEF_LOGSERVICELIB_PROTOCOL_H
+#include "GucefLogServiceLib_protocol.h"
+#define GUCEF_LOGSERVICELIB_PROTOCOL_H
+#endif /* GUCEF_LOGSERVICELIB_PROTOCOL_H ? */
 
-namespace GUCEF {
-namespace LOGSERVICELIB {
+#ifndef GUCEF_LOGSERVICELIB_CLOGSVCCLIENT_H
+#include "GucefLogServiceLib_CLogSvcClient.h"
+#define GUCEF_LOGSERVICELIB_CLOGSVCCLIENT_H
+#endif /* GUCEF_LOGSERVICELIB_CLOGSVCCLIENT_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      UTILITIES                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
+#ifndef GUCEF_LOGSERVICELIB_CLOGSVCSERVER_H
+#include "GucefLogServiceLib_CLogSvcServer.h"
+#define GUCEF_LOGSERVICELIB_CLOGSVCSERVER_H
+#endif /* GUCEF_LOGSERVICELIB_CLOGSVCSERVER_H ? */
 
-/*
- *      Prevent C++ name mangling
- */
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef GUCEF_LOGSERVICELIB_CILOGSVCSERVERLOGGER_H
+#include "GucefLogServiceLib_CILogSvcServerLogger.h"
+#define GUCEF_LOGSERVICELIB_CILOGSVCSERVERLOGGER_H
+#endif /* GUCEF_LOGSERVICELIB_CILOGSVCSERVERLOGGER_H ? */
 
-/*-------------------------------------------------------------------------*/
-
-GUCEF_VFSPLUGIN_VP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*-------------------------------------------------------------------------*/
-
-GUCEF_VFSPLUGIN_VP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*-------------------------------------------------------------------------*/
-
-GUCEF_VFSPLUGIN_VP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*-------------------------------------------------------------------------*/
-
-GUCEF_VFSPLUGIN_VP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*-------------------------------------------------------------------------*/
-
-GUCEF_VFSPLUGIN_VP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*-------------------------------------------------------------------------*/                 
-
-#ifdef __cplusplus
-   }
-#endif /* __cplusplus */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-}; /* namespace LOGSERVICELIB */
-}; /* namespace GUCEF */
+#ifndef GUCEF_LOGSERVICELIB_CLOGSVCSERVERFILELOGGER_H
+#include "GucefLogServiceLib_CLogSvcServerFileLogger.h"
+#define GUCEF_LOGSERVICELIB_CLOGSVCSERVERFILELOGGER_H
+#endif /* GUCEF_LOGSERVICELIB_CLOGSVCSERVERFILELOGGER_H ? */
 
 /*------------------------------------------------------------------------*/
 
