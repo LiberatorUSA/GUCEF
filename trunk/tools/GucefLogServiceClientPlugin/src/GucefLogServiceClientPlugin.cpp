@@ -28,10 +28,10 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
-#ifndef GUCEF_VFSPLUGIN_VP_CVPARCHIVE_H
-#include "GucefLogServiceClientPlugin_CLogger.h"
-#define GUCEF_VFSPLUGIN_VP_CVPARCHIVE_H
-#endif /* GUCEF_VFSPLUGIN_VP_CVPARCHIVE_H ? */
+#ifndef GUCEF_LOGSERVICELIB_CLOGSVCCLIENT_H
+#include "GucefLogServiceLib_CLogSvcClient.h"
+#define GUCEF_LOGSERVICELIB_CLOGSVCCLIENT_H
+#endif /* GUCEF_LOGSERVICELIB_CLOGSVCCLIENT_H ? */
 
 #include "GucefLogServiceClientPlugin.h"
 
@@ -42,15 +42,19 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace LOGSERVICE {
+namespace LOGSERVICECLIENTPLUGIN {
+
+/*--------------------------------------------------------------------------*/
+
+using namespace LOGSERVICELIB;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      TYPES                                                              //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-
+CLogSvcClient svcClient;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,7 +66,7 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    CORE::CLogManager::Instance()->AddLogger(  );
+    CORE::CLogManager::Instance()->AddLogger( &svcClient );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -71,7 +75,7 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    VFS::CVFS::Instance()->UnregisterArchiveFactory( "vp" );
+    CORE::CLogManager::Instance()->RemoveLogger( &svcClient );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -92,7 +96,7 @@ const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
     
-    return "Copyright (C) 2010.  Dinand Vanvelzen";
+    return "Copyright (C) 2010.  Dinand Vanvelzen, Released under LGPLv2 or later";
 }
 
 /*--------------------------------------------------------------------------*/
@@ -110,7 +114,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace LOGSERVICE */
+}; /* namespace LOGSERVICECLIENTPLUGIN */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
