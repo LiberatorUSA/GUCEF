@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,24 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <assert.h>
-
-#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h"
-#define GUCEF_CORE_DVCPPSTRINGUTILS_H
-#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
-
-#ifndef GUCEF_CORE_CIOACCESS_H
-#include "CIOAccess.h"
-#define GUCEF_CORE_CIOACCESS_H
-#endif /* GUCEF_CORE_CIOACCESS_H ? */
-
-#include "CStdLogger.h"
-
-#ifndef GUCEF_CORE_ESSENTIALS_H
-#include "gucef_essentials.h"
-#define GUCEF_CORE_ESSENTIALS_H
-#endif /* GUCEF_CORE_ESSENTIALS_H ? */
+#include "GucefLogServiceLib_CILogSvcServerLogger.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -49,7 +32,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace LOGSERVICELIB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,98 +40,68 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CStdLogger::CStdLogger( void )
-    : CILogger()                                 ,
-      m_output( NULL )                           ,
-      m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL )
+CILogSvcServerLogger::CILogSvcServerLogger( void )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CStdLogger::CStdLogger( CIOAccess& output )
-    : CILogger()                                 ,
-      m_output( &output )                        ,
-      m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL )
-{GUCEF_TRACE;
-
-    assert( &output != NULL );
-    assert( m_output != NULL );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CStdLogger::~CStdLogger()
+CILogSvcServerLogger::~CILogSvcServerLogger()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CStdLogger::SetOutput( CIOAccess& output )
+CILogSvcServerLogger::CILogSvcServerLogger( const CILogSvcServerLogger& src )
 {GUCEF_TRACE;
 
-    assert( &output != NULL );
-    m_output = &output;
-    m_output->Open();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CStdLogger::Log( const TLogMsgType logMsgType ,
-                 const Int32 logLevel         ,
-                 const CString& logMessage    ,
-                 const UInt32 threadId        )
+CILogSvcServerLogger&
+CILogSvcServerLogger::operator=( const CILogSvcServerLogger& src )
+{GUCEF_TRACE;
+    
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+CILogSvcServerLogger::FormatStdLogMessage( const bool logAppName                        ,
+                                           const bool logProcessName                    ,
+                                           const bool logProcessId                      ,
+                                           const CLogSvcServer::TClientInfo& clientInfo ,
+                                           const TLogMsgType logMsgType                 ,
+                                           const CORE::Int32 logLevel                   ,
+                                           const CORE::CString& logMessage              ,
+                                           const CORE::UInt32 threadId                  )
 {GUCEF_TRACE;
 
-    if ( m_output != NULL )
+    CORE::CString actualLogMsg;
+    if ( logAppName )
     {
-        if ( logLevel >= m_minimalLogLevel )
-        {
-            CString actualLogMsg( 
-                   "[THREAD=" + UInt32ToString( threadId ) +
-                 "] [TYPE=" + CLogManager::GetLogMsgTypeString( logMsgType ) +
-                 "] [LVL=" + LogLevelToString( logLevel ) + 
-                 "] [MSG=" + logMessage + "]\n" );
-
-            m_output->Write( actualLogMsg.C_String() ,
-                             actualLogMsg.Length()   ,
-                             1                       );
-        }
+        actualLogMsg += "[APPNAME=" + clientInfo.appName + "]";
     }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CStdLogger::FlushLog( void )
-{GUCEF_TRACE;
-
-    if ( m_output != NULL )
+    if ( logProcessName )
     {
-        m_output->Flush();
+        actualLogMsg += "[PROCESSNAME=" + clientInfo.processName + "]";
     }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CStdLogger::SetMinimalLogLevel( const Int32 minimalLogLevel )
-{GUCEF_TRACE;
-
-    m_minimalLogLevel = minimalLogLevel;
-}
-
-/*-------------------------------------------------------------------------*/
-
-Int32
-CStdLogger::GetMinimalLogLevel( void ) const
-{GUCEF_TRACE;
-
-    return m_minimalLogLevel;
+    if ( logProcessId )
+    {
+        actualLogMsg += "[PROCESSID=" + clientInfo.processId + "]";
+    }
+                        
+    actualLogMsg +=
+          " [THREAD=" + CORE::UInt32ToString( threadId ) +
+         "] [TYPE=" + CORE::CLogManager::GetLogMsgTypeString( logMsgType ) +
+         "] [LVL=" + CORE::LogLevelToString( logLevel ) + 
+         "] [MSG=" + logMessage + "]\n";
+         
+    return actualLogMsg;
 }
 
 /*-------------------------------------------------------------------------//
@@ -157,7 +110,7 @@ CStdLogger::GetMinimalLogLevel( void ) const
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace LOGSERVICELIB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

@@ -225,6 +225,24 @@ CCyclicDynamicBuffer::Write( const void* srcBuffer        ,
 }
 
 /*-------------------------------------------------------------------------*/
+
+UInt32
+CCyclicDynamicBuffer::Write( const CDynamicBuffer& buffer          ,
+                             const UInt32 offsetInBuffer /* = 0 */ )
+{GUCEF_TRACE;
+
+    Int32 bytesPerElement = (Int32) buffer.GetDataSize() - offsetInBuffer;    
+    if ( bytesPerElement > 0 )
+    {
+        return WriteImp( buffer.GetConstBufferPtr( offsetInBuffer ) ,
+                         (UInt32)bytesPerElement                    ,
+                         1                                          ,
+                         true                                       );
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
     
 UInt32
 CCyclicDynamicBuffer::WriteImp( const void* srcBuffer        ,

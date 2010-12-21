@@ -180,7 +180,8 @@ GUCEF_CORE_PUBLIC_C extern const Int32 LOGLEVEL_EVERYTHING;
  *  Function that will convert the loglevel values above into a string equivalant
  *  and the rest into numbers.
  */
-CString LogLevelToString( const Int32 logLevel );
+GUCEF_CORE_PUBLIC_CPP CString
+LogLevelToString( const Int32 logLevel );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

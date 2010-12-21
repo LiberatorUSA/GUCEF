@@ -1,6 +1,6 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  GucefLogServiceLib: Library containing the main logic for the Logging service
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CSTDLOGGER_H
-#define GUCEF_CORE_CSTDLOGGER_H
+#ifndef GUCEF_LOGSERVICELIB_CILOGSVCSERVERLOGGER_H
+#define GUCEF_LOGSERVICELIB_CILOGSVCSERVERLOGGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CILOGGER_H
-#include "CILogger.h"
-#define GUCEF_CORE_CILOGGER_H
-#endif /* GUCEF_CORE_CILOGGER_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_LOGSERVICELIB_CLOGSVCSERVER_H
+#include "GucefLogServiceLib_CLogSvcServer.h"
+#define GUCEF_LOGSERVICELIB_CLOGSVCSERVER_H
+#endif /* GUCEF_LOGSERVICELIB_CLOGSVCSERVER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace LOGSERVICELIB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,46 +51,33 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIOAccess;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *  Standard GUCEF logger implementation.
- *  Just your run of the mill logging, nothing fancy.
- */
-class GUCEF_CORE_PUBLIC_CPP CStdLogger : public CILogger
+class GUCEF_LOGSERVICELIB_EXPORT_CPP CILogSvcServerLogger
 {
     public:
+    
+    typedef CORE::CLogManager::TLogMsgType TLogMsgType;
 
-    CStdLogger( void );
+    virtual void Log( const CLogSvcServer::TClientInfo& clientInfo ,
+                      const TLogMsgType logMsgType                 ,
+                      const CORE::Int32 logLevel                   ,
+                      const CORE::CString& logMessage              ,
+                      const CORE::UInt32 threadId                  ) = 0;
+                      
+    virtual void FlushLog( void ) = 0;
 
-    CStdLogger( CIOAccess& output );
-
-    virtual ~CStdLogger();
-
-    virtual void Log( const TLogMsgType logMsgType ,
-                      const Int32 logLevel         ,
-                      const CString& logMessage    ,
-                      const UInt32 threadId        );
-
-    virtual void FlushLog( void );
-
-    void SetOutput( CIOAccess& output );
-
-    void SetMinimalLogLevel( const Int32 minimalLogLevel );
-
-    Int32 GetMinimalLogLevel( void ) const;
-
-    private:
-
-    CStdLogger& operator=( const CStdLogger& src );
-    CStdLogger( const CStdLogger& src );
-
-    private:
-
-    CIOAccess* m_output;
-    Int32 m_minimalLogLevel;
+    static CORE::CString FormatStdLogMessage( const bool logAppName                        ,
+                                              const bool logProcessName                    ,
+                                              const bool logProcessId                      ,
+                                              const CLogSvcServer::TClientInfo& clientInfo ,
+                                              const TLogMsgType logMsgType                 ,
+                                              const CORE::Int32 logLevel                   ,
+                                              const CORE::CString& logMessage              ,
+                                              const CORE::UInt32 threadId                  );
+    
+    CILogSvcServerLogger( void );                                         /**< interface class: no-op */
+    virtual ~CILogSvcServerLogger();                                      /**< interface class: no-op */
+    CILogSvcServerLogger( const CILogSvcServerLogger& src );              /**< interface class: no-op */
+    CILogSvcServerLogger& operator=( const CILogSvcServerLogger& src );   /**< interface class: no-op */
 };
 
 /*-------------------------------------------------------------------------//
@@ -94,12 +86,12 @@ class GUCEF_CORE_PUBLIC_CPP CStdLogger : public CILogger
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace LOGSERVICELIB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CSTDLOGGER_H ? */
+#endif /* GUCEF_LOGSERVICELIB_CILOGSVCSERVERLOGGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -107,7 +99,7 @@ class GUCEF_CORE_PUBLIC_CPP CStdLogger : public CILogger
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 16-02-2007 :
-        - Dinand: Added this class
+- 04-05-2005 :
+        - Dinand: Initial version.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

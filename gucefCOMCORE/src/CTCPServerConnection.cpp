@@ -400,6 +400,15 @@ CTCPServerConnection::CheckRecieveBuffer( void )
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+CTCPServerConnection::GetConnectionIndex( void ) const
+{GUCEF_TRACE;
+
+    return m_connectionidx;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CTCPServerConnection::Update( void )
 {GUCEF_TRACE;
