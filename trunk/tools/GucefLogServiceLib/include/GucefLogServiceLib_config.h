@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_VFSPLUGIN_VP_CONFIG_H
-#define GUCEF_VFSPLUGIN_VP_CONFIG_H
+#ifndef GUCEF_LOGSERVICELIB_CONFIG_H
+#define GUCEF_LOGSERVICELIB_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,12 +26,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define GUCEF_VFSPLUGIN_VP_EXPORT_CPP_CODE
-#define GUCEF_VFSPLUGIN_VP_EXPORT_C_CODE
+#define GUCEF_LOGSERVICELIB_EXPORT_CPP_CODE
+#define GUCEF_LOGSERVICELIB_EXPORT_C_CODE
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_VFSPLUGIN_VP_CONFIG_H ? */
+#endif /* GUCEF_LOGSERVICELIB_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
