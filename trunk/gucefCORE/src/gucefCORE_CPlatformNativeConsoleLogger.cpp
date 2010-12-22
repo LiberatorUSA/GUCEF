@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,7 +23,23 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "GucefLogServiceLib_CILogSvcServerLogger.h"
+#include "gucefCORE_CPlatformNativeConsoleLogger.h"
+
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32
+
+#ifndef GUCEF_CORE_CMSWINCONSOLELOGGER_H
+#include "CMSWinConsoleLogger.h"
+#define GUCEF_CORE_CMSWINCONSOLELOGGER_H
+#endif /* GUCEF_CORE_CMSWINCONSOLELOGGER_H ? */
+
+#elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
+
+#ifndef GUCEF_CORE_CXTERMCONSOLELOGGER_H
+#include "CXTermConsoleLogger.h"
+#define GUCEF_CORE_CXTERMCONSOLELOGGER_H
+#endif /* GUCEF_CORE_CXTERMCONSOLELOGGER_H ? */
+
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -32,7 +48,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace LOGSERVICELIB {
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,67 +56,34 @@ namespace LOGSERVICELIB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CILogSvcServerLogger::CILogSvcServerLogger( void )
-{GUCEF_TRACE;
+CPlatformNativeConsoleLogger::CPlatformNativeConsoleLogger( void )
+    : m_nativeConsoleLogger( NULL )
+{
+    #if GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32
 
+    m_nativeConsoleLogger = new CMSWinConsoleLogger();
+
+    #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
+
+    m_nativeConsoleLogger = new CXTermConsoleLogger();
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
 
-CILogSvcServerLogger::~CILogSvcServerLogger()
-{GUCEF_TRACE;
-
+CPlatformNativeConsoleLogger::~CPlatformNativeConsoleLogger()
+{
+    delete m_nativeConsoleLogger;
+    m_nativeConsoleLogger = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CILogSvcServerLogger::CILogSvcServerLogger( const CILogSvcServerLogger& src )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CILogSvcServerLogger&
-CILogSvcServerLogger::operator=( const CILogSvcServerLogger& src )
-{GUCEF_TRACE;
-    
-    return *this;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CString
-CILogSvcServerLogger::FormatStdLogMessage( const bool logAppName                        ,
-                                           const bool logProcessName                    ,
-                                           const bool logProcessId                      ,
-                                           const CLogSvcServer::TClientInfo& clientInfo ,
-                                           const TLogMsgType logMsgType                 ,
-                                           const CORE::Int32 logLevel                   ,
-                                           const CORE::CString& logMessage              ,
-                                           const CORE::UInt32 threadId                  )
-{GUCEF_TRACE;
-
-    CORE::CString actualLogMsg;
-    if ( logAppName )
-    {
-        actualLogMsg += "[APPNAME=" + clientInfo.appName + "]";
-    }
-    if ( logProcessName )
-    {
-        actualLogMsg += "[PROCESSNAME=" + clientInfo.processName + "]";
-    }
-    if ( logProcessId )
-    {
-        actualLogMsg += "[PROCESSID=" + clientInfo.processId + "]";
-    }
-                        
-    actualLogMsg += CORE::CILogger::FormatStdLogMessage( logMsgType ,
-                                                         logLevel   ,
-                                                         logMessage ,
-                                                         threadId   );
-         
-    return actualLogMsg;
+CILogger*
+CPlatformNativeConsoleLogger::GetLogger( void )
+{
+    return m_nativeConsoleLogger;
 }
 
 /*-------------------------------------------------------------------------//
@@ -109,7 +92,7 @@ CILogSvcServerLogger::FormatStdLogMessage( const bool logAppName                
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace LOGSERVICELIB */
+}; /* namespace CORE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

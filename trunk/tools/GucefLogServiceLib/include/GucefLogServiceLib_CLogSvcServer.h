@@ -61,6 +61,10 @@ namespace LOGSERVICELIB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CILogSvcServerLogger;
+
+/*-------------------------------------------------------------------------*/
+
 class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServer : public CORE::CObservingNotifier
 {
     public:
@@ -83,6 +87,7 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServer : public CORE::CObservingNoti
         bool initialized;
         bool connected;
         CORE::CCyclicDynamicBuffer receiveBuffer;
+        CORE::CString addressAndPort;
     };
     typedef struct SClientInfo TClientInfo;
 
@@ -92,10 +97,13 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServer : public CORE::CObservingNoti
     
     virtual ~CLogSvcServer();
     
-    bool ListnenOnPort( const CORE::CString& address , 
-                        CORE::UInt16 port            ); 
+    bool ListenOnPort( CORE::UInt16 port );
 
     virtual const CORE::CString& GetClassTypeName( void ) const;
+    
+    void RegisterLogger( CILogSvcServerLogger* logger );
+    
+    void UnregisterLogger( CILogSvcServerLogger* logger );
 
     private:
     
@@ -143,10 +151,11 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServer : public CORE::CObservingNoti
     private:
     
     typedef std::map< CORE::UInt32, TClientInfo > TClientInfoMap;
+    typedef std::set< CILogSvcServerLogger* > TLoggerList;
     
     COMCORE::CTCPServerSocket m_tcpServer;
     TClientInfoMap m_clientInfoMap;
-        
+    TLoggerList m_loggers;    
 };
 
 /*-------------------------------------------------------------------------//

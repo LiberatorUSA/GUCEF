@@ -99,6 +99,11 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CILogger      
                       const CORE::CString& logMessage ,
                       const CORE::UInt32 threadId     );
 
+    virtual void LogWithoutFormatting( const TLogMsgType logMsgType    ,
+                                       const CORE::Int32 logLevel      ,
+                                       const CORE::CString& logMessage ,
+                                       const CORE::UInt32 threadId     );
+
     virtual void FlushLog( void );
     
     void SetApplicationName( const CORE::CString& applicationName );

@@ -150,6 +150,21 @@ CLogSvcClient::Close( void )
 }
 
 /*-------------------------------------------------------------------------*/
+
+void
+CLogSvcClient::LogWithoutFormatting( const TLogMsgType logMsgType    ,
+                                     const CORE::Int32 logLevel      ,
+                                     const CORE::CString& logMessage ,
+                                     const CORE::UInt32 threadId     )
+{GUCEF_TRACE;
+
+    Log( logMsgType ,
+         logLevel   ,
+         logMessage ,
+         threadId   );
+}
+
+/*-------------------------------------------------------------------------*/
     
 void
 CLogSvcClient::Log( const TLogMsgType logMsgType    ,

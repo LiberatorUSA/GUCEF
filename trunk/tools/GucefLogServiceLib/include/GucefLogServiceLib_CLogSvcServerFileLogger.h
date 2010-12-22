@@ -26,6 +26,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
+#ifndef GUCEF_CORE_CFILEACCESS_H
+#include "CFileAccess.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
+
 #ifndef GUCEF_LOGSERVICELIB_CILOGSVCSERVERLOGGER_H
 #include "GucefLogServiceLib_CILogSvcServerLogger.h"
 #define GUCEF_LOGSERVICELIB_CILOGSVCSERVERLOGGER_H
@@ -46,19 +56,19 @@ namespace LOGSERVICELIB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIOAccess;
-
-/*-------------------------------------------------------------------------*/
-
 class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServerFileLogger : public CILogSvcServerLogger
 {
     public:
 
     CLogSvcServerFileLogger( void );
     
-    CLogSvcServerFileLogger( CORE::CIOAccess& output );
+    CLogSvcServerFileLogger( const CORE::CString& outputDir );
                                             
     virtual ~CLogSvcServerFileLogger();
+
+    virtual void StartOfLoggingForClient( const TClientInfo& clientInfo );
+    
+    virtual void EndOfLoggingForClient( const TClientInfo& clientInfo );
     
     virtual void Log( const CLogSvcServer::TClientInfo& clientInfo ,
                       const TLogMsgType logMsgType                 ,
@@ -66,38 +76,64 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServerFileLogger : public CILogSvcSe
                       const CORE::CString& logMessage              ,
                       const CORE::UInt32 threadId                  );
                       
-    virtual void FlushLog( void );
+    virtual void FlushLog( const TClientInfo& clientInfo );
 
-    void SetOutput( CORE::CIOAccess& output );
+    virtual void SetMinimalLogLevel( const CORE::Int32 minimalLogLevel );
 
-    void SetMinimalLogLevel( const CORE::Int32 minimalLogLevel );
+    virtual CORE::Int32 GetMinimalLogLevel( void ) const;
+    
+    virtual void SetWhetherAppNameIsLogged( bool logAppName );
+    
+    virtual bool GetWhetherAppNameIsLogged( void ) const;
 
-    CORE::Int32 GetMinimalLogLevel( void ) const;
+    virtual void SetWhetherProcessNameIsLogged( bool logProcessName );
     
-    void SetWhetherAppNameIsLogged( bool logAppName );
+    virtual bool GetWhetherProcessNameIsLogged( void ) const;
     
-    bool GetWhetherAppNameIsLogged( void ) const;
+    virtual void SetWhetherProcessIdIsLogged( bool logProcessId );
+    
+    virtual bool GetWhetherProcessIdIsLogged( void ) const;
+    
+    void SetOutputDir( const CORE::CString& logOutputDir );
+    
+    const CORE::CString& GetOutputDir( void ) const;
 
-    void SetWhetherProcessNameIsLogged( bool logProcessName );
+    void SetUseSeperateLogPerApp( bool logPerApp );
     
-    bool GetWhetherProcessNameIsLogged( void ) const;
+    bool GetUseSeperateLogPerApp( void ) const;
+
+    void SetUseSeperateLogPerProcessName( bool logPerProcessName );
     
-    void SetWhetherProcessIdIsLogged( bool logProcessId );
+    bool GetUseSeperateLogPerProcessName( void ) const;
     
-    bool GetWhetherProcessIdIsLogged( void ) const;
+    void CloseOutput( void );
     
     private:
                                          
+    typedef CORE::CTSharedPtr< CORE::CFileAccess > TFileAccessPtr;
+    
     CLogSvcServerFileLogger( const CLogSvcServerFileLogger& src );             /** <- not implemented */
     CLogSvcServerFileLogger& operator=( const CLogSvcServerFileLogger& src );  /** <- not implemented */
+
+    TFileAccessPtr GetFileAccess( const TClientInfo& clientInfo );
+    
+    CORE::CString CreateRelOutputFilePath( const TClientInfo& clientInfo );
+    
+    CORE::CString CreateAbsOutputFilePath( const CORE::CString& relPath );
     
     private:
     
-    CORE::CIOAccess* m_output;
+    typedef std::map< CORE::CString, TFileAccessPtr > TOutputMap;
+    
+    CORE::CString m_outputDir;
     CORE::Int32 m_minimalLogLevel;
     bool m_logAppName;
     bool m_logProcessName;
     bool m_logProcessId;
+    bool m_seperateLogPerApp;
+    bool m_seperateLogPerProcessName;
+    TOutputMap m_clientMap;
+    TOutputMap m_outputMap;
 };
 
 /*-------------------------------------------------------------------------//

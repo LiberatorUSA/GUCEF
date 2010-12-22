@@ -66,6 +66,11 @@ class GUCEF_CORE_PUBLIC_CPP CXTermConsoleLogger : public CILogger
                       const CString& logMessage    ,
                       const UInt32 threadId        );
 
+    virtual void LogWithoutFormatting( const TLogMsgType logMsgType ,
+                                       const Int32 logLevel         ,
+                                       const CString& logMessage    ,
+                                       const UInt32 threadId        );
+
     virtual void FlushLog( void );
 
     void SetMinimalLogLevel( const Int32 minimalLogLevel );

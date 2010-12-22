@@ -41,6 +41,18 @@
 #define GUCEF_CORE_CSTDLOGGER_H
 #endif /* GUCEF_CORE_CSTDLOGGER_H ? */
 
+#ifndef GUCEF_CORE_CPLATFORMNATIVECONSOLELOGGER_H
+#include "gucefCORE_CPlatformNativeConsoleLogger.h"
+#define GUCEF_CORE_CPLATFORMNATIVECONSOLELOGGER_H
+#endif /* GUCEF_CORE_CPLATFORMNATIVECONSOLELOGGER_H ? */
+
+/*
+ *  Below are platform specific loggers which can be
+ *  used directly however please consider using the 
+ *  CPlatformNativeConsoleLogger class to create the 
+ *  correct logger for you which gives you platform
+ *  agnostic code.
+ */
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
 
   #ifndef GUCEF_CORE_CMSWINCONSOLELOGGER_H
