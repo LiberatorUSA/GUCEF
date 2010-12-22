@@ -94,11 +94,27 @@ CMSWinConsoleLogger::Log( const TLogMsgType logMsgType ,
 
     if ( logLevel >= m_minimalLogLevel )
     {
-        CString actualLogMsg( "[THREAD=" + UInt32ToString( threadId ) +
-             "] [TYPE=" + CLogManager::GetLogMsgTypeString( logMsgType ) +
-             "] [LVL=" + LogLevelToString( logLevel ) + "] " +
-             logMessage + "\n" );
+        CString actualLogMsg( FormatStdLogMessage( logMsgType ,
+                                                   logLevel   ,
+                                                   logMessage ,
+                                                   threadId   ) + "\n" );
 
+        fprintf( stdout, actualLogMsg.C_String() );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMSWinConsoleLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
+                                           const Int32 logLevel         ,
+                                           const CString& logMessage    ,
+                                           const UInt32 threadId        )
+{GUCEF_TRACE;
+
+    if ( logLevel >= m_minimalLogLevel )
+    {
+        CString actualLogMsg( logMessage + "\n" );
         fprintf( stdout, actualLogMsg.C_String() );
     }
 }

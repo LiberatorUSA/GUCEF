@@ -60,8 +60,8 @@ extern "C" {
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUCEF_LOGSERVICECLIENTPLUGIN_EXPORT_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Load( CORE::Int32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 

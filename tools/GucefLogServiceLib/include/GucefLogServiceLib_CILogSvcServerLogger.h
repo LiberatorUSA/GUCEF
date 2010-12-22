@@ -56,23 +56,44 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CILogSvcServerLogger
     public:
     
     typedef CORE::CLogManager::TLogMsgType TLogMsgType;
+    typedef CLogSvcServer::TClientInfo TClientInfo;
+    
+    virtual void StartOfLoggingForClient( const TClientInfo& clientInfo ) = 0;
+    
+    virtual void EndOfLoggingForClient( const TClientInfo& clientInfo ) = 0;
 
-    virtual void Log( const CLogSvcServer::TClientInfo& clientInfo ,
-                      const TLogMsgType logMsgType                 ,
-                      const CORE::Int32 logLevel                   ,
-                      const CORE::CString& logMessage              ,
-                      const CORE::UInt32 threadId                  ) = 0;
+    virtual void Log( const TClientInfo& clientInfo   ,
+                      const TLogMsgType logMsgType    ,
+                      const CORE::Int32 logLevel      ,
+                      const CORE::CString& logMessage ,
+                      const CORE::UInt32 threadId     ) = 0;
                       
-    virtual void FlushLog( void ) = 0;
+    virtual void FlushLog( const TClientInfo& clientInfo ) = 0;
 
-    static CORE::CString FormatStdLogMessage( const bool logAppName                        ,
-                                              const bool logProcessName                    ,
-                                              const bool logProcessId                      ,
-                                              const CLogSvcServer::TClientInfo& clientInfo ,
-                                              const TLogMsgType logMsgType                 ,
-                                              const CORE::Int32 logLevel                   ,
-                                              const CORE::CString& logMessage              ,
-                                              const CORE::UInt32 threadId                  );
+    virtual void SetMinimalLogLevel( const CORE::Int32 minimalLogLevel ) = 0;
+
+    virtual CORE::Int32 GetMinimalLogLevel( void ) const = 0;
+    
+    virtual void SetWhetherAppNameIsLogged( bool logAppName ) = 0;
+    
+    virtual bool GetWhetherAppNameIsLogged( void ) const = 0;
+
+    virtual void SetWhetherProcessNameIsLogged( bool logProcessName ) = 0;
+    
+    virtual bool GetWhetherProcessNameIsLogged( void ) const = 0;
+    
+    virtual void SetWhetherProcessIdIsLogged( bool logProcessId ) = 0;
+    
+    virtual bool GetWhetherProcessIdIsLogged( void ) const = 0;
+
+    static CORE::CString FormatStdLogMessage( const bool logAppName           ,
+                                              const bool logProcessName       ,
+                                              const bool logProcessId         ,
+                                              const TClientInfo& clientInfo   ,
+                                              const TLogMsgType logMsgType    ,
+                                              const CORE::Int32 logLevel      ,
+                                              const CORE::CString& logMessage ,
+                                              const CORE::UInt32 threadId     );
     
     CILogSvcServerLogger( void );                                         /**< interface class: no-op */
     virtual ~CILogSvcServerLogger();                                      /**< interface class: no-op */

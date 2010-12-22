@@ -53,15 +53,27 @@
 #include <windows.h>
 #endif /* GUCEF_MSWIN_BUILD ? */
 
+#ifndef GUCEF_LOGSERVICELIB_H
+#include "GucefLogServiceLib.h"
+#define GUCEF_LOGSERVICELIB_H
+#endif /* GUCEF_LOGSERVICELIB_H ? */ 
+
+using namespace GUCEF;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const bool defaultShowConsoleState = true;
+CORE::UInt16 defaultListnenPort = 43557;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-using namespace GUCEF;
-
-/*-------------------------------------------------------------------------*/
 
 void
 ParseParams( const int argc                 , 
@@ -111,30 +123,61 @@ main( int argc, char* argv[] )
     ParseParams( argc, argv, keyValueList );
 
     // Do we want to display the console window?
-    #ifdef GUCEF_MSWIN_BUILD    
-    CORE::CMSWinConsoleLogger* consoleOut = NULL;    
-    bool showConsole = true;    
+    CORE::CPlatformNativeConsoleLogger* consoleOut = NULL;    
+    bool showConsole = defaultShowConsoleState;    
     if ( keyValueList.HasKey( "showConsole" ) )
     {
         showConsole = CORE::StringToBool( keyValueList.GetValue( "showConsole" ) );
     }
     if ( showConsole )
     {
-        consoleOut = new CORE::CMSWinConsoleLogger();
-        CORE::CLogManager::Instance()->AddLogger( consoleOut );
+        consoleOut = new CORE::CPlatformNativeConsoleLogger();
+        CORE::CLogManager::Instance()->AddLogger( consoleOut->GetLogger() );
         
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GucefLogService: Enabled console output" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GucefLogServiceApp: Enabled console output" );
     }
-    #endif /* GUCEF_MSWIN_BUILD ? */
-
     
+    // Flush bootstrap logging now that we attached all our loggers
+    CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
+    
+    // Get the desired listnen port for the server
+    CORE::UInt16 serverListnenPort = defaultListnenPort;
+    if ( keyValueList.HasKey( "port" ) )
+    {
+        serverListnenPort = CORE::StringToUInt16( keyValueList.GetValue( "port" ) );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GucefLogServiceApp: Changing server port from default " + CORE::UInt16ToString( defaultListnenPort ) + " to " + CORE::UInt16ToString( serverListnenPort ) );
+    }
 
-    #ifdef GUCEF_MSWIN_BUILD
+    // Get the desired output path for the log files
+    CORE::CString logFilesOutputDir = "$MODULEDIR$";
+    if ( keyValueList.HasKey( "outputDir" ) )
+    {
+        logFilesOutputDir = keyValueList.GetValue( "outputDir" );
+    }
+    else
+    {
+        logFilesOutputDir = CORE::RelativePath( "$MODULEDIR$" );
+    }
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GucefLogServiceApp: Setting server output dir for log files to " + logFilesOutputDir );
+        
+    int appRetValue = 0;
+    LOGSERVICELIB::CLogSvcServerFileLogger fileLogger( logFilesOutputDir );
+    LOGSERVICELIB::CLogSvcServer logServiceServer;    
+    logServiceServer.RegisterLogger( &fileLogger );
+    
+    if ( logServiceServer.ListenOnPort( serverListnenPort ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GucefLogServiceApp: Server set to listnen on port " + CORE::UInt16ToString( serverListnenPort ) );
+        
+        appRetValue = CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
+    }
+    
+    logServiceServer.UnregisterLogger( &fileLogger );
+    
     delete consoleOut;
     consoleOut = NULL;
-    #endif /* GUCEF_MSWIN_BUILD ? */
     
-    return 0;
+    return appRetValue;
 }
 
 /*---------------------------------------------------------------------------*/

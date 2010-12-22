@@ -47,28 +47,33 @@ namespace LOGSERVICELIB {
 
 CLogSvcServerFileLogger::CLogSvcServerFileLogger( void )
     : CILogSvcServerLogger()                           ,
-      m_output( NULL )                                 ,
+      m_outputDir( "$CURWORKDIR$" )                    ,
       m_minimalLogLevel( CORE::LOGLEVEL_BELOW_NORMAL ) ,
       m_logAppName( true )                             ,
       m_logProcessName( true )                         ,
-      m_logProcessId( true )
+      m_logProcessId( true )                           ,
+      m_seperateLogPerProcessName( true )              ,
+      m_clientMap()                                    ,
+      m_outputMap()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CLogSvcServerFileLogger::CLogSvcServerFileLogger( CORE::CIOAccess& output )
+CLogSvcServerFileLogger::CLogSvcServerFileLogger( const CORE::CString& outputDir )
     : CILogSvcServerLogger()                           ,
-      m_output( &output )                              ,
+      m_outputDir( outputDir )                         ,
       m_minimalLogLevel( CORE::LOGLEVEL_BELOW_NORMAL ) ,
-      m_logAppName( true )                             ,
+      m_logAppName( false )                            ,
       m_logProcessName( true )                         ,
-      m_logProcessId( true )
+      m_logProcessId( true )                           ,
+      m_seperateLogPerApp( true )                      ,
+      m_seperateLogPerProcessName( true )              ,
+      m_clientMap()                                    ,
+      m_outputMap()
 {GUCEF_TRACE;
 
-    assert( &output != NULL );
-    assert( m_output != NULL );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -76,35 +81,233 @@ CLogSvcServerFileLogger::CLogSvcServerFileLogger( CORE::CIOAccess& output )
 CLogSvcServerFileLogger::~CLogSvcServerFileLogger()
 {GUCEF_TRACE;
 
+    CloseOutput();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CLogSvcServerFileLogger::Log( const CLogSvcServer::TClientInfo& clientInfo ,
-                              const TLogMsgType logMsgType                 ,
-                              const CORE::Int32 logLevel                   ,
-                              const CORE::CString& logMessage              ,
-                              const CORE::UInt32 threadId                  )
+CLogSvcServerFileLogger::CloseOutput( void )
 {GUCEF_TRACE;
 
-    if ( m_output != NULL )
+    TOutputMap::iterator i = m_outputMap.begin();
+    while ( i != m_outputMap.end() )
     {
-        if ( logLevel >= m_minimalLogLevel )
-        {
-            CORE::CString actualLogMsg = FormatStdLogMessage( m_logAppName     ,
-                                                              m_logProcessName ,
-                                                              m_logProcessId   ,
-                                                              clientInfo       ,
-                                                              logMsgType       ,
-                                                              logLevel         ,
-                                                              logMessage       ,
-                                                              threadId         );
+        TFileAccessPtr& file = (*i).second;
+        
+        file->Flush();
+        file->Close();
+            
+        m_outputMap.erase( i );
+        i = m_outputMap.begin();
+    }
+    
+    m_clientMap.clear();
+}
 
-            m_output->Write( actualLogMsg.C_String() ,
-                             actualLogMsg.Length()   ,
-                             1                       );
+/*-------------------------------------------------------------------------*/
+
+void
+CLogSvcServerFileLogger::SetUseSeperateLogPerProcessName( bool logPerProcessName )
+{GUCEF_TRACE;
+
+    m_seperateLogPerProcessName = logPerProcessName;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CLogSvcServerFileLogger::GetUseSeperateLogPerProcessName( void ) const
+{GUCEF_TRACE;
+
+    return m_seperateLogPerProcessName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogSvcServerFileLogger::SetUseSeperateLogPerApp( bool logPerApp )
+{GUCEF_TRACE;
+
+    m_seperateLogPerApp = logPerApp;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CLogSvcServerFileLogger::GetUseSeperateLogPerApp( void ) const
+{GUCEF_TRACE;
+
+    return m_seperateLogPerApp;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogSvcServerFileLogger::StartOfLoggingForClient( const TClientInfo& clientInfo )
+{GUCEF_TRACE;
+    
+    // We don't have to do anything here, GetFileAccess() uses lazy initialization
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CLogSvcServerFileLogger::EndOfLoggingForClient( const TClientInfo& clientInfo )
+{GUCEF_TRACE;
+
+    TOutputMap::iterator i = m_clientMap.find( clientInfo.addressAndPort );
+    if ( i != m_clientMap.end() )
+    {
+        TFileAccessPtr clientFile = (*i).second;
+        
+        // Remove the entry for this client
+        m_clientMap.erase( i );        
+        
+        // Check if this was the last client using this log
+        if ( 3 == clientFile.GetReferenceCount() )
+        {
+            // Be nice and close the log now
+            clientFile->Flush();
+            clientFile->Close();
+            
+            // Create a key for the output map and erase the file over there as well
+            // since this was the last client using it.
+            // Note that the last reference is the local shared pointer in this scope.
+            CORE::CString filePath = CreateRelOutputFilePath( clientInfo );
+            m_outputMap.erase( filePath );
         }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+CLogSvcServerFileLogger::CreateRelOutputFilePath( const TClientInfo& clientInfo )
+{GUCEF_TRACE;
+
+    CORE::CString filename;
+    if ( m_seperateLogPerProcessName && m_seperateLogPerApp )
+    {
+        filename = clientInfo.addressAndPort + clientInfo.appName + clientInfo.processName;
+    }
+    else
+    if ( !m_seperateLogPerProcessName && m_seperateLogPerApp )
+    {
+        filename = clientInfo.addressAndPort + clientInfo.appName;
+    }
+    else
+    if ( m_seperateLogPerProcessName && !m_seperateLogPerApp )
+    {
+        filename = clientInfo.addressAndPort + clientInfo.processName;
+    }
+    else
+    {
+        filename = clientInfo.addressAndPort;
+    }
+    
+    // Remove chars not allowed in filenames
+    filename = filename.RemoveChar( '*' );
+    filename = filename.RemoveChar( '/' );
+    filename = filename.RemoveChar( '\\' );
+    filename = filename.RemoveChar( '?' );
+    filename = filename.RemoveChar( ':' );
+    filename = filename.RemoveChar( '>' );
+    filename = filename.RemoveChar( '<' );
+    filename = filename.RemoveChar( '\"' );
+    filename = filename.RemoveChar( '|' );
+    
+    filename = filename.ReplaceChar( ' ', '_' );
+    
+    return filename;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+CLogSvcServerFileLogger::CreateAbsOutputFilePath( const CORE::CString& relPath )
+{GUCEF_TRACE;
+
+    CORE::CString absBasePath = CORE::RelativePath( m_outputDir );
+    CORE::AppendToPath( absBasePath, relPath );
+    
+    CORE::CString absPath = absBasePath;
+    CORE::AppendToPath( absPath, "_0.txt" );
+    CORE::UInt32 counter = 1;
+    
+    while ( CORE::FileExists( absPath ) )
+    {
+        absPath = absBasePath;
+        CORE::AppendToPath( absPath, '_' + CORE::UInt32ToString( counter ) + ".txt" );
+        ++counter;
+    }
+    
+    return absPath;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CLogSvcServerFileLogger::TFileAccessPtr
+CLogSvcServerFileLogger::GetFileAccess( const TClientInfo& clientInfo )
+{GUCEF_TRACE;
+    
+    // First try to find an existing output file
+    // Note that flags affecting output file paths do not take effect while there
+    // are clients using the relevant logs.
+    TOutputMap::iterator i = m_clientMap.find( clientInfo.addressAndPort );
+    if ( i != m_clientMap.end() )
+    {
+        return (*i).second;
+    }
+    
+    // This client does not have any output defined yet.
+    // See if we can use an existing file
+    CORE::CString relOutputPath = CreateRelOutputFilePath( clientInfo );
+    i = m_outputMap.find( relOutputPath );
+    if ( i != m_outputMap.end() )
+    {
+        // With the current settings this client will be mapped to an existing file
+        m_clientMap[ clientInfo.addressAndPort ] = (*i).second;
+        return (*i).second;
+    }
+
+    // Unable to find an existing output file, lets make a new one
+    // First determine the output path we want    
+    CORE::CString absOutputPath = CreateAbsOutputFilePath( relOutputPath );
+    
+    // Now make the file and add it to our output map
+    TFileAccessPtr filePtr = new CORE::CFileAccess( absOutputPath, "w" );
+    m_outputMap[ relOutputPath ] = filePtr;
+    
+    // Now also make a client entry for this new log file
+    m_clientMap[ clientInfo.addressAndPort ] = filePtr;
+    return filePtr;   
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogSvcServerFileLogger::Log( const TClientInfo& clientInfo   ,
+                              const TLogMsgType logMsgType    ,
+                              const CORE::Int32 logLevel      ,
+                              const CORE::CString& logMessage ,
+                              const CORE::UInt32 threadId     )
+{GUCEF_TRACE;
+
+    if ( logLevel >= m_minimalLogLevel )
+    {
+        CORE::CString actualLogMsg = FormatStdLogMessage( m_logAppName     ,
+                                                          m_logProcessName ,
+                                                          m_logProcessId   ,
+                                                          clientInfo       ,
+                                                          logMsgType       ,
+                                                          logLevel         ,
+                                                          logMessage       ,
+                                                          threadId         ) + '\n';
+
+        GetFileAccess( clientInfo )->Write( actualLogMsg.C_String() ,
+                                            actualLogMsg.Length()   ,
+                                            1                       );
     }
 }
 
@@ -167,24 +370,28 @@ CLogSvcServerFileLogger::GetWhetherProcessIdIsLogged( void ) const
 /*-------------------------------------------------------------------------*/
                       
 void
-CLogSvcServerFileLogger::FlushLog( void )
+CLogSvcServerFileLogger::FlushLog( const TClientInfo& clientInfo )
 {GUCEF_TRACE;
 
-    if ( m_output != NULL )
-    {
-        m_output->Flush();
-    }
+    GetFileAccess( clientInfo )->Flush();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CLogSvcServerFileLogger::SetOutput( CORE::CIOAccess& output )
+CLogSvcServerFileLogger::SetOutputDir( const CORE::CString& logOutputDir )
 {GUCEF_TRACE;
 
-    assert( &output != NULL );
-    m_output = &output;
-    m_output->Open();
+    m_outputDir = logOutputDir;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+CLogSvcServerFileLogger::GetOutputDir( void ) const
+{GUCEF_TRACE;
+
+    return m_outputDir;
 }
 
 /*-------------------------------------------------------------------------*/

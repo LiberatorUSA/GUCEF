@@ -59,13 +59,29 @@ class GUCEF_CORE_PUBLIC_CPP CILogger
 
     typedef CLogManager::TLogMsgType TLogMsgType;
 
+    /**
+     *  The logging backend should format the info given
+     *  as appropriote and output it.
+     */
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
                       const CString& logMessage    ,
                       const UInt32 threadId        ) = 0;
 
+    /**
+     *  The logging backend should output the logMessage string as given
+     */
+    virtual void LogWithoutFormatting( const TLogMsgType logMsgType ,
+                                       const Int32 logLevel         ,
+                                       const CString& logMessage    ,
+                                       const UInt32 threadId        ) = 0;
+
     virtual void FlushLog( void ) = 0;
 
+    static CString FormatStdLogMessage( const TLogMsgType logMsgType ,
+                                        const Int32 logLevel         ,
+                                        const CString& logMessage    ,
+                                        const UInt32 threadId        );
 
     CILogger( void );                             /**< interface class: no-op */
     virtual ~CILogger();                          /**< interface class: no-op */

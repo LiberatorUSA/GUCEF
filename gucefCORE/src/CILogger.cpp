@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #include "CILogger.h"
 
 #ifndef GUCEF_CORE_ESSENTIALS_H
@@ -71,6 +76,21 @@ CILogger::operator=( const CILogger& src )
 {GUCEF_TRACE;
     
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CILogger::FormatStdLogMessage( const TLogMsgType logMsgType ,
+                               const Int32 logLevel         ,
+                               const CString& logMessage    ,
+                               const UInt32 threadId        )
+{GUCEF_TRACE;
+
+    return   "[THREAD=" + UInt32ToString( threadId ) +
+           "] [TYPE=" + CLogManager::GetLogMsgTypeString( logMsgType ) +
+           "] [LVL=" + LogLevelToString( logLevel ) +
+           "] [MSG=" + logMessage + "]";
 }
 
 /*-------------------------------------------------------------------------//

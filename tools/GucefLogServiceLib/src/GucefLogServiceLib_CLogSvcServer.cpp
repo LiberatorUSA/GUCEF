@@ -72,7 +72,8 @@ namespace LOGSERVICELIB {
 CLogSvcServer::CLogSvcServer( void )
     : CORE::CObservingNotifier()                                                     ,
       m_tcpServer( CORE::CGUCEFApplication::Instance()->GetPulseGenerator(), false ) ,
-      m_clientInfoMap()
+      m_clientInfoMap()                                                              ,
+      m_loggers()
 {GUCEF_TRACE;
 
 }
@@ -82,7 +83,8 @@ CLogSvcServer::CLogSvcServer( void )
 CLogSvcServer::CLogSvcServer( CORE::CPulseGenerator& pulseGenerator )
     : CORE::CObservingNotifier()           ,
       m_tcpServer( pulseGenerator, false ) ,
-      m_clientInfoMap()
+      m_clientInfoMap()                    ,
+      m_loggers()
 {GUCEF_TRACE;
 
 }
@@ -149,6 +151,33 @@ CLogSvcServer::GetClassTypeName( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
+CLogSvcServer::RegisterLogger( CILogSvcServerLogger* logger )
+{GUCEF_TRACE;
+    
+    m_loggers.insert( logger );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CLogSvcServer::UnregisterLogger( CILogSvcServerLogger* logger )
+{GUCEF_TRACE;
+
+    m_loggers.erase( logger );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLogSvcServer::ListenOnPort( CORE::UInt16 port )
+{GUCEF_TRACE;
+    
+    return m_tcpServer.ListenOnPort( port );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CLogSvcServer::ProcessReceivedMessage( TClientInfo& clientInfo                   ,
                                        COMCORE::CTCPServerConnection* connection ,
                                        const CORE::CDynamicBuffer& messageBuffer )
@@ -187,28 +216,60 @@ CLogSvcServer::ProcessReceivedMessage( TClientInfo& clientInfo                  
                 strLength = messageBuffer.AsConstType< CORE::UInt32 >( offset );
                 offset += 4;
                 clientInfo.processId.Set( messageBuffer.AsConstTypePtr< char >( offset, strLength ), strLength );
+                
+                // Set the client's address and port for easy unique addressability
+                clientInfo.addressAndPort = connection->GetRemoteIP().AddressAndPortAsString();
 
                 // If we got here without an exception then the we successfully received all info required to 
                 // consider the connection as initialized.
                 clientInfo.initialized = true;
+
+                // tell the loggers we have a new client for which we can begin logging
+                TLoggerList::iterator i = m_loggers.begin();
+                while ( i != m_loggers.end() )
+                {
+                    (*i)->StartOfLoggingForClient( clientInfo );
+                    ++i;
+                }
                 
                 // Send notification to the client that the initialization was successfull
                 CORE::UInt8 statusCode = LOGSVCMSGTYPE_INITIALIZED;
-                connection->Send( &statusCode, 1 ); 
-                
+                connection->Send( &statusCode, 1 );                
                 break;
             }
             case LOGSVCMSGTYPE_FLUSHLOG:
             {
                 // We are being asked to flush the log
-                
+                TLoggerList::iterator i = m_loggers.begin();
+                while ( i != m_loggers.end() )
+                {
+                    (*i)->FlushLog( clientInfo );
+                    ++i;
+                }
                 break;
             }
             case LOGSVCMSGTYPE_LOGMSG:
-            {
-            
+            {            
                 // This is what its all about, we have been given a log message.
+                // Parse the log message from the transmission
+                CORE::UInt32 offset = 1;
+                CILogSvcServerLogger::TLogMsgType logMsgTypeValue = (CILogSvcServerLogger::TLogMsgType) messageBuffer.AsConstType< CORE::Int16 >( offset );
+                offset += 2;
+                CORE::Int32 logLevel = messageBuffer.AsConstType< CORE::Int32 >( offset );
+                offset += 4;
+                CORE::UInt32 threadId = messageBuffer.AsConstType< CORE::UInt32 >( offset );
+                offset += 4;
+                CORE::CString logMessage;
+                CORE::UInt32 strLength = messageBuffer.GetDataSize() - offset; 
+                logMessage.Set( messageBuffer.AsConstTypePtr< char >( offset, strLength ), strLength );
                 
+                // Now send the log message to all loggers                
+                TLoggerList::iterator i = m_loggers.begin();
+                while ( i != m_loggers.end() )
+                {
+                    (*i)->Log( clientInfo, logMsgTypeValue, logLevel, logMessage, threadId );
+                    ++i;
+                }
                 break;
             }
             default:
@@ -333,6 +394,8 @@ CLogSvcServer::OnServerSocketClientConnected( CORE::CNotifier* notifier    ,
     
     m_clientInfoMap[ eventData.connectionIndex ] = initialClientInfo;
     
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CLogSvcServer: Client connected from " + eventData.connection->GetRemoteIP().AddressAndPortAsString() );
+    
     RegisterClientConnectionEventHandlers( eventData.connection );
 }
 
@@ -344,12 +407,22 @@ CLogSvcServer::OnServerSocketClientDisconnected( CORE::CNotifier* notifier    ,
                                                  CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
-        // Get access to the event data
-        COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata );
-        COMCORE::CTCPServerSocket::TConnectionInfo& eventData = eData->GetData();  
-        
-        TClientInfo& clientInfo = m_clientInfoMap[ eventData.connectionIndex ];
-        clientInfo.connected = false;
+    // Get access to the event data
+    COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata );
+    COMCORE::CTCPServerSocket::TConnectionInfo& eventData = eData->GetData();  
+    
+    TClientInfo& clientInfo = m_clientInfoMap[ eventData.connectionIndex ];
+    clientInfo.connected = false;
+    
+    // tell the loggers we should stop logging for this client
+    TLoggerList::iterator i = m_loggers.begin();
+    while ( i != m_loggers.end() )
+    {
+        (*i)->EndOfLoggingForClient( clientInfo );
+        ++i;
+    }
+    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CLogSvcServer: Client from " + eventData.connection->GetRemoteIP().AddressAndPortAsString() + " disconnected" );
 }
 
 /*-------------------------------------------------------------------------*/

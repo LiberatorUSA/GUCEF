@@ -185,13 +185,18 @@ CLogManager::AddLogger( CILogger* loggerImp )
 {GUCEF_TRACE;
 
     // Do not add bogus loggers
-    assert( NULL != loggerImp );
+    if ( NULL != loggerImp )
+    {
+        g_dataLock.Lock();
+        m_loggers.insert( loggerImp );
+        g_dataLock.Unlock();
 
-    g_dataLock.Lock();
-    m_loggers.insert( loggerImp );
-    g_dataLock.Unlock();
-
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Added logger" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Added logger" );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Null given for logger" );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

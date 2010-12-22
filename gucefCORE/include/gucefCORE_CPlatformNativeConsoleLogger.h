@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CSTDLOGGER_H
-#define GUCEF_CORE_CSTDLOGGER_H
+#ifndef GUCEF_CORE_CPLATFORMNATIVECONSOLELOGGER_H
+#define GUCEF_CORE_CPLATFORMNATIVECONSOLELOGGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,51 +46,30 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIOAccess;
-
-/*-------------------------------------------------------------------------*/
-
 /**
- *  Standard GUCEF logger implementation.
- *  Just your run of the mill logging, nothing fancy.
+ *  Class which uses the strategy pattern to allocate a platform
+ *  native console logger which can then be obtained using GetLogger().
+ *  Note that it does not automatically register the logger with the 
+ *  log manager.
  */
-class GUCEF_CORE_PUBLIC_CPP CStdLogger : public CILogger
+class GUCEF_CORE_PUBLIC_CPP CPlatformNativeConsoleLogger
 {
     public:
+    
+    CPlatformNativeConsoleLogger( void );
 
-    CStdLogger( void );
+    ~CPlatformNativeConsoleLogger();
 
-    CStdLogger( CIOAccess& output );
-
-    virtual ~CStdLogger();
-
-    virtual void Log( const TLogMsgType logMsgType ,
-                      const Int32 logLevel         ,
-                      const CString& logMessage    ,
-                      const UInt32 threadId        );
-
-    virtual void LogWithoutFormatting( const TLogMsgType logMsgType ,
-                                       const Int32 logLevel         ,
-                                       const CString& logMessage    ,
-                                       const UInt32 threadId        );
-
-    virtual void FlushLog( void );
-
-    void SetOutput( CIOAccess& output );
-
-    void SetMinimalLogLevel( const Int32 minimalLogLevel );
-
-    Int32 GetMinimalLogLevel( void ) const;
+    CILogger* GetLogger( void );
 
     private:
 
-    CStdLogger& operator=( const CStdLogger& src );
-    CStdLogger( const CStdLogger& src );
+    CPlatformNativeConsoleLogger& operator=( const CPlatformNativeConsoleLogger& src );
+    CPlatformNativeConsoleLogger( const CPlatformNativeConsoleLogger& src );
 
     private:
 
-    CIOAccess* m_output;
-    Int32 m_minimalLogLevel;
+    CILogger* m_nativeConsoleLogger;
 };
 
 /*-------------------------------------------------------------------------//
@@ -104,7 +83,7 @@ class GUCEF_CORE_PUBLIC_CPP CStdLogger : public CILogger
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CSTDLOGGER_H ? */
+#endif /* GUCEF_CORE_CPLATFORMNATIVECONSOLELOGGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -112,7 +91,7 @@ class GUCEF_CORE_PUBLIC_CPP CStdLogger : public CILogger
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 16-02-2007 :
+- 19-05-2007 :
         - Dinand: Added this class
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/
