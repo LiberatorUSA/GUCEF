@@ -201,13 +201,24 @@ CGenericPluginManager::IsLoaded( const CString& pluginPath )
 bool
 CGenericPluginManager::Load( const CString& pluginPath )
 {GUCEF_TRACE;
+
+    CValueList params;
+    return Load( pluginPath, params );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGenericPluginManager::Load( const CString& pluginPath ,
+                             const CValueList& params  )
+{GUCEF_TRACE;
     
     if ( !IsLoaded( pluginPath ) )
     {
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Attempting to load generic plugin: " + pluginPath );
         
         CGenericPlugin* plugin = new CGenericPlugin();
-        if ( plugin->Load( pluginPath ) )
+        if ( plugin->Load( pluginPath, params ) )
         {
             GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Generic plugin loaded: " + pluginPath );
             
@@ -215,8 +226,7 @@ CGenericPluginManager::Load( const CString& pluginPath )
             m_pluginList.push_back( plugin );
             
             // Notify the observers of this event
-            NotifyObservers( PluginLoadedEvent );
-            
+            NotifyObservers( PluginLoadedEvent );            
             return true;
         }
         else
@@ -287,7 +297,23 @@ CGenericPluginManager::LoadConfig( const CDataNode& treeroot )
         {
             const CDataNode* pluginNode = (*i);
             CString pluginPath = pluginNode->GetAttributeValue( "pluginPath" );
-            Load( pluginPath );            
+            if ( pluginPath.Length() > 0 )
+            {
+                // Check if this plugin has any params
+                CValueList params;
+                CDataNode::TConstDataNodeSet paramNodes = pluginNode->FindChildrenOfType( "Param" );
+                CDataNode::TConstDataNodeSet::const_iterator i = paramNodes.begin();
+                while ( i != paramNodes.end() )
+                {
+                    CString key = (*i)->GetAttributeValue( "Key" );
+                    CString value = (*i)->GetAttributeValue( "Value" );                    
+                    params.Set( key, value );
+                    ++i;
+                }
+                
+                // Now load the plugin right away
+                Load( pluginPath, params );            
+            }
             ++i;
         }
     }
