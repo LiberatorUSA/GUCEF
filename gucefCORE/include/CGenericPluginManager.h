@@ -38,6 +38,11 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -80,6 +85,9 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager ,
     virtual bool IsLoaded( const CString& pluginPath );
 
     virtual bool Load( const CString& pluginPath );
+    
+    bool Load( const CString& pluginPath ,
+               const CValueList& params  );
 
     virtual bool Unload( const CString& pluginPath );
 

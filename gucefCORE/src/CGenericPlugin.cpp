@@ -75,8 +75,10 @@ enum TGenericPluginFuncPtrType
 //-------------------------------------------------------------------------*/
 
 CGenericPlugin::CGenericPlugin( void )
-    : m_moduleHandle( NULL ) ,
-      m_modulePath()
+    : CIPlugin()             ,
+      m_moduleHandle( NULL ) ,
+      m_modulePath()         ,
+      m_params()
 {GUCEF_TRACE;
 
     memset( m_funcPointers, 0, GPLUGINFUNCPTR_COUNT );
@@ -92,20 +94,53 @@ CGenericPlugin::~CGenericPlugin()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CGenericPlugin::SetPluginParams( const CValueList& pluginParams )
+{GUCEF_TRACE;
+
+    m_params = pluginParams; 
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CValueList&
+CGenericPlugin::GetPluginParams( void ) const
+{GUCEF_TRACE;
+
+    return m_params;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGenericPlugin::Load( const CString& pluginPath      ,
+                      const CValueList& pluginParams )
+{GUCEF_TRACE;
+
+    m_params = pluginParams;
+    return Load( pluginPath );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CGenericPlugin::Load( const CString& pluginPath )
 {GUCEF_TRACE;
 
     if ( !IsLoaded() )
     {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPlugin: Attempting to load module from: " + pluginPath );
+        
         m_moduleHandle = LoadModuleDynamicly( pluginPath.C_String() );
         if ( NULL != m_moduleHandle )
         {
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPlugin: Successfully loaded module from: " + pluginPath );
+            
             // We have now successfully loaded the module itself
             // We will now try to lookup the function pointers
-            m_funcPointers[ GPLUGINFUNCPTR_LOAD ] = GetFunctionAddress( m_moduleHandle     ,
-                                                                        "GUCEFPlugin_Load" ,
-                                                                        0                  ).funcPtr;
+            m_funcPointers[ GPLUGINFUNCPTR_LOAD ] = GetFunctionAddress( m_moduleHandle                ,
+                                                                        "GUCEFPlugin_Load"            ,
+                                                                        sizeof(UInt32)+sizeof(char**) ).funcPtr;
             m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] = GetFunctionAddress( m_moduleHandle       ,
                                                                           "GUCEFPlugin_Unload" ,
                                                                           0                    ).funcPtr;
@@ -116,9 +151,9 @@ CGenericPlugin::Load( const CString& pluginPath )
                                                                                "GUCEFPlugin_GetDescription" ,
                                                                                0                            ).funcPtr;
 
-            m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] = GetFunctionAddress( m_moduleHandle           ,
+            m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] = GetFunctionAddress( m_moduleHandle             ,
                                                                              "GUCEFPlugin_GetCopyright" ,
-                                                                             0                        ).funcPtr;
+                                                                             0                          ).funcPtr;
 
             // Verify that all function pointers are loaded correctly
             if ( ( NULL != m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )        &&
@@ -127,11 +162,50 @@ CGenericPlugin::Load( const CString& pluginPath )
                  ( NULL != m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] ) &&
                  ( NULL != m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] )    )
             {
+                // Make the module parameter list
+                const char** argv = NULL;
+                UInt32 argc = m_params.GetCount();
+                if ( argc > 0 )
+                {
+                    argv = new const char*[ argc ];
+                    for ( UInt32 i=0; i<argc; ++i )
+                    {
+                        CString keyValuePair = m_params.GetPair( i );
+                        argv[ i ] = new const char[ keyValuePair.Length()+1 ];
+                        memcpy( (void*)argv[ i ], keyValuePair.C_String(), keyValuePair.Length()+1 );
+                    } 
+                }
+                
                 // Call the module's Load()
-                reinterpret_cast< TGUCEFGENERICPLUGFPTR_Load >( m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )();
-
-                // We have loaded & linked our plugin module
-                return true;
+                Int32 loadStatus = reinterpret_cast< TGUCEFGENERICPLUGFPTR_Load >( m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )( argc, argv );
+                
+                // Cleanup the module parameter list
+                if ( argc > 0 )
+                {
+                    for ( UInt32 i=0; i<argc; ++i )
+                    {
+                        delete[] argv[ i ];
+                    }
+                    delete[] argv;
+                    argv = NULL;
+                }
+                
+                // Check whether the load was successfull
+                if ( loadStatus == 1 )
+                {
+                    // We have loaded & linked our plugin module
+                    return true;
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CGenericPlugin: Failed load module because Load returned an error state (" + 
+                                                            Int32ToString( loadStatus ) + ") with module loaded from: " + pluginPath );
+                }
+                
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CGenericPlugin: Failed to locate the required exports in module: " + pluginPath );
             }
 
             // We failed to link the functions :(

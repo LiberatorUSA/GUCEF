@@ -48,6 +48,11 @@
 #define GUCEF_CORE_CIPLUGIN_H
 #endif /* GUCEF_CORE_CIPLUGIN_H ? */
 
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -95,8 +100,15 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPlugin : public CIPlugin
     virtual bool IsLoaded( void ) const;
 
     virtual bool Load( const CString& pluginPath );
+    
+    bool Load( const CString& pluginPath      ,
+               const CValueList& pluginParams );
 
     virtual bool Unload( void );
+    
+    void SetPluginParams( const CValueList& pluginParams );
+    
+    const CValueList& GetPluginParams( void ) const;
 
     private:
 
@@ -111,6 +123,7 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPlugin : public CIPlugin
     void* m_moduleHandle;
     TDefaultFuncPtr m_funcPointers[ 5 ];
     CString m_modulePath;
+    CValueList m_params;
 };
 
 /*-------------------------------------------------------------------------//

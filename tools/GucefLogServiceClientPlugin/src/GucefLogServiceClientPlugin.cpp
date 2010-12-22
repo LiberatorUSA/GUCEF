@@ -107,7 +107,7 @@ GUCEFPlugin_Load( CORE::Int32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SU
 
     CORE::CLogManager::Instance()->AddLogger( &svcClient );
     
-    return 0;
+    return 1;
 }
 
 /*--------------------------------------------------------------------------*/

@@ -60,15 +60,24 @@ typedef CORE::CTFactory< VFS::CIArchive, CVPArchive > TVPArchiveFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+TVPArchiveFactory vpArchiveFactory;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    VFS::CVFS::Instance()->RegisterArchiveFactory( "vp", *new TVPArchiveFactory() );
+    VFS::CVFS::Instance()->RegisterArchiveFactory( "vp", vpArchiveFactory );
+    return 1;
 }
 
 /*--------------------------------------------------------------------------*/
