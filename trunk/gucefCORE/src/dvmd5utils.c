@@ -59,8 +59,8 @@ namespace CORE {
  *	Returns 1 on success and 0 on failure.
  */
 UInt32
-md5frommfile( TIOAccess *access  ,
-              UInt8 digest[ 16 ] )
+md5fromfile( TIOAccess *access  ,
+             UInt8 digest[ 16 ] )
 {
         md5_state_t md5state;                  /* md5 generation info */
         UInt32 rbytes;

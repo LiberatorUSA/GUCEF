@@ -220,8 +220,8 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
                 fileAccess.Open();
                 if ( fileAccess.Opened() && fileAccess.IsValid() )
                 {
-                    if ( 0 != CORE::md5frommfile( fileAccess.CStyleAccess() , 
-                                                  md5Digest                 ) )
+                    if ( 0 != CORE::md5fromfile( fileAccess.CStyleAccess() , 
+                                                 md5Digest                 ) )
                     {
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Finished old file hash generation" );
                         

@@ -23,19 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <windows.h>
-#undef min
-#undef max
+#include <map>
 
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
 #define GUCEF_CORE_H
 #endif /* GUCEF_CORE_H ? */
-
-#ifndef GUCEF_VFS_H
-#include "gucefVFS.h"
-#define GUCEF_VFS_H
-#endif /* GUCEF_VFS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,75 +40,244 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+using namespace GUCEF;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+struct SFileInfo
+{
+    CORE::CString path;
+    CORE::UInt32 size;
+    CORE::CString hash;    
+};
+typedef struct SFileInfo TFileInfo;
+
+typedef std::vector< TFileInfo > TFileInfoList;
+
+struct SDuplicateFileEntry
+{
+    TFileInfo file1;
+    TFileInfo file2;    
+};
+typedef struct SDuplicateFileEntry TDuplicateFileEntry;
+
+typedef std::vector< TDuplicateFileEntry > TDuplicateFileEntryList;
+
+typedef std::multimap< CORE::UInt32, const TFileInfo* > TFileSizeMultiMap;
+typedef std::pair< CORE::UInt32, const TFileInfo* > TFileSizeMultiMapPair;
+
+typedef std::multimap< CORE::CString, const TFileInfo* > TFileHashMultiMap;
+typedef std::pair< CORE::CString, const TFileInfo* > TFileHashMultiMapPair;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-          
-#ifdef GUCEF_MSWIN_BUILD
 
-void cls( void )
+CORE::CString
+MD5FromFile( const CORE::CString& filePath )
 {GUCEF_TRACE;
 
-    COORD coordScreen = { 0, 0 }; /* here's where we'll home the cursor */
-    DWORD cCharsWritten;
-    CONSOLE_SCREEN_BUFFER_INFO csbi; /* to get buffer info */
-    DWORD dwConSize; /* number of character cells in the current buffer */
-
-    /* get the output console handle */
-    HANDLE hConsole=GetStdHandle(STD_OUTPUT_HANDLE);
-    
-    /* get the number of character cells in the current buffer */
-    GetConsoleScreenBufferInfo(hConsole, &csbi);    
-    dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
-    
-    /* fill the entire screen with blanks */
-    FillConsoleOutputCharacter(hConsole, (TCHAR) ' ',
-      dwConSize, coordScreen, &cCharsWritten);
-      
-    /* get the current text attribute */
-    GetConsoleScreenBufferInfo(hConsole, &csbi);
-    
-    /* now set the buffer's attributes accordingly */
-    FillConsoleOutputAttribute(hConsole, csbi.wAttributes,
-      dwConSize, coordScreen, &cCharsWritten);
-      
-    /* put the cursor at (0, 0) */
-    SetConsoleCursorPosition(hConsole, coordScreen);
-    return;
+    CORE::UInt8 md5Digest[ 16 ];
+    CORE::CFileAccess fileAccess( filePath, "rb" );
+    fileAccess.Open();
+    CORE::md5fromfile( fileAccess.CStyleAccess(), md5Digest );
+    return CORE::MD5ToString( md5Digest );    
 }
 
-/*---------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-class CMSWin32ConsoleWindow
-{
-    public:
-    
-    CMSWin32ConsoleWindow( void )
-    {GUCEF_TRACE;
-    
-        AllocConsole();
-        
-        /* reopen stdin handle as console window input */
-        freopen( "CONIN$", "rb", stdin );
-        
-        /* reopen stout handle as console window output */
-        freopen( "CONOUT$", "wb", stdout );
-        
-        /* reopen stderr handle as console window output */
-        freopen( "CONOUT$", "wb", stderr );        
+void
+BuildFileInfoList( const CORE::CString& srcRoot ,
+                   TFileInfoList& list          ,
+                   bool recursive               )
+{GUCEF_TRACE;
+
+    struct CORE::SDI_Data* dirIt = CORE::DI_First_Dir_Entry( srcRoot.C_String() );
+    if ( NULL != dirIt )
+    {
+        do
+        {
+            if ( CORE::DI_Is_It_A_File( dirIt ) != 0 )
+            {
+                TFileInfo newFileInfo;
+                
+                CORE::CString pathToFile = srcRoot;
+                CORE::AppendToPath( pathToFile, DI_Name( dirIt ) );                
+                newFileInfo.path = pathToFile;                
+                newFileInfo.size = CORE::DI_Size( dirIt );
+                newFileInfo.hash = MD5FromFile( pathToFile );
+                
+                list.push_back( newFileInfo );
+            }
+            else
+            {
+                // Check if we are processing sub-dirs
+                if ( recursive )
+                {
+                    if ( 0 != strcmp( ".", DI_Name( dirIt ) ) &&
+                         0 != strcmp( "..", DI_Name( dirIt ) ) )
+                    {
+                        // recursively process the sub-dir
+                        CORE::CString subDirRoot = srcRoot;
+                        CORE::AppendToPath( subDirRoot, DI_Name( dirIt ) );
+                        
+                        BuildFileInfoList( subDirRoot ,
+                                           list       ,
+                                           recursive  );
+                    }
+                }
+            }
+        }
+        while ( CORE::DI_Next_Dir_Entry( dirIt ) != 0 );
+        CORE::DI_Cleanup( dirIt );
     }
-    
-    ~CMSWin32ConsoleWindow()
-    {GUCEF_TRACE;
-    
-        FreeConsole();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+BuildSizeBasedIndex( const TFileInfoList& list ,
+                     TFileSizeMultiMap& index  )
+{GUCEF_TRACE;
+
+    TFileInfoList::const_iterator i = list.begin();
+    while ( i != list.end() )
+    {
+        const TFileInfo* fileInfo = &(*i);
+        index.insert( TFileSizeMultiMapPair( fileInfo->size, fileInfo ) );
+        ++i;
     }
-};
+}
 
-#endif /* GUCEF_MSWIN_BUILD ? */
+/*-------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
+void
+BuildHashBasedIndex( const TFileInfoList& list ,
+                     TFileHashMultiMap& index  )
+{GUCEF_TRACE;
 
+    TFileInfoList::const_iterator i = list.begin();
+    while ( i != list.end() )
+    {
+        const TFileInfo* fileInfo = &(*i);
+        index.insert( TFileHashMultiMapPair( fileInfo->hash, fileInfo ) );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+BuildSizeBasedDuplicateList( const TFileInfoList& list1    ,
+                             const TFileInfoList& list2    ,
+                             TDuplicateFileEntryList& list )
+{GUCEF_TRACE;
+
+    TFileSizeMultiMap sizeBasedIndex1;
+    TFileSizeMultiMap sizeBasedIndex2;
+    
+    BuildSizeBasedIndex( list1, sizeBasedIndex1 );
+    BuildSizeBasedIndex( list2, sizeBasedIndex2 );
+    
+    // For each size entry in index1 find files with the same size in index2 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+BuildSizeBasedDuplicateList( const CORE::CString& srcRoot1 ,
+                             const CORE::CString& srcRoot2 ,
+                             TDuplicateFileEntryList& list )
+{GUCEF_TRACE;
+
+    TFileInfoList infoList1;
+    TFileInfoList infoList2;
+    
+    BuildFileInfoList( srcRoot1  ,
+                       infoList1 ,
+                       true      );
+    BuildFileInfoList( srcRoot2  ,
+                       infoList2 ,
+                       true      );
+
+    BuildSizeBasedDuplicateList( infoList1 ,
+                                 infoList2 ,
+                                 list      );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+BuildHashBasedDuplicateList( const TFileInfoList& list1    ,
+                             const TFileInfoList& list2    ,
+                             TDuplicateFileEntryList& list )
+{GUCEF_TRACE;
+
+    TFileHashMultiMap hashBasedIndex1;
+    TFileHashMultiMap hashBasedIndex2;
+    
+    BuildHashBasedIndex( list1, hashBasedIndex1 );
+    BuildHashBasedIndex( list2, hashBasedIndex2 );
+    
+    // For each hash entry in index1 find files with the same hash in index2 
+    std::pair< TFileHashMultiMap::const_iterator, TFileHashMultiMap::const_iterator > itPair;
+    TFileHashMultiMap::iterator i = hashBasedIndex1.begin();
+    while ( i != hashBasedIndex1.end() )
+    {
+        // Find a match in both indeces
+        itPair = hashBasedIndex2.equal_range( (*i).first );
+        
+        // Iterate the matching set
+        TFileHashMultiMap::const_iterator n = itPair.first;
+        while ( n != itPair.second )
+        {
+            // Get the fileinfo in index2 which matches up with the file in index1
+            const TFileHashMultiMapPair& entry = (*n);
+            
+            //list.push_back( 
+            
+            ++n;
+        }        
+        
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+BuildHashBasedDuplicateList( const CORE::CString& srcRoot1 ,
+                             const CORE::CString& srcRoot2 ,
+                             TDuplicateFileEntryList& list )
+{GUCEF_TRACE;
+
+    TFileInfoList infoList1;
+    TFileInfoList infoList2;
+    
+    BuildFileInfoList( srcRoot1  ,
+                       infoList1 ,
+                       true      );
+    BuildFileInfoList( srcRoot2  ,
+                       infoList2 ,
+                       true      );
+
+    BuildHashBasedDuplicateList( infoList1 ,
+                                 infoList2 ,
+                                 list      );
+}
+
+/*-------------------------------------------------------------------------*/
+          
 void
 PrintHeader( void )
 {GUCEF_TRACE;
@@ -177,47 +339,13 @@ ParseParams( const int argc                        ,
     }
 }
 
-/*-------------------------------------------------------------------------*/
-
-void
-BuildDuplicateList( GUCEF::CORE::CDataNode& dupList        ,
-                    const GUCEF::CORE::CDataNode& fullList )
-{GUCEF_TRACE;
-
-    // @TODO @MAKEME
-}
 
 /*-------------------------------------------------------------------------*/
 
 /*
  *      Application entry point
  */
-#ifdef GUCEF_MSWIN_BUILD
-
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
-{
-
-    int argc = 0;
-    char** argv = &lpcmdline;
-    if ( lpcmdline != NULL )
-    {
-        if ( *lpcmdline != '\0' )
-        {
-            argc = 1;
-        }
-    }
-    
-#else
-
-int
-main( int argc , char* argv[] )
-{GUCEF_TRACE;
-
-#endif
+GUCEF_OSMAIN_BEGIN
                
     #ifdef GUCEF_CORE_DEBUG_MODE
     //GUCEF::CORE::GUCEF_LogStackToStdOut();
@@ -232,15 +360,9 @@ main( int argc , char* argv[] )
         
         GUCEF::CORE::CStdLogger logger( logFileAccess );
         GUCEF::CORE::CLogManager::Instance()->AddLogger( &logger );
-        
-        #ifdef GUCEF_MSWIN_BUILD
-        GUCEF::CORE::CMSWinConsoleLogger consoleOut;
-        GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
-        #endif /* GUCEF_MSWIN_BUILD ? */
 
-        #ifdef GUCEF_MSWIN_BUILD
-        CMSWin32ConsoleWindow console;
-        #endif
+        GUCEF::CORE::CPlatformNativeConsoleLogger console;
+        GUCEF::CORE::CLogManager::Instance()->AddLogger( console.GetLogger() );
 
 	    if ( 0 == argc )
 	    {
@@ -265,16 +387,15 @@ main( int argc , char* argv[] )
             }
            
             // Obtain the application arguments
-            GUCEF::CORE::CString rootDirPath = argList[ "RootDirPath" ];
-            GUCEF::CORE::CString outputPath = argList[ "OutputPath" ];
-            GUCEF::CORE::CString listCodec = argList[ "ListCodec" ];
-            GUCEF::CORE::CString pluginDir = argList[ "PluginDir" ];
-            GUCEF::CORE::CString hashCheckStr = argList[ "HashCheck" ];
-            GUCEF::CORE::CString filter = argList[ "Filter" ]; 
+            GUCEF::CORE::CString rootDirPath = argList.GetValueAlways( "RootDirPath" );
+            GUCEF::CORE::CString outputPath = argList.GetValueAlways( "OutputPath" );
+            GUCEF::CORE::CString listCodec = argList.GetValueAlways( "ListCodec" );
+            GUCEF::CORE::CString pluginDir = argList.GetValueAlways( "PluginDir" );
+            GUCEF::CORE::CString hashCheckStr = argList.GetValueAlways( "HashCheck" );
+            GUCEF::CORE::CString filter = argList.GetValueAlways( "Filter" ); 
 
             // Prepare some vars
             GUCEF::CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr;
-            GUCEF::VFS::CVFS* vfs = GUCEF::VFS::CVFS::Instance();
             bool hashCheck = false;
             
             if ( hashCheckStr.Length() != 0 )
@@ -308,36 +429,36 @@ main( int argc , char* argv[] )
             pluginControl->SetPluginDir( pluginDir );
             pluginControl->LoadAll();
 
-            // Now we ask the VFS to build the list for us.
-            // This operation can take a while
-            GUCEF::CORE::CDataNode fileListRoot;
-            vfs->GetList( fileListRoot ,
-                          ""           ,
-                          true         ,
-                          filter       ,
-                          hashCheck    );
+            //// Now we ask the VFS to build the list for us.
+            //// This operation can take a while
+            //GUCEF::CORE::CDataNode fileListRoot;
+            //vfs->GetList( fileListRoot ,
+            //              ""           ,
+            //              true         ,
+            //              filter       ,
+            //              hashCheck    );
 
-            // Store the full list to file
-            GUCEF::CORE::CString fullListFilePath( outputPath );
-            GUCEF::CORE::AppendToPath( fullListFilePath, "FullDirAndFileIndex." );
-            fullListFilePath += listCodec;
-            GUCEF::CORE::CFileAccess fullListFile( fullListFilePath );
-            
-            codecPtr->StoreDataTree( &fileListRoot, &fullListFile );
-                                     
-            // Now we have all the data we need to start looking for duplicate 
-            // files with ease
-            GUCEF::CORE::CDataNode duplicateList;
-            BuildDuplicateList( duplicateList ,
-                                fileListRoot  );
-                                
-            // Store the duplicate list to file
-            GUCEF::CORE::CString duplicateListFilePath( outputPath );
-            GUCEF::CORE::AppendToPath( duplicateListFilePath, "DuplicateFileList." );
-            duplicateListFilePath += listCodec;
-            GUCEF::CORE::CFileAccess duplicateListFile( fullListFilePath );
-            
-            codecPtr->StoreDataTree( &duplicateList, &duplicateListFile );
+            //// Store the full list to file
+            //GUCEF::CORE::CString fullListFilePath( outputPath );
+            //GUCEF::CORE::AppendToPath( fullListFilePath, "FullDirAndFileIndex." );
+            //fullListFilePath += listCodec;
+            //GUCEF::CORE::CFileAccess fullListFile( fullListFilePath );
+            //
+            //codecPtr->StoreDataTree( &fileListRoot, &fullListFile );
+            //                         
+            //// Now we have all the data we need to start looking for duplicate 
+            //// files with ease
+            //GUCEF::CORE::CDataNode duplicateList;
+            //BuildDuplicateList( duplicateList ,
+            //                    fileListRoot  );
+            //                    
+            //// Store the duplicate list to file
+            //GUCEF::CORE::CString duplicateListFilePath( outputPath );
+            //GUCEF::CORE::AppendToPath( duplicateListFilePath, "DuplicateFileList." );
+            //duplicateListFilePath += listCodec;
+            //GUCEF::CORE::CFileAccess duplicateListFile( fullListFilePath );
+            //
+            //codecPtr->StoreDataTree( &duplicateList, &duplicateListFile );
                                             
             return 1;
         }
@@ -389,7 +510,8 @@ main( int argc , char* argv[] )
                                        "Unhandled exception during program execution, the application will now terminate"  );                                                         
     }
     return 1;                                                                                                                              
-}
+
+GUCEF_OSMAIN_END
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -1,0 +1,10 @@
+
+if (WIN32)
+  add_executable( FileReplacer WIN32 ${HEADER_FILES} ${SOURCE_FILES} )
+else()
+  add_executable( FileReplacer ${HEADER_FILES} ${SOURCE_FILES} )
+endif()
+add_dependencies( FileReplacer gucefCORE gucefMT )
+target_link_libraries( FileReplacer gucefCORE gucefMT )
+set_target_properties( FileReplacer PROPERTIES COMPILE_DEFINITIONS FILEREPLACER_BUILD_MODULE )
+GUCEF_config_tool( FileReplacer )

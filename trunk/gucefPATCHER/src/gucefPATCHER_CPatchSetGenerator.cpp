@@ -203,8 +203,8 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Opened file and commencing MD5 generation from: " + filePath );
                         
                         UInt8 md5Digest[ 16 ];
-                        if ( 0 == CORE::md5frommfile( fileAccess.CStyleAccess() ,
-                                                      md5Digest                 ) )
+                        if ( 0 == CORE::md5fromfile( fileAccess.CStyleAccess() ,
+                                                     md5Digest                 ) )
                         {
                             // clean up our toys
                             CORE::DI_Cleanup( dirEntry );

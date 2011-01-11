@@ -149,6 +149,7 @@ set(HEADER_FILES
   include/gucefCORE_CLoggingTask.h
   include/gucefCORE_CObserverSwitch.h
   include/gucefCORE_config.h
+  include/gucefCORE_CPlatformNativeConsoleLogger.h
   include/gucefCORE_CPulseData.h
   include/gucefCORE_CPulseGenerator.h
   include/gucefCORE_CSingleTaskDelegator.h
@@ -301,6 +302,7 @@ set(SOURCE_FILES
   src/gucefCORE_CLinkedTransferBuffer.cpp
   src/gucefCORE_CLoggingTask.cpp
   src/gucefCORE_CObserverSwitch.cpp
+  src/gucefCORE_CPlatformNativeConsoleLogger.cpp
   src/gucefCORE_CPulseData.cpp
   src/gucefCORE_CPulseGenerator.cpp
   src/gucefCORE_CSingleTaskDelegator.cpp
@@ -405,7 +407,7 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 
 
-add_library( gucefCORE ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
+add_library( gucefCORE ${ALL_FILES} )
 add_dependencies( gucefCORE gucefMT )
 target_link_libraries( gucefCORE gucefMT )
 if (UNIX)
