@@ -301,8 +301,8 @@ CFileSystemArchive::GetFileHash( const CString& file ) const
         CORE::CFileAccess fileAccess( path );
 
         UInt8 md5Hash[ 16 ];
-        if ( CORE::md5frommfile( fileAccess.CStyleAccess() ,
-                                 md5Hash                   ) == 1 )
+        if ( CORE::md5fromfile( fileAccess.CStyleAccess() ,
+                                md5Hash                   ) == 1 )
         {
             return CORE::MD5ToString( md5Hash );
         }

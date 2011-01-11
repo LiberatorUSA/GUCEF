@@ -1,0 +1,10 @@
+
+if (WIN32)
+  add_executable( DuplicateFileFinder WIN32 ${HEADER_FILES} ${SOURCE_FILES} )
+else()
+  add_executable( DuplicateFileFinder ${HEADER_FILES} ${SOURCE_FILES} )
+endif()
+add_dependencies( DuplicateFileFinder gucefCORE gucefMT )
+target_link_libraries( DuplicateFileFinder gucefCORE gucefMT )
+set_target_properties( DuplicateFileFinder PROPERTIES COMPILE_DEFINITIONS DUPLICATEFILEFINDER_BUILD_MODULE )
+GUCEF_config_tool( DuplicateFileFinder )

@@ -35,35 +35,39 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-namespace GUCEF {
-namespace CORE {
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILTIIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+   extern "C" {
+#endif   /* __cplusplus */
+
+/*-------------------------------------------------------------------------*/
 
 /** 
  *  Returns the handle of the current module the code is compiled in.
  *  Nowadays in Win32 this means the same as getting the HINSTANCE for the
  *  application. They are only different in 16-bit windows.
  */
-HMODULE
+GUCEF_CORE_PUBLIC_C HMODULE
 GetCurrentModuleHandle( void );
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
-}; /* namespace GUCEF */
+/**
+ *  Function to clear the console window.
+ *  This is not always available on all windowed platforms thus 
+ *  we provide a version here
+ */
+GUCEF_CORE_PUBLIC_C void 
+cls( void );
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+   }
+#endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------*/
 

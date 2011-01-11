@@ -59,8 +59,8 @@ namespace CORE {
  *	Returns 1 on success and 0 on failure.
  */
 GUCEF_CORE_PUBLIC_C UInt32
-md5frommfile( TIOAccess* access  ,
-              UInt8 digest[ 16 ] );
+md5fromfile( TIOAccess* access  ,
+             UInt8 digest[ 16 ] );
 
 /*--------------------------------------------------------------------------*/
 

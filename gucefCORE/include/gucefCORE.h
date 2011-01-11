@@ -381,12 +381,17 @@
 #define GUCEF_CORE_CEXCEPTION_H
 #endif /* GUCEF_CORE_CEXCEPTION_H ? */
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 /*---------------------------------------------------------------------------/
 
         C++ MS Windows includes
 
 /---------------------------------------------------------------------------*/
-#ifdef GUCEF_MSWIN_BUILD
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32
 
 /*
  *  Note that the following includes may require a include path to be added
@@ -419,7 +424,12 @@
 #define GUCEF_CORE_CMSWIN32CONSOLEWINDOW_H
 #endif /* GUCEF_CORE_CMSWIN32CONSOLEWINDOW_H ? */
 
-#endif /* GUCEF_MSWIN_BUILD ? */
+#ifndef GUCEF_CORE_MSWINUTILS_H
+#include "gucefCORE_mswinutils.h"
+#define GUCEF_CORE_MSWINUTILS_H
+#endif /* GUCEF_CORE_MSWINUTILS_H ? */
+
+#endif /* GUCEF_PLATFORM_WIN32 ? */
 
 #endif /* __cplusplus ? */
 
@@ -429,7 +439,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_C const char* GUCEF_CORE_ModuleCompileTimeStamp( void );
+GUCEF_CORE_PUBLIC_C const char* 
+GUCEF_CORE_ModuleCompileTimeStamp( void );
 
 /*-------------------------------------------------------------------------*/
 

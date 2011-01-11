@@ -311,8 +311,8 @@ CVPArchive::GetFileHash( const VFS::CString& file ) const
     if ( NULL != fileAccess )
     {
         VFS::UInt8 digest[ 16 ];
-        if ( 0 != CORE::md5frommfile( fileAccess->CStyleAccess() ,
-                                      digest                     ) )
+        if ( 0 != CORE::md5fromfile( fileAccess->CStyleAccess() ,
+                                     digest                     ) )
         {
             delete fileAccess;
             

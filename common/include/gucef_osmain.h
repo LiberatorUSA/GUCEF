@@ -1,5 +1,5 @@
 /*
- *  GUCEF platform wide macros/defines for OS/Compiler specifics
+ *  GUCEF platform wide macros/defines for the main app entry point
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -16,87 +16,79 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
-
-#ifndef GUCEF_PLATFORM_H
-#define GUCEF_PLATFORM_H
+ 
+ #ifndef GUCEF_OSMAIN_H
+ #define GUCEF_OSMAIN_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CONFIG_H
-#include "gucef_config.h"
-#define GUCEF_CONFIG_H
-#endif /* GUCEF_CONFIG_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      CONSTANTS                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-/* Initial platform/compiler-related stuff to set.
-*/
-#define GUCEF_PLATFORM_WIN32 1
-#define GUCEF_PLATFORM_LINUX 2
-#define GUCEF_PLATFORM_APPLE 3
-
-#define GUCEF_COMPILER_MSVC 1
-#define GUCEF_COMPILER_GNUC 2
-#define GUCEF_COMPILER_BORL 3
-
-#define GUCEF_ENDIAN_LITTLE 1
-#define GUCEF_ENDIAN_BIG 2
-
-#define GUCEF_ARCHITECTURE_32 1
-#define GUCEF_ARCHITECTURE_64 2
-
+ 
+#ifndef GUCEF_PLATFORM_H
+#include "gucef_platform.h"
+#define GUCEF_PLATFORM_H
+#endif /* GUCEF_PLATFORM_H ? */
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      MACROS                                                             //
 //                                                                         //
-//-------------------------------------------------------------------------*/
+//-------------------------------------------------------------------------*/ 
 
-/* Finds the compiler type and version.
-*/
-#if defined( _MSC_VER )
-#   define GUCEF_COMPILER GUCEF_COMPILER_MSVC
-#   define GUCEF_COMP_VER _MSC_VER
+/*
+ *  Here we will define the GUCEF_OSMAIN macro which defines a entry point
+ *  and makes the following variables available and application parameters:
+ *      int argc
+ *      char** argv
+ *
+ *  This makes the parsing of application parameters uniform
+ */
+ 
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32
 
-#elif defined( __GNUC__ )
-#   define GUCEF_COMPILER GUCEF_COMPILER_GNUC
-#   define GUCEF_COMP_VER (((__GNUC__)*100) + \
-        (__GNUC_MINOR__*10) + \
-        __GNUC_PATCHLEVEL__)
+    #include <windows.h>
+    #undef min
+    #undef max
 
-#elif defined( __BORLANDC__ )
-#   define GUCEF_COMPILER GUCEF_COMPILER_BORL
-#   define GUCEF_COMP_VER __BCPLUSPLUS__
-#   define __FUNCTION__ __FUNC__
+    #define GUCEF_OSMAIN_BEGIN                \
+                                              \
+    int __stdcall                             \
+    WinMain( HINSTANCE hinstance     ,        \
+             HINSTANCE hprevinstance ,        \
+             LPSTR lpcmdline         ,        \
+             int ncmdshow            )        \
+    {                                         \
+                                              \
+        int argc = 0;                         \
+        char** argv = &lpcmdline;             \
+        if ( lpcmdline != NULL )              \
+        {                                     \
+            if ( *lpcmdline != '\0' )         \
+            {                                 \
+                argc = 1;                     \
+            }                                 \
+        }
+                                              
+    #define GUCEF_OSMAIN_END }
+
 #else
-#   pragma error "No known compiler. Abort! Abort!"
+
+    #define GUCEF_OSMAIN_BEGIN                \
+                                              \
+    int                                       \
+    main( int argc , char* argv[] )           \
+    {
+    
+    #define GUCEF_OSMAIN_END }
 
 #endif
 
-
-/* Finds the current platform */
-
-#if defined( __WIN32__ ) || defined( _WIN32 )
-#   define GUCEF_PLATFORM GUCEF_PLATFORM_WIN32
-#   define GUCEF_MSWIN_BUILD
-#elif defined( __APPLE_CC__)
-#   define GUCEF_PLATFORM GUCEF_PLATFORM_APPLE
-#else
-#   define GUCEF_PLATFORM GUCEF_PLATFORM_LINUX
-#   define GUCEF_LINUX_BUILD
-#endif
-
-/*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_PLATFORM_H ? */
-
+/*-------------------------------------------------------------------------*/ 
+ 
+ #endif /* GUCEF_OSMAIN_H ? */
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      Info & Changes                                                     //
