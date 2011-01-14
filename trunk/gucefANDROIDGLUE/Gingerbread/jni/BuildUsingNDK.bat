@@ -1,6 +1,7 @@
 @echo off
 
-SET BUIDUSINGNDK_THEBATCHDIR=%CD%
+REM SET BUIDUSINGNDK_THEBATCHDIR=%CD%
+SET BUIDUSINGNDK_THEBATCHDIR=%~dp0
 
 ECHO.
 ECHO *** Starting build from MS Windows ***
@@ -8,7 +9,7 @@ ECHO.
 
 IF NOT DEFINED GUCEF_HOME (
   ECHO GUCEF environment variable not found, setting it
-  SET GUCEF_HOME=%BUIDUSINGNDK_THEBATCHDIR%\..\..\..
+  SET GUCEF_HOME=%BUIDUSINGNDK_THEBATCHDIR%..\..\..
 )
 REM ECHO GUCEF_HOME="%GUCEF_HOME%"
 
@@ -29,7 +30,15 @@ IF DEFINED CYGWIN_ROOT (
   ECHO.
   ECHO *** Invoking BuildUsingNDK.sh using bash ***
   
-  %CYGWIN_ROOT%\bin\bash.exe BuildUsingNDK.sh
+  ECHO Adding Cygwin binary paths to PATH
+  SET PATH="%BUIDUSINGNDK_THEBATCHDIR%;%CYGWIN_ROOT%\bin;%PATH%"
+
+  REM ECHO Changing working directory to cygwin's bin
+  REM CD /D "%CYGWIN_ROOT%\bin"
+
+  REM CD /D %BUIDUSINGNDK_THEBATCHDIR%
+
+  %CYGWIN_ROOT%\bin\bash.exe BuildUsingNDK.sh --login -i
 )
 
 IF NOT DEFINED CYGWIN_ROOT (

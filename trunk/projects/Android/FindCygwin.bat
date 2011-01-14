@@ -74,7 +74,7 @@ SET EXETEST=c:\cygwin\bin\bash.exe
 
 IF EXIST "%EXETEST%" (
   ECHO Found Cygwin at the default install location C:\cygwin
-  SET CYGWIN_ROOT="c:\cygwin"
+  SET CYGWIN_ROOT=c:\cygwin
   GOTO END_OF_BATCH
 )
 
