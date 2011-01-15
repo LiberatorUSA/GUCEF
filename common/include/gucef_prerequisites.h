@@ -24,10 +24,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-// Define ogre version
-#define GUCEF_VERSION_MAJOR 0
-#define GUCEF_VERSION_MINOR 1
-#define GUCEF_VERSION_PATCH 1
+// Define GUCEF version
+#define GUCEF_VERSION_MAJOR   0
+#define GUCEF_VERSION_MINOR   1
+#define GUCEF_VERSION_PATCH   2
+#define GUCEF_VERSION_RELEASE 1
 #define GUCEF_VERSION_SUFFIX ""
 #define GUCEF_VERSION_NAME "InitialBeta"
 
