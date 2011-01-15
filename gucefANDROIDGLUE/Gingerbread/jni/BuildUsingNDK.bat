@@ -29,14 +29,18 @@ IF DEFINED CYGWIN_ROOT (
   
   ECHO.
   ECHO *** Invoking BuildUsingNDK.sh using bash ***
+  ECHO.
   
-  ECHO Adding Cygwin binary paths to PATH
-  SET PATH="%BUIDUSINGNDK_THEBATCHDIR%;%CYGWIN_ROOT%\bin;%PATH%"
+  rem ECHO Adding Cygwin binary paths to PATH
+  rem SET PATH="%BUIDUSINGNDK_THEBATCHDIR%";"%CYGWIN_ROOT%\bin";"%PATH%"
 
   REM ECHO Changing working directory to cygwin's bin
   REM CD /D "%CYGWIN_ROOT%\bin"
 
-  REM CD /D %BUIDUSINGNDK_THEBATCHDIR%
+  CD /D %BUIDUSINGNDK_THEBATCHDIR%
+
+  ECHO Undefining GUCEF_HOME so we don't mess up the bash version
+  SET GUCEF_HOME=
 
   %CYGWIN_ROOT%\bin\bash.exe BuildUsingNDK.sh --login -i
 )
