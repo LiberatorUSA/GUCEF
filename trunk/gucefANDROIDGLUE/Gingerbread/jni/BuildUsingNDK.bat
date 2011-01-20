@@ -31,8 +31,11 @@ IF DEFINED CYGWIN_ROOT (
   ECHO *** Invoking BuildUsingNDK.sh using bash ***
   ECHO.
   
-  rem ECHO Adding Cygwin binary paths to PATH
-  rem SET PATH="%BUIDUSINGNDK_THEBATCHDIR%";"%CYGWIN_ROOT%\bin";"%PATH%"
+  REM Cygwin needs its bin dirs to be able to execute commands
+  REM /usr/local/bin;/usr/bin;/bin
+  
+  ECHO Adding Cygwin binary paths to PATH
+  SET PATH=%CYGWIN_ROOT%\local\bin;%CYGWIN_ROOT%\usr\bin;%CYGWIN_ROOT%\bin;"%PATH%"
 
   REM ECHO Changing working directory to cygwin's bin
   REM CD /D "%CYGWIN_ROOT%\bin"
