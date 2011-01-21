@@ -71,11 +71,8 @@ typedef struct SDuplicateFileEntry TDuplicateFileEntry;
 
 typedef std::vector< TDuplicateFileEntry > TDuplicateFileEntryList;
 
-typedef std::multimap< CORE::UInt32, const TFileInfo* > TFileSizeMultiMap;
-typedef std::pair< CORE::UInt32, const TFileInfo* > TFileSizeMultiMapPair;
-
-typedef std::multimap< CORE::CString, const TFileInfo* > TFileHashMultiMap;
-typedef std::pair< CORE::CString, const TFileInfo* > TFileHashMultiMapPair;
+typedef std::multimap< CORE::UInt32, TFileInfo* > TFileSizeMultiMap;
+typedef std::pair< CORE::UInt32, TFileInfo* > TFileSizeMultiMapPair;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -99,7 +96,8 @@ MD5FromFile( const CORE::CString& filePath )
 void
 BuildFileInfoList( const CORE::CString& srcRoot ,
                    TFileInfoList& list          ,
-                   bool recursive               )
+                   bool recursive               ,
+                   bool generateHash            )
 {GUCEF_TRACE;
 
     struct CORE::SDI_Data* dirIt = CORE::DI_First_Dir_Entry( srcRoot.C_String() );
@@ -115,7 +113,11 @@ BuildFileInfoList( const CORE::CString& srcRoot ,
                 CORE::AppendToPath( pathToFile, DI_Name( dirIt ) );                
                 newFileInfo.path = pathToFile;                
                 newFileInfo.size = CORE::DI_Size( dirIt );
-                newFileInfo.hash = MD5FromFile( pathToFile );
+                
+                if ( generateHash )
+                {
+                    newFileInfo.hash = MD5FromFile( pathToFile );
+                }
                 
                 list.push_back( newFileInfo );
             }
@@ -131,9 +133,10 @@ BuildFileInfoList( const CORE::CString& srcRoot ,
                         CORE::CString subDirRoot = srcRoot;
                         CORE::AppendToPath( subDirRoot, DI_Name( dirIt ) );
                         
-                        BuildFileInfoList( subDirRoot ,
-                                           list       ,
-                                           recursive  );
+                        BuildFileInfoList( subDirRoot   ,
+                                           list         ,
+                                           recursive    ,
+                                           generateHash );
                     }
                 }
             }
@@ -146,14 +149,14 @@ BuildFileInfoList( const CORE::CString& srcRoot ,
 /*-------------------------------------------------------------------------*/
 
 void
-BuildSizeBasedIndex( const TFileInfoList& list ,
-                     TFileSizeMultiMap& index  )
+BuildSizeBasedIndex( TFileInfoList& list      ,
+                     TFileSizeMultiMap& index )
 {GUCEF_TRACE;
 
-    TFileInfoList::const_iterator i = list.begin();
+    TFileInfoList::iterator i = list.begin();
     while ( i != list.end() )
     {
-        const TFileInfo* fileInfo = &(*i);
+        TFileInfo* fileInfo = &(*i);
         index.insert( TFileSizeMultiMapPair( fileInfo->size, fileInfo ) );
         ++i;
     }
@@ -162,25 +165,9 @@ BuildSizeBasedIndex( const TFileInfoList& list ,
 /*-------------------------------------------------------------------------*/
 
 void
-BuildHashBasedIndex( const TFileInfoList& list ,
-                     TFileHashMultiMap& index  )
-{GUCEF_TRACE;
-
-    TFileInfoList::const_iterator i = list.begin();
-    while ( i != list.end() )
-    {
-        const TFileInfo* fileInfo = &(*i);
-        index.insert( TFileHashMultiMapPair( fileInfo->hash, fileInfo ) );
-        ++i;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-BuildSizeBasedDuplicateList( const TFileInfoList& list1    ,
-                             const TFileInfoList& list2    ,
-                             TDuplicateFileEntryList& list )
+BuildSizeAndHashBasedDuplicateList( TFileInfoList& list1          ,
+                                    TFileInfoList& list2          ,
+                                    TDuplicateFileEntryList& list )
 {GUCEF_TRACE;
 
     TFileSizeMultiMap sizeBasedIndex1;
@@ -190,75 +177,61 @@ BuildSizeBasedDuplicateList( const TFileInfoList& list1    ,
     BuildSizeBasedIndex( list2, sizeBasedIndex2 );
     
     // For each size entry in index1 find files with the same size in index2 
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-BuildSizeBasedDuplicateList( const CORE::CString& srcRoot1 ,
-                             const CORE::CString& srcRoot2 ,
-                             TDuplicateFileEntryList& list )
-{GUCEF_TRACE;
-
-    TFileInfoList infoList1;
-    TFileInfoList infoList2;
-    
-    BuildFileInfoList( srcRoot1  ,
-                       infoList1 ,
-                       true      );
-    BuildFileInfoList( srcRoot2  ,
-                       infoList2 ,
-                       true      );
-
-    BuildSizeBasedDuplicateList( infoList1 ,
-                                 infoList2 ,
-                                 list      );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-BuildHashBasedDuplicateList( const TFileInfoList& list1    ,
-                             const TFileInfoList& list2    ,
-                             TDuplicateFileEntryList& list )
-{GUCEF_TRACE;
-
-    TFileHashMultiMap hashBasedIndex1;
-    TFileHashMultiMap hashBasedIndex2;
-    
-    BuildHashBasedIndex( list1, hashBasedIndex1 );
-    BuildHashBasedIndex( list2, hashBasedIndex2 );
-    
-    // For each hash entry in index1 find files with the same hash in index2 
-    std::pair< TFileHashMultiMap::const_iterator, TFileHashMultiMap::const_iterator > itPair;
-    TFileHashMultiMap::iterator i = hashBasedIndex1.begin();
-    while ( i != hashBasedIndex1.end() )
+    std::pair< TFileSizeMultiMap::iterator, TFileSizeMultiMap::iterator > itPair;
+    TFileSizeMultiMap::iterator i = sizeBasedIndex1.begin();
+    while ( i != sizeBasedIndex1.end() )
     {
         // Find a match in both indeces
-        itPair = hashBasedIndex2.equal_range( (*i).first );
+        itPair = sizeBasedIndex2.equal_range( (*i).first );
+        
+        // Check if entry (*i) has a hash generated for it, if not generate one
+        TFileInfo* file1 = (*i).second;
+        if ( file1->hash.IsNULLOrEmpty() )
+        {
+            file1->hash = MD5FromFile( file1->path );
+        }
         
         // Iterate the matching set
-        TFileHashMultiMap::const_iterator n = itPair.first;
+        TFileSizeMultiMap::iterator n = itPair.first;
         while ( n != itPair.second )
         {
             // Get the fileinfo in index2 which matches up with the file in index1
-            const TFileHashMultiMapPair& entry = (*n);
+            TFileInfo* file2 = (*n).second;
             
-            //list.push_back( 
+            // Just because files have the same file size doesnt mean they are the same.
+            // We wont check the filenames since that is not a good indicator either
+            // this tool has to be smarter then that as to not be fooled by file renames.
+            // As such we will now generate a hash per file
+
+            // Check if file2 has a hash generated for it, if not generate one
+            if ( file2->hash.IsNULLOrEmpty() )
+            {
+                file2->hash = MD5FromFile( file2->path );
+            }
+            
+            // We already know the size matches, now lets see if the hash matches
+            if ( file1->hash == file2->hash )
+            {
+                // Both match, we will consider this a duplicate
+                TDuplicateFileEntry dupEntry;
+                dupEntry.file1 = *file1;
+                dupEntry.file2 = *file2;
+                list.push_back( dupEntry );
+            }
             
             ++n;
         }        
         
         ++i;
-    }
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-BuildHashBasedDuplicateList( const CORE::CString& srcRoot1 ,
-                             const CORE::CString& srcRoot2 ,
-                             TDuplicateFileEntryList& list )
+BuildSizeAndHashBasedDuplicateList( const CORE::CString& srcRoot1 ,
+                                    const CORE::CString& srcRoot2 ,
+                                    TDuplicateFileEntryList& list )
 {GUCEF_TRACE;
 
     TFileInfoList infoList1;
@@ -266,14 +239,16 @@ BuildHashBasedDuplicateList( const CORE::CString& srcRoot1 ,
     
     BuildFileInfoList( srcRoot1  ,
                        infoList1 ,
-                       true      );
+                       true      ,
+                       false     );
     BuildFileInfoList( srcRoot2  ,
                        infoList2 ,
-                       true      );
+                       true      ,
+                       false     );
 
-    BuildHashBasedDuplicateList( infoList1 ,
-                                 infoList2 ,
-                                 list      );
+    BuildSizeAndHashBasedDuplicateList( infoList1 ,
+                                        infoList2 ,
+                                        list      );
 }
 
 /*-------------------------------------------------------------------------*/
