@@ -321,6 +321,7 @@ ParseParams( const int argc                        ,
  *      Application entry point
  */
 GUCEF_OSMAIN_BEGIN
+{GUCEF_TRACE;
                
     #ifdef GUCEF_CORE_DEBUG_MODE
     //GUCEF::CORE::GUCEF_LogStackToStdOut();
@@ -486,6 +487,7 @@ GUCEF_OSMAIN_BEGIN
     }
     return 1;                                                                                                                              
 
+}
 GUCEF_OSMAIN_END
 
 /*-------------------------------------------------------------------------//
