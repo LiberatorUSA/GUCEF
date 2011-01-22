@@ -28,7 +28,7 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
-#include "gucefProjectGenerator_CIProjectGenerator.h"
+#include "gucefProjectGenerator_CIProjectInfoGatherer.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,29 +45,29 @@ namespace PROJECTGENERATOR {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CIProjectGenerator::CIProjectGenerator( void )
+CIProjectInfoGatherer::CIProjectInfoGatherer( void )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
     
-CIProjectGenerator::CIProjectGenerator( const CIProjectGenerator& src )
+CIProjectInfoGatherer::CIProjectInfoGatherer( const CIProjectInfoGatherer& src )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
     
-CIProjectGenerator::~CIProjectGenerator()
+CIProjectInfoGatherer::~CIProjectInfoGatherer()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CIProjectGenerator&
-CIProjectGenerator::operator=( const CIProjectGenerator& src )
+CIProjectInfoGatherer&
+CIProjectInfoGatherer::operator=( const CIProjectInfoGatherer& src )
 {GUCEF_TRACE;
     
     return *this;

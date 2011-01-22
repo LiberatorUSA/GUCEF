@@ -57,6 +57,17 @@ CAndroidMakefileGenerator::~CAndroidMakefileGenerator()
 
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CAndroidMakefileGenerator::GenerateProject( TProjectInfo& projectInfo            ,
+                                            const CORE::CString& outputDir       ,
+                                            bool addGeneratorCompileTimeToOutput )
+{GUCEF_TRACE;
+
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

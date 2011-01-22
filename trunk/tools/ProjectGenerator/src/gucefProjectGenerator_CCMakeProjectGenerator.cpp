@@ -65,7 +65,7 @@ namespace PROJECTGENERATOR {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const TStringSetMap&
+static const TStringSetMap&
 GetSupportedPlatformDirMap( void )
 
 {GUCEF_TRACE;
@@ -93,7 +93,7 @@ GetSupportedPlatformDirMap( void )
 
 /*-------------------------------------------------------------------------*/
 
-const TStringSet&
+static const TStringSet&
 GetSupportedPlatforms( void )
 {GUCEF_TRACE;
 

@@ -65,7 +65,7 @@ namespace PROJECTGENERATOR {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CORE::CDStoreCodecRegistry::TDStoreCodecPtr
+static CORE::CDStoreCodecRegistry::TDStoreCodecPtr
 GetXmlDStoreCodec( void )
 {GUCEF_TRACE;
 
