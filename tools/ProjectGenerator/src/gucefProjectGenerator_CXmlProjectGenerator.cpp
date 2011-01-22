@@ -154,7 +154,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         moduleInfoNode.SetAttribute( "Name", moduleInfo.name );
         moduleInfoNode.SetAttribute( "BuildOrder", CORE::Int32ToString( moduleInfo.buildOrder ) );
         moduleInfoNode.SetAttribute( "RootDir", moduleInfo.rootDir );
-        moduleInfoNode.SetAttribute( "IsExecutable", CORE::BoolToString( moduleInfo.isExecutable ) );
+        moduleInfoNode.SetAttribute( "Type", ModuleTypeToString( moduleInfo.moduleType ) );
 
         // Add headers for all platforms
         CORE::CDataNode headersInfoNode;

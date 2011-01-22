@@ -2074,8 +2074,12 @@ ProcessProjectDir( TProjectInfo& projectInfo ,
         CORE::CString actualModuleName;
         moduleInfo.dependencies = ParseDependencies( moduleInfo.cmakeListSuffixFileContent, actualModuleName );
         moduleInfo.dependencyIncludeDirs = ParseIncludeDirs( moduleInfo.cmakeListSuffixFileContent );
-        moduleInfo.isExecutable = false;
-        ParseModuleProperties( moduleInfo.cmakeListSuffixFileContent, actualModuleName, moduleInfo.isExecutable );
+        bool isExecutable = false;
+        ParseModuleProperties( moduleInfo.cmakeListSuffixFileContent, actualModuleName, isExecutable );
+        
+        //@TODO: better module type support
+        moduleInfo.moduleType = isExecutable ? MODULETYPE_EXECUTABLE : MODULETYPE_SHARED_LIBRARY;
+        
         ParseSuffixFile( moduleInfo );
         if ( actualModuleName != moduleInfo.name )
         {

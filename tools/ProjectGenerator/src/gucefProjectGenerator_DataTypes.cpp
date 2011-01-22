@@ -23,6 +23,50 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #include "gucefProjectGenerator_DataTypes.h"
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF {
+namespace PROJECTGENERATOR {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CORE::CString
+ModuleTypeToString( const TModuleType moduleType )
+{GUCEF_TRACE;
+
+    switch ( moduleType )
+    {
+        case MODULETYPE_UNDEFINED: return "";
+        case MODULETYPE_EXECUTABLE: return "Executable";
+        case MODULETYPE_SHARED_LIBRARY: return "SharedLibrary";
+        case MODULETYPE_STATIC_LIBRARY: return "StaticLibrary";
+        case MODULETYPE_UNKNOWN: return "Unknown";
+        default: return "";
+    }
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace PROJECTGENERATOR */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
