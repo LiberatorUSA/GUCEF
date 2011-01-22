@@ -27,6 +27,7 @@ set(SOURCE_FILES
   src/gucefProjectGenerator_CIProjectGenerator.cpp
   src/gucefProjectGenerator_CIProjectInfoGatherer.cpp
   src/gucefProjectGenerator_CXmlProjectGenerator.cpp
+  src/gucefProjectGenerator_DataTypes.cpp
   src/main.cpp
 )
 
