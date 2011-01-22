@@ -11,6 +11,7 @@
 # Configure ProjectGenerator
 
 set(HEADER_FILES 
+  include/gucefProjectGenerator_CAndroidMakefileGenerator.h
   include/gucefProjectGenerator_CCMakeProjectGenerator.h
   include/gucefProjectGenerator_CDirCrawlingProjectInfoGatherer.h
   include/gucefProjectGenerator_CIProjectGenerator.h
@@ -20,6 +21,7 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES 
+  src/gucefProjectGenerator_CAndroidMakefileGenerator.cpp
   src/gucefProjectGenerator_CCMakeProjectGenerator.cpp
   src/gucefProjectGenerator_CDirCrawlingProjectInfoGatherer.cpp
   src/gucefProjectGenerator_CIProjectGenerator.cpp

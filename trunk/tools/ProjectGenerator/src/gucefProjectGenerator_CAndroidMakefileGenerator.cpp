@@ -17,19 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_PROJECTGENERATOR_CXMLPROJECTGENERATOR_H
-#define GUCEF_PROJECTGENERATOR_CXMLPROJECTGENERATOR_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H
-#include "gucefProjectGenerator_CIProjectGenerator.h"
-#define GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#include "gucefProjectGenerator_CAndroidMakefileGenerator.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,28 +41,21 @@ namespace PROJECTGENERATOR {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CXmlProjectGenerator : public CIProjectGenerator
-{
-    public:
+CAndroidMakefileGenerator::CAndroidMakefileGenerator( void )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
     
-    CXmlProjectGenerator( void );
-    
-    virtual ~CXmlProjectGenerator();
-    
-    virtual bool GenerateProject( TProjectInfo& projectInfo            ,
-                                  const CORE::CString& outputDir       ,
-                                  bool addGeneratorCompileTimeToOutput );
-                                  
-    private:
-    
-    CXmlProjectGenerator( const CXmlProjectGenerator& src );
-    
-    CXmlProjectGenerator& operator=( const CXmlProjectGenerator& src );
-};
+CAndroidMakefileGenerator::~CAndroidMakefileGenerator()
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -75,16 +67,3 @@ class CXmlProjectGenerator : public CIProjectGenerator
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_PROJECTGENERATOR_CXMLPROJECTGENERATOR_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
----------------------------------------------------------------------------*/

@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_PROJECTGENERATOR_CXMLPROJECTGENERATOR_H
-#define GUCEF_PROJECTGENERATOR_CXMLPROJECTGENERATOR_H
+#ifndef GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H
+#define GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,23 +46,23 @@ namespace PROJECTGENERATOR {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CXmlProjectGenerator : public CIProjectGenerator
+class CAndroidMakefileGenerator : public CIProjectGenerator
 {
     public:
     
-    CXmlProjectGenerator( void );
+    CAndroidMakefileGenerator( void );
     
-    virtual ~CXmlProjectGenerator();
+    virtual ~CAndroidMakefileGenerator();
     
     virtual bool GenerateProject( TProjectInfo& projectInfo            ,
                                   const CORE::CString& outputDir       ,
                                   bool addGeneratorCompileTimeToOutput );
                                   
     private:
+
+    CAndroidMakefileGenerator( const CAndroidMakefileGenerator& src );
     
-    CXmlProjectGenerator( const CXmlProjectGenerator& src );
-    
-    CXmlProjectGenerator& operator=( const CXmlProjectGenerator& src );
+    CAndroidMakefileGenerator& operator=( const CAndroidMakefileGenerator& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -76,7 +76,7 @@ class CXmlProjectGenerator : public CIProjectGenerator
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PROJECTGENERATOR_CXMLPROJECTGENERATOR_H ? */
+#endif /* GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
