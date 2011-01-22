@@ -70,6 +70,11 @@
 #define GUCEF_PROJECTGENERATOR_CCMAKEPROJECTGENERATOR_H
 #endif /* GUCEF_PROJECTGENERATOR_CCMAKEPROJECTGENERATOR_H ? */
 
+#ifndef GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H
+#include "gucefProjectGenerator_CAndroidMakefileGenerator.h"
+#define GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H
+#endif /* GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -183,6 +188,11 @@ GUCEF_OSMAIN_BEGIN
     cmakeGenerator.GenerateProject( projectInfo                          ,
                                     CORE::RelativePath( "$CURWORKDIR$" ) ,
                                     addToolCompileTimeToOutput           );
+
+    CAndroidMakefileGenerator androidMakefileGenerator;
+    androidMakefileGenerator.GenerateProject( projectInfo                          ,
+                                              CORE::RelativePath( "$CURWORKDIR$" ) ,
+                                              addToolCompileTimeToOutput           );
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Wrote log file to: " + logFilename );
 
