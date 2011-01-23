@@ -632,26 +632,35 @@ IsFileInDir( const CString& dirPath  ,
 
 bool
 WriteStringAsTextFile( const CString& filePath    ,
-                       const CString& fileContent )
+                       const CString& fileContent ,
+                       const char* eolString      )
 {GUCEF_TRACE;
-
+   
     FILE* fptr = fopen( filePath.C_String(), "wb" );
     if ( NULL != fptr )
-    {
-        #ifdef GUCEF_MSWIN_BUILD
+    {        
+        // If no desired eol format is given then use the platform
+        // native format
+        if ( NULL == eolString )
+        {
+            #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+            eolString = "\r\n";
+            #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX || GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID
+            eolString = "\n";
+            #elif GUCEF_PLATFORM == GUCEF_PLATFORM_MACOS || GUCEF_PLATFORM == GUCEF_PLATFORM_IPHONEOS
+            eolString = "\r";
+            #endif
+        }
+        
         // Turn everything into "\n" in case of a mixed EOL char string
-        CString content = fileContent.ReplaceSubstr( "\r\n", "\n" );
-        content = fileContent.ReplaceSubstr( "\r", "\n" );
-
-        // Now turn "\n" into the windows variant which is "\r\n"
-        content = fileContent.ReplaceSubstr( "\n", "\r\n" );
+        CString content = fileContent.ReplaceSubstr( "\r\n", "\n" ).ReplaceSubstr( "\r", "\n" );
+        // Now we unified the EOL segments into \n.
+        
+        // Convert into whatever is given as the desired format
+        content = fileContent.ReplaceSubstr( "\n", eolString );
 
         fwrite( content.C_String(), content.Length(), 1, fptr );
         fclose( fptr );
-        #else
-        fwrite( fileContent.C_String(), fileContent.Length(), 1, fptr );
-        fclose( fptr );
-        #endif
         return true;
     }
     return false;

@@ -28,7 +28,7 @@
 #define GUCEF_CORE_H
 #endif /* GUCEF_CORE_H ? */
 
-#if GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 #include <windows.h>
 #endif
 
@@ -111,7 +111,7 @@ main( int argc, char** argv )
 
 /*---------------------------------------------------------------------------*/
 
-#if GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
 int __stdcall
 WinMain( HINSTANCE hinstance     ,

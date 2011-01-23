@@ -32,7 +32,7 @@
 #define GUCEFCORE_MACROS_H
 #endif /* GUCEFCORE_MACROS_H ? */
 
-#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
   /* Do not use WIN32_LEAN_AND_MEAN because it will remove timeBeginPeriod() etc. */
   #undef  WIN32_LEAN_AND_MEAN
@@ -95,7 +95,7 @@ LoadModuleDynamicly( const char* filename )
         fName = malloc( sLen + 7 );
         memcpy( fName, filename, sLen );
 
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
         memcpy( fName+sLen, ".dll\0", 5 );
         #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
         memcpy( fName+sLen, ".so\0", 4 );
@@ -106,7 +106,7 @@ LoadModuleDynamicly( const char* filename )
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
     modulePtr = (void*) dlopen( fName, RTLD_NOW );
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     modulePtr = (void*) LoadLibrary( fName );
     #endif
 
@@ -462,7 +462,7 @@ GUCEFGetEnv( const char* key )
 UInt32
 GUCEFGetTickCount( void )
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     return GetTickCount();
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
     struct tms timeStorage;

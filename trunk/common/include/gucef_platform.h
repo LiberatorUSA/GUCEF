@@ -39,9 +39,11 @@
 
 /* Initial platform/compiler-related stuff to set.
 */
-#define GUCEF_PLATFORM_WIN32 1
-#define GUCEF_PLATFORM_LINUX 2
-#define GUCEF_PLATFORM_APPLE 3
+#define GUCEF_PLATFORM_MSWIN    1
+#define GUCEF_PLATFORM_LINUX    2
+#define GUCEF_PLATFORM_MACOS    3
+#define GUCEF_PLATFORM_ANDROID  4
+#define GUCEF_PLATFORM_IPHONEOS 5
 
 #define GUCEF_COMPILER_MSVC 1
 #define GUCEF_COMPILER_GNUC 2
@@ -84,10 +86,12 @@
 /* Finds the current platform */
 
 #if defined( __WIN32__ ) || defined( _WIN32 )
-#   define GUCEF_PLATFORM GUCEF_PLATFORM_WIN32
+#   define GUCEF_PLATFORM GUCEF_PLATFORM_MSWIN
 #   define GUCEF_MSWIN_BUILD
 #elif defined( __APPLE_CC__)
-#   define GUCEF_PLATFORM GUCEF_PLATFORM_APPLE
+#   define GUCEF_PLATFORM GUCEF_PLATFORM_MACOS
+#elif defined( __ANDROID__ ) || defined( ANDROID )
+#   define GUCEF_PLATFORM GUCEF_PLATFORM_ANDROID
 #else
 #   define GUCEF_PLATFORM GUCEF_PLATFORM_LINUX
 #   define GUCEF_LINUX_BUILD

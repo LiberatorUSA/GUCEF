@@ -299,7 +299,7 @@ GetXmlDStoreCodec( void )
         if ( !registry->TryLookup( "XML", codecPtr, false ) )
         {
             // No codec is registered to handle XML, try and load a plugin for it
-            #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+            #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
               #ifdef GUCEF_CORE_DEBUG_MODE
               const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML_d";
@@ -3305,7 +3305,7 @@ main( int argc , char* argv[] )
     CORE::CStdLogger logger( logFileAccess );
     CORE::CLogManager::Instance()->AddLogger( &logger );
 
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     CORE::CMSWinConsoleLogger consoleOut;
     CORE::CLogManager::Instance()->AddLogger( &consoleOut );
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )

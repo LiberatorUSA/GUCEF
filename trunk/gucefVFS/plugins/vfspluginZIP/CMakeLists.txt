@@ -51,7 +51,7 @@ GUCEF_config_plugin( vfspluginZIP )
 
 
 
-include_directories( ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include dependencies/zlib dependencies/zziplib dependencies/zziplib/zzip include )
+include_directories( ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include ../vfspluginZIP/dependencies/zlib ../vfspluginZIP/dependencies/zziplib ../vfspluginZIP/dependencies/zziplib/zzip include )
 
 if ( UNIX )
   include_directories( ../../../gucefCORE/include/linux )

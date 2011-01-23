@@ -28,7 +28,7 @@
 
 #include "gucefMT_dvmtoswrap.h"         /* the function prototypes */
 
-#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #include <Mmsystem.h>  /* needed for timeBeginPeriod() etc */
 #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
   #include <stdio.h>
@@ -46,7 +46,7 @@
 
 struct SThreadData
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     DWORD threadid;
     HANDLE threadhandle;
     LPTHREAD_START_ROUTINE func;
@@ -69,7 +69,7 @@ typedef struct SThreadData TThreadData;
  *      needed for PrecisionDelay() and PrecisionTickCount()
  *      Initialized in PrecisionTimerInit()
  */
-#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 static LARGE_INTEGER m_high_perf_timer_freq = { 0 };
 #endif
 
@@ -82,7 +82,7 @@ static LARGE_INTEGER m_high_perf_timer_freq = { 0 };
 void
 ThreadDelay( UInt32 delay )
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     Sleep( delay );
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
     sleep( delay );
@@ -144,7 +144,7 @@ ThreadCreate( TThreadFunc func ,
 GUCEF_MT_PUBLIC_C UInt32
 ThreadID( struct SThreadData* td )
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     return td->threadid;
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
     return (UInt32) td->thread;
@@ -158,7 +158,7 @@ ThreadID( struct SThreadData* td )
 UInt32
 ThreadSuspend( struct SThreadData* td )
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     return ( -1 != SuspendThread( td->threadhandle ) );
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
 
@@ -172,7 +172,7 @@ ThreadSuspend( struct SThreadData* td )
 UInt32
 ThreadResume( struct SThreadData* td )
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     return ( -1 != ResumeThread( td->threadhandle ) );
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
 
@@ -186,7 +186,7 @@ ThreadResume( struct SThreadData* td )
 UInt32
 ThreadKill( struct SThreadData* td )
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     if ( td != NULL )
     {
         UInt32 retval = TerminateThread( td->threadhandle ,
@@ -219,7 +219,7 @@ UInt32
 ThreadWait( struct SThreadData* td ,
             Int32 timeout          )
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     if ( timeout >= 0 )
     {
         return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
@@ -239,7 +239,7 @@ ThreadWait( struct SThreadData* td ,
 UInt32
 GetCurrentTaskID( void )
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     return GetCurrentThreadId();
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
     return (UInt32) pthread_self();
@@ -253,7 +253,7 @@ GetCurrentTaskID( void )
 UInt64
 PrecisionTickCount( void )
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     LARGE_INTEGER t;
 
     assert( sizeof( LARGE_INTEGER ) <= sizeof( UInt64 ) );
@@ -278,7 +278,7 @@ PrecisionTickCount( void )
 UInt64
 PrecisionTimerResolution( void )
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     ULARGE_INTEGER t;
     if ( QueryPerformanceFrequency( (LARGE_INTEGER*) &t ) == TRUE )
     {
@@ -300,7 +300,7 @@ PrecisionTimerResolution( void )
 void
 PrecisionDelay( UInt32 delay )
 {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
         /*
          *      Original code obtained from http://www.geisswerks.com/ryan/FAQS/timing.html
@@ -387,7 +387,7 @@ PrecisionDelay( UInt32 delay )
 void
 PrecisionTimerInit( void )
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     if ( m_high_perf_timer_freq.QuadPart == 0 )
     {
         /*
@@ -412,7 +412,7 @@ PrecisionTimerInit( void )
 void
 PrecisionTimerShutdown( void )
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     if ( m_high_perf_timer_freq.QuadPart != 0 )
     {
         /*

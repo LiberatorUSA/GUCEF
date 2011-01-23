@@ -62,7 +62,7 @@
 /*
  *      O/S Specific Switches
  */
-#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     #define WIN32_LEAN_AND_MEAN     /* trim fat from windoze by default */
     #define WIN32_EXTRA_LEAN        /* trim additional tub of lard from windoze by default */
 
@@ -210,7 +210,7 @@
  *  Macros that defines the correct character to be used for directory
  *  seperation in a path depending on the platform we are building for.
  */
-#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #define GUCEF_DIRSEPCHAROPPOSITE '/'
   #define GUCEF_DIRSEPCHAR '\\'
 #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
@@ -224,7 +224,7 @@
  *  Macros that defines the correct end of line string to be used 
  *  depending on the platform we are building for.
  */
-#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #define GUCEF_EOL "\r\n"
   #define GUCEF_EOL_LENGTH 2
 #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )

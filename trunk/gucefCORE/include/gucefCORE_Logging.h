@@ -53,7 +53,7 @@
  *  correct logger for you which gives you platform
  *  agnostic code.
  */
-#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
   #ifndef GUCEF_CORE_CMSWINCONSOLELOGGER_H
   #include "CMSWinConsoleLogger.h"

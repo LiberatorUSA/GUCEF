@@ -45,7 +45,7 @@ GUCEF_config_plugin( dstorepluginPARSIFALXML )
 
 
 
-include_directories( ../../../gucefCORE/include ../../../gucefMT/include dependancy/libparsifal/include/libparsifal include )
+include_directories( ../../../gucefCORE/include ../../../gucefMT/include ../dstorepluginPARSIFALXML/dependancy/libparsifal/include/libparsifal include )
 
 if ( UNIX )
   include_directories( ../../../gucefCORE/include/linux )
