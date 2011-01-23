@@ -37,7 +37,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
   #define WIN32_LEAN_AND_MEAN
   #include <windows.h>

@@ -391,7 +391,7 @@
         C++ MS Windows includes
 
 /---------------------------------------------------------------------------*/
-#if GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
 /*
  *  Note that the following includes may require a include path to be added
@@ -429,7 +429,7 @@
 #define GUCEF_CORE_MSWINUTILS_H
 #endif /* GUCEF_CORE_MSWINUTILS_H ? */
 
-#endif /* GUCEF_PLATFORM_WIN32 ? */
+#endif /* GUCEF_PLATFORM_MSWIN ? */
 
 #endif /* __cplusplus ? */
 

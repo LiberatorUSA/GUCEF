@@ -46,7 +46,7 @@
  *  This makes the parsing of application parameters uniform
  */
  
-#if GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
     #include <windows.h>
     #undef min

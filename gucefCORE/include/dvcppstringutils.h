@@ -235,10 +235,15 @@ LoadTextFileAsString( const CString& filePath ,
 
 /**
  *  Attempts to write the string as a text file
+ *
+ *  This function will unify any end of line characters in the given content
+ *  string to the given eolString. If no eolString is given then the platform
+ *  native eol format is used.
  */
 GUCEF_CORE_PUBLIC_CPP bool
-WriteStringAsTextFile( const CString& filePath    ,
-                       const CString& fileContent );
+WriteStringAsTextFile( const CString& filePath      ,
+                       const CString& fileContent   ,
+                       const char* eolString = NULL );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

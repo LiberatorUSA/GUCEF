@@ -43,7 +43,7 @@
 
 struct SMutexData
 {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
         HANDLE id;
         #else
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
@@ -77,7 +77,7 @@ namespace MT {
 CMutex::CMutex( void )
         : _mutexdata( NULL )
 {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
         TMutexData* md = new TMutexData;
         md->id = CreateMutex( NULL, FALSE, NULL );
         if ( !md->id )
@@ -111,7 +111,7 @@ CMutex::CMutex( void )
  */
 CMutex::~CMutex()
 {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
         CloseHandle( ((TMutexData*)_mutexdata)->id );
         delete (TMutexData*)_mutexdata;
         #else
@@ -132,7 +132,7 @@ CMutex::~CMutex()
 bool
 CMutex::Lock( void ) const
 {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
         if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id ,
                                   INFINITE                      ) == WAIT_FAILED ) return false;
         return true;
@@ -154,7 +154,7 @@ CMutex::Lock( void ) const
 bool
 CMutex::Unlock( void ) const
 {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
         if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE ) return false;
         return true;
         #else

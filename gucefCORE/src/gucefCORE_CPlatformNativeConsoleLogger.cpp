@@ -25,7 +25,7 @@
 
 #include "gucefCORE_CPlatformNativeConsoleLogger.h"
 
-#if GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
 #ifndef GUCEF_CORE_CMSWINCONSOLELOGGER_H
 #include "CMSWinConsoleLogger.h"
@@ -59,7 +59,7 @@ namespace CORE {
 CPlatformNativeConsoleLogger::CPlatformNativeConsoleLogger( void )
     : m_nativeConsoleLogger( NULL )
 {
-    #if GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32
+    #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
     m_nativeConsoleLogger = new CMSWinConsoleLogger();
 

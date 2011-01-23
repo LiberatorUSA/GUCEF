@@ -676,7 +676,7 @@ Remove_Directory( const char *dir  ,
 UInt32
 Module_Path( char *dest, UInt32 dest_size )
 {
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     return !GetModuleFileName( NULL, dest, dest_size );
 
@@ -894,7 +894,7 @@ Filesize( const char *filename )
 {
     if ( filename )
     {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WIN32 )
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
         UInt32 lfilesize;
         WIN32_FIND_DATA FileInfo;
         HANDLE hFind;
