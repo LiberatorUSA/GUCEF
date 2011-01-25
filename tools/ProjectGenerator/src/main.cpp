@@ -174,25 +174,30 @@ GUCEF_OSMAIN_BEGIN
     TStringVector::iterator i = generatorList.begin();
     while ( i != generatorList.end() )
     {
-        
-        
+        if ( (*i).Lowercase() == "xml" )
+        {
+            CXmlProjectGenerator xmlGenerator;
+            xmlGenerator.GenerateProject( projectInfo                          ,
+                                          CORE::RelativePath( "$CURWORKDIR$" ) ,
+                                          addToolCompileTimeToOutput           );
+        }
+        else
+        if ( (*i).Lowercase() == "androidmake" )
+        {
+            CAndroidMakefileGenerator androidMakefileGenerator;
+            androidMakefileGenerator.GenerateProject( projectInfo                          ,
+                                                      CORE::RelativePath( "$CURWORKDIR$" ) ,
+                                                      addToolCompileTimeToOutput           );
+        }
+        else
+        if ( (*i).Lowercase() == "cmake" )
+        {
+            CCMakeProjectGenerator cmakeGenerator;
+            cmakeGenerator.GenerateProject( projectInfo                          ,
+                                            CORE::RelativePath( "$CURWORKDIR$" ) ,
+                                            addToolCompileTimeToOutput           );
+        }
         ++i;
-    }
-    
-    CXmlProjectGenerator xmlGenerator;
-    xmlGenerator.GenerateProject( projectInfo                          ,
-                                  CORE::RelativePath( "$CURWORKDIR$" ) ,
-                                  addToolCompileTimeToOutput           );
-
-    CCMakeProjectGenerator cmakeGenerator;
-    cmakeGenerator.GenerateProject( projectInfo                          ,
-                                    CORE::RelativePath( "$CURWORKDIR$" ) ,
-                                    addToolCompileTimeToOutput           );
-
-    CAndroidMakefileGenerator androidMakefileGenerator;
-    androidMakefileGenerator.GenerateProject( projectInfo                          ,
-                                              CORE::RelativePath( "$CURWORKDIR$" ) ,
-                                              addToolCompileTimeToOutput           );
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Wrote log file to: " + logFilename );
 
