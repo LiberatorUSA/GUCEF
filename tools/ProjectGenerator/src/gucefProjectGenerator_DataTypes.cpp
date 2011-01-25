@@ -23,6 +23,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
+#ifndef GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
+#include "CDStoreCodecPluginManager.h"
+#define GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -428,6 +438,42 @@ SerializeModuleInfo( const TModuleInfo& moduleInfo ,
 /*-------------------------------------------------------------------------*/
 
 bool
+SerializeModuleInfo( const TModuleInfo& moduleInfo       ,
+                     const CORE::CString& outputFilepath )
+{GUCEF_TRACE;
+
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec = GetXmlDStoreCodec();
+    if ( NULL != codec )
+    {
+        CORE::CDataNode info;
+        if ( SerializeModuleInfo( moduleInfo, info ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SerializeModuleInfo: Successfully generated a data tree with all module information" );
+
+            if ( codec->StoreDataTree( &info, outputFilepath ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SerializeModuleInfo: Successfully wrote all module information to disk file \"" + outputFilepath + "\"" );
+                return true;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "SerializeModuleInfo: Failed to store the serialized module information to disk at " + outputFilepath );
+                return false;
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "SerializeModuleInfo: Failed to serialize the given module information" );
+            return false;
+        }
+    }
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "SerializeModuleInfo: Cannot serialize since no codec is registered that can be used for serialization" );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 SerializeProjectInfo( const TProjectInfo& projectInfo ,
                       CORE::CDataNode& rootNodeToBe   )
 {GUCEF_TRACE;
@@ -454,6 +500,41 @@ SerializeProjectInfo( const TProjectInfo& projectInfo ,
     }
 
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+SerializeProjectInfo( const TProjectInfo& projectInfo     ,
+                      const CORE::CString& outputFilepath )
+{
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec = GetXmlDStoreCodec();
+    if ( NULL != codec )
+    {
+        CORE::CDataNode info;
+        if ( SerializeProjectInfo( projectInfo, info ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully generated a data tree with all project information" );
+
+            if ( codec->StoreDataTree( &info, outputFilepath ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully wrote all project information to disk file \"" + outputFilepath + "\"" );
+                return true;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "SerializeProjectInfo: Failed to store the serialized project information to disk at " + outputFilepath );
+                return false;
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "SerializeProjectInfo: Failed to serialize the given project information" );
+            return false;
+        }
+    }
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "SerializeProjectInfo: Cannot serialize since no codec is registered that can be used for serialization" );
+    return false;
 }
 
 /*-------------------------------------------------------------------------//
