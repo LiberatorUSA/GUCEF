@@ -641,7 +641,7 @@ WriteStringAsTextFile( const CString& filePath    ,
     {        
         // If no desired eol format is given then use the platform
         // native format
-        if ( NULL == eolString )
+        if ( NULL == eolString || *eolString == '\0' )
         {
             #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
             eolString = "\r\n";

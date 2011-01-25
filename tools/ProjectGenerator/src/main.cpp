@@ -198,7 +198,8 @@ GUCEF_OSMAIN_BEGIN
                                             addToolCompileTimeToOutput           );
         }
         ++i;
-
+    }
+    
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Wrote log file to: " + logFilename );
 
     return 0;

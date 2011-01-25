@@ -76,9 +76,9 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
     }
     
     contentPrefix +=
-      "LOCAL_PATH := $(call my-dir)\n"
-      "include $(CLEAR_VARS)\n"
-      "LOCAL_MODULE := " + moduleInfo.name + "\n";
+      "LOCAL_PATH := $(call my-dir)\n\n"
+      "include $(CLEAR_VARS)\n\n"
+      "LOCAL_MODULE := " + moduleInfo.name + "\n\n";
     
     // Generate the source files section
     CORE::CString srcFilesSection = "LOCAL_SRC_FILES := \\\n";
@@ -94,11 +94,21 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
             CORE::CString relFilePath = srcDir;
             CORE::AppendToPath( relFilePath, (*n) );
             
-            srcFilesSection += "  " + relFilePath.ReplaceChar( '\\', '/' ) + "\\\n";            
+            srcFilesSection += "  " + relFilePath.ReplaceChar( '\\', '/' );            
+            
             ++n;
+            
+            // We are not finished yet, add marker saying more to come
+            if ( n != srcFiles.end() )
+            {
+                srcFilesSection += " \\\n"; 
+            }
         }        
         ++i;
     }
+    
+    // Add some spacing for readability
+    srcFilesSection += "\n\n";
     
     // Generate the included files section
     // for android make files we only need the path
@@ -107,8 +117,24 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
     i = moduleInfo.includeDirs.begin();
     while ( i != moduleInfo.includeDirs.end() )
     {
-        includeFilesSection += "  " + (*i).first.ReplaceChar( '\\', '/' ) + "\\\n";        
+        const CORE::CString& dir = (*i).first;
+        if ( !dir.IsNULLOrEmpty() )
+        {
+            includeFilesSection += "  " + dir.ReplaceChar( '\\', '/' );        
+        }
+        else
+        {
+            // Support the use-case where the include dir is empty because the moduleinfo dir == incude dir
+            includeFilesSection += "  $(LOCAL_PATH)"; 
+        }
+        
         ++i;
+        
+        // We are not finished yet, add marker saying more to come
+        if ( !moduleInfo.dependencyIncludeDirs.empty() || i != moduleInfo.includeDirs.end() )
+        {
+            includeFilesSection += " \\\n"; 
+        }
     }
     
     // We also need to add the include paths required to find headers
@@ -116,9 +142,19 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
     TStringSet::iterator n = moduleInfo.dependencyIncludeDirs.begin();
     while ( n != moduleInfo.dependencyIncludeDirs.end() )
     {
-        includeFilesSection += "  " + (*n).ReplaceChar( '\\', '/' ) + "\\\n";
+        includeFilesSection += "  " + (*n).ReplaceChar( '\\', '/' ) + " \\\n";
+        
         ++n;
+        
+        // We are not finished yet, add marker saying more to come
+        if ( n != moduleInfo.dependencyIncludeDirs.end() )
+        {
+            includeFilesSection += " \\\n"; 
+        }
     }
+    
+    // Add some spacing for readability
+    includeFilesSection += "\n\n";
     
     // Check if we have a file on disk of information which is to be inserted into
     // our automatically generated make file
@@ -148,17 +184,17 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
     {
         case MODULETYPE_SHARED_LIBRARY:
         {
-            contentSuffix += "include $(BUILD_SHARED_LIBRARY)\n";
+            contentSuffix += "include $(BUILD_SHARED_LIBRARY)\n\n";
             break;
         }
         case MODULETYPE_STATIC_LIBRARY:
         {
-            contentSuffix += "include $(BUILD_STATIC_LIBRARY)\n";
+            contentSuffix += "include $(BUILD_STATIC_LIBRARY)\n\n";
             break;
         }
         case MODULETYPE_EXECUTABLE:
         { 
-            contentSuffix += "include $(BUILD_EXECUTABLE)\n";
+            contentSuffix += "include $(BUILD_EXECUTABLE)\n\n";
             break;
         }
         default:
@@ -216,7 +252,20 @@ CreateAndroidMakefileOnDiskForEachModule( TProjectInfo& projectInfo            ,
                                           bool addGeneratorCompileTimeToOutput )
 {GUCEF_TRACE;
 
-    return false;
+    TModuleInfoVector::iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        TModuleInfo& moduleInfo = (*i);
+        if ( !CreateAndroidMakefileOnDiskForModule( projectInfo                     , 
+                                                    moduleInfo                      , 
+                                                    addGeneratorCompileTimeToOutput ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to create an Android makefile for all modules because of the following module " + moduleInfo.name );
+            return false;
+        }
+        
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -227,7 +276,7 @@ CreateAndroidProjectMakefileOnDisk( TProjectInfo& projectInfo            ,
                                     bool addGeneratorCompileTimeToOutput )
 {GUCEF_TRACE;
 
-    return false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
