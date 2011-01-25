@@ -180,7 +180,7 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CreateAndroidMakefileForModuleOnDisk( TProjectInfo& projectInfo            ,
+CreateAndroidMakefileOnDiskForModule( TProjectInfo& projectInfo            ,
                                       TModuleInfo& moduleInfo              ,
                                       bool addGeneratorCompileTimeToOutput )
 {GUCEF_TRACE;
@@ -211,6 +211,27 @@ CreateAndroidMakefileForModuleOnDisk( TProjectInfo& projectInfo            ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CreateAndroidMakefileOnDiskForEachModule( TProjectInfo& projectInfo            ,
+                                          bool addGeneratorCompileTimeToOutput )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CreateAndroidProjectMakefileOnDisk( TProjectInfo& projectInfo            ,
+                                    const CORE::CString& outputDir       ,
+                                    bool addGeneratorCompileTimeToOutput )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CAndroidMakefileGenerator::CAndroidMakefileGenerator( void )
 {GUCEF_TRACE;
 
@@ -231,6 +252,16 @@ CAndroidMakefileGenerator::GenerateProject( TProjectInfo& projectInfo           
                                             bool addGeneratorCompileTimeToOutput )
 {GUCEF_TRACE;
 
+    // First we create a makefile per module on disk
+    if ( CreateAndroidMakefileOnDiskForEachModule( projectInfo                     ,
+                                                   addGeneratorCompileTimeToOutput ) )
+    {
+        // Now we can create the overall project file which refers to each of the make files
+        // we just created per module.
+        return CreateAndroidProjectMakefileOnDisk( projectInfo                     ,
+                                                   outputDir                       ,
+                                                   addGeneratorCompileTimeToOutput );
+    }    
     return false;
 }
 

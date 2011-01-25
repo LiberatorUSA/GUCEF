@@ -60,6 +60,402 @@ ModuleTypeToString( const TModuleType moduleType )
     }
 }
 
+/*-------------------------------------------------------------------------*/
+
+static CORE::CDStoreCodecRegistry::TDStoreCodecPtr
+GetXmlDStoreCodec( void )
+{GUCEF_TRACE;
+
+    static CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr;
+    if ( codecPtr.IsNULL() )
+    {
+        CORE::CDStoreCodecRegistry* registry = CORE::CDStoreCodecRegistry::Instance();
+        if ( !registry->TryLookup( "XML", codecPtr, false ) )
+        {
+            // No codec is registered to handle XML, try and load a plugin for it
+            #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+              #ifdef GUCEF_CORE_DEBUG_MODE
+              const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML_d";
+              #else
+              const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML";
+              #endif
+
+              CORE::CPluginManager::TPluginPtr codecPlugin =
+                  CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( pathToPlugin );
+
+            #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
+              #ifdef GUCEF_CORE_DEBUG_MODE
+              const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML_d";
+              #else
+              const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML";
+              #endif
+
+              CORE::CPluginManager::TPluginPtr codecPlugin =
+                  CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( pathToPlugin );
+
+              if ( NULL == codecPlugin )
+              {
+                  #ifdef GUCEF_CORE_DEBUG_MODE
+                  const char* pathToPlugin = "$MODULEDIR$/../lib/dstorepluginPARSIFALXML_d";
+                  #else
+                  const char* pathToPlugin = "$MODULEDIR$/../lib/dstorepluginPARSIFALXML";
+                  #endif
+
+                  codecPlugin = CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( pathToPlugin );
+              }
+
+            #endif
+
+            if ( NULL != codecPlugin )
+            {
+                // Now try and get the codec again
+                registry->TryLookup( "XML", codecPtr, false );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Request for data storage codec for xml file, succesfully loaded plugin to handle request" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Request for data storage codec for xml file but no plugin for it could be loaded!" );
+                CORE::ShowErrorMessage( "Missing codec support",
+                                        "Request for data storage codec for xml file but no plugin for it could be loaded!" );
+            }
+        }
+    }
+    return codecPtr;
+}
+
+
+/*-------------------------------------------------------------------------*/
+
+bool
+SerializeModuleInfo( const TModuleInfo& moduleInfo ,
+                     CORE::CDataNode& parentNode   )
+{GUCEF_TRACE;
+
+    // Add basic module info
+    CORE::CDataNode moduleInfoNode;
+    moduleInfoNode.SetName( "Module" );
+    moduleInfoNode.SetAttribute( "Name", moduleInfo.name );
+    moduleInfoNode.SetAttribute( "BuildOrder", CORE::Int32ToString( moduleInfo.buildOrder ) );
+    moduleInfoNode.SetAttribute( "RootDir", moduleInfo.rootDir );
+    moduleInfoNode.SetAttribute( "Type", ModuleTypeToString( moduleInfo.moduleType ) );
+
+    // Add headers for all platforms
+    CORE::CDataNode headersInfoNode;
+    headersInfoNode.SetName( "Files" );
+    headersInfoNode.SetAttribute( "Type", "Headers" );
+    headersInfoNode.SetAttribute( "Platform", "All" );
+    headersInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
+    TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
+    while ( n != moduleInfo.includeDirs.end() )
+    {
+        CORE::CDataNode pathNode;
+        pathNode.SetName( "Dir" );
+        pathNode.SetAttribute( "Path", (*n).first );
+
+        CORE::CDataNode fileNode;
+        fileNode.SetName( "File" );
+
+        const TStringVector& fileVector = (*n).second;
+        pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
+        TStringVector::const_iterator m = fileVector.begin();
+        while ( m != fileVector.end() )
+        {
+            fileNode.SetAttribute( "Name", (*m) );
+            pathNode.AddChild( fileNode );
+            ++m;
+        }
+
+        headersInfoNode.AddChild( pathNode );
+        ++n;
+    }
+    moduleInfoNode.AddChild( headersInfoNode );
+    headersInfoNode.DelSubTree();
+
+    // Add headers for specific platforms
+    TStringVectorMapMap::const_iterator x = moduleInfo.platformHeaderFiles.begin();
+    while ( x != moduleInfo.platformHeaderFiles.end() )
+    {
+        const TStringVectorMap& platformHeaders = (*x).second;
+        headersInfoNode.SetAttribute( "Platform", (*x).first );
+        headersInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( platformHeaders.size() ) );
+
+        n = platformHeaders.begin();
+        while ( n != platformHeaders.end() )
+        {
+            CORE::CDataNode pathNode;
+            pathNode.SetName( "Dir" );
+            pathNode.SetAttribute( "Path", (*n).first );
+
+            CORE::CDataNode fileNode;
+            fileNode.SetName( "File" );
+
+            const TStringVector& fileVector = (*n).second;
+            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
+            TStringVector::const_iterator m = fileVector.begin();
+            while ( m != fileVector.end() )
+            {
+                fileNode.SetAttribute( "Name", (*m) );
+                pathNode.AddChild( fileNode );
+                ++m;
+            }
+
+            headersInfoNode.AddChild( pathNode );
+            ++n;
+        }
+        moduleInfoNode.AddChild( headersInfoNode );
+        headersInfoNode.DelSubTree();
+        ++x;
+    }
+
+    // Add sources for all platforms
+    CORE::CDataNode sourceInfoNode;
+    sourceInfoNode.SetName( "Files" );
+    sourceInfoNode.SetAttribute( "Type", "Source" );
+    sourceInfoNode.SetAttribute( "Platform", "All" );
+    sourceInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.sourceDirs.size() ) );
+    n = moduleInfo.sourceDirs.begin();
+    while ( n != moduleInfo.sourceDirs.end() )
+    {
+        CORE::CDataNode pathNode;
+        pathNode.SetName( "Dir" );
+        pathNode.SetAttribute( "Path", (*n).first );
+
+        CORE::CDataNode fileNode;
+        fileNode.SetName( "File" );
+
+        const TStringVector& fileVector = (*n).second;
+        pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
+        TStringVector::const_iterator m = fileVector.begin();
+        while ( m != fileVector.end() )
+        {
+            fileNode.SetAttribute( "Name", (*m) );
+            pathNode.AddChild( fileNode );
+            ++m;
+        }
+
+        sourceInfoNode.AddChild( pathNode );
+        ++n;
+    }
+    moduleInfoNode.AddChild( sourceInfoNode );
+    sourceInfoNode.DelSubTree();
+
+    // Add sources for specific platforms
+    x = moduleInfo.platformSourceFiles.begin();
+    while ( x != moduleInfo.platformSourceFiles.end() )
+    {
+        const TStringVectorMap& platformSources = (*x).second;
+        sourceInfoNode.SetAttribute( "Platform", (*x).first );
+        sourceInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.sourceDirs.size() ) );
+
+        n = platformSources.begin();
+        while ( n != platformSources.end() )
+        {
+            CORE::CDataNode pathNode;
+            pathNode.SetName( "Dir" );
+            pathNode.SetAttribute( "Path", (*n).first );
+
+            CORE::CDataNode fileNode;
+            fileNode.SetName( "File" );
+
+            const TStringVector& fileVector = (*n).second;
+            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
+            TStringVector::const_iterator m = fileVector.begin();
+            while ( m != fileVector.end() )
+            {
+                fileNode.SetAttribute( "Name", (*m) );
+                pathNode.AddChild( fileNode );
+                ++m;
+            }
+
+            sourceInfoNode.AddChild( pathNode );
+            ++n;
+        }
+        moduleInfoNode.AddChild( sourceInfoNode );
+        sourceInfoNode.DelSubTree();
+        ++x;
+    }
+
+    // Add includes for all platforms
+    CORE::CDataNode includesInfoNode;
+    includesInfoNode.SetName( "Includes" );
+    includesInfoNode.SetAttribute( "Platform", "All" );
+    includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencyIncludeDirs.size() ) );
+    includesInfoNode.SetAttribute( "Source", "Dependency" );
+    TStringSet::const_iterator h = moduleInfo.dependencyIncludeDirs.begin();
+    while ( h !=  moduleInfo.dependencyIncludeDirs.end() )
+    {
+        CORE::CDataNode includeNode;
+        includeNode.SetName( "Include" );
+        includeNode.SetAttribute( "Path", (*h) );
+
+        includesInfoNode.AddChild( includeNode );
+        ++h;
+    }
+    moduleInfoNode.AddChild( includesInfoNode );
+    includesInfoNode.DelSubTree();
+
+    // Add includes for specific platforms
+    TStringSetMap::const_iterator q = moduleInfo.dependencyPlatformIncludeDirs.begin();
+    while ( q != moduleInfo.dependencyPlatformIncludeDirs.end() )
+    {
+        const TStringSet& platformIncludes = (*q).second;
+        includesInfoNode.SetAttribute( "Platform", (*q).first );
+        includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( platformIncludes.size() ) );
+        includesInfoNode.SetAttribute( "Source", "Dependency" );
+
+        h = platformIncludes.begin();
+        while ( h != platformIncludes.end() )
+        {
+            CORE::CDataNode includeNode;
+            includeNode.SetName( "Include" );
+            includeNode.SetAttribute( "Path", (*h) );
+
+            includesInfoNode.AddChild( includeNode );
+            ++h;
+        }
+        moduleInfoNode.AddChild( includesInfoNode );
+        includesInfoNode.DelSubTree();
+        ++q;
+    }
+
+    // Add all the regular include dirs for this module
+    // These are already represented in the path attribute of the files section
+    // but for ease of processing and clarity they are provided again in the includes section
+    includesInfoNode.SetAttribute( "Platform", "All" );
+    includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
+    includesInfoNode.SetAttribute( "Source", "Self" );
+    n = moduleInfo.includeDirs.begin();
+    while ( n != moduleInfo.includeDirs.end() )
+    {
+        CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
+        if ( 0 != includeDir.Length() )
+        {
+            CORE::CDataNode includeNode;
+            includeNode.SetName( "Include" );
+            includeNode.SetAttribute( "Path", includeDir );
+            includesInfoNode.AddChild( includeNode );
+        }
+        else
+        {
+            // Check if there is more then one include dir
+            // If so we have create an include for an empty include dir
+            // to ensure files in subdirs can include the file with the zero length
+            // subdir.
+            if ( 1 < moduleInfo.includeDirs.size() )
+            {
+                CORE::CString includeDir = "../" + CORE::LastSubDir( moduleInfo.rootDir ) + " ";
+                CORE::CDataNode includeNode;
+                includeNode.SetName( "Include" );
+                includeNode.SetAttribute( "Path", includeDir );
+                includesInfoNode.AddChild( includeNode );
+            }
+        }
+        ++n;
+    }
+    moduleInfoNode.AddChild( includesInfoNode );
+    includesInfoNode.DelSubTree();
+
+    //includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.platformHeaderFiles.size() ) );
+    //n = moduleInfo.includeDirs.begin();
+    //while ( n != moduleInfo.includeDirs.end() )
+    //{
+    //    CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
+    //    if ( 0 != includeDir.Length() )
+    //    {
+    //        CORE::CDataNode includeNode;
+    //        includeNode.SetName( "Include" );
+    //        includeNode.SetAttribute( "Path", includeDir );
+    //        includesInfoNode.AddChild( includeNode );
+    //    }
+    //    else
+    //    {
+    //        // Check if there is more then one include dir
+    //        // If so we have create an include for an empty include dir
+    //        // to ensure files in subdirs can include the file with the zero length
+    //        // subdir.
+    //        if ( 1 < moduleInfo.includeDirs.size() )
+    //        {
+    //            CORE::CString includeDir = "../" + CORE::LastSubDir( moduleInfo.rootDir ) + " ";
+    //            CORE::CDataNode includeNode;
+    //            includeNode.SetName( "Include" );
+    //            includeNode.SetAttribute( "Path", includeDir );
+    //            includesInfoNode.AddChild( includeNode );
+    //        }
+    //    }
+    //    ++n;
+    //}
+    //moduleInfoNode.AddChild( includesInfoNode );
+    //includesInfoNode.DelSubTree();
+
+    // Add all the module dependencies
+    CORE::CDataNode dependenciesNode;
+    dependenciesNode.SetName( "Dependencies" );
+    dependenciesNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencies.size() ) );
+    TStringVector::const_iterator m = moduleInfo.dependencies.begin();
+    while ( m != moduleInfo.dependencies.end() )
+    {
+        CORE::CDataNode dependencyNode;
+        dependencyNode.SetName( "Dependency" );
+        dependencyNode.SetAttribute( "Name", (*m) );
+        dependenciesNode.AddChild( dependencyNode );
+        ++m;
+    }
+    moduleInfoNode.AddChild( dependenciesNode );
+
+    // Add all the libraries that are linked but not part of the overall project
+    CORE::CDataNode linkedLibrariesNode;
+    linkedLibrariesNode.SetName( "LinkedLibraries" );
+    linkedLibrariesNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.linkedLibraries.size() ) );
+    m = moduleInfo.linkedLibraries.begin();
+    while ( m != moduleInfo.linkedLibraries.end() )
+    {
+        CORE::CDataNode libraryNode;
+        libraryNode.SetName( "LinkedLibrary" );
+        libraryNode.SetAttribute( "Name", (*m) );
+        linkedLibrariesNode.AddChild( libraryNode );
+        ++m;
+    }
+    moduleInfoNode.AddChild( linkedLibrariesNode );
+
+    // Add all the info for this module to the overall project
+    parentNode.AddChild( moduleInfoNode );
+    
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+SerializeProjectInfo( const TProjectInfo& projectInfo ,
+                      CORE::CDataNode& rootNodeToBe   )
+{GUCEF_TRACE;
+
+    // start from a clean slate
+    rootNodeToBe.Clear();
+
+    // Add project info
+    rootNodeToBe.SetName( "Project" );
+    rootNodeToBe.SetAttribute( "ModuleCount", CORE::UInt32ToString( projectInfo.modules.size() ) );
+    rootNodeToBe.SetAttribute( "Name", projectInfo.projectName );
+
+    // Add info for each module
+    TModuleInfoVector::const_iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        if ( !SerializeModuleInfo( (*i)         , 
+                                   rootNodeToBe ) )
+        {   
+            // Failed to serialize this module
+            return false;
+        }                                   
+        ++i;
+    }
+
+    return true;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
