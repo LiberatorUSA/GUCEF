@@ -65,34 +65,6 @@ namespace PROJECTGENERATOR {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool
-WriteProjectInfoDataTreeToDisk( const TProjectInfo& projectInfo         ,
-                                const CORE::CString& outputInfoFilename )
-{GUCEF_TRACE;
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Preparing to write all project information to disk file \"" + outputInfoFilename + "\"" );
-
-    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec = GetXmlDStoreCodec();
-    if ( NULL != codec )
-    {
-        CORE::CDataNode info;
-        if ( SerializeProjectInfo( projectInfo, info ) )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully generated a data tree with all project information" );
-
-            if ( codec->StoreDataTree( &info, outputInfoFilename ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully wrote all project information to disk file \"" + outputInfoFilename + "\"" );
-                return true;
-            }
-        }
-    }
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to write all project information to disk file \"" + outputInfoFilename + "\"" );
-    return false;
-}
-
-/*--------------------------------------------------------------------------*/
-
 CXmlProjectGenerator::CXmlProjectGenerator( void )
 {GUCEF_TRACE;
 
@@ -116,7 +88,7 @@ CXmlProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
     // Write all the project information we gathered to disk 
     CORE::CString projectinfoFilename = outputDir;
     CORE::AppendToPath( projectinfoFilename, "Project.xml" );
-    return WriteProjectInfoDataTreeToDisk( projectInfo, projectinfoFilename );
+    return SerializeProjectInfo( projectInfo, projectinfoFilename );
 }
 
 /*-------------------------------------------------------------------------//

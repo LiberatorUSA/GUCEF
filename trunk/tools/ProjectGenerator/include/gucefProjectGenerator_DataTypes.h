@@ -161,9 +161,21 @@ SerializeModuleInfo( const TModuleInfo& moduleInfo ,
 /*-------------------------------------------------------------------------*/
 
 bool
+SerializeModuleInfo( const TModuleInfo& moduleInfo       ,
+                     const CORE::CString& outputFilepath );
+
+/*-------------------------------------------------------------------------*/
+
+bool
 SerializeProjectInfo( const TProjectInfo& projectInfo ,
                       CORE::CDataNode& rootNodeToBe   );
 
+/*-------------------------------------------------------------------------*/
+
+bool
+SerializeProjectInfo( const TProjectInfo& projectInfo     ,
+                      const CORE::CString& outputFilepath );
+                      
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
