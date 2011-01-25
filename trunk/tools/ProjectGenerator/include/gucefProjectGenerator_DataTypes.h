@@ -136,6 +136,7 @@ typedef std::map< CORE::CString, TDirProcessingInstructions > TDirProcessingInst
 
 struct SProjectInfo
 {
+    CORE::CString projectName;                               // Name of the overall project
     TModuleInfoVector modules;                               // All generated module information
     TDirProcessingInstructionsMap dirProcessingInstructions; // All loaded processing instructions mapped per path
     TStringVector globalDirExcludeList;                      // Dirs that should never be included in processing regardless of path
@@ -150,6 +151,18 @@ typedef struct SProjectInfo TProjectInfo;
 
 CORE::CString
 ModuleTypeToString( const TModuleType moduleType );
+
+/*-------------------------------------------------------------------------*/
+
+bool
+SerializeModuleInfo( const TModuleInfo& moduleInfo ,
+                     CORE::CDataNode& parentNode   );
+
+/*-------------------------------------------------------------------------*/
+
+bool
+SerializeProjectInfo( const TProjectInfo& projectInfo ,
+                      CORE::CDataNode& rootNodeToBe   );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
