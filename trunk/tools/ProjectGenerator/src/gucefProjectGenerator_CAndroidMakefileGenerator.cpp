@@ -308,6 +308,7 @@ FindNextModuleAccordingToBuildOrder( TProjectInfo& projectInfo  ,
         {
             return &(*i);
         }
+        ++i;
     }
     return NULL;        
 }
@@ -324,6 +325,14 @@ GenerateContentForAndroidProjectMakefile( TProjectInfo& projectInfo            ,
 
     CORE::CString contentPrefix = makefileHeader;
 
+    contentPrefix +=
+      "#\n"
+      "# This is the project makefile which includes all modules which are part of this project\n"
+      "#\n";
+      
+    contentPrefix += 
+      "# PROJECT: \"" + projectInfo.projectName + "\"\n#\n\n";
+    
     if ( addGeneratorCompileTimeToOutput )
     {
         contentPrefix += 
@@ -342,7 +351,9 @@ GenerateContentForAndroidProjectMakefile( TProjectInfo& projectInfo            ,
     while ( NULL != currentModule )
     {
         // Get relative path from the outputDir to the module's Android.mk
-        CORE::CString relativePathToModule;
+        CORE::CString relativePathToModule = CORE::GetRelativePathToOtherPathRoot( outputDir, currentModule->rootDir );
+        CORE::AppendToPath( relativePathToModule, "Android.mk" );
+        relativePathToModule = relativePathToModule.ReplaceChar( '\\', '/' );
         
         // Add entry for this module to the project file
         moduleListSection += "include $(PROJECT_ROOT_PATH)/" + relativePathToModule + "\n";

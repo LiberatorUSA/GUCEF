@@ -498,7 +498,7 @@ PerformSvnMakeSurePathExists( const CORE::CString& givenPath   ,
     }
     
     // Now check if the path is versioned from the archive root down
-    CORE::UInt32 equality = path.FindMaxSubstrEquality( archiveRoot, 0, true );
+    CORE::UInt32 equality = path.FindMaxSubstrEquality( archiveRoot, 0, true, false );
     CORE::CString relativePath = path.CutChars( equality, true );
     TStringVector relativePathSegments = relativePath.ParseElements( '\\', false );
         

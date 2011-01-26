@@ -52,10 +52,26 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *      Turns the given relative path into an absolute path
+ *  Turns the given relative path into an absolute path
+ *  You can use this function to implement support for variables in path names
+ *  Supported variables are:
+ *      - $CURWORKDIR$ -> Is resolved to the current working directory
+ *      - $MODULEDIR$  -> Is resolved to the directory this module is located in
+ *      - ..           -> If dir segments are available before this one the path is shortened
  */
 GUCEF_CORE_PUBLIC_CPP CString
 RelativePath( const CString& relpath );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Determines the most compact relative path between the two paths given.
+ *  the given paths can have variables in them, these will be resolved via
+ *  RelativePath()
+ */
+GUCEF_CORE_PUBLIC_CPP CString
+GetRelativePathToOtherPathRoot( const CString& fromPath ,
+                                const CString& toPath   );
 
 /*-------------------------------------------------------------------------*/
 

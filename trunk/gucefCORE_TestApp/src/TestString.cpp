@@ -84,7 +84,7 @@ PerformStringTests( void )
         
         // test FindMaxSubstrEquality
         testStr2 = "jklmnopqrstuvwxyz";
-        testStr1.FindMaxSubstrEquality( testStr2, 0, true );
+        testStr1.FindMaxSubstrEquality( testStr2, 0, true, true );
     }
     catch( ... )
     {

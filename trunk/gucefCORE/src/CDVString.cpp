@@ -964,17 +964,37 @@ CString::ParseElements( char seperator        ,
 UInt32
 CString::FindMaxSubstrEquality( const CString& searchStr ,
                                 const UInt32 startOffset ,
-                                bool startFront          ) const
+                                bool startFront          ,
+                                bool isCaseSentive       ) const
 {GUCEF_TRACE;
 
     // Sanity check on the startOffset
     if ( (Int32)m_length - startOffset > 0 )
     {        
+        // Here we want to be able to support case insensitive compares 
+        // without having to suffer the performance penalty of making string lowercase
+        // when not doing case insensitive compares. This we do some pointer magic to 
+        // avoid this overhead when we can
+        CString lowercaseSearchStrStorage;
+        CString lowercaseThisStrStorage;        
+        const CString* theSearchStr = &searchStr;
+        const CString* thisStr = this;
+        
+        if ( !isCaseSentive )
+        {   
+            // Caller wants a case-insensitive compare,..
+            // take the performance hit
+            lowercaseSearchStrStorage = searchStr.Lowercase();
+            theSearchStr = &lowercaseSearchStrStorage;
+            lowercaseThisStrStorage = Lowercase();
+            thisStr = &lowercaseThisStrStorage;
+        }
+        
         // Get the smallest of the 2 buffer limits
-        UInt32 max = searchStr.Length();
-        if ( m_length - startOffset < max )
+        UInt32 max = theSearchStr->Length();
+        if ( thisStr->m_length - startOffset < max )
         {
-            max = m_length - startOffset;
+            max = thisStr->m_length - startOffset;
         }
         
         if ( startFront )
@@ -983,7 +1003,7 @@ CString::FindMaxSubstrEquality( const CString& searchStr ,
             UInt32 subLength=1;
             while ( subLength<=max )
             {
-                if ( memcmp( m_string+startOffset, searchStr.m_string, subLength ) != 0 )
+                if ( memcmp( thisStr->m_string+startOffset, theSearchStr->m_string, subLength ) != 0 )
                 {
                     // Reached the maximum equality length
                     return subLength-1;
@@ -995,8 +1015,8 @@ CString::FindMaxSubstrEquality( const CString& searchStr ,
         else
         {
             // Loop trough the buffer growing our comparison string
-            const char* string = m_string + m_length - startOffset;
-            const char* otherString = searchStr.m_string + searchStr.m_length; 
+            const char* string = thisStr->m_string + thisStr->m_length - startOffset;
+            const char* otherString = theSearchStr->m_string + theSearchStr->m_length; 
              
             UInt32 subLength=1;
             while ( subLength<=max )
