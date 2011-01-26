@@ -2068,35 +2068,6 @@ GetModuleInfo( const TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GetRelativePathToOtherPathRoot( const CORE::CString& fromPath ,
-                                const CORE::CString& toPath   )
-{GUCEF_TRACE;
-
-    CORE::Int32 pathEquality = (CORE::Int32) fromPath.FindMaxSubstrEquality( toPath, 0, true );
-    CORE::CString toPathRemainder = toPath.ReplaceChar( '\\', '/' );
-    CORE::CString fromPathRemainder = fromPath.ReplaceChar( '\\', '/' );
-    pathEquality = toPathRemainder.HasChar( '/', pathEquality, false );
-    if ( pathEquality >= 0 )
-    {
-        toPathRemainder = toPathRemainder.CutChars( pathEquality+1, true );
-        fromPathRemainder = fromPathRemainder.CutChars( pathEquality+1, true );
-        TStringVector upDirElements = fromPathRemainder.ParseElements( '/', false );
-
-        CORE::CString relativePath;
-        for ( CORE::UInt32 i=0; i<upDirElements.size(); ++i )
-        {
-            relativePath += "../";
-        }
-        CORE::AppendToPath( relativePath, toPathRemainder );
-        relativePath = CORE::RelativePath( relativePath );
-        return relativePath.ReplaceChar( '\\', '/' );
-    }
-    return toPathRemainder;
-}
-
-/*---------------------------------------------------------------------------*/
-
-CORE::CString
 GenerateCMakeModuleIncludesSectionForPlatform( const TProjectInfo& projectInfo   ,
                                                const TModuleInfo& moduleInfo     ,
                                                const CORE::CString& platformName )
@@ -2159,8 +2130,9 @@ GenerateModuleIncludesForPlatform( const TProjectInfo& projectInfo   ,
         if ( NULL != dependencyModule )
         {
             // Determine the relative path to this other module
-            CORE::CString relativePath = GetRelativePathToOtherPathRoot( moduleInfo.rootDir        ,
-                                                                         dependencyModule->rootDir );
+            CORE::CString relativePath = CORE::GetRelativePathToOtherPathRoot( moduleInfo.rootDir        ,
+                                                                               dependencyModule->rootDir );
+            relativePath = relativePath.ReplaceChar( '\\', '/' );
 
             // Now construct the relative path to each of the dependency module's include dirs
             // These dir will all become include dirs for this module

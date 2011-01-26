@@ -209,7 +209,8 @@ class GUCEF_CORE_PUBLIC_CPP CString
 
     UInt32 FindMaxSubstrEquality( const CString& searchStr ,
                                   const UInt32 startOffset ,
-                                  bool frontToBack         ) const;
+                                  bool frontToBack         ,
+                                  bool isCaseSentive       ) const;
 
     CString CutChars( UInt32 charcount         ,
                       bool frontToBack = false ) const;

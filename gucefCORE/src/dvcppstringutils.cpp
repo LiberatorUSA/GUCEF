@@ -177,6 +177,59 @@ RelativePath( const CString& relpath )
     return resultStr;
 }
 
+/*---------------------------------------------------------------------------*/
+
+CString
+GetRelativePathToOtherPathRoot( const CString& fromPath ,
+                                const CString& toPath   )
+{GUCEF_TRACE;
+
+    typedef std::vector< CString >  TStringVector;
+    
+    // First resolve any variables in the paths,.. normalize
+    CString absFromPath = RelativePath( fromPath );
+    CString absToPath = RelativePath( toPath );
+    
+    #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+    
+    // For MS Win we need to take into account that paths are 
+    // the same even if the case doesn't match. Paths are
+    // case-insensitive. We will make sure this doesnt affect 
+    // us by checking the equality in a case-insensitive manner.
+    // This principle also applies to drive letters.
+
+    // Now just check for the overlap in paths and based on the overlap
+    // we will make a relative path
+    Int32 pathEquality = (Int32) absFromPath.FindMaxSubstrEquality( absToPath, 0, true, false );
+    
+    #elif
+    
+    // Now just check for the overlap in paths and based on the overlap
+    // we will make a relative path
+    Int32 pathEquality = (Int32) absFromPath.FindMaxSubstrEquality( absToPath, 0, true, true );
+    
+    #endif
+    
+    CString toPathRemainder = absToPath.ReplaceChar( '\\', '/' );
+    CString fromPathRemainder = absFromPath.ReplaceChar( '\\', '/' );
+    pathEquality = toPathRemainder.HasChar( '/', pathEquality, false );
+    if ( pathEquality >= 0 )
+    {
+        toPathRemainder = toPathRemainder.CutChars( pathEquality+1, true );
+        fromPathRemainder = fromPathRemainder.CutChars( pathEquality+1, true );
+        TStringVector upDirElements = fromPathRemainder.ParseElements( '/', false );
+
+        CString relativePath;
+        for ( UInt32 i=0; i<upDirElements.size(); ++i )
+        {
+            relativePath += "../";
+        }
+        AppendToPath( relativePath, toPathRemainder );
+        return RelativePath( relativePath );
+    }
+    return toPathRemainder;
+}
+
 /*-------------------------------------------------------------------------*/
 
 void
