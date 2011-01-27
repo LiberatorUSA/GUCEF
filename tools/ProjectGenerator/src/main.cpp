@@ -166,6 +166,11 @@ GUCEF_OSMAIN_BEGIN
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::UInt32ToString( projectInfo.globalDirExcludeList.size() ) + " dirs in the global dir ignore list" );
 
     projectInfo.projectName = keyValueList.GetValueAlways( "projectName" );
+    CORE::CString outputDir = keyValueList.GetValueAlways( "outputDir" );
+    if ( outputDir.IsNULLOrEmpty() )
+    {
+        outputDir = CORE::RelativePath( "$CURWORKDIR$" );
+    }
 
     // Use an info gatherer to get all the project information for us
     CDirCrawlingProjectInfoGatherer infoGatherer;    
@@ -179,25 +184,25 @@ GUCEF_OSMAIN_BEGIN
         if ( (*i).Lowercase() == "xml" )
         {
             CXmlProjectGenerator xmlGenerator;
-            xmlGenerator.GenerateProject( projectInfo                          ,
-                                          CORE::RelativePath( "$CURWORKDIR$" ) ,
-                                          addToolCompileTimeToOutput           );
+            xmlGenerator.GenerateProject( projectInfo                ,
+                                          outputDir                  ,
+                                          addToolCompileTimeToOutput );
         }
         else
         if ( (*i).Lowercase() == "androidmake" )
         {
             CAndroidMakefileGenerator androidMakefileGenerator;
-            androidMakefileGenerator.GenerateProject( projectInfo                          ,
-                                                      CORE::RelativePath( "$CURWORKDIR$" ) ,
-                                                      addToolCompileTimeToOutput           );
+            androidMakefileGenerator.GenerateProject( projectInfo                ,
+                                                      outputDir                  ,
+                                                      addToolCompileTimeToOutput );
         }
         else
         if ( (*i).Lowercase() == "cmake" )
         {
             CCMakeProjectGenerator cmakeGenerator;
-            cmakeGenerator.GenerateProject( projectInfo                          ,
-                                            CORE::RelativePath( "$CURWORKDIR$" ) ,
-                                            addToolCompileTimeToOutput           );
+            cmakeGenerator.GenerateProject( projectInfo                ,
+                                            outputDir                  ,
+                                            addToolCompileTimeToOutput );
         }
         ++i;
     }

@@ -63,7 +63,7 @@ IF NOT DEFINED GUCEF_HOME (
   ECHO GUCEF_HOME=%CD%
 )
 
-%GENERATOREXE% *rootDir=%GUCEF_HOME%* *generators=androidmake;xml* *dirsToIgnore=.svn;_svn*
+%GENERATOREXE% *rootDir=%GUCEF_HOME%* *outputDir=%GUCEF_HOME%* *generators=androidmake* *dirsToIgnore=.svn;_svn* *projectName=GUCEF*
 cd "%GUCEF_THEBATCHDIR%"
 GOTO END
 
