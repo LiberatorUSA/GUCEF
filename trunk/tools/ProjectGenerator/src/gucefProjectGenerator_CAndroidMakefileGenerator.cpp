@@ -67,6 +67,27 @@ const char* makefileHeader =
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+TModuleInfo*
+FindModuleByName( TProjectInfo& projectInfo       ,
+                  const CORE::CString& moduleName )
+{GUCEF_TRACE;
+
+    TModuleInfoVector::iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        TModuleInfo& moduleInfo = (*i);
+        if ( moduleInfo.name == moduleName )
+        {
+            return &(*i);
+        }
+        
+        ++i;
+    }
+    return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CString
 GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
                                    TModuleInfo& moduleInfo              ,
@@ -164,6 +185,107 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
     // Add some spacing for readability
     includeFilesSection += "\n\n";
     
+    // Now we will add all the dependency linking instructions.
+    // For some reason it matters, at specification time, to Android's build 
+    // system whether the module you are linking to is a dynamically linked module
+    // or a statically linked module. As such we have to figure out which is which.
+    CORE::CString linkingSection, linkingErrorSection;
+    CORE::CString linkedSharedLibrariesSection = "\nLOCAL_SHARED_LIBRARIES := \\\n";
+    CORE::CString linkedStaticLibrariesSection = "\nLOCAL_STATIC_LIBRARIES := \\\n";
+    CORE::CString linkedRuntimeLibrariesSection = "\nLOCAL_LDLIBS := \\\n";
+    bool hasLinkedSharedLibraries = false;
+    bool hasLinkedStaticLibraries = false;
+    bool hasRuntimeLibraries = false;
+    TStringVector::iterator m = moduleInfo.linkedLibraries.begin();
+    while ( m != moduleInfo.linkedLibraries.end() )
+    {
+        TModuleInfo* linkedDependency = FindModuleByName( projectInfo, (*m) );
+        if ( NULL != linkedDependency )
+        {
+            // The module we are linking too is part of this project.
+            // As such we can simply check the other module's info
+            // to find out wheter its a dynamically linked module or not
+            // which in turn tells us how to instruct the Android build system
+            // to link.
+            switch( linkedDependency->moduleType )
+            {
+                case MODULETYPE_SHARED_LIBRARY:
+                {
+                    if ( hasLinkedSharedLibraries )
+                    {
+                        linkedSharedLibrariesSection += " \\\n";
+                    }
+                    linkedSharedLibrariesSection += "  " + (*m);
+                    hasLinkedSharedLibraries = true;
+                    break;
+                }
+                case MODULETYPE_STATIC_LIBRARY:
+                {
+                    if ( hasLinkedStaticLibraries )
+                    {
+                        linkedStaticLibrariesSection += " \\\n";
+                    }
+                    linkedStaticLibrariesSection += "  " + (*m);
+                    hasLinkedStaticLibraries = true;
+                    break;
+                }
+                case MODULETYPE_EXECUTABLE:
+                { 
+                    // This is really nasty but the best option for now...
+                    // It is possible to link to exported symbols from an executable
+                    // under linux and as such we will leverage this here
+                    if ( hasLinkedStaticLibraries )
+                    {
+                        linkedStaticLibrariesSection += " \\\n";
+                    }
+                    linkedStaticLibrariesSection += "  " + (*m);
+                    hasLinkedSharedLibraries = true;
+                    break;
+                }
+                default:
+                {
+                    linkingErrorSection += 
+                      "# *** ERROR *** Finish me\n"
+                      "# Unable to determing module type from the source information\n"
+                      "# Please edit the line below to manually set the correct linking method for this dependency\n";
+                    linkingErrorSection += "#LOCAL_<(LDLIBS???)> += " + moduleInfo.name + "\n\n";
+
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Error: the module " + moduleInfo.name + " does not have a useable module type set, you will have to manually edit the file to correct the error" );  
+                    break;
+                }
+            }
+        }
+        else
+        {
+            // If we get here then this dependency is not on a module which is part of the project
+            // As such we cannot build this module thus the only approriote linking method would seem
+            // to be the one where we simply instruct the linker to load this dependency at runtime.
+            // This will typically be the case for any Android NDK modules we have to link to.
+            if ( hasRuntimeLibraries )
+            {
+                linkedRuntimeLibrariesSection += " \\\n";
+            }
+            linkedRuntimeLibrariesSection += "  -l" + (*m);
+            hasRuntimeLibraries = true;
+        }
+        ++m;
+    }
+    
+    // Based on what was found we will construct the linking section
+    if ( hasLinkedSharedLibraries )
+    {
+        linkingSection += linkedSharedLibrariesSection + "\n\n";
+    }
+    if ( hasLinkedStaticLibraries )
+    {
+        linkingSection += linkedStaticLibrariesSection + "\n\n";
+    }
+    if ( hasRuntimeLibraries )
+    {
+        linkingSection += linkedRuntimeLibrariesSection + "\n\n";
+    }
+    linkingSection += linkingErrorSection;
+            
     // Check if we have a file on disk of information which is to be inserted into
     // our automatically generated make file
     CORE::CString manualContent;
@@ -218,7 +340,7 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
         }
     }
     
-    return contentPrefix + srcFilesSection + includeFilesSection + manualContent + contentSuffix;
+    return contentPrefix + srcFilesSection + includeFilesSection + linkingSection + manualContent + contentSuffix;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -165,6 +165,8 @@ GUCEF_OSMAIN_BEGIN
     projectInfo.globalDirExcludeList = keyValueList.GetValueAlways( "dirsToIgnore" ).ParseElements( ';', false );
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::UInt32ToString( projectInfo.globalDirExcludeList.size() ) + " dirs in the global dir ignore list" );
 
+    projectInfo.projectName = keyValueList.GetValueAlways( "projectName" );
+
     // Use an info gatherer to get all the project information for us
     CDirCrawlingProjectInfoGatherer infoGatherer;    
     infoGatherer.GatherInfo( rootDirs    ,
