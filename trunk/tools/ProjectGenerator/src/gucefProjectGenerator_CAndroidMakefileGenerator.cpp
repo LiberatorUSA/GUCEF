@@ -111,27 +111,28 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
     
     // Generate the source files section
     CORE::CString srcFilesSection = "LOCAL_SRC_FILES := \\\n";
+    bool firstLoop = true;
     TStringVectorMap::iterator i = moduleInfo.sourceDirs.begin();
     while ( i != moduleInfo.sourceDirs.end() )
     {
         const CORE::CString& srcDir = (*i).first;
         const TStringVector& srcFiles = (*i).second;
-        
+
         TStringVector::const_iterator n = srcFiles.begin();
         while ( n != srcFiles.end() )
         {
+            if ( !firstLoop )
+            {
+                srcFilesSection += " \\\n";
+            }
+            firstLoop = false;
+
             CORE::CString relFilePath = srcDir;
             CORE::AppendToPath( relFilePath, (*n) );
             
-            srcFilesSection += "  " + relFilePath.ReplaceChar( '\\', '/' );            
+            srcFilesSection += "  $(LOCAL_PATH)/" + relFilePath.ReplaceChar( '\\', '/' );            
             
             ++n;
-            
-            // We are not finished yet, add marker saying more to come
-            if ( n != srcFiles.end() )
-            {
-                srcFilesSection += " \\\n"; 
-            }
         }        
         ++i;
     }
@@ -144,12 +145,19 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
     // it will locate the header file on its own
     CORE::CString includeFilesSection = "LOCAL_C_INCLUDES := \\\n";
     i = moduleInfo.includeDirs.begin();
+    firstLoop = true;
     while ( i != moduleInfo.includeDirs.end() )
     {
+        if ( !firstLoop )
+        {
+            includeFilesSection += " \\\n";
+        }
+        firstLoop = false;
+
         const CORE::CString& dir = (*i).first;
         if ( !dir.IsNULLOrEmpty() )
         {
-            includeFilesSection += "  " + dir.ReplaceChar( '\\', '/' );        
+            includeFilesSection += "  $(LOCAL_PATH)/" + dir.ReplaceChar( '\\', '/' );        
         }
         else
         {
@@ -158,12 +166,6 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
         }
         
         ++i;
-        
-        // We are not finished yet, add marker saying more to come
-        if ( !moduleInfo.dependencyIncludeDirs.empty() || i != moduleInfo.includeDirs.end() )
-        {
-            includeFilesSection += " \\\n"; 
-        }
     }
     
     // We also need to add the include paths required to find headers
@@ -171,15 +173,15 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
     TStringSet::iterator n = moduleInfo.dependencyIncludeDirs.begin();
     while ( n != moduleInfo.dependencyIncludeDirs.end() )
     {
-        includeFilesSection += "  " + (*n).ReplaceChar( '\\', '/' ) + " \\\n";
+        if ( !firstLoop )
+        {
+            includeFilesSection += " \\\n";
+        }
+        firstLoop = false;
+
+        includeFilesSection += "  $(LOCAL_PATH)/" + (*n).ReplaceChar( '\\', '/' );
         
         ++n;
-        
-        // We are not finished yet, add marker saying more to come
-        if ( n != moduleInfo.dependencyIncludeDirs.end() )
-        {
-            includeFilesSection += " \\\n"; 
-        }
     }
     
     // Add some spacing for readability
