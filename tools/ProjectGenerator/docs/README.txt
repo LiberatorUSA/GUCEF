@@ -1,11 +1,11 @@
 *
-*  CMakeListGenerator
-*  Copyright (C) 2002 - 2010.  Dinand Vanvelzen
+*  ProjectGenerator
+*  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
 *
 *  This software is free software; you can redistribute it and/or
 *  modify it under the terms of the GNU Lesser General Public
 *  License as published by the Free Software Foundation; either
-*  version 2.1 of the License, or (at your option) any later version.
+*  version 3 of the License, or (at your option) any later version.
 *
 *  This software is distributed in the hope that it will be useful,
 *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,17 +21,26 @@
 About:
 ----------------------------------------------
 
-The CMakeListGenerator tool is meant for automatically generating the bulk 
-of the CMakeLists.txt content based on directory structure and file analysis.
-This reduces maintenance time for CMake files and makes it easy to generate
-CMake files for 3'rd party sources with little effort.
+Into:
+The ProjectGenerator tool is meant for automatically generating the bulk 
+of the project file content based on directory structure and file analysis.
+This reduces maintenance time for module/project files and makes it easy to 
+generate such files for 3'rd party sources with little effort.
+
+History:
 I, Dinand Vanvelzen, created this tool to help me build the Galaxy Unlimited
 codebase using CMake without having to manually write all the CMake files for
-GU libraries and their dependencies. One of the advantages is being able 
-to dump new code releases of dependencies into the archive without having to
-go through the code to check which files got added/deleted etc. Just re-run the
-generator and you will have up-to-date CMakeList.txt files for those projects.
-An additional advantage is the automatic generation of include_directories paths
+GU libraries and their dependencies. Later I started doing native Android 
+development which required Android.mk files which CMake could not provide.
+As such the CMakeListGenerator tool was renamed and its functionality expanded
+and enhanced to include support for different generator backends besides CMake.
+
+Example usefullness:
+One of the advantages is being able to dump new code releases of dependencies 
+into the archive without having to go through the code to check which files got
+added/deleted etc. Just re-run the generator and you will have up-to-date
+module/project files for the build system you are using.
+An additional advantage is the automatic generation of include directory paths
 which can be a pain to get right, especially with a lot of modules in a complicated
 directory structure. Using this tool you can just move the modules around and their
 include paths will be correct again as soon as you re-run the generator.
@@ -42,10 +51,12 @@ include paths will be correct again as soon as you re-run the generator.
 Version:
 ----------------------------------------------
 
-This is a release build created on 26'rd of June 2010.
-It is a 32-bit Linux application for the x86 platform.
-This is the first Linux release
+This is a release build created on 26'th of Jan 2011.
+It is a 32-bit MS Windows application for the x86 platform.
 if you encounter any problems let me know.
+
+This is the first release under the name of "ProjectGenerator"
+The previous release was under the name of "CMakeListGenerator"
 
 
 ----------------------------------------------
@@ -59,7 +70,29 @@ Features:
 - Special processing for platform specific headers/sources is supported.
 - Support for combined processing of multipe source trees
 - Generate XML project file with all gathered/generated information.
+- Support for multiple generator backends
 
+
+----------------------------------------------
+Features: Supported generators
+----------------------------------------------
+
+The currently supported generator backends are compiled into the tool. 
+The support generators are:
+
+  - "cmake"
+       Generates CMakeList.txt files which the CMake tool can consume
+       This generator only generates the module files not the overall
+       project file since in the case of CMake this involves a lot of scripting.
+  - "androidmake"
+       Generates Android.mk files for all the modules and creates a
+       top level 'project' file which includes all the generated module
+       make files.
+  - "xml"
+       Generates a "Project.xml" file which is simply a dump of all the gathered
+       information. If you wich to integrate the ProjectGenerator with toolchains
+       not supported by a generator it is expected that you achieve such integration
+       via this output option.
 
 
 ----------------------------------------------
@@ -102,35 +135,60 @@ Usage: Command line parameters
 If no command line arguments are given then the tool will start processing 
 the directory structure using the current working directory as the root.
 Like most GU applications command line parameters accepted in the form:
-'<key>=<value>'
+*<key>=<value>*
 
 The tool accepts the following command line parameters:
 
-- 'addToolCompileTimeToOutput=<true/false>'
+- *addToolCompileTimeToOutput=<true/false>*
      Determines whether to add the compile date-time of the tool to the header of all the CMake 
      files that are generated. This is particulary usefull when you are suspecting that your CMake
      files are not being generated by the correct version of the generator tool.
      The default is for this feature to be turned off.
 
-- 'writeLogLocationToOutput=<true/false>'
+- *writeLogLocationToOutput=<true/false>*
      Determines whether the location of the tool logfile should be added at the end of the 
      generated CMake files. This is mainly usefull for debugging your build scripts.
      The default is for this feature to be turned off.
 
-- 'rootDir=<path to processing root>'
+- *rootDir=<path to processing root>*
     Example:
-       'rootDir=C:\Dev\MyCodeRoot'
+       *rootDir=C:\Dev\MyCodeRoot*
 
-    Note that you can pass multiple instances of the rootDir argument in order
-    to pass multiple root directories.
+     Note that you can pass multiple instances of the rootDir argument in order
+     to pass multiple root directories.
 
     Example:
-       'rootDir=C:\Dev\MyCodeRoot' 'rootDir=D:\OtherDev\MyCodeRoot'
+       *rootDir=C:\Dev\MyCodeRoot* *rootDir=D:\OtherDev\MyCodeRoot*
 
-    Passing multiple root dirs will allow include dependencies between the two root dirs
-    to be resolved thus allowing them to be used as if it's all part of the same project set.
+     Passing multiple root dirs will allow include dependencies between the two root dirs
+     to be resolved thus allowing them to be used as if it's all part of the same project set.
 
+     Note that if no rootDir's are passed then the default is used which is the current working
+     directory.
 
+- *projectName=<name of your project>*
+    Example: 
+       *projectName=GUCEF*
+
+     Note that this setting may not affect the output depending on which generator is used.
+     If you do not pass this parameter the generators will simply not be given a project name.
+
+- *generators=<nameOfGenerator1>;<nameOfGenerator2>*
+    Example:
+       *generators=cmake;androidmake;xml*
+
+     This parameter tells the tool which generators should be used to generate project/module
+     files basedon the gathered information. Check the feature list for a list of which generators
+     are actually supported in this release. You can use as many generators as you wish, just
+     seperate them with a ;
+     Note that if this parameter is not passed to the tool then only the default generator will 
+     be used. The default generator is "xml".
+
+- *dirsToIgnore=<dirNameToIgnoreGlobally1>;<dirNameToIgnoreGlobally2>*
+    Example:
+       *dirsToIgnore=_svn;.svn*
+
+     This parameter tlls the 
 
 ----------------------------------------------
 Usage: Platform (O/S) specific processing
@@ -191,7 +249,8 @@ As described in the overview there are 2 ways of specifying processing instructi
   - Simple exclude list: this requires a file named "CMakeGenExcludeList.txt"
   - Advanced processing instructions: this requires a file named "CMakeGenInstructions.xml"
     In addition it also requires the "libparsifal.dll" XML library to be present and it's GUCEF
-    tie-in plugin library which is "dstorepluginPARSIFALXML.dll"
+    tie-in plugin library which is "dstorepluginPARSIFALXML.dll" (or whatever the module's name is 
+    for the platform distribution you are using).
 
 The simple exclude list is, as you might guess, simple. As described in the overview it is simply
 a list consisting of each item being placed on a different line. There is no way to specify whether
@@ -252,6 +311,11 @@ up the generator's processing time. As such processing instructions can also be 
 History:
 ----------------------------------------------
 
+- 26'th Jan 2011:
+     - First version under the name of ProjectGenerator. Added Android makefile support to the already
+       implemented support for CMake and just a plain XML dump of the gathered information.
+     - Note that because of issues with the Linux version the character used to seperate cmd line params
+       has been changed from ' to *. Please update your scripts invoking the tool accordingly.
 - 26'th June 2010:
      - First version of the native Linux port. Build on Ubuntu x86 Desktop edition.
 - 11'th June 2010:
