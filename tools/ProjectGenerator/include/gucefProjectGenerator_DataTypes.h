@@ -154,6 +154,11 @@ ModuleTypeToString( const TModuleType moduleType );
 
 /*-------------------------------------------------------------------------*/
 
+TModuleType
+StringToModuleType( const CORE::CString moduleTypeStr );
+
+/*-------------------------------------------------------------------------*/
+
 bool
 SerializeModuleInfo( const TModuleInfo& moduleInfo ,
                      CORE::CDataNode& parentNode   );
@@ -163,6 +168,19 @@ SerializeModuleInfo( const TModuleInfo& moduleInfo ,
 bool
 SerializeModuleInfo( const TModuleInfo& moduleInfo       ,
                      const CORE::CString& outputFilepath );
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
+                       const CORE::CDataNode& parentNode );
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DeserializeModuleInfo( TModuleInfo& moduleInfo            ,
+                       const CORE::CString& inputFilepath );
+
 
 /*-------------------------------------------------------------------------*/
 

@@ -270,6 +270,17 @@ GetProcessingInstructionsPath( const CORE::CString& dir )
 {GUCEF_TRACE;
 
     CORE::CString instructionsFile = dir;
+    CORE::AppendToPath( instructionsFile, "ProjectGenInstructions.xml" );
+    return instructionsFile;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GetLegacyProcessingInstructionsPath( const CORE::CString& dir )
+{GUCEF_TRACE;
+
+    CORE::CString instructionsFile = dir;
     CORE::AppendToPath( instructionsFile, "CMakeGenInstructions.xml" );
     return instructionsFile;
 }
@@ -282,19 +293,23 @@ GetProcessingInstructions( const CORE::CString& dir      ,
 {GUCEF_TRACE;
 
     CORE::CString instructionsFile = GetProcessingInstructionsPath( dir );
-
-    if ( CORE::FileExists( instructionsFile ) )
+    if ( !CORE::FileExists( instructionsFile ) )
     {
-        CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = GetXmlDStoreCodec();
-        if ( !codecPtr.IsNULL() )
+        instructionsFile = GetLegacyProcessingInstructionsPath( dir );
+        if ( !CORE::FileExists( instructionsFile ) )
         {
-            if ( codecPtr->BuildDataTree( &instructions    ,
-                                          instructionsFile ) )
-            {
-                return true;
-            }
+            return false;
         }
-
+    }
+    
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = GetXmlDStoreCodec();
+    if ( !codecPtr.IsNULL() )
+    {
+        if ( codecPtr->BuildDataTree( &instructions    ,
+                                      instructionsFile ) )
+        {
+            return true;
+        }
     }
     return false;
 }
@@ -303,6 +318,17 @@ GetProcessingInstructions( const CORE::CString& dir      ,
 
 CORE::CString
 GetExcludeListPath( const CORE::CString& dir )
+{GUCEF_TRACE;                            
+
+    CORE::CString excludeFile = dir;
+    CORE::AppendToPath( excludeFile, "ProjectGenExcludeList.txt" );
+    return excludeFile;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GetLegacyExcludeListPath( const CORE::CString& dir )
 {GUCEF_TRACE;
 
     CORE::CString excludeFile = dir;
@@ -317,20 +343,25 @@ GetExcludeList( const CORE::CString& dir )
 {GUCEF_TRACE;
 
     CORE::CString excludeFile = GetExcludeListPath( dir );
-
-    if ( CORE::FileExists( excludeFile ) )
+    if ( !CORE::FileExists( excludeFile ) )    
     {
-        CORE::CString excludeFileContent;
-        if ( CORE::LoadTextFileAsString( excludeFile        ,
-                                         excludeFileContent ) )
+        // try legacy filename
+        excludeFile = GetLegacyExcludeListPath( dir );
+        if ( !CORE::FileExists( excludeFile ) )
         {
-            excludeFileContent = excludeFileContent.RemoveChar( '\r' );
-
-            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Loaded simple exclude list for directory \"" + dir + "\"" );
-            return excludeFileContent.ParseElements( '\n' );
+            return TStringVector();
         }
     }
 
+    CORE::CString excludeFileContent;
+    if ( CORE::LoadTextFileAsString( excludeFile        ,
+                                     excludeFileContent ) )
+    {
+        excludeFileContent = excludeFileContent.RemoveChar( '\r' );
+
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Loaded simple exclude list for directory \"" + dir + "\"" );
+        return excludeFileContent.ParseElements( '\n' );
+    }
     return TStringVector();
 }
 
@@ -747,8 +778,10 @@ bool
 AreProcessingInstructionsOnDisk( const CORE::CString& dir )
 {GUCEF_TRACE;
 
-    return CORE::FileExists( GetExcludeListPath( dir ) )         ||
-           CORE::FileExists( GetProcessingInstructionsPath( dir ) );
+    return CORE::FileExists( GetExcludeListPath( dir ) )               ||
+           CORE::FileExists( GetLegacyExcludeListPath( dir ) )         ||
+           CORE::FileExists( GetProcessingInstructionsPath( dir ) )    ||
+           CORE::FileExists( GetLegacyProcessingInstructionsPath( dir ) );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2029,6 +2062,16 @@ FindSubDirsWithSource( TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 void
+LegacyProcessProjectDir( TProjectInfo& projectInfo ,
+                         TModuleInfo& moduleInfo   )
+{GUCEF_TRACE;
+
+
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
 ProcessProjectDir( TProjectInfo& projectInfo ,
                    TModuleInfo& moduleInfo   )
 {GUCEF_TRACE;
@@ -2076,7 +2119,7 @@ ProcessProjectDir( TProjectInfo& projectInfo ,
     GetAllPlatformFilesInPlatformDirs( projectInfo, moduleInfo );
     ApplyDirProcessingInstructionsToModule( projectInfo, moduleInfo );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generated CMake List file content for project dir: " + moduleInfo.rootDir );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed CMake List file content for project dir: " + moduleInfo.rootDir );
 }
 
 /*---------------------------------------------------------------------------*/

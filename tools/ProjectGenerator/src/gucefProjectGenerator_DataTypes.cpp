@@ -72,6 +72,20 @@ ModuleTypeToString( const TModuleType moduleType )
 
 /*-------------------------------------------------------------------------*/
 
+TModuleType
+StringToModuleType( const CORE::CString moduleTypeStr )
+{
+    CORE::CString moduleTypeString = moduleTypeStr.Lowercase();
+    if ( moduleTypeString == "" ) return MODULETYPE_UNDEFINED;
+    if ( moduleTypeString == "executable" ) return MODULETYPE_EXECUTABLE;
+    if ( moduleTypeString == "sharedlibrary" ) return MODULETYPE_SHARED_LIBRARY;
+    if ( moduleTypeString == "staticlibrary" ) return MODULETYPE_STATIC_LIBRARY;
+    if ( moduleTypeString == "unknown" ) return MODULETYPE_UNKNOWN;
+    return MODULETYPE_UNDEFINED;
+}
+
+/*-------------------------------------------------------------------------*/
+
 static CORE::CDStoreCodecRegistry::TDStoreCodecPtr
 GetXmlDStoreCodec( void )
 {GUCEF_TRACE;
@@ -507,7 +521,8 @@ SerializeProjectInfo( const TProjectInfo& projectInfo ,
 bool
 SerializeProjectInfo( const TProjectInfo& projectInfo     ,
                       const CORE::CString& outputFilepath )
-{
+{GUCEF_TRACE;
+
     CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec = GetXmlDStoreCodec();
     if ( NULL != codec )
     {
@@ -530,6 +545,161 @@ SerializeProjectInfo( const TProjectInfo& projectInfo     ,
         else
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "SerializeProjectInfo: Failed to serialize the given project information" );
+            return false;
+        }
+    }
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "SerializeProjectInfo: Cannot serialize since no codec is registered that can be used for serialization" );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
+                       const CORE::CDataNode& parentNode )
+{GUCEF_TRACE;
+
+    const CORE::CDataNode* moduleInfoNode = parentNode.Find( "Module" );
+    if ( NULL == moduleInfoNode ) return false;
+    
+    // Find the overall module properties
+    moduleInfo.buildOrder = CORE::StringToInt32( moduleInfoNode->GetAttributeValue( "BuildOrder" ) );
+    moduleInfo.rootDir = moduleInfoNode->GetAttributeValue( "RootDir" );
+    moduleInfo.moduleType = StringToModuleType( moduleInfoNode->GetAttributeValue( "Type" ) );
+
+    // Find any/all files for which are part of this module
+    CORE::CDataNode::TConstDataNodeSet fileNodes = moduleInfoNode->FindChildrenOfType( "Files" );
+    CORE::CDataNode::TConstDataNodeSet::iterator i = fileNodes.begin();
+    while ( i != fileNodes.end() )
+    {
+        const CORE::CDataNode* filesDirsNode = (*i);
+        CORE::CString filesType = filesDirsNode->GetAttributeValue( "Type" );
+        CORE::CString platform = filesDirsNode->GetAttributeValue( "Platform" );
+
+        CORE::CDataNode::TConstDataNodeSet dirs = filesDirsNode->FindChildrenOfType( "Dir" );
+        CORE::CDataNode::TConstDataNodeSet::iterator n = dirs.begin();
+        while ( n != dirs.end() )
+        {
+            const CORE::CDataNode* dirsNode = (*n);            
+            CORE::CString path = dirsNode->GetAttributeValue( "Path" );
+            
+            CORE::CDataNode::TConstDataNodeSet files = dirsNode->FindChildrenOfType( "File" );
+            CORE::CDataNode::TConstDataNodeSet::iterator m = files.begin();
+            while ( m != files.end() )
+            {
+                CORE::CString filename = (*m)->GetAttributeValue( "Name" );
+                
+                if ( filesType == "Headers" )
+                {
+                    // We have a list of header files
+                    if ( platform == "All" )
+                    {
+                        moduleInfo.includeDirs[ path ].push_back( filename );
+                    }
+                    else
+                    {
+                        moduleInfo.platformHeaderFiles[ platform ][ path ].push_back( filename );
+                    }
+                }
+                else
+                if ( filesType == "Source" )
+                {
+                    // We have a list of source files
+                    if ( platform == "All" )
+                    {
+                        moduleInfo.sourceDirs[ path ].push_back( filename );
+                    }
+                    else
+                    {
+                        moduleInfo.platformSourceFiles[ platform ][ path ].push_back( filename );
+                    }
+                }
+                ++m;
+            }                
+            ++n;
+        }
+        ++i;
+    }
+ 
+    // Find dependency includes
+    CORE::CDataNode::TConstDataNodeSet includesNodes = moduleInfoNode->FindChildrenOfType( "Includes" );
+     i = includesNodes.begin();
+    while ( i != includesNodes.end() )
+    {
+        const CORE::CDataNode* includesNode = (*i);        
+        CORE::CString source = includesNode->GetAttributeValue( "Source" ).Lowercase();
+        if ( source == "dependency" )
+        {        
+            CORE::CString platform = includesNode->GetAttributeValue( "Platform" );
+
+            CORE::CDataNode::TConstDataNodeSet includes = includesNode->FindChildrenOfType( "Include" );
+            CORE::CDataNode::TConstDataNodeSet::iterator n = includes.begin();
+            while ( n != includes.end() )
+            {
+                const CORE::CDataNode* includeNode = (*n);            
+                CORE::CString path = includeNode->GetAttributeValue( "Path" );
+                
+                if ( platform == "All" )
+                {
+                    moduleInfo.dependencyIncludeDirs.insert( path );
+                }
+                else
+                {
+                    moduleInfo.dependencyPlatformIncludeDirs[ platform ].insert( path );
+                }
+                ++n;
+            }                
+        }
+        ++i;
+    }
+    
+    // Find all the module dependencies
+    const CORE::CDataNode* dependenciesNode = moduleInfoNode->Find( "Dependencies" );
+    CORE::CDataNode::TConstDataNodeSet dependencies = dependenciesNode->FindChildrenOfType( "Dependency" );
+    i = dependencies.begin();
+    while ( i != dependencies.end() )
+    {
+        const CORE::CDataNode* dependencyNode = (*i);
+        moduleInfo.dependencies.push_back( dependencyNode->GetAttributeValue( "Name" ) );
+        
+        ++i;
+    }
+
+    // Find all the libraries that are linked but not part of the overall project
+    const CORE::CDataNode* linkedLibsNode = moduleInfoNode->Find( "LinkedLibraries" );
+    CORE::CDataNode::TConstDataNodeSet linkedLibs = linkedLibsNode->FindChildrenOfType( "LinkedLibrary" );
+    i = linkedLibs.begin();
+    while ( i != linkedLibs.end() )
+    {
+        const CORE::CDataNode* linkedLibNode = (*i);
+        moduleInfo.linkedLibraries.push_back( linkedLibNode->GetAttributeValue( "Name" ) );
+        
+        ++i;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DeserializeModuleInfo( TModuleInfo& moduleInfo            ,
+                       const CORE::CString& inputFilepath )
+{GUCEF_TRACE;
+
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec = GetXmlDStoreCodec();
+    if ( NULL != codec )
+    {
+        CORE::CDataNode rootNode;        
+        if ( codec->BuildDataTree( &rootNode, inputFilepath ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded module information from file \"" + inputFilepath + "\", now we will parse the information" );
+            return DeserializeModuleInfo( moduleInfo ,
+                                          rootNode   );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: Failed to load the module information from file at " + inputFilepath );
             return false;
         }
     }
