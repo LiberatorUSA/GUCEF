@@ -66,13 +66,13 @@ typedef std::map< CORE::CString, TStringVectorMap > TStringVectorMapMap;
 
 enum EModuleType
 {
-    MODULETYPE_UNDEFINED      ,
+    MODULETYPE_UNDEFINED      ,    // <- this is the initialization value
     
     MODULETYPE_EXECUTABLE     ,
     MODULETYPE_SHARED_LIBRARY ,
     MODULETYPE_STATIC_LIBRARY ,
     
-    MODULETYPE_UNKNOWN
+    MODULETYPE_UNKNOWN             // <- to be used when initialized BUT we cannot determine the module type
 };
 typedef enum EModuleType TModuleType;
 
@@ -107,6 +107,7 @@ typedef struct SModuleInfo TModuleInfo;
 /*---------------------------------------------------------------------------*/
 
 typedef std::vector< TModuleInfo > TModuleInfoVector;
+typedef std::map< CORE::CString, TModuleInfoVector > TModuleInfoVectorMap;
 typedef std::vector< TModuleInfo* > TModuleInfoPtrVector;
 typedef std::map< int, TModuleInfo* > TModulePrioMap;
 
@@ -124,7 +125,7 @@ struct SDirProcessingInstructions
     TStringVector fileIncludeList;              // list of files that are to be included at all times
     TStringVectorMap filePlatformIncludeList;   // list of files that are to be included for the given platform
 
-    CORE::CDataNode processingInstructions; // All unparsed processing intruction data
+    CORE::CDataNode processingInstructions; // All unparsed processing instruction data
 };
 typedef struct SDirProcessingInstructions TDirProcessingInstructions;
 
@@ -137,6 +138,7 @@ typedef std::map< CORE::CString, TDirProcessingInstructions > TDirProcessingInst
 struct SProjectInfo
 {
     CORE::CString projectName;                               // Name of the overall project
+    //TModuleInfoVectorMap modules;                            // All generated module information
     TModuleInfoVector modules;                               // All generated module information
     TDirProcessingInstructionsMap dirProcessingInstructions; // All loaded processing instructions mapped per path
     TStringVector globalDirExcludeList;                      // Dirs that should never be included in processing regardless of path
@@ -148,6 +150,17 @@ typedef struct SProjectInfo TProjectInfo;
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+void
+InitializeModuleInfo( TModuleInfo& moduleInfo );
+
+/*-------------------------------------------------------------------------*/
+
+void
+MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
+                 const TModuleInfo& moduleInfoToMergeIn );
+
+/*-------------------------------------------------------------------------*/
 
 CORE::CString
 ModuleTypeToString( const TModuleType moduleType );
