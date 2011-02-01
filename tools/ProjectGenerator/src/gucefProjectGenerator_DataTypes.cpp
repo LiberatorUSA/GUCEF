@@ -707,6 +707,59 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo            ,
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+InitializeModuleInfo( TModuleInfo& moduleInfo )
+{GUCEF_TRACE;
+
+    // reset all fields
+    moduleInfo.buildOrder = -1;
+    moduleInfo.name.Clear();
+    moduleInfo.includeDirs.clear();
+    moduleInfo.sourceDirs.clear();
+    moduleInfo.dependencyIncludeDirs.clear();
+    moduleInfo.dependencyPlatformIncludeDirs.clear();
+    moduleInfo.linkedLibraries.clear();
+    moduleInfo.dependencies.clear();
+    moduleInfo.cmakeListFileContentPostSuffix.Clear();
+    moduleInfo.cmakeListFileContentPreSuffix.Clear();
+    moduleInfo.cmakeListSuffixFileContent.Clear();
+    moduleInfo.moduleType = MODULETYPE_UNDEFINED;
+    moduleInfo.platformHeaderFiles.clear();
+    moduleInfo.platformSourceFiles.clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
+                 const TModuleInfo& moduleInfoToMergeIn )
+{GUCEF_TRACE;
+
+    // First take care of items which we know overwrite
+    if ( moduleInfoToMergeIn.buildOrder > -1 )
+    {
+        targetModuleInfo.buildOrder = moduleInfoToMergeIn.buildOrder;
+    }
+    if ( !moduleInfoToMergeIn.name.IsNULLOrEmpty() )
+    {
+        targetModuleInfo.name = moduleInfoToMergeIn.name;
+    }
+    if ( targetModuleInfo.rootDir.IsNULLOrEmpty() )
+    {
+        // Only overwrite root if we did not have one already
+        targetModuleInfo.rootDir = moduleInfoToMergeIn.rootDir;
+    }
+    if ( moduleInfoToMergeIn.moduleType != MODULETYPE_UNDEFINED )
+    {
+        targetModuleInfo.moduleType = moduleInfoToMergeIn.moduleType;
+    }
+    
+    // Now combine the other items without overwriting
+    
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -184,11 +184,10 @@ FilterStringVectorForFilesWithExtensions( TStringVector& outputVector         ,
         ++i;
     }
 }
-
 /*---------------------------------------------------------------------------*/
 
 bool
-IsDirAProjectDir( CORE::CString dir )
+IsDirALegacyProjectDir( const CORE::CString& dir )
 {GUCEF_TRACE;
 
     // The dir is a module dir if it has a suffix file in it
@@ -196,6 +195,23 @@ IsDirAProjectDir( CORE::CString dir )
     CORE::AppendToPath( suffixFilePath, "CMakeListsSuffix.txt" );
 
     return CORE::FileExists( suffixFilePath );
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsDirAProjectDir( const CORE::CString& dir )
+{GUCEF_TRACE;
+
+    // The dir is a module dir if it has a suffix file in it
+    CORE::CString moduleInfoFilePath = dir;
+    CORE::AppendToPath( moduleInfoFilePath, "ModuleInfo.xml" );
+
+    if ( !CORE::FileExists( moduleInfoFilePath ) )
+    {
+        return IsDirALegacyProjectDir( dir );
+    }
+    return true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1536,7 +1552,7 @@ GetAllPlatformFilesInPlatformDirs( const TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 TStringVector
-ParseFileLines( const CORE::CString& fileSuffix )
+CMakeParseFileLines( const CORE::CString& fileSuffix )
 {GUCEF_TRACE;
 
     CORE::CString testStr = fileSuffix.ReplaceChar( '\r', '\n' );
@@ -1547,12 +1563,12 @@ ParseFileLines( const CORE::CString& fileSuffix )
 /*---------------------------------------------------------------------------*/
 
 TStringSet
-ParseIncludeDirs( const CORE::CString& fileSuffix )
+CMakeParseIncludeDirs( const CORE::CString& fileSuffix )
 {GUCEF_TRACE;
 
     TStringSet includeDirs;
 
-    TStringVector suffixFileLines = ParseFileLines( fileSuffix );
+    TStringVector suffixFileLines = CMakeParseFileLines( fileSuffix );
     TStringVector::iterator i = suffixFileLines.begin();
     while ( i != suffixFileLines.end() )
     {
@@ -1599,10 +1615,10 @@ ParseIncludeDirs( const CORE::CString& fileSuffix )
 /*---------------------------------------------------------------------------*/
 
 void
-ParseSuffixFile( TModuleInfo& moduleInfo )
+CMakeParseSuffixFile( TModuleInfo& moduleInfo )
 {GUCEF_TRACE;
 
-    TStringVector suffixFileLines = ParseFileLines( moduleInfo.cmakeListSuffixFileContent );
+    TStringVector suffixFileLines = CMakeParseFileLines( moduleInfo.cmakeListSuffixFileContent );
     TStringVector::iterator i = suffixFileLines.begin();
     while ( i != suffixFileLines.end() )
     {
@@ -1650,13 +1666,13 @@ ParseSuffixFile( TModuleInfo& moduleInfo )
 /*---------------------------------------------------------------------------*/
 
 TStringVector
-ParseDependencies( const CORE::CString& fileSuffix ,
-                   CORE::CString& moduleName       )
+CMakeParseDependencies( const CORE::CString& fileSuffix ,
+                        CORE::CString& moduleName       )
 {GUCEF_TRACE;
 
     TStringVector dependencies;
 
-    TStringVector suffixFileLines = ParseFileLines( fileSuffix );
+    TStringVector suffixFileLines = CMakeParseFileLines( fileSuffix );
     TStringVector::iterator i = suffixFileLines.begin();
     while ( i != suffixFileLines.end() )
     {
@@ -1705,9 +1721,9 @@ ParseDependencies( const CORE::CString& fileSuffix ,
 /*---------------------------------------------------------------------------*/
 
 bool
-ParseModuleProperties( const CORE::CString& fileSuffix ,
-                       CORE::CString& moduleName       ,
-                       bool& isExecutable              )
+CMakeParseModuleProperties( const CORE::CString& fileSuffix ,
+                            CORE::CString& moduleName       ,
+                            bool& isExecutable              )
 {GUCEF_TRACE;
 
     CORE::CString testStr = fileSuffix.Lowercase();
@@ -2062,11 +2078,45 @@ FindSubDirsWithSource( TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 void
-LegacyProcessProjectDir( TProjectInfo& projectInfo ,
-                         TModuleInfo& moduleInfo   )
+LegacyCMakeProcessProjectDir( TProjectInfo& projectInfo ,
+                              TModuleInfo& moduleInfo   )
 {GUCEF_TRACE;
 
+    CORE::CString pathToSuffixFile = moduleInfo.rootDir;
+    CORE::AppendToPath( pathToSuffixFile, "CMakeListsSuffix.txt" );
+    
+    if ( CORE::LoadTextFileAsString( pathToSuffixFile, moduleInfo.cmakeListSuffixFileContent ) )
+    {
+        // Fill in the dependencies as specified in the suffix file
+        CORE::CString actualModuleName;
+        moduleInfo.dependencies = CMakeParseDependencies( moduleInfo.cmakeListSuffixFileContent, actualModuleName );
+        moduleInfo.dependencyIncludeDirs = CMakeParseIncludeDirs( moduleInfo.cmakeListSuffixFileContent );
+        bool isExecutable = false;
+        CMakeParseModuleProperties( moduleInfo.cmakeListSuffixFileContent, actualModuleName, isExecutable );
+        
+        //@TODO: better module type support
+        moduleInfo.moduleType = isExecutable ? MODULETYPE_EXECUTABLE : MODULETYPE_SHARED_LIBRARY;
+        
+        CMakeParseSuffixFile( moduleInfo );
+        if ( actualModuleName != moduleInfo.name )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Detected module name that differs from module sub-dir name, correcting module name from \"" + moduleInfo.name + "\" to \"" + actualModuleName + "\"" );
+            moduleInfo.name = actualModuleName;
+        }
 
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed suffix file for project " + moduleInfo.name );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate the required module file " + pathToSuffixFile );
+        
+        // add suffix example section instead
+        moduleInfo.cmakeListSuffixFileContent  = "## TODO: the following is an example suffix section, you have to complete it\n";
+        moduleInfo.cmakeListSuffixFileContent += "#add_definitions(-DTIXML_USE_STL)\n";
+        moduleInfo.cmakeListSuffixFileContent += "#add_executable(" + moduleInfo.name + " ${HEADER_FILES} ${SOURCE_FILES})\n";
+        moduleInfo.cmakeListSuffixFileContent += "#target_link_libraries(" + moduleInfo.name + " ${GUCEF_LIBRARIES})\n";
+        moduleInfo.cmakeListSuffixFileContent += "#gucef_config_tool(" + moduleInfo.name + ")\n";
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2080,38 +2130,19 @@ ProcessProjectDir( TProjectInfo& projectInfo ,
     // Best we can do unless we can get it from the suffix file later
     moduleInfo.name = CORE::LastSubDir( moduleInfo.rootDir );
 
-    CORE::CString pathToSuffixFile = moduleInfo.rootDir;
-    CORE::AppendToPath( pathToSuffixFile, "CMakeListsSuffix.txt" );
-
-    if ( CORE::LoadTextFileAsString( pathToSuffixFile, moduleInfo.cmakeListSuffixFileContent ) )
+    CORE::CString pathToModuleInfoFile = moduleInfo.rootDir;
+    CORE::AppendToPath( pathToModuleInfoFile, "ModuleInfo.xml" );
+    
+    if ( CORE::FileExists( pathToModuleInfoFile ) )
     {
-        // Fill in the dependencies as specified in the suffix file
-        CORE::CString actualModuleName;
-        moduleInfo.dependencies = ParseDependencies( moduleInfo.cmakeListSuffixFileContent, actualModuleName );
-        moduleInfo.dependencyIncludeDirs = ParseIncludeDirs( moduleInfo.cmakeListSuffixFileContent );
-        bool isExecutable = false;
-        ParseModuleProperties( moduleInfo.cmakeListSuffixFileContent, actualModuleName, isExecutable );
-        
-        //@TODO: better module type support
-        moduleInfo.moduleType = isExecutable ? MODULETYPE_EXECUTABLE : MODULETYPE_SHARED_LIBRARY;
-        
-        ParseSuffixFile( moduleInfo );
-        if ( actualModuleName != moduleInfo.name )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Detected module name that differs from module sub-dir name, correcting module name from \"" + moduleInfo.name + "\" to \"" + actualModuleName + "\"" );
-            moduleInfo.name = actualModuleName;
-        }
-
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed suffix file for project " + moduleInfo.name );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing ModuleInfo file " + pathToModuleInfoFile );        
+        DeserializeModuleInfo( moduleInfo, pathToModuleInfoFile ); 
     }
     else
     {
-        // add suffix example section instead
-        moduleInfo.cmakeListSuffixFileContent  = "## TODO: the following is an example suffix section, you have to complete it\n";
-        moduleInfo.cmakeListSuffixFileContent += "#add_definitions(-DTIXML_USE_STL)\n";
-        moduleInfo.cmakeListSuffixFileContent += "#add_executable(" + moduleInfo.name + " ${HEADER_FILES} ${SOURCE_FILES})\n";
-        moduleInfo.cmakeListSuffixFileContent += "#target_link_libraries(" + moduleInfo.name + " ${GUCEF_LIBRARIES})\n";
-        moduleInfo.cmakeListSuffixFileContent += "#gucef_config_tool(" + moduleInfo.name + ")\n";
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to process legacy cmake suffix file" );
+        LegacyCMakeProcessProjectDir( projectInfo ,
+                                      moduleInfo  );
     }
 
     FindSubDirsWithHeaders( projectInfo, moduleInfo );
@@ -2119,7 +2150,7 @@ ProcessProjectDir( TProjectInfo& projectInfo ,
     GetAllPlatformFilesInPlatformDirs( projectInfo, moduleInfo );
     ApplyDirProcessingInstructionsToModule( projectInfo, moduleInfo );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed CMake List file content for project dir: " + moduleInfo.rootDir );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed module " + moduleInfo.name + " for project dir: " + moduleInfo.rootDir );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2138,8 +2169,8 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
 
         // Process this dir
         TModuleInfo moduleInfo;
+        InitializeModuleInfo( moduleInfo );        
         moduleInfo.rootDir = topLevelDir;
-        moduleInfo.buildOrder = 0;
         ProcessProjectDir( projectInfo, moduleInfo );
         projectInfo.modules.push_back( moduleInfo );
     }
