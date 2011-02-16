@@ -152,9 +152,14 @@ GetXmlDStoreCodec( void )
 
 /*-------------------------------------------------------------------------*/
 
+// Serialize a specific moduleInfo which is derived off of
+// the given entry. The given moduleInfo can be an independent platform
+// moduleInfo or a merged moduleInfo
 bool
-SerializeModuleInfo( const TModuleInfo& moduleInfo ,
-                     CORE::CDataNode& parentNode   )
+SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
+                     const TModuleInfo& moduleInfo       ,
+                     const CORE::CString& platform       ,
+                     CORE::CDataNode& parentNode         )
 {GUCEF_TRACE;
 
     // Add basic module info
@@ -162,14 +167,13 @@ SerializeModuleInfo( const TModuleInfo& moduleInfo ,
     moduleInfoNode.SetName( "Module" );
     moduleInfoNode.SetAttribute( "Name", moduleInfo.name );
     moduleInfoNode.SetAttribute( "BuildOrder", CORE::Int32ToString( moduleInfo.buildOrder ) );
-    moduleInfoNode.SetAttribute( "RootDir", moduleInfo.rootDir );
     moduleInfoNode.SetAttribute( "Type", ModuleTypeToString( moduleInfo.moduleType ) );
+    moduleInfoNode.SetAttribute( "Platform", platform );
 
-    // Add headers for all platforms
+    // Add headers 
     CORE::CDataNode headersInfoNode;
     headersInfoNode.SetName( "Files" );
     headersInfoNode.SetAttribute( "Type", "Headers" );
-    headersInfoNode.SetAttribute( "Platform", "All" );
     headersInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
     TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
     while ( n != moduleInfo.includeDirs.end() )
@@ -197,47 +201,10 @@ SerializeModuleInfo( const TModuleInfo& moduleInfo ,
     moduleInfoNode.AddChild( headersInfoNode );
     headersInfoNode.DelSubTree();
 
-    // Add headers for specific platforms
-    TStringVectorMapMap::const_iterator x = moduleInfo.platformHeaderFiles.begin();
-    while ( x != moduleInfo.platformHeaderFiles.end() )
-    {
-        const TStringVectorMap& platformHeaders = (*x).second;
-        headersInfoNode.SetAttribute( "Platform", (*x).first );
-        headersInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( platformHeaders.size() ) );
-
-        n = platformHeaders.begin();
-        while ( n != platformHeaders.end() )
-        {
-            CORE::CDataNode pathNode;
-            pathNode.SetName( "Dir" );
-            pathNode.SetAttribute( "Path", (*n).first );
-
-            CORE::CDataNode fileNode;
-            fileNode.SetName( "File" );
-
-            const TStringVector& fileVector = (*n).second;
-            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
-            TStringVector::const_iterator m = fileVector.begin();
-            while ( m != fileVector.end() )
-            {
-                fileNode.SetAttribute( "Name", (*m) );
-                pathNode.AddChild( fileNode );
-                ++m;
-            }
-
-            headersInfoNode.AddChild( pathNode );
-            ++n;
-        }
-        moduleInfoNode.AddChild( headersInfoNode );
-        headersInfoNode.DelSubTree();
-        ++x;
-    }
-
-    // Add sources for all platforms
+    // Add sources
     CORE::CDataNode sourceInfoNode;
     sourceInfoNode.SetName( "Files" );
     sourceInfoNode.SetAttribute( "Type", "Source" );
-    sourceInfoNode.SetAttribute( "Platform", "All" );
     sourceInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.sourceDirs.size() ) );
     n = moduleInfo.sourceDirs.begin();
     while ( n != moduleInfo.sourceDirs.end() )
@@ -265,46 +232,9 @@ SerializeModuleInfo( const TModuleInfo& moduleInfo ,
     moduleInfoNode.AddChild( sourceInfoNode );
     sourceInfoNode.DelSubTree();
 
-    // Add sources for specific platforms
-    x = moduleInfo.platformSourceFiles.begin();
-    while ( x != moduleInfo.platformSourceFiles.end() )
-    {
-        const TStringVectorMap& platformSources = (*x).second;
-        sourceInfoNode.SetAttribute( "Platform", (*x).first );
-        sourceInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.sourceDirs.size() ) );
-
-        n = platformSources.begin();
-        while ( n != platformSources.end() )
-        {
-            CORE::CDataNode pathNode;
-            pathNode.SetName( "Dir" );
-            pathNode.SetAttribute( "Path", (*n).first );
-
-            CORE::CDataNode fileNode;
-            fileNode.SetName( "File" );
-
-            const TStringVector& fileVector = (*n).second;
-            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
-            TStringVector::const_iterator m = fileVector.begin();
-            while ( m != fileVector.end() )
-            {
-                fileNode.SetAttribute( "Name", (*m) );
-                pathNode.AddChild( fileNode );
-                ++m;
-            }
-
-            sourceInfoNode.AddChild( pathNode );
-            ++n;
-        }
-        moduleInfoNode.AddChild( sourceInfoNode );
-        sourceInfoNode.DelSubTree();
-        ++x;
-    }
-
     // Add includes for all platforms
     CORE::CDataNode includesInfoNode;
     includesInfoNode.SetName( "Includes" );
-    includesInfoNode.SetAttribute( "Platform", "All" );
     includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencyIncludeDirs.size() ) );
     includesInfoNode.SetAttribute( "Source", "Dependency" );
     TStringSet::const_iterator h = moduleInfo.dependencyIncludeDirs.begin();
@@ -320,34 +250,26 @@ SerializeModuleInfo( const TModuleInfo& moduleInfo ,
     moduleInfoNode.AddChild( includesInfoNode );
     includesInfoNode.DelSubTree();
 
-    // Add includes for specific platforms
-    TStringSetMap::const_iterator q = moduleInfo.dependencyPlatformIncludeDirs.begin();
-    while ( q != moduleInfo.dependencyPlatformIncludeDirs.end() )
+    // Add include paths inherited from dependencies
+    includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencyIncludeDirs.size() ) );
+    includesInfoNode.SetAttribute( "Source", "Dependency" );
+    TStringSet::const_iterator q = moduleInfo.dependencyIncludeDirs.begin();
+    while ( q != moduleInfo.dependencyIncludeDirs.end() )
     {
-        const TStringSet& platformIncludes = (*q).second;
-        includesInfoNode.SetAttribute( "Platform", (*q).first );
-        includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( platformIncludes.size() ) );
-        includesInfoNode.SetAttribute( "Source", "Dependency" );
+        CORE::CDataNode includeNode;
+        includeNode.SetName( "Include" );
+        includeNode.SetAttribute( "Path", (*q) );
 
-        h = platformIncludes.begin();
-        while ( h != platformIncludes.end() )
-        {
-            CORE::CDataNode includeNode;
-            includeNode.SetName( "Include" );
-            includeNode.SetAttribute( "Path", (*h) );
-
-            includesInfoNode.AddChild( includeNode );
-            ++h;
-        }
-        moduleInfoNode.AddChild( includesInfoNode );
-        includesInfoNode.DelSubTree();
+        includesInfoNode.AddChild( includeNode );
         ++q;
     }
-
+    
+    moduleInfoNode.AddChild( includesInfoNode );
+    includesInfoNode.DelSubTree();
+    
     // Add all the regular include dirs for this module
     // These are already represented in the path attribute of the files section
     // but for ease of processing and clarity they are provided again in the includes section
-    includesInfoNode.SetAttribute( "Platform", "All" );
     includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
     includesInfoNode.SetAttribute( "Source", "Self" );
     n = moduleInfo.includeDirs.begin();
@@ -369,7 +291,7 @@ SerializeModuleInfo( const TModuleInfo& moduleInfo ,
             // subdir.
             if ( 1 < moduleInfo.includeDirs.size() )
             {
-                CORE::CString includeDir = "../" + CORE::LastSubDir( moduleInfo.rootDir ) + " ";
+                CORE::CString includeDir = "../" + CORE::LastSubDir( moduleEntry.rootDir ) + " ";
                 CORE::CDataNode includeNode;
                 includeNode.SetName( "Include" );
                 includeNode.SetAttribute( "Path", includeDir );
@@ -380,38 +302,6 @@ SerializeModuleInfo( const TModuleInfo& moduleInfo ,
     }
     moduleInfoNode.AddChild( includesInfoNode );
     includesInfoNode.DelSubTree();
-
-    //includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.platformHeaderFiles.size() ) );
-    //n = moduleInfo.includeDirs.begin();
-    //while ( n != moduleInfo.includeDirs.end() )
-    //{
-    //    CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
-    //    if ( 0 != includeDir.Length() )
-    //    {
-    //        CORE::CDataNode includeNode;
-    //        includeNode.SetName( "Include" );
-    //        includeNode.SetAttribute( "Path", includeDir );
-    //        includesInfoNode.AddChild( includeNode );
-    //    }
-    //    else
-    //    {
-    //        // Check if there is more then one include dir
-    //        // If so we have create an include for an empty include dir
-    //        // to ensure files in subdirs can include the file with the zero length
-    //        // subdir.
-    //        if ( 1 < moduleInfo.includeDirs.size() )
-    //        {
-    //            CORE::CString includeDir = "../" + CORE::LastSubDir( moduleInfo.rootDir ) + " ";
-    //            CORE::CDataNode includeNode;
-    //            includeNode.SetName( "Include" );
-    //            includeNode.SetAttribute( "Path", includeDir );
-    //            includesInfoNode.AddChild( includeNode );
-    //        }
-    //    }
-    //    ++n;
-    //}
-    //moduleInfoNode.AddChild( includesInfoNode );
-    //includesInfoNode.DelSubTree();
 
     // Add all the module dependencies
     CORE::CDataNode dependenciesNode;
@@ -452,7 +342,38 @@ SerializeModuleInfo( const TModuleInfo& moduleInfo ,
 /*-------------------------------------------------------------------------*/
 
 bool
-SerializeModuleInfo( const TModuleInfo& moduleInfo       ,
+SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
+                     CORE::CDataNode& parentNode         )
+{GUCEF_TRACE;
+
+    CORE::CDataNode moduleEntryNode( "ModuleInfoEntry" );
+    moduleEntryNode.SetAttribute( "RootDir", moduleEntry.rootDir );
+    
+    TModuleInfoMap::const_iterator i = moduleEntry.modulesPerPlatform.begin();
+    while ( i != moduleEntry.modulesPerPlatform.end() )
+    {
+        const CORE::CString& platform = (*i).first;
+        const TModuleInfo& moduleInfo = (*i).second;
+        
+        if ( !SerializeModuleInfo( moduleEntry     ,
+                                   moduleInfo      ,
+                                   platform        ,
+                                   moduleEntryNode ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SerializeModuleInfo: Failed to serialize moduleInfo of module " + moduleInfo.name + " for platform " + platform );
+            return false;
+        }
+        
+        ++i;
+    }    
+    parentNode.AddChild( moduleEntryNode );    
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
                      const CORE::CString& outputFilepath )
 {GUCEF_TRACE;
 
@@ -460,7 +381,7 @@ SerializeModuleInfo( const TModuleInfo& moduleInfo       ,
     if ( NULL != codec )
     {
         CORE::CDataNode info;
-        if ( SerializeModuleInfo( moduleInfo, info ) )
+        if ( SerializeModuleInfo( moduleEntry, info ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SerializeModuleInfo: Successfully generated a data tree with all module information" );
 
@@ -501,7 +422,7 @@ SerializeProjectInfo( const TProjectInfo& projectInfo ,
     rootNodeToBe.SetAttribute( "Name", projectInfo.projectName );
 
     // Add info for each module
-    TModuleInfoVector::const_iterator i = projectInfo.modules.begin();
+    TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
     while ( i != projectInfo.modules.end() )
     {
         if ( !SerializeModuleInfo( (*i)         , 
@@ -560,11 +481,10 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
 {GUCEF_TRACE;
 
     const CORE::CDataNode* moduleInfoNode = parentNode.Find( "Module" );
-    if ( NULL == moduleInfoNode ) return false;
+    if ( moduleInfoNode == NULL ) return false;
     
     // Find the overall module properties
     moduleInfo.buildOrder = CORE::StringToInt32( moduleInfoNode->GetAttributeValue( "BuildOrder" ) );
-    moduleInfo.rootDir = moduleInfoNode->GetAttributeValue( "RootDir" );
     moduleInfo.moduleType = StringToModuleType( moduleInfoNode->GetAttributeValue( "Type" ) );
 
     // Find any/all files for which are part of this module
@@ -574,7 +494,6 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
     {
         const CORE::CDataNode* filesDirsNode = (*i);
         CORE::CString filesType = filesDirsNode->GetAttributeValue( "Type" );
-        CORE::CString platform = filesDirsNode->GetAttributeValue( "Platform" );
 
         CORE::CDataNode::TConstDataNodeSet dirs = filesDirsNode->FindChildrenOfType( "Dir" );
         CORE::CDataNode::TConstDataNodeSet::iterator n = dirs.begin();
@@ -592,27 +511,13 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
                 if ( filesType == "Headers" )
                 {
                     // We have a list of header files
-                    if ( platform == "All" )
-                    {
-                        moduleInfo.includeDirs[ path ].push_back( filename );
-                    }
-                    else
-                    {
-                        moduleInfo.platformHeaderFiles[ platform ][ path ].push_back( filename );
-                    }
+                    moduleInfo.includeDirs[ path ].push_back( filename );
                 }
                 else
                 if ( filesType == "Source" )
                 {
                     // We have a list of source files
-                    if ( platform == "All" )
-                    {
-                        moduleInfo.sourceDirs[ path ].push_back( filename );
-                    }
-                    else
-                    {
-                        moduleInfo.platformSourceFiles[ platform ][ path ].push_back( filename );
-                    }
+                    moduleInfo.sourceDirs[ path ].push_back( filename );
                 }
                 ++m;
             }                
@@ -630,8 +535,6 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
         CORE::CString source = includesNode->GetAttributeValue( "Source" ).Lowercase();
         if ( source == "dependency" )
         {        
-            CORE::CString platform = includesNode->GetAttributeValue( "Platform" );
-
             CORE::CDataNode::TConstDataNodeSet includes = includesNode->FindChildrenOfType( "Include" );
             CORE::CDataNode::TConstDataNodeSet::iterator n = includes.begin();
             while ( n != includes.end() )
@@ -639,14 +542,7 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
                 const CORE::CDataNode* includeNode = (*n);            
                 CORE::CString path = includeNode->GetAttributeValue( "Path" );
                 
-                if ( platform == "All" )
-                {
-                    moduleInfo.dependencyIncludeDirs.insert( path );
-                }
-                else
-                {
-                    moduleInfo.dependencyPlatformIncludeDirs[ platform ].insert( path );
-                }
+                moduleInfo.dependencyIncludeDirs.insert( path );
                 ++n;
             }                
         }
@@ -677,6 +573,44 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
         ++i;
     }
 
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry ,
+                       const CORE::CDataNode& parentNode )
+{GUCEF_TRACE;
+
+    const CORE::CDataNode* moduleEntryNode = parentNode.Find( "ModuleInfoEntry" );
+    if ( NULL == moduleEntryNode ) return false;
+    
+    moduleInfoEntry.rootDir = moduleEntryNode->GetAttributeValue( "RootDir" );
+    
+    const CORE::CDataNode::TConstDataNodeSet moduleInfoNodes = moduleEntryNode->FindChildrenOfType( "Module" );
+    if ( moduleInfoNodes.size() == 0 ) return false;
+    
+    CORE::CDataNode::TConstDataNodeSet::const_iterator n = moduleInfoNodes.begin();
+    while ( n != moduleInfoNodes.end() )
+    {
+        TModuleInfo moduleInfoForPlatform;
+        InitializeModuleInfo( moduleInfoForPlatform );
+        
+        const CORE::CDataNode* moduleNode = (*n);        
+        CORE::CString platform = moduleNode->GetAttributeValue( "Platform" );
+        
+        if ( DeserializeModuleInfo( moduleInfoForPlatform ,
+                                    *moduleNode           ) )
+        {
+            moduleInfoEntry.modulesPerPlatform[ platform ] = moduleInfoForPlatform;
+        }
+        else
+        {
+            return false;
+        }
+        ++n;
+    }
     return true;
 }
 
@@ -719,15 +653,18 @@ InitializeModuleInfo( TModuleInfo& moduleInfo )
     moduleInfo.includeDirs.clear();
     moduleInfo.sourceDirs.clear();
     moduleInfo.dependencyIncludeDirs.clear();
-    moduleInfo.dependencyPlatformIncludeDirs.clear();
     moduleInfo.linkedLibraries.clear();
     moduleInfo.dependencies.clear();
-    moduleInfo.cmakeListFileContentPostSuffix.Clear();
-    moduleInfo.cmakeListFileContentPreSuffix.Clear();
-    moduleInfo.cmakeListSuffixFileContent.Clear();
     moduleInfo.moduleType = MODULETYPE_UNDEFINED;
-    moduleInfo.platformHeaderFiles.clear();
-    moduleInfo.platformSourceFiles.clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+InitializeModuleInfoEntry( TModuleInfoEntry& moduleEntry )
+{
+    moduleEntry.modulesPerPlatform.clear();
+    moduleEntry.rootDir.Clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -745,11 +682,6 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
     if ( !moduleInfoToMergeIn.name.IsNULLOrEmpty() )
     {
         targetModuleInfo.name = moduleInfoToMergeIn.name;
-    }
-    if ( targetModuleInfo.rootDir.IsNULLOrEmpty() )
-    {
-        // Only overwrite root if we did not have one already
-        targetModuleInfo.rootDir = moduleInfoToMergeIn.rootDir;
     }
     if ( moduleInfoToMergeIn.moduleType != MODULETYPE_UNDEFINED )
     {
