@@ -99,6 +99,7 @@ typedef struct SModuleInfo TModuleInfo;
 
 typedef std::vector< TModuleInfo > TModuleInfoVector;
 typedef std::map< CORE::CString, TModuleInfoVector > TModuleInfoVectorMap;
+typedef std::map< CORE::CString, TModuleInfo > TModuleInfoMap;
 typedef std::vector< TModuleInfo* > TModuleInfoPtrVector;
 typedef std::map< int, TModuleInfo* > TModulePrioMap;
 
@@ -106,8 +107,8 @@ typedef std::map< int, TModuleInfo* > TModulePrioMap;
 
 struct SModuleInfoEntry
 {
-    TModuleInfoVectorMap  modulesPerPlatform;     // ModuleInfo per platform
-    CORE::CString         rootDir;                // the absolute path to the root of this module's directory tree
+    TModuleInfoMap  modulesPerPlatform;     // ModuleInfo per platform
+    CORE::CString   rootDir;                // the absolute path to the root of this module's directory tree
 };
 typedef struct SModuleInfoEntry TModuleInfoEntry;
 
@@ -138,8 +139,7 @@ typedef std::map< CORE::CString, TDirProcessingInstructions > TDirProcessingInst
 struct SProjectInfo
 {
     CORE::CString projectName;                               // Name of the overall project
-    //TModuleInfoVectorMap modules;                            // All generated module information
-    TModuleInfoVector modules;                               // All generated module information
+    TModuleInfoEntryVector modules;                          // All generated module information
     TDirProcessingInstructionsMap dirProcessingInstructions; // All loaded processing instructions mapped per path
     TStringVector globalDirExcludeList;                      // Dirs that should never be included in processing regardless of path
 };
@@ -150,6 +150,11 @@ typedef struct SProjectInfo TProjectInfo;
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+void
+InitializeModuleInfoEntry( TModuleInfoEntry& moduleEntry );
+
+/*-------------------------------------------------------------------------*/
 
 void
 InitializeModuleInfo( TModuleInfo& moduleInfo );
@@ -173,25 +178,13 @@ StringToModuleType( const CORE::CString moduleTypeStr );
 /*-------------------------------------------------------------------------*/
 
 bool
-SerializeModuleInfo( const TModuleInfo& moduleInfo ,
-                     CORE::CDataNode& parentNode   );
-
-/*-------------------------------------------------------------------------*/
-
-bool
-SerializeModuleInfo( const TModuleInfo& moduleInfo       ,
+SerializeModuleInfo( const TModuleInfoEntry& moduleInfo  ,
                      const CORE::CString& outputFilepath );
 
 /*-------------------------------------------------------------------------*/
 
 bool
-DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
-                       const CORE::CDataNode& parentNode );
-
-/*-------------------------------------------------------------------------*/
-
-bool
-DeserializeModuleInfo( TModuleInfo& moduleInfo            ,
+DeserializeModuleInfo( TModuleInfoEntry& moduleInfo       ,
                        const CORE::CString& inputFilepath );
 
 

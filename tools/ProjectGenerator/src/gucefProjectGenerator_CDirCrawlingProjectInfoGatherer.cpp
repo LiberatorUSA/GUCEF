@@ -2078,8 +2078,8 @@ FindSubDirsWithSource( TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 void
-LegacyCMakeProcessProjectDir( TProjectInfo& projectInfo ,
-                              TModuleInfo& moduleInfo   )
+LegacyCMakeProcessProjectDir( TProjectInfo& projectInfo    ,
+                              TModuleInfoEntry& moduleInfo )
 {GUCEF_TRACE;
 
     CORE::CString pathToSuffixFile = moduleInfo.rootDir;
@@ -2122,8 +2122,8 @@ LegacyCMakeProcessProjectDir( TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 void
-ProcessProjectDir( TProjectInfo& projectInfo ,
-                   TModuleInfo& moduleInfo   )
+ProcessProjectDir( TProjectInfo& projectInfo    ,
+                   TModuleInfoEntry& moduleInfo )
 {GUCEF_TRACE;
 
     // Set a project name based off the module sub-dir name

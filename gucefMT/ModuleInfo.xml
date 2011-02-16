@@ -1,23 +1,26 @@
-
-<ModuleInfo>
-    <Platform Name="All">
-        <Module Name="gucefMT" Type="SharedLibrary" />
+<ModuleInfoEntry>
+    <Module Name="gucefMT" Type="SharedLibrary" Platform="All" />
         <Compiler>
             <Language Name="C++" />
             <Language Name="C" />
         </Compiler>
-        <Preprocessor Platform="all">
+        <Preprocessor>
             <Define String="GUCEF_MT_BUILD_MODULE" />
         </Preprocessor>
-    </Platform>
-    <Platform Name="mswin">
+    </Module>
+    <Module Platform="mswin" />
         <Linker>
             <Dependency Name="Winmm" />
         </Linker>
-    </Platform>
-    <Platform Name="linux">
+    </Module>
+    <Module Platform="linux">
         <Linker>
             <Dependency Name="pthread" />
         </Linker>
-    </Platform>
-</ModuleInfo>
+    </Module>
+    <Module Platform="linux">
+        <Linker>
+            <Dependency Name="pthread" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>
