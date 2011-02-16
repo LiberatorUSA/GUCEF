@@ -115,6 +115,8 @@ typedef struct SModuleInfoEntry TModuleInfoEntry;
 /*---------------------------------------------------------------------------*/
 
 typedef std::vector< TModuleInfoEntry > TModuleInfoEntryVector;
+typedef std::pair< const TModuleInfoEntry*, const TModuleInfo* > TModuleInfoEntryPair;
+typedef std::vector< TModuleInfoEntryPair > TModuleInfoEntryPairVector;
 
 /*---------------------------------------------------------------------------*/
 
@@ -159,11 +161,33 @@ InitializeModuleInfoEntry( TModuleInfoEntry& moduleEntry );
 void
 InitializeModuleInfo( TModuleInfo& moduleInfo );
 
+
+/*-------------------------------------------------------------------------*/
+
+const TModuleInfo*
+FindModuleInfoForPlatform( const TModuleInfoEntry& moduleInfoEntry ,
+                           const CORE::CString& platform           );
+
 /*-------------------------------------------------------------------------*/
 
 void
 MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
                  const TModuleInfo& moduleInfoToMergeIn );
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MergeModuleInfo( const TModuleInfoEntry& moduleInfo     ,
+                 const CORE::CString& targetPlatform    ,
+                 TModuleInfo& mergedModuleInfo          );
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MergeAllModuleInfoForPlatform( const TModuleInfoEntryVector& allInfo  ,
+                               const CORE::CString& platform          ,
+                               TModuleInfoVector& allMergedInfo       ,
+                               TModuleInfoEntryPairVector& mergeLinks );
 
 /*-------------------------------------------------------------------------*/
 

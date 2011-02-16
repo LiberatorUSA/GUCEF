@@ -51,6 +51,14 @@ namespace PROJECTGENERATOR {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CString AllPlatforms = "All";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -690,7 +698,98 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
     
     // Now combine the other items without overwriting
     
+    //@TODO
 }
+
+/*-------------------------------------------------------------------------*/
+
+const TModuleInfo*
+FindModuleInfoForPlatform( const TModuleInfoEntry& moduleInfoEntry ,
+                           const CORE::CString& platform           )
+{GUCEF_TRACE;
+
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( platform.Lowercase() );
+    if ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        return &(*i).second;
+    }
+    return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MergeModuleInfo( const TModuleInfoEntry& moduleInfoEntry ,
+                 const CORE::CString& targetPlatform     ,
+                 TModuleInfo& mergedModuleInfo           )
+{GUCEF_TRACE;
+    
+    InitializeModuleInfo( mergedModuleInfo );
+    
+    const TModuleInfo* allPlatformsInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms );
+    const TModuleInfo* targetPlatformInfo = FindModuleInfoForPlatform( moduleInfoEntry, targetPlatform );
+    if ( ( NULL != allPlatformsInfo ) || ( NULL != targetPlatformInfo ) )
+    {
+        // Check if we have both
+        if ( ( NULL != allPlatformsInfo ) && ( NULL != targetPlatformInfo ) )
+        {
+            // Use the 'all' plaform as a base to work from
+            mergedModuleInfo = *allPlatformsInfo;
+            
+            // Now merge in the platform specific info
+            MergeModuleInfo( mergedModuleInfo, *targetPlatformInfo );
+            
+            return true;
+        }
+        else
+        if ( ( NULL != allPlatformsInfo ) && ( NULL == targetPlatformInfo ) )
+        {
+            // We only have the 'all' platform which is fine, we will just use that
+            mergedModuleInfo = *allPlatformsInfo;
+            return true;
+        }
+        else
+        if ( ( NULL == allPlatformsInfo ) && ( NULL != targetPlatformInfo ) )
+        {
+            // We only have the target platform which is fine, we will just use that
+            // this module aparently is not available for all platforms even in altered form
+            mergedModuleInfo = *targetPlatformInfo;
+            return true;
+        }        
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MergeAllModuleInfoForPlatform( const TModuleInfoEntryVector& allInfo  ,
+                               const CORE::CString& platform          ,
+                               TModuleInfoVector& allMergedInfo       ,
+                               TModuleInfoEntryPairVector& mergeLinks )
+{GUCEF_TRACE;
+
+    allMergedInfo.clear();
+    
+    TModuleInfoEntryVector::const_iterator i = allInfo.begin();
+    while ( i != allInfo.end() )
+    {
+        // For each module we create a merged platform specific module
+        // description which is easy to process if you only care about that platform
+        TModuleInfo mergedInfo;
+        MergeModuleInfo( (*i), platform, mergedInfo );
+        
+        // Store the merged info
+        allMergedInfo.push_back( mergedInfo );        
+        
+        // Store a link between the merged info and the original info
+        TModuleInfoEntryPair mergeLink( &(*i), &(*allMergedInfo.begin()) );
+        mergeLinks.push_back( mergeLink );
+        ++i;
+    }
+    
+    return true;
+}                               
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

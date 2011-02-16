@@ -67,20 +67,19 @@ const char* makefileHeader =
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-TModuleInfo*
-FindModuleByName( TProjectInfo& projectInfo       ,
-                  const CORE::CString& moduleName )
+const TModuleInfo*
+FindModuleByName( const TModuleInfoEntryPairVector& mergeLinks ,
+                  const CORE::CString& moduleName              )
 {GUCEF_TRACE;
 
-    TModuleInfoVector::iterator i = projectInfo.modules.begin();
-    while ( i != projectInfo.modules.end() )
+    TModuleInfoEntryPairVector::const_iterator i = mergeLinks.begin();
+    while ( i != mergeLinks.end() )
     {
-        TModuleInfo& moduleInfo = (*i);
+        const TModuleInfo& moduleInfo = (*(*i).second);
         if ( moduleInfo.name == moduleName )
         {
-            return &(*i);
-        }
-        
+            return (*i).second;
+        }        
         ++i;
     }
     return NULL;
@@ -89,9 +88,10 @@ FindModuleByName( TProjectInfo& projectInfo       ,
 /*-------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
-                                   TModuleInfo& moduleInfo              ,
-                                   bool addGeneratorCompileTimeToOutput )
+GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks ,
+                                   const TModuleInfo& moduleInfo                ,
+                                   const CORE::CString& moduleRoot              ,
+                                   bool addGeneratorCompileTimeToOutput         )
 {GUCEF_TRACE;
 
     CORE::CString contentPrefix = makefileHeader;
@@ -112,7 +112,7 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
     // Generate the source files section
     CORE::CString srcFilesSection = "LOCAL_SRC_FILES := \\\n";
     bool firstLoop = true;
-    TStringVectorMap::iterator i = moduleInfo.sourceDirs.begin();
+    TStringVectorMap::const_iterator i = moduleInfo.sourceDirs.begin();
     while ( i != moduleInfo.sourceDirs.end() )
     {
         const CORE::CString& srcDir = (*i).first;
@@ -170,7 +170,7 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
     
     // We also need to add the include paths required to find headers
     // refered to because of dependencies
-    TStringSet::iterator n = moduleInfo.dependencyIncludeDirs.begin();
+    TStringSet::const_iterator n = moduleInfo.dependencyIncludeDirs.begin();
     while ( n != moduleInfo.dependencyIncludeDirs.end() )
     {
         if ( !firstLoop )
@@ -198,10 +198,10 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
     bool hasLinkedSharedLibraries = false;
     bool hasLinkedStaticLibraries = false;
     bool hasRuntimeLibraries = false;
-    TStringVector::iterator m = moduleInfo.linkedLibraries.begin();
+    TStringVector::const_iterator m = moduleInfo.linkedLibraries.begin();
     while ( m != moduleInfo.linkedLibraries.end() )
     {
-        TModuleInfo* linkedDependency = FindModuleByName( projectInfo, (*m) );
+        const TModuleInfo* linkedDependency = FindModuleByName( mergeLinks, (*m) );
         if ( NULL != linkedDependency )
         {
             // The module we are linking too is part of this project.
@@ -291,7 +291,7 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
     // Check if we have a file on disk of information which is to be inserted into
     // our automatically generated make file
     CORE::CString manualContent;
-    CORE::CString manualContentFilePath = moduleInfo.rootDir;
+    CORE::CString manualContentFilePath = moduleRoot;
     CORE::AppendToPath( manualContentFilePath, "AndroidAddition.mk" );
     if ( CORE::FileExists( manualContentFilePath ) )
     {
@@ -348,20 +348,22 @@ GenerateContentForAndroidMakefile( TProjectInfo& projectInfo            ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CreateAndroidMakefileOnDiskForModule( TProjectInfo& projectInfo            ,
-                                      TModuleInfo& moduleInfo              ,
-                                      bool addGeneratorCompileTimeToOutput )
+CreateAndroidMakefileOnDiskForModule( const TModuleInfoEntryPairVector& mergeLinks ,
+                                      const TModuleInfo& moduleInfo                ,
+                                      const CORE::CString& moduleRoot              ,
+                                      bool addGeneratorCompileTimeToOutput         )
 {GUCEF_TRACE;
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating Android makefile content for module " + moduleInfo.name ); 
     
     // First we generate the content for the makefile based on the given module information
-    CORE::CString makefileContent = GenerateContentForAndroidMakefile( projectInfo                     ,
+    CORE::CString makefileContent = GenerateContentForAndroidMakefile( mergeLinks                      ,
                                                                        moduleInfo                      ,
+                                                                       moduleRoot                      ,
                                                                        addGeneratorCompileTimeToOutput );
     
     // Now we write the makefile to the root location of the module since everything is relative to that
-    CORE::CString makefilePath = moduleInfo.rootDir;
+    CORE::CString makefilePath = moduleRoot;
     CORE::AppendToPath( makefilePath, "Android.mk" );
         
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Writing Android makefile content for module " + moduleInfo.name + " to " + makefilePath );    
@@ -380,16 +382,19 @@ CreateAndroidMakefileOnDiskForModule( TProjectInfo& projectInfo            ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CreateAndroidMakefileOnDiskForEachModule( TProjectInfo& projectInfo            ,
-                                          bool addGeneratorCompileTimeToOutput )
+CreateAndroidMakefileOnDiskForEachModule( const TModuleInfoEntryPairVector& mergeLinks ,
+                                          bool addGeneratorCompileTimeToOutput         )
 {GUCEF_TRACE;
 
-    TModuleInfoVector::iterator i = projectInfo.modules.begin();
-    while ( i != projectInfo.modules.end() )
+    TModuleInfoEntryPairVector::const_iterator i = mergeLinks.begin();
+    while ( i != mergeLinks.end() )
     {
-        TModuleInfo& moduleInfo = (*i);
-        if ( !CreateAndroidMakefileOnDiskForModule( projectInfo                     , 
+        const TModuleInfoEntry& moduleInfoEntry = (*(*i).first);
+        const TModuleInfo& moduleInfo = (*(*i).second);
+        
+        if ( !CreateAndroidMakefileOnDiskForModule( mergeLinks                      , 
                                                     moduleInfo                      , 
+                                                    moduleInfoEntry.rootDir         ,
                                                     addGeneratorCompileTimeToOutput ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to create an Android makefile for all modules because of the following module " + moduleInfo.name );
@@ -403,16 +408,16 @@ CreateAndroidMakefileOnDiskForEachModule( TProjectInfo& projectInfo            ,
 
 /*-------------------------------------------------------------------------*/
 
-TModuleInfo*
-FindFirstModuleAccordingToBuildOrder( TProjectInfo& projectInfo )
+const TModuleInfo*
+FindFirstModuleAccordingToBuildOrder( const TModuleInfoEntryPairVector& mergeLinks )
 {GUCEF_TRACE;
 
-    TModuleInfoVector::iterator i = projectInfo.modules.begin();
-    while ( i != projectInfo.modules.end() )
+    TModuleInfoEntryPairVector::const_iterator i = mergeLinks.begin();
+    while ( i != mergeLinks.end() )
     {
-        if ( (*i).buildOrder == 0 )
+        if ( (*i).second->buildOrder == 0 )
         {
-            return &(*i);
+            return (*i).second;
         }
     }
     return NULL;
@@ -420,17 +425,17 @@ FindFirstModuleAccordingToBuildOrder( TProjectInfo& projectInfo )
 
 /*-------------------------------------------------------------------------*/
 
-TModuleInfo*
-FindNextModuleAccordingToBuildOrder( TProjectInfo& projectInfo  ,
-                                     TModuleInfo& currentModule )
+const TModuleInfo*
+FindNextModuleAccordingToBuildOrder( const TModuleInfoEntryPairVector& mergeLinks ,
+                                     const TModuleInfo& currentModule             )
 {GUCEF_TRACE;
 
-    TModuleInfoVector::iterator i = projectInfo.modules.begin();
-    while ( i != projectInfo.modules.end() )
+    TModuleInfoEntryPairVector::const_iterator i = mergeLinks.begin();
+    while ( i != mergeLinks.end() )
     {
-        if ( (*i).buildOrder == currentModule.buildOrder+1 )
+        if ( (*i).second->buildOrder == currentModule.buildOrder+1 )
         {
-            return &(*i);
+            return (*i).second;
         }
         ++i;
     }
@@ -439,13 +444,32 @@ FindNextModuleAccordingToBuildOrder( TProjectInfo& projectInfo  ,
 
 /*-------------------------------------------------------------------------*/
 
+const TModuleInfoEntry*
+FindModuleInfoEntryForMergedInfo( const TModuleInfoEntryPairVector& mergeLinks ,
+                                  const TModuleInfo& mergedModule              )
+{
+    TModuleInfoEntryPairVector::const_iterator i = mergeLinks.begin();
+    while ( i != mergeLinks.end() )
+    {
+        if ( (*i).second == &mergedModule )
+        {
+            return (*i).first;
+        }
+        ++i;
+    }
+    return NULL;   
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CString
-GenerateContentForAndroidProjectMakefile( TProjectInfo& projectInfo            ,
-                                          const CORE::CString& outputDir       ,
-                                          bool addGeneratorCompileTimeToOutput )
+GenerateContentForAndroidProjectMakefile( const CORE::CString& projectName             ,
+                                          const TModuleInfoEntryPairVector& mergeLinks ,
+                                          const CORE::CString& outputDir               ,
+                                          bool addGeneratorCompileTimeToOutput         )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating Android makefile content for overall project file regarding project \"" + projectInfo.projectName + "\"" ); 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating Android makefile content for overall project file regarding project \"" + projectName + "\"" ); 
 
     CORE::CString contentPrefix = makefileHeader;
 
@@ -455,7 +479,7 @@ GenerateContentForAndroidProjectMakefile( TProjectInfo& projectInfo            ,
       "#\n";
       
     contentPrefix += 
-      "# PROJECT: \"" + projectInfo.projectName + "\"\n#\n\n";
+      "# PROJECT: \"" + projectName + "\"\n#\n\n";
     
     if ( addGeneratorCompileTimeToOutput )
     {
@@ -471,11 +495,12 @@ GenerateContentForAndroidProjectMakefile( TProjectInfo& projectInfo            ,
       
     // Include each module's makefile in the order listed as their build order
     CORE::CString moduleListSection;
-    TModuleInfo* currentModule = FindFirstModuleAccordingToBuildOrder( projectInfo );
+    const TModuleInfo* currentModule = FindFirstModuleAccordingToBuildOrder( mergeLinks );
     while ( NULL != currentModule )
     {
         // Get relative path from the outputDir to the module's Android.mk
-        CORE::CString relativePathToModule = CORE::GetRelativePathToOtherPathRoot( outputDir, currentModule->rootDir );
+        const TModuleInfoEntry* fullModuleInfo = FindModuleInfoEntryForMergedInfo( mergeLinks, *currentModule );
+        CORE::CString relativePathToModule = CORE::GetRelativePathToOtherPathRoot( outputDir, fullModuleInfo->rootDir );
         CORE::AppendToPath( relativePathToModule, "Android.mk" );
         relativePathToModule = relativePathToModule.ReplaceChar( '\\', '/' );
         
@@ -483,7 +508,7 @@ GenerateContentForAndroidProjectMakefile( TProjectInfo& projectInfo            ,
         moduleListSection += "include $(PROJECT_ROOT_PATH)/" + relativePathToModule + "\n";
         
         // Done with this module, go to the next one
-        currentModule = FindNextModuleAccordingToBuildOrder( projectInfo, *currentModule );
+        currentModule = FindNextModuleAccordingToBuildOrder( mergeLinks, *currentModule );
     }
 
     return contentPrefix + moduleListSection;
@@ -492,15 +517,17 @@ GenerateContentForAndroidProjectMakefile( TProjectInfo& projectInfo            ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CreateAndroidProjectMakefileOnDisk( TProjectInfo& projectInfo            ,
-                                    const CORE::CString& outputDir       ,
-                                    bool addGeneratorCompileTimeToOutput )
+CreateAndroidProjectMakefileOnDisk( const CORE::CString& projectName             ,
+                                    const TModuleInfoEntryPairVector& mergeLinks ,
+                                    const CORE::CString& outputDir               ,
+                                    bool addGeneratorCompileTimeToOutput         )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating Android makefile content for overall project file regarding project \"" + projectInfo.projectName + "\"" ); 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating Android makefile content for overall project file regarding project \"" + projectName + "\"" ); 
     
     // First we generate the content for the makefile based on the given module information
-    CORE::CString makefileContent = GenerateContentForAndroidProjectMakefile( projectInfo                     ,
+    CORE::CString makefileContent = GenerateContentForAndroidProjectMakefile( projectName                     ,
+                                                                              mergeLinks                      ,
                                                                               outputDir                       ,
                                                                               addGeneratorCompileTimeToOutput );
     
@@ -508,16 +535,16 @@ CreateAndroidProjectMakefileOnDisk( TProjectInfo& projectInfo            ,
     CORE::CString makefilePath = outputDir;
     CORE::AppendToPath( makefilePath, "Android.mk" );
         
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Writing Android makefile content for project \"" + projectInfo.projectName + "\" to " + makefilePath );    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Writing Android makefile content for project \"" + projectName + "\" to " + makefilePath );    
 
     if ( CORE::WriteStringAsTextFile( makefilePath    , 
                                       makefileContent , 
                                       "\n"            ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created Android makefile for project \"" + projectInfo.projectName + "\" at " + makefilePath );    
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created Android makefile for project \"" + projectName + "\" at " + makefilePath );    
         return true;
     }
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to create an Android makefile for project \"" + projectInfo.projectName + "\" at " + makefilePath );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to create an Android makefile for project \"" + projectName + "\" at " + makefilePath );
     return false;
 }
 
@@ -543,13 +570,20 @@ CAndroidMakefileGenerator::GenerateProject( TProjectInfo& projectInfo           
                                             bool addGeneratorCompileTimeToOutput )
 {GUCEF_TRACE;
 
+    // Merge all the module info to give us a complete module definition for the Android platform
+    // per module. This makes is easy for us to process as we don't care about other platforms
+    TModuleInfoVector mergedInfo;
+    TModuleInfoEntryPairVector mergeLinks;
+    MergeAllModuleInfoForPlatform( projectInfo.modules, "android", mergedInfo, mergeLinks );
+
     // First we create a makefile per module on disk
-    if ( CreateAndroidMakefileOnDiskForEachModule( projectInfo                     ,
+    if ( CreateAndroidMakefileOnDiskForEachModule( mergeLinks                      ,
                                                    addGeneratorCompileTimeToOutput ) )
     {
         // Now we can create the overall project file which refers to each of the make files
         // we just created per module.
-        return CreateAndroidProjectMakefileOnDisk( projectInfo                     ,
+        return CreateAndroidProjectMakefileOnDisk( projectInfo.projectName         ,
+                                                   mergeLinks                      ,
                                                    outputDir                       ,
                                                    addGeneratorCompileTimeToOutput );
     }    

@@ -1273,48 +1273,6 @@ GetListOfAllModuleDirs( TModuleInfo& moduleInfo   ,
         }
         ++i;
     }
-    TStringVectorMapMap::iterator n = moduleInfo.platformHeaderFiles.begin();
-    while ( n != moduleInfo.platformHeaderFiles.end() )
-    {
-        i = (*n).second.begin();
-        while ( i != (*n).second.end() )
-        {
-            if ( relativePaths )
-            {
-                moduleDirs.insert( (*i).first );
-            }
-            else
-            {
-                CORE::CString fullPath = moduleInfo.rootDir;
-                CORE::AppendToPath( fullPath, (*i).first );
-
-                moduleDirs.insert( fullPath );
-            }
-            ++i;
-        }
-        ++n;
-    }
-    n = moduleInfo.platformSourceFiles.begin();
-    while ( n != moduleInfo.platformSourceFiles.end() )
-    {
-        i = (*n).second.begin();
-        while ( i != (*n).second.end() )
-        {
-            if ( relativePaths )
-            {
-                moduleDirs.insert( (*i).first );
-            }
-            else
-            {
-                CORE::CString fullPath = moduleInfo.rootDir;
-                CORE::AppendToPath( fullPath, (*i).first );
-
-                moduleDirs.insert( fullPath );
-            }
-            ++i;
-        }
-        ++n;
-    }
 }
 
 /*---------------------------------------------------------------------------*/
