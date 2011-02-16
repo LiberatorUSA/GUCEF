@@ -202,7 +202,7 @@ GenerateCMakeListsFileSrcSection( const TStringVectorMap& srcFiles )
 /*---------------------------------------------------------------------------*/
 
 void
-GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo           ,
+GenerateCMakeListsFilePlatformFilesSection( TModuleInfoEntry& moduleInfo      ,
                                             const CORE::CString& platformName ,
                                             CORE::CString& headerSection      ,
                                             CORE::CString& sourceSection      ,
