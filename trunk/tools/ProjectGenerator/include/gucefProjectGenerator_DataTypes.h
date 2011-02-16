@@ -122,11 +122,11 @@ typedef std::vector< TModuleInfoEntryPair > TModuleInfoEntryPairVector;
 
 struct SDirProcessingInstructions
 {
-    TStringVectorMap dirExcludeList;        // list of directories that are to be excluded at all times
-    TStringVectorMap dirIncludeList;        // list of directories that are to be included at all times
+    TStringVectorMap dirExcludeList;        // list of directories that are to be excluded, maps a list of per platform  
+    TStringVectorMap dirIncludeList;        // list of directories that are to be included, maps a list of per platform
 
-    TStringVectorMap fileExcludeList;       // list of files that are to be excluded at all times
-    TStringVectorMap fileIncludeList;       // list of files that are to be included at all times
+    TStringVectorMap fileExcludeList;       // list of files that are to be excluded, maps a list of per platform
+    TStringVectorMap fileIncludeList;       // list of files that are to be included, maps a list of per platform
 
     CORE::CDataNode processingInstructions; // All unparsed processing instruction data
 };
