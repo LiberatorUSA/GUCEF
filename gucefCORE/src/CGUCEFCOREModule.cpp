@@ -118,6 +118,16 @@
 #define GUCEF_CORE_CSTREAMEREVENTS_H
 #endif /* GUCEF_CORE_CSTREAMEREVENTS_H ? */
 
+#ifndef GUCEF_CORE_CTASKDELEGATOR_H
+#include "gucefCORE_CTaskDelegator.h"
+#define GUCEF_CORE_CTASKDELEGATOR_H
+#endif /* GUCEF_CORE_CTASKDELEGATOR_H ? */
+
+#ifndef GUCEF_CORE_CTASKCONSUMER_H
+#include "gucefCORE_CITaskConsumer.h"
+#define GUCEF_CORE_CTASKCONSUMER_H
+#endif /* GUCEF_CORE_CTASKCONSUMER_H ? */
+
 #ifndef GUCEF_CORE_CTASKMANAGER_H
 #include "gucefCORE_CTaskManager.h"
 #define GUCEF_CORE_CTASKMANAGER_H
@@ -127,11 +137,6 @@
 #include "gucefCORE_CPulseGenerator.h"
 #define GUCEF_CORE_CPULSEGENERATOR_H
 #endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
-
-#ifndef GUCEF_CORE_CTASKDELEGATOR_H
-#include "gucefCORE_CTaskDelegator.h"
-#define GUCEF_CORE_CTASKDELEGATOR_H
-#endif /* GUCEF_CORE_CTASKDELEGATOR_H ? */
 
 #ifndef GUCEF_CORE_TSPRINTING_H
 #include "tsprinting.h"
