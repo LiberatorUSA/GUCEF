@@ -80,13 +80,40 @@ namespace PROJECTGENERATOR {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-static const CORE::CString AllPlatforms = "all";
+static const std::string AllPlatforms = "all";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+static const TStringSetMap&
+GetSupportedPlatformDirMap( void )
+{GUCEF_TRACE;
+
+    static TStringSetMap platformMap;
+    if ( platformMap.empty() )
+    {
+        platformMap[ "WIN32" ].insert( "mswin" );
+        platformMap[ "WIN32" ].insert( "win32" );
+        platformMap[ "WIN64" ].insert( "mswin" );
+        platformMap[ "WIN64" ].insert( "win64" );
+        platformMap[ "UNIX" ].insert( "linux" );
+        platformMap[ "UNIX" ].insert( "unix" );
+        platformMap[ "IPHONEOS" ].insert( "iphone" );
+        platformMap[ "SYMBIAN" ].insert( "symbian" );
+        platformMap[ "OSX" ].insert( "osx" );
+        platformMap[ "OSX" ].insert( "mac" );
+        platformMap[ "ANDROID" ].insert( "android" );
+        platformMap[ "GLX" ].insert( "glx" );
+        platformMap[ "GTK" ].insert( "gtk" );
+        platformMap[ "SDL" ].insert( "sdl" );
+    }
+    return platformMap;
+}
+
+/*---------------------------------------------------------------------------*/
 
 const TStringVector&
 GetSourceFileExtensions( void )
@@ -119,6 +146,85 @@ GetHeaderFileExtensions( void )
         fileTypes.push_back( "hpp" );
     }
     return fileTypes;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static const TStringSet&
+GetSupportedPlatforms( void )
+{GUCEF_TRACE;
+
+    static TStringSet platforms;
+    if ( platforms.empty() )
+    {
+        const TStringSetMap& dirMap = GetSupportedPlatformDirMap();
+        TStringSetMap::const_iterator i = dirMap.begin();
+        while ( i != dirMap.end() )
+        {
+            platforms.insert( (*i).first );
+            ++i;
+        }
+    }
+    return platforms;
+}
+
+/*---------------------------------------------------------------------------*/
+
+const TStringSet&
+GetSupportedPlatformDirs()
+{GUCEF_TRACE;
+
+    static TStringSet platformDirs;
+    if ( platformDirs.empty() )
+    {
+        const TStringSetMap& dirMap = GetSupportedPlatformDirMap();
+        TStringSetMap::const_iterator i = dirMap.begin();
+        while ( i != dirMap.end() )
+        {
+            const TStringSet& dirs = (*i).second;
+            TStringSet::const_iterator n = dirs.begin();
+            while ( n != dirs.end() )
+            {
+                platformDirs.insert( (*n) );
+                ++n;
+            }
+            ++i;
+        }
+    }
+    return platformDirs;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsDirAPlatformDir( const CORE::CString& path )
+{GUCEF_TRACE;
+
+    CORE::CString lastSubDir = CORE::LastSubDir( path ).Lowercase();
+    const TStringSet& supportedPlatformDirs = GetSupportedPlatformDirs();
+    return supportedPlatformDirs.end() != supportedPlatformDirs.find( lastSubDir );
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsDirAPlatformDirForPlatform( const CORE::CString& path     ,
+                              const CORE::CString& platform )
+{GUCEF_TRACE;
+
+    CORE::CString lastSubDir = CORE::LastSubDir( path ).Lowercase();
+    const TStringSetMap& platformDirMap = GetSupportedPlatformDirMap();
+    TStringSetMap::const_iterator i = platformDirMap.find( platform );
+    if ( i != platformDirMap.end() )
+    {
+        const TStringSet& dirsForPlatform = (*i).second;
+        TStringSet::const_iterator n = dirsForPlatform.find( lastSubDir.Lowercase() );
+        if ( n != dirsForPlatform.end() )
+        {
+            return true;
+        }        
+    }
+    return false;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -958,9 +1064,22 @@ ExcludeOrIncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo ,
 void
 PopulateFileListFromDir( const CORE::CString& path      ,
                          const TStringVector& fileTypes ,
-                         TStringVector& fileList        )
+                         TStringVector& fileList        ,
+                         const CORE::CString& platform  )
 {GUCEF_TRACE;
 
+    if ( platform.IsNULLOrEmpty() || platform == AllPlatforms )
+    {
+        // current dir cannot be a platform dir
+        if ( IsDirAPlatformDir( path ) ) return;
+    }
+    else    
+    {
+        // current dir must be a dir which is considered to be a platform dir
+        // for the platform specified
+        if ( !IsDirAPlatformDirForPlatform( path, platform ) ) return;
+    }
+    
     CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( path.C_String() );
     if ( NULL != sdiData )
     {
@@ -985,238 +1104,77 @@ PopulateFileListFromDir( const CORE::CString& path      ,
 /*---------------------------------------------------------------------------*/
 
 void
-PopulateDirListFromDir( const CORE::CString& path ,
-                        TStringVector& dirList    )
+PopulateDirListFromDir( const CORE::CString& path     ,
+                        TStringVector& dirList        ,
+                        const CORE::CString& platform )
 {GUCEF_TRACE;
 
-    CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( path.C_String() );
-    if ( NULL != sdiData )
+    if ( platform.IsNULLOrEmpty() || platform == AllPlatforms )
     {
-        do
+        // Get a list of all platform dirs
+        const TStringSet& platformsDirs = GetSupportedPlatformDirs();
+        
+        // Go through the dir adding dirs which qualify
+        CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( path.C_String() );
+        if ( NULL != sdiData )
         {
-            if ( 0 == DI_Is_It_A_File( sdiData ) )
+            do
             {
-                CORE::CString dirName = DI_Name( sdiData );
-                if ( ( dirName != "." ) && ( dirName != ".." ) )
+                if ( 0 == DI_Is_It_A_File( sdiData ) )
                 {
-                    dirList.push_back( dirName );
+                    // Add the dir if it is a real dir and if its not a platform dir
+                    CORE::CString dirName = DI_Name( sdiData );
+                    if ( ( dirName != "." ) && ( dirName != ".." )               && 
+                         ( platformsDirs.find( dirName ) == platformsDirs.end() ) )
+                    {
+                        dirList.push_back( dirName );
+                    }
                 }
             }
+            while ( 0 != DI_Next_Dir_Entry( sdiData ) );
+            DI_Cleanup( sdiData );
         }
-        while ( 0 != DI_Next_Dir_Entry( sdiData ) );
-        DI_Cleanup( sdiData );
+        return;
+    }
+    
+    // We are looking for dirs for the given platform
+    const TStringSetMap& platformsDirMap = GetSupportedPlatformDirMap();    
+    TStringSetMap::const_iterator i = platformsDirMap.find( platform );
+    if ( i != platformsDirMap.end() )
+    {
+        const TStringSet& dirsForPlatform = (*i).second;
+        
+        // Check each dir to see if it exists
+        CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( path.C_String() );
+        if ( NULL != sdiData )
+        {
+            do
+            {
+                if ( 0 == DI_Is_It_A_File( sdiData ) )
+                {
+                    // Add the dir if it is a real dir and if its a platform dir for
+                    // the specified platform
+                    CORE::CString dirName = DI_Name( sdiData );
+                    if ( ( dirName != "." ) && ( dirName != ".." )                               && 
+                         ( dirsForPlatform.find( dirName.Lowercase() ) != dirsForPlatform.end() ) )
+                    {
+                        dirList.push_back( dirName );
+                    }
+                }
+            }
+            while ( 0 != DI_Next_Dir_Entry( sdiData ) );
+            DI_Cleanup( sdiData );
+        }
     }
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-GetAllPlatformFilesInPlatformDirs( TModuleInfoEntry& moduleInfo      ,
-                                   const CORE::CString& platformName ,
-                                   const CORE::CString& platformDir  )
-{GUCEF_TRACE;
-
-    // First we check each of the project include dirs for a platform sub-sir
-    TStringVectorMap::iterator i = moduleInfo.includeDirs.begin();
-    while ( i != moduleInfo.includeDirs.end() )
-    {
-        // Build the include dir to check for a platform sub-dir
-        CORE::CString includeDir = (*i).first;
-        CORE::AppendToPath( includeDir, platformDir );
-        CORE::CString fullIncludeDir = moduleInfo.rootDir;
-        CORE::AppendToPath( fullIncludeDir, includeDir );
-
-        // Try and get a list of include files from the platform dir
-        TStringVector platformFiles;
-        PopulateFileListFromDir( fullIncludeDir, GetHeaderFileExtensions(), platformFiles );
-
-        if ( !platformFiles.empty() )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir which has header files" + includeDir );
-
-            // Add the platform files to the list of platform files from all include dirs
-            TStringVectorMap& allFilesForThisPlatform = moduleInfo.platformHeaderFiles[ platformName ];
-            CORE::CString includeDirIndex = includeDir.ReplaceChar( '\\', '/' );
-            TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ includeDirIndex ];
-
-            TStringVector::iterator n = platformFiles.begin();
-            while ( n != platformFiles.end() )
-            {
-                allFilesForThisPlatformDir.push_back( (*n) );
-                ++n;
-            }
-        }
-
-        // Try and get a list of source files from the platform dir
-        platformFiles.clear();
-        PopulateFileListFromDir( fullIncludeDir, GetSourceFileExtensions(), platformFiles );
-
-        if ( !platformFiles.empty() )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir which has source files" + includeDir );
-
-            // Add the platform files to the list of platform files from all include dirs
-            TStringVectorMap& allFilesForThisPlatform = moduleInfo.platformSourceFiles[ platformName ];
-            CORE::CString includeDirIndex = includeDir.ReplaceChar( '\\', '/' );
-            TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ includeDirIndex ];
-
-            TStringVector::iterator n = platformFiles.begin();
-            while ( n != platformFiles.end() )
-            {
-                allFilesForThisPlatformDir.push_back( (*n) );
-                ++n;
-            }
-        }
-
-        ++i;
-    }
-
-    // Now we check each of the project source dirs for a platform sub-sir
-    i = moduleInfo.sourceDirs.begin();
-    while ( i != moduleInfo.sourceDirs.end() )
-    {
-        // Build the source dir to check for a platform sub-dir
-        CORE::CString sourceDir = (*i).first;
-        CORE::AppendToPath( sourceDir, platformDir );
-        CORE::CString fullSourceDir = moduleInfo.rootDir;
-        CORE::AppendToPath( fullSourceDir, sourceDir );
-
-        // Try and get a list of header files from the platform dir
-        TStringVector platformFiles;
-        PopulateFileListFromDir( fullSourceDir, GetHeaderFileExtensions(), platformFiles );
-
-        if ( !platformFiles.empty() )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir which has header files " + sourceDir );
-
-            // Add the platform files to the list of platform files from all source dirs
-            TStringVectorMap& allFilesForThisPlatform = moduleInfo.platformHeaderFiles[ platformName ];
-            CORE::CString sourceDirIndex = sourceDir.ReplaceChar( '\\', '/' );
-            TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ sourceDirIndex ];
-
-            TStringVector::iterator n = platformFiles.begin();
-            while ( n != platformFiles.end() )
-            {
-                allFilesForThisPlatformDir.push_back( (*n) );
-                ++n;
-            }
-        }
-
-        // Try and get a list of files from the platform dir
-        platformFiles.clear();
-        PopulateFileListFromDir( fullSourceDir, GetSourceFileExtensions(), platformFiles );
-
-        if ( !platformFiles.empty() )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Discovered valid platform sub-dir which has source files " + sourceDir );
-
-            // Add the platform files to the list of platform files from all source dirs
-            TStringVectorMap& allFilesForThisPlatform = moduleInfo.platformSourceFiles[ platformName ];
-            CORE::CString sourceDirIndex = sourceDir.ReplaceChar( '\\', '/' );
-            TStringVector& allFilesForThisPlatformDir = allFilesForThisPlatform[ sourceDirIndex ];
-
-            TStringVector::iterator n = platformFiles.begin();
-            while ( n != platformFiles.end() )
-            {
-                allFilesForThisPlatformDir.push_back( (*n) );
-                ++n;
-            }
-        }
-        ++i;
-    }
-}
-
-/*---------------------------------------------------------------------------*/
-
-static const TStringSetMap&
-GetSupportedPlatformDirMap( void )
-
-{GUCEF_TRACE;
-
-    static TStringSetMap platformMap;
-    if ( platformMap.empty() )
-    {
-        platformMap[ "WIN32" ].insert( "mswin" );
-        platformMap[ "WIN32" ].insert( "win32" );
-        platformMap[ "WIN64" ].insert( "mswin" );
-        platformMap[ "WIN64" ].insert( "win64" );
-        platformMap[ "UNIX" ].insert( "linux" );
-        platformMap[ "UNIX" ].insert( "unix" );
-        platformMap[ "IPHONEOS" ].insert( "iphone" );
-        platformMap[ "SYMBIAN" ].insert( "symbian" );
-        platformMap[ "OSX" ].insert( "osx" );
-        platformMap[ "OSX" ].insert( "mac" );
-        platformMap[ "ANDROID" ].insert( "android" );
-        platformMap[ "GLX" ].insert( "glx" );
-        platformMap[ "GTK" ].insert( "gtk" );
-        platformMap[ "SDL" ].insert( "sdl" );
-    }
-    return platformMap;
-}
-
-/*---------------------------------------------------------------------------*/
-
-static const TStringSet&
-GetSupportedPlatforms( void )
-{GUCEF_TRACE;
-
-    static TStringSet platforms;
-    if ( platforms.empty() )
-    {
-        const TStringSetMap& dirMap = GetSupportedPlatformDirMap();
-        TStringSetMap::const_iterator i = dirMap.begin();
-        while ( i != dirMap.end() )
-        {
-            platforms.insert( (*i).first );
-            ++i;
-        }
-    }
-    return platforms;
-}
-
-/*---------------------------------------------------------------------------*/
-
-const TStringSet&
-GetSupportedPlatformDirs()
-{GUCEF_TRACE;
-
-    static TStringSet platformDirs;
-    if ( platformDirs.empty() )
-    {
-        const TStringSetMap& dirMap = GetSupportedPlatformDirMap();
-        TStringSetMap::const_iterator i = dirMap.begin();
-        while ( i != dirMap.end() )
-        {
-            const TStringSet& dirs = (*i).second;
-            TStringSet::const_iterator n = dirs.begin();
-            while ( n != dirs.end() )
-            {
-                platformDirs.insert( (*n) );
-                ++n;
-            }
-            ++i;
-        }
-    }
-    return platformDirs;
-}
-
-/*---------------------------------------------------------------------------*/
-
-bool
-IsDirAPlatformDir( const CORE::CString& path )
-{GUCEF_TRACE;
-
-    CORE::CString lastSubDir = CORE::LastSubDir( path ).Lowercase();
-    const TStringSet& supportedPlatformDirs = GetSupportedPlatformDirs();
-    return supportedPlatformDirs.end() != supportedPlatformDirs.find( lastSubDir );
-}
-
-/*---------------------------------------------------------------------------*/
-
-void
-GetListOfAllModuleDirs( TModuleInfo& moduleInfo   ,
-                        TStringSet& moduleDirs    ,
-                        bool relativePaths        )
+GetListOfAllModuleDirs( TModuleInfo& moduleInfo      ,
+                        TStringSet& moduleDirs       ,
+                        bool relativePaths           ,
+                        const CORE::CString& rootDir )
 {GUCEF_TRACE;
 
     TStringVectorMap::iterator i = moduleInfo.includeDirs.begin();
@@ -1228,7 +1186,7 @@ GetListOfAllModuleDirs( TModuleInfo& moduleInfo   ,
         }
         else
         {
-            CORE::CString fullPath = moduleInfo.rootDir;
+            CORE::CString fullPath = rootDir;
             CORE::AppendToPath( fullPath, (*i).first );
 
             moduleDirs.insert( fullPath );
@@ -1244,11 +1202,57 @@ GetListOfAllModuleDirs( TModuleInfo& moduleInfo   ,
         }
         else
         {
-            CORE::CString fullPath = moduleInfo.rootDir;
+            CORE::CString fullPath = rootDir;
             CORE::AppendToPath( fullPath, (*i).first );
 
             moduleDirs.insert( fullPath );
         }
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+GetListOfAllModuleDirs( TModuleInfoEntry& moduleInfoEntry ,
+                        TStringSet& moduleDirs            ,
+                        bool relativePaths                ,
+                        const CORE::CString& platform     )
+{GUCEF_TRACE;
+
+    TModuleInfoMap::iterator i = moduleInfoEntry.modulesPerPlatform.find( platform );
+    if ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        GetListOfAllModuleDirs( (*i).second             ,
+                                moduleDirs              ,
+                                relativePaths           ,
+                                moduleInfoEntry.rootDir ); 
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+GetListOfAllModuleDirs( TModuleInfoEntry& moduleInfoEntry ,
+                        TStringSet& moduleDirs            ,
+                        bool relativePaths                )
+{GUCEF_TRACE;
+
+    // Add generic dirs
+    GetListOfAllModuleDirs( moduleInfoEntry ,
+                            moduleDirs      ,
+                            relativePaths   ,
+                            AllPlatforms    ); 
+                                
+    // Add all platform dirs
+    const TStringSet& platforms = GetSupportedPlatforms();    
+    TStringSet::const_iterator i = platforms.begin();
+    while ( i != platforms.end() )
+    {
+        GetListOfAllModuleDirs( moduleInfoEntry ,
+                                moduleDirs      ,
+                                relativePaths   ,
+                                (*i)            ); 
         ++i;
     }
 }
@@ -1459,29 +1463,6 @@ ApplyDirProcessingInstructionsToModule( TProjectInfo& projectInfo ,
         }
 
         ++r;
-    }
-}
-
-/*---------------------------------------------------------------------------*/
-
-void
-GetAllPlatformFilesInPlatformDirs( const TProjectInfo& projectInfo ,
-                                   TModuleInfo& moduleInfo         )
-{GUCEF_TRACE;
-
-    // Look for supported platform dirs to find platform files
-    const TStringSetMap& dirMap = GetSupportedPlatformDirMap();
-    TStringSetMap::const_iterator i = dirMap.begin();
-    while ( i != dirMap.end() )
-    {
-        const TStringSet& dirs = (*i).second;
-        TStringSet::const_iterator n = dirs.begin();
-        while ( n != dirs.end() )
-        {
-            GetAllPlatformFilesInPlatformDirs( moduleInfo, (*i).first, (*n) );
-            ++n;
-        }
-        ++i;
     }
 }
 
@@ -1921,9 +1902,8 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
                           const CORE::CString& curRootDirSeg )
 {GUCEF_TRACE;
 
-    // First we build a list of all files for the directory for ease of handling
     TStringVector fileList;
-    PopulateFileListFromDir( curRootDir, fileTypes, fileList );
+    PopulateFileListFromDir( curRootDir, fileTypes, fileList, platform );
 
     if ( fileList.size() > 0 )
     {
@@ -1933,10 +1913,10 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to add files to the file map for subdir \"" + curRootDirSeg + "\"" );
         }
     }
-
+    
     // Get a list of sub-dirs
     TStringVector dirList;
-    PopulateDirListFromDir( curRootDir, dirList );
+    PopulateDirListFromDir( curRootDir, dirList, platform );
 
     // Now we add/substract from that list based on generator instructions
     ExcludeOrIncludeDirEntriesAsSpecifiedForDir( projectInfo                   ,
@@ -1951,8 +1931,8 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
         CORE::CString subDir = curRootDir;
         CORE::AppendToPath( subDir, (*i) );
 
-        // Do not recurse into other project dirs or platform dirs
-        if ( !IsDirAProjectDir( subDir ) && !IsDirAPlatformDir( subDir ) )
+        // Do not recurse into other project dirs
+        if ( !IsDirAProjectDir( subDir ) )
         {
             CORE::CString subDirSeg = curRootDirSeg;
             CORE::AppendToPath( subDirSeg, (*i) );
@@ -1973,31 +1953,92 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
 /*---------------------------------------------------------------------------*/
 
 void
-FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
-                          TStringVectorMap& fileMap          ,
-                          const TStringVector& fileTypes     ,
-                          const CORE::CString& curRootDir    ,
-                          const CORE::CString& curRootDirSeg )
+FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
+                        TModuleInfoEntry& moduleInfoEntry ,
+                        const CORE::CString& platform     )
 {GUCEF_TRACE;
 
-    FindSubDirsWithFileTypes( projectInfo     ,
-                              fileMap         ,
-                              fileTypes       ,
-                              CORE::CString() ,
-                              false           ,
-                              curRootDir      ,
-                              curRootDirSeg   );
+    TStringVectorMap fileMap;
+    FindSubDirsWithFileTypes( projectInfo               , 
+                              fileMap                   , 
+                              GetHeaderFileExtensions() ,
+                              platform                  ,
+                              false                     ,
+                              moduleInfo.rootDir        ,
+                              ""                        );
+                              
+    if ( !fileMap.empty() )
+    {
+        TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( platform );
+        if ( i != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            (*i).includeDirs = fileMap;  
+        }
+        else        
+        {
+            TModuleInfo& moduleInfo = moduleInfoEntry.modulesPerPlatform[ platform ];
+            InitializeModuleInfo( moduleInfo );
+            moduleInfo.includeDirs = fileMap;
+        } 
+    }
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-FindSubDirsWithHeaders( TProjectInfo& projectInfo ,
-                        TModuleInfo& moduleInfo   )
+FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
+                        TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
-    // Look into the root itself and recuse downwards
-    FindSubDirsWithFileTypes( projectInfo, moduleInfo.includeDirs, GetHeaderFileExtensions(), moduleInfo.rootDir, "" );
+    // Add all generic headers
+    FindSubDirsWithHeaders( projectInfo     ,
+                            moduleInfoEntry ,
+                            AllPlatforms    );
+
+    // Add platform specific headers
+    const TStringSet& platforms = GetSupportedPlatforms();
+    TStringSet::const_iterator i = platforms.begin();
+    while ( i != platforms.end() )
+    {
+        FindSubDirsWithHeaders( projectInfo     ,
+                                moduleInfoEntry ,
+                                (*i)            );
+
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+FindSubDirsWithSource( TProjectInfo& projectInfo     ,
+                       TModuleInfo& moduleInfo       ,
+                       const CORE::CString& platform )
+{GUCEF_TRACE;
+
+    TStringVectorMap fileMap;
+    FindSubDirsWithFileTypes( projectInfo               , 
+                              fileMap                   , 
+                              GetSourceFileExtensions() ,
+                              platform                  ,
+                              false                     ,
+                              moduleInfo.rootDir        ,
+                              ""                        );
+                              
+    if ( !fileMap.empty() )
+    {
+        TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( platform );
+        if ( i != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            (*i).sourceDirs = fileMap;  
+        }
+        else        
+        {
+            TModuleInfo& moduleInfo = moduleInfoEntry.modulesPerPlatform[ platform ];
+            InitializeModuleInfo( moduleInfo );
+            moduleInfo.sourceDirs = fileMap;
+        }
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2007,8 +2048,22 @@ FindSubDirsWithSource( TProjectInfo& projectInfo ,
                        TModuleInfo& moduleInfo   )
 {GUCEF_TRACE;
 
-    // Look into the root itself and recuse downwards
-    FindSubDirsWithFileTypes( projectInfo, moduleInfo.sourceDirs, GetSourceFileExtensions(), moduleInfo.rootDir, "" );
+    // Add all generic sources
+    FindSubDirsWithSource( projectInfo     ,
+                           moduleInfoEntry ,
+                           AllPlatforms    );
+
+    // Add platform specific headers
+    const TStringSet& platforms = GetSupportedPlatforms();
+    TStringSet::const_iterator i = platforms.begin();
+    while ( i != platforms.end() )
+    {
+        FindSubDirsWithSource( projectInfo     ,
+                               moduleInfoEntry ,
+                               (*i)            );
+
+        ++i;
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2083,7 +2138,6 @@ ProcessProjectDir( TProjectInfo& projectInfo    ,
 
     FindSubDirsWithHeaders( projectInfo, moduleInfo );
     FindSubDirsWithSource( projectInfo, moduleInfo );
-    GetAllPlatformFilesInPlatformDirs( projectInfo, moduleInfo );
     ApplyDirProcessingInstructionsToModule( projectInfo, moduleInfo );
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed module " + moduleInfo.name + " for project dir: " + moduleInfo.rootDir );
@@ -2154,17 +2208,19 @@ GetModulePrio( TModulePrioMap& prioMap         ,
 /*---------------------------------------------------------------------------*/
 
 TModuleInfoPtrVector
-GetModulesWithDependencyCounfOf( TModuleInfoVector& modules   ,
-                                 CORE::UInt32 dependencyCount )
+GetModulesWithDependencyCounfOf( TModuleInfoEntryVector& modules     ,
+                                 CORE::UInt32 dependencyCount        ,
+                                 const CORE::CString& targetPlatform )
 {GUCEF_TRACE;
 
     TModuleInfoPtrVector resultSet;
-    TModuleInfoVector::iterator i = modules.begin();
+    TModuleInfoEntryVector::iterator i = modules.begin();
     while ( i != modules.end() )
     {
-        if ( (*i).dependencies.size() == dependencyCount )
+        TModuleInfo& moduleInfo = (*i).modulePerPlatform[ targetPlatform ];
+        if ( moduleInfo.dependencies.size() == dependencyCount )
         {
-            resultSet.push_back( &( (*i) ) );
+            resultSet.push_back( &moduleInfo );
         }
         ++i;
     }
@@ -2174,26 +2230,28 @@ GetModulesWithDependencyCounfOf( TModuleInfoVector& modules   ,
 /*---------------------------------------------------------------------------*/
 
 CORE::UInt32
-GetHighestDependencyCount( TModuleInfoVector& modules )
+GetHighestDependencyCount( TModuleInfoEntryVector& modulesForAllPlatforms ,
+                           const CORE::CString& targetPlatform            )
 {GUCEF_TRACE;
 
     CORE::UInt32 greatestDependencyCount = 0;
-    TModuleInfoVector::iterator i = modules.begin();
-    while ( i != modules.end() )
+    TModuleInfoEntryVector::iterator i = modulesForAllPlatforms.begin();
+    while ( i != modulesForAllPlatforms )
     {
-        if ( (*i).dependencies.size() > greatestDependencyCount )
+        TModuleInfo& moduleInfo = (*i).modulePerPlatform[ targetPlatform ];
+        if ( moduleInfo.dependencies.size() > greatestDependencyCount )
         {
-            greatestDependencyCount = (*i).dependencies.size();
+            greatestDependencyCount = moduleInfo.dependencies.size();
         }
         ++i;
     }
-    return greatestDependencyCount;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-SortModulesInDependencyOrder( TProjectInfo& projectInfo )
+SortModulesInDependencyOrder( TProjectInfo& projectInfo                         ,
+                              const CORE::CString& targetPlatform = PlatformAll )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Sorting all modules based on build priority,.." );
@@ -2203,11 +2261,11 @@ SortModulesInDependencyOrder( TProjectInfo& projectInfo )
     // First we make sorting easier by putting all modules in the priority list
     // in such a way that they are already sorted somewhat based on their dependency count
     int prioInc=0;
-    CORE::UInt32 highestDependencyCount = GetHighestDependencyCount( projectInfo.modules );
+    CORE::UInt32 highestDependencyCount = GetHighestDependencyCount( projectInfo.modules, targetPlatform );
     for ( CORE::UInt32 i=0; i<=highestDependencyCount; ++i )
     {
         // Grab a list of modules with *i* dependencies
-        TModuleInfoPtrVector modules = GetModulesWithDependencyCounfOf( projectInfo.modules, i );
+        TModuleInfoPtrVector modules = GetModulesWithDependencyCounfOf( projectInfo.modules, i, targetPlatform );
         TModuleInfoPtrVector::iterator n = modules.begin();
         while ( n != modules.end() )
         {
