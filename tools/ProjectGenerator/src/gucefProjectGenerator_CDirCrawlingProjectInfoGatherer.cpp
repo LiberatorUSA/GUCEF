@@ -1976,30 +1976,12 @@ GetModulePrio( TModuleInfoEntryPrioMap& prioMap    ,
     while ( i != prioMap.end() )
     {
         TModuleInfoEntry* moduleInfoEntry = (*i).second;
-        TModuleInfoMap::iterator n = moduleInfoEntry->modulesPerPlatform.find( targetPlatform );
-        if ( n != moduleInfoEntry->modulesPerPlatform.end() )
+        const CORE::CString* currentModuleName = GetModuleName( *(*i).second, targetPlatform );
+        if ( NULL != currentModuleName )
         {
-            // this module has a name specified which is specific to this platform
-            if ( (*n).second.name == moduleName )
+            if ( *currentModuleName == moduleName )
             {
                 return (*i).first;
-            }
-        }
-        else
-        {
-            if ( targetPlatform != AllPlatforms )
-            {
-                // This module might not have a platform specific name so we will
-                // check against the name that is used for all platforms as a default
-                n = moduleInfoEntry->modulesPerPlatform.find( AllPlatforms );
-                if ( n != moduleInfoEntry->modulesPerPlatform.end() )
-                {
-                    // This module has a name specified as a default for all platforms
-                    if ( (*n).second.name == moduleName )
-                    {
-                        return (*i).first;
-                    }
-                }
             }
         }
         ++i;
@@ -2117,118 +2099,127 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
         while ( n != prioMap.end() )
         {
             int modulePrio = (*n).first;
-            TModuleInfoEntry* moduleInfo = (*n).second;
-
-            TStringVector::iterator m = moduleInfo->dependencies.begin();
-            while ( m != moduleInfo->dependencies.end() )
+            TModuleInfoEntry* moduleInfoEntry = (*n).second;
+            
+            TModuleInfo* moduleInfo = FindModuleInfoForPlatform( *moduleInfoEntry, targetPlatform, false );
+            if ( NULL != moduleInfo )
             {
-                // Logically we cannot have a prio higher then the dependency
-                // so we will ensure it is lower
-                int dependencyPrio = GetModulePrio( prioMap, (*m), targetPlatform );
-                if ( dependencyPrio >= modulePrio )
+                TStringVector::iterator m = moduleInfo->dependencies.begin();
+                while ( m != moduleInfo->dependencies.end() )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Module " + moduleInfo->name + " with build order index " + CORE::Int32ToString( modulePrio ) +
-                                " has dependency " + (*m) + " which has build order index " + CORE::Int32ToString( dependencyPrio ) + ", the dependency should be build before the module that requires it!"  );
-
-                    TModuleInfoEntryPrioMap newPrioMap;
-
-                    // Set the new priority, the priority should be higher then the dependency
-                    // causing it to be build after the dependency (lower prio = builder earlier)
-                    modulePrio = dependencyPrio+1;
-
-                    // Now insert our reprioritized item at this location
-                    newPrioMap[ modulePrio ] = moduleInfo;
-
-                    // Now add everything around the reprioritized item to our
-                    // new prio map
-                    TModulePrioMap::iterator p = prioMap.begin();
-                    while ( p != prioMap.end() )
+                    // Logically we cannot have a prio higher then the dependency
+                    // so we will ensure it is lower
+                    int dependencyPrio = GetModulePrio( prioMap, (*m), targetPlatform );
+                    if ( dependencyPrio >= modulePrio )
                     {
-                        if ( (*p).first < modulePrio )
+                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Module " + moduleInfo->name + " with build order index " + CORE::Int32ToString( modulePrio ) +
+                                    " has dependency " + (*m) + " which has build order index " + CORE::Int32ToString( dependencyPrio ) + ", the dependency should be build before the module that requires it!"  );
+
+                        TModuleInfoEntryPrioMap newPrioMap;
+
+                        // Set the new priority, the priority should be higher then the dependency
+                        // causing it to be build after the dependency (lower prio = builder earlier)
+                        modulePrio = dependencyPrio+1;
+
+                        // Now insert our reprioritized item at this location
+                        newPrioMap[ modulePrio ] = moduleInfoEntry;
+
+                        // Now add everything around the reprioritized item to our
+                        // new prio map
+                        TModuleInfoEntryPrioMap::iterator p = prioMap.begin();
+                        while ( p != prioMap.end() )
                         {
-                            if ( (*p).second->name != moduleInfo->name )
+                            const CORE::CString* otherName = GetModuleName( *(*p).second, targetPlatform ); 
+                            const CORE::CString* thisName = GetModuleName( *moduleInfoEntry, targetPlatform );
+                                
+                            if ( (*p).first < modulePrio )
                             {
-                                newPrioMap[ (*p).first ] = (*p).second;
+                                if ( ( ( NULL != otherName ) && ( NULL != thisName ) ) &&
+                                     ( *otherName != *thisName )                        )
+                                {
+                                    newPrioMap[ (*p).first ] = (*p).second;
+                                }
                             }
-                        }
-                        else
-                        if ( (*p).first >= modulePrio )
-                        {
-                            if ( (*p).second->name != moduleInfo->name )
+                            else
+                            if ( (*p).first >= modulePrio )
                             {
-                                newPrioMap[ (*p).first + 1 ] = (*p).second;
-                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Changed build priority for module: " + (*p).second->name +
-                                            " from " + CORE::Int32ToString( (*p).first ) + " to " + CORE::Int32ToString( (*p).first+1 ) );
+                                if ( ( ( NULL != otherName ) && ( NULL != thisName ) ) &&
+                                     ( *otherName != *thisName )                        )
+                                {
+                                    newPrioMap[ (*p).first + 1 ] = (*p).second;
+                                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Changed build priority for module: " + *otherName +
+                                                " from " + CORE::Int32ToString( (*p).first ) + " to " + CORE::Int32ToString( (*p).first+1 ) );
+                                }
                             }
+                            ++p;
                         }
-                        ++p;
-                    }
 
-                    // Reindex list to close gap
-                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Reindexing the build priority list" );
-                    CORE::Int32 i=0;
-                    TModulePrioMap newestPrioMap;
-                    p = newPrioMap.begin();
-                    while ( p != newPrioMap.end() )
-                    {
-                        newestPrioMap[ i ] = (*p).second;
-
-                        if ( i != (*p).first )
+                        // Reindex list to close gap
+                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Reindexing the build priority list" );
+                        CORE::Int32 i=0;
+                        TModuleInfoEntryPrioMap newestPrioMap;
+                        p = newPrioMap.begin();
+                        while ( p != newPrioMap.end() )
                         {
-                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Changed build priority for module: " + (*p).second->name +
-                                        " from " + CORE::Int32ToString( (*p).first ) + " to " + CORE::Int32ToString( i ) );
+                            newestPrioMap[ i ] = (*p).second;
+
+                            const CORE::CString* moduleName = GetModuleName( *(*p).second, targetPlatform );
+                            if ( i != (*p).first )
+                            {
+                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Changed build priority for module: " + *moduleName +
+                                            " from " + CORE::Int32ToString( (*p).first ) + " to " + CORE::Int32ToString( i ) );
+                            }
+                            ++i; ++p;
                         }
-                        ++i; ++p;
-                    }
 
-                    #ifdef GUCEF_CORE_DEBUG_MODE
+                        #ifdef GUCEF_CORE_DEBUG_MODE
 
-                    // For debug: output final differeces between the altered list and the original
-                    TModulePrioMap::iterator q = prioMap.begin();
-                    p = newestPrioMap.begin();
-                    while ( p != newestPrioMap.end() )
-                    {
-                        if ( (*p).second != (*q).second )
+                        // For debug: output final differeces between the altered list and the original
+                        TModuleInfoEntryPrioMap::iterator q = prioMap.begin();
+                        p = newestPrioMap.begin();
+                        while ( p != newestPrioMap.end() )
                         {
-                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Difference with original build order: module " + (*p).second->name +
-                                        " is now at index " + CORE::Int32ToString( (*p).first ) + " where module " + (*q).second->name + " used to be" );
+                            if ( (*p).second != (*q).second )
+                            {
+                                const CORE::CString* moduleName1 = GetModuleName( *(*p).second, targetPlatform ); 
+                                const CORE::CString* moduleName2 = GetModuleName( *(*q).second, targetPlatform );
+                            
+                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Difference with original build order: module " + *moduleName1 +
+                                            " is now at index " + CORE::Int32ToString( (*p).first ) + " where module " + *moduleName2 + " used to be" );
+                            }
+                            ++q; ++p;
                         }
-                        ++q; ++p;
+
+                        #endif
+
+                        // Replace the old map with the new one and start the next bubbling iteration
+                        prioMap = newestPrioMap;
+                        changes = true;
+
+                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Completed changing the build priority for module: " + moduleInfo->name );
+                        break;
                     }
+                    ++m;
+                }
 
-                    #endif
-
-                    // Replace the old map with the new one and start the next bubbling iteration
-                    prioMap = newestPrioMap;
-                    changes = true;
-
-                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Completed changing the build priority for module: " + moduleInfo->name );
+                // Restart the process if something had to be changed
+                if ( changes )
+                {
                     break;
                 }
-                ++m;
             }
-
-            // Restart the process if something had to be changed
-            if ( changes )
-            {
-                break;
-            }
-
-            ++n;
+            ++n;                
         }
     }
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished determining the correct build order (priority) for all modules, assigning priorities and reordering modules to refect this" );
 
-    // First assign the determined build order index to the module
-    TModuleInfoVector newModuleInfoVector;
-    TModulePrioMap::iterator n = prioMap.begin();
+    // Assign the determined build order index to the module
+    TModuleInfoEntryPrioMap::iterator n = prioMap.begin();
     while ( n != prioMap.end() )
     {
-        TModuleInfo* moduleInfo = (*n).second;
+        TModuleInfo* moduleInfo = FindModuleInfoForPlatform( *(*n).second, targetPlatform, true );
         moduleInfo->buildOrder = (*n).first;
-
-        newModuleInfoVector.push_back( *moduleInfo );
         ++n;
     }
 
