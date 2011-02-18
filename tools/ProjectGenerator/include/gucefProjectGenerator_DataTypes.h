@@ -173,7 +173,15 @@ FindModuleInfoForPlatform( const TModuleInfoEntry& moduleInfoEntry ,
 
 TModuleInfo*
 FindModuleInfoForPlatform( TModuleInfoEntry& moduleInfoEntry ,
-                           const CORE::CString& platform     );
+                           const CORE::CString& platform     ,
+                           bool createNewIfNoneExists        );
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString*
+GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
+               const CORE::CString& targetPlatform     ,
+               const TModuleInfo** moduleInfo = NULL   );
 
 /*-------------------------------------------------------------------------*/
 

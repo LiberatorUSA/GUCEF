@@ -705,13 +705,22 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
 
 TModuleInfo*
 FindModuleInfoForPlatform( TModuleInfoEntry& moduleInfoEntry ,
-                           const CORE::CString& platform     )
+                           const CORE::CString& platform     ,
+                           bool createNewIfNoneExists        )
 {GUCEF_TRACE;
 
     TModuleInfoMap::iterator i = moduleInfoEntry.modulesPerPlatform.find( platform.Lowercase() );
     if ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {
         return &(*i).second;
+    }
+    if ( createNewIfNoneExists )
+    {
+        TModuleInfo moduleInfo;
+        InitializeModuleInfo( moduleInfo );
+        
+        moduleInfoEntry.modulesPerPlatform.insert( std::pair< CORE::CString, TModuleInfo >( platform, moduleInfo ) );
+        return &moduleInfoEntry.modulesPerPlatform[ platform ];
     }
     return NULL;
 }
@@ -804,7 +813,46 @@ MergeAllModuleInfoForPlatform( const TModuleInfoEntryVector& allInfo  ,
     }
     
     return true;
-}                               
+}
+
+/*---------------------------------------------------------------------------*/
+
+const CORE::CString*
+GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
+               const CORE::CString& targetPlatform     ,
+               const TModuleInfo** moduleInfo          )
+{GUCEF_TRACE;
+
+    TModuleInfoMap::const_iterator n = moduleInfoEntry.modulesPerPlatform.find( targetPlatform );
+    if ( n != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        // A name was specified for this platform
+        if ( NULL != moduleInfo )
+        {
+            *moduleInfo = &(*n).second;
+        }
+        return &(*n).second.name;
+    }
+    else
+    {
+        // If no name is specified for a specific platform then there might still be a 
+        // default for all platforms
+        if ( targetPlatform != AllPlatforms )
+        {
+            n = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
+            if ( n != moduleInfoEntry.modulesPerPlatform.end() )
+            {
+                // A default name was specified for this module
+                if ( NULL != moduleInfo )
+                {
+                    *moduleInfo = &(*n).second;
+                }
+                return &(*n).second.name;
+            }
+        }            
+    }
+    return NULL;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
