@@ -101,7 +101,6 @@ typedef std::vector< TModuleInfo > TModuleInfoVector;
 typedef std::map< CORE::CString, TModuleInfoVector > TModuleInfoVectorMap;
 typedef std::map< CORE::CString, TModuleInfo > TModuleInfoMap;
 typedef std::vector< TModuleInfo* > TModuleInfoPtrVector;
-typedef std::map< int, TModuleInfo* > TModulePrioMap;
 
 /*---------------------------------------------------------------------------*/
 
@@ -117,6 +116,8 @@ typedef struct SModuleInfoEntry TModuleInfoEntry;
 typedef std::vector< TModuleInfoEntry > TModuleInfoEntryVector;
 typedef std::pair< const TModuleInfoEntry*, const TModuleInfo* > TModuleInfoEntryPair;
 typedef std::vector< TModuleInfoEntryPair > TModuleInfoEntryPairVector;
+typedef std::vector< TModuleInfoEntry* > TModuleInfoEntryPtrVector;
+typedef std::map< int, TModuleInfoEntry* > TModuleInfoEntryPrioMap;
 
 /*---------------------------------------------------------------------------*/
 
@@ -167,6 +168,12 @@ InitializeModuleInfo( TModuleInfo& moduleInfo );
 const TModuleInfo*
 FindModuleInfoForPlatform( const TModuleInfoEntry& moduleInfoEntry ,
                            const CORE::CString& platform           );
+
+/*-------------------------------------------------------------------------*/
+
+TModuleInfo*
+FindModuleInfoForPlatform( TModuleInfoEntry& moduleInfoEntry ,
+                           const CORE::CString& platform     );
 
 /*-------------------------------------------------------------------------*/
 

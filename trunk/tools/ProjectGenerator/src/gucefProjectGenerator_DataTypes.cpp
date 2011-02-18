@@ -703,6 +703,21 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
 
 /*-------------------------------------------------------------------------*/
 
+TModuleInfo*
+FindModuleInfoForPlatform( TModuleInfoEntry& moduleInfoEntry ,
+                           const CORE::CString& platform     )
+{GUCEF_TRACE;
+
+    TModuleInfoMap::iterator i = moduleInfoEntry.modulesPerPlatform.find( platform.Lowercase() );
+    if ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        return &(*i).second;
+    }
+    return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 const TModuleInfo*
 FindModuleInfoForPlatform( const TModuleInfoEntry& moduleInfoEntry ,
                            const CORE::CString& platform           )
