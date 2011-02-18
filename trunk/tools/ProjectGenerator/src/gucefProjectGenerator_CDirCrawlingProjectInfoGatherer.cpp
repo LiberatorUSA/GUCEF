@@ -1323,28 +1323,9 @@ CMakeParseIncludeDirs( const CORE::CString& fileSuffix )
 /*---------------------------------------------------------------------------*/
 
 void
-CMakeParseSuffixFile( TModuleInfoEntry& moduleInfoEntry )
+CMakeParseSuffixFile( TModuleInfo& moduleInfo, const CORE::CString& cmakeListSuffixFileContent )
 {GUCEF_TRACE;
         
-    CORE::CString suffixFilePath = moduleInfoEntry.rootDir;
-    CORE::AppendToPath( suffixFilePath, "CMakeListsSuffix.txt" );
-    
-    CORE::CString cmakeListSuffixFileContent;
-    if ( !CORE::LoadTextFileAsString( suffixFilePath, cmakeListSuffixFileContent ) ) return;
-    
-    TModuleInfo* moduleInfo = NULL;
-    TModuleInfoMap::iterator q = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
-    if ( q == moduleInfoEntry.modulesPerPlatform.end() )
-    {
-        TModuleInfo& newModuleInfo = moduleInfoEntry.modulesPerPlatform[ AllPlatforms ];
-        InitializeModuleInfo( newModuleInfo );
-        moduleInfo = &newModuleInfo;
-    } 
-    else
-    {
-        moduleInfo = &moduleInfoEntry.modulesPerPlatform[ AllPlatforms ];
-    }
-
     TStringVector suffixFileLines = CMakeParseFileLines( cmakeListSuffixFileContent );
     TStringVector::iterator i = suffixFileLines.begin();
     while ( i != suffixFileLines.end() )
@@ -1382,7 +1363,7 @@ CMakeParseSuffixFile( TModuleInfoEntry& moduleInfoEntry )
             TStringVector::iterator n = elements.begin();
             while ( n != elements.end() )
             {
-                moduleInfo->linkedLibraries.push_back( (*n) );
+                moduleInfo.linkedLibraries.push_back( (*n) );
                 ++n;
             }
         }
@@ -1501,45 +1482,6 @@ CMakeParseModuleProperties( const CORE::CString& fileSuffix ,
 
 /*---------------------------------------------------------------------------*/
 
-const CORE::CString*
-GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
-               const CORE::CString& targetPlatform     ,
-               const TModuleInfo** moduleInfo = NULL   )
-{GUCEF_TRACE;
-
-    TModuleInfoMap::const_iterator n = moduleInfoEntry.modulesPerPlatform.find( targetPlatform );
-    if ( n != moduleInfoEntry.modulesPerPlatform.end() )
-    {
-        // A name was specified for this platform
-        if ( NULL != moduleInfo )
-        {
-            *moduleInfo = &(*n).second;
-        }
-        return &(*n).second.name;
-    }
-    else
-    {
-        // If no name is specified for a specific platform then there might still be a 
-        // default for all platforms
-        if ( targetPlatform != AllPlatforms )
-        {
-            n = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
-            if ( n != moduleInfoEntry.modulesPerPlatform.end() )
-            {
-                // A default name was specified for this module
-                if ( NULL != moduleInfo )
-                {
-                    *moduleInfo = &(*n).second;
-                }
-                return &(*n).second.name;
-            }
-        }            
-    }
-    return NULL;
-}
-
-/*---------------------------------------------------------------------------*/
-
 const TModuleInfoEntry*
 GetModuleInfoEntry( const TProjectInfo& projectInfo       ,
                     const CORE::CString& moduleName       ,
@@ -1600,7 +1542,7 @@ GenerateModuleDependencyIncludesForPlatform( const TProjectInfo& projectInfo   ,
     // Find the platform specific info for this entry
     // If there is no platform specific info then we have no dependencies to deal with which
     // in turns means we have no includes to generate
-    TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, platformName );
+    TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, platformName, false );
     if ( NULL == moduleInfo ) return;
     
     // Add include dirs for each dependency we know about
@@ -1856,8 +1798,8 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
 /*---------------------------------------------------------------------------*/
 
 void
-FindSubDirsWithSource( TProjectInfo& projectInfo ,
-                       TModuleInfo& moduleInfo   )
+FindSubDirsWithSource( TProjectInfo& projectInfo         ,
+                       TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     // Add all generic sources
@@ -1881,26 +1823,41 @@ FindSubDirsWithSource( TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 void
-LegacyCMakeProcessProjectDir( TProjectInfo& projectInfo    ,
-                              TModuleInfoEntry& moduleInfo )
+LegacyCMakeProcessProjectDir( TProjectInfo& projectInfo         ,
+                              TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
-    CORE::CString pathToSuffixFile = moduleInfo.rootDir;
+    CORE::CString pathToSuffixFile = moduleInfoEntry.rootDir;
     CORE::AppendToPath( pathToSuffixFile, "CMakeListsSuffix.txt" );
     
-    if ( CORE::LoadTextFileAsString( pathToSuffixFile, moduleInfo.cmakeListSuffixFileContent ) )
+    CORE::CString cmakeListSuffixFileContent;
+    if ( !CORE::LoadTextFileAsString( pathToSuffixFile, cmakeListSuffixFileContent ) )
     {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load legacy project file: " + pathToSuffixFile );
+        return;
+    }
+    
+    if ( CORE::LoadTextFileAsString( pathToSuffixFile, cmakeListSuffixFileContent ) )
+    {
+        // get a platform entry to use
+        // this legacy system only supported AllPlatforms via CMake
+        TModuleInfo& moduleInfo = *FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms, true );
+
+        // Set a project name based off the module sub-dir name
+        // Best we can do unless we can get it from the suffix file later
+        moduleInfo.name = CORE::LastSubDir( moduleInfoEntry.rootDir );
+        
         // Fill in the dependencies as specified in the suffix file
         CORE::CString actualModuleName;
-        moduleInfo.dependencies = CMakeParseDependencies( moduleInfo.cmakeListSuffixFileContent, actualModuleName );
-        moduleInfo.dependencyIncludeDirs = CMakeParseIncludeDirs( moduleInfo.cmakeListSuffixFileContent );
+        moduleInfo.dependencies = CMakeParseDependencies( cmakeListSuffixFileContent, actualModuleName );
+        moduleInfo.dependencyIncludeDirs = CMakeParseIncludeDirs( cmakeListSuffixFileContent );
         bool isExecutable = false;
-        CMakeParseModuleProperties( moduleInfo.cmakeListSuffixFileContent, actualModuleName, isExecutable );
+        CMakeParseModuleProperties( cmakeListSuffixFileContent, actualModuleName, isExecutable );
         
-        //@TODO: better module type support
+        // This legacy system only supports this simple test
         moduleInfo.moduleType = isExecutable ? MODULETYPE_EXECUTABLE : MODULETYPE_SHARED_LIBRARY;
         
-        CMakeParseSuffixFile( moduleInfo );
+        CMakeParseSuffixFile( moduleInfo, cmakeListSuffixFileContent );
         if ( actualModuleName != moduleInfo.name )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Detected module name that differs from module sub-dir name, correcting module name from \"" + moduleInfo.name + "\" to \"" + actualModuleName + "\"" );
@@ -1912,46 +1869,56 @@ LegacyCMakeProcessProjectDir( TProjectInfo& projectInfo    ,
     else
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate the required module file " + pathToSuffixFile );
-        
-        // add suffix example section instead
-        moduleInfo.cmakeListSuffixFileContent  = "## TODO: the following is an example suffix section, you have to complete it\n";
-        moduleInfo.cmakeListSuffixFileContent += "#add_definitions(-DTIXML_USE_STL)\n";
-        moduleInfo.cmakeListSuffixFileContent += "#add_executable(" + moduleInfo.name + " ${HEADER_FILES} ${SOURCE_FILES})\n";
-        moduleInfo.cmakeListSuffixFileContent += "#target_link_libraries(" + moduleInfo.name + " ${GUCEF_LIBRARIES})\n";
-        moduleInfo.cmakeListSuffixFileContent += "#gucef_config_tool(" + moduleInfo.name + ")\n";
     }
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-ProcessProjectDir( TProjectInfo& projectInfo    ,
-                   TModuleInfoEntry& moduleInfo )
+ProcessProjectDir( TProjectInfo& projectInfo         ,
+                   TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
-    // Set a project name based off the module sub-dir name
-    // Best we can do unless we can get it from the suffix file later
-    moduleInfo.name = CORE::LastSubDir( moduleInfo.rootDir );
-
-    CORE::CString pathToModuleInfoFile = moduleInfo.rootDir;
+    CORE::CString pathToModuleInfoFile = moduleInfoEntry.rootDir;
     CORE::AppendToPath( pathToModuleInfoFile, "ModuleInfo.xml" );
     
     if ( CORE::FileExists( pathToModuleInfoFile ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing ModuleInfo file " + pathToModuleInfoFile );        
-        DeserializeModuleInfo( moduleInfo, pathToModuleInfoFile ); 
+        DeserializeModuleInfo( moduleInfoEntry, pathToModuleInfoFile );
+        
+        // If there is any module info specified for 'AllPlatforms' but it does not have a 
+        // module name set then we shall determine a default which is the based ont he directory the
+        // project is in. Note that platform specific info can overwrite this of course but at least
+        // this gives us a default if they don't have a name specified either.
+        TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms, false );
+        if ( NULL != moduleInfo )
+        {        
+            // Set a project name based off the module sub-dir name
+            moduleInfo->name = CORE::LastSubDir( moduleInfoEntry.rootDir ); 
+        }
     }
     else
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to process legacy cmake suffix file" );
-        LegacyCMakeProcessProjectDir( projectInfo ,
-                                      moduleInfo  );
+        LegacyCMakeProcessProjectDir( projectInfo     ,
+                                      moduleInfoEntry );
     }
 
-    FindSubDirsWithHeaders( projectInfo, moduleInfo );
-    FindSubDirsWithSource( projectInfo, moduleInfo );
+    FindSubDirsWithHeaders( projectInfo, moduleInfoEntry );
+    FindSubDirsWithSource( projectInfo, moduleInfoEntry );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed module " + moduleInfo.name + " for project dir: " + moduleInfo.rootDir );
+    // If we have a module name then use it for our logging output
+    // we want to be able to see in the log which modules where successfully processed
+    const CORE::CString* moduleName = GetModuleName( moduleInfoEntry, AllPlatforms );
+    if ( NULL != moduleName )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed module " + *moduleName + " from project dir: " + moduleInfoEntry.rootDir );
+    }
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed module from project dir: " + moduleInfoEntry.rootDir );
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1969,16 +1936,16 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that the following directory is a project directory: " + topLevelDir );
 
         // Process this dir
-        TModuleInfo moduleInfo;
-        InitializeModuleInfo( moduleInfo );        
-        moduleInfo.rootDir = topLevelDir;
-        ProcessProjectDir( projectInfo, moduleInfo );
-        projectInfo.modules.push_back( moduleInfo );
+        TModuleInfoEntry moduleInfoEntry;
+        InitializeModuleInfoEntry( moduleInfoEntry );        
+        moduleInfoEntry.rootDir = topLevelDir;
+        ProcessProjectDir( projectInfo, moduleInfoEntry );
+        projectInfo.modules.push_back( moduleInfoEntry );
     }
 
     // Get all subdir's
     std::vector< CORE::CString > dirList;
-    PopulateDirListFromDir( topLevelDir, dirList );
+    PopulateDirListFromDir( topLevelDir, dirList, AllPlatforms );
 
     // Add/subtract dirs from the list based on generator instructions
     // This early application (before module definition) of processing instructions allows us
@@ -2000,15 +1967,15 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
 /*---------------------------------------------------------------------------*/
 
 int
-GetModulePrio( TModulePrioMap& prioMap             ,
+GetModulePrio( TModuleInfoEntryPrioMap& prioMap    ,
                const CORE::CString& moduleName     ,
                const CORE::CString& targetPlatform )
 {GUCEF_TRACE;
 
-    TModulePrioMap::iterator i = prioMap.begin();
+    TModuleInfoEntryPrioMap::iterator i = prioMap.begin();
     while ( i != prioMap.end() )
     {
-        TModuleInfoEntry* moduleInfoEntry = (*i);
+        TModuleInfoEntry* moduleInfoEntry = (*i).second;
         TModuleInfoMap::iterator n = moduleInfoEntry->modulesPerPlatform.find( targetPlatform );
         if ( n != moduleInfoEntry->modulesPerPlatform.end() )
         {
@@ -2049,8 +2016,8 @@ GetModuleDependencyCount( const TModuleInfoEntry& moduleInfoEntry ,
 
     // Get dependencies which apply to all platforms
     CORE::UInt32 dependencyCount = 0;
-    TModuleInfoMap::iterator n = moduleInfoEntry.modulePerPlatform.find( AllPlatforms );
-    if ( n != moduleInfoEntry.modulePerPlatform.end() )
+    TModuleInfoMap::const_iterator n = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
+    if ( n != moduleInfoEntry.modulesPerPlatform.end() )
     {
         dependencyCount = (*n).second.dependencies.size();
     }    
@@ -2058,8 +2025,8 @@ GetModuleDependencyCount( const TModuleInfoEntry& moduleInfoEntry ,
     // Get dependencies which are specific for the target platform
     if ( targetPlatform != AllPlatforms )
     {
-        n = moduleInfoEntry.modulePerPlatform.find( targetPlatform );
-        if ( n != moduleInfoEntry.modulePerPlatform.end() )
+        n = moduleInfoEntry.modulesPerPlatform.find( targetPlatform );
+        if ( n != moduleInfoEntry.modulesPerPlatform.end() )
         {
             dependencyCount += (*n).second.dependencies.size();
         }
@@ -2069,7 +2036,7 @@ GetModuleDependencyCount( const TModuleInfoEntry& moduleInfoEntry ,
 
 /*---------------------------------------------------------------------------*/
 
-TModuleInfoPtrVector
+TModuleInfoEntryPtrVector
 GetModulesWithDependencyCountOf( TModuleInfoEntryVector& modules     ,
                                  CORE::UInt32 dependencyCount        ,
                                  const CORE::CString& targetPlatform )
@@ -2098,7 +2065,7 @@ GetHighestDependencyCount( TModuleInfoEntryVector& modulesForAllPlatforms ,
 
     CORE::UInt32 greatestDependencyCount = 0;
     TModuleInfoEntryVector::iterator i = modulesForAllPlatforms.begin();
-    while ( i != modulesForAllPlatforms )
+    while ( i != modulesForAllPlatforms.end() )
     {
         CORE::UInt32 dependencyCount = GetModuleDependencyCount( (*i), targetPlatform );
         if ( dependencyCount > greatestDependencyCount )
@@ -2117,7 +2084,7 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
                                   const CORE::CString& targetPlatform  )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determining the build order for all modules using platform \"" + targetPlatform + \",..." );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determining the build order for all modules using platform \"" + targetPlatform + "\",..." );
 
     TModuleInfoEntryPrioMap prioMap;
 
@@ -2128,7 +2095,7 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
     for ( CORE::UInt32 i=0; i<=highestDependencyCount; ++i )
     {
         // Grab a list of modules with *i* dependencies
-        TModuleInfoEntryPtrVector modules = GetModulesWithDependencyCounfOf( projectInfo.modules, i, targetPlatform );
+        TModuleInfoEntryPtrVector modules = GetModulesWithDependencyCountOf( projectInfo.modules, i, targetPlatform );
         TModuleInfoEntryPtrVector::iterator n = modules.begin();
         while ( n != modules.end() )
         {
@@ -2146,7 +2113,7 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
     {
         changes = false;
 
-        TModulePrioMap::iterator n = prioMap.begin();
+        TModuleInfoEntryPrioMap::iterator n = prioMap.begin();
         while ( n != prioMap.end() )
         {
             int modulePrio = (*n).first;
@@ -2163,7 +2130,7 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
                     GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Module " + moduleInfo->name + " with build order index " + CORE::Int32ToString( modulePrio ) +
                                 " has dependency " + (*m) + " which has build order index " + CORE::Int32ToString( dependencyPrio ) + ", the dependency should be build before the module that requires it!"  );
 
-                    TModulePrioMap newPrioMap;
+                    TModuleInfoEntryPrioMap newPrioMap;
 
                     // Set the new priority, the priority should be higher then the dependency
                     // causing it to be build after the dependency (lower prio = builder earlier)
