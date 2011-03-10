@@ -61,6 +61,14 @@ namespace PROJECTGENERATOR {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+static const std::string AllPlatforms = "all";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -182,40 +190,70 @@ GenerateCMakeListsFileSection( const CORE::CString& sectionContent ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFileIncludeSection( const TStringVectorMap& includeFiles )
+GenerateCMakeListsFileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
+                                      const CORE::CString& consensusModuleName )
 {GUCEF_TRACE;
 
-    CORE::CString sectionContent = "set(HEADER_FILES \n";
-    return GenerateCMakeListsFileSection( sectionContent, includeFiles );
+    CORE::CString sectionContent;
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
+    if ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {        
+        const TStringVectorMap& includeFiles = (*i).second.includeDirs;
+        
+        sectionContent = "set( HEADER_FILES \n";
+        sectionContent = GenerateCMakeListsFileSection( sectionContent, includeFiles );
+        
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( includeFiles.size() ) + " include dirs for module " + consensusModuleName );
+    }
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The module " + consensusModuleName + " does not have include directories which apply to all platforms, skipping general include section" ); 
+    }
+    
+    return sectionContent;
 }
 
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFileSrcSection( const TStringVectorMap& srcFiles )
+GenerateCMakeListsFileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
+                                  const CORE::CString& consensusModuleName )
 {GUCEF_TRACE;
 
-    CORE::CString sectionContent = "set(SOURCE_FILES \n";
-    return GenerateCMakeListsFileSection( sectionContent, srcFiles );
+    CORE::CString sectionContent;
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
+    if ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {        
+        const TStringVectorMap& srcFiles = (*i).second.sourceDirs;
+        
+        sectionContent = "set( SOURCE_FILES \n";
+        sectionContent = GenerateCMakeListsFileSection( sectionContent, srcFiles );
+        
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( srcFiles.size() ) + " include dirs for module " + consensusModuleName );
+    }
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The module " + consensusModuleName + " does not have include directories which apply to all platforms, skipping general include section" ); 
+    }
+    
+    return sectionContent;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-GenerateCMakeListsFilePlatformFilesSection( TModuleInfoEntry& moduleInfo      ,
-                                            const CORE::CString& platformName ,
-                                            CORE::CString& headerSection      ,
-                                            CORE::CString& sourceSection      ,
-                                            bool& hasPlatformHeaderFiles      ,
-                                            bool& hasPlatformSourceFiles      )
+GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntry ,
+                                            const CORE::CString& platformName       ,
+                                            CORE::CString& headerSection            ,
+                                            CORE::CString& sourceSection            ,
+                                            bool& hasPlatformHeaderFiles            ,
+                                            bool& hasPlatformSourceFiles            )
 {GUCEF_TRACE;
 
-
-
-    TStringVectorMapMap::iterator m = moduleInfo.platformHeaderFiles.find( platformName );
-    if ( m != moduleInfo.platformHeaderFiles.end() )
+    TModuleInfoMap::const_iterator m = moduleInfoEntry.modulesPerPlatform.find( platformName );
+    if ( m != moduleInfoEntry.modulesPerPlatform.end() )
     {
-        const TStringVectorMap& platformHeaderFiles = (*m).second;
+        const TStringVectorMap& platformHeaderFiles = (*m).second.includeDirs;
         if ( !platformHeaderFiles.empty() )
         {
             hasPlatformHeaderFiles = true;
@@ -253,12 +291,8 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfoEntry& moduleInfo      ,
             headerSection += "  set( PLATFORM_HEADER_INSTALL \"" + platformName + "\" )\n";
             headerSection += "  source_group( \"Platform Header Files\" FILES ${PLATFORM_HEADER_FILES} )\n\n";
         }
-    }
-
-    m = moduleInfo.platformSourceFiles.find( platformName );
-    if ( m != moduleInfo.platformSourceFiles.end() )
-    {
-        const TStringVectorMap& platformSourceFiles = (*m).second;
+        
+        const TStringVectorMap& platformSourceFiles = (*m).second.sourceDirs;
         if ( !platformSourceFiles.empty() )
         {
             hasPlatformSourceFiles = true;
@@ -291,7 +325,7 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfoEntry& moduleInfo      ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo )
+GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     bool hasPlatformHeaderFiles = false;
@@ -299,13 +333,13 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo )
 
     CORE::CString sectionContent;
     bool firstPlatform = true;
-    TStringVectorMapMap::iterator i = moduleInfo.platformHeaderFiles.begin();
-    while ( i != moduleInfo.platformHeaderFiles.end() )
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.begin();
+    while ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {
         CORE::CString headerSection;
         CORE::CString sourceSection;
         const CORE::CString& platformName = (*i).first;
-        GenerateCMakeListsFilePlatformFilesSection( moduleInfo             ,
+        GenerateCMakeListsFilePlatformFilesSection( moduleInfoEntry        ,
                                                     platformName           ,
                                                     headerSection          ,
                                                     sourceSection          ,
@@ -349,74 +383,8 @@ GenerateCMakeListsFilePlatformFilesSection( TModuleInfo& moduleInfo )
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeModuleIncludesSectionForPlatform( const TProjectInfo& projectInfo   ,
-                                               const TModuleInfo& moduleInfo     ,
-                                               const CORE::CString& platformName )
-{GUCEF_TRACE;
-
-    CORE::CString allRelDependencyPaths;
-
-    // Add all the include dirs inherited from dependency modules
-    TStringSetMap::const_iterator m = moduleInfo.dependencyPlatformIncludeDirs.find( platformName );
-    if ( m != moduleInfo.dependencyPlatformIncludeDirs.end() )
-    {
-        const TStringSet& platformIncludes = (*m).second;
-        TStringSet::const_iterator i = platformIncludes.begin();
-        while ( i != platformIncludes.end() )
-        {
-            allRelDependencyPaths += (*i) + " ";
-            ++i;
-        }
-    }
-
-    // Add all the regular platform include dirs for this module itself
-    TStringVectorMapMap::const_iterator t = moduleInfo.platformHeaderFiles.find( platformName );
-    if ( t != moduleInfo.platformHeaderFiles.end() )
-    {
-        const TStringVectorMap& platformHeaderFiles = (*t).second;
-        TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
-        while ( n != platformHeaderFiles.end() )
-        {
-            CORE::CString includeDir = (*n).first;
-            includeDir = CORE::RelativePath( includeDir ).ReplaceChar( '\\', '/' );
-            allRelDependencyPaths += includeDir + " ";
-            ++n;
-        }
-    }
-
-    CORE::CString sectionContent;
-    if ( allRelDependencyPaths.Length() > 0 )
-    {
-        sectionContent = "\nif ( "+ platformName + " )\n  include_directories( " + allRelDependencyPaths + ")\nendif( "+ platformName + " )\n";
-    }
-
-    return sectionContent;
-}
-
-/*---------------------------------------------------------------------------*/
-
-CORE::CString
-GenerateCMakeModuleIncludesSectionForAllPlatforms( const TProjectInfo& projectInfo ,
-                                                   const TModuleInfo& moduleInfo   )
-{GUCEF_TRACE;
-
-    CORE::CString sectionContent;
-
-    TStringSet relevantPlatformDirs = GetSupportedPlatforms();
-    TStringSet::iterator i = relevantPlatformDirs.begin();
-    while ( i != relevantPlatformDirs.end() )
-    {
-        sectionContent += GenerateCMakeModuleIncludesSectionForPlatform( projectInfo, moduleInfo, (*i) );
-        ++i;
-    }
-    return sectionContent;
-}
-
-/*---------------------------------------------------------------------------*/
-
-CORE::CString
-GenerateCMakeModuleIncludesSection( const TProjectInfo& projectInfo ,
-                                    const TModuleInfo& moduleInfo   )
+GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
+                                    const CORE::CString& rootDir  )
 {GUCEF_TRACE;
 
     // Add include dirs for each dependency we know about
@@ -446,7 +414,7 @@ GenerateCMakeModuleIncludesSection( const TProjectInfo& projectInfo ,
             // subdir.
             if ( 1 < moduleInfo.includeDirs.size() )
             {
-                allRelDependencyPaths += "../" + CORE::LastSubDir( moduleInfo.rootDir ) + " ";
+                allRelDependencyPaths += "../" + CORE::LastSubDir( rootDir ) + " ";
             }
         }
         ++n;
@@ -455,14 +423,47 @@ GenerateCMakeModuleIncludesSection( const TProjectInfo& projectInfo ,
     CORE::CString sectionContent;
     if ( allRelDependencyPaths.Length() > 0 )
     {
-        sectionContent = "\ninclude_directories( " + allRelDependencyPaths + ")\n";
+        sectionContent = "include_directories( " + allRelDependencyPaths + ")\n";
     }
-
-    sectionContent += GenerateCMakeModuleIncludesSectionForAllPlatforms( projectInfo, moduleInfo );
-
     return sectionContent;
 }
 
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeModuleIncludesSection( const TModuleInfoEntry& moduleInfoEntry )
+{GUCEF_TRACE;
+    
+    CORE::CString sectionContent;
+    
+    // First add the include section which applies to all platforms
+    // it should not have an 'if' check around it
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
+    if ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    { 
+        sectionContent += "\n";
+        sectionContent += GenerateCMakeModuleIncludesSection( (*i).second, moduleInfoEntry.rootDir );
+    }
+        
+    // Now add the include paths which are platform specific
+    i = moduleInfoEntry.modulesPerPlatform.begin();
+    while ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        const CORE::CString& platformName = (*i).first; 
+        if ( platformName != AllPlatforms )
+        {            
+            CORE::CString platformSection = GenerateCMakeModuleIncludesSection( (*i).second, moduleInfoEntry.rootDir );
+            if ( platformSection.Length() > 0 )
+            {
+                sectionContent += "\nif ( "+ platformName + " )\n  ";
+                sectionContent += platformSection;
+                sectionContent += ")\nendif( " + platformName + " )\n";                
+            }
+        }
+    }
+    
+    return sectionContent;
+}
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
@@ -484,102 +485,101 @@ GenerateAutoGenertedSeperator( bool end )
 
 /*---------------------------------------------------------------------------*/
 
-void
-GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
-                        TModuleInfo& moduleInfo         ,
-                        bool addCompileDate = false     )
+CORE::CString
+LoadLegacyCMakeListsSuffixFileFromDisk( const TModuleInfoEntry& moduleInfoEntry )
+{GUCEF_TRACE;
+
+    // Mainly meant to support backwards compatibility with the old way this tool
+    // used to work which is with the use of CMakeListsSuffix.txt files
+    // Archives should be updated to the new way of working which is not CMake
+    // specific
+    
+    CORE::CString suffixFilePath = moduleInfoEntry.rootDir;
+    CORE::AppendToPath( suffixFilePath, "CMakeListsSuffix.txt" );
+    
+    CORE::CString fileContent;
+    CORE::LoadTextFileAsString( suffixFilePath, fileContent );
+    return fileContent;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeListsFileContent( const TModuleInfoEntry& moduleInfoEntry ,
+                               bool addCompileDate = false             )
 {GUCEF_TRACE;
 
     // Set file header comment section
     CORE::CString fileContent = GetCMakeListsFileHeader( addCompileDate );
 
+    // Determine the general consensus module name
+    CORE::CString consensusModuleName = GetConsensusModuleName( moduleInfoEntry );
+    
     // Set project name comment section
-    fileContent += "\n# Configure " + moduleInfo.name + "\n\n";
+    fileContent += "\n# Configuration for module: " + consensusModuleName + "\n\n";
 
-    // Add all the include files
-    fileContent += GenerateCMakeListsFileIncludeSection( moduleInfo.includeDirs );
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( moduleInfo.includeDirs.size() ) + " include dirs for project " + moduleInfo.name );
+    // Add all the general include files
+    fileContent += GenerateCMakeListsFileIncludeSection( moduleInfoEntry, consensusModuleName );
 
     // Add all the source files
-    fileContent += GenerateCMakeListsFileSrcSection( moduleInfo.sourceDirs );
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( moduleInfo.sourceDirs.size() ) + " source dirs for project " + moduleInfo.name );
+    fileContent += GenerateCMakeListsFileSrcSection( moduleInfoEntry, consensusModuleName );
 
     // Add all platform files, headers and source
-    fileContent += GenerateCMakeListsFilePlatformFilesSection( moduleInfo );
+    fileContent += GenerateCMakeListsFilePlatformFilesSection( moduleInfoEntry );
 
     fileContent += "# For ease of use make a variable that has all files for this module\nset( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )\n\n";
 
-    fileContent += GenerateAutoGenertedSeperator( true );
-
-    // We have completed generating the file content and gathering info
-    moduleInfo.cmakeListFileContentPreSuffix = fileContent;
-
-    fileContent = GenerateAutoGenertedSeperator( false );
-
+    // Check if we need to add a legacy suffix file section
+    CORE::CString suffixFileContent = LoadLegacyCMakeListsSuffixFileFromDisk( moduleInfoEntry );
+    if ( suffixFileContent.Length() > 0 )
+    {
+        fileContent += GenerateAutoGenertedSeperator( true );
+        fileContent += suffixFileContent;
+        fileContent += GenerateAutoGenertedSeperator( false );
+    }
+    else
+    {
+        //@TODO: use generated info
+    }
+    
     // Add all the include directories for this module
-    fileContent += GenerateCMakeModuleIncludesSection( projectInfo, moduleInfo );
-
-    fileContent += GenerateAutoGenertedSeperator( true );
-
-    moduleInfo.cmakeListFileContentPostSuffix = fileContent;
+    fileContent += GenerateCMakeModuleIncludesSection( moduleInfoEntry );
+    
+    // We are done generating the content for the CMake file
+    return fileContent;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-WriteCMakeListsFilesToDisk( TProjectInfo& projectInfo        ,
-                            const CORE::CString& logFilename )
+WriteCMakeListsFilesToDisk( const TProjectInfo& projectInfo  ,
+                            const CORE::CString& logFilename ,
+                            bool addCompileDate = false      )
 {GUCEF_TRACE;
 
     // Write all the CMakeLists.txt files
-    std::vector< TModuleInfo >::iterator i = projectInfo.modules.begin();
+    TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
     while ( i != projectInfo.modules.end() )
     {
-        TModuleInfo& moduleInfo = (*i);
+        const TModuleInfoEntry& moduleInfoEntry = (*i);
 
-        CORE::CString pathToCMakeListsFile = moduleInfo.rootDir;
-        CORE::AppendToPath( pathToCMakeListsFile, "CMakeLists.txt" );
-
-        CORE::CString fileContent = moduleInfo.cmakeListFileContentPreSuffix +
-                                    moduleInfo.cmakeListSuffixFileContent +
-                                    moduleInfo.cmakeListFileContentPostSuffix;
-
+        CORE::CString fileContent = GenerateCMakeListsFileContent( moduleInfoEntry, addCompileDate );
         if ( logFilename.Length() > 0 )
         {
-            fileContent += "# Generator logfile can be found at: " + logFilename;
+            fileContent += "\n# Generator logfile can be found at: " + logFilename;
         }
 
-        CORE::WriteStringAsTextFile( pathToCMakeListsFile, fileContent );
+        CORE::CString pathToCMakeListsFile = moduleInfoEntry.rootDir;
+        CORE::AppendToPath( pathToCMakeListsFile, "CMakeLists.txt" );
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMakeLists.txt file for project dir: " + moduleInfo.rootDir );
-        ++i;
-    }
-}
-
-/*---------------------------------------------------------------------------*/
-
-void
-WriteCMakeListsFilesToDisk( TProjectInfo& projectInfo )
-{GUCEF_TRACE;
-
-    WriteCMakeListsFilesToDisk( projectInfo, CORE::CString() );
-}
-
-/*---------------------------------------------------------------------------*/
-
-void
-GenerateCMakeListsContentForModules( TProjectInfo& projectInfo   ,
-                                     bool addCompileDate = false )
-{GUCEF_TRACE;
-
-    // Generate all the CMakeLists.txt file content
-    std::vector< TModuleInfo >::iterator i = projectInfo.modules.begin();
-    while ( i != projectInfo.modules.end() )
-    {
-        TModuleInfo& moduleInfo = (*i);
-        GenerateCMakeListsFile( projectInfo, moduleInfo, addCompileDate );
-
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generated CMakeLists.txt file contents for project dir: " + moduleInfo.rootDir );
+        if ( CORE::WriteStringAsTextFile( pathToCMakeListsFile, fileContent ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMakeLists.txt file for project dir: " + moduleInfoEntry.rootDir );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write CMakeLists.txt file content to disk at path " + moduleInfoEntry.rootDir );
+        }
         ++i;
     }
 }
@@ -606,22 +606,11 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
                                          bool addGeneratorCompileTimeToOutput )
 {GUCEF_TRACE;
 
-    // Generate the contents of the CMakeLists files
-    GenerateCMakeListsContentForModules( projectInfo                     , 
-                                         addGeneratorCompileTimeToOutput );
-
-    bool writeLogLocationToOutput = false;//CORE::StringToBool( keyValueList.GetValueAlways( "writeLogLocationToOutput" ) );
-
-    // Now write what we created to disk
-    if ( writeLogLocationToOutput )
-    {
-//        WriteCMakeListsFilesToDisk( projectInfo, logFilename );
-    }
-    else
-    {
-        WriteCMakeListsFilesToDisk( projectInfo );
-    }
+    CORE::CString logFilename;  //@TODO: get these from settings
+    bool addCompileDate = false;
     
+    // Write the gathered info to disk in CMakeList.txt format
+    WriteCMakeListsFilesToDisk( projectInfo, logFilename, addCompileDate );   
     return true;
 }
 

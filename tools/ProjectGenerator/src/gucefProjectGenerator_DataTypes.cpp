@@ -625,7 +625,7 @@ DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry ,
 /*-------------------------------------------------------------------------*/
 
 bool
-DeserializeModuleInfo( TModuleInfo& moduleInfo            ,
+DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry  ,
                        const CORE::CString& inputFilepath )
 {GUCEF_TRACE;
 
@@ -636,8 +636,8 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo            ,
         if ( codec->BuildDataTree( &rootNode, inputFilepath ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded module information from file \"" + inputFilepath + "\", now we will parse the information" );
-            return DeserializeModuleInfo( moduleInfo ,
-                                          rootNode   );
+            return DeserializeModuleInfo( moduleInfoEntry ,
+                                          rootNode        );
         }
         else
         {
@@ -852,6 +852,32 @@ GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
         }            
     }
     return NULL;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry )
+{GUCEF_TRACE;
+
+    TModuleInfoMap::const_iterator n = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
+    if ( n != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        // A name was specified for all platforms which makes our job easy
+        // an all platform name always counts as the general consensus name
+        return (*n).second.name;
+    }
+    else
+    {
+        // If no name is specified for a all platforms then we will have to 
+        // determine the best name to use. We do this by getting the name 
+        // for all platforms and counting how often each is used. The most used
+        // name is considered the general consensus name. If the same count applies
+        // to multiple we will try to use a popular platform to improve our 'guess'
+
+        //@TODO          
+    }
+    return CORE::CString();
 }
 
 /*-------------------------------------------------------------------------//

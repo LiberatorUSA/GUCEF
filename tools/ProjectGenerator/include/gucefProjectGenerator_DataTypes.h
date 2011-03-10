@@ -182,6 +182,16 @@ const CORE::CString*
 GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
                const CORE::CString& targetPlatform     ,
                const TModuleInfo** moduleInfo = NULL   );
+               
+/*-------------------------------------------------------------------------*/
+
+// The name to use in config files etc can't always be multiple names or defined
+// per platform. For that we have this function which looks at the different names
+// available across the platforms and find the general consensus name which is the
+// best guess name that could be used to label this module generally without specifying 
+// a platform
+CORE::CString
+GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry );
 
 /*-------------------------------------------------------------------------*/
 
