@@ -55,7 +55,7 @@ namespace PROJECTGENERATOR {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CString AllPlatforms = "All";
+const CORE::CString AllPlatforms = "all";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -326,21 +326,26 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     }
     moduleInfoNode.AddChild( dependenciesNode );
 
-    // Add all the libraries that are linked but not part of the overall project
-    CORE::CDataNode linkedLibrariesNode;
-    linkedLibrariesNode.SetName( "LinkedLibraries" );
-    linkedLibrariesNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.linkedLibraries.size() ) );
-    m = moduleInfo.linkedLibraries.begin();
-    while ( m != moduleInfo.linkedLibraries.end() )
-    {
-        CORE::CDataNode libraryNode;
-        libraryNode.SetName( "LinkedLibrary" );
-        libraryNode.SetAttribute( "Name", (*m) );
-        linkedLibrariesNode.AddChild( libraryNode );
-        ++m;
-    }
-    moduleInfoNode.AddChild( linkedLibrariesNode );
+    CORE::CDataNode linkerNode;
+    linkerNode.SetName( "Linker" );
 
+    // Now Serialize all linker related info
+    // First add all the libraries that are linked but not part of the overall project
+    if ( moduleInfo.linkerSettings.linkedLibraries.size() > 0 )
+    {        
+        m = moduleInfo.linkerSettings.linkedLibraries.begin();
+        while ( m != moduleInfo.linkerSettings.linkedLibraries.end() )
+        {
+            CORE::CDataNode libraryNode;
+            libraryNode.SetName( "Dependency" );
+            libraryNode.SetAttribute( "Name", (*m) );
+            linkerNode.AddChild( libraryNode );
+            ++m;
+        }
+        
+    }
+    moduleInfoNode.AddChild( linkerNode );
+    
     // Add all the info for this module to the overall project
     parentNode.AddChild( moduleInfoNode );
     
@@ -492,7 +497,15 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
     if ( moduleInfoNode == NULL ) return false;
     
     // Find the overall module properties
-    moduleInfo.buildOrder = CORE::StringToInt32( moduleInfoNode->GetAttributeValue( "BuildOrder" ) );
+    CORE::CString tmpStr = moduleInfoNode->GetAttributeValue( "BuildOrder" );
+    if ( !tmpStr.IsNULLOrEmpty() )
+    {
+        moduleInfo.buildOrder = CORE::StringToInt32( tmpStr );
+    }
+    else
+    {
+        moduleInfo.buildOrder = -1;
+    }
     moduleInfo.moduleType = StringToModuleType( moduleInfoNode->GetAttributeValue( "Type" ) );
 
     // Find any/all files for which are part of this module
@@ -559,26 +572,77 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
     
     // Find all the module dependencies
     const CORE::CDataNode* dependenciesNode = moduleInfoNode->Find( "Dependencies" );
-    CORE::CDataNode::TConstDataNodeSet dependencies = dependenciesNode->FindChildrenOfType( "Dependency" );
-    i = dependencies.begin();
-    while ( i != dependencies.end() )
+    if ( NULL != dependenciesNode )
     {
-        const CORE::CDataNode* dependencyNode = (*i);
-        moduleInfo.dependencies.push_back( dependencyNode->GetAttributeValue( "Name" ) );
-        
-        ++i;
+        CORE::CDataNode::TConstDataNodeSet dependencies = dependenciesNode->FindChildrenOfType( "Dependency" );
+        i = dependencies.begin();
+        while ( i != dependencies.end() )
+        {
+            const CORE::CDataNode* dependencyNode = (*i);
+            CORE::CString dependencyName = dependencyNode->GetAttributeValue( "Name" );
+            if ( !dependencyName.IsNULLOrEmpty() )
+            {
+                moduleInfo.dependencies.push_back( dependencyName );
+            }
+            ++i;
+        }
+    }
+    
+    // Go through all linker related settings, if any exist
+    const CORE::CDataNode* linkerNode = moduleInfoNode->Find( "Linker" );
+    if ( NULL != linkerNode )
+    {
+        // Find all the libraries that are linked but not part of the overall project
+        CORE::CDataNode::TConstDataNodeSet linkedLibs = linkerNode->FindChildrenOfType( "Dependency" );
+        i = linkedLibs.begin();
+        while ( i != linkedLibs.end() )
+        {
+            const CORE::CDataNode* linkedLibNode = (*i);
+            CORE::CString linkedLibName = linkedLibNode->GetAttributeValue( "Name" );
+            if ( !linkedLibName.IsNULLOrEmpty() )
+            {
+                moduleInfo.linkerSettings.linkedLibraries.push_back( linkedLibName );
+            }
+            ++i;
+        }
     }
 
-    // Find all the libraries that are linked but not part of the overall project
-    const CORE::CDataNode* linkedLibsNode = moduleInfoNode->Find( "LinkedLibraries" );
-    CORE::CDataNode::TConstDataNodeSet linkedLibs = linkedLibsNode->FindChildrenOfType( "LinkedLibrary" );
-    i = linkedLibs.begin();
-    while ( i != linkedLibs.end() )
+   // Go through all preprocessor related settings, if any exist
+    const CORE::CDataNode* preprocessorNode = moduleInfoNode->Find( "Preprocessor" );
+    if ( NULL != preprocessorNode )
     {
-        const CORE::CDataNode* linkedLibNode = (*i);
-        moduleInfo.linkedLibraries.push_back( linkedLibNode->GetAttributeValue( "Name" ) );
-        
-        ++i;
+        // Find all the preprocessor definitions
+        CORE::CDataNode::TConstDataNodeSet defines = linkerNode->FindChildrenOfType( "Define" );
+        i = defines.begin();
+        while ( i != defines.end() )
+        {
+            const CORE::CDataNode* defineNode = (*i);
+            CORE::CString defineValue = defineNode->GetAttributeValue( "String" );
+            if ( !defineValue.IsNULLOrEmpty() )
+            {
+                moduleInfo.preprocessorSettings.defines.push_back( defineValue );
+            }
+            ++i;
+        }
+    }
+
+   // Go through all preprocessor related settings, if any exist
+    const CORE::CDataNode* compilerNode = moduleInfoNode->Find( "Compiler" );
+    if ( NULL != preprocessorNode )
+    {
+        // Find all the preprocessor definitions
+        CORE::CDataNode::TConstDataNodeSet languages = linkerNode->FindChildrenOfType( "Language" );
+        i = languages.begin();
+        while ( i != languages.end() )
+        {
+            const CORE::CDataNode* languageNode = (*i);
+            CORE::CString name = languageNode->GetAttributeValue( "Name" );
+            if ( !name.IsNULLOrEmpty() )
+            {
+                moduleInfo.compilerSettings.languagesUsed.push_back( name );
+            }
+            ++i;
+        }
     }
 
     return true;
@@ -606,7 +670,12 @@ DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry ,
         InitializeModuleInfo( moduleInfoForPlatform );
         
         const CORE::CDataNode* moduleNode = (*n);        
-        CORE::CString platform = moduleNode->GetAttributeValue( "Platform" );
+        CORE::CString platform = moduleNode->GetAttributeValue( "Platform" ).Lowercase();
+        if ( platform.IsNULLOrEmpty() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to locate a Platform value for a module, will default to all platforms but this may not be correct" );
+            platform = AllPlatforms;
+        }
         
         if ( DeserializeModuleInfo( moduleInfoForPlatform ,
                                     *moduleNode           ) )
@@ -661,7 +730,9 @@ InitializeModuleInfo( TModuleInfo& moduleInfo )
     moduleInfo.includeDirs.clear();
     moduleInfo.sourceDirs.clear();
     moduleInfo.dependencyIncludeDirs.clear();
-    moduleInfo.linkedLibraries.clear();
+    moduleInfo.linkerSettings.linkedLibraries.clear();
+    moduleInfo.compilerSettings.languagesUsed.clear();
+    moduleInfo.preprocessorSettings.defines.clear();
     moduleInfo.dependencies.clear();
     moduleInfo.moduleType = MODULETYPE_UNDEFINED;
 }
@@ -670,7 +741,8 @@ InitializeModuleInfo( TModuleInfo& moduleInfo )
 
 void
 InitializeModuleInfoEntry( TModuleInfoEntry& moduleEntry )
-{
+{GUCEF_TRACE;
+
     moduleEntry.modulesPerPlatform.clear();
     moduleEntry.rootDir.Clear();
 }

@@ -198,8 +198,8 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
     bool hasLinkedSharedLibraries = false;
     bool hasLinkedStaticLibraries = false;
     bool hasRuntimeLibraries = false;
-    TStringVector::const_iterator m = moduleInfo.linkedLibraries.begin();
-    while ( m != moduleInfo.linkedLibraries.end() )
+    TStringVector::const_iterator m = moduleInfo.linkerSettings.linkedLibraries.begin();
+    while ( m != moduleInfo.linkerSettings.linkedLibraries.end() )
     {
         const TModuleInfo* linkedDependency = FindModuleByName( mergeLinks, (*m) );
         if ( NULL != linkedDependency )

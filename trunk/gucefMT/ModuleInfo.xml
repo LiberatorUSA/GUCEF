@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="gucefMT" Type="SharedLibrary" Platform="All" />
+    <Module Name="gucefMT" Type="SharedLibrary" Platform="All">
         <Compiler>
             <Language Name="C++" />
             <Language Name="C" />
@@ -8,7 +8,7 @@
             <Define String="GUCEF_MT_BUILD_MODULE" />
         </Preprocessor>
     </Module>
-    <Module Platform="mswin" />
+    <Module Platform="mswin">
         <Linker>
             <Dependency Name="Winmm" />
         </Linker>

@@ -78,20 +78,55 @@ typedef enum EModuleType TModuleType;
 
 /*---------------------------------------------------------------------------*/
 
+/**
+ *  Structure where all linker related information should be stored
+ */
+struct SLinkerSettings
+{
+    TStringVector linkedLibraries;               // list of all libraries the module links against
+};
+typedef struct SLinkerSettings TLinkerSettings;
+
+/*---------------------------------------------------------------------------*/
+
+/**
+ *  Structure where all compiler related information should be stored
+ */
+struct SCompilerSettings
+{
+    TStringVector languagesUsed;                // list of all programming languages used within this module
+};
+typedef struct SCompilerSettings TCompilerSettings;
+
+/*---------------------------------------------------------------------------*/
+
+/**
+ *  Structure where all preprocessor related information should be stored
+ */
+struct SPreprocessorSettings
+{
+    TStringVector defines;                       // list of all precompiler definitions for this module
+};
+typedef struct SPreprocessorSettings TPreprocessorSettings;
+
+/*---------------------------------------------------------------------------*/
+
 struct SModuleInfo
 {
+    CORE::CString name;                          // the name of the module
+    TModuleType moduleType;                      // The type of module we are dealing with
+    
     TStringVector dependencies;                  // list of module names of all modules this module depends on
-    TStringVector linkedLibraries;               // list of all libraries the module links against
-
+    TStringSet dependencyIncludeDirs;            // include directories needed for the headers of the dependencies, paths only no files
+       
     TStringVectorMap includeDirs;                // include directories of this module's own headers
     TStringVectorMap sourceDirs;                 // source directories of this module's own source
 
-    TStringSet dependencyIncludeDirs;            // include directories needed for the headers of the dependencies, paths only no files
-
-    CORE::CString name;                          // the name of the module
-    TModuleType moduleType;                      // The type of module we are dealing with
-
     int buildOrder;                              // order number of this module in the build queue
+
+    TLinkerSettings linkerSettings;              // all linker related settings for this module
+    TCompilerSettings compilerSettings;          // all compiler related settings for this module
+    TPreprocessorSettings preprocessorSettings;  // all preprocessor related settings for this module
 };
 typedef struct SModuleInfo TModuleInfo;
 

@@ -80,7 +80,7 @@ namespace PROJECTGENERATOR {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-static const std::string AllPlatforms = "all";
+static const CORE::CString AllPlatforms = "all";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -1363,7 +1363,7 @@ CMakeParseSuffixFile( TModuleInfo& moduleInfo, const CORE::CString& cmakeListSuf
             TStringVector::iterator n = elements.begin();
             while ( n != elements.end() )
             {
-                moduleInfo.linkedLibraries.push_back( (*n) );
+                moduleInfo.linkerSettings.linkedLibraries.push_back( (*n) );
                 ++n;
             }
         }
@@ -1892,7 +1892,7 @@ ProcessProjectDir( TProjectInfo& projectInfo         ,
         // project is in. Note that platform specific info can overwrite this of course but at least
         // this gives us a default if they don't have a name specified either.
         TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms, false );
-        if ( NULL != moduleInfo )
+        if ( NULL != moduleInfo && moduleInfo->name.IsNULLOrEmpty() )
         {        
             // Set a project name based off the module sub-dir name
             moduleInfo->name = CORE::LastSubDir( moduleInfoEntry.rootDir ); 
