@@ -319,8 +319,9 @@ BoolToString( const bool value )
 bool
 StringToBool( const CString& str )
 {GUCEF_TRACE;
-        UInt32 boolint = String_To_Boolint( str.C_String() );
-        return boolint > 0;
+
+    UInt32 boolint = String_To_Boolint( str.C_String() );
+    return boolint > 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -329,14 +330,18 @@ Int64
 StringToInt64( const CString& str )
 {GUCEF_TRACE;
 
-    Int64 value;
-    #ifdef GUCEF_MSWIN_BUILD
-    sscanf( str.C_String(), "%I64d", &value );
-    #else
-    sscanf( str.C_String(), "%d", &value );
-    #endif
+    if ( !str.IsNULLOrEmpty() )
+    {
+        Int64 value;
+        #ifdef GUCEF_MSWIN_BUILD
+        sscanf( str.C_String(), "%I64d", &value );
+        #else
+        sscanf( str.C_String(), "%d", &value );
+        #endif
 
-    return value;
+        return value;
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -361,14 +366,19 @@ UInt64
 StringToUInt64( const CString& str )
 {GUCEF_TRACE;
 
-    UInt64 value;
-    #ifdef GUCEF_MSWIN_BUILD
-    sscanf( str.C_String(), "%I64u", &value );
-    #else
-    sscanf( str.C_String(), "%u", &value );
-    #endif
+    if ( !str.IsNULLOrEmpty() )
+    {
+        UInt64 value;
+        #ifdef GUCEF_MSWIN_BUILD
+        sscanf( str.C_String(), "%I64u", &value );
+        #else
+        sscanf( str.C_String(), "%u", &value );
+        #endif
 
-    return value;
+        return value;
+    }
+    
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -393,9 +403,13 @@ Int32
 StringToInt32( const CString& str )
 {GUCEF_TRACE;
 
-    Int32 value;
-    sscanf( str.C_String(), "%d", &value );
-    return value;
+    if ( !str.IsNULLOrEmpty() )
+    {
+        Int32 value;
+        sscanf( str.C_String(), "%d", &value );
+        return value;
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -415,9 +429,13 @@ UInt32
 StringToUInt32( const CString& str )
 {GUCEF_TRACE;
 
-    UInt32 value;
-    sscanf( str.C_String(), "%u", &value );
-    return value;
+    if ( !str.IsNULLOrEmpty() )
+    {
+        UInt32 value;
+        sscanf( str.C_String(), "%u", &value );
+        return value;
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -437,9 +455,13 @@ UInt16
 StringToUInt16( const CString& str )
 {GUCEF_TRACE;
 
-    UInt32 value;
-    sscanf( str.C_String(), "%u", &value );
-    return (UInt16) value;
+    if ( !str.IsNULLOrEmpty() )
+    {
+        UInt32 value;
+        sscanf( str.C_String(), "%u", &value );
+        return (UInt16) value;
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -459,9 +481,13 @@ Int8
 StringToInt8( const CString& str )
 {GUCEF_TRACE;
 
-    Int32 value;
-    sscanf( str.C_String(), "%d", &value );
-    return (Int8) value;
+    if ( !str.IsNULLOrEmpty() )
+    {
+        Int32 value;
+        sscanf( str.C_String(), "%d", &value );
+        return (Int8) value;
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -481,9 +507,13 @@ UInt8
 StringToUInt8( const CString& str )
 {GUCEF_TRACE;
 
-    UInt32 value;
-    sscanf( str.C_String(), "%u", &value );
-    return (UInt8) value;
+    if ( !str.IsNULLOrEmpty() )
+    {
+        UInt32 value;
+        sscanf( str.C_String(), "%u", &value );
+        return (UInt8) value;
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -513,12 +543,13 @@ PointerToString( const void* value )
 CString
 StringToMD5String( const CString& str )
 {GUCEF_TRACE;
-        UInt8 md5digest[ 16 ];
 
-        md5fromstring( str.C_String() ,
-                       md5digest      );
+    UInt8 md5digest[ 16 ];
 
-        return MD5ToString( md5digest );
+    md5fromstring( str.C_String() ,
+                   md5digest      );
+
+    return MD5ToString( md5digest );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -526,15 +557,15 @@ StringToMD5String( const CString& str )
 GUCEF_CORE_PUBLIC_CPP CString
 MD5ToString( const UInt8 md5Digest[ 16 ] )
 {
-        char md5string[ 48 ];
+    char md5string[ 48 ];
 
-        md5tostring( md5Digest ,
-                     md5string );
+    md5tostring( md5Digest ,
+                 md5string );
 
-        CString md5str;
-        md5str.Set( md5string, 48 );
+    CString md5str;
+    md5str.Set( md5string, 48 );
 
-        return md5str;
+    return md5str;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -542,10 +573,11 @@ MD5ToString( const UInt8 md5Digest[ 16 ] )
 CString
 FloatToString( const float value )
 {GUCEF_TRACE;
-        char floatChars[ 16 ];
-        sprintf( floatChars, "%f", value );
 
-        return floatChars;
+    char floatChars[ 16 ];
+    sprintf( floatChars, "%f", value );
+
+    return floatChars;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -553,10 +585,11 @@ FloatToString( const float value )
 CString
 DoubleToString( const double value )
 {GUCEF_TRACE;
-        char doubleChars[ 16 ];
-        sprintf( doubleChars, "%f", value );
 
-        return doubleChars;
+    char doubleChars[ 16 ];
+    sprintf( doubleChars, "%f", value );
+
+    return doubleChars;
 }
 
 /*-------------------------------------------------------------------------*/

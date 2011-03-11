@@ -65,7 +65,7 @@ namespace PROJECTGENERATOR {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-static const std::string AllPlatforms = "all";
+static const CORE::CString AllPlatforms = "all";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
