@@ -507,6 +507,13 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
         moduleInfo.buildOrder = -1;
     }
     moduleInfo.moduleType = StringToModuleType( moduleInfoNode->GetAttributeValue( "Type" ) );
+    
+    // Check to see if a name was defined
+    tmpStr = moduleInfoNode->GetAttributeValue( "Name" );
+    if ( !tmpStr.IsNULLOrEmpty() )
+    {
+        moduleInfo.name = tmpStr;
+    }
 
     // Find any/all files for which are part of this module
     CORE::CDataNode::TConstDataNodeSet fileNodes = moduleInfoNode->FindChildrenOfType( "Files" );
@@ -612,7 +619,7 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
     if ( NULL != preprocessorNode )
     {
         // Find all the preprocessor definitions
-        CORE::CDataNode::TConstDataNodeSet defines = linkerNode->FindChildrenOfType( "Define" );
+        CORE::CDataNode::TConstDataNodeSet defines = preprocessorNode->FindChildrenOfType( "Define" );
         i = defines.begin();
         while ( i != defines.end() )
         {
@@ -631,7 +638,7 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
     if ( NULL != preprocessorNode )
     {
         // Find all the preprocessor definitions
-        CORE::CDataNode::TConstDataNodeSet languages = linkerNode->FindChildrenOfType( "Language" );
+        CORE::CDataNode::TConstDataNodeSet languages = compilerNode->FindChildrenOfType( "Language" );
         i = languages.begin();
         while ( i != languages.end() )
         {
@@ -658,7 +665,10 @@ DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry ,
     const CORE::CDataNode* moduleEntryNode = parentNode.Find( "ModuleInfoEntry" );
     if ( NULL == moduleEntryNode ) return false;
     
-    moduleInfoEntry.rootDir = moduleEntryNode->GetAttributeValue( "RootDir" );
+    if ( moduleInfoEntry.rootDir.IsNULLOrEmpty() )
+    {
+        moduleInfoEntry.rootDir = moduleEntryNode->GetAttributeValue( "RootDir" );
+    }
     
     const CORE::CDataNode::TConstDataNodeSet moduleInfoNodes = moduleEntryNode->FindChildrenOfType( "Module" );
     if ( moduleInfoNodes.size() == 0 ) return false;

@@ -598,17 +598,21 @@ CString
 LastSubDir( const CString& path )
 {GUCEF_TRACE;
 
-    CString lastSubDir;
-    UInt32 offset = Last_Subdir( path.C_String() );
-    if ( offset > 0 )
+    if ( !path.IsNULLOrEmpty() )
     {
-        lastSubDir.Set( path.C_String()+offset, path.Length() - offset );
+        CString lastSubDir;
+        UInt32 offset = Last_Subdir( path.C_String() );
+        if ( offset > 0 )
+        {
+            lastSubDir.Set( path.C_String()+offset, path.Length() - offset );
+        }
+        else
+        {
+            lastSubDir = path;
+        }
+        return lastSubDir;
     }
-    else
-    {
-        lastSubDir = path;
-    }
-    return lastSubDir;
+    return path;
 }
 
 /*-------------------------------------------------------------------------*/

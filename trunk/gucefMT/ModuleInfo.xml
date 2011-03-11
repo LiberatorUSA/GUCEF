@@ -18,9 +18,4 @@
             <Dependency Name="pthread" />
         </Linker>
     </Module>
-    <Module Platform="linux">
-        <Linker>
-            <Dependency Name="pthread" />
-        </Linker>
-    </Module>
 </ModuleInfoEntry>
