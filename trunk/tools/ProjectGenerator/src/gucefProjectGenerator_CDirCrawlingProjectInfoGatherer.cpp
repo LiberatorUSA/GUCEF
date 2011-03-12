@@ -1910,15 +1910,8 @@ ProcessProjectDir( TProjectInfo& projectInfo         ,
 
     // If we have a module name then use it for our logging output
     // we want to be able to see in the log which modules where successfully processed
-    const CORE::CString* moduleName = GetModuleName( moduleInfoEntry, AllPlatforms );
-    if ( NULL != moduleName )
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed module " + *moduleName + " from project dir: " + moduleInfoEntry.rootDir );
-    }
-    else
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed module from project dir: " + moduleInfoEntry.rootDir );
-    }
+    CORE::CString consensusModuleName = GetConsensusModuleName( moduleInfoEntry );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed module " + consensusModuleName + " from project dir: " + moduleInfoEntry.rootDir );
 }
 
 /*---------------------------------------------------------------------------*/
