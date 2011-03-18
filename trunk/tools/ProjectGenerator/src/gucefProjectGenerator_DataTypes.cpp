@@ -63,6 +63,131 @@ const CORE::CString AllPlatforms = "all";
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+static bool
+IsStringInList( const TStringVector& list       ,
+                bool caseSensitive              ,
+                const CORE::CString& testString )
+{GUCEF_TRACE;
+
+    TStringVector::const_iterator i = list.begin();
+    while ( i != list.end() )
+    {
+        if ( (*i).Equals( testString, caseSensitive ) )
+        {
+            return true;
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static bool
+IsStringInList( const TStringSet& list          ,
+                bool caseSensitive              ,
+                const CORE::CString& testString )
+{GUCEF_TRACE;
+
+    TStringSet::const_iterator i = list.begin();
+    while ( i != list.end() )
+    {
+        if ( (*i).Equals( testString, caseSensitive ) )
+        {
+            return true;
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static bool
+IsStringInKeyList( const TStringVectorMap& list    ,
+                   bool caseSensitive              ,
+                   const CORE::CString& testString )
+{GUCEF_TRACE;
+
+    TStringVectorMap::const_iterator i = list.begin();
+    while ( i != list.end() )
+    {
+        if ( (*i).first.Equals( testString, caseSensitive ) )
+        {
+            return true;
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static void
+MergeStringVector( TStringVector& targetList          ,
+                   const TStringVector& listToMergeIn ,
+                   bool caseSensitive                 )
+{GUCEF_TRACE;
+
+    TStringVector::const_iterator i = listToMergeIn.begin();
+    while ( i != listToMergeIn.end() )
+    {
+        if ( !IsStringInList( targetList, caseSensitive, (*i) ) )
+        {
+            targetList.push_back( (*i) );
+        }
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+static void
+MergeStringSet( TStringSet& targetList          ,
+                const TStringSet& listToMergeIn ,
+                bool caseSensitive              )
+{GUCEF_TRACE;
+
+    TStringSet::const_iterator i = listToMergeIn.begin();
+    while ( i != listToMergeIn.end() )
+    {
+        if ( caseSensitive )
+        {
+            TStringSet::iterator n = targetList.find( (*i) );
+            if ( n == targetList.end() )
+            {
+                targetList.insert( (*i) );
+            }
+        }
+        else
+        {
+            if ( !IsStringInList( targetList, caseSensitive, (*i) ) )
+            {
+                targetList.insert( (*i) );
+            }
+        }
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+static void
+MergeStringVectorMap( TStringVectorMap& targetList          ,
+                      const TStringVectorMap& listToMergeIn ,
+                      bool caseSensitive                    )
+{GUCEF_TRACE;
+
+    TStringVectorMap::const_iterator i = listToMergeIn.begin();
+    while ( i != listToMergeIn.end() )
+    {
+        MergeStringVector( targetList[ (*i).first ], (*i).second, caseSensitive ); 
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 CORE::CString
 ModuleTypeToString( const TModuleType moduleType )
 {GUCEF_TRACE;
@@ -173,167 +298,189 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     // Add basic module info
     CORE::CDataNode moduleInfoNode;
     moduleInfoNode.SetName( "Module" );
-    moduleInfoNode.SetAttribute( "Name", moduleInfo.name );
-    moduleInfoNode.SetAttribute( "BuildOrder", CORE::Int32ToString( moduleInfo.buildOrder ) );
-    moduleInfoNode.SetAttribute( "Type", ModuleTypeToString( moduleInfo.moduleType ) );
+    if ( !moduleInfo.name.IsNULLOrEmpty() )
+    {
+        moduleInfoNode.SetAttribute( "Name", moduleInfo.name );
+    }
+    if ( moduleInfo.buildOrder != -1 )
+    {
+        moduleInfoNode.SetAttribute( "BuildOrder", CORE::Int32ToString( moduleInfo.buildOrder ) );
+    }
+    if ( moduleInfo.moduleType != MODULETYPE_UNDEFINED )
+    {
+        moduleInfoNode.SetAttribute( "Type", ModuleTypeToString( moduleInfo.moduleType ) );
+    }
     moduleInfoNode.SetAttribute( "Platform", platform );
 
-    // Add headers 
-    CORE::CDataNode headersInfoNode;
-    headersInfoNode.SetName( "Files" );
-    headersInfoNode.SetAttribute( "Type", "Headers" );
-    headersInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
-    TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
-    while ( n != moduleInfo.includeDirs.end() )
-    {
-        CORE::CDataNode pathNode;
-        pathNode.SetName( "Dir" );
-        pathNode.SetAttribute( "Path", (*n).first );
-
-        CORE::CDataNode fileNode;
-        fileNode.SetName( "File" );
-
-        const TStringVector& fileVector = (*n).second;
-        pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
-        TStringVector::const_iterator m = fileVector.begin();
-        while ( m != fileVector.end() )
+    // Add headers
+    if ( moduleInfo.includeDirs.size() > 0 )
+    { 
+        CORE::CDataNode headersInfoNode;
+        headersInfoNode.SetName( "Files" );
+        headersInfoNode.SetAttribute( "Type", "Headers" );
+        headersInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
+        TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
+        while ( n != moduleInfo.includeDirs.end() )
         {
-            fileNode.SetAttribute( "Name", (*m) );
-            pathNode.AddChild( fileNode );
-            ++m;
+            CORE::CDataNode pathNode;
+            pathNode.SetName( "Dir" );
+            pathNode.SetAttribute( "Path", (*n).first );
+
+            CORE::CDataNode fileNode;
+            fileNode.SetName( "File" );
+
+            const TStringVector& fileVector = (*n).second;
+            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
+            TStringVector::const_iterator m = fileVector.begin();
+            while ( m != fileVector.end() )
+            {
+                fileNode.SetAttribute( "Name", (*m) );
+                pathNode.AddChild( fileNode );
+                ++m;
+            }
+
+            // Don't add dirs that have no files in them
+            // These should not be present in our data in the first place. But just in case,...
+            if ( fileVector.size() > 0 )
+            {
+                headersInfoNode.AddChild( pathNode );
+            }
+            ++n;
         }
-
-        headersInfoNode.AddChild( pathNode );
-        ++n;
-    }
-    moduleInfoNode.AddChild( headersInfoNode );
-    headersInfoNode.DelSubTree();
-
-    // Add sources
-    CORE::CDataNode sourceInfoNode;
-    sourceInfoNode.SetName( "Files" );
-    sourceInfoNode.SetAttribute( "Type", "Source" );
-    sourceInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.sourceDirs.size() ) );
-    n = moduleInfo.sourceDirs.begin();
-    while ( n != moduleInfo.sourceDirs.end() )
-    {
-        CORE::CDataNode pathNode;
-        pathNode.SetName( "Dir" );
-        pathNode.SetAttribute( "Path", (*n).first );
-
-        CORE::CDataNode fileNode;
-        fileNode.SetName( "File" );
-
-        const TStringVector& fileVector = (*n).second;
-        pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
-        TStringVector::const_iterator m = fileVector.begin();
-        while ( m != fileVector.end() )
-        {
-            fileNode.SetAttribute( "Name", (*m) );
-            pathNode.AddChild( fileNode );
-            ++m;
-        }
-
-        sourceInfoNode.AddChild( pathNode );
-        ++n;
-    }
-    moduleInfoNode.AddChild( sourceInfoNode );
-    sourceInfoNode.DelSubTree();
-
-    // Add includes for all platforms
-    CORE::CDataNode includesInfoNode;
-    includesInfoNode.SetName( "Includes" );
-    includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencyIncludeDirs.size() ) );
-    includesInfoNode.SetAttribute( "Source", "Dependency" );
-    TStringSet::const_iterator h = moduleInfo.dependencyIncludeDirs.begin();
-    while ( h !=  moduleInfo.dependencyIncludeDirs.end() )
-    {
-        CORE::CDataNode includeNode;
-        includeNode.SetName( "Include" );
-        includeNode.SetAttribute( "Path", (*h) );
-
-        includesInfoNode.AddChild( includeNode );
-        ++h;
-    }
-    moduleInfoNode.AddChild( includesInfoNode );
-    includesInfoNode.DelSubTree();
-
-    // Add include paths inherited from dependencies
-    includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencyIncludeDirs.size() ) );
-    includesInfoNode.SetAttribute( "Source", "Dependency" );
-    TStringSet::const_iterator q = moduleInfo.dependencyIncludeDirs.begin();
-    while ( q != moduleInfo.dependencyIncludeDirs.end() )
-    {
-        CORE::CDataNode includeNode;
-        includeNode.SetName( "Include" );
-        includeNode.SetAttribute( "Path", (*q) );
-
-        includesInfoNode.AddChild( includeNode );
-        ++q;
+        
+        moduleInfoNode.AddChild( headersInfoNode );
+        headersInfoNode.DelSubTree();
     }
     
-    moduleInfoNode.AddChild( includesInfoNode );
-    includesInfoNode.DelSubTree();
+    // Add sources
+    if ( moduleInfo.sourceDirs.size() > 0 )
+    {
+        CORE::CDataNode sourceInfoNode;
+        sourceInfoNode.SetName( "Files" );
+        sourceInfoNode.SetAttribute( "Type", "Source" );
+        sourceInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.sourceDirs.size() ) );
+        TStringVectorMap::const_iterator n = moduleInfo.sourceDirs.begin();
+        while ( n != moduleInfo.sourceDirs.end() )
+        {
+            CORE::CDataNode pathNode;
+            pathNode.SetName( "Dir" );
+            pathNode.SetAttribute( "Path", (*n).first );
+
+            CORE::CDataNode fileNode;
+            fileNode.SetName( "File" );
+
+            const TStringVector& fileVector = (*n).second;
+            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
+            TStringVector::const_iterator m = fileVector.begin();
+            while ( m != fileVector.end() )
+            {
+                fileNode.SetAttribute( "Name", (*m) );
+                pathNode.AddChild( fileNode );
+                ++m;
+            }
+
+            // Don't add dirs that have no files in them
+            // These should not be present in our data in the first place. But just in case,...
+            if ( fileVector.size() > 0 )
+            {
+                sourceInfoNode.AddChild( pathNode );
+            }
+            ++n;
+        }
+        
+        moduleInfoNode.AddChild( sourceInfoNode );
+        sourceInfoNode.DelSubTree();
+    }
+    
+    // Add include paths inherited from dependencies
+    if ( moduleInfo.dependencyIncludeDirs.size() > 0 )
+    {
+        CORE::CDataNode includesInfoNode( "Includes" );
+        includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencyIncludeDirs.size() ) );
+        includesInfoNode.SetAttribute( "Source", "Dependency" );
+        TStringSet::const_iterator q = moduleInfo.dependencyIncludeDirs.begin();
+        while ( q != moduleInfo.dependencyIncludeDirs.end() )
+        {
+            CORE::CDataNode includeNode;
+            includeNode.SetName( "Include" );
+            includeNode.SetAttribute( "Path", (*q) );
+
+            includesInfoNode.AddChild( includeNode );
+            ++q;
+        }
+
+        moduleInfoNode.AddChild( includesInfoNode );
+        includesInfoNode.DelSubTree();
+    }
     
     // Add all the regular include dirs for this module
     // These are already represented in the path attribute of the files section
     // but for ease of processing and clarity they are provided again in the includes section
-    includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
-    includesInfoNode.SetAttribute( "Source", "Self" );
-    n = moduleInfo.includeDirs.begin();
-    while ( n != moduleInfo.includeDirs.end() )
+    if ( moduleInfo.includeDirs.size() > 0 )
     {
-        CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
-        if ( 0 != includeDir.Length() )
+       CORE::CDataNode includesInfoNode( "Includes" );
+        includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
+        includesInfoNode.SetAttribute( "Source", "Self" );
+        TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
+        while ( n != moduleInfo.includeDirs.end() )
         {
-            CORE::CDataNode includeNode;
-            includeNode.SetName( "Include" );
-            includeNode.SetAttribute( "Path", includeDir );
-            includesInfoNode.AddChild( includeNode );
-        }
-        else
-        {
-            // Check if there is more then one include dir
-            // If so we have create an include for an empty include dir
-            // to ensure files in subdirs can include the file with the zero length
-            // subdir.
-            if ( 1 < moduleInfo.includeDirs.size() )
+            CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
+            if ( 0 != includeDir.Length() )
             {
-                CORE::CString includeDir = "../" + CORE::LastSubDir( moduleEntry.rootDir ) + " ";
                 CORE::CDataNode includeNode;
                 includeNode.SetName( "Include" );
                 includeNode.SetAttribute( "Path", includeDir );
                 includesInfoNode.AddChild( includeNode );
             }
+            else
+            {
+                // Check if there is more then one include dir
+                // If so we have create an include for an empty include dir
+                // to ensure files in subdirs can include the file with the zero length
+                // subdir.
+                if ( 1 < moduleInfo.includeDirs.size() )
+                {
+                    CORE::CString includeDir = "../" + CORE::LastSubDir( moduleEntry.rootDir ) + " ";
+                    CORE::CDataNode includeNode;
+                    includeNode.SetName( "Include" );
+                    includeNode.SetAttribute( "Path", includeDir );
+                    includesInfoNode.AddChild( includeNode );
+                }
+            }
+            ++n;
         }
-        ++n;
+        moduleInfoNode.AddChild( includesInfoNode );
+        includesInfoNode.DelSubTree();
     }
-    moduleInfoNode.AddChild( includesInfoNode );
-    includesInfoNode.DelSubTree();
 
     // Add all the module dependencies
-    CORE::CDataNode dependenciesNode;
-    dependenciesNode.SetName( "Dependencies" );
-    dependenciesNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencies.size() ) );
-    TStringVector::const_iterator m = moduleInfo.dependencies.begin();
-    while ( m != moduleInfo.dependencies.end() )
+    if ( moduleInfo.dependencies.size() > 0 )
     {
-        CORE::CDataNode dependencyNode;
-        dependencyNode.SetName( "Dependency" );
-        dependencyNode.SetAttribute( "Name", (*m) );
-        dependenciesNode.AddChild( dependencyNode );
-        ++m;
+        CORE::CDataNode dependenciesNode;
+        dependenciesNode.SetName( "Dependencies" );
+        dependenciesNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencies.size() ) );
+        TStringVector::const_iterator m = moduleInfo.dependencies.begin();
+        while ( m != moduleInfo.dependencies.end() )
+        {
+            CORE::CDataNode dependencyNode;
+            dependencyNode.SetName( "Dependency" );
+            dependencyNode.SetAttribute( "Name", (*m) );
+            dependenciesNode.AddChild( dependencyNode );
+            ++m;
+        }
+        moduleInfoNode.AddChild( dependenciesNode );
     }
-    moduleInfoNode.AddChild( dependenciesNode );
-
+    
     CORE::CDataNode linkerNode;
     linkerNode.SetName( "Linker" );
+    bool addedLinkedSettings = false;
 
     // Now Serialize all linker related info
     // First add all the libraries that are linked but not part of the overall project
     if ( moduleInfo.linkerSettings.linkedLibraries.size() > 0 )
     {        
-        m = moduleInfo.linkerSettings.linkedLibraries.begin();
+        addedLinkedSettings = true;
+        TStringVector::const_iterator m = moduleInfo.linkerSettings.linkedLibraries.begin();
         while ( m != moduleInfo.linkerSettings.linkedLibraries.end() )
         {
             CORE::CDataNode libraryNode;
@@ -344,7 +491,11 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
         }
         
     }
-    moduleInfoNode.AddChild( linkerNode );
+    
+    if ( addedLinkedSettings )
+    {
+        moduleInfoNode.AddChild( linkerNode );
+    }
     
     // Add all the info for this module to the overall project
     parentNode.AddChild( moduleInfoNode );
@@ -765,6 +916,8 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
 {GUCEF_TRACE;
 
     // First take care of items which we know overwrite
+    // We overwrite when the 'moduleInfoToMergeIn' has these attributes set to a 
+    // value other then the initialization value
     if ( moduleInfoToMergeIn.buildOrder > -1 )
     {
         targetModuleInfo.buildOrder = moduleInfoToMergeIn.buildOrder;
@@ -778,9 +931,28 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
         targetModuleInfo.moduleType = moduleInfoToMergeIn.moduleType;
     }
     
-    // Now combine the other items without overwriting
-    
-    //@TODO
+    // Now combine the other items without overwriting    
+    MergeStringVector( targetModuleInfo.compilerSettings.languagesUsed    ,
+                       moduleInfoToMergeIn.compilerSettings.languagesUsed ,
+                       false                                              );
+    MergeStringVector( targetModuleInfo.preprocessorSettings.defines    ,
+                       moduleInfoToMergeIn.preprocessorSettings.defines ,
+                       true                                             );
+    MergeStringVector( targetModuleInfo.linkerSettings.linkedLibraries    ,
+                       moduleInfoToMergeIn.linkerSettings.linkedLibraries ,
+                       false                                              );
+    MergeStringVector( targetModuleInfo.dependencies    ,
+                       moduleInfoToMergeIn.dependencies ,
+                       false                            );
+    MergeStringSet( targetModuleInfo.dependencyIncludeDirs    ,
+                    moduleInfoToMergeIn.dependencyIncludeDirs ,
+                    true                                      );
+    MergeStringVectorMap( targetModuleInfo.includeDirs    ,
+                          moduleInfoToMergeIn.includeDirs ,
+                          true                            );
+    MergeStringVectorMap( targetModuleInfo.sourceDirs    ,
+                          moduleInfoToMergeIn.sourceDirs ,
+                          true                           );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -887,11 +1059,18 @@ MergeAllModuleInfoForPlatform( const TModuleInfoEntryVector& allInfo  ,
         
         // Store the merged info
         allMergedInfo.push_back( mergedInfo );        
-        
-        // Store a link between the merged info and the original info
-        TModuleInfoEntryPair mergeLink( &(*i), &(*allMergedInfo.begin()) );
-        mergeLinks.push_back( mergeLink );
         ++i;
+    }
+
+    i = allInfo.begin();
+    TModuleInfoVector::iterator n = allMergedInfo.begin();
+    while ( ( i != allInfo.end() )       && 
+            ( n != allMergedInfo.end() )  )
+    {
+        // Store a link between the merged info and the original info
+        TModuleInfoEntryPair mergeLink( &(*i), &(*n) );
+        mergeLinks.push_back( mergeLink );
+        ++i; ++n;
     }
     
     return true;
@@ -951,7 +1130,7 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry )
     }
     else
     {
-        // If no name is specified for a all platforms then we will have to 
+        // If no name is specified for all platforms then we will have to 
         // determine the best name to use. We do this by getting the name 
         // for all platforms and counting how often each is used. The most used
         // name is considered the general consensus name. If the same count applies
