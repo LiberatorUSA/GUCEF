@@ -261,7 +261,7 @@ RemoveString( std::vector< CORE::CString >& list ,
 
 /*---------------------------------------------------------------------------*/
 
-bool
+static bool
 IsStringInList( const TStringVector& list       ,
                 bool caseSensitive              ,
                 const CORE::CString& testString )
@@ -2095,6 +2095,11 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
             TModuleInfoEntry* moduleInfoEntry = (*n).second;
             
             TModuleInfo* moduleInfo = FindModuleInfoForPlatform( *moduleInfoEntry, targetPlatform, false );
+            if ( NULL == moduleInfo && targetPlatform != AllPlatforms )
+            {
+                // If no platform specific info is available we will use the info which applies to all platforms
+                moduleInfo = FindModuleInfoForPlatform( *moduleInfoEntry, AllPlatforms, false );
+            }
             if ( NULL != moduleInfo )
             {
                 TStringVector::iterator m = moduleInfo->dependencies.begin();
@@ -2211,7 +2216,27 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
     TModuleInfoEntryPrioMap::iterator n = prioMap.begin();
     while ( n != prioMap.end() )
     {
-        TModuleInfo* moduleInfo = FindModuleInfoForPlatform( *(*n).second, targetPlatform, true );
+        TModuleInfo* moduleInfo = FindModuleInfoForPlatform( *(*n).second, targetPlatform, false );
+        if ( NULL == moduleInfo )
+        {
+            // No module info is available for this platform
+            // We will use the AllPlatforms info but keep in mind we cannot change it's build order since
+            // this sorting is platform specific
+            moduleInfo = FindModuleInfoForPlatform( *(*n).second, AllPlatforms, false );
+            if ( ( NULL == moduleInfo )                   ||
+                 ( moduleInfo->buildOrder == -1 )         ||
+                 ( moduleInfo->buildOrder != (*n).first )  )
+            {
+                // We will have to just create a new entry for this platform because we need to store the platform specific build order
+                moduleInfo = FindModuleInfoForPlatform( *(*n).second, targetPlatform, true );
+            }
+            else
+            {
+                // we can use the existing 'AllPlatforms' build order, no need to generate a platform entry
+                ++n;
+                continue;
+            }
+        }
         moduleInfo->buildOrder = (*n).first;
         ++n;
     }
@@ -2225,6 +2250,14 @@ void
 DetermineBuildOrderForAllModules( TProjectInfo& projectInfo )
 {GUCEF_TRACE;
 
+    // Important: First determine the build order which applies to all modules
+    // This build order will be used for specific platforms as well unless no 'AllPlatforms'
+    // target is available or if the build order differs
+    // Doing it this way cuts down on the number platform spefic entries generated just to store
+    // the build order
+    DetermineBuildOrderForAllModules( projectInfo, AllPlatforms );
+    
+    // Now determine the build order for all the other platforms
     const TStringSet& supportedPlatforms = GetSupportedPlatforms();
     TStringSet::const_iterator i = supportedPlatforms.begin();
     while ( i != supportedPlatforms.end() )
