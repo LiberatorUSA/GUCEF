@@ -123,7 +123,18 @@ ParseParams( const int argc                 ,
 GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
-    CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
+
+    CORE::CValueList keyValueList;
+    ParseParams( argc, argv, keyValueList );
+
+    CORE::CString outputDir = keyValueList.GetValueAlways( "outputDir" );
+    if ( outputDir.IsNULLOrEmpty() )
+    {
+        outputDir = CORE::RelativePath( "$CURWORKDIR$" );
+    }
+
+    CORE::CString logFilename = outputDir;
     CORE::AppendToPath( logFilename, "ProjectGenerator_Log.txt" );
     CORE::CFileAccess logFileAccess( logFilename, "w" );
 
@@ -132,11 +143,6 @@ GUCEF_OSMAIN_BEGIN
 
     CORE::CPlatformNativeConsoleLogger console;
     CORE::CLogManager::Instance()->AddLogger( console.GetLogger() );
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
-
-    CORE::CValueList keyValueList;
-    ParseParams( argc, argv, keyValueList );
 
     TStringVector rootDirs;
     try
@@ -166,11 +172,6 @@ GUCEF_OSMAIN_BEGIN
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::UInt32ToString( projectInfo.globalDirExcludeList.size() ) + " dirs in the global dir ignore list" );
 
     projectInfo.projectName = keyValueList.GetValueAlways( "projectName" );
-    CORE::CString outputDir = keyValueList.GetValueAlways( "outputDir" );
-    if ( outputDir.IsNULLOrEmpty() )
-    {
-        outputDir = CORE::RelativePath( "$CURWORKDIR$" );
-    }
 
     // Use an info gatherer to get all the project information for us
     CDirCrawlingProjectInfoGatherer infoGatherer;    
