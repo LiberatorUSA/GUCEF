@@ -786,7 +786,7 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
 
    // Go through all preprocessor related settings, if any exist
     const CORE::CDataNode* compilerNode = moduleInfoNode->Find( "Compiler" );
-    if ( NULL != preprocessorNode )
+    if ( NULL != compilerNode )
     {
         // Find all the preprocessor definitions
         CORE::CDataNode::TConstDataNodeSet languages = compilerNode->FindChildrenOfType( "Language" );

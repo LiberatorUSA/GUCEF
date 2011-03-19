@@ -36,7 +36,7 @@ LOCAL_C_INCLUDES := \
 
 
 LOCAL_LDLIBS := \
-  -l${PLATFORM_LIBS}
+  -lpthread
 
 include $(BUILD_SHARED_LIBRARY)
 
