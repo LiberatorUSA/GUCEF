@@ -1,0 +1,13 @@
+<ModuleInfoEntry>
+    <Module Name="gucefCORE" Type="SharedLibrary" Platform="All">
+	<Dependencies>
+		<Dependency Name="gucefMT" />
+	</Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_CORE_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
