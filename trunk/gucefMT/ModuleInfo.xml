@@ -1,9 +1,5 @@
 <ModuleInfoEntry>
     <Module Name="gucefMT" Type="SharedLibrary" Platform="All">
-        <Compiler>
-            <Language Name="C++" />
-            <Language Name="C" />
-        </Compiler>
         <Preprocessor>
             <Define String="GUCEF_MT_BUILD_MODULE" />
         </Preprocessor>
@@ -14,6 +10,11 @@
         </Linker>
     </Module>
     <Module Platform="linux">
+        <Linker>
+            <Dependency Name="pthread" />
+        </Linker>
+    </Module>
+    <Module Platform="android">
         <Linker>
             <Dependency Name="pthread" />
         </Linker>
