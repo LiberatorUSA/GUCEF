@@ -1,6 +1,1 @@
-
-add_library( gucefCOM ${HEADER_FILES} ${SOURCE_FILES} )
-add_dependencies( gucefCOM gucefCOMCORE gucefCORE gucefMT)
-target_link_libraries( gucefCOM gucefCOMCORE gucefCORE gucefMT )
-set_target_properties( gucefCOM PROPERTIES COMPILE_DEFINITIONS GUCEFCOM_BUILD_MODULE )
 GUCEF_config_lib( gucefCOM )
