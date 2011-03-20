@@ -31,6 +31,11 @@
 #define GUCEF_PROJECTGENERATOR_DATATYPES_H
 #endif /* GUCEF_PROJECTGENERATOR_DATATYPES_H ? */
 
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -58,9 +63,10 @@ class CIProjectGenerator
     
     CIProjectGenerator& operator=( const CIProjectGenerator& src );
     
-    virtual bool GenerateProject( TProjectInfo& projectInfo             ,
-                                  const GUCEF::CORE::CString& outputDir ,
-                                  bool addGeneratorCompileTimeToOutput  ) = 0;
+    virtual bool GenerateProject( TProjectInfo& projectInfo            ,
+                                  const CORE::CString& outputDir       ,
+                                  bool addGeneratorCompileTimeToOutput ,
+                                  const CORE::CValueList& params       ) = 0;
 };
 
 /*-------------------------------------------------------------------------//

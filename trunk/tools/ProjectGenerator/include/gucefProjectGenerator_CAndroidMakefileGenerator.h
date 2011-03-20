@@ -56,7 +56,8 @@ class CAndroidMakefileGenerator : public CIProjectGenerator
     
     virtual bool GenerateProject( TProjectInfo& projectInfo            ,
                                   const CORE::CString& outputDir       ,
-                                  bool addGeneratorCompileTimeToOutput );
+                                  bool addGeneratorCompileTimeToOutput ,
+                                  const CORE::CValueList& params       );
                                   
     private:
 
