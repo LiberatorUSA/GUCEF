@@ -25,11 +25,6 @@
 
 #include <stdio.h>
 
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
-
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -136,8 +131,10 @@ GUCEF_OSMAIN_BEGIN
 
     CORE::CString logFilename = outputDir;
     CORE::AppendToPath( logFilename, "ProjectGenerator_Log.txt" );
+    
+    keyValueList.Set( "logfile", logFilename ); 
+    
     CORE::CFileAccess logFileAccess( logFilename, "w" );
-
     CORE::CStdLogger logger( logFileAccess );
     CORE::CLogManager::Instance()->AddLogger( &logger );
 
@@ -187,7 +184,8 @@ GUCEF_OSMAIN_BEGIN
             CXmlProjectGenerator xmlGenerator;
             xmlGenerator.GenerateProject( projectInfo                ,
                                           outputDir                  ,
-                                          addToolCompileTimeToOutput );
+                                          addToolCompileTimeToOutput ,
+                                          keyValueList               );
         }
         else
         if ( (*i).Lowercase() == "androidmake" )
@@ -195,7 +193,8 @@ GUCEF_OSMAIN_BEGIN
             CAndroidMakefileGenerator androidMakefileGenerator;
             androidMakefileGenerator.GenerateProject( projectInfo                ,
                                                       outputDir                  ,
-                                                      addToolCompileTimeToOutput );
+                                                      addToolCompileTimeToOutput ,
+                                                      keyValueList               );
         }
         else
         if ( (*i).Lowercase() == "cmake" )
@@ -203,7 +202,8 @@ GUCEF_OSMAIN_BEGIN
             CCMakeProjectGenerator cmakeGenerator;
             cmakeGenerator.GenerateProject( projectInfo                ,
                                             outputDir                  ,
-                                            addToolCompileTimeToOutput );
+                                            addToolCompileTimeToOutput ,
+                                            keyValueList               );
         }
         ++i;
     }

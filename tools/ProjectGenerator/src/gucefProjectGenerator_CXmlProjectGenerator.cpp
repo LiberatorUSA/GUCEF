@@ -82,7 +82,8 @@ CXmlProjectGenerator::~CXmlProjectGenerator()
 bool
 CXmlProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
                                        const CORE::CString& outputDir       ,
-                                       bool addGeneratorCompileTimeToOutput )
+                                       bool addGeneratorCompileTimeToOutput ,
+                                       const CORE::CValueList& params       )
 {GUCEF_TRACE;
 
     // Write all the project information we gathered to disk 

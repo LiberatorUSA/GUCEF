@@ -1,0 +1,21 @@
+<ModuleInfoEntry>
+    <Module Name="gucefCOMCORE" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_COMCORE_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="mswin">
+        <Linker>
+            <Dependency Name="Ws2_32.lib" />
+            <Dependency Name="Advapi32.lib" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>

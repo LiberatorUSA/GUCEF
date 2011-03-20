@@ -603,14 +603,12 @@ CCMakeProjectGenerator::~CCMakeProjectGenerator()
 bool
 CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
                                          const CORE::CString& outputDir       ,
-                                         bool addGeneratorCompileTimeToOutput )
+                                         bool addGeneratorCompileTimeToOutput ,
+                                         const CORE::CValueList& params       )
 {GUCEF_TRACE;
 
-    CORE::CString logFilename;  //@TODO: get these from settings
-    bool addCompileDate = false;
-    
     // Write the gathered info to disk in CMakeList.txt format
-    WriteCMakeListsFilesToDisk( projectInfo, logFilename, addCompileDate );   
+    WriteCMakeListsFilesToDisk( projectInfo, params.GetValueAlways( "logfile" ), addGeneratorCompileTimeToOutput );   
     return true;
 }
 

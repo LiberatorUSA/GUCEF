@@ -567,7 +567,8 @@ CAndroidMakefileGenerator::~CAndroidMakefileGenerator()
 bool
 CAndroidMakefileGenerator::GenerateProject( TProjectInfo& projectInfo            ,
                                             const CORE::CString& outputDir       ,
-                                            bool addGeneratorCompileTimeToOutput )
+                                            bool addGeneratorCompileTimeToOutput ,
+                                            const CORE::CValueList& params       )
 {GUCEF_TRACE;
 
     // Merge all the module info to give us a complete module definition for the Android platform
