@@ -13,7 +13,7 @@ function SetGucefHome {
   GUCEF_HOME=${GUCEF_HOME:=undefined}
   if [ "$GUCEF_HOME" = "undefined" ]; then
     echo "GUCEF_HOME environment variable not found, setting it"
-    GUCEF_HOME="$GUCEFANDROIDGLUEBUILD_SCRIPTSTARTDIR/../../.."
+    GUCEF_HOME="$GUCEFANDROIDGLUEBUILD_SCRIPTSTARTDIR/../.."
   fi
   echo "GUCEF_HOME = $GUCEF_HOME"
 
