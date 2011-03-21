@@ -45,11 +45,12 @@ echo " "
 . $GUCEF_HOME/projects/Android/FindNDK.sh
 
 echo " "
-echo "Changing current directory to GUCEF_HOME"
-echo "GUCEF_HOME = $GUCEF_HOME"
-echo " "
+echo "Changing current directory to Android project dir relative to GUCEF_HOME"
 
-cd $GUCEF_HOME
+cd $GUCEF_HOME/projects/Android/jni
+
+echo "Project dir = $PWD"
+echo " "
 
 echo " "
 echo "*** Invoking build ***"
