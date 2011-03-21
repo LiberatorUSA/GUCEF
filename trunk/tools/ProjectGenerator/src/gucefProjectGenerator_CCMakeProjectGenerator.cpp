@@ -520,31 +520,33 @@ LoadCMakeListsAdditionFileFromDisk( const TModuleInfoEntry& moduleInfoEntry )
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeModuleDefinitionLine( const TModuleInfo& moduleInfo     ,
-                                   const CORE::CString& moduleName   ,
-                                   const CORE::CString& platformName )
+GenerateCMakeModuleDescriptionLine( const TModuleInfo& moduleInfo     ,
+                                    const CORE::CString& moduleName   ,
+                                    const CORE::CString& platformName )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module description line for module " + moduleName + " and platform " + platformName );
+    
     switch ( moduleInfo.moduleType )
     {
         case MODULETYPE_EXECUTABLE:
         {
             if ( platformName == "win32" || platformName == "win64" )
             {
-                return "add_executable( " + moduleName + " WIN32 ${ALL_FILES} )";
+                return "add_executable( " + moduleName + " WIN32 ${ALL_FILES} )\n";
             }
             else
             {
-                return "add_executable( " + moduleName + " ${ALL_FILES} )";
+                return "add_executable( " + moduleName + " ${ALL_FILES} )\n";
             }
         }
         case MODULETYPE_SHARED_LIBRARY:
         {
-            return "add_library( " + moduleName + " ${ALL_FILES} )";
+            return "add_library( " + moduleName + " ${ALL_FILES} )\n";
         }
         case MODULETYPE_STATIC_LIBRARY:
         {
-            return "add_library( " + moduleName + " STATIC ${ALL_FILES} )";
+            return "add_library( " + moduleName + " STATIC ${ALL_FILES} )\n";
         }
         case MODULETYPE_UNKNOWN:
         case MODULETYPE_UNDEFINED:
@@ -553,6 +555,87 @@ GenerateCMakeModuleDefinitionLine( const TModuleInfo& moduleInfo     ,
             return CORE::CString();
         }
     }
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeModuleDependenciesLine( const TModuleInfo& moduleInfo     ,
+                                     const CORE::CString& moduleName   ,
+                                     const CORE::CString& platformName )
+{GUCEF_TRACE;
+    
+    if ( !moduleInfo.dependencies.empty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module dependencies line for module " + moduleName + " and platform " + platformName );
+
+        CORE::CString sectionContent = "add_dependencies( " + moduleName;
+        
+        TStringVector::const_iterator i = moduleInfo.dependencies.begin();
+        while ( i != moduleInfo.dependencies.end() )
+        {
+            sectionContent += ' ' + (*i);            
+            ++i;
+        }
+        sectionContent += " )\n";
+        return sectionContent;
+    }        
+    
+    return CORE::CString();
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeModuleLinkerLine( const TModuleInfo& moduleInfo     ,
+                               const CORE::CString& moduleName   ,
+                               const CORE::CString& platformName )
+{GUCEF_TRACE;
+
+    if ( !moduleInfo.linkerSettings.linkedLibraries.empty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module linker line for module " + moduleName + " and platform " + platformName );
+        
+        CORE::CString sectionContent = "target_link_libraries( " + moduleName;
+        
+        TStringVector::const_iterator i = moduleInfo.linkerSettings.linkedLibraries.begin();
+        while ( i != moduleInfo.linkerSettings.linkedLibraries.end() )
+        {
+            sectionContent += ' ' + (*i);            
+            ++i;
+        }
+        sectionContent += " )\n";
+        return sectionContent;
+    }        
+    
+    return CORE::CString();
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeModuleDefinesLine( const TModuleInfo& moduleInfo     ,
+                                const CORE::CString& moduleName   ,
+                                const CORE::CString& platformName )
+{GUCEF_TRACE;
+
+    if ( !moduleInfo.preprocessorSettings.defines.empty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module preprocessor defines for module " + moduleName + " and platform " + platformName );
+        
+        CORE::CString sectionContent = "set_target_properties( " + moduleName + " PROPERTIES COMPILE_DEFINITIONS ";
+        
+        TStringVector::const_iterator i = moduleInfo.linkerSettings.linkedLibraries.begin();
+        while ( i != moduleInfo.linkerSettings.linkedLibraries.end() )
+        {
+            sectionContent += ' ' + (*i);            
+            ++i;
+        }
+        sectionContent += " )\n";
+        return sectionContent;
+    }        
+    
+    return CORE::CString();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -572,34 +655,58 @@ GenerateCMakeListsModuleInfoSection( const TModuleInfoEntry& moduleInfoEntry )
         if ( platformName != AllPlatforms )
         {
             const TModuleInfo& moduleInfo = (*i).second;
-            CORE::CString* moduleName = GetModuleName( moduleInfoEntry, platformName );
+            const CORE::CString* moduleName = GetModuleName( moduleInfoEntry, platformName );
             if ( moduleName == NULL ) continue;
+                        
+            // Generate the different instructions for this platform (if any exist)
+            CORE::CString moduleDescriptionStr = GenerateCMakeModuleDescriptionLine( moduleInfo, *moduleName, platformName );
+            CORE::CString moduleDependenciesStr = GenerateCMakeModuleDependenciesLine( moduleInfo, *moduleName, platformName );
+            CORE::CString moduleLinkingStr = GenerateCMakeModuleLinkerLine( moduleInfo, *moduleName, platformName );
+            CORE::CString moduleDefinesStr = GenerateCMakeModuleDefinesLine( moduleInfo, *moduleName, platformName );
             
-            CORE::CString moduleDefStr = GenerateCMakeModuleDefinitionLine( moduleInfo, *moduleName, platformName );
-            
-            CORE::CString platformSection;
-            
-            platformSection = "\nif ( "+ platformName + " )\n  ";
-
-            
-            platformSection += "  add_dependencies( " 
-            //sectionContent += platformSection;
-            
-            
-            
-            sectionContent += ")\nendif( " + platformName + " )\n";
-
-            moduleInfo
+            // Encompass inside an if section if we have any instructions
+            if ( !moduleDescriptionStr.IsNULLOrEmpty()  || 
+                 !moduleDependenciesStr.IsNULLOrEmpty() ||
+                 !moduleLinkingStr.IsNULLOrEmpty()      ||
+                 !moduleDefinesStr.IsNULLOrEmpty()       )
+            {
+                CORE::CString platformSection;
+                
+                platformSection = "\nif ( "+ platformName + " )\n";
+                
+                if ( !moduleDescriptionStr.IsNULLOrEmpty() )
+                {
+                    platformSection += "  " + moduleDescriptionStr;
+                }
+                if ( !moduleDependenciesStr.IsNULLOrEmpty() )
+                {
+                    platformSection += "  " + moduleDependenciesStr;
+                }
+                if ( !moduleLinkingStr.IsNULLOrEmpty() )
+                {
+                    platformSection += "  " + moduleLinkingStr;
+                }
+                if ( !moduleDefinesStr.IsNULLOrEmpty() )
+                {
+                    platformSection += "  " + moduleDefinesStr;
+                }
+                platformSection += ")\nendif( " + platformName + " )\n";
+                
+                // Now that we finished generating the section for this platform add it to the entire info content section
+                sectionContent += platformSection;
+            }
         }            
         ++i;
     }
         
-    const TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms );
-    if ( NULL == moduleInfo )
-    {
-        moduleInfo->
-    }
-    moduleInfoEntry.
+    //const TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms );
+    //if ( NULL == moduleInfo )
+    //{
+    //    moduleInfo->
+    //}
+    //moduleInfoEntry.
+    
+    return sectionContent;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -614,6 +721,8 @@ GenerateCMakeListsFileContent( const TModuleInfoEntry& moduleInfoEntry ,
 
     // Determine the general consensus module name
     CORE::CString consensusModuleName = GetConsensusModuleName( moduleInfoEntry );
+    
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMakeLists content for module " + consensusModuleName );
     
     // Set project name comment section
     fileContent += "\n# Configuration for module: " + consensusModuleName + "\n\n";
@@ -639,11 +748,17 @@ GenerateCMakeListsFileContent( const TModuleInfoEntry& moduleInfoEntry ,
     }
     else
     {
+        // Since we are not using a legacy suffix file we have to auto generate more info then before
+        // mainly the module description, dependencies, definitions, etc.        
         fileContent += GenerateCMakeListsModuleInfoSection( moduleInfoEntry );
-        
-        fileContent += GenerateAutoGenertedSeperator( true );
-        fileContent += LoadCMakeListsAdditionFileFromDisk( moduleInfoEntry );
-        fileContent += GenerateAutoGenertedSeperator( false );
+
+        CORE::CString additionFileContent = LoadCMakeListsAdditionFileFromDisk( moduleInfoEntry );
+        if ( !additionFileContent.IsNULLOrEmpty() )
+        {
+            fileContent += GenerateAutoGenertedSeperator( true );
+            fileContent += additionFileContent;
+            fileContent += GenerateAutoGenertedSeperator( false );
+        }
     }
     
     // Add all the include directories for this module
