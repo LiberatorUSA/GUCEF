@@ -460,6 +460,7 @@ GenerateCMakeModuleIncludesSection( const TModuleInfoEntry& moduleInfoEntry )
                 sectionContent += ")\nendif( " + platformName + " )\n";                
             }
         }
+        ++i;
     }
     
     return sectionContent;
@@ -505,6 +506,105 @@ LoadLegacyCMakeListsSuffixFileFromDisk( const TModuleInfoEntry& moduleInfoEntry 
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
+LoadCMakeListsAdditionFileFromDisk( const TModuleInfoEntry& moduleInfoEntry )
+{GUCEF_TRACE;
+
+    CORE::CString additionFilePath = moduleInfoEntry.rootDir;
+    CORE::AppendToPath( additionFilePath, "CMakeListsAddition.txt" );
+    
+    CORE::CString fileContent;
+    CORE::LoadTextFileAsString( additionFilePath, fileContent );
+    return fileContent;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeModuleDefinitionLine( const TModuleInfo& moduleInfo     ,
+                                   const CORE::CString& moduleName   ,
+                                   const CORE::CString& platformName )
+{GUCEF_TRACE;
+
+    switch ( moduleInfo.moduleType )
+    {
+        case MODULETYPE_EXECUTABLE:
+        {
+            if ( platformName == "win32" || platformName == "win64" )
+            {
+                return "add_executable( " + moduleName + " WIN32 ${ALL_FILES} )";
+            }
+            else
+            {
+                return "add_executable( " + moduleName + " ${ALL_FILES} )";
+            }
+        }
+        case MODULETYPE_SHARED_LIBRARY:
+        {
+            return "add_library( " + moduleName + " ${ALL_FILES} )";
+        }
+        case MODULETYPE_STATIC_LIBRARY:
+        {
+            return "add_library( " + moduleName + " STATIC ${ALL_FILES} )";
+        }
+        case MODULETYPE_UNKNOWN:
+        case MODULETYPE_UNDEFINED:
+        default:
+        {
+            return CORE::CString();
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeListsModuleInfoSection( const TModuleInfoEntry& moduleInfoEntry )
+{GUCEF_TRACE;
+
+    CORE::CString sectionContent;
+    bool addedPlatformSection = false;
+    
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.begin();
+    while ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        const CORE::CString& platformName = (*i).first;
+        
+        if ( platformName != AllPlatforms )
+        {
+            const TModuleInfo& moduleInfo = (*i).second;
+            CORE::CString* moduleName = GetModuleName( moduleInfoEntry, platformName );
+            if ( moduleName == NULL ) continue;
+            
+            CORE::CString moduleDefStr = GenerateCMakeModuleDefinitionLine( moduleInfo, *moduleName, platformName );
+            
+            CORE::CString platformSection;
+            
+            platformSection = "\nif ( "+ platformName + " )\n  ";
+
+            
+            platformSection += "  add_dependencies( " 
+            //sectionContent += platformSection;
+            
+            
+            
+            sectionContent += ")\nendif( " + platformName + " )\n";
+
+            moduleInfo
+        }            
+        ++i;
+    }
+        
+    const TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms );
+    if ( NULL == moduleInfo )
+    {
+        moduleInfo->
+    }
+    moduleInfoEntry.
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
 GenerateCMakeListsFileContent( const TModuleInfoEntry& moduleInfoEntry ,
                                bool addCompileDate = false             )
 {GUCEF_TRACE;
@@ -539,7 +639,11 @@ GenerateCMakeListsFileContent( const TModuleInfoEntry& moduleInfoEntry ,
     }
     else
     {
-        //@TODO: use generated info
+        fileContent += GenerateCMakeListsModuleInfoSection( moduleInfoEntry );
+        
+        fileContent += GenerateAutoGenertedSeperator( true );
+        fileContent += LoadCMakeListsAdditionFileFromDisk( moduleInfoEntry );
+        fileContent += GenerateAutoGenertedSeperator( false );
     }
     
     // Add all the include directories for this module
