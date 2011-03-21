@@ -21,10 +21,6 @@ function SetGucefHome {
 
 #------------------------------------------------------------------------------
 
-
-
-#------------------------------------------------------------------------------
-
 echo " "
 echo "*** Setting up basic variables ***"
 echo " "
@@ -49,10 +45,16 @@ echo " "
 . $GUCEF_HOME/projects/Android/FindNDK.sh
 
 echo " "
+echo "Changing current directory to GUCEF_HOME"
+echo "GUCEF_HOME = $GUCEF_HOME"
+echo " "
+
+cd $GUCEF_HOME
+
+echo " "
 echo "*** Invoking build ***"
 echo " "
 
-cd $GUCEFANDROIDGLUEBUILD_SCRIPTSTARTDIR
 $ANDROIDNDK/ndk-build
 
 #echo "Press enter to continue..."
