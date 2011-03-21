@@ -40,13 +40,8 @@ LOCAL_C_INCLUDES := \
 
 
 LOCAL_SHARED_LIBRARIES := \
-  gucefCORE \
-  gucefMT
-
-
-LOCAL_LDLIBS := \
-  -lWs2_32.lib \
-  -lAdvapi32.lib
+  gucefMT \
+  gucefCORE
 
 include $(BUILD_SHARED_LIBRARY)
 
