@@ -105,7 +105,9 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
     }
     
     contentPrefix +=
-      "LOCAL_PATH := $(call my-dir)\n\n"
+      "ifndef $(MY_MODULE_PATH)\n"
+      "  MY_MODULE_PATH := $(call my-dir)\n"
+      "endif\n\n"
       "include $(CLEAR_VARS)\n\n"
       "LOCAL_MODULE := " + moduleInfo.name + "\n\n";
     
@@ -130,7 +132,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
             CORE::CString relFilePath = srcDir;
             CORE::AppendToPath( relFilePath, (*n) );
             
-            srcFilesSection += "  $(LOCAL_PATH)/" + relFilePath.ReplaceChar( '\\', '/' );            
+            srcFilesSection += "  $(MY_MODULE_PATH)/" + relFilePath.ReplaceChar( '\\', '/' );            
             
             ++n;
         }        
@@ -157,12 +159,12 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
         const CORE::CString& dir = (*i).first;
         if ( !dir.IsNULLOrEmpty() )
         {
-            includeFilesSection += "  $(LOCAL_PATH)/" + dir.ReplaceChar( '\\', '/' );        
+            includeFilesSection += "  $(MY_MODULE_PATH)/" + dir.ReplaceChar( '\\', '/' );        
         }
         else
         {
             // Support the use-case where the include dir is empty because the moduleinfo dir == incude dir
-            includeFilesSection += "  $(LOCAL_PATH)"; 
+            includeFilesSection += "  $(MY_MODULE_PATH)"; 
         }
         
         ++i;
@@ -179,7 +181,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
         }
         firstLoop = false;
 
-        includeFilesSection += "  $(LOCAL_PATH)/" + (*n).ReplaceChar( '\\', '/' );
+        includeFilesSection += "  $(MY_MODULE_PATH)/" + (*n).ReplaceChar( '\\', '/' );
         
         ++n;
     }
@@ -490,7 +492,9 @@ GenerateContentForAndroidProjectMakefile( const CORE::CString& projectName      
     }
     
     contentPrefix +=
-      "PROJECT_ROOT_PATH := $(call my-dir)\n\n"
+      "ifndef $(PROJECT_ROOT_PATH)\n"
+      "  PROJECT_ROOT_PATH := $(call my-dir)\n"
+      "endif\n\n"
       "include $(CLEAR_VARS)\n\n";
       
     // Include each module's makefile in the order listed as their build order
@@ -498,14 +502,14 @@ GenerateContentForAndroidProjectMakefile( const CORE::CString& projectName      
     const TModuleInfo* currentModule = FindFirstModuleAccordingToBuildOrder( mergeLinks );
     while ( NULL != currentModule )
     {
-        // Get relative path from the outputDir to the module's Android.mk
+        // Get relative path from the outputDir to the other module
         const TModuleInfoEntry* fullModuleInfo = FindModuleInfoEntryForMergedInfo( mergeLinks, *currentModule );
         CORE::CString relativePathToModule = CORE::GetRelativePathToOtherPathRoot( outputDir, fullModuleInfo->rootDir );
-        CORE::AppendToPath( relativePathToModule, "Android.mk" );
         relativePathToModule = relativePathToModule.ReplaceChar( '\\', '/' );
         
         // Add entry for this module to the project file
-        moduleListSection += "include $(PROJECT_ROOT_PATH)/" + relativePathToModule + "\n";
+        moduleListSection += "MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/" + relativePathToModule + "\n";
+        moduleListSection += "include $(MY_MODULE_PATH)/Android.mk\n\n";
         
         // Done with this module, go to the next one
         currentModule = FindNextModuleAccordingToBuildOrder( mergeLinks, *currentModule );

@@ -9,19 +9,21 @@
 #-------------------------------------------------------------------
 
 
-LOCAL_PATH := $(call my-dir)
+ifndef $(MY_MODULE_PATH)
+  MY_MODULE_PATH := $(call my-dir)
+endif
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := DVPPackTool
 
 LOCAL_SRC_FILES := \
-  $(LOCAL_PATH)/src/DVP_Pack_Tool.c
+  $(MY_MODULE_PATH)/src/DVP_Pack_Tool.c
 
 LOCAL_C_INCLUDES := \
-  $(LOCAL_PATH)/../../gucefCORE/include \
-  $(LOCAL_PATH)/../../gucefMT/include \
-  $(LOCAL_PATH)/../../gucefVFS/plugins/vfspluginDVP/dependencies/DVPACKSYS/include
+  $(MY_MODULE_PATH)/../../gucefCORE/include \
+  $(MY_MODULE_PATH)/../../gucefMT/include \
+  $(MY_MODULE_PATH)/../../gucefVFS/plugins/vfspluginDVP/dependencies/DVPACKSYS/include
 
 
 LOCAL_SHARED_LIBRARIES := \

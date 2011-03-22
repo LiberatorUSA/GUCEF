@@ -9,38 +9,40 @@
 #-------------------------------------------------------------------
 
 
-LOCAL_PATH := $(call my-dir)
+ifndef $(MY_MODULE_PATH)
+  MY_MODULE_PATH := $(call my-dir)
+endif
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := gucefPATCHER
 
 LOCAL_SRC_FILES := \
-  $(LOCAL_PATH)/src/gucefPATCHER.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CModule.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchConfig.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchEngine.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchListEngine.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchListEngineEvents.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchListParser.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchManager.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchSetDirEngine.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchSetDirEngineEvents.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchSetEngine.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchSetEngineEvents.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchSetFileEngine.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchSetFileEngineEvents.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchSetGenerator.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchSetParser.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchTaskConsumer.cpp \
-  $(LOCAL_PATH)/src/gucefPATCHER_CPatchTaskData.cpp
+  $(MY_MODULE_PATH)/src/gucefPATCHER.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CModule.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchConfig.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchEngine.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchListEngine.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchListEngineEvents.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchListParser.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchManager.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetDirEngine.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetDirEngineEvents.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetEngine.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetEngineEvents.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetFileEngine.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetFileEngineEvents.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetGenerator.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetParser.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchTaskConsumer.cpp \
+  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchTaskData.cpp
 
 LOCAL_C_INCLUDES := \
-  $(LOCAL_PATH)/include \
-  $(LOCAL_PATH)/../gucefCOM/include \
-  $(LOCAL_PATH)/../gucefCOMCORE/include \
-  $(LOCAL_PATH)/../gucefCORE/include \
-  $(LOCAL_PATH)/../gucefMT/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../gucefCOM/include \
+  $(MY_MODULE_PATH)/../gucefCOMCORE/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

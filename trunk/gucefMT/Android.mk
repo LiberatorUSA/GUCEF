@@ -9,30 +9,32 @@
 #-------------------------------------------------------------------
 
 
-LOCAL_PATH := $(call my-dir)
+ifndef $(MY_MODULE_PATH)
+  MY_MODULE_PATH := $(call my-dir)
+endif
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := gucefMT
 
 LOCAL_SRC_FILES := \
-  $(LOCAL_PATH)/src/gucefMT.cpp \
-  $(LOCAL_PATH)/src/gucefMT_CActiveObject.cpp \
-  $(LOCAL_PATH)/src/gucefMT_CCondition.cpp \
-  $(LOCAL_PATH)/src/gucefMT_CCriticalSection.cpp \
-  $(LOCAL_PATH)/src/gucefMT_CGUCEFMTModule.cpp \
-  $(LOCAL_PATH)/src/gucefMT_CICloneable.cpp \
-  $(LOCAL_PATH)/src/gucefMT_CMutex.cpp \
-  $(LOCAL_PATH)/src/gucefMT_CReadWriteLock.cpp \
-  $(LOCAL_PATH)/src/gucefMT_CScopeMutex.cpp \
-  $(LOCAL_PATH)/src/gucefMT_CSemaphore.cpp \
-  $(LOCAL_PATH)/src/gucefMT_CTMailBox.cpp \
-  $(LOCAL_PATH)/src/gucefMT_dvmtoswrap.c \
-  $(LOCAL_PATH)/src/gucefMT_DVRWLOCK.c \
-  $(LOCAL_PATH)/src/gucefMT_MUTEX.c
+  $(MY_MODULE_PATH)/src/gucefMT.cpp \
+  $(MY_MODULE_PATH)/src/gucefMT_CActiveObject.cpp \
+  $(MY_MODULE_PATH)/src/gucefMT_CCondition.cpp \
+  $(MY_MODULE_PATH)/src/gucefMT_CCriticalSection.cpp \
+  $(MY_MODULE_PATH)/src/gucefMT_CGUCEFMTModule.cpp \
+  $(MY_MODULE_PATH)/src/gucefMT_CICloneable.cpp \
+  $(MY_MODULE_PATH)/src/gucefMT_CMutex.cpp \
+  $(MY_MODULE_PATH)/src/gucefMT_CReadWriteLock.cpp \
+  $(MY_MODULE_PATH)/src/gucefMT_CScopeMutex.cpp \
+  $(MY_MODULE_PATH)/src/gucefMT_CSemaphore.cpp \
+  $(MY_MODULE_PATH)/src/gucefMT_CTMailBox.cpp \
+  $(MY_MODULE_PATH)/src/gucefMT_dvmtoswrap.c \
+  $(MY_MODULE_PATH)/src/gucefMT_DVRWLOCK.c \
+  $(MY_MODULE_PATH)/src/gucefMT_MUTEX.c
 
 LOCAL_C_INCLUDES := \
-  $(LOCAL_PATH)/include
+  $(MY_MODULE_PATH)/include
 
 
 LOCAL_LDLIBS := \

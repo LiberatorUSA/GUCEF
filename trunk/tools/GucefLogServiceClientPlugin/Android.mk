@@ -9,22 +9,24 @@
 #-------------------------------------------------------------------
 
 
-LOCAL_PATH := $(call my-dir)
+ifndef $(MY_MODULE_PATH)
+  MY_MODULE_PATH := $(call my-dir)
+endif
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := GucefLogServiceClientPlugin
 
 LOCAL_SRC_FILES := \
-  $(LOCAL_PATH)/src/GucefLogServiceClientPlugin.cpp
+  $(MY_MODULE_PATH)/src/GucefLogServiceClientPlugin.cpp
 
 LOCAL_C_INCLUDES := \
-  $(LOCAL_PATH)/include \
-  $(LOCAL_PATH)/../../gucefCOM/include \
-  $(LOCAL_PATH)/../../gucefCOMCORE/include \
-  $(LOCAL_PATH)/../../gucefCORE/include \
-  $(LOCAL_PATH)/../../gucefMT/include \
-  $(LOCAL_PATH)/../GucefLogServiceLib/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../../gucefCOM/include \
+  $(MY_MODULE_PATH)/../../gucefCOMCORE/include \
+  $(MY_MODULE_PATH)/../../gucefCORE/include \
+  $(MY_MODULE_PATH)/../../gucefMT/include \
+  $(MY_MODULE_PATH)/../GucefLogServiceLib/include
 
 
 LOCAL_SHARED_LIBRARIES := \
