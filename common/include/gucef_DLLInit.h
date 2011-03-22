@@ -108,7 +108,7 @@
         }
 
 #else
-#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
   #define GUCEF_DLL_INIT_FUNC( ns ) \
                                     \

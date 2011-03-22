@@ -9,24 +9,26 @@
 #-------------------------------------------------------------------
 
 
-LOCAL_PATH := $(call my-dir)
+ifndef $(MY_MODULE_PATH)
+  MY_MODULE_PATH := $(call my-dir)
+endif
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := gucefMULTIPLAY
 
 LOCAL_SRC_FILES := \
-  $(LOCAL_PATH)/src/gucefMULTIPLAY_CMultiPlayControl.cpp \
-  $(LOCAL_PATH)/src/gucefMULTIPLAY_CPassiveURLServerListProvider.cpp \
-  $(LOCAL_PATH)/src/gucefMULTIPLAY_CServerList.cpp \
-  $(LOCAL_PATH)/src/gucefMULTIPLAY_CServerListProvider.cpp
+  $(MY_MODULE_PATH)/src/gucefMULTIPLAY_CMultiPlayControl.cpp \
+  $(MY_MODULE_PATH)/src/gucefMULTIPLAY_CPassiveURLServerListProvider.cpp \
+  $(MY_MODULE_PATH)/src/gucefMULTIPLAY_CServerList.cpp \
+  $(MY_MODULE_PATH)/src/gucefMULTIPLAY_CServerListProvider.cpp
 
 LOCAL_C_INCLUDES := \
-  $(LOCAL_PATH)/include \
-  $(LOCAL_PATH)/../gucefCOM/include \
-  $(LOCAL_PATH)/../gucefCOMCORE/include \
-  $(LOCAL_PATH)/../gucefCORE/include \
-  $(LOCAL_PATH)/../gucefMT/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../gucefCOM/include \
+  $(MY_MODULE_PATH)/../gucefCOMCORE/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

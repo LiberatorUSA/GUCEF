@@ -9,33 +9,35 @@
 #-------------------------------------------------------------------
 
 
-LOCAL_PATH := $(call my-dir)
+ifndef $(MY_MODULE_PATH)
+  MY_MODULE_PATH := $(call my-dir)
+endif
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := gucefINPUT
 
 LOCAL_SRC_FILES := \
-  $(LOCAL_PATH)/src/CGUCEFINPUTModule.cpp \
-  $(LOCAL_PATH)/src/CInputActionMap.cpp \
-  $(LOCAL_PATH)/src/CInputContext.cpp \
-  $(LOCAL_PATH)/src/CInputController.cpp \
-  $(LOCAL_PATH)/src/CInputDriverPlugin.cpp \
-  $(LOCAL_PATH)/src/gucefINPUT_CActionEventData.cpp \
-  $(LOCAL_PATH)/src/gucefINPUT_CInputDriver.cpp \
-  $(LOCAL_PATH)/src/gucefINPUT_CInputObserverSwitch.cpp \
-  $(LOCAL_PATH)/src/gucefINPUT_CKeyboard.cpp \
-  $(LOCAL_PATH)/src/gucefINPUT_CKeyModStateChangedEventData.cpp \
-  $(LOCAL_PATH)/src/gucefINPUT_CKeyStateChangedEventData.cpp \
-  $(LOCAL_PATH)/src/gucefINPUT_CMouse.cpp \
-  $(LOCAL_PATH)/src/gucefINPUT_CMouseButtonEventData.cpp \
-  $(LOCAL_PATH)/src/gucefINPUT_CMouseMovedEventData.cpp \
-  $(LOCAL_PATH)/src/gucefINPUT_keyboard.cpp
+  $(MY_MODULE_PATH)/src/CGUCEFINPUTModule.cpp \
+  $(MY_MODULE_PATH)/src/CInputActionMap.cpp \
+  $(MY_MODULE_PATH)/src/CInputContext.cpp \
+  $(MY_MODULE_PATH)/src/CInputController.cpp \
+  $(MY_MODULE_PATH)/src/CInputDriverPlugin.cpp \
+  $(MY_MODULE_PATH)/src/gucefINPUT_CActionEventData.cpp \
+  $(MY_MODULE_PATH)/src/gucefINPUT_CInputDriver.cpp \
+  $(MY_MODULE_PATH)/src/gucefINPUT_CInputObserverSwitch.cpp \
+  $(MY_MODULE_PATH)/src/gucefINPUT_CKeyboard.cpp \
+  $(MY_MODULE_PATH)/src/gucefINPUT_CKeyModStateChangedEventData.cpp \
+  $(MY_MODULE_PATH)/src/gucefINPUT_CKeyStateChangedEventData.cpp \
+  $(MY_MODULE_PATH)/src/gucefINPUT_CMouse.cpp \
+  $(MY_MODULE_PATH)/src/gucefINPUT_CMouseButtonEventData.cpp \
+  $(MY_MODULE_PATH)/src/gucefINPUT_CMouseMovedEventData.cpp \
+  $(MY_MODULE_PATH)/src/gucefINPUT_keyboard.cpp
 
 LOCAL_C_INCLUDES := \
-  $(LOCAL_PATH)/include \
-  $(LOCAL_PATH)/../gucefCORE/include \
-  $(LOCAL_PATH)/../gucefMT/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

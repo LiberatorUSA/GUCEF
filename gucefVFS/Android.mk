@@ -9,25 +9,27 @@
 #-------------------------------------------------------------------
 
 
-LOCAL_PATH := $(call my-dir)
+ifndef $(MY_MODULE_PATH)
+  MY_MODULE_PATH := $(call my-dir)
+endif
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := gucefVFS
 
 LOCAL_SRC_FILES := \
-  $(LOCAL_PATH)/src/gucefVFS.cpp \
-  $(LOCAL_PATH)/src/gucefVFS_CFileSystemArchive.cpp \
-  $(LOCAL_PATH)/src/gucefVFS_CIArchive.cpp \
-  $(LOCAL_PATH)/src/gucefVFS_CModule.cpp \
-  $(LOCAL_PATH)/src/gucefVFS_CVFS.cpp \
-  $(LOCAL_PATH)/src/gucefVFS_CVFSHandle.cpp \
-  $(LOCAL_PATH)/src/gucefVFS_CVFSURLHandler.cpp
+  $(MY_MODULE_PATH)/src/gucefVFS.cpp \
+  $(MY_MODULE_PATH)/src/gucefVFS_CFileSystemArchive.cpp \
+  $(MY_MODULE_PATH)/src/gucefVFS_CIArchive.cpp \
+  $(MY_MODULE_PATH)/src/gucefVFS_CModule.cpp \
+  $(MY_MODULE_PATH)/src/gucefVFS_CVFS.cpp \
+  $(MY_MODULE_PATH)/src/gucefVFS_CVFSHandle.cpp \
+  $(MY_MODULE_PATH)/src/gucefVFS_CVFSURLHandler.cpp
 
 LOCAL_C_INCLUDES := \
-  $(LOCAL_PATH)/include \
-  $(LOCAL_PATH)/../gucefCORE/include \
-  $(LOCAL_PATH)/../gucefMT/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

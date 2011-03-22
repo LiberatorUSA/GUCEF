@@ -9,17 +9,19 @@
 #-------------------------------------------------------------------
 
 
-LOCAL_PATH := $(call my-dir)
+ifndef $(MY_MODULE_PATH)
+  MY_MODULE_PATH := $(call my-dir)
+endif
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := gucefLOADER
 
 LOCAL_SRC_FILES := \
-  $(LOCAL_PATH)/src/gucefLOADER.c
+  $(MY_MODULE_PATH)/src/gucefLOADER.c
 
 LOCAL_C_INCLUDES := \
-  $(LOCAL_PATH)/include
+  $(MY_MODULE_PATH)/include
 
 include $(BUILD_SHARED_LIBRARY)
 

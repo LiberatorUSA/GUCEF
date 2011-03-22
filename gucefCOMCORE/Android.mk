@@ -9,34 +9,36 @@
 #-------------------------------------------------------------------
 
 
-LOCAL_PATH := $(call my-dir)
+ifndef $(MY_MODULE_PATH)
+  MY_MODULE_PATH := $(call my-dir)
+endif
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := gucefCOMCORE
 
 LOCAL_SRC_FILES := \
-  $(LOCAL_PATH)/src/CCom.cpp \
-  $(LOCAL_PATH)/src/CGUCEFCOMCOREModule.cpp \
-  $(LOCAL_PATH)/src/CHostAddress.cpp \
-  $(LOCAL_PATH)/src/CIPAddress.cpp \
-  $(LOCAL_PATH)/src/CPing.cpp \
-  $(LOCAL_PATH)/src/CSocket.cpp \
-  $(LOCAL_PATH)/src/CTCPClientSocket.cpp \
-  $(LOCAL_PATH)/src/CTCPConnection.cpp \
-  $(LOCAL_PATH)/src/CTCPServerConnection.cpp \
-  $(LOCAL_PATH)/src/CTCPServerSocket.cpp \
-  $(LOCAL_PATH)/src/CUDPChannel.cpp \
-  $(LOCAL_PATH)/src/CUDPMasterSocket.cpp \
-  $(LOCAL_PATH)/src/CUDPSocket.cpp \
-  $(LOCAL_PATH)/src/dvwinsock.c \
-  $(LOCAL_PATH)/src/gucefCOMCORE.cpp \
-  $(LOCAL_PATH)/src/socketutils.cpp
+  $(MY_MODULE_PATH)/src/CCom.cpp \
+  $(MY_MODULE_PATH)/src/CGUCEFCOMCOREModule.cpp \
+  $(MY_MODULE_PATH)/src/CHostAddress.cpp \
+  $(MY_MODULE_PATH)/src/CIPAddress.cpp \
+  $(MY_MODULE_PATH)/src/CPing.cpp \
+  $(MY_MODULE_PATH)/src/CSocket.cpp \
+  $(MY_MODULE_PATH)/src/CTCPClientSocket.cpp \
+  $(MY_MODULE_PATH)/src/CTCPConnection.cpp \
+  $(MY_MODULE_PATH)/src/CTCPServerConnection.cpp \
+  $(MY_MODULE_PATH)/src/CTCPServerSocket.cpp \
+  $(MY_MODULE_PATH)/src/CUDPChannel.cpp \
+  $(MY_MODULE_PATH)/src/CUDPMasterSocket.cpp \
+  $(MY_MODULE_PATH)/src/CUDPSocket.cpp \
+  $(MY_MODULE_PATH)/src/dvwinsock.c \
+  $(MY_MODULE_PATH)/src/gucefCOMCORE.cpp \
+  $(MY_MODULE_PATH)/src/socketutils.cpp
 
 LOCAL_C_INCLUDES := \
-  $(LOCAL_PATH)/include \
-  $(LOCAL_PATH)/../gucefCORE/include \
-  $(LOCAL_PATH)/../gucefMT/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

@@ -15,26 +15,8 @@
 # PROJECT: "GUCEF"
 #
 
-PROJECT_ROOT_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-include $(PROJECT_ROOT_PATH)/gucefCORE/plugins/dstorepluginPARSIFALXML/dependancy/libparsifal/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefLOADER/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefMT/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefCORE/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefCOMCORE/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefIMAGE/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefINPUT/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefMATH/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefVFS/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefCOM/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefCORE/plugins/dstorepluginPARSIFALXML/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefVFS/plugins/vfspluginVP/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefDRN/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefGUI/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefMULTIPLAY/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefPATCHER/Android.mk
-include $(PROJECT_ROOT_PATH)/tools/GucefLogServiceLib/Android.mk
-include $(PROJECT_ROOT_PATH)/gucefSMDRN/Android.mk
-include $(PROJECT_ROOT_PATH)/tools/GucefLogServiceClientPlugin/Android.mk
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefMT
+include $(MY_MODULE_PATH)/Android.mk

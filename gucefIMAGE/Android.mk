@@ -9,24 +9,26 @@
 #-------------------------------------------------------------------
 
 
-LOCAL_PATH := $(call my-dir)
+ifndef $(MY_MODULE_PATH)
+  MY_MODULE_PATH := $(call my-dir)
+endif
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := gucefIMAGE
 
 LOCAL_SRC_FILES := \
-  $(LOCAL_PATH)/src/CGUCEFIMAGEModule.cpp \
-  $(LOCAL_PATH)/src/CGUIImageCodec.cpp \
-  $(LOCAL_PATH)/src/CImage.cpp \
-  $(LOCAL_PATH)/src/CIMGCodec.cpp \
-  $(LOCAL_PATH)/src/CPixelMap.cpp \
-  $(LOCAL_PATH)/src/gucefIMAGE.cpp
+  $(MY_MODULE_PATH)/src/CGUCEFIMAGEModule.cpp \
+  $(MY_MODULE_PATH)/src/CGUIImageCodec.cpp \
+  $(MY_MODULE_PATH)/src/CImage.cpp \
+  $(MY_MODULE_PATH)/src/CIMGCodec.cpp \
+  $(MY_MODULE_PATH)/src/CPixelMap.cpp \
+  $(MY_MODULE_PATH)/src/gucefIMAGE.cpp
 
 LOCAL_C_INCLUDES := \
-  $(LOCAL_PATH)/include \
-  $(LOCAL_PATH)/../gucefCORE/include \
-  $(LOCAL_PATH)/../gucefMT/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

@@ -19,4 +19,5 @@ PROJECT_REDIRECT_ROOT_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-include $(PROJECT_REDIRECT_ROOT_PATH)/../../../Android.mk
+PROJECT_ROOT_PATH := $(PROJECT_REDIRECT_ROOT_PATH)/../../..
+include $(PROJECT_ROOT_PATH)/Android.mk

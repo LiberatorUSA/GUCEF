@@ -9,23 +9,25 @@
 #-------------------------------------------------------------------
 
 
-LOCAL_PATH := $(call my-dir)
+ifndef $(MY_MODULE_PATH)
+  MY_MODULE_PATH := $(call my-dir)
+endif
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := gucefCOMCORE_TestApp
 
 LOCAL_SRC_FILES := \
-  $(LOCAL_PATH)/src/gucefCOMCORE_TestApp.cpp \
-  $(LOCAL_PATH)/src/TestCode_ClientServer.cpp \
-  $(LOCAL_PATH)/src/TestCode_PingTest.cpp \
-  $(LOCAL_PATH)/src/TestCode_SimpleTCPClient.cpp
+  $(MY_MODULE_PATH)/src/gucefCOMCORE_TestApp.cpp \
+  $(MY_MODULE_PATH)/src/TestCode_ClientServer.cpp \
+  $(MY_MODULE_PATH)/src/TestCode_PingTest.cpp \
+  $(MY_MODULE_PATH)/src/TestCode_SimpleTCPClient.cpp
 
 LOCAL_C_INCLUDES := \
-  $(LOCAL_PATH)/include \
-  $(LOCAL_PATH)/../gucefCOMCORE/include \
-  $(LOCAL_PATH)/../gucefCORE/include \
-  $(LOCAL_PATH)/../gucefMT/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../gucefCOMCORE/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

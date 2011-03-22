@@ -9,54 +9,56 @@
 #-------------------------------------------------------------------
 
 
-LOCAL_PATH := $(call my-dir)
+ifndef $(MY_MODULE_PATH)
+  MY_MODULE_PATH := $(call my-dir)
+endif
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := gucefGUI
 
 LOCAL_SRC_FILES := \
-  $(LOCAL_PATH)/src/gucefGUI.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CButton.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CCheckbox.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CCombobox.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CEditbox.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CFileSystemDialog.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CForm.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CFormBackend.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CFormEx.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CFormFactory.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CGridView.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CGUIDriver.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CGUIManager.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CIFileSystemInfoProvider.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CIGUIContext.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CImageFrame.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CLabel.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CListbox.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CMenuBar.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CModule.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CPopupMenu.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CProgressBar.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CPushButton.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CRenderContext.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CSpinner.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CTabContentPane.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CTabControl.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CTextbox.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CTreeview.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CUDim.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CUVector.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CWidget.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CWidgetFactory.cpp \
-  $(LOCAL_PATH)/src/gucefGUI_CWindow.cpp
+  $(MY_MODULE_PATH)/src/gucefGUI.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CButton.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CCheckbox.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CCombobox.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CEditbox.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CFileSystemDialog.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CForm.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CFormBackend.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CFormEx.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CFormFactory.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CGridView.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CGUIDriver.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CGUIManager.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CIFileSystemInfoProvider.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CIGUIContext.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CImageFrame.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CLabel.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CListbox.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CMenuBar.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CModule.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CPopupMenu.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CProgressBar.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CPushButton.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CRenderContext.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CSpinner.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CTabContentPane.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CTabControl.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CTextbox.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CTreeview.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CUDim.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CUVector.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CWidget.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CWidgetFactory.cpp \
+  $(MY_MODULE_PATH)/src/gucefGUI_CWindow.cpp
 
 LOCAL_C_INCLUDES := \
-  $(LOCAL_PATH)/include \
-  $(LOCAL_PATH)/../gucefCORE/include \
-  $(LOCAL_PATH)/../gucefIMAGE/include \
-  $(LOCAL_PATH)/../gucefMT/include \
-  $(LOCAL_PATH)/../gucefVFS/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefIMAGE/include \
+  $(MY_MODULE_PATH)/../gucefMT/include \
+  $(MY_MODULE_PATH)/../gucefVFS/include
 
 
 LOCAL_SHARED_LIBRARIES := \
