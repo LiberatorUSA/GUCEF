@@ -20,7 +20,6 @@ PROJECT_ROOT_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 include $(PROJECT_ROOT_PATH)/gucefCORE/plugins/dstorepluginPARSIFALXML/dependancy/libparsifal/Android.mk
-#include $(PROJECT_ROOT_PATH)/gucefINPUT/plugins/inputdriverOIS/dependency/OIS/Android.mk
 include $(PROJECT_ROOT_PATH)/gucefLOADER/Android.mk
 include $(PROJECT_ROOT_PATH)/gucefMT/Android.mk
 include $(PROJECT_ROOT_PATH)/gucefCORE/Android.mk
