@@ -101,55 +101,52 @@ class CTBasicSharedPtr
     CTBasicSharedPtr( T* ptr                                         ,
                       CTDynamicDestructorBase< T >* objectDestructor );
 
-    CTBasicSharedPtr( T& ptr                                         ,
-                      CTDynamicDestructorBase< T >* objectDestructor );
-
     // inlined copy constructor, has to be inlined in class definition for now due to VC6 limitations
     template< class Derived >
     CTBasicSharedPtr( const CTBasicSharedPtr< Derived >& src )
-        : m_ptr(
-              static_cast< Derived* >( reinterpret_cast< const CTBasicSharedPtr& >( src ).m_ptr ) ),
-          m_refCounter(
-              reinterpret_cast< const CTBasicSharedPtr& >( src ).m_refCounter ),
-          m_objectDestructor(
-              reinterpret_cast< const CTBasicSharedPtr& >( src ).m_objectDestructor )
+        : m_ptr( NULL )              ,
+          m_refCounter( NULL )       ,
+          m_objectDestructor( NULL )
     {
-        // regarding the initializer list:
-        //   We use reinterpret_cast to make use of the automatic same-class-friend-relationship
-        //   which allows us to access the data members of the given src.
-        //   We perform an additional static_cast on the pointer to ensure that the template argument
-        //   is actually part of the same inheritance chain.
-
-        if ( m_refCounter )
-        {
-            ++(*m_refCounter);
-        }
+        InitializeUsingInheritance( src );
     }
 
     CTBasicSharedPtr( const CTBasicSharedPtr& src );
 
     virtual ~CTBasicSharedPtr();
-
+    
+    template< class RelatedClass >
+    bool InitializeUsingInheritance( CTBasicSharedPtr< RelatedClass >& classPtr )
+    {
+        Unlink();
+        
+        LockData();
+        
+        // The static cast below is performed as a compile time validation
+        // of the type passed.
+        T* relatedClass = static_cast< T* >( classPtr.GetPointerAlways() );
+        if ( NULL != relatedClass )
+        {            
+            m_ptr = relatedClass;
+            m_refCounter = classPtr.GetReferenceCounter();
+            m_objectDestructor = reinterpret_cast< CTBasicSharedPtr< T >::TDestructor* >( classPtr.GetDestructor() );
+            
+            ++(*m_refCounter);
+            
+            UnlockData();
+            return true;
+        }
+        UnlockData();
+        return false;
+    }
+    
     // implemented inline as a workaround for VC6 issues
     template< class Derived >
     CTBasicSharedPtr& operator=( const CTBasicSharedPtr< Derived >& src )
     {
         if ( &reinterpret_cast< const CTBasicSharedPtr& >( src ) != this )
         {
-            Unlink();
-
-            // We use reinterpret_cast to make use of the automatic same-class-friend-relationship
-            // which allows us to access the data members of the given src.
-            // We perform an additional static_cast on the pointer to ensure that the template argument
-            // is actually part of the same inheritance chain.
-            m_ptr = static_cast< Derived* >( reinterpret_cast< const CTBasicSharedPtr& >( src ).m_ptr );
-            m_refCounter = reinterpret_cast< const CTBasicSharedPtr& >( src ).m_refCounter;
-            m_objectDestructor = reinterpret_cast< const CTBasicSharedPtr& >( src ).m_objectDestructor;
-
-            if ( m_refCounter )
-            {
-                ++(*m_refCounter);
-            }
+            InitializeUsingInheritance( src );
         }
         return *this;
     }
@@ -159,13 +156,10 @@ class CTBasicSharedPtr
     template< class Derived >
     CTBasicSharedPtr< Derived > StaticCast( bool dummy = true )
     {
-            ++(*m_refCounter);
-
-            CTBasicSharedPtr< Derived > retVal;
-            retVal.m_ptr = static_cast< Derived* >( m_ptr );
-            retVal.m_refCounter = m_refCounter;
-            retVal.m_objectDestructor = reinterpret_cast< CTDynamicDestructorBase< Derived >* >( m_objectDestructor );
-
+            // We use the initialization function of the derived type's
+            // shared pointer which will have knowledge of both types.
+            TBasicSharedPtr< Derived > retVal;
+            retVal.InitializeUsingInheritance( *this );
             return retVal;
     }
 
@@ -245,6 +239,24 @@ class CTBasicSharedPtr
     TDestructor* GetDestructor( void ) const;
 
     void Unlink( void );
+    
+    /** 
+     *  no-op in the default implementation. 
+     *  derived classes wishing to make the shared pointer thread safe
+     *  should add a synchronization mechanic in a derived implementation
+     *
+     *  This function should be implemented to be logically const 
+     */
+    virtual void LockData( void ) const;
+
+    /** 
+     *  no-op in the default implementation. 
+     *  derived classes wishing to make the shared pointer thread safe
+     *  should add a synchronization mechanic in a derived implementation
+     *
+     *  This function should be implemented to be logically const 
+     */    
+    virtual void UnlockData( void ) const;
 
     private:
 
@@ -265,6 +277,7 @@ CTBasicSharedPtr< T >::CTBasicSharedPtr( void )
           m_refCounter( NULL )                   ,
           m_objectDestructor( NULL )
 {GUCEF_TRACE;
+
     // Note that if this constructor is used an assignment is required at
     // a later time to initialize the shared pointer
 }
@@ -288,28 +301,20 @@ CTBasicSharedPtr< T >::CTBasicSharedPtr( T* ptr                        ,
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-CTBasicSharedPtr< T >::CTBasicSharedPtr( T& ptr                        ,
-                                         TDestructor* objectDestructor )
-        : m_ptr( &ptr )                         ,
-          m_refCounter( new UInt32( 1UL ) )     ,
-          m_objectDestructor( objectDestructor )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-template< typename T >
 CTBasicSharedPtr< T >::CTBasicSharedPtr( const CTBasicSharedPtr< T >& src )
         : m_ptr( src.m_ptr )                           ,
           m_refCounter( src.m_refCounter )             ,
           m_objectDestructor( src.m_objectDestructor )
 {GUCEF_TRACE;
 
+    src.LockData();
+    
     if ( m_refCounter )
     {
         ++(*m_refCounter);
     }
+    
+    src.UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -328,7 +333,7 @@ void
 CTBasicSharedPtr< T >::Initialize( T* ptr                        ,
                                    TDestructor* objectDestructor )
 {GUCEF_TRACE;
-
+    
     // If you get an assert here:
     //    You have an error in your decending class: you cannot initialize twice
     assert( m_ptr == NULL );
@@ -339,9 +344,13 @@ CTBasicSharedPtr< T >::Initialize( T* ptr                        ,
     // mode without asserts we will still allow the scenario by unlinking first
     Unlink();
 
+    LockData();
+
     m_ptr = ptr;
     m_refCounter = new unsigned long( 1UL );
     m_objectDestructor = objectDestructor;
+    
+    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -411,6 +420,8 @@ CTBasicSharedPtr< T >::operator=( const CTBasicSharedPtr< T >& src )
     {
         Unlink();
 
+        LockData();
+        
         m_ptr = src.m_ptr;
         m_refCounter = src.m_refCounter;
         m_objectDestructor = src.m_objectDestructor;
@@ -419,6 +430,8 @@ CTBasicSharedPtr< T >::operator=( const CTBasicSharedPtr< T >& src )
         {
             ++(*m_refCounter);
         }
+        
+        UnlockData();
     }
     return *this;
 }
@@ -544,7 +557,7 @@ inline const T&
 CTBasicSharedPtr< T >::operator*( void ) const
 {GUCEF_TRACE;
 
-    if ( m_ptr )
+    if ( NULL != m_ptr )
     {
         return *m_ptr;
     }
@@ -561,7 +574,7 @@ inline T*
 CTBasicSharedPtr< T >::operator->( void )
 {GUCEF_TRACE;
 
-    if ( m_ptr )
+    if ( NULL != m_ptr )
     {
         return m_ptr;
     }
@@ -577,7 +590,7 @@ inline const T*
 CTBasicSharedPtr< T >::operator->( void ) const
 {GUCEF_TRACE;
 
-    if ( m_ptr )
+    if ( NULL != m_ptr )
     {
         return m_ptr;
     }
@@ -593,7 +606,7 @@ inline T*
 CTBasicSharedPtr< T >::GetPointer( void )
 {GUCEF_TRACE;
 
-    if ( m_ptr )
+    if ( NULL != m_ptr )
     {
         return m_ptr;
     }
@@ -609,7 +622,7 @@ inline const T*
 CTBasicSharedPtr< T >::GetPointer( void ) const
 {GUCEF_TRACE;
 
-    if ( m_ptr )
+    if ( NULL != m_ptr )
     {
         return m_ptr;
     }
@@ -625,7 +638,9 @@ void
 CTBasicSharedPtr< T >::Unlink( void )
 {GUCEF_TRACE;
 
-    if ( m_ptr )
+    LockData();
+    
+    if ( NULL != m_ptr )
     {
         --(*m_refCounter);
         if ( 0UL == *m_refCounter )
@@ -646,10 +661,12 @@ CTBasicSharedPtr< T >::Unlink( void )
     }
 
     // this object may not have been the last refrence but we still have to NULL
-    // the attributes to allow this onject to be re-used
+    // the attributes to allow this object to be re-used
     m_objectDestructor = NULL;
     m_refCounter = NULL;
     m_ptr = NULL;
+    
+    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -658,10 +675,36 @@ template< typename T >
 void
 CTBasicSharedPtr< T >::SetToNULL( void )
 {
+    LockData();
+    
     m_objectDestructor = NULL;
     delete m_refCounter;
     m_refCounter = NULL;
     m_ptr = NULL;
+    
+    UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+void
+CTBasicSharedPtr< T >::LockData( void ) const
+{
+    // no-op in the default implementation. 
+    // derived classes wishing to make the shared pointer thread safe
+    // should add a synchronization mechanic in a derived implementation
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+void
+CTBasicSharedPtr< T >::UnlockData( void ) const
+{
+    // no-op in the default implementation. 
+    // derived classes wishing to make the shared pointer thread safe
+    // should add a synchronization mechanic in a derived implementation
 }
 
 /*-------------------------------------------------------------------------//
