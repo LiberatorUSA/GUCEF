@@ -116,7 +116,7 @@ class CTBasicSharedPtr
     virtual ~CTBasicSharedPtr();
     
     template< class RelatedClass >
-    bool InitializeUsingInheritance( CTBasicSharedPtr< RelatedClass >& classPtr )
+    bool InitializeUsingInheritance( const CTBasicSharedPtr< RelatedClass >& classPtr )
     {
         Unlink();
         
@@ -124,11 +124,11 @@ class CTBasicSharedPtr
         
         // The static cast below is performed as a compile time validation
         // of the type passed.
-        T* relatedClass = static_cast< T* >( classPtr.GetPointerAlways() );
+        T* relatedClass = static_cast< T* >( const_cast< RelatedClass* >( classPtr.GetPointerAlways() ) );
         if ( NULL != relatedClass )
         {            
             m_ptr = relatedClass;
-            m_refCounter = classPtr.GetReferenceCounter();
+            m_refCounter = const_cast< UInt32* >( classPtr.GetReferenceCounter() );
             m_objectDestructor = reinterpret_cast< CTBasicSharedPtr< T >::TDestructor* >( classPtr.GetDestructor() );
             
             ++(*m_refCounter);
@@ -208,10 +208,18 @@ class CTBasicSharedPtr
     inline T* GetPointer( void );
 
     inline const T* GetPointer( void ) const;
+    
+    inline T* GetPointerAlways( void );
+    
+    inline const T* GetPointerAlways( void ) const;
 
     inline bool IsNULL( void ) const;
 
     UInt32 GetReferenceCount( void ) const;
+    
+    const UInt32* GetReferenceCounter( void ) const;
+
+    TDestructor* GetDestructor( void ) const;
 
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( ENotInitialized );
 
@@ -235,8 +243,8 @@ class CTBasicSharedPtr
      *  The pointer has to be valid.
      */
     void OverrideDestructor( TDestructor* newObjectDestructor );
-
-    TDestructor* GetDestructor( void ) const;
+    
+    UInt32* GetReferenceCounter( void );
 
     void Unlink( void );
     
@@ -602,6 +610,24 @@ CTBasicSharedPtr< T >::operator->( void ) const
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
+unsigned long*
+CTBasicSharedPtr< T >::GetReferenceCounter( void )
+{
+    return m_refCounter;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+const unsigned long*
+CTBasicSharedPtr< T >::GetReferenceCounter( void ) const
+{
+    return m_refCounter;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
 inline T*
 CTBasicSharedPtr< T >::GetPointer( void )
 {GUCEF_TRACE;
@@ -629,6 +655,24 @@ CTBasicSharedPtr< T >::GetPointer( void ) const
 
     // Someone forgot to initialize the shared pointer with an assignment
     GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T >::operator->( void ) const: uninitialized pointer usage" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline T* 
+CTBasicSharedPtr< T >::GetPointerAlways( void )
+{
+    return m_ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline const T* 
+CTBasicSharedPtr< T >::GetPointerAlways( void ) const
+{
+    return m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/

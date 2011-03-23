@@ -105,9 +105,6 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
     CTSharedPtr( T* ptr                                                ,
                  CTDynamicDestructorBase< T >* objectDestructor = NULL );
 
-    CTSharedPtr( T& ptr                                                ,
-                 CTDynamicDestructorBase< T >* objectDestructor = NULL );
-
     /**
      *  Conversion constructor making it possible to pass
      *  a CTBasicSharedPtr to a function which requires a
@@ -118,20 +115,10 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
     // inlined copy constructor, has to be inlined in class definition for now due to VC6 limitations
     template< class Derived >
     CTSharedPtr( const CTSharedPtr< Derived >& src )
-        : CTBasicSharedPtr< T >( reinterpret_cast< const CTSharedPtr& >( src ) )
+        : CTBasicSharedPtr< T >()
     {GUCEF_TRACE;
 
-        // regarding the initializer list:
-        //   We use reinterpret_cast to make use of the automatic same-class-friend-relationship
-        //   which allows us to access the data members of the given src.
-
-        // Cast performed for safety reasons:
-        // Allows us to catch unlawful casts compile time.
-        // If you get an error here then 'Derived' is not actually in the same
-        // inheritance chain as 'T'
-        Derived* testPtrDerived = NULL;
-        T* testPtrT = static_cast< Derived* >( testPtrDerived );
-        testPtrT = NULL;
+        InitializeUsingInheritance( src );
     }
 
     CTSharedPtr( const CTSharedPtr& src );
@@ -145,15 +132,7 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
 
         if ( &reinterpret_cast< const CTSharedPtr& >( src ) != this )
         {
-            // Cast performed for safety reasons:
-            // Allows us to catch unlawful casts compile time.
-            // If you get an error here then 'Derived' is not actually in the same
-            // inheritance chain as 'T'
-            Derived* testPtrDerived( NULL );
-            T* testPtrT( static_cast< Derived* >( testPtrDerived ) );
-            testPtrT = NULL;
-
-            CTBasicSharedPtr< T >::operator=( reinterpret_cast< const CTSharedPtr& >( src ) );
+            CTBasicSharedPtr< T >::operator=( static_cast< const CTBasicSharedPtr< Derived >& >( src ) );
         }
         return *this;
     }
@@ -204,18 +183,7 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
     CTSharedPtr< Derived >
     StaticCast( bool dummy = true )
     {
-        // The actual compile time check is the line of code below.
-        // You should get a casting error if 'Derived' is not a type that is
-        // derived from 'T'. After we made this check we can just reinterpret
-        // this object to be able to give out more pointer references as 'Derived'
-        // Note that we have to use the 'derivedClassPtr' variable otherwise the compiler
-        // will optimize out the code which is why the code is structured this way.
-        Derived* derivedClassPtr = static_cast< Derived* >( CTBasicSharedPtr< T >::GetPointer() );
-        if ( 0 != derivedClassPtr )
-        {
-            return reinterpret_cast< CTSharedPtr< Derived >& >( *this );
-        }
-        return CTSharedPtr< Derived >();
+        return CTSharedPtr< Derived >( *this );
     }
 };
 
@@ -260,24 +228,6 @@ CTSharedPtr< T >::CTSharedPtr( T* ptr                                           
     else
     {
         Initialize( ptr, new CTDynamicDestructor< T >( true ) );
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-template< typename T >
-CTSharedPtr< T >::CTSharedPtr( T& ptr                                                      ,
-                               CTDynamicDestructorBase< T >* objectDestructor /* = NULL */ )
-        : CTBasicSharedPtr< T >()
-{GUCEF_TRACE;
-
-    if ( NULL != objectDestructor )
-    {
-        Initialize( &ptr, objectDestructor );
-    }
-    else
-    {
-        Initialize( &ptr, new CTDynamicDestructor< T >( true ) );
     }
 }
 
