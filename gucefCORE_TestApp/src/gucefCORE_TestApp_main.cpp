@@ -86,9 +86,9 @@ main( int argc, char** argv )
 
         //GUCEF::CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
 
-        PerformStringTests();
+        //PerformStringTests();
         
-        //PerformSharedPtrTests();
+        PerformSharedPtrTests();
 
         //PerformCyclicDynamicBufferTests();
 
