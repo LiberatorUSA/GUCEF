@@ -40,6 +40,7 @@
 //-------------------------------------------------------------------------*/
 
 #define ERRORHERE { std::cout << "Test failed @ " << __FILE__ << "(" << __LINE__ << ")\n"; DebugBreak(); } 
+#define TESTASSERT( condition ) { if ( !( condition ) ) { ERRORHERE; } }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -49,15 +50,40 @@
 
 class Base
 {
-public:
-    ~Base() {}
+    public:
+    
+    Base() : y( 1111 ) {}
+
+    virtual ~Base() {}
+    
+    int y;
 };
 
 class Derived : public Base
 {
-public:
-    ~Derived() {}
+    public:
+    
+    Derived() : x( 2222 ) {}
+
+    virtual ~Derived() {}
+    
+    int x;
 };
+
+class Unrelated
+{
+    public:
+    
+    Unrelated() : z( 9999 ) {}
+    
+    virtual ~Unrelated();
+    
+    int z;
+};
+
+typedef GUCEF::CORE::CTSharedPtr< Base > TBasePtr;
+typedef GUCEF::CORE::CTSharedPtr< Derived > TDerivedPtr;
+typedef GUCEF::CORE::CTSharedPtr< Unrelated > TUnrelatedPtr;
 
 void
 PerformSharedPtrTests( void )
@@ -66,10 +92,50 @@ PerformSharedPtrTests( void )
     
     try
     {
-    /*    BasePtr bp( new Base() );
-        DerivedPtr dp( new Derived() );
+        //--- compile time tests, uncomment to test
+        
+        TUnrelatedPtr a;
+        TDerivedPtr b;
+        TBasePtr c;
+        
+        //a = b;                        //<- should not compile
+        //b = a;                        //<- should not compile
+        //a.StaticCast< Derived >();    //<- should not compile
+        
+        //c = a;                        //<- should not compile
+        //a = c;                        //<- should not compile
+        //a.StaticCast< Base >();       //<- should not compile
+        
+        
+        //---- runtime tests
+        
+        Derived* d = new Derived();
+        Derived* d2 = NULL;
+        
+        TBasePtr bp;
+        TDerivedPtr dp( d );
+        
         bp = dp;
-        DerivedPtr& dpr = *reinterpret_cast< DerivedPtr* >( &bp ); */
+        
+        TESTASSERT( bp.GetReferenceCount() == 2 );
+        TESTASSERT( dp.GetReferenceCount() == 2 );
+        TESTASSERT( d == bp.GetPointerAlways() );
+        TESTASSERT( d == dp.GetPointerAlways() );
+        
+        d2 = new Derived();
+        bp = d2;
+        
+        TESTASSERT( (bp.GetReferenceCount() == 1) );
+        TESTASSERT( (dp.GetReferenceCount() == 1) );
+        TESTASSERT( d2 == bp.GetPointerAlways() );
+        TESTASSERT( d == dp.GetPointerAlways() );
+        
+        dp = bp;
+        
+        TESTASSERT( bp.GetReferenceCount() == 2 );
+        TESTASSERT( dp.GetReferenceCount() == 2 );
+        TESTASSERT( d2 == bp.GetPointerAlways() );
+        TESTASSERT( d2 == dp.GetPointerAlways() );
     }
     catch( ... )
     {
