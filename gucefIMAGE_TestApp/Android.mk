@@ -17,18 +17,16 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-MY_MODULE_PATH := $(LOCAL_PATH)
-
 LOCAL_MODULE := gucefIMAGE_TestApp
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  $(MY_MODULE_PATH)/src/gucefIMAGE_TestApp.cpp
+  src/gucefIMAGE_TestApp.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/../gucefCORE/include \
-  $(MY_MODULE_PATH)/../gucefIMAGE/include \
-  $(MY_MODULE_PATH)/../gucefMT/include
+  ../gucefCORE/include \
+  ../gucefIMAGE/include \
+  ../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

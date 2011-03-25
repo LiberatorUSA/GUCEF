@@ -17,17 +17,15 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-MY_MODULE_PATH := $(LOCAL_PATH)
-
 LOCAL_MODULE := HDFiller
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  $(MY_MODULE_PATH)/src/HDFiller.cpp
+  src/HDFiller.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../gucefMT/include
+  ../../gucefCORE/include \
+  ../../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

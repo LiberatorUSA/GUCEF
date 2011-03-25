@@ -30,7 +30,7 @@
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #include <Mmsystem.h>  /* needed for timeBeginPeriod() etc */
-#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
   #include <stdio.h>
   #include <stdlib.h>
   #include <unistd.h>
@@ -51,7 +51,7 @@ struct SThreadData
     HANDLE threadhandle;
     LPTHREAD_START_ROUTINE func;
     void* data;
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     pthread_t thread;
     TThreadFunc func;
     void* data;
@@ -84,7 +84,7 @@ ThreadDelay( UInt32 delay )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     Sleep( delay );
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     sleep( delay );
     #endif
 }
@@ -122,7 +122,7 @@ ThreadCreate( TThreadFunc func ,
         return NULL;
     }
     return td;
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     TThreadData* td = malloc( sizeof( TThreadData ) );
     td->data = data;
     if ( 0 != pthread_create( &td->thread         ,
@@ -146,7 +146,7 @@ ThreadID( struct SThreadData* td )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     return td->threadid;
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     return (UInt32) td->thread;
     #else
     #error unsupported target platform
@@ -160,7 +160,7 @@ ThreadSuspend( struct SThreadData* td )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     return ( -1 != SuspendThread( td->threadhandle ) );
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     #else
     #error unsupported target platform
@@ -174,7 +174,7 @@ ThreadResume( struct SThreadData* td )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     return ( -1 != ResumeThread( td->threadhandle ) );
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     #else
     #error unsupported target platform
@@ -195,7 +195,7 @@ ThreadKill( struct SThreadData* td )
         return retval;
     }
     return 0;
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     if ( td != NULL )
     {
         Int32 retval = (Int32) pthread_kill( td->thread, 0 );
@@ -227,7 +227,7 @@ ThreadWait( struct SThreadData* td ,
     }
     return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
                                                    INFINITE         ) );
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     #else
     #error unsupported target platform
@@ -241,7 +241,7 @@ GetCurrentTaskID( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     return GetCurrentThreadId();
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     return (UInt32) pthread_self();
     #else
     #error unsupported target platform
@@ -266,7 +266,7 @@ PrecisionTickCount( void )
     {
         return GetTickCount();
     }
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     #else
     #error unsupported target platform
@@ -288,7 +288,7 @@ PrecisionTimerResolution( void )
     {
         return 100; /* this is the WIN32 resolution of GetTickCount(); which has a time-slice size of about 10 ms */
     }
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     #else
     #error unsupported target platform
@@ -300,86 +300,86 @@ PrecisionTimerResolution( void )
 void
 PrecisionDelay( UInt32 delay )
 {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-        /*
-         *      Original code obtained from http://www.geisswerks.com/ryan/FAQS/timing.html
-         */
+    /*
+     *      Original code obtained from http://www.geisswerks.com/ryan/FAQS/timing.html
+     */
 
-        /*
-         *      note: Possible problem in some cases:
-         *              http://support.microsoft.com/default.aspx?scid=KB;EN-US;Q274323&
-         *              Performance counter value may unexpectedly leap forward
-         */
+    /*
+     *      note: Possible problem in some cases:
+     *              http://support.microsoft.com/default.aspx?scid=KB;EN-US;Q274323&
+     *              Performance counter value may unexpectedly leap forward
+     */
 
-        /*
-         *      note: BE SURE YOU CALL timeBeginPeriod(1) at program startup!!!
-         *      note: BE SURE YOU CALL timeEndPeriod(1) at program exit!!!
-         *      note: that this code will require linking to winmm.lib !!!
-         */
+    /*
+     *      note: BE SURE YOU CALL timeBeginPeriod(1) at program startup!!!
+     *      note: BE SURE YOU CALL timeEndPeriod(1) at program exit!!!
+     *      note: that this code will require linking to winmm.lib !!!
+     */
 
-        Int32 ticks_passed;
-        Int32 ticks_left;
-        Int32 i;
+    Int32 ticks_passed;
+    Int32 ticks_left;
+    Int32 i;
 
-        static LARGE_INTEGER m_prev_end_of_frame = { 0 };
+    static LARGE_INTEGER m_prev_end_of_frame = { 0 };
 
-        LARGE_INTEGER t;
-        QueryPerformanceCounter(&t);
+    LARGE_INTEGER t;
+    QueryPerformanceCounter(&t);
 
-        if (m_prev_end_of_frame.QuadPart != 0)
+    if (m_prev_end_of_frame.QuadPart != 0)
+    {
+        Int32 ticks_to_wait = (Int32)m_high_perf_timer_freq.QuadPart / delay;
+        Int32 done = 0;
+        do
         {
-                Int32 ticks_to_wait = (Int32)m_high_perf_timer_freq.QuadPart / delay;
-                Int32 done = 0;
-                do
+            QueryPerformanceCounter(&t);
+
+            ticks_passed = (Int32)( (__int64)t.QuadPart - (__int64)m_prev_end_of_frame.QuadPart );
+            ticks_left = ticks_to_wait - ticks_passed;
+
+            if ( t.QuadPart < m_prev_end_of_frame.QuadPart )    /* time wrap */
+            {
+                done = 1;
+            }
+            if (ticks_passed >= ticks_to_wait)
+            {
+                done = 1;
+            }
+
+            if ( !done )
+            {
+                /*
+                 *      if > 0.002s left, do Sleep(1), which will actually sleep some
+                 *      steady amount, probably 1-2 ms,
+                 *      and do so in a nice way (cpu meter drops; laptop battery spared).
+                 *      otherwise, do a few Sleep(0)'s, which just give up the time slice,
+                 *      but don't really save cpu or battery, but do pass a tiny
+                 *     amount of time.
+                 */
+                if ( ticks_left > (Int32)m_high_perf_timer_freq.QuadPart*2/1000)
                 {
-                        QueryPerformanceCounter(&t);
-
-                        ticks_passed = (Int32)( (__int64)t.QuadPart - (__int64)m_prev_end_of_frame.QuadPart );
-                        ticks_left = ticks_to_wait - ticks_passed;
-
-                        if ( t.QuadPart < m_prev_end_of_frame.QuadPart )    /* time wrap */
-                        {
-                                done = 1;
-                        }
-                        if (ticks_passed >= ticks_to_wait)
-                        {
-                                done = 1;
-                        }
-
-                        if ( !done )
-                        {
-                                /*
-                                 *      if > 0.002s left, do Sleep(1), which will actually sleep some
-                                 *      steady amount, probably 1-2 ms,
-                                 *      and do so in a nice way (cpu meter drops; laptop battery spared).
-                                 *      otherwise, do a few Sleep(0)'s, which just give up the time slice,
-                                 *      but don't really save cpu or battery, but do pass a tiny
-                                 *     amount of time.
-                                 */
-                                if ( ticks_left > (Int32)m_high_perf_timer_freq.QuadPart*2/1000)
-                                {
-                                        Sleep(1);
-                                }
-                                else
-                                {
-                                        for ( i=0; i<10; ++i )
-                                        {
-                                                Sleep(0);  /* causes thread to give up its time slice */
-                                        }
-                                }
-                        }
+                    Sleep(1);
                 }
-                while (!done);
+                else
+                {
+                    for ( i=0; i<10; ++i )
+                    {
+                            Sleep(0);  /* causes thread to give up its time slice */
+                    }
+                }
+            }
         }
+        while (!done);
+    }
 
-        m_prev_end_of_frame = t;
+    m_prev_end_of_frame = t;
 
-        #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-        #else
-        #error unsupported target platform
-        #endif
+    #else
+    #error unsupported target platform
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/

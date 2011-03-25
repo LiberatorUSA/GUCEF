@@ -17,30 +17,28 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-MY_MODULE_PATH := $(LOCAL_PATH)
-
 LOCAL_MODULE := gucefCOM
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  $(MY_MODULE_PATH)/src/CDBQuery.cpp \
-  $(MY_MODULE_PATH)/src/CGUCEFCOMModule.cpp \
-  $(MY_MODULE_PATH)/src/CHTTPClient.cpp \
-  $(MY_MODULE_PATH)/src/CHTTPURLHandler.cpp \
-  $(MY_MODULE_PATH)/src/CMySQLClient.cpp \
-  $(MY_MODULE_PATH)/src/CPHUDPSocket.cpp \
-  $(MY_MODULE_PATH)/src/gucefCOM.cpp \
-  $(MY_MODULE_PATH)/src/gucefCOM_CDefaultHTTPServerRouterController.cpp \
-  $(MY_MODULE_PATH)/src/gucefCOM_CHTTPServer.cpp \
-  $(MY_MODULE_PATH)/src/gucefCOM_CIHTTPServerResource.cpp \
-  $(MY_MODULE_PATH)/src/gucefCOM_CIHTTPServerRouter.cpp \
-  $(MY_MODULE_PATH)/src/gucefCOM_CIHTTPServerRouterController.cpp
+  src/CDBQuery.cpp \
+  src/CGUCEFCOMModule.cpp \
+  src/CHTTPClient.cpp \
+  src/CHTTPURLHandler.cpp \
+  src/CMySQLClient.cpp \
+  src/CPHUDPSocket.cpp \
+  src/gucefCOM.cpp \
+  src/gucefCOM_CDefaultHTTPServerRouterController.cpp \
+  src/gucefCOM_CHTTPServer.cpp \
+  src/gucefCOM_CIHTTPServerResource.cpp \
+  src/gucefCOM_CIHTTPServerRouter.cpp \
+  src/gucefCOM_CIHTTPServerRouterController.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../gucefCOMCORE/include \
-  $(MY_MODULE_PATH)/../gucefCORE/include \
-  $(MY_MODULE_PATH)/../gucefMT/include
+  include \
+  ../gucefCOMCORE/include \
+  ../gucefCORE/include \
+  ../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

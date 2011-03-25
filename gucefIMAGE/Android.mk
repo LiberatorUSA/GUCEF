@@ -17,23 +17,21 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-MY_MODULE_PATH := $(LOCAL_PATH)
-
 LOCAL_MODULE := gucefIMAGE
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  $(MY_MODULE_PATH)/src/CGUCEFIMAGEModule.cpp \
-  $(MY_MODULE_PATH)/src/CGUIImageCodec.cpp \
-  $(MY_MODULE_PATH)/src/CImage.cpp \
-  $(MY_MODULE_PATH)/src/CIMGCodec.cpp \
-  $(MY_MODULE_PATH)/src/CPixelMap.cpp \
-  $(MY_MODULE_PATH)/src/gucefIMAGE.cpp
+  src/CGUCEFIMAGEModule.cpp \
+  src/CGUIImageCodec.cpp \
+  src/CImage.cpp \
+  src/CIMGCodec.cpp \
+  src/CPixelMap.cpp \
+  src/gucefIMAGE.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../gucefCORE/include \
-  $(MY_MODULE_PATH)/../gucefMT/include
+  include \
+  ../gucefCORE/include \
+  ../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

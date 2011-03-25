@@ -17,32 +17,30 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-MY_MODULE_PATH := $(LOCAL_PATH)
-
 LOCAL_MODULE := gucefINPUT
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  $(MY_MODULE_PATH)/src/CGUCEFINPUTModule.cpp \
-  $(MY_MODULE_PATH)/src/CInputActionMap.cpp \
-  $(MY_MODULE_PATH)/src/CInputContext.cpp \
-  $(MY_MODULE_PATH)/src/CInputController.cpp \
-  $(MY_MODULE_PATH)/src/CInputDriverPlugin.cpp \
-  $(MY_MODULE_PATH)/src/gucefINPUT_CActionEventData.cpp \
-  $(MY_MODULE_PATH)/src/gucefINPUT_CInputDriver.cpp \
-  $(MY_MODULE_PATH)/src/gucefINPUT_CInputObserverSwitch.cpp \
-  $(MY_MODULE_PATH)/src/gucefINPUT_CKeyboard.cpp \
-  $(MY_MODULE_PATH)/src/gucefINPUT_CKeyModStateChangedEventData.cpp \
-  $(MY_MODULE_PATH)/src/gucefINPUT_CKeyStateChangedEventData.cpp \
-  $(MY_MODULE_PATH)/src/gucefINPUT_CMouse.cpp \
-  $(MY_MODULE_PATH)/src/gucefINPUT_CMouseButtonEventData.cpp \
-  $(MY_MODULE_PATH)/src/gucefINPUT_CMouseMovedEventData.cpp \
-  $(MY_MODULE_PATH)/src/gucefINPUT_keyboard.cpp
+  src/CGUCEFINPUTModule.cpp \
+  src/CInputActionMap.cpp \
+  src/CInputContext.cpp \
+  src/CInputController.cpp \
+  src/CInputDriverPlugin.cpp \
+  src/gucefINPUT_CActionEventData.cpp \
+  src/gucefINPUT_CInputDriver.cpp \
+  src/gucefINPUT_CInputObserverSwitch.cpp \
+  src/gucefINPUT_CKeyboard.cpp \
+  src/gucefINPUT_CKeyModStateChangedEventData.cpp \
+  src/gucefINPUT_CKeyStateChangedEventData.cpp \
+  src/gucefINPUT_CMouse.cpp \
+  src/gucefINPUT_CMouseButtonEventData.cpp \
+  src/gucefINPUT_CMouseMovedEventData.cpp \
+  src/gucefINPUT_keyboard.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../gucefCORE/include \
-  $(MY_MODULE_PATH)/../gucefMT/include
+  include \
+  ../gucefCORE/include \
+  ../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

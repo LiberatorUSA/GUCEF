@@ -17,24 +17,22 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-MY_MODULE_PATH := $(LOCAL_PATH)
-
 LOCAL_MODULE := GucefLogServiceLib
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  $(MY_MODULE_PATH)/src/GucefLogServiceLib.cpp \
-  $(MY_MODULE_PATH)/src/GucefLogServiceLib_CILogSvcServerLogger.cpp \
-  $(MY_MODULE_PATH)/src/GucefLogServiceLib_CLogSvcClient.cpp \
-  $(MY_MODULE_PATH)/src/GucefLogServiceLib_CLogSvcServer.cpp \
-  $(MY_MODULE_PATH)/src/GucefLogServiceLib_CLogSvcServerFileLogger.cpp
+  src/GucefLogServiceLib.cpp \
+  src/GucefLogServiceLib_CILogSvcServerLogger.cpp \
+  src/GucefLogServiceLib_CLogSvcClient.cpp \
+  src/GucefLogServiceLib_CLogSvcServer.cpp \
+  src/GucefLogServiceLib_CLogSvcServerFileLogger.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../../gucefCOM/include \
-  $(MY_MODULE_PATH)/../../gucefCOMCORE/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../gucefMT/include
+  include \
+  ../../gucefCOM/include \
+  ../../gucefCOMCORE/include \
+  ../../gucefCORE/include \
+  ../../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

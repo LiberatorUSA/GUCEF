@@ -17,16 +17,14 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-MY_MODULE_PATH := $(LOCAL_PATH)
-
 LOCAL_MODULE := gucefLOADER
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  $(MY_MODULE_PATH)/src/gucefLOADER.c
+  src/gucefLOADER.c
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include
+  include
 
 include $(BUILD_SHARED_LIBRARY)
 
