@@ -12,10 +12,15 @@
 ifndef $(MY_MODULE_PATH)
   MY_MODULE_PATH := $(call my-dir)
 endif
+LOCAL_PATH := $(MY_MODULE_PATH)
 
 include $(CLEAR_VARS)
 
+@echo Module path: $(MY_MODULE_PATH)
+MY_MODULE_PATH := $(LOCAL_PATH)
+
 LOCAL_MODULE := GucefLogServiceClientPlugin
+@echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
   $(MY_MODULE_PATH)/src/GucefLogServiceClientPlugin.cpp
