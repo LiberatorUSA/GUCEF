@@ -107,9 +107,13 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
     contentPrefix +=
       "ifndef $(MY_MODULE_PATH)\n"
       "  MY_MODULE_PATH := $(call my-dir)\n"
-      "endif\n\n"
+      "endif\n"
+      "LOCAL_PATH := $(MY_MODULE_PATH)\n\n"
       "include $(CLEAR_VARS)\n\n"
-      "LOCAL_MODULE := " + moduleInfo.name + "\n\n";
+      "@echo Module path: $(MY_MODULE_PATH)\n"
+      "MY_MODULE_PATH := $(LOCAL_PATH)\n\n"
+      "LOCAL_MODULE := " + moduleInfo.name + "\n"
+      "@echo Module name: $(LOCAL_MODULE)\n\n";
     
     // Generate the source files section
     CORE::CString srcFilesSection = "LOCAL_SRC_FILES := \\\n";
