@@ -17,27 +17,25 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-MY_MODULE_PATH := $(LOCAL_PATH)
-
 LOCAL_MODULE := gucefSMDRN
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  $(MY_MODULE_PATH)/src/gucefSMDRN_CModule.cpp \
-  $(MY_MODULE_PATH)/src/gucefSMDRN_CSectorGrid.cpp \
-  $(MY_MODULE_PATH)/src/gucefSMDRN_CSectorPosition.cpp \
-  $(MY_MODULE_PATH)/src/gucefSMDRN_CSectorSegment.cpp \
-  $(MY_MODULE_PATH)/src/gucefSMDRN_CZoneArbiter.cpp \
-  $(MY_MODULE_PATH)/src/gucefSMDRN_CZoneClient.cpp \
-  $(MY_MODULE_PATH)/src/gucefSMDRN_CZoneGrid.cpp
+  src/gucefSMDRN_CModule.cpp \
+  src/gucefSMDRN_CSectorGrid.cpp \
+  src/gucefSMDRN_CSectorPosition.cpp \
+  src/gucefSMDRN_CSectorSegment.cpp \
+  src/gucefSMDRN_CZoneArbiter.cpp \
+  src/gucefSMDRN_CZoneClient.cpp \
+  src/gucefSMDRN_CZoneGrid.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../gucefCOM/include \
-  $(MY_MODULE_PATH)/../gucefCOMCORE/include \
-  $(MY_MODULE_PATH)/../gucefCORE/include \
-  $(MY_MODULE_PATH)/../gucefDRN/include \
-  $(MY_MODULE_PATH)/../gucefMT/include
+  include \
+  ../gucefCOM/include \
+  ../gucefCOMCORE/include \
+  ../gucefCORE/include \
+  ../gucefDRN/include \
+  ../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

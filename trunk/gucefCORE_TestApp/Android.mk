@@ -17,22 +17,20 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-MY_MODULE_PATH := $(LOCAL_PATH)
-
 LOCAL_MODULE := gucefCORE_TestApp
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  $(MY_MODULE_PATH)/src/gucefCORE_TestApp_main.cpp \
-  $(MY_MODULE_PATH)/src/TestCyclicDynamicBuffer.cpp \
-  $(MY_MODULE_PATH)/src/TestNotifierObserver.cpp \
-  $(MY_MODULE_PATH)/src/TestSharedPtr.cpp \
-  $(MY_MODULE_PATH)/src/TestString.cpp
+  src/gucefCORE_TestApp_main.cpp \
+  src/TestCyclicDynamicBuffer.cpp \
+  src/TestNotifierObserver.cpp \
+  src/TestSharedPtr.cpp \
+  src/TestString.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../gucefCORE/include \
-  $(MY_MODULE_PATH)/../gucefMT/include
+  include \
+  ../gucefCORE/include \
+  ../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

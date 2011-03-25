@@ -111,7 +111,6 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
       "LOCAL_PATH := $(MY_MODULE_PATH)\n\n"
       "include $(CLEAR_VARS)\n\n"
       "@echo Module path: $(MY_MODULE_PATH)\n"
-      "MY_MODULE_PATH := $(LOCAL_PATH)\n\n"
       "LOCAL_MODULE := " + moduleInfo.name + "\n"
       "@echo Module name: $(LOCAL_MODULE)\n\n";
     
@@ -136,7 +135,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
             CORE::CString relFilePath = srcDir;
             CORE::AppendToPath( relFilePath, (*n) );
             
-            srcFilesSection += "  $(MY_MODULE_PATH)/" + relFilePath.ReplaceChar( '\\', '/' );            
+            srcFilesSection += "  " + relFilePath.ReplaceChar( '\\', '/' );            
             
             ++n;
         }        
@@ -163,12 +162,12 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
         const CORE::CString& dir = (*i).first;
         if ( !dir.IsNULLOrEmpty() )
         {
-            includeFilesSection += "  $(MY_MODULE_PATH)/" + dir.ReplaceChar( '\\', '/' );        
+            includeFilesSection += "  " + dir.ReplaceChar( '\\', '/' );        
         }
         else
         {
-            // Support the use-case where the include dir is empty because the moduleinfo dir == incude dir
-            includeFilesSection += "  $(MY_MODULE_PATH)"; 
+            // Support the use-case where the include dir is empty because the moduleinfo dir == include dir
+            includeFilesSection += "  ./"; 
         }
         
         ++i;
@@ -185,7 +184,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
         }
         firstLoop = false;
 
-        includeFilesSection += "  $(MY_MODULE_PATH)/" + (*n).ReplaceChar( '\\', '/' );
+        includeFilesSection += "  " + (*n).ReplaceChar( '\\', '/' );
         
         ++n;
     }

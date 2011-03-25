@@ -17,33 +17,31 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-MY_MODULE_PATH := $(LOCAL_PATH)
-
 LOCAL_MODULE := gucefCOMCORE
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  $(MY_MODULE_PATH)/src/CCom.cpp \
-  $(MY_MODULE_PATH)/src/CGUCEFCOMCOREModule.cpp \
-  $(MY_MODULE_PATH)/src/CHostAddress.cpp \
-  $(MY_MODULE_PATH)/src/CIPAddress.cpp \
-  $(MY_MODULE_PATH)/src/CPing.cpp \
-  $(MY_MODULE_PATH)/src/CSocket.cpp \
-  $(MY_MODULE_PATH)/src/CTCPClientSocket.cpp \
-  $(MY_MODULE_PATH)/src/CTCPConnection.cpp \
-  $(MY_MODULE_PATH)/src/CTCPServerConnection.cpp \
-  $(MY_MODULE_PATH)/src/CTCPServerSocket.cpp \
-  $(MY_MODULE_PATH)/src/CUDPChannel.cpp \
-  $(MY_MODULE_PATH)/src/CUDPMasterSocket.cpp \
-  $(MY_MODULE_PATH)/src/CUDPSocket.cpp \
-  $(MY_MODULE_PATH)/src/dvwinsock.c \
-  $(MY_MODULE_PATH)/src/gucefCOMCORE.cpp \
-  $(MY_MODULE_PATH)/src/socketutils.cpp
+  src/CCom.cpp \
+  src/CGUCEFCOMCOREModule.cpp \
+  src/CHostAddress.cpp \
+  src/CIPAddress.cpp \
+  src/CPing.cpp \
+  src/CSocket.cpp \
+  src/CTCPClientSocket.cpp \
+  src/CTCPConnection.cpp \
+  src/CTCPServerConnection.cpp \
+  src/CTCPServerSocket.cpp \
+  src/CUDPChannel.cpp \
+  src/CUDPMasterSocket.cpp \
+  src/CUDPSocket.cpp \
+  src/dvwinsock.c \
+  src/gucefCOMCORE.cpp \
+  src/socketutils.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../gucefCORE/include \
-  $(MY_MODULE_PATH)/../gucefMT/include
+  include \
+  ../gucefCORE/include \
+  ../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

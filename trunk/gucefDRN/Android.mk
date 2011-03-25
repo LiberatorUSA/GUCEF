@@ -17,29 +17,27 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-MY_MODULE_PATH := $(LOCAL_PATH)
-
 LOCAL_MODULE := gucefDRN
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  $(MY_MODULE_PATH)/src/gucefDRN.cpp \
-  $(MY_MODULE_PATH)/src/gucefDRN_CDRNDataGroup.cpp \
-  $(MY_MODULE_PATH)/src/gucefDRN_CDRNDataGroupProperties.cpp \
-  $(MY_MODULE_PATH)/src/gucefDRN_CDRNDataStream.cpp \
-  $(MY_MODULE_PATH)/src/gucefDRN_CDRNNode.cpp \
-  $(MY_MODULE_PATH)/src/gucefDRN_CDRNPeerLink.cpp \
-  $(MY_MODULE_PATH)/src/gucefDRN_CDRNPeerLinkData.cpp \
-  $(MY_MODULE_PATH)/src/gucefDRN_CGUCEFDRNModule.cpp \
-  $(MY_MODULE_PATH)/src/gucefDRN_CIDRNPeerLinkCrypter.cpp \
-  $(MY_MODULE_PATH)/src/gucefDRN_CIDRNPeerValidator.cpp
+  src/gucefDRN.cpp \
+  src/gucefDRN_CDRNDataGroup.cpp \
+  src/gucefDRN_CDRNDataGroupProperties.cpp \
+  src/gucefDRN_CDRNDataStream.cpp \
+  src/gucefDRN_CDRNNode.cpp \
+  src/gucefDRN_CDRNPeerLink.cpp \
+  src/gucefDRN_CDRNPeerLinkData.cpp \
+  src/gucefDRN_CGUCEFDRNModule.cpp \
+  src/gucefDRN_CIDRNPeerLinkCrypter.cpp \
+  src/gucefDRN_CIDRNPeerValidator.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../gucefCOM/include \
-  $(MY_MODULE_PATH)/../gucefCOMCORE/include \
-  $(MY_MODULE_PATH)/../gucefCORE/include \
-  $(MY_MODULE_PATH)/../gucefMT/include
+  include \
+  ../gucefCOM/include \
+  ../gucefCOMCORE/include \
+  ../gucefCORE/include \
+  ../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

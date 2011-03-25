@@ -17,37 +17,35 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-MY_MODULE_PATH := $(LOCAL_PATH)
-
 LOCAL_MODULE := gucefPATCHER
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  $(MY_MODULE_PATH)/src/gucefPATCHER.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CModule.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchConfig.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchEngine.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchListEngine.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchListEngineEvents.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchListParser.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchManager.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetDirEngine.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetDirEngineEvents.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetEngine.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetEngineEvents.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetFileEngine.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetFileEngineEvents.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetGenerator.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchSetParser.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchTaskConsumer.cpp \
-  $(MY_MODULE_PATH)/src/gucefPATCHER_CPatchTaskData.cpp
+  src/gucefPATCHER.cpp \
+  src/gucefPATCHER_CModule.cpp \
+  src/gucefPATCHER_CPatchConfig.cpp \
+  src/gucefPATCHER_CPatchEngine.cpp \
+  src/gucefPATCHER_CPatchListEngine.cpp \
+  src/gucefPATCHER_CPatchListEngineEvents.cpp \
+  src/gucefPATCHER_CPatchListParser.cpp \
+  src/gucefPATCHER_CPatchManager.cpp \
+  src/gucefPATCHER_CPatchSetDirEngine.cpp \
+  src/gucefPATCHER_CPatchSetDirEngineEvents.cpp \
+  src/gucefPATCHER_CPatchSetEngine.cpp \
+  src/gucefPATCHER_CPatchSetEngineEvents.cpp \
+  src/gucefPATCHER_CPatchSetFileEngine.cpp \
+  src/gucefPATCHER_CPatchSetFileEngineEvents.cpp \
+  src/gucefPATCHER_CPatchSetGenerator.cpp \
+  src/gucefPATCHER_CPatchSetParser.cpp \
+  src/gucefPATCHER_CPatchTaskConsumer.cpp \
+  src/gucefPATCHER_CPatchTaskData.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../gucefCOM/include \
-  $(MY_MODULE_PATH)/../gucefCOMCORE/include \
-  $(MY_MODULE_PATH)/../gucefCORE/include \
-  $(MY_MODULE_PATH)/../gucefMT/include
+  include \
+  ../gucefCOM/include \
+  ../gucefCOMCORE/include \
+  ../gucefCORE/include \
+  ../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \
