@@ -162,12 +162,12 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
         const CORE::CString& dir = (*i).first;
         if ( !dir.IsNULLOrEmpty() )
         {
-            includeFilesSection += "  " + dir.ReplaceChar( '\\', '/' );        
+            includeFilesSection += "  $(MY_MODULE_PATH)/" + dir.ReplaceChar( '\\', '/' );        
         }
         else
         {
             // Support the use-case where the include dir is empty because the moduleinfo dir == include dir
-            includeFilesSection += "  ./"; 
+            includeFilesSection += "  $(MY_MODULE_PATH)"; 
         }
         
         ++i;
@@ -184,7 +184,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
         }
         firstLoop = false;
 
-        includeFilesSection += "  " + (*n).ReplaceChar( '\\', '/' );
+        includeFilesSection += "  $(MY_MODULE_PATH)/" + (*n).ReplaceChar( '\\', '/' );
         
         ++n;
     }
@@ -247,6 +247,13 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
                     }
                     linkedStaticLibrariesSection += "  " + (*m);
                     hasLinkedSharedLibraries = true;
+                    break;
+                }
+                case MODULETYPE_HEADER_INCLUDE_LOCATION:
+                {
+                    // Don't have to do anything.
+                    // Due to the auto-dependency tracking of include paths the header paths will have been added to
+                    // whatever module depends on this 'module'
                     break;
                 }
                 default:
@@ -358,6 +365,12 @@ CreateAndroidMakefileOnDiskForModule( const TModuleInfoEntryPairVector& mergeLin
                                       const CORE::CString& moduleRoot              ,
                                       bool addGeneratorCompileTimeToOutput         )
 {GUCEF_TRACE;
+    
+    if ( MODULETYPE_HEADER_INCLUDE_LOCATION == moduleInfo.moduleType )
+    {
+        // this module type does not require processing here
+        return true;
+    }
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating Android makefile content for module " + moduleInfo.name ); 
     
@@ -505,17 +518,20 @@ GenerateContentForAndroidProjectMakefile( const CORE::CString& projectName      
     const TModuleInfo* currentModule = FindFirstModuleAccordingToBuildOrder( mergeLinks );
     while ( NULL != currentModule )
     {
-        // Get relative path from the outputDir to the other module
-        const TModuleInfoEntry* fullModuleInfo = FindModuleInfoEntryForMergedInfo( mergeLinks, *currentModule );
-        CORE::CString relativePathToModule = CORE::GetRelativePathToOtherPathRoot( outputDir, fullModuleInfo->rootDir );
-        relativePathToModule = relativePathToModule.ReplaceChar( '\\', '/' );
-        
-        // Add entry for this module to the project file
-        moduleListSection += "MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/" + relativePathToModule + "\n";
-        moduleListSection += "include $(MY_MODULE_PATH)/Android.mk\n\n";
-        
+        if ( MODULETYPE_HEADER_INCLUDE_LOCATION != currentModule->moduleType )
+        {
+            // Get relative path from the outputDir to the other module
+            const TModuleInfoEntry* fullModuleInfo = FindModuleInfoEntryForMergedInfo( mergeLinks, *currentModule );
+            CORE::CString relativePathToModule = CORE::GetRelativePathToOtherPathRoot( outputDir, fullModuleInfo->rootDir );
+            relativePathToModule = relativePathToModule.ReplaceChar( '\\', '/' );
+            
+            // Add entry for this module to the project file
+            moduleListSection += "MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/" + relativePathToModule + "\n";
+            moduleListSection += "include $(MY_MODULE_PATH)/Android.mk\n\n";
+        }
+            
         // Done with this module, go to the next one
-        currentModule = FindNextModuleAccordingToBuildOrder( mergeLinks, *currentModule );
+        currentModule = FindNextModuleAccordingToBuildOrder( mergeLinks, *currentModule );        
     }
 
     return contentPrefix + moduleListSection;

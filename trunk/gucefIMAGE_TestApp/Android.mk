@@ -24,9 +24,9 @@ LOCAL_SRC_FILES := \
   src/gucefIMAGE_TestApp.cpp
 
 LOCAL_C_INCLUDES := \
-  ../gucefCORE/include \
-  ../gucefIMAGE/include \
-  ../gucefMT/include
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefIMAGE/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

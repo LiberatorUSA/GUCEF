@@ -24,7 +24,8 @@ LOCAL_SRC_FILES := \
   src/gucefMT_TestApp.cpp
 
 LOCAL_C_INCLUDES := \
-  ../gucefMT/include
+  $(MY_MODULE_PATH)/../common/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

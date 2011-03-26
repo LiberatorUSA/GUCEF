@@ -1,5 +1,8 @@
 <ModuleInfoEntry>
     <Module Name="gucefMT" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefHeaders" />
+        </Dependencies>
         <Preprocessor>
             <Define String="GUCEF_MT_BUILD_MODULE" />
         </Preprocessor>

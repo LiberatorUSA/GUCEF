@@ -25,12 +25,12 @@ LOCAL_SRC_FILES := \
   src/TestCode_PeerToPeer.cpp
 
 LOCAL_C_INCLUDES := \
-  include \
-  ../gucefCOM/include \
-  ../gucefCOMCORE/include \
-  ../gucefCORE/include \
-  ../gucefDRN/include \
-  ../gucefMT/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../gucefCOM/include \
+  $(MY_MODULE_PATH)/../gucefCOMCORE/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefDRN/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

@@ -39,9 +39,9 @@ LOCAL_SRC_FILES := \
   src/socketutils.cpp
 
 LOCAL_C_INCLUDES := \
-  include \
-  ../gucefCORE/include \
-  ../gucefMT/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

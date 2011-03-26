@@ -35,10 +35,10 @@ LOCAL_SRC_FILES := \
   src/gucefCOM_CIHTTPServerRouterController.cpp
 
 LOCAL_C_INCLUDES := \
-  include \
-  ../gucefCOMCORE/include \
-  ../gucefCORE/include \
-  ../gucefMT/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../gucefCOMCORE/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

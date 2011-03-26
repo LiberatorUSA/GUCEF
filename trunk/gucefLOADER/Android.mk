@@ -24,7 +24,7 @@ LOCAL_SRC_FILES := \
   src/gucefLOADER.c
 
 LOCAL_C_INCLUDES := \
-  include
+  $(MY_MODULE_PATH)/include
 
 include $(BUILD_SHARED_LIBRARY)
 

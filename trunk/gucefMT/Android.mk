@@ -37,7 +37,8 @@ LOCAL_SRC_FILES := \
   src/gucefMT_MUTEX.c
 
 LOCAL_C_INCLUDES := \
-  include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../common/include
 
 
 LOCAL_LDLIBS := \
