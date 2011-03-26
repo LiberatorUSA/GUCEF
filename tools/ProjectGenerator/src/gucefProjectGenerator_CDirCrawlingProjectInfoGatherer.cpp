@@ -230,8 +230,8 @@ IsDirAPlatformDirForPlatform( const CORE::CString& path     ,
 /*--------------------------------------------------------------------------*/
 
 bool
-RemoveString( std::vector< CORE::CString >& list ,
-              const CORE::CString& searchStr     )
+RemoveString( TStringVector& list            ,
+              const CORE::CString& searchStr )
 {GUCEF_TRACE;
 
     //@TODO: make wildcard processing more advanced then this :)
@@ -277,6 +277,118 @@ IsStringInList( const TStringVector& list       ,
         ++i;
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const TModuleInfoEntry*
+FindModuleAccordingToBuildOrderImp( const TProjectInfo& projectInfo     ,
+                                    const CORE::CString& targetPlatform ,
+                                    int buildOrderIndex                 )
+{GUCEF_TRACE;
+
+    TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        const TModuleInfoEntry& moduleEntry = (*i);
+        
+        // Check to see if we have an entry for this platform
+        TModuleInfoMap::const_iterator n = moduleEntry.modulesPerPlatform.find( targetPlatform );
+        if ( n != moduleEntry.modulesPerPlatform.end() )
+        {
+            // Check to see if the entry has a platform specific build order
+            const TModuleInfo& info = (*n).second;
+            if ( buildOrderIndex == info.buildOrder )
+            {
+                return &(*i);
+            }
+        }
+        ++i;
+    }
+    
+    return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const TModuleInfoEntry*
+FindFirstModuleAccordingToBuildOrder( const TProjectInfo& projectInfo     ,
+                                      const CORE::CString& targetPlatform )
+{GUCEF_TRACE;
+
+    const TModuleInfoEntry* platformEntry = FindModuleAccordingToBuildOrderImp( projectInfo    ,
+                                                                                targetPlatform , 
+                                                                                0              );
+    if ( NULL == platformEntry && targetPlatform != AllPlatforms )
+    {
+        // If we get here we did not find a module with build order 0
+        // instead of a platform specific build order check the AllPlatforms build order
+        platformEntry = FindModuleAccordingToBuildOrderImp( projectInfo  ,
+                                                            AllPlatforms , 
+                                                            0            );        
+    }
+   
+    return platformEntry;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+GetModuleBuildOrder( const TModuleInfoEntry& moduleEntry , 
+                     const CORE::CString& targetPlatform )
+{
+    // Check to see if we have an entry for this platform
+    TModuleInfoMap::const_iterator n = moduleEntry.modulesPerPlatform.find( targetPlatform );
+    if ( n != moduleEntry.modulesPerPlatform.end() )
+    {
+        // Check to see if the entry has a platform specific build order
+        const TModuleInfo& info = (*n).second;
+        if ( -1 != info.buildOrder )
+        {
+            return info.buildOrder;
+        }
+    }
+    
+    if ( targetPlatform != AllPlatforms )
+    {
+        TModuleInfoMap::const_iterator n = moduleEntry.modulesPerPlatform.find( AllPlatforms );
+        if ( n != moduleEntry.modulesPerPlatform.end() )
+        {
+            // Check to see if the entry has a platform specific build order
+            const TModuleInfo& info = (*n).second;
+            if ( -1 != info.buildOrder )
+            {
+                return info.buildOrder;
+            }
+        }
+    }
+    
+    return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const TModuleInfoEntry*
+FindNextModuleAccordingToBuildOrder( const TProjectInfo& projectInfo            ,
+                                     const TModuleInfoEntry& currentModuleEntry ,
+                                     const CORE::CString& targetPlatform        )
+{GUCEF_TRACE;
+
+    int desiredBuildOrder = GetModuleBuildOrder( currentModuleEntry, targetPlatform ) + 1;
+    
+    const TModuleInfoEntry* platformEntry = FindModuleAccordingToBuildOrderImp( projectInfo       ,
+                                                                                targetPlatform    , 
+                                                                                desiredBuildOrder );
+    if ( NULL == platformEntry && targetPlatform != AllPlatforms )
+    {
+        // If we get here we did not find a module with build order 0
+        // instead of a platform specific build order check the AllPlatforms build order
+        platformEntry = FindModuleAccordingToBuildOrderImp( projectInfo       ,
+                                                            AllPlatforms      , 
+                                                            desiredBuildOrder );        
+    }
+   
+    return platformEntry;        
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1937,7 +2049,7 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
     }
 
     // Get all subdir's
-    std::vector< CORE::CString > dirList;
+    TStringVector dirList;
     PopulateDirListFromDir( topLevelDir, dirList, AllPlatforms );
 
     // Add/subtract dirs from the list based on generator instructions
@@ -1946,7 +2058,7 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
     ExcludeOrIncludeDirEntriesAsSpecifiedForDir( projectInfo, topLevelDir, dirList );
 
     // Process all sub-dirs
-    std::vector< CORE::CString >::iterator i = dirList.begin();
+    TStringVector::iterator i = dirList.begin();
     while ( i != dirList.end() )
     {
         CORE::CString subDir = topLevelDir;

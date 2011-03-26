@@ -25,14 +25,16 @@
 
 #include "gucefMT_CMutex.h"     /* Our mutex class definition */
 
-#ifdef GUCEF_MSWIN_BUILD
-#include <windows.h>
-#endif
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-#ifdef GUCEF_LINUX_BUILD
+#include <windows.h>
+
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
+
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -43,15 +45,17 @@
 
 struct SMutexData
 {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-        HANDLE id;
-        #else
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
-        pthread_mutex_t id;
-        #else
-        #error Unsuported target platform
-        #endif
-        #endif
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    HANDLE id;
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    pthread_mutex_t id;
+    
+    #else
+    #error Unsuported target platform
+    #endif
 };
 
 typedef struct SMutexData TMutexData;
@@ -71,98 +75,92 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *      Default constructor, allocates storage for a mutex.
- */
 CMutex::CMutex( void )
-        : _mutexdata( NULL )
+    : _mutexdata( NULL )
 {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-        TMutexData* md = new TMutexData;
-        md->id = CreateMutex( NULL, FALSE, NULL );
-        if ( !md->id )
-        {
-                delete md;
-                return;
-        }
-        _mutexdata = md;
-        #else
-        #ifdef GUCEF_LINUX_BUILD
-        TMutexData* md = new TMutexData;
-        pthread_mutexattr_t attr;
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    TMutexData* md = new TMutexData;
+    md->id = CreateMutex( NULL, FALSE, NULL );
+    if ( !md->id )
+    {
+            delete md;
+            return;
+    }
+    _mutexdata = md;
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    TMutexData* md = new TMutexData;
+    pthread_mutexattr_t attr;
 
-        pthread_mutexattr_init( &attr );
-        pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
+    pthread_mutexattr_init( &attr );
+    pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
 
-        if ( pthread_mutex_init( &md->id, &attr ) != 0 )
-        {
-                delete md;
-                return;
-        }
-        _mutexdata = md;
-        #endif
-        #endif
+    if ( pthread_mutex_init( &md->id, &attr ) != 0 )
+    {
+            delete md;
+            return;
+    }
+    _mutexdata = md;
+    
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Destructor, de-allocates storage for a mutex.
- */
 CMutex::~CMutex()
 {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-        CloseHandle( ((TMutexData*)_mutexdata)->id );
-        delete (TMutexData*)_mutexdata;
-        #else
-        #ifdef GUCEF_LINUX_BUILD
-        pthread_mutex_destroy( &((TMutexData*)_mutexdata)->id );
-        delete (TMutexData*)_mutexdata;
-        #endif
-        #endif
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    CloseHandle( ((TMutexData*)_mutexdata)->id );
+    delete (TMutexData*)_mutexdata;
+    _mutexdata = NULL;
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    pthread_mutex_destroy( &((TMutexData*)_mutexdata)->id );
+    delete (TMutexData*)_mutexdata;
+    _mutexdata = NULL;
+
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Lock the mutex. If the mutex is already locked the calling
- *      process will have to wait for the mutex to allow a lock.
- *      The return value indicates wheter the lock failed or succeeded.
- */
 bool
 CMutex::Lock( void ) const
 {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-        if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id ,
-                                  INFINITE                      ) == WAIT_FAILED ) return false;
-        return true;
-        #else
-        #ifdef GUCEF_LINUX_BUILD
-        if ( pthread_mutex_lock( &((TMutexData*)_mutexdata)->id ) < 0 ) return false;
-        return true;
-        #endif
-        #endif
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id ,
+                              INFINITE                      ) == WAIT_FAILED ) return false;
+    return true;
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    if ( pthread_mutex_lock( &((TMutexData*)_mutexdata)->id ) < 0 ) return false;
+    return true;
+    
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Unlocks the mutex after a call to Lock_Mutex(). Other processes
- *      will have the ability to get a mutex lock after this call.
- *      The return value indicates wheter the unlock failed or succeeded.
- */
 bool
 CMutex::Unlock( void ) const
 {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-        if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE ) return false;
-        return true;
-        #else
-        #ifdef GUCEF_LINUX_BUILD
-        if ( pthread_mutex_unlock( &((TMutexData*)_mutexdata)->id ) < 0 ) return false;
-        return true;
-        #endif
-        #endif
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE ) return false;
+    return true;
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    if ( pthread_mutex_unlock( &((TMutexData*)_mutexdata)->id ) < 0 ) return false;
+    return true;
+    
+    #endif
 }
 
 /*-------------------------------------------------------------------------//

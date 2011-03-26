@@ -28,11 +28,12 @@ LOCAL_SRC_FILES := \
   src/GucefLogServiceLib_CLogSvcServerFileLogger.cpp
 
 LOCAL_C_INCLUDES := \
-  include \
-  ../../gucefCOM/include \
-  ../../gucefCOMCORE/include \
-  ../../gucefCORE/include \
-  ../../gucefMT/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../../common/include \
+  $(MY_MODULE_PATH)/../../gucefCOM/include \
+  $(MY_MODULE_PATH)/../../gucefCOMCORE/include \
+  $(MY_MODULE_PATH)/../../gucefCORE/include \
+  $(MY_MODULE_PATH)/../../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

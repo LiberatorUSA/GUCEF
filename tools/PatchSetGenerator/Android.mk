@@ -24,11 +24,12 @@ LOCAL_SRC_FILES := \
   src/PatchSetGenerator.cpp
 
 LOCAL_C_INCLUDES := \
-  ../../gucefCOM/include \
-  ../../gucefCOMCORE/include \
-  ../../gucefCORE/include \
-  ../../gucefMT/include \
-  ../../gucefPATCHER/include
+  $(MY_MODULE_PATH)/../../common/include \
+  $(MY_MODULE_PATH)/../../gucefCOM/include \
+  $(MY_MODULE_PATH)/../../gucefCOMCORE/include \
+  $(MY_MODULE_PATH)/../../gucefCORE/include \
+  $(MY_MODULE_PATH)/../../gucefMT/include \
+  $(MY_MODULE_PATH)/../../gucefPATCHER/include
 
 
 LOCAL_SHARED_LIBRARIES := \

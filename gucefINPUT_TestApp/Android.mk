@@ -24,9 +24,9 @@ LOCAL_SRC_FILES := \
   src/gucefINPUT_TestApp.cpp
 
 LOCAL_C_INCLUDES := \
-  ../gucefCORE/include \
-  ../gucefINPUT/include \
-  ../gucefMT/include
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefINPUT/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

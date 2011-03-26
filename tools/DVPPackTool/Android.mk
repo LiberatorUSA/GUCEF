@@ -24,9 +24,10 @@ LOCAL_SRC_FILES := \
   src/DVP_Pack_Tool.c
 
 LOCAL_C_INCLUDES := \
-  ../../gucefCORE/include \
-  ../../gucefMT/include \
-  ../../gucefVFS/plugins/vfspluginDVP/dependencies/DVPACKSYS/include
+  $(MY_MODULE_PATH)/../../common/include \
+  $(MY_MODULE_PATH)/../../gucefCORE/include \
+  $(MY_MODULE_PATH)/../../gucefMT/include \
+  $(MY_MODULE_PATH)/../../gucefVFS/plugins/vfspluginDVP/dependencies/DVPACKSYS/include
 
 
 LOCAL_SHARED_LIBRARIES := \

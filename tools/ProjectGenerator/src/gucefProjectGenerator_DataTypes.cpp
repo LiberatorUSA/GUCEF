@@ -198,6 +198,7 @@ ModuleTypeToString( const TModuleType moduleType )
         case MODULETYPE_EXECUTABLE: return "Executable";
         case MODULETYPE_SHARED_LIBRARY: return "SharedLibrary";
         case MODULETYPE_STATIC_LIBRARY: return "StaticLibrary";
+        case MODULETYPE_HEADER_INCLUDE_LOCATION: return "HeaderIncludeLocation";
         case MODULETYPE_UNKNOWN: return "Unknown";
         default: return "";
     }
@@ -213,6 +214,7 @@ StringToModuleType( const CORE::CString moduleTypeStr )
     if ( moduleTypeString == "executable" ) return MODULETYPE_EXECUTABLE;
     if ( moduleTypeString == "sharedlibrary" ) return MODULETYPE_SHARED_LIBRARY;
     if ( moduleTypeString == "staticlibrary" ) return MODULETYPE_STATIC_LIBRARY;
+    if ( moduleTypeString == "headerincludelocation" ) return MODULETYPE_HEADER_INCLUDE_LOCATION;
     if ( moduleTypeString == "unknown" ) return MODULETYPE_UNKNOWN;
     return MODULETYPE_UNDEFINED;
 }

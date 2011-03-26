@@ -66,11 +66,12 @@ typedef std::map< CORE::CString, TStringVectorMap > TStringVectorMapMap;
 
 enum EModuleType
 {
-    MODULETYPE_UNDEFINED      ,    // <- this is the initialization value
+    MODULETYPE_UNDEFINED                ,    // <- this is the initialization value
     
-    MODULETYPE_EXECUTABLE     ,
-    MODULETYPE_SHARED_LIBRARY ,
-    MODULETYPE_STATIC_LIBRARY ,
+    MODULETYPE_EXECUTABLE               ,
+    MODULETYPE_SHARED_LIBRARY           ,    // <- shared library (.dll on win32, .so on linux/android)
+    MODULETYPE_STATIC_LIBRARY           ,    // <- static library (.lib on win32, .a on linux/android)
+    MODULETYPE_HEADER_INCLUDE_LOCATION  ,    // <- location where headers can be placed for reference by other modules
     
     MODULETYPE_UNKNOWN             // <- to be used when initialized BUT we cannot determine the module type
 };

@@ -57,11 +57,11 @@ LOCAL_SRC_FILES := \
   src/gucefGUI_CWindow.cpp
 
 LOCAL_C_INCLUDES := \
-  include \
-  ../gucefCORE/include \
-  ../gucefIMAGE/include \
-  ../gucefMT/include \
-  ../gucefVFS/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefIMAGE/include \
+  $(MY_MODULE_PATH)/../gucefMT/include \
+  $(MY_MODULE_PATH)/../gucefVFS/include
 
 
 LOCAL_SHARED_LIBRARIES := \
