@@ -843,7 +843,18 @@ DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry ,
         if ( DeserializeModuleInfo( moduleInfoForPlatform ,
                                     *moduleNode           ) )
         {
-            moduleInfoEntry.modulesPerPlatform[ platform ] = moduleInfoForPlatform;
+            // Special case handling for win32 vs win64 
+            // When mswin is specified we add the platform to both win32 and win64
+            // This just makes it less effort for people to specify modules for mswin
+            if ( "mswin" == platform )
+            {
+                moduleInfoEntry.modulesPerPlatform[ "win32" ] = moduleInfoForPlatform;
+                moduleInfoEntry.modulesPerPlatform[ "win64" ] = moduleInfoForPlatform;
+            }
+            else
+            {
+                moduleInfoEntry.modulesPerPlatform[ platform ] = moduleInfoForPlatform;
+            }
         }
         else
         {
