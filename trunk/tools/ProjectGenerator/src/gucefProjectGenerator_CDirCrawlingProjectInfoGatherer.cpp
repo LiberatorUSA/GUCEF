@@ -281,23 +281,23 @@ IsStringInList( const TStringVector& list       ,
 
 /*-------------------------------------------------------------------------*/
 
-const TModuleInfoEntry*
-FindModuleAccordingToBuildOrderImp( const TProjectInfo& projectInfo     ,
+TModuleInfoEntry*
+FindModuleAccordingToBuildOrderImp( TProjectInfo& projectInfo           ,
                                     const CORE::CString& targetPlatform ,
                                     int buildOrderIndex                 )
 {GUCEF_TRACE;
 
-    TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
+    TModuleInfoEntryVector::iterator i = projectInfo.modules.begin();
     while ( i != projectInfo.modules.end() )
     {
-        const TModuleInfoEntry& moduleEntry = (*i);
+        TModuleInfoEntry& moduleEntry = (*i);
         
         // Check to see if we have an entry for this platform
-        TModuleInfoMap::const_iterator n = moduleEntry.modulesPerPlatform.find( targetPlatform );
+        TModuleInfoMap::iterator n = moduleEntry.modulesPerPlatform.find( targetPlatform );
         if ( n != moduleEntry.modulesPerPlatform.end() )
         {
             // Check to see if the entry has a platform specific build order
-            const TModuleInfo& info = (*n).second;
+            TModuleInfo& info = (*n).second;
             if ( buildOrderIndex == info.buildOrder )
             {
                 return &(*i);
@@ -311,14 +311,14 @@ FindModuleAccordingToBuildOrderImp( const TProjectInfo& projectInfo     ,
 
 /*-------------------------------------------------------------------------*/
 
-const TModuleInfoEntry*
-FindFirstModuleAccordingToBuildOrder( const TProjectInfo& projectInfo     ,
+TModuleInfoEntry*
+FindFirstModuleAccordingToBuildOrder( TProjectInfo& projectInfo           ,
                                       const CORE::CString& targetPlatform )
 {GUCEF_TRACE;
 
-    const TModuleInfoEntry* platformEntry = FindModuleAccordingToBuildOrderImp( projectInfo    ,
-                                                                                targetPlatform , 
-                                                                                0              );
+    TModuleInfoEntry* platformEntry = FindModuleAccordingToBuildOrderImp( projectInfo    ,
+                                                                          targetPlatform , 
+                                                                          0              );
     if ( NULL == platformEntry && targetPlatform != AllPlatforms )
     {
         // If we get here we did not find a module with build order 0
@@ -368,17 +368,17 @@ GetModuleBuildOrder( const TModuleInfoEntry& moduleEntry ,
 
 /*-------------------------------------------------------------------------*/
 
-const TModuleInfoEntry*
-FindNextModuleAccordingToBuildOrder( const TProjectInfo& projectInfo            ,
-                                     const TModuleInfoEntry& currentModuleEntry ,
-                                     const CORE::CString& targetPlatform        )
+TModuleInfoEntry*
+FindNextModuleAccordingToBuildOrder( TProjectInfo& projectInfo            ,
+                                     TModuleInfoEntry& currentModuleEntry ,
+                                     const CORE::CString& targetPlatform  )
 {GUCEF_TRACE;
 
     int desiredBuildOrder = GetModuleBuildOrder( currentModuleEntry, targetPlatform ) + 1;
     
-    const TModuleInfoEntry* platformEntry = FindModuleAccordingToBuildOrderImp( projectInfo       ,
-                                                                                targetPlatform    , 
-                                                                                desiredBuildOrder );
+    TModuleInfoEntry* platformEntry = FindModuleAccordingToBuildOrderImp( projectInfo       ,
+                                                                          targetPlatform    , 
+                                                                          desiredBuildOrder );
     if ( NULL == platformEntry && targetPlatform != AllPlatforms )
     {
         // If we get here we did not find a module with build order 0
@@ -1720,18 +1720,23 @@ GenerateModuleDependencyIncludesForPlatform( const TProjectInfo& projectInfo   ,
 /*---------------------------------------------------------------------------*/
 
 void
-GenerateModuleDependencyIncludesForAllPlatforms( const TProjectInfo& projectInfo   ,
-                                                 TModuleInfoEntry& moduleInfoEntry )
+GenerateDependencyIncludesForPlatform( TProjectInfo& projectInfo         ,
+                                       const CORE::CString& platformName )
 {GUCEF_TRACE;
 
-    GenerateModuleDependencyIncludesForPlatform( projectInfo, moduleInfoEntry, AllPlatforms );
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating dependency inhertited includes for platform " + platformName );
     
-    const TStringSet& supportedPlatforms = GetSupportedPlatforms();
-    TStringSet::const_iterator i = supportedPlatforms.begin();
-    while ( i != supportedPlatforms.end() )
-    {
-        GenerateModuleDependencyIncludesForPlatform( projectInfo, moduleInfoEntry, (*i) );
-        ++i;
+    TModuleInfoEntry* moduleInfoEntry = FindFirstModuleAccordingToBuildOrder( projectInfo  ,
+                                                                              platformName );
+    while ( NULL != moduleInfoEntry )
+    {    
+        GenerateModuleDependencyIncludesForPlatform( projectInfo      ,
+                                                     *moduleInfoEntry ,
+                                                     platformName     );
+
+        moduleInfoEntry = FindNextModuleAccordingToBuildOrder( projectInfo      ,
+                                                               *moduleInfoEntry ,
+                                                               platformName     );
     }
 }
 
@@ -1741,10 +1746,13 @@ void
 GenerateDependencyIncludes( TProjectInfo& projectInfo )
 {GUCEF_TRACE;
 
-    TModuleInfoEntryVector::iterator i = projectInfo.modules.begin();
-    while ( i != projectInfo.modules.end() )
+    GenerateDependencyIncludesForPlatform( projectInfo, AllPlatforms );
+    
+    const TStringSet& supportedPlatforms = GetSupportedPlatforms();
+    TStringSet::const_iterator i = supportedPlatforms.begin();
+    while ( i != supportedPlatforms.end() )
     {
-        GenerateModuleDependencyIncludesForAllPlatforms( projectInfo, (*i) );
+        GenerateDependencyIncludesForPlatform( projectInfo, (*i) );
         ++i;
     }
 }
