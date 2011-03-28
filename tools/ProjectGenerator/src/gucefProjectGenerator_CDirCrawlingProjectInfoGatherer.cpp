@@ -1752,7 +1752,7 @@ GenerateDependencyIncludes( TProjectInfo& projectInfo )
     TStringSet::const_iterator i = supportedPlatforms.begin();
     while ( i != supportedPlatforms.end() )
     {
-        GenerateDependencyIncludesForPlatform( projectInfo, (*i) );
+        GenerateDependencyIncludesForPlatform( projectInfo, (*i).Lowercase() );
         ++i;
     }
 }
