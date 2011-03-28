@@ -17,9 +17,4 @@
             <Dependency Name="pthread" />
         </Linker>
     </Module>
-    <Module Platform="android">
-        <Linker>
-            <Dependency Name="pthread" />
-        </Linker>
-    </Module>
 </ModuleInfoEntry>
