@@ -40,9 +40,5 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../common/include
 
-
-LOCAL_LDLIBS := \
-  -lpthread
-
 include $(BUILD_SHARED_LIBRARY)
 
