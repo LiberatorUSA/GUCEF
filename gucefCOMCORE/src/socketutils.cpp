@@ -23,6 +23,22 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_COMCORE_MACROS_H
+#include "gucefCOMCORE_macros.h"       /* build defines */
+#define GUCEF_COMCORE_MACROS_H
+#endif /* GUCEF_COMCORE_MACROS_H ? */
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+  #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
+  #include <winsock2.h>
+  #include <Ws2tcpip.h>
+  #include <Wspiapi.h>
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+  #include <unistd.h>
+  #include <sys/socket.h>
+  #include <sys/types.h>
+#endif
+
 #include "socketutils.h"
 
 /*-------------------------------------------------------------------------//

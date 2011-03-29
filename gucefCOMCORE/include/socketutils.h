@@ -26,23 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCOMCORE_MACROS_H
+#ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"       /* build defines */
-#define GUCEFCOMCORE_MACROS_H
-#endif /* GUCEFCOMCORE_MACROS_H ? */
+#define GUCEF_COMCORE_MACROS_H
+#endif /* GUCEF_COMCORE_MACROS_H ? */
 
-#ifdef GUCEF_MSWIN_BUILD
-  #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
-  #include <winsock2.h>
-  #include <Ws2tcpip.h>
-  #include <Wspiapi.h>
-#else
- #ifdef GUCEF_LINUX_BUILD
-    #include <unistd.h>
-    #include <sys/socket.h>
-    #include <sys/types.h>
- #endif
-#endif
+#ifndef GUCEF_COMCORE_DVSOCKET_H
+#include "dvwinsock.h"
+#define GUCEF_COMCORE_DVSOCKET_H
+#endif /* GUCEF_COMCORE_DVSOCKET_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

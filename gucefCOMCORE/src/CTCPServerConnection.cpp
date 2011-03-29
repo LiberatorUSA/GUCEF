@@ -220,7 +220,7 @@ CTCPServerConnection::Send( const void* dataSource ,
         {
             // perform a send, trying to send as much of the given data as possible
             Int32 remnant = length - totalBytesSent;
-            wbytes = WSTS_send( _data->sockid                      ,  
+            wbytes = dvsocket_send( _data->sockid                      ,  
                                 ((Int8*)dataSource)+totalBytesSent , 
                                 remnant                            , 
                                 0                                  , 
@@ -334,7 +334,7 @@ CTCPServerConnection::CheckRecieveBuffer( void )
     do
     {                 
         m_readbuffer.SetDataSize( m_readbuffer.GetDataSize()+readblocksize );
-        bytesrecv = WSTS_recv( _data->sockid                                                 , 
+        bytesrecv = dvsocket_recv( _data->sockid                                                 , 
                                static_cast<char*>(m_readbuffer.GetBufferPtr())+totalrecieved ,
                                readblocksize                                                 ,
                                0                                                             ,
@@ -479,7 +479,7 @@ CTCPServerConnection::Update( void )
                     // perform a send, trying to send as much of the given data as possible
                     const Int8* data = static_cast< const Int8* >( m_sendOpBuffer.GetConstBufferPtr() );
                     Int32 remnant = m_sendOpBuffer.GetDataSize() - totalBytesSent;
-                    wbytes = WSTS_send( _data->sockid       ,  
+                    wbytes = dvsocket_send( _data->sockid       ,  
                                         data+totalBytesSent , 
                                         remnant             , 
                                         0                   , 
