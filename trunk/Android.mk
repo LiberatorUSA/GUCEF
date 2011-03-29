@@ -24,4 +24,5 @@ include $(CLEAR_VARS)
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefMT
 include $(MY_MODULE_PATH)/Android.mk
 
-
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefCORE
+include $(MY_MODULE_PATH)/Android.mk

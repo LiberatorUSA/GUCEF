@@ -37,7 +37,7 @@
 #include "dvfileutils.h"	/* function prototypes */
 
 #include "dvstrutils.h"         /* My own string utils */
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #include <windows.h>		/* WIN32 API */
   #undef min
   #undef max
@@ -45,7 +45,7 @@
   #include <io.h>                 /* Dir itteration: findfirst ect. */
   #include <direct.h>             /* dir tools */
   #define MAX_DIR_LENGTH MAX_PATH
-#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
   #include <dirent.h>             /* needed for dirent strcture */
   #include <unistd.h>             /* POSIX utilities */
   #include <limits.h>             /* Linux OS limits */
@@ -84,18 +84,23 @@ namespace CORE {
  */
 struct SDI_Data
 {
- 	#ifdef GUCEF_MSWIN_BUILD
+ 	#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+	
 	Int32 find_handle;        /* Unique handle identifying the file or set of files that resulted from a findfirst with the filter provided */
 	struct _finddata_t  find; /* struct that stores entry data */
-        #else
-        DIR *dir;                 /* Directory stream */
-        struct dirent *entry;     /* Pointer needed for functions to iterating directory entries. Stores entry name which is used to get stat */
-        struct stat statinfo;     /* Struct needed for determining info about an entry with stat(). */
-        #ifdef GUCEF_LINUX_BUILD
-        #else
-        /* -> empty struct because we don't support other OS's atm */
-        #endif /* GUCEF_LINUX_BUILD ? */
-        #endif /* WIN32_BUILD ? */
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    DIR *dir;                 /* Directory stream */
+    struct dirent *entry;     /* Pointer needed for functions to iterating directory entries. Stores entry name which is used to get stat */
+    struct stat statinfo;     /* Struct needed for determining info about an entry with stat(). */
+    
+    #else
+    
+    /* -> empty struct because we don't support other OS's atm */
+    #error Unsupported OS
+    
+    #endif
 };
 
 /*-------------------------------------------------------------------------//
@@ -107,131 +112,132 @@ struct SDI_Data
 struct SDI_Data*
 DI_First_Dir_Entry( const char *path )
 {
+    /*
+     *	Function that should be used for directory entry itteration.
+     *	All the functions listed here with a DI_ prefix belong together and
+     *	combined allow you to itterate trough a directory in a cross-platform
+     *	manner. Note that the DI_ functions are NOT threadsafe.
+     *
+     *	This function allocates data storage for the dir itteration process.
+     *	In case of error NULL is returned.
+     */
+    struct SDI_Data *data;
+    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ) 
+    
+    char *tmp_path;
+    
+    #endif /* GUCEF_PLATFORM_MSWIN ? */
+
+    if ( !path ) return NULL;
+
+    /*
+     *	Allocate data storage.
+     */
+    data = ( struct SDI_Data* ) malloc( sizeof( struct SDI_Data ) );
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    /*
+     *	In Win32 we use _findfirst ect. because even though the posix
+     *	functions are supported on windows NT they are not supported on
+     *	Win98 and WinME and these functions are. No support for Win95 or
+     *	older though.
+     */
+    tmp_path = (char*)calloc( strlen( path )+5, sizeof( char ) );
+    strcpy( tmp_path, path );
+    Append_To_Path( tmp_path, "*.*\0" );
+    data->find_handle = (Int32) _findfirst( tmp_path, &data->find );
+    free( tmp_path );
+
+    /*
+     *	Check if findfirst was successful
+     */
+    if ( data->find_handle == -1 )
+    {
         /*
-         *	Function that should be used for directory entry itteration.
-         *	All the functions listed here with a DI_ prefix belong together and
-         *	combined allow you to itterate trough a directory in a cross-platform
-         *	manner. Note that the DI_ functions are NOT threadsafe.
-         *
-         *	This function allocates data storage for the dir itteration process.
-         *	In case of error NULL is returned.
+         *	There was an error
          */
-        struct SDI_Data *data;
-        #ifdef GUCEF_MSWIN_BUILD
-        char *tmp_path;
-        #endif /* WIN32_BUILD ? */
+        _findclose( data->find_handle );
+        free( data );
+        return NULL;
+    }
 
-        if ( !path ) return NULL;
+    /*
+     *	Successfully obtained first entry so we return the struct
+     *	pointer
+     */
+    return data;
 
-        /*
-         *	Allocate data storage.
-         */
-        data = ( struct SDI_Data* ) malloc( sizeof( struct SDI_Data ) );
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-        #ifdef GUCEF_MSWIN_BUILD
+    /*
+     *	In Linux we use POSIX functions because these are independant of
+     *	the Linux distribution. It may also provide use with support for
+     *	other Unix based systems.
+     */
 
-        /*
-         *	In Win32 we use _findfirst ect. because even though the posix
-         *	functions are supported on windows NT they are not supported on
-         *	Win98 and WinME and these functions are. No support for Win95 or
-         *	older though.
-         */
-        tmp_path = (char*)calloc( strlen( path )+5, sizeof( char ) );
-	strcpy( tmp_path, path );
-        Append_To_Path( tmp_path, "*.*\0" );
-        data->find_handle = (Int32) _findfirst( tmp_path, &data->find );
-	free( tmp_path );
-
-        /*
-         *	Check if findfirst was successful
-         */
-        if ( data->find_handle == -1 )
-        {
-        	/*
-                 *	There was an error
-                 */
-                _findclose( data->find_handle );
-                free( data );
-                return NULL;
-        }
-
-        /*
-         *	Successfully obtained first entry so we return the struct
-         *	pointer
-         */
-        return data;
-
-        #else
-        #ifdef GUCEF_LINUX_BUILD
-
-        /*
-         *	In Linux we use POSIX functions because these are independant of
-         *	the Linux distribution. It may also provide use with support for
-         *	other Unix based systems.
-         */
-
-        /*
-         *	Attempt to open the directory
-         */
-        if ( ( data->dir = opendir( path ) ) == NULL )
-        {
-        	/*
-                 *	Could not open directory
-                 */
-                closedir( data->dir );
-                free( data );
-        	return NULL;
-        }
-
-        /*
-         *	change working dir to be able to read file information
-         */
-        chdir( path );
-
-        /*
-         *	Read first entry
-         */
-        data->entry = readdir( data->dir );
-        while( data->entry )
-        {
-                /*
-                 *	Get info on the entry.
-                 *	We only want regular files and directory entry's. We ignore the
-                 *	rest.
-                 */
-                stat( data->entry->d_name, &data->statinfo );
-                if ( S_ISREG( data->statinfo.st_mode ) || S_ISDIR( data->statinfo.st_mode ) )
-                {
-                	/*
-                         *	We found either a regular file or a directory
-                         *	entry which is now our current entry.
-                         */
-                        return data;
-                }
-
-                /*
-                 *	This entry is not what we want,.. skip to the next entry
-                 */
-                data->entry = readdir( data->dir );
-        }
-
-        /*
-         *	there was an error reading the entry data or no entry was found
-         *	on the path specified that was a regular file or directory.
+    /*
+     *	Attempt to open the directory
+     */
+    if ( ( data->dir = opendir( path ) ) == NULL )
+    {
+    	/*
+         *	Could not open directory
          */
         closedir( data->dir );
         free( data );
-        return NULL;
+	    return NULL;
+    }
 
-        #else
+    /*
+     *	change working dir to be able to read file information
+     */
+    chdir( path );
+
+    /*
+     *	Read first entry
+     */
+    data->entry = readdir( data->dir );
+    while( data->entry )
+    {
+        /*
+         *	Get info on the entry.
+         *	We only want regular files and directory entry's. We ignore the
+         *	rest.
+         */
+        stat( data->entry->d_name, &data->statinfo );
+        if ( S_ISREG( data->statinfo.st_mode ) || S_ISDIR( data->statinfo.st_mode ) )
+        {
+        	/*
+             *	We found either a regular file or a directory
+             *	entry which is now our current entry.
+             */
+            return data;
+        }
 
         /*
-         *	Unsupported O/S build
+         *	This entry is not what we want,.. skip to the next entry
          */
-        return NULL;
+        data->entry = readdir( data->dir );
+    }
 
-        #endif /* GUCEF_LINUX_BUILD */
-        #endif /* WIN32_BUILD */
+    /*
+     *	there was an error reading the entry data or no entry was found
+     *	on the path specified that was a regular file or directory.
+     */
+    closedir( data->dir );
+    free( data );
+    return NULL;
+
+    #else
+
+    /*
+     *	Unsupported O/S build
+     */
+    return NULL;
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -239,63 +245,62 @@ DI_First_Dir_Entry( const char *path )
 UInt32
 DI_Next_Dir_Entry( struct SDI_Data *data )
 {
-        /*
-         *	Function that should be used for directory entry itteration.
-         *	All the functions listed here with a DI_ prefix belong together and
-         *	combined allow you to itterate trough a directory in a cross-platform
-         *	manner. Note that the DI_ functions are NOT threadsafe.
-         *
-         *	Function that selects the next directory entry. If there are no more
-         *	directory entry's available ie we itterated over all entry's then
-         *	0 is returned in which case you should call DI_Cleanup(),
-         *	otherwise 1 is returned.
-         */
-        #ifdef GUCEF_MSWIN_BUILD
-        return !_findnext( data->find_handle, &data->find );
-	#else
-        #ifdef GUCEF_LINUX_BUILD
+    /*
+     *	Function that should be used for directory entry itteration.
+     *	All the functions listed here with a DI_ prefix belong together and
+     *	combined allow you to itterate trough a directory in a cross-platform
+     *	manner. Note that the DI_ functions are NOT threadsafe.
+     *
+     *	Function that selects the next directory entry. If there are no more
+     *	directory entry's available ie we itterated over all entry's then
+     *	0 is returned in which case you should call DI_Cleanup(),
+     *	otherwise 1 is returned.
+     */
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    return !_findnext( data->find_handle, &data->find );
 
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    /*
+     *	Read next entry
+     */
+    data->entry = readdir( data->dir );
+    while( data->entry )
+    {
         /*
-         *	Read next entry
+         *	Get info on the entry.
+         *	We only want regular files and directory entry's. We ignore the
+         *	rest.
          */
-        data->entry = readdir( data->dir );
-        while( data->entry )
+        stat( data->entry->d_name, &data->statinfo );
+        if ( S_ISREG( data->statinfo.st_mode ) || S_ISDIR( data->statinfo.st_mode ) )
         {
-                /*
-                 *	Get info on the entry.
-                 *	We only want regular files and directory entry's. We ignore the
-                 *	rest.
-                 */
-                stat( data->entry->d_name, &data->statinfo );
-                if ( S_ISREG( data->statinfo.st_mode ) || S_ISDIR( data->statinfo.st_mode ) )
-                {
-                	/*
-                         *	We found either a regular file or a directory
-                         *	entry which is now our current entry.
-                         */
-                        return 1;
-                }
-
-                /*
-                 *	This entry is not what we want,.. skip to the next entry
-                 */
-                data->entry = readdir( data->dir );
+        	/*
+             *	We found either a regular file or a directory
+             *	entry which is now our current entry.
+             */
+            return 1;
         }
 
         /*
-         *	Could not find any other entry's that where either a regular file
-         *	or a directory.
+         *	This entry is not what we want,.. skip to the next entry
          */
-        return 0;
+        data->entry = readdir( data->dir );
+    }
 
-        #else
+    /*
+     *	Could not find any other entry's that where either a regular file
+     *	or a directory.
+     */
+    return 0;
+
+    #else
 
         /*
          *	Unsupported O/S build
          */
-
-        #endif /* GUCEF_LINUX_BUILD ? */
-        #endif /* WIN32_BUILD ? */
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -303,28 +308,31 @@ DI_Next_Dir_Entry( struct SDI_Data *data )
 UInt32
 DI_Timestamp( struct SDI_Data *data )
 {
-        /*
-         *	Function that should be used for directory entry itteration.
-         *	All the functions listed here with a DI_ prefix belong together and
-         *	combined allow you to itterate trough a directory in a cross-platform
-         *	manner. Note that the DI_ functions are NOT threadsafe.
-         *
-         *	Returns the dir entry name of the current directory entry. This may be
-         *	a directory name or a filename. Use DI_Is_It_A_File() to determine which
-         */
-        #ifdef GUCEF_MSWIN_BUILD
-        return (UInt32)data->find.time_write;
-	#else
-        #ifdef GUCEF_LINUX_BUILD
-        return data->statinfo.st_mtime;
-        #else
+    /*
+     *	Function that should be used for directory entry itteration.
+     *	All the functions listed here with a DI_ prefix belong together and
+     *	combined allow you to itterate trough a directory in a cross-platform
+     *	manner. Note that the DI_ functions are NOT threadsafe.
+     *
+     *	Returns the dir entry name of the current directory entry. This may be
+     *	a directory name or a filename. Use DI_Is_It_A_File() to determine which
+     */
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    return (UInt32)data->find.time_write;
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    return data->statinfo.st_mtime;
+    
+    #else
 
-        /*
-         *	Unsupported O/S build
-         */
-
-        #endif /* GUCEF_LINUX_BUILD ? */
-        #endif /* WIN32_BUILD ? */
+    /*
+     *	Unsupported O/S build
+     */
+    return 0;
+    
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -332,28 +340,31 @@ DI_Timestamp( struct SDI_Data *data )
 UInt32
 DI_Size( struct SDI_Data *data )
 {
-        /*
-         *	Function that should be used for directory entry itteration.
-         *	All the functions listed here with a DI_ prefix belong together and
-         *	combined allow you to itterate trough a directory in a cross-platform
-         *	manner. Note that the DI_ functions are NOT threadsafe.
-         *
-         *	Returns the size of the current entry which in the case of a file is the
-         *	filesize.
-         */
-        #ifdef GUCEF_MSWIN_BUILD
-        return data->find.size;
-	#else
-        #ifdef GUCEF_LINUX_BUILD
-        return data->statinfo.st_size;
-        #else
+    /*
+     *	Function that should be used for directory entry itteration.
+     *	All the functions listed here with a DI_ prefix belong together and
+     *	combined allow you to itterate trough a directory in a cross-platform
+     *	manner. Note that the DI_ functions are NOT threadsafe.
+     *
+     *	Returns the size of the current entry which in the case of a file is the
+     *	filesize.
+     */
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    return data->find.size;
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    return data->statinfo.st_size;
+    
+    #else
 
-        /*
-         *	Unsupported O/S build
-         */
+    /*
+     *	Unsupported O/S build
+     */
+    return 0;
 
-        #endif /* GUCEF_LINUX_BUILD ? */
-        #endif /* WIN32_BUILD ? */
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -361,28 +372,31 @@ DI_Size( struct SDI_Data *data )
 UInt32
 DI_Is_It_A_File( struct SDI_Data *data )
 {
-        /*
-         *	Function that should be used for directory entry itteration.
-         *	All the functions listed here with a DI_ prefix belong together and
-         *	combined allow you to itterate trough a directory in a cross-platform
-         *	manner. Note that the DI_ functions are NOT threadsafe.
-         *
-         *	Returns boolean indicating wheter the current entry is a directory or
-         *	a file.
-         */
-        #ifdef GUCEF_MSWIN_BUILD
-        return !( data->find.attrib & _A_SUBDIR );
-	#else
-        #ifdef GUCEF_LINUX_BUILD
-        return S_ISREG( data->statinfo.st_mode );
-        #else
+    /*
+     *	Function that should be used for directory entry itteration.
+     *	All the functions listed here with a DI_ prefix belong together and
+     *	combined allow you to itterate trough a directory in a cross-platform
+     *	manner. Note that the DI_ functions are NOT threadsafe.
+     *
+     *	Returns boolean indicating wheter the current entry is a directory or
+     *	a file.
+     */
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    return !( data->find.attrib & _A_SUBDIR );
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    return S_ISREG( data->statinfo.st_mode );
+    
+    #else
 
-        /*
-         *	Unsupported O/S build
-         */
-
-        #endif /* GUCEF_LINUX_BUILD ? */
-        #endif /* WIN32_BUILD ? */
+    /*
+     *	Unsupported O/S build
+     */
+    return 0;
+    
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -390,28 +404,31 @@ DI_Is_It_A_File( struct SDI_Data *data )
 const char*
 DI_Name( struct SDI_Data *data )
 {
-        /*
-         *	Function that should be used for directory entry itteration.
-         *	All the functions listed here with a DI_ prefix belong together and
-         *	combined allow you to itterate trough a directory in a cross-platform
-         *	manner. Note that the DI_ functions are NOT threadsafe.
-         *
-         *	Returns the dir entry name of the current directory entry. This may be
-         *	a directory name or a filename. Use DI_Is_It_A_File() to determine which
-         */
-        #ifdef GUCEF_MSWIN_BUILD
-        return data->find.name;
-	#else
-        #ifdef GUCEF_LINUX_BUILD
-        return data->entry->d_name;
-        #else
+    /*
+     *	Function that should be used for directory entry itteration.
+     *	All the functions listed here with a DI_ prefix belong together and
+     *	combined allow you to itterate trough a directory in a cross-platform
+     *	manner. Note that the DI_ functions are NOT threadsafe.
+     *
+     *	Returns the dir entry name of the current directory entry. This may be
+     *	a directory name or a filename. Use DI_Is_It_A_File() to determine which
+     */
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    return data->find.name;
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    return data->entry->d_name;
+    
+    #else
 
-        /*
-         *	Unsupported O/S build
-         */
-
-        #endif /* GUCEF_LINUX_BUILD ? */
-        #endif /* WIN32_BUILD ? */
+    /*
+     *	Unsupported O/S build
+     */
+    return NULL;
+        
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -419,30 +436,32 @@ DI_Name( struct SDI_Data *data )
 void
 DI_Cleanup( struct SDI_Data *data )
 {
-        /*
-         *	Function that should be used for directory entry itteration.
-         *	All the functions listed here with a DI_ prefix belong together and
-         *	combined allow you to itterate trough a directory in a cross-platform
-         *	manner. Note that the DI_ functions are NOT threadsafe.
-         *
-         *	De-allocates data storage used for dir itteration which was created by
-         *	a call to DI_First_Dir_Entry().
-         */
-        #ifdef GUCEF_MSWIN_BUILD
-        _findclose( data->find_handle );
-        free( data );
-	#else
-        #ifdef GUCEF_LINUX_BUILD
-	closedir( data->dir );
-        free( data );
-        #else
+    /*
+     *	Function that should be used for directory entry itteration.
+     *	All the functions listed here with a DI_ prefix belong together and
+     *	combined allow you to itterate trough a directory in a cross-platform
+     *	manner. Note that the DI_ functions are NOT threadsafe.
+     *
+     *	De-allocates data storage used for dir itteration which was created by
+     *	a call to DI_First_Dir_Entry().
+     */
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    _findclose( data->find_handle );
+    free( data );
 
-        /*
-         *	Unsupported O/S build
-         */
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    closedir( data->dir );
+    free( data );
+    
+    #else
 
-        #endif /* GUCEF_LINUX_BUILD ? */
-        #endif /* WIN32_BUILD ? */
+    /*
+     *	Unsupported O/S build
+     */
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -450,22 +469,31 @@ DI_Cleanup( struct SDI_Data *data )
 char*
 Get_Current_Dir( char* dest_buffer, UInt32 buf_length )
 {
-        /*
-         *	Function that returns the current directory
-         */
-        if ( !dest_buffer ) return NULL;
+    /*
+     *	Function that returns the current directory
+     */
+    if ( !dest_buffer ) return NULL;
 
-        #ifdef GUCEF_MSWIN_BUILD
-        return _getcwd( dest_buffer, buf_length );
-        #endif /* WIN32_BUILD */
-        #ifdef GUCEF_LINUX_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    return _getcwd( dest_buffer, buf_length );
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-        /*
-         *	This call can actually fail: if another process has succeeded
-         *	in removing the current directory of a process
-         */
-        return getcwd( dest_buffer, buf_length );
-        #endif /* GUCEF_LINUX_BUILD */
+    /*
+     *	This call can actually fail: if another process has succeeded
+     *	in removing the current directory of a process
+     */
+    return getcwd( dest_buffer, buf_length );
+    
+    #else
+
+    /*
+     *	Unsupported O/S build
+     */
+    return NULL; 
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -477,12 +505,22 @@ Get_Current_Dir( char* dest_buffer, UInt32 buf_length )
 UInt32
 Max_Dir_Length( void )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        return MAX_PATH;
-        #endif /* WIN32_BUILD */
-        #ifdef GUCEF_LINUX_BUILD
-        return PATH_MAX;
-        #endif /* GUCEF_LINUX_BUILD */
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    return MAX_PATH;
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    return PATH_MAX;
+    
+    #else
+
+    /*
+     *	Unsupported O/S build
+     */
+    return 0; 
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -490,18 +528,28 @@ Max_Dir_Length( void )
 UInt32
 Max_Filename_Length( void )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        return _MAX_FNAME;
-        /*return MAXFILE+MAXEXT; */
-        #endif /* WIN32_BUILD */
-        #ifdef GUCEF_LINUX_BUILD
-        return NAME_MAX+1;
-        #endif /* GUCEF_LINUX_BUILD */
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    return _MAX_FNAME;
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    return NAME_MAX+1;
+        
+    #else
+
+    /*
+     *	Unsupported O/S build
+     */
+    return 0; 
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
 /**
  *	Recursive function that creates directories
  */
@@ -566,22 +614,33 @@ create_directory( const char *new_dir, UInt32 offset )
              return 1;
     }
 }
-#endif /* WIN32_BUILD */
+
+#endif /* GUCEF_PLATFORM_MSWIN */
 
 /*-------------------------------------------------------------------------*/
 
 UInt32
 Create_Directory( const char *new_dir )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-	return create_directory( new_dir, 0 );
-        #endif /* WIN32_BUILD */
-        #ifdef GUCEF_LINUX_BUILD
-        /*
-         *	Use posix function. returns -1 on failure and 0 on sucess
-         */
-        return mkdir( new_dir, 0777 )+1;
-        #endif /* GUCEF_LINUX_BUILD */
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    return create_directory( new_dir, 0 );
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    /*
+     *	Use posix function. returns -1 on failure and 0 on sucess
+     */
+    return mkdir( new_dir, 0777 )+1;
+    
+    #else
+
+    /*
+     *	Unsupported O/S build
+     */
+    return 0; 
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -597,70 +656,78 @@ Remove_Directory( const char *dir  ,
                   UInt32 del_files )
 {
 
-        if ( del_files )
+    if ( del_files )
+    {
+        /*
+         *      The user wishes to delete the directory even if the
+         *      directory is not empty. We will proceed to delete all
+         *      files in the directory first.
+         */
+        struct SDI_Data *ddata = DI_First_Dir_Entry( dir );
+        UInt32 more = 1;
+        if ( !ddata ) return 0;
+
+        while ( more )
         {
+            if ( DI_Is_It_A_File( ddata ) )
+            {
                 /*
-                 *      The user wishes to delete the directory even if the
-                 *      directory is not empty. We will proceed to delete all
-                 *      files in the directory first.
+                 *      Attempt to delete the file we found in
+                 *      the directory.
                  */
-                struct SDI_Data *ddata = DI_First_Dir_Entry( dir );
-                UInt32 more = 1;
-                if ( !ddata ) return 0;
-
-                while ( more )
+                if ( !Delete_File( DI_Name( ddata ) ) ) return 0;
+            }
+            else
+            {
+                /*
+                 *      Attempt to delete the directory we found
+                 *      and all files inside it.
+                 */
+                char *subdir = calloc( strlen( dir ) + strlen( DI_Name( ddata ) )+1, 1 );
+                strcpy( subdir, dir );
+                Append_To_Path( subdir, DI_Name( ddata ) );
+                if ( !Remove_Directory( subdir, del_files ) )
                 {
-                        if ( DI_Is_It_A_File( ddata ) )
-                        {
-                                /*
-                                 *      Attempt to delete the file we found in
-                                 *      the directory.
-                                 */
-                                if ( !Delete_File( DI_Name( ddata ) ) ) return 0;
-                        }
-                        else
-                        {
-                                /*
-                                 *      Attempt to delete the directory we found
-                                 *      and all files inside it.
-                                 */
-                                char *subdir = calloc( strlen( dir ) + strlen( DI_Name( ddata ) )+1, 1 );
-                                strcpy( subdir, dir );
-                                Append_To_Path( subdir, DI_Name( ddata ) );
-                                if ( !Remove_Directory( subdir, del_files ) )
-                                {
-                                        free( subdir );
-                                        return 0;
-                                }
-                                free( subdir );
-                        }
-
-                        /*
-                         *      Itterate to next directory entry
-                         */
-                        more = DI_Next_Dir_Entry( ddata );
+                    free( subdir );
+                    return 0;
                 }
+                free( subdir );
+            }
 
-                /*
-                 *      Clean-up our dir itterator
-                 */
-                DI_Cleanup( ddata );
+            /*
+             *      Itterate to next directory entry
+             */
+            more = DI_Next_Dir_Entry( ddata );
         }
 
-        #ifdef GUCEF_MSWIN_BUILD
         /*
-         *      Attempt to remove the directory itself. We can call the WIN32
-         *      function directly here because it won't delete any files in the
-         *      dir.
+         *      Clean-up our dir itterator
          */
-        return RemoveDirectory( dir );
-        #else
+        DI_Cleanup( ddata );
+    }
 
-        /*
-         *      Not implemented for your O/S
-         */
-        return 0;
-        #endif
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    /*
+     *      Attempt to remove the directory itself. We can call the WIN32
+     *      function directly here because it won't delete any files in the
+     *      dir.
+     */
+    
+    return RemoveDirectory( dir );
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    return 0 == rmdir( dir ) ? 1 : 0;
+    
+    #else
+    
+    /*
+     *      Not implemented for your O/S
+     */
+    return 0;
+    
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -718,7 +785,7 @@ Module_Path( char *dest, UInt32 dest_size )
     return (path);
     }
 
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     pid_t pid = getpid();
 
@@ -733,68 +800,78 @@ Module_Path( char *dest, UInt32 dest_size )
     }
     return 1;
 
+    #else
+    
+    /* 
+     *  Not supported
+     */
+    return 0; 
+
     #endif
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *	Function that will attempt to delete the given file.
- *	If successfull true (1) is returned, otherwise false (0).
- */
 UInt32
 Delete_File( const char *filename )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        return DeleteFile( filename );
-        #else
-        #ifdef GUCEF_LINUX_BUILD
-        return remove( filename );
-        #endif /* WIN32_BUILD ? */
-        #endif /* GUCEF_LINUX_BUILD ? */
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    return DeleteFile( filename );
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    return 0 == remove( filename ) ? 1 : 0;
+    
+    #else
+    
+    /*
+     *  Not supported
+     */
+    return 0;
+    
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *	Function that will attempt to copy the given file.
- *	src is the source file.
- *	dst is the destination file.
- *	If successfull true (1) is returned, otherwise false (0).
- */
 UInt32
 Copy_File( const char *dst, const char *src )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        return 0 != CopyFile( src, dst, TRUE ) ? 1 : 0;
-        #else
-        char buffer[ 1024*512 ];
-        UInt32 rbytes = 1;
-        FILE *dst_fptr, *src_fptr = fopen( src, "rb" );
-        if ( !src_fptr ) return 0;
-        dst_fptr = fopen( dst, "wb" );
-        if ( !dst_fptr )
-        {
-        	fclose(  src_fptr );
-        	return 0;
-        }
-        while ( rbytes )
-        {
-        	rbytes = (UInt32)fread( buffer, 1, 1024*512, src_fptr );
-                if ( rbytes )
-                if ( !(rbytes == fwrite( buffer, 1, 1024*512, dst_fptr )) )
-                {
-                	/*
-                         *	Problem writing file section
-                         */
-                        fclose(  dst_fptr );
-                        fclose(  src_fptr );
-                        return 0;
-                }
-        }
-        return 1;
-        #endif /* WIN32_BUILD ? */
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    return 0 != CopyFile( src, dst, TRUE ) ? 1 : 0;
+    
+    #else
+    
+    char buffer[ 1024*512 ];
+    UInt32 rbytes = 1;
+    FILE *dst_fptr, *src_fptr = fopen( src, "rb" );
+    if ( !src_fptr ) return 0;
+    dst_fptr = fopen( dst, "wb" );
+    if ( !dst_fptr )
+    {
+    	fclose(  src_fptr );
+    	return 0;
+    }
+    while ( rbytes )
+    {
+    	rbytes = (UInt32)fread( buffer, 1, 1024*512, src_fptr );
+            if ( rbytes )
+            if ( !(rbytes == fwrite( buffer, 1, 1024*512, dst_fptr )) )
+            {
+            	/*
+                 *	Problem writing file section
+                 */
+                fclose(  dst_fptr );
+                fclose(  src_fptr );
+                return 0;
+            }
+    }
+    return 1;
+    
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -806,58 +883,67 @@ Copy_File( const char *dst, const char *src )
 UInt32
 Move_File( const char *dst, const char *src )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        return MoveFile( src, dst );
-        #else
-        if ( Copy_File( dst, src ) )
-        {
-        	return Delete_File( src );
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    return MoveFile( src, dst );
 
-        }
-        return 0;
-        #endif /* WIN32_BUILD ? */
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    return 0 == rename( src, dst ) ? 1 : 0;
+        
+    #else
+    
+    if ( 0 != Copy_File( dst, src ) )
+    {
+    	return Delete_File( src );
+    }
+    return 0;
+    
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
 static HANDLE
 ExecuteProgramEx( const char *filename,
                   const char *cmdline )
 {
-        STARTUPINFO si;
-        PROCESS_INFORMATION pi;
-        BOOL bres;
-        char *tmp_lstr;
-        si.cb = sizeof( si );
-        si.lpReserved = NULL;
-        si.lpDesktop = NULL;
-        si.lpTitle = NULL,
-        si.dwFlags = STARTF_FORCEONFEEDBACK;
-        si.cbReserved2 = 0;
-        si.lpReserved2 = NULL;
-        if ( cmdline )
-        {
-                /*
-                 *      We need to concatonize the filename and cmdline strings
-                 *      We can't just pass them seperatly because winblows
-                 *      does not follow ANSI rules and will allow you to override
-                 *      argv[ 0 ] by passing them seperatly. This can have verry
-                 *      unexpected results.
-                 */
-                tmp_lstr = calloc( strlen( filename )+strlen( cmdline )+2, 1 );
-                sprintf( tmp_lstr, "%s %s", filename, cmdline );
-                bres = CreateProcess( NULL, tmp_lstr, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-                free( tmp_lstr );
-        }
-        else
-        {
-                bres = CreateProcess( filename, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-        }
-        if ( bres ) return pi.hProcess;
-        return NULL;
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+    BOOL bres;
+    char *tmp_lstr;
+    si.cb = sizeof( si );
+    si.lpReserved = NULL;
+    si.lpDesktop = NULL;
+    si.lpTitle = NULL,
+    si.dwFlags = STARTF_FORCEONFEEDBACK;
+    si.cbReserved2 = 0;
+    si.lpReserved2 = NULL;
+    if ( cmdline )
+    {
+        /*
+         *      We need to concatonize the filename and cmdline strings
+         *      We can't just pass them seperatly because winblows
+         *      does not follow ANSI rules and will allow you to override
+         *      argv[ 0 ] by passing them seperatly. This can have verry
+         *      unexpected results.
+         */
+        tmp_lstr = calloc( strlen( filename )+strlen( cmdline )+2, 1 );
+        sprintf( tmp_lstr, "%s %s", filename, cmdline );
+        bres = CreateProcess( NULL, tmp_lstr, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+        free( tmp_lstr );
+    }
+    else
+    {
+        bres = CreateProcess( filename, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+    }
+    if ( bres ) return pi.hProcess;
+    return NULL;
 }
-#endif /* WIN32_BUILD ? */
+
+#endif /* GUCEF_PLATFORM_MSWIN ? */
 
 /*-------------------------------------------------------------------------*/
 
@@ -869,22 +955,24 @@ UInt32
 Execute_Program( const char *filename ,
                  const char *cmdline  )
 {
-        if ( filename )
+    if ( NULL != filename )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+        
+        HANDLE phdl = ExecuteProgramEx( filename, cmdline );
+        if ( phdl )
         {
-                #ifdef GUCEF_MSWIN_BUILD
-                HANDLE phdl = ExecuteProgramEx( filename, cmdline );
-                if ( phdl )
-                {
-                        CloseHandle( phdl );
-                        return 1;
-                }
-                return 0;
-                #else
-                #ifdef GUCEF_LINUX_BUILD
-                #endif /* WIN32_BUILD ? */
-                #endif /* GUCEF_LINUX_BUILD ? */
+            CloseHandle( phdl );
+            return 1;
         }
         return 0;
+        
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+        
+
+        #endif
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -892,9 +980,10 @@ Execute_Program( const char *filename ,
 UInt32
 Filesize( const char *filename )
 {
-    if ( filename )
+    if ( NULL != filename )
     {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+        
         UInt32 lfilesize;
         WIN32_FIND_DATA FileInfo;
         HANDLE hFind;
@@ -909,20 +998,25 @@ Filesize( const char *filename )
         }
         FindClose( hFind );
         return lfilesize;
-        #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+        
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+        
         struct stat buf;
         UInt32 filesize;
         int result;
         result = stat( filename, &buf );
         if ( result == 0 ) return buf.st_size;
         return 0;
+        
         #else
+        
         UInt32 filesize = 0;
         FILE *fptr = fopen( filename, "rb" );
         fseek( fptr, 0, SEEK_END );
         filesize = ftell( fptr );
         fclose( fptr );
         return filesize;
+        
         #endif
     }
     return 0;
@@ -930,45 +1024,40 @@ Filesize( const char *filename )
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Returns a boolean value indicating wheter or not the given file
- *      exists. 1 is true and 0  is false.
- */
 UInt32
 File_Exists( const char *filename )
 {
-        if ( filename )
+    if ( NULL != filename )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        WIN32_FIND_DATA FileInfo;
+        HANDLE hFind;
+        hFind = FindFirstFile( filename, &FileInfo );
+        if ( hFind != INVALID_HANDLE_VALUE )
         {
-                #ifdef GUCEF_MSWIN_BUILD
+                FindClose( hFind );
 
-                WIN32_FIND_DATA FileInfo;
-                HANDLE hFind;
-                hFind = FindFirstFile( filename, &FileInfo );
-                if ( hFind != INVALID_HANDLE_VALUE )
-                {
-                        FindClose( hFind );
-
-                        /* make sure we found a file not a directory */
-                        return !( FileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY );
-                }
-                return 0;
-
-
-                #else
-                #ifdef GUCEF_LINUX_BUILD
-                struct stat buf;
-                if ( stat( filename, &buf ) == -1 )
-                return errno == ENOENT;
-
-
-                #else
-                FILE *fptr = fopen( filename, "rb" );
-                fclose( fptr );
-                return fptr > 0;
-                #endif /* WIN32_BUILD ? */
-                #endif /* GUCEF_LINUX_BUILD ? */
+                /* make sure we found a file not a directory */
+                return !( FileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY );
         }
         return 0;
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        struct stat buf;
+        if ( stat( filename, &buf ) == -1 )
+        return errno == ENOENT;
+
+        #else
+        
+        FILE *fptr = fopen( filename, "rb" );
+        fclose( fptr );
+        return fptr > 0;
+        
+        #endif
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1095,18 +1184,27 @@ Relative_Path( const char *pathstr ,
 UInt32
 Is_Path_Valid( const char* path )
 {
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
     return GetFileAttributes( path ) != INVALID_FILE_ATTRIBUTES;
-    #else
-    #ifdef GUCEF_LINUX_BUILD
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
     // @TODO
-    #endif
+    
+    #else
+    
+    /*
+     *  Unsupported platform
+     */
+    return 0; 
+    
     #endif
 }
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 time_t
 FileTimeToUnixTime( const FILETIME* ft )
@@ -1126,7 +1224,7 @@ FileTimeToUnixTime( const FILETIME* ft )
 time_t
 Get_Modification_Time( const char* path )
 {
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     WIN32_FILE_ATTRIBUTE_DATA data;
     if ( 0 != GetFileAttributesEx( path, GetFileExInfoStandard, &data ) )
@@ -1135,7 +1233,7 @@ Get_Modification_Time( const char* path )
     }
     return -1;
 
-    #else
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     struct stat buf;
 
@@ -1147,6 +1245,13 @@ Get_Modification_Time( const char* path )
     }
     return -1;
 
+    #else
+    
+    /*
+     *  Unsupported platform
+     */
+    return (time_t) 0; 
+    
     #endif
 }
 
