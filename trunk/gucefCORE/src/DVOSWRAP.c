@@ -41,7 +41,7 @@
   #undef max
   #define MAX_DIR_LENGTH MAX_PATH
 
-#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
   #include <sys/times.h>
   #include <limits.h>                 /* Linux OS limits */
@@ -97,14 +97,14 @@ LoadModuleDynamicly( const char* filename )
 
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
         memcpy( fName+sLen, ".dll\0", 5 );
-        #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
         memcpy( fName+sLen, ".so\0", 4 );
         #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_APPLE )
         memcpy( fName+sLen, ".dylib\0", 7 );
         #endif
     }
 
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     modulePtr = (void*) dlopen( fName, RTLD_NOW );
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     modulePtr = (void*) LoadLibrary( fName );
@@ -123,11 +123,16 @@ LoadModuleDynamicly( const char* filename )
 void
 UnloadModuleDynamicly( void *sohandle )
 {
-    if ( !sohandle ) return;
-    #ifdef GUCEF_LINUX_BUILD
+    if ( NULL == sohandle ) return;
+    
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
     dlclose( sohandle );
-    #elif defined( GUCEF_MSWIN_BUILD )
+    
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
     FreeLibrary( (HMODULE)sohandle );
+    
     #else
     #error Unsupported target platform
     #endif
@@ -152,11 +157,13 @@ GetFunctionAddress( void *sohandle           ,
         return fptr;
     }
 
-    #if defined( GUCEF_LINUX_BUILD )
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
     fptr.objPtr = dlsym( sohandle     ,
                          functionname );
     return fptr;
-    #elif defined( GUCEF_MSWIN_BUILD )
+    
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     /*
      *      First we try a normal load using the given
@@ -463,10 +470,14 @@ UInt32
 GUCEFGetTickCount( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
     return GetTickCount();
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
     struct tms timeStorage;
     return (UInt32) times( &timeStorage );
+    
     #else
     #error unsupported platform
     #endif
@@ -478,14 +489,14 @@ void
 ShowErrorMessage( const char* message     ,
                   const char* description )
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        MessageBox( GetCurrentHWND()                    ,
-                    description                         ,
-                    message                             ,
-                    MB_OK | MB_ICONERROR | MB_TASKMODAL );
-        #else
-        fprintf( stderr, "%s : %s\n", message, description );
-        #endif
+    #ifdef GUCEF_MSWIN_BUILD
+    MessageBox( GetCurrentHWND()                    ,
+                description                         ,
+                message                             ,
+                MB_OK | MB_ICONERROR | MB_TASKMODAL );
+    #else
+    fprintf( stderr, "%s : %s\n", message, description );
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/

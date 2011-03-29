@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFIMAGEDLLINIT_H
-#include "gucefIMAGEDLLInit.h"
-#define GUCEFIMAGEDLLINIT_H
-#endif /* GUCEFIMAGEDLLINIT_H ? */
+#ifndef GUCEF_DLLINIT_H
+#include "gucef_DLLInit.h"
+#define GUCEF_DLLINIT_H
+#endif /* GUCEF_DLLINIT_H ? */
 
 #ifndef CGUCEFIMAGEMODULE_H
 #include "CGUCEFIMAGEModule.h"
@@ -42,7 +42,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-DLL_INIT_FUNC_BEG_END( GUCEF::IMAGE::CGUCEFIMAGEModule )
+GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::IMAGE::CGUCEFIMAGEModule );
 
 /*-------------------------------------------------------------------------*/
 
