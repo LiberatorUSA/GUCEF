@@ -37,7 +37,7 @@
 
 #include "dvcppstringutils.h"   /* function prototypes of the functions implemented here */
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #define WIN32_LEAN_AND_MEAN
   #include <windows.h>		/* WIN32 API */
   #undef min
@@ -45,7 +45,7 @@
   #define MAX_DIR_LENGTH MAX_PATH
   #define GUCEF_DIRSEPCHAROPPOSITE '/'
   #define GUCEF_DIRSEPCHAR '\\'
-#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
   #include <unistd.h>             /* POSIX utilities */
   #include <limits.h>             /* Linux OS limits */
   #define MAX_DIR_LENGTH PATH_MAX
@@ -202,7 +202,7 @@ GetRelativePathToOtherPathRoot( const CString& fromPath ,
     // we will make a relative path
     Int32 pathEquality = (Int32) absFromPath.FindMaxSubstrEquality( absToPath, 0, true, false );
     
-    #elif
+    #else
     
     // Now just check for the overlap in paths and based on the overlap
     // we will make a relative path

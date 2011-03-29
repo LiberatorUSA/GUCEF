@@ -171,7 +171,7 @@ CGenericPlugin::Load( const CString& pluginPath )
                     for ( UInt32 i=0; i<argc; ++i )
                     {
                         CString keyValuePair = m_params.GetPair( i );
-                        argv[ i ] = new const char[ keyValuePair.Length()+1 ];
+                        argv[ i ] = new char[ keyValuePair.Length()+1 ];
                         memcpy( (void*)argv[ i ], keyValuePair.C_String(), keyValuePair.Length()+1 );
                     } 
                 }

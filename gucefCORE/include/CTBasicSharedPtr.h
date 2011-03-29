@@ -158,7 +158,7 @@ class CTBasicSharedPtr
     {
             // We use the initialization function of the derived type's
             // shared pointer which will have knowledge of both types.
-            TBasicSharedPtr< Derived > retVal;
+            CTBasicSharedPtr< Derived > retVal;
             retVal.InitializeUsingInheritance( *this );
             return retVal;
     }
