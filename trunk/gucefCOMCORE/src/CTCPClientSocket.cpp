@@ -264,14 +264,14 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     if ( CORE::Check_If_IP( remoteaddr.C_String() ) == 1 )
     {
             UInt32 addr = inet_addr( remoteaddr.C_String() );
-            _data->hostent = WSTS_gethostbyaddr( (char*) &addr , 
+            _data->hostent = dvsocket_gethostbyaddr( (char*) &addr , 
                                                   4            , 
                                                   AF_INET      ,
                                                   &errorcode   );                                             
     }
     else
     {
-            _data->hostent = WSTS_gethostbyname( remoteaddr.C_String() ,
+            _data->hostent = dvsocket_gethostbyname( remoteaddr.C_String() ,
                                                  &errorcode            );
     }
     
@@ -292,7 +292,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
                                         
     if ( NULL == _data->hostent ) return false;
 
-    _data->sockid = WSTS_socket( AF_INET     ,  /* Go over TCP/IP */
+    _data->sockid = dvsocket_socket( AF_INET     ,  /* Go over TCP/IP */
                                  SOCK_STREAM ,  /* This is a stream-oriented socket */
                                  IPPROTO_TCP ,  /* Use TCP rather than UDP */
                                  &errorcode  );
@@ -340,7 +340,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
 	/*
 	 *      We now attempt to create a connection.
 	 */
-    if ( WSTS_connect( _data->sockid                  ,
+    if ( dvsocket_connect( _data->sockid                  ,
                        (LPSOCKADDR)&_data->serverinfo ,
                        sizeof( struct sockaddr)       ,
                        &errorcode                     ) == SOCKET_ERROR )
@@ -450,7 +450,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
             m_readbuffer.SetBufferSize( m_readbuffer.GetDataSize()+readblocksize, false );
             
             // read an additional block
-            bytesrecv = WSTS_recv( _data->sockid                                                                , 
+            bytesrecv = dvsocket_recv( _data->sockid                                                                , 
                                    static_cast<char*>(m_readbuffer.GetBufferPtr()) + m_readbuffer.GetDataSize() ,
                                    readblocksize                                                                ,
                                    0                                                                            ,
@@ -603,7 +603,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
                     // perform a send, trying to send as much of the given data as possible
                     const Int8* data = static_cast< const Int8* >( m_sendOpBuffer.GetConstBufferPtr() );
                     Int32 remnant = m_sendOpBuffer.GetDataSize() - totalBytesSent;
-                    wbytes = WSTS_send( _data->sockid       ,  
+                    wbytes = dvsocket_send( _data->sockid       ,  
                                         data+totalBytesSent , 
                                         remnant             , 
                                         0                   , 
@@ -736,7 +736,7 @@ CTCPClientSocket::Send( const void* data ,
         {
             // perform a send, trying to send as much of the given data as possible
             Int32 remnant = length - totalBytesSent;
-            wbytes = WSTS_send( _data->sockid                 ,  
+            wbytes = dvsocket_send( _data->sockid                 ,  
                                 ((Int8*)data)+totalBytesSent  , 
                                 remnant                       , 
                                 0                             , 

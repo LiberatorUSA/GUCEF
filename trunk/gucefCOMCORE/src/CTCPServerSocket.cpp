@@ -112,10 +112,10 @@ const CORE::CEvent CTCPServerSocket::ServerSocketMaxConnectionsChangedEvent = "G
 
 struct STCPServerConData
 {
-        SOCKET sockid;
-        CORE::CString clientip;
-        struct sockaddr_in clientaddr;
-        struct timeval timeout;         /* timeout for blocking operations */
+    SOCKET sockid;
+    CORE::CString clientip;
+    struct sockaddr_in clientaddr;
+    struct timeval timeout;         /* timeout for blocking operations */
 };
 typedef struct STCPServerConData TTCPServerConData;
 
@@ -340,7 +340,7 @@ CTCPServerSocket::AcceptClients( void )
                                                  *      Store the Ip of the Client that Just Connected.
                                                  */
                                                 char clientip[ 20 ];
-                                                WSTS_inet_ntoa( clientcon->_data->clientaddr.sin_addr ,
+                                                dvsocket_inet_ntoa( clientcon->_data->clientaddr.sin_addr ,
                                                                 clientip                              );                                                        
                                                 clientcon->_data->clientip = clientip;
                                                 
@@ -419,16 +419,11 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
             Close();
     }
     
-    /*
-     *      === Microsoft Windows implementation === 
-     */        
-    #ifdef GUCEF_MSWIN_BUILD
-    
     int error = 0;
-    _data->sockid = WSTS_socket( AF_INET     ,    /* Go over TCP/IP */
-                             SOCK_STREAM ,    /* This is a stream-oriented socket */
-                             IPPROTO_TCP ,    /* Use TCP rather than UDP */
-                             &error      );   
+    _data->sockid = dvsocket_socket( AF_INET     ,    /* Go over TCP/IP */
+                                     SOCK_STREAM ,    /* This is a stream-oriented socket */
+                                     IPPROTO_TCP ,    /* Use TCP rather than UDP */
+                                     &error      );   
             
     if ( _data->sockid == INVALID_SOCKET ) 
     {
@@ -465,10 +460,10 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
         /* 
          *      Bind the socket to our local server address
          */
-	int retval = WSTS_bind( _data->sockid                  , 
-	                        (LPSOCKADDR)&_data->serverinfo , 
-	                        sizeof( _data->serverinfo )    ,
-	                        &error                        );
+	int retval = dvsocket_bind( _data->sockid                  , 
+	                            (LPSOCKADDR)&_data->serverinfo , 
+	                            sizeof( _data->serverinfo )    ,
+	                            &error                         );
 
 	if ( retval == SOCKET_ERROR ) 
 	{
@@ -483,9 +478,9 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
      *      Up to maxcon connections may wait at any
      *      one time to be accept()'ed
      */
-	retval = WSTS_listen( _data->sockid      , 
-	                      _data->maxcon      ,
-	                      &error             );		
+	retval = dvsocket_listen( _data->sockid      , 
+	                          _data->maxcon      ,
+	                          &error             );		
 
 	if ( retval == SOCKET_ERROR ) 
 	{
@@ -504,16 +499,7 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 	 */
     AcceptClients();
                              
-    return true;
-    
-    /*
-     *      === Linux implementation === 
-     */         
-    #elif GUCEF_LINUX_BUILD
-        #error implementation not implemented
-    #elif
-    return false;
-    #endif                
+    return true;              
 }
 
 /*-------------------------------------------------------------------------*/

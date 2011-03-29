@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
  
-#ifndef DVWINSOCK_H
-#define DVWINSOCK_H
+#ifndef GUCEF_COMCORE_DVSOCKET_H
+#define GUCEF_COMCORE_DVSOCKET_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -31,13 +31,25 @@
 #define GUCEF_COMCORE_MACROS_H
 #endif /* GUCEF_COMCORE_MACROS_H ? */
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+  #undef FD_SETSIZE
+  #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
+  #include <winsock2.h>
+  #include <Ws2tcpip.h>
+  #include <Wspiapi.h>
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+  #include <unistd.h>
+  #include <sys/socket.h>
+  #include <sys/types.h>
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 struct hostent;
 
@@ -52,6 +64,12 @@ struct fd_set;
 struct sockaddr;
 struct in_addr;
 struct timeval;
+
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+typedef int SOCKET;
+
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -77,6 +95,11 @@ namespace COMCORE {
    extern "C" {
 #endif   /* __cplusplus */
 
+/*--------------------------------------------------------------------------*/
+
+        /* MSWIN specific functions */
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 /*--------------------------------------------------------------------------*/
 
 /**
@@ -116,98 +139,96 @@ void
 ShutdownWinsock( void );
 
 /*-------------------------------------------------------------------------*/
+#endif /* GUCEF_PLATFORM_MSWIN ? */
 
-/*
- *      The following are threadsafe replacements for winsock functions
- */
+        /* End of MSWIN specific functions */
 
 /*-------------------------------------------------------------------------*/
 
 int
-WSTS_bind( SOCKET s                    ,
-           const struct sockaddr* type ,
-           int namelen                 ,
-           int* error                  );
-
+dvsocket_bind( SOCKET s                    ,
+               const struct sockaddr* type ,
+               int namelen                 ,
+               int* error                  );
 
 /*-------------------------------------------------------------------------*/
 
 SOCKET
-WSTS_socket( int af       ,
-             int type     ,
-             int protocol ,
-             int* error   );
+dvsocket_socket( int af       ,
+                 int type     ,
+                 int protocol ,
+                 int* error   );
 
 /*-------------------------------------------------------------------------*/
              
 int 
-WSTS_select( int nfds                      ,
-             fd_set* readfds               ,
-             fd_set* writefds              ,
-             fd_set* exceptfds             ,
-             const struct timeval* timeout ,
-             int* error                    );               
+dvsocket_select( int nfds                      ,
+                 fd_set* readfds               ,
+                 fd_set* writefds              ,
+                 fd_set* exceptfds             ,
+                 const struct timeval* timeout ,
+                 int* error                    );
              
  /*-------------------------------------------------------------------------*/
              
 int
-WSTS_listen( SOCKET s    ,
-             int backlog ,
-             int* error  ); 
+dvsocket_listen( SOCKET s    ,
+                 int backlog ,
+                 int* error  ); 
              
 /*-------------------------------------------------------------------------*/              
              
 SOCKET
-WSTS_accept( SOCKET s              ,
-             struct sockaddr* addr ,
-             int* addrlen          ,
-             int* error            );
+dvsocket_accept( SOCKET s              ,
+                 struct sockaddr* addr ,
+                 int* addrlen          ,
+                 int* error            );
              
 /*-------------------------------------------------------------------------*/             
              
 int
-WSTS_connect( SOCKET s                    ,
-              const struct sockaddr* addr ,
-              int namelen                 ,
-              int* error                  );
+dvsocket_connect( SOCKET s                    ,
+                  const struct sockaddr* addr ,
+                  int namelen                 ,
+                  int* error                  );
       
 /*-------------------------------------------------------------------------*/      
               
 int 
-WSTS_send( SOCKET s        ,
-           const void* buf ,
-           int len         ,
-           int flags       ,
-           int* error      );
+dvsocket_send( SOCKET s        ,
+               const void* buf ,
+               int len         ,
+               int flags       ,
+               int* error      );
            
 /*-------------------------------------------------------------------------*/
            
 int 
-WSTS_recv( SOCKET s   ,
-           void* buf  ,
-           int len    ,
-           int flags  ,
-           int* error );                                     
+dvsocket_recv( SOCKET s   ,
+               void* buf  ,
+               int len    ,
+               int flags  ,
+               int* error );                                     
              
 /*-------------------------------------------------------------------------*/                                                           
 
 void
-WSTS_inet_ntoa( struct in_addr in ,
-                char* ip          );
+dvsocket_inet_ntoa( struct in_addr in ,
+                    char* ip          );
               
 /*-------------------------------------------------------------------------*/              
                 
 LPHOSTENT               
-WSTS_gethostbyname( const char* name ,
-                    int* error       );
+dvsocket_gethostbyname( const char* name ,
+                        int* error       );
 
 /*-------------------------------------------------------------------------*/
 
 LPHOSTENT 
-WSTS_gethostbyaddr( const char* addr ,
-                    int len          ,
-                    int type         ,
-                    int* error       );
+dvsocket_gethostbyaddr( const char* addr ,
+                        int len          ,
+                        int type         ,
+                        int* error       );
 
 /*--------------------------------------------------------------------------*/
 
@@ -226,13 +247,9 @@ WSTS_gethostbyaddr( const char* addr ,
 }; /* namespace GUCEF */
 #endif /* __cplusplus ? */
 
-/*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_MSWIN_BUILD ? */
-
 /*--------------------------------------------------------------------------*/
 
-#endif /* DVWINSOCK_H ? */
+#endif /* GUCEF_COMCORE_DVSOCKET_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
