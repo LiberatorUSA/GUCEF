@@ -63,19 +63,17 @@
 #define GUCEF_COMCORE_CUDPCHANNEL_H
 #endif /* GUCEF_COMCORE_CUDPCHANNEL_H ? */
 
+#ifndef GUCEF_COMCORE_DVSOCKET_H
+#include "dvwinsock.h"
+#define GUCEF_COMCORE_DVSOCKET_H
+#endif /* GUCEF_COMCORE_DVSOCKET_H */
+
 #ifndef GUCEF_COMCORE_CPINGTASKCONSUMER_H
 #include "gucefCOMCORE_CPingTaskConsumer.h"
 #define GUCEF_COMCORE_CPINGTASKCONSUMER_H
 #endif /* GUCEF_COMCORE_CPINGTASKCONSUMER_H ? */
 
 #include "CGUCEFCOMCOREModule.h"  /* definition of the class implemented here */
-
-#ifdef GUCEF_MSWIN_BUILD
-  #ifndef DVWINSOCK_H
-  #include "dvwinsock.h"
-  #define DVWINSOCK_H
-  #endif /* DVWINSOCK_H */
-#endif
 
 #ifdef ACTIVATE_MEMORY_MANAGER
   #ifndef GUCEF_NEW_ON_H
@@ -112,7 +110,7 @@ CGUCEFCOMCOREModule::Load( void )
 {
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Module loaded" );
     
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     InitWinsock( 1 );
     #endif
     
@@ -124,7 +122,7 @@ CGUCEFCOMCOREModule::Load( void )
     CPingTaskConsumer::RegisterEvents();
     CUDPMasterSocket::RegisterEvents();
     CUDPChannel::RegisterEvents();
-        
+    
     // Make the task manager capable of handling ping tasks    
     CORE::CTaskManager::Instance()->RegisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() ,
                                                                  new TPingTaskConsumerFactory()     );
@@ -145,7 +143,7 @@ CGUCEFCOMCOREModule::Unload( void )
 
     CORE::CTaskManager::Instance()->UnregisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() );
     
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     ShutdownWinsock();
     #endif
             

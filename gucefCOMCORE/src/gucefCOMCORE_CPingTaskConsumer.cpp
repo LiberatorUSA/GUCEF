@@ -73,6 +73,20 @@ const CORE::CEvent CPingTaskConsumer::PingStoppedEvent = "GUCEF::COMCORE::CPingT
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+struct SMsWinPingData
+{
+    HANDLE pingEvent;
+    HANDLE icmpHandle;
+};
+typedef struct SMsWinPingData TMsWinPingData;
+
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -287,16 +301,21 @@ CPingTaskConsumer::CEchoReceivedEventData::GetRoundTripTime( void ) const
 /*-------------------------------------------------------------------------*/
 
 CPingTaskConsumer::CPingTaskConsumer( void )
-    : CTaskConsumer()      ,
-      m_pingEvent( NULL )  ,
-      m_icmpHandle( NULL ) ,
-      m_notDone( true )    ,
-      m_taskData( NULL )   ,
+    : CTaskConsumer()        ,
+      m_platformData( NULL ) ,
+      m_notDone( true )      ,
+      m_taskData( NULL )     ,
       m_pingCounters()
 {GUCEF_TRACE;
 
-    m_icmpHandle = IcmpCreateFile();    
-    m_pingEvent = CreateEvent( NULL, FALSE, FALSE, NULL );    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    TMsWinPingData* platformData = new TMsWinPingData;
+    platformData->icmpHandle = IcmpCreateFile();
+    platformData->pingEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
+    m_platformData = platformData;
+    
+    #endif
     
     RegisterEvents();
 }
@@ -306,8 +325,12 @@ CPingTaskConsumer::CPingTaskConsumer( void )
 CPingTaskConsumer::~CPingTaskConsumer()
 {GUCEF_TRACE;
 
-    CloseHandle( m_pingEvent );
-    IcmpCloseHandle( m_icmpHandle );
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    CloseHandle( ((TMsWinPingData*)m_platformData)->pingEvent );
+    IcmpCloseHandle( ((TMsWinPingData*)m_platformData)->icmpHandle );
+    
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -340,6 +363,8 @@ CPingTaskConsumer::GetClassTypeName( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 void
 CPingTaskConsumer::IcmpCallback( void* vdata )
@@ -391,6 +416,8 @@ CPingTaskConsumer::IcmpCallback( void* vdata )
     }
 }
 
+#endif
+
 /*-------------------------------------------------------------------------*/
 
 bool
@@ -409,6 +436,8 @@ CPingTaskConsumer::OnTaskEnd( CORE::CICloneable* taskData )
 }
 
 /*-------------------------------------------------------------------------*/
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
 bool
 CPingTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
@@ -484,8 +513,8 @@ CPingTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
                     netIp.S_un.S_addr = pingEntry.host->GetAddress();
                     pingEntry.areWeWaitingForPingResult = true;
                     
-                    DWORD result = IcmpSendEcho2( m_icmpHandle                                           ,
-                                                  NULL                                            ,
+                    DWORD result = IcmpSendEcho2( ((TMsWinPingData*)m_platformData)->icmpHandle          ,
+                                                  NULL                                                   ,
                                                   (PIO_APC_ROUTINE_OLD)&IcmpCallback                     ,
                                                   &pingEntry                                             ,
                                                   netIp                                                  ,
@@ -550,6 +579,17 @@ CPingTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
     
     return true;
 }
+
+#else
+
+bool
+CPingTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+    return true;
+}
+
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

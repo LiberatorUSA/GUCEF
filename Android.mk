@@ -38,3 +38,6 @@ include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefINPUT
 include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefCOMCORE
+include $(MY_MODULE_PATH)/Android.mk

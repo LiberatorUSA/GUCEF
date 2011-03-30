@@ -35,15 +35,15 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
-#ifndef DVWINSOCK_H
-#include "dvwinsock.h"          /* socket API for ms windows */
-#define DVWINSOCK_H
-#endif /* DVWINSOCK_H ? */
+#ifndef GUCEF_COMCORE_DVSOCKET_H
+#include "dvwinsock.h"          /* socket API */
+#define GUCEF_COMCORE_DVSOCKET_H
+#endif /* GUCEF_COMCORE_DVSOCKET_H ? */
 
-#ifndef CSOCKET_H
+#ifndef GUCEF_COMCORE_CSOCKET_H
 #include "CSocket.h"            /* base class for all sockets */
-#define CSOCKET_H
-#endif /* CSOCKET_H ? */  
+#define GUCEF_COMCORE_CSOCKET_H
+#endif /* GUCEF_COMCORE_CSOCKET_H ? */  
 
 #include "CCom.h"               /* definition of CCom class */
 
@@ -91,7 +91,7 @@ MT::CMutex CCom::_mutex;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 bool
 GetMSWinInternetProxyFromRegistry( CORE::CString& remoteHost ,
@@ -144,7 +144,7 @@ GetMSWinInternetProxyFromRegistry( CORE::CString& remoteHost ,
     return false;
 }
 
-#endif /* GUCEF_MSWIN_BUILD ? */
+#endif /* GUCEF_PLATFORM_MSWIN ? */
 
 /*-------------------------------------------------------------------------*/
 
@@ -166,11 +166,12 @@ CCom::Instance( void )
 void 
 CCom::Deinstance( void )
 {GUCEF_TRACE;
-        _mutex.Lock();
-        delete _instance;
-        _instance = NULL;
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "GUCEF::COMCORE::CCom Singleton destroyed" );
-        _mutex.Unlock();                
+
+    _mutex.Lock();
+    delete _instance;
+    _instance = NULL;
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "GUCEF::COMCORE::CCom Singleton destroyed" );
+    _mutex.Unlock();                
 }
 
 /*-------------------------------------------------------------------------*/
@@ -183,7 +184,7 @@ CCom::CCom()
     _sockets.SetResizeChange( HEAP_RESIZE_AMOUNT );
     memset( &_stats, 0, sizeof(TSocketStats) );   
     
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 // @TODO use InternetQueryOption
 // http://msdn2.microsoft.com/en-us/library/aa385101.aspx
@@ -206,7 +207,7 @@ CCom::CCom()
                                   active     );
     }
     
-    #endif /* GUCEF_MSWIN_BUILD ? */
+    #endif /* GUCEF_PLATFORM_MSWIN ? */
 }
 
 /*-------------------------------------------------------------------------*/

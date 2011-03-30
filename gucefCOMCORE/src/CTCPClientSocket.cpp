@@ -45,19 +45,15 @@
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
-#ifdef GUCEF_MSWIN_BUILD
-
-#ifndef DVWINSOCK_H
+#ifndef GUCEF_COMCORE_DVSOCKET_H
 #include "dvwinsock.h"
-#define DVWINSOCK_H
-#endif /* DVWINSOCK_H ? */
+#define GUCEF_COMCORE_DVSOCKET_H
+#endif /* GUCEF_COMCORE_DVSOCKET_H ? */
 
 #ifndef GUCEF_COMCORE_SOCKETUTILS_H
 #include "socketutils.h"
 #define GUCEF_COMCORE_SOCKETUTILS_H
 #endif /* GUCEF_COMCORE_SOCKETUTILS_H ? */
-
-#endif /* GUCEF_MSWIN_BUILD ? */
 
 #include "CTCPClientSocket.h"           /* Header with class for these utils */
 
@@ -105,15 +101,10 @@ const CORE::CEvent CTCPClientSocket::ConnectingEvent = "GUCEF::COMCORE::CTCPClie
  */
 struct CTCPClientSocket::STCPClientSockData
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        LPHOSTENT hostent;
-        SOCKET sockid;
-        SOCKADDR_IN serverinfo;
-        struct timeval timeout;         /* timeout for blocking operations */
-        #else
-          #ifdef GUCEF_LINUX_BUILD
-          #endif
-        #endif  
+    LPHOSTENT hostent;
+    SOCKET sockid;
+    SOCKADDR_IN serverinfo;
+    struct timeval timeout;         /* timeout for blocking operations */ 
 };
 typedef struct CTCPClientSocket::STCPClientSockData TTCPClientSockData;
 
@@ -265,14 +256,14 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     {
             UInt32 addr = inet_addr( remoteaddr.C_String() );
             _data->hostent = dvsocket_gethostbyaddr( (char*) &addr , 
-                                                  4            , 
-                                                  AF_INET      ,
-                                                  &errorcode   );                                             
+                                                      4            , 
+                                                      AF_INET      ,
+                                                      &errorcode   );                                             
     }
     else
     {
             _data->hostent = dvsocket_gethostbyname( remoteaddr.C_String() ,
-                                                 &errorcode            );
+                                                     &errorcode            );
     }
     
     // Check for an error
@@ -293,9 +284,9 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     if ( NULL == _data->hostent ) return false;
 
     _data->sockid = dvsocket_socket( AF_INET     ,  /* Go over TCP/IP */
-                                 SOCK_STREAM ,  /* This is a stream-oriented socket */
-                                 IPPROTO_TCP ,  /* Use TCP rather than UDP */
-                                 &errorcode  );
+                                     SOCK_STREAM ,  /* This is a stream-oriented socket */
+                                     IPPROTO_TCP ,  /* Use TCP rather than UDP */
+                                     &errorcode  );
 
     // Check for an error
     if ( errorcode != 0 )
@@ -341,14 +332,14 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
 	 *      We now attempt to create a connection.
 	 */
     if ( dvsocket_connect( _data->sockid                  ,
-                       (LPSOCKADDR)&_data->serverinfo ,
-                       sizeof( struct sockaddr)       ,
-                       &errorcode                     ) == SOCKET_ERROR )
+                           (LPSOCKADDR)&_data->serverinfo ,
+                           sizeof( struct sockaddr)       ,
+                           &errorcode                     ) == SOCKET_ERROR )
     {
-        // It is normal for WSAEWOULDBLOCK to be reported as the result from calling 
+        // It is normal for DVSOCKET_EWOULDBLOCK to be reported as the result from calling 
         // connect on a nonblocking SOCK_STREAM socket, since some time must elapse 
         // for the connection to be established.
-        if ( errorcode != WSAEWOULDBLOCK )
+        if ( errorcode != DVSOCKET_EWOULDBLOCK )
         {
             _active = false;
             
@@ -418,7 +409,11 @@ CIPAddress
 CTCPClientSocket::GetRemoteIP( void ) const
 {GUCEF_TRACE;
 
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )    
     return CIPAddress( _data->serverinfo.sin_addr.S_un.S_addr, _data->serverinfo.sin_port );
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    return CIPAddress( _data->serverinfo.sin_addr.s_addr, _data->serverinfo.sin_port );
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -451,10 +446,10 @@ CTCPClientSocket::CheckRecieveBuffer( void )
             
             // read an additional block
             bytesrecv = dvsocket_recv( _data->sockid                                                                , 
-                                   static_cast<char*>(m_readbuffer.GetBufferPtr()) + m_readbuffer.GetDataSize() ,
-                                   readblocksize                                                                ,
-                                   0                                                                            ,
-                                   &errorcode                                                                   );
+                                       static_cast<char*>(m_readbuffer.GetBufferPtr()) + m_readbuffer.GetDataSize() ,
+                                       readblocksize                                                                ,
+                                       0                                                                            ,
+                                       &errorcode                                                                   );
                                   
             // Check for an error
             if ( ( bytesrecv == SOCKET_ERROR ) || ( errorcode != 0 ) )
@@ -492,7 +487,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                 // Check to make sure we do not exceed the maximum
                 if ( m_maxreadbytes <= m_readbuffer.GetDataSize() )
                 {
-                        break;
+                    break;
                 }
             }
         }        
@@ -618,7 +613,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
                     {
                         // Socket error,..
                         // Check if we have to delay sending the data
-                        if ( WSAEWOULDBLOCK == error && !_blocking )
+                        if ( DVSOCKET_EWOULDBLOCK == error && !_blocking )
                         {
                             // Cannot send now,... try again next pulse
                             // We have to place remaining data we grabbed from the send buffer back in
@@ -752,7 +747,7 @@ CTCPClientSocket::Send( const void* data ,
             {
                 // Socket error,..
                 // Check if we have to delay sending the data
-                if ( WSAEWOULDBLOCK == error && !_blocking )
+                if ( DVSOCKET_EWOULDBLOCK == error && !_blocking )
                 {
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Delaying sending of data" );
                     m_sendBuffer.Write( ((Int8*)data)+totalBytesSent, 1, remnant );

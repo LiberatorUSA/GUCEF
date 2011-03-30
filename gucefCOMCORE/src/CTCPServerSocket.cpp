@@ -46,10 +46,10 @@
 
 #ifdef GUCEF_MSWIN_BUILD
 
-#ifndef DVWINSOCK_H
+#ifndef GUCEF_COMCORE_DVSOCKET_H
 #include "dvwinsock.h"
-#define DVWINSOCK_H
-#endif /* DVWINSOCK_H ? */
+#define GUCEF_COMCORE_DVSOCKET_H
+#endif /* GUCEF_COMCORE_DVSOCKET_H ? */
 
 #endif /* GUCEF_MSWIN_BUILD ? */
 
@@ -290,101 +290,108 @@ CTCPServerSocket::OnPulse( CORE::CNotifier* notifier                 ,
 void
 CTCPServerSocket::AcceptClients( void )
 {GUCEF_TRACE;
-        int s;          /* s is where the data is stored from the select function */
-        int nfds;       /* This is used for Compatibility */
-        fd_set conn;    /* Setup the read variable for the Select function */
-        
-        if ( _data->connectcount < _data->maxcon )
+
+    int s;          /* s is where the data is stored from the select function */
+    int nfds;       /* This is used for Compatibility */
+    fd_set conn;    /* Setup the read variable for the Select function */
+    
+    if ( _data->connectcount < _data->maxcon )
+    {
+        FD_ZERO( &conn ); // Set the data in conn to nothing
+        FD_SET( _data->sockid , 
+                &conn         ); // Tell it to get the data from the Listening Socket
+                    
+        s = 0;        
+        if ( !_data->blocking )                        
         {
-                FD_ZERO( &conn ); // Set the data in conn to nothing
-                FD_SET( _data->sockid , 
-                        &conn         ); // Tell it to get the data from the Listening Socket
-                        
-                s = 0;        
-                if ( !_data->blocking )                        
+            /*
+             *  Because we are in non-blocking mode we must make sure the timeout
+             *  structure is zero'd or it will block
+             */
+            memset( &_data->timeout, 0, sizeof( struct timeval ) );
+            
+            /* 
+             *      Up the nfds value by one, shouldnt be the same for each
+             *      client that connects for compatibility reasons
+             *      Doing a select first will ensure that we don't block on accept()
+             */
+            nfds = (int)_data->sockid+1;
+            s = select( nfds            , 
+                        &conn           , 
+                        NULL            , 
+                        NULL            , 
+                        &_data->timeout ); // Is there any data coming in?
+                                                    
+            if ( s > 0 ) /* Someone is trying to Connect */
+            {
+                CTCPServerConnection* clientcon;
+                int aint;
+                for ( UInt32 i=0; i<_data->maxcon; ++i )
                 {
+                    clientcon = (CTCPServerConnection*)(_connections[ i ]);
+                    if ( !clientcon->IsActive() )                                
+                    {
+                        int error = 0;
+                        aint = sizeof( struct sockaddr );
+                        clientcon->_data->sockid = dvsocket_accept( _data->sockid                                    ,
+                                                                    (struct sockaddr*) &clientcon->_data->clientaddr ,
+                                                                    &aint                                            ,
+                                                                    &error                                           );
+
                         /*
-                         *  Because we are in non-blocking mode we must make sure the timeout
-                         *  structure is zero'd or it will block
+                         *      Client Connected
+                         *      Store the Ip of the Client that Just Connected.
                          */
-                        memset( &_data->timeout, 0, sizeof( struct timeval ) );
+                        char clientip[ 20 ];
+                        dvsocket_inet_ntoa( clientcon->_data->clientaddr.sin_addr ,
+                                            clientip                              );                                                        
+                        clientcon->_data->clientip = clientip;
                         
-                        /* 
-                         *      Up the nfds value by one, shouldnt be the same for each
-                         *      client that connects for compatibility reasons
-                         *      Doing a select first will ensure that we don't block on accept()
+                        /*
+                         *      Set the socket into the desired mode of operation
+                         *      ie blocking or non-blocking mode
                          */
-                        nfds = (int)_data->sockid+1;
-                        s = select( nfds            , 
-                                    &conn           , 
-                                    NULL            , 
-                                    NULL            , 
-                                    &_data->timeout ); // Is there any data coming in?
-                                                        
-                        if ( s > 0 ) /* Someone is trying to Connect */
+                        if ( !SetBlockingMode( _data->sockid ,
+                                               _blocking     ) )
                         {
-                                CTCPServerConnection* clientcon;
-                                int aint;
-                                for ( UInt32 i=0; i<_data->maxcon; ++i )
-                                {
-                                        clientcon = (CTCPServerConnection*)(_connections[ i ]);
-                                        if ( !clientcon->IsActive() )                                
-                                        {
-                                                aint = sizeof( struct sockaddr );
-                                                clientcon->_data->sockid = accept( _data->sockid                                    ,
-                                                                                   (struct sockaddr*) &clientcon->_data->clientaddr ,
-                                                                                   &aint                                            );
-
-                                                /*
-                                                 *      Client Connected
-                                                 *      Store the Ip of the Client that Just Connected.
-                                                 */
-                                                char clientip[ 20 ];
-                                                dvsocket_inet_ntoa( clientcon->_data->clientaddr.sin_addr ,
-                                                                clientip                              );                                                        
-                                                clientcon->_data->clientip = clientip;
-                                                
-                                                /*
-                                                 *      Set the socket into the desired mode of operation
-                                                 *      ie blocking or non-blocking mode
-                                                 */
-                                                if ( !SetBlockingMode( _data->sockid ,
-                                                                       _blocking     ) )
-                                                {
-                                                        clientcon->_data->sockid = 0;
-                                                        return;
-                                                }	                                         
-                                                clientcon->_blocking = _blocking;             	                                                
-                                                if ( !_blocking )
-                                                {
-                                                    /*
-                                                     *  Because we are in non-blocking mode we must make sure the timeout
-                                                     *  structure is zero'd or it will block
-                                                     */
-                                                    memset( &clientcon->_data->timeout, 0, sizeof( struct timeval ) );
-                                                }
-                                                
-                                                ++_data->connectcount;
-                                                clientcon->_active = true;
-                                                                                    
-                                                /*
-                                                 *      Call the on client connect event handler      
-                                                 */
-                                                struct SConnectionInfo eData;
-                                                eData.hostAddress.SetHostname( clientcon->_data->clientip );
-                                                eData.hostAddress.SetAddress( clientcon->_data->clientaddr.sin_addr.S_un.S_addr );
-                                                eData.hostAddress.SetPort( clientcon->_data->clientaddr.sin_port );
-                                                eData.connection = clientcon;
-                                                eData.connectionIndex = i;
-                                                TClientConnectedEventData cloneableEventData( eData );
-                                                NotifyObservers( ClientConnectedEvent, &cloneableEventData );                                                                                 
-
-                                                return;
-                                        }                                        
-                                }   
+                            clientcon->_data->sockid = 0;
+                            return;
+                        }	                                         
+                        clientcon->_blocking = _blocking;             	                                                
+                        if ( !_blocking )
+                        {
+                            /*
+                             *  Because we are in non-blocking mode we must make sure the timeout
+                             *  structure is zero'd or it will block
+                             */
+                            memset( &clientcon->_data->timeout, 0, sizeof( struct timeval ) );
                         }
-                }                        
-        }        
+                        
+                        ++_data->connectcount;
+                        clientcon->_active = true;
+                                                            
+                        /*
+                         *      Call the on client connect event handler      
+                         */
+                        struct SConnectionInfo eData;
+                        eData.hostAddress.SetHostname( clientcon->_data->clientip );
+                        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+                        eData.hostAddress.SetAddress( clientcon->_data->clientaddr.sin_addr.S_un.S_addr );
+                        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+                        eData.hostAddress.SetAddress( clientcon->_data->clientaddr.sin_addr.s_addr );
+                        #endif
+                        eData.hostAddress.SetPort( clientcon->_data->clientaddr.sin_port );
+                        eData.connection = clientcon;
+                        eData.connectionIndex = i;
+                        TClientConnectedEventData cloneableEventData( eData );
+                        NotifyObservers( ClientConnectedEvent, &cloneableEventData );                                                                                 
+
+                        return;
+                    }                                        
+                }   
+            }
+        }                        
+    }        
 } 
 
 /*-------------------------------------------------------------------------*/
@@ -536,7 +543,8 @@ CTCPServerSocket::Close( void )
     {        	
 	    //StopAndWait();
 	
-        closesocket( _data->sockid );                    
+        int errorCode;
+        dvsocket_closesocket( _data->sockid, &errorCode );                    
                         
         NotifyObservers( ServerSocketClosedEvent );
                            

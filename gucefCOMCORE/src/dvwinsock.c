@@ -84,6 +84,7 @@ static WSADATA wsadata;
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
 #define LastSocketError errno
+#define closesocket close
 
 #endif
 
@@ -200,12 +201,13 @@ dvsocket_select( int nfds                      ,
                  const struct timeval* timeout ,
                  int* error                    )
 {
+    /* timeval differs via constness between winsock and linux bsd sockets */
     int retval; 
-    if ( ( retval = select( nfds      , 
-                            readfds   ,
-                            writefds  ,
-                            exceptfds ,
-                            timeout   ) ) == SOCKET_ERROR )
+    if ( ( retval = select( nfds                      , 
+                            readfds                   ,
+                            writefds                  ,
+                            exceptfds                 ,
+                            (struct timeval*) timeout ) ) == SOCKET_ERROR )
     {
         *error = LastSocketError;
         return retval;
@@ -364,6 +366,22 @@ dvsocket_connect( SOCKET s                    ,
     *error = 0;
     return retval;    
 }              
+
+/*-------------------------------------------------------------------------*/
+
+int
+dvsocket_closesocket( SOCKET s   ,
+                      int* error )
+{
+    int retval;
+    if ( ( retval = closesocket( s ) ) == SOCKET_ERROR )
+    {
+        *error = LastSocketError;
+        return retval;
+    }                                
+    *error = 0;
+    return retval;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
