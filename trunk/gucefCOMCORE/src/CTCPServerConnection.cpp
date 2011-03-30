@@ -127,7 +127,17 @@ CIPAddress
 CTCPServerConnection::GetRemoteIP( void ) const
 {GUCEF_TRACE;
 
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
     return CIPAddress( _data->clientaddr.sin_addr.S_un.S_addr, _data->clientaddr.sin_port );
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    return CIPAddress( _data->clientaddr.sin_addr.s_addr, _data->clientaddr.sin_port );
+    
+    #endif
+
+    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -167,7 +177,8 @@ CTCPServerConnection::Close( void )
     
     if ( _active )
     {
-        closesocket( _data->sockid ); 
+        int errorCode;
+        dvsocket_closesocket( _data->sockid, &errorCode ); 
         _active = false;
         
         NotifyObservers( DisconnectedEvent );
@@ -221,10 +232,10 @@ CTCPServerConnection::Send( const void* dataSource ,
             // perform a send, trying to send as much of the given data as possible
             Int32 remnant = length - totalBytesSent;
             wbytes = dvsocket_send( _data->sockid                      ,  
-                                ((Int8*)dataSource)+totalBytesSent , 
-                                remnant                            , 
-                                0                                  , 
-                                &error                             );
+                                    ((Int8*)dataSource)+totalBytesSent , 
+                                    remnant                            , 
+                                    0                                  , 
+                                    &error                             );
             if ( wbytes != SOCKET_ERROR )
             {
                 // we where able to send at least some of the data
@@ -236,7 +247,7 @@ CTCPServerConnection::Send( const void* dataSource ,
             {
                 // Socket error,..
                 // Check if we have to delay sending the data
-                if ( WSAEWOULDBLOCK == error && !_blocking )
+                if ( DVSOCKET_EWOULDBLOCK == error && !_blocking )
                 {
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Delaying sending of data" );
                     m_sendBuffer.Write( ((Int8*)dataSource)+totalBytesSent, 1, remnant );
@@ -335,10 +346,10 @@ CTCPServerConnection::CheckRecieveBuffer( void )
     {                 
         m_readbuffer.SetDataSize( m_readbuffer.GetDataSize()+readblocksize );
         bytesrecv = dvsocket_recv( _data->sockid                                                 , 
-                               static_cast<char*>(m_readbuffer.GetBufferPtr())+totalrecieved ,
-                               readblocksize                                                 ,
-                               0                                                             ,
-                               &errorcode                                                    );
+                                   static_cast<char*>(m_readbuffer.GetBufferPtr())+totalrecieved ,
+                                   readblocksize                                                 ,
+                                   0                                                             ,
+                                   &errorcode                                                    );
         
         // Check for an error
         if ( ( bytesrecv == SOCKET_ERROR ) || ( errorcode != 0 ) )
@@ -346,7 +357,7 @@ CTCPServerConnection::CheckRecieveBuffer( void )
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
 
             // After a socket error you must always close the connection.
-            closesocket( _data->sockid ); 
+            dvsocket_closesocket( _data->sockid, &errorcode ); 
             _active = false;
             
             // Notify our users of the error
@@ -364,7 +375,7 @@ CTCPServerConnection::CheckRecieveBuffer( void )
              *      we arrived here because the read flag was set, however no data is available
              *      This means that the client closed the connection
              */
-            closesocket( _data->sockid ); 
+            dvsocket_closesocket( _data->sockid, &errorcode ); 
             _active = false;
             
             NotifyObservers( DisconnectedEvent );
@@ -426,23 +437,25 @@ CTCPServerConnection::Update( void )
         FD_SET( _data->sockid, &readfds );
         FD_SET( _data->sockid, &exceptfds );                
         
-        int errorcode = 0;
-        if ( select( _data->sockid+1   , 
-                     &readfds          , 
-                     NULL              , // We don't care about socket writes here
-                     &exceptfds        , 
-                     &_data->timeout   ) != SOCKET_ERROR ) 
+        int errorCode = 0;
+        if ( dvsocket_select( _data->sockid+1   , 
+                              &readfds          , 
+                              NULL              , // We don't care about socket writes here
+                              &exceptfds        , 
+                              &_data->timeout   ,
+                              &errorCode        ) != SOCKET_ERROR ) 
         {
             /* something happened on the socket */
             
             if ( FD_ISSET( _data->sockid, &exceptfds ) )
             {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorCode ) );
                 
-                closesocket( _data->sockid ); 
+                int lastError = errorCode;
+                dvsocket_closesocket( _data->sockid, &errorCode ); 
                 _active = false;
 
-                TSocketErrorEventData eData( errorcode );
+                TSocketErrorEventData eData( lastError );
                 if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
                
                 UnlockData();
@@ -458,9 +471,9 @@ CTCPServerConnection::Update( void )
         else
         {
             /* select call failed */
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured (select call failed): " + CORE::Int32ToString( errorcode ) );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured (select call failed): " + CORE::Int32ToString( errorCode ) );
             
-            TSocketErrorEventData eData( errorcode );
+            TSocketErrorEventData eData( errorCode );
             NotifyObservers( SocketErrorEvent, &eData );
         }
         
@@ -480,10 +493,10 @@ CTCPServerConnection::Update( void )
                     const Int8* data = static_cast< const Int8* >( m_sendOpBuffer.GetConstBufferPtr() );
                     Int32 remnant = m_sendOpBuffer.GetDataSize() - totalBytesSent;
                     wbytes = dvsocket_send( _data->sockid       ,  
-                                        data+totalBytesSent , 
-                                        remnant             , 
-                                        0                   , 
-                                        &error              );
+                                            data+totalBytesSent , 
+                                            remnant             , 
+                                            0                   , 
+                                            &error              );
                     if ( wbytes != SOCKET_ERROR )
                     {
                         // we where able to send at least some of the data
@@ -494,7 +507,7 @@ CTCPServerConnection::Update( void )
                     {
                         // Socket error,..
                         // Check if we have to delay sending the data
-                        if ( WSAEWOULDBLOCK == error && !_blocking )
+                        if ( DVSOCKET_EWOULDBLOCK == error && !_blocking )
                         {
                             // Cannot send now,... try again next pulse
                             // We have to place remaining data we grabbed from the send buffer back in

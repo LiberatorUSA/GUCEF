@@ -51,14 +51,10 @@
 #define GUCEF_COMCORE_CHOSTADDRESS_H
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
-#ifdef GUCEF_MSWIN_BUILD
-
-  #ifndef GUCEF_COMCORE_CPINGTASKCONSUMER_H
-  #include "gucefCOMCORE_CPingTaskConsumer.h"
-  #define GUCEF_COMCORE_CPINGTASKCONSUMER_H
-  #endif /* GUCEF_COMCORE_CPINGTASKCONSUMER_H ? */
-  
-#endif /* GUCEF_MSWIN_BUILD ? */
+#ifndef GUCEF_COMCORE_CPINGTASKCONSUMER_H
+#include "gucefCOMCORE_CPingTaskConsumer.h"
+#define GUCEF_COMCORE_CPINGTASKCONSUMER_H
+#endif /* GUCEF_COMCORE_CPINGTASKCONSUMER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

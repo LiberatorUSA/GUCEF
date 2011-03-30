@@ -33,9 +33,39 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H ? */
 
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H ? */
+
+#ifndef GUCEF_MT_CACTIVEOBJECT_H
+#include "gucefMT_CActiveObject.h"
+#define GUCEF_MT_CACTIVEOBJECT_H
+#endif /* GUCEF_MT_CACTIVEOBJECT_H ? */
+
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
+
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
+#ifndef GUCEF_COMCORE_CSOCKET_H
+#include "CSocket.h"
+#define GUCEF_COMCORE_CSOCKET_H
+#endif /* GUCEF_COMCORE_CSOCKET_H ? */
+
+#ifndef GUCEF_COMCORE_DVSOCKET_H
+#include "dvwinsock.h"  
+#define GUCEF_COMCORE_DVSOCKET_H
+#endif /* GUCEF_COMCORE_DVSOCKET_H ? */
+
 #include "CPing.h"           /* declaration of the class */
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
   /* #include <Icmpapi.h> -> this is the header for the functions that we dynamicly link */ 
    
@@ -44,37 +74,12 @@
   #define GUCEF_COMCORE_ICMPAPI_H
   #endif /* GUCEF_COMCORE_ICMPAPI_H ? */
   
-  #ifndef GUCEF_CORE_DVOSWRAP_H
-  #include "DVOSWRAP.h"
-  #define GUCEF_CORE_DVOSWRAP_H
-  #endif /* GUCEF_CORE_DVOSWRAP_H ? */
-  
-  #ifndef GUCEF_MT_CACTIVEOBJECT_H
-  #include "gucefMT_CActiveObject.h"
-  #define GUCEF_MT_CACTIVEOBJECT_H
-  #endif /* GUCEF_MT_CACTIVEOBJECT_H ? */
-
-  #ifndef GUCEF_CORE_CTSGNOTIFIER_H
-  #include "CTSGNotifier.h"
-  #define GUCEF_CORE_CTSGNOTIFIER_H
-  #endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
-
-  #ifndef GUCEF_MT_CMUTEX_H
-  #include "gucefMT_CMutex.h"
-  #define GUCEF_MT_CMUTEX_H
-  #endif /* GUCEF_MT_CMUTEX_H ? */
-  
-  #ifndef GUCEF_COMCORE_CSOCKET_H
-  #include "CSocket.h"
-  #define GUCEF_COMCORE_CSOCKET_H
-  #endif /* GUCEF_COMCORE_CSOCKET_H ? */
-  
   #ifndef GUCEF_COMCORE_CPINGTASKCONSUMER_H
   #include "gucefCOMCORE_CPingTaskConsumer.h"
   #define GUCEF_COMCORE_CPINGTASKCONSUMER_H
   #endif /* GUCEF_COMCORE_CPINGTASKCONSUMER_H ? */
 
-#endif /* GUCEF_MSWIN_BUILD ? */
+#endif /* GUCEF_PLATFORM_MSWIN ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -199,9 +204,9 @@ CPing::CPing( CORE::CPulseGenerator& pulsGenerator )
 
     RegisterEvents();    
     
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     icmpLinked = LinkICMP() > 0;
-    #endif /* GUCEF_MSWIN_BUILD ? */    
+    #endif /* GUCEF_PLATFORM_MSWIN ? */    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -219,9 +224,9 @@ CPing::CPing( void )
 
     RegisterEvents();    
     
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     icmpLinked = LinkICMP() > 0;
-    #endif /* GUCEF_MSWIN_BUILD ? */    
+    #endif /* GUCEF_PLATFORM_MSWIN ? */    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -231,9 +236,9 @@ CPing::~CPing()
 
     Stop();
     
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     UnlinkICMP();
-    #endif /* GUCEF_MSWIN_BUILD ? */
+    #endif /* GUCEF_PLATFORM_MSWIN ? */
 }
 
 /*-------------------------------------------------------------------------*/

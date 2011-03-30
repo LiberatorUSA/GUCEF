@@ -43,19 +43,33 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_COMCORE_DVSOCKET_H
+#include "dvwinsock.h"  
+#define GUCEF_COMCORE_DVSOCKET_H
+#endif /* GUCEF_COMCORE_DVSOCKET_H ? */
+
 #include "CIPAddress.h"
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+  #undef FD_SETSIZE
   #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
   #include <winsock2.h>
   #include <Ws2tcpip.h>
   #include <Wspiapi.h>
-#else
- #ifdef GUCEF_LINUX_BUILD
+
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
     #include <unistd.h>
     #include <sys/socket.h>
     #include <sys/types.h>
- #endif
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    
+#else
+
+    #error Unsupported platform
+
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -145,11 +159,12 @@ CIPAddress::ResolveDNS( const CORE::CString& address ,
     {              
         #if 1
 
-        struct hostent* retval = gethostbyname( address.C_String() );        
+        int errorCode;
+        struct hostent* retval = dvsocket_gethostbyname( address.C_String(), &errorCode );        
         if ( retval != NULL )
         {
             GUCEF_DEBUG_LOG( 1, CORE::CString( "CIPAddress::CIPAddress() DNS resolution: gethostbyname(): full name: " ) + retval->h_name );
-            char* addrStr = inet_ntoa( *( struct in_addr*)( retval->h_addr_list[0] ) );
+            char* addrStr = inet_ntoa( *( struct ::in_addr*)( retval->h_addr_list[0] ) );
             Int32 netaddr = inet_addr( addrStr );
             if ( netaddr >= 0 ) 
             {   
@@ -161,6 +176,8 @@ CIPAddress::ResolveDNS( const CORE::CString& address ,
         return false;
         
         #else
+        
+        /* Alternate method */
         
         struct addrinfo* info = NULL;
         CORE::CString portString( CORE::Int32ToString( destport ) );

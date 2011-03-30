@@ -32,15 +32,22 @@
 #endif /* GUCEF_COMCORE_MACROS_H ? */
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
   #undef FD_SETSIZE
   #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
   #include <winsock2.h>
   #include <Ws2tcpip.h>
   #include <Wspiapi.h>
+
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+  
+  #include <errno.h>
   #include <unistd.h>
   #include <sys/socket.h>
   #include <sys/types.h>
+  #include <netdb.h>
+  #include <arpa/inet.h>
+  
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -65,9 +72,19 @@ struct sockaddr;
 struct in_addr;
 struct timeval;
 
+#define DVSOCKET_EWOULDBLOCK    WSAEWOULDBLOCK
+
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
+typedef struct hostent*         LPHOSTENT;
+typedef struct in_addr*         LPIN_ADDR;
+typedef struct sockaddr*        LPSOCKADDR;
 typedef int SOCKET;
+
+#define INVALID_SOCKET          (SOCKET)(~0)
+#define SOCKET_ERROR            (-1)
+#define DVSOCKET_EWOULDBLOCK    EWOULDBLOCK
+#define SOCKADDR_IN             struct sockaddr_in
 
 #endif
 
@@ -229,6 +246,12 @@ dvsocket_gethostbyaddr( const char* addr ,
                         int len          ,
                         int type         ,
                         int* error       );
+                        
+/*-------------------------------------------------------------------------*/
+                        
+int
+dvsocket_closesocket( SOCKET s   ,
+                      int* error );
 
 /*--------------------------------------------------------------------------*/
 

@@ -42,22 +42,32 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_COMCORE_DVSOCKET_H
+#include "dvwinsock.h"  
+#define GUCEF_COMCORE_DVSOCKET_H
+#endif /* GUCEF_COMCORE_DVSOCKET_H ? */
+
 #ifndef CCOM_H
 #include "CCom.h"		  /* network manager */
 #define CCOM_H
 #endif /* CCOM_H ? */
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+  #undef FD_SETSIZE
   #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
   #include <winsock2.h>
   #include <Ws2tcpip.h>
   #include <Wspiapi.h>
-#else
- #ifdef GUCEF_LINUX_BUILD
-    #include <unistd.h>
-    #include <sys/socket.h>
-    #include <sys/types.h>
- #endif
+
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+  #include <unistd.h>
+  #include <sys/socket.h>
+  #include <sys/types.h>
+  #include <netinet/in.h>
+  #include <arpa/inet.h>
+
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -151,11 +161,12 @@ CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
     {              
         #if 1
 
-        struct hostent* retval = gethostbyname( destaddrstr.C_String() );        
+        int errorCode = 0;
+        struct hostent* retval = dvsocket_gethostbyname( destaddrstr.C_String(), &errorCode );        
         if ( retval != NULL )
         {
             GUCEF_DEBUG_LOG( 1, CORE::CString( "CSocket::ConvertToIPAddress(): gethostbyname(): full name: " ) + retval->h_name );
-            char* addrStr = inet_ntoa( *( struct in_addr*)( retval->h_addr_list[0] ) );
+            char* addrStr = inet_ntoa( *( struct ::in_addr*)( retval->h_addr_list[0] ) );
             Int32 netaddr = inet_addr( addrStr );
             if ( netaddr >= 0 ) 
             {   
@@ -167,6 +178,8 @@ CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
         return false;
         
         #else
+        
+        /* Alternate method */
         
         struct addrinfo* info = NULL;
         CORE::CString portString( CORE::Int32ToString( destport ) );
@@ -199,8 +212,14 @@ CSocket::ConvertFromIPAddress( const CIPAddress& src     ,
                                UInt16& srcport           )
 {GUCEF_TRACE;                   
 
-    in_addr addrStruct;
+    ::in_addr addrStruct;
+    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     addrStruct.S_un.S_addr = src.GetAddress();
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    addrStruct.s_addr = src.GetAddress();
+    #endif
+    
     const char* addrStr = inet_ntoa( addrStruct );
     if ( addrStr != NULL )
     {

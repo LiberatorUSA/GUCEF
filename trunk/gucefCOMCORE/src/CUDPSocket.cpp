@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
+#ifndef GUCEF_COMCORE_DVSOCKET_H
+#include "dvwinsock.h"
+#define GUCEF_COMCORE_DVSOCKET_H
+#endif /* GUCEF_COMCORE_DVSOCKET_H ? */
+
 #include "CUDPSocket.h" /* definition of the class implemented here */
 
 #ifdef GUCEF_MSWIN_BUILD
@@ -483,7 +488,8 @@ CUDPSocket::Close( bool force )
 
     if ( IsActive() )
     {
-        force ? closesocket( _data->sockid ) : shutdown( _data->sockid, 1 );
+        int error;
+        force ? dvsocket_closesocket( _data->sockid, &error ) : shutdown( _data->sockid, 1 );
         
         // We now no longer require periodic updates to poll for data
         m_pulseGenerator->RequestStopOfPeriodicUpdates( this );

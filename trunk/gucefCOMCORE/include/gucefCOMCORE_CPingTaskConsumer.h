@@ -158,7 +158,11 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     CPingTaskConsumer( const CPingTaskConsumer& src );
     CPingTaskConsumer& operator=( const CPingTaskConsumer& src );
     
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
     static void IcmpCallback( void* vdata );
+    
+    #endif
 
     private:
     
@@ -178,8 +182,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     typedef struct SPingEntry TPingEntry;
     typedef std::map< CHostAddress, TPingEntry > TPingCounters;
 
-    void* m_pingEvent;
-    void* m_icmpHandle;
+    void* m_platformData;
     bool m_notDone;
     CPingTaskData* m_taskData;
     TPingCounters m_pingCounters;

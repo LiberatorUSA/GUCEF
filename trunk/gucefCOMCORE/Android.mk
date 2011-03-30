@@ -36,6 +36,7 @@ LOCAL_SRC_FILES := \
   src/CUDPSocket.cpp \
   src/dvwinsock.c \
   src/gucefCOMCORE.cpp \
+  src/gucefCOMCORE_CPingTaskConsumer.cpp \
   src/socketutils.cpp
 
 LOCAL_C_INCLUDES := \
@@ -46,8 +47,8 @@ LOCAL_C_INCLUDES := \
 
 
 LOCAL_SHARED_LIBRARIES := \
-  gucefMT \
-  gucefCORE
+  gucefCORE \
+  gucefMT
 
 include $(BUILD_SHARED_LIBRARY)
 
