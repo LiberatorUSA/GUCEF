@@ -23,10 +23,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_DRN_DLLINIT_H
-#include "gucefDRN_DLLInit.h"
-#define GUCEF_DRN_DLLINIT_H
-#endif /* GUCEF_DRN_DLLINIT_H ? */
+#ifndef GUCEF_DLLINIT_H
+#include "gucef_DLLInit.h"
+#define GUCEF_DLLINIT_H
+#endif /* GUCEF_DLLINIT_H ? */
 
 #ifndef GUCEF_DRN_CGUCEFDRNMODULE_H
 #include "gucefDRN_CGUCEFDRNModule.h"
@@ -39,6 +39,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-DLL_INIT_FUNC_BEG_END( GUCEF::DRN::CGUCEFDRNModule )
+GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::DRN::CGUCEFDRNModule )
 
 /*-------------------------------------------------------------------------*/

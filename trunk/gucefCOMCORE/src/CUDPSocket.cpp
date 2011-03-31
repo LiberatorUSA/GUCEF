@@ -25,33 +25,22 @@
 
 #include <string.h>       /* needed for memset() */
 
-#ifndef DVSTRUTILS_H
+#ifndef GUCEF_CORE_DVSTRUTILS_H
 #include "dvstrutils.h"
-#define DVSTRUTILS_H
-#endif /* DVSTRUTILS_H ? */ 
+#define GUCEF_CORE_DVSTRUTILS_H
+#endif /* GUCEF_CORE_DVSTRUTILS_H ? */ 
 
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
-#ifndef GUCEF_COMCORE_DVSOCKET_H
-#include "dvwinsock.h"
-#define GUCEF_COMCORE_DVSOCKET_H
-#endif /* GUCEF_COMCORE_DVSOCKET_H ? */
+#ifndef GUCEF_COMCORE_SOCKETUTILS_H
+#include "socketutils.h"
+#define GUCEF_COMCORE_SOCKETUTILS_H
+#endif /* GUCEF_COMCORE_SOCKETUTILS_H ? */
 
 #include "CUDPSocket.h" /* definition of the class implemented here */
-
-#ifdef GUCEF_MSWIN_BUILD
-  #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
-  #include <winsock2.h>
-#else
- #ifdef GUCEF_LINUX_BUILD
-    #include <unistd.h>
-    #include <sys/socket.h>
-    #include <sys/types.h>
- #endif
-#endif 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -86,10 +75,8 @@ const CORE::CEvent CUDPSocket::UDPPacketRecievedEvent = "GUCEF::COMCORE::CUDPSoc
  */
 struct CUDPSocket::SUDPSockData
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        SOCKET sockid;
-        struct sockaddr_in localaddress;
-        #endif
+    SOCKET sockid;
+    struct sockaddr_in localaddress;
 };
 
 /*-------------------------------------------------------------------------//
@@ -153,10 +140,11 @@ CUDPSocket::CUDPSocket( bool blocking )
 
 CUDPSocket::~CUDPSocket()
 {GUCEF_TRACE;
-        Close( true );
-        
-        delete _data;
-        _data = NULL;
+
+    Close( true );
+    
+    delete _data;
+    _data = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -178,22 +166,23 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
                           const void* data       , 
                           UInt16 datasize        )
 {GUCEF_TRACE;
-        if ( !_data->sockid )
-        {
-                Open();
-        }
-        
-        struct sockaddr_in remote;
-        memset( &remote, 0, sizeof( remote ) ); // should this be CLEAR_ADDR( &remote ); ?
-        remote.sin_addr.s_addr = dest.GetAddress();
-        remote.sin_port = dest.GetPort();
-        remote.sin_family = AF_INET;
-        return sendto( _data->sockid             , 
-                       (const char*)data         , 
-                       datasize                  , 
-                       0                         , 
-                       (struct sockaddr*)&remote , 
-                       sizeof(remote)            );
+
+    if ( !_data->sockid )
+    {
+            Open();
+    }
+    
+    struct sockaddr_in remote;
+    memset( &remote, 0, sizeof( remote ) ); // should this be CLEAR_ADDR( &remote ); ?
+    remote.sin_addr.s_addr = dest.GetAddress();
+    remote.sin_port = dest.GetPort();
+    remote.sin_family = AF_INET;
+    return sendto( _data->sockid             , 
+                   (const char*)data         , 
+                   datasize                  , 
+                   0                         , 
+                   (struct sockaddr*)&remote , 
+                   sizeof(remote)            );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -204,12 +193,13 @@ CUDPSocket::SendPacketTo( const CORE::CString& dnsname ,
                           const void* data             , 
                           UInt16 datasize              )
 {GUCEF_TRACE;
-        CIPAddress dest;
-        if ( ConvertToIPAddress( dnsname, port, dest ) )
-        {
-                return SendPacketTo( dest, data, datasize );
-        }
-        return -1;
+
+    CIPAddress dest;
+    if ( ConvertToIPAddress( dnsname, port, dest ) )
+    {
+            return SendPacketTo( dest, data, datasize );
+    }
+    return -1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -252,16 +242,17 @@ CUDPSocket::OnPulseGeneratorDestruction( CORE::CNotifier* notifier              
 bool
 CUDPSocket::IsIncomingDataQueued( void ) const
 {GUCEF_TRACE;
-        TIMEVAL time = { 0, 0 };
-        fd_set sockset;
-        FD_ZERO( &sockset );
-        FD_SET( _data->sockid, &sockset ); 
 
-        if ( select( 2, &sockset, NULL, NULL, &time ) > 0 )
-        {
-                return true;
-        }
-        return false;
+    TIMEVAL time = { 0, 0 };
+    fd_set sockset;
+    FD_ZERO( &sockset );
+    FD_SET( _data->sockid, &sockset ); 
+
+    if ( select( 2, &sockset, NULL, NULL, &time ) > 0 )
+    {
+            return true;
+    }
+    return false;
 }                    
 
 /*-------------------------------------------------------------------------*/
@@ -356,37 +347,23 @@ CUDPSocket::Recieve( void* destbuf  ,
 bool 
 CUDPSocket::Open( void )
 {GUCEF_TRACE;
-        GUCEF_ASSERT_ALWAYS;
         
-        Close( true );           
-        
-        //----------- BEGIN MS WINDOWS IMPLEMENTATION        
-        #ifdef GUCEF_MSWIN_BUILD
-        
-        _data->sockid = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
-        if ( _data->sockid == INVALID_SOCKET ) return false;
-        
-        // Set the desired blocking mode
-        int mode = _blocking;
-        if ( ioctlsocket( _data->sockid      , 
-                          FIONBIO            , 
-                          (u_long FAR*)&mode ) == SOCKET_ERROR )
-        {
-                return false;
-        }        
-        
-        int size( sizeof(_data->localaddress) );
-        getsockname( _data->sockid, (struct sockaddr*)&_data->localaddress, &size );
+    Close( true );           
+    
+    int errorCode;
+    if ( dvsocket_bind( _data->sockid                            , 
+                        (struct sockaddr *) &_data->localaddress , 
+                        sizeof(struct sockaddr_in)               ,
+                        &errorCode                               ) == 0 )
+    {
         NotifyObservers( UDPSocketOpenedEvent );
-        //m_port = ;  @MAKEME
         
         // We will now be requiring periodic updates to poll for data
         m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
-        
+                        
         return true;
-        
-        #endif /* GUCEF_MSWIN_BUILD ? */
-        //----------- END MS WINDOWS IMPLEMENTATION
+    }
+    return false; 
 }       
 
 /*-------------------------------------------------------------------------*/ 
@@ -394,90 +371,57 @@ CUDPSocket::Open( void )
 bool 
 CUDPSocket::Open( UInt16 port )
 {GUCEF_TRACE;
-        Close( true );
         
-        //----------- BEGIN MS WINDOWS IMPLEMENTATION
-        #ifdef GUCEF_MSWIN_BUILD
-        
-        _data->sockid = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
-        if ( _data->sockid == INVALID_SOCKET ) return false;
-
-        // Set the desired blocking mode
-        int mode = _blocking;
-        if ( ioctlsocket( _data->sockid      , 
-                          FIONBIO            , 
-                          (u_long FAR*)&mode ) == SOCKET_ERROR )
-        {
-                return false;
-        }
-        
-        //CLEAR_ADDR( &_data->localaddress );
-        _data->localaddress.sin_family = AF_INET;
-        _data->localaddress.sin_port = htons( port );
-        _data->localaddress.sin_addr.s_addr = htonl( INADDR_ANY );        
-        
-        if ( bind( _data->sockid                            , 
-                   (struct sockaddr *) &_data->localaddress , 
-                   sizeof(struct sockaddr_in)               ) == 0 )
-        {
-                m_port = port;
-                NotifyObservers( UDPSocketOpenedEvent );
-                
-                // We will now be requiring periodic updates to poll for data
-                m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
-                
-                return true;
-        }
-        return false;
-        
-        #endif /* GUCEF_MSWIN_BUILD ? */
-        //----------- END MS WINDOWS IMPLEMENTATION
+    return Open( CORE::CString(), port );
 }
 
 /*-------------------------------------------------------------------------*/
-
+              
 bool 
 CUDPSocket::Open( const CORE::CString& localaddr ,
                   UInt16 port                    )
 {GUCEF_TRACE;
-        Close( true );
         
-        //----------- BEGIN MS WINDOWS IMPLEMENTATION
-        #ifdef GUCEF_MSWIN_BUILD
-        
-        _data->sockid = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
-        if ( _data->sockid != INVALID_SOCKET ) return false;
+    Close( true );
+    
+    int errorCode;
+    _data->sockid = dvsocket_socket( AF_INET     , 
+                                     SOCK_DGRAM  , 
+                                     IPPROTO_UDP , 
+                                     &errorCode  );
+    if ( _data->sockid != INVALID_SOCKET ) return false;
 
-        // Set the desired blocking mode
-        int mode = _blocking;
-        if ( ioctlsocket( _data->sockid      , 
-                          FIONBIO            , 
-                          (u_long FAR*)&mode ) == SOCKET_ERROR )
-        {
-                return false;
-        }
-        
-        //CLEAR_ADDR( &_data->localaddress );
-        _data->localaddress.sin_family = AF_INET;
-        _data->localaddress.sin_port = htons( port );
-        _data->localaddress.sin_addr.s_addr = inet_addr( localaddr.C_String() );
-        
-        if ( bind( _data->sockid                            , 
-                   (struct sockaddr *) &_data->localaddress , 
-                   sizeof(struct sockaddr_in)               ) == 0 )
-        {
-                m_port = port;
-                NotifyObservers( UDPSocketOpenedEvent );
-                
-                // We will now be requiring periodic updates to poll for data
-                m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
-                                
-                return true;
-        }
+    // Set the desired blocking mode
+    if ( !SetBlockingMode( _data->sockid, _blocking ) )
+    {
         return false;
+    }
+    
+    _data->localaddress.sin_family = AF_INET;
+    _data->localaddress.sin_port = htons( port );
+    if ( localaddr.IsNULLOrEmpty() )
+    {
+        _data->localaddress.sin_addr.s_addr = INADDR_ANY;
+    }
+    else
+    {
+        _data->localaddress.sin_addr.s_addr = inet_addr( localaddr.C_String() );
+    }
+    
+    if ( dvsocket_bind( _data->sockid                            , 
+                        (struct sockaddr *) &_data->localaddress , 
+                        sizeof(struct sockaddr_in)               ,
+                        &errorCode                               ) == 0 )
+    {
+        m_port = port;
+        NotifyObservers( UDPSocketOpenedEvent );
         
-        #endif /* GUCEF_MSWIN_BUILD ? */
-        //----------- END MS WINDOWS IMPLEMENTATION       
+        // We will now be requiring periodic updates to poll for data
+        m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
+                        
+        return true;
+    }
+    return false;   
 }
 
 /*-------------------------------------------------------------------------*/  
@@ -503,7 +447,8 @@ CUDPSocket::Close( bool force )
 bool 
 CUDPSocket::IsBlocking( void ) const
 {GUCEF_TRACE;
-       return _blocking;
+
+    return _blocking;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -511,7 +456,8 @@ CUDPSocket::IsBlocking( void ) const
 bool 
 CUDPSocket::IsActive( void ) const
 {GUCEF_TRACE;
-        return _data->sockid > 0;
+
+    return _data->sockid > 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -519,7 +465,8 @@ CUDPSocket::IsActive( void ) const
 UInt16 
 CUDPSocket::GetPort( void ) const
 {GUCEF_TRACE;
-        return m_port;
+
+    return m_port;
 }
  
 /*-------------------------------------------------------------------------//

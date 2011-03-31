@@ -79,6 +79,7 @@ struct timeval;
 typedef struct hostent*         LPHOSTENT;
 typedef struct in_addr*         LPIN_ADDR;
 typedef struct sockaddr*        LPSOCKADDR;
+typedef struct timeval          TIMEVAL;
 typedef int SOCKET;
 
 #define INVALID_SOCKET          (SOCKET)(~0)
