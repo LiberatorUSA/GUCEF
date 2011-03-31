@@ -2204,7 +2204,7 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
             ++prioInc;
         }
     }
-    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Performed initial sorting based on number of dependencies" );
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Performed initial sorting based on number of dependencies. The target platform is \"" + targetPlatform + "\"" );
 
     // Now we can bubble sort the priority map, because of the initial sorting done above
     // the number of iterations should be somewhat reduced.
@@ -2224,9 +2224,20 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
             {
                 // If no platform specific info is available we will use the info which applies to all platforms
                 moduleInfo = FindModuleInfoForPlatform( *moduleInfoEntry, AllPlatforms, false );
+                if ( NULL != moduleInfo )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Using AllPlatforms definition for module " + moduleInfo->name + " for build order determination since no definition was provided for platform \"" + targetPlatform + "\"" );
+                }
+            }
+            else
+            if ( targetPlatform != AllPlatforms )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Using platform specific definition for module " + moduleInfo->name + " for build order determination. The target platform is \"" + targetPlatform + "\"" );
             }
             if ( NULL != moduleInfo )
             {
+                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Module \"" + moduleInfo->name + "\" currently has build order " + CORE::Int32ToString( moduleInfo->buildOrder ) + ". The target platform is \"" + targetPlatform + "\""  );
+            
                 TStringVector::iterator m = moduleInfo->dependencies.begin();
                 while ( m != moduleInfo->dependencies.end() )
                 {
@@ -2319,7 +2330,7 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
                         prioMap = newestPrioMap;
                         changes = true;
 
-                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Completed changing the build priority for module: " + moduleInfo->name );
+                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Completed changing the build priority for module: " + moduleInfo->name + ". The target platform is \"" + targetPlatform + "\"" );
                         break;
                     }
                     ++m;
@@ -2335,12 +2346,13 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
         }
     }
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished determining the correct build order (priority) for all modules, assigning priorities and reordering modules to refect this" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished determining the correct build order (priority) for all modules, assigning priorities and reordering modules to reflect this" );
 
-    // Assign the determined build order index to the module
+    // Assign the determined build order index to the modules
     TModuleInfoEntryPrioMap::iterator n = prioMap.begin();
     while ( n != prioMap.end() )
     {
+        const CORE::CString* moduleName = NULL;
         TModuleInfo* moduleInfo = FindModuleInfoForPlatform( *(*n).second, targetPlatform, false );
         if ( NULL == moduleInfo )
         {
@@ -2348,20 +2360,49 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
             // We will use the AllPlatforms info but keep in mind we cannot change it's build order since
             // this sorting is platform specific
             moduleInfo = FindModuleInfoForPlatform( *(*n).second, AllPlatforms, false );
-            if ( ( NULL == moduleInfo )                   ||
-                 ( moduleInfo->buildOrder == -1 )         ||
-                 ( moduleInfo->buildOrder != (*n).first )  )
+            if ( NULL != moduleInfo )
             {
-                // We will have to just create a new entry for this platform because we need to store the platform specific build order
-                moduleInfo = FindModuleInfoForPlatform( *(*n).second, targetPlatform, true );
+                moduleName = &moduleInfo->name;
+                
+                // We do have a 'AllPlatforms' entry for this module instead of a platform specific one
+                // Lets check if it's existing buildOrder can be used. In order for this to happen the build order
+                // must be identical for 'AllPlatforms' and this target platform
+                if ( ( moduleInfo->buildOrder == -1 )         ||
+                     ( moduleInfo->buildOrder != (*n).first )  )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The build order for module " + *moduleName + " needs to be " 
+                        + CORE::Int32ToString( (*n).first ) + " for platform \"" + targetPlatform + "\", however no platform specific module definition exists. The build order is "
+                        "different from the AllPlatforms build order which is " + CORE::Int32ToString( moduleInfo->buildOrder ) 
+                        + " as such we will have to create a platform specific entry for this module to retain the different build order" );
+
+                    // We will have to just create a new entry for this platform because we need to store the platform specific build order
+                    moduleInfo = FindModuleInfoForPlatform( *(*n).second, targetPlatform, true );
+                }                        
+                else
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The build order for module " + *moduleName + " needs to be " 
+                        + CORE::Int32ToString( (*n).first ) + " for platform \"" + targetPlatform + "\", however no platform specific module definition exists."
+                        " Because a 'AllPlatforms' module defintion does exist for this module and its build order is the same we can just use the 'AllPlatforms' build order for this module" );
+                        
+                    // we can use the existing 'AllPlatforms' build order, no need to generate a platform entry
+                    ++n;
+                    continue;
+                }
             }
             else
             {
-                // we can use the existing 'AllPlatforms' build order, no need to generate a platform entry
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping module entry since no 'AllPlatforms' defintion exists nor does a definition exist for the target platform which is \"" + targetPlatform + "\"" );
                 ++n;
                 continue;
             }
+
         }
+        else
+        {
+            moduleName = &moduleInfo->name;
+        }
+        
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Assigning build order " + CORE::Int32ToString( (*n).first ) + " to module " + *moduleName + " for the target platform which is \"" + targetPlatform + "\"" );
         moduleInfo->buildOrder = (*n).first;
         ++n;
     }
@@ -2387,7 +2428,7 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo )
     TStringSet::const_iterator i = supportedPlatforms.begin();
     while ( i != supportedPlatforms.end() )
     {
-        DetermineBuildOrderForAllModules( projectInfo, (*i) );        
+        DetermineBuildOrderForAllModules( projectInfo, (*i).Lowercase() );        
         ++i;
     }
 }
