@@ -1148,8 +1148,57 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry )
         // for all platforms and counting how often each is used. The most used
         // name is considered the general consensus name. If the same count applies
         // to multiple we will try to use a popular platform to improve our 'guess'
-
-        //@TODO          
+        
+        typedef std::map< CORE::CString, CORE::UInt32 > TStringCountMap;
+        
+        TStringCountMap countMap;
+        TModuleInfoMap::const_iterator n = moduleInfoEntry.modulesPerPlatform.begin();
+        while ( n != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            const TModuleInfo& moduleInfo = (*n).second;
+            TStringCountMap::iterator m = countMap.find( moduleInfo.name );
+            if ( m != countMap.end() )
+            {
+                ++((*m).second);
+            }
+            else
+            {
+                countMap[ moduleInfo.name ] = 1;
+            }            
+            ++n;
+        }
+        
+        // Now that we have the popularity count of each name get the highest count
+        CORE::UInt32 highestCount = 0;
+        TStringCountMap::iterator i = countMap.begin();
+        while ( i != countMap.end() )
+        {
+            if ( highestCount < (*i).second )
+            {
+                highestCount = (*i).second;
+            }
+            ++i;
+        }
+        
+        // Make the list of most popular names
+        TStringSet topNames;
+        i = countMap.begin();
+        while ( i != countMap.end() )
+        {
+            if ( highestCount == (*i).second )
+            {
+                topNames.insert( (*i).first );
+            }
+            ++i;
+        }
+        
+        // If we have multiple use a popular platform if
+        // possible, otherwise just grab one
+        
+        //@TODO: popular platform check
+        
+        return (*topNames.begin());
+        
     }
     return CORE::CString();
 }
