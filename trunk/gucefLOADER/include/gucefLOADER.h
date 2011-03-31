@@ -1,4 +1,9 @@
 
+LoadGucefPlatform( unsigned long mayorVersion   ,
+                   unsigned long minorVersion   ,
+                   char** argv                  ,
+                   int argc                     );
+
 
 LoadGucefPlatform( unsigned long mayorVersion   ,
                    unsigned long minorVersion   ,
