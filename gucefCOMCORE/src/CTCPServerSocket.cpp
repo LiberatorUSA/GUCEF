@@ -44,15 +44,6 @@
 #define GUCEF_COMCORE_SOCKETUTILS_H
 #endif /* GUCEF_COMCORE_SOCKETUTILS_H ? */
 
-#ifdef GUCEF_MSWIN_BUILD
-
-#ifndef GUCEF_COMCORE_DVSOCKET_H
-#include "dvwinsock.h"
-#define GUCEF_COMCORE_DVSOCKET_H
-#endif /* GUCEF_COMCORE_DVSOCKET_H ? */
-
-#endif /* GUCEF_MSWIN_BUILD ? */
-
 #include "CTCPServerSocket.h"           /* this file's header */
 
 /*-------------------------------------------------------------------------//
@@ -104,12 +95,6 @@ const CORE::CEvent CTCPServerSocket::ServerSocketMaxConnectionsChangedEvent = "G
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_LINUX_BUILD
-#define SOCKET int
-#endif /* GUCEF_LINUX_BUILD ? */
-
-/*-------------------------------------------------------------------------*/
-
 struct STCPServerConData
 {
     SOCKET sockid;
@@ -123,15 +108,12 @@ typedef struct STCPServerConData TTCPServerConData;
 
 struct STCPServerSockData
 {
-        #ifdef GUCEF_MSWIN_BUILD
-        SOCKET sockid;           /* Winsock socket number */
-        UInt32 connectcount;     /* number of clients connected to the server socket */
-        UInt32 maxcon;           /* maximum number of connections for this server socket */
-        bool blocking;           /* is this a blocking or non-blocking server ? */
-        SOCKADDR_IN serverinfo;  /* winsock info on the listening socket */
-        struct timeval timeout;  /* timeout for blocking operations */
-        #endif
-                
+    SOCKET sockid;           /* Winsock socket number */
+    UInt32 connectcount;     /* number of clients connected to the server socket */
+    UInt32 maxcon;           /* maximum number of connections for this server socket */
+    bool blocking;           /* is this a blocking or non-blocking server ? */
+    SOCKADDR_IN serverinfo;  /* winsock info on the listening socket */
+    struct timeval timeout;  /* timeout for blocking operations */                
 };
 typedef struct STCPServerSockData TTCPServerSockData;
 

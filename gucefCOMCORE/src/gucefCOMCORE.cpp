@@ -26,15 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCOMCOREDLLINIT_H
-#include "gucefCOMCOREDLLInit.h"
-#define GUCEFCOMCOREDLLINIT_H
-#endif /* GUCEFCOMCOREDLLINIT_H ? */
+#ifndef GUCEF_DLLINIT_H
+#include "gucef_DLLInit.h"
+#define GUCEF_DLLINIT_H
+#endif /* GUCEF_DLLINIT_H ? */
 
-#ifndef CGUCEFCOMCOREMODULE_H
+#ifndef GUCEF_COMCORE_CGUCEFCOMCOREMODULE_H
 #include "CGUCEFCOMCOREModule.h"
-#define CGUCEFCOMCOREMODULE_H
-#endif /* CGUCEFCOMCOREMODULE_H ? */
+#define GUCEF_COMCORE_CGUCEFCOMCOREMODULE_H
+#endif /* GUCEF_COMCORE_CGUCEFCOMCOREMODULE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,7 +42,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-DLL_INIT_FUNC_BEG_END( GUCEF::COMCORE::CGUCEFCOMCOREModule )
+GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::COMCORE::CGUCEFCOMCOREModule )
 
 /*-------------------------------------------------------------------------*/
 

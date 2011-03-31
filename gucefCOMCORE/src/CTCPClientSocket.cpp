@@ -665,7 +665,8 @@ CTCPClientSocket::Close( void )
                   1             );
                                   
         /* close the socket, this de-allocates the winsock buffers for the socket */          
-        closesocket( _data->sockid );
+        int errorCode;
+        dvsocket_closesocket( _data->sockid, &errorCode );
         _active = false;
         m_isConnecting = false;
         

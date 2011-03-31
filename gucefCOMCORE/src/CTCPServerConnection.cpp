@@ -23,21 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CTCPServerConnection.h"       /* header for this class */
-
 #include "CTCPServerSocket.h"           /* parent server socket */
-#include "tsprinting.h"			/* threadsafe printing */
 
-#ifdef GUCEF_MSWIN_BUILD
-
-#ifndef DVWINSOCK_H
-#include "dvwinsock.h"
-#define DVWINSOCK_H
-#endif /* DVWINSOCK_H ? */
-
-#include <winsock2.h>                   /* windows networking API */
-
-#endif /* GUCEF_MSWIN_BUILD ? */
+#ifndef GUCEF_COMCORE_SOCKETUTILS_H
+#include "socketutils.h"
+#define GUCEF_COMCORE_SOCKETUTILS_H
+#endif /* GUCEF_COMCORE_SOCKETUTILS_H ? */
 
 #ifdef ACTIVATE_MEMORY_MANAGER
   #ifndef GUCEF_NEW_ON_H
@@ -45,6 +36,8 @@
   #define GUCEF_NEW_ON_H
   #endif /* GUCEF_NEW_ON_H ? */
 #endif /* ACTIVATE_MEMORY_MANAGER ? */
+
+#include "CTCPServerConnection.h"       /* header for this class */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

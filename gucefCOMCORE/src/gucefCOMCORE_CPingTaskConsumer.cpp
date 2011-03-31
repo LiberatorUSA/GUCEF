@@ -38,15 +38,19 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
-#ifndef GUCEF_COMCORE_ICMPAPI_H
-#include "gucefCOMCORE_icmpApi.h"
-#define GUCEF_COMCORE_ICMPAPI_H
-#endif /* GUCEF_COMCORE_ICMPAPI_H ? */
-
 #ifndef GUCEF_COMCORE_CPING_H
 #include "CPing.h"
 #define GUCEF_COMCORE_CPING_H
 #endif /* GUCEF_COMCORE_CPING_H ? */
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+  #ifndef GUCEF_COMCORE_ICMPAPI_H
+  #include "gucefCOMCORE_icmpApi.h"
+  #define GUCEF_COMCORE_ICMPAPI_H
+  #endif /* GUCEF_COMCORE_ICMPAPI_H ? */
+
+#endif
 
 #include "gucefCOMCORE_CPingTaskConsumer.h"
 
@@ -77,6 +81,8 @@ const CORE::CEvent CPingTaskConsumer::PingStoppedEvent = "GUCEF::COMCORE::CPingT
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
 struct SMsWinPingData
 {
     HANDLE pingEvent;
@@ -84,6 +90,7 @@ struct SMsWinPingData
 };
 typedef struct SMsWinPingData TMsWinPingData;
 
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
