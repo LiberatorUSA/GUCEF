@@ -1,0 +1,8 @@
+<PROJECTGENERATOR>
+    <INCLUDES PLATFORM="ALL">
+        <ITEM NAME="../gucefCORE/src/DVOSWRAP.c" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/include/DVOSWRAP.h" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/dvstrutils.c" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/include/dvstrutils.h" TYPE="FILE" />
+    </INCLUDES>
+</PROJECTGENERATOR>

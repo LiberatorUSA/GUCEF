@@ -809,7 +809,8 @@ ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
     if ( instructions.HasChildren() )
     {
         // write down the tags we will parse for
-        static const CORE::CString rootNodeName = "CMAKELISTGENERATOR";
+        static const CORE::CString oldRootNodeName = "CMAKELISTGENERATOR";
+        static const CORE::CString rootNodeName = "PROJECTGENERATOR";
         static const CORE::CString excludesNodeName = "EXCLUDES";
         static const CORE::CString includesNodeName = "INCLUDES";
         static const CORE::CString platformNodeName = "PLATFORM";
@@ -821,6 +822,10 @@ ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
         // Parse the instructions for the information we are looking for
         CORE::CString leftOver;
         const CORE::CDataNode* rootNode = instructions.Find( rootNodeName );
+        if ( 0 == rootNode )
+        {
+            rootNode = instructions.Find( oldRootNodeName );
+        }
         if ( 0 != rootNode )
         {
             CORE::CDataNode::const_iterator i = rootNode->ConstBegin();
