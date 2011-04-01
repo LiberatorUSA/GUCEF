@@ -95,20 +95,20 @@ GetSupportedPlatformDirMap( void )
     static TStringSetMap platformMap;
     if ( platformMap.empty() )
     {
-        platformMap[ "WIN32" ].insert( "mswin" );
-        platformMap[ "WIN32" ].insert( "win32" );
-        platformMap[ "WIN64" ].insert( "mswin" );
-        platformMap[ "WIN64" ].insert( "win64" );
-        platformMap[ "UNIX" ].insert( "linux" );
-        platformMap[ "UNIX" ].insert( "unix" );
-        platformMap[ "IPHONEOS" ].insert( "iphone" );
-        platformMap[ "SYMBIAN" ].insert( "symbian" );
-        platformMap[ "OSX" ].insert( "osx" );
-        platformMap[ "OSX" ].insert( "mac" );
-        platformMap[ "ANDROID" ].insert( "android" );
-        platformMap[ "GLX" ].insert( "glx" );
-        platformMap[ "GTK" ].insert( "gtk" );
-        platformMap[ "SDL" ].insert( "sdl" );
+        platformMap[ "win32" ].insert( "mswin" );
+        platformMap[ "win32" ].insert( "win32" );
+        platformMap[ "win64" ].insert( "mswin" );
+        platformMap[ "win64" ].insert( "win64" );
+        platformMap[ "unix" ].insert( "linux" );
+        platformMap[ "unix" ].insert( "unix" );
+        platformMap[ "iphoneos" ].insert( "iphone" );
+        platformMap[ "symbian" ].insert( "symbian" );
+        platformMap[ "osx" ].insert( "osx" );
+        platformMap[ "osx" ].insert( "mac" );
+        platformMap[ "android" ].insert( "android" );
+        platformMap[ "glx" ].insert( "glx" );
+        platformMap[ "gtk" ].insert( "gtk" );
+        platformMap[ "sdl" ].insert( "sdl" );
     }
     return platformMap;
 }
@@ -371,10 +371,14 @@ GetModuleBuildOrder( const TModuleInfoEntry& moduleEntry ,
 TModuleInfoEntry*
 FindNextModuleAccordingToBuildOrder( TProjectInfo& projectInfo            ,
                                      TModuleInfoEntry& currentModuleEntry ,
-                                     const CORE::CString& targetPlatform  )
+                                     const CORE::CString& targetPlatform  ,
+                                     int desiredBuildOrder = -1           )
 {GUCEF_TRACE;
 
-    int desiredBuildOrder = GetModuleBuildOrder( currentModuleEntry, targetPlatform ) + 1;
+    if ( desiredBuildOrder == -1 )
+    {
+        desiredBuildOrder = GetModuleBuildOrder( currentModuleEntry, targetPlatform ) + 1;
+    }
     
     TModuleInfoEntry* platformEntry = FindModuleAccordingToBuildOrderImp( projectInfo       ,
                                                                           targetPlatform    , 
@@ -1731,17 +1735,21 @@ GenerateDependencyIncludesForPlatform( TProjectInfo& projectInfo         ,
 
     GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating dependency inhertited includes for platform " + platformName );
     
+    int buildOrderIndex = 0;    
     TModuleInfoEntry* moduleInfoEntry = FindFirstModuleAccordingToBuildOrder( projectInfo  ,
                                                                               platformName );
     while ( NULL != moduleInfoEntry )
     {    
+        ++buildOrderIndex;
+        
         GenerateModuleDependencyIncludesForPlatform( projectInfo      ,
                                                      *moduleInfoEntry ,
                                                      platformName     );
 
         moduleInfoEntry = FindNextModuleAccordingToBuildOrder( projectInfo      ,
                                                                *moduleInfoEntry ,
-                                                               platformName     );
+                                                               platformName     ,
+                                                               buildOrderIndex  );
     }
 }
 
@@ -1855,9 +1863,29 @@ FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
         }
         else        
         {
-            TModuleInfo& moduleInfo = moduleInfoEntry.modulesPerPlatform[ platform ];
-            InitializeModuleInfo( moduleInfo );
-            moduleInfo.includeDirs = fileMap;
+            // If the files we are looking for are not by definition for a specific
+            // platform via a platform dir then how they are processed depends on 
+            // the module definition. If the module is specific to a certain platform
+            // then we don't want to add a all platforms definition but rather apply
+            // the files to all platforms for which the module is valid according to
+            // its module definition. This is a critical difference between 'AllPlatforms'
+            // and specific platforms which is important for proper overrides/merging etc
+            if ( AllPlatforms == platform )
+            {
+                i = moduleInfoEntry.modulesPerPlatform.begin();
+                while ( i != moduleInfoEntry.modulesPerPlatform.end() )
+                {
+                    TModuleInfo& moduleInfo = (*i).second;
+                    moduleInfo.includeDirs = fileMap;
+                    ++i;
+                }
+            }
+            else
+            {
+                TModuleInfo& moduleInfo = moduleInfoEntry.modulesPerPlatform[ platform ];
+                InitializeModuleInfo( moduleInfo );
+                moduleInfo.includeDirs = fileMap;
+            }
         } 
     }
 }
@@ -1913,10 +1941,30 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
         }
         else        
         {
-            TModuleInfo& moduleInfo = moduleInfoEntry.modulesPerPlatform[ platform ];
-            InitializeModuleInfo( moduleInfo );
-            moduleInfo.sourceDirs = fileMap;
-        }
+            // If the files we are looking for are not by definition for a specific
+            // platform via a platform dir then how they are processed depends on 
+            // the module definition. If the module is specific to a certain platform
+            // then we don't want to add a all platforms definition but rather apply
+            // the files to all platforms for which the module is valid according to
+            // its module definition. This is a critical difference between 'AllPlatforms'
+            // and specific platforms which is important for proper overrides/merging etc
+            if ( AllPlatforms == platform )
+            {
+                i = moduleInfoEntry.modulesPerPlatform.begin();
+                while ( i != moduleInfoEntry.modulesPerPlatform.end() )
+                {
+                    TModuleInfo& moduleInfo = (*i).second;
+                    moduleInfo.sourceDirs = fileMap;
+                    ++i;
+                }
+            }
+            else
+            {
+                TModuleInfo& moduleInfo = moduleInfoEntry.modulesPerPlatform[ platform ];
+                InitializeModuleInfo( moduleInfo );
+                moduleInfo.sourceDirs = fileMap;
+            }
+        } 
     }
 }
 
@@ -2315,11 +2363,11 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
                         {
                             if ( (*p).second != (*q).second )
                             {
-                                const CORE::CString* moduleName1 = GetModuleName( *(*p).second, targetPlatform ); 
-                                const CORE::CString* moduleName2 = GetModuleName( *(*q).second, targetPlatform );
+                                CORE::CString moduleName1 = GetModuleNameAlways( *(*p).second, targetPlatform );
+                                CORE::CString moduleName2 = GetModuleNameAlways( *(*q).second, targetPlatform );
                             
-                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Difference with original build order: module " + *moduleName1 +
-                                            " is now at index " + CORE::Int32ToString( (*p).first ) + " where module " + *moduleName2 + " used to be" );
+                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Difference with original build order: module " + moduleName1 +
+                                            " is now at index " + CORE::Int32ToString( (*p).first ) + " where module " + moduleName2 + " used to be" );
                             }
                             ++q; ++p;
                         }

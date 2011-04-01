@@ -341,11 +341,6 @@ CString::operator<( const CString& other ) const
     {
         return strcmp( m_string, other.m_string ) < 0;
     }
-    else
-    if ( NULL == m_string )
-    {
-        return true;
-    }
     return false;        
 }
 

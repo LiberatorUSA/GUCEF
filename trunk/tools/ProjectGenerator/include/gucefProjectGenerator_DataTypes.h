@@ -231,6 +231,15 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry );
 
 /*-------------------------------------------------------------------------*/
 
+// Tries to get the properly merged module name first for the given platform
+// if this does not yield a module name it will use the general consensus
+// module name instead
+CORE::CString
+GetModuleNameAlways( const TModuleInfoEntry& moduleInfoEntry ,
+                     const CORE::CString& targetPlatform     );
+
+/*-------------------------------------------------------------------------*/
+
 void
 MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
                  const TModuleInfo& moduleInfoToMergeIn );
