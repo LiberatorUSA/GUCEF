@@ -833,27 +833,50 @@ DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry ,
         InitializeModuleInfo( moduleInfoForPlatform );
         
         const CORE::CDataNode* moduleNode = (*n);        
-        CORE::CString platform = moduleNode->GetAttributeValue( "Platform" ).Lowercase();
-        if ( platform.IsNULLOrEmpty() )
+        
+        // Get all platforms for which this info applies.
+        // Keep in mind that multiple platforms can be specified for ease of use.
+        // This feature requires platform entries to be seperated by a ';'
+        TStringVector platforms = moduleNode->GetAttributeValue( "Platform" ).Lowercase().ParseElements( ';', false);
+        
+        if ( platforms.empty() )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to locate a Platform value for a module, will default to all platforms but this may not be correct" );
-            platform = AllPlatforms;
+            platforms.push_back( AllPlatforms );
         }
         
         if ( DeserializeModuleInfo( moduleInfoForPlatform ,
                                     *moduleNode           ) )
         {
-            // Special case handling for win32 vs win64 
-            // When mswin is specified we add the platform to both win32 and win64
-            // This just makes it less effort for people to specify modules for mswin
-            if ( "mswin" == platform )
+            if ( moduleInfoForPlatform.name.IsNULLOrEmpty() )
             {
-                moduleInfoEntry.modulesPerPlatform[ "win32" ] = moduleInfoForPlatform;
-                moduleInfoEntry.modulesPerPlatform[ "win64" ] = moduleInfoForPlatform;
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully deserialized module definition for module with no name specified for the applicable platforms" );
             }
             else
             {
-                moduleInfoEntry.modulesPerPlatform[ platform ] = moduleInfoForPlatform;
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully deserialized module definition for module with name " + moduleInfoForPlatform.name );
+            }
+            
+            TStringVector::iterator i = platforms.begin();
+            while ( i != platforms.end() )
+            {
+                // Special case handling for win32 vs win64 
+                // When mswin is specified we add the platform to both win32 and win64
+                // This just makes it less effort for people to specify modules for mswin
+                if ( "mswin" == (*i) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Adding module definition for platform win32 and win64 because the deserialized info used mswin as the platform name" );
+                    
+                    moduleInfoEntry.modulesPerPlatform[ "win32" ] = moduleInfoForPlatform;
+                    moduleInfoEntry.modulesPerPlatform[ "win64" ] = moduleInfoForPlatform;
+                }
+                else
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Adding module definition for platform " + (*i) );                    
+                    moduleInfoEntry.modulesPerPlatform[ (*i) ] = moduleInfoForPlatform;
+                }
+                
+                ++i;
             }
         }
         else
@@ -1048,6 +1071,9 @@ MergeModuleInfo( const TModuleInfoEntry& moduleInfoEntry ,
             return true;
         }        
     }
+    
+    // This module should not be used since it doesnt have platform specific info
+    // nor info which applies to all platforms.
     return false;
 }
 
@@ -1060,32 +1086,36 @@ MergeAllModuleInfoForPlatform( const TModuleInfoEntryVector& allInfo  ,
                                TModuleInfoEntryPairVector& mergeLinks )
 {GUCEF_TRACE;
 
+    typedef std::vector< const TModuleInfoEntry* > TModuleInfoEntryPtrVector;
+    
     allMergedInfo.clear();
     
+    TModuleInfoEntryPtrVector indexMap;
     TModuleInfoEntryVector::const_iterator i = allInfo.begin();
     while ( i != allInfo.end() )
     {
         // For each module we create a merged platform specific module
         // description which is easy to process if you only care about that platform
         TModuleInfo mergedInfo;
-        MergeModuleInfo( (*i), platform, mergedInfo );
-        
-        // Store the merged info
-        allMergedInfo.push_back( mergedInfo );        
+        if ( MergeModuleInfo( (*i), platform, mergedInfo ) )
+        {        
+            // Store the merged info
+            allMergedInfo.push_back( mergedInfo );        
+
+            // Store a link between the merged info and the original info
+            // at the same index as the merged info
+            indexMap.push_back( &(*i) );
+        }
         ++i;
     }
-
-    i = allInfo.begin();
-    TModuleInfoVector::iterator n = allMergedInfo.begin();
-    while ( ( i != allInfo.end() )       && 
-            ( n != allMergedInfo.end() )  )
-    {
-        // Store a link between the merged info and the original info
-        TModuleInfoEntryPair mergeLink( &(*i), &(*n) );
-        mergeLinks.push_back( mergeLink );
-        ++i; ++n;
-    }
     
+    // Now that alterations to the storage are completed we can map the index
+    // of each entry to the actual data storage
+    for ( CORE::UInt32 m=0; m<allMergedInfo.size(); ++m )
+    {
+        TModuleInfoEntryPair mergeLink( indexMap[ m ], &(allMergedInfo[ m ]) );
+        mergeLinks.push_back( mergeLink );
+    }
     return true;
 }
 
@@ -1201,6 +1231,21 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry )
         
     }
     return CORE::CString();
+}        
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GetModuleNameAlways( const TModuleInfoEntry& moduleInfoEntry ,
+                     const CORE::CString& targetPlatform     )
+{GUCEF_TRACE;
+
+    const CORE::CString* strPtr = GetModuleName( moduleInfoEntry, targetPlatform );
+    if ( NULL == strPtr )
+    {
+        return GetConsensusModuleName( moduleInfoEntry );
+    }
+    return *strPtr;
 }
 
 /*-------------------------------------------------------------------------//

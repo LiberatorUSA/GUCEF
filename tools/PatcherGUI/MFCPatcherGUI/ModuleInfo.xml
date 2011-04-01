@@ -1,0 +1,23 @@
+<ModuleInfoEntry>
+    <Module Name="MFCPatcherGUI" Type="SharedLibrary" Platform="mswin">
+	    <Dependencies>
+		    <Dependency Name="gucefPATCHER" />
+            <Dependency Name="gucefCOM" />
+            <Dependency Name="gucefCOMCORE" />
+            <Dependency Name="gucefVFS" />
+             <Dependency Name="gucefCORE" />
+             <Dependency Name="gucefMT" />
+	    </Dependencies>
+        <Linker>
+            <Dependency Name="gucefPATCHER" />
+            <Dependency Name="gucefCOM" />
+            <Dependency Name="gucefCOMCORE" />
+            <Dependency Name="gucefVFS" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+        </Linker>
+        <Preprocessor>
+            <Define String="_AFXDLL" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
