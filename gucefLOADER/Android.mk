@@ -21,10 +21,18 @@ LOCAL_MODULE := gucefLOADER
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/gucefLOADER.c
+  ../gucefCORE/src/DVOSWRAP.c \
+  ../gucefCORE/include/DVOSWRAP.h \
+  ../gucefCORE/src/dvstrutils.c \
+  ../gucefCORE/include/dvstrutils.h \
+  ../gucefCORE/src/DVOSWRAP.c \
+  ../gucefCORE/include/DVOSWRAP.h \
+  ../gucefCORE/src/dvstrutils.c \
+  ../gucefCORE/include/dvstrutils.h
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include
+  $(MY_MODULE_PATH) \
+  $(MY_MODULE_PATH)/../common/include
 
 include $(BUILD_SHARED_LIBRARY)
 

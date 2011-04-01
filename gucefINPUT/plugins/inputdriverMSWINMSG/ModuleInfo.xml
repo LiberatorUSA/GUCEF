@@ -1,0 +1,13 @@
+<ModuleInfoEntry>
+    <Module Name="inputdriverMSWINMSG" Type="SharedLibrary" Platform="mswin">
+	    <Dependencies>
+		    <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+	    </Dependencies>
+        <Preprocessor>
+            <Define String="INPUTDRIVERMSWINMSG_BUILD_MODULE" />
+            <Define String="BUILD_GUCEF_INPUT_PLUGIN_DLL" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
