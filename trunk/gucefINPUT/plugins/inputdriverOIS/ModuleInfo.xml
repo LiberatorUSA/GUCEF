@@ -1,0 +1,17 @@
+<ModuleInfoEntry>
+    <Module Name="inputdriverOIS" Type="SharedLibrary" Platform="mswin;linux">
+	    <Dependencies>
+		    <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="OIS" />
+	    </Dependencies>
+        <Linker>
+            <Dependency Name="OIS" />
+        </Linker>
+        <Preprocessor>
+            <Define String="INPUTDRIVEROIS_BUILD_MODULE" />
+            <Define String="BUILD_GUCEF_INPUT_PLUGIN_DLL" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

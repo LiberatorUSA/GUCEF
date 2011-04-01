@@ -372,11 +372,6 @@ CreateAndroidMakefileOnDiskForModule( const TModuleInfoEntryPairVector& mergeLin
         return true;
     }
     
-    if ( moduleInfo.name.HasSubstr( "PatchSet" ) > -1 )
-    {
-        int fdd=0;
-    }
-    
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating Android makefile content for module " + moduleInfo.name ); 
     
     // First we generate the content for the makefile based on the given module information
