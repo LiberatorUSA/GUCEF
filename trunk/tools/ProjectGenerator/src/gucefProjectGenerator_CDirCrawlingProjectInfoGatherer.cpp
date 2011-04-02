@@ -1818,7 +1818,7 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
         CORE::CString subDir = curRootDir;
         CORE::AppendToPath( subDir, (*i) );
 
-        // Do not recurse into other project dirs
+        // Do not recurse into other module dirs
         if ( !IsDirAProjectDir( subDir ) )
         {
             CORE::CString subDirSeg = curRootDirSeg;
@@ -1870,7 +1870,7 @@ FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
             // the files to all platforms for which the module is valid according to
             // its module definition. This is a critical difference between 'AllPlatforms'
             // and specific platforms which is important for proper overrides/merging etc
-            if ( AllPlatforms == platform )
+            if ( AllPlatforms == platform || platform.IsNULLOrEmpty() )
             {
                 i = moduleInfoEntry.modulesPerPlatform.begin();
                 while ( i != moduleInfoEntry.modulesPerPlatform.end() )
@@ -1948,7 +1948,7 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
             // the files to all platforms for which the module is valid according to
             // its module definition. This is a critical difference between 'AllPlatforms'
             // and specific platforms which is important for proper overrides/merging etc
-            if ( AllPlatforms == platform )
+            if ( AllPlatforms == platform || platform.IsNULLOrEmpty() )
             {
                 i = moduleInfoEntry.modulesPerPlatform.begin();
                 while ( i != moduleInfoEntry.modulesPerPlatform.end() )
@@ -1980,7 +1980,7 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
                            moduleInfoEntry ,
                            AllPlatforms    );
 
-    // Add platform specific headers
+    // Add platform specific source
     const TStringSet& platforms = GetSupportedPlatforms();
     TStringSet::const_iterator i = platforms.begin();
     while ( i != platforms.end() )
