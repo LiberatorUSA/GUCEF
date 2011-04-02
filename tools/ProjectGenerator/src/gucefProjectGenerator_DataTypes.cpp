@@ -473,6 +473,23 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
         moduleInfoNode.AddChild( dependenciesNode );
     }
     
+    // Add all the module preprocessor instructions
+    if ( moduleInfo.preprocessorSettings.defines.size() > 0 )
+    {
+        CORE::CDataNode preprocessorNode;
+        preprocessorNode.SetName( "Preprocessor" );
+        TStringVector::const_iterator m = moduleInfo.preprocessorSettings.defines.begin();
+        while ( m != moduleInfo.preprocessorSettings.defines.end() )
+        {
+            CORE::CDataNode defineNode;
+            defineNode.SetName( "Define" );
+            defineNode.SetAttribute( "String", (*m) );
+            preprocessorNode.AddChild( defineNode );
+            ++m;
+        }
+        moduleInfoNode.AddChild( preprocessorNode );
+    }
+    
     CORE::CDataNode linkerNode;
     linkerNode.SetName( "Linker" );
     bool addedLinkedSettings = false;
@@ -1150,31 +1167,39 @@ GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
     TModuleInfoMap::const_iterator n = moduleInfoEntry.modulesPerPlatform.find( targetPlatform );
     if ( n != moduleInfoEntry.modulesPerPlatform.end() )
     {
-        // A name was specified for this platform
-        if ( NULL != moduleInfo )
+        // A module was specified for this platform
+        // Just because we have a module definition doenst mean we have a name
+        if ( !(*n).second.name.IsNULLOrEmpty() )
         {
-            *moduleInfo = &(*n).second;
-        }
-        return &(*n).second.name;
-    }
-    else
-    {
-        // If no name is specified for a specific platform then there might still be a 
-        // default for all platforms
-        if ( targetPlatform != AllPlatforms )
-        {
-            n = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
-            if ( n != moduleInfoEntry.modulesPerPlatform.end() )
+            // We have a name for this specific plaform
+            if ( NULL != moduleInfo )
             {
-                // A default name was specified for this module
+                *moduleInfo = &(*n).second;
+            }
+            return &( (*n).second.name );
+        }
+    }
+    
+    // If no name is specified for a specific platform then there might still be a 
+    // default for all platforms
+    if ( targetPlatform != AllPlatforms )
+    {
+        n = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
+        if ( n != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            // An 'AllPlatforms' definition is available for this module
+            // Just because we have a module definition doenst mean we have a name
+            if ( !(*n).second.name.IsNULLOrEmpty() )
+            {
+                // We have a name for this specific plaform
                 if ( NULL != moduleInfo )
                 {
                     *moduleInfo = &(*n).second;
                 }
-                return &(*n).second.name;
+                return &( (*n).second.name );
             }
-        }            
-    }
+        }
+    }            
     return NULL;
 }
 
