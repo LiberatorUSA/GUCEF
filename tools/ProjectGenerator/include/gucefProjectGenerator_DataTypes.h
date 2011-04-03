@@ -293,6 +293,13 @@ SerializeProjectInfo( const TProjectInfo& projectInfo ,
 bool
 SerializeProjectInfo( const TProjectInfo& projectInfo     ,
                       const CORE::CString& outputFilepath );
+
+/*-------------------------------------------------------------------------*/
+
+void
+GetModuleDependencies( TModuleInfoEntry& moduleInfoEntry   ,
+                       const CORE::CString& targetPlatform ,
+                       TStringVector& dependencies         );
                       
 /*-------------------------------------------------------------------------//
 //                                                                         //
