@@ -1293,6 +1293,29 @@ GetModuleNameAlways( const TModuleInfoEntry& moduleInfoEntry ,
     return *strPtr;
 }
 
+/*---------------------------------------------------------------------------*/
+
+void
+GetModuleDependencies( TModuleInfoEntry& moduleInfoEntry   ,
+                       const CORE::CString& targetPlatform ,
+                       TStringVector& dependencies         )
+{GUCEF_TRACE;
+
+    TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, targetPlatform, false );
+    if ( NULL != moduleInfo )
+    {
+        MergeStringVector( dependencies, moduleInfo->dependencies, false );
+    }
+    if ( targetPlatform != AllPlatforms && !targetPlatform.IsNULLOrEmpty() )
+    {
+        moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms, false );
+        if ( NULL != moduleInfo )
+        {
+            MergeStringVector( dependencies, moduleInfo->dependencies, false );
+        }
+    }
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
