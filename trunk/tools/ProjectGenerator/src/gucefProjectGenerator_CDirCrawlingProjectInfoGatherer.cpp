@@ -1227,10 +1227,11 @@ PopulateFileListFromDir( const CORE::CString& path      ,
 void
 PopulateDirListFromDir( const CORE::CString& path     ,
                         TStringVector& dirList        ,
-                        const CORE::CString& platform )
+                        const CORE::CString& platform ,
+                        bool excludeGenericDirs       )
 {GUCEF_TRACE;
 
-    if ( platform.IsNULLOrEmpty() || platform == AllPlatforms )
+    if ( ( platform.IsNULLOrEmpty() || platform == AllPlatforms ) || !excludeGenericDirs )
     {
         // Get a list of all platform dirs
         const TStringSet& platformsDirs = GetSupportedPlatformDirs();
@@ -1255,36 +1256,38 @@ PopulateDirListFromDir( const CORE::CString& path     ,
             while ( 0 != DI_Next_Dir_Entry( sdiData ) );
             DI_Cleanup( sdiData );
         }
-        return;
     }
     
-    // We are looking for dirs for the given platform
-    const TStringSetMap& platformsDirMap = GetSupportedPlatformDirMap();    
-    TStringSetMap::const_iterator i = platformsDirMap.find( platform );
-    if ( i != platformsDirMap.end() )
+    if ( !platform.IsNULLOrEmpty() && platform != AllPlatforms )
     {
-        const TStringSet& dirsForPlatform = (*i).second;
-        
-        // Check each dir to see if it exists
-        CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( path.C_String() );
-        if ( NULL != sdiData )
+        // We are looking for dirs for the given platform
+        const TStringSetMap& platformsDirMap = GetSupportedPlatformDirMap();    
+        TStringSetMap::const_iterator i = platformsDirMap.find( platform );
+        if ( i != platformsDirMap.end() )
         {
-            do
+            const TStringSet& dirsForPlatform = (*i).second;
+            
+            // Check each dir to see if it exists
+            CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( path.C_String() );
+            if ( NULL != sdiData )
             {
-                if ( 0 == DI_Is_It_A_File( sdiData ) )
+                do
                 {
-                    // Add the dir if it is a real dir and if its a platform dir for
-                    // the specified platform
-                    CORE::CString dirName = DI_Name( sdiData );
-                    if ( ( dirName != "." ) && ( dirName != ".." )                               && 
-                         ( dirsForPlatform.find( dirName.Lowercase() ) != dirsForPlatform.end() ) )
+                    if ( 0 == DI_Is_It_A_File( sdiData ) )
                     {
-                        dirList.push_back( dirName );
+                        // Add the dir if it is a real dir and if its a platform dir for
+                        // the specified platform
+                        CORE::CString dirName = DI_Name( sdiData );
+                        if ( ( dirName != "." ) && ( dirName != ".." )                               && 
+                             ( dirsForPlatform.find( dirName.Lowercase() ) != dirsForPlatform.end() ) )
+                        {
+                            dirList.push_back( dirName );
+                        }
                     }
                 }
+                while ( 0 != DI_Next_Dir_Entry( sdiData ) );
+                DI_Cleanup( sdiData );
             }
-            while ( 0 != DI_Next_Dir_Entry( sdiData ) );
-            DI_Cleanup( sdiData );
         }
     }
 }
@@ -1803,7 +1806,7 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
     
     // Get a list of sub-dirs
     TStringVector dirList;
-    PopulateDirListFromDir( curRootDir, dirList, platform );
+    PopulateDirListFromDir( curRootDir, dirList, platform, false );
 
     // Now we add/substract dirs based on generator instructions
     ExcludeOrIncludeDirEntriesAsSpecifiedForDir( projectInfo                   ,
@@ -2111,7 +2114,7 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
 
     // Get all subdir's
     TStringVector dirList;
-    PopulateDirListFromDir( topLevelDir, dirList, AllPlatforms );
+    PopulateDirListFromDir( topLevelDir, dirList, AllPlatforms, false );
 
     // Add/subtract dirs from the list based on generator instructions
     // This early application (before module definition) of processing instructions allows us
