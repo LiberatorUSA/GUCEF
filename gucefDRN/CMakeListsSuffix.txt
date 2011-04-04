@@ -1,6 +1,0 @@
-
-add_library( gucefDRN ${HEADER_FILES} ${SOURCE_FILES} )
-add_dependencies( gucefDRN gucefCOM gucefCOMCORE gucefCORE gucefMT)
-target_link_libraries( gucefDRN gucefCOM gucefCOMCORE gucefCORE gucefMT )
-set_target_properties( gucefDRN PROPERTIES COMPILE_DEFINITIONS GUCEFDRN_BUILD_MODULE )
-GUCEF_config_lib( gucefDRN )
