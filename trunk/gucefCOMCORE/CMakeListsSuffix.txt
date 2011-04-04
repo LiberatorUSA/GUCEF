@@ -1,9 +1,0 @@
-
-add_library( gucefCOMCORE ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
-add_dependencies( gucefCOMCORE gucefCORE gucefMT)
-target_link_libraries( gucefCOMCORE gucefCORE gucefMT )
-if (WIN32)
-  target_link_libraries( gucefCOMCORE Ws2_32.lib Advapi32.lib )
-endif()
-set_target_properties( gucefCOMCORE PROPERTIES COMPILE_DEFINITIONS GUCEFCOMCORE_BUILD_MODULE )
-GUCEF_config_lib( gucefCOMCORE )

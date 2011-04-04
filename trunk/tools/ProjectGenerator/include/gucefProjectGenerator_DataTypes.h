@@ -300,6 +300,13 @@ void
 GetModuleDependencies( TModuleInfoEntry& moduleInfoEntry   ,
                        const CORE::CString& targetPlatform ,
                        TStringVector& dependencies         );
+                       
+
+/*-------------------------------------------------------------------------*/
+
+TModuleType
+GetModuleType( const TModuleInfoEntry& moduleInfoEntry ,
+               const CORE::CString& targetPlatform     );
                       
 /*-------------------------------------------------------------------------//
 //                                                                         //

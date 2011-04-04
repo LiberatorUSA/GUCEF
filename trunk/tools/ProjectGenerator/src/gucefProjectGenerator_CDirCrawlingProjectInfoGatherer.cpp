@@ -1910,6 +1910,8 @@ FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
                         TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Locating headers which apply to all platforms" );
+    
     // Add all generic headers
     FindSubDirsWithHeaders( projectInfo     ,
                             moduleInfoEntry ,
@@ -1920,6 +1922,8 @@ FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
     TStringSet::const_iterator i = platforms.begin();
     while ( i != platforms.end() )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Locating headers which apply to platform " + (*i) );
+        
         FindSubDirsWithHeaders( projectInfo     ,
                                 moduleInfoEntry ,
                                 (*i)            );
@@ -1988,6 +1992,8 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
                        TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Locating sources which apply to all platforms" );
+    
     // Add all generic sources
     FindSubDirsWithSource( projectInfo     ,
                            moduleInfoEntry ,
@@ -1998,6 +2004,8 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
     TStringSet::const_iterator i = platforms.begin();
     while ( i != platforms.end() )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Locating sources which apply to platform " + (*i) );
+        
         FindSubDirsWithSource( projectInfo     ,
                                moduleInfoEntry ,
                                (*i)            );
@@ -2082,6 +2090,7 @@ ProcessProjectDir( TProjectInfo& projectInfo         ,
         {        
             // Set a project name based off the module sub-dir name
             moduleInfo->name = CORE::LastSubDir( moduleInfoEntry.rootDir ); 
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Setting module name to " + moduleInfo->name + " based on the sub-dir name because no other name is available" ); 
         }
     }
     else

@@ -1,1 +1,0 @@
-GUCEF_config_lib( gucefCOM )

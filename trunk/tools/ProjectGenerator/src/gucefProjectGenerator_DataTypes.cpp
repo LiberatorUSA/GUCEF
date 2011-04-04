@@ -1316,6 +1316,32 @@ GetModuleDependencies( TModuleInfoEntry& moduleInfoEntry   ,
     }
 }
 
+/*---------------------------------------------------------------------------*/
+
+TModuleType
+GetModuleType( const TModuleInfoEntry& moduleInfoEntry ,
+               const CORE::CString& targetPlatform     )
+{GUCEF_TRACE;
+
+    const TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, targetPlatform );
+    if ( NULL != moduleInfo )
+    {
+        if ( MODULETYPE_UNDEFINED != moduleInfo->moduleType )
+        {
+            return moduleInfo->moduleType;
+        }
+    }
+    if ( targetPlatform != AllPlatforms && !targetPlatform.IsNULLOrEmpty() )
+    {
+        moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms );
+        if ( NULL != moduleInfo )
+        {
+            return moduleInfo->moduleType;
+        }
+    }
+    return MODULETYPE_UNDEFINED;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
