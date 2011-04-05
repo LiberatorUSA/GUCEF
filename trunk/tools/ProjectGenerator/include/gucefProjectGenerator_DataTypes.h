@@ -326,6 +326,14 @@ GetModuleInfoWithUniqueModulesTypes( const TModuleInfoEntry& moduleInfoEntry ,
 void
 GetModuleInfoWithUniqueModuleNames( const TModuleInfoEntry& moduleInfoEntry ,
                                     TConstModuleInfoPtrMap& moduleMap       );
+
+/*-------------------------------------------------------------------------*/
+
+const TModuleInfoEntry*
+GetModuleInfoEntry( const TProjectInfo& projectInfo       ,
+                    const CORE::CString& moduleName       ,
+                    const CORE::CString& platform         ,
+                    const TModuleInfo** moduleInfo = NULL );
                       
 /*-------------------------------------------------------------------------//
 //                                                                         //

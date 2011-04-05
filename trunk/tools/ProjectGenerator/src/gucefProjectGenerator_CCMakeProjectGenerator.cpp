@@ -740,7 +740,8 @@ GenerateCMakeModuleDescriptionLine( const TModuleInfo& moduleInfo     ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeModuleDependenciesLine( const TModuleInfo& moduleInfo     ,
+GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
+                                     const TModuleInfo& moduleInfo     ,
                                      const CORE::CString& moduleName   ,
                                      const CORE::CString& platformName )
 {GUCEF_TRACE;
@@ -751,14 +752,34 @@ GenerateCMakeModuleDependenciesLine( const TModuleInfo& moduleInfo     ,
 
         CORE::CString sectionContent = "add_dependencies( ${MODULE_NAME}";
         
+        bool dependenciesAdded = false;
         TStringVector::const_iterator i = moduleInfo.dependencies.begin();
         while ( i != moduleInfo.dependencies.end() )
         {
-            sectionContent += ' ' + (*i);            
+            // We add all dependencies except for header include locations which are not real modules
+            // and CMake will not be using a make file for those.
+            const TModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, (*i), AllPlatforms );
+            if ( NULL != dependencyModule )
+            {
+                if ( MODULETYPE_HEADER_INCLUDE_LOCATION != GetModuleType( *dependencyModule, AllPlatforms ) )
+                {
+                    sectionContent += ' ' + (*i);
+                    dependenciesAdded = true;
+                }
+            }
+            else
+            {
+                sectionContent += ' ' + (*i);
+                dependenciesAdded = true;
+            }
             ++i;
         }
-        sectionContent += " )\n";
-        return sectionContent;
+        
+        if ( dependenciesAdded )
+        {
+            sectionContent += " )\n";
+            return sectionContent;
+        }
     }        
     
     return CORE::CString();
@@ -812,6 +833,7 @@ GenerateCMakeModuleDefinesLine( const TModuleInfo& moduleInfo     ,
             if ( first )
             {
                 sectionContent += (*i);            
+                first = false;
             }
             else
             {
@@ -956,7 +978,8 @@ GenerateCMakeModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntry  
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsModuleInfoSection( const TModuleInfoEntry& moduleInfoEntry )
+GenerateCMakeListsModuleInfoSection( const TProjectInfo& projectInfo         ,
+                                     const TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     CORE::CString consensusName = GetConsensusModuleName( moduleInfoEntry );
@@ -976,7 +999,7 @@ GenerateCMakeListsModuleInfoSection( const TModuleInfoEntry& moduleInfoEntry )
         const TModuleInfo& moduleInfo = (*i).second;
         
         // Generate the different instructions for all platforms (if any exist)
-        CORE::CString moduleDependenciesStr = GenerateCMakeModuleDependenciesLine( moduleInfo, consensusName, platformName );
+        CORE::CString moduleDependenciesStr = GenerateCMakeModuleDependenciesLine( projectInfo, moduleInfo, consensusName, platformName );
         CORE::CString moduleLinkingStr = GenerateCMakeModuleLinkerLine( moduleInfo, consensusName, platformName );
         CORE::CString moduleDefinesStr = GenerateCMakeModuleDefinesLine( moduleInfo, consensusName, platformName );
         
@@ -1000,7 +1023,7 @@ GenerateCMakeListsModuleInfoSection( const TModuleInfoEntry& moduleInfoEntry )
             const TModuleInfo& moduleInfo = (*i).second;
                         
             // Generate the different instructions for this platform (if any exist)
-            CORE::CString moduleDependenciesStr = GenerateCMakeModuleDependenciesLine( moduleInfo, consensusName, platformName );
+            CORE::CString moduleDependenciesStr = GenerateCMakeModuleDependenciesLine( projectInfo, moduleInfo, consensusName, platformName );
             CORE::CString moduleLinkingStr = GenerateCMakeModuleLinkerLine( moduleInfo, consensusName, platformName );
             CORE::CString moduleDefinesStr = GenerateCMakeModuleDefinesLine( moduleInfo, consensusName, platformName );
             
@@ -1040,7 +1063,8 @@ GenerateCMakeListsModuleInfoSection( const TModuleInfoEntry& moduleInfoEntry )
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFileContent( const TModuleInfoEntry& moduleInfoEntry ,
+GenerateCMakeListsFileContent( const TProjectInfo& projectInfo         ,
+                               const TModuleInfoEntry& moduleInfoEntry ,
                                bool addCompileDate = false             )
 {GUCEF_TRACE;
 
@@ -1081,7 +1105,7 @@ GenerateCMakeListsFileContent( const TModuleInfoEntry& moduleInfoEntry ,
     {
         // Since we are not using a legacy suffix file we have to auto generate more info then before
         // mainly the module description, dependencies, definitions, etc.        
-        fileContent += GenerateCMakeListsModuleInfoSection( moduleInfoEntry );
+        fileContent += GenerateCMakeListsModuleInfoSection( projectInfo, moduleInfoEntry );
 
         CORE::CString additionFileContent = LoadCMakeListsAdditionFileFromDisk( moduleInfoEntry );
         if ( !additionFileContent.IsNULLOrEmpty() )
@@ -1119,7 +1143,7 @@ WriteCMakeListsFilesToDisk( const TProjectInfo& projectInfo  ,
         TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, AllPlatforms );
         if ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType )
         {
-            CORE::CString fileContent = GenerateCMakeListsFileContent( moduleInfoEntry, addCompileDate );
+            CORE::CString fileContent = GenerateCMakeListsFileContent( projectInfo, moduleInfoEntry, addCompileDate );
             if ( logFilename.Length() > 0 )
             {
                 fileContent += "\n# Generator logfile can be found at: " + logFilename;

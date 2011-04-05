@@ -1606,31 +1606,6 @@ CMakeParseModuleProperties( const CORE::CString& fileSuffix ,
 
 /*---------------------------------------------------------------------------*/
 
-const TModuleInfoEntry*
-GetModuleInfoEntry( const TProjectInfo& projectInfo       ,
-                    const CORE::CString& moduleName       ,
-                    const CORE::CString& platform         ,
-                    const TModuleInfo** moduleInfo = NULL )
-{GUCEF_TRACE;
-
-    TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
-    while ( i != projectInfo.modules.end() )
-    {
-        const CORE::CString* nameOfCurrentModule = GetModuleName( (*i), platform, moduleInfo );
-        if ( NULL != nameOfCurrentModule )
-        {
-            if ( *nameOfCurrentModule == moduleName )
-            {
-                return &(*i);
-            }
-        }
-        ++i;
-    }
-    return NULL;
-}
-
-/*---------------------------------------------------------------------------*/
-
 const TModuleInfo*
 GetModuleInfo( const TProjectInfo& projectInfo ,
                const CORE::CString& moduleName ,
