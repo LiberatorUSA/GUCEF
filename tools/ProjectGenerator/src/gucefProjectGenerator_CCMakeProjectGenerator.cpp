@@ -821,13 +821,111 @@ GenerateCMakeModuleDefinesLine( const TModuleInfo& moduleInfo     ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
+GenerateCMakeListsModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
+{GUCEF_TRACE;
+
+    CORE::CString sectionContent;    
+    
+    // First get a list of platforms for which a platform specific module name is defined
+    TConstModuleInfoPtrMap moduleNameMap;
+    GetModuleInfoWithUniqueModuleNames( moduleInfoEntry, moduleNameMap );
+    
+    // Now we will use this list to define the module name CMake variable
+    bool platformAdded = false;
+    TConstModuleInfoPtrMap::iterator i = moduleNameMap.begin();
+    while ( i != moduleNameMap.end() )
+    {
+        const CORE::CString& platformName = (*i).first;        
+        const CORE::CString& moduleName = (*i).second->name;
+        
+        if ( platformName != AllPlatforms )
+        {
+            if ( platformAdded )
+            {
+                sectionContent += "elseif( " + platformName.Uppercase() + " )\n  set( MODULE_NAME \"" + moduleName +"\" )\n";
+            }
+            else
+            {
+                sectionContent += "\nif( " + platformName.Uppercase() + " )\n  set( MODULE_NAME \"" + moduleName +"\" )\n";
+                platformAdded = true;
+            }
+        }
+        ++i;
+    }
+
+    i = moduleNameMap.find( AllPlatforms );
+    if ( i != moduleNameMap.end() )
+    {
+        const CORE::CString& platformName = (*i).first;        
+        const CORE::CString& moduleName = (*i).second->name;
+        
+        if ( platformAdded )
+        {
+            sectionContent += "else()\n  set( MODULE_NAME \"" + moduleName +"\" )\nendif()\n";
+        }
+        else
+        {
+            sectionContent += "set( MODULE_NAME \"" + moduleName +"\" )\n";
+        }
+    }
+    else
+    {
+        if ( platformAdded )
+        {
+            sectionContent += "endif()\n";
+        }
+    }
+    
+    return sectionContent;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
 GenerateCMakeListsModuleInfoSection( const TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
-    CORE::CString sectionContent;
+    CORE::CString sectionContent = GenerateCMakeListsModuleNameSection( moduleInfoEntry );
     bool addedPlatformSection = false;
     
-    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.begin();
+    // First we add the module definition.
+    // This bit of information is not additive and is in fact mutually exclusive per platform
+    // As such we have to encompass each different definition in an if-else
+    TConstModuleInfoPtrMap moduleTypeMap;
+    GetModuleInfoWithUniqueModulesTypes( moduleInfoEntry, moduleTypeMap );    
+    TConstModuleInfoPtrMap::iterator n = moduleTypeMap.begin();
+    while ( n != moduleTypeMap.end() )
+    {
+        //const CORE::CString& platformName = (*n).first;
+        //const TModuleInfo* moduleInfo = (*n).second;
+        //CORE::CString 
+        //
+        //CORE::CString moduleDescriptionStr = GenerateCMakeModuleDescriptionLine( moduleInfo, *moduleName,  );  
+        //
+        ++n;
+    }
+    
+    // Add module info which is addative meaning AllPlatforms info can be 
+    // supplemented with it and it is not mutually exclusive
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
+    if ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        // Generate the different instructions for all platforms (if any exist)
+        CORE::CString moduleDependenciesStr = GenerateCMakeModuleDependenciesLine( moduleInfo, *moduleName, platformName );
+        CORE::CString moduleLinkingStr = GenerateCMakeModuleLinkerLine( moduleInfo, *moduleName, platformName );
+        CORE::CString moduleDefinesStr = GenerateCMakeModuleDefinesLine( moduleInfo, *moduleName, platformName );
+        
+        // make sure we actually have any instructions
+        if ( !moduleDependenciesStr.IsNULLOrEmpty() ||
+             !moduleLinkingStr.IsNULLOrEmpty()      ||
+             !moduleDefinesStr.IsNULLOrEmpty()       )
+        {
+            sectionContent += ( moduleDependenciesStr + moduleLinkingStr + moduleDefinesStr );
+        }
+    }
+    
+    // Now do the same for all adative platform specific info        
+    i = moduleInfoEntry.modulesPerPlatform.begin();
     while ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {
         const CORE::CString& platformName = (*i).first;
@@ -839,14 +937,12 @@ GenerateCMakeListsModuleInfoSection( const TModuleInfoEntry& moduleInfoEntry )
             if ( moduleName == NULL ) continue;
                         
             // Generate the different instructions for this platform (if any exist)
-            CORE::CString moduleDescriptionStr = GenerateCMakeModuleDescriptionLine( moduleInfo, *moduleName, platformName );
             CORE::CString moduleDependenciesStr = GenerateCMakeModuleDependenciesLine( moduleInfo, *moduleName, platformName );
             CORE::CString moduleLinkingStr = GenerateCMakeModuleLinkerLine( moduleInfo, *moduleName, platformName );
             CORE::CString moduleDefinesStr = GenerateCMakeModuleDefinesLine( moduleInfo, *moduleName, platformName );
             
             // Encompass inside an if section if we have any instructions
-            if ( !moduleDescriptionStr.IsNULLOrEmpty()  || 
-                 !moduleDependenciesStr.IsNULLOrEmpty() ||
+            if ( !moduleDependenciesStr.IsNULLOrEmpty() ||
                  !moduleLinkingStr.IsNULLOrEmpty()      ||
                  !moduleDefinesStr.IsNULLOrEmpty()       )
             {
@@ -854,10 +950,6 @@ GenerateCMakeListsModuleInfoSection( const TModuleInfoEntry& moduleInfoEntry )
                 
                 platformSection = "\nif ( "+ platformName.Uppercase() + " )\n";
                 
-                if ( !moduleDescriptionStr.IsNULLOrEmpty() )
-                {
-                    platformSection += "  " + moduleDescriptionStr;
-                }
                 if ( !moduleDependenciesStr.IsNULLOrEmpty() )
                 {
                     platformSection += "  " + moduleDependenciesStr;
@@ -878,19 +970,7 @@ GenerateCMakeListsModuleInfoSection( const TModuleInfoEntry& moduleInfoEntry )
         }            
         ++i;
     }
-    
-    // Now that we handled the 
-    i = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
-    if ( i != moduleInfoEntry.modulesPerPlatform.end() )
-    {
-    }
-    
-    // Generate the different instructions for this platform (if any exist)
-    CORE::CString moduleDescriptionStr = GenerateCMakeModuleDescriptionLine( moduleInfo, *moduleName, platformName );
-    CORE::CString moduleDependenciesStr = GenerateCMakeModuleDependenciesLine( moduleInfo, *moduleName, platformName );
-    CORE::CString moduleLinkingStr = GenerateCMakeModuleLinkerLine( moduleInfo, *moduleName, platformName );
-    CORE::CString moduleDefinesStr = GenerateCMakeModuleDefinesLine( moduleInfo, *moduleName, platformName );
-    
+
     return sectionContent;
 }
 

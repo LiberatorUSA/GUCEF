@@ -1342,6 +1342,98 @@ GetModuleType( const TModuleInfoEntry& moduleInfoEntry ,
     return MODULETYPE_UNDEFINED;
 }
 
+/*---------------------------------------------------------------------------*/
+
+void
+GetModuleInfoWithUniqueModulesTypes( const TModuleInfoEntry& moduleInfoEntry ,
+                                     TConstModuleInfoPtrMap& moduleMap       )
+{GUCEF_TRACE;
+
+    // First try and get a 'AllPlatforms' definition which makes all the difference
+    const TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms );
+    if ( NULL != moduleInfo && ( MODULETYPE_UNDEFINED != moduleInfo->moduleType ) )
+    {
+        // Since a 'AllPlatforms' definition is available we have a baseline to compare against
+        // We will only add platform specific entries if they differ from our baseline
+        TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.begin();
+        while ( i != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            const CORE::CString& platformName = (*i).first;
+            const TModuleInfo& platformModuleInfo = (*i).second;
+            
+            if ( ( MODULETYPE_UNDEFINED != platformModuleInfo.moduleType )  &&
+                 ( moduleInfo->moduleType != platformModuleInfo.moduleType ) )
+            {
+                moduleMap[ platformName ] = &((*i).second);
+            }
+            ++i;
+        }
+        moduleMap[ AllPlatforms ] = moduleInfo;        
+    }
+    else
+    {
+        // If we get here: We cannot filter in this case,.. just add all platforms
+        TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.begin();
+        while ( i != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            const CORE::CString& platformName = (*i).first;
+            const TModuleInfo& platformModuleInfo = (*i).second;
+            
+            if ( MODULETYPE_UNDEFINED != platformModuleInfo.moduleType )
+            {
+                moduleMap[ platformName ] = &((*i).second);
+            }
+            ++i;
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+GetModuleInfoWithUniqueModuleNames( const TModuleInfoEntry& moduleInfoEntry ,
+                                    TConstModuleInfoPtrMap& moduleMap       )
+{GUCEF_TRACE;
+
+    // First try and get a 'AllPlatforms' definition which makes all the difference
+    const TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms );
+    if ( NULL != moduleInfo && !moduleInfo->name.IsNULLOrEmpty() )
+    {
+        // Since a 'AllPlatforms' definition is available we have a baseline to compare against
+        // We will only add platform specific entries if they differ from our baseline
+        TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.begin();
+        while ( i != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            const CORE::CString& platformName = (*i).first;
+            const TModuleInfo& platformModuleInfo = (*i).second;
+            
+            if ( ( !platformModuleInfo.name.IsNULLOrEmpty() )  &&
+                 ( moduleInfo->name != platformModuleInfo.name ) )
+            {
+                moduleMap[ platformName ] = &((*i).second);
+            }
+            ++i;
+        }
+        moduleMap[ AllPlatforms ] = moduleInfo;        
+    }
+    else
+    {
+        // If we get here: We cannot filter in this case,.. just add all platforms
+        TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.begin();
+        while ( i != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            const CORE::CString& platformName = (*i).first;
+            const TModuleInfo& platformModuleInfo = (*i).second;
+            
+            if ( MODULETYPE_UNDEFINED != platformModuleInfo.moduleType )
+            {
+                moduleMap[ platformName ] = &((*i).second);
+            }
+            ++i;
+        }
+    }
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
