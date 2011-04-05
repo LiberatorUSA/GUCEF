@@ -2,6 +2,8 @@
     <Module Name="gucefLOADER" Type="SharedLibrary" Platform="All">
         <Dependencies>
 		    <Dependency Name="gucefHeaders" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
 	    </Dependencies>
         <Preprocessor>
             <Define String="GUCEF_MT_EMBED_CODE" />
