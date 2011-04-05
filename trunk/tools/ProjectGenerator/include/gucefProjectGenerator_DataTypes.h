@@ -77,6 +77,8 @@ enum EModuleType
 };
 typedef enum EModuleType TModuleType;
 
+typedef std::map< CORE::CString, TModuleType > TModuleTypeMap;
+
 /*---------------------------------------------------------------------------*/
 
 /**
@@ -137,6 +139,7 @@ typedef std::vector< TModuleInfo > TModuleInfoVector;
 typedef std::map< CORE::CString, TModuleInfoVector > TModuleInfoVectorMap;
 typedef std::map< CORE::CString, TModuleInfo > TModuleInfoMap;
 typedef std::vector< TModuleInfo* > TModuleInfoPtrVector;
+typedef std::map< CORE::CString, const TModuleInfo* > TConstModuleInfoPtrMap;
 
 /*---------------------------------------------------------------------------*/
 
@@ -307,6 +310,22 @@ GetModuleDependencies( TModuleInfoEntry& moduleInfoEntry   ,
 TModuleType
 GetModuleType( const TModuleInfoEntry& moduleInfoEntry ,
                const CORE::CString& targetPlatform     );
+
+/*-------------------------------------------------------------------------*/
+
+// Determines a list of module types and how they relate to the plaforms
+// This functions has some smarts because it filters non-deviating info wrt
+// a AllPlatforms definition or cases where a platform specific module definition
+// yields to 'AllPlatforms' wrt the module type to use.
+void
+GetModuleInfoWithUniqueModulesTypes( const TModuleInfoEntry& moduleInfoEntry ,
+                                     TConstModuleInfoPtrMap& moduleMap       );
+
+/*-------------------------------------------------------------------------*/
+
+void
+GetModuleInfoWithUniqueModuleNames( const TModuleInfoEntry& moduleInfoEntry ,
+                                    TConstModuleInfoPtrMap& moduleMap       );
                       
 /*-------------------------------------------------------------------------//
 //                                                                         //
