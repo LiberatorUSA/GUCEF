@@ -1,20 +1,20 @@
 @echo off
 
 SET GUCEF_THEBATCHDIR=%CD%
-GOTO FIND_GUCEF_OLD_SLN_DEBUG_MVC9_CMAKELISTGENERATOR
+GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC9_CMAKELISTGENERATOR
 
 
 REM -----------------------------------------------------
 
 :FIND_GUCEF_RELEASE_CMAKELISTGENERATOR
 
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\CMakeListGenerator\bin\ReleasedBins\Win32\11June2010\
-SET GENERATOREXE=CMakeListGenerator.exe
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\ProjectGenerator\bin\ReleasedBins\Win32\4April2010\
+SET GENERATOREXE=ProjectGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
-  ECHO Using released version of CMakeListGenerator dated 11'th June 2010
+  ECHO Using released version of ProjectGenerator dated 4'th April 2011
   GOTO RUN_CMAKELISTGENERATOR
 )
 
@@ -31,40 +31,18 @@ REM -----------------------------------------------------
 :FIND_GUCEF_CMAKE_SLN_DEBUG_MVC9_CMAKELISTGENERATOR
 
 SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC9\bin\Debug
-SET GENERATOREXE=CMakeListGenerator.exe
+SET GENERATOREXE=ProjectGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
-  ECHO Warning: Using CMake debug development version of the CMakeListGenerator
+  ECHO Warning: Using CMake debug development version of the ProjectGenerator
   GOTO RUN_CMAKELISTGENERATOR
 )
 
 IF NOT EXIST "%EXETEST%" (
-  ECHO Cannot locate CMake debug development version of the CMakeListGenerator
+  ECHO Cannot locate CMake debug development version of the ProjectGenerator
   GOTO FIND_GUCEF_RELEASE_CMAKELISTGENERATOR
-)
-
-cd "%GUCEF_THEBATCHDIR%"
-GOTO RUN_CMAKELISTGENERATOR
-
-REM -----------------------------------------------------
-
-:FIND_GUCEF_OLD_SLN_DEBUG_MVC9_CMAKELISTGENERATOR
-
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\Debug_MVC9
-SET GENERATOREXE=CMakeListGenerator_d.exe
-SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
-
-ECHO Test path = "%EXETEST%"
-IF EXIST "%EXETEST%" (
-  ECHO Warning: Using debug development version of the CMakeListGenerator
-  GOTO RUN_CMAKELISTGENERATOR
-)
-
-IF NOT EXIST "%EXETEST%" (
-  ECHO Cannot locate old sln debug development version of the CMakeListGenerator
-  GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC9_CMAKELISTGENERATOR
 )
 
 cd "%GUCEF_THEBATCHDIR%"
@@ -84,7 +62,7 @@ IF NOT DEFINED GUCEF_HOME (
   ECHO GUCEF_HOME=%CD%
 )
 
-%GENERATOREXE% *rootDir=%GUCEF_HOME%* *dirsToIgnore=.svn;_svn*
+%GENERATOREXE% *rootDir=%GUCEF_HOME%* *dirsToIgnore=.svn;_svn* *projectName=GUCEF* *generators=cmake* *outputDir=%GUCEF_HOME%* *cmakgen:TemplateDir=%GUCEF_HOME%\projects\CMake\ProjectGenTemplates*
 cd "%GUCEF_THEBATCHDIR%"
 GOTO END
 
