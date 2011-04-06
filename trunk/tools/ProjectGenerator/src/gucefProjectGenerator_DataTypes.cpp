@@ -123,7 +123,7 @@ IsStringInKeyList( const TStringVectorMap& list    ,
 
 /*---------------------------------------------------------------------------*/
 
-static void
+void
 MergeStringVector( TStringVector& targetList          ,
                    const TStringVector& listToMergeIn ,
                    bool caseSensitive                 )

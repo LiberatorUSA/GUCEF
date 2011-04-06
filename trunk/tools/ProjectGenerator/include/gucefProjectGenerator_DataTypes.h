@@ -240,6 +240,13 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry );
 CORE::CString
 GetModuleNameAlways( const TModuleInfoEntry& moduleInfoEntry ,
                      const CORE::CString& targetPlatform     );
+                     
+/*-------------------------------------------------------------------------*/
+                     
+void
+MergeStringVector( TStringVector& targetList          ,
+                   const TStringVector& listToMergeIn ,
+                   bool caseSensitive                 );
 
 /*-------------------------------------------------------------------------*/
 

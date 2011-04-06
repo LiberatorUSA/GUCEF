@@ -711,7 +711,7 @@ ExcludeOrIncludeDirEntriesAsSpecifiedForDir( const CORE::CString& dir           
                                                   
     }
 
-    if ( !platform.IsNULLOrEmpty() )
+    if ( !platform.IsNULLOrEmpty() && platform != AllPlatforms )
     {
         ExcludeOrIncludeEntriesAsSpecifiedForDir( allInstructions ,
                                                   platform        ,
@@ -736,7 +736,7 @@ ExcludeOrIncludeFileEntriesAsSpecifiedForDir( const CORE::CString& dir          
                                                    allEntries      );
     }
 
-    if ( !platform.IsNULLOrEmpty() )
+    if ( !platform.IsNULLOrEmpty() && platform != AllPlatforms )
     {
         ExcludeOrIncludeEntriesAsSpecifiedForFile( allInstructions ,
                                                    platform        ,
@@ -1818,9 +1818,21 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
     if ( fileList.size() > 0 )
     {
         // found files in the current root
-        if ( !fileMap.insert( std::pair< CORE::CString, TStringVector >( curRootDirSeg, fileList ) ).second )
+        TStringVectorMap::iterator i = fileMap.find( curRootDirSeg );
+        if ( i == fileMap.end() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to add files to the file map for subdir \"" + curRootDirSeg + "\"" );
+            if ( !fileMap.insert( std::pair< CORE::CString, TStringVector >( curRootDirSeg, fileList ) ).second )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to add files to the file map for subdir \"" + curRootDirSeg + "\"" );
+            }
+        }
+        else
+        {
+            // We already have a list of files for this dir,.. merge
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Subdir \"" + curRootDirSeg + "\" already has files defined that "
+                     "should be used for the module, this list of files will be merged with files we automatically locate in the same dir" );
+                     
+            MergeStringVector( (*i).second, fileList, true );
         }
     }
     
