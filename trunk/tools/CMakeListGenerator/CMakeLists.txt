@@ -11,9 +11,6 @@
 
 # Configuration for module: CMakeListGenerator
 
-set( HEADER_FILES 
-)
-
 set( SOURCE_FILES 
   src/main.cpp
 )

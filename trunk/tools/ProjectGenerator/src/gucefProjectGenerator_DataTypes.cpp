@@ -1214,23 +1214,27 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry )
     {
         // A name was specified for all platforms which makes our job easy
         // an all platform name always counts as the general consensus name
-        return (*n).second.name;
-    }
-    else
-    {
-        // If no name is specified for all platforms then we will have to 
-        // determine the best name to use. We do this by getting the name 
-        // for all platforms and counting how often each is used. The most used
-        // name is considered the general consensus name. If the same count applies
-        // to multiple we will try to use a popular platform to improve our 'guess'
-        
-        typedef std::map< CORE::CString, CORE::UInt32 > TStringCountMap;
-        
-        TStringCountMap countMap;
-        TModuleInfoMap::const_iterator n = moduleInfoEntry.modulesPerPlatform.begin();
-        while ( n != moduleInfoEntry.modulesPerPlatform.end() )
+        if ( !(*n).second.name.IsNULLOrEmpty() )
         {
-            const TModuleInfo& moduleInfo = (*n).second;
+            return (*n).second.name;
+        }
+    }
+
+    // If no name is specified for all platforms then we will have to 
+    // determine the best name to use. We do this by getting the name 
+    // for all platforms and counting how often each is used. The most used
+    // name is considered the general consensus name. If the same count applies
+    // to multiple we will try to use a popular platform to improve our 'guess'
+    
+    typedef std::map< CORE::CString, CORE::UInt32 > TStringCountMap;
+    
+    TStringCountMap countMap;
+    n = moduleInfoEntry.modulesPerPlatform.begin();
+    while ( n != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        const TModuleInfo& moduleInfo = (*n).second;
+        if ( !moduleInfo.name.IsNULLOrEmpty() )
+        {
             TStringCountMap::iterator m = countMap.find( moduleInfo.name );
             if ( m != countMap.end() )
             {
@@ -1239,43 +1243,46 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry )
             else
             {
                 countMap[ moduleInfo.name ] = 1;
-            }            
-            ++n;
-        }
-        
-        // Now that we have the popularity count of each name get the highest count
-        CORE::UInt32 highestCount = 0;
-        TStringCountMap::iterator i = countMap.begin();
-        while ( i != countMap.end() )
-        {
-            if ( highestCount < (*i).second )
-            {
-                highestCount = (*i).second;
             }
-            ++i;
-        }
-        
-        // Make the list of most popular names
-        TStringSet topNames;
-        i = countMap.begin();
-        while ( i != countMap.end() )
-        {
-            if ( highestCount == (*i).second )
-            {
-                topNames.insert( (*i).first );
-            }
-            ++i;
-        }
-        
-        // If we have multiple use a popular platform if
-        // possible, otherwise just grab one
-        
-        //@TODO: popular platform check
-        
-        return (*topNames.begin());
-        
+        }            
+        ++n;
     }
-    return CORE::CString();
+    
+    if ( countMap.empty() )
+    {
+        return CORE::CString();
+    }
+    
+    // Now that we have the popularity count of each name get the highest count
+    CORE::UInt32 highestCount = 0;
+    TStringCountMap::iterator i = countMap.begin();
+    while ( i != countMap.end() )
+    {
+        if ( highestCount < (*i).second )
+        {
+            highestCount = (*i).second;
+        }
+        ++i;
+    }
+    
+    // Make the list of most popular names
+    TStringSet topNames;
+    i = countMap.begin();
+    while ( i != countMap.end() )
+    {
+        if ( highestCount == (*i).second )
+        {
+            topNames.insert( (*i).first );
+        }
+        ++i;
+    }
+    
+    // If we have multiple use a popular platform if
+    // possible, otherwise just grab one
+    
+    //@TODO: popular platform check
+    
+    return (*topNames.begin());
 }        
 
 /*---------------------------------------------------------------------------*/

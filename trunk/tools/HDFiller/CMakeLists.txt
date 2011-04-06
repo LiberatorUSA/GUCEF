@@ -11,9 +11,6 @@
 
 # Configuration for module: HDFiller
 
-set( HEADER_FILES 
-)
-
 set( SOURCE_FILES 
   src/HDFiller.cpp
 )

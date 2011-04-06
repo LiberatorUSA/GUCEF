@@ -11,9 +11,6 @@
 
 # Configuration for module: ReferenceUpdater
 
-set( HEADER_FILES 
-)
-
 set( SOURCE_FILES 
   src/ReferenceUpdater_main.cpp
 )

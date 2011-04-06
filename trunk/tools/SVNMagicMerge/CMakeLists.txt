@@ -11,9 +11,6 @@
 
 # Configuration for module: SVNMagicMerge
 
-set( HEADER_FILES 
-)
-
 set( SOURCE_FILES 
   src/SVNMagicMerge_main.cpp
 )

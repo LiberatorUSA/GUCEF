@@ -11,9 +11,6 @@
 
 # Configuration for module: ArchiveDiff
 
-set( HEADER_FILES 
-)
-
 set( SOURCE_FILES 
   src/ArchiveDiff_main.cpp
 )

@@ -11,9 +11,6 @@
 
 # Configuration for module: gucefIMAGE_TestApp
 
-set( HEADER_FILES 
-)
-
 set( SOURCE_FILES 
   src/gucefIMAGE_TestApp.cpp
 )
