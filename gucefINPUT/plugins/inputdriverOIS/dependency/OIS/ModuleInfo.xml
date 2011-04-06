@@ -1,10 +1,5 @@
 <ModuleInfoEntry>
     <Module Name="OIS" Type="SharedLibrary" Platform="mswin;linux;osx">
-	    <Dependencies>
-		    <Dependency Name="gucefINPUT" />
-            <Dependency Name="gucefCORE" />
-            <Dependency Name="gucefMT" />
-	    </Dependencies>
         <Preprocessor>
             <Define String="OIS_DYNAMIC_LIB" />
             <Define String="OIS_NONCLIENT_BUILD" />

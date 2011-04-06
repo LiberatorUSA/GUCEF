@@ -85,6 +85,8 @@ include_directories( ../common/include include )
 
 if (LINUX)
 GUCEF_config_lib( ${MODULE_NAME} )
+elseif (OSX)
+GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN64)
