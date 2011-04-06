@@ -1,4 +1,0 @@
-
-add_library( gucefLOADER ${ALL_FILES} )
-set_target_properties( gucefLOADER PROPERTIES COMPILE_DEFINITIONS GUCEF_LOADER_BUILD_MODULE )
-GUCEF_config_lib( gucefLOADER )
