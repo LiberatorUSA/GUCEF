@@ -61,14 +61,16 @@ elseif( WIN64 )
 endif()
 
 if ( WIN32 )
-  add_dependencies( ${MODULE_NAME} gucefINPUT gucefCORE gucefMT )
+  add_dependencies( ${MODULE_NAME} gucefMT gucefCORE gucefINPUT )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "INPUTDRIVERDIRECTINPUT8_BUILD_MODULE;BUILD_GUCEF_INPUT_PLUGIN_DLL" )
 endif( WIN32 )
 
 if ( WIN64 )
-  add_dependencies( ${MODULE_NAME} gucefINPUT gucefCORE gucefMT )
+  add_dependencies( ${MODULE_NAME} gucefMT gucefCORE gucefINPUT )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "INPUTDRIVERDIRECTINPUT8_BUILD_MODULE;BUILD_GUCEF_INPUT_PLUGIN_DLL" )
 endif( WIN64 )
+
+include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefINPUT/include ../../../gucefMT/include )
 
 if ( WIN32 )
   include_directories( ../../../gucefCORE/include/mswin include )

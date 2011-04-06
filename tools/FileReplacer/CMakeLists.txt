@@ -11,9 +11,6 @@
 
 # Configuration for module: FileReplacer
 
-set( HEADER_FILES 
-)
-
 set( SOURCE_FILES 
   src/FileReplacer.cpp
 )

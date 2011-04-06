@@ -11,9 +11,6 @@
 
 # Configuration for module: DuplicateFileFinder
 
-set( HEADER_FILES 
-)
-
 set( SOURCE_FILES 
   src/DuplicateFileFinder_main.cpp
 )

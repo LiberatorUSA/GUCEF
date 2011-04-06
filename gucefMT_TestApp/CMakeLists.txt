@@ -11,9 +11,6 @@
 
 # Configuration for module: gucefMT_TestApp
 
-set( HEADER_FILES 
-)
-
 set( SOURCE_FILES 
   src/gucefMT_TestApp.cpp
 )

@@ -372,18 +372,18 @@ GenerateCMakeListsFileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
     if ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {        
         const TStringVectorMap& includeFiles = (*i).second.includeDirs;
-        
-        sectionContent = "set( HEADER_FILES \n";
-        sectionContent = GenerateCMakeListsFileSection( sectionContent, includeFiles );
-        
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( includeFiles.size() ) + " include dirs for module " + consensusModuleName );
+        if ( !includeFiles.empty() )
+        {
+            sectionContent = "set( HEADER_FILES \n";
+            sectionContent = GenerateCMakeListsFileSection( sectionContent, includeFiles );
+            
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( includeFiles.size() ) + " include dirs for module " + consensusModuleName );
+            return sectionContent;
+        }
     }
-    else
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The module " + consensusModuleName + " does not have include directories which apply to all platforms, skipping general include section" ); 
-    }
-    
-    return sectionContent;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The module " + consensusModuleName + " does not have include directories which apply to all platforms, skipping general include section" ); 
+    return CORE::CString();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -398,18 +398,18 @@ GenerateCMakeListsFileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
     if ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {        
         const TStringVectorMap& srcFiles = (*i).second.sourceDirs;
-        
-        sectionContent = "set( SOURCE_FILES \n";
-        sectionContent = GenerateCMakeListsFileSection( sectionContent, srcFiles );
-        
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( srcFiles.size() ) + " include dirs for module " + consensusModuleName );
+        if ( !srcFiles.empty() )
+        {
+            sectionContent = "set( SOURCE_FILES \n";
+            sectionContent = GenerateCMakeListsFileSection( sectionContent, srcFiles );
+            
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( srcFiles.size() ) + " include dirs for module " + consensusModuleName );            
+            return sectionContent;
+        }
     }
-    else
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The module " + consensusModuleName + " does not have include directories which apply to all platforms, skipping general include section" ); 
-    }
-    
-    return sectionContent;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The module " + consensusModuleName + " does not have include directories which apply to all platforms, skipping general include section" ); 
+    return CORE::CString();
 }
 
 /*---------------------------------------------------------------------------*/

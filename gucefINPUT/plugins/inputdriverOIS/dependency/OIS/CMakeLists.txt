@@ -182,6 +182,8 @@ GUCEF_config_plugin( OIS )
 
 
 
+include_directories( ../../../../../common/include ../../../../../gucefCORE/include ../../../../../gucefINPUT/include ../../../../../gucefMT/include )
+
 if ( LINUX )
   include_directories( ../../../../../gucefCORE/include/linux includes/linux )
 endif( LINUX )

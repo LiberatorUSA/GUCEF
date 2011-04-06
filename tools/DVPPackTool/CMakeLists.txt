@@ -11,9 +11,6 @@
 
 # Configuration for module: DVPPackTool
 
-set( HEADER_FILES 
-)
-
 set( SOURCE_FILES 
   src/DVP_Pack_Tool.c
 )

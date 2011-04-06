@@ -11,9 +11,6 @@
 
 # Configuration for module: PatchSetGenerator
 
-set( HEADER_FILES 
-)
-
 set( SOURCE_FILES 
   src/PatchSetGenerator.cpp
 )

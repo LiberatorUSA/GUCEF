@@ -11,9 +11,6 @@
 
 # Configuration for module: GucefLogServiceApp
 
-set( HEADER_FILES 
-)
-
 set( SOURCE_FILES 
   src/GucefLogService_main.cpp
 )

@@ -11,9 +11,6 @@
 
 # Configuration for module: gucefINPUT_TestApp
 
-set( HEADER_FILES 
-)
-
 set( SOURCE_FILES 
   src/gucefINPUT_TestApp.cpp
 )
