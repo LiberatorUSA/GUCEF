@@ -16,10 +16,7 @@ set( HEADER_FILES
   ../gucefCORE/include/DVOSWRAP.h
   ../gucefCORE/src/dvstrutils.c
   ../gucefCORE/include/dvstrutils.h
-  ../gucefCORE/src/DVOSWRAP.c
-  ../gucefCORE/include/DVOSWRAP.h
-  ../gucefCORE/src/dvstrutils.c
-  ../gucefCORE/include/dvstrutils.h
+  gucefLOADER.h
 )
 
 set( SOURCE_FILES 
@@ -27,10 +24,7 @@ set( SOURCE_FILES
   ../gucefCORE/include/DVOSWRAP.h
   ../gucefCORE/src/dvstrutils.c
   ../gucefCORE/include/dvstrutils.h
-  ../gucefCORE/src/DVOSWRAP.c
-  ../gucefCORE/include/DVOSWRAP.h
-  ../gucefCORE/src/dvstrutils.c
-  ../gucefCORE/include/dvstrutils.h
+  gucefLOADER.c
 )
 
 
