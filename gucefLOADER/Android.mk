@@ -22,17 +22,15 @@ LOCAL_MODULE := gucefLOADER
 
 LOCAL_SRC_FILES := \
   ../gucefCORE/src/DVOSWRAP.c \
-  ../gucefCORE/include/DVOSWRAP.h \
   ../gucefCORE/src/dvstrutils.c \
-  ../gucefCORE/include/dvstrutils.h \
-  ../gucefCORE/src/DVOSWRAP.c \
-  ../gucefCORE/include/DVOSWRAP.h \
-  ../gucefCORE/src/dvstrutils.c \
-  ../gucefCORE/include/dvstrutils.h
+  src/gucefLOADER.c
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH) \
-  $(MY_MODULE_PATH)/../common/include
+  $(MY_MODULE_PATH)/../gucefCORE/include/ \
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../common/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 include $(BUILD_SHARED_LIBRARY)
 
