@@ -1201,7 +1201,7 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
     
     // Write the gathered info to disk in CMakeList.txt format
     CORE::CString logfilePath;
-    bool addLogfilePathToOutput = CORE::StringToBool( params.GetValueAlways( "addLogfilePathToOutput" ) );
+    bool addLogfilePathToOutput = CORE::StringToBool( params.GetValueAlways( "writeLogLocationToOutput" ) );
     if ( addLogfilePathToOutput )
     {
         logfilePath = params.GetValueAlways( "logfile" );
