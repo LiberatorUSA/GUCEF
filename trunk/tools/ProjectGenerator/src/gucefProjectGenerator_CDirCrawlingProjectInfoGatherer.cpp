@@ -1999,7 +1999,7 @@ FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
         TModuleInfoMap::iterator i = moduleInfoEntry.modulesPerPlatform.find( platform );
         if ( i != moduleInfoEntry.modulesPerPlatform.end() )
         {
-            (*i).second.includeDirs = fileMap;  
+            MergeStringVectorMap( (*i).second.includeDirs, fileMap, true );
         }
         else        
         {
@@ -2016,7 +2016,7 @@ FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
                 while ( i != moduleInfoEntry.modulesPerPlatform.end() )
                 {
                     TModuleInfo& moduleInfo = (*i).second;
-                    moduleInfo.includeDirs = fileMap;
+                    MergeStringVectorMap( moduleInfo.includeDirs, fileMap, true );
                     ++i;
                 }
             }
@@ -2200,7 +2200,7 @@ ProcessProjectDir( TProjectInfo& projectInfo         ,
                    TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
-    if ( moduleInfoEntry.rootDir.HasSubstr( "gucefLOADER", false ) > -1 )
+    if ( moduleInfoEntry.rootDir.HasSubstr( "OIS", false ) > -1 )
     {
         int as = 0;
     }

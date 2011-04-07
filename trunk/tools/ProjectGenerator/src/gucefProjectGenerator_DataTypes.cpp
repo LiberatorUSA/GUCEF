@@ -172,22 +172,6 @@ MergeStringSet( TStringSet& targetList          ,
 
 /*---------------------------------------------------------------------------*/
 
-static void
-MergeStringVectorMap( TStringVectorMap& targetList          ,
-                      const TStringVectorMap& listToMergeIn ,
-                      bool caseSensitive                    )
-{GUCEF_TRACE;
-
-    TStringVectorMap::const_iterator i = listToMergeIn.begin();
-    while ( i != listToMergeIn.end() )
-    {
-        MergeStringVector( targetList[ (*i).first ], (*i).second, caseSensitive ); 
-        ++i;
-    }
-}
-
-/*---------------------------------------------------------------------------*/
-
 CORE::CString
 ModuleTypeToString( const TModuleType moduleType )
 {GUCEF_TRACE;
@@ -1464,6 +1448,22 @@ GetModuleInfoEntry( const TProjectInfo& projectInfo ,
         ++i;
     }
     return NULL;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+MergeStringVectorMap( TStringVectorMap& targetMap          ,
+                      const TStringVectorMap& mapToMergeIn ,
+                      bool caseSensitive                   )
+{GUCEF_TRACE;
+
+    TStringVectorMap::const_iterator i = mapToMergeIn.begin();
+    while ( i != mapToMergeIn.end() )    
+    {
+        MergeStringVector( targetMap[ (*i).first ], (*i).second, caseSensitive );
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------//

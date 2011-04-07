@@ -249,6 +249,13 @@ MergeStringVector( TStringVector& targetList          ,
                    bool caseSensitive                 );
 
 /*-------------------------------------------------------------------------*/
+                   
+void
+MergeStringVectorMap( TStringVectorMap& targetMap          ,
+                      const TStringVectorMap& mapToMergeIn ,
+                      bool caseSensitive                   );
+
+/*-------------------------------------------------------------------------*/
 
 void
 MergeModuleInfo( TModuleInfo& targetModuleInfo          ,

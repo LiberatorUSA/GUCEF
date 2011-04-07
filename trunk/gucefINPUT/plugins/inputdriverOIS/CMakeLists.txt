@@ -118,11 +118,11 @@ endif( WIN64 )
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefINPUT/include ../../../gucefMT/include )
 
 if ( LINUX )
-  include_directories( ../../../gucefCORE/include/linux dependency/OIS/includes/linux include )
+  include_directories( ../../../gucefCORE/include/linux dependency/OIS/includes dependency/OIS/includes/linux dependency/OIS/src/extras/LIRC include )
 endif( LINUX )
 
 if ( WIN32 )
-  include_directories( ../../../gucefCORE/include/mswin dependency/OIS/includes/win32 include )
+  include_directories( ../../../gucefCORE/include/mswin dependency/OIS/includes dependency/OIS/includes/win32 dependency/OIS/src/extras/LIRC include )
 endif( WIN32 )
 
 if ( WIN64 )

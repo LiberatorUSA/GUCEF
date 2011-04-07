@@ -15,6 +15,20 @@
 
 if (LINUX)
   set( PLATFORM_HEADER_FILES 
+    includes/OIS.h
+    includes/OISConfig.h
+    includes/OISEffect.h
+    includes/OISEvents.h
+    includes/OISException.h
+    includes/OISFactoryCreator.h
+    includes/OISForceFeedback.h
+    includes/OISInputManager.h
+    includes/OISInterface.h
+    includes/OISJoyStick.h
+    includes/OISKeyboard.h
+    includes/OISMouse.h
+    includes/OISObject.h
+    includes/OISPrereqs.h
     includes/linux/EventHelpers.h
     includes/linux/LinuxForceFeedback.h
     includes/linux/LinuxInputManager.h
@@ -22,6 +36,9 @@ if (LINUX)
     includes/linux/LinuxKeyboard.h
     includes/linux/LinuxMouse.h
     includes/linux/LinuxPrereqs.h
+    src/extras/LIRC/OISLIRC.h
+    src/extras/LIRC/OISLIRCFactoryCreator.h
+    src/extras/LIRC/OISLIRCRingBuffer.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX" )
@@ -41,12 +58,29 @@ if (LINUX)
 
 elseif (OSX)
   set( PLATFORM_HEADER_FILES 
+    includes/OIS.h
+    includes/OISConfig.h
+    includes/OISEffect.h
+    includes/OISEvents.h
+    includes/OISException.h
+    includes/OISFactoryCreator.h
+    includes/OISForceFeedback.h
+    includes/OISInputManager.h
+    includes/OISInterface.h
+    includes/OISJoyStick.h
+    includes/OISKeyboard.h
+    includes/OISMouse.h
+    includes/OISObject.h
+    includes/OISPrereqs.h
     includes/mac/MacHelpers.h
     includes/mac/MacHIDManager.h
     includes/mac/MacInputManager.h
     includes/mac/MacKeyboard.h
     includes/mac/MacMouse.h
     includes/mac/MacPrereqs.h
+    src/extras/LIRC/OISLIRC.h
+    src/extras/LIRC/OISLIRCFactoryCreator.h
+    src/extras/LIRC/OISLIRCRingBuffer.h
   )
 
   set( PLATFORM_HEADER_INSTALL "OSX" )
@@ -87,12 +121,29 @@ elseif (SDL)
 
 elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
+    includes/OIS.h
+    includes/OISConfig.h
+    includes/OISEffect.h
+    includes/OISEvents.h
+    includes/OISException.h
+    includes/OISFactoryCreator.h
+    includes/OISForceFeedback.h
+    includes/OISInputManager.h
+    includes/OISInterface.h
+    includes/OISJoyStick.h
+    includes/OISKeyboard.h
+    includes/OISMouse.h
+    includes/OISObject.h
+    includes/OISPrereqs.h
     includes/win32/Win32ForceFeedback.h
     includes/win32/Win32InputManager.h
     includes/win32/Win32JoyStick.h
     includes/win32/Win32KeyBoard.h
     includes/win32/Win32Mouse.h
     includes/win32/Win32Prereqs.h
+    src/extras/LIRC/OISLIRC.h
+    src/extras/LIRC/OISLIRCFactoryCreator.h
+    src/extras/LIRC/OISLIRCRingBuffer.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
@@ -174,11 +225,11 @@ elseif( WIN64 )
 endif()
 
 if ( LINUX )
-  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB;OIS_NONCLIENT_BUILD;OIS_LINUX_PLATFORM" )
+  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "OIS_LINUX_PLATFORM;OIS_DYNAMIC_LIB;OIS_NONCLIENT_BUILD" )
 endif( LINUX )
 
 if ( OSX )
-  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB;OIS_NONCLIENT_BUILD;OIS_APPLE_PLATFORM" )
+  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "OIS_APPLE_PLATFORM;OIS_DYNAMIC_LIB;OIS_NONCLIENT_BUILD" )
 endif( OSX )
 
 if ( WIN32 )
@@ -192,11 +243,11 @@ if ( WIN64 )
 endif( WIN64 )
 
 if ( LINUX )
-  include_directories( includes/linux )
+  include_directories( includes includes/linux src/extras/LIRC )
 endif( LINUX )
 
 if ( OSX )
-  include_directories( includes/mac )
+  include_directories( includes includes/mac src/extras/LIRC )
 endif( OSX )
 
 if ( SDL )
@@ -204,7 +255,7 @@ if ( SDL )
 endif( SDL )
 
 if ( WIN32 )
-  include_directories( includes/win32 )
+  include_directories( includes includes/win32 src/extras/LIRC )
 endif( WIN32 )
 
 if ( WIN64 )
