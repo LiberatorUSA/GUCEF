@@ -12,28 +12,22 @@
 # Configuration for module: gucefLOADER
 
 set( HEADER_FILES 
-  ../gucefCORE/src/DVOSWRAP.c
   ../gucefCORE/include/DVOSWRAP.h
-  ../gucefCORE/src/dvstrutils.c
   ../gucefCORE/include/dvstrutils.h
-  gucefLOADER.h
+  include/gucefLOADER.h
 )
 
 set( SOURCE_FILES 
   ../gucefCORE/src/DVOSWRAP.c
-  ../gucefCORE/include/DVOSWRAP.h
   ../gucefCORE/src/dvstrutils.c
-  ../gucefCORE/include/dvstrutils.h
-  gucefLOADER.c
+  src/gucefLOADER.c
 )
 
 
 
 if (ANDROID)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/include/dvstrutils.h
   )
 
@@ -42,9 +36,7 @@ if (ANDROID)
 
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
-    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/src/dvstrutils.c
-    ../gucefCORE/include/dvstrutils.h
   )
 
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
@@ -52,9 +44,7 @@ if (ANDROID)
 
 elseif (GLX)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/include/dvstrutils.h
   )
 
@@ -63,9 +53,7 @@ elseif (GLX)
 
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
-    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/src/dvstrutils.c
-    ../gucefCORE/include/dvstrutils.h
   )
 
   set( PLATFORM_SOURCE_INSTALL "GLX" )
@@ -73,9 +61,7 @@ elseif (GLX)
 
 elseif (GTK)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/include/dvstrutils.h
   )
 
@@ -84,9 +70,7 @@ elseif (GTK)
 
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
-    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/src/dvstrutils.c
-    ../gucefCORE/include/dvstrutils.h
   )
 
   set( PLATFORM_SOURCE_INSTALL "GTK" )
@@ -94,9 +78,7 @@ elseif (GTK)
 
 elseif (IPHONEOS)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/include/dvstrutils.h
   )
 
@@ -105,9 +87,7 @@ elseif (IPHONEOS)
 
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
-    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/src/dvstrutils.c
-    ../gucefCORE/include/dvstrutils.h
   )
 
   set( PLATFORM_SOURCE_INSTALL "IPHONEOS" )
@@ -115,9 +95,7 @@ elseif (IPHONEOS)
 
 elseif (LINUX)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/include/dvstrutils.h
   )
 
@@ -126,9 +104,7 @@ elseif (LINUX)
 
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
-    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/src/dvstrutils.c
-    ../gucefCORE/include/dvstrutils.h
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX" )
@@ -136,9 +112,7 @@ elseif (LINUX)
 
 elseif (OSX)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/include/dvstrutils.h
   )
 
@@ -147,9 +121,7 @@ elseif (OSX)
 
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
-    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/src/dvstrutils.c
-    ../gucefCORE/include/dvstrutils.h
   )
 
   set( PLATFORM_SOURCE_INSTALL "OSX" )
@@ -157,9 +129,7 @@ elseif (OSX)
 
 elseif (SDL)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/include/dvstrutils.h
   )
 
@@ -168,9 +138,7 @@ elseif (SDL)
 
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
-    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/src/dvstrutils.c
-    ../gucefCORE/include/dvstrutils.h
   )
 
   set( PLATFORM_SOURCE_INSTALL "SDL" )
@@ -178,9 +146,7 @@ elseif (SDL)
 
 elseif (SYMBIAN)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/include/dvstrutils.h
   )
 
@@ -189,9 +155,7 @@ elseif (SYMBIAN)
 
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
-    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/src/dvstrutils.c
-    ../gucefCORE/include/dvstrutils.h
   )
 
   set( PLATFORM_SOURCE_INSTALL "SYMBIAN" )
@@ -199,9 +163,7 @@ elseif (SYMBIAN)
 
 elseif (UNIX)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/include/dvstrutils.h
   )
 
@@ -210,9 +172,7 @@ elseif (UNIX)
 
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
-    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/src/dvstrutils.c
-    ../gucefCORE/include/dvstrutils.h
   )
 
   set( PLATFORM_SOURCE_INSTALL "UNIX" )
@@ -220,9 +180,7 @@ elseif (UNIX)
 
 elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/include/dvstrutils.h
   )
 
@@ -231,9 +189,7 @@ elseif (WIN32)
 
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
-    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/src/dvstrutils.c
-    ../gucefCORE/include/dvstrutils.h
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -241,9 +197,7 @@ elseif (WIN32)
 
 elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/include/dvstrutils.h
   )
 
@@ -252,9 +206,7 @@ elseif (WIN64)
 
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
-    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/src/dvstrutils.c
-    ../gucefCORE/include/dvstrutils.h
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
@@ -270,18 +222,50 @@ add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefMT gucefCORE )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_MT_EMBED_CODE;GUCEF_CORE_EMBED_CODE;GUCEF_LOADER_BUILD_MODULE" )
 
-include_directories( ../common/include ../gucefCORE/include ../gucefMT/include )
+include_directories( ../common/include ../gucefCORE/include ../gucefMT/include ../gucefCORE/include/ include )
+
+if ( ANDROID )
+  include_directories( ../gucefCORE/include/ )
+endif( ANDROID )
+
+if ( GLX )
+  include_directories( ../gucefCORE/include/ )
+endif( GLX )
+
+if ( GTK )
+  include_directories( ../gucefCORE/include/ )
+endif( GTK )
+
+if ( IPHONEOS )
+  include_directories( ../gucefCORE/include/ )
+endif( IPHONEOS )
 
 if ( LINUX )
-  include_directories( ../gucefCORE/include/linux )
+  include_directories( ../gucefCORE/include/linux ../gucefCORE/include/ )
 endif( LINUX )
 
+if ( OSX )
+  include_directories( ../gucefCORE/include/ )
+endif( OSX )
+
+if ( SDL )
+  include_directories( ../gucefCORE/include/ )
+endif( SDL )
+
+if ( SYMBIAN )
+  include_directories( ../gucefCORE/include/ )
+endif( SYMBIAN )
+
+if ( UNIX )
+  include_directories( ../gucefCORE/include/ )
+endif( UNIX )
+
 if ( WIN32 )
-  include_directories( ../gucefCORE/include/mswin )
+  include_directories( ../gucefCORE/include/mswin ../gucefCORE/include/ )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../gucefCORE/include/mswin )
+  include_directories( ../gucefCORE/include/mswin ../gucefCORE/include/ )
 endif( WIN64 )
 
 
