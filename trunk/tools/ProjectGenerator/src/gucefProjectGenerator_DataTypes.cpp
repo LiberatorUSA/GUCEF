@@ -1054,6 +1054,19 @@ FindModuleInfoForPlatform( const TModuleInfoEntry& moduleInfoEntry ,
 /*-------------------------------------------------------------------------*/
 
 bool
+IsIndependentModuleDefinition( const TModuleInfo* moduleInfo )
+{GUCEF_TRACE;
+    
+    if ( NULL != moduleInfo )
+    {
+        return ( -1 < moduleInfo->buildOrder ) && ( MODULETYPE_UNDEFINED != moduleInfo->moduleType );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 MergeModuleInfo( const TModuleInfoEntry& moduleInfoEntry ,
                  const CORE::CString& targetPlatform     ,
                  TModuleInfo& mergedModuleInfo           )
@@ -1066,7 +1079,7 @@ MergeModuleInfo( const TModuleInfoEntry& moduleInfoEntry ,
     if ( ( NULL != allPlatformsInfo ) || ( NULL != targetPlatformInfo ) )
     {
         // Check if we have both
-        if ( ( NULL != allPlatformsInfo ) && ( NULL != targetPlatformInfo ) )
+        if ( IsIndependentModuleDefinition( allPlatformsInfo ) && IsIndependentModuleDefinition( targetPlatformInfo ) )
         {
             // Use the 'all' plaform as a base to work from
             mergedModuleInfo = *allPlatformsInfo;
@@ -1077,14 +1090,14 @@ MergeModuleInfo( const TModuleInfoEntry& moduleInfoEntry ,
             return true;
         }
         else
-        if ( ( NULL != allPlatformsInfo ) && ( NULL == targetPlatformInfo ) )
+        if ( IsIndependentModuleDefinition( allPlatformsInfo ) )
         {
             // We only have the 'all' platform which is fine, we will just use that
             mergedModuleInfo = *allPlatformsInfo;
             return true;
         }
         else
-        if ( ( NULL == allPlatformsInfo ) && ( NULL != targetPlatformInfo ) )
+        if ( IsIndependentModuleDefinition( targetPlatformInfo ) )
         {
             // We only have the target platform which is fine, we will just use that
             // this module aparently is not available for all platforms even in altered form

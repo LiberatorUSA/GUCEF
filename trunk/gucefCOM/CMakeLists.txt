@@ -60,7 +60,7 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "gucefCOM" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefMT gucefCORE gucefCOMCORE )
+add_dependencies( ${MODULE_NAME} gucefCORE gucefMT gucefCOMCORE )
 target_link_libraries( ${MODULE_NAME} gucefMT gucefCORE gucefCOMCORE )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_COM_BUILD_MODULE" )
 

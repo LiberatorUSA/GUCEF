@@ -45,6 +45,15 @@ if (LINUX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    src/OISEffect.cpp
+    src/OISException.cpp
+    src/OISForceFeedback.cpp
+    src/OISInputManager.cpp
+    src/OISJoyStick.cpp
+    src/OISKeyboard.cpp
+    src/OISObject.cpp
+    src/extras/LIRC/OISLIRC.cpp
+    src/extras/LIRC/OISLIRCFactoryCreator.cpp
     src/linux/EventHelpers.cpp
     src/linux/LinuxForceFeedback.cpp
     src/linux/LinuxInputManager.cpp
@@ -87,6 +96,15 @@ elseif (OSX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    src/OISEffect.cpp
+    src/OISException.cpp
+    src/OISForceFeedback.cpp
+    src/OISInputManager.cpp
+    src/OISJoyStick.cpp
+    src/OISKeyboard.cpp
+    src/OISObject.cpp
+    src/extras/LIRC/OISLIRC.cpp
+    src/extras/LIRC/OISLIRCFactoryCreator.cpp
     src/mac/MacHelpers.cpp
     src/mac/MacHIDManager.cpp
     src/mac/MacInputManager.cpp
@@ -110,10 +128,19 @@ elseif (SDL)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    src/OISEffect.cpp
+    src/OISException.cpp
+    src/OISForceFeedback.cpp
+    src/OISInputManager.cpp
+    src/OISJoyStick.cpp
+    src/OISKeyboard.cpp
+    src/OISObject.cpp
     src/SDL/SDLInputManager.cpp
     src/SDL/SDLJoyStick.cpp
     src/SDL/SDLKeyboard.cpp
     src/SDL/SDLMouse.cpp
+    src/extras/LIRC/OISLIRC.cpp
+    src/extras/LIRC/OISLIRCFactoryCreator.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "SDL" )
@@ -150,6 +177,15 @@ elseif (WIN32)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    src/OISEffect.cpp
+    src/OISException.cpp
+    src/OISForceFeedback.cpp
+    src/OISInputManager.cpp
+    src/OISJoyStick.cpp
+    src/OISKeyboard.cpp
+    src/OISObject.cpp
+    src/extras/LIRC/OISLIRC.cpp
+    src/extras/LIRC/OISLIRCFactoryCreator.cpp
     src/win32/Win32ForceFeedback.cpp
     src/win32/Win32InputManager.cpp
     src/win32/Win32JoyStick.cpp
@@ -225,11 +261,11 @@ elseif( WIN64 )
 endif()
 
 if ( LINUX )
-  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "OIS_LINUX_PLATFORM;OIS_DYNAMIC_LIB;OIS_NONCLIENT_BUILD" )
+  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB;OIS_NONCLIENT_BUILD;OIS_LINUX_PLATFORM" )
 endif( LINUX )
 
 if ( OSX )
-  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "OIS_APPLE_PLATFORM;OIS_DYNAMIC_LIB;OIS_NONCLIENT_BUILD" )
+  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB;OIS_NONCLIENT_BUILD;OIS_APPLE_PLATFORM" )
 endif( OSX )
 
 if ( WIN32 )

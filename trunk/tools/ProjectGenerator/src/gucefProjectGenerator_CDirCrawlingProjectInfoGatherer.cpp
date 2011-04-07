@@ -2081,7 +2081,7 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
         TModuleInfoMap::iterator i = moduleInfoEntry.modulesPerPlatform.find( platform );
         if ( i != moduleInfoEntry.modulesPerPlatform.end() )
         {
-            (*i).second.sourceDirs = fileMap;  
+            MergeStringVectorMap( (*i).second.sourceDirs, fileMap, true );  
         }
         else        
         {
@@ -2098,7 +2098,7 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
                 while ( i != moduleInfoEntry.modulesPerPlatform.end() )
                 {
                     TModuleInfo& moduleInfo = (*i).second;
-                    moduleInfo.sourceDirs = fileMap;
+                    MergeStringVectorMap( moduleInfo.sourceDirs, fileMap, true );
                     ++i;
                 }
             }
