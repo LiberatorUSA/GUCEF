@@ -655,10 +655,9 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const TDirProcessingInstructions& allI
 /*---------------------------------------------------------------------------*/
 
 void
-ExcludeOrIncludeEntriesAsSpecifiedForFile( const TDirProcessingInstructions& allInstructions ,
-                                           const CORE::CString& platform                     ,
-                                           TStringVector& allEntries                         ,
-                                           const TStringVector& fileTypes                    )
+ExcludeEntriesAsSpecifiedForFile( const TDirProcessingInstructions& allInstructions ,
+                                  const CORE::CString& platform                     ,
+                                  TStringVector& allEntries                         )
 {GUCEF_TRACE;
 
     // see if we have info for this platform
@@ -670,22 +669,27 @@ ExcludeOrIncludeEntriesAsSpecifiedForFile( const TDirProcessingInstructions& all
         TStringVector::const_iterator n = excludeList.begin();
         while ( n != excludeList.end() )
         {
-            const CORE::CString& filename = (*n);
-            const CORE::CString fileExt = CORE::ExtractFileExtention( filename );
-            
-            if ( IsStringInList( fileTypes, false, fileExt ) )
+            if ( RemoveString( allEntries, (*n) ) )
             {
-                if ( RemoveString( allEntries, filename ) )
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the file \"" + (*n) + "\" based on the exclude list for this dir" );
-                }
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Excluded the file \"" + (*n) + "\" based on the exclude list for this dir" );
             }
             ++n;
         }
     }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+IncludeEntriesAsSpecifiedForFile( const TDirProcessingInstructions& allInstructions ,
+                                  const CORE::CString& platform                     ,
+                                  const CORE::CString& currentPath                  ,
+                                  TStringVectorMap& allEntries                      ,
+                                  const TStringVector& fileTypes                    )
+{GUCEF_TRACE;
     
     // see if we have info for this platform
-    q = allInstructions.fileIncludeList.find( platform );
+    TStringVectorMap::const_iterator q = allInstructions.fileIncludeList.find( platform );
     if ( q != allInstructions.fileIncludeList.end() )
     {
         // apply changes
@@ -693,13 +697,19 @@ ExcludeOrIncludeEntriesAsSpecifiedForFile( const TDirProcessingInstructions& all
         TStringVector::const_iterator n = includeList.begin();
         while ( n != includeList.end() )
         {
-            const CORE::CString& filename = (*n);
-            const CORE::CString fileExt = CORE::ExtractFileExtention( filename );
-
+            const CORE::CString& fullEntry = (*n);
+            CORE::CString fileExt = CORE::ExtractFileExtention( fullEntry );
+            
             if ( IsStringInList( fileTypes, false, fileExt ) )
             {
-                allEntries.push_back( filename );
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the file \"" + filename + "\" based on the include list for this dir" );
+                CORE::CString filename = CORE::ExtractFilename( fullEntry );
+                CORE::CString path = currentPath;
+                CORE::AppendToPath( path, fullEntry.CutChars( filename.Length(), false ) );
+                path = CORE::RelativePath( path );
+                path = path.ReplaceChar( '\\', '/' );
+            
+                allEntries[ path ].push_back( filename );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the file \"" + filename + "\" based on the include list for this dir using path " + path );
             }
             ++n;
         }
@@ -735,28 +745,54 @@ ExcludeOrIncludeDirEntriesAsSpecifiedForDir( const CORE::CString& dir           
 /*---------------------------------------------------------------------------*/
 
 void
-ExcludeOrIncludeFileEntriesAsSpecifiedForDir( const CORE::CString& dir                          ,
-                                              const TDirProcessingInstructions& allInstructions ,
-                                              const CORE::CString& platform                     ,
-                                              bool applyPlatformChangesOnly                     ,
-                                              TStringVector& allEntries                         ,
-                                              const TStringVector& fileTypes                    )
+ExcludeFileEntriesAsSpecifiedForDir( const TDirProcessingInstructions& allInstructions ,
+                                     const CORE::CString& platform                     ,
+                                     bool applyPlatformChangesOnly                     ,
+                                     TStringVector& allEntries                         )
 {GUCEF_TRACE;
 
     if ( !applyPlatformChangesOnly )
     {
-        ExcludeOrIncludeEntriesAsSpecifiedForFile( allInstructions ,
-                                                   AllPlatforms    ,
-                                                   allEntries      ,
-                                                   fileTypes       );
+        ExcludeEntriesAsSpecifiedForFile( allInstructions ,
+                                          AllPlatforms    ,
+                                          allEntries      );
     }
 
     if ( !platform.IsNULLOrEmpty() && platform != AllPlatforms )
     {
-        ExcludeOrIncludeEntriesAsSpecifiedForFile( allInstructions ,
-                                                   platform        ,
-                                                   allEntries      ,
-                                                   fileTypes       );
+        ExcludeEntriesAsSpecifiedForFile( allInstructions ,
+                                          platform        ,
+                                          allEntries      );
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+IncludeFileEntriesAsSpecifiedForDir( const TDirProcessingInstructions& allInstructions ,
+                                     const CORE::CString& platform                     ,
+                                     const CORE::CString& currentPath                  ,
+                                     bool applyPlatformChangesOnly                     ,
+                                     TStringVectorMap& allEntries                      ,
+                                     const TStringVector& fileTypes                    )
+{GUCEF_TRACE;
+
+    if ( !applyPlatformChangesOnly )
+    {
+        IncludeEntriesAsSpecifiedForFile( allInstructions ,
+                                          AllPlatforms    ,
+                                          currentPath     ,
+                                          allEntries      ,
+                                          fileTypes       );
+    }
+
+    if ( !platform.IsNULLOrEmpty() && platform != AllPlatforms )
+    {
+        IncludeEntriesAsSpecifiedForFile( allInstructions ,
+                                          platform        ,
+                                          currentPath     ,
+                                          allEntries      ,
+                                          fileTypes       );
     }
 }
 
@@ -1149,12 +1185,11 @@ ExcludeOrIncludeDirEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
 /*---------------------------------------------------------------------------*/
 
 void
-ExcludeOrIncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo      ,
-                                              const CORE::CString& dir       ,
-                                              const CORE::CString& platform  ,
-                                              bool applyPlatformChangesOnly  ,
-                                              TStringVector& allEntries      ,
-                                              const TStringVector& fileTypes )
+ExcludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
+                                     const CORE::CString& dir      ,
+                                     const CORE::CString& platform ,
+                                     bool applyPlatformChangesOnly ,
+                                     TStringVector& allEntries     )
 {GUCEF_TRACE;
 
     // Fetch processing instructions from directory
@@ -1163,7 +1198,34 @@ ExcludeOrIncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo      ,
     if ( NULL != instructionStorage )
     {
         // Carry out the process using the fetched instructions
-        ExcludeOrIncludeFileEntriesAsSpecifiedForDir( dir, *instructionStorage, platform, applyPlatformChangesOnly, allEntries, fileTypes );
+        ExcludeFileEntriesAsSpecifiedForDir( *instructionStorage, platform, applyPlatformChangesOnly, allEntries );
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+IncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo        ,
+                                     const CORE::CString& dir         ,
+                                     const CORE::CString& platform    ,
+                                     const CORE::CString& currentPath ,
+                                     bool applyPlatformChangesOnly    ,
+                                     TStringVectorMap& allEntries     ,
+                                     const TStringVector& fileTypes   )
+{GUCEF_TRACE;
+
+    // Fetch processing instructions from directory
+    TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, dir );
+
+    if ( NULL != instructionStorage )
+    {
+        // Carry out the process using the fetched instructions
+        IncludeFileEntriesAsSpecifiedForDir( *instructionStorage      , 
+                                             platform                 , 
+                                             currentPath              ,
+                                             applyPlatformChangesOnly , 
+                                             allEntries               , 
+                                             fileTypes                );
     }
 }
 
@@ -1185,18 +1247,35 @@ ExcludeOrIncludeDirEntriesAsSpecifiedForDir( TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 void
-ExcludeOrIncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo      ,
-                                              const CORE::CString& dir       ,
-                                              TStringVector& allEntries      ,
-                                              const TStringVector& fileTypes )
+ExcludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo ,
+                                     const CORE::CString& dir  ,
+                                     TStringVector& allEntries )
 {GUCEF_TRACE;
 
-    ExcludeOrIncludeFileEntriesAsSpecifiedForDir( projectInfo     ,
-                                                  dir             ,
-                                                  CORE::CString() ,
-                                                  false           ,
-                                                  allEntries      ,
-                                                  fileTypes       );
+    ExcludeFileEntriesAsSpecifiedForDir( projectInfo     ,
+                                         dir             ,
+                                         CORE::CString() ,
+                                         false           ,
+                                         allEntries      );
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+IncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo        ,
+                                     const CORE::CString& dir         ,
+                                     TStringVectorMap& allEntries     ,
+                                     const TStringVector& fileTypes   ,
+                                     const CORE::CString& currentPath )
+{GUCEF_TRACE;
+
+    IncludeFileEntriesAsSpecifiedForDir( projectInfo     ,
+                                         dir             ,
+                                         CORE::CString() ,
+                                         currentPath     ,
+                                         false           ,
+                                         allEntries      ,
+                                         fileTypes       );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1828,13 +1907,19 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
     PopulateFileListFromDir( curRootDir, fileTypes, fileList, platform );
 
     // Now we add/substract files based on generator instructions
-    ExcludeOrIncludeFileEntriesAsSpecifiedForDir( projectInfo                   ,
-                                                  curRootDir                    ,
-                                                  platform                      ,
-                                                  applyOnlyPlatformInstructions ,
-                                                  fileList                      ,
-                                                  fileTypes                     );
-
+    ExcludeFileEntriesAsSpecifiedForDir( projectInfo                   ,
+                                         curRootDir                    ,
+                                         platform                      ,
+                                         applyOnlyPlatformInstructions ,
+                                         fileList                      );
+    IncludeFileEntriesAsSpecifiedForDir( projectInfo                   ,
+                                         curRootDir                    ,
+                                         platform                      ,
+                                         curRootDirSeg                 ,
+                                         applyOnlyPlatformInstructions ,
+                                         fileMap                       ,
+                                         fileTypes                     );
+                                         
     if ( fileList.size() > 0 )
     {
         // found files in the current root
