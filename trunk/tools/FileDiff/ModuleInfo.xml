@@ -1,0 +1,13 @@
+<ModuleInfoEntry>
+    <Module Name="FileDiff" Type="Executable" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefHeaders" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>
