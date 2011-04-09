@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_LOADER_H
-#define GUCEF_LOADER_H
+#ifndef GUCEF_LOADER_CONFIG_H
+#define GUCEF_LOADER_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,37 +26,26 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_LOADER_MACROS_H
-#include "gucefLOADER_macros.h"
-#define GUCEF_LOADER_MACROS_H
-#endif /* GUCEF_LOADER_MACROS_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      BUILD DEFINES                                                      //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-int
-LoadGucefPlatform( unsigned long mayorVersion   ,
-                   unsigned long minorVersion   ,
-                   char** argv                  ,
-                   int argc                     );
-
+/* Switches for the export of C++ and/or C code */
+#undef GUCEF_LOADER_EXPORT_CPP_CODE     /* do not change this line */
+#undef GUCEF_LOADER_EXPORT_C_CODE       /* do not change this line */
+/* #define GUCEF_LOADER_EXPORT_CPP_CODE */
+#define GUCEF_LOADER_EXPORT_C_CODE
 
 /*-------------------------------------------------------------------------*/
 
-int
-LoadGucefPlatformEx( unsigned long mayorVersion   ,
-                     unsigned long minorVersion   ,
-                     unsigned long patchVersion   ,
-                     unsigned long releaseVersion ,
-                     char** argv                  ,
-                     int argc                     );
-                   
-/*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_LOADER_H ? */
+#endif /* GUCEF_LOADER_CONFIG_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -64,7 +53,8 @@ LoadGucefPlatformEx( unsigned long mayorVersion   ,
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 12-02-2005 :
-        - Initial implementation
+- 16-10-2004 :
+       - Initial version of this file.
 
 -----------------------------------------------------------------------------*/
+ 
