@@ -2200,11 +2200,6 @@ ProcessProjectDir( TProjectInfo& projectInfo         ,
                    TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
-    if ( moduleInfoEntry.rootDir.HasSubstr( "OIS", false ) > -1 )
-    {
-        int as = 0;
-    }
-
     CORE::CString pathToModuleInfoFile = moduleInfoEntry.rootDir;
     CORE::AppendToPath( pathToModuleInfoFile, "ModuleInfo.xml" );
     

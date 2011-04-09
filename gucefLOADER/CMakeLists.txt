@@ -15,6 +15,9 @@ set( HEADER_FILES
   ../gucefCORE/include/DVOSWRAP.h
   ../gucefCORE/include/dvstrutils.h
   include/gucefLOADER.h
+  include/gucefLOADER_config.h
+  include/gucefLOADER_ETypes.h
+  include/gucefLOADER_macros.h
 )
 
 set( SOURCE_FILES 

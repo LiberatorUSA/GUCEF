@@ -959,8 +959,21 @@ GenerateCMakeModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntry  
         }
         else
         {
-            // This module only needs a AllPlatforms description and no deviating description for any platform
-            sectionContent += GenerateCMakeModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms );
+            // This module only has a AllPlatforms description and no deviating description for any platform
+            // AllPlatforms means we also support MS windows. On that platform we still want to use the WinMain
+            // entry point.
+            if ( moduleInfo->moduleType == MODULETYPE_EXECUTABLE )
+            {
+                sectionContent += "if ( WIN32 )\n  " + 
+                                    GenerateCMakeModuleDescriptionLine( *moduleInfo, consensusModuleName, "win32" ) +
+                                  "else()\n  " +
+                                    GenerateCMakeModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms ) +
+                                  "endif()\n";  
+            }
+            else
+            {
+                sectionContent += GenerateCMakeModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms );
+            }
         }
     }
     else
