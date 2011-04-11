@@ -723,6 +723,7 @@ IsFileInDir( const CString& dirPath  ,
 bool
 WriteStringAsTextFile( const CString& filePath    ,
                        const CString& fileContent ,
+                       const bool unifyEol        ,
                        const char* eolString      )
 {GUCEF_TRACE;
    
@@ -731,29 +732,39 @@ WriteStringAsTextFile( const CString& filePath    ,
     FILE* fptr = fopen( filePath.C_String(), "wb" );
     if ( NULL != fptr )
     {        
-        // If no desired eol format is given then use the platform
-        // native format
-        if ( NULL == eolString || *eolString == '\0' )
+        if ( unifyEol )
         {
             #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
-            eolString = "\r\n";
+            const char* platformEolString = "\r\n";
             #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX || GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID
-            eolString = "\n";
+            const char* platformEolString = "\n";
             #elif GUCEF_PLATFORM == GUCEF_PLATFORM_MACOS || GUCEF_PLATFORM == GUCEF_PLATFORM_IPHONEOS
-            eolString = "\r";
-            #endif
+            const char* platformEolString = "\r";
+            #endif            
+            
+            // If no desired eol format is given then use the platform
+            // native format
+            const char* eolStrToUse = eolString;
+            if ( NULL == eolStrToUse || *eolStrToUse == '\0' )
+            {
+                eolStrToUse = platformEolString;
+            }
+            
+            // Turn everything into "\n" in case of a mixed EOL char string
+            CString content = fileContent.ReplaceSubstr( "\r\n", "\n" ).ReplaceSubstr( "\r", "\n" );
+            // Now we unified the EOL segments into \n.
+            
+            if ( 0 != strcmp( eolStrToUse, "\n" ) )
+            {
+                // Convert into whatever is given as the desired format
+                content = content.ReplaceSubstr( "\n", eolStrToUse );
+            }
+            fwrite( content.C_String(), content.Length(), 1, fptr );
         }
-        
-        // Turn everything into "\n" in case of a mixed EOL char string
-        CString content = fileContent.ReplaceSubstr( "\r\n", "\n" ).ReplaceSubstr( "\r", "\n" );
-        // Now we unified the EOL segments into \n.
-        
-        if ( 0 != strcmp( eolString, "\n" ) )
+        else
         {
-            // Convert into whatever is given as the desired format
-            content = content.ReplaceSubstr( "\n", eolString );
-        }
-        fwrite( content.C_String(), content.Length(), 1, fptr );
+            fwrite( fileContent.C_String(), fileContent.Length(), 1, fptr );
+        }    
         fclose( fptr );
         return true;
     }
