@@ -272,10 +272,10 @@ FindIdenticalBlocks( CORE::MFILE* file1                      ,
     void* testBuffer = new char[ testBlockSizeInBytes ];
     memset( testBuffer, 0, testBlockSizeInBytes );
     memset( prevTestBuffer, 0, testBlockSizeInBytes );
-              int a=0;
+              //int a=0;
     size_t offsetInSrcFile = 0;
     while ( 0 == CORE::mfeof( file1 ) )
-    {             if ( a>200)break;++a;
+    {             //if ( a>200)break;++a;
         size_t actuallyRead = CORE::mfread( testBuffer           , 
                                             1                    , 
                                             testBlockSizeInBytes , 
@@ -666,42 +666,123 @@ WriteBlockMatchGapsAsText( const TBlockMatchVector& unmatchedBlocks )
 /*-------------------------------------------------------------------------*/
 
 void
-MatchSpecificBlocks( void* buffer                     ,
-                     unsigned long bufferSize         ,
-                     MFILE* searchFile                ,
-                     TBlockMatchVector& matchedBlocks )
-{GUCF_TRACE;
+MatchSpecificBlock( void* buffer                     ,
+                    unsigned long bufferSize         ,
+                    CORE::MFILE* searchFile          ,
+                    TBlockMatchVector& matchedBlocks )
+{GUCEF_TRACE;
     
-    mfsetpos( searchFile, 0 );
+    CORE::CDynamicBuffer searchBuffer( bufferSize, true );
     
+    CORE::UInt32 offsetInFile = 0;
+    while ( 0 == CORE::mfeof( searchFile ) )
+    {
+        CORE::mfsetpos( searchFile, offsetInFile );
+        CORE::UInt32 actuallyRead = CORE::mfread( searchBuffer.GetBufferPtr(), 1, bufferSize, searchFile );
+        if ( 0 == memcmp( searchBuffer.GetBufferPtr(), buffer, actuallyRead ) )
+        {
+            TBlockMatch match;
+            match.offsetInFile = offsetInFile;
+            match.sizeOfBlock = actuallyRead;
+            match.subBlockCount = 1;
+            matchedBlocks.push_back( match );
+            
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found matching block at offset " +  
+                  CORE::UInt32ToString( match.offsetInFile ) + " with size " + CORE::UInt32ToString( match.sizeOfBlock ) );
+        }
+        
+        // We want to be very precise in this matching so we will move 1 byte
+        // and then compare again
+        ++offsetInFile;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 MatchSpecificBlocks( const TBlockMatchVector& blocksToMatch ,
-                     MFILE* sourceFile                      ,
-                     MFILE* searchFile                      )
-{GUCF_TRACE;
+                     CORE::MFILE* sourceFile                ,
+                     CORE::MFILE* searchFile                ,
+                     TBlockMatchComboMap& matches           )
+{GUCEF_TRACE;
 
     CORE::CDynamicBuffer sourceBuffer;
     
-    TBlockMatchVector::iterator i = blocksToMatch.begin();
+    TBlockMatchVector::const_iterator i = blocksToMatch.begin();
     while ( i != blocksToMatch.end() )
     {
         const TBlockMatch& blockMatch = (*i);
         
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to match a specific block at offset " +  
+              CORE::UInt32ToString( blockMatch.offsetInFile ) + " with size " + CORE::UInt32ToString( blockMatch.sizeOfBlock ) );
+        
         sourceBuffer.SetDataSize( blockMatch.sizeOfBlock );
-        mfseek( sourceFile, blockMatch.offsetInFile, SEEK_SET );
-        mfread( sourceBuffer.GetBufferPtr(), blockMatch.sizeOfBlock, 1, sourceFile ); 
+        CORE::mfseek( sourceFile, blockMatch.offsetInFile, SEEK_SET );
+        CORE::mfread( sourceBuffer.GetBufferPtr(), blockMatch.sizeOfBlock, 1, sourceFile ); 
         
         TBlockMatchVector matchedBlocks;
-        MatchSpecificBlocks( sourceBuffer.GetBufferPtr() ,
-                             blockMatch.sizeOfBlock      , 
-                             searchFile                  ,
-                             matchedBlocks               );         
+        MatchSpecificBlock( sourceBuffer.GetBufferPtr() ,
+                            blockMatch.sizeOfBlock      , 
+                            searchFile                  ,
+                            matchedBlocks               );         
+                            
+        if ( !matchedBlocks.empty() )
+        {
+            TBlockMatchCombo& matchCombo = matches[ blockMatch.offsetInFile ];
+            matchCombo.matchedBlocks = matchedBlocks;
+            FindLongestRepeatingSequence( sourceBuffer.GetBufferPtr()            ,
+                                          blockMatch.sizeOfBlock                 ,
+                                          matchCombo.sourceBlock.repeatValueInfo );
+            matchCombo.sourceBlock.blockMatch = blockMatch;
+        }
+        
         ++i;
     }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+MatchSpecificBlocks( const TBlockMatchVector& blocksToMatch ,
+                     const CORE::CString& sourceFilePath    ,
+                     const CORE::CString& searchFilePath    ,
+                     TBlockMatchComboMap& matches           )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Starting search for specific blocks between file1 (" + sourceFilePath + ") and file 2 (" + searchFilePath + ")" );
+
+    CORE::CDynamicBuffer sourceFileBuffer;
+    if ( !sourceFileBuffer.LoadContentFromFile( sourceFilePath ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file: " + sourceFilePath );
+        return;
+    }
+
+    CORE::CDynamicBuffer searchFileBuffer;
+    if ( !searchFileBuffer.LoadContentFromFile( searchFilePath ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file: " + searchFilePath );
+        return;
+    }
+    
+    CORE::MFILE* file1Ptr = CORE::mfcreate( sourceFileBuffer.GetBufferPtr(), sourceFileBuffer.GetDataSize() );
+    CORE::MFILE* file2Ptr = CORE::mfcreate( searchFileBuffer.GetBufferPtr(), searchFileBuffer.GetDataSize() );
+
+    if ( NULL != file1Ptr && NULL != file2Ptr )
+    {   
+        MatchSpecificBlocks( blocksToMatch ,
+                             file1Ptr      , 
+                             file2Ptr      , 
+                             matches       );
+    }
+    if ( NULL != file1Ptr )
+    {
+        CORE::mfdestroy( file1Ptr );
+    }
+    if ( NULL != file2Ptr )
+    {
+        CORE::mfdestroy( file2Ptr );
+    }  
 }
 
 /*-------------------------------------------------------------------------*/
@@ -746,6 +827,25 @@ WriteBlockMatchesAsTextfile( const TBlockMatchComboMap& blockMatchComboMap ,
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CString
+GetUniqueLogFilename( const CORE::CString& logfileName )
+{GUCEF_TRACE;
+
+    CORE::UInt32 i=0;
+    CORE::CString testPath;
+    do
+    {
+        testPath = logfileName;
+        CORE::AppendToPath( testPath, "FileDiff_Log(" + CORE::UInt32ToString( i ) + ").txt" );
+        ++i;
+    }
+    while ( CORE::FileExists( testPath ) );
+    
+    return testPath;
+}
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
@@ -756,17 +856,31 @@ GUCEF_OSMAIN_BEGIN
     CORE::GUCEF_SetStackLoggingInCvsFormat( 1 );
     CORE::GUCEF_SetStackLogging( 1 );
     #endif /* GUCEF_CALLSTACK_TRACING ? */    
+
+    // Parse the application parameters
+    CORE::CValueList keyValueList;
+    ParseParams( argc, argv, keyValueList );
+
+    CORE::CString outputDir = keyValueList.GetValueAlways( "outputDir" );
+    if ( outputDir.IsNULLOrEmpty() )
+    {
+        outputDir = CORE::RelativePath( "$MODULEDIR$" );
+    }
     
-    CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
-    CORE::AppendToPath( logFilename, "FileDiff_Log.txt" );
+    CORE::CString logFilename;
+    if ( outputDir.IsNULLOrEmpty() )
+    {
+        logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
+    }
+    else
+    {
+        logFilename = outputDir;
+    }
+    logFilename = GetUniqueLogFilename( logFilename );
     CORE::CFileAccess logFileAccess( logFilename, "w" );
     
     CORE::CStdLogger logger( logFileAccess );
     CORE::CLogManager::Instance()->AddLogger( &logger );
-    
-    // Parse the application parameters
-    CORE::CValueList keyValueList;
-    ParseParams( argc, argv, keyValueList );
 
     // Do we want to display the console window?
     CORE::CPlatformNativeConsoleLogger* consoleOut = NULL;    
@@ -797,11 +911,12 @@ GUCEF_OSMAIN_BEGIN
         {
             testBlockSizeInBytes = CORE::StringToUInt32( testBlockSizeStr );
         }
-        
+       
         CORE::CString outputMatchfile = keyValueList.GetValueAlways( "outputMatchFile" );
         if ( outputMatchfile.IsNULLOrEmpty() )
         {
-            outputMatchfile = CORE::RelativePath( "$MODULEDIR$/MatchedBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
+            outputMatchfile = outputDir;
+            CORE::AppendToPath( outputMatchfile, "MatchedBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
         }
         TBlockMatchComboMap blockMatchComboMap;
         FindIdenticalBlocks( file1Path            ,
@@ -821,12 +936,14 @@ GUCEF_OSMAIN_BEGIN
         CORE::CString outputUnmatchedSourcefile = keyValueList.GetValueAlways( "outputUnmatchedSourcefile" );
         if ( outputUnmatchedSourcefile.IsNULLOrEmpty() )
         {
-            outputUnmatchedSourcefile = CORE::RelativePath( "$MODULEDIR$/UnmatchedSourceBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
+            outputUnmatchedSourcefile = outputDir;
+            CORE::AppendToPath( outputUnmatchedSourcefile, "UnmatchedSourceBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
         }
         CORE::CString outputUnmatchedTargetfile = keyValueList.GetValueAlways( "outputUnmatchedTargetfile" );
         if ( outputUnmatchedTargetfile.IsNULLOrEmpty() )
         {
-            outputUnmatchedTargetfile = CORE::RelativePath( "$MODULEDIR$/UnmatchedTargetBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
+            outputUnmatchedTargetfile = outputDir;
+            CORE::AppendToPath( outputUnmatchedTargetfile, "UnmatchedTargetBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
         }
         
         WriteBlockMatchGapsAsTextfile( unmatchedSourceBlocks, outputUnmatchedSourcefile );  
@@ -835,7 +952,37 @@ GUCEF_OSMAIN_BEGIN
         CORE::CString deltafilePath = keyValueList.GetValueAlways( "deltafile" );
         if ( !deltafilePath.IsNULLOrEmpty() )
         {   
+            TBlockMatchComboMap matchedSourceBlocks;
+            MatchSpecificBlocks( unmatchedSourceBlocks , 
+                                 file1Path             , 
+                                 deltafilePath         ,
+                                 matchedSourceBlocks   );
+
+            CORE::CString outputMatchedSourcefile = keyValueList.GetValueAlways( "outputMatchedSourcefileDelta" );
+            if ( outputUnmatchedSourcefile.IsNULLOrEmpty() )
+            {
+                outputUnmatchedSourcefile = outputDir;
+                CORE::AppendToPath( outputUnmatchedSourcefile, "MatchedSourceDeltaBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
+            }
+
+            WriteBlockMatchesAsTextfile( matchedSourceBlocks       ,
+                                         outputUnmatchedSourcefile );
             
+            TBlockMatchComboMap matchedTargetBlocks;
+            MatchSpecificBlocks( unmatchedOtherBlocks , 
+                                 file2Path            , 
+                                 deltafilePath        , 
+                                 matchedTargetBlocks  );
+            
+            CORE::CString outputMatchedTargetfile = keyValueList.GetValueAlways( "outputMatchedTargetfileDelta" );
+            if ( outputMatchedTargetfile.IsNULLOrEmpty() )
+            {
+                outputMatchedTargetfile = outputDir;
+                CORE::AppendToPath( outputMatchedTargetfile, "MatchedTargetDeltaBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
+            }
+            
+            WriteBlockMatchesAsTextfile( matchedTargetBlocks     ,
+                                         outputMatchedTargetfile );
         }
     }
     else
