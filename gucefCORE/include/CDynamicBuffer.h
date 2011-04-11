@@ -259,6 +259,11 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
         void Append( const void* data                      ,
                      const UInt32 size                     ,
                      const bool appendToLogicalData = true );
+                     
+        /**
+         *  Trys to fill the dynamic buffer with the contents of the file given
+         */
+        bool LoadContentFromFile( const CString& filePath );
 
         /**
          *  Provides mutable access to the buffer as a block of memory
