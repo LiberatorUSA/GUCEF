@@ -23,7 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <functional>            /* needed here for std::min() */
+#include <functional>           /* needed here for std::min() */
 #include <stdlib.h>             /* needed here for realloc() */
 #include <string.h>             /* needed for memcpy() */
 
@@ -31,6 +31,11 @@
 #include "CIOAccess.h"
 #define GUCEF_CORE_CIOACCESS_H
 #endif /* GUCEF_CORE_CIOACCESS_H ? */
+
+#ifndef GUCEF_CORE_DVFILEUTILS_H
+#include "dvfileutils.h"
+#define GUCEF_CORE_DVFILEUTILS_H
+#endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
 #include "CDynamicBuffer.h"     /* class definition */
 
@@ -377,6 +382,33 @@ bool
 CDynamicBuffer::GetAutoEnlarge( void ) const
 {GUCEF_TRACE;
         return _autoenlarge;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDynamicBuffer::LoadContentFromFile( const CString& filePath )
+{GUCEF_TRACE;
+
+    // Set the buffer to be the same size as the file
+    Clear( true );
+    UInt32 fileSize = CORE::Filesize( filePath.C_String() );
+    SetBufferSize( fileSize, true );
+    
+    // Load the entire file into memory
+    FILE* filePtr = fopen( filePath.C_String(), "rb" );
+    UInt32 actuallyRead = fread( _buffer, fileSize, 1, filePtr );
+    fclose( filePtr );
+    
+    // Sanity check to make sure we loaded the whole file
+    if ( actuallyRead == 1 )
+    {
+        m_dataSize = fileSize;
+        return true;
+    }
+    
+    Clear( false );
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -726,6 +726,8 @@ WriteStringAsTextFile( const CString& filePath    ,
                        const char* eolString      )
 {GUCEF_TRACE;
    
+    if ( filePath.IsNULLOrEmpty() ) return false;
+    
     FILE* fptr = fopen( filePath.C_String(), "wb" );
     if ( NULL != fptr )
     {        
@@ -746,9 +748,11 @@ WriteStringAsTextFile( const CString& filePath    ,
         CString content = fileContent.ReplaceSubstr( "\r\n", "\n" ).ReplaceSubstr( "\r", "\n" );
         // Now we unified the EOL segments into \n.
         
-        // Convert into whatever is given as the desired format
-        content = fileContent.ReplaceSubstr( "\n", eolString );
-
+        if ( 0 != strcmp( eolString, "\n" ) )
+        {
+            // Convert into whatever is given as the desired format
+            content = content.ReplaceSubstr( "\n", eolString );
+        }
         fwrite( content.C_String(), content.Length(), 1, fptr );
         fclose( fptr );
         return true;
