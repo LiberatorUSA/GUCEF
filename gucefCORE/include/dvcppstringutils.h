@@ -259,6 +259,7 @@ LoadTextFileAsString( const CString& filePath ,
 GUCEF_CORE_PUBLIC_CPP bool
 WriteStringAsTextFile( const CString& filePath      ,
                        const CString& fileContent   ,
+                       const bool unifyEol = false  ,
                        const char* eolString = NULL );
 
 /*-------------------------------------------------------------------------//
