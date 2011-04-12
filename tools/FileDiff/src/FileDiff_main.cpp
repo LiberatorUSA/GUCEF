@@ -143,7 +143,8 @@ void
 FindIdenticalBlock( CORE::MFILE* file                   ,
                     void* data                          ,
                     unsigned int blockSize              ,
-                    TBlockMatchVector& blockMatchVector )
+                    TBlockMatchVector& blockMatchVector ,
+                    bool preciseMatching                )
 {GUCEF_TRACE;
 
     void* fileBlock = new unsigned char[ blockSize ];
@@ -173,6 +174,16 @@ FindIdenticalBlock( CORE::MFILE* file                   ,
         }
         
         memset( fileBlock, 0, blockSize );
+        
+        if ( preciseMatching )
+        {
+            // Dont just jump at fixed block sized but shift the 
+            // fixed block 1 byte per iteration. This of course takes a lot 
+            // longer but it can better identify matches
+            CORE::UInt32 pos = CORE::mftell( file );
+            pos -= ( actuallyRead - 1);
+            CORE::mfsetpos( file, pos ); 
+        }
     }
     
     delete []fileBlock;
@@ -263,7 +274,8 @@ void
 FindIdenticalBlocks( CORE::MFILE* file1                      ,
                      CORE::MFILE* file2                      ,
                      TBlockMatchComboMap& blockMatchComboMap ,
-                     const size_t testBlockSizeInBytes       )
+                     const size_t testBlockSizeInBytes       ,
+                     bool preciseMatching                    )
 {GUCEF_TRACE;
     
     void* prevTestBuffer = new char[ testBlockSizeInBytes ];
@@ -350,10 +362,11 @@ FindIdenticalBlocks( CORE::MFILE* file1                      ,
                        " starting at offset " + CORE::UInt32ToString( repeatInfo.offsetInBlock ) + " in the block" );
             }            
             TBlockMatchVector blockMatches;
-            FindIdenticalBlock( file2        , 
-                                testBuffer   , 
-                                actuallyRead , 
-                                blockMatches );
+            FindIdenticalBlock( file2           , 
+                                testBuffer      , 
+                                actuallyRead    , 
+                                blockMatches    ,
+                                preciseMatching );
                                 
             if ( !blockMatches.empty() )
             {
@@ -393,7 +406,8 @@ void
 FindIdenticalBlocks( const CORE::CString& file1         ,
                      const CORE::CString& file2         ,
                      TBlockMatchComboMap& blockMatchMap ,
-                     const size_t testBlockSizeInBytes  )
+                     const size_t testBlockSizeInBytes  ,
+                     bool preciseMatching               )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Starting search for identical blocks between file1 (" + file1 + ") and file 2 (" + file2 + ")" );
@@ -420,7 +434,8 @@ FindIdenticalBlocks( const CORE::CString& file1         ,
         FindIdenticalBlocks( file1Ptr             , 
                              file2Ptr             , 
                              blockMatchMap        ,
-                             testBlockSizeInBytes );
+                             testBlockSizeInBytes ,
+                             preciseMatching      );
     }
     if ( NULL != file1Ptr )
     {
@@ -434,9 +449,19 @@ FindIdenticalBlocks( const CORE::CString& file1         ,
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CString
-WriteBlockMatchesAsText( const TBlockMatchComboMap& blockMatchComboMap )
+void
+WriteBlockMatchesAsTextFile( const TBlockMatchComboMap& blockMatchComboMap ,
+                             const CORE::CString& filename                 )
 {GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Writing matched blocks to text file at " + filename );
+    
+    FILE* fileOut = fopen( filename.C_String(), "w" );
+    if ( NULL == fileOut )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to write matched blocks to text file at " + filename );
+        return;    
+    }
 
     CORE::CString textFileContent;
     TBlockMatchComboMap::const_iterator i = blockMatchComboMap.begin();
@@ -446,7 +471,7 @@ WriteBlockMatchesAsText( const TBlockMatchComboMap& blockMatchComboMap )
         const TBlockMatch& sourceBlock = (*i).second.sourceBlock.blockMatch;
         const TBlockMatchVector& blockMatchVector = (*i).second.matchedBlocks;
         
-        textFileContent +=
+        textFileContent =
         
         "\n\n#Source block:\n"
         "offset: " + CORE::UInt32ToString( sourceBlock.offsetInFile ) + "\n"
@@ -456,25 +481,30 @@ WriteBlockMatchesAsText( const TBlockMatchComboMap& blockMatchComboMap )
             + CORE::UInt32ToString( repeatValueInfo.sequenceLength ) + " offset=" + CORE::UInt32ToString( repeatValueInfo.offsetInBlock ) + "\n"
         "#Block matches: (match count=" + CORE::UInt32ToString( blockMatchVector.size() ) + ")\n";
         
+        fwrite( textFileContent.C_String(), 1, textFileContent.Length(), fileOut );
+        
         int m = 1;
         TBlockMatchVector::const_iterator n = blockMatchVector.begin();
         while ( n != blockMatchVector.end() )
         {
             const TBlockMatch& matchedBlock = (*n);
             
-            textFileContent +=
+            textFileContent =
             
             "-- Match " + CORE::Int32ToString( m ) + "\n"
             "offset: " + CORE::UInt32ToString( matchedBlock.offsetInFile ) + "\n"
             "block size: " + CORE::UInt32ToString( matchedBlock.sizeOfBlock ) + "\n"
             "sub block count: " + CORE::UInt32ToString( matchedBlock.subBlockCount ) + "\n";
             
+            fwrite( textFileContent.C_String(), 1, textFileContent.Length(), fileOut );
+            
             ++n;++m;
         }
-        
         ++i;
     }
-    return textFileContent;
+    fclose( fileOut );
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully wrote matched blocks to text file at " + filename );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -641,26 +671,39 @@ DetermineMatchGaps( const TBlockMatchComboMap& blockMatchComboMap ,
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CString
-WriteBlockMatchGapsAsText( const TBlockMatchVector& unmatchedBlocks )
+void
+WriteBlockMatchGapsAsTextFile( const TBlockMatchVector& unmatchedBlocks ,
+                               const CORE::CString& outputFile          )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Writing match gaps to text file at " + outputFile );
+    
+    FILE* outFile = fopen( outputFile.C_String(), "w" );
+    if ( NULL == outFile )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to write unmatched block gaps to text file at " + outputFile );
+        return;
+    }
+    
     CORE::CString content;
     TBlockMatchVector::const_iterator i = unmatchedBlocks.begin();
     while ( i != unmatchedBlocks.end() )
     {
         const TBlockMatch& blockmatch = (*i);
         
-        content +=
+        content =
         "\n\n#Unmatched block:\n"
         "offset: " + CORE::UInt32ToString( blockmatch.offsetInFile ) + "\n"
         "block size: " + CORE::UInt32ToString( blockmatch.sizeOfBlock ) + "\n"
         "sub block count: " + CORE::UInt32ToString( blockmatch.subBlockCount ) + "\n";        
         
+        fwrite( content.C_String(), 1, content.Length(), outFile );
+        
         ++i;
-    }
+    }    
+    fclose( outFile );
     
-    return content;    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully wrote unmatched block gaps to text file at " + outputFile );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -787,46 +830,6 @@ MatchSpecificBlocks( const TBlockMatchVector& blocksToMatch ,
 
 /*-------------------------------------------------------------------------*/
 
-void
-WriteBlockMatchGapsAsTextfile( const TBlockMatchVector& unmatchedBlocks ,
-                               const CORE::CString& filename            )
-{GUCEF_TRACE;
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Writing match gaps to text file at " + filename );
-
-    CORE::CString fileContent = WriteBlockMatchGapsAsText( unmatchedBlocks );
-    if ( CORE::WriteStringAsTextFile( filename, fileContent ) )
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully wrote unmatched block gaps to text file at " + filename );    
-    }
-    else
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to write unmatched block gaps to text file at " + filename );    
-    }    
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-WriteBlockMatchesAsTextfile( const TBlockMatchComboMap& blockMatchComboMap ,
-                             const CORE::CString& filename                 )
-{GUCEF_TRACE;
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Writing matched blocks to text file at " + filename );
-    
-    CORE::CString fileContent = WriteBlockMatchesAsText( blockMatchComboMap );
-    if ( CORE::WriteStringAsTextFile( filename, fileContent ) )
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully wrote matched blocks to text file at " + filename );    
-    }
-    else
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to write matched blocks to text file at " + filename );    
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
 CORE::CString
 GetUniqueLogFilename( const CORE::CString& logfileName )
 {GUCEF_TRACE;
@@ -918,13 +921,22 @@ GUCEF_OSMAIN_BEGIN
             outputMatchfile = outputDir;
             CORE::AppendToPath( outputMatchfile, "MatchedBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
         }
+        
+        bool preciseMatching = false;
+        CORE::CString preciseMatchingStr = keyValueList.GetValueAlways( "preciseMatching" );
+        if ( preciseMatchingStr.IsNULLOrEmpty() )
+        {
+            preciseMatching = CORE::StringToBool( preciseMatchingStr );
+        }
+        
         TBlockMatchComboMap blockMatchComboMap;
         FindIdenticalBlocks( file1Path            ,
                              file2Path            ,
                              blockMatchComboMap   ,
-                             testBlockSizeInBytes );
+                             testBlockSizeInBytes ,
+                             preciseMatching      );
                              
-        WriteBlockMatchesAsTextfile( blockMatchComboMap ,
+        WriteBlockMatchesAsTextFile( blockMatchComboMap ,
                                      outputMatchfile    );
                                      
         TBlockMatchVector unmatchedSourceBlocks;
@@ -946,8 +958,8 @@ GUCEF_OSMAIN_BEGIN
             CORE::AppendToPath( outputUnmatchedTargetfile, "UnmatchedTargetBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
         }
         
-        WriteBlockMatchGapsAsTextfile( unmatchedSourceBlocks, outputUnmatchedSourcefile );  
-        WriteBlockMatchGapsAsTextfile( unmatchedOtherBlocks, outputUnmatchedTargetfile );
+        WriteBlockMatchGapsAsTextFile( unmatchedSourceBlocks, outputUnmatchedSourcefile );  
+        WriteBlockMatchGapsAsTextFile( unmatchedOtherBlocks, outputUnmatchedTargetfile );
         
         CORE::CString deltafilePath = keyValueList.GetValueAlways( "deltafile" );
         if ( !deltafilePath.IsNULLOrEmpty() )
@@ -965,7 +977,7 @@ GUCEF_OSMAIN_BEGIN
                 CORE::AppendToPath( outputUnmatchedSourcefile, "MatchedSourceDeltaBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
             }
 
-            WriteBlockMatchesAsTextfile( matchedSourceBlocks       ,
+            WriteBlockMatchesAsTextFile( matchedSourceBlocks       ,
                                          outputUnmatchedSourcefile );
             
             TBlockMatchComboMap matchedTargetBlocks;
@@ -981,7 +993,7 @@ GUCEF_OSMAIN_BEGIN
                 CORE::AppendToPath( outputMatchedTargetfile, "MatchedTargetDeltaBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
             }
             
-            WriteBlockMatchesAsTextfile( matchedTargetBlocks     ,
+            WriteBlockMatchesAsTextFile( matchedTargetBlocks     ,
                                          outputMatchedTargetfile );
         }
     }
