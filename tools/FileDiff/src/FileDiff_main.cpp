@@ -287,7 +287,7 @@ FindIdenticalBlocks( CORE::MFILE* file1                      ,
               //int a=0;
     size_t offsetInSrcFile = 0;
     while ( 0 == CORE::mfeof( file1 ) )
-    {             //if ( a>200)break;++a;
+    {           //  if ( a>200)break;++a;
         size_t actuallyRead = CORE::mfread( testBuffer           , 
                                             1                    , 
                                             testBlockSizeInBytes , 
@@ -632,12 +632,19 @@ DetermineMatchGaps( const TBlockMatchComboMap& blockMatchComboMap ,
         {
             // We are missing a segment which aparently could not be matched
             // This is an indicator that parts of the data from these blocks could be replaced/erased
-            TBlockMatch unmatchedBlock;
-            unmatchedBlock.offsetInFile = prevSourceBlock.offsetInFile + prevSourceBlock.sizeOfBlock;
-            unmatchedBlock.sizeOfBlock = sourceBlock.offsetInFile - unmatchedBlock.offsetInFile;
-            unmatchedBlock.subBlockCount = 1;
-            
-            unmatchedSourceBlocks.push_back( unmatchedBlock );
+            if ( prevSourceBlock.offsetInFile + prevSourceBlock.sizeOfBlock < sourceBlock.offsetInFile )
+            {
+                TBlockMatch unmatchedBlock;
+                unmatchedBlock.offsetInFile = prevSourceBlock.offsetInFile + prevSourceBlock.sizeOfBlock;
+                unmatchedBlock.sizeOfBlock = sourceBlock.offsetInFile - unmatchedBlock.offsetInFile;
+                unmatchedBlock.subBlockCount = 1;
+                
+                unmatchedSourceBlocks.push_back( unmatchedBlock );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Error while determining source block match gaps, the blocks are not properly merged and/or ordered before entering this phase" );
+            }
         }
     }
     
@@ -659,12 +666,19 @@ DetermineMatchGaps( const TBlockMatchComboMap& blockMatchComboMap ,
         {
             // We are missing a segment which aparently could not be matched
             // This is an indicator that parts of the data from these blocks could be replaced/erased
-            TBlockMatch unmatchedBlock;
-            unmatchedBlock.offsetInFile = prevBlock.offsetInFile + prevBlock.sizeOfBlock;
-            unmatchedBlock.sizeOfBlock = block.offsetInFile - unmatchedBlock.offsetInFile;
-            unmatchedBlock.subBlockCount = 1;
-            
-            unmatchedOtherBlocks.push_back( unmatchedBlock );
+            if ( prevBlock.offsetInFile + prevBlock.sizeOfBlock < block.offsetInFile )
+            {
+                TBlockMatch unmatchedBlock;
+                unmatchedBlock.offsetInFile = prevBlock.offsetInFile + prevBlock.sizeOfBlock;
+                unmatchedBlock.sizeOfBlock = block.offsetInFile - unmatchedBlock.offsetInFile;
+                unmatchedBlock.subBlockCount = 1;
+                
+                unmatchedOtherBlocks.push_back( unmatchedBlock );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Error while determining target block match gaps, the blocks are not properly merged and/or ordered before entering this phase" );
+            }
         }
     }        
 }
@@ -738,6 +752,7 @@ MatchSpecificBlock( void* buffer                     ,
         // and then compare again
         ++offsetInFile;
     }
+    CORE::mfsetpos( searchFile, 0 );
 }
 
 /*-------------------------------------------------------------------------*/
