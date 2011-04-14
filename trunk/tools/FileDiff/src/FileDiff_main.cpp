@@ -699,6 +699,7 @@ WriteBlockMatchGapsAsTextFile( const TBlockMatchVector& unmatchedBlocks ,
         return;
     }
     
+    CORE::UInt32 totalBlockBytes = 0;
     CORE::CString content;
     TBlockMatchVector::const_iterator i = unmatchedBlocks.begin();
     while ( i != unmatchedBlocks.end() )
@@ -711,10 +712,16 @@ WriteBlockMatchGapsAsTextFile( const TBlockMatchVector& unmatchedBlocks ,
         "block size: " + CORE::UInt32ToString( blockmatch.sizeOfBlock ) + "\n"
         "sub block count: " + CORE::UInt32ToString( blockmatch.subBlockCount ) + "\n";        
         
+        totalBlockBytes += blockmatch.sizeOfBlock;
+        
         fwrite( content.C_String(), 1, content.Length(), outFile );
         
         ++i;
-    }    
+    }
+    
+    content = "\n\nTotal bytes for all blocks: " + CORE::UInt32ToString( totalBlockBytes );
+    fwrite( content.C_String(), 1, content.Length(), outFile );
+        
     fclose( outFile );
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully wrote unmatched block gaps to text file at " + outputFile );
