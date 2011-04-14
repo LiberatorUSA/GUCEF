@@ -915,19 +915,25 @@ SimpleBlockDiff( TBlockMatchVector& differentBlocks ,
         return;
     }
     
-    CORE::Int16 testValue = 0;
-    for ( CORE::UInt32 i=0; i<fileBuffer.GetDataSize(); ++i )
+    TBlockMatch mismatchedBlock;
+    bool matching = true;
+    for ( CORE::UInt32 i=0; i<file1Buffer.GetDataSize(); ++i )
     {
-        if ( i+sizeof(testValue) <= fileBuffer.GetDataSize() )
+        CORE::UInt8 file1Byte = file1Buffer.AsConstType< CORE::Int8 >( i );
+        CORE::UInt8 file2Byte = file2Buffer.AsConstType< CORE::Int8 >( i );
+        
+        if ( file1Byte != file2Byte && matching )
         {
-            testValue = fileBuffer.AsConstType< CORE::Int16 >( i );
-            for ( CORE::UInt32 n=0; n<6; ++n )
-            {
-                if ( testVals[ n ] == testValue )
-                {
-                 int a=0;
-                }
-            }
+            matching = false;
+            mismatchedBlock.offsetInFile = i;
+        }
+        else
+        if ( file1Byte == file2Byte && !matching )
+        {
+            matching = true;
+            mismatchedBlock.sizeOfBlock = i - mismatchedBlock.offsetInFile;
+            mismatchedBlock.subBlockCount = 1;
+            differentBlocks.push_back( mismatchedBlock );
         }
     }
 }
@@ -993,96 +999,101 @@ GUCEF_OSMAIN_BEGIN
     
     if ( !file1Path.IsNULLOrEmpty() && !file2Path.IsNULLOrEmpty() )
     {
-        LookForValues( file1Path );
+        TBlockMatchVector mismatchedBlocks;
+        SimpleBlockDiff( mismatchedBlocks, file1Path, file2Path );
+
+        CORE::CString simpleDiffResultFile = outputDir;
+        CORE::AppendToPath( simpleDiffResultFile, "SimpleBlockDiff.txt" );
+        WriteBlockMatchGapsAsTextFile( mismatchedBlocks, simpleDiffResultFile );
         
-        size_t testBlockSizeInBytes = 128;
-        CORE::CString testBlockSizeStr = keyValueList.GetValueAlways( "testBlockSizeInBytes" );
-        if ( !testBlockSizeStr.IsNULLOrEmpty() )
-        {
-            testBlockSizeInBytes = CORE::StringToUInt32( testBlockSizeStr );
-        }
+        //size_t testBlockSizeInBytes = 128;
+        //CORE::CString testBlockSizeStr = keyValueList.GetValueAlways( "testBlockSizeInBytes" );
+        //if ( !testBlockSizeStr.IsNULLOrEmpty() )
+        //{
+        //    testBlockSizeInBytes = CORE::StringToUInt32( testBlockSizeStr );
+        //}
        
-        CORE::CString outputMatchfile = keyValueList.GetValueAlways( "outputMatchFile" );
-        if ( outputMatchfile.IsNULLOrEmpty() )
-        {
-            outputMatchfile = outputDir;
-            CORE::AppendToPath( outputMatchfile, "MatchedBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
-        }
-        
-        bool preciseMatching = false;
-        CORE::CString preciseMatchingStr = keyValueList.GetValueAlways( "preciseMatching" );
-        if ( !preciseMatchingStr.IsNULLOrEmpty() )
-        {
-            preciseMatching = CORE::StringToBool( preciseMatchingStr );
-        }
-        
-        TBlockMatchComboMap blockMatchComboMap;
-        FindIdenticalBlocks( file1Path            ,
-                             file2Path            ,
-                             blockMatchComboMap   ,
-                             testBlockSizeInBytes ,
-                             preciseMatching      );
-                             
-        WriteBlockMatchesAsTextFile( blockMatchComboMap ,
-                                     outputMatchfile    );
-                                     
-        TBlockMatchVector unmatchedSourceBlocks;
-        TBlockMatchVector unmatchedOtherBlocks;
-        DetermineMatchGaps( blockMatchComboMap    ,
-                            unmatchedSourceBlocks ,
-                            unmatchedOtherBlocks  );
-                            
-        CORE::CString outputUnmatchedSourcefile = keyValueList.GetValueAlways( "outputUnmatchedSourcefile" );
-        if ( outputUnmatchedSourcefile.IsNULLOrEmpty() )
-        {
-            outputUnmatchedSourcefile = outputDir;
-            CORE::AppendToPath( outputUnmatchedSourcefile, "UnmatchedSourceBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
-        }
-        CORE::CString outputUnmatchedTargetfile = keyValueList.GetValueAlways( "outputUnmatchedTargetfile" );
-        if ( outputUnmatchedTargetfile.IsNULLOrEmpty() )
-        {
-            outputUnmatchedTargetfile = outputDir;
-            CORE::AppendToPath( outputUnmatchedTargetfile, "UnmatchedTargetBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
-        }
-        
-        WriteBlockMatchGapsAsTextFile( unmatchedSourceBlocks, outputUnmatchedSourcefile );  
-        WriteBlockMatchGapsAsTextFile( unmatchedOtherBlocks, outputUnmatchedTargetfile );
-        
-        CORE::CString deltafilePath = keyValueList.GetValueAlways( "deltafile" );
-        if ( !deltafilePath.IsNULLOrEmpty() )
-        {   
-            TBlockMatchComboMap matchedSourceBlocks;
-            MatchSpecificBlocks( unmatchedSourceBlocks , 
-                                 file1Path             , 
-                                 deltafilePath         ,
-                                 matchedSourceBlocks   );
+        //CORE::CString outputMatchfile = keyValueList.GetValueAlways( "outputMatchFile" );
+        //if ( outputMatchfile.IsNULLOrEmpty() )
+        //{
+        //    outputMatchfile = outputDir;
+        //    CORE::AppendToPath( outputMatchfile, "MatchedBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
+        //}
+        //
+        //bool preciseMatching = false;
+        //CORE::CString preciseMatchingStr = keyValueList.GetValueAlways( "preciseMatching" );
+        //if ( !preciseMatchingStr.IsNULLOrEmpty() )
+        //{
+        //    preciseMatching = CORE::StringToBool( preciseMatchingStr );
+        //}
+        //
+        //TBlockMatchComboMap blockMatchComboMap;
+        //FindIdenticalBlocks( file1Path            ,
+        //                     file2Path            ,
+        //                     blockMatchComboMap   ,
+        //                     testBlockSizeInBytes ,
+        //                     preciseMatching      );
+        //                     
+        //WriteBlockMatchesAsTextFile( blockMatchComboMap ,
+        //                             outputMatchfile    );
+        //                             
+        //TBlockMatchVector unmatchedSourceBlocks;
+        //TBlockMatchVector unmatchedOtherBlocks;
+        //DetermineMatchGaps( blockMatchComboMap    ,
+        //                    unmatchedSourceBlocks ,
+        //                    unmatchedOtherBlocks  );
+        //                    
+        //CORE::CString outputUnmatchedSourcefile = keyValueList.GetValueAlways( "outputUnmatchedSourcefile" );
+        //if ( outputUnmatchedSourcefile.IsNULLOrEmpty() )
+        //{
+        //    outputUnmatchedSourcefile = outputDir;
+        //    CORE::AppendToPath( outputUnmatchedSourcefile, "UnmatchedSourceBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
+        //}
+        //CORE::CString outputUnmatchedTargetfile = keyValueList.GetValueAlways( "outputUnmatchedTargetfile" );
+        //if ( outputUnmatchedTargetfile.IsNULLOrEmpty() )
+        //{
+        //    outputUnmatchedTargetfile = outputDir;
+        //    CORE::AppendToPath( outputUnmatchedTargetfile, "UnmatchedTargetBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
+        //}
+        //
+        //WriteBlockMatchGapsAsTextFile( unmatchedSourceBlocks, outputUnmatchedSourcefile );  
+        //WriteBlockMatchGapsAsTextFile( unmatchedOtherBlocks, outputUnmatchedTargetfile );
+        //
+        //CORE::CString deltafilePath = keyValueList.GetValueAlways( "deltafile" );
+        //if ( !deltafilePath.IsNULLOrEmpty() )
+        //{   
+        //    TBlockMatchComboMap matchedSourceBlocks;
+        //    MatchSpecificBlocks( unmatchedSourceBlocks , 
+        //                         file1Path             , 
+        //                         deltafilePath         ,
+        //                         matchedSourceBlocks   );
 
-            CORE::CString outputMatchedSourcefile = keyValueList.GetValueAlways( "outputMatchedSourcefileDelta" );
-            if ( outputUnmatchedSourcefile.IsNULLOrEmpty() )
-            {
-                outputUnmatchedSourcefile = outputDir;
-                CORE::AppendToPath( outputUnmatchedSourcefile, "MatchedSourceDeltaBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
-            }
+        //    CORE::CString outputMatchedSourcefile = keyValueList.GetValueAlways( "outputMatchedSourcefileDelta" );
+        //    if ( outputUnmatchedSourcefile.IsNULLOrEmpty() )
+        //    {
+        //        outputUnmatchedSourcefile = outputDir;
+        //        CORE::AppendToPath( outputUnmatchedSourcefile, "MatchedSourceDeltaBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
+        //    }
 
-            WriteBlockMatchesAsTextFile( matchedSourceBlocks       ,
-                                         outputUnmatchedSourcefile );
-            
-            TBlockMatchComboMap matchedTargetBlocks;
-            MatchSpecificBlocks( unmatchedOtherBlocks , 
-                                 file2Path            , 
-                                 deltafilePath        , 
-                                 matchedTargetBlocks  );
-            
-            CORE::CString outputMatchedTargetfile = keyValueList.GetValueAlways( "outputMatchedTargetfileDelta" );
-            if ( outputMatchedTargetfile.IsNULLOrEmpty() )
-            {
-                outputMatchedTargetfile = outputDir;
-                CORE::AppendToPath( outputMatchedTargetfile, "MatchedTargetDeltaBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
-            }
-            
-            WriteBlockMatchesAsTextFile( matchedTargetBlocks     ,
-                                         outputMatchedTargetfile );
-        }
+        //    WriteBlockMatchesAsTextFile( matchedSourceBlocks       ,
+        //                                 outputUnmatchedSourcefile );
+        //    
+        //    TBlockMatchComboMap matchedTargetBlocks;
+        //    MatchSpecificBlocks( unmatchedOtherBlocks , 
+        //                         file2Path            , 
+        //                         deltafilePath        , 
+        //                         matchedTargetBlocks  );
+        //    
+        //    CORE::CString outputMatchedTargetfile = keyValueList.GetValueAlways( "outputMatchedTargetfileDelta" );
+        //    if ( outputMatchedTargetfile.IsNULLOrEmpty() )
+        //    {
+        //        outputMatchedTargetfile = outputDir;
+        //        CORE::AppendToPath( outputMatchedTargetfile, "MatchedTargetDeltaBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
+        //    }
+        //    
+        //    WriteBlockMatchesAsTextFile( matchedTargetBlocks     ,
+        //                                 outputMatchedTargetfile );
+        //}
     }
     else
     {
