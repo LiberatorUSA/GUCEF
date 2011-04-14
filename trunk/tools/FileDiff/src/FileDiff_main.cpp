@@ -864,6 +864,76 @@ GetUniqueLogFilename( const CORE::CString& logfileName )
 
 /*-------------------------------------------------------------------------*/
 
+void
+LookForValues( const CORE::CString& filename )
+{GUCEF_TRACE;
+
+    CORE::Int32 testVals[ 6 ] = { 125, 1484, 6901, 7797, 8684, 8838 };
+
+    CORE::CDynamicBuffer fileBuffer;
+    if ( !fileBuffer.LoadContentFromFile( filename ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file: " + filename );
+        return;
+    }
+    
+    CORE::Int16 testValue = 0;
+    for ( CORE::UInt32 i=0; i<fileBuffer.GetDataSize(); ++i )
+    {
+        if ( i+sizeof(testValue) <= fileBuffer.GetDataSize() )
+        {
+            testValue = fileBuffer.AsConstType< CORE::Int16 >( i );
+            for ( CORE::UInt32 n=0; n<6; ++n )
+            {
+                if ( testVals[ n ] == testValue )
+                {
+                 int a=0;
+                }
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+SimpleBlockDiff( TBlockMatchVector& differentBlocks ,
+                 const CORE::CString& filename1     ,
+                 const CORE::CString& filename2     )
+{GUCEF_TRACE;
+
+    CORE::CDynamicBuffer file1Buffer;
+    if ( !file1Buffer.LoadContentFromFile( filename1 ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file: " + filename1 );
+        return;
+    }
+    CORE::CDynamicBuffer file2Buffer;
+    if ( !file2Buffer.LoadContentFromFile( filename2 ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file: " + filename2 );
+        return;
+    }
+    
+    CORE::Int16 testValue = 0;
+    for ( CORE::UInt32 i=0; i<fileBuffer.GetDataSize(); ++i )
+    {
+        if ( i+sizeof(testValue) <= fileBuffer.GetDataSize() )
+        {
+            testValue = fileBuffer.AsConstType< CORE::Int16 >( i );
+            for ( CORE::UInt32 n=0; n<6; ++n )
+            {
+                if ( testVals[ n ] == testValue )
+                {
+                 int a=0;
+                }
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
@@ -923,6 +993,8 @@ GUCEF_OSMAIN_BEGIN
     
     if ( !file1Path.IsNULLOrEmpty() && !file2Path.IsNULLOrEmpty() )
     {
+        LookForValues( file1Path );
+        
         size_t testBlockSizeInBytes = 128;
         CORE::CString testBlockSizeStr = keyValueList.GetValueAlways( "testBlockSizeInBytes" );
         if ( !testBlockSizeStr.IsNULLOrEmpty() )
@@ -939,7 +1011,7 @@ GUCEF_OSMAIN_BEGIN
         
         bool preciseMatching = false;
         CORE::CString preciseMatchingStr = keyValueList.GetValueAlways( "preciseMatching" );
-        if ( preciseMatchingStr.IsNULLOrEmpty() )
+        if ( !preciseMatchingStr.IsNULLOrEmpty() )
         {
             preciseMatching = CORE::StringToBool( preciseMatchingStr );
         }

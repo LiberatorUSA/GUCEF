@@ -398,7 +398,10 @@ CDynamicBuffer::LoadContentFromFile( const CString& filePath )
     // Load the entire file into memory
     FILE* filePtr = fopen( filePath.C_String(), "rb" );
     UInt32 actuallyRead = fread( _buffer, fileSize, 1, filePtr );
-    fclose( filePtr );
+    if ( NULL != filePtr )
+    {
+        fclose( filePtr );
+    }
     
     // Sanity check to make sure we loaded the whole file
     if ( actuallyRead == 1 )
