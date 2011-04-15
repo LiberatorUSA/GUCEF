@@ -101,6 +101,71 @@ CurrentWorkingDir( void )
 
 /*-------------------------------------------------------------------------*/
 
+static inline void 
+DivisionRemainder( Int32 dividend   , 
+                   Int32 divisor    ,
+                   Int32& remainder ,
+                   Int32& quotient  ) 
+{GUCEF_TRACE;
+
+    //remainder = dividend % divisor;
+    //quotient = (dividend / divisor);   
+
+    quotient = dividend / divisor;
+    remainder = dividend - divisor * quotient;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+ConvertBytesToHexString( const void* byteBuffer , 
+                         UInt32 bufferSize      ,
+                         bool addSpaces         )
+{GUCEF_TRACE;
+
+    static const char* g_hexDigits = "0123456789ABCDEF";
+    const char* charByteBuffer = (const char*) byteBuffer; 
+
+    CString hexString;
+    char* digits = hexString.Reserve( addSpaces ? ( bufferSize * 2 ) + bufferSize : ( bufferSize * 2 ) + 1 );
+
+    Int32 digitIndex1 = 0;
+    Int32 digitIndex2 = 0;
+    UInt32 digitOffset = 0;
+    UInt32 inc = addSpaces ? 2 : 1;
+    for ( UInt32 i=0; i<bufferSize; ++i )
+    {
+        DivisionRemainder( charByteBuffer[ i ] ,
+                           16                  ,
+                           digitIndex1         ,
+                           digitIndex2         );
+        
+        if ( digitIndex1 < 0 ) digitIndex1 *= -1;
+        if ( digitIndex2 < 0 ) digitIndex2 *= -1;
+        
+        if ( addSpaces )
+        {
+            digitOffset = 3 * i;
+            digits[ digitOffset ] = g_hexDigits[ digitIndex2 ];
+            digits[ digitOffset + 1 ] = g_hexDigits[ digitIndex1 ];
+            digits[ digitOffset + 2 ] = ' ';
+        }
+        else
+        {
+            digitOffset = 2 * i;
+            digits[ digitOffset ] = g_hexDigits[ digitIndex2 ];
+            digits[ digitOffset + 1 ] = g_hexDigits[ digitIndex1 ];
+        }
+    }
+    if ( hexString.Length() >= 1 )
+    {
+        digits[ hexString.Length()-1 ] = '\0';
+    }
+    return hexString;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString
 RelativePath( const CString& relpath )
 {GUCEF_TRACE;

@@ -685,6 +685,72 @@ DetermineMatchGaps( const TBlockMatchComboMap& blockMatchComboMap ,
 
 /*-------------------------------------------------------------------------*/
 
+CORE::String
+ConvertBytesToHexStringLines( const void* byteBuffer , 
+                              UInt32 bufferSize      ,
+                              bool addSpaces         )
+{GUCEF_TRACE;
+    
+    CORE::ConvertBytesToHexString( byteBuffer ,
+                                   bufferSize ,
+                                   true       ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+WriteBlocksAsHexInTextFile( const TBlockMatchVector& blocks ,
+                            const CORE::CString& inputFile  ,
+                            const CORE::CString& outputFile )
+{GUCEF_TRACE;
+
+    CORE::CDynamicBuffer fileBuffer;
+    if ( !fileBuffer.LoadContentFromFile( inputFile ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file: " + inputFile );
+        return;
+    }
+
+    FILE* outFile = fopen( outputFile.C_String(), "w" );
+    if ( NULL == outFile )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to open text file for writing at " + outputFile );
+        return;
+    }
+    
+    CORE::UInt32 n=0;
+    CORE::UInt32 totalBlockBytes = 0;
+    CORE::CString content;
+    TBlockMatchVector::const_iterator i = blocks.begin();
+    while ( i != blocks.end() )
+    {
+        const TBlockMatch& blockmatch = (*i);
+
+        content =
+        "\n\n#block " + CORE::UInt32ToString( n ) + ":\n"
+        "offset: " + CORE::UInt32ToString( blockmatch.offsetInFile ) + "\n"
+        "block size: " + CORE::UInt32ToString( blockmatch.sizeOfBlock ) + "\n"
+        "sub block count: " + CORE::UInt32ToString( blockmatch.subBlockCount ) + "\n"
+        "hex:\n" + ConvertBytesToHexStringLines( fileBuffer.GetConstBufferPtr( blockmatch.offsetInFile ) ,
+                                                 blockmatch.sizeOfBlock                                  ,
+                                                 true                                                    );        
+                                                  
+        totalBlockBytes += blockmatch.sizeOfBlock;
+        fwrite( content.C_String(), 1, content.Length(), outFile );
+        
+        ++i;++n;
+    }
+    
+    content = "\n\nTotal bytes for all blocks: " + CORE::UInt32ToString( totalBlockBytes );
+    fwrite( content.C_String(), 1, content.Length(), outFile );
+        
+    fclose( outFile );
+    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully wrote block data as hex to text file at " + outputFile ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 WriteBlockMatchGapsAsTextFile( const TBlockMatchVector& unmatchedBlocks ,
                                const CORE::CString& outputFile          )
@@ -699,6 +765,7 @@ WriteBlockMatchGapsAsTextFile( const TBlockMatchVector& unmatchedBlocks ,
         return;
     }
     
+    CORE::UInt32 n = 0;
     CORE::UInt32 totalBlockBytes = 0;
     CORE::CString content;
     TBlockMatchVector::const_iterator i = unmatchedBlocks.begin();
@@ -707,7 +774,7 @@ WriteBlockMatchGapsAsTextFile( const TBlockMatchVector& unmatchedBlocks ,
         const TBlockMatch& blockmatch = (*i);
         
         content =
-        "\n\n#Unmatched block:\n"
+        "\n\n#Unmatched block " + CORE::UInt32ToString( n ) + ":\n"
         "offset: " + CORE::UInt32ToString( blockmatch.offsetInFile ) + "\n"
         "block size: " + CORE::UInt32ToString( blockmatch.sizeOfBlock ) + "\n"
         "sub block count: " + CORE::UInt32ToString( blockmatch.subBlockCount ) + "\n";        
@@ -716,7 +783,7 @@ WriteBlockMatchGapsAsTextFile( const TBlockMatchVector& unmatchedBlocks ,
         
         fwrite( content.C_String(), 1, content.Length(), outFile );
         
-        ++i;
+        ++i;++n;
     }
     
     content = "\n\nTotal bytes for all blocks: " + CORE::UInt32ToString( totalBlockBytes );
@@ -1009,9 +1076,17 @@ GUCEF_OSMAIN_BEGIN
         TBlockMatchVector mismatchedBlocks;
         SimpleBlockDiff( mismatchedBlocks, file1Path, file2Path );
 
-        CORE::CString simpleDiffResultFile = outputDir;
-        CORE::AppendToPath( simpleDiffResultFile, "SimpleBlockDiff.txt" );
-        WriteBlockMatchGapsAsTextFile( mismatchedBlocks, simpleDiffResultFile );
+        CORE::CString outputfilePath = outputDir;
+        CORE::AppendToPath( outputfilePath, "SimpleBlockDiff.txt" );
+        WriteBlockMatchGapsAsTextFile( mismatchedBlocks, outputfilePath );
+        
+        outputfilePath = outputDir;
+        CORE::AppendToPath( outputfilePath, "File1DiffBlocksHex.txt" );
+        WriteBlocksAsHexInTextFile( mismatchedBlocks, file1Path, outputfilePath );
+
+        outputfilePath = outputDir;
+        CORE::AppendToPath( outputfilePath, "File2DiffBlocksHex.txt" );
+        WriteBlocksAsHexInTextFile( mismatchedBlocks, file2Path, outputfilePath );
         
         //size_t testBlockSizeInBytes = 128;
         //CORE::CString testBlockSizeStr = keyValueList.GetValueAlways( "testBlockSizeInBytes" );

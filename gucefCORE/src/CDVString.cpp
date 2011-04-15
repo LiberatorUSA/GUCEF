@@ -485,7 +485,33 @@ CString::operator+=( char lastchar )
 const char*
 CString::C_String( void ) const
 {GUCEF_TRACE;
-        return m_string;
+    
+    return m_string;
+}
+
+/*-------------------------------------------------------------------------*/
+
+char*
+CString::C_String( void )
+{GUCEF_TRACE;
+    
+    return m_string;
+}
+
+/*-------------------------------------------------------------------------*/
+
+char*
+CString::Reserve( const UInt32 stringSize )
+{
+    delete []m_string;
+    m_string = NULL;
+    
+    if ( stringSize > 0 )
+    {
+        m_string = new char[ stringSize ];
+    }
+    m_length = stringSize;
+    return m_string;
 }
 
 /*-------------------------------------------------------------------------*/
