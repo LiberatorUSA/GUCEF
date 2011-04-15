@@ -131,6 +131,16 @@ class GUCEF_CORE_PUBLIC_CPP CString
     /* operator const char*() const; */
 
     const char* C_String( void ) const;
+    
+    char* C_String( void );
+    
+    /**
+     *  If you wish to manipulate characters in a char buffer
+     *  while still having containment as a string object this function
+     *  if for you. It will set the string to have an unititialized char buffer
+     *  of stringSize bytes.
+     */
+    char* Reserve( const UInt32 stringSize );
 
     std::string STL_String( void ) const;
 
@@ -229,11 +239,6 @@ class GUCEF_CORE_PUBLIC_CPP CString
                     const bool caseSensitive = true ) const;
 
     void Clear( void );
-
-    /**
-     *      Utility member function for easy access to string caching
-     */
-    UInt32 Cache( void ) const;
 
     private:
     char* m_string;    /**< our actual null-terminated string */

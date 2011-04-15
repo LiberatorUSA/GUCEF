@@ -204,6 +204,14 @@ StringToMD5String( const CString& str );
 GUCEF_CORE_PUBLIC_CPP CString
 MD5ToString( const UInt8 md5Digest[ 16 ] );
 
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP CString
+ConvertBytesToHexString( const void* byteBuffer , 
+                         UInt32 bufferSize      ,
+                         bool addSpaces         );
+
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP CString
