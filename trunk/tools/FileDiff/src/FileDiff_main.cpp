@@ -107,6 +107,17 @@ typedef struct SBlockMatchCombo TBlockMatchCombo;
 
 typedef std::map< unsigned long, TBlockMatchCombo > TBlockMatchComboMap;
 
+struct SSamsungDeltaHeader
+{
+    CORE::UInt16 field1[ 3 ];
+    CORE::UInt32 field2;
+    CORE::UInt32 field3;
+    
+    CORE::UInt8 field4[ 6 ];
+    
+};
+typedef struct SSamsungDeltaHeader TSamsungDeltaHeader;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -685,15 +696,15 @@ DetermineMatchGaps( const TBlockMatchComboMap& blockMatchComboMap ,
 
 /*-------------------------------------------------------------------------*/
 
-CORE::String
-ConvertBytesToHexStringLines( const void* byteBuffer , 
-                              UInt32 bufferSize      ,
-                              bool addSpaces         )
+CORE::CString
+ConvertBytesToHexStringLines( const void* byteBuffer  , 
+                              CORE::UInt32 bufferSize ,
+                              bool addSpaces          )
 {GUCEF_TRACE;
     
-    CORE::ConvertBytesToHexString( byteBuffer ,
-                                   bufferSize ,
-                                   true       ); 
+    return CORE::ConvertBytesToHexString( byteBuffer ,
+                                          bufferSize ,
+                                          true       ); 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -971,6 +982,49 @@ LookForValues( const CORE::CString& filename )
 /*-------------------------------------------------------------------------*/
 
 void
+GenerateDelta( CORE::CDynamicBuffer& file1Buffer  ,
+               CORE::CDynamicBuffer& file2Buffer  ,
+               const CORE::CString& deltaFilename )
+{GUCEF_TRACE;
+    
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+ReadSamsungDeltaHeader( TSamsungDeltaHeader& header   ,
+                        const CORE::CString& filename )
+{
+    CORE::CDynamicBuffer fileBuffer;
+    if ( !fileBuffer.LoadContentFromFile( filename ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file: " + filename );
+        return;
+    }
+    
+    const char* dataBuffer = (const char*) fileBuffer.GetConstBufferPtr( 0 );
+    
+    memcpy( &header.field1[ 0 ], dataBuffer + 0, 2 );
+    memcpy( &header.field1[ 1 ], dataBuffer + 2, 2 );
+    memcpy( &header.field1[ 2 ], dataBuffer + 4, 2 );
+    memcpy( &header.field2,      dataBuffer + 6, 4 );
+    memcpy( &header.field3,      dataBuffer + 10, 4 );
+    memcpy( &header.field3,      dataBuffer + 10, 4 );
+    
+    memcpy( &header.field4[ 0 ], dataBuffer + 96, 1 );
+    memcpy( &header.field4[ 1 ], dataBuffer + 97, 1 );
+    memcpy( &header.field4[ 2 ], dataBuffer + 98, 1 );
+    memcpy( &header.field4[ 3 ], dataBuffer + 99, 1 );
+    memcpy( &header.field4[ 4 ], dataBuffer + 100, 1 );
+    memcpy( &header.field4[ 5 ], dataBuffer + 101, 1 );
+    
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 SimpleBlockDiff( TBlockMatchVector& differentBlocks ,
                  const CORE::CString& filename1     ,
                  const CORE::CString& filename2     )
@@ -1070,23 +1124,26 @@ GUCEF_OSMAIN_BEGIN
     
     CORE::CString file1Path = keyValueList.GetValueAlways( "file1" );
     CORE::CString file2Path = keyValueList.GetValueAlways( "file2" );
+
+    TSamsungDeltaHeader header;
+    ReadSamsungDeltaHeader( header, file1Path );
     
     if ( !file1Path.IsNULLOrEmpty() && !file2Path.IsNULLOrEmpty() )
     {
-        TBlockMatchVector mismatchedBlocks;
-        SimpleBlockDiff( mismatchedBlocks, file1Path, file2Path );
+        //TBlockMatchVector mismatchedBlocks;
+        //SimpleBlockDiff( mismatchedBlocks, file1Path, file2Path );
 
-        CORE::CString outputfilePath = outputDir;
-        CORE::AppendToPath( outputfilePath, "SimpleBlockDiff.txt" );
-        WriteBlockMatchGapsAsTextFile( mismatchedBlocks, outputfilePath );
-        
-        outputfilePath = outputDir;
-        CORE::AppendToPath( outputfilePath, "File1DiffBlocksHex.txt" );
-        WriteBlocksAsHexInTextFile( mismatchedBlocks, file1Path, outputfilePath );
+        //CORE::CString outputfilePath = outputDir;
+        //CORE::AppendToPath( outputfilePath, "SimpleBlockDiff.txt" );
+        //WriteBlockMatchGapsAsTextFile( mismatchedBlocks, outputfilePath );
+        //
+        //outputfilePath = outputDir;
+        //CORE::AppendToPath( outputfilePath, "File1DiffBlocksHex.txt" );
+        //WriteBlocksAsHexInTextFile( mismatchedBlocks, file1Path, outputfilePath );
 
-        outputfilePath = outputDir;
-        CORE::AppendToPath( outputfilePath, "File2DiffBlocksHex.txt" );
-        WriteBlocksAsHexInTextFile( mismatchedBlocks, file2Path, outputfilePath );
+        //outputfilePath = outputDir;
+        //CORE::AppendToPath( outputfilePath, "File2DiffBlocksHex.txt" );
+        //WriteBlocksAsHexInTextFile( mismatchedBlocks, file2Path, outputfilePath );
         
         //size_t testBlockSizeInBytes = 128;
         //CORE::CString testBlockSizeStr = keyValueList.GetValueAlways( "testBlockSizeInBytes" );
