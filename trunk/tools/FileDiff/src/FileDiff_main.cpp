@@ -702,9 +702,22 @@ ConvertBytesToHexStringLines( const void* byteBuffer  ,
                               bool addSpaces          )
 {GUCEF_TRACE;
     
-    return CORE::ConvertBytesToHexString( byteBuffer ,
-                                          bufferSize ,
-                                          true       ); 
+    CORE::CString hexString;
+    CORE::UInt32 remainingBytes = bufferSize;
+    CORE::UInt32 sectionSize = 0;
+    
+    do
+    {        
+        sectionSize = remainingBytes > 16 ? 16 : remainingBytes;
+
+        hexString += CORE::ConvertBytesToHexString( (const char*)byteBuffer + (bufferSize-remainingBytes) ,
+                                                    sectionSize                                           ,
+                                                    true                                                  ) + '\n';
+        remainingBytes -= sectionSize;
+    }
+    while ( remainingBytes > 0 ); 
+    
+    return hexString;
 }
 
 /*-------------------------------------------------------------------------*/
