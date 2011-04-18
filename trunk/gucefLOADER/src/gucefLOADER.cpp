@@ -23,6 +23,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #include "gucefLOADER.h"
 
 /*-------------------------------------------------------------------------//
@@ -31,6 +41,14 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+using namespace GUCEF;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -131,6 +149,40 @@ FindParam( const char* paramKey ,
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CString
+GetModuleRootPath( char** argv ,
+                   int argc    )
+{
+    CORE::CString moduleRoot;
+    int paramStartIndex = -1;
+    int paramEndIndex = -1;
+    
+    FindParam( "-moduleRoot"    ,
+               &paramStartIndex ,
+               &paramEndIndex   ,
+               argv             ,
+               argc             );
+               
+    if ( ( paramStartIndex > -1 && paramEndIndex > -1 ) &&
+         ( paramStartIndex != paramEndIndex > -1 )       ) 
+    {
+        if ( paramStartIndex+1 < argc-1 )
+        {
+            moduleRoot = CORE::RelativePath( argv+paramStartIndex+1 );
+            return;
+        }
+    }
+
+    if ( moduleRoot.IsNULLOrEmpty() )
+    {
+        moduleRoot = CORE::RelativePath( "$MODULEDIR$" );
+    }
+    
+    return moduleRoot;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 ParseListOfExtraModulestoLoad( char** argv        ,
                                int argc           ,
@@ -163,6 +215,17 @@ ParseListOfExtraModulestoLoad( char** argv        ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+GetHighestVersionAvailableFromDir( const CORE::CString rootDir ,
+                                   long& patchVersion          ,
+                                   long& releaseVersion        )
+{
+
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
 int
 LoadGucefPlatformImp( unsigned long mayorVersion   ,
                       unsigned long minorVersion   ,
@@ -171,7 +234,7 @@ LoadGucefPlatformImp( unsigned long mayorVersion   ,
                       char** argv                  ,
                       int argc                     )
 {
-    /* get a list of optional gucef modules that should be loaded */
+    // get a list of optional gucef modules that should be loaded
     char** moduleList = NULL;
     int moduleCount = 0;
     ParseListOfExtraModulestoLoad( argv         , 
@@ -179,10 +242,33 @@ LoadGucefPlatformImp( unsigned long mayorVersion   ,
                                    &moduleList  ,
                                    &moduleCount );
                                    
-    /* get the root path to where we should load modules from */
+    // get the root path to where we should load modules from
+    CORE::CString moduleRoot = GetModuleRootPath( argv, argc );
     
+    // adjust path for desired version
+    char versionDir[ 41 ];
+    sprintf( versionDir, "%d.%d", mayorVersion, minorVersion );
+    CORE::AppendToPath( moduleRoot, versionDir );
+    
+    if ( patchVersion < 0 || releaseVersion < 0 )
+    {
+        // We will have to search for the latest version available
+        GetHighestVersionAvailableFromDir( moduleRoot, patchVersion, releaseVersion );
+        if ( patchVersion < 0 || releaseVersion < 0 )
+        {
+            // Unable to find any versions in this dir
+            return -1;
+        }
+    }
+
+    // Simply append with the specific version requested
+    sprintf( versionDir, "%d.%d", patchVersion, releaseVersion );
+    CORE::AppendToPath( moduleRoot, versionDir );
     
     /* check if all modules are present */
+    CORE::CString filePath;
+    
+    
     
     /* load the modules into memory */
     
