@@ -37,7 +37,23 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-int
+GUCEF_LOADER_PUBLIC_C void*
+LoadModules( const char* groupName      ,
+             unsigned long mayorVersion ,
+             unsigned long minorVersion ,
+             long patchVersion          ,
+             long releaseVersion        ,
+             char** argv                ,
+             int argc                   );
+             
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PUBLIC_C void
+UnloadModules( void* moduleData );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PUBLIC_C void*
 LoadGucefPlatform( unsigned long mayorVersion   ,
                    unsigned long minorVersion   ,
                    char** argv                  ,
@@ -46,7 +62,7 @@ LoadGucefPlatform( unsigned long mayorVersion   ,
 
 /*-------------------------------------------------------------------------*/
 
-int
+GUCEF_LOADER_PUBLIC_C void*
 LoadGucefPlatformEx( unsigned long mayorVersion   ,
                      unsigned long minorVersion   ,
                      unsigned long patchVersion   ,

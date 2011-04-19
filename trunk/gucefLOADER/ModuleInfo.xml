@@ -8,6 +8,7 @@
         <Preprocessor>
             <Define String="GUCEF_MT_EMBED_CODE" />
             <Define String="GUCEF_CORE_EMBED_CODE" />
+            <Define String="GUCEF_CORE_NO_MD5_SUPPORT"/>
             <Define String="GUCEF_LOADER_BUILD_MODULE" />
         </Preprocessor>
     </Module>

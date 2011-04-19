@@ -4,5 +4,11 @@
         <ITEM NAME="../gucefCORE/include/DVOSWRAP.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/dvstrutils.c" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/dvstrutils.h" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/CDVString.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/include/CDVString.h" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/dvfileutils.c" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/include/dvfileutils.h" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/dvcppstringutils.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/include/dvcppstringutils.h" TYPE="FILE" />
     </INCLUDES>
 </PROJECTGENERATOR>

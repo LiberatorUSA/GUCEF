@@ -23,6 +23,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <set>
+#include <map>
+#include <vector>
+
 #ifndef GUCEF_CORE_DVOSWRAP_H
 #include "DVOSWRAP.h"
 #define GUCEF_CORE_DVOSWRAP_H
@@ -42,13 +46,6 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -57,11 +54,20 @@ using namespace GUCEF;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+typedef std::set< CORE::CString > TStringSet;
+typedef std::vector< void* > TVoidPtrVector;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_HIDDEN void
+GUCEF_LOADER_PRIVATE_C void
 FindAnyParamKey( char** argv    ,
                  int argc       ,
                  int startIndex ,
@@ -82,7 +88,7 @@ FindAnyParamKey( char** argv    ,
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_HIDDEN void
+GUCEF_LOADER_PRIVATE_C void
 FindParamKey( char** argv        ,
               int argc           ,
               int startIndex     ,
@@ -112,7 +118,7 @@ FindParamKey( char** argv        ,
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_HIDDEN void
+GUCEF_LOADER_PRIVATE_C void
 FindParam( const char* paramKey ,
            int* paramStartIndex ,
            int* paramEndIndex   ,
@@ -154,7 +160,7 @@ FindParam( const char* paramKey ,
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_HIDDEN CORE::CString
+GUCEF_LOADER_PRIVATE_C CORE::CString
 GetModuleRootPath( char** argv ,
                    int argc    )
 {
@@ -169,12 +175,11 @@ GetModuleRootPath( char** argv ,
                argc             );
                
     if ( ( paramStartIndex > -1 && paramEndIndex > -1 ) &&
-         ( paramStartIndex != paramEndIndex > -1 )       ) 
+         ( paramStartIndex != paramEndIndex )            ) 
     {
         if ( paramStartIndex+1 < argc-1 )
         {
-            moduleRoot = CORE::RelativePath( argv+paramStartIndex+1 );
-            return;
+            moduleRoot = CORE::RelativePath( argv[ paramStartIndex+1 ] );
         }
     }
 
@@ -188,7 +193,7 @@ GetModuleRootPath( char** argv ,
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_HIDDEN void
+GUCEF_LOADER_PRIVATE_C void
 ParseListOfExtraModulestoLoad( char** argv        ,
                                int argc           ,
                                char*** moduleList ,
@@ -220,15 +225,14 @@ ParseListOfExtraModulestoLoad( char** argv        ,
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_HIDDEN void
+GUCEF_LOADER_PRIVATE_CPP bool
 GetHighestVersionAvailableFromDir( const CORE::CString rootDir ,
                                    long& patchVersion          ,
                                    long& releaseVersion        )
 {
-
-    long higestFoundPatchVersion = -1;
-    long higestFoundReleaseVersion = -1;
-
+    typedef std::map< CORE::Int32, CORE::Int32 > TVersionMap;
+    
+    TVersionMap versionMap;
     struct CORE::SDI_Data* itData = CORE::DI_First_Dir_Entry( rootDir.C_String() );
     if ( NULL != itData )
     {
@@ -245,24 +249,18 @@ GetHighestVersionAvailableFromDir( const CORE::CString rootDir ,
                     CORE::Int32 dirPatchVersion = CORE::StringToInt32( dirName.SubstrToChar( '.', 0, true ) );
                     CORE::Int32 dirReleaseVersion = CORE::StringToInt32( dirName.SubstrToChar( '.', 0, false ) );
                     
-                    if ( patchVersion > -1 )
+                    TVersionMap::iterator i = versionMap.find( dirPatchVersion );
+                    if ( i != versionMap.end() )
                     {
-                        // We have to meet the patch version given, only look for highest release version
-                        if ( dirPatchVersion == patchVersion )
+                        CORE::Int32& higestFoundReleaseVersion = (*i).second;
+                        if ( dirReleaseVersion > higestFoundReleaseVersion )
                         {
-                            
+                            higestFoundReleaseVersion = dirReleaseVersion;
                         }
                     }
                     else
                     {
-                        if ( dirPatchVersion >= higestFoundPatchVersion )
-                        {
-                            higestFoundPatchVersion = dirPatchVersion;
-                            if ( dirReleaseVersion > higestFoundReleaseVersion )
-                            {
-                                higestFoundReleaseVersion = dirReleaseVersion;
-                            }
-                        }
+                        versionMap[ dirPatchVersion ] = dirReleaseVersion;
                     }
                 }
             }
@@ -272,21 +270,48 @@ GetHighestVersionAvailableFromDir( const CORE::CString rootDir ,
         CORE::DI_Cleanup( itData );
     }
     
-    patchVersion = higestFoundPatchVersion;
-    releaseVersion = higestFoundReleaseVersion;
+    if ( patchVersion > -1 )
+    {
+        // We need to match a specific patch version so we only look at the release version
+        TVersionMap::iterator n = versionMap.find( patchVersion );
+        if ( n != versionMap.end() )
+        {
+            releaseVersion = (*n).second;
+            return true;
+        }
+        
+        // Unable to find anything for this patch version
+        releaseVersion = -1;
+        return false;
+    }
+    
+    // if we get here then just get the highest patch/release combo
+    if ( !versionMap.empty() )
+    {
+        TVersionMap::iterator n = versionMap.begin();
+        patchVersion = (*n).first;
+        releaseVersion = (*n).second;
+        return true;
+    }
+    patchVersion = -1;
+    releaseVersion = -1;
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_HIDDEN int
-LoadGucefPlatformImp( unsigned long mayorVersion   ,
-                      unsigned long minorVersion   ,
-                      long patchVersion            ,
-                      long releaseVersion          ,
-                      char** argv                  ,
-                      int argc                     )
+void*
+LoadModules( const char* groupName        ,
+             unsigned long mayorVersion   ,
+             unsigned long minorVersion   ,
+             long patchVersion            ,
+             long releaseVersion          ,
+             char** argv                  ,
+             int argc                     )
 {
-    // get a list of optional gucef modules that should be loaded
+    if ( NULL == groupName ) return NULL;
+
+    // get a list of optional modules that should be loaded
     char** moduleList = NULL;
     int moduleCount = 0;
     ParseListOfExtraModulestoLoad( argv         , 
@@ -296,6 +321,7 @@ LoadGucefPlatformImp( unsigned long mayorVersion   ,
                                    
     // get the root path to where we should load modules from
     CORE::CString moduleRoot = GetModuleRootPath( argv, argc );
+    CORE::AppendToPath( moduleRoot, groupName );
     
     // adjust path for desired version
     char versionDir[ 41 ];
@@ -305,11 +331,10 @@ LoadGucefPlatformImp( unsigned long mayorVersion   ,
     if ( patchVersion < 0 || releaseVersion < 0 )
     {
         // We will have to search for the latest version available
-        GetHighestVersionAvailableFromDir( moduleRoot, patchVersion, releaseVersion );
-        if ( patchVersion < 0 || releaseVersion < 0 )
+        if ( !GetHighestVersionAvailableFromDir( moduleRoot, patchVersion, releaseVersion ) )
         {
             // Unable to find any versions in this dir
-            return -1;
+            return NULL;
         }
     }
 
@@ -317,37 +342,85 @@ LoadGucefPlatformImp( unsigned long mayorVersion   ,
     sprintf( versionDir, "%d.%d", patchVersion, releaseVersion );
     CORE::AppendToPath( moduleRoot, versionDir );
     
-    /* check if all modules are present */
-    CORE::CString filePath;
+    // check if all desired modules are present
+    TStringSet modulePaths;
+    for ( int i=0; i<moduleCount; ++i )
+    {
+        CORE::CString filePath = moduleRoot;
+        CORE::AppendToPath( filePath, moduleList[ i ] );
+        
+        if ( CORE::FileExists( filePath ) )
+        {
+            modulePaths.insert( filePath );
+        }
+        else
+        {
+            // We are missing one of the requested modules...
+            // Abort
+            return NULL;
+        }
+    }
     
+    // load the modules into memory
+    TVoidPtrVector* modulePtrs = new TVoidPtrVector();
+    TStringSet::iterator n = modulePaths.begin();
+    while ( n != modulePaths.end() )
+    {
+        void* modulePtr = CORE::LoadModuleDynamicly( (*n).C_String() );
+        if ( NULL != modulePtr )  
+        {
+            modulePtrs->push_back( modulePtr );
+        }
+        else
+        {
+            delete modulePtrs;
+            return NULL;
+        }
+        ++n;
+    }
     
-    
-    /* load the modules into memory */
-    
-    return -1;
+    return modulePtrs;
 }
 
 /*-------------------------------------------------------------------------*/
 
-int
+void
+UnloadModules( void* moduleData )
+{
+    if ( NULL != moduleData )
+    {
+        TVoidPtrVector* modulePtrs = (TVoidPtrVector*) moduleData;
+        TVoidPtrVector::iterator n = modulePtrs->begin();
+        while ( n != modulePtrs->end() )
+        {
+            CORE::UnloadModuleDynamicly( (*n) );
+            ++n;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void*
 LoadGucefPlatform( unsigned long mayorVersion   ,
                    unsigned long minorVersion   ,
                    char** argv                  ,
                    int argc                     )
 {
 
-    return LoadGucefPlatformImp( mayorVersion ,
-                                 minorVersion ,
-                                 -1           ,
-                                 -1           ,
-                                 argv         ,
-                                 argc         );
+    return LoadModules( "GUCEF"      ,
+                        mayorVersion ,
+                        minorVersion ,
+                        -1           ,
+                        -1           ,
+                        argv         ,
+                        argc         );
 }
 
 
 /*-------------------------------------------------------------------------*/
 
-int
+void*
 LoadGucefPlatformEx( unsigned long mayorVersion   ,
                      unsigned long minorVersion   ,
                      unsigned long patchVersion   ,
@@ -356,12 +429,13 @@ LoadGucefPlatformEx( unsigned long mayorVersion   ,
                      int argc                     )
 {
 
-    return LoadGucefPlatformImp( mayorVersion          ,
-                                 minorVersion          ,
-                                 (long) patchVersion   ,
-                                 (long) releaseVersion ,
-                                 argv                  ,
-                                 argc                  );
+    return LoadModules( "GUCEF"               ,
+                        mayorVersion          ,
+                        minorVersion          ,
+                        (long) patchVersion   ,
+                        (long) releaseVersion ,
+                        argv                  ,
+                        argc                  );
 }
 
 /*-------------------------------------------------------------------------*/
