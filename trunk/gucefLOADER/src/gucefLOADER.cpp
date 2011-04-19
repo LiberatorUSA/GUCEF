@@ -33,6 +33,11 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVFILEUTILS_H
+#include "dvfileutils.h"
+#define GUCEF_CORE_DVFILEUTILS_H
+#endif /* GUCEF_CORE_DVFILEUTILS_H ? */
+
 #include "gucefLOADER.h"
 
 /*-------------------------------------------------------------------------//
@@ -56,7 +61,7 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-void
+GUCEF_HIDDEN void
 FindAnyParamKey( char** argv    ,
                  int argc       ,
                  int startIndex ,
@@ -77,7 +82,7 @@ FindAnyParamKey( char** argv    ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+GUCEF_HIDDEN void
 FindParamKey( char** argv        ,
               int argc           ,
               int startIndex     ,
@@ -107,7 +112,7 @@ FindParamKey( char** argv        ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+GUCEF_HIDDEN void
 FindParam( const char* paramKey ,
            int* paramStartIndex ,
            int* paramEndIndex   ,
@@ -149,7 +154,7 @@ FindParam( const char* paramKey ,
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CString
+GUCEF_HIDDEN CORE::CString
 GetModuleRootPath( char** argv ,
                    int argc    )
 {
@@ -183,7 +188,7 @@ GetModuleRootPath( char** argv ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+GUCEF_HIDDEN void
 ParseListOfExtraModulestoLoad( char** argv        ,
                                int argc           ,
                                char*** moduleList ,
@@ -215,18 +220,65 @@ ParseListOfExtraModulestoLoad( char** argv        ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+GUCEF_HIDDEN void
 GetHighestVersionAvailableFromDir( const CORE::CString rootDir ,
                                    long& patchVersion          ,
                                    long& releaseVersion        )
 {
 
+    long higestFoundPatchVersion = -1;
+    long higestFoundReleaseVersion = -1;
+
+    struct CORE::SDI_Data* itData = CORE::DI_First_Dir_Entry( rootDir.C_String() );
+    if ( NULL != itData )
+    {
+        do
+        {
+            // We only care about dirs
+            if ( 0 == CORE::DI_Is_It_A_File( itData ) )
+            {
+                // Filter out . and .. dirs
+                if ( 0 != strcmp( ".", CORE::DI_Name( itData ) ) &&
+                     0 != strcmp( "..", CORE::DI_Name( itData ) ) )
+                {
+                    CORE::CString dirName = CORE::DI_Name( itData );
+                    CORE::Int32 dirPatchVersion = CORE::StringToInt32( dirName.SubstrToChar( '.', 0, true ) );
+                    CORE::Int32 dirReleaseVersion = CORE::StringToInt32( dirName.SubstrToChar( '.', 0, false ) );
+                    
+                    if ( patchVersion > -1 )
+                    {
+                        // We have to meet the patch version given, only look for highest release version
+                        if ( dirPatchVersion == patchVersion )
+                        {
+                            
+                        }
+                    }
+                    else
+                    {
+                        if ( dirPatchVersion >= higestFoundPatchVersion )
+                        {
+                            higestFoundPatchVersion = dirPatchVersion;
+                            if ( dirReleaseVersion > higestFoundReleaseVersion )
+                            {
+                                higestFoundReleaseVersion = dirReleaseVersion;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        while ( 0 != CORE::DI_Next_Dir_Entry( itData ) );
+
+        CORE::DI_Cleanup( itData );
+    }
     
+    patchVersion = higestFoundPatchVersion;
+    releaseVersion = higestFoundReleaseVersion;
 }
 
 /*-------------------------------------------------------------------------*/
 
-int
+GUCEF_HIDDEN int
 LoadGucefPlatformImp( unsigned long mayorVersion   ,
                       unsigned long minorVersion   ,
                       long patchVersion            ,
