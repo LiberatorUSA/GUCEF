@@ -14,6 +14,9 @@
 set( HEADER_FILES 
   ../gucefCORE/include/DVOSWRAP.h
   ../gucefCORE/include/dvstrutils.h
+  ../gucefCORE/include/CDVString.h
+  ../gucefCORE/include/dvfileutils.h
+  ../gucefCORE/include/dvcppstringutils.h
   include/gucefLOADER.h
   include/gucefLOADER_config.h
   include/gucefLOADER_ETypes.h
@@ -23,7 +26,10 @@ set( HEADER_FILES
 set( SOURCE_FILES 
   ../gucefCORE/src/DVOSWRAP.c
   ../gucefCORE/src/dvstrutils.c
-  src/gucefLOADER.c
+  ../gucefCORE/src/CDVString.cpp
+  ../gucefCORE/src/dvfileutils.c
+  ../gucefCORE/src/dvcppstringutils.cpp
+  src/gucefLOADER.cpp
 )
 
 
@@ -32,6 +38,9 @@ if (ANDROID)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "ANDROID" )
@@ -40,6 +49,9 @@ if (ANDROID)
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvcppstringutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
@@ -49,6 +61,9 @@ elseif (GLX)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "GLX" )
@@ -57,6 +72,9 @@ elseif (GLX)
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvcppstringutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "GLX" )
@@ -66,6 +84,9 @@ elseif (GTK)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "GTK" )
@@ -74,6 +95,9 @@ elseif (GTK)
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvcppstringutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "GTK" )
@@ -83,6 +107,9 @@ elseif (IPHONEOS)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "IPHONEOS" )
@@ -91,6 +118,9 @@ elseif (IPHONEOS)
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvcppstringutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "IPHONEOS" )
@@ -100,6 +130,9 @@ elseif (LINUX)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX" )
@@ -108,6 +141,9 @@ elseif (LINUX)
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvcppstringutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX" )
@@ -117,6 +153,9 @@ elseif (OSX)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "OSX" )
@@ -125,6 +164,9 @@ elseif (OSX)
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvcppstringutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "OSX" )
@@ -134,6 +176,9 @@ elseif (SDL)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "SDL" )
@@ -142,6 +187,9 @@ elseif (SDL)
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvcppstringutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "SDL" )
@@ -151,6 +199,9 @@ elseif (SYMBIAN)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "SYMBIAN" )
@@ -159,6 +210,9 @@ elseif (SYMBIAN)
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvcppstringutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "SYMBIAN" )
@@ -168,6 +222,9 @@ elseif (UNIX)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "UNIX" )
@@ -176,6 +233,9 @@ elseif (UNIX)
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvcppstringutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "UNIX" )
@@ -185,6 +245,9 @@ elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
@@ -193,6 +256,9 @@ elseif (WIN32)
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvcppstringutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -202,6 +268,9 @@ elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN64" )
@@ -210,6 +279,9 @@ elseif (WIN64)
   set( PLATFORM_SOURCE_FILES 
     ../gucefCORE/src/DVOSWRAP.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvcppstringutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
@@ -223,7 +295,7 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 set( MODULE_NAME "gucefLOADER" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefMT gucefCORE )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_MT_EMBED_CODE;GUCEF_CORE_EMBED_CODE;GUCEF_LOADER_BUILD_MODULE" )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_MT_EMBED_CODE;GUCEF_CORE_EMBED_CODE;GUCEF_CORE_NO_MD5_SUPPORT;GUCEF_LOADER_BUILD_MODULE" )
 
 include_directories( ../common/include ../gucefCORE/include ../gucefMT/include ../gucefCORE/include/ include )
 
