@@ -23,7 +23,10 @@ LOCAL_MODULE := gucefLOADER
 LOCAL_SRC_FILES := \
   ../gucefCORE/src/DVOSWRAP.c \
   ../gucefCORE/src/dvstrutils.c \
-  src/gucefLOADER.c
+  ../gucefCORE/src/CDVString.cpp \
+  ../gucefCORE/src/dvfileutils.c \
+  ../gucefCORE/src/dvcppstringutils.cpp \
+  src/gucefLOADER.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../gucefCORE/include/ \
