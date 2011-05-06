@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -28,7 +28,7 @@
 #ifndef GUCEF_CORE_DVSTRUTILS_H
 #include "dvstrutils.h"
 #define GUCEF_CORE_DVSTRUTILS_H
-#endif /* GUCEF_CORE_DVSTRUTILS_H ? */ 
+#endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
@@ -94,20 +94,20 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
       m_buffer()                          ,
       m_pulseGenerator( &pulseGenerator )
 {GUCEF_TRACE;
-        
+
     RegisterEvents();
-    
+
     _data = new TUDPSockData;
     memset( _data, 0, sizeof( TUDPSockData ) );
-    
+
     m_buffer.SetBufferSize( 1024 );
-    
-    SubscribeTo( m_pulseGenerator                              , 
+
+    SubscribeTo( m_pulseGenerator                              ,
                  CORE::CPulseGenerator::PulseEvent             ,
                  &TEventCallback( this, &CUDPSocket::OnPulse ) );
-    SubscribeTo( m_pulseGenerator                                                  , 
+    SubscribeTo( m_pulseGenerator                                                  ,
                  CORE::CPulseGenerator::DestructionEvent                           ,
-                 &TEventCallback( this, &CUDPSocket::OnPulseGeneratorDestruction ) );                            
+                 &TEventCallback( this, &CUDPSocket::OnPulseGeneratorDestruction ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -120,20 +120,20 @@ CUDPSocket::CUDPSocket( bool blocking )
       m_buffer()            ,
       m_pulseGenerator( &CORE::CGUCEFApplication::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
-        
+
     RegisterEvents();
-    
+
     _data = new TUDPSockData;
     memset( _data, 0, sizeof( TUDPSockData ) );
-    
+
     m_buffer.SetBufferSize( 1024 );
-    
-    SubscribeTo( m_pulseGenerator                              , 
+
+    SubscribeTo( m_pulseGenerator                              ,
                  CORE::CPulseGenerator::PulseEvent             ,
                  &TEventCallback( this, &CUDPSocket::OnPulse ) );
-    SubscribeTo( m_pulseGenerator                                                  , 
+    SubscribeTo( m_pulseGenerator                                                  ,
                  CORE::CPulseGenerator::DestructionEvent                           ,
-                 &TEventCallback( this, &CUDPSocket::OnPulseGeneratorDestruction ) );    
+                 &TEventCallback( this, &CUDPSocket::OnPulseGeneratorDestruction ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -142,7 +142,7 @@ CUDPSocket::~CUDPSocket()
 {GUCEF_TRACE;
 
     Close( true );
-    
+
     delete _data;
     _data = NULL;
 }
@@ -159,11 +159,11 @@ CUDPSocket::RegisterEvents( void )
     UDPPacketRecievedEvent.Initialize();
 }
 
-/*-------------------------------------------------------------------------*/                         
+/*-------------------------------------------------------------------------*/
 
 Int32
 CUDPSocket::SendPacketTo( const CIPAddress& dest ,
-                          const void* data       , 
+                          const void* data       ,
                           UInt16 datasize        )
 {GUCEF_TRACE;
 
@@ -171,26 +171,26 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
     {
             Open();
     }
-    
+
     struct sockaddr_in remote;
     memset( &remote, 0, sizeof( remote ) ); // should this be CLEAR_ADDR( &remote ); ?
     remote.sin_addr.s_addr = dest.GetAddress();
     remote.sin_port = dest.GetPort();
     remote.sin_family = AF_INET;
-    return sendto( _data->sockid             , 
-                   (const char*)data         , 
-                   datasize                  , 
-                   0                         , 
-                   (struct sockaddr*)&remote , 
+    return sendto( _data->sockid             ,
+                   (const char*)data         ,
+                   datasize                  ,
+                   0                         ,
+                   (struct sockaddr*)&remote ,
                    sizeof(remote)            );
 }
 
 /*-------------------------------------------------------------------------*/
 
-Int32 
+Int32
 CUDPSocket::SendPacketTo( const CORE::CString& dnsname ,
                           UInt16 port                  ,
-                          const void* data             , 
+                          const void* data             ,
                           UInt16 datasize              )
 {GUCEF_TRACE;
 
@@ -204,7 +204,7 @@ CUDPSocket::SendPacketTo( const CORE::CString& dnsname ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CUDPSocket::OnPulse( CORE::CNotifier* notifier                 ,
                      const CORE::CEvent& eventid               ,
                      CORE::CICloneable* eventdata /* = NULL */ )
@@ -220,7 +220,7 @@ CUDPSocket::OnPulse( CORE::CNotifier* notifier                 ,
                      0    );
         }
     }
-}                    
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -246,30 +246,30 @@ CUDPSocket::IsIncomingDataQueued( void ) const
     TIMEVAL time = { 0, 0 };
     fd_set sockset;
     FD_ZERO( &sockset );
-    FD_SET( _data->sockid, &sockset ); 
+    FD_SET( _data->sockid, &sockset );
 
     if ( select( 2, &sockset, NULL, NULL, &time ) > 0 )
     {
             return true;
     }
     return false;
-}                    
+}
 
 /*-------------------------------------------------------------------------*/
 
 UInt32
 CUDPSocket::GetRecievedDataBufferSize( void ) const
 {GUCEF_TRACE;
-    
+
     return m_buffer.GetBufferSize();
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CUDPSocket::SetRecievedDataBufferSize( const UInt32 newBufferSize )
 {GUCEF_TRACE;
-    
+
     m_buffer.SetBufferSize( newBufferSize );
 }
 
@@ -277,117 +277,119 @@ CUDPSocket::SetRecievedDataBufferSize( const UInt32 newBufferSize )
 
 Int32
 CUDPSocket::Recieve( CIPAddress& src ,
-                     void* destbuf   , 
+                     void* destbuf   ,
                      UInt16 bufsize  )
-{GUCEF_TRACE;        
+{GUCEF_TRACE;
 
-    struct sockaddr_in remote;        
-    int structsize( sizeof( remote ) );
-    int retval = recvfrom( _data->sockid                  , 
-                           (char*)m_buffer.GetBufferPtr() , 
-                           m_buffer.GetBufferSize()       , 
-                           0                              , 
-                           (struct sockaddr*)&remote      ,
-                           &structsize                    );
-    if ( retval < 0 ) 
+    struct sockaddr_in remote;
+    socklen_t structsize( sizeof( remote ) );
+    int sockError;
+    int retval = dvsocket_recvfrom( _data->sockid                  ,
+                                    (char*)m_buffer.GetBufferPtr() ,
+                                    m_buffer.GetBufferSize()       ,
+                                    0                              ,
+                                    (struct sockaddr*)&remote      ,
+                                    &structsize                    ,
+                                    &sockError                     );
+    if ( retval < 0 )
     {
             return -1;
-    }                               
+    }
     if ( retval == 0 )
     {
             Close( true );
-            return 0;       
-    }                         
-    
-    // Set the actual usefull bytes of data in the buffer 
+            return 0;
+    }
+
+    // Set the actual usefull bytes of data in the buffer
     // to match the number of retrieved bytes
     m_buffer.SetDataSize( retval );
-                   
+
     // Copy the data directly to our user
     src.SetPort( remote.sin_port );
     src.SetAddress( remote.sin_addr.s_addr );
-    
+
     if ( NULL != destbuf )
     {
         UInt32  copyLimit = bufsize;
         if ( m_buffer.GetBufferSize() < copyLimit )
         {
-            copyLimit = m_buffer.GetBufferSize(); 
-        }                       
+            copyLimit = m_buffer.GetBufferSize();
+        }
         memcpy( destbuf, m_buffer.GetBufferPtr(), copyLimit );
     }
-                     
+
     // Send an event notifying people that the data was recieved
     struct SUDPPacketRecievedEventData infoStruct;
     infoStruct.sourceAddress.SetPort( remote.sin_port );
     infoStruct.sourceAddress.SetAddress( remote.sin_addr.s_addr );
     infoStruct.dataBuffer = CORE::TLinkedCloneableBuffer( &m_buffer );
-    
+
     UDPPacketRecievedEventData eventData( infoStruct );
-    NotifyObservers( UDPPacketRecievedEvent, &eventData );        
-    
-    return retval;                             
+    NotifyObservers( UDPPacketRecievedEvent, &eventData );
+
+    return retval;
 }
 
 /*-------------------------------------------------------------------------*/
 
-Int32 
+Int32
 CUDPSocket::Recieve( void* destbuf  ,
                      UInt16 bufsize )
 {GUCEF_TRACE;
 
     CIPAddress src;
-    return Recieve( src     , 
+    return Recieve( src     ,
                     destbuf ,
                     bufsize );
-}                     
+}
 
 /*-------------------------------------------------------------------------*/
-       
-bool 
+
+bool
 CUDPSocket::Open( void )
 {GUCEF_TRACE;
-        
-    Close( true );           
-    
+
+    Close( true );
+
     int errorCode;
-    if ( dvsocket_bind( _data->sockid                            , 
-                        (struct sockaddr *) &_data->localaddress , 
+    if ( dvsocket_bind( _data->sockid                            ,
+                        (struct sockaddr *) &_data->localaddress ,
                         sizeof(struct sockaddr_in)               ,
                         &errorCode                               ) == 0 )
     {
         NotifyObservers( UDPSocketOpenedEvent );
-        
+
         // We will now be requiring periodic updates to poll for data
         m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
-                        
+
         return true;
     }
-    return false; 
-}       
+    return false;
+}
 
-/*-------------------------------------------------------------------------*/ 
-        
-bool 
+/*-------------------------------------------------------------------------*/
+
+bool
 CUDPSocket::Open( UInt16 port )
 {GUCEF_TRACE;
-        
+
     return Open( CORE::CString(), port );
 }
 
 /*-------------------------------------------------------------------------*/
-              
-bool 
+
+bool
 CUDPSocket::Open( const CORE::CString& localaddr ,
                   UInt16 port                    )
 {GUCEF_TRACE;
-        
+
     Close( true );
-    
+
     int errorCode;
-    _data->sockid = dvsocket_socket( AF_INET     , 
-                                     SOCK_DGRAM  , 
-                                     IPPROTO_UDP , 
+    _data->sockid = dvsocket_socket( AF_INET     ,
+                                     SOCK_DGRAM  ,
+                                     IPPROTO_UDP ,
                                      &errorCode  );
     if ( _data->sockid != INVALID_SOCKET ) return false;
 
@@ -396,7 +398,7 @@ CUDPSocket::Open( const CORE::CString& localaddr ,
     {
         return false;
     }
-    
+
     _data->localaddress.sin_family = AF_INET;
     _data->localaddress.sin_port = htons( port );
     if ( localaddr.IsNULLOrEmpty() )
@@ -407,26 +409,26 @@ CUDPSocket::Open( const CORE::CString& localaddr ,
     {
         _data->localaddress.sin_addr.s_addr = inet_addr( localaddr.C_String() );
     }
-    
-    if ( dvsocket_bind( _data->sockid                            , 
-                        (struct sockaddr *) &_data->localaddress , 
+
+    if ( dvsocket_bind( _data->sockid                            ,
+                        (struct sockaddr *) &_data->localaddress ,
                         sizeof(struct sockaddr_in)               ,
                         &errorCode                               ) == 0 )
     {
         m_port = port;
         NotifyObservers( UDPSocketOpenedEvent );
-        
+
         // We will now be requiring periodic updates to poll for data
         m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
-                        
+
         return true;
     }
-    return false;   
+    return false;
 }
 
-/*-------------------------------------------------------------------------*/  
-        
-void 
+/*-------------------------------------------------------------------------*/
+
+void
 CUDPSocket::Close( bool force )
 {GUCEF_TRACE;
 
@@ -434,17 +436,17 @@ CUDPSocket::Close( bool force )
     {
         int error;
         force ? dvsocket_closesocket( _data->sockid, &error ) : shutdown( _data->sockid, 1 );
-        
+
         // We now no longer require periodic updates to poll for data
         m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
 
         NotifyObservers( UDPSocketClosedEvent );
-    }                
+    }
 }
 
 /*-------------------------------------------------------------------------*/
- 
-bool 
+
+bool
 CUDPSocket::IsBlocking( void ) const
 {GUCEF_TRACE;
 
@@ -453,7 +455,7 @@ CUDPSocket::IsBlocking( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CUDPSocket::IsActive( void ) const
 {GUCEF_TRACE;
 
@@ -462,13 +464,13 @@ CUDPSocket::IsActive( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt16 
+UInt16
 CUDPSocket::GetPort( void ) const
 {GUCEF_TRACE;
 
     return m_port;
 }
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -479,4 +481,3 @@ CUDPSocket::GetPort( void ) const
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
- 

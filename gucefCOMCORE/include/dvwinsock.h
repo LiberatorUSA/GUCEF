@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_COMCORE_DVSOCKET_H
 #define GUCEF_COMCORE_DVSOCKET_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"       /* library build defines & macros */
@@ -40,14 +40,14 @@
   #include <Wspiapi.h>
 
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-  
+
   #include <errno.h>
   #include <unistd.h>
   #include <sys/socket.h>
   #include <sys/types.h>
   #include <netdb.h>
   #include <arpa/inet.h>
-  
+
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -125,13 +125,13 @@ namespace COMCORE {
  *
  *      @return boolean indicating true (>0) or false (0)
  */
-UInt32 
+UInt32
 IsWinsockInitialized( void );
 
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Returns the global winsock 
+ *      Returns the global winsock
  *
  *      @return returns the global WSADATA* winsock data structure information
  */
@@ -143,12 +143,12 @@ GetWinsockData( void );
 /**
  *      Initializes winsock if winsock has not yet been initialized
  *      Should be called before each instance of use for winsock.
- *      ie for each socket. Each call increments a counter that is 
+ *      ie for each socket. Each call increments a counter that is
  *      decremented with a call to ShutdownWinsock().
  *
  *      @param desiredversion the winsock version you require
  */
-void 
+void
 InitWinsock( UInt16 desiredversion );
 
 /*-------------------------------------------------------------------------*/
@@ -178,78 +178,89 @@ dvsocket_socket( int af       ,
                  int* error   );
 
 /*-------------------------------------------------------------------------*/
-             
-int 
+
+int
 dvsocket_select( int nfds                      ,
                  fd_set* readfds               ,
                  fd_set* writefds              ,
                  fd_set* exceptfds             ,
                  const struct timeval* timeout ,
                  int* error                    );
-             
+
  /*-------------------------------------------------------------------------*/
-             
+
 int
 dvsocket_listen( SOCKET s    ,
                  int backlog ,
-                 int* error  ); 
-             
-/*-------------------------------------------------------------------------*/              
-             
+                 int* error  );
+
+/*-------------------------------------------------------------------------*/
+
 SOCKET
 dvsocket_accept( SOCKET s              ,
                  struct sockaddr* addr ,
                  int* addrlen          ,
                  int* error            );
-             
-/*-------------------------------------------------------------------------*/             
-             
+
+/*-------------------------------------------------------------------------*/
+
 int
 dvsocket_connect( SOCKET s                    ,
                   const struct sockaddr* addr ,
                   int namelen                 ,
                   int* error                  );
-      
-/*-------------------------------------------------------------------------*/      
-              
-int 
+
+/*-------------------------------------------------------------------------*/
+
+int
 dvsocket_send( SOCKET s        ,
                const void* buf ,
                int len         ,
                int flags       ,
                int* error      );
-           
+
 /*-------------------------------------------------------------------------*/
-           
-int 
+
+int
 dvsocket_recv( SOCKET s   ,
                void* buf  ,
                int len    ,
                int flags  ,
-               int* error );                                     
-             
-/*-------------------------------------------------------------------------*/                                                           
+               int* error );
+
+/*-------------------------------------------------------------------------*/
+
+int
+dvsocket_recvfrom( SOCKET s                  ,
+                   void* buf                 ,
+                   int len                   ,
+                   int flags                 ,
+                   struct sockaddr* fromaddr ,
+                   socklen_t* fromlen        ,
+                   int* error                );
+
+/*-------------------------------------------------------------------------*/
 
 void
 dvsocket_inet_ntoa( struct in_addr in ,
                     char* ip          );
-              
-/*-------------------------------------------------------------------------*/              
-                
-LPHOSTENT               
+
+/*-------------------------------------------------------------------------*/
+
+LPHOSTENT
 dvsocket_gethostbyname( const char* name ,
                         int* error       );
 
 /*-------------------------------------------------------------------------*/
 
-LPHOSTENT 
+LPHOSTENT
 dvsocket_gethostbyaddr( const char* addr ,
                         int len          ,
                         int type         ,
                         int* error       );
-                        
+
 /*-------------------------------------------------------------------------*/
-                        
+
 int
 dvsocket_closesocket( SOCKET s   ,
                       int* error );
@@ -285,4 +296,3 @@ dvsocket_closesocket( SOCKET s   ,
         - Initial implementation.
 
 -----------------------------------------------------------------------------*/
- 

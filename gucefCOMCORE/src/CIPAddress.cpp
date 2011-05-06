@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -22,6 +22,8 @@
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#include <string.h>
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
@@ -44,7 +46,7 @@
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
 #ifndef GUCEF_COMCORE_DVSOCKET_H
-#include "dvwinsock.h"  
+#include "dvwinsock.h"
 #define GUCEF_COMCORE_DVSOCKET_H
 #endif /* GUCEF_COMCORE_DVSOCKET_H ? */
 
@@ -65,7 +67,7 @@
     #include <sys/types.h>
     #include <netinet/in.h>
     #include <arpa/inet.h>
-    
+
 #else
 
     #error Unsupported platform
@@ -100,7 +102,7 @@ CIPAddress::CIPAddress( const CIPAddress& src )
     : m_address( src.m_address ) ,
       m_port( src.m_port )
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -156,29 +158,29 @@ CIPAddress::ResolveDNS( const CORE::CString& address ,
         return true;
     }
     else
-    {              
+    {
         #if 1
 
         int errorCode;
-        struct hostent* retval = dvsocket_gethostbyname( address.C_String(), &errorCode );        
+        struct hostent* retval = dvsocket_gethostbyname( address.C_String(), &errorCode );
         if ( retval != NULL )
         {
             GUCEF_DEBUG_LOG( 1, CORE::CString( "CIPAddress::CIPAddress() DNS resolution: gethostbyname(): full name: " ) + retval->h_name );
             char* addrStr = inet_ntoa( *( struct ::in_addr*)( retval->h_addr_list[0] ) );
             Int32 netaddr = inet_addr( addrStr );
-            if ( netaddr >= 0 ) 
-            {   
+            if ( netaddr >= 0 )
+            {
                 m_address = netaddr;
                 m_port = htons( port );
                 return true;
-            }            
+            }
         }
         return false;
-        
+
         #else
-        
+
         /* Alternate method */
-        
+
         struct addrinfo* info = NULL;
         CORE::CString portString( CORE::Int32ToString( destport ) );
         int retval = getaddrinfo( destaddrstr.C_String() ,
@@ -197,7 +199,7 @@ CIPAddress::ResolveDNS( const CORE::CString& address ,
         GUCEF_DEBUG_LOG( "CSocket::ConvertToIPAddress(): gethostbyname() failed with code " CORE::Int32ToString( retval ) );
         #endif
         return false;
-        
+
         #endif
     }
 }
@@ -208,12 +210,12 @@ void
 CIPAddress::SetPort( const UInt16 port )
 {GUCEF_TRACE;
 
-    m_port = port;    
+    m_port = port;
     OnChange( false, true );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 UInt16
 CIPAddress::GetPort( void ) const
 {GUCEF_TRACE;
@@ -228,7 +230,7 @@ CIPAddress::SetPortInHostByteOrder( const UInt16 port )
 {GUCEF_TRACE;
 
     m_port = htons( port );
-    OnChange( false, true ); 
+    OnChange( false, true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -261,7 +263,7 @@ CIPAddress::SetAddress( const UInt32 address )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 UInt32
 CIPAddress::GetAddress( void ) const
 {GUCEF_TRACE;
@@ -279,20 +281,20 @@ CIPAddress::GetAddressInHostByteOrder( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CString
 CIPAddress::AddressAsString( void ) const
 {GUCEF_TRACE;
 
     UInt32 address = ntohl( m_address );
     UInt8* addressArray = (UInt8*) &address;
-    
+
     CString addressStr =
-      CORE::UInt8ToString( addressArray[ 3 ] ) + '.' + 
+      CORE::UInt8ToString( addressArray[ 3 ] ) + '.' +
       CORE::UInt8ToString( addressArray[ 2 ] ) + '.' +
       CORE::UInt8ToString( addressArray[ 1 ] ) + '.' +
       CORE::UInt8ToString( addressArray[ 0 ] );
-      
+
     return addressStr;
 }
 
@@ -307,7 +309,7 @@ CIPAddress::PortAsString( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CORE::CString
 CIPAddress::AddressAndPortAsString( void ) const
 {GUCEF_TRACE;
@@ -330,17 +332,17 @@ CIPAddress::operator=( const CIPAddress& src )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CIPAddress::operator==( const CIPAddress& other ) const
 {GUCEF_TRACE;
 
     return ( m_address == other.m_address ) &&
-           ( m_port == other.m_port ); 
+           ( m_port == other.m_port );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CIPAddress::operator!=( const CIPAddress& other ) const
 {GUCEF_TRACE;
@@ -357,17 +359,17 @@ CIPAddress::operator<( const CIPAddress& other ) const
 
     // Implemented in this manner because it appears to result in the best
     // runtime performance
-    char buff[ 6 ];    
+    char buff[ 6 ];
     *static_cast< UInt32* >( (void*)buff ) = m_address;
     *static_cast< UInt16* >( (void*)(buff+4) ) = m_port;
-    
-    char otherBuff[ 6 ];    
+
+    char otherBuff[ 6 ];
     *static_cast< UInt32* >( (void*)otherBuff ) = other.m_address;
     *static_cast< UInt16* >( (void*)(otherBuff+4) ) = other.m_port;
-    
+
     return memcmp( buff, otherBuff, 6 ) < 0;
 }
-    
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
