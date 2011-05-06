@@ -37,14 +37,23 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/*
+ *  Modules are should be stored according to the following path convention:
+ *      <LoadRoot>/<GroupName>/<MayorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
+ */
+
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_LOADER_PUBLIC_C void*
 LoadModules( const char* groupName      ,
-             unsigned long mayorVersion ,
+             unsigned long majorVersion ,
              unsigned long minorVersion ,
              long patchVersion          ,
              long releaseVersion        ,
              char** argv                ,
-             int argc                   );
+             int argc                   ,
+             void* previousLoadData     );
              
 /*-------------------------------------------------------------------------*/
 
@@ -54,21 +63,23 @@ UnloadModules( void* moduleData );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_LOADER_PUBLIC_C void*
-LoadGucefPlatform( unsigned long mayorVersion   ,
+LoadGucefPlatform( unsigned long majorVersion   ,
                    unsigned long minorVersion   ,
                    char** argv                  ,
-                   int argc                     );
+                   int argc                     ,
+                   void* previousLoadData       );
 
 
 /*-------------------------------------------------------------------------*/
 
 GUCEF_LOADER_PUBLIC_C void*
-LoadGucefPlatformEx( unsigned long mayorVersion   ,
+LoadGucefPlatformEx( unsigned long majorVersion   ,
                      unsigned long minorVersion   ,
                      unsigned long patchVersion   ,
                      unsigned long releaseVersion ,
                      char** argv                  ,
-                     int argc                     );
+                     int argc                     ,
+                     void* previousLoadData       );
                    
 /*-------------------------------------------------------------------------*/
           

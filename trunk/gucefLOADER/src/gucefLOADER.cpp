@@ -27,6 +27,11 @@
 #include <map>
 #include <vector>
 
+#ifndef GUCEF_CORE_ESTRUCTS_H
+#include "EStructs.h"
+#define GUCEF_CORE_ESTRUCTS_H
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+
 #ifndef GUCEF_CORE_DVOSWRAP_H
 #include "DVOSWRAP.h"
 #define GUCEF_CORE_DVOSWRAP_H
@@ -59,7 +64,24 @@ using namespace GUCEF;
 //-------------------------------------------------------------------------*/
 
 typedef std::set< CORE::CString > TStringSet;
-typedef std::vector< void* > TVoidPtrVector;
+
+struct SModuleInfo
+{
+    void* handle;
+    CORE::TVersion version;
+    CORE::CString name;
+};
+typedef struct SModuleInfo TModuleInfo;
+
+typedef std::vector< TModuleInfo > TModuleInfoVector;
+
+struct SModuleGroup
+{
+    TModuleInfoVector modules;
+    CORE::CString name;
+};
+typedef struct SModuleGroup TModuleGroup;
+
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -300,86 +322,165 @@ GetHighestVersionAvailableFromDir( const CORE::CString rootDir ,
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_LOADER_PRIVATE_CPP bool
+IsModuleVersionAlreadyLoadedIfNotUnloadExisting( const char* moduleGroupName         ,
+                                                 const char* moduleName              ,
+                                                 const CORE::TVersion& moduleVersion ,
+                                                 void* previousLoadData              )
+{
+    if ( NULL == previousLoadData ) return false;
+    
+    TModuleGroup* moduleGroup = (TModuleGroup*) previousLoadData;
+    
+    try
+    {
+        if ( moduleGroup->name == moduleGroupName )
+        {
+            TModuleInfoVector::iterator i = moduleGroup->modules.begin();
+            while ( i != moduleGroup->modules.end() )
+            {
+                TModuleInfo& moduleInfo = (*i);                
+                if ( moduleInfo.name == moduleName )
+                {
+                    // We found a module which is loaded which belongs to the same group
+                    // it also has the same name. Lets check the version
+                    if ( ( moduleInfo.version.major == moduleVersion.major )   &&
+                         ( moduleInfo.version.minor == moduleVersion.minor )   &&
+                         ( moduleInfo.version.patch == moduleVersion.patch )   &&
+                         ( moduleInfo.version.release == moduleVersion.release ) )
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        // This module is already loaded but with a different version
+                        // We should unload this module
+                        CORE::UnloadModuleDynamicly( moduleInfo.handle );
+                        moduleInfo.handle = NULL;
+                        moduleGroup->modules.erase( i );
+                        return false;
+                    }
+                }                
+                ++i;
+            }
+        }
+        return false;
+    }
+    catch ( ... )
+    {
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void*
 LoadModules( const char* groupName        ,
-             unsigned long mayorVersion   ,
+             unsigned long majorVersion   ,
              unsigned long minorVersion   ,
              long patchVersion            ,
              long releaseVersion          ,
              char** argv                  ,
-             int argc                     )
-{
-    if ( NULL == groupName ) return NULL;
-
-    // get a list of optional modules that should be loaded
-    char** moduleList = NULL;
-    int moduleCount = 0;
-    ParseListOfExtraModulestoLoad( argv         , 
-                                   argc         ,
-                                   &moduleList  ,
-                                   &moduleCount );
-                                   
-    // get the root path to where we should load modules from
-    CORE::CString moduleRoot = GetModuleRootPath( argv, argc );
-    CORE::AppendToPath( moduleRoot, groupName );
+             int argc                     ,
+             void* previousLoadData       )
+{    
+    if ( NULL == groupName ) return NULL;    
+    TModuleGroup* moduleGroup = NULL;
     
-    // adjust path for desired version
-    char versionDir[ 41 ];
-    sprintf( versionDir, "%d.%d", mayorVersion, minorVersion );
-    CORE::AppendToPath( moduleRoot, versionDir );
-    
-    if ( patchVersion < 0 || releaseVersion < 0 )
+    try
     {
-        // We will have to search for the latest version available
-        if ( !GetHighestVersionAvailableFromDir( moduleRoot, patchVersion, releaseVersion ) )
-        {
-            // Unable to find any versions in this dir
-            return NULL;
-        }
-    }
-
-    // Simply append with the specific version requested
-    sprintf( versionDir, "%d.%d", patchVersion, releaseVersion );
-    CORE::AppendToPath( moduleRoot, versionDir );
-    
-    // check if all desired modules are present
-    TStringSet modulePaths;
-    for ( int i=0; i<moduleCount; ++i )
-    {
-        CORE::CString filePath = moduleRoot;
-        CORE::AppendToPath( filePath, moduleList[ i ] );
+        // get a list of optional modules that should be loaded
+        char** moduleList = NULL;
+        int moduleCount = 0;
+        ParseListOfExtraModulestoLoad( argv         , 
+                                       argc         ,
+                                       &moduleList  ,
+                                       &moduleCount );
+                                       
+        // get the root path to where we should load modules from
+        // This gives us: <LoadRoot>/<GroupName>
+        CORE::CString moduleRoot = GetModuleRootPath( argv, argc );
+        CORE::AppendToPath( moduleRoot, groupName );
         
-        if ( CORE::FileExists( filePath ) )
+        CORE::TVersion moduleVersion;
+        moduleVersion.major = (CORE::UInt16) majorVersion;
+        moduleVersion.minor = (CORE::UInt16) minorVersion; 
+        
+        // adjust path for desired version
+        // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>
+        char versionDir[ 41 ];
+        sprintf( versionDir, "%d.%d", majorVersion, minorVersion );
+        CORE::AppendToPath( moduleRoot, versionDir );
+        
+        // check if all desired modules are present
+        moduleGroup = new TModuleGroup();
+        moduleGroup->name = groupName;
+        for ( int i=0; i<moduleCount; ++i )
         {
-            modulePaths.insert( filePath );
+            // Add the module name to our root path
+            // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>
+            CORE::CString filePath = moduleRoot;
+            CORE::AppendToPath( filePath, moduleList[ i ] );
+
+            long modulePatchVersion = patchVersion;
+            long moduleReleaseVersion = releaseVersion;
+            if ( patchVersion < 0 || releaseVersion < 0 )
+            {
+                // We will have to search for the latest version available
+                if ( !GetHighestVersionAvailableFromDir( filePath             , 
+                                                         modulePatchVersion   , 
+                                                         moduleReleaseVersion ) )
+                {
+                    // Unable to find any versions in this dir for this module
+                    UnloadModules( moduleGroup );
+                    return NULL;
+                }
+            }
+            moduleVersion.patch = (CORE::UInt16) modulePatchVersion;
+            moduleVersion.release = (CORE::UInt16) moduleReleaseVersion;
+            
+            if ( IsModuleVersionAlreadyLoadedIfNotUnloadExisting( groupName        ,
+                                                                  moduleList[ i ]  , 
+                                                                  moduleVersion    , 
+                                                                  previousLoadData ) )
+            {
+                // Simply append with the specific version requested or if no specific version was
+                // requested then the highest version located.
+                // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
+                sprintf( versionDir, "%d.%d", patchVersion, releaseVersion );
+                CORE::AppendToPath( filePath, versionDir );
+                
+                // Now that we constructed the full load path for this module we will try and load it
+                void* modulePtr = CORE::LoadModuleDynamicly( filePath.C_String() );
+                if ( NULL != modulePtr )  
+                {            
+                    TModuleInfo moduleInfo;
+                    moduleInfo.handle = modulePtr;
+                    moduleInfo.name = moduleList[ i ];
+                    moduleInfo.version = moduleVersion;
+
+                    moduleGroup->modules.push_back( moduleInfo );
+                }
+                else
+                {
+                    // We are missing one of the requested modules...
+                    // Abort
+                    UnloadModules( moduleGroup );
+                    return NULL;
+                }
+            }
         }
-        else
-        {
-            // We are missing one of the requested modules...
-            // Abort
-            return NULL;
-        }
+        
+        // Return a pointer to the loaded modules which the user 
+        // should give back to us later
+        return moduleGroup;
     }
-    
-    // load the modules into memory
-    TVoidPtrVector* modulePtrs = new TVoidPtrVector();
-    TStringSet::iterator n = modulePaths.begin();
-    while ( n != modulePaths.end() )
+    catch ( ... )
     {
-        void* modulePtr = CORE::LoadModuleDynamicly( (*n).C_String() );
-        if ( NULL != modulePtr )  
-        {
-            modulePtrs->push_back( modulePtr );
-        }
-        else
-        {
-            delete modulePtrs;
-            return NULL;
-        }
-        ++n;
+        // Don't allow exceptions to escape outside the loader
+        UnloadModules( moduleGroup );
+        return NULL;
     }
-    
-    return modulePtrs;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -387,15 +488,24 @@ LoadModules( const char* groupName        ,
 void
 UnloadModules( void* moduleData )
 {
-    if ( NULL != moduleData )
+    try
     {
-        TVoidPtrVector* modulePtrs = (TVoidPtrVector*) moduleData;
-        TVoidPtrVector::iterator n = modulePtrs->begin();
-        while ( n != modulePtrs->end() )
+        if ( NULL != moduleData )
         {
-            CORE::UnloadModuleDynamicly( (*n) );
-            ++n;
+            TModuleGroup* moduleGroup = (TModuleGroup*) moduleData;
+            TModuleInfoVector& moduleInfoVector = moduleGroup->modules;
+            TModuleInfoVector::iterator n = moduleInfoVector.begin();
+            while ( n != moduleInfoVector.end() )
+            {
+                CORE::UnloadModuleDynamicly( (*n).handle );
+                ++n;
+            }
+            delete moduleGroup;
         }
+    }
+    catch ( ... )
+    {
+        // Don't allow exceptions to escape outside the loader
     }
 }
 
@@ -405,16 +515,18 @@ void*
 LoadGucefPlatform( unsigned long mayorVersion   ,
                    unsigned long minorVersion   ,
                    char** argv                  ,
-                   int argc                     )
+                   int argc                     ,
+                   void* previousLoadData       )
 {
 
-    return LoadModules( "GUCEF"      ,
-                        mayorVersion ,
-                        minorVersion ,
-                        -1           ,
-                        -1           ,
-                        argv         ,
-                        argc         );
+    return LoadModules( "GUCEF"          ,
+                        mayorVersion     ,
+                        minorVersion     ,
+                        -1               ,
+                        -1               ,
+                        argv             ,
+                        argc             ,
+                        previousLoadData );
 }
 
 
@@ -426,7 +538,8 @@ LoadGucefPlatformEx( unsigned long mayorVersion   ,
                      unsigned long patchVersion   ,
                      unsigned long releaseVersion ,
                      char** argv                  ,
-                     int argc                     )
+                     int argc                     ,
+                     void* previousLoadData       )
 {
 
     return LoadModules( "GUCEF"               ,
@@ -435,7 +548,8 @@ LoadGucefPlatformEx( unsigned long mayorVersion   ,
                         (long) patchVersion   ,
                         (long) releaseVersion ,
                         argv                  ,
-                        argc                  );
+                        argc                  ,
+                        previousLoadData      );
 }
 
 /*-------------------------------------------------------------------------*/
