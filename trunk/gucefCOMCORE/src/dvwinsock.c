@@ -14,21 +14,21 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #include <assert.h>
 
 #ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"       /* library build defines & macros */
 #define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */ 
+#endif /* GUCEF_COMCORE_MACROS_H ? */
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
@@ -98,10 +98,10 @@ static WSADATA wsadata;
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 IsWinsockInitialized( void )
 {
-    return _wsinit;        
+    return _wsinit;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -112,16 +112,16 @@ IsWinsockInitialized( void )
  *      @param desiredversion the winsock version you require
  *      @return returns wheter the initialization succeeded
  */
-void 
+void
 InitWinsock( UInt16 desiredversion )
 {
     if ( _wsinit == 0 )
-    {           
-        WSAStartup( desiredversion , 
+    {
+        WSAStartup( desiredversion ,
                     &wsadata       );
-        _wsinit = 1; 
-    }                                       
-}    
+        _wsinit = 1;
+    }
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -131,8 +131,8 @@ ShutdownWinsock( void )
     if ( _wsinit == 1 )
     {
         WSACleanup();
-        _wsinit = 0;                
-    }                
+        _wsinit = 0;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -142,10 +142,10 @@ GetWinsockData( void )
 {
     if ( _wsinit > 0 )
     {
-        return &wsadata;        
+        return &wsadata;
     }
-    return NULL;      
-}                
+    return NULL;
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -159,16 +159,16 @@ dvsocket_bind( SOCKET s                    ,
                int namelen                 ,
                int* error                  )
 {
-    int retval;                
-    if ( ( retval = bind( s       , 
+    int retval;
+    if ( ( retval = bind( s       ,
                           type    ,
                           namelen ) ) == -1 )
     {
-            *error = LastSocketError; 
+            *error = LastSocketError;
             return retval;
-    }                                
-    *error = 0; 
-    return retval;                         
+    }
+    *error = 0;
+    return retval;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -180,20 +180,20 @@ dvsocket_socket( int af       ,
                  int* error   )
 {
     SOCKET sock;
-    if ( ( sock = socket( af       , 
+    if ( ( sock = socket( af       ,
                           type     ,
                           protocol ) ) == SOCKET_ERROR )
     {
         *error = LastSocketError;
         return sock;
-    }                                
+    }
     *error = 0;
-    return sock;       
+    return sock;
 }
 
 /*-------------------------------------------------------------------------*/
 
-int 
+int
 dvsocket_select( int nfds                      ,
                  fd_set* readfds               ,
                  fd_set* writefds              ,
@@ -202,8 +202,8 @@ dvsocket_select( int nfds                      ,
                  int* error                    )
 {
     /* timeval differs via constness between winsock and linux bsd sockets */
-    int retval; 
-    if ( ( retval = select( nfds                      , 
+    int retval;
+    if ( ( retval = select( nfds                      ,
                             readfds                   ,
                             writefds                  ,
                             exceptfds                 ,
@@ -211,29 +211,29 @@ dvsocket_select( int nfds                      ,
     {
         *error = LastSocketError;
         return retval;
-    }                                
+    }
     *error = 0;
     return retval;
-}              
+}
 
-/*-------------------------------------------------------------------------*/   
+/*-------------------------------------------------------------------------*/
 
 int
 dvsocket_listen( SOCKET s    ,
                  int backlog ,
                  int* error  )
 {
-    int retval;         
-    if ( ( retval = listen( s       , 
+    int retval;
+    if ( ( retval = listen( s       ,
                             backlog ) ) == SOCKET_ERROR )
     {
         *error = LastSocketError;
         return retval;
-    }                                
+    }
     *error = 0;
-    return retval;         
-}                                 
-           
+    return retval;
+}
+
 /*-------------------------------------------------------------------------*/
 
 SOCKET
@@ -242,61 +242,87 @@ dvsocket_accept( SOCKET s              ,
                  int* addrlen          ,
                  int* error            )
 {
-    SOCKET sock;         
-    if ( ( sock = accept( s       , 
+    SOCKET sock;
+    if ( ( sock = accept( s       ,
                           addr    ,
                           addrlen ) ) == SOCKET_ERROR )
     {
         *error = LastSocketError;
         return sock;
-    }                                
+    }
     *error = 0;
-    return sock;             
+    return sock;
 }
 
-/*-------------------------------------------------------------------------*/                         
+/*-------------------------------------------------------------------------*/
 
-int 
+int
 dvsocket_send( SOCKET s        ,
                const void* buf ,
                int len         ,
                int flags       ,
                int* error      )
 {
-    int retval;         
-    if ( ( retval = send( s       , 
+    int retval;
+    if ( ( retval = send( s       ,
                           buf     ,
                           len     ,
                           flags   ) ) == SOCKET_ERROR )
     {
         *error = LastSocketError;
         return retval;
-    }                                
+    }
     *error = 0;
-    return retval;  
+    return retval;
 }
 
 /*-------------------------------------------------------------------------*/
 
-int 
+int
 dvsocket_recv( SOCKET s   ,
                void* buf  ,
                int len    ,
                int flags  ,
                int* error )
 {
-    int retval;         
-    if ( ( retval = recv( s       , 
+    int retval;
+    if ( ( retval = recv( s       ,
                           buf     ,
                           len     ,
                           flags   ) ) == SOCKET_ERROR )
     {
-        *error = LastSocketError; 
+        *error = LastSocketError;
         return retval;
-    }                                
+    }
     *error = 0;
-    return retval;        
-}                      
+    return retval;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+dvsocket_recvfrom( SOCKET s                  ,
+                   void* buf                 ,
+                   int len                   ,
+                   int flags                 ,
+                   struct sockaddr* fromaddr ,
+                   socklen_t* fromlen        ,
+                   int* error                )
+{
+    int retval;
+    if ( ( retval = recvfrom( s        ,
+                              buf      ,
+                              len      ,
+                              flags    ,
+                              fromaddr ,
+                              fromlen  ) ) == SOCKET_ERROR )
+    {
+        *error = LastSocketError;
+        return retval;
+    }
+    *error = 0;
+    return retval;
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -311,7 +337,7 @@ dvsocket_inet_ntoa( struct in_addr in ,
 
 /*-------------------------------------------------------------------------*/
 
-LPHOSTENT               
+LPHOSTENT
 dvsocket_gethostbyname( const char* name ,
                         int* error       )
 {
@@ -320,15 +346,15 @@ dvsocket_gethostbyname( const char* name ,
     if ( retval == NULL )
     {
         *error = LastSocketError;
-        return retval;                
-    }         
+        return retval;
+    }
     *error = 0;
     return retval;
 }
 
 /*-------------------------------------------------------------------------*/
 
-LPHOSTENT 
+LPHOSTENT
 dvsocket_gethostbyaddr( const char* addr ,
                         int len          ,
                         int type         ,
@@ -341,11 +367,11 @@ dvsocket_gethostbyaddr( const char* addr ,
     if ( retval == NULL )
     {
         *error = LastSocketError;
-        return retval;                
-    }        
+        return retval;
+    }
     *error = 0;
     return retval;
-}                   
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -356,16 +382,16 @@ dvsocket_connect( SOCKET s                    ,
                   int* error                  )
 {
     int retval;
-    if ( ( retval = connect( s        , 
+    if ( ( retval = connect( s        ,
                              addr     ,
                              namelen  ) ) == SOCKET_ERROR )
     {
         *error = LastSocketError;
         return retval;
-    }                                
+    }
     *error = 0;
-    return retval;    
-}              
+    return retval;
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -378,7 +404,7 @@ dvsocket_closesocket( SOCKET s   ,
     {
         *error = LastSocketError;
         return retval;
-    }                                
+    }
     *error = 0;
     return retval;
 }
@@ -395,4 +421,3 @@ dvsocket_closesocket( SOCKET s   ,
 #endif /* __cplusplus ? */
 
 /*--------------------------------------------------------------------------*/
- 
