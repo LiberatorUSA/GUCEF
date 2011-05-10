@@ -196,6 +196,8 @@ PointerToString( const void* value );
 
 /*-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_NO_MD5_SUPPORT
+
 GUCEF_CORE_PUBLIC_CPP CString
 StringToMD5String( const CString& str );
 
@@ -204,6 +206,7 @@ StringToMD5String( const CString& str );
 GUCEF_CORE_PUBLIC_CPP CString
 MD5ToString( const UInt8 md5Digest[ 16 ] );
 
+#endif /* GUCEF_CORE_NO_MD5_SUPPORT ? */
 
 /*-------------------------------------------------------------------------*/
 

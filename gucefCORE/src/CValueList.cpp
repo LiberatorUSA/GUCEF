@@ -355,6 +355,68 @@ CValueList::GetPair( const UInt32 index ) const
 
 /*-------------------------------------------------------------------------*/
 
+CString
+CValueList::GetAllPairs( const UInt32 index          , 
+                         const CString& seperatorStr ) const
+{GUCEF_TRACE;
+
+    const CString& key = GetKey( index );
+    const TStringVector& values = GetValueVector( index );
+    
+    CString resultStr;
+    bool first = true;
+    for ( UInt32 i=0; i<values.size(); ++i )
+    {
+        if ( !first )
+        {
+            resultStr += seperatorStr;
+        }
+        else
+        {
+            first = false;
+        }
+     
+        resultStr += key + '=' + values[ i ];
+    }
+    
+    return resultStr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CValueList::GetAllPairs( const CString& seperatorStr ) const
+{GUCEF_TRACE;
+
+    CString resultStr;
+    bool first = true;
+    TValueMap::const_iterator i = m_list.begin();
+    while ( i != m_list.end() )
+    {
+        const CString& key = (*i).first;
+        const TStringVector& values = (*i).second;
+        
+        TStringVector::const_iterator n = values.begin();
+        while ( n != values.end() )
+        {
+            if ( !first )
+            {
+                resultStr += seperatorStr;
+            }
+            else
+            {
+                first = false;
+            }
+            
+            resultStr += key + '=' + (*n);
+        }
+        ++i;
+    }
+    return resultStr;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString 
 CValueList::GetPair( const CString& key ) const
 {GUCEF_TRACE;
@@ -417,6 +479,23 @@ CValueList::GetCount( void ) const
 {GUCEF_TRACE;
 
     return (UInt32) m_list.size();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CValueList::TStringVector&
+CValueList::GetValueVector( const UInt32 index ) const
+{GUCEF_TRACE;
+
+    if ( index < m_list.size() )
+    {
+        TValueMap::const_iterator i = m_list.begin();
+        for ( UInt32 n=0; n<index; ++n ) { ++i; }
+        
+        return (*i).second;
+    }
+    
+    GUCEF_EMSGTHROW( EIndexOutOfRange, "CValueList::GetValueVector( index ): The given index is invalid" )
 }
 
 /*-------------------------------------------------------------------------//

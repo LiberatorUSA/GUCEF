@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_DVMD5UTILS_H
-#define GUCEF_CORE_DVMD5UTILS_H
+#ifndef GUCEF_CORE_CINIPARSER_H
+#define GUCEF_CORE_CINIPARSER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,27 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_IOACCESS_H
-#include "ioaccess.h"     /* medium & source independant file handling utils */
-#define GUCEF_CORE_IOACCESS_H
-#endif /* GUCEF_CORE_IOACCESS_H ? */
+#include <map>
+
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
+
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"     /* often used gucef macros */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,61 +54,50 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
 namespace GUCEF {
 namespace CORE {
-#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
-   extern "C" {
-#endif   /* __cplusplus */
+class GUCEF_CORE_PUBLIC_CPP CIniParser
+{
+    CIniParser( void );
+    
+    CIniParser( const CIniParser& src );
+    
+    virtual ~CIniParser();
+    
+    CIniParser& operator=( const CIniParser& src );
+    
+    bool SaveTo( CDataNode& rootNode ) const;
+    
+    bool SaveTo( const CString& filename ) const;
+    
+    bool LoadFrom( const CDataNode& rootNode );
+    
+    bool LoadFrom( const CString& filename );
 
-#ifndef GUCEF_CORE_NO_MD5_SUPPORT
+    private:
+    
+    static bool IsCharIndexWithinQuotes( const CString& testString , 
+                                         UInt32 charIndex          ,
+                                         Int32 quotationStartIndex ,
+                                         Int32 quotationEndIndex   );
 
-/*-------------------------------------------------------------------------*/
+    static Int32 FindIndexOfNonQuotedEquals( const CString& testString );
+    
+    static CString StripQuotation( const CString& testString );
 
-/**
- *	Function that returns an MD5 digest generated from the resource given
- *	Returns 1 on success and 0 on failure.
- */
-GUCEF_CORE_PUBLIC_C UInt32
-md5fromfile( TIOAccess* access  ,
-             UInt8 digest[ 16 ] );
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *	Converts an md5 digest into a string 48 chars long.
- *	Each digest value is converted to 3 characters.
- *	A null terminator is not included.
- */
-GUCEF_CORE_PUBLIC_C void
-md5tostring( const UInt8 digest[ 16 ] ,
-             char md5_str[ 48 ]       );
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *	Converts the given null-terminated string
- *      into an md5 digest
- */
-GUCEF_CORE_PUBLIC_C void
-md5fromstring( const char* string ,
-               UInt8 digest[ 16 ] );
-
-/*--------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_NO_MD5_SUPPORT ? */
-
-#ifdef __cplusplus
-   }
-#endif /* __cplusplus */
+    private:
+    
+    typedef std::map< CString, CValueList > TIniMap;
+    
+    TIniMap m_iniData;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -99,14 +105,12 @@ md5fromstring( const char* string ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_DVMD5UTILS_H ? */
+#endif /* GUCEF_CORE_CINIPARSER_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -115,10 +119,6 @@ md5fromstring( const char* string ,
 //-------------------------------------------------------------------------//
 
 - 21-09-2005 :
-        - Added stringtomd5string()
-- 25-11-2004 :
-        - Got rid of dependancy on MFILE and duplicate impementations for
-          different recource sources. Instead TIOAccess is used now.
+        - initial version
 
 ---------------------------------------------------------------------------*/
-

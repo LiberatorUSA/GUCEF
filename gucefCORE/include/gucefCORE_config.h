@@ -113,6 +113,11 @@
 #undef GUCEF_LOG_EXCEPTIONS
 #define GUCEF_LOG_EXCEPTIONS
 
+/*
+ *  Switch for removing MD5 support from the module
+ */
+//#define GUCEF_CORE_NO_MD5_SUPPORT
+
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CONFIG_H */

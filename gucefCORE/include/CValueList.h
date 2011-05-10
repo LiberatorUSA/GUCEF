@@ -153,9 +153,21 @@ class GUCEF_CORE_PUBLIC_CPP CValueList
      */
     const TStringVector& GetValueVector( const CString& key ) const;
 
+    /**
+     *  Returns the value vector associated with the
+     *  given index.
+     *
+     *  @exception EIndexOutOfRange thrown if the given index is out of bounds
+     */
+    const TStringVector& GetValueVector( const UInt32 index ) const;
+
     CString GetPair( const CString& key ) const;
 
     CString GetPair( const UInt32 index ) const;
+    
+    CString GetAllPairs( const UInt32 index, const CString& seperatorStr ) const;
+    
+    CString GetAllPairs( const CString& seperatorStr ) const;
 
     /**
      *  Returns the key associated with the given index.
@@ -179,7 +191,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList
     void SetAllowMultipleValues( const bool allowMultipleValues );
 
     bool GetAllowMultipleValues( void ) const;
-
+    
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EUnknownKey );
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EIndexOutOfRange );
 
