@@ -199,6 +199,9 @@ class GUCEF_CORE_PUBLIC_CPP CString
     CString SubstrToIndex( UInt32 index            ,
                            bool frontToBack = true ) const;
 
+    CString SubstrFromRange( UInt32 startIndex ,
+                             UInt32 endIndex   ) const;
+
     CString Trim( bool frontToBack ) const;
 
     Int32 HasChar( char searchchar         ,

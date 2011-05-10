@@ -645,13 +645,32 @@ CString::SubstrToIndex( UInt32 index     ,
                         bool frontToBack ) const
 {GUCEF_TRACE;
 
-    UInt32 max = index+1 > m_length ? m_length-1 : index;
-    if ( frontToBack )
-    {          
-        return CString( m_string, max );
+    UInt32 otherIndex = frontToBack ? 0 : m_length > 0 ? m_length-1 : 0;
+    return SubstrFromRange( otherIndex, index );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString 
+CString::SubstrFromRange( UInt32 startIndex ,
+                          UInt32 endIndex   ) const
+{GUCEF_TRACE;
+
+    // we want the user to be able to pass a range conveniently
+    if  ( startIndex > endIndex )
+    {
+        // swap
+        UInt32 swapIndex = startIndex;
+        startIndex = endIndex;
+        endIndex = swapIndex;
     }
     
-    return CString( m_string+m_length-max, max );
+    // gracefully protect against out-of-bounds index
+    UInt32 maxEnd = endIndex+1 > m_length ? m_length-1 : endIndex;
+    UInt32 maxStart = startIndex+1 > m_length ? m_length-1 : startIndex;
+
+    // make the new string using the given range
+    return CString( m_string+maxStart, maxEnd-maxStart );
 }
 
 /*-------------------------------------------------------------------------*/

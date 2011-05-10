@@ -54,10 +54,10 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *	Function that returns an MD5 digest generated from the file given
- *	Returns 1 on success and 0 on failure.
- */
+#ifndef GUCEF_CORE_NO_MD5_SUPPORT
+
+/*-------------------------------------------------------------------------*/
+
 UInt32
 md5fromfile( TIOAccess *access  ,
              UInt8 digest[ 16 ] )
@@ -88,10 +88,6 @@ md5fromfile( TIOAccess *access  ,
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *	Converts an md5 digest into a string 48 chars long.
- *	Each digest value is converted to 3 characters.
- */
 void
 md5tostring( const UInt8 digest[ 16 ] ,
              char md5_str[ 48 ]       )
@@ -124,10 +120,6 @@ md5tostring( const UInt8 digest[ 16 ] ,
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *	Converts the given null-terminated string 
- *      into an md5 digest 
- */
 void
 md5fromstring( const char* string ,
                Ubyte digest[ 16 ] )
@@ -139,6 +131,10 @@ md5fromstring( const char* string ,
         md5_append( &md5state, (const Ubyte*)string, (int)strlen( string ) );
         md5_finish( &md5state, digest );
 }                   
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_CORE_NO_MD5_SUPPORT ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

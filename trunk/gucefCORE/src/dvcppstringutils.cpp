@@ -30,12 +30,14 @@
 #define GUCEF_CORE_DVSTRUTILS_H
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
-#ifndef GUCEF_CORE_DVMD5UTILS_H
-#include "dvmd5utils.h"
-#define GUCEF_CORE_DVMD5UTILS_H
-#endif /* GUCEF_CORE_DVMD5UTILS_H ? */
-
 #include "dvcppstringutils.h"   /* function prototypes of the functions implemented here */
+
+#ifndef GUCEF_CORE_NO_MD5_SUPPORT
+  #ifndef GUCEF_CORE_DVMD5UTILS_H
+  #include "dvmd5utils.h"
+  #define GUCEF_CORE_DVMD5UTILS_H
+  #endif /* GUCEF_CORE_DVMD5UTILS_H ? */
+#endif /* GUCEF_CORE_NO_MD5_SUPPORT ? */
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #define WIN32_LEAN_AND_MEAN
@@ -605,6 +607,8 @@ PointerToString( const void* value )
 
 /*-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_NO_MD5_SUPPORT
+
 CString
 StringToMD5String( const CString& str )
 {GUCEF_TRACE;
@@ -621,7 +625,8 @@ StringToMD5String( const CString& str )
 
 GUCEF_CORE_PUBLIC_CPP CString
 MD5ToString( const UInt8 md5Digest[ 16 ] )
-{
+{GUCEF_TRACE;
+
     char md5string[ 48 ];
 
     md5tostring( md5Digest ,
@@ -632,6 +637,8 @@ MD5ToString( const UInt8 md5Digest[ 16 ] )
 
     return md5str;
 }
+
+#endif /* GUCEF_CORE_NO_MD5_SUPPORT ? */
 
 /*-------------------------------------------------------------------------*/
 
