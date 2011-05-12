@@ -143,6 +143,11 @@
 #define GUCEF_CORE_TSPRINTING_H
 #endif /* GUCEF_CORE_TSPRINTING_H ? */
 
+#ifndef GUCEF_CORE_CINIDATASTORECODEC_H
+#include "gucefCORE_CIniDataStoreCodec.h"
+#define GUCEF_CORE_CINIDATASTORECODEC_H
+#endif /* GUCEF_CORE_CINIDATASTORECODEC_H ? */
+
 #include "CGUCEFCOREModule.h"  /* definition of the class implemented here */
 
 #ifdef GUCEF_MSWIN_BUILD
@@ -177,79 +182,80 @@ namespace CORE {
 bool 
 CGUCEFCOREModule::Load( void )
 {
-        // it is important to initialize the call stack tracer at an early stage
-        GUCEF_InitCallstackUtility();
-        
-        /*
-         *      Very important: Initialize the memory manager before anything else !!!!!
-         */
-        #ifdef ADD_MEMORY_MANAGER        
-        MEMMAN_SetLogFile( "GUCEFMemoryLog.txt" );
-        MEMMAN_SetExhaustiveTesting( 0 ); 
-        MEMMAN_SetPaddingSize( 0 );
-        MEMMAN_Initialize();       
-        #endif 
-        
-        /*
-         *      Initialize centralized output
-         */
-        tspinit();
-        #ifdef GUCEF_CORE_DEBUG_MODE        
-        tssetcoutfile( "GUCEFLog.txt" );
-        tsusecoutfile( 1 );
-        #endif
+    // it is important to initialize the call stack tracer at an early stage
+    GUCEF_InitCallstackUtility();
+    
+    /*
+     *      Very important: Initialize the memory manager before anything else !!!!!
+     */
+    #ifdef ADD_MEMORY_MANAGER        
+    MEMMAN_SetLogFile( "GUCEFMemoryLog.txt" );
+    MEMMAN_SetExhaustiveTesting( 0 ); 
+    MEMMAN_SetPaddingSize( 0 );
+    MEMMAN_Initialize();       
+    #endif 
+    
+    /*
+     *      Initialize centralized output
+     */
+    tspinit();
+    #ifdef GUCEF_CORE_DEBUG_MODE        
+    tssetcoutfile( "GUCEFLog.txt" );
+    tsusecoutfile( 1 );
+    #endif
 
-        /*
-         *  Instantiate all the singletons
-         *  We start with the log manager so that it is possible to log everything from that point on
-         *  if a logger is registered at an early stage      
-         */
-        CLogManager::Instance();
-        CNotificationIDRegistry::Instance();
+    /*
+     *  Instantiate all the singletons
+     *  We start with the log manager so that it is possible to log everything from that point on
+     *  if a logger is registered at an early stage      
+     */
+    CLogManager::Instance();
+    CNotificationIDRegistry::Instance();
 
-        /*
-         *  Make sure all events are registered from the start
-         */
-        CNotifier::RegisterEvents();
-        CPulseGenerator::RegisterEvents();
-        CStreamerEvents::RegisterEvents();
-        CTimer::RegisterEvents();
-        CPluginManager::RegisterEvents();
-        CIURLEvents::RegisterEvents();
-        CNotifyingMapEvents::RegisterEvents();
-        CGUCEFApplication::RegisterEvents();
-        CTaskDelegator::RegisterEvents();
-        CTaskConsumer::RegisterEvents();
-        CTaskManager::RegisterEvents();        
+    /*
+     *  Make sure all events are registered from the start
+     */
+    CNotifier::RegisterEvents();
+    CPulseGenerator::RegisterEvents();
+    CStreamerEvents::RegisterEvents();
+    CTimer::RegisterEvents();
+    CPluginManager::RegisterEvents();
+    CIURLEvents::RegisterEvents();
+    CNotifyingMapEvents::RegisterEvents();
+    CGUCEFApplication::RegisterEvents();
+    CTaskDelegator::RegisterEvents();
+    CTaskConsumer::RegisterEvents();
+    CTaskManager::RegisterEvents();        
 
-        /*
-         *  Instantiate the rest of the singletons
-         */
-        CPluginControl::Instance();         
-        CDStoreCodecRegistry::Instance();
-        CDStoreCodecPluginManager::Instance();
-        CConfigStore::Instance();
-        CTaskManager::Instance();
-        CURLHandlerRegistry::Instance();
-        CGUCEFApplication::Instance();
-        CSysConsole::Instance();
-        CGenericPluginManager::Instance();
-        CStdCodecPluginManager::Instance();
-        
+    /*
+     *  Instantiate the rest of the singletons
+     */
+    CPluginControl::Instance();         
+    CDStoreCodecRegistry::Instance();
+    CDStoreCodecPluginManager::Instance();
+    CConfigStore::Instance();
+    CTaskManager::Instance();
+    CURLHandlerRegistry::Instance();
+    CGUCEFApplication::Instance();
+    CSysConsole::Instance();
+    CGenericPluginManager::Instance();
+    CStdCodecPluginManager::Instance();
+    
 
 
-        #ifdef GUCEF_MSWIN_BUILD
-        CWndMsgHookNotifier::RegisterEvents();
-        #endif /* GUCEF_MSWIN_BUILD ? */ 
-        
-        /*
-         *      Register some default codecs/handlers 
-         */
-        CURLHandlerRegistry::Instance()->Register( "file", new CFileURLHandler() );
-        
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "gucefCORE module initialized" );
-        
-        return true;
+    #ifdef GUCEF_MSWIN_BUILD
+    CWndMsgHookNotifier::RegisterEvents();
+    #endif /* GUCEF_MSWIN_BUILD ? */ 
+    
+    /*
+     *      Register some default codecs/handlers 
+     */
+    CURLHandlerRegistry::Instance()->Register( "file", new CFileURLHandler() );
+    CDStoreCodecRegistry::Instance()->Register( "ini", new CIniDataStoreCodec() );
+    
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "gucefCORE module initialized" );
+    
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -257,40 +263,40 @@ CGUCEFCOREModule::Load( void )
 bool 
 CGUCEFCOREModule::Unload( void )
 {         
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Unloading gucefCORE module" );
-               
-        /*
-         *      cleanup all singletons
-         *      Take care to deinstance them in the correct order !!!
-         */
-        CTaskManager::Deinstance();
-        CStdCodecPluginManager::Deinstance();
-        CGenericPluginManager::Deinstance(); 
-        CSysConsole::Deinstance(); 
-        CGUCEFApplication::Deinstance();
-        CURLHandlerRegistry::Deinstance();
-        CConfigStore::Deinstance();
-        CDStoreCodecPluginManager::Deinstance();
-        CDStoreCodecRegistry::Deinstance();
-        CPluginControl::Deinstance();
-        CNotificationIDRegistry::Deinstance();
-        
-        /*
-         *      Shutdown centralized output last
-         */
-        tspshutdown();
-              
-        /*
-         *      Very important: Shutdown the memory manager last !!!!!
-         */
-        #ifdef ADD_MEMORY_MANAGER 
-        MEMMAN_Shutdown();
-        #endif
-        
-        // it important to shutdown the call stack tracer as the last
-        GUCEF_ShutdowntCallstackUtility();
-                        
-        return true;
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Unloading gucefCORE module" );
+           
+    /*
+     *      cleanup all singletons
+     *      Take care to deinstance them in the correct order !!!
+     */
+    CTaskManager::Deinstance();
+    CStdCodecPluginManager::Deinstance();
+    CGenericPluginManager::Deinstance(); 
+    CSysConsole::Deinstance(); 
+    CGUCEFApplication::Deinstance();
+    CURLHandlerRegistry::Deinstance();
+    CConfigStore::Deinstance();
+    CDStoreCodecPluginManager::Deinstance();
+    CDStoreCodecRegistry::Deinstance();
+    CPluginControl::Deinstance();
+    CNotificationIDRegistry::Deinstance();
+    
+    /*
+     *      Shutdown centralized output last
+     */
+    tspshutdown();
+          
+    /*
+     *      Very important: Shutdown the memory manager last !!!!!
+     */
+    #ifdef ADD_MEMORY_MANAGER 
+    MEMMAN_Shutdown();
+    #endif
+    
+    // it important to shutdown the call stack tracer as the last
+    GUCEF_ShutdowntCallstackUtility();
+                    
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

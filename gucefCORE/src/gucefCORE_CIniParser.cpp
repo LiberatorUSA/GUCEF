@@ -30,11 +30,6 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
-#ifndef GUCEF_CORE_CFILEACCESS_H
-#include "CFileAccess.h"
-#define GUCEF_CORE_CFILEACCESS_H
-#endif /* GUCEF_CORE_CFILEACCESS_H ? */
-
 #include "gucefCORE_CIniParser.h"
 
 /*-------------------------------------------------------------------------//
@@ -92,17 +87,40 @@ bool
 CIniParser::SaveTo( CDataNode& rootNode ) const
 {GUCEF_TRACE;
 
-    return false;
+    TIniMap::const_iterator i = m_iniData.begin();
+    while ( i != m_iniData.end() )
+    {
+        const CString& sectionName = (*i).first;
+        const CValueList& sectionData = (*i).second;
+        
+        CDataNode* sectionNode = rootNode.Structure( sectionName, '\\' );
+        
+        CValueList::TValueMap::const_iterator n = sectionData.GetDataBeginIterator();
+        while ( n != sectionData.GetDataEndIterator() )
+        {
+            const CString& key = (*n).first;
+            const CValueList::TStringVector& values = (*n).second;
+            
+            CValueList::TStringVector::const_iterator m = values.begin();
+            while ( m != values.end() )
+            {
+                sectionNode->SetAttribute( key, (*m) );
+                ++m;
+            }            
+            ++n;
+        }
+        ++i;
+    }
+    return true;
 }
     
 /*-------------------------------------------------------------------------*/
     
 bool
-CIniParser::SaveTo( const CString& filename ) const
+CIniParser::SaveTo( CIOAccess& file ) const
 {GUCEF_TRACE;
 
-    FILE* fptr = fopen( filename.C_String(), "wb" );
-    if ( NULL != fptr )
+    if ( file.IsValid() && file.IsWriteable() )
     {
         const CString valueSepStr = GUCEF_EOL;
         TIniMap::const_iterator i = m_iniData.begin();
@@ -111,14 +129,14 @@ CIniParser::SaveTo( const CString& filename ) const
             const CString& keyString = GUCEF_EOL "[" + (*i).first + "]" GUCEF_EOL;
             CString values = (*i).second.GetAllPairs( valueSepStr );
             
-            fwrite( keyString.C_String(), keyString.Length(), 1, fptr );
-            fwrite( values.C_String(), values.Length(), 1, fptr );
+            file.Write( keyString );
+            file.Write( values );
             
             ++i;
         }        
-        fclose( fptr );
+        return true;
     }
-    return true;
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -223,7 +241,8 @@ CIniParser::FindIndexOfNonQuotedEquals( const CString& testString )
 
 CString
 CIniParser::StripQuotation( const CString& testString )
-{
+{GUCEF_TRACE;
+
     CString resultStr = testString.Trim( true ).Trim( false );
     if ( resultStr.Length() > 1 )
     {
@@ -236,14 +255,30 @@ CIniParser::StripQuotation( const CString& testString )
 }
 
 /*-------------------------------------------------------------------------*/
+
+CIniParser::TIniMap&
+CIniParser::GetData( void )
+{GUCEF_TRACE;
+
+    return m_iniData;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+const CIniParser::TIniMap& 
+CIniParser::GetData( void ) const
+{GUCEF_TRACE;
+   
+    return m_iniData;
+}
+
+/*-------------------------------------------------------------------------*/
     
 bool
-CIniParser::LoadFrom( const CString& filename )
+CIniParser::LoadFrom( CIOAccess& fileAccess )
 {GUCEF_TRACE;
 
     // @TODO: take escape sequences into account
-    
-    CFileAccess fileAccess( filename, "rb" );
     if ( fileAccess.IsValid() )
     {
         CString sectionName;

@@ -43,6 +43,11 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
+#ifndef GUCEF_CORE_CIOACCESS_H
+#include "CIOAccess.h"
+#define GUCEF_CORE_CIOACCESS_H
+#endif /* GUCEF_CORE_CIOACCESS_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"     /* often used gucef macros */
 #define GUCEF_CORE_MACROS_H
@@ -65,6 +70,10 @@ namespace CORE {
 
 class GUCEF_CORE_PUBLIC_CPP CIniParser
 {
+    public:
+    
+    typedef std::map< CString, CValueList > TIniMap;
+    
     CIniParser( void );
     
     CIniParser( const CIniParser& src );
@@ -75,11 +84,15 @@ class GUCEF_CORE_PUBLIC_CPP CIniParser
     
     bool SaveTo( CDataNode& rootNode ) const;
     
-    bool SaveTo( const CString& filename ) const;
+    bool SaveTo( CIOAccess& fileAccess ) const;
     
     bool LoadFrom( const CDataNode& rootNode );
     
-    bool LoadFrom( const CString& filename );
+    bool LoadFrom( CIOAccess& fileAccess );
+    
+    TIniMap& GetData( void );
+    
+    const TIniMap& GetData( void ) const;
 
     private:
     
@@ -94,7 +107,7 @@ class GUCEF_CORE_PUBLIC_CPP CIniParser
 
     private:
     
-    typedef std::map< CString, CValueList > TIniMap;
+    
     
     TIniMap m_iniData;
 };

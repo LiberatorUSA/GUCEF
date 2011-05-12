@@ -355,7 +355,7 @@ DSTOREPLUG_Dest_File_Open( void** plugdata    ,
 
                 sprintf( outBuffer, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\r\n" );
                 outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
-                sprintf( outBuffer, "<!-- Generated using dstorepluginXMLPARSIFAL (v%d.%d.%d.%d) for the GUCEF platform - Copyright (C) Dinand Vanvelzen. All rights reserved -->\r\n", VERSION_MAJOR_FIELD, VERSION_MINOR_FIELD, VERSION_PATCH_FIELD, VERSION_RELEASE_FIELD );
+                sprintf( outBuffer, "<!-- Generated using dstorepluginXMLPARSIFAL (v%d.%d.%d.%d) for the GUCEF platform - Copyright (C) Dinand Vanvelzen. LPGLv3 -->\r\n", VERSION_MAJOR_FIELD, VERSION_MINOR_FIELD, VERSION_PATCH_FIELD, VERSION_RELEASE_FIELD );
                 outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
                 return 1;
         }
@@ -653,7 +653,7 @@ DSTOREPLUG_Name( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 DSTOREPLUG_Copyright( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        return "Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.";
+        return "Copyright (C) Dinand Vanvelzen. 2002 - 2005. LGPLv3.";
 }
 
 /*---------------------------------------------------------------------------*/
