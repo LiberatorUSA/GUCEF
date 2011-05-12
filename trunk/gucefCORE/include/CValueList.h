@@ -63,7 +63,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueList
 {
     public:
 
-    typedef std::vector< CString > TStringVector;
+    typedef std::vector< CString >              TStringVector;
+    typedef std::map< CString, TStringVector >  TValueMap;
 
     CValueList( void );
 
@@ -192,12 +193,14 @@ class GUCEF_CORE_PUBLIC_CPP CValueList
 
     bool GetAllowMultipleValues( void ) const;
     
+    TValueMap::const_iterator GetDataBeginIterator( void ) const;
+    
+    TValueMap::const_iterator GetDataEndIterator( void ) const;
+    
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EUnknownKey );
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EIndexOutOfRange );
 
     private:
-
-    typedef std::map< CString, TStringVector > TValueMap;
 
     TValueMap m_list;
     bool m_allowDuplicates;

@@ -498,6 +498,22 @@ CValueList::GetValueVector( const UInt32 index ) const
     GUCEF_EMSGTHROW( EIndexOutOfRange, "CValueList::GetValueVector( index ): The given index is invalid" )
 }
 
+/*-------------------------------------------------------------------------*/
+
+CValueList::TValueMap::const_iterator
+CValueList::GetDataBeginIterator( void ) const
+{
+    return m_list.begin();
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CValueList::TValueMap::const_iterator
+CValueList::GetDataEndIterator( void ) const
+{
+    return m_list.end();
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
