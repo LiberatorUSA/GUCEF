@@ -66,6 +66,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     typedef std::pair< const CString, CString > TKeyValuePair;
     typedef std::set< CDataNode* > TDataNodeSet;
     typedef std::set< const CDataNode* > TConstDataNodeSet;
+    typedef std::map< CString, CString > TAttributeMap;
 
     CDataNode( void );
 
@@ -239,7 +240,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *  as possible using the specified node sequence.
      *  If no nodes where found that have an name as specified in the sequence
      *  at the correct location then that part of the sequence is considdered to
-     *  be a leftover. An pointer to the 'deepest' node is returned.
+     *  be a leftover. A pointer to the 'deepest' node is returned.
      *
      *  @param sequence the sequence of node names you are looking for, each name seperated with a seperator char
      *  @param seperator char that is used to seperate the different node names
@@ -291,6 +292,14 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *  request is made on.
      */
     UInt32 GetNrOfTreeNodes( void ) const;
+    
+    /**
+     *  Creates a string representation of the 'path' to the root node
+     *  consisting of all the node names encountered up to the root node
+     *  seperared by 'nodeNameSeperator'
+     */
+    CString GetPathToRoot( char nodeNameSeperator ,
+                           bool includeThisNode   ) const;
 
     /**
      *  Attempts to delete this node from the tree.
@@ -380,6 +389,10 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     const_iterator ConstBegin( void ) const;
 
     const_iterator ConstEnd( void ) const;
+    
+    TAttributeMap::const_iterator AttributeBegin( void ) const;
+    
+    TAttributeMap::const_iterator AttributeEnd( void ) const;
 
     private:
     friend class iterator;
@@ -396,7 +409,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     void Detach( void );      /**< detaches the node from the tree */
     void DetachChild( CDataNode* child ); /**< detaches the given child node */
 
-    typedef std::map< CString, CString > TAttributeMap;
+    
 
     CString _name;        /**< name of the node */
     TAttributeMap _atts;  /**< list of node attributes */

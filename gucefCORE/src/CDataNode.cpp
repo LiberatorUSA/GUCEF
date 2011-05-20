@@ -704,6 +704,38 @@ CDataNode::FindSibling( const CString& name )
 
 /*-------------------------------------------------------------------------*/
 
+CDataNode::TAttributeMap::const_iterator
+CDataNode::AttributeBegin( void ) const
+{GUCEF_TRACE;
+
+    return _atts.begin();
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CDataNode::TAttributeMap::const_iterator
+CDataNode::AttributeEnd( void ) const
+{GUCEF_TRACE;
+    
+    return _atts.end();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CDataNode::GetPathToRoot( char nodeNameSeperator , 
+                          bool includeThisNode   ) const
+{GUCEF_TRACE;
+
+    if ( NULL != _pparent )
+    {
+        return _pparent->GetPathToRoot( nodeNameSeperator, includeThisNode ) + nodeNameSeperator + _name;
+    }
+    return _name;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDataNode* 
 CDataNode::Find( const CString& name )
 {GUCEF_TRACE;    

@@ -90,11 +90,21 @@ CIniParser::SaveTo( CDataNode& rootNode ) const
     TIniMap::const_iterator i = m_iniData.begin();
     while ( i != m_iniData.end() )
     {
-        const CString& sectionName = (*i).first;
         const CValueList& sectionData = (*i).second;
         
-        CDataNode* sectionNode = rootNode.Structure( sectionName, '\\' );
+        CString nodeName = (*i).first.SubstrToChar( '\\', false );
+        CString sectionName = (*i).first.CutChars( (*i).first.Length() - nodeName.Length(), false );
         
+        CDataNode* sectionNode = NULL;
+        if ( !sectionName.IsNULLOrEmpty() )
+        {
+            sectionNode = rootNode.Structure( sectionName, '\\' );
+        }
+        else
+        {
+            sectionNode = &rootNode;
+        }
+                
         CValueList::TValueMap::const_iterator n = sectionData.GetDataBeginIterator();
         while ( n != sectionData.GetDataEndIterator() )
         {
@@ -104,7 +114,10 @@ CIniParser::SaveTo( CDataNode& rootNode ) const
             CValueList::TStringVector::const_iterator m = values.begin();
             while ( m != values.end() )
             {
-                sectionNode->SetAttribute( key, (*m) );
+                CDataNode sectionEntryNode( nodeName );
+                sectionEntryNode.SetAttribute( key, (*m) );
+
+                sectionNode->AddChild( sectionEntryNode );
                 ++m;
             }            
             ++n;
@@ -144,10 +157,36 @@ CIniParser::SaveTo( CIOAccess& file ) const
 bool
 CIniParser::LoadFrom( const CDataNode& rootNode )
 {GUCEF_TRACE;
+   
+    // Add this section if there are attributes for this section
+    if ( rootNode.GetAttCount() > 0 )
+    {
+        // Base the section path off of the path to the root node
+        CString sectionName = rootNode.GetPathToRoot( '\\', true );
 
-    return false;
+        // Add each attribute as a key value pair is this section
+        CValueList& sectionList = m_iniData[ sectionName ];
+        CDataNode::TAttributeMap::const_iterator i = rootNode.AttributeBegin();
+        while ( i != rootNode.AttributeEnd() )
+        {
+            sectionList.Set( (*i).first, (*i).second );
+            ++i;
+        }
+    }
+
+    // Repeat recursively for all the children
+    CDataNode::const_iterator n = rootNode.Begin();
+    while ( n != rootNode.End() )
+    {
+        if ( !LoadFrom( *(*n) ) )
+        {
+            return false;
+        }
+        ++n;
+    }
+    return true;
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 bool
