@@ -41,9 +41,9 @@ LOCAL_C_INCLUDES := \
 
 
 LOCAL_SHARED_LIBRARIES := \
+  gucefCOMCORE \
   gucefMT \
-  gucefCORE \
-  gucefCOMCORE
+  gucefCORE
 
 include $(BUILD_SHARED_LIBRARY)
 

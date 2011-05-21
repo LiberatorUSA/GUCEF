@@ -94,7 +94,7 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "gucefCOMCORE" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefMT gucefCORE )
+add_dependencies( ${MODULE_NAME} gucefCORE gucefMT )
 target_link_libraries( ${MODULE_NAME} gucefMT gucefCORE )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_COMCORE_BUILD_MODULE" )
 
@@ -127,9 +127,17 @@ endif( WIN64 )
 
 
 
-if (LINUX)
+if (GLX)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (GTK)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (SDL)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (SYMBIAN)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )

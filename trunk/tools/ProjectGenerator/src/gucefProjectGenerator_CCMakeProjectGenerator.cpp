@@ -1089,6 +1089,11 @@ GenerateCMakeListsFileContent( const TProjectInfo& projectInfo         ,
     
     GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMakeLists content for module " + consensusModuleName );
     
+    if ( consensusModuleName == "MyGUI.Common")
+    {
+        int test=0;
+    }
+    
     // Set project name comment section
     fileContent += "\n# Configuration for module: " + consensusModuleName + "\n\n";
 
