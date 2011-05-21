@@ -138,6 +138,8 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp \
   src/gucefCORE_CForwardingNotifier.cpp \
   src/gucefCORE_CIEventHandlerFunctorBase.cpp \
+  src/gucefCORE_CIniDataStoreCodec.cpp \
+  src/gucefCORE_CIniParser.cpp \
   src/gucefCORE_CIObserver.cpp \
   src/gucefCORE_CIPulseGeneratorDriver.cpp \
   src/gucefCORE_CITaskConsumer.cpp \

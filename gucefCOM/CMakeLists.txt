@@ -85,9 +85,17 @@ endif( WIN64 )
 
 
 
-if (LINUX)
+if (GLX)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (GTK)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (SDL)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (SYMBIAN)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )

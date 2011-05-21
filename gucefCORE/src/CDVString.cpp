@@ -337,9 +337,13 @@ bool
 CString::operator<( const CString& other ) const
 {GUCEF_TRACE;
     
-    if ( m_string && other.m_string )
+    if ( NULL != m_string && NULL != other.m_string )
     {
         return strcmp( m_string, other.m_string ) < 0;
+    }
+    if ( NULL == m_string && NULL != other.m_string )
+    {
+        return true;
     }
     return false;        
 }

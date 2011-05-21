@@ -38,8 +38,8 @@
 //-------------------------------------------------------------------------*/
 
 /* Switches for the export of C++ and/or C code */
-#define GUCEF_GUI_EXPORT_CPP_CODE
-#define GUCEF_GUI_EXPORT_C_CODE
+#define GUCEF_GUI_PUBLIC_CPP_CODE
+#define GUCEF_GUI_PUBLIC_C_CODE
 
 /*-------------------------------------------------------------------------*/
 

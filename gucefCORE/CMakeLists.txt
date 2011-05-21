@@ -143,6 +143,8 @@ set( HEADER_FILES
   include/gucefCORE_CEventBasedTaskConsumer.h
   include/gucefCORE_CForwardingNotifier.h
   include/gucefCORE_CIEventHandlerFunctorBase.h
+  include/gucefCORE_CIniDataStoreCodec.h
+  include/gucefCORE_CIniParser.h
   include/gucefCORE_CIObserver.h
   include/gucefCORE_CIPulseGeneratorDriver.h
   include/gucefCORE_CITaskConsumer.h
@@ -297,6 +299,8 @@ set( SOURCE_FILES
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp
   src/gucefCORE_CForwardingNotifier.cpp
   src/gucefCORE_CIEventHandlerFunctorBase.cpp
+  src/gucefCORE_CIniDataStoreCodec.cpp
+  src/gucefCORE_CIniParser.cpp
   src/gucefCORE_CIObserver.cpp
   src/gucefCORE_CIPulseGeneratorDriver.cpp
   src/gucefCORE_CITaskConsumer.cpp
