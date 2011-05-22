@@ -13,7 +13,34 @@
 
 
 
-if (LINUX)
+if (IPHONEOS)
+  set( PLATFORM_HEADER_FILES 
+    includes/iphone/iPhoneAccelerometer.h
+    includes/iphone/iPhoneHelpers.h
+    includes/iphone/iPhoneInputManager.h
+    includes/iphone/iPhoneMultiTouch.h
+    includes/iphone/iPhonePrereqs.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "IPHONEOS" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/OISEffect.cpp
+    src/OISException.cpp
+    src/OISForceFeedback.cpp
+    src/OISInputManager.cpp
+    src/OISJoyStick.cpp
+    src/OISKeyboard.cpp
+    src/OISObject.cpp
+    src/extras/LIRC/OISLIRC.cpp
+    src/extras/LIRC/OISLIRCFactoryCreator.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "IPHONEOS" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX)
   set( PLATFORM_HEADER_FILES 
     includes/OIS.h
     includes/OISConfig.h
@@ -27,6 +54,7 @@ if (LINUX)
     includes/OISJoyStick.h
     includes/OISKeyboard.h
     includes/OISMouse.h
+    includes/OISMultiTouch.h
     includes/OISObject.h
     includes/OISPrereqs.h
     includes/linux/EventHelpers.h
@@ -79,11 +107,13 @@ elseif (OSX)
     includes/OISJoyStick.h
     includes/OISKeyboard.h
     includes/OISMouse.h
+    includes/OISMultiTouch.h
     includes/OISObject.h
     includes/OISPrereqs.h
     includes/mac/MacHelpers.h
     includes/mac/MacHIDManager.h
     includes/mac/MacInputManager.h
+    includes/mac/MacJoyStick.h
     includes/mac/MacKeyboard.h
     includes/mac/MacMouse.h
     includes/mac/MacPrereqs.h
@@ -108,6 +138,7 @@ elseif (OSX)
     src/mac/MacHelpers.cpp
     src/mac/MacHIDManager.cpp
     src/mac/MacInputManager.cpp
+    src/mac/MacJoyStick.cpp
     src/mac/MacKeyboard.cpp
     src/mac/MacMouse.cpp
   )
@@ -160,6 +191,7 @@ elseif (WIN32)
     includes/OISJoyStick.h
     includes/OISKeyboard.h
     includes/OISMouse.h
+    includes/OISMultiTouch.h
     includes/OISObject.h
     includes/OISPrereqs.h
     includes/win32/Win32ForceFeedback.h
@@ -210,6 +242,7 @@ elseif (WIN64)
     includes/OISJoyStick.h
     includes/OISKeyboard.h
     includes/OISMouse.h
+    includes/OISMultiTouch.h
     includes/OISObject.h
     includes/OISPrereqs.h
     src/extras/LIRC/OISLIRC.h
@@ -277,6 +310,10 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} dxguid.lib dinput8.lib )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "OIS_NONCLIENT_BUILD;OIS_DYNAMIC_LIB" )
 endif( WIN64 )
+
+if ( IPHONEOS )
+  include_directories( includes/iphone )
+endif( IPHONEOS )
 
 if ( LINUX )
   include_directories( includes includes/linux src/extras/LIRC )

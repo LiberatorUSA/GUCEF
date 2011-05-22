@@ -65,10 +65,10 @@
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 
-#ifndef CVFS_H
-#include "CVFS.h"
-#define CVFS_H
-#endif /* CVFS_H ? */
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
 
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/

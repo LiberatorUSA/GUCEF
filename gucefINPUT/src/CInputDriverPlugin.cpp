@@ -402,9 +402,9 @@ CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
     /*
      *      Link up generic module utilities
      */
-    m_fptable[ INPUTDRIVERPLUG_INIT ] = CORE::GetFunctionAddress( m_sohandle             ,
-                                                                  "INPUTDRIVERPLUG_Init" ,
-                                                                  2*sizeof(void*)        ).funcPtr;
+    m_fptable[ INPUTDRIVERPLUG_INIT ] = CORE::GetFunctionAddress( m_sohandle                           ,
+                                                                  "INPUTDRIVERPLUG_Init"               ,
+                                                                  sizeof(void**)+sizeof(const char***) ).funcPtr;
     m_fptable[ INPUTDRIVERPLUG_SHUTDOWN ] = CORE::GetFunctionAddress( m_sohandle                 ,
                                                                       "INPUTDRIVERPLUG_Shutdown" ,
                                                                       1*sizeof(void*)            ).funcPtr;
