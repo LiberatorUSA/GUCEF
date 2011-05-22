@@ -68,6 +68,11 @@
 #define GUCEF_INPUT_PUBLIC_CPP_CODE /* do you want to enable the C++ exports ? */
 #define GUCEF_INPUT_PUBLIC_C_CODE   /* do you want to enable the C exports ? */
 
+#undef GUCEF_INPUT_PLUGIN_PUBLIC_C_CODE     /* do not change this line */
+#undef GUCEF_INPUT_PLUGIN_PUBLIC_CPP_CODE   /* do not change this line */
+#define GUCEF_INPUT_PLUGIN_PUBLIC_C_CODE    /* do you want to enable the C exports ? */
+#define GUCEF_INPUT_PLUGIN_PUBLIC_CPP_CODE  /* do you want to enable the C++ exports ? */
+
 /*-------------------------------------------------------------------------*/
 
 /*

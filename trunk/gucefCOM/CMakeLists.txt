@@ -85,7 +85,9 @@ endif( WIN64 )
 
 
 
-if (GLX)
+if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (GLX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (GTK)
 GUCEF_config_lib( ${MODULE_NAME} )
