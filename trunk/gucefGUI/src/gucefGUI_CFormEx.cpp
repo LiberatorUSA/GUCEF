@@ -48,7 +48,8 @@ namespace GUI {
 CFormEx::CFormEx( void )
     : CForm()                 ,
       m_isReloadable( false ) ,
-      m_layoutFile()
+      m_layoutFile()          ,
+      m_useVfsDirect( false)
 {GUCEF_TRACE;
 
 }
@@ -74,7 +75,37 @@ CFormEx::LoadLayout( CORE::CIOAccess& layoutStorage )
 /*-------------------------------------------------------------------------*/
     
 bool
+CFormEx::SaveLayout( CORE::CIOAccess& layoutStorage )
+{GUCEF_TRACE;
+
+    return CForm::SaveLayout( layoutStorage );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
 CFormEx::LoadLayout( const CString& filename )
+{GUCEF_TRACE;
+
+    m_isReloadable = true;
+    m_layoutFile = filename;
+    m_useVfsDirect = false;
+    return CForm::LoadLayout( filename );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CFormEx::SaveLayout( const CString& filename )
+{GUCEF_TRACE;
+
+    return CForm::SaveLayout( filename );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CFormEx::LoadLayoutUsingVfs( const CString& filename )
 {GUCEF_TRACE;
 
     VFS::CVFS::CVFSHandlePtr file = VFS::CVFS::Instance()->GetFile( filename );
@@ -84,6 +115,7 @@ CFormEx::LoadLayout( const CString& filename )
         {
             m_layoutFile = filename;
             m_isReloadable = true;
+            m_useVfsDirect = true;
             return true;
         }
     }
@@ -93,7 +125,7 @@ CFormEx::LoadLayout( const CString& filename )
 /*-------------------------------------------------------------------------*/
     
 bool
-CFormEx::SaveLayout( const CString& filename )
+CFormEx::SaveLayoutUsingVfs( const CString& filename )
 {GUCEF_TRACE;
 
     VFS::CVFS::CVFSHandlePtr file = VFS::CVFS::Instance()->GetFile( filename, "wb", true );
@@ -112,7 +144,14 @@ CFormEx::Reload( void )
     
     if ( m_isReloadable )
     {
-        return LoadLayout( m_layoutFile );
+        if ( m_useVfsDirect )
+        {
+            return LoadLayoutUsingVfs( m_layoutFile );
+        }
+        else
+        {
+            return LoadLayout( m_layoutFile );
+        }
     }
     return false;
 }

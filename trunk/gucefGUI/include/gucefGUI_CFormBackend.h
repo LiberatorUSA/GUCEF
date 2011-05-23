@@ -71,6 +71,10 @@ class GUCEF_GUI_PUBLIC_CPP CFormBackend
     
     virtual ~CFormBackend();
 
+    virtual bool LoadLayout( const CString& layoutStoragePath ) = 0;
+    
+    virtual bool SaveLayout( const CString& layoutStoragePath ) = 0;
+
     virtual bool LoadLayout( CORE::CIOAccess& layoutStorage ) = 0;
     
     virtual bool SaveLayout( CORE::CIOAccess& layoutStorage ) = 0;
