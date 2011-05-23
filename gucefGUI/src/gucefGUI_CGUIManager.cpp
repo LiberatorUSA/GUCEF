@@ -131,7 +131,7 @@ CGUIManager::RegisterGUIDriver( const CString& guiDriverName ,
                                 CGUIDriver* guiDriver        )
 {GUCEF_TRACE;
 
-    m_guiDrivers.insert( std::pair< CString, CGUIDriver* >( guiDriverName, guiDriver ) );
+    m_guiDrivers[ guiDriverName ] = guiDriver;
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CGUIManager: Registered GUI driver (" + PointerToString( guiDriver ) + ") with name \"" + guiDriverName + "\"" );
     
     GUCEF::CORE::TCloneableString driverName( guiDriverName );
