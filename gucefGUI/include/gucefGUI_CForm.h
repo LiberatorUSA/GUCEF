@@ -78,6 +78,10 @@ class GUCEF_GUI_PUBLIC_CPP CForm : public CORE::CObservingNotifier
     
     virtual ~CForm();
     
+    virtual bool LoadLayout( const CString& layoutStoragePath );
+
+    virtual bool SaveLayout( const CString& layoutStoragePath );
+    
     virtual bool LoadLayout( CORE::CIOAccess& layoutStorage );
     
     virtual bool SaveLayout( CORE::CIOAccess& layoutStorage );

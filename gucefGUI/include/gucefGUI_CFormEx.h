@@ -54,11 +54,17 @@ class GUCEF_GUI_PUBLIC_CPP CFormEx : public CForm
     
     virtual ~CFormEx();
 
+    virtual bool LoadLayout( const CString& layoutStoragePath );
+
+    virtual bool SaveLayout( const CString& layoutStoragePath );
+    
     virtual bool LoadLayout( CORE::CIOAccess& layoutStorage );
     
-    virtual bool LoadLayout( const CString& filename );
+    virtual bool SaveLayout( CORE::CIOAccess& layoutStorage );
+
+    virtual bool LoadLayoutUsingVfs( const CString& filename );
     
-    virtual bool SaveLayout( const CString& filename );
+    virtual bool SaveLayoutUsingVfs( const CString& filename );
     
     virtual bool Reload( void );
     
@@ -75,6 +81,7 @@ class GUCEF_GUI_PUBLIC_CPP CFormEx : public CForm
     
     bool m_isReloadable;
     CString m_layoutFile;
+    bool m_useVfsDirect;
 };
 
 /*-------------------------------------------------------------------------//

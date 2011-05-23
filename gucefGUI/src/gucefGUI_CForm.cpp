@@ -126,6 +126,67 @@ CForm::GetContext( void )
 /*-------------------------------------------------------------------------*/
     
 bool
+CForm::LoadLayout( const CString& layoutStoragePath )
+{GUCEF_TRACE;
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CForm(" + CORE::PointerToString( this ) + "): Loading layout from " + layoutStoragePath );
+    
+    if ( NULL != m_context )
+    {
+        if ( NULL == m_backend )
+        {
+            m_backend = m_context->CreateFormBackend();
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CForm(" + CORE::PointerToString( this ) + "): Created form backend" );
+        }
+    }
+    
+    if ( NULL != m_backend )
+    {
+        OnPreLayoutLoad();
+        if ( m_backend->LoadLayout( layoutStoragePath ) )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CForm(" + CORE::PointerToString( this ) + "): Successfull loaded layout from resource " + layoutStoragePath );
+            
+            if ( NULL != m_parentWidget )
+            {
+                SetParent( m_parentWidget );
+            }
+            OnPostLayoutLoad();
+            NotifyObservers( LayoutLoadedEvent );
+            return true;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CForm(" + CORE::PointerToString( this ) + "): Failed to load layout from resource " + layoutStoragePath );
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CForm(" + CORE::PointerToString( this ) + "): Failed to load layout because no backend implementation is available" );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CForm::SaveLayout( const CString& layoutStoragePath )
+{GUCEF_TRACE;
+
+    if ( NULL != m_backend )
+    {
+        if ( m_backend->SaveLayout( layoutStoragePath ) )
+        {
+            NotifyObservers( LayoutSavedEvent );
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
 CForm::LoadLayout( CORE::CIOAccess& layoutStorage )
 {GUCEF_TRACE;
 
