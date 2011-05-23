@@ -47,6 +47,15 @@
 #define GUCEF_CORE_ESSENTIALS_H
 #endif /* GUCEF_CORE_ESSENTIALS_H ? */
 
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+ 
+  #ifndef GUCEF_CORE_CANDROIDSYSTEMLOGGER_H
+  #include "gucefCORE_CAndroidSystemLogger.h"
+  #define GUCEF_CORE_CANDROIDSYSTEMLOGGER_H
+  #endif /* GUCEF_CORE_CANDROIDSYSTEMLOGGER_H ? */
+  
+#endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -101,6 +110,13 @@ CLogManager::CLogManager( void )
     m_msgTypeEnablers[ LOG_CALLSTACK ] = true;
     m_msgTypeEnablers[ LOG_EXCEPTION ] = true;
     m_msgTypeEnablers[ LOG_CONSOLE ] = true;
+    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )    
+    
+    static CAndroidSystemLogger androidSystemLogger;
+    AddLogger( &androidSystemLogger);
+    
+    #endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ? */
 }
 
 /*-------------------------------------------------------------------------*/
