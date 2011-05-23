@@ -191,15 +191,20 @@ CGenericPlugin::Load( const CString& pluginPath )
                 }
                 
                 // Check whether the load was successfull
-                if ( loadStatus == 1 )
+                if ( loadStatus > 0 )
                 {
                     // We have loaded & linked our plugin module
+                    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPlugin: Successfully loaded module and invoked Load() which returned status " + 
+                          Int32ToString( loadStatus  ) + " using module: " + pluginPath );
                     return true;
                 }
                 else
                 {
                     GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CGenericPlugin: Failed load module because Load returned an error state (" + 
                                                             Int32ToString( loadStatus ) + ") with module loaded from: " + pluginPath );
+
+                    // Call the module's Unload()
+                    reinterpret_cast< TGUCEFGENERICPLUGFPTR_Unload >( m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] )();
                 }
                 
             }
