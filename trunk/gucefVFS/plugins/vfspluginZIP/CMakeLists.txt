@@ -12,56 +12,6 @@
 # Configuration for module: vfspluginZIP
 
 set( HEADER_FILES 
-  dependencies/bla/zlib/crc32.h
-  dependencies/bla/zlib/deflate.h
-  dependencies/bla/zlib/inffast.h
-  dependencies/bla/zlib/inffixed.h
-  dependencies/bla/zlib/inflate.h
-  dependencies/bla/zlib/inftrees.h
-  dependencies/bla/zlib/trees.h
-  dependencies/bla/zlib/zconf.h
-  dependencies/bla/zlib/zconf.in.h
-  dependencies/bla/zlib/zlib.h
-  dependencies/bla/zlib/zutil.h
-  dependencies/bla/zlib/contrib/blast/blast.h
-  dependencies/bla/zlib/contrib/infback9/infback9.h
-  dependencies/bla/zlib/contrib/infback9/inffix9.h
-  dependencies/bla/zlib/contrib/infback9/inflate9.h
-  dependencies/bla/zlib/contrib/infback9/inftree9.h
-  dependencies/bla/zlib/contrib/iostream/zfstream.h
-  dependencies/bla/zlib/contrib/iostream2/zstream.h
-  dependencies/bla/zlib/contrib/iostream3/zfstream.h
-  dependencies/bla/zlib/contrib/minizip/crypt.h
-  dependencies/bla/zlib/contrib/minizip/ioapi.h
-  dependencies/bla/zlib/contrib/minizip/iowin32.h
-  dependencies/bla/zlib/contrib/minizip/mztools.h
-  dependencies/bla/zlib/contrib/minizip/unzip.h
-  dependencies/bla/zlib/contrib/minizip/zip.h
-  dependencies/bla/zlib/contrib/puff/puff.h
-  dependencies/bla/zlib/examples/gzlog.h
-  dependencies/bla/zziplib/zzip/autoconf.h
-  dependencies/bla/zziplib/zzip/conf.h
-  dependencies/bla/zziplib/zzip/fetch.h
-  dependencies/bla/zziplib/zzip/file.h
-  dependencies/bla/zziplib/zzip/format.h
-  dependencies/bla/zziplib/zzip/fseeko.h
-  dependencies/bla/zziplib/zzip/info.h
-  dependencies/bla/zziplib/zzip/lib.h
-  dependencies/bla/zziplib/zzip/memdisk.h
-  dependencies/bla/zziplib/zzip/mmapped.h
-  dependencies/bla/zziplib/zzip/plugin.h
-  dependencies/bla/zziplib/zzip/stdint.h
-  dependencies/bla/zziplib/zzip/types.h
-  dependencies/bla/zziplib/zzip/write.h
-  dependencies/bla/zziplib/zzip/zzip.h
-  dependencies/bla/zziplib/zzip/_config.h
-  dependencies/bla/zziplib/zzip/_msvc.h
-  dependencies/bla/zziplib/zzip/__debug.h
-  dependencies/bla/zziplib/zzip/__dirent.h
-  dependencies/bla/zziplib/zzip/__fnmatch.h
-  dependencies/bla/zziplib/zzip/__hints.h
-  dependencies/bla/zziplib/zzip/__mmap.h
-  dependencies/bla/zziplib/zzipwrap/wrap.h
   include/vfspluginZIP.h
   include/vfspluginZIP_config.h
   include/vfspluginZIP_CZIPArchive.h
@@ -70,108 +20,16 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
-  dependencies/bla/zlib/adler32.c
-  dependencies/bla/zlib/compress.c
-  dependencies/bla/zlib/crc32.c
-  dependencies/bla/zlib/deflate.c
-  dependencies/bla/zlib/example.c
-  dependencies/bla/zlib/gzio.c
-  dependencies/bla/zlib/infback.c
-  dependencies/bla/zlib/inffast.c
-  dependencies/bla/zlib/inflate.c
-  dependencies/bla/zlib/inftrees.c
-  dependencies/bla/zlib/minigzip.c
-  dependencies/bla/zlib/trees.c
-  dependencies/bla/zlib/uncompr.c
-  dependencies/bla/zlib/zutil.c
-  dependencies/bla/zlib/contrib/blast/blast.c
-  dependencies/bla/zlib/contrib/infback9/infback9.c
-  dependencies/bla/zlib/contrib/infback9/inftree9.c
-  dependencies/bla/zlib/contrib/inflate86/inffas86.c
-  dependencies/bla/zlib/contrib/iostream/test.cpp
-  dependencies/bla/zlib/contrib/iostream/zfstream.cpp
-  dependencies/bla/zlib/contrib/iostream2/zstream_test.cpp
-  dependencies/bla/zlib/contrib/iostream3/test.cc
-  dependencies/bla/zlib/contrib/iostream3/zfstream.cc
-  dependencies/bla/zlib/contrib/masm686/match.asm
-  dependencies/bla/zlib/contrib/masmx64/gvmat64.asm
-  dependencies/bla/zlib/contrib/masmx64/inffas8664.c
-  dependencies/bla/zlib/contrib/masmx64/inffasx64.asm
-  dependencies/bla/zlib/contrib/masmx86/gvmat32.asm
-  dependencies/bla/zlib/contrib/masmx86/gvmat32c.c
-  dependencies/bla/zlib/contrib/masmx86/inffas32.asm
-  dependencies/bla/zlib/contrib/minizip/ioapi.c
-  dependencies/bla/zlib/contrib/minizip/iowin32.c
-  dependencies/bla/zlib/contrib/minizip/miniunz.c
-  dependencies/bla/zlib/contrib/minizip/minizip.c
-  dependencies/bla/zlib/contrib/minizip/mztools.c
-  dependencies/bla/zlib/contrib/minizip/unzip.c
-  dependencies/bla/zlib/contrib/minizip/zip.c
-  dependencies/bla/zlib/contrib/puff/puff.c
-  dependencies/bla/zlib/contrib/testzlib/testzlib.c
-  dependencies/bla/zlib/contrib/untgz/untgz.c
-  dependencies/bla/zlib/examples/fitblk.c
-  dependencies/bla/zlib/examples/gun.c
-  dependencies/bla/zlib/examples/gzappend.c
-  dependencies/bla/zlib/examples/gzjoin.c
-  dependencies/bla/zlib/examples/gzlog.c
-  dependencies/bla/zlib/examples/zpipe.c
-  dependencies/bla/zlib/examples/zran.c
-  dependencies/bla/zziplib/bins/unzip-mem.c
-  dependencies/bla/zziplib/bins/unzzip.c
-  dependencies/bla/zziplib/bins/unzzipcat-mem.c
-  dependencies/bla/zziplib/bins/unzzipcat-seeko.c
-  dependencies/bla/zziplib/bins/unzzipcat.c
-  dependencies/bla/zziplib/bins/unzzipdir-mem.c
-  dependencies/bla/zziplib/bins/unzzipdir.c
-  dependencies/bla/zziplib/bins/zzcat.c
-  dependencies/bla/zziplib/bins/zzdir.c
-  dependencies/bla/zziplib/bins/zzip.c
-  dependencies/bla/zziplib/bins/zziptest.c
-  dependencies/bla/zziplib/bins/zzobfuscated.c
-  dependencies/bla/zziplib/bins/zzxorcat.c
-  dependencies/bla/zziplib/bins/zzxorcopy.c
-  dependencies/bla/zziplib/bins/zzxordir.c
-  dependencies/bla/zziplib/test/zzipself.c
-  dependencies/bla/zziplib/test/zzipsetstub.c
-  dependencies/bla/zziplib/zzip/dir.c
-  dependencies/bla/zziplib/zzip/err.c
-  dependencies/bla/zziplib/zzip/fetch.c
-  dependencies/bla/zziplib/zzip/file.c
-  dependencies/bla/zziplib/zzip/fseeko.c
-  dependencies/bla/zziplib/zzip/info.c
-  dependencies/bla/zziplib/zzip/memdisk.c
-  dependencies/bla/zziplib/zzip/mmapped.c
-  dependencies/bla/zziplib/zzip/plugin.c
-  dependencies/bla/zziplib/zzip/stat.c
-  dependencies/bla/zziplib/zzip/write.c
-  dependencies/bla/zziplib/zzip/zip.c
-  dependencies/bla/zziplib/zzipwrap/wrap.c
-  dependencies/bla/zziplib/zzipwrap/zzipwrap.c
   src/vfspluginZIP.cpp
   src/vfspluginZIP_CZIPArchive.cpp
   src/vfspluginZIP_CZipIOAccess.cpp
 )
 
+# Make sure the PLATFORM_HEADER_FILES variable is always defined
+ set( PLATFORM_HEADER_FILES "" )
 
-
-if (SDL)
-  set( PLATFORM_HEADER_FILES 
-    dependencies/bla/zziplib/SDL/SDL_rwops_zzip.h
-  )
-
-  set( PLATFORM_HEADER_INSTALL "SDL" )
-  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
-
-  set( PLATFORM_SOURCE_FILES 
-    dependencies/bla/zziplib/SDL/SDL_rwops_zzcat.c
-    dependencies/bla/zziplib/SDL/SDL_rwops_zzip.c
-  )
-
-  set( PLATFORM_SOURCE_INSTALL "SDL" )
-  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
-
-endif ()
+# Make sure the PLATFORM_SOURCE_FILES variable is always defined
+ set( PLATFORM_SOURCE_FILES "" )
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
@@ -194,15 +52,11 @@ GUCEF_config_plugin( vfspluginZIP )
 
 
 
-include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include dependencies/zlib dependencies/zziplib dependencies/zziplib/zzip dependencies/bla/zlib dependencies/bla/zlib/contrib/blast dependencies/bla/zlib/contrib/infback9 dependencies/bla/zlib/contrib/iostream dependencies/bla/zlib/contrib/iostream2 dependencies/bla/zlib/contrib/iostream3 dependencies/bla/zlib/contrib/minizip dependencies/bla/zlib/contrib/puff dependencies/bla/zlib/examples dependencies/bla/zziplib/zzip dependencies/bla/zziplib/zzipwrap include )
+include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include dependencies/zlib dependencies/zziplib dependencies/zziplib/zzip include )
 
 if ( LINUX )
   include_directories( ../../../gucefCORE/include/linux )
 endif( LINUX )
-
-if ( SDL )
-  include_directories( dependencies/bla/zziplib/SDL )
-endif( SDL )
 
 if ( WIN32 )
   include_directories( ../../../gucefCORE/include/mswin )
