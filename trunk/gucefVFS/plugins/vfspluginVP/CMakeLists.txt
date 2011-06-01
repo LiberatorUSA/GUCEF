@@ -52,6 +52,10 @@ GUCEF_config_plugin( vfspluginVP )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include include )
 
+if ( ANDROID )
+  include_directories( ../../../gucefCORE/include/android )
+endif( ANDROID )
+
 if ( LINUX )
   include_directories( ../../../gucefCORE/include/linux )
 endif( LINUX )

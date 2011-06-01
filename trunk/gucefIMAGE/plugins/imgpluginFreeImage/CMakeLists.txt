@@ -48,6 +48,10 @@ GUCEF_config_plugin( imgpluginFreeImage )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefIMAGE/include ../../../gucefMT/include dependencies/FreeImage/Source dependencies/FreeImage/Source/DeprecationManager dependencies/FreeImage/Source/FreeImageToolkit dependencies/FreeImage/Source/LibJPEG dependencies/FreeImage/Source/LibMNG dependencies/FreeImage/Source/LibOpenJPEG dependencies/FreeImage/Source/LibPNG dependencies/FreeImage/Source/LibTIFF dependencies/FreeImage/Source/Metadata dependencies/FreeImage/Source/OpenEXR dependencies/FreeImage/Source/OpenEXR/Half dependencies/FreeImage/Source/OpenEXR/Iex dependencies/FreeImage/Source/OpenEXR/IlmImf dependencies/FreeImage/Source/OpenEXR/IlmThread dependencies/FreeImage/Source/OpenEXR/Imath dependencies/FreeImage/Source/ZLib include )
 
+if ( ANDROID )
+  include_directories( ../../../gucefCORE/include/android )
+endif( ANDROID )
+
 if ( LINUX )
   include_directories( ../../../gucefCORE/include/linux )
 endif( LINUX )

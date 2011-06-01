@@ -49,6 +49,10 @@ GUCEF_config_tool( PatchSetGenerator )
 
 include_directories( ../../common/include ../../gucefCOM/include ../../gucefCOMCORE/include ../../gucefCORE/include ../../gucefMT/include ../../gucefPATCHER/include )
 
+if ( ANDROID )
+  include_directories( ../../gucefCORE/include/android )
+endif( ANDROID )
+
 if ( LINUX )
   include_directories( ../../gucefCORE/include/linux )
 endif( LINUX )

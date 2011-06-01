@@ -69,6 +69,10 @@ GUCEF_config_lib( gucefSMDRN )
 
 include_directories( ../common/include ../gucefCOM/include ../gucefCOMCORE/include ../gucefCORE/include ../gucefDRN/include ../gucefMT/include include )
 
+if ( ANDROID )
+  include_directories( ../gucefCORE/include/android )
+endif( ANDROID )
+
 if ( LINUX )
   include_directories( ../gucefCORE/include/linux )
 endif( LINUX )

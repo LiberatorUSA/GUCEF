@@ -329,7 +329,22 @@ set( SOURCE_FILES
 
 
 
-if (LINUX)
+if (ANDROID)
+  set( PLATFORM_HEADER_FILES 
+    include/android/gucefCORE_CAndroidSystemLogger.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "ANDROID" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/android/gucefCORE_CAndroidSystemLogger.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "ANDROID" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX)
   set( PLATFORM_HEADER_FILES 
     include/linux/CXTermConsoleLogger.h
     include/linux/gucefCORE_pty.h
@@ -413,6 +428,10 @@ set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_CORE
 
 include_directories( ../common/include ../gucefMT/include include )
 
+if ( ANDROID )
+  include_directories( include/android )
+endif( ANDROID )
+
 if ( LINUX )
   include_directories( include/linux )
 endif( LINUX )
@@ -432,7 +451,9 @@ endif( WIN64 )
 
 
 
-if (LINUX)
+if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )

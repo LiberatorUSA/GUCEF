@@ -48,6 +48,10 @@ GUCEF_config_tool( HDFiller )
 
 include_directories( ../../common/include ../../gucefCORE/include ../../gucefMT/include )
 
+if ( ANDROID )
+  include_directories( ../../gucefCORE/include/android )
+endif( ANDROID )
+
 if ( LINUX )
   include_directories( ../../gucefCORE/include/linux )
 endif( LINUX )
