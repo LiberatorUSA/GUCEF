@@ -51,6 +51,10 @@ GUCEF_config_lib( ArchiveDiffLib )
 
 include_directories( ../../common/include ../../gucefCOM/include ../../gucefCOMCORE/include ../../gucefCORE/include ../../gucefMT/include ../../gucefPATCHER/include include )
 
+if ( ANDROID )
+  include_directories( ../../gucefCORE/include/android )
+endif( ANDROID )
+
 if ( LINUX )
   include_directories( ../../gucefCORE/include/linux )
 endif( LINUX )

@@ -293,14 +293,14 @@ endif ()
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 set( MODULE_NAME "gucefLOADER" )
-add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefCORE gucefMT )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_LOADER_BUILD_MODULE;GUCEF_MT_EMBED_CODE;GUCEF_CORE_EMBED_CODE;GUCEF_CORE_NO_MD5_SUPPORT" )
+add_library( ${MODULE_NAME} STATIC ${ALL_FILES} )
+add_dependencies( ${MODULE_NAME} gucefMT gucefCORE )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_MT_EMBED_CODE;GUCEF_CORE_EMBED_CODE;GUCEF_CORE_NO_MD5_SUPPORT;GUCEF_LOADER_BUILD_MODULE" )
 
 include_directories( ../common/include ../gucefCORE/include ../gucefMT/include ../gucefCORE/include/ include )
 
 if ( ANDROID )
-  include_directories( ../gucefCORE/include/ )
+  include_directories( ../gucefCORE/include/android ../gucefCORE/include/ )
 endif( ANDROID )
 
 if ( GLX )

@@ -83,7 +83,9 @@ include_directories( ../common/include include )
 
 
 
-if (LINUX)
+if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )

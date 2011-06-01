@@ -54,6 +54,10 @@ GUCEF_config_plugin( vfspluginZIP )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include dependencies/zlib dependencies/zziplib dependencies/zziplib/zzip include )
 
+if ( ANDROID )
+  include_directories( ../../../gucefCORE/include/android )
+endif( ANDROID )
+
 if ( LINUX )
   include_directories( ../../../gucefCORE/include/linux )
 endif( LINUX )

@@ -66,6 +66,10 @@ set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_COM_
 
 include_directories( ../common/include ../gucefCOMCORE/include ../gucefCORE/include ../gucefMT/include include )
 
+if ( ANDROID )
+  include_directories( ../gucefCORE/include/android )
+endif( ANDROID )
+
 if ( LINUX )
   include_directories( ../gucefCORE/include/linux )
 endif( LINUX )
@@ -87,17 +91,9 @@ endif( WIN64 )
 
 if (ANDROID)
 GUCEF_config_lib( ${MODULE_NAME} )
-elseif (GLX)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (GTK)
-GUCEF_config_lib( ${MODULE_NAME} )
 elseif (LINUX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (SDL)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (SYMBIAN)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )

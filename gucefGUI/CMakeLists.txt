@@ -117,6 +117,10 @@ GUCEF_config_lib( gucefGUI )
 
 include_directories( ../common/include ../gucefCORE/include ../gucefIMAGE/include ../gucefMT/include ../gucefVFS/include include )
 
+if ( ANDROID )
+  include_directories( ../gucefCORE/include/android )
+endif( ANDROID )
+
 if ( LINUX )
   include_directories( ../gucefCORE/include/linux )
 endif( LINUX )

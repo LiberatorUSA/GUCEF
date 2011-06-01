@@ -48,6 +48,10 @@ GUCEF_config_plugin( dstorepluginPARSIFALXML )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefMT/include dependancy/libparsifal/include/libparsifal include )
 
+if ( ANDROID )
+  include_directories( ../../../gucefCORE/include/android )
+endif( ANDROID )
+
 if ( LINUX )
   include_directories( ../../../gucefCORE/include/linux )
 endif( LINUX )

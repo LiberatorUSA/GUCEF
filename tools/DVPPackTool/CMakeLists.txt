@@ -44,6 +44,10 @@ GUCEF_config_tool( DVPPackTool )
 
 include_directories( ../../common/include ../../gucefCORE/include ../../gucefMT/include ../../gucefVFS/plugins/vfspluginDVP/dependencies/DVPACKSYS/include )
 
+if ( ANDROID )
+  include_directories( ../../gucefCORE/include/android )
+endif( ANDROID )
+
 if ( LINUX )
   include_directories( ../../gucefCORE/include/linux )
 endif( LINUX )
