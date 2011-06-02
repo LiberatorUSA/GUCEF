@@ -28,7 +28,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef CDBFIELD_H
-#include "CDBFIELD.h"	/* class representing a single database field */
+#include "CDBField.h"	/* class representing a single database field */
 #define CDBFIELD_H
 #endif /* CDBFIELD_H */
 
@@ -85,8 +85,8 @@ class GUCEF_COM_EXPORT_CPP CDBQuery
         UInt16 status;
         UInt32 columns, rows;
         char *description;
-        CDBField *field;
-        CDBColumn *column;
+        CDBField* field;
+        CDBColumn* column;
 
         void Columns(UInt32 amount);
         void Rows(UInt32 amount);
