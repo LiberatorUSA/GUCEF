@@ -23,11 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
-#include "CDStoreCodecRegistry.h"
-#define GUCEF_CORE_CDSTORECODECREGISTRY_H
-#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
-
 #ifndef GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
 #include "CDStoreCodecPluginManager.h"
 #define GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
@@ -205,7 +200,7 @@ StringToModuleType( const CORE::CString moduleTypeStr )
 
 /*-------------------------------------------------------------------------*/
 
-static CORE::CDStoreCodecRegistry::TDStoreCodecPtr
+CORE::CDStoreCodecRegistry::TDStoreCodecPtr
 GetXmlDStoreCodec( void )
 {GUCEF_TRACE;
 
@@ -227,7 +222,7 @@ GetXmlDStoreCodec( void )
               CORE::CPluginManager::TPluginPtr codecPlugin =
                   CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( pathToPlugin );
 
-            #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+            #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
 
               #ifdef GUCEF_CORE_DEBUG_MODE
               const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML_d";
@@ -248,6 +243,11 @@ GetXmlDStoreCodec( void )
 
                   codecPlugin = CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( pathToPlugin );
               }
+            
+            #else
+            
+            // Plugin loading not supported
+            CORE::CPluginManager::TPluginPtr codecPlugin;  
 
             #endif
 
@@ -1059,7 +1059,7 @@ IsIndependentModuleDefinition( const TModuleInfo* moduleInfo )
     
     if ( NULL != moduleInfo )
     {
-        return ( -1 < moduleInfo->buildOrder ) && ( MODULETYPE_UNDEFINED != moduleInfo->moduleType );
+        return -1 < moduleInfo->buildOrder;
     }
     return false;
 }

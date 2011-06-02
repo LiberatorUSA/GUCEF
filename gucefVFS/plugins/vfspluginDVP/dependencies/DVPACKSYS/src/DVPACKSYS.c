@@ -43,17 +43,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #include <windows.h>		/* WIN32 API */
   #define MAX_DIR_LENGTH MAX_PATH
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+  #include <limits.h>
+  #include <unistd.h>             /* POSIX utilities */
+  #define MAX_DIR_LENGTH PATH_MAX
 #else
-  #ifdef GUCEF_LINUX_BUILD
-    #include <limits.h>
-    #include <unistd.h>             /* POSIX utilities */
-    #define MAX_DIR_LENGTH PATH_MAX
-  #else
-    #error Unsupported OS
-  #endif
+  #error Unsupported OS
 #endif
 
 /*-------------------------------------------------------------------------//

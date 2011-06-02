@@ -1,6 +1,0 @@
-
-add_library( imgpluginFreeImage ${HEADER_FILES} ${SOURCE_FILES} )
-add_dependencies( imgpluginFreeImage gucefCORE gucefMT gucefIMAGE FreeImage )
-target_link_libraries( imgpluginFreeImage gucefCORE gucefMT gucefIMAGE FreeImage )
-set_target_properties( imgpluginFreeImage PROPERTIES COMPILE_DEFINITIONS "GUCEF_CODECPLUGIN_BUILD_MODULE" )
-GUCEF_config_plugin( imgpluginFreeImage )

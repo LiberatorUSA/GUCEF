@@ -24,10 +24,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCOMDLLINIT_H
-#include "gucefCOMDLLInit.h"
-#define GUCEFCOMDLLINIT_H
-#endif /* GUCEFCOMDLLINIT_H ? */
+#ifndef GUCEF_DLLINIT_H
+#include "gucef_DLLInit.h"
+#define GUCEF_DLLINIT_H
+#endif /* GUCEF_DLLINIT_H ? */
 
 #ifndef CGUCEFCOMMODULE_H
 #include "CGUCEFCOMModule.h"
@@ -42,7 +42,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-DLL_INIT_FUNC_BEG_END( GUCEF::COM::CGUCEFCOMModule );
+GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::COM::CGUCEFCOMModule );
 
 /*-------------------------------------------------------------------------*/
 

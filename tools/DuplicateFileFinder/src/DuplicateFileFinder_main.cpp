@@ -80,6 +80,20 @@ typedef std::pair< CORE::UInt32, TFileInfo* > TFileSizeMultiMapPair;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX || GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID
+
+void
+cls( void )
+{
+    /* makeme: see:
+      http://www.cplusplus.com/forum/beginner/387/ */
+
+}
+
+#endif
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CString
 MD5FromFile( const CORE::CString& filePath )
 {GUCEF_TRACE;

@@ -211,10 +211,8 @@ main( int argc , char* argv[] )
     CORE::CStdLogger logger( logFileAccess );
     CORE::CLogManager::Instance()->AddLogger( &logger );
 
-    #ifdef GUCEF_MSWIN_BUILD
-    CORE::CMSWinConsoleLogger consoleOut;
-    CORE::CLogManager::Instance()->AddLogger( &consoleOut );
-    #endif /* GUCEF_MSWIN_BUILD ? */
+    CORE::CPlatformNativeConsoleLogger nativeConsoleLogger;
+    CORE::CLogManager::Instance()->AddLogger( nativeConsoleLogger.GetLogger() );
     
     CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
 

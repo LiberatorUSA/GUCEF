@@ -27,7 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_MT_CMUTEX_H
-#include "CMutex.h"             /* MT library mutex implementation */
+#include "gucefMT_CMutex.h"    /* MT library mutex implementation */
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 

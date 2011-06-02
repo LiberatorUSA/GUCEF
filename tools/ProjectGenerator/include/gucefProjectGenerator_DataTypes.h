@@ -30,6 +30,11 @@
 #include <map>
 #include <vector>
 
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H
@@ -192,6 +197,11 @@ typedef struct SProjectInfo TProjectInfo;
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+CORE::CDStoreCodecRegistry::TDStoreCodecPtr
+GetXmlDStoreCodec( void );
+
+/*-------------------------------------------------------------------------*/
 
 void
 InitializeModuleInfoEntry( TModuleInfoEntry& moduleEntry );

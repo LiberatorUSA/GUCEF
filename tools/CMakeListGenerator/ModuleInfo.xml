@@ -1,18 +1,15 @@
 <ModuleInfoEntry>
-    <Module Name="gucefCORE" Type="SharedLibrary" Platform="All">
+    <Module Name="CMakeListGenerator" Type="Executable" Platform="mswin;linux">
         <Dependencies>
             <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
         </Dependencies>
         <Linker>
             <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
         </Linker>
         <Preprocessor>
-            <Define String="GUCEF_CORE_BUILD_MODULE" />
+            <Define String="CMAKELISTGENERATOR_BUILD_MODULE" />
         </Preprocessor>
-    </Module>
-    <Module Platform="Android">
-        <Linker>
-            <Dependency Name="log" />
-        </Linker>
     </Module>
 </ModuleInfoEntry>

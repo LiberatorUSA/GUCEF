@@ -97,7 +97,7 @@ void cls( void )
 
 /*---------------------------------------------------------------------------*/
 
-#if GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX || GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID
 
 void
 cls( void )
