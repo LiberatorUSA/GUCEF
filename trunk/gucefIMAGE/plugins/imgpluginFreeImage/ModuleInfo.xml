@@ -1,0 +1,17 @@
+<ModuleInfoEntry>
+    <Module Name="imgpluginFreeImage" Type="SharedLibrary" Platform="mswin;linux">
+        <Dependencies>
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="FreeImage" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="FreeImage" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_CODECPLUGIN_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

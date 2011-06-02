@@ -29,6 +29,11 @@
 
 #include <android/log.h>
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -50,13 +55,13 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 static android_LogPriority
-LogTypeAndLevelToAndroidPrio( const TLogMsgType logMsgType ,
-                              const Int32 logLevel         )
+LogTypeAndLevelToAndroidPrio( const CLogManager::TLogMsgType logMsgType ,
+                              const Int32 logLevel                      )
 {
     switch ( logMsgType )
     {
-        case LOG_EXCEPTION:
-        case LOG_ERROR:
+        case CLogManager::LOG_EXCEPTION:
+        case CLogManager::LOG_ERROR:
         {
             if ( logLevel < LOGLEVEL_CRITICAL )
             {
@@ -68,9 +73,9 @@ LogTypeAndLevelToAndroidPrio( const TLogMsgType logMsgType ,
             }
             return ANDROID_LOG_FATAL;
         }
-        case LOG_DEV:
-        case LOG_DEBUG:
-        case LOG_CALLSTACK:
+        case CLogManager::LOG_DEV:
+        case CLogManager::LOG_DEBUG:
+        case CLogManager::LOG_CALLSTACK:
         {
             if ( logLevel >= LOGLEVEL_NORMAL )
             {
@@ -78,10 +83,10 @@ LogTypeAndLevelToAndroidPrio( const TLogMsgType logMsgType ,
             }
             return ANDROID_LOG_VERBOSE;
         }
-        case LOG_USER:
-        case LOG_STANDARD:
-        case LOG_SYSTEM:
-        case LOG_SERVICE:
+        case CLogManager::LOG_USER:
+        case CLogManager::LOG_STANDARD:
+        case CLogManager::LOG_SYSTEM:
+        case CLogManager::LOG_SERVICE:
         {
             if ( logLevel >= LOGLEVEL_NORMAL )
             {
@@ -93,12 +98,12 @@ LogTypeAndLevelToAndroidPrio( const TLogMsgType logMsgType ,
             }
             return ANDROID_LOG_VERBOSE;
         }
-        case LOG_PROTECTED:
+        case CLogManager::LOG_PROTECTED:
         {
             // Android does not support encypted logs
             return ANDROID_LOG_SILENT;
         }
-        case LOG_UNKNOWNTYPE:
+        case CLogManager::LOG_UNKNOWNTYPE:
         {
             return ANDROID_LOG_UNKNOWN;
         }

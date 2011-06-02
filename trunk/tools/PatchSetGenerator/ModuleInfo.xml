@@ -1,0 +1,17 @@
+<ModuleInfoEntry>
+    <Module Name="PatchSetGenerator" Type="Executable" Platform="mswin">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefPATCHER" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefPATCHER" />
+        </Linker>
+        <Preprocessor>
+            <Define String="PATCHSETGENERATOR_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

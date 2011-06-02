@@ -1,0 +1,19 @@
+<ModuleInfoEntry>
+    <Module Name="ArchiveDiff" Type="Executable" Platform="mswin;linux">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefPATCHER" />
+            <Dependency Name="ArchiveDiffLib" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefPATCHER" />
+            <Dependency Name="ArchiveDiffLib" />
+        </Linker>
+        <Preprocessor>
+            <Define String="ARCHIVEDIFF_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

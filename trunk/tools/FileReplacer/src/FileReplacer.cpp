@@ -125,6 +125,10 @@ class CMSWin32ConsoleWindow
 
 /*---------------------------------------------------------------------------*/
 
+#if ( GUCEF_PLATFORM != GUCEF_PLATFORM_ANDROID )
+
+/*---------------------------------------------------------------------------*/
+
 void
 PrintHeader( void )
 {GUCEF_TRACE;
@@ -157,6 +161,10 @@ PrintHelp( void )
 
 /*---------------------------------------------------------------------------*/
 
+#endif /* ( GUCEF_PLATFORM != GUCEF_PLATFORM_ANDROID ) */
+
+/*---------------------------------------------------------------------------*/
+
 void
 ParseParams( const int argc                        , 
              char* argv[]                          ,
@@ -183,42 +191,27 @@ ParseParams( const int argc                        ,
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MSWIN_BUILD
-
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
-{
-
-    int argc = 0;
-    char** argv = &lpcmdline;
-    if ( lpcmdline != NULL )
-    {
-        if ( *lpcmdline != '\0' )
-        {
-            argc = 1;
-        }
-    }
-    
-#else
-
-int
-main( int argc , char* argv[] )
+/*
+ *      Application entry point
+ */
+GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
-
-#endif
 
 	if ( 0 == argc )
 	{
-	    #ifdef GUCEF_MSWIN_BUILD
+	    #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+	    
 	    CMSWin32ConsoleWindow console;
+	    
 	    #endif
+
+        #if ( GUCEF_PLATFORM != GUCEF_PLATFORM_ANDROID )
 	    
 	    PrintHeader();
 	    PrintHelp();
 	    getchar();
+	    
+        #endif	    
 	}
 	else
 	{
@@ -235,7 +228,11 @@ main( int argc , char* argv[] )
                 if ( 0 == GUCEF::CORE::Delete_File( destPath.C_String() ) )
                 {
                     printf( GUCEF::CORE::CString( "ERROR: Failed to delete file: " + destPath ).C_String() );
+                    
+                    #if ( GUCEF_PLATFORM != GUCEF_PLATFORM_ANDROID )
                     getchar();
+                    #endif
+                    
                     continue;                           
                 }
                 else
@@ -249,7 +246,10 @@ main( int argc , char* argv[] )
             if ( 0 == GUCEF::CORE::Move_File( destPath.C_String(), originPath.C_String() ) )
             {
                 printf( GUCEF::CORE::CString( "ERROR: Failed to move file: " + originPath + " -> " + destPath ).C_String() );
-                getchar();                            
+                
+                #if ( GUCEF_PLATFORM != GUCEF_PLATFORM_ANDROID )
+                getchar();
+                #endif                          
             }
             else
             {
@@ -261,5 +261,6 @@ main( int argc , char* argv[] )
 	
 	return 0;
 }
+GUCEF_OSMAIN_END
 
 /*---------------------------------------------------------------------------*/

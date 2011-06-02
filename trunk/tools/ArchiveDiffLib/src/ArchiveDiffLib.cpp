@@ -1191,7 +1191,7 @@ LoadFileStatusList( const CORE::CString& filePath     ,
     {
         CORE::UInt32 fileIndex = 0;
         CORE::UInt32 totalFiles = 0;
-        CORE::CString& aFileFromSet = *multiPartFiles.begin();        
+        const CORE::CString& aFileFromSet = *multiPartFiles.begin();
         if ( GetMultiPartFileInfoFromPath( aFileFromSet ,
                                            fileIndex    ,
                                            totalFiles   ) )

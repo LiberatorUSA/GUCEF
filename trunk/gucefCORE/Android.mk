@@ -163,16 +163,22 @@ LOCAL_SRC_FILES := \
   src/PAFILE.c \
   src/streamables.cpp \
   src/streamers.cpp \
-  src/tsprinting.c
+  src/tsprinting.c \
+  src/android/gucefCORE_CAndroidSystemLogger.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/include/android \
   $(MY_MODULE_PATH)/../common/include \
   $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \
   gucefMT
+
+
+LOCAL_LDLIBS := \
+  -llog
 
 include $(BUILD_SHARED_LIBRARY)
 

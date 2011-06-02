@@ -17,9 +17,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEFCOMCORE_H
-#define GUCEFCOMCORE_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -45,5 +42,3 @@
 GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::COMCORE::CGUCEFCOMCOREModule )
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEFCOMCORE_H ? */
