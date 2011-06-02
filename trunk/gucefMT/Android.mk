@@ -40,5 +40,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../common/include
 
+LOCAL_CFLAGS := -DGUCEF_MT_BUILD_MODULE
+
 include $(BUILD_SHARED_LIBRARY)
 

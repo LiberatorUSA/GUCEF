@@ -191,7 +191,24 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
     
     // Add some spacing for readability
     includeFilesSection += "\n\n";
-    
+        
+    // Now we add the preprocessor definitions
+    CORE::CString preprocessorSection;    
+    if ( !moduleInfo.preprocessorSettings.defines.empty() )
+    {
+        preprocessorSection = "LOCAL_CFLAGS :=";
+        
+        TStringVector::const_iterator m = moduleInfo.preprocessorSettings.defines.begin();
+        while ( m != moduleInfo.preprocessorSettings.defines.end() )
+        {
+            preprocessorSection += " -D" + (*m);            
+            ++m;
+        }
+        
+        // Add some spacing for readability
+        preprocessorSection += "\n\n";
+    }
+        
     // Now we will add all the dependency linking instructions.
     // For some reason it matters, at specification time, to Android's build 
     // system whether the module you are linking to is a dynamically linked module
@@ -354,7 +371,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
         }
     }
     
-    return contentPrefix + srcFilesSection + includeFilesSection + linkingSection + manualContent + contentSuffix;
+    return contentPrefix + srcFilesSection + includeFilesSection + preprocessorSection + linkingSection + manualContent + contentSuffix;
 }
 
 /*-------------------------------------------------------------------------*/
