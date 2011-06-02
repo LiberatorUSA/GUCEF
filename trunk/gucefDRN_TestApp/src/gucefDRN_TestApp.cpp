@@ -23,10 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <windows.h>
-#undef min
-#undef max
-
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
 #define GUCEF_CORE_H
@@ -51,13 +47,9 @@
 /*
  *      Application entry point
  */
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
+GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
-               
+
     #ifdef GUCEF_DRN_DEBUG_MODE
     //GUCEF::CORE::GUCEF_LogStackToStdOut();
     //GUCEF::CORE::GUCEF_SetStackLogging( 1 );
@@ -72,10 +64,8 @@ WinMain( HINSTANCE hinstance     ,
         GUCEF::CORE::CStdLogger logger( logFileAccess );
         GUCEF::CORE::CLogManager::Instance()->AddLogger( &logger );
         
-        #ifdef GUCEF_MSWIN_BUILD
-        GUCEF::CORE::CMSWinConsoleLogger consoleOut;
-        GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
-        #endif /* GUCEF_MSWIN_BUILD ? */
+        GUCEF::CORE::CPlatformNativeConsoleLogger consoleOut;
+        GUCEF::CORE::CLogManager::Instance()->AddLogger( consoleOut.GetLogger() );
         
         GUCEF::CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
 
@@ -95,6 +85,7 @@ WinMain( HINSTANCE hinstance     ,
     }
     return 1;                                                                                                                              
 }
+GUCEF_OSMAIN_END
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

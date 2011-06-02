@@ -23,7 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <windows.h>            // needed for DebugBreak()
 #include <iostream>
 
 #ifndef GUCEF_CORE_CTSHAREDPTR_H
@@ -39,7 +38,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define ERRORHERE { std::cout << "Test failed @ " << __FILE__ << "(" << __LINE__ << ")\n"; DebugBreak(); } 
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX || GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID
+  #define DEBUGBREAK __builtin_trap()
+#elif GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+  #define DEBUGBREAK DebugBreak()
+#else
+  #define DEBUGBREAK
+#endif
+
+#define ERRORHERE { std::cout << "Test failed @ " << __FILE__ << "(" << __LINE__ << ")\n"; DEBUGBREAK; } 
 #define TESTASSERT( condition ) { if ( !( condition ) ) { ERRORHERE; } }
 
 /*-------------------------------------------------------------------------//

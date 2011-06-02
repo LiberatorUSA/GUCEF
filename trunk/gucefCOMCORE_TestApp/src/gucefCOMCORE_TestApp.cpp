@@ -23,8 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <windows.h>
-
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
 #define GUCEF_CORE_H
@@ -48,11 +46,7 @@
 /*
  *      Application entry point
  */
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
+GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
     using namespace GUCEF::CORE;
@@ -97,6 +91,7 @@ WinMain( HINSTANCE hinstance     ,
     }
     return 1;                                                                                                                              
 }
+GUCEF_OSMAIN_END
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -114,6 +114,18 @@ typedef std::map< CORE::CString, TStringVector > TStringVectorMap;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX || GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID
+
+void cls()
+{
+    // @TODO: Implement for these platforms
+}
+
+#endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX || GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID */
+
+
+/*-------------------------------------------------------------------------*/
+
 void
 BuildFileList( const CORE::CString& srcDir         ,
                const CORE::CString& relativeSrcDir ,
@@ -1022,32 +1034,8 @@ VectorToSet( const TStringVector& src )
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MSWIN_BUILD
-
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
+GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
-
-    int argc = 0;
-    char** argv = &lpcmdline;
-    if ( lpcmdline != NULL )
-    {
-        if ( *lpcmdline != '\0' )
-        {
-            argc = 1;
-        }
-    }
-    
-#else
-
-int
-main( int argc , char* argv[] )
-{GUCEF_TRACE;
-
-#endif
 
     CORE::CString logFilename = CORE::RelativePath( "$CURWORKDIR$" );
     CORE::AppendToPath( logFilename, "ReferenceUpdater_Log.txt" );
@@ -1133,5 +1121,6 @@ main( int argc , char* argv[] )
     }
     return 0;
 }
+GUCEF_OSMAIN_END
 
 /*-------------------------------------------------------------------------*/

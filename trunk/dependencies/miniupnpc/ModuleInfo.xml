@@ -1,0 +1,12 @@
+<ModuleInfoEntry>
+    <Module Name="miniupnpc" Type="SharedLibrary" Platform="All">
+        <Preprocessor>
+            <Define String="MINIUPNP_EXPORTS" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="mswin">
+        <Linker>
+            <Dependency Name="WS2_32.lib" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>

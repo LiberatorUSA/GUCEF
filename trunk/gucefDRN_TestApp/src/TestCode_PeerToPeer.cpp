@@ -35,12 +35,10 @@
 #define GUCEF_DRN_H
 #endif /* GUCEF_DRN_H ? */
 
-#ifdef GUCEF_MSWIN_BUILD
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
   #include <windows.h>
   #undef min
   #undef max
-#else
-  #include <assert.h>
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -57,14 +55,18 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MSWIN_BUILD
-  #define DebugBreak() assert( 0 )
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX || GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID
+  #define DEBUGBREAK __builtin_trap()
+#elif GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+  #define DEBUGBREAK DebugBreak()
+#else
+  #define DEBUGBREAK
 #endif
 
 /*-------------------------------------------------------------------------*/
 
 #define ERRORHERE { GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GUCEF::CORE::CString( "Test failed @ " ) + GUCEF::CORE::CString( __FILE__ ) + ':' + GUCEF::CORE::Int32ToString( __LINE__ ) ); \
-                    DebugBreak();                                                                                                                                     \
+                    DEBUGBREAK;                                                                                                                                     \
                   }
 
 /*-------------------------------------------------------------------------//
@@ -233,7 +235,7 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
 		SubscribeTo( CORE::CGUCEFApplication::Instance() );
     }
     
-    bool IsDataGroupTestComplete( DRN::CDRNPeerLinkData::TDRNDataGroupPtr& dataGroup )
+    bool IsDataGroupTestComplete( DRN::CDRNPeerLinkData::TDRNDataGroupPtr dataGroup )
     {
         if ( NULL != dataGroup )
         {
