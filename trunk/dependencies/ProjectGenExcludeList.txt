@@ -2,3 +2,4 @@ android-ndk-r4
 android-ndk-r5
 android-ndk-r5b
 android-sdk-windows
+ant

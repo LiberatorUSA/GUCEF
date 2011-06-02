@@ -17,25 +17,31 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := DVPPackTool
+LOCAL_MODULE := zziplib
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/DVP_Pack_Tool.c
+  dir.c \
+  err.c \
+  fetch.c \
+  file.c \
+  fseeko.c \
+  info.c \
+  memdisk.c \
+  mmapped.c \
+  plugin.c \
+  stat.c \
+  write.c \
+  zip.c
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/../../common/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../gucefMT/include
+  $(MY_MODULE_PATH) \
+  $(MY_MODULE_PATH)/../ \
+  $(MY_MODULE_PATH)/../../zlib
 
 
 LOCAL_SHARED_LIBRARIES := \
-  gucefCORE \
-  gucefMT
+  zlib
 
-
-LOCAL_LDLIBS := \
-  -lDVPACKSYS
-
-include $(BUILD_EXECUTABLE)
+include $(BUILD_SHARED_LIBRARY)
 

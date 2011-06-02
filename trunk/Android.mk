@@ -60,9 +60,6 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefVFS
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefVFS/plugins/vfspluginDVP/dependencies/DVPACKSYS
-include $(MY_MODULE_PATH)/Android.mk
-
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/tools/DuplicateFileFinder
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -127,9 +124,6 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefPATCHER
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/tools/ArchiveDiffLib
-include $(MY_MODULE_PATH)/Android.mk
-
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefVFS/plugins/vfspluginDVP
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/tools/GucefLogServiceLib
