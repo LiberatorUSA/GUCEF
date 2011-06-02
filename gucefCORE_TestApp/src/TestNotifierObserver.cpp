@@ -67,7 +67,15 @@ using namespace GUCEF::CORE;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define ERRORHERE { printf( "Test failed @ %s(%d)\n", __FILE__, __LINE__ ); DebugBreak(); } 
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX || GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID
+  #define DEBUGBREAK __builtin_trap()
+#elif GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+  #define DEBUGBREAK DebugBreak()
+#else
+  #define DEBUGBREAK
+#endif
+
+#define ERRORHERE { printf( "Test failed @ %s(%d)\n", __FILE__, __LINE__ ); DEBUGBREAK; } 
 
 #define SETARRAYMEM( ptr, max, value )    \
     {                                     \

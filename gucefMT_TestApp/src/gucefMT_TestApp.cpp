@@ -23,8 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <windows.h>
-
 #ifndef GUCEF_MT_H
 #include "gucefMT.h"
 #define GUCEF_MT_H
@@ -39,11 +37,7 @@
 /*
  *      Application entry point
  */
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
+GUCEF_OSMAIN_BEGIN
 {               
     try 
     {                               
@@ -58,6 +52,7 @@ WinMain( HINSTANCE hinstance     ,
     }
     return 1;                                                                                                                              
 }
+GUCEF_OSMAIN_END
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

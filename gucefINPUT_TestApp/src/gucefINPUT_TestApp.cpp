@@ -23,8 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <windows.h>
-
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
 #define GUCEF_CORE_H
@@ -44,11 +42,7 @@
 /*
  *      Application entry point
  */
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
+GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
     #ifdef GUCEF_INPUT_DEBUG_MODE
@@ -66,10 +60,8 @@ WinMain( HINSTANCE hinstance     ,
         GUCEF::CORE::CStdLogger logger( logFileAccess );
         GUCEF::CORE::CLogManager::Instance()->AddLogger( &logger );
         
-        #ifdef GUCEF_MSWIN_BUILD
-        GUCEF::CORE::CMSWinConsoleLogger consoleOut;
-        GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
-        #endif /* GUCEF_MSWIN_BUILD ? */
+        GUCEF::CORE::CPlatformNativeConsoleLogger consoleOut;
+        GUCEF::CORE::CLogManager::Instance()->AddLogger( consoleOut.GetLogger() );
         
         // @TODO add tests here
 
@@ -87,6 +79,7 @@ WinMain( HINSTANCE hinstance     ,
     }
     return 1;                                                                                                                              
 }
+GUCEF_OSMAIN_END
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

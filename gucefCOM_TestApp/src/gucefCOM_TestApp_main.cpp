@@ -24,22 +24,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <windows.h>
-
-#ifndef GUCEFCORE_H
+#ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
-#define GUCEFCORE_H
-#endif /* GUCEFCORE_H ? */
+#define GUCEF_CORE_H
+#endif /* GUCEF_CORE_H ? */
 
-#ifndef GUCEFCOMCORE_H
+#ifndef GUCEF_COMCORE_H
 #include "gucefCOMCORE.h"
-#define GUCEFCOMCORE_H
-#endif /* GUCEFCOMCORE_H ? */
+#define GUCEF_COMCORE_H
+#endif /* GUCEF_COMCORE_H ? */
 
-#ifndef GUCEFCOM_H
+#ifndef GUCEF_COM_H
 #include "gucefCOM.h"
-#define GUCEFCOM_H
-#endif /* GUCEFCOM_H ? */
+#define GUCEF_COM_H
+#endif /* GUCEF_COM_H ? */
 
 #ifndef TESTCODE_CHTTPCLIENT_H
 #include "TestCode_CHTTPClient.h"
@@ -57,61 +55,34 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-
-          
-/*
- *      Application entry point
- */
-#ifdef GUCEF_MSWIN_BUILD
-
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
-{
-
-    int argc = 0;
-    char** argv = &lpcmdline;
-    if ( lpcmdline != NULL )
-    {
-        if ( *lpcmdline != '\0' )
-        {
-            argc = 1;
-        }
-    }
-    
-#else
-
-int
-main( int argc , char* argv[] )
+GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
-#endif
-        using namespace GUCEF::CORE;
-        using namespace GUCEF::COMCORE;
-        using namespace GUCEF::COM;
-                
-        try 
-        {                               
-               // SetupHTTPClientTest();
+    using namespace GUCEF::CORE;
+    using namespace GUCEF::COMCORE;
+    using namespace GUCEF::COM;
+            
+    try 
+    {                               
+       // SetupHTTPClientTest();
 
-                RunHTTPServerTest( argc, argv );
-                
-                return 1;                                                                            
-        }
-        catch ( ... )
-        {
-                #ifdef DEBUG_MODE
-                GUCEF_PrintCallstack();
-                GUCEF_DumpCallstack( "GUCEFCallstack.txt" );
-                #endif
-                
-                ShowErrorMessage( "Unknown exception"                                                                 ,
-                                  "Unhandled exception during program execution, the application will now terminate"  );                                                         
-        }
-        GUCEF_END;
-        return 1;                                                                                                                              
+        RunHTTPServerTest( argc, argv );
+        
+        return 1;                                                                            
+    }
+    catch ( ... )
+    {
+        #ifdef DEBUG_MODE
+        GUCEF_PrintCallstack();
+        GUCEF_DumpCallstack( "GUCEFCallstack.txt" );
+        #endif
+        
+        ShowErrorMessage( "Unknown exception"                                                                 ,
+                          "Unhandled exception during program execution, the application will now terminate"  );                                                         
+    }
+    GUCEF_END;
+    return 1;                                                                                                                              
 }
+GUCEF_OSMAIN_END
 
 /*-------------------------------------------------------------------------*/
