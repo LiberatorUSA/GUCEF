@@ -25,7 +25,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef DVOSWRAP_H
-#include "dvoswrap.h"
+#include "DVOSWRAP.h"
 #define DVOSWRAP_H
 #endif /* DVOSWRAP_H ? */
 

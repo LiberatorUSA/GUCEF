@@ -426,6 +426,10 @@ add_dependencies( ${MODULE_NAME} gucefMT )
 target_link_libraries( ${MODULE_NAME} gucefMT )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_CORE_BUILD_MODULE" )
 
+if ( ANDROID )
+  target_link_libraries( ${MODULE_NAME} log )
+endif( ANDROID )
+
 include_directories( ../common/include ../gucefMT/include include )
 
 if ( ANDROID )
