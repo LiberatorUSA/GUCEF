@@ -17,25 +17,22 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := DVPPackTool
+LOCAL_MODULE := dstorepluginPARSIFALXML
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/DVP_Pack_Tool.c
+  src/DLLMainDSTOREpluginPARSIFALXML.c
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/../../common/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../gucefMT/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../../../common/include \
+  $(MY_MODULE_PATH)/../../../gucefCORE/include \
+  $(MY_MODULE_PATH)/../../../gucefMT/include \
+  $(MY_MODULE_PATH)/dependancy/libparsifal/include/libparsifal
 
 
 LOCAL_SHARED_LIBRARIES := \
-  gucefCORE \
-  gucefMT
+  libparsifal
 
-
-LOCAL_LDLIBS := \
-  -lDVPACKSYS
-
-include $(BUILD_EXECUTABLE)
+include $(BUILD_SHARED_LIBRARY)
 

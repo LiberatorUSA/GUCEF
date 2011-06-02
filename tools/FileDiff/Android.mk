@@ -17,11 +17,11 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := DVPPackTool
+LOCAL_MODULE := FileDiff
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/DVP_Pack_Tool.c
+  src/FileDiff_main.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../common/include \
@@ -30,12 +30,8 @@ LOCAL_C_INCLUDES := \
 
 
 LOCAL_SHARED_LIBRARIES := \
-  gucefCORE \
-  gucefMT
-
-
-LOCAL_LDLIBS := \
-  -lDVPACKSYS
+  gucefMT \
+  gucefCORE
 
 include $(BUILD_EXECUTABLE)
 
