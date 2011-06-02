@@ -9,4 +9,9 @@
             <Dependency Name="WS2_32.lib" />
         </Linker>
     </Module>
+    <Module Platform="android">
+        <Preprocessor>
+            <Define String="__sun" />
+        </Preprocessor>
+    </Module>
 </ModuleInfoEntry>

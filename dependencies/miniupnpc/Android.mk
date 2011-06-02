@@ -17,40 +17,25 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := gucefCOMCORE
+LOCAL_MODULE := miniupnpc
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/CCom.cpp \
-  src/CGUCEFCOMCOREModule.cpp \
-  src/CHostAddress.cpp \
-  src/CIPAddress.cpp \
-  src/CPing.cpp \
-  src/CSocket.cpp \
-  src/CTCPClientSocket.cpp \
-  src/CTCPConnection.cpp \
-  src/CTCPServerConnection.cpp \
-  src/CTCPServerSocket.cpp \
-  src/CUDPChannel.cpp \
-  src/CUDPMasterSocket.cpp \
-  src/CUDPSocket.cpp \
-  src/dvwinsock.c \
-  src/gucefCOMCORE.cpp \
-  src/gucefCOMCORE_CPingTaskConsumer.cpp \
-  src/socketutils.cpp
+  igd_desc_parse.c \
+  minisoap.c \
+  minissdpc.c \
+  miniupnpc.c \
+  miniwget.c \
+  minixml.c \
+  upnpc.c \
+  upnpcommands.c \
+  upnperrors.c \
+  upnpreplyparse.c
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../common/include \
-  $(MY_MODULE_PATH)/../gucefCORE/include \
-  $(MY_MODULE_PATH)/../gucefMT/include
+  $(MY_MODULE_PATH)
 
-LOCAL_CFLAGS := -DGUCEF_COMCORE_BUILD_MODULE
-
-
-LOCAL_SHARED_LIBRARIES := \
-  gucefMT \
-  gucefCORE
+LOCAL_CFLAGS := -DMINIUPNP_EXPORTS -D__sun
 
 include $(BUILD_SHARED_LIBRARY)
 
