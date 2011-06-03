@@ -31,17 +31,21 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../gucefCORE/include \
   $(MY_MODULE_PATH)/../../../gucefMT/include \
   $(MY_MODULE_PATH)/../../../gucefVFS/include \
-  $(MY_MODULE_PATH)/dependencies/zlib \
   $(MY_MODULE_PATH)/dependencies/zziplib \
   $(MY_MODULE_PATH)/dependencies/zziplib/zzip
 
+LOCAL_CFLAGS := -DGUCEF_VFSPLUGIN_ZIP_BUILD_MODULE
+
 
 LOCAL_SHARED_LIBRARIES := \
-  gucefVFS \
+  zziplib \
   gucefCORE \
-  gucefMT \
-  zlib \
-  zziplib
+  gucefVFS \
+  gucefMT
+
+
+LOCAL_LDLIBS := \
+  -lzlib
 
 include $(BUILD_SHARED_LIBRARY)
 
