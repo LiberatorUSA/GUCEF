@@ -10,6 +10,11 @@
             <Define String="GUCEF_CORE_BUILD_MODULE" />
         </Preprocessor>
     </Module>
+    <Module Platform="Linux">
+        <Linker>
+            <Dependency Name="ld" />
+        </Linker>
+    </Module>
     <Module Platform="Android">
         <Linker>
             <Dependency Name="log" />
