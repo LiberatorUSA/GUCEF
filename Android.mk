@@ -27,6 +27,9 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefCORE/plugins/dstorepluginPARSIFALXML/dependancy/libparsifal
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefVFS/plugins/vfspluginZIP/dependencies/zziplib
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefCORE
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -34,9 +37,6 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefMT
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefMT_TestApp
-include $(MY_MODULE_PATH)/Android.mk
-
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefVFS/plugins/vfspluginZIP/dependencies/zziplib/zzip
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefCOMCORE

@@ -1,0 +1,28 @@
+<ModuleInfoEntry>
+    <Module Name="zziplib" Type="SharedLibrary" Platform="All">
+        <Linker>
+            <Dependency Name="zlib" />
+        </Linker>
+        <Preprocessor>
+            <Define String="ZZIP_DLL" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="mswin">
+        <Dependencies>
+            <Dependency Name="zlib" />
+        </Dependencies>
+    </Module>
+    <Module Platform="linux">
+        <Dependencies>
+            <Dependency Name="zlib" />
+        </Dependencies>
+        <Preprocessor>
+            <Define String="ZZIP_HAVE_STDINT_H" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="android">
+        <Preprocessor>
+            <Define String="ZZIP_HAVE_STDINT_H" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

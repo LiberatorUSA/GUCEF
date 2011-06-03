@@ -199,7 +199,7 @@ add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML/dependancy/libparsif
 add_subdirectory( gucefINPUT/plugins/inputdriverOIS/dependency/OIS )
 add_subdirectory( gucefIMAGE/plugins/imgpluginFreeImage/dependencies/FreeImage )
 add_subdirectory( gucefVFS/plugins/vfspluginZIP/dependencies/zlib )
-add_subdirectory( gucefVFS/plugins/vfspluginZIP/dependencies/zziplib/zzip )
+add_subdirectory( gucefVFS/plugins/vfspluginZIP/dependencies/zziplib )
 add_subdirectory( gucefVFS/plugins/vfspluginDVP/dependencies/DVPACKSYS )
 add_subdirectory( dependencies/miniupnpc )
 
