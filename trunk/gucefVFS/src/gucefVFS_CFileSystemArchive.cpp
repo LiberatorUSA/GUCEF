@@ -23,6 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <string.h>
+
 #ifndef GUCEF_CORE_DVFILEUTILS_H
 #include "dvfileutils.h"
 #define GUCEF_CORE_DVFILEUTILS_H

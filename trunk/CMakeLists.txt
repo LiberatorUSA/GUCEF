@@ -21,9 +21,9 @@ cmake_policy(SET CMP0003 NEW)
 project(GUCEF)
 
 # Include necessary submodules
-set(CMAKE_MODULE_PATH 
+set(CMAKE_MODULE_PATH
   "${GUCEF_SOURCE_DIR}/projects/CMake"
-  "${GUCEF_SOURCE_DIR}/projects/CMake/Utils" 
+  "${GUCEF_SOURCE_DIR}/projects/CMake/Utils"
   "${GUCEF_SOURCE_DIR}/projects/CMake/Packages"
 )
 include(CMakeDependentOption)
@@ -68,12 +68,12 @@ if (CMAKE_COMPILER_IS_GNUCXX)
   check_cxx_compiler_flag(-fvisibility=hidden GUCEF_GCC_VISIBILITY)
   if (GUCEF_GCC_VISIBILITY)
     # determine gcc version
-    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion 
+    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
       OUTPUT_VARIABLE GUCEF_GCC_VERSION)
     message(STATUS "Detected g++ ${GUCEF_GCC_VERSION}")
     message(STATUS "Enabling GCC visibility flags")
     set(GUCEF_GCC_VISIBILITY_FLAGS "-DGUCEF_GCC_VISIBILITY -fvisibility=hidden")
-  
+
     # check if we can safely add -fvisibility-inlines-hidden
     string(TOLOWER "${CMAKE_BUILD_TYPE}" GUCEF_BUILD_TYPE)
     if (GUCEF_BUILD_TYPE STREQUAL "debug" AND GUCEF_GCC_VERSION VERSION_LESS "4.2")
@@ -98,7 +98,7 @@ endif (APPLE)
 # Find dependencies
 include(Dependencies)
 # definitions for samples
-set(GUCEF_LIBRARIES gucefCORE ) 
+set(GUCEF_LIBRARIES gucefCORE )
 
 
 # Specify build paths
@@ -207,7 +207,7 @@ add_subdirectory( dependencies/miniupnpc )
 add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML )
 add_subdirectory( gucefVFS/plugins/vfspluginDVP )
 add_subdirectory( gucefVFS/plugins/vfspluginVP )
-#add_subdirectory( gucefVFS/plugins/vfspluginZIP )
+add_subdirectory( gucefVFS/plugins/vfspluginZIP )
 add_subdirectory( gucefIMAGE/plugins/imgpluginFreeImage )
 #add_subdirectory( gucefIMAGE/plugins/imgpluginDEVIL )
 add_subdirectory( gucefINPUT/plugins/inputdriverOIS )
