@@ -1,0 +1,8 @@
+<ModuleInfoEntry>
+    <Module Name="zlib" Type="SharedLibrary" Platform="linux;mswin">
+        <Preprocessor>
+            <Define String="ZLIB_DLL" />
+            <Define String="ZLIB_INTERNAL" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
