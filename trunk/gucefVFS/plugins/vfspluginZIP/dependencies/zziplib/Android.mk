@@ -21,22 +21,24 @@ LOCAL_MODULE := zziplib
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  dir.c \
-  err.c \
-  fetch.c \
-  file.c \
-  fseeko.c \
-  info.c \
-  memdisk.c \
-  mmapped.c \
-  plugin.c \
-  stat.c \
-  write.c \
-  zip.c
+  zzip/dir.c \
+  zzip/err.c \
+  zzip/fetch.c \
+  zzip/file.c \
+  zzip/fseeko.c \
+  zzip/info.c \
+  zzip/memdisk.c \
+  zzip/mmapped.c \
+  zzip/plugin.c \
+  zzip/stat.c \
+  zzip/write.c \
+  zzip/zip.c
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH) \
-  $(MY_MODULE_PATH)/../
+  $(MY_MODULE_PATH)/zzip
+
+LOCAL_CFLAGS := -DZZIP_DLL -DZZIP_HAVE_STDINT_H
 
 
 LOCAL_LDLIBS := \

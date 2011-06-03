@@ -9,20 +9,47 @@
 #-------------------------------------------------------------------
 #
 
-# Configuration for module: vfspluginZIP
+# Configuration for module: zziplib
 
 set( HEADER_FILES 
-  include/vfspluginZIP.h
-  include/vfspluginZIP_config.h
-  include/vfspluginZIP_CZIPArchive.h
-  include/vfspluginZIP_CZipIOAccess.h
-  include/vfspluginZIP_macros.h
+  dummy.h
+  zzip/autoconf.h
+  zzip/conf.h
+  zzip/fetch.h
+  zzip/file.h
+  zzip/format.h
+  zzip/fseeko.h
+  zzip/info.h
+  zzip/lib.h
+  zzip/memdisk.h
+  zzip/mmapped.h
+  zzip/plugin.h
+  zzip/stdint.h
+  zzip/types.h
+  zzip/write.h
+  zzip/zzip.h
+  zzip/_config.h
+  zzip/_msvc.h
+  zzip/__debug.h
+  zzip/__dirent.h
+  zzip/__fnmatch.h
+  zzip/__hints.h
+  zzip/__mmap.h
 )
 
 set( SOURCE_FILES 
-  src/vfspluginZIP.cpp
-  src/vfspluginZIP_CZIPArchive.cpp
-  src/vfspluginZIP_CZipIOAccess.cpp
+  zzip/dir.c
+  zzip/err.c
+  zzip/fetch.c
+  zzip/file.c
+  zzip/fseeko.c
+  zzip/info.c
+  zzip/memdisk.c
+  zzip/mmapped.c
+  zzip/plugin.c
+  zzip/stat.c
+  zzip/write.c
+  zzip/zip.c
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -34,14 +61,18 @@ set( SOURCE_FILES
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "vfspluginZIP" )
+set( MODULE_NAME "zziplib" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefMT gucefCORE gucefVFS zziplib )
-target_link_libraries( ${MODULE_NAME} zziplib gucefCORE gucefVFS zlib gucefMT )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "ZZIP_HAVE_STDINT_H;GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE" )
+target_link_libraries( ${MODULE_NAME} zlib )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "ZZIP_DLL" )
+
+if ( ANDROID )
+  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "ZZIP_HAVE_STDINT_H" )
+endif( ANDROID )
 
 if ( LINUX )
   add_dependencies( ${MODULE_NAME} zlib )
+  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "ZZIP_HAVE_STDINT_H" )
 endif( LINUX )
 
 if ( WIN32 )
@@ -52,22 +83,18 @@ if ( WIN64 )
   add_dependencies( ${MODULE_NAME} zlib )
 endif( WIN64 )
 
-include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include dependencies/zziplib dependencies/zziplib/zzip include )
-
-if ( ANDROID )
-  include_directories( ../../../gucefCORE/include/android )
-endif( ANDROID )
+include_directories( ../zziplib zzip )
 
 if ( LINUX )
-  include_directories( ../../../gucefCORE/include/linux dependencies/zlib )
+  include_directories( ../zlib )
 endif( LINUX )
 
 if ( WIN32 )
-  include_directories( ../../../gucefCORE/include/mswin dependencies/zlib )
+  include_directories( ../zlib )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../gucefCORE/include/mswin dependencies/zlib )
+  include_directories( ../zlib )
 endif( WIN64 )
 
 

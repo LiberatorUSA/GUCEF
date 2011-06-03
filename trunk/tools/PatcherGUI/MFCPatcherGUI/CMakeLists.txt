@@ -85,14 +85,14 @@ elseif( WIN64 )
 endif()
 
 if ( WIN32 )
-  add_dependencies( ${MODULE_NAME} gucefCOMCORE gucefVFS gucefCORE gucefMT gucefCOM gucefPATCHER )
-  target_link_libraries( ${MODULE_NAME} gucefPATCHER gucefCOMCORE gucefCOM gucefVFS gucefCORE gucefMT )
+  add_dependencies( ${MODULE_NAME} gucefPATCHER gucefCOMCORE gucefVFS gucefCOM gucefMT gucefCORE )
+  target_link_libraries( ${MODULE_NAME} gucefCOM gucefMT gucefCORE gucefVFS gucefPATCHER gucefCOMCORE )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "_AFXDLL" )
 endif( WIN32 )
 
 if ( WIN64 )
-  add_dependencies( ${MODULE_NAME} gucefCOMCORE gucefVFS gucefCORE gucefMT gucefCOM gucefPATCHER )
-  target_link_libraries( ${MODULE_NAME} gucefPATCHER gucefCOMCORE gucefCOM gucefVFS gucefCORE gucefMT )
+  add_dependencies( ${MODULE_NAME} gucefPATCHER gucefCOMCORE gucefVFS gucefCOM gucefMT gucefCORE )
+  target_link_libraries( ${MODULE_NAME} gucefCOM gucefMT gucefCORE gucefVFS gucefPATCHER gucefCOMCORE )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "_AFXDLL" )
 endif( WIN64 )
 
