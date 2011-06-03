@@ -3,7 +3,7 @@
 
 /* NOTE: this is part of libzzipmmapped (i.e. it is not libzzip). */
 
-#include <zzip/types.h>
+#include <zzip/zzip_types.h>
 #include <zzip/mmapped.h>
 
 #ifdef __cplusplus

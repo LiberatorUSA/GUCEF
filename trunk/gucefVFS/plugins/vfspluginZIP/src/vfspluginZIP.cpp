@@ -60,6 +60,14 @@ typedef CORE::CTFactory< VFS::CIArchive, CZIPArchive > TZIPArchiveFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+static TZIPArchiveFactory zipArchiveFactory;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -68,8 +76,9 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    VFS::CVFS::Instance()->RegisterArchiveFactory( "zip", *new TZIPArchiveFactory() );
-    VFS::CVFS::Instance()->RegisterArchiveFactory( "pk3", *new TZIPArchiveFactory() );
+    VFS::CVFS::Instance()->RegisterArchiveFactory( "zip", zipArchiveFactory );
+    VFS::CVFS::Instance()->RegisterArchiveFactory( "pk3", zipArchiveFactory );
+    VFS::CVFS::Instance()->RegisterArchiveFactory( "jar", zipArchiveFactory );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -80,6 +89,7 @@ GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 
     VFS::CVFS::Instance()->UnregisterArchiveFactory( "zip" );
     VFS::CVFS::Instance()->UnregisterArchiveFactory( "pk3" );
+    VFS::CVFS::Instance()->UnregisterArchiveFactory( "jar" );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -100,7 +110,7 @@ const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
     
-    return "Copyright (C) Dinand Vanvelzen, LGPL license";
+    return "Copyright (C) Dinand Vanvelzen, LGPL license version 3";
 }
 
 /*--------------------------------------------------------------------------*/
@@ -109,7 +119,7 @@ const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    return "Generic GUCEF plugin for VFS \"ZIP\" archives";
+    return "Generic GUCEF plugin for VFS \"ZIP\" archives using zziplib and zlib";
 }
 
 /*-------------------------------------------------------------------------//

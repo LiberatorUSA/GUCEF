@@ -1,9 +1,9 @@
 #ifndef _ZZIP_FORMATS_H
 #define _ZZIP_FORMATS_H
 
-#include <zzip/types.h>
+#include <zzip/zzip_types.h>
 #include <zzip/format.h> 
-#include <zzip/stdint.h>
+#include <zzip/zzip_stdint.h>
 
 /* linux knows "byteswap.h" giving us an optimized variant */
 #ifdef ZZIP_HAVE_BYTESWAP_H

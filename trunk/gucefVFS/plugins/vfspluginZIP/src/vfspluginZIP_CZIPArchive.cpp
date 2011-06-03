@@ -23,8 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "zzip.h"
-
 #ifndef GUCEF_CORE_DVMD5UTILS_H
 #include "dvmd5utils.h"
 #define GUCEF_CORE_DVMD5UTILS_H
@@ -55,9 +53,19 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef VFSPLUGIN_ZIP_CZIPIOACCESSS_H
 #include "vfspluginZIP_CZipIOAccess.h"
+#define VFSPLUGIN_ZIP_CZIPIOACCESSS_H
+#endif /* VFSPLUGIN_ZIP_CZIPIOACCESSS_H ? */
 
 #include "vfspluginZIP_CZIPArchive.h"
+
+// Include the zzip header last because it performs some funky type
+// magic which will screw up types in other headers
+#ifndef _ZZIP_ZZIP_H
+#include "zzip.h"
+#define _ZZIP_ZZIP_H
+#endif /* _ZZIP_ZZIP_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

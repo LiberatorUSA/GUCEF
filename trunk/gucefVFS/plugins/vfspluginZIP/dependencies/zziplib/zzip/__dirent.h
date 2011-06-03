@@ -24,11 +24,93 @@
 #define _zzip_readdir   readdir
 #define _zzip_closedir  closedir
 #define _zzip_rewinddir rewinddir
-#define _zzip_telldir   telldir
-#define _zzip_seekdir   seekdir
 #define _zzip_DIR       DIR
 
 #include <dirent.h>
+
+#if defined( ANDROID ) || defined( __ANDROID__ )
+
+/*
+    Dinand Vanvelzen hack for Android.
+    
+    Android does not have telldir or seekdir so I made replacement
+    functions which should do the job as well as can be expected from these
+    known-to-be-less-then-perfect functions
+*/
+
+#define _zzip_telldir   android_telldir
+#define _zzip_seekdir   android_seekdir
+
+/*
+  telldir
+
+  Returns the "position" in the "directory stream" which can be used with
+  seekdir to go back to an old entry. We simply return the value in stat.
+*/
+static uint64_t
+android_telldir( struct dirent* dirp )
+{
+    errno = 0;
+
+    if (!dirp) 
+    {
+	    errno = EFAULT;
+	    return -1;
+    }
+    return dirp->d_ino;
+}
+
+/*
+  seekdir
+
+  Seek to an entry previously returned by telldir. We rewind the directory
+  and call readdir repeatedly until either dd_stat is the position number
+  or -1 (off the end). This is not perfect, in that the directory may
+  have changed while we weren't looking. But that is probably the case with
+  any such system.
+*/
+static void
+android_seekdir( struct dirent* dirp, uint64_t lPos )
+{
+    errno = 0;
+    
+    if (!dirp) 
+    {
+	    errno = EFAULT;
+	    return;
+    }
+    
+    if (lPos < -1) 
+    {
+	    /* Seeking to an invalid position. */
+	    errno = EINVAL;
+	    return;
+    }
+    else
+    if (lPos == -1) 
+    {
+	    /* Seek past end. */
+	    if (dirp->d_ino != -1) 
+	    {
+	        closedir( (DIR*) dirp);
+	    }
+    } 
+    else
+    {
+	    /* Rewind and read forward to the appropriate index. */
+	    rewinddir( (DIR*) dirp );
+    	
+	    while ( ( dirp->d_ino != lPos ) && readdir( (DIR*) dirp ) );
+    }
+}
+
+#else /* defined( ANDROID ) || defined( __ANDROID__ ) ? */
+
+#define _zzip_telldir telldir
+#define _zzip_seekdir seekdir
+
+#endif
+
 
 #elif defined ZZIP_HAVE_WINBASE_H
 #define USE_DIRENT 2

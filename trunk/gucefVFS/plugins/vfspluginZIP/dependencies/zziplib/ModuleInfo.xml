@@ -1,18 +1,21 @@
 <ModuleInfoEntry>
     <Module Name="zziplib" Type="SharedLibrary" Platform="All">
-        <Linker>
-            <Dependency Name="zlib" />
-        </Linker>
         <Preprocessor>
             <Define String="ZZIP_DLL" />
         </Preprocessor>
     </Module>
     <Module Platform="mswin">
+        <Linker>
+            <Dependency Name="zlib" />
+        </Linker>
         <Dependencies>
             <Dependency Name="zlib" />
         </Dependencies>
     </Module>
     <Module Platform="linux">
+        <Linker>
+            <Dependency Name="zlib" />
+        </Linker>
         <Dependencies>
             <Dependency Name="zlib" />
         </Dependencies>
@@ -24,5 +27,8 @@
         <Preprocessor>
             <Define String="ZZIP_HAVE_STDINT_H" />
         </Preprocessor>
+        <Linker>
+            <Dependency Name="z" />
+        </Linker>
     </Module>
 </ModuleInfoEntry>
