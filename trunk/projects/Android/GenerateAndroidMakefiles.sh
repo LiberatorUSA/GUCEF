@@ -77,7 +77,7 @@ fi
 echo "GENERATORPATH = $TEST_PATH"
 
 # invoke the generator
-$GENERATORPATH *rootDir=%GUCEF_HOME%* *outputDir=%GUCEF_HOME%* *generators=androidmake* *dirsToIgnore=.svn;_svn* *projectName=GUCEF*
+$GENERATORPATH *rootDir=%GUCEF_HOME%* *outputDir=%GUCEF_HOME%* *generators=androidmake* *dirsToIgnore=.svn* *projectName=GUCEF*
 
 echo "Press enter to continue..."
 line=""
