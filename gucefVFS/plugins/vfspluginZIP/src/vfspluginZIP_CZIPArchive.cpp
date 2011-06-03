@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -77,7 +77,7 @@ namespace ZIP {
 
 /// Utility method to format out zzip errors
 VFS::CString
-getZzipErrorDescription( zzip_error_t zzipError ) 
+getZzipErrorDescription( zzip_error_t zzipError )
 {GUCEF_TRACE;
 
     VFS::CString errorMsg;
@@ -87,22 +87,22 @@ getZzipErrorDescription( zzip_error_t zzipError )
         break;
     case ZZIP_OUTOFMEM:
         errorMsg = "Out of memory.";
-        break;            
+        break;
     case ZZIP_DIR_OPEN:
-    case ZZIP_DIR_STAT: 
+    case ZZIP_DIR_STAT:
     case ZZIP_DIR_SEEK:
     case ZZIP_DIR_READ:
         errorMsg = "Unable to read zip file.";
-        break;            
+        break;
     case ZZIP_UNSUPP_COMPR:
         errorMsg = "Unsupported compression format.";
-        break;            
+        break;
     case ZZIP_CORRUPTED:
         errorMsg = "Corrupted archive.";
-        break;            
+        break;
     default:
         errorMsg = "Unknown error.";
-        break;            
+        break;
     };
 
     return errorMsg;
@@ -121,7 +121,7 @@ CZIPArchive::CZIPArchive( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CZIPArchive::~CZIPArchive()
 {GUCEF_TRACE;
 
@@ -129,7 +129,7 @@ CZIPArchive::~CZIPArchive()
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 VFS::CIArchive::CVFSHandlePtr
 CZIPArchive::GetFile( const VFS::CString& file      ,
                       const char* mode              ,
@@ -146,18 +146,18 @@ CZIPArchive::GetFile( const VFS::CString& file      ,
         // Create path to file
         CORE::CString filePath = m_archivePath;
         CORE::AppendToPath( filePath, file );
-        
+
         // Construct & return handle
         return VFS::CVFS::CVFSHandlePtr( new VFS::CVFSHandle( fileAccess, file, filePath ), this );
     }
-    return VFS::CVFS::CVFSHandlePtr(); 
+    return VFS::CVFS::CVFSHandlePtr();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CZIPArchive::GetList( TStringSet& outputList       ,
-                      const VFS::CString& location , 
+                      const VFS::CString& location ,
                       bool recursive               ,
                       bool includePathInFilename   ,
                       const VFS::CString& filter   ,
@@ -168,7 +168,7 @@ CZIPArchive::GetList( TStringSet& outputList       ,
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CZIPArchive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
@@ -193,7 +193,7 @@ CZIPArchive::GetFileSize( const VFS::CString& filePath ) const
 
         return zstat.st_size;
     }
-    return 0;    
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -202,7 +202,7 @@ time_t
 CZIPArchive::GetFileModificationTime( const VFS::CString& filePath ) const
 {
     // @todo: makeme
-    return 0;    
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -214,10 +214,10 @@ CZIPArchive::LoadFile( const VFS::CString& file      ,
 
     // Check for failed archive
     if ( NULL == m_zipRoot ) return NULL;
-    
+
     // Get non const access, no worries, it wont be changed
     ZZIP_DIR* zipRoot = const_cast< ZZIP_DIR* >( m_zipRoot );
-    
+
     // Format not used here (always binary)
     ZZIP_FILE* zipFile = zzip_file_open( zipRoot, file.C_String(), ZZIP_ONLYZIP | ZZIP_CASELESS );
     if ( NULL == zipFile )
@@ -234,14 +234,14 @@ CZIPArchive::LoadFile( const VFS::CString& file      ,
     ZZIP_STAT zstat;
     zzip_dir_stat( zipRoot, file.C_String(), &zstat, ZZIP_CASEINSENSITIVE );
 
-    CZipIOAccess* fileAccess = new CZipIOAccess( zipFile, zstat.st_size ); 
-    
+    CZipIOAccess* fileAccess = new CZipIOAccess( zipFile, zstat.st_size );
+
     // We will not load anything in memory for now (ignore memLoadSize)
     return fileAccess;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 VFS::CString
 CZIPArchive::GetFileHash( const VFS::CString& file ) const
 {GUCEF_TRACE;
@@ -250,25 +250,25 @@ CZIPArchive::GetFileHash( const VFS::CString& file ) const
     if ( NULL != fileAccess )
     {
         VFS::UInt8 digest[ 16 ];
-        if ( 0 != CORE::md5frommfile( fileAccess->CStyleAccess() ,
-                                      digest                     ) )
+        if ( 0 != CORE::md5fromfile( fileAccess->CStyleAccess() ,
+                                    digest                     ) )
         {
             delete fileAccess;
-            
+
             char md5_str[ 48 ];
             CORE::md5tostring( digest, md5_str );
             VFS::CString md5Str;
             md5Str.Set( md5_str, 48 );
             return md5Str;
         }
-        
-        delete fileAccess; 
+
+        delete fileAccess;
     }
     return VFS::CString();
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const VFS::CString&
 CZIPArchive::GetArchiveName( void ) const
 {GUCEF_TRACE;
@@ -300,7 +300,7 @@ CZIPArchive::CheckZzipError( int zzipError                 ,
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CZIPArchive::LoadArchive( const VFS::CString& archiveName ,
                           const VFS::CString& archivePath ,
@@ -309,7 +309,7 @@ CZIPArchive::LoadArchive( const VFS::CString& archiveName ,
 
     // We do not support writable ZIP archives
     if ( writableRequest ) return false;
-    
+
     if ( NULL == m_zipRoot )
     {
         zzip_error_t zzipError;
@@ -320,20 +320,20 @@ CZIPArchive::LoadArchive( const VFS::CString& archiveName ,
         {
             return false;
         }
-        
+
         // Cache names
         ZZIP_DIRENT zzipEntry;
         while ( zzip_dir_read( m_zipRoot, &zzipEntry ) )
         {
             TZipEntry info;
-            
+
             // Get the entry name
             info.path = zzipEntry.d_name;
-            
+
             // Get sizes
             info.compressedSize = static_cast<size_t>(zzipEntry.d_csize);
             info.uncompressedSize = static_cast<size_t>(zzipEntry.st_size);
-            
+
             // Check for folder entries
             VFS::CString filename = CORE::ExtractFilename( info.path );
             if ( filename.Length() == 0 )
@@ -362,7 +362,7 @@ CZIPArchive::UnloadArchive( void )
     {
         zzip_dir_close( m_zipRoot );
         m_zipRoot = NULL;
-        
+
         m_fileList.clear();
     }
     return true;
