@@ -29,6 +29,7 @@ elseif (UNIX)
   set(GUCEF_LIB_MINSIZE_PATH "")
   set(GUCEF_LIB_DEBUG_PATH "")
   set(GUCEF_PLUGIN_PATH "/GUCEF")
+  set(LINUX "1")
 endif ()
 
 # create vcproj.user file for Visual Studio to set debug working directory
@@ -87,7 +88,7 @@ function(GUCEF_config_common TARGETNAME)
 
   GUCEF_create_vcproj_userfile(${TARGETNAME})
 
-  if (MSVC) 
+  if (MSVC)
     add_definitions( "/D_CRT_SECURE_NO_WARNINGS /wd4251 /nologo" )
   endif()
 
@@ -111,7 +112,7 @@ function(GUCEF_config_lib LIBNAME)
       # add GCC visibility flags to shared library build
       set_target_properties(${LIBNAME} PROPERTIES COMPILE_FLAGS "${GUCEF_GCC_VISIBILITY_FLAGS}")
 	endif (CMAKE_COMPILER_IS_GNUCXX)
-	
+
 	# Set some Mac OS X specific framework settings, including installing the headers in subdirs
 	if (APPLE AND NOT GUCEF_BUILD_PLATFORM_IPHONE)
       set_target_properties(${LIBNAME} PROPERTIES XCODE_ATTRIBUTE_GCC_PRECOMPILE_PREFIX_HEADER "YES")
@@ -126,7 +127,7 @@ function(GUCEF_config_lib LIBNAME)
 	endif (APPLE AND NOT GUCEF_BUILD_PLATFORM_IPHONE)
   endif (GUCEF_STATIC)
   GUCEF_install_target(${LIBNAME} "")
-  
+
   if (GUCEF_INSTALL_PDB)
     # install debug pdb files
     if (GUCEF_STATIC)
@@ -170,7 +171,7 @@ function(GUCEF_config_plugin PLUGINNAME)
       set_target_properties(${PLUGINNAME} PROPERTIES COMPILE_FLAGS "${GUCEF_GCC_VISIBILITY_FLAGS}")
       # disable "lib" prefix on Unix
       set_target_properties(${PLUGINNAME} PROPERTIES PREFIX "")
-	endif (CMAKE_COMPILER_IS_GNUCXX)	
+	endif (CMAKE_COMPILER_IS_GNUCXX)
   endif (GUCEF_STATIC)
   GUCEF_install_target(${PLUGINNAME} ${GUCEF_PLUGIN_PATH})
 
@@ -202,7 +203,7 @@ endfunction(GUCEF_config_plugin)
 function(GUCEF_config_sample SAMPLENAME)
   # The PRODUCT_NAME target setting cannot contain underscores.  Just remove them
   # Known bug in Xcode CFBundleIdentifier processing rdar://6187020
-  # Can cause an instant App Store rejection. Also, code signing will fail. 
+  # Can cause an instant App Store rejection. Also, code signing will fail.
   #if (GUCEF_BUILD_PLATFORM_IPHONE)
 #    string (REPLACE "_" "" SAMPLENAME ${SAMPLENAME})
   #endif()
@@ -214,13 +215,13 @@ function(GUCEF_config_sample SAMPLENAME)
       INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
     set_property(TARGET ${SAMPLENAME} PROPERTY INSTALL_RPATH_USE_LINK_PATH TRUE)
   endif ()
-  
+
   if (APPLE)
     # On OS X, create .app bundle
     set_property(TARGET ${SAMPLENAME} PROPERTY MACOSX_BUNDLE TRUE)
 
 	if (GUCEF_BUILD_PLATFORM_IPHONE)
-      set (GUCEF_SAMPLE_CONTENTS_PATH 
+      set (GUCEF_SAMPLE_CONTENTS_PATH
         ${CMAKE_BINARY_DIR}/bin/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/$(PRODUCT_NAME).app)
       add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
         COMMAND cp ARGS ${CMAKE_BINARY_DIR}/bin/*.cfg ${GUCEF_SAMPLE_CONTENTS_PATH}/
@@ -230,29 +231,29 @@ function(GUCEF_config_sample SAMPLENAME)
       )
 	else ()
       # also, symlink frameworks so .app is standalone
-      # NOTE: $(CONFIGURATION) is not resolvable at CMake run time, it's only 
+      # NOTE: $(CONFIGURATION) is not resolvable at CMake run time, it's only
       # valid at build time (hence parenthesis rather than braces)
-      set (GUCEF_SAMPLE_CONTENTS_PATH 
+      set (GUCEF_SAMPLE_CONTENTS_PATH
         ${CMAKE_BINARY_DIR}/bin/$(CONFIGURATION)/${SAMPLENAME}.app/Contents)
       add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
         COMMAND mkdir ARGS -p ${GUCEF_SAMPLE_CONTENTS_PATH}/Frameworks
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/GUCEF.framework 
+        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/GUCEF.framework
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Frameworks/
-        COMMAND ln ARGS -s -f ${CMAKE_SOURCE_DIR}/Dependencies/Cg.framework 
+        COMMAND ln ARGS -s -f ${CMAKE_SOURCE_DIR}/Dependencies/Cg.framework
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Frameworks/
-        COMMAND ln ARGS -s -f ${CMAKE_SOURCE_DIR}/Dependencies/CEGUI.framework 
+        COMMAND ln ARGS -s -f ${CMAKE_SOURCE_DIR}/Dependencies/CEGUI.framework
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Frameworks/
       )
       # now cfg files
       add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
         COMMAND mkdir ARGS -p ${GUCEF_SAMPLE_CONTENTS_PATH}/Resources
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/bin/plugins.cfg 
+        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/bin/plugins.cfg
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Resources/
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/bin/resources.cfg 
+        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/bin/resources.cfg
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Resources/
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/bin/media.cfg 
+        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/bin/media.cfg
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Resources/
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/bin/quake3settings.cfg 
+        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/bin/quake3settings.cfg
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Resources/
       )
       # now plugins
@@ -260,7 +261,7 @@ function(GUCEF_config_sample SAMPLENAME)
         COMMAND mkdir ARGS -p ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins)
       if (GUCEF_BUILD_RENDERSYSTEM_GL)
         add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-          COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/RenderSystem_GL.dylib 
+          COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/RenderSystem_GL.dylib
             ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
         )
       endif ()
@@ -270,43 +271,43 @@ function(GUCEF_config_sample SAMPLENAME)
             ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
         )
       endif ()
-      if (GUCEF_BUILD_PLUGIN_BSP)    
+      if (GUCEF_BUILD_PLUGIN_BSP)
         add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_BSPSceneManager.dylib 
+        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_BSPSceneManager.dylib
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
         )
       endif()
-      if (GUCEF_BUILD_PLUGIN_CG)    
+      if (GUCEF_BUILD_PLUGIN_CG)
         add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_CgProgramManager.dylib 
+        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_CgProgramManager.dylib
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
         )
       endif()
-      if (GUCEF_BUILD_PLUGIN_OCTREE)    
+      if (GUCEF_BUILD_PLUGIN_OCTREE)
         add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_OctreeSceneManager.dylib 
+        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_OctreeSceneManager.dylib
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
        )
       endif()
-      if (GUCEF_BUILD_PLUGIN_PCZ)    
+      if (GUCEF_BUILD_PLUGIN_PCZ)
         add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-          COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_PCZSceneManager.dylib 
-            ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/    
+          COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_PCZSceneManager.dylib
+            ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
         )
         add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_OctreeZone.dylib 
+        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_OctreeZone.dylib
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
       )
       endif()
-      if (GUCEF_BUILD_PLUGIN_PFX)    
+      if (GUCEF_BUILD_PLUGIN_PFX)
         add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_ParticleFX.dylib 
+        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_ParticleFX.dylib
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
         )
       endif()
-      if (GUCEF_BUILD_CEGUIRENDERER)    
+      if (GUCEF_BUILD_CEGUIRENDERER)
         add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/libCEGUIGUCEFRenderer.dylib 
+        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/libCEGUIGUCEFRenderer.dylib
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
         )
       endif()
@@ -324,7 +325,7 @@ function(GUCEF_config_sample SAMPLENAME)
         DESTINATION bin${GUCEF_RELWDBG_PATH} CONFIGURATIONS RelWithDebInfo
         )
     endif ()
-  endif ()	
+  endif ()
 
 endfunction(GUCEF_config_sample)
 
@@ -352,6 +353,6 @@ function(GUCEF_config_tool TOOLNAME)
         CONFIGURATIONS RelWithDebInfo
         )
     endif ()
-  endif ()	
+  endif ()
 
 endfunction(GUCEF_config_tool)

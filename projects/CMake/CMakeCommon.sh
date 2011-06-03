@@ -17,7 +17,7 @@ SKIP_GUCEF_CMAKELISTSFILEGENERATION=${SKIP_GUCEF_CMAKELISTSFILEGENERATION:=undef
 if [ "$SKIP_GUCEF_CMAKELISTSFILEGENERATION" = "undefined" ];
 then 
   echo "*** Generate CMakeLists.txt files ***"
-  . GenerateCMakeLists.sh
+  #. GenerateCMakeLists.sh
 else 
   echo "Skipping GUCEF's CMakeLists file generation"
 fi

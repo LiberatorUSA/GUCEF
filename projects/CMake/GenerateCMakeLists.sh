@@ -19,13 +19,13 @@ function SetGucefHome {
 
 #------------------------------------------------------------------------------
 
-function FindGucefDebugCMakeListGenerator {
+function FindGucefDebugProjectGenerator {
   
-  TEST_PATH="$GUCEF_HOME/common/bin/CBNIX/bin/CMakeListGenerator"
+  TEST_PATH="$GUCEF_HOME/common/bin/CBNIX/bin/ProjectGenerator"
   echo "Testing for executable binary @ $TEST_PATH"
   if [ -x "$TEST_PATH" ];
   then
-    echo "Found Debug version of GUCEF CMakeListGenerator"
+    echo "Found Debug version of GUCEF ProjectGenerator"
     GENERATORPATH=$TEST_PATH
   fi
 
@@ -33,13 +33,13 @@ function FindGucefDebugCMakeListGenerator {
 
 #------------------------------------------------------------------------------
 
-function FindGucefReleaseCMakeListGenerator {
+function FindGucefReleaseProjectGenerator {
   
-  TEST_PATH="$GUCEF_HOME/tools/CMakeListGenerator/bin/ReleasedBins/Linux/26June2010/CMakeListGenerator"
+  TEST_PATH="$GUCEF_HOME/tools/ProjectGenerator/bin/ReleasedBins/Linux/5April2011/ProjectGenerator"
   echo "Testing for executable binary @ $TEST_PATH"
   if [ -x "$TEST_PATH" ];
   then
-    echo "Found Release version of GUCEF CMakeListGenerator dated 26'th of June 2010"
+    echo "Found Release version of GUCEF ProjectGenerator dated 5th of April 2011"
     GENERATORPATH=$TEST_PATH
   fi
 
@@ -47,13 +47,13 @@ function FindGucefReleaseCMakeListGenerator {
 
 #------------------------------------------------------------------------------
 
-function FindCMakeListGenerator {
+function FindProjectGenerator {
 
   GENERATORPATH=${GENERATORPATH:=undefined}
-  FindGucefDebugCMakeListGenerator
+  FindGucefDebugProjectGenerator
   if [ "$GUCEF_HOME" = "undefined" ]; 
   then
-    FindGucefReleaseCMakeListGenerator
+    FindGucefReleaseProjectGenerator
   fi
 }
 
@@ -67,11 +67,11 @@ echo "GENERATECMAKELISTS_SCRIPTSTARTDIR = $GENERATECMAKELISTS_SCRIPTSTARTDIR"
 # Make sure the GUCEF_HOME variable is set
 SetGucefHome
 
-# Determine a path to a CMakeListGenerator binary
+# Determine a path to a ProjectGenerator binary
 GENERATORPATH=${GENERATORPATH:=undefined}
-FindCMakeListGenerator
+FindProjectGenerator
 if [ "$GENERATORPATH" = "undefined" ]; then
-  echo "Error: Unable to find a CMakeListGenerator binary"
+  echo "Error: Unable to find a ProjectGenerator binary"
   exit
 fi
 echo "GENERATORPATH = $TEST_PATH"
