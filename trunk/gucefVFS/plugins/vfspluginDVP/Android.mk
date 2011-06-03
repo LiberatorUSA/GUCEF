@@ -36,8 +36,8 @@ LOCAL_CFLAGS := -DGUCEF_VFSPLUGIN_DVP_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \
-  gucefMT \
   gucefCORE \
+  gucefMT \
   gucefVFS \
   DVPACKSYS
 

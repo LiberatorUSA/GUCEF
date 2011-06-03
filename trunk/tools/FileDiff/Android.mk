@@ -30,8 +30,8 @@ LOCAL_C_INCLUDES := \
 
 
 LOCAL_SHARED_LIBRARIES := \
-  gucefMT \
-  gucefCORE
+  gucefCORE \
+  gucefMT
 
 include $(BUILD_EXECUTABLE)
 
