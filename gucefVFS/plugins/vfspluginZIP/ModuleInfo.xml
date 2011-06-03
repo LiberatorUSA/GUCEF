@@ -11,7 +11,6 @@
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefVFS" />
             <Dependency Name="zziplib" />
-            <Dependency Name="zlib" />
         </Linker>
         <Preprocessor>
             <Define String="GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE" />
