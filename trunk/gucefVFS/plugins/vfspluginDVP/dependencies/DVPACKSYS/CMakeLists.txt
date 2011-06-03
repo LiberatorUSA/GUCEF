@@ -13,6 +13,7 @@
 
 set( HEADER_FILES 
   include/DVPACKSYS.h
+  include/DVPACKSYS_ETypes.h
 )
 
 set( SOURCE_FILES 
