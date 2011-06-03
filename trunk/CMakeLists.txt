@@ -205,7 +205,7 @@ add_subdirectory( dependencies/miniupnpc )
 
 # Setup GUCEF Plugin modules
 add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML )
-#add_subdirectory( gucefVFS/plugins/vfspluginDVP )
+add_subdirectory( gucefVFS/plugins/vfspluginDVP )
 add_subdirectory( gucefVFS/plugins/vfspluginVP )
 #add_subdirectory( gucefVFS/plugins/vfspluginZIP )
 add_subdirectory( gucefIMAGE/plugins/imgpluginFreeImage )

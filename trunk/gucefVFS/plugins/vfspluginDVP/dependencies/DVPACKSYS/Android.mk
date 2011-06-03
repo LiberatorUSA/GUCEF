@@ -17,23 +17,22 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := DVPPackTool
+LOCAL_MODULE := DVPACKSYS
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/DVP_Pack_Tool.c
+  src/DVPACKSYS.c
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/../../common/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../gucefMT/include \
-  $(MY_MODULE_PATH)/../../gucefVFS/plugins/vfspluginDVP/dependencies/DVPACKSYS/include
+  $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/../../../../../common/include \
+  $(MY_MODULE_PATH)/../../../../../gucefCORE/include \
+  $(MY_MODULE_PATH)/../../../../../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \
-  DVPACKSYS \
   gucefCORE \
   gucefMT
 
-include $(BUILD_EXECUTABLE)
+include $(BUILD_SHARED_LIBRARY)
 

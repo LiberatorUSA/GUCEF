@@ -263,7 +263,9 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
         /**
          *  Trys to fill the dynamic buffer with the contents of the file given
          */
-        bool LoadContentFromFile( const CString& filePath );
+        bool LoadContentFromFile( const CString& filePath       ,
+                                  const UInt32 offsetInFile = 0 ,
+                                  const Int32 bytesToRead = -1  );
 
         /**
          *  Provides mutable access to the buffer as a block of memory

@@ -789,7 +789,7 @@ DVP_IOA_Find_Entry_Data( TIOAccess *access       ,
                 /*
                  *      Compare name
                  */
-                if ( !strcmp( ename, name ) )
+                if ( 0 == strcmp( ename, name ) )
                 {
                         /*
                          *      Found entry with name requested
@@ -1201,7 +1201,7 @@ DVP_IOA_Extract_All_Files( TIOAccess *access      ,
                 /*
                  *      Is the entry a dir or a file ?
                  */
-                if ( entry.size )
+                if ( 0 != entry.size )
                 {
                         /*
                          *      We have a file entry. We will extract the file
@@ -1221,7 +1221,7 @@ DVP_IOA_Extract_All_Files( TIOAccess *access      ,
                         /*
                          *      We have a directory entry
                          */
-                        if ( !strcmp( entry.name, ".." ) )
+                        if ( 0 != strcmp( entry.name, ".." ) )
                         {
                                 /*
                                  *      Go up one level by stripping last subdir

@@ -1,5 +1,5 @@
 /*
- *  DVPACKTOOL Application for handling DVP files
+ *  DVPACKSYS module for handling DVP files
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -42,9 +42,21 @@
 #include <stdio.h>            /* standard I/O */
 #include <string.h>           /* general string utils */
 #include <time.h>             /* needed for timestamp */
-#include "gucefCORE_ETypes.h" /* simple types used */
+
+#ifndef GUCEF_DVPACKSYS_ETYPES_H
+#include "DVPACKSYS_ETypes.h"
+#define GUCEF_DVPACKSYS_ETYPES_H
+#endif /* GUCEF_DVPACKSYS_ETYPES_H ? */
+
+#ifndef GUCEF_MACROS_H
 #include "gucef_macros.h"     /* platform wide macros used */
-#include "ioaccess.h"         /* source independant I/O */
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
+
+#ifndef GUCEF_CORE_IOACCESS_H
+#include "ioaccess.h"         /* media independant I/O */
+#define GUCEF_CORE_IOACCESS_H
+#endif /* GUCEF_CORE_IOACCESS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -89,9 +101,35 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+
+namespace GUCEF {
+namespace DVPACKSYS {
+
+extern "C" {
+
+#endif /* __cplusplus ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+
+/* 
+ *  Namespace type imports
+ */
+typedef CORE::TIOAccess TIOAccess;
+
+#endif /* __cplusplus ? */ 
+
+/*-------------------------------------------------------------------------*/
 
 /**
  *      Header format used for the Dinand Vanvelzen Pack files (.dvp)
@@ -112,13 +150,13 @@
  */
 struct SDVP_File_Header
 {
-        char ID[ 4 ];               /* ID of packfile, can be used as an identity marker for grouping pack files */
-        UInt32 version;             /* version of the pack file, this determines pack file layout */
-        UInt32 index_offset;        /* offset in bytes of the index from the start of the file */
-        UInt32 num_files;           /* total number of files packed */
-        UInt32 num_dirs;            /* total number of directory's in packed dir tree */
-        UInt32 lastchange;          /* timestamp indicating the last time the file was changed */
-        UInt32 checksum;            /* this must equal DVP_CHECKSUM */
+    char ID[ 4 ];               /* ID of packfile, can be used as an identity marker for grouping pack files */
+    UInt32 version;             /* version of the pack file, this determines pack file layout */
+    UInt32 index_offset;        /* offset in bytes of the index from the start of the file */
+    UInt32 num_files;           /* total number of files packed */
+    UInt32 num_dirs;            /* total number of directory's in packed dir tree */
+    UInt32 lastchange;          /* timestamp indicating the last time the file was changed */
+    UInt32 checksum;            /* this must equal DVP_CHECKSUM */
 };
 
 typedef struct SDVP_File_Header TDVP_File_Header;
@@ -134,10 +172,10 @@ typedef struct SDVP_File_Header TDVP_File_Header;
  */
 struct SDVP_Index_Entry
 {
-        UInt32 offset;
-        UInt32 size;
-        char name[ DVP_MAX_INAME_LENGTH ];
-        UInt32 timestamp;
+    UInt32 offset;
+    UInt32 size;
+    char name[ DVP_MAX_INAME_LENGTH ];
+    UInt32 timestamp;
 };
 
 typedef struct SDVP_Index_Entry TDVP_Index_Entry;
@@ -152,15 +190,6 @@ typedef struct SDVP_Index_Entry TDVP_Index_Entry;
  *      Note that these functions will return non-zero if they fail and zero
  *      on success.
  */
-
-/*---------------------------------------------------------------------------*/
-
-/*
- *      Prevent C++ name mangling
- */
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -606,10 +635,19 @@ DVP_Open_File( const char *filename, const char *mode );
 DVPACKSYS_API void
 DVP_Close_File( FILE *fptr );
 
-/*---------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
 
 #ifdef __cplusplus
-};
+
+}; /* __cplusplus ? */
+
+}; /* namespace DVPACKSYS */
+}; /* namespace GUCEF */
+
 #endif
 
 /*-------------------------------------------------------------------------*/
