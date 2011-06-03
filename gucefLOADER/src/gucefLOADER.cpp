@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,6 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <string.h>
+#include <stdio.h>
 #include <set>
 #include <map>
 #include <vector>
@@ -96,7 +98,7 @@ FindAnyParamKey( char** argv    ,
                  int* keyIndex  )
 {
     int i=startIndex;
-    
+
     *keyIndex = -1;
     for ( i; i<argc; ++i )
     {
@@ -117,7 +119,7 @@ FindParamKey( char** argv        ,
               const char* keyStr ,
               int* keyIndex      )
 {
-    int curKeyIndex = -1;    
+    int curKeyIndex = -1;
     do
     {
         FindAnyParamKey( argv         ,
@@ -130,12 +132,12 @@ FindParamKey( char** argv        ,
             if ( 0 == strcmp( argv[ curKeyIndex ], keyStr ) )
             {
                 *keyIndex = curKeyIndex;
-                return; 
+                return;
             }
         }
         startIndex = curKeyIndex+1;
     }
-    while ( curKeyIndex  > -1 );    
+    while ( curKeyIndex  > -1 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -148,11 +150,11 @@ FindParam( const char* paramKey ,
            int argc             )
 {
     int keyIndex = -1;
-    
+
     // Init return values
     *paramStartIndex = -1;
     *paramEndIndex = -1;
-    
+
     // First try to locate the requested key
     FindParamKey( argv, argc, 0, paramKey, &keyIndex );
     if ( keyIndex > -1 )
@@ -160,13 +162,13 @@ FindParam( const char* paramKey ,
         // Found it, now find the end delimeter which is either another key
         // or the end of the string list
         *paramStartIndex = keyIndex;
-        keyIndex = -1;        
-        
-        FindAnyParamKey( argv       , 
+        keyIndex = -1;
+
+        FindAnyParamKey( argv       ,
                          argc       ,
                          keyIndex+1 ,
                          &keyIndex  );
-                         
+
         if ( keyIndex > -1 )
         {
             // end delimiter is another key
@@ -189,15 +191,15 @@ GetModuleRootPath( char** argv ,
     CORE::CString moduleRoot;
     int paramStartIndex = -1;
     int paramEndIndex = -1;
-    
+
     FindParam( "-moduleRoot"    ,
                &paramStartIndex ,
                &paramEndIndex   ,
                argv             ,
                argc             );
-               
+
     if ( ( paramStartIndex > -1 && paramEndIndex > -1 ) &&
-         ( paramStartIndex != paramEndIndex )            ) 
+         ( paramStartIndex != paramEndIndex )            )
     {
         if ( paramStartIndex+1 < argc-1 )
         {
@@ -209,7 +211,7 @@ GetModuleRootPath( char** argv ,
     {
         moduleRoot = CORE::RelativePath( "$MODULEDIR$" );
     }
-    
+
     return moduleRoot;
 }
 
@@ -223,15 +225,15 @@ ParseListOfExtraModulestoLoad( char** argv        ,
 {
     int paramStartIndex = -1;
     int paramEndIndex = -1;
-    
+
     FindParam( "-gucefModules",
                &paramStartIndex ,
                &paramEndIndex   ,
                argv             ,
                argc             );
-               
+
     if ( ( paramStartIndex > -1 && paramEndIndex > -1 ) &&
-         ( paramStartIndex != paramEndIndex > -1 )       ) 
+         ( paramStartIndex != paramEndIndex > -1 )       )
     {
         if ( paramStartIndex+1 < argc-1 )
         {
@@ -253,7 +255,7 @@ GetHighestVersionAvailableFromDir( const CORE::CString rootDir ,
                                    long& releaseVersion        )
 {
     typedef std::map< CORE::Int32, CORE::Int32 > TVersionMap;
-    
+
     TVersionMap versionMap;
     struct CORE::SDI_Data* itData = CORE::DI_First_Dir_Entry( rootDir.C_String() );
     if ( NULL != itData )
@@ -270,7 +272,7 @@ GetHighestVersionAvailableFromDir( const CORE::CString rootDir ,
                     CORE::CString dirName = CORE::DI_Name( itData );
                     CORE::Int32 dirPatchVersion = CORE::StringToInt32( dirName.SubstrToChar( '.', 0, true ) );
                     CORE::Int32 dirReleaseVersion = CORE::StringToInt32( dirName.SubstrToChar( '.', 0, false ) );
-                    
+
                     TVersionMap::iterator i = versionMap.find( dirPatchVersion );
                     if ( i != versionMap.end() )
                     {
@@ -291,7 +293,7 @@ GetHighestVersionAvailableFromDir( const CORE::CString rootDir ,
 
         CORE::DI_Cleanup( itData );
     }
-    
+
     if ( patchVersion > -1 )
     {
         // We need to match a specific patch version so we only look at the release version
@@ -301,12 +303,12 @@ GetHighestVersionAvailableFromDir( const CORE::CString rootDir ,
             releaseVersion = (*n).second;
             return true;
         }
-        
+
         // Unable to find anything for this patch version
         releaseVersion = -1;
         return false;
     }
-    
+
     // if we get here then just get the highest patch/release combo
     if ( !versionMap.empty() )
     {
@@ -329,9 +331,9 @@ IsModuleVersionAlreadyLoadedIfNotUnloadExisting( const char* moduleGroupName    
                                                  void* previousLoadData              )
 {
     if ( NULL == previousLoadData ) return false;
-    
+
     TModuleGroup* moduleGroup = (TModuleGroup*) previousLoadData;
-    
+
     try
     {
         if ( moduleGroup->name == moduleGroupName )
@@ -339,7 +341,7 @@ IsModuleVersionAlreadyLoadedIfNotUnloadExisting( const char* moduleGroupName    
             TModuleInfoVector::iterator i = moduleGroup->modules.begin();
             while ( i != moduleGroup->modules.end() )
             {
-                TModuleInfo& moduleInfo = (*i);                
+                TModuleInfo& moduleInfo = (*i);
                 if ( moduleInfo.name == moduleName )
                 {
                     // We found a module which is loaded which belongs to the same group
@@ -360,7 +362,7 @@ IsModuleVersionAlreadyLoadedIfNotUnloadExisting( const char* moduleGroupName    
                         moduleGroup->modules.erase( i );
                         return false;
                     }
-                }                
+                }
                 ++i;
             }
         }
@@ -383,35 +385,35 @@ LoadModules( const char* groupName        ,
              char** argv                  ,
              int argc                     ,
              void* previousLoadData       )
-{    
-    if ( NULL == groupName ) return NULL;    
+{
+    if ( NULL == groupName ) return NULL;
     TModuleGroup* moduleGroup = NULL;
-    
+
     try
     {
         // get a list of optional modules that should be loaded
         char** moduleList = NULL;
         int moduleCount = 0;
-        ParseListOfExtraModulestoLoad( argv         , 
+        ParseListOfExtraModulestoLoad( argv         ,
                                        argc         ,
                                        &moduleList  ,
                                        &moduleCount );
-                                       
+
         // get the root path to where we should load modules from
         // This gives us: <LoadRoot>/<GroupName>
         CORE::CString moduleRoot = GetModuleRootPath( argv, argc );
         CORE::AppendToPath( moduleRoot, groupName );
-        
+
         CORE::TVersion moduleVersion;
         moduleVersion.major = (CORE::UInt16) majorVersion;
-        moduleVersion.minor = (CORE::UInt16) minorVersion; 
-        
+        moduleVersion.minor = (CORE::UInt16) minorVersion;
+
         // adjust path for desired version
         // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>
         char versionDir[ 41 ];
         sprintf( versionDir, "%d.%d", majorVersion, minorVersion );
         CORE::AppendToPath( moduleRoot, versionDir );
-        
+
         // check if all desired modules are present
         moduleGroup = new TModuleGroup();
         moduleGroup->name = groupName;
@@ -427,8 +429,8 @@ LoadModules( const char* groupName        ,
             if ( patchVersion < 0 || releaseVersion < 0 )
             {
                 // We will have to search for the latest version available
-                if ( !GetHighestVersionAvailableFromDir( filePath             , 
-                                                         modulePatchVersion   , 
+                if ( !GetHighestVersionAvailableFromDir( filePath             ,
+                                                         modulePatchVersion   ,
                                                          moduleReleaseVersion ) )
                 {
                     // Unable to find any versions in this dir for this module
@@ -438,10 +440,10 @@ LoadModules( const char* groupName        ,
             }
             moduleVersion.patch = (CORE::UInt16) modulePatchVersion;
             moduleVersion.release = (CORE::UInt16) moduleReleaseVersion;
-            
+
             if ( IsModuleVersionAlreadyLoadedIfNotUnloadExisting( groupName        ,
-                                                                  moduleList[ i ]  , 
-                                                                  moduleVersion    , 
+                                                                  moduleList[ i ]  ,
+                                                                  moduleVersion    ,
                                                                   previousLoadData ) )
             {
                 // Simply append with the specific version requested or if no specific version was
@@ -449,11 +451,11 @@ LoadModules( const char* groupName        ,
                 // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
                 sprintf( versionDir, "%d.%d", patchVersion, releaseVersion );
                 CORE::AppendToPath( filePath, versionDir );
-                
+
                 // Now that we constructed the full load path for this module we will try and load it
                 void* modulePtr = CORE::LoadModuleDynamicly( filePath.C_String() );
-                if ( NULL != modulePtr )  
-                {            
+                if ( NULL != modulePtr )
+                {
                     TModuleInfo moduleInfo;
                     moduleInfo.handle = modulePtr;
                     moduleInfo.name = moduleList[ i ];
@@ -470,8 +472,8 @@ LoadModules( const char* groupName        ,
                 }
             }
         }
-        
-        // Return a pointer to the loaded modules which the user 
+
+        // Return a pointer to the loaded modules which the user
         // should give back to us later
         return moduleGroup;
     }
