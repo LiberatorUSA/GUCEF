@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_VFSPLUGIN_ZIP_MACROS_H
@@ -30,11 +30,6 @@
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-#ifndef GUCEF_CORE_BASICMACROS_H
-#include "macros.h"                /* generic often used macros */
-#define GUCEF_CORE_BASICMACROS_H
-#endif /* GUCEF_CORE_BASICMACROS_H ? */
 
 #ifndef GUCEF_VFS_ETYPES_H
 #include "gucefVFS_ETypes.h"      /* simple types */
@@ -66,12 +61,12 @@
 
 #undef GUCEF_VFSPLUGIN_ZIP_EXPORT_CPP
 #ifdef GUCEF_VFSPLUGIN_ZIP_EXPORT_CPP_CODE
-  #define GUCEF_VFSPLUGIN_ZIP_EXPORT_CPP GUCEF_VFSPLUGIN_ZIP_EXPORT  
+  #define GUCEF_VFSPLUGIN_ZIP_EXPORT_CPP GUCEF_VFSPLUGIN_ZIP_EXPORT
 #else
   #define GUCEF_VFSPLUGIN_ZIP_EXPORT_CPP
 #endif /* GUCEF_VFSPLUGIN_ZIP_EXPORT_CPP_CODE */
 
-#undef GUCEF_VFSPLUGIN_ZIP_EXPORT_C 
+#undef GUCEF_VFSPLUGIN_ZIP_EXPORT_C
 #ifdef GUCEF_VFSPLUGIN_ZIP_EXPORT_C_CODE
   #define GUCEF_VFSPLUGIN_ZIP_EXPORT_C GUCEF_VFSPLUGIN_ZIP_EXPORT
 #else
