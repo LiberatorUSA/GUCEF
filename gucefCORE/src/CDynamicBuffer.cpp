@@ -387,29 +387,44 @@ CDynamicBuffer::GetAutoEnlarge( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CDynamicBuffer::LoadContentFromFile( const CString& filePath )
+CDynamicBuffer::LoadContentFromFile( const CString& filePath   ,
+                                     const UInt32 offsetInFile ,
+                                     const Int32 bytesToRead   )
 {GUCEF_TRACE;
 
     // Set the buffer to be the same size as the file
     Clear( true );
+    
+    UInt32 readBlockSize = 0;
+    if ( bytesToRead < 0 )
+    {
+        readBlockSize = CORE::Filesize( filePath.C_String() ) - offsetInFile;
+    }
+    else
+    {
+        readBlockSize = (UInt32) bytesToRead;
+    }
+    
     UInt32 fileSize = CORE::Filesize( filePath.C_String() );
     SetBufferSize( fileSize, true );
     
     // Load the entire file into memory
     FILE* filePtr = fopen( filePath.C_String(), "rb" );
-    UInt32 actuallyRead = fread( _buffer, fileSize, 1, filePtr );
+    fseek( filePtr, offsetInFile, SEEK_SET );
+    UInt32 actuallyRead = fread( _buffer, readBlockSize, 1, filePtr );
     if ( NULL != filePtr )
     {
         fclose( filePtr );
     }
     
-    // Sanity check to make sure we loaded the whole file
+    // Sanity check to make sure we loaded the whole block
     if ( actuallyRead == 1 )
     {
         m_dataSize = fileSize;
         return true;
     }
     
+    // Failed to read the block
     Clear( false );
     return false;
 }

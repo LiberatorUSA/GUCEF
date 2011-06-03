@@ -12,11 +12,15 @@
 # Configuration for module: vfspluginDVP
 
 set( HEADER_FILES 
-  include/DLLMainVFSpluginDVP.h
+  include/vfspluginDVP.h
+  include/vfspluginDVP_CDVPArchive.h
+  include/vfspluginDVP_config.h
+  include/vfspluginDVP_macros.h
 )
 
 set( SOURCE_FILES 
-  src/DLLMainVFSpluginDVP.c
+  src/vfspluginDVP.cpp
+  src/vfspluginDVP_CDVPArchive.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
