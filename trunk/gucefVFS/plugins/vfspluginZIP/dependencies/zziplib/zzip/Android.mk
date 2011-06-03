@@ -36,12 +36,11 @@ LOCAL_SRC_FILES := \
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH) \
-  $(MY_MODULE_PATH)/../ \
-  $(MY_MODULE_PATH)/../../zlib
+  $(MY_MODULE_PATH)/../
 
 
-LOCAL_SHARED_LIBRARIES := \
-  zlib
+LOCAL_LDLIBS := \
+  -lzlib
 
 include $(BUILD_SHARED_LIBRARY)
 

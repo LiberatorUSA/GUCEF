@@ -27,9 +27,6 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefCORE/plugins/dstorepluginPARSIFALXML/dependancy/libparsifal
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefVFS/plugins/vfspluginZIP/dependencies/zlib
-include $(MY_MODULE_PATH)/Android.mk
-
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefCORE
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -132,6 +129,9 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefVFS/plugins/vfspluginDVP
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefVFS/plugins/vfspluginZIP
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/tools/GucefLogServiceLib
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -139,9 +139,6 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/tools/SVNMagicMerge
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefSMDRN
-include $(MY_MODULE_PATH)/Android.mk
-
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefVFS/plugins/vfspluginZIP
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/tools/GucefLogServiceApp
