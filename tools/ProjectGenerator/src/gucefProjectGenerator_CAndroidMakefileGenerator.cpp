@@ -377,6 +377,26 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
 /*-------------------------------------------------------------------------*/
 
 bool
+DidMakefileContentChange( const CORE::CString& makefilePath ,
+                          const CORE::CString& newContent   )
+{GUCEF_TRACE;
+
+    CORE::CString preexistingContent;
+    if ( CORE::LoadTextFileAsString( makefilePath, preexistingContent ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found a pre-existing Android makefile at " + makefilePath + ", comparing against new content..." );
+        
+        if ( newContent == preexistingContent )
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CreateAndroidMakefileOnDiskForModule( const TModuleInfoEntryPairVector& mergeLinks ,
                                       const TModuleInfo& moduleInfo                ,
                                       const CORE::CString& moduleRoot              ,
@@ -400,18 +420,30 @@ CreateAndroidMakefileOnDiskForModule( const TModuleInfoEntryPairVector& mergeLin
     // Now we write the makefile to the root location of the module since everything is relative to that
     CORE::CString makefilePath = moduleRoot;
     CORE::AppendToPath( makefilePath, "Android.mk" );
-        
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Writing Android makefile content for module " + moduleInfo.name + " to " + makefilePath );    
-
-    if ( CORE::WriteStringAsTextFile( makefilePath    , 
-                                      makefileContent , 
-                                      "\n"            ) )
+    
+    // Do not change the file on disk unless we have to.
+    // the NDK build system will rebuild if the timestamp on the file changed which can take a long time
+    if ( DidMakefileContentChange( makefilePath, makefileContent ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created Android makefile for module " + moduleInfo.name + " at " + makefilePath );    
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Writing Android makefile content for module " + moduleInfo.name + " to " + makefilePath );    
+
+        if ( CORE::WriteStringAsTextFile( makefilePath    , 
+                                          makefileContent , 
+                                          true            ,
+                                          "\n"            ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created Android makefile for module " + moduleInfo.name + " at " + makefilePath );    
+            return true;
+        }
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to create an Android makefile for module " + moduleInfo.name + " at " + makefilePath );
+        return false;
+    }
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping creation of Android makefile for module " + moduleInfo.name + " at " + makefilePath + 
+            " since there already is a makefile with identical content" ); 
         return true;
     }
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to create an Android makefile for module " + moduleInfo.name + " at " + makefilePath );
-    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -574,18 +606,30 @@ CreateAndroidProjectMakefileOnDisk( const CORE::CString& projectName            
     // Now we write the makefile to the root location of the project since everything is relative to that
     CORE::CString makefilePath = outputDir;
     CORE::AppendToPath( makefilePath, "Android.mk" );
-        
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Writing Android makefile content for project \"" + projectName + "\" to " + makefilePath );    
 
-    if ( CORE::WriteStringAsTextFile( makefilePath    , 
-                                      makefileContent , 
-                                      "\n"            ) )
+    // Do not change the file on disk unless we have to.
+    // the NDK build system will rebuild if the timestamp on the file changed which can take a long time
+    if ( DidMakefileContentChange( makefilePath, makefileContent ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created Android makefile for project \"" + projectName + "\" at " + makefilePath );    
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Writing Android makefile content for project \"" + projectName + "\" to " + makefilePath );    
+
+        if ( CORE::WriteStringAsTextFile( makefilePath    , 
+                                          makefileContent , 
+                                          true            ,
+                                          "\n"            ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created Android makefile for project \"" + projectName + "\" at " + makefilePath );    
+            return true;
+        }
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to create an Android makefile for project \"" + projectName + "\" at " + makefilePath );
+        return false;
+    }
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping creation of overall project Android makefile for project \"" + projectName + "\" at " + makefilePath + 
+            " since there already is a makefile with identical content" ); 
         return true;
     }
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to create an Android makefile for project \"" + projectName + "\" at " + makefilePath );
-    return false;
 }
 
 /*-------------------------------------------------------------------------*/
