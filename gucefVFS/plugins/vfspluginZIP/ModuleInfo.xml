@@ -15,6 +15,7 @@
         </Linker>
         <Preprocessor>
             <Define String="GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE" />
+            <Define String="ZZIP_HAVE_STDINT_H" />
         </Preprocessor>
     </Module>
     <Module Platform="linux;mswin">
