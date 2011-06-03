@@ -31,7 +31,7 @@ else()
   add_executable( ${MODULE_NAME} ${ALL_FILES} )
 endif()
 add_dependencies( ${MODULE_NAME} gucefMT gucefCORE )
-target_link_libraries( ${MODULE_NAME} gucefMT gucefCORE )
+target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT )
 
 include_directories( ../../common/include ../../gucefCORE/include ../../gucefMT/include )
 
