@@ -1,0 +1,25 @@
+<ModuleInfoEntry>
+    <Module Name="vfspluginZIP" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefVFS" />
+            <Dependency Name="zziplib" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefVFS" />
+            <Dependency Name="zziplib" />
+            <Dependency Name="zlib" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="linux;mswin">
+        <Dependencies>
+            <Dependency Name="zlib" />
+        </Dependencies>
+    </Module>
+</ModuleInfoEntry>

@@ -251,7 +251,7 @@ CZIPArchive::GetFileHash( const VFS::CString& file ) const
     {
         VFS::UInt8 digest[ 16 ];
         if ( 0 != CORE::md5fromfile( fileAccess->CStyleAccess() ,
-                                    digest                     ) )
+                                     digest                     ) )
         {
             delete fileAccess;
 
