@@ -1,6 +1,0 @@
-
-add_library( zziplib ${HEADER_FILES} ${SOURCE_FILES} )
-add_dependencies( zziplib zlib )
-target_link_libraries( zziplib zlib )
-set_target_properties( zziplib PROPERTIES COMPILE_DEFINITIONS ZZIP_DLL )
-include_directories( ../  )
