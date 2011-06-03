@@ -1,0 +1,19 @@
+<ModuleInfoEntry>
+    <Module Name="vfspluginDVP" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefVFS" />
+            <Dependency Name="DVPACKSYS" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefVFS" />
+            <Dependency Name="DVPACKSYS" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_VFSPLUGIN_DVP_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

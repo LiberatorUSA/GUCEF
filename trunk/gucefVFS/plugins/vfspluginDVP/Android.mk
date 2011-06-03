@@ -21,7 +21,8 @@ LOCAL_MODULE := vfspluginDVP
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/DLLMainVFSpluginDVP.c
+  src/vfspluginDVP.cpp \
+  src/vfspluginDVP_CDVPArchive.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
@@ -31,10 +32,12 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../gucefVFS/include \
   $(MY_MODULE_PATH)/dependencies/DVPACKSYS/include
 
+LOCAL_CFLAGS := -DGUCEF_VFSPLUGIN_DVP_BUILD_MODULE
+
 
 LOCAL_SHARED_LIBRARIES := \
-  DVPACKSYS \
   gucefVFS \
+  DVPACKSYS \
   gucefCORE \
   gucefMT
 
