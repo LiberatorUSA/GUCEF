@@ -12,7 +12,7 @@
     </Module>
     <Module Platform="Linux">
         <Linker>
-            <Dependency Name="ld" />
+            <Dependency Name="dl" />
         </Linker>
     </Module>
     <Module Platform="Android">
