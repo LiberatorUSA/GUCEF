@@ -23,6 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <string.h>
 #include <stdio.h>
 
 #ifndef GUCEF_CORE_DVSTRUTILS_H
@@ -103,15 +104,15 @@ CurrentWorkingDir( void )
 
 /*-------------------------------------------------------------------------*/
 
-static inline void 
-DivisionRemainder( Int32 dividend   , 
+static inline void
+DivisionRemainder( Int32 dividend   ,
                    Int32 divisor    ,
                    Int32& remainder ,
-                   Int32& quotient  ) 
+                   Int32& quotient  )
 {GUCEF_TRACE;
 
     //remainder = dividend % divisor;
-    //quotient = (dividend / divisor);   
+    //quotient = (dividend / divisor);
 
     quotient = dividend / divisor;
     remainder = dividend - divisor * quotient;
@@ -120,13 +121,13 @@ DivisionRemainder( Int32 dividend   ,
 /*-------------------------------------------------------------------------*/
 
 CString
-ConvertBytesToHexString( const void* byteBuffer , 
+ConvertBytesToHexString( const void* byteBuffer ,
                          UInt32 bufferSize      ,
                          bool addSpaces         )
 {GUCEF_TRACE;
 
     static const char* g_hexDigits = "0123456789ABCDEF";
-    const char* charByteBuffer = (const char*) byteBuffer; 
+    const char* charByteBuffer = (const char*) byteBuffer;
 
     CString hexString;
     char* digits = hexString.Reserve( addSpaces ? ( bufferSize * 2 ) + bufferSize : ( bufferSize * 2 ) + 1 );
@@ -141,10 +142,10 @@ ConvertBytesToHexString( const void* byteBuffer ,
                            16                  ,
                            digitIndex1         ,
                            digitIndex2         );
-        
+
         if ( digitIndex1 < 0 ) digitIndex1 *= -1;
         if ( digitIndex2 < 0 ) digitIndex2 *= -1;
-        
+
         if ( addSpaces )
         {
             digitOffset = 3 * i;
@@ -252,31 +253,31 @@ GetRelativePathToOtherPathRoot( const CString& fromPath ,
 {GUCEF_TRACE;
 
     typedef std::vector< CString >  TStringVector;
-    
+
     // First resolve any variables in the paths,.. normalize
     CString absFromPath = RelativePath( fromPath );
     CString absToPath = RelativePath( toPath );
-    
+
     #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
-    
-    // For MS Win we need to take into account that paths are 
+
+    // For MS Win we need to take into account that paths are
     // the same even if the case doesn't match. Paths are
-    // case-insensitive. We will make sure this doesnt affect 
+    // case-insensitive. We will make sure this doesnt affect
     // us by checking the equality in a case-insensitive manner.
     // This principle also applies to drive letters.
 
     // Now just check for the overlap in paths and based on the overlap
     // we will make a relative path
     Int32 pathEquality = (Int32) absFromPath.FindMaxSubstrEquality( absToPath, 0, true, false );
-    
+
     #else
-    
+
     // Now just check for the overlap in paths and based on the overlap
     // we will make a relative path
     Int32 pathEquality = (Int32) absFromPath.FindMaxSubstrEquality( absToPath, 0, true, true );
-    
+
     #endif
-    
+
     CString toPathRemainder = absToPath.ReplaceChar( '\\', '/' );
     CString fromPathRemainder = absFromPath.ReplaceChar( '\\', '/' );
     pathEquality = toPathRemainder.HasChar( '/', pathEquality, false );
@@ -444,7 +445,7 @@ StringToUInt64( const CString& str )
 
         return value;
     }
-    
+
     return 0;
 }
 
@@ -798,12 +799,12 @@ WriteStringAsTextFile( const CString& filePath    ,
                        const bool unifyEol        ,
                        const char* eolString      )
 {GUCEF_TRACE;
-   
+
     if ( filePath.IsNULLOrEmpty() ) return false;
-    
+
     FILE* fptr = fopen( filePath.C_String(), "wb" );
     if ( NULL != fptr )
-    {        
+    {
         if ( unifyEol )
         {
             #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
@@ -812,8 +813,8 @@ WriteStringAsTextFile( const CString& filePath    ,
             const char* platformEolString = "\n";
             #elif GUCEF_PLATFORM == GUCEF_PLATFORM_MACOS || GUCEF_PLATFORM == GUCEF_PLATFORM_IPHONEOS
             const char* platformEolString = "\r";
-            #endif            
-            
+            #endif
+
             // If no desired eol format is given then use the platform
             // native format
             const char* eolStrToUse = eolString;
@@ -821,11 +822,11 @@ WriteStringAsTextFile( const CString& filePath    ,
             {
                 eolStrToUse = platformEolString;
             }
-            
+
             // Turn everything into "\n" in case of a mixed EOL char string
             CString content = fileContent.ReplaceSubstr( "\r\n", "\n" ).ReplaceSubstr( "\r", "\n" );
             // Now we unified the EOL segments into \n.
-            
+
             if ( 0 != strcmp( eolStrToUse, "\n" ) )
             {
                 // Convert into whatever is given as the desired format
@@ -836,7 +837,7 @@ WriteStringAsTextFile( const CString& filePath    ,
         else
         {
             fwrite( fileContent.C_String(), fileContent.Length(), 1, fptr );
-        }    
+        }
         fclose( fptr );
         return true;
     }

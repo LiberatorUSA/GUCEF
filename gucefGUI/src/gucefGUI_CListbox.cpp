@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -28,7 +28,7 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
-#include "gucefGUI_CListbox.h"
+#include "gucefGUI_CListBox.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -110,7 +110,7 @@ CListbox::SetAllowMultiSelect( bool allowMultiselect )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CListbox::GetAllowMultiSelect( bool allowMultiselect )
 {GUCEF_TRACE;
@@ -119,7 +119,7 @@ CListbox::GetAllowMultiSelect( bool allowMultiselect )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 UInt32
 CListbox::GetLineCount( void )
 {GUCEF_TRACE;
@@ -128,7 +128,7 @@ CListbox::GetLineCount( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CListbox::Clear( void )
 {GUCEF_TRACE;
@@ -137,7 +137,7 @@ CListbox::Clear( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CListbox::GetLineAtIndex( const UInt32 lineIndex ,
                           CString& lineText      ) const
@@ -147,7 +147,7 @@ CListbox::GetLineAtIndex( const UInt32 lineIndex ,
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CListbox::InsertLineAtIndex( const UInt32 lineIndex ,
                              const CString& text    )
@@ -158,7 +158,7 @@ CListbox::InsertLineAtIndex( const UInt32 lineIndex ,
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CListbox::AppendLine( const CString& text )
 {GUCEF_TRACE;
@@ -167,7 +167,7 @@ CListbox::AppendLine( const CString& text )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CListbox::GetText( CString& text ) const
 {GUCEF_TRACE;
@@ -176,7 +176,7 @@ CListbox::GetText( CString& text ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CListbox::SetLineSelection( const UInt32 lineIndex ,
                             const bool isSelected  )

@@ -14,13 +14,13 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*
  *      This is the main include header for the gucefGUI library.
  *      It is part of a framework called GUCEF.
- *      All classes in this library have to do with providing a unified and 
+ *      All classes in this library have to do with providing a unified and
  *      uniform GUI interface independant of the chosen GUI backend
  */
 
@@ -34,7 +34,7 @@
 //-------------------------------------------------------------------------*/
 
 /*
- *      Library build configuration      
+ *      Library build configuration
  */
 #ifndef GUCEF_GUI_CONFIG_H
 #include "gucefGUI_config.h"
@@ -125,7 +125,7 @@
 #endif /* GUCEF_GUI_CTEXTBOX_H ? */
 
 #ifndef GUCEF_GUI_CLISTBOX_H
-#include "gucefGUI_CListbox.h"
+#include "gucefGUI_CListBox.h"
 #define GUCEF_GUI_CLISTBOX_H
 #endif /* GUCEF_GUI_CLISTBOX_H ? */
 
