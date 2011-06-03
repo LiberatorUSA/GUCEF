@@ -24,7 +24,7 @@
  */
 #define _ZZIP_DISK_FILE_STRUCT 1
 
-#include <zzip/types.h>
+#include <zzip/zzip_types.h>
 
 #include <stdlib.h>
 #include <stdio.h>

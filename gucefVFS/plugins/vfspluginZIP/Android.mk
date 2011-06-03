@@ -45,7 +45,7 @@ LOCAL_SHARED_LIBRARIES := \
 
 
 LOCAL_LDLIBS := \
-  -lzlib
+  -lz
 
 include $(BUILD_SHARED_LIBRARY)
 

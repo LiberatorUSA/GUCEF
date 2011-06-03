@@ -17,7 +17,7 @@
  */
 
 
-#include <zzip/types.h>
+#include <zzip/zzip_types.h>
 #include <stdio.h>
 
 #ifdef _ZZIP_ENTRY_STRUCT

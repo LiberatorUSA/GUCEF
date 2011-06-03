@@ -19,7 +19,7 @@
 #ifndef _ZZIP_ZZIP_H /* zziplib.h */
 #define _ZZIP_ZZIP_H
 
-#include <zzip/types.h>
+#include <zzip/zzip_types.h>
 
 #ifdef __cplusplus
 extern "C" {

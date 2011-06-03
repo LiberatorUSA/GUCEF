@@ -22,5 +22,13 @@
         <Dependencies>
             <Dependency Name="zlib" />
         </Dependencies>
+        <Linker>
+            <Dependency Name="zlib" />
+        </Linker>        
+    </Module>
+    <Module Platform="android">
+        <Linker>
+            <Dependency Name="z" />
+        </Linker>
     </Module>
 </ModuleInfoEntry>

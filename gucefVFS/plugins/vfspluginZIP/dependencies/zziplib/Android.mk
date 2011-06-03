@@ -42,7 +42,7 @@ LOCAL_CFLAGS := -DZZIP_DLL -DZZIP_HAVE_STDINT_H
 
 
 LOCAL_LDLIBS := \
-  -lzlib
+  -lz
 
 include $(BUILD_SHARED_LIBRARY)
 
