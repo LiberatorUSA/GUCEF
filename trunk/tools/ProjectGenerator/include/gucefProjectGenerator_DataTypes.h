@@ -91,7 +91,7 @@ typedef std::map< CORE::CString, TModuleType > TModuleTypeMap;
  */
 struct SLinkerSettings
 {
-    TStringVector linkedLibraries;               // list of all libraries the module links against
+    TModuleTypeMap linkedLibraries;               // list of all libraries the module links against
 };
 typedef struct SLinkerSettings TLinkerSettings;
 

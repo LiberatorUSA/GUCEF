@@ -1520,7 +1520,7 @@ CMakeParseSuffixFile( TModuleInfo& moduleInfo, const CORE::CString& cmakeListSuf
             TStringVector::iterator n = elements.begin();
             while ( n != elements.end() )
             {
-                moduleInfo.linkerSettings.linkedLibraries.push_back( (*n) );
+                moduleInfo.linkerSettings.linkedLibraries[ (*n) ] = MODULETYPE_UNDEFINED;
                 ++n;
             }
         }

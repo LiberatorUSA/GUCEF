@@ -799,10 +799,10 @@ GenerateCMakeModuleLinkerLine( const TModuleInfo& moduleInfo     ,
         
         CORE::CString sectionContent = "target_link_libraries( ${MODULE_NAME}";
         
-        TStringVector::const_iterator i = moduleInfo.linkerSettings.linkedLibraries.begin();
+        TModuleTypeMap::const_iterator i = moduleInfo.linkerSettings.linkedLibraries.begin();
         while ( i != moduleInfo.linkerSettings.linkedLibraries.end() )
         {
-            sectionContent += ' ' + (*i);            
+            sectionContent += ' ' + (*i).first;            
             ++i;
         }
         sectionContent += " )\n";

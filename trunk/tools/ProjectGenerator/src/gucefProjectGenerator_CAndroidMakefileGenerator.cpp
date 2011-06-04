@@ -224,64 +224,97 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
     TStringSet linkedSharedLibraries;
     TStringSet linkedStaticLibraries;
     TStringSet linkedRuntimeLibraries;
-    TStringVector::const_iterator m = moduleInfo.linkerSettings.linkedLibraries.begin();
+    TModuleTypeMap::const_iterator m = moduleInfo.linkerSettings.linkedLibraries.begin();
     while ( m != moduleInfo.linkerSettings.linkedLibraries.end() )
     {
-        const TModuleInfo* linkedDependency = FindModuleByName( mergeLinks, (*m) );
-        if ( NULL != linkedDependency )
+        const CORE::CString& linkedLibName = (*m).first;
+        TModuleType linkedLibType = (*m).second;
+        switch ( linkedLibType )
         {
-            // The module we are linking too is part of this project.
-            // As such we can simply check the other module's info
-            // to find out wheter its a dynamically linked module or not
-            // which in turn tells us how to instruct the Android build system
-            // to link.
-            switch( linkedDependency->moduleType )
+            case MODULETYPE_EXECUTABLE:
             {
-                case MODULETYPE_SHARED_LIBRARY:
+                // This is really nasty but the best option for now...
+                // It is possible to link to exported symbols from an executable
+                // under linux and as such we will leverage this here
+                linkedStaticLibraries.insert( linkedLibName );
+                break;
+            }
+            case MODULETYPE_SHARED_LIBRARY:
+            {
+                linkedSharedLibraries.insert( linkedLibName );
+                break;
+            }
+            case MODULETYPE_STATIC_LIBRARY:
+            {
+                linkedStaticLibraries.insert( linkedLibName );
+                break;
+            }
+            case MODULETYPE_HEADER_INCLUDE_LOCATION:
+            {
+                // Skip this, no linking required
+                break;
+            }
+            default:
+            {
+                // Since the depedendency module type was not predefined we will investigate among
+                // the other modules to try to determine the nature of the linked module
+                const TModuleInfo* linkedDependency = FindModuleByName( mergeLinks, linkedLibName );
+                if ( NULL != linkedDependency )
                 {
-                    linkedSharedLibraries.insert( *m );
-                    break;
-                }
-                case MODULETYPE_STATIC_LIBRARY:
-                {
-                    linkedStaticLibraries.insert( *m );
-                    break;
-                }
-                case MODULETYPE_EXECUTABLE:
-                { 
-                    // This is really nasty but the best option for now...
-                    // It is possible to link to exported symbols from an executable
-                    // under linux and as such we will leverage this here
-                    linkedStaticLibraries.insert( *m );
-                    break;
-                }
-                case MODULETYPE_HEADER_INCLUDE_LOCATION:
-                {
-                    // Don't have to do anything.
-                    // Due to the auto-dependency tracking of include paths the header paths will have been added to
-                    // whatever module depends on this 'module'
-                    break;
-                }
-                default:
-                {
-                    linkingErrorSection += 
-                      "# *** ERROR *** Finish me\n"
-                      "# Unable to determing module type from the source information\n"
-                      "# Please edit the line below to manually set the correct linking method for this dependency\n";
-                    linkingErrorSection += "#LOCAL_<(LDLIBS???)> += " + moduleInfo.name + "\n\n";
+                    // The module we are linking too is part of this project.
+                    // As such we can simply check the other module's info
+                    // to find out wheter its a dynamically linked module or not
+                    // which in turn tells us how to instruct the Android build system
+                    // to link.
+                    switch( linkedDependency->moduleType )
+                    {
+                        case MODULETYPE_SHARED_LIBRARY:
+                        {
+                            linkedSharedLibraries.insert( linkedLibName );
+                            break;
+                        }
+                        case MODULETYPE_STATIC_LIBRARY:
+                        {
+                            linkedStaticLibraries.insert( linkedLibName );
+                            break;
+                        }
+                        case MODULETYPE_EXECUTABLE:
+                        { 
+                            // This is really nasty but the best option for now...
+                            // It is possible to link to exported symbols from an executable
+                            // under linux and as such we will leverage this here
+                            linkedStaticLibraries.insert( linkedLibName );
+                            break;
+                        }
+                        case MODULETYPE_HEADER_INCLUDE_LOCATION:
+                        {
+                            // Don't have to do anything.
+                            // Due to the auto-dependency tracking of include paths the header paths will have been added to
+                            // whatever module depends on this 'module'
+                            break;
+                        }
+                        default:
+                        {
+                            linkingErrorSection += 
+                              "# *** ERROR *** Finish me\n"
+                              "# Unable to determing module type from the source information\n"
+                              "# Please edit the line below to manually set the correct linking method for this dependency\n";
+                            linkingErrorSection += "#LOCAL_<(LDLIBS???)> += " + moduleInfo.name + "\n\n";
 
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Error: the module " + moduleInfo.name + " does not have a useable module type set, you will have to manually edit the file to correct the error" );  
-                    break;
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Error: the module " + moduleInfo.name + " does not have a useable module type set, you will have to manually edit the file to correct the error" );  
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    // If we get here then this dependency is not on a module which is part of the project
+                    // As such we cannot build this module thus the only approriote linking method would seem
+                    // to be the one where we simply instruct the linker to load this dependency at runtime.
+                    // This will typically be the case for any Android NDK modules we have to link to.
+                    linkedRuntimeLibraries.insert( linkedLibName );
                 }
             }
-        }
-        else
-        {
-            // If we get here then this dependency is not on a module which is part of the project
-            // As such we cannot build this module thus the only approriote linking method would seem
-            // to be the one where we simply instruct the linker to load this dependency at runtime.
-            // This will typically be the case for any Android NDK modules we have to link to.
-            linkedRuntimeLibraries.insert( *m );
         }
         ++m;
     }
@@ -305,8 +338,8 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
         ++n;
     }
     first = true;
-    n = linkedSharedLibraries.begin();
-    while ( n != linkedSharedLibraries.end() )
+    n = linkedStaticLibraries.begin();
+    while ( n != linkedStaticLibraries.end() )
     {
         if ( !first )
         {

@@ -1,15 +1,20 @@
 <ModuleInfoEntry>
-    <Module Name="gucefLOADER" Type="StaticLibrary" Platform="All">
+    <Module Name="gucefLOADER" Type="SharedLibrary" Platform="All">
         <Dependencies>
-		    <Dependency Name="gucefHeaders" />
+            <Dependency Name="gucefHeaders" />
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />
-	    </Dependencies>
+        </Dependencies>
         <Preprocessor>
             <Define String="GUCEF_MT_EMBED_CODE" />
             <Define String="GUCEF_CORE_EMBED_CODE" />
             <Define String="GUCEF_CORE_NO_MD5_SUPPORT"/>
             <Define String="GUCEF_LOADER_BUILD_MODULE" />
         </Preprocessor>
+    </Module>
+    <Module Platform="Android">
+        <Linker>
+            <Dependency Name="dl" />
+        </Linker>
     </Module>
 </ModuleInfoEntry>
