@@ -28,6 +28,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../../common/include \
   $(MY_MODULE_PATH)/../../../gucefCORE/include \
+  $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
   $(MY_MODULE_PATH)/../../../gucefMT/include \
   $(MY_MODULE_PATH)/../../../gucefVFS/include \
   $(MY_MODULE_PATH)/dependencies/DVPACKSYS/include
@@ -36,9 +37,9 @@ LOCAL_CFLAGS := -DGUCEF_VFSPLUGIN_DVP_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \
-  DVPACKSYS \
-  gucefVFS \
   gucefCORE \
+  gucefVFS \
+  DVPACKSYS \
   gucefMT
 
 include $(BUILD_SHARED_LIBRARY)

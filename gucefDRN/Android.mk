@@ -37,15 +37,16 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../common/include \
   $(MY_MODULE_PATH)/../gucefCOMCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include/android \
   $(MY_MODULE_PATH)/../gucefMT/include
 
 LOCAL_CFLAGS := -DGUCEF_DRN_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \
-  gucefMT \
+  gucefCOMCORE \
   gucefCORE \
-  gucefCOMCORE
+  gucefMT
 
 include $(BUILD_SHARED_LIBRARY)
 
