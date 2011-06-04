@@ -35,14 +35,14 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/dependencies/zziplib \
   $(MY_MODULE_PATH)/dependencies/zziplib/zzip
 
-LOCAL_CFLAGS := -DZZIP_HAVE_STDINT_H -DGUCEF_VFSPLUGIN_ZIP_BUILD_MODULE
+LOCAL_CFLAGS := -DGUCEF_VFSPLUGIN_ZIP_BUILD_MODULE -DZZIP_HAVE_STDINT_H
 
 
 LOCAL_SHARED_LIBRARIES := \
-  gucefCORE \
+  gucefMT \
   gucefVFS \
-  zziplib \
-  gucefMT
+  gucefCORE \
+  zziplib
 
 
 LOCAL_LDLIBS := \
