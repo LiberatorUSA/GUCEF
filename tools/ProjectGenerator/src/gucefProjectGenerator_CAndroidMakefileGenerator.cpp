@@ -198,8 +198,11 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
     {
         preprocessorSection = "LOCAL_CFLAGS :=";
         
-        TStringVector::const_iterator m = moduleInfo.preprocessorSettings.defines.begin();
-        while ( m != moduleInfo.preprocessorSettings.defines.end() )
+        // copy vector to a set so we order them alphabetically
+        TStringSet defines = StringVectorToStringSet( moduleInfo.preprocessorSettings.defines );
+        
+        TStringSet::const_iterator m = defines.begin();
+        while ( m != defines.end() )
         {
             preprocessorSection += " -D" + (*m);            
             ++m;
@@ -213,13 +216,14 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
     // For some reason it matters, at specification time, to Android's build 
     // system whether the module you are linking to is a dynamically linked module
     // or a statically linked module. As such we have to figure out which is which.
-    CORE::CString linkingSection, linkingErrorSection;
-    CORE::CString linkedSharedLibrariesSection = "\nLOCAL_SHARED_LIBRARIES := \\\n";
-    CORE::CString linkedStaticLibrariesSection = "\nLOCAL_STATIC_LIBRARIES := \\\n";
-    CORE::CString linkedRuntimeLibrariesSection = "\nLOCAL_LDLIBS := \\\n";
-    bool hasLinkedSharedLibraries = false;
-    bool hasLinkedStaticLibraries = false;
-    bool hasRuntimeLibraries = false;
+    //
+    // We make an alphabetical list instead of creating the section right away because
+    // we dont want the order to vary in the makefile because such changes cause the NDK
+    // to build the code again for no reason.
+    CORE::CString linkingErrorSection;
+    TStringSet linkedSharedLibraries;
+    TStringSet linkedStaticLibraries;
+    TStringSet linkedRuntimeLibraries;
     TStringVector::const_iterator m = moduleInfo.linkerSettings.linkedLibraries.begin();
     while ( m != moduleInfo.linkerSettings.linkedLibraries.end() )
     {
@@ -235,22 +239,12 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
             {
                 case MODULETYPE_SHARED_LIBRARY:
                 {
-                    if ( hasLinkedSharedLibraries )
-                    {
-                        linkedSharedLibrariesSection += " \\\n";
-                    }
-                    linkedSharedLibrariesSection += "  " + (*m);
-                    hasLinkedSharedLibraries = true;
+                    linkedSharedLibraries.insert( *m );
                     break;
                 }
                 case MODULETYPE_STATIC_LIBRARY:
                 {
-                    if ( hasLinkedStaticLibraries )
-                    {
-                        linkedStaticLibrariesSection += " \\\n";
-                    }
-                    linkedStaticLibrariesSection += "  " + (*m);
-                    hasLinkedStaticLibraries = true;
+                    linkedStaticLibraries.insert( *m );
                     break;
                 }
                 case MODULETYPE_EXECUTABLE:
@@ -258,12 +252,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
                     // This is really nasty but the best option for now...
                     // It is possible to link to exported symbols from an executable
                     // under linux and as such we will leverage this here
-                    if ( hasLinkedStaticLibraries )
-                    {
-                        linkedStaticLibrariesSection += " \\\n";
-                    }
-                    linkedStaticLibrariesSection += "  " + (*m);
-                    hasLinkedSharedLibraries = true;
+                    linkedStaticLibraries.insert( *m );
                     break;
                 }
                 case MODULETYPE_HEADER_INCLUDE_LOCATION:
@@ -292,26 +281,63 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
             // As such we cannot build this module thus the only approriote linking method would seem
             // to be the one where we simply instruct the linker to load this dependency at runtime.
             // This will typically be the case for any Android NDK modules we have to link to.
-            if ( hasRuntimeLibraries )
-            {
-                linkedRuntimeLibrariesSection += " \\\n";
-            }
-            linkedRuntimeLibrariesSection += "  -l" + (*m);
-            hasRuntimeLibraries = true;
+            linkedRuntimeLibraries.insert( *m );
         }
         ++m;
     }
+
+    CORE::CString linkingSection;
+    CORE::CString linkedSharedLibrariesSection = "\nLOCAL_SHARED_LIBRARIES := \\\n";
+    CORE::CString linkedStaticLibrariesSection = "\nLOCAL_STATIC_LIBRARIES := \\\n";
+    CORE::CString linkedRuntimeLibrariesSection = "\nLOCAL_LDLIBS := \\\n";
     
     // Based on what was found we will construct the linking section
-    if ( hasLinkedSharedLibraries )
+    bool first = true;
+    n = linkedSharedLibraries.begin();
+    while ( n != linkedSharedLibraries.end() )
+    {
+        if ( !first )
+        {
+             linkedSharedLibrariesSection += " \\\n";
+        }
+        linkedSharedLibrariesSection += "  " + (*n);
+        first = false;
+        ++n;
+    }
+    first = true;
+    n = linkedSharedLibraries.begin();
+    while ( n != linkedSharedLibraries.end() )
+    {
+        if ( !first )
+        {
+             linkedStaticLibrariesSection += " \\\n";
+        }
+        linkedStaticLibrariesSection += "  " + (*n);
+        first = false;
+        ++n;
+    }    
+    first = true;
+    n = linkedRuntimeLibraries.begin();
+    while ( n != linkedRuntimeLibraries.end() )
+    {
+        if ( !first )
+        {
+             linkedRuntimeLibrariesSection += " \\\n";
+        }
+        linkedRuntimeLibrariesSection += "  -l" + (*n);
+        first = false;
+        ++n;
+    }
+    
+    if ( !linkedSharedLibraries.empty() )
     {
         linkingSection += linkedSharedLibrariesSection + "\n\n";
     }
-    if ( hasLinkedStaticLibraries )
+    if ( !linkedStaticLibraries.empty() )
     {
         linkingSection += linkedStaticLibrariesSection + "\n\n";
     }
-    if ( hasRuntimeLibraries )
+    if ( !linkedRuntimeLibraries.empty() )
     {
         linkingSection += linkedRuntimeLibrariesSection + "\n\n";
     }

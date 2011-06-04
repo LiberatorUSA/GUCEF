@@ -298,6 +298,11 @@ StringToModuleType( const CORE::CString moduleTypeStr );
 
 /*-------------------------------------------------------------------------*/
 
+TStringSet
+StringVectorToStringSet( const TStringVector& stringVector );
+
+/*-------------------------------------------------------------------------*/
+
 bool
 SerializeModuleInfo( const TModuleInfoEntry& moduleInfo  ,
                      const CORE::CString& outputFilepath );

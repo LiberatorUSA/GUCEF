@@ -31,7 +31,9 @@ IF NOT DEFINED CYGWIN_ROOT (
   ECHO Failure: The FindCygwin script was unable to locate cygwin, we cannot proceed!
 )
 
-IF DEFINED CYGWIN_ROOT (
+echo woop
+
+rem IF DEFINED CYGWIN_ROOT (
   
   ECHO.
   ECHO *** Invoking BuildUsingNDK.sh using bash ***
@@ -41,7 +43,7 @@ IF DEFINED CYGWIN_ROOT (
   REM /usr/local/bin;/usr/bin;/bin
   
   ECHO Adding Cygwin binary paths to PATH
-  SET PATH=%CYGWIN_ROOT%\local\bin;%CYGWIN_ROOT%\usr\bin;%CYGWIN_ROOT%\bin;"%PATH%"
+  SET PATH="%CYGWIN_ROOT%\local\bin;%CYGWIN_ROOT%\usr\bin;%CYGWIN_ROOT%\bin;%PATH%"
 
   ECHO Undefining GUCEF_HOME so we don't mess up the bash version
   SET GUCEF_HOME=
@@ -54,7 +56,7 @@ IF DEFINED CYGWIN_ROOT (
 
   REM echo %WIN32_BASH_PATH%
   %CYGWIN_ROOT%\bin\bash "%BUIDUSINGNDK_THEBATCHDIR%\BuildUsingNDK.sh" --login -i
-)
+rem )
 
 
 IF NOT DEFINED NOPAUSE (

@@ -36,20 +36,27 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "vfspluginZIP" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefMT gucefCORE gucefVFS zziplib )
-target_link_libraries( ${MODULE_NAME} zziplib gucefCORE gucefVFS zlib gucefMT )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "ZZIP_HAVE_STDINT_H;GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE" )
+add_dependencies( ${MODULE_NAME} gucefMT zziplib gucefVFS gucefCORE )
+target_link_libraries( ${MODULE_NAME} gucefCORE gucefVFS zziplib gucefMT )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE;ZZIP_HAVE_STDINT_H" )
+
+if ( ANDROID )
+  target_link_libraries( ${MODULE_NAME} z )
+endif( ANDROID )
 
 if ( LINUX )
   add_dependencies( ${MODULE_NAME} zlib )
+  target_link_libraries( ${MODULE_NAME} zlib )
 endif( LINUX )
 
 if ( WIN32 )
   add_dependencies( ${MODULE_NAME} zlib )
+  target_link_libraries( ${MODULE_NAME} zlib )
 endif( WIN32 )
 
 if ( WIN64 )
   add_dependencies( ${MODULE_NAME} zlib )
+  target_link_libraries( ${MODULE_NAME} zlib )
 endif( WIN64 )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include dependencies/zziplib dependencies/zziplib/zzip include )

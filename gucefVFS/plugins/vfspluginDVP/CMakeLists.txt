@@ -34,8 +34,8 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "vfspluginDVP" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefMT gucefVFS gucefCORE DVPACKSYS )
-target_link_libraries( ${MODULE_NAME} DVPACKSYS gucefVFS gucefCORE gucefMT )
+add_dependencies( ${MODULE_NAME} gucefMT gucefCORE gucefVFS DVPACKSYS )
+target_link_libraries( ${MODULE_NAME} DVPACKSYS gucefMT gucefCORE gucefVFS )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_VFSPLUGIN_DVP_BUILD_MODULE" )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include dependencies/DVPACKSYS/include include )
