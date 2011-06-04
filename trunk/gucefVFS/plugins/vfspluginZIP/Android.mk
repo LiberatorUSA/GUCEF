@@ -39,10 +39,10 @@ LOCAL_CFLAGS := -DGUCEF_VFSPLUGIN_ZIP_BUILD_MODULE -DZZIP_HAVE_STDINT_H
 
 
 LOCAL_SHARED_LIBRARIES := \
+  zziplib \
   gucefMT \
   gucefVFS \
-  gucefCORE \
-  zziplib
+  gucefCORE
 
 
 LOCAL_LDLIBS := \
