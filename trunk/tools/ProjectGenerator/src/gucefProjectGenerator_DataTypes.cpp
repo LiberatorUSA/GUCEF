@@ -167,6 +167,22 @@ MergeStringSet( TStringSet& targetList          ,
 
 /*---------------------------------------------------------------------------*/
 
+TStringSet
+StringVectorToStringSet( const TStringVector& stringVector )
+{GUCEF_TRACE;
+
+    TStringSet stringSet;
+    TStringVector::const_iterator i = stringVector.begin();
+    while ( i != stringVector.end() )
+    {
+        stringSet.insert( (*i) );
+        ++i;
+    }
+    return stringSet;
+}
+
+/*---------------------------------------------------------------------------*/
+
 CORE::CString
 ModuleTypeToString( const TModuleType moduleType )
 {GUCEF_TRACE;

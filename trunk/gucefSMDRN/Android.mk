@@ -40,11 +40,11 @@ LOCAL_C_INCLUDES := \
 
 
 LOCAL_SHARED_LIBRARIES := \
-  gucefCORE \
-  gucefMT \
-  gucefCOMCORE \
   gucefCOM \
-  gucefDRN
+  gucefCOMCORE \
+  gucefCORE \
+  gucefDRN \
+  gucefMT
 
 include $(BUILD_SHARED_LIBRARY)
 

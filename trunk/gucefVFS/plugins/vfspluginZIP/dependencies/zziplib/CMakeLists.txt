@@ -24,10 +24,10 @@ set( HEADER_FILES
   zzip/memdisk.h
   zzip/mmapped.h
   zzip/plugin.h
-  zzip/stdint.h
-  zzip/types.h
   zzip/write.h
   zzip/zzip.h
+  zzip/zzip_stdint.h
+  zzip/zzip_types.h
   zzip/_config.h
   zzip/_msvc.h
   zzip/__debug.h
@@ -63,24 +63,27 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "zziplib" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-target_link_libraries( ${MODULE_NAME} zlib )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "ZZIP_DLL" )
 
 if ( ANDROID )
+  target_link_libraries( ${MODULE_NAME} z )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "ZZIP_HAVE_STDINT_H" )
 endif( ANDROID )
 
 if ( LINUX )
   add_dependencies( ${MODULE_NAME} zlib )
+  target_link_libraries( ${MODULE_NAME} zlib )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "ZZIP_HAVE_STDINT_H" )
 endif( LINUX )
 
 if ( WIN32 )
   add_dependencies( ${MODULE_NAME} zlib )
+  target_link_libraries( ${MODULE_NAME} zlib )
 endif( WIN32 )
 
 if ( WIN64 )
   add_dependencies( ${MODULE_NAME} zlib )
+  target_link_libraries( ${MODULE_NAME} zlib )
 endif( WIN64 )
 
 include_directories( ../zziplib zzip )
