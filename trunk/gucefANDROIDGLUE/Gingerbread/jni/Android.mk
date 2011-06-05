@@ -25,7 +25,8 @@ LOCAL_SRC_FILES := \
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../gucefCORE/include/ \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include/android
+  $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../../gucefCORE/src/
 
 
 LOCAL_SHARED_LIBRARIES := \
@@ -42,4 +43,6 @@ LOCAL_LDLIBS := \
   -landroid
 
 include $(BUILD_SHARED_LIBRARY)
+
+$(call import-module,android/native_app_glue)
 
