@@ -10,5 +10,9 @@
         <ITEM NAME="../gucefCORE/include/dvfileutils.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/dvcppstringutils.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/dvcppstringutils.h" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/md5.c" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/include/md5.h" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/dvmd5utils.h" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/dvmd5utils.c" TYPE="FILE" />
     </INCLUDES>
 </PROJECTGENERATOR>

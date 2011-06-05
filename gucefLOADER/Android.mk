@@ -26,21 +26,23 @@ LOCAL_SRC_FILES := \
   ../gucefCORE/src/CDVString.cpp \
   ../gucefCORE/src/dvfileutils.c \
   ../gucefCORE/src/dvcppstringutils.cpp \
+  ../gucefCORE/src/md5.c \
+  ../gucefCORE/src/dvmd5utils.c \
   src/gucefLOADER.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../gucefCORE/include/ \
+  $(MY_MODULE_PATH)/../gucefCORE/src/ \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../common/include \
   $(MY_MODULE_PATH)/../gucefCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include/android \
   $(MY_MODULE_PATH)/../gucefMT/include
 
-LOCAL_CFLAGS := -DGUCEF_CORE_EMBED_CODE -DGUCEF_CORE_NO_MD5_SUPPORT -DGUCEF_LOADER_BUILD_MODULE -DGUCEF_MT_EMBED_CODE
+LOCAL_CFLAGS := -DGUCEF_CORE_EMBED_CODE -DGUCEF_LOADER_BUILD_MODULE -DGUCEF_MT_EMBED_CODE
 
 
 LOCAL_LDLIBS := \
   -ldl
 
 include $(BUILD_SHARED_LIBRARY)
-
