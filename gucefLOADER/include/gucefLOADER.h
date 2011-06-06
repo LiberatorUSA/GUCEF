@@ -42,6 +42,9 @@
  *      <LoadRoot>/<GroupName>/<MayorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------*/
 
@@ -80,6 +83,12 @@ LoadGucefPlatformEx( unsigned long majorVersion   ,
                      char** argv                  ,
                      int argc                     ,
                      void* previousLoadData       );
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+}; /* extern "C" */
+#endif /* __cplusplus ? */
                    
 /*-------------------------------------------------------------------------*/
           
@@ -94,4 +103,4 @@ LoadGucefPlatformEx( unsigned long majorVersion   ,
 - 12-02-2005 :
         - Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/
