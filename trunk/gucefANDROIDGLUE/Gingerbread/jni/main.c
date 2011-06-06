@@ -26,6 +26,8 @@
 #include <android/log.h>
 #include <android_native_app_glue.h>
 
+#include "gucefLOADER.h"
+
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "native-activity", __VA_ARGS__))
 #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "native-activity", __VA_ARGS__))
 
@@ -223,6 +225,8 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
     }
 }
 
+#define NULLPTR ((void*)0)
+
 /**
  * This is the main entry point of a native application that is using
  * android_native_app_glue.  It runs in its own thread, with its own
@@ -233,6 +237,9 @@ void android_main(struct android_app* state) {
 
     // Make sure glue isn't stripped.
     app_dummy();
+    
+    char* argv[ 1 ] = { "gucefLOADER.ini" };
+    void* platformData = LoadGucefPlatform( 0, 0, 1, argv, NULLPTR ); 
 
     memset(&engine, 0, sizeof(engine));
     state->userData = &engine;
