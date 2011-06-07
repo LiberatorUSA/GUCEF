@@ -30,6 +30,16 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
+#ifndef GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#include "CDynamicBufferAccess.h"
+#define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
+
 #include "gucefCORE_CIniParser.h"
 
 /*-------------------------------------------------------------------------//
@@ -79,6 +89,15 @@ CIniParser::operator=( const CIniParser& src )
         m_iniData = src.m_iniData;
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CIniParser::Clear( void )
+{GUCEF_TRACE;
+
+    m_iniData.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -139,7 +158,7 @@ CIniParser::SaveTo( CIOAccess& file ) const
         TIniMap::const_iterator i = m_iniData.begin();
         while ( i != m_iniData.end() )
         {
-            const CString& keyString = GUCEF_EOL "[" + (*i).first + "]" GUCEF_EOL;
+            CString keyString = GUCEF_EOL "[" + (*i).first + "]" GUCEF_EOL;
             CString values = (*i).second.GetAllPairs( valueSepStr );
             
             file.Write( keyString );
@@ -150,6 +169,23 @@ CIniParser::SaveTo( CIOAccess& file ) const
         return true;
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIniParser::SaveTo( CString& outputIniString ) const
+{GUCEF_TRACE;
+
+    const CString valueSepStr = GUCEF_EOL;
+    TIniMap::const_iterator i = m_iniData.begin();
+    while ( i != m_iniData.end() )
+    {
+        outputIniString += GUCEF_EOL "[" + (*i).first + "]" GUCEF_EOL;
+        outputIniString += (*i).second.GetAllPairs( valueSepStr );
+        ++i;
+    }        
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -272,6 +308,11 @@ CIniParser::FindIndexOfNonQuotedEquals( const CString& testString )
                 // non quoted equals
             }
         }
+        else
+        {
+            // There are no quotes surrounding this equals so we are done
+            return equalsIndex;
+        }
     }
     return -1;
 }
@@ -309,6 +350,18 @@ CIniParser::GetData( void ) const
 {GUCEF_TRACE;
    
     return m_iniData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIniParser::LoadFrom( const CString& iniText )
+{GUCEF_TRACE;
+
+    CDynamicBuffer stringBuffer;
+    stringBuffer.LinkTo( iniText.C_String(), iniText.Length() );
+    CDynamicBufferAccess stringBufferAccess( &stringBuffer, false );
+    return LoadFrom( stringBufferAccess );
 }
 
 /*-------------------------------------------------------------------------*/

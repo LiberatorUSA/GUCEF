@@ -1,6 +1,6 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  gucefPRODMAN: Product management module
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,44 +14,29 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CINIPARSER_H
-#define GUCEF_CORE_CINIPARSER_H
+#ifndef GUCEF_PRODMAN_CPRODUCTINFOLIST_H
+#define GUCEF_PRODMAN_CPRODUCTINFOLIST_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      INCLUDES                                                           //
+//      INCLUDE                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 #include <map>
 
-#ifndef GUCEF_CORE_CDATANODE_H
-#include "CDataNode.h"
-#define GUCEF_CORE_CDATANODE_H
-#endif /* GUCEF_CORE_CDATANODE_H ? */
+#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
+#include "ExceptionMacros.h"
+#define GUCEF_CORE_EXCEPTIONMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
-
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
-
-#ifndef GUCEF_CORE_CIOACCESS_H
-#include "CIOAccess.h"
-#define GUCEF_CORE_CIOACCESS_H
-#endif /* GUCEF_CORE_CIOACCESS_H ? */
-
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"     /* often used gucef macros */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_PRODMAN_CPRODUCTINFO_H
+#include "gucefPRODMAN_CProductInfo.h"
+#define GUCEF_PRODMAN_CPRODUCTINFO_H
+#endif /* GUCEF_PRODMAN_CPRODUCTINFO_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,7 +45,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace PRODMAN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -68,54 +53,53 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CIniParser
+class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoList : public CORE::CIConfigurable
 {
     public:
     
-    typedef std::map< CString, CValueList > TIniMap;
-    
-    CIniParser( void );
-    
-    CIniParser( const CIniParser& src );
-    
-    virtual ~CIniParser();
-    
-    CIniParser& operator=( const CIniParser& src );
-    
-    bool SaveTo( CDataNode& rootNode ) const;
-    
-    bool SaveTo( CIOAccess& fileAccess ) const;
-    
-    bool SaveTo( CString& outputIniString ) const;
-    
-    bool LoadFrom( const CDataNode& rootNode );
-    
-    bool LoadFrom( CIOAccess& fileAccess );
-    
-    bool LoadFrom( const CString& iniText );
-    
-    void Clear( void );
-    
-    TIniMap& GetData( void );
-    
-    const TIniMap& GetData( void ) const;
+    typedef std::map< CString, CProductInfo > TProductMap;
+    typedef CProductInfo::TDeploymentStatus   TDeploymentStatus;
+    typedef CProductInfo::TProductType        TProductType;  
 
+    CProductInfoList( void );
+    
+    CProductInfoList( const CProductInfoList& src );
+    
+    virtual ~CProductInfoList();
+
+    CProductInfoList& operator=( const CProductInfoList& src );
+
+    virtual bool SaveConfig( CORE::CDataNode& node );
+                                
+    virtual bool LoadConfig( const CORE::CDataNode& node );
+    
+    TProductMap& GetList( const TDeploymentStatus deploymentStatus );
+    
+    const TProductMap& GetList( const TDeploymentStatus deploymentStatus ) const;
+
+    void RetrieveListSubSet( const TProductType productType           ,
+                             CProductInfoList& productList            ) const;
+    
+    void RetrieveListSubSet( const TDeploymentStatus deploymentStatus ,
+                             const TProductType productType           ,
+                             CProductInfoList& productList            ) const;
+                             
+    bool MergeProduct( const CProductInfo& productInfo );
+    
+    bool MergeProductList( const CProductInfoList& productInfoList );
+    
+    CProductInfo* RetrieveProductInfo( const CString& combinedProductString );
+    
+    const CProductInfo* RetrieveProductInfo( const CString& combinedProductString ) const;
+    
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_PRODMAN_EXPORT_CPP, EInvalidDeploymentType );
+    
     private:
     
-    static bool IsCharIndexWithinQuotes( const CString& testString , 
-                                         UInt32 charIndex          ,
-                                         Int32 quotationStartIndex ,
-                                         Int32 quotationEndIndex   );
-
-    static Int32 FindIndexOfNonQuotedEquals( const CString& testString );
-    
-    static CString StripQuotation( const CString& testString );
-
-    private:
-    
-    
-    
-    TIniMap m_iniData;
+    TProductMap m_availableProducts;
+    TProductMap m_installedProducts;
+    TProductMap m_updatingProducts;
+    TProductMap m_downloadingProducts;
 };
 
 /*-------------------------------------------------------------------------//
@@ -124,12 +108,12 @@ class GUCEF_CORE_PUBLIC_CPP CIniParser
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace PRODMAN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CINIPARSER_H */
+#endif /* GUCEF_PRODMAN_CPRODUCTINFOLIST_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -137,7 +121,7 @@ class GUCEF_CORE_PUBLIC_CPP CIniParser
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 21-09-2005 :
-        - initial version
-
+- 11-02-2008 :
+        - Initial implementation
+          
 ---------------------------------------------------------------------------*/

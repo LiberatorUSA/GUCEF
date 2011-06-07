@@ -650,6 +650,10 @@ CString::SubstrToIndex( UInt32 index     ,
 {GUCEF_TRACE;
 
     UInt32 otherIndex = frontToBack ? 0 : m_length > 0 ? m_length-1 : 0;
+    
+    if ( index == otherIndex ) return CString();
+    
+    index > otherIndex ? --index : ++index;
     return SubstrFromRange( otherIndex, index );
 }
 
@@ -673,8 +677,13 @@ CString::SubstrFromRange( UInt32 startIndex ,
     UInt32 maxEnd = endIndex+1 > m_length ? m_length-1 : endIndex;
     UInt32 maxStart = startIndex+1 > m_length ? m_length-1 : startIndex;
 
-    // make the new string using the given range
-    return CString( m_string+maxStart, maxEnd-maxStart );
+    // Check for 0 length string
+    if ( maxEnd >= maxStart )
+    {
+        // make the new string using the given range
+        return CString( m_string+maxStart, (maxEnd-maxStart)+1 );
+    }
+    return CString();
 }
 
 /*-------------------------------------------------------------------------*/

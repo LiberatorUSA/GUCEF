@@ -13,6 +13,7 @@
 
 set( HEADER_FILES 
   include/TestCyclicDynamicBuffer.h
+  include/TestIniParser.h
   include/TestNotifierObserver.h
   include/TestSharedPtr.h
   include/TestString.h
@@ -21,6 +22,7 @@ set( HEADER_FILES
 set( SOURCE_FILES 
   src/gucefCORE_TestApp_main.cpp
   src/TestCyclicDynamicBuffer.cpp
+  src/TestIniParser.cpp
   src/TestNotifierObserver.cpp
   src/TestSharedPtr.cpp
   src/TestString.cpp
