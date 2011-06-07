@@ -95,15 +95,15 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 set( MODULE_NAME "gucefCOMCORE" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefMT gucefCORE )
-target_link_libraries( ${MODULE_NAME} gucefMT gucefCORE )
+target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_COMCORE_BUILD_MODULE" )
 
 if ( WIN32 )
-  target_link_libraries( ${MODULE_NAME} Ws2_32.lib Advapi32.lib )
+  target_link_libraries( ${MODULE_NAME} Advapi32.lib Ws2_32.lib )
 endif( WIN32 )
 
 if ( WIN64 )
-  target_link_libraries( ${MODULE_NAME} Ws2_32.lib Advapi32.lib )
+  target_link_libraries( ${MODULE_NAME} Advapi32.lib Ws2_32.lib )
 endif( WIN64 )
 
 include_directories( ../common/include ../gucefCORE/include ../gucefMT/include include )

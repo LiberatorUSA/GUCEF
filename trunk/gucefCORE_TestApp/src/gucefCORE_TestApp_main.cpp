@@ -52,6 +52,11 @@
 #define GUCEF_CORE_TESTAPP_TESTCYCLICDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_TESTAPP_TESTCYCLICDYNAMICBUFFER_H ? */
 
+#ifndef GUCEF_CORE_TESTAPP_TESTINIPARSER_H
+#include "TestIniParser.h"
+#define GUCEF_CORE_TESTAPP_TESTINIPARSER_H
+#endif /* GUCEF_CORE_TESTAPP_TESTINIPARSER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -86,9 +91,11 @@ main( int argc, char** argv )
 
         //GUCEF::CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
 
+        PerformIniParserTests();
+        
         //PerformStringTests();
         
-        PerformSharedPtrTests();
+        //PerformSharedPtrTests();
 
         //PerformCyclicDynamicBufferTests();
 

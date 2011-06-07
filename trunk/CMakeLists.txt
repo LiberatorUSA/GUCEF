@@ -193,6 +193,7 @@ add_subdirectory( gucefDRN )
 add_subdirectory( gucefSMDRN )
 add_subdirectory( gucefPATCHER )
 add_subdirectory( gucefLOADER )
+add_subdirectory( gucefPRODMAN )
 
 # Setup GUCEF plugin dependencies
 add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML/dependancy/libparsifal )

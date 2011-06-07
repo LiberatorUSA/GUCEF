@@ -17,6 +17,8 @@ set( HEADER_FILES
   ../gucefCORE/include/CDVString.h
   ../gucefCORE/include/dvfileutils.h
   ../gucefCORE/include/dvcppstringutils.h
+  ../gucefCORE/include/md5.h
+  ../gucefCORE/include/dvmd5utils.h
   include/gucefLOADER.h
   include/gucefLOADER_config.h
   include/gucefLOADER_ETypes.h
@@ -29,6 +31,8 @@ set( SOURCE_FILES
   ../gucefCORE/src/CDVString.cpp
   ../gucefCORE/src/dvfileutils.c
   ../gucefCORE/src/dvcppstringutils.cpp
+  ../gucefCORE/src/md5.c
+  ../gucefCORE/src/dvmd5utils.c
   src/gucefLOADER.cpp
 )
 
@@ -41,6 +45,8 @@ if (ANDROID)
     ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvmd5utils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "ANDROID" )
@@ -52,6 +58,8 @@ if (ANDROID)
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvmd5utils.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
@@ -64,6 +72,8 @@ elseif (GLX)
     ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvmd5utils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "GLX" )
@@ -75,6 +85,8 @@ elseif (GLX)
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvmd5utils.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "GLX" )
@@ -87,6 +99,8 @@ elseif (GTK)
     ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvmd5utils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "GTK" )
@@ -98,6 +112,8 @@ elseif (GTK)
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvmd5utils.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "GTK" )
@@ -110,6 +126,8 @@ elseif (IPHONEOS)
     ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvmd5utils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "IPHONEOS" )
@@ -121,6 +139,8 @@ elseif (IPHONEOS)
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvmd5utils.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "IPHONEOS" )
@@ -133,6 +153,8 @@ elseif (LINUX)
     ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvmd5utils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX" )
@@ -144,6 +166,8 @@ elseif (LINUX)
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvmd5utils.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX" )
@@ -156,6 +180,8 @@ elseif (OSX)
     ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvmd5utils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "OSX" )
@@ -167,6 +193,8 @@ elseif (OSX)
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvmd5utils.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "OSX" )
@@ -179,6 +207,8 @@ elseif (SDL)
     ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvmd5utils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "SDL" )
@@ -190,6 +220,8 @@ elseif (SDL)
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvmd5utils.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "SDL" )
@@ -202,6 +234,8 @@ elseif (SYMBIAN)
     ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvmd5utils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "SYMBIAN" )
@@ -213,6 +247,8 @@ elseif (SYMBIAN)
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvmd5utils.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "SYMBIAN" )
@@ -225,6 +261,8 @@ elseif (UNIX)
     ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvmd5utils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "UNIX" )
@@ -236,6 +274,8 @@ elseif (UNIX)
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvmd5utils.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "UNIX" )
@@ -248,6 +288,8 @@ elseif (WIN32)
     ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvmd5utils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
@@ -259,6 +301,8 @@ elseif (WIN32)
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvmd5utils.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -271,6 +315,8 @@ elseif (WIN64)
     ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvmd5utils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN64" )
@@ -282,6 +328,8 @@ elseif (WIN64)
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvmd5utils.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
@@ -293,9 +341,13 @@ endif ()
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 set( MODULE_NAME "gucefLOADER" )
-add_library( ${MODULE_NAME} STATIC ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefCORE gucefMT )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_MT_EMBED_CODE;GUCEF_CORE_EMBED_CODE;GUCEF_CORE_NO_MD5_SUPPORT;GUCEF_LOADER_BUILD_MODULE" )
+add_library( ${MODULE_NAME} ${ALL_FILES} )
+add_dependencies( ${MODULE_NAME} gucefMT gucefCORE )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_MT_EMBED_CODE;GUCEF_CORE_EMBED_CODE;GUCEF_LOADER_BUILD_MODULE" )
+
+if ( ANDROID )
+  target_link_libraries( ${MODULE_NAME} dl )
+endif( ANDROID )
 
 include_directories( ../common/include ../gucefCORE/include ../gucefMT/include ../gucefCORE/include/ include )
 

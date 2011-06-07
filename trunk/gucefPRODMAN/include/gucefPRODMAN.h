@@ -1,6 +1,6 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  vfspluginVP: Generic GUCEF VFS plugin for "Dinand Vanvelzen Pack" archives
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CINIPARSER_H
-#define GUCEF_CORE_CINIPARSER_H
+#ifndef GUCEF_PRODMAN_H
+#define GUCEF_PRODMAN_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,32 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <map>
+#ifndef GUCEF_CORE_ESTRUCTS_H
+#include "EStructs.h"
+#define GUCEF_CORE_ESTRUCTS_H
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef GUCEF_CORE_CDATANODE_H
-#include "CDataNode.h"
-#define GUCEF_CORE_CDATANODE_H
-#endif /* GUCEF_CORE_CDATANODE_H ? */
-
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
-
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
-
-#ifndef GUCEF_CORE_CIOACCESS_H
-#include "CIOAccess.h"
-#define GUCEF_CORE_CIOACCESS_H
-#endif /* GUCEF_CORE_CIOACCESS_H ? */
-
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"     /* often used gucef macros */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_VFSPLUGIN_DVP_MACROS_H
+#include "gucefPRODMAN_macros.h"
+#define GUCEF_VFSPLUGIN_DVP_MACROS_H
+#endif /* GUCEF_VFSPLUGIN_DVP_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,64 +42,54 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
 namespace GUCEF {
-namespace CORE {
+namespace PRODMAN {
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CIniParser
-{
-    public:
-    
-    typedef std::map< CString, CValueList > TIniMap;
-    
-    CIniParser( void );
-    
-    CIniParser( const CIniParser& src );
-    
-    virtual ~CIniParser();
-    
-    CIniParser& operator=( const CIniParser& src );
-    
-    bool SaveTo( CDataNode& rootNode ) const;
-    
-    bool SaveTo( CIOAccess& fileAccess ) const;
-    
-    bool SaveTo( CString& outputIniString ) const;
-    
-    bool LoadFrom( const CDataNode& rootNode );
-    
-    bool LoadFrom( CIOAccess& fileAccess );
-    
-    bool LoadFrom( const CString& iniText );
-    
-    void Clear( void );
-    
-    TIniMap& GetData( void );
-    
-    const TIniMap& GetData( void ) const;
+/*
+ *      Prevent C++ name mangling
+ */
+#ifdef __cplusplus
+extern "C" {
+#endif  /* __cplusplus */
 
-    private:
-    
-    static bool IsCharIndexWithinQuotes( const CString& testString , 
-                                         UInt32 charIndex          ,
-                                         Int32 quotationStartIndex ,
-                                         Int32 quotationEndIndex   );
+/*---------------------------------------------------------------------------*/
 
-    static Int32 FindIndexOfNonQuotedEquals( const CString& testString );
-    
-    static CString StripQuotation( const CString& testString );
+GUCEF_PLUGIN_PRODMAN_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-    private:
-    
-    
-    
-    TIniMap m_iniData;
-};
+/*--------------------------------------------------------------------------*/
+
+GUCEF_PLUGIN_PRODMAN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_PLUGIN_PRODMAN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_PLUGIN_PRODMAN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_PLUGIN_PRODMAN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*---------------------------------------------------------------------------*/                 
+
+#ifdef __cplusplus
+   };
+#endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -124,12 +97,14 @@ class GUCEF_CORE_PUBLIC_CPP CIniParser
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+#ifdef __cplusplus
+}; /* namespace PRODMAN */
 }; /* namespace GUCEF */
+#endif /* __cplusplus */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CINIPARSER_H */
+#endif /* GUCEF_VFSPLUGIN_DVP_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -137,7 +112,7 @@ class GUCEF_CORE_PUBLIC_CPP CIniParser
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 21-09-2005 :
-        - initial version
+- 04-05-2005 :
+        - Dinand: Initial version.
 
----------------------------------------------------------------------------*/
+-----------------------------------------------------------------------------*/
