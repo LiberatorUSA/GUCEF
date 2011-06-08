@@ -1,0 +1,10 @@
+<ModuleInfoEntry>
+    <Module Name="gucefLOADER_TestApp" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefLOADER" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefLOADER" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>
