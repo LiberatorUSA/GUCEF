@@ -41,6 +41,11 @@
 #define GUCEF_PRODMAN_CONFIG_H
 #endif /* GUCEF_PRODMAN_CONFIG_H ? */
 
+#ifndef GUCEF_PRODMAN_ETYPES_H
+#include "gucefPRODMAN_ETypes.h"
+#define GUCEF_PRODMAN_ETYPES_H
+#endif /* GUCEF_PRODMAN_ETYPES_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      GENERAL MACROS                                                     //

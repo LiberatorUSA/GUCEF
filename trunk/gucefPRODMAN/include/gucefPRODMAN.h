@@ -62,27 +62,27 @@ extern "C" {
 
 /*---------------------------------------------------------------------------*/
 
-GUCEF_PLUGIN_PRODMAN_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_PRODMAN_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_PLUGIN_PRODMAN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_PRODMAN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_PLUGIN_PRODMAN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_PRODMAN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_PLUGIN_PRODMAN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_PRODMAN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_PLUGIN_PRODMAN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_PRODMAN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/                 

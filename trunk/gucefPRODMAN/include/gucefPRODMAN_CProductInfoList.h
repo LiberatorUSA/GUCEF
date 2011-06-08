@@ -92,7 +92,7 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoList : public CORE::CIConfigurable
     
     const CProductInfo* RetrieveProductInfo( const CString& combinedProductString ) const;
     
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_PRODMAN_EXPORT_CPP, EInvalidDeploymentType );
+    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_PRODMAN_PUBLIC_CPP, EInvalidDeploymentType );
     
     private:
     
