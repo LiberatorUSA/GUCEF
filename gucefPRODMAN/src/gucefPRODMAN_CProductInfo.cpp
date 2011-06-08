@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTRACER_H
+#include "CTracer.h"
+#define GUCEF_CORE_CTRACER_H
+#endif /* GUCEF_CORE_CTRACER_H ? */
+
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"
 #define GUCEF_CORE_CDATANODE_H
@@ -33,7 +38,7 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
-#include "guCORE_CProductInfo.h"
+#include "gucefPRODMAN_CProductInfo.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,8 +46,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GU {
-namespace CORE {
+namespace GUCEF {
+namespace PRODMAN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -468,7 +473,7 @@ CProductInfo::GetCombinedProductString( void ) const
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
-}; /* namespace GU */
+}; /* namespace PRODMAN */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

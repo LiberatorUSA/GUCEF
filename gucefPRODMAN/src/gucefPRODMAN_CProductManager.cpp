@@ -41,8 +41,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GU {
-namespace CORE {
+namespace GUCEF {
+namespace PRODMAN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -212,13 +212,13 @@ CProductManager::LoadConfig( const GUCEF::CORE::CDataNode& node )
             m_productRoot = att->second;
         }
 
-        GUCEF::CORE::CDataNode productList;        
-        if ( GUCE::CORE::VFSLoadDataTree( m_productListPath  ,
-                                          m_productListCodec ,
-                                          &productList       ) )
-        {
-            m_productList.LoadConfig( productList );
-        }
+        //GUCEF::CORE::CDataNode productList;        
+        //if ( GUCE::CORE::VFSLoadDataTree( m_productListPath  ,
+        //                                  m_productListCodec ,
+        //                                  &productList       ) )
+        //{
+        //    m_productList.LoadConfig( productList );
+        //}
         
         m_downloadsManager.LoadConfig( node );
         return true;
@@ -265,7 +265,7 @@ CProductManager::GetProductRoot( const CProductInfo& product ) const
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
-}; /* namespace GU */
+}; /* namespace PRODMAN */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

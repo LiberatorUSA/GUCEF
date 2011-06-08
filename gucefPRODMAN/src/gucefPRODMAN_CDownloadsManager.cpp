@@ -23,11 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCE_CORE_MISCUTILS_H
-#include "miscutils.h"
-#define GUCE_CORE_MISCUTILS_H
-#endif /* GUCE_CORE_MISCUTILS_H ? */
-
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"
 #define GUCEF_CORE_CDATANODE_H
@@ -43,7 +38,7 @@
 #define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
 
-#include "guCORE_CDownloadsManager.h"
+#include "gucefPRODMAN_CDownloadsManager.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,8 +46,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GU {
-namespace CORE {
+namespace GUCEF {
+namespace PRODMAN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,13 +55,13 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const GUCEF::CORE::CEvent CDownloadsManager::DownloadStartedEvent = "GU::CORE::CDownloadsManager::DownloadStartedEvent";
-const GUCEF::CORE::CEvent CDownloadsManager::DownloadStoppedEvent = "GU::CORE::CDownloadsManager::DownloadStartedEvent";
-const GUCEF::CORE::CEvent CDownloadsManager::DownloadStopRequestedEvent = "GU::CORE::CDownloadsManager::DownloadStartedEvent";
-const GUCEF::CORE::CEvent CDownloadsManager::DownloadFinishedEvent = "GU::CORE::CDownloadsManager::DownloadStartedEvent";
-const GUCEF::CORE::CEvent CDownloadsManager::DownloadPausedEvent = "GU::CORE::CDownloadsManager::DownloadStartedEvent";
-const GUCEF::CORE::CEvent CDownloadsManager::DownloadResumedEvent = "GU::CORE::CDownloadsManager::DownloadStartedEvent";
-const GUCEF::CORE::CEvent CDownloadsManager::PatchTaskEventReceivedEvent = "GU::CORE::CDownloadsManager::PatchTaskEventReceivedEvent";        
+const GUCEF::CORE::CEvent CDownloadsManager::DownloadStartedEvent = "GUCEF::PRODMAN::CDownloadsManager::DownloadStartedEvent";
+const GUCEF::CORE::CEvent CDownloadsManager::DownloadStoppedEvent = "GUCEF::PRODMAN::CDownloadsManager::DownloadStartedEvent";
+const GUCEF::CORE::CEvent CDownloadsManager::DownloadStopRequestedEvent = "GUCEF::PRODMAN::CDownloadsManager::DownloadStartedEvent";
+const GUCEF::CORE::CEvent CDownloadsManager::DownloadFinishedEvent = "GUCEF::PRODMAN::CDownloadsManager::DownloadStartedEvent";
+const GUCEF::CORE::CEvent CDownloadsManager::DownloadPausedEvent = "GUCEF::PRODMAN::CDownloadsManager::DownloadStartedEvent";
+const GUCEF::CORE::CEvent CDownloadsManager::DownloadResumedEvent = "GUCEF::PRODMAN::CDownloadsManager::DownloadStartedEvent";
+const GUCEF::CORE::CEvent CDownloadsManager::PatchTaskEventReceivedEvent = "GUCEF::PRODMAN::CDownloadsManager::PatchTaskEventReceivedEvent";        
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -162,21 +157,21 @@ bool
 CDownloadsManager::StartDownload( const CProductInfo& productInfo )
 {GUCEF_TRACE;
 
-    GUCEF::CORE::CDataNode configTemplate;
-    CString productString = productInfo.GetCombinedProductString();
-    
-    if ( GUCE::CORE::VFSLoadDataTree( m_patchEngineConfigTemplatePath  ,
-                                      m_patchEngineConfigTemplateCodec ,
-                                      &configTemplate                  ) )
-    {
-        GUCEF::CORE::CDataNode* node = configTemplate.Find( "CPatchEngine" );
-        node->SetAttribute( "PatchListURL", productInfo.GetPatchListURL() );
-        
-        m_productMap[ productString ] = productInfo;
-        
-        return m_patchManager.StartTask( productString  ,
-                                         configTemplate );
-    }
+    //GUCEF::CORE::CDataNode configTemplate;
+    //CString productString = productInfo.GetCombinedProductString();
+    //
+    //if ( GUCE::CORE::VFSLoadDataTree( m_patchEngineConfigTemplatePath  ,
+    //                                  m_patchEngineConfigTemplateCodec ,
+    //                                  &configTemplate                  ) )
+    //{
+    //    GUCEF::CORE::CDataNode* node = configTemplate.Find( "CPatchEngine" );
+    //    node->SetAttribute( "PatchListURL", productInfo.GetPatchListURL() );
+    //    
+    //    m_productMap[ productString ] = productInfo;
+    //    
+    //    return m_patchManager.StartTask( productString  ,
+    //                                     configTemplate );
+    //}
     return false;                          
 }
 
@@ -228,20 +223,20 @@ CDownloadsManager::OnADListRetrievalEvent( GUCEF::CORE::CNotifier* notifier    ,
     {
         GUCEF::CORE::CIOAccess* access = m_adListUrlRetiever.GetIOAccess();
         access->Setpos( 0 );
-        
-        GUCEF::CORE::CDataNode dataTree;
-        if ( GUCE::CORE::LoadDataTree( *access   ,
-                                       "xml"     ,
-                                       &dataTree ) )
-        {
-            const GUCEF::CORE::CDataNode* rootNode = dataTree.Find( "ProductList" );
-            GUCEF::CORE::CDataNode::const_iterator i = dataTree.ConstBegin();
-            while ( i != dataTree.ConstEnd() )
-            {
-                
-                ++i;
-            }
-        }
+    //    
+    //    GUCEF::CORE::CDataNode dataTree;
+    //    if ( GUCE::CORE::LoadDataTree( *access   ,
+    //                                   "xml"     ,
+    //                                   &dataTree ) )
+    //    {
+    //        const GUCEF::CORE::CDataNode* rootNode = dataTree.Find( "ProductList" );
+    //        GUCEF::CORE::CDataNode::const_iterator i = dataTree.ConstBegin();
+    //        while ( i != dataTree.ConstEnd() )
+    //        {
+    //            
+    //            ++i;
+    //        }
+    //    }
     }
     else
     if ( GUCEF::CORE::CURLDataRetriever::URLDataRetrievalErrorEvent == eventid )
