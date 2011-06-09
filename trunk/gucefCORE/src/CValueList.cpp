@@ -112,6 +112,19 @@ CValueList::operator[]( const CString& key ) const
 /*-------------------------------------------------------------------------*/
 
 void
+CValueList::SetMultiple( int argc    ,
+                         char** argv )
+{GUCEF_TRACE;
+
+    for ( int i=0; i<argc; ++i )
+    {
+        Set( argv[ i ] );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CValueList::SetMultiple( const CString& keyandvalue ,
                          const char seperator       )
 {GUCEF_TRACE;
