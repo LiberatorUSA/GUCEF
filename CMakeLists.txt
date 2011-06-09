@@ -230,6 +230,7 @@ add_subdirectory( gucefIMAGE_TestApp )
 add_subdirectory( gucefINPUT_TestApp )
 #add_subdirectory( gucefAUDIO_TestApp )
 add_subdirectory( gucefDRN_TestApp )
+add_subdirectory( gucefLOADER_TestApp )
 
 # Setup GUCEF tooling applications
 add_subdirectory(tools)

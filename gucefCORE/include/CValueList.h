@@ -90,6 +90,9 @@ class GUCEF_CORE_PUBLIC_CPP CValueList
      */
     const CString& operator[]( const CString& key ) const;
 
+    void SetMultiple( int argc    ,
+                      char** argv );
+
     void SetMultiple( const CString& keyandvalue ,
                       const char seperator       );
 

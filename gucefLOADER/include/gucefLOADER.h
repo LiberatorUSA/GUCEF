@@ -86,6 +86,35 @@ LoadGucefPlatformEx( unsigned long majorVersion   ,
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Attempts to load the specified version of the app identified as "appName"
+ *  using the parameters given as appArgc and appArgv. Passing less then 0 as
+ *  a version value signals you want the latest version.
+ */
+GUCEF_LOADER_PUBLIC_C int
+LoadAndRunGucefPlatformAppEx( const char* appName ,
+                              const char* rootDir ,
+                              int appArgc         ,
+                              char** appArgv      ,
+                              long majorVersion   ,
+                              long minorVersion   ,
+                              long patchVersion   ,
+                              long releaseVersion );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Attempts to load the latest version of the app identified as "appName"
+ *  using the parameters given as appArgc and appArgv
+ */
+GUCEF_LOADER_PUBLIC_C int
+LoadAndRunGucefPlatformApp( const char* appName ,
+                            const char* rootDir ,
+                            int appArgc         ,
+                            char** appArgv      );
+
+/*-------------------------------------------------------------------------*/
+
 #ifdef __cplusplus
 }; /* extern "C" */
 #endif /* __cplusplus ? */

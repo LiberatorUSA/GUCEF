@@ -84,6 +84,37 @@ struct SModuleGroup
 };
 typedef struct SModuleGroup TModuleGroup;
 
+/*-------------------------------------------------------------------------*/
+
+/*
+ *  The following are type definitions for the CORE module C interface functions
+ */
+typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_AppMain ) ( int argc, char** argv, int runAppBool ) GUCEF_CALLSPEC_SUFFIX;
+typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_AppLoadConfig ) ( const char* configData, const char* dataCodec ) GUCEF_CALLSPEC_SUFFIX;
+typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_AppLoadGenericPlugin ) ( const char* pluginPath, int argc, char** argv ) GUCEF_CALLSPEC_SUFFIX;
+
+struct SGucefCoreCInterface
+{
+    TGUCEFCORECINTERFACE_AppMain appMain;
+    TGUCEFCORECINTERFACE_AppLoadConfig appLoadConfig;
+    TGUCEFCORECINTERFACE_AppLoadGenericPlugin appLoadGenericPlugin;
+};
+typedef struct SGucefCoreCInterface TGucefCoreCInterface;
+
+/*-------------------------------------------------------------------------*/
+
+/*
+ *  The following is a struct containing info parsed from a loader
+ *  config file. It is meant to drive the actions of the app load functions
+ */
+struct SLoaderAppConfig
+{
+    unsigned long gucefMajorVersion;
+    unsigned long gucefMinorVersion;
+    long gucefPatchVersion;
+    long gucefReleaseVersion;
+}
+typedef struct SLoaderAppConfig TLoaderAppConfig;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -487,6 +518,36 @@ LoadModules( const char* groupName        ,
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_LOADER_PRIVATE_CPP void*
+GetModulePtr( void* moduleData       ,
+              const char* moduleName )
+{
+    try
+    {
+        if ( NULL != moduleData )
+        {
+            TModuleGroup* moduleGroup = (TModuleGroup*) moduleData;
+            TModuleInfoVector& moduleInfoVector = moduleGroup->modules;
+            TModuleInfoVector::iterator n = moduleInfoVector.begin();
+            while ( n != moduleInfoVector.end() )
+            {
+                if ( moduleName == (*n).name )
+                {
+                    return (*n).handle;
+                }
+                ++n;
+            }
+        }
+    }
+    catch ( ... )
+    {
+        // Don't allow exceptions to escape outside the loader
+    }
+    return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 UnloadModules( void* moduleData )
 {
@@ -552,6 +613,182 @@ LoadGucefPlatformEx( unsigned long mayorVersion   ,
                         argv                  ,
                         argc                  ,
                         previousLoadData      );
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PRIVATE_CPP bool
+LinkGucefCoreCInterface( void* moduleData                 ,
+                         TGucefCoreCInterface& cInterface )
+{
+    // grab pointer to gucefCORE module
+    void* coreModulePtr = GetModulePtr( moduleData, "gucefCORE" );    
+    if ( NULL == coreModulePtr )
+    {
+        return false;
+    }
+    
+    // Get pointers to the CORE functions we need
+    // We use the C interface to be independent of class changes
+    cInterface.appLoadConfig = (TGUCEFCORECINTERFACE_AppLoadConfig)
+           = CORE::GetFunctionAddress( coreModulePtr              ,
+                                       "GUCEF_CORE_AppLoadConfig" ,
+                                       sizeof(const char*)*2      ).funcPtr; 
+    cInterface.appMain = (TGUCEFCORECINTERFACE_AppMain)
+           = CORE::GetFunctionAddress( coreModulePtr        ,
+                                       "GUCEF_CORE_AppMain" ,
+                                       sizeof(int)    +
+                                       sizeof(char**) +
+                                       sizeof(int)          ).funcPtr; 
+    cInterface.appLoadGenericPlugin = (TGUCEFCORECINTERFACE_AppLoadGenericPlugin)
+           = CORE::GetFunctionAddress( coreModulePtr                     ,
+                                       "GUCEF_CORE_AppLoadGenericPlugin" ,
+                                       sizeof(const char*) +
+                                       sizeof(int)         +
+                                       sizeof(const char**)              ).funcPtr;
+
+    if ( NULL != cInterface.appLoadConfig        &&
+         NULL != cInterface.appLoadGenericPlugin &&
+         NULL != cInterface.appMain               )
+    {
+        return true;
+    }
+    
+    cInterface.appMain = NULL;
+    cInterface.appLoadConfig = NULL;
+    cInterface.appLoadGenericPlugin = NULL;
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PRIVATE_CPP CORE::CString
+GetPathToAppDir( const char* appName ,
+                 const char* rootDir ,
+                 long majorVersion   ,
+                 long minorVersion   ,
+                 long patchVersion   ,
+                 long releaseVersion )
+{
+    CORE::CString pathToAppDir = rootDir;
+    CORE::AppendToPath( pathToAppDir, "APPS" );
+
+    if ( majorVersion < 0 || minorVersion < 0 )    
+    {
+        if ( !GetHighestVersionAvailableFromDir( pathToAppDir , 
+                                                 majorVersion ,
+                                                 minorVersion ) )
+        {
+            return CORE::CString();
+        }
+    }
+    
+    pathToAppDir += GUCEF_DIRSEPCHAR                    + 
+                    CORE::Int32ToString( majorVersion ) +
+                    '.'                                 +
+                    CORE::Int32ToString( minorVersion ) ;
+    
+    if ( patchVersion < 0 || releaseVersion < 0 )    
+    {
+        if ( !GetHighestVersionAvailableFromDir( pathToAppDir   , 
+                                                 patchVersion   ,
+                                                 releaseVersion ) )
+        {
+            return CORE::CString();
+        }
+    }
+    
+    pathToAppDir += GUCEF_DIRSEPCHAR                      + 
+                    CORE::Int32ToString( patchVersion )   +
+                    '.'                                   +
+                    CORE::Int32ToString( releaseVersion ) ;
+                    
+    return pathToAppDir;
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PRIVATE_CPP bool
+LoadLoaderAppConfig( const CORE::CString& appDir ,
+                     TLoaderAppConfig& appConfig )
+{
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+LoadAndRunGucefPlatformAppEx( const char* appName ,
+                              const char* rootDir ,
+                              int appArgc         ,
+                              char** appArgv      ,
+                              long majorVersion   ,
+                              long minorVersion   ,
+                              long patchVersion   ,
+                              long releaseVersion )
+{
+    // Apps load from: <LoadRoot>/APPS/<AppName>/<MajorVersion>.<MinorVersion>/<PatchVersion>.<ReleaseVersion>
+    // For the app we will check the config file and based on that we will load correct platform.
+    // Platform loads from: <LoadRoot>/<Groupname>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
+
+    // First get the path to the app dir because we need the loader config for this app
+    CORE::CString appDir = GetPathToAppDir( appName        ,
+                                            rootDir        ,
+                                            majorVersion   ,
+                                            minorVersion   ,
+                                            patchVersion   ,
+                                            releaseVersion );
+    // Sanity check on the path
+    if ( appDir.IsNULLOrEmpty() )
+    {
+        return 0;
+    }
+
+    // Get the application config file
+    TLoaderAppConfig loaderAppConfig;
+    if ( !LoadLoaderAppConfig( appDir          ,
+                               loaderAppConfig ) )
+    {
+        // Failed to load a loader config for this app
+        // Now we dont know what to do which is a fatal error
+        return 0;
+    }
+    
+    // Try to load the platform version required for this application
+    void* moduleData = LoadModules( "GUCEF"             ,
+                                    loaderAppConfig.gucefMajorVersion   ,
+                                    loaderAppConfig.gucefMinorVersion   ,
+                                    loaderAppConfig.gucefPatchVersion   ,
+                                    loaderAppConfig.gucefReleaseVersion ,
+                        argv                  ,
+                        argc                  ,
+                        NULL      );
+    
+    TGucefCoreCInterface cInterface;
+    if ( LinkGucefCoreCInterface( moduleData ,
+                                  cInterface ) )
+    {
+        //cInterface.appLoadConfig( 
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+LoadAndRunGucefPlatformApp( const char* appName ,
+                            const char* rootDir ,
+                            int appArgc         ,
+                            char** appArgv      )
+{
+    return LoadAndRunGucefPlatformApp( appName ,
+                                       rootDir ,
+                                       appArgc ,
+                                       appArgv ,
+                                       -1      ,
+                                       -1      ,
+                                       -1      ,
+                                       -1      );
 }
 
 /*-------------------------------------------------------------------------*/
