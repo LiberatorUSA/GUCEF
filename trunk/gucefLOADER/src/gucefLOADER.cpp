@@ -753,23 +753,23 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
         // Now we dont know what to do which is a fatal error
         return 0;
     }
-    
-    // Try to load the platform version required for this application
-    void* moduleData = LoadModules( "GUCEF"             ,
-                                    loaderAppConfig.gucefMajorVersion   ,
-                                    loaderAppConfig.gucefMinorVersion   ,
-                                    loaderAppConfig.gucefPatchVersion   ,
-                                    loaderAppConfig.gucefReleaseVersion ,
-                        argv                  ,
-                        argc                  ,
-                        NULL      );
-    
-    TGucefCoreCInterface cInterface;
-    if ( LinkGucefCoreCInterface( moduleData ,
-                                  cInterface ) )
-    {
-        //cInterface.appLoadConfig( 
-    }
+    //
+    //// Try to load the platform version required for this application
+    //void* moduleData = LoadModules( "GUCEF"             ,
+    //                                loaderAppConfig.gucefMajorVersion   ,
+    //                                loaderAppConfig.gucefMinorVersion   ,
+    //                                loaderAppConfig.gucefPatchVersion   ,
+    //                                loaderAppConfig.gucefReleaseVersion ,
+    //                    argv                  ,
+    //                    argc                  ,
+    //                    NULL      );
+    //
+    //TGucefCoreCInterface cInterface;
+    //if ( LinkGucefCoreCInterface( moduleData ,
+    //                              cInterface ) )
+    //{
+    //    //cInterface.appLoadConfig( 
+    //}
     return 0;
 }
 
