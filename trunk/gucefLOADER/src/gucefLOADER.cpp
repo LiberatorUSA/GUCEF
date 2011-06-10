@@ -66,6 +66,9 @@ using namespace GUCEF;
 //-------------------------------------------------------------------------*/
 
 typedef std::set< CORE::CString > TStringSet;
+typedef std::vector< CORE::CString > TStringVector;
+
+/*-------------------------------------------------------------------------*/
 
 struct SModuleInfo
 {
@@ -83,6 +86,7 @@ struct SModuleGroup
     CORE::CString name;
 };
 typedef struct SModuleGroup TModuleGroup;
+typedef std::vector< TModuleGroup > TModuleGroupVector;
 
 /*-------------------------------------------------------------------------*/
 
@@ -90,7 +94,7 @@ typedef struct SModuleGroup TModuleGroup;
  *  The following are type definitions for the CORE module C interface functions
  */
 typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_AppMain ) ( int argc, char** argv, int runAppBool ) GUCEF_CALLSPEC_SUFFIX;
-typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_AppLoadConfig ) ( const char* configData, const char* dataCodec ) GUCEF_CALLSPEC_SUFFIX;
+typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_AppLoadConfig ) ( const char* configPath, const char* dataCodec ) GUCEF_CALLSPEC_SUFFIX;
 typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_AppLoadGenericPlugin ) ( const char* pluginPath, int argc, char** argv ) GUCEF_CALLSPEC_SUFFIX;
 
 struct SGucefCoreCInterface
@@ -103,18 +107,27 @@ typedef struct SGucefCoreCInterface TGucefCoreCInterface;
 
 /*-------------------------------------------------------------------------*/
 
+struct SAppMainLoaderConfig
+{
+    TStringVector params;
+    int runAppBool;
+    bool invokeAppMain;
+};
+typedef struct SAppMainLoaderConfig TAppMainLoaderConfig;
+
+/*-------------------------------------------------------------------------*/
+
 /*
  *  The following is a struct containing info parsed from a loader
  *  config file. It is meant to drive the actions of the app load functions
  */
-struct SLoaderAppConfig
+struct SLoaderAppData
 {
-    unsigned long gucefMajorVersion;
-    unsigned long gucefMinorVersion;
-    long gucefPatchVersion;
-    long gucefReleaseVersion;
+    TModuleGroupVector modulesToLoad;
+    TAppMainLoaderConfig appMainConfig;
+    TModuleInfo appModule;
 }
-typedef struct SLoaderAppConfig TLoaderAppConfig;
+typedef struct SLoaderAppData TLoaderAppData;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -359,18 +372,16 @@ GUCEF_LOADER_PRIVATE_CPP bool
 IsModuleVersionAlreadyLoadedIfNotUnloadExisting( const char* moduleGroupName         ,
                                                  const char* moduleName              ,
                                                  const CORE::TVersion& moduleVersion ,
-                                                 void* previousLoadData              )
+                                                 TModuleGroup* previousLoadData      )
 {
     if ( NULL == previousLoadData ) return false;
 
-    TModuleGroup* moduleGroup = (TModuleGroup*) previousLoadData;
-
     try
     {
-        if ( moduleGroup->name == moduleGroupName )
+        if ( previousLoadData->name == moduleGroupName )
         {
-            TModuleInfoVector::iterator i = moduleGroup->modules.begin();
-            while ( i != moduleGroup->modules.end() )
+            TModuleInfoVector::iterator i = previousLoadData->modules.begin();
+            while ( i != previousLoadData->modules.end() )
             {
                 TModuleInfo& moduleInfo = (*i);
                 if ( moduleInfo.name == moduleName )
@@ -390,7 +401,7 @@ IsModuleVersionAlreadyLoadedIfNotUnloadExisting( const char* moduleGroupName    
                         // We should unload this module
                         CORE::UnloadModuleDynamicly( moduleInfo.handle );
                         moduleInfo.handle = NULL;
-                        moduleGroup->modules.erase( i );
+                        previousLoadData->modules.erase( i );
                         return false;
                     }
                 }
@@ -407,7 +418,7 @@ IsModuleVersionAlreadyLoadedIfNotUnloadExisting( const char* moduleGroupName    
 
 /*-------------------------------------------------------------------------*/
 
-void*
+GUCEF_LOADER_PRIVATE_C bool
 LoadModules( const char* groupName        ,
              unsigned long majorVersion   ,
              unsigned long minorVersion   ,
@@ -519,24 +530,20 @@ LoadModules( const char* groupName        ,
 /*-------------------------------------------------------------------------*/
 
 GUCEF_LOADER_PRIVATE_CPP void*
-GetModulePtr( void* moduleData       ,
-              const char* moduleName )
+GetModulePtr( TModuleGroup& moduleGroup ,
+              const char* moduleName    )
 {
     try
     {
-        if ( NULL != moduleData )
+        TModuleInfoVector& moduleInfoVector = moduleGroup.modules;
+        TModuleInfoVector::iterator n = moduleInfoVector.begin();
+        while ( n != moduleInfoVector.end() )
         {
-            TModuleGroup* moduleGroup = (TModuleGroup*) moduleData;
-            TModuleInfoVector& moduleInfoVector = moduleGroup->modules;
-            TModuleInfoVector::iterator n = moduleInfoVector.begin();
-            while ( n != moduleInfoVector.end() )
+            if ( moduleName == (*n).name )
             {
-                if ( moduleName == (*n).name )
-                {
-                    return (*n).handle;
-                }
-                ++n;
+                return (*n).handle;
             }
+            ++n;
         }
     }
     catch ( ... )
@@ -548,71 +555,26 @@ GetModulePtr( void* moduleData       ,
 
 /*-------------------------------------------------------------------------*/
 
-void
-UnloadModules( void* moduleData )
+GUCEF_LOADER_PRIVATE_CPP void
+UnloadModules( TModuleGroup& moduleGroup )
 {
     try
     {
-        if ( NULL != moduleData )
+        TModuleInfoVector& moduleInfoVector = moduleGroup.modules;
+        TModuleInfoVector::iterator n = moduleInfoVector.begin();
+        while ( n != moduleInfoVector.end() )
         {
-            TModuleGroup* moduleGroup = (TModuleGroup*) moduleData;
-            TModuleInfoVector& moduleInfoVector = moduleGroup->modules;
-            TModuleInfoVector::iterator n = moduleInfoVector.begin();
-            while ( n != moduleInfoVector.end() )
-            {
-                CORE::UnloadModuleDynamicly( (*n).handle );
-                ++n;
-            }
-            delete moduleGroup;
+            TModuleInfo& moduleInfo = (*n);
+            CORE::UnloadModuleDynamicly( moduleInfo.handle );
+            moduleInfo.handle = NULL;
+            
+            ++n;
         }
     }
     catch ( ... )
     {
         // Don't allow exceptions to escape outside the loader
     }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void*
-LoadGucefPlatform( unsigned long mayorVersion   ,
-                   unsigned long minorVersion   ,
-                   char** argv                  ,
-                   int argc                     ,
-                   void* previousLoadData       )
-{
-
-    return LoadModules( "GUCEF"          ,
-                        mayorVersion     ,
-                        minorVersion     ,
-                        -1               ,
-                        -1               ,
-                        argv             ,
-                        argc             ,
-                        previousLoadData );
-}
-
-
-/*-------------------------------------------------------------------------*/
-
-void*
-LoadGucefPlatformEx( unsigned long mayorVersion   ,
-                     unsigned long minorVersion   ,
-                     unsigned long patchVersion   ,
-                     unsigned long releaseVersion ,
-                     char** argv                  ,
-                     int argc                     ,
-                     void* previousLoadData       )
-{
-
-    return LoadModules( "GUCEF"               ,
-                        mayorVersion          ,
-                        minorVersion          ,
-                        (long) patchVersion   ,
-                        (long) releaseVersion ,
-                        argv                  ,
-                        argc                  ,
-                        previousLoadData      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -709,10 +671,271 @@ GetPathToAppDir( const char* appName ,
 /*-------------------------------------------------------------------------*/
 
 GUCEF_LOADER_PRIVATE_CPP bool
-LoadLoaderAppConfig( const CORE::CString& appDir ,
-                     TLoaderAppConfig& appConfig )
+ParseVersion( const CORE::CString& versionString ,
+              CORE::Int16& versionMajor          ,
+              CORE::Int16& versionMinor          ,
+              CORE::Int16& versionPatch          ,
+              CORE::Int16& versionRelease        )
 {
+    TStringVector versionSegments = versionString.ParseElements( '.', false );
+    if ( versionSegments.size() >= 2 )
+    {
+        versionMajor = CORE::StringToUInt16( versionSegments[ 0 ] );
+        versionMinor = CORE::StringToUInt16( versionSegments[ 1 ] );
+    }
+    else
+    {
+        // Corrupt version string
+        return false;
+    }
+    
+    // Check for a more granular version definition (optional)
+    if ( versionSegments.size() >= 4 )
+    {
+        versionPatch = CORE::StringToInt32( versionSegments[ 2 ] );
+        versionRelease = CORE::StringToInt32( versionSegments[ 3 ] );
+    }
+}
 
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PRIVATE_CPP void
+ParseModulesToLoad( const CORE::CString& commandText ,
+                    TLoaderAppData& appConfig        )
+{
+    TStringVector cmdParams = commandText.ParseElements( ' ', false );
+    TModuleGroup moduleGroup;
+    
+    // The first param is the name of the module group
+    TStringVector::iterator i = cmdParams.begin();
+    if ( i != cmdParams.end() )
+    {    
+        moduleGroup.name = (*i);
+        ++i;
+    }
+    else
+    {
+        // Invalid command, this is a mandatory param
+        return;
+    }
+    
+    // The second param is the version of the module group in the
+    // format <majorVersion>.<minorVersion>
+    CORE::Int16 groupVersionMajor = -1;
+    CORE::Int16 groupVersionMinor = -1;
+    CORE::Int16 groupVersionPatch = -1;
+    CORE::Int16 groupVersionRelease = -1;
+    if ( i != cmdParams.end() )
+    {    
+        if ( !ParseVersion( (*i)                ,
+                            groupVersionMajor   ,
+                            groupVersionMinor   ,
+                            groupVersionPatch   ,
+                            groupVersionRelease ) )
+        {
+            // Invalid version param
+            return;
+        }
+        ++i;
+    }
+    else
+    {
+        // Invalid command, this is a mandatory param
+        return;
+    }
+    
+    while ( i != cmdParams.end() )
+    {
+        // the remaining segments are all module names and optionally also
+        // a specific version for that module
+        CORE::CString& moduleString = (*i);
+        
+        // Check if the module string has a version attached to it
+        if ( ')' == moduleString[ moduleString.Length()-1 ] )
+        {
+            // Seperate the version string from the module name
+            CORE::CString versionString = moduleString.SubstrToChar( '(', moduleString.Length()-2, false ); 
+            CORE::CString moduleName = moduleString.CutChars( versionString.Length()+2, false );
+
+            // Further parse the versions string
+            CORE::Int16 moduleVersionPatch = -1;
+            CORE::Int16 moduleVersionRelease = -1;
+            CORE::Int16 dummy = -1;
+            if ( !ParseVersion( versionString        ,
+                                moduleVersionPatch   ,
+                                moduleVersionRelease ,
+                                dummy                ,
+                                dummy                ) )
+            {
+                // Invalid version param
+                return;
+            }
+            
+            // Define the module
+            TModuleInfo moduleInfo;
+            moduleInfo.handle = NULL;
+            moduleInfo.name = moduleName;
+            moduleInfo.version.major = (CORE::UInt16) groupVersionMajor;
+            moduleInfo.version.minor = (CORE::UInt16) groupVersionMinor;
+            moduleInfo.version.patch = moduleVersionPatch > -1 ? moduleVersionPatch : (CORE::UInt16) groupVersionPatch;
+            moduleInfo.version.release = moduleVersionRelease > -1 ? moduleVersionRelease : (CORE::UInt16) groupVersionRelease;
+            moduleGroup.modules.push_back( moduleInfo );
+        }
+        else
+        {
+            // No version suffix. The module string is the module name
+            TModuleInfo moduleInfo;
+            moduleInfo.handle = NULL;
+            moduleInfo.name = moduleString;
+            moduleInfo.version.major = (CORE::UInt16) groupVersionMajor;
+            moduleInfo.version.minor = (CORE::UInt16) groupVersionMinor;
+            moduleInfo.version.patch = (CORE::UInt16) groupVersionPatch;
+            moduleInfo.version.release = (CORE::UInt16) groupVersionRelease;
+            moduleGroup.modules.push_back( moduleInfo );
+        }
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PRIVATE_CPP void
+ParseAppMainCommand( const CString& commandText ,
+                     TLoaderAppData& appConfig  )
+{
+    // The first item is a boolean telling us whether to run the app's main loop
+    // Most apps will use 'true' for this although some may wish to execute via the
+    // load of the app module itself    
+    TStringVector cmdParams = commandText.ParseElements( ' ', false );
+    TStringVector::iterator i = cmdParams.begin();
+    if ( i != cmdParams.end() )
+    {
+        appConfig.appMainConfig.runAppBool = CORE::StringToBool( (*i) ) ? 1 : 0;
+        appConfig.appMainConfig.invokeAppMain = true;
+        ++i;
+    }
+    else
+    {
+        // Invalid command, we need the first param always
+        appConfig.appMainConfig.runAppBool = false;
+        appConfig.appMainConfig.invokeAppMain = false;
+        appConfig.appMainConfig.params.clear();
+        return;
+    }
+    
+    // The next params (if any) are the params that will be passed to the app main
+    while ( i != cmdParams.end() )
+    {
+        appConfig.appMainConfig.params.push_back( *i );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PRIVATE_CPP void
+ParseAppConfigCommand( const CString& commandText ,
+                       TLoaderAppData& appConfig  )
+{
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PRIVATE_CPP bool
+LoadLoaderAppConfig( const CORE::CString& appDir ,
+                     TLoaderAppData& appConfig   )
+{
+    CORE::CString appLoaderConfigPath = appDir;
+    CORE::AppendToPath( appLoaderConfigPath, "LoaderConfig.txt" );
+    
+    // Load the file as a string into memory
+    CORE::CString configFile;
+    if ( CORE::LoadTextFileAsString( appLoaderConfigPath, configFile, true, "\n" ) )
+    {
+        // Seperate the different lines for easy processing
+        TStringVector lines = configFile.ParseElements( '\n', false );
+        configFile.Clear();
+        
+        TStringVector::iterator i = lines.begin();
+        while ( i != lines.end() )
+        {
+            const CORE::CString& lineText = (*i);
+            CORE::CString instructionTag = lineText.SubstrToChar( ' ', true );
+            
+            if ( instructionTag == "APPMODULE" )
+            {
+                appConfig.appModule.version.major = -1;
+                appConfig.appModule.version.minor = -1;
+                appConfig.appModule.version.patch = -1;
+                appConfig.appModule.version.release = -1;
+                appConfig.appModule.handle = NULL;
+                appConfig.appModule.name = lineText.CutChars( 10, true );
+            }
+            else
+            if ( instructionTag == "LOADMODULES" )
+            {
+                ParseModulesToLoad( lineText.CutChars( 12, true ) ,
+                                    appConfig                     );
+            }
+            else
+            if ( instructionTag == "APPCONFIG" )
+            {
+                ParseAppConfigCommand( lineText.CutChars( 10, true ) ,
+                                       appConfig                     );
+            }
+            else            
+            if ( instructionTag == "APPMAIN" )
+            {
+                ParseAppMainCommand( lineText.CutChars( 8, true ) ,
+                                     appConfig                    );
+            }            
+            ++i;
+        }
+        return true;        
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PRIVATE_CPP bool
+LoadMultipleModuleGroups( const TLoaderAppData& appConfig )
+{
+    
+    TModuleGroupVector::iterator i = appConfig. modulesToLoad.begin();
+    while ( i != modulesToLoad.end() )
+    {
+        TModuleGroup& moduleGroup = (*i);
+        
+        TModuleInfoVector::iterator n = moduleGroup.modules.begin();
+        while ( n != moduleGroup.modules.end() )
+        {
+                        
+            ++n;
+        }
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PRIVATE_CPP bool
+LoadApplicationModule( TLoaderAppData& appConfig        ,
+                       const CORE::CString& appDir      ,
+                       TGucefCoreCInterface& cInterface )
+{
+    try
+    {
+        CORE::CString appModulePath = appDir;
+        CORE::AppendToPath( appModulePath, loaderAppData.appModule.name );
+        loaderAppData.appModule.handle = NULL;
+        
+        return 0 != cInterface.appLoadGenericPlugin( appModulePath.C_String(), 0, NULL );
+    }
+    catch ( ... )
+    {
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -745,31 +968,80 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
     }
 
     // Get the application config file
-    TLoaderAppConfig loaderAppConfig;
-    if ( !LoadLoaderAppConfig( appDir          ,
-                               loaderAppConfig ) )
+    TLoaderAppData loaderAppData;
+    if ( !LoadLoaderAppConfig( appDir        ,
+                               loaderAppData ) )
     {
         // Failed to load a loader config for this app
         // Now we dont know what to do which is a fatal error
         return 0;
     }
-    //
-    //// Try to load the platform version required for this application
-    //void* moduleData = LoadModules( "GUCEF"             ,
-    //                                loaderAppConfig.gucefMajorVersion   ,
-    //                                loaderAppConfig.gucefMinorVersion   ,
-    //                                loaderAppConfig.gucefPatchVersion   ,
-    //                                loaderAppConfig.gucefReleaseVersion ,
-    //                    argv                  ,
-    //                    argc                  ,
-    //                    NULL      );
-    //
-    //TGucefCoreCInterface cInterface;
-    //if ( LinkGucefCoreCInterface( moduleData ,
-    //                              cInterface ) )
-    //{
-    //    //cInterface.appLoadConfig( 
-    //}
+    
+    // First try to load the platform version required for this application
+    // Modules are loaded in the order they are written in the config
+    if ( !LoadMultipleModuleGroups( loaderAppData ) )
+    {
+        // Failed to load prereq modules for this app
+        return 0;
+    }
+
+    // Link the GUCEF::CORE C interface so we can invoke functions
+    // as specified by the loader app config
+    TGucefCoreCInterface cInterface;
+    if ( !LinkGucefCoreCInterface( moduleData ,
+                                   cInterface ) )
+    {
+        return 0;
+    }
+    
+    // Now that the correct prereq modules are loaded we can load the application
+    // module itself
+    if ( !LoadApplicationModule( loaderAppData ,
+                                 appName       ,
+                                 cInterface    ) )
+    {
+        // There was an error loading the application module
+        return 0;
+    }
+    
+    // Now load the app config if so desired
+    
+    
+
+    // Now invoke the Application class main if so desired
+    if ( loaderAppData.appMainConfig.invokeAppMain )
+    {        
+        // Add the app bin dir as a param to main
+        loaderAppData.appMainConfig.params.push_back( "APPBINDIR=" + appDir );
+        
+        // Make a C style param list
+        // We combine the param list given to this function with the params
+        // we fetch from the app's loader config. This way we offer multiple ways
+        // of passing application argument information
+        int paramCount = (int) loaderAppData.appMainConfig.params.size();
+        char** paramArray = new char*[ paramCount + appArgc ];
+        for ( int i=0; i<appArgc; ++i )
+        {
+            paramArray[ i ] = appArgv[ i ]; 
+            ++i;
+        }
+        int n=i;            
+        for ( i=0; i<loaderAppData.appMainConfig.params.size(); ++i )
+        {
+            paramArray[ n ] = loaderAppData.appMainConfig.params[ i ].C_String(); 
+            ++i; ++n;
+        }
+        
+        int mainReturnValue = cInterface.appMain( paramCount                                     ,
+                                                  paramArray                                     ,
+                                                  loaderAppData.appMainConfig.runAppBool ? 1 : 0 );  
+        
+        delete []paramArray;
+        paramArray = NULL;
+        
+        return mainReturnValue;
+    }
+
     return 0;
 }
 

@@ -253,17 +253,23 @@ IsFileInDir( const CString& dirPath  ,
 
 /**
  *  Attempts to load the text file into a string
+ *
+ *  This function can unify any end-of-line characters in the given file
+ *  to the given eolString. If no eolString is given then the platform
+ *  native eol format is used.
  */
 GUCEF_CORE_PUBLIC_CPP bool
-LoadTextFileAsString( const CString& filePath ,
-                      CString& fileContent    );
+LoadTextFileAsString( const CString& filePath      ,
+                      CString& fileContent         ,
+                      const bool unifyEol = false  ,
+                      const char* eolString = NULL );
 
 /*-------------------------------------------------------------------------*/
 
 /**
  *  Attempts to write the string as a text file
  *
- *  This function will unify any end of line characters in the given content
+ *  This function can unify any end-of-line characters in the given content
  *  string to the given eolString. If no eolString is given then the platform
  *  native eol format is used.
  */

@@ -55,7 +55,7 @@ GUCEF_CORE_AppMain( int argc       ,
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C int
-GUCEF_CORE_AppLoadConfig( const char* configData ,
+GUCEF_CORE_AppLoadConfig( const char* configPath ,
                           const char* dataCodec  );
 
 /*-------------------------------------------------------------------------*/

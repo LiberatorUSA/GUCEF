@@ -48,44 +48,6 @@ extern "C" {
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_LOADER_PUBLIC_C void*
-LoadModules( const char* groupName      ,
-             unsigned long majorVersion ,
-             unsigned long minorVersion ,
-             long patchVersion          ,
-             long releaseVersion        ,
-             char** argv                ,
-             int argc                   ,
-             void* previousLoadData     );
-             
-/*-------------------------------------------------------------------------*/
-
-GUCEF_LOADER_PUBLIC_C void
-UnloadModules( void* moduleData );
-
-/*-------------------------------------------------------------------------*/
-
-GUCEF_LOADER_PUBLIC_C void*
-LoadGucefPlatform( unsigned long majorVersion   ,
-                   unsigned long minorVersion   ,
-                   char** argv                  ,
-                   int argc                     ,
-                   void* previousLoadData       );
-
-
-/*-------------------------------------------------------------------------*/
-
-GUCEF_LOADER_PUBLIC_C void*
-LoadGucefPlatformEx( unsigned long majorVersion   ,
-                     unsigned long minorVersion   ,
-                     unsigned long patchVersion   ,
-                     unsigned long releaseVersion ,
-                     char** argv                  ,
-                     int argc                     ,
-                     void* previousLoadData       );
-
-/*-------------------------------------------------------------------------*/
-
 /**
  *  Attempts to load the specified version of the app identified as "appName"
  *  using the parameters given as appArgc and appArgv. Passing less then 0 as
