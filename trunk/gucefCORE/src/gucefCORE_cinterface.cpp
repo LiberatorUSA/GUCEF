@@ -24,7 +24,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CGENERICPLUGINMANAGER_H
-#include "gucefCORE_CGenericPluginManager.h"
+#include "CGenericPluginManager.h"
 #define GUCEF_CORE_CGENERICPLUGINMANAGER_H
 #endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
 
@@ -62,7 +62,7 @@ GUCEF_CORE_AppMain( int argc       ,
 /*-------------------------------------------------------------------------*/
 
 int
-GUCEF_CORE_AppLoadConfig( const char* configData ,
+GUCEF_CORE_AppLoadConfig( const char* configPath ,
                           const char* dataCodec  )
 {GUCEF_TRACE;
 

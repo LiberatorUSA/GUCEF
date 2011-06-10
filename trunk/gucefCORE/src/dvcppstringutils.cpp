@@ -545,6 +545,32 @@ UInt16ToString( const UInt16 value )
 
 /*-------------------------------------------------------------------------*/
 
+Int16
+StringToInt16( const CString& str )
+{GUCEF_TRACE;
+
+    if ( !str.IsNULLOrEmpty() )
+    {
+        Int32 value;
+        sscanf( str.C_String(), "%d", &value );
+        return (Int16) value;
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+Int16ToString( const Int16 value )
+{GUCEF_TRACE;
+
+    char intBuffer[ 12 ];
+    sprintf( intBuffer, "%d", value );
+    return CString( intBuffer );
+}
+
+/*-------------------------------------------------------------------------*/
+
 Int8
 StringToInt8( const CString& str )
 {GUCEF_TRACE;
