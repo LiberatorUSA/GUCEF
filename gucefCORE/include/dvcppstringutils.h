@@ -171,6 +171,16 @@ UInt16ToString( const UInt16 value );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_CPP Int16
+StringToInt16( const CString& str );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP CString
+Int16ToString( const Int16 value );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_CORE_PUBLIC_CPP Int8
 StringToInt8( const CString& str );
 

@@ -105,10 +105,10 @@ typedef struct SSize3D TSize3D;
 
 struct SVersion
 {
-        UInt16 major;
-        UInt16 minor;
-        UInt16 patch;
-        UInt16 release;
+    Int16 major;
+    Int16 minor;
+    Int16 patch;
+    Int16 release;
 };
 
 typedef struct SVersion TVersion;
