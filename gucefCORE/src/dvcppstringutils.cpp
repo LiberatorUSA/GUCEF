@@ -793,6 +793,32 @@ IsFileInDir( const CString& dirPath  ,
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PRIVATE_CPP void
+UnifyStringEol( const char* eolString ,
+                CString& textStr      )
+{GUCEF_TRACE;
+
+    // If no desired eol format is given then use the platform
+    // native format
+    const char* eolStrToUse = eolString;
+    if ( NULL == eolStrToUse || *eolStrToUse == '\0' )
+    {
+        eolStrToUse = GUCEF_EOL;
+    }
+
+    // Turn everything into "\n" in case of a mixed EOL char string
+    textStr = textStr.ReplaceSubstr( "\r\n", "\n" ).ReplaceSubstr( "\r", "\n" );
+    // Now we unified the EOL segments into \n.
+
+    if ( 0 != strcmp( eolStrToUse, "\n" ) )
+    {
+        // Convert into whatever is given as the desired format
+        textStr = textStr.ReplaceSubstr( "\n", eolStrToUse );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 WriteStringAsTextFile( const CString& filePath    ,
                        const CString& fileContent ,
@@ -807,32 +833,9 @@ WriteStringAsTextFile( const CString& filePath    ,
     {
         if ( unifyEol )
         {
-            #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
-            const char* platformEolString = "\r\n";
-            #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX || GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID
-            const char* platformEolString = "\n";
-            #elif GUCEF_PLATFORM == GUCEF_PLATFORM_MACOS || GUCEF_PLATFORM == GUCEF_PLATFORM_IPHONEOS
-            const char* platformEolString = "\r";
-            #endif
-
-            // If no desired eol format is given then use the platform
-            // native format
-            const char* eolStrToUse = eolString;
-            if ( NULL == eolStrToUse || *eolStrToUse == '\0' )
-            {
-                eolStrToUse = platformEolString;
-            }
-
-            // Turn everything into "\n" in case of a mixed EOL char string
-            CString content = fileContent.ReplaceSubstr( "\r\n", "\n" ).ReplaceSubstr( "\r", "\n" );
-            // Now we unified the EOL segments into \n.
-
-            if ( 0 != strcmp( eolStrToUse, "\n" ) )
-            {
-                // Convert into whatever is given as the desired format
-                content = content.ReplaceSubstr( "\n", eolStrToUse );
-            }
-            fwrite( content.C_String(), content.Length(), 1, fptr );
+            CString unifiedContent = fileContent;
+            UnifyStringEol( eolString, unifiedContent );
+            fwrite( unifiedContent.C_String(), unifiedContent.Length(), 1, fptr );
         }
         else
         {
@@ -848,7 +851,9 @@ WriteStringAsTextFile( const CString& filePath    ,
 
 bool
 LoadTextFileAsString( const CString& filePath ,
-                      CString& fileContent    )
+                      CString& fileContent    ,
+                      const bool unifyEol     ,
+                      const char* eolString   )
 {GUCEF_TRACE;
 
     fileContent.Clear();
@@ -868,15 +873,17 @@ LoadTextFileAsString( const CString& filePath ,
             size_t delimter = bytesRead;
             for ( size_t i=0; i<bytesRead; ++i )
             {
-                if ( charBuffer[ i ] == 0 )
+                if ( 0 == charBuffer[ i ] )
                 {
                     delimter = (int) i;
                 }
             }
 
-            if ( delimter != bytesRead )
+            if ( delimter+1 < bytesRead )
             {
                 // This is not a text file
+                // The only valid location for a zero terminator (if any) 
+                // is at the end of the file
                 fclose( fptr );
                 return false;
             }
@@ -887,6 +894,11 @@ LoadTextFileAsString( const CString& filePath ,
         while ( bytesRead == 1024 );
 
         fclose( fptr );
+        
+        if ( unifyEol )
+        {
+            UnifyStringEol( eolString, fileContent );
+        }
         return true;
     }
     return false;

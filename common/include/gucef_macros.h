@@ -240,6 +240,9 @@
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
   #define GUCEF_EOL "\n"
   #define GUCEF_EOL_LENGTH 1
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_MACOS ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_IPHONEOS ) )
+  #define GUCEF_EOL "\r"
+  #define GUCEF_EOL_LENGTH 1
 #endif
 
 /*-------------------------------------------------------------------------*/
