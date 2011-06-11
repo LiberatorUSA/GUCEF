@@ -93,27 +93,27 @@ typedef std::vector< TModuleGroup > TModuleGroupVector;
 /*
  *  The following are type definitions for the CORE module C interface functions
  */
-typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_AppMain ) ( int argc, char** argv, int runAppBool ) GUCEF_CALLSPEC_SUFFIX;
-typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_AppLoadConfig ) ( const char* configPath, const char* dataCodec ) GUCEF_CALLSPEC_SUFFIX;
-typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_AppLoadGenericPlugin ) ( const char* pluginPath, int argc, char** argv ) GUCEF_CALLSPEC_SUFFIX;
+typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_GucefMain ) ( int argc, char** argv, int runAppBool ) GUCEF_CALLSPEC_SUFFIX;
+typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_GucefLoadConfig ) ( const char* configPath, const char* dataCodec ) GUCEF_CALLSPEC_SUFFIX;
+typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_GucefLoadGenericPlugin ) ( const char* pluginPath, int argc, char** argv ) GUCEF_CALLSPEC_SUFFIX;
 
 struct SGucefCoreCInterface
 {
-    TGUCEFCORECINTERFACE_AppMain appMain;
-    TGUCEFCORECINTERFACE_AppLoadConfig appLoadConfig;
-    TGUCEFCORECINTERFACE_AppLoadGenericPlugin appLoadGenericPlugin;
+    TGUCEFCORECINTERFACE_GucefMain gucefMain;
+    TGUCEFCORECINTERFACE_GucefLoadConfig gucefLoadConfig;
+    TGUCEFCORECINTERFACE_GucefLoadGenericPlugin gucefLoadGenericPlugin;
 };
 typedef struct SGucefCoreCInterface TGucefCoreCInterface;
 
 /*-------------------------------------------------------------------------*/
 
-struct SAppMainLoaderConfig
+struct SGucefMainLoaderConfig
 {
     TStringVector params;
     int runAppBool;
     bool invokeAppMain;
 };
-typedef struct SAppMainLoaderConfig TAppMainLoaderConfig;
+typedef struct SGucefMainLoaderConfig TGucefMainLoaderConfig;
 
 /*-------------------------------------------------------------------------*/
 
@@ -124,7 +124,7 @@ typedef struct SAppMainLoaderConfig TAppMainLoaderConfig;
 struct SLoaderAppData
 {
     TModuleGroupVector modulesToLoad;
-    TAppMainLoaderConfig appMainConfig;
+    TGucefMainLoaderConfig gucefMainConfig;
     TModuleInfo appModule;
 };
 typedef struct SLoaderAppData TLoaderAppData;
@@ -135,161 +135,161 @@ typedef struct SLoaderAppData TLoaderAppData;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_LOADER_PRIVATE_CPP void
-FindAnyParamKey( char** argv    ,
-                 int argc       ,
-                 int startIndex ,
-                 int* keyIndex  )
-{
-    int i=startIndex;
-
-    *keyIndex = -1;
-    for ( i; i<argc; ++i )
-    {
-        if ( argv[ i ][ 0 ] == '-' )
-        {
-            *keyIndex = i;
-            return;
-        }
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUCEF_LOADER_PRIVATE_CPP void
-FindParamKey( char** argv        ,
-              int argc           ,
-              int startIndex     ,
-              const char* keyStr ,
-              int* keyIndex      )
-{
-    int curKeyIndex = -1;
-    do
-    {
-        FindAnyParamKey( argv         ,
-                         argc         ,
-                         startIndex   ,
-                         &curKeyIndex );
-
-        if ( curKeyIndex > -1 )
-        {
-            if ( 0 == strcmp( argv[ curKeyIndex ], keyStr ) )
-            {
-                *keyIndex = curKeyIndex;
-                return;
-            }
-        }
-        startIndex = curKeyIndex+1;
-    }
-    while ( curKeyIndex  > -1 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUCEF_LOADER_PRIVATE_CPP void
-FindParam( const char* paramKey ,
-           int* paramStartIndex ,
-           int* paramEndIndex   ,
-           char** argv          ,
-           int argc             )
-{
-    int keyIndex = -1;
-
-    // Init return values
-    *paramStartIndex = -1;
-    *paramEndIndex = -1;
-
-    // First try to locate the requested key
-    FindParamKey( argv, argc, 0, paramKey, &keyIndex );
-    if ( keyIndex > -1 )
-    {
-        // Found it, now find the end delimeter which is either another key
-        // or the end of the string list
-        *paramStartIndex = keyIndex;
-        keyIndex = -1;
-
-        FindAnyParamKey( argv       ,
-                         argc       ,
-                         keyIndex+1 ,
-                         &keyIndex  );
-
-        if ( keyIndex > -1 )
-        {
-            // end delimiter is another key
-            *paramEndIndex = keyIndex;
-        }
-        else
-        {
-            // end delimiter is the end of the string set
-            *paramEndIndex = argc-1;
-        }
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUCEF_LOADER_PRIVATE_CPP CORE::CString
-GetModuleRootPath( char** argv ,
-                   int argc    )
-{
-    CORE::CString moduleRoot;
-    int paramStartIndex = -1;
-    int paramEndIndex = -1;
-
-    FindParam( "-moduleRoot"    ,
-               &paramStartIndex ,
-               &paramEndIndex   ,
-               argv             ,
-               argc             );
-
-    if ( ( paramStartIndex > -1 && paramEndIndex > -1 ) &&
-         ( paramStartIndex != paramEndIndex )            )
-    {
-        if ( paramStartIndex+1 < argc-1 )
-        {
-            moduleRoot = CORE::RelativePath( argv[ paramStartIndex+1 ] );
-        }
-    }
-
-    if ( moduleRoot.IsNULLOrEmpty() )
-    {
-        moduleRoot = CORE::RelativePath( "$MODULEDIR$" );
-    }
-
-    return moduleRoot;
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUCEF_LOADER_PRIVATE_C void
-ParseListOfExtraModulestoLoad( char** argv        ,
-                               int argc           ,
-                               char*** moduleList ,
-                               int* moduleCount   )
-{
-    int paramStartIndex = -1;
-    int paramEndIndex = -1;
-
-    FindParam( "-gucefModules",
-               &paramStartIndex ,
-               &paramEndIndex   ,
-               argv             ,
-               argc             );
-
-    if ( ( paramStartIndex > -1 && paramEndIndex > -1 ) &&
-         ( paramStartIndex != paramEndIndex > -1 )       )
-    {
-        if ( paramStartIndex+1 < argc-1 )
-        {
-            *moduleList = argv+paramStartIndex+1;
-            *moduleCount = (paramEndIndex-paramStartIndex)+1;
-            return;
-        }
-    }
-
-    *moduleList = NULL;
-    *moduleCount = 0;
-}
+//GUCEF_LOADER_PRIVATE_CPP void
+//FindAnyParamKey( char** argv    ,
+//                 int argc       ,
+//                 int startIndex ,
+//                 int* keyIndex  )
+//{
+//    int i=startIndex;
+//
+//    *keyIndex = -1;
+//    for ( i; i<argc; ++i )
+//    {
+//        if ( argv[ i ][ 0 ] == '-' )
+//        {
+//            *keyIndex = i;
+//            return;
+//        }
+//    }
+//}
+//
+///*-------------------------------------------------------------------------*/
+//
+//GUCEF_LOADER_PRIVATE_CPP void
+//FindParamKey( char** argv        ,
+//              int argc           ,
+//              int startIndex     ,
+//              const char* keyStr ,
+//              int* keyIndex      )
+//{
+//    int curKeyIndex = -1;
+//    do
+//    {
+//        FindAnyParamKey( argv         ,
+//                         argc         ,
+//                         startIndex   ,
+//                         &curKeyIndex );
+//
+//        if ( curKeyIndex > -1 )
+//        {
+//            if ( 0 == strcmp( argv[ curKeyIndex ], keyStr ) )
+//            {
+//                *keyIndex = curKeyIndex;
+//                return;
+//            }
+//        }
+//        startIndex = curKeyIndex+1;
+//    }
+//    while ( curKeyIndex  > -1 );
+//}
+//
+///*-------------------------------------------------------------------------*/
+//
+//GUCEF_LOADER_PRIVATE_CPP void
+//FindParam( const char* paramKey ,
+//           int* paramStartIndex ,
+//           int* paramEndIndex   ,
+//           char** argv          ,
+//           int argc             )
+//{
+//    int keyIndex = -1;
+//
+//    // Init return values
+//    *paramStartIndex = -1;
+//    *paramEndIndex = -1;
+//
+//    // First try to locate the requested key
+//    FindParamKey( argv, argc, 0, paramKey, &keyIndex );
+//    if ( keyIndex > -1 )
+//    {
+//        // Found it, now find the end delimeter which is either another key
+//        // or the end of the string list
+//        *paramStartIndex = keyIndex;
+//        keyIndex = -1;
+//
+//        FindAnyParamKey( argv       ,
+//                         argc       ,
+//                         keyIndex+1 ,
+//                         &keyIndex  );
+//
+//        if ( keyIndex > -1 )
+//        {
+//            // end delimiter is another key
+//            *paramEndIndex = keyIndex;
+//        }
+//        else
+//        {
+//            // end delimiter is the end of the string set
+//            *paramEndIndex = argc-1;
+//        }
+//    }
+//}
+//
+///*-------------------------------------------------------------------------*/
+//
+//GUCEF_LOADER_PRIVATE_CPP CORE::CString
+//GetModuleRootPath( char** argv ,
+//                   int argc    )
+//{
+//    CORE::CString moduleRoot;
+//    int paramStartIndex = -1;
+//    int paramEndIndex = -1;
+//
+//    FindParam( "-moduleRoot"    ,
+//               &paramStartIndex ,
+//               &paramEndIndex   ,
+//               argv             ,
+//               argc             );
+//
+//    if ( ( paramStartIndex > -1 && paramEndIndex > -1 ) &&
+//         ( paramStartIndex != paramEndIndex )            )
+//    {
+//        if ( paramStartIndex+1 < argc-1 )
+//        {
+//            moduleRoot = CORE::RelativePath( argv[ paramStartIndex+1 ] );
+//        }
+//    }
+//
+//    if ( moduleRoot.IsNULLOrEmpty() )
+//    {
+//        moduleRoot = CORE::RelativePath( "$MODULEDIR$" );
+//    }
+//
+//    return moduleRoot;
+//}
+//
+///*-------------------------------------------------------------------------*/
+//
+//GUCEF_LOADER_PRIVATE_C void
+//ParseListOfExtraModulestoLoad( char** argv        ,
+//                               int argc           ,
+//                               char*** moduleList ,
+//                               int* moduleCount   )
+//{
+//    int paramStartIndex = -1;
+//    int paramEndIndex = -1;
+//
+//    FindParam( "-gucefModules",
+//               &paramStartIndex ,
+//               &paramEndIndex   ,
+//               argv             ,
+//               argc             );
+//
+//    if ( ( paramStartIndex > -1 && paramEndIndex > -1 ) &&
+//         ( paramStartIndex != paramEndIndex > -1 )       )
+//    {
+//        if ( paramStartIndex+1 < argc-1 )
+//        {
+//            *moduleList = argv+paramStartIndex+1;
+//            *moduleCount = (paramEndIndex-paramStartIndex)+1;
+//            return;
+//        }
+//    }
+//
+//    *moduleList = NULL;
+//    *moduleCount = 0;
+//}
 
 /*-------------------------------------------------------------------------*/
 
@@ -561,33 +561,33 @@ LinkGucefCoreCInterface( TModuleGroup& moduleGroup        ,
     
     // Get pointers to the CORE functions we need
     // We use the C interface to be independent of class changes
-    cInterface.appLoadConfig = (TGUCEFCORECINTERFACE_AppLoadConfig)
-             CORE::GetFunctionAddress( coreModulePtr              ,
-                                       "GUCEF_CORE_AppLoadConfig" ,
-                                       sizeof(const char*)*2      ).funcPtr; 
-    cInterface.appMain = (TGUCEFCORECINTERFACE_AppMain)
-             CORE::GetFunctionAddress( coreModulePtr        ,
-                                       "GUCEF_CORE_AppMain" ,
+    cInterface.gucefLoadConfig = (TGUCEFCORECINTERFACE_GucefLoadConfig)
+             CORE::GetFunctionAddress( coreModulePtr                ,
+                                       "GUCEF_CORE_GucefLoadConfig" ,
+                                       sizeof(const char*)*2        ).funcPtr; 
+    cInterface.gucefMain = (TGUCEFCORECINTERFACE_GucefMain)
+             CORE::GetFunctionAddress( coreModulePtr          ,
+                                       "GUCEF_CORE_GucefMain" ,
                                        sizeof(int)    +
                                        sizeof(char**) +
-                                       sizeof(int)          ).funcPtr; 
-    cInterface.appLoadGenericPlugin = (TGUCEFCORECINTERFACE_AppLoadGenericPlugin)
-             CORE::GetFunctionAddress( coreModulePtr                     ,
-                                       "GUCEF_CORE_AppLoadGenericPlugin" ,
+                                       sizeof(int)            ).funcPtr; 
+    cInterface.gucefLoadGenericPlugin = (TGUCEFCORECINTERFACE_GucefLoadGenericPlugin)
+             CORE::GetFunctionAddress( coreModulePtr                       ,
+                                       "GUCEF_CORE_GucefLoadGenericPlugin" ,
                                        sizeof(const char*) +
                                        sizeof(int)         +
-                                       sizeof(const char**)              ).funcPtr;
+                                       sizeof(const char**)                ).funcPtr;
 
-    if ( NULL != cInterface.appLoadConfig        &&
-         NULL != cInterface.appLoadGenericPlugin &&
-         NULL != cInterface.appMain               )
+    if ( NULL != cInterface.gucefLoadConfig        &&
+         NULL != cInterface.gucefLoadGenericPlugin &&
+         NULL != cInterface.gucefMain               )
     {
         return true;
     }
     
-    cInterface.appMain = NULL;
-    cInterface.appLoadConfig = NULL;
-    cInterface.appLoadGenericPlugin = NULL;
+    cInterface.gucefMain = NULL;
+    cInterface.gucefLoadConfig = NULL;
+    cInterface.gucefLoadGenericPlugin = NULL;
     return false;
 }
 
@@ -770,8 +770,8 @@ ParseModulesToLoad( const CORE::CString& commandText ,
 /*-------------------------------------------------------------------------*/
 
 GUCEF_LOADER_PRIVATE_CPP void
-ParseAppMainCommand( const CORE::CString& commandText ,
-                     TLoaderAppData& appConfig        )
+ParseGucefMainCommand( const CORE::CString& commandText ,
+                       TLoaderAppData& appConfig        )
 {
     // The first item is a boolean telling us whether to run the app's main loop
     // Most apps will use 'true' for this although some may wish to execute via the
@@ -780,23 +780,23 @@ ParseAppMainCommand( const CORE::CString& commandText ,
     TStringVector::iterator i = cmdParams.begin();
     if ( i != cmdParams.end() )
     {
-        appConfig.appMainConfig.runAppBool = CORE::StringToBool( (*i) ) ? 1 : 0;
-        appConfig.appMainConfig.invokeAppMain = true;
+        appConfig.gucefMainConfig.runAppBool = CORE::StringToBool( (*i) ) ? 1 : 0;
+        appConfig.gucefMainConfig.invokeAppMain = true;
         ++i;
     }
     else
     {
         // Invalid command, we need the first param always
-        appConfig.appMainConfig.runAppBool = false;
-        appConfig.appMainConfig.invokeAppMain = false;
-        appConfig.appMainConfig.params.clear();
+        appConfig.gucefMainConfig.runAppBool = false;
+        appConfig.gucefMainConfig.invokeAppMain = false;
+        appConfig.gucefMainConfig.params.clear();
         return;
     }
     
     // The next params (if any) are the params that will be passed to the app main
     while ( i != cmdParams.end() )
     {
-        appConfig.appMainConfig.params.push_back( *i );
+        appConfig.gucefMainConfig.params.push_back( *i );
         ++i;
     }
 }
@@ -854,10 +854,10 @@ LoadLoaderAppConfig( const CORE::CString& appDir ,
                                        appConfig                     );
             }
             else            
-            if ( instructionTag == "APPMAIN" )
+            if ( instructionTag == "GUCEFMAIN" )
             {
-                ParseAppMainCommand( lineText.CutChars( 8, true ) ,
-                                     appConfig                    );
+                ParseGucefMainCommand( lineText.CutChars( 10, true ) ,
+                                       appConfig                     );
             }            
             ++i;
         }
@@ -915,7 +915,9 @@ LoadMultipleModuleGroups( const char* rootDir              ,
 GUCEF_LOADER_PRIVATE_CPP bool
 LoadApplicationModule( TLoaderAppData& loaderAppData    ,
                        const CORE::CString& appDir      ,
-                       TGucefCoreCInterface& cInterface )
+                       TGucefCoreCInterface& cInterface ,
+                       int appArgc                      ,
+                       char** appArgv                   )
 {
     try
     {
@@ -923,7 +925,9 @@ LoadApplicationModule( TLoaderAppData& loaderAppData    ,
         CORE::AppendToPath( appModulePath, loaderAppData.appModule.name );
         loaderAppData.appModule.handle = NULL;
         
-        return 0 != cInterface.appLoadGenericPlugin( appModulePath.C_String(), 0, NULL );
+        return 0 != cInterface.gucefLoadGenericPlugin( appModulePath.C_String() , 
+                                                       appArgc                  , 
+                                                       appArgv                  );
     }
     catch ( ... )
     {
@@ -936,6 +940,8 @@ LoadApplicationModule( TLoaderAppData& loaderAppData    ,
 int
 LoadAndRunGucefPlatformAppEx( const char* appName ,
                               const char* rootDir ,
+                              int platformArgc    ,
+                              char** platformArgv ,
                               int appArgc         ,
                               char** appArgv      ,
                               long majorVersion   ,
@@ -1000,7 +1006,9 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
     // module itself
     if ( !LoadApplicationModule( loaderAppData ,
                                  appName       ,
-                                 cInterface    ) )
+                                 cInterface    ,
+                                 appArgc       ,
+                                 appArgv       ) )
     {
         // There was an error loading the application module
         return 0;
@@ -1011,33 +1019,33 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
     
 
     // Now invoke the Application class main if so desired
-    if ( loaderAppData.appMainConfig.invokeAppMain )
+    if ( loaderAppData.gucefMainConfig.invokeAppMain )
     {        
         // Add the app bin dir as a param to main
-        loaderAppData.appMainConfig.params.push_back( "APPBINDIR=" + appDir );
+        loaderAppData.gucefMainConfig.params.push_back( "APPBINDIR=" + appDir );
         
         // Make a C style param list
         // We combine the param list given to this function with the params
         // we fetch from the app's loader config. This way we offer multiple ways
         // of passing application argument information
-        int paramCount = (int) loaderAppData.appMainConfig.params.size();
-        char** paramArray = new char*[ paramCount + appArgc ];
+        int paramCount = (int) loaderAppData.gucefMainConfig.params.size();
+        char** paramArray = new char*[ paramCount + platformArgc ];
         int i=0;
-        for ( i; i<appArgc; ++i )
+        for ( i; i<platformArgc; ++i )
         {
-            paramArray[ i ] = appArgv[ i ]; 
+            paramArray[ i ] = platformArgv[ i ]; 
             ++i;
         }
         int n=i;            
-        for ( i=0; i<(int)loaderAppData.appMainConfig.params.size(); ++i )
+        for ( i=0; i<(int)loaderAppData.gucefMainConfig.params.size(); ++i )
         {
-            paramArray[ n ] = loaderAppData.appMainConfig.params[ i ].C_String(); 
+            paramArray[ n ] = loaderAppData.gucefMainConfig.params[ i ].C_String(); 
             ++i; ++n;
         }
         
-        int mainReturnValue = cInterface.appMain( paramCount                                     ,
-                                                  paramArray                                     ,
-                                                  loaderAppData.appMainConfig.runAppBool ? 1 : 0 );  
+        int mainReturnValue = cInterface.gucefMain( paramCount                                       ,
+                                                    paramArray                                       ,
+                                                    loaderAppData.gucefMainConfig.runAppBool ? 1 : 0 );  
         
         delete []paramArray;
         paramArray = NULL;
@@ -1053,17 +1061,21 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
 int
 LoadAndRunGucefPlatformApp( const char* appName ,
                             const char* rootDir ,
+                            int platformArgc    ,
+                            char** platformArgv ,                            
                             int appArgc         ,
                             char** appArgv      )
 {
-    return LoadAndRunGucefPlatformAppEx( appName ,
-                                         rootDir ,
-                                         appArgc ,
-                                         appArgv ,
-                                         -1      ,
-                                         -1      ,
-                                         -1      ,
-                                         -1      );
+    return LoadAndRunGucefPlatformAppEx( appName      ,
+                                         rootDir      ,
+                                         platformArgc ,
+                                         platformArgv ,
+                                         appArgc      ,
+                                         appArgv      ,
+                                         -1           ,
+                                         -1           ,
+                                         -1           ,
+                                         -1           );
 }
 
 /*-------------------------------------------------------------------------*/

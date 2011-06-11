@@ -35,6 +35,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -48,22 +53,22 @@
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C int
-GUCEF_CORE_AppMain( int argc       ,
-                    char** argv    , 
-                    int runAppBool );
+GUCEF_CORE_GucefMain( int argc    ,
+                      char** argv , 
+                      int runBool );
 
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C int
-GUCEF_CORE_AppLoadConfig( const char* configPath ,
-                          const char* dataCodec  );
+GUCEF_CORE_GucefLoadConfig( const char* configPath ,
+                            const char* dataCodec  );
 
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C int
-GUCEF_CORE_AppLoadGenericPlugin( const char* pluginPath ,
-                                 int argc               , 
-                                 char** argv            );
+GUCEF_CORE_GucefLoadGenericPlugin( const char* pluginPath ,
+                                   int argc               , 
+                                   char** argv            );
 
 /*--------------------------------------------------------------------------*/
 
