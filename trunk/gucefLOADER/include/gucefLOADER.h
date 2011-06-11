@@ -56,6 +56,8 @@ extern "C" {
 GUCEF_LOADER_PUBLIC_C int
 LoadAndRunGucefPlatformAppEx( const char* appName ,
                               const char* rootDir ,
+                              int platformArgc    ,
+                              char** platformArgv ,
                               int appArgc         ,
                               char** appArgv      ,
                               long majorVersion   ,
@@ -72,6 +74,8 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
 GUCEF_LOADER_PUBLIC_C int
 LoadAndRunGucefPlatformApp( const char* appName ,
                             const char* rootDir ,
+                            int platformArgc    ,
+                            char** platformArgv ,
                             int appArgc         ,
                             char** appArgv      );
 
