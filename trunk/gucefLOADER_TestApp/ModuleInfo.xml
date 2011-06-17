@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="gucefLOADER_TestApp" Type="SharedLibrary" Platform="All">
+    <Module Name="gucefLOADER_TestApp" Type="Executable" Platform="All">
         <Dependencies>
             <Dependency Name="gucefHeaders" />
             <Dependency Name="gucefLOADER" />

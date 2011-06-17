@@ -46,7 +46,7 @@ GUCEF_OSMAIN_BEGIN
 {
     try 
     {                               
-        if ( argc > 1 )
+        if ( argc >= 1 )
         {
             return LoadAndRunGucefPlatformApp( "gucefPRODMAN", argv[ 0 ], argc, argv, 0, NULL );
         }
