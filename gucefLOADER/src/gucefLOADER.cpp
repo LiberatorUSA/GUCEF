@@ -126,6 +126,7 @@ struct SLoaderAppData
     TModuleGroupVector modulesToLoad;
     TGucefMainLoaderConfig gucefMainConfig;
     TModuleInfo appModule;
+    CORE::CString appConfigFile;
 };
 typedef struct SLoaderAppData TLoaderAppData;
 
@@ -314,21 +315,24 @@ GetHighestVersionAvailableFromDir( const CORE::CString rootDir ,
                      0 != strcmp( "..", CORE::DI_Name( itData ) ) )
                 {
                     CORE::CString dirName = CORE::DI_Name( itData );
-                    CORE::Int16 dirPatchVersion = CORE::StringToInt16( dirName.SubstrToChar( '.', 0, true ) );
-                    CORE::Int16 dirReleaseVersion = CORE::StringToInt16( dirName.SubstrToChar( '.', 0, false ) );
+                    if ( -1 < dirName.HasChar( '.' ) )
+                    {
+                        CORE::Int16 dirPatchVersion = CORE::StringToInt16( dirName.SubstrToChar( '.', 0, true ) );
+                        CORE::Int16 dirReleaseVersion = CORE::StringToInt16( dirName.SubstrToChar( '.', 0, false ) );
 
-                    TVersionMap::iterator i = versionMap.find( dirPatchVersion );
-                    if ( i != versionMap.end() )
-                    {
-                        CORE::Int16& higestFoundReleaseVersion = (*i).second;
-                        if ( dirReleaseVersion > higestFoundReleaseVersion )
+                        TVersionMap::iterator i = versionMap.find( dirPatchVersion );
+                        if ( i != versionMap.end() )
                         {
-                            higestFoundReleaseVersion = dirReleaseVersion;
+                            CORE::Int16& higestFoundReleaseVersion = (*i).second;
+                            if ( dirReleaseVersion > higestFoundReleaseVersion )
+                            {
+                                higestFoundReleaseVersion = dirReleaseVersion;
+                            }
                         }
-                    }
-                    else
-                    {
-                        versionMap[ dirPatchVersion ] = dirReleaseVersion;
+                        else
+                        {
+                            versionMap[ dirPatchVersion ] = dirReleaseVersion;
+                        }
                     }
                 }
             }
@@ -442,6 +446,30 @@ UnloadModules( TModuleGroup& moduleGroup )
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_LOADER_PRIVATE_CPP void
+UnloadModules( TLoaderAppData& loaderAppData )
+{
+    try
+    {
+        TModuleGroupVector::iterator i = loaderAppData.modulesToLoad.begin();
+        while ( i != loaderAppData.modulesToLoad.end() )
+        {
+            TModuleGroup& moduleGroup = (*i);
+            UnloadModules( moduleGroup );
+            ++i;
+        }        
+        
+        CORE::UnloadModuleDynamicly( loaderAppData.appModule.handle );
+        loaderAppData.appModule.handle = NULL;
+    }
+    catch ( ... )
+    {
+        // Don't allow exceptions to escape outside the loader
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_LOADER_PRIVATE_C bool
 LoadModules( const char* rootDir            ,
              TModuleGroup& moduleGroup      ,
@@ -485,16 +513,19 @@ LoadModules( const char* rootDir            ,
 
             // Make restarting/switching apps more efficient by only unloading/loading
             // modules when needed and retaining already loaded modules
-            if ( IsModuleVersionAlreadyLoadedIfNotUnloadExisting( moduleGroup.name   ,
-                                                                  moduleInfo.name    ,
-                                                                  moduleInfo.version ,
-                                                                  previousLoadData   ) )
+            if ( !IsModuleVersionAlreadyLoadedIfNotUnloadExisting( moduleGroup.name   ,
+                                                                   moduleInfo.name    ,
+                                                                   moduleInfo.version ,
+                                                                   previousLoadData   ) )
             {
                 // Simply append with the specific version requested or if no specific version was
                 // requested then the highest version located.
                 // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
                 sprintf( versionDir, "%d.%d", moduleInfo.version.patch, moduleInfo.version.release );
                 CORE::AppendToPath( filePath, versionDir );
+                
+                // Add the name of the module which contains the application code
+                CORE::AppendToPath( filePath, moduleInfo.name );
 
                 // Now that we constructed the full load path for this module we will try and load it
                 moduleInfo.handle = CORE::LoadModuleDynamicly( filePath.C_String() );
@@ -600,6 +631,7 @@ GetPathToAppDir( const char* appName        ,
 {
     CORE::CString pathToAppDir = rootDir;
     CORE::AppendToPath( pathToAppDir, "APPS" );
+    CORE::AppendToPath( pathToAppDir, appName );
     bool usingAutoMajorMinor = false;
 
     if ( appVersion.major < 0 || appVersion.minor < 0 )    
@@ -765,6 +797,8 @@ ParseModulesToLoad( const CORE::CString& commandText ,
         }
         ++i;
     }
+    
+    appConfig.modulesToLoad.push_back( moduleGroup );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -807,6 +841,7 @@ GUCEF_LOADER_PRIVATE_CPP void
 ParseAppConfigCommand( const CORE::CString& commandText ,
                        TLoaderAppData& appConfig        )
 {
+    appConfig.appConfigFile = commandText;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -937,6 +972,23 @@ LoadApplicationModule( TLoaderAppData& loaderAppData    ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+InitLoaderAppData( TLoaderAppData& data )
+{
+    data.appModule.handle = NULL;
+    data.appModule.version.major = -1;
+    data.appModule.version.minor = -1;
+    data.appModule.version.patch = -1;
+    data.appModule.version.release = -1;
+    data.appModule.name.Clear();
+    data.modulesToLoad.clear();
+    data.gucefMainConfig.invokeAppMain = false;
+    data.gucefMainConfig.runAppBool = false;
+    data.gucefMainConfig.params.clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
 int
 LoadAndRunGucefPlatformAppEx( const char* appName ,
                               const char* rootDir ,
@@ -970,6 +1022,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
 
     // Get the application config file
     TLoaderAppData loaderAppData;
+    InitLoaderAppData( loaderAppData );
     if ( !LoadLoaderAppConfig( appDir        ,
                                loaderAppData ) )
     {
@@ -990,6 +1043,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
     if ( NULL == coreModuleGroup )
     {
         // Since this is a GUCEF App loader we don't support apps not using GUCEF
+        UnloadModules( loaderAppData );
         return 0;
     }
 
@@ -999,6 +1053,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
     if ( !LinkGucefCoreCInterface( *coreModuleGroup ,
                                    cInterface       ) )
     {
+        UnloadModules( loaderAppData );
         return 0;
     }
     
@@ -1011,6 +1066,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
                                  appArgv       ) )
     {
         // There was an error loading the application module
+        UnloadModules( loaderAppData );
         return 0;
     }
     

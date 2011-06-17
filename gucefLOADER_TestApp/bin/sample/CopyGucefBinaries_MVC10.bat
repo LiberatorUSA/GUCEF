@@ -1,0 +1,2 @@
+SET COMPILERTAG=MVC10
+CALL CopyGucefBinaries.bat
