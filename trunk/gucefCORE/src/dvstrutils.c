@@ -591,24 +591,25 @@ File_Ext_Length( const char *filename )
 const char*
 Extract_File_Ext( const char *filename )
 {
-        /*
-         *      Extract the file extension
-         */
-        Int32 len = (Int32)strlen( filename );
-        Int32 n = 0;
-        const char* i = filename+len;
-        for ( n=0; n<len; ++n )
+    Int32 len = (Int32)strlen( filename );
+    Int32 n = 0;
+    const char* i = filename+len;
+    for ( n=0; n<len; ++n )
+    {
+        if ( *i == GUCEF_DIRSEPCHAR )
         {
-                if ( ( *i == '.' ) && ( n != len ) )
-                {
-                        /*
-                         *      Return extension
-                         */
-                        return i+1;
-                }
-                --i;
+            return NULL;
         }
-        return NULL;
+        if ( ( *i == '.' ) && ( n != len ) )
+        {
+            /*
+             *      Return extension
+             */
+            return i+1;
+        }
+        --i;
+    }
+    return NULL;
 }
 
 /*---------------------------------------------------------------------------*/
