@@ -23,6 +23,7 @@ LOCAL_MODULE := gucefCORE_TestApp
 LOCAL_SRC_FILES := \
   src/gucefCORE_TestApp_main.cpp \
   src/TestCyclicDynamicBuffer.cpp \
+  src/TestIniParser.cpp \
   src/TestNotifierObserver.cpp \
   src/TestSharedPtr.cpp \
   src/TestString.cpp
