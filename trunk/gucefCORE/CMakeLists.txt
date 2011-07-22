@@ -145,6 +145,7 @@ set( HEADER_FILES
   include/gucefCORE_CIEventHandlerFunctorBase.h
   include/gucefCORE_CIniDataStoreCodec.h
   include/gucefCORE_CIniParser.h
+  include/gucefCORE_cinterface.h
   include/gucefCORE_CIObserver.h
   include/gucefCORE_CIPulseGeneratorDriver.h
   include/gucefCORE_CITaskConsumer.h
@@ -301,6 +302,7 @@ set( SOURCE_FILES
   src/gucefCORE_CIEventHandlerFunctorBase.cpp
   src/gucefCORE_CIniDataStoreCodec.cpp
   src/gucefCORE_CIniParser.cpp
+  src/gucefCORE_cinterface.cpp
   src/gucefCORE_CIObserver.cpp
   src/gucefCORE_CIPulseGeneratorDriver.cpp
   src/gucefCORE_CITaskConsumer.cpp

@@ -140,6 +140,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CIEventHandlerFunctorBase.cpp \
   src/gucefCORE_CIniDataStoreCodec.cpp \
   src/gucefCORE_CIniParser.cpp \
+  src/gucefCORE_cinterface.cpp \
   src/gucefCORE_CIObserver.cpp \
   src/gucefCORE_CIPulseGeneratorDriver.cpp \
   src/gucefCORE_CITaskConsumer.cpp \
