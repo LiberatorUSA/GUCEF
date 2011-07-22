@@ -1034,11 +1034,41 @@ VectorToSet( const TStringVector& src )
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CString
+GetUniqueFileName( const CORE::CString& filename )
+{GUCEF_TRACE;
+
+    CORE::CString fileExt = CORE::ExtractFileExtention( filename );
+    CORE::CString fileWithoutExt;
+
+    if ( fileExt.IsNULLOrEmpty() )
+    {
+        fileWithoutExt = filename;
+    }
+    else
+    {
+        fileWithoutExt = filename.CutChars( fileExt.Length()+1, false );
+    }
+
+    CORE::UInt32 i = 2;
+    CORE::CString filenameToTest = filename;
+    while ( CORE::FileExists( filenameToTest ) )
+    {
+        filenameToTest = fileWithoutExt + '(' + CORE::UInt32ToString( i ) + ")." + fileExt;
+        ++i;
+    }
+
+    return filenameToTest;
+}
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
     CORE::CString logFilename = CORE::RelativePath( "$CURWORKDIR$" );
     CORE::AppendToPath( logFilename, "ReferenceUpdater_Log.txt" );
+    logFilename = GetUniqueFileName( logFilename );
     CORE::CFileAccess logFileAccess( logFilename, "w" );
 
     CORE::CStdLogger logger( logFileAccess );
