@@ -31,20 +31,25 @@
 #define GUCEF_MT_GUCEFMT_H
 #endif /* GUCEF_MT_GUCEFMT_H ? */
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"                /* platform string implementation */
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#ifndef GUCEF_CORE_CIPLUGINLOADLOGIC_H
+#include "gucefCORE_CIPluginLoadLogic.h"
+#define GUCEF_CORE_CIPLUGINLOADLOGIC_H
+#endif /* GUCEF_CORE_CIPLUGINLOADLOGIC_H ? */
 
-#ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"            /* platform dynamic array implementation */
-#define GUCEF_CORE_CDYNAMICARRAY_H
-#endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
+#ifndef GUCEF_CORE_CPLUGINGROUP_H
+#include "gucefCORE_CPluginGroup.h"
+#define GUCEF_CORE_CPLUGINGROUP_H
+#endif /* GUCEF_CORE_CPLUGINGROUP_H ? */
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"         /* often used gucef macros */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CNOTIFIER_H
+#include "CNotifier.h"
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+
+#ifndef GUCEF_CORE_CPLUGINMETADATA_H
+#include "gucefCORE_CPluginMetaData.h"
+#define GUCEF_CORE_CPLUGINMETADATA_H
+#endif /* GUCEF_CORE_CPLUGINMETADATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -65,55 +70,177 @@ namespace CORE {
  *      Forward declarations of framework classes used here
  */
 class CPluginManager;
-class CString;
 
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Global framework plugin control center
- *      All plugin managers derived from CPluginManager automaticly register here.
+ *  Global framework plugin control center
  *
+ *  All plugin managers derived from CPluginManager automaticly register here.
+ *  By seperating the logic of loading modules from the specifics of module interfaces
+ *  we can support any plugin interface as long as a plugin manager is registered capable
+ *  of handling the given plugin's interface.
  */
-class GUCEF_CORE_PUBLIC_CPP CPluginControl
+class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
+                                             public CIConfigurable
 {
-        public:
+    public:
+    
+    static const CEvent PluginLoadedEvent;
+    static const CEvent PluginUnloadedEvent;
 
-        static CPluginControl* Instance( void );
+    static void RegisterEvents( void );
 
-        void LoadAll( void );
+    public:
 
-        void UnloadAll( void );
-        
-        bool Load( const CString& pluginPath );
+    typedef std::vector< CString > TStringVector;
 
-        void SetPluginDir( const CString& path );
+    static CPluginControl* Instance( void );
 
-        CString GetPluginDir( void ) const;
+    bool LoadAll( void );
 
-        private:
-        friend class CPluginManager;
+    bool LoadAllPluginsOfType( const CString& pluginTypeToLoad );
 
-        void Register( CPluginManager* pman );
+    bool LoadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
+                                      const CString& groupName        );
 
-        void Unregister( CPluginManager* pman );
+    bool LoadPluginGroup( const CString& groupName );
 
-        private:
-        friend class CGUCEFCOREModule;
+    bool UnloadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
+                                        const CString& groupName        );
 
-        static void Deinstance( void );
+    bool UnloadAllPluginsOfType( const CString& pluginTypeToUnload );
+    
+    bool UnloadPluginGroup( const CString& groupName );
+    
+    bool UnloadAll( void );
 
-        private:
+    void ClearMetaDataFromGroup( const CString& groupName );
 
-        CPluginControl( void );
-        CPluginControl( const CPluginControl& src );
-        ~CPluginControl();
-        CPluginControl& operator=( const CPluginControl& src );
+    bool AddPluginMetaData( const CIPluginMetaData& pluginMetaData ,
+                            const CString& groupName               ,
+                            bool loadImmediatly                    );
 
-        static MT::CMutex _mutex;
-        static CPluginControl* _instance;
+    bool AddAllPluginsFromDir( const CString& pluginDir ,
+                               const CString& groupName ,
+                               bool loadImmediatly      );
+    
+    /**
+     *  Utility function: defines limited plugin meta data from the limited information
+     *  available and then performs a trial and error load.
+     *  If you have more information regarding the plugin you should use 
+     *      AddPluginMetaData() instead and pass that information
+     */
+    bool AddPluginFromDir( const CString& pluginPath ,
+                           const CString& groupName  ,
+                           bool loadImmediatly       );
 
-        CString _plugindir;
-        CDynamicArray _managers;
+    /**
+     *  Adds a plugin root dir to the dirs that will be used to load 
+     *  modules from if the plugin metadata does not already specify a directory to use
+     *  Variables in the path are automatically resolved.
+     */
+    void AddPluginDir( const CString& path );
+
+    /**
+     *  Removes a plugin root dir to the dirs that will be used to load 
+     *  modules from if the plugin metadata does not already specify a directory to use
+     *  Variables in the path are automatically resolved.
+     */
+    void RemovePluginDir( const CString& path );
+
+    /**
+     *  Gets a list of all supported plugin types.
+     *  The types of plugins supported is determined by the types of
+     *  plugin managers registered.
+     */
+    void GetSupportedPluginTypes( TStringVector& supportedTypes ) const;
+
+    /**
+     *  Registers the given loader with the plugin controller.
+     *  Note that ownership is not assumed and the given object is assumed to be
+     *  alive for the duration of its registration. 
+     */
+    void RegisterPluginLoadLogic( CIPluginLoadLogic* pluginLoaderLogic );
+
+    /**
+     *  Unregisters the given loader with the plugin controller.
+     */
+    void UnregisterPluginLoadLogic( const CString& loaderLogicTypeName );
+
+    /**
+     *  Sets the default loading logic type to be used for loading modules.
+     *  Note that if the plugin metadata specifies loading logic type then that
+     *  type will be used instead of the default.
+     */
+    void SetDefaultPluginLoadLogicType( const CString& loaderLogicTypeName );
+
+    /**
+     *  Gets the default loading logic type to be used for loading modules.
+     */
+    CString GetDefaultPluginLoadLogicType( void ) const;
+
+    /**
+     *  Attempts to store the given tree in the file
+     *  given according to the method of the codec metadata
+     *
+     *  @param tree the data tree you wish to store
+     *  @return wheter storing the tree was successfull
+     */
+    virtual bool SaveConfig( CDataNode& tree );
+
+    /**
+     *  Attempts to load data from the given file to the
+     *  root node given. The root data will be replaced
+     *  and any children the node may already have will be deleted.
+     *
+     *  @param treeroot pointer to the node that is to act as root of the data tree
+     *  @return whether building the tree from the given file was successfull.
+     */
+    virtual bool LoadConfig( const CDataNode& treeroot );
+
+    private:
+    friend class CPluginManager;
+
+    void Register( CPluginManager* pman );
+
+    void Unregister( CPluginManager* pman );
+
+    private:
+    friend class CGUCEFCOREModule;
+
+    static void Deinstance( void );
+
+    private:
+
+    typedef std::map< CString, CIPluginLoadLogic* > TPluginLoadLogicMap;
+    typedef std::map< CString, CPluginGroup > TPluginGroupMap;
+    typedef std::set< CPluginManager* > TPluginManagerSet;
+    typedef std::set< CString > TStringSet;
+
+    CPluginControl( void );
+    CPluginControl( const CPluginControl& src );
+    ~CPluginControl();
+    CPluginControl& operator=( const CPluginControl& src );
+
+    bool LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
+                     CPluginGroup& pluginGroup          ,
+                     const CString& groupName           );
+
+    bool UnloadPlugin( TPluginPtr& plugin        ,
+                       CPluginGroup& pluginGroup ,
+                       const CString& groupName  );
+
+    CPluginManager* GetPluginManagerForType( const CString& pluginType );
+
+    static MT::CMutex g_mutex;
+    static CPluginControl* g_instance;
+
+    TPluginLoadLogicMap m_pluginLoadLogicProviders;
+    CString m_defaultPluginLoadLogicType;
+    TPluginGroupMap m_pluginGroups;
+    TStringSet m_rootDirs;
+    TPluginManagerSet m_pluginManagers;
 };
 
 /*-------------------------------------------------------------------------//

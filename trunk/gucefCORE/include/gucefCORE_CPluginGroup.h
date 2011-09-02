@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CGENERICPLUGINMANAGER_H
-#define GUCEF_CORE_CGENERICPLUGINMANAGER_H
+#ifndef GUCEF_CORE_CPLUGINGROUP_H
+#define GUCEF_CORE_CPLUGINGROUP_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,22 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
+#ifndef GUCEF_CORE_CIPLUGINMETADATA_H
+#include "gucefCORE_CIPluginMetaData.h"
+#define GUCEF_CORE_CIPLUGINMETADATA_H
+#endif /* GUCEF_CORE_CIPLUGINMETADATA_H ? */
 
-#ifndef GUCEF_CORE_CPLUGINMANAGER_H
-#include "CPluginManager.h"
-#define GUCEF_CORE_CPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
+#ifndef GUCEF_CORE_CIPLUGIN_H
+#include "CIPlugin.h"
+#define GUCEF_CORE_CIPLUGIN_H
+#endif /* GUCEF_CORE_CIPLUGIN_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,46 +52,37 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Plugin manager for generic plugins
- *
- *  About Generic plugins:
- *  These are typicly C++ modules that link back to the GUCEF modules and
- *  uppon load integrate themselves in the framework. This allows a generic plugin
- *  to be/do just about anything but with the drawback that it has to link to the GUCEF
- *  modules and as such has a more limited lifespan as a C-interface plugin.
+ *  Logical grouping class for plugins
+ *  Allows plugins to be managed as groups
  */
-class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
+class GUCEF_CORE_PRIVATE_CPP CPluginGroup
 {
     public:
 
-    static CGenericPluginManager* Instance( void );
+    typedef std::set< TPluginPtr > TPluginSet;
+    typedef std::set< TPluginMetaDataPtr > TPluginMetaDataSet;
+    
+    CPluginGroup( void );
 
-    virtual CString GetPluginType( void ) const;
+    CPluginGroup( const CPluginGroup& src );
 
-    protected:
+    virtual ~CPluginGroup();
 
-    virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
-                                       TPluginMetaDataPtr pluginMetaData );
+    CPluginGroup& operator=( const CPluginGroup& src );
 
-    virtual void UnregisterPlugin( TPluginPtr plugin );
+    TPluginSet& GetPlugins( void );
 
-    private:
-    friend class CGUCEFCOREModule;
-
-    static void Deinstance( void );
-
-    private:
-    CGenericPluginManager( void );
-    CGenericPluginManager( const CGenericPluginManager& src );
-    CGenericPluginManager& operator=( const CGenericPluginManager& src );
-
-    virtual ~CGenericPluginManager();
+    TPluginMetaDataSet& GetPluginMetaData( void );
 
     private:
 
-    static CGenericPluginManager* m_instance;
+    TPluginSet m_plugins;
+    TPluginMetaDataSet m_pluginMetaData;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CTSharedPtr< CPluginGroup > TPluginGroupPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -111,7 +95,7 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
+#endif /* GUCEF_CORE_CPLUGINGROUP_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -122,4 +106,4 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
 - 27-11-2004 :
         - Dinand: Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

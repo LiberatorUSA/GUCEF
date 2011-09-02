@@ -9,37 +9,25 @@
 #-------------------------------------------------------------------
 #
 
-# Configuration for module: gucefDRN
+# Configuration for module: gucefPRODMAN
 
 set( HEADER_FILES 
-  include/gucefDRN.h
-  include/gucefDRN_CDRNData.h
-  include/gucefDRN_CDRNDataGroup.h
-  include/gucefDRN_CDRNDataGroupProperties.h
-  include/gucefDRN_CDRNDataStream.h
-  include/gucefDRN_CDRNNode.h
-  include/gucefDRN_CDRNPeerLink.h
-  include/gucefDRN_CDRNPeerLinkData.h
-  include/gucefDRN_CGUCEFDRNModule.h
-  include/gucefDRN_CIDRNPeerLinkCrypter.h
-  include/gucefDRN_CIDRNPeerValidator.h
-  include/gucefDRN_config.h
-  include/gucefDRN_DRNProtocol.h
-  include/gucefDRN_ETypes.h
-  include/gucefDRN_macros.h
+  include/gucefPRODMAN.h
+  include/gucefPRODMAN_CDownloadsManager.h
+  include/gucefPRODMAN_config.h
+  include/gucefPRODMAN_CProductInfo.h
+  include/gucefPRODMAN_CProductInfoList.h
+  include/gucefPRODMAN_CProductManager.h
+  include/gucefPRODMAN_ETypes.h
+  include/gucefPRODMAN_macros.h
 )
 
 set( SOURCE_FILES 
-  src/gucefDRN.cpp
-  src/gucefDRN_CDRNDataGroup.cpp
-  src/gucefDRN_CDRNDataGroupProperties.cpp
-  src/gucefDRN_CDRNDataStream.cpp
-  src/gucefDRN_CDRNNode.cpp
-  src/gucefDRN_CDRNPeerLink.cpp
-  src/gucefDRN_CDRNPeerLinkData.cpp
-  src/gucefDRN_CGUCEFDRNModule.cpp
-  src/gucefDRN_CIDRNPeerLinkCrypter.cpp
-  src/gucefDRN_CIDRNPeerValidator.cpp
+  src/gucefPRODMAN.cpp
+  src/gucefPRODMAN_CDownloadsManager.cpp
+  src/gucefPRODMAN_CProductInfo.cpp
+  src/gucefPRODMAN_CProductInfoList.cpp
+  src/gucefPRODMAN_CProductManager.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -51,13 +39,13 @@ set( SOURCE_FILES
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "gucefDRN" )
+set( MODULE_NAME "gucefPRODMAN" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefMT gucefCORE gucefCOMCORE )
-target_link_libraries( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_DRN_BUILD_MODULE" )
+add_dependencies( ${MODULE_NAME} gucefMT gucefCOM gucefPATCHER gucefCORE gucefCOMCORE )
+target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefPATCHER )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_PRODMAN_BUILD_MODULE" )
 
-include_directories( ../common/include ../gucefCOMCORE/include ../gucefCORE/include ../gucefMT/include include )
+include_directories( ../common/include ../gucefCOM/include ../gucefCOMCORE/include ../gucefCORE/include ../gucefMT/include ../gucefPATCHER/include include )
 
 if ( ANDROID )
   include_directories( ../gucefCORE/include/android )

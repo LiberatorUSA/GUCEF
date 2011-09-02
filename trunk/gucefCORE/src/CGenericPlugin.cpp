@@ -78,7 +78,8 @@ CGenericPlugin::CGenericPlugin( void )
     : CIPlugin()             ,
       m_moduleHandle( NULL ) ,
       m_modulePath()         ,
-      m_params()
+      m_params()             ,
+      m_metaData()
 {GUCEF_TRACE;
 
     memset( m_funcPointers, 0, GPLUGINFUNCPTR_COUNT );
@@ -89,7 +90,7 @@ CGenericPlugin::CGenericPlugin( void )
 CGenericPlugin::~CGenericPlugin()
 {GUCEF_TRACE;
 
-    Unload();
+    Unlink();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -112,113 +113,124 @@ CGenericPlugin::GetPluginParams( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CGenericPlugin::Load( const CString& pluginPath      ,
-                      const CValueList& pluginParams )
+TPluginMetaDataPtr
+CGenericPlugin::GetMetaData( void )
 {GUCEF_TRACE;
 
-    m_params = pluginParams;
-    return Load( pluginPath );
+    return m_metaData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void*
+CGenericPlugin::GetModulePointer( void )
+{GUCEF_TRACE;
+
+    return m_moduleHandle;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CGenericPlugin::Load( const CString& pluginPath )
+CGenericPlugin::Link( void* modulePtr                   ,
+                      TPluginMetaDataPtr pluginMetaData )
 {GUCEF_TRACE;
 
-    if ( !IsLoaded() )
+    if ( IsLoaded() ) return false;
+    
+    m_moduleHandle = modulePtr;
+    if ( NULL != m_moduleHandle )
     {
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPlugin: Attempting to load module from: " + pluginPath );
-        
-        m_moduleHandle = LoadModuleDynamicly( pluginPath.C_String() );
-        if ( NULL != m_moduleHandle )
-        {
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPlugin: Successfully loaded module from: " + pluginPath );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GenericPlugin: Linking API using module pointer: " + PointerToString( modulePtr ) );
             
-            // We have now successfully loaded the module itself
-            // We will now try to lookup the function pointers
-            m_funcPointers[ GPLUGINFUNCPTR_LOAD ] = GetFunctionAddress( m_moduleHandle                ,
-                                                                        "GUCEFPlugin_Load"            ,
-                                                                        sizeof(UInt32)+sizeof(char**) ).funcPtr;
-            m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] = GetFunctionAddress( m_moduleHandle       ,
-                                                                          "GUCEFPlugin_Unload" ,
-                                                                          0                    ).funcPtr;
-            m_funcPointers[ GPLUGINFUNCPTR_VERSION ] = GetFunctionAddress( m_moduleHandle           ,
-                                                                           "GUCEFPlugin_GetVersion" ,
-                                                                           sizeof( TVersion* )      ).funcPtr;
-            m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] = GetFunctionAddress( m_moduleHandle               ,
-                                                                               "GUCEFPlugin_GetDescription" ,
-                                                                               0                            ).funcPtr;
+        // We have now successfully loaded the module itself
+        // We will now try to lookup the function pointers
+        m_funcPointers[ GPLUGINFUNCPTR_LOAD ] = GetFunctionAddress( m_moduleHandle                ,
+                                                                    "GUCEFPlugin_Load"            ,
+                                                                    sizeof(UInt32)+sizeof(char**) ).funcPtr;
+        m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] = GetFunctionAddress( m_moduleHandle       ,
+                                                                      "GUCEFPlugin_Unload" ,
+                                                                      0                    ).funcPtr;
+        m_funcPointers[ GPLUGINFUNCPTR_VERSION ] = GetFunctionAddress( m_moduleHandle           ,
+                                                                       "GUCEFPlugin_GetVersion" ,
+                                                                       sizeof( TVersion* )      ).funcPtr;
+        m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] = GetFunctionAddress( m_moduleHandle               ,
+                                                                           "GUCEFPlugin_GetDescription" ,
+                                                                           0                            ).funcPtr;
 
-            m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] = GetFunctionAddress( m_moduleHandle             ,
-                                                                             "GUCEFPlugin_GetCopyright" ,
-                                                                             0                          ).funcPtr;
+        m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] = GetFunctionAddress( m_moduleHandle             ,
+                                                                         "GUCEFPlugin_GetCopyright" ,
+                                                                         0                          ).funcPtr;
 
-            // Verify that all function pointers are loaded correctly
-            if ( ( NULL != m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )        &&
-                 ( NULL != m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] )      &&
-                 ( NULL != m_funcPointers[ GPLUGINFUNCPTR_VERSION ] )     &&
-                 ( NULL != m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] ) &&
-                 ( NULL != m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] )    )
+        // Verify that all function pointers are loaded correctly
+        if ( ( NULL != m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )        &&
+                ( NULL != m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] )      &&
+                ( NULL != m_funcPointers[ GPLUGINFUNCPTR_VERSION ] )     &&
+                ( NULL != m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] ) &&
+                ( NULL != m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] )    )
+        {
+            // Make the module parameter list
+            const char** argv = NULL;
+            UInt32 argc = m_params.GetCount();
+            if ( argc > 0 )
             {
-                // Make the module parameter list
-                const char** argv = NULL;
-                UInt32 argc = m_params.GetCount();
-                if ( argc > 0 )
+                argv = new const char*[ argc ];
+                for ( UInt32 i=0; i<argc; ++i )
                 {
-                    argv = new const char*[ argc ];
-                    for ( UInt32 i=0; i<argc; ++i )
-                    {
-                        CString keyValuePair = m_params.GetPair( i );
-                        argv[ i ] = new char[ keyValuePair.Length()+1 ];
-                        memcpy( (void*)argv[ i ], keyValuePair.C_String(), keyValuePair.Length()+1 );
-                    } 
-                }
+                    CString keyValuePair = m_params.GetPair( i );
+                    argv[ i ] = new char[ keyValuePair.Length()+1 ];
+                    memcpy( (void*)argv[ i ], keyValuePair.C_String(), keyValuePair.Length()+1 );
+                } 
+            }
                 
-                // Call the module's Load()
-                Int32 loadStatus = reinterpret_cast< TGUCEFGENERICPLUGFPTR_Load >( m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )( argc, argv );
+            // Call the module's Load()
+            Int32 loadStatus = reinterpret_cast< TGUCEFGENERICPLUGFPTR_Load >( m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )( argc, argv );
                 
-                // Cleanup the module parameter list
-                if ( argc > 0 )
+            // Cleanup the module parameter list
+            if ( argc > 0 )
+            {
+                for ( UInt32 i=0; i<argc; ++i )
                 {
-                    for ( UInt32 i=0; i<argc; ++i )
-                    {
-                        delete[] argv[ i ];
-                    }
-                    delete[] argv;
-                    argv = NULL;
+                    delete[] argv[ i ];
                 }
+                delete[] argv;
+                argv = NULL;
+            }
                 
-                // Check whether the load was successfull
-                if ( loadStatus > 0 )
-                {
-                    // We have loaded & linked our plugin module
-                    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPlugin: Successfully loaded module and invoked Load() which returned status " + 
-                          Int32ToString( loadStatus  ) + " using module: " + pluginPath );
-                    return true;
-                }
-                else
-                {
-                    GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CGenericPlugin: Failed load module because Load returned an error state (" + 
-                                                            Int32ToString( loadStatus ) + ") with module loaded from: " + pluginPath );
+            // Check whether the load was successfull
+            if ( loadStatus > 0 )
+            {
+                // We have loaded & linked our plugin module
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GenericPlugin: Successfully loaded module and invoked Load() which returned status " + 
+                        Int32ToString( loadStatus  ) + " using module: " + PointerToString( modulePtr ) );
 
-                    // Call the module's Unload()
-                    reinterpret_cast< TGUCEFGENERICPLUGFPTR_Unload >( m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] )();
-                }
-                
+                // Copy the given metadata and update it with info from the actual module
+                m_metaData = new CPluginMetaData( *pluginMetaData );                 
+                m_metaData->SetDescription( GetDescription() );
+                m_metaData->SetCopyright( GetCopyright() );
+                m_metaData->SetVersion( GetVersion() );
+
+                return true;
             }
             else
             {
-                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CGenericPlugin: Failed to locate the required exports in module: " + pluginPath );
-            }
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "GenericPlugin: Failed load module because Load returned an error state (" + 
+                                                        Int32ToString( loadStatus ) + ") with module: " + PointerToString( modulePtr ) );
 
-            // We failed to link the functions :(
-            memset( m_funcPointers, 0, GPLUGINFUNCPTR_COUNT );
-            UnloadModuleDynamicly( m_moduleHandle );
-            m_moduleHandle = NULL;
-            return false;
+                // Call the module's Unload()
+                reinterpret_cast< TGUCEFGENERICPLUGFPTR_Unload >( m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] )();
+            }
+                
         }
+        else
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CGenericPlugin: Failed to locate the required exports in module: " + PointerToString( modulePtr ) );
+        }
+
+        // We failed to link the functions :(
+        memset( m_funcPointers, 0, GPLUGINFUNCPTR_COUNT );
+        m_moduleHandle = NULL;
+        return false;
     }
 
     // Unloading->Loading must be done explicitly
@@ -228,7 +240,7 @@ CGenericPlugin::Load( const CString& pluginPath )
 /*-------------------------------------------------------------------------*/
 
 bool
-CGenericPlugin::Unload( void )
+CGenericPlugin::Unlink( void )
 {GUCEF_TRACE;
 
     if ( IsLoaded() )
@@ -238,8 +250,8 @@ CGenericPlugin::Unload( void )
 
         // Cleanup recources
         memset( m_funcPointers, 0, GPLUGINFUNCPTR_COUNT );
-        UnloadModuleDynamicly( m_moduleHandle );
         m_moduleHandle = NULL;
+        m_metaData = NULL;
     }
 
     return true;
@@ -265,7 +277,7 @@ CGenericPlugin::GetDescription( void ) const
         return reinterpret_cast< TGUCEFGENERICPLUGFPTR_GetDescription >( m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] )();
     }
 
-    GUCEF_EMSGTHROW( ENotLoaded, "CGenericPlugin::GetDescription(): No module is loaded" );
+    return CString();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -279,7 +291,7 @@ CGenericPlugin::GetCopyright( void ) const
         return reinterpret_cast< TGUCEFGENERICPLUGFPTR_GetCopyright >( m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] )();
     }
 
-    GUCEF_EMSGTHROW( ENotLoaded, "CGenericPlugin::GetCopyright(): No module is loaded" );
+    return CString();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -296,22 +308,10 @@ CGenericPlugin::GetVersion( void ) const
         return versionInfo;
     }
 
-    GUCEF_EMSGTHROW( ENotLoaded, "CGenericPlugin::GetVersion(): No module is loaded" );
+    TVersion unknownVersion = { -1, -1, -1, -1 };
+    return unknownVersion;
 }
 
-/*-------------------------------------------------------------------------*/
-
-CString
-CGenericPlugin::GetModulePath( void ) const
-{GUCEF_TRACE;
-
-    if ( IsLoaded() )
-    {
-        return m_modulePath;
-    }
-
-    GUCEF_EMSGTHROW( ENotLoaded, "CGenericPlugin::GetModulePath(): No module is loaded" );
-}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CGENERICPLUGINMANAGER_H
-#define GUCEF_CORE_CGENERICPLUGINMANAGER_H
+#ifndef GUCEF_CORE_CLOADERDELEGATEDPLUGINLOADLOGIC_H
+#define GUCEF_CORE_CLOADERDELEGATEDPLUGINLOADLOGIC_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,22 +26,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
+#include "EStructs.h"
 
-#ifndef GUCEF_CORE_CPLUGINMANAGER_H
-#include "CPluginManager.h"
-#define GUCEF_CORE_CPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
+#ifndef GUCEF_CORE_CIPLUGINLOADLOGIC_H
+#include "gucefCORE_CIPluginLoadLogic.h"
+#define GUCEF_CORE_CIPLUGINLOADLOGIC_H
+#endif /* GUCEF_CORE_CIPLUGINLOADLOGIC_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,46 +49,37 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Plugin manager for generic plugins
- *
- *  About Generic plugins:
- *  These are typicly C++ modules that link back to the GUCEF modules and
- *  uppon load integrate themselves in the framework. This allows a generic plugin
- *  to be/do just about anything but with the drawback that it has to link to the GUCEF
- *  modules and as such has a more limited lifespan as a C-interface plugin.
+ *  Plugin loader logic implementation which delegates to a gucefLOADER module
+ *  which houses the actual loader logic. The gucefLOADER modules is a specialist
+ *  module which keeps module loading centralized and stable by using C interfaces.
  */
-class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
+class GUCEF_CORE_PRIVATE_CPP CLoaderDelegatedPluginLoadLogic : public CIPluginLoadLogic
 {
     public:
 
-    static CGenericPluginManager* Instance( void );
+    virtual void* LoadPlugin( const CString& rootDir            ,
+                              const CString& moduleName         ,
+                              const CString& groupName          ,
+                              const TVersion* pluginVersion = 0 );
 
-    virtual CString GetPluginType( void ) const;
+    virtual void UnloadPlugin( void* modulePtr );
 
-    protected:
+    virtual CString GetLoaderLogicTypeName( void ) const;
+    
 
-    virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
-                                       TPluginMetaDataPtr pluginMetaData );
+    CLoaderDelegatedPluginLoadLogic( void );
 
-    virtual void UnregisterPlugin( TPluginPtr plugin );
-
-    private:
-    friend class CGUCEFCOREModule;
-
-    static void Deinstance( void );
-
-    private:
-    CGenericPluginManager( void );
-    CGenericPluginManager( const CGenericPluginManager& src );
-    CGenericPluginManager& operator=( const CGenericPluginManager& src );
-
-    virtual ~CGenericPluginManager();
+    virtual ~CLoaderDelegatedPluginLoadLogic();
 
     private:
 
-    static CGenericPluginManager* m_instance;
+    void Initialize( void );
+    
+    CLoaderDelegatedPluginLoadLogic( const CLoaderDelegatedPluginLoadLogic& src );
+    CLoaderDelegatedPluginLoadLogic& operator=( const CLoaderDelegatedPluginLoadLogic& src );
+
+    void* m_cInterface;
 };
-
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -111,7 +92,7 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
+#endif /* GUCEF_CORE_CLOADERDELEGATEDPLUGINLOADLOGIC_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -122,4 +103,4 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
 - 27-11-2004 :
         - Dinand: Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

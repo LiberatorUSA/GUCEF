@@ -53,6 +53,11 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
+#ifndef GUCEF_CORE_CPLUGINMETADATA_H
+#include "gucefCORE_CPluginMetaData.h"
+#define GUCEF_CORE_CPLUGINMETADATA_H
+#endif /* GUCEF_CORE_CPLUGINMETADATA_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -79,7 +84,10 @@ class CGenericPluginManager;
  *  These are typicly C++ modules that link back to the GUCEF modules and
  *  uppon load integrate themselves in the framework. This allows a generic plugin
  *  to be/do just about anything but with the drawback that it has to link to the GUCEF
- *  modules and as such has a more limited lifespan as a binary plugin.
+ *  modules and as such has a more limited lifespan as a binary plugin. 
+ *  Its compatiblity is very narrow and any change in the GUCEF and related libraries 
+ *  can break compatibility witha  generic plugin. As such only use generic plugins in cases
+ *  were you are going to compile them anew for every new revision of the platform.
  */
 class GUCEF_CORE_PUBLIC_CPP CGenericPlugin : public CIPlugin
 {
@@ -89,34 +97,32 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPlugin : public CIPlugin
 
     virtual ~CGenericPlugin();
 
-    virtual CString GetDescription( void ) const;
+    virtual TPluginMetaDataPtr GetMetaData( void );
 
-    virtual CString GetCopyright( void ) const;
-
-    virtual TVersion GetVersion( void ) const;
-
-    virtual CString GetModulePath( void ) const;
-
-    virtual bool IsLoaded( void ) const;
-
-    virtual bool Load( const CString& pluginPath );
-    
-    bool Load( const CString& pluginPath      ,
-               const CValueList& pluginParams );
-
-    virtual bool Unload( void );
+    virtual void* GetModulePointer( void );
     
     void SetPluginParams( const CValueList& pluginParams );
     
     const CValueList& GetPluginParams( void ) const;
 
-    private:
+    bool Link( void* modulePtr                   ,
+               TPluginMetaDataPtr pluginMetaData );
 
-    static void Deinstance( void );
+    bool Unlink( void );
 
     private:
+    
     CGenericPlugin( const CGenericPlugin& src );
+
     CGenericPlugin& operator=( const CGenericPlugin& src );
+
+    bool IsLoaded( void ) const;
+
+    CString GetDescription( void ) const;
+
+    CString GetCopyright( void ) const;
+
+    TVersion GetVersion( void ) const;
 
     private:
 
@@ -124,6 +130,7 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPlugin : public CIPlugin
     TDefaultFuncPtr m_funcPointers[ 5 ];
     CString m_modulePath;
     CValueList m_params;
+    TPluginMetaDataStoragePtr m_metaData;
 };
 
 /*-------------------------------------------------------------------------//

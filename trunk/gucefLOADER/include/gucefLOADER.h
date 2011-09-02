@@ -81,6 +81,35 @@ LoadAndRunGucefPlatformApp( const char* appName ,
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Attenpts to load the given module.
+ *  The module will be located using the module storage schema of gucefLOADER
+ *  No functions will be loaded and/or executed. This function is only meant to load
+ *  plugin modules using the same logic as the loader system from another location
+ *  such as gucefCORE's plugin management system.
+ *
+ *  This should be considered an internal function, it is not for regular use.
+ */
+GUCEF_LOADER_PUBLIC_C void*
+LoadSpecificModule( const char* moduleFilename  ,
+                    const char* rootDir         ,
+                    const char* moduleGroupName ,
+                    long majorVersion           ,
+                    long minorVersion           ,
+                    long patchVersion           ,
+                    long releaseVersion         );
+
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Should be used to unload modules which were loaded using "LoadSpecificModule"
+ */
+GUCEF_LOADER_PUBLIC_C void 
+UnloadSpecificModule( void* modulePtr );
+
+/*-------------------------------------------------------------------------*/
+
 #ifdef __cplusplus
 }; /* extern "C" */
 #endif /* __cplusplus ? */

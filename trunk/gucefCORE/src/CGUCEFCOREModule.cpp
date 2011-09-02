@@ -219,7 +219,7 @@ CGUCEFCOREModule::Load( void )
     CPulseGenerator::RegisterEvents();
     CStreamerEvents::RegisterEvents();
     CTimer::RegisterEvents();
-    CPluginManager::RegisterEvents();
+    CPluginControl::RegisterEvents();
     CIURLEvents::RegisterEvents();
     CNotifyingMapEvents::RegisterEvents();
     CGUCEFApplication::RegisterEvents();

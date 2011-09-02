@@ -99,7 +99,6 @@ typedef union anyPointer TAnyPointer;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-
 GUCEF_CORE_PUBLIC_C void*
 LoadModuleDynamicly( const char* filename );
 
@@ -107,6 +106,17 @@ LoadModuleDynamicly( const char* filename );
 
 GUCEF_CORE_PUBLIC_C void
 UnloadModuleDynamicly( void *sohandle );
+
+/*--------------------------------------------------------------------------*/
+
+/** 
+ *  Gets a pointer to an already loaded module. This function does NOT
+ *  increment the reference count of the module referenced. If you do not know
+ *  whether the modules is already loaded you should use LoadModuleDynamicly()
+ *  instead of this function.
+ */
+GUCEF_CORE_PUBLIC_C void*
+GetModulePointer( const char* moduleName );
 
 /*--------------------------------------------------------------------------*/
 

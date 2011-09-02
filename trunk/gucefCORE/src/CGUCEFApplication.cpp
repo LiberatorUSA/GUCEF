@@ -437,29 +437,6 @@ CGUCEFApplication::Stop( void )
 
 /*-------------------------------------------------------------------------*/
 
-void
-CGUCEFApplication::SetPluginDir( const CString& plugindir )
-{GUCEF_TRACE;
-
-    LockData();
-
-    CPluginControl* pc = CPluginControl::Instance();
-    pc->SetPluginDir( plugindir );
-    pc->LoadAll();
-
-    UnlockData();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CString
-CGUCEFApplication::GetPluginDir( void ) const
-{GUCEF_TRACE;
-        return CPluginControl::Instance()->GetPluginDir();
-}
-
-/*-------------------------------------------------------------------------*/
-
 CString
 CGUCEFApplication::GetApplicationDir( void ) const
 {GUCEF_TRACE;

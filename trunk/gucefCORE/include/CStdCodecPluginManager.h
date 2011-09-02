@@ -55,9 +55,14 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPluginManager : public CPluginManager
 
     static CStdCodecPluginManager* Instance( void );
 
-    virtual void UnloadAll( void );
+    virtual CString GetPluginType( void ) const;
 
-    virtual TPluginPtr LoadPlugin( const CString& pluginPath );
+    protected:
+
+    virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
+                                       TPluginMetaDataPtr pluginMetaData );
+
+    virtual void UnregisterPlugin( TPluginPtr plugin );
 
     private:
     friend class CGUCEFCOREModule;
@@ -72,7 +77,6 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPluginManager : public CPluginManager
 
     private:
 
-    std::vector< TPluginPtr > m_plugins;
     static CStdCodecPluginManager* m_instance;
 };
 

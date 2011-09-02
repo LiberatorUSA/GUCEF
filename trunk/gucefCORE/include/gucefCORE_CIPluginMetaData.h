@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CGENERICPLUGINMANAGER_H
-#define GUCEF_CORE_CGENERICPLUGINMANAGER_H
+#ifndef GUCEF_CORE_CIPLUGINMETADATA_H
+#define GUCEF_CORE_CIPLUGINMETADATA_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,22 +26,25 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
-
-#ifndef GUCEF_CORE_CPLUGINMANAGER_H
-#include "CPluginManager.h"
-#define GUCEF_CORE_CPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
 
 #ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
+
+#ifndef GUCEF_CORE_ESTRUCTS_H
+#include "EStructs.h"         /* often used gucef data structs */
+#define GUCEF_CORE_ESTRUCTS_H
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,46 +62,68 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Plugin manager for generic plugins
- *
- *  About Generic plugins:
- *  These are typicly C++ modules that link back to the GUCEF modules and
- *  uppon load integrate themselves in the framework. This allows a generic plugin
- *  to be/do just about anything but with the drawback that it has to link to the GUCEF
- *  modules and as such has a more limited lifespan as a C-interface plugin.
+ *  Interface class for plugin metadata
  */
-class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
+class GUCEF_CORE_PUBLIC_CPP CIPluginMetaData
 {
     public:
 
-    static CGenericPluginManager* Instance( void );
+    CIPluginMetaData( void );
 
-    virtual CString GetPluginType( void ) const;
+    CIPluginMetaData( const CIPluginMetaData& src );
 
-    protected:
+    virtual ~CIPluginMetaData();
 
-    virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
-                                       TPluginMetaDataPtr pluginMetaData );
+    CIPluginMetaData& operator=( const CIPluginMetaData& src );
 
-    virtual void UnregisterPlugin( TPluginPtr plugin );
+    /**
+     *  Optional textual description of the plugin functionality
+     */    
+    virtual CString GetDescription( void ) const = 0;
 
-    private:
-    friend class CGUCEFCOREModule;
+    /**
+     *  Optional textual copyright information regarding the plugin
+     */ 
+    virtual CString GetCopyright( void ) const = 0;
 
-    static void Deinstance( void );
+    /**
+     *  Version info for the plugin
+     */
+    virtual TVersion GetVersion( void ) const = 0;
 
-    private:
-    CGenericPluginManager( void );
-    CGenericPluginManager( const CGenericPluginManager& src );
-    CGenericPluginManager& operator=( const CGenericPluginManager& src );
+    /**
+     *  Optional info on which which loader logic should be used when loading the plugin
+     */
+    virtual CString GetLoaderLogicTypeName( void ) const = 0;
 
-    virtual ~CGenericPluginManager();
+    /**
+     *  Info regarding the type of plugin this is. 
+     *  PluginManagers can be added to the system to support the loading of different types
+     *  of plugins. Defining the plugin type allows these managers to pick the plugins they 
+     *  can manage
+     */
+    virtual CString GetPluginType( void ) const = 0;
 
-    private:
+    virtual CString GetModuleFilename( void ) const = 0;
 
-    static CGenericPluginManager* m_instance;
+    /**
+     *  Optional info regarding the full path of the module.
+     *  If none is specified globally defined root paths can be used in combination 
+     *  with the module filename to find the module
+     */
+    virtual CString GetFullModulePath( void ) const = 0;
+
+    /**
+     *  Optionally parameters can be specified to be available for the plugin.
+     *  How, when and if they values are passed to the plugin depends on the implementation
+     *  of the plugin and plugin manager. This is merely a placeholder.
+     */
+    virtual void GetParams( CValueList& params ) const = 0;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CTSharedPtr< CIPluginMetaData > TPluginMetaDataPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -111,7 +136,7 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
+#endif /* GUCEF_CORE_CIPLUGINMETADATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -122,4 +147,4 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
 - 27-11-2004 :
         - Dinand: Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

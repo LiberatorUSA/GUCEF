@@ -66,9 +66,22 @@ GUCEF_CORE_GucefLoadConfig( const char* configPath ,
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C int
-GUCEF_CORE_GucefLoadGenericPlugin( const char* pluginPath ,
-                                   int argc               , 
-                                   char** argv            );
+GUCEF_CORE_GucefLoadPlugin( const char* pluginPath , 
+                            const char* pluginType ,
+                            const char* groupName  ,
+                            int argc               , 
+                            char** argv            );
+
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C void
+GUCEF_CORE_GucefAddPluginDir( const char* pluginDir );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C void
+GUCEF_CORE_GucefSetDefaultPluginLoaderLogicType( const char* defaultLoaderLogicType );
 
 /*--------------------------------------------------------------------------*/
 

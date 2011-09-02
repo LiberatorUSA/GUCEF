@@ -96,12 +96,16 @@ typedef std::vector< TModuleGroup > TModuleGroupVector;
 typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_GucefMain ) ( int argc, char** argv, int runAppBool ) GUCEF_CALLSPEC_SUFFIX;
 typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_GucefLoadConfig ) ( const char* configPath, const char* dataCodec ) GUCEF_CALLSPEC_SUFFIX;
 typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_GucefLoadGenericPlugin ) ( const char* pluginPath, int argc, char** argv ) GUCEF_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_GucefAddPluginDir ) ( const char* pluginDir ) GUCEF_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_GucefSetDefaultPluginLoaderLogicType ) ( const char* pluginLoaderLogicTypeName ) GUCEF_CALLSPEC_SUFFIX;
 
 struct SGucefCoreCInterface
 {
     TGUCEFCORECINTERFACE_GucefMain gucefMain;
     TGUCEFCORECINTERFACE_GucefLoadConfig gucefLoadConfig;
     TGUCEFCORECINTERFACE_GucefLoadGenericPlugin gucefLoadGenericPlugin;
+    TGUCEFCORECINTERFACE_GucefAddPluginDir gucefAddPluginDir;
+    TGUCEFCORECINTERFACE_GucefSetDefaultPluginLoaderLogicType gucefSetDefaultPluginLoaderLogicType;
 };
 typedef struct SGucefCoreCInterface TGucefCoreCInterface;
 
@@ -470,10 +474,60 @@ UnloadModules( TLoaderAppData& loaderAppData )
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_LOADER_PRIVATE_C bool
-LoadModules( const char* rootDir            ,
-             TModuleGroup& moduleGroup      ,
-             TModuleGroup* previousLoadData )
+GUCEF_LOADER_PRIVATE_CPP bool
+LoadASingleModule( const CORE::CString& rootDir ,
+                   TModuleInfo& moduleInfo      )
+{
+    CORE::CString filePath = rootDir;
+            
+    // adjust path for desired version
+    // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>
+    char versionDir[ 41 ];
+    sprintf( versionDir, "%d.%d", moduleInfo.version.major, moduleInfo.version.minor );
+    CORE::AppendToPath( filePath, versionDir );
+
+    // Add the module name to our root path
+    // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>
+    CORE::AppendToPath( filePath, moduleInfo.name );
+
+    if ( moduleInfo.version.patch < 0 || moduleInfo.version.release < 0 )
+    {
+        // We will have to search for the latest version available
+        if ( !GetHighestVersionAvailableFromDir( filePath                   ,
+                                                 moduleInfo.version.patch   ,
+                                                 moduleInfo.version.release ) )
+        {
+            // Unable to find any versions in this dir for this module
+            return false;
+        }
+    }
+
+    // Simply append with the specific version requested or if no specific version was
+    // requested then the highest version located.
+    // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
+    sprintf( versionDir, "%d.%d", moduleInfo.version.patch, moduleInfo.version.release );
+    CORE::AppendToPath( filePath, versionDir );
+                
+    // Add the name of the module which contains the application code
+    CORE::AppendToPath( filePath, moduleInfo.name );
+
+    // Now that we constructed the full load path for this module we will try and load it
+    moduleInfo.handle = CORE::LoadModuleDynamicly( filePath.C_String() );
+    if ( NULL == moduleInfo.handle )
+    {
+        // We are missing one of the requested modules...
+        // Abort
+        return false;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PRIVATE_CPP bool
+LoadModules( const char* rootDir       ,
+             TModuleGroup& moduleGroup )
 {
     try
     {
@@ -486,56 +540,12 @@ LoadModules( const char* rootDir            ,
         for ( int i=0; i<(int)moduleGroup.modules.size(); ++i )
         {
             TModuleInfo& moduleInfo = moduleGroup.modules[ i ];
-            CORE::CString filePath = groupRoot;
-            
-            // adjust path for desired version
-            // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>
-            char versionDir[ 41 ];
-            sprintf( versionDir, "%d.%d", moduleInfo.version.major, moduleInfo.version.minor );
-            CORE::AppendToPath( filePath, versionDir );
 
-            // Add the module name to our root path
-            // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>
-            CORE::AppendToPath( filePath, moduleInfo.name );
-
-            if ( moduleInfo.version.patch < 0 || moduleInfo.version.release < 0 )
+            if ( !LoadASingleModule( groupRoot  ,
+                                     moduleInfo ) )
             {
-                // We will have to search for the latest version available
-                if ( !GetHighestVersionAvailableFromDir( filePath                   ,
-                                                         moduleInfo.version.patch   ,
-                                                         moduleInfo.version.release ) )
-                {
-                    // Unable to find any versions in this dir for this module
-                    UnloadModules( moduleGroup );
-                    return false;
-                }
-            }
-
-            // Make restarting/switching apps more efficient by only unloading/loading
-            // modules when needed and retaining already loaded modules
-            if ( !IsModuleVersionAlreadyLoadedIfNotUnloadExisting( moduleGroup.name   ,
-                                                                   moduleInfo.name    ,
-                                                                   moduleInfo.version ,
-                                                                   previousLoadData   ) )
-            {
-                // Simply append with the specific version requested or if no specific version was
-                // requested then the highest version located.
-                // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
-                sprintf( versionDir, "%d.%d", moduleInfo.version.patch, moduleInfo.version.release );
-                CORE::AppendToPath( filePath, versionDir );
-                
-                // Add the name of the module which contains the application code
-                CORE::AppendToPath( filePath, moduleInfo.name );
-
-                // Now that we constructed the full load path for this module we will try and load it
-                moduleInfo.handle = CORE::LoadModuleDynamicly( filePath.C_String() );
-                if ( NULL == moduleInfo.handle )
-                {
-                    // We are missing one of the requested modules...
-                    // Abort
-                    UnloadModules( moduleGroup );
-                    return false;
-                }
+                UnloadModules( moduleGroup );
+                return false;
             }
         }
 
@@ -608,10 +618,21 @@ LinkGucefCoreCInterface( TModuleGroup& moduleGroup        ,
                                        sizeof(const char*) +
                                        sizeof(int)         +
                                        sizeof(const char**)                ).funcPtr;
+    cInterface.gucefAddPluginDir = (TGUCEFCORECINTERFACE_GucefAddPluginDir)
+             CORE::GetFunctionAddress( coreModulePtr                       ,
+                                       "GUCEF_CORE_GucefAddPluginDir" ,
+                                       sizeof(const char*) +
+                                       sizeof(const char**)           ).funcPtr;
+    cInterface.gucefSetDefaultPluginLoaderLogicType = (TGUCEFCORECINTERFACE_GucefSetDefaultPluginLoaderLogicType)
+             CORE::GetFunctionAddress( coreModulePtr                                     ,
+                                       "GUCEF_CORE_GucefSetDefaultPluginLoaderLogicType" ,
+                                       sizeof(const char*)                               ).funcPtr;
 
-    if ( NULL != cInterface.gucefLoadConfig        &&
-         NULL != cInterface.gucefLoadGenericPlugin &&
-         NULL != cInterface.gucefMain               )
+    if ( NULL != cInterface.gucefLoadConfig                      &&
+         NULL != cInterface.gucefLoadGenericPlugin               &&
+         NULL != cInterface.gucefMain                            &&
+         NULL != cInterface.gucefAddPluginDir                    &&
+         NULL != cInterface.gucefSetDefaultPluginLoaderLogicType )
     {
         return true;
     }
@@ -619,6 +640,7 @@ LinkGucefCoreCInterface( TModuleGroup& moduleGroup        ,
     cInterface.gucefMain = NULL;
     cInterface.gucefLoadConfig = NULL;
     cInterface.gucefLoadGenericPlugin = NULL;
+    cInterface.gucefAddPluginDir = NULL;
     return false;
 }
 
@@ -935,7 +957,7 @@ LoadMultipleModuleGroups( const char* rootDir              ,
         TModuleGroup& moduleGroup = (*i);
         TModuleGroup* previousLoadGroup = GetModuleGroup( previousLoadData, moduleGroup.name );
         
-        if ( !LoadModules( rootDir, moduleGroup, previousLoadGroup ) )
+        if ( !LoadModules( rootDir, moduleGroup ) )
         {
             // Failure duing the load of one of the prereq module groups
             return false;
@@ -1056,6 +1078,16 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
         UnloadModules( loaderAppData );
         return 0;
     }
+
+    // Before we load anything else we want to make sure that the application can load plugins on its own
+    // In order to do this in cases where the plugins are not stored with the other app modules we have to 
+    // make the gucefLOADER load logic available to the rest of the app. Basically we make it possible to route
+    // plugin load calls trough this module for correct path lookup. This works because the gucefCORE module
+    // is aware of this module and will work with it to complete the circuit and link the logic transparently.
+    // The advantage here is that you have a central loader which is easy to upgrade without making it harder on
+    // C++ interface based modules.
+    cInterface.gucefSetDefaultPluginLoaderLogicType( "gucefLOADER" );
+    cInterface.gucefAddPluginDir( rootDir );
     
     // Now that the correct prereq modules are loaded we can load the application
     // module itself
@@ -1132,6 +1164,47 @@ LoadAndRunGucefPlatformApp( const char* appName ,
                                          -1           ,
                                          -1           ,
                                          -1           );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+UnloadSpecificModule( void* modulePtr )
+{
+    // We don't do anything special here since we don't keep state
+    CORE::UnloadModuleDynamicly( modulePtr );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void*
+LoadSpecificModule( const char* moduleFilename  ,
+                    const char* rootDir         ,
+                    const char* moduleGroupName ,
+                    long majorVersion           ,
+                    long minorVersion           ,
+                    long patchVersion           ,
+                    long releaseVersion         )
+{
+    TModuleInfo moduleInfo;
+    moduleInfo.name = moduleFilename;
+    moduleInfo.version.major = (CORE::Int16) majorVersion;
+    moduleInfo.version.minor = (CORE::Int16) minorVersion;
+    moduleInfo.version.patch = (CORE::Int16) patchVersion;
+    moduleInfo.version.release = (CORE::Int16) releaseVersion;
+    moduleInfo.handle = NULL;
+
+    TModuleGroup moduleGroup;
+    moduleGroup.modules.push_back( moduleInfo );
+    moduleGroup.name = moduleGroupName;
+    
+    if ( LoadModules( rootDir     ,
+                      moduleGroup ) )
+    {
+        return GetModulePtr( moduleGroup    ,
+                             moduleFilename );
+    }
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/

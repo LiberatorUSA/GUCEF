@@ -63,46 +63,46 @@ class CDataNode;
  */
 class GUCEF_CORE_PUBLIC_CPP CIConfigurable
 {
-        public:
+    public:
 
-        CIConfigurable( void );
+    CIConfigurable( void );
 
-        CIConfigurable( const CIConfigurable& src );
+    CIConfigurable( const CIConfigurable& src );
 
-        CIConfigurable( bool useglobalconfig );
+    CIConfigurable( bool useglobalconfig );
 
-        virtual ~CIConfigurable();
+    virtual ~CIConfigurable();
 
-        CIConfigurable& operator=( const CIConfigurable& src );
+    CIConfigurable& operator=( const CIConfigurable& src );
 
-        /**
-         *      Attempts to store the given tree in the file
-         *      given according to the method of the codec metadata
-         *
-         *      @param tree the data tree you wish to store
-         *      @return wheter storing the tree was successfull
-         */
-        virtual bool SaveConfig( CDataNode& tree ) = 0;
+    /**
+     *      Attempts to store the given tree in the file
+     *      given according to the method of the codec metadata
+     *
+     *      @param tree the data tree you wish to store
+     *      @return wheter storing the tree was successfull
+     */
+    virtual bool SaveConfig( CDataNode& tree ) = 0;
 
-        /**
-         *      Attempts to load data from the given file to the
-         *      root node given. The root data will be replaced
-         *      and any children the node may already have will be deleted.
-         *
-         *      @param treeroot pointer to the node that is to act as root of the data tree
-         *      @return whether building the tree from the given file was successfull.
-         */
-        virtual bool LoadConfig( const CDataNode& treeroot ) = 0;
+    /**
+     *      Attempts to load data from the given file to the
+     *      root node given. The root data will be replaced
+     *      and any children the node may already have will be deleted.
+     *
+     *      @param treeroot pointer to the node that is to act as root of the data tree
+     *      @return whether building the tree from the given file was successfull.
+     */
+    virtual bool LoadConfig( const CDataNode& treeroot ) = 0;
 
-        void SetUseGlobalConfig( bool use );
+    void SetUseGlobalConfig( bool use );
 
-        bool GetUseGlobalConfig( void ) const;
+    bool GetUseGlobalConfig( void ) const;
 
-        private:
-        friend class CConfigStore;
+    private:
+    friend class CConfigStore;
 
-        UInt32 _configid;       /**< used by the CConfigStore class to speed up lookup ops */
-        bool _useglobal;        /**< wheter this configurable object reacts to global config events */
+    UInt32 _configid;       /**< used by the CConfigStore class to speed up lookup ops */
+    bool _useglobal;        /**< wheter this configurable object reacts to global config events */
 };
 
 /*-------------------------------------------------------------------------//

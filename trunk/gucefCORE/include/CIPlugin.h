@@ -26,20 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
-#include "ExceptionMacros.h"
-#define GUCEF_CORE_EXCEPTIONMACROS_H
-#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
-
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
-
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"         /* often used gucef data structs */
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+#ifndef GUCEF_CORE_CIPLUGINMETADATA_H
+#include "gucefCORE_CIPluginMetaData.h"
+#define GUCEF_CORE_CIPLUGINMETADATA_H
+#endif /* GUCEF_CORE_CIPLUGINMETADATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -71,22 +61,14 @@ class GUCEF_CORE_PUBLIC_CPP CIPlugin
 
     CIPlugin& operator=( const CIPlugin& src );
 
-    virtual CString GetDescription( void ) const = 0;
+    virtual TPluginMetaDataPtr GetMetaData( void ) = 0;
 
-    virtual CString GetCopyright( void ) const = 0;
-
-    virtual TVersion GetVersion( void ) const = 0;
-
-    virtual CString GetModulePath( void ) const = 0;
-
-    virtual bool IsLoaded( void ) const = 0;
-
-    virtual bool Load( const CString& pluginPath ) = 0;
-
-    virtual bool Unload( void ) = 0;
-
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, ENotLoaded );
+    virtual void* GetModulePointer( void ) = 0;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CTSharedPtr< CIPlugin > TPluginPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -110,4 +92,4 @@ class GUCEF_CORE_PUBLIC_CPP CIPlugin
 - 27-11-2004 :
         - Dinand: Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

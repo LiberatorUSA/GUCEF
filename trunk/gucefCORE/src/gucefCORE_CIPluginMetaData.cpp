@@ -17,31 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CGENERICPLUGINMANAGER_H
-#define GUCEF_CORE_CGENERICPLUGINMANAGER_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_CORE_CPLUGINMANAGER_H
-#include "CPluginManager.h"
-#define GUCEF_CORE_CPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
+#include "gucefCORE_CIPluginMetaData.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,47 +45,33 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Plugin manager for generic plugins
- *
- *  About Generic plugins:
- *  These are typicly C++ modules that link back to the GUCEF modules and
- *  uppon load integrate themselves in the framework. This allows a generic plugin
- *  to be/do just about anything but with the drawback that it has to link to the GUCEF
- *  modules and as such has a more limited lifespan as a C-interface plugin.
- */
-class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
-{
-    public:
+CIPluginMetaData::CIPluginMetaData( void )
+{GUCEF_TRACE;
 
-    static CGenericPluginManager* Instance( void );
+}
 
-    virtual CString GetPluginType( void ) const;
+/*-------------------------------------------------------------------------*/
 
-    protected:
+CIPluginMetaData::CIPluginMetaData( const CIPluginMetaData& src )
+{GUCEF_TRACE;
 
-    virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
-                                       TPluginMetaDataPtr pluginMetaData );
+}
 
-    virtual void UnregisterPlugin( TPluginPtr plugin );
+/*-------------------------------------------------------------------------*/
 
-    private:
-    friend class CGUCEFCOREModule;
+CIPluginMetaData::~CIPluginMetaData()
+{GUCEF_TRACE;
 
-    static void Deinstance( void );
+}
 
-    private:
-    CGenericPluginManager( void );
-    CGenericPluginManager( const CGenericPluginManager& src );
-    CGenericPluginManager& operator=( const CGenericPluginManager& src );
+/*-------------------------------------------------------------------------*/
 
-    virtual ~CGenericPluginManager();
+CIPluginMetaData&
+CIPluginMetaData::operator=( const CIPluginMetaData& src )
+{GUCEF_TRACE;
 
-    private:
-
-    static CGenericPluginManager* m_instance;
-};
-
+    return *this;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -110,16 +83,3 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #include "CIPlugin.h"
 
 /*-------------------------------------------------------------------------//
@@ -40,34 +45,31 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_IMPLEMENT_MSGEXCEPTION( CIPlugin, ENotLoaded )
-
-/*-------------------------------------------------------------------------*/
-
 CIPlugin::CIPlugin( void )
-{
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CIPlugin::CIPlugin( const CIPlugin& src )
-{
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CIPlugin::~CIPlugin()
-{
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CIPlugin&
 CIPlugin::operator=( const CIPlugin& src )
-{
-    if ( &src != this )
-    {
-    }
+{GUCEF_TRACE;
+
     return *this;
 }
 

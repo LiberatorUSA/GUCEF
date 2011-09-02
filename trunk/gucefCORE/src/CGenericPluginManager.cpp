@@ -84,15 +84,16 @@ CGenericPluginManager* CGenericPluginManager::m_instance = NULL;
 //-------------------------------------------------------------------------*/
 
 CGenericPluginManager::CGenericPluginManager( void )
-    : CPluginManager() ,
-      CIConfigurable( true )
+    : CPluginManager() 
 {GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CGenericPluginManager::~CGenericPluginManager()
 {GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -100,7 +101,8 @@ CGenericPluginManager::~CGenericPluginManager()
 CGenericPluginManager*
 CGenericPluginManager::Instance( void )
 {GUCEF_TRACE;
-    if ( !m_instance )
+
+    if ( NULL != m_instance )
     {
         m_instance = new CGenericPluginManager();
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CGenericPluginManager Singleton created" );
@@ -117,216 +119,43 @@ CGenericPluginManager::Deinstance( void )
     
     delete m_instance;
     m_instance = NULL;
+
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CGenericPluginManager Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/
 
+TPluginPtr
+CGenericPluginManager::RegisterPlugin( void* modulePtr                   ,
+                                       TPluginMetaDataPtr pluginMetaData )
+{GUCEF_TRACE;
+
+    CGenericPlugin* plugin = new CGenericPlugin();
+    if ( plugin->Link( modulePtr      ,
+                       pluginMetaData ) )
+    {
+        return plugin;
+    }
+    
+    delete plugin;
+    return NULL; 
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
-CGenericPluginManager::LoadAll( void )
+CGenericPluginManager::UnregisterPlugin( TPluginPtr plugin )
 {GUCEF_TRACE;
 
-    CString pluginDir( GetPluginDir() );
-    CString pluginPath( pluginDir );
-    struct SDI_Data* dirInfo = DI_First_Dir_Entry( pluginDir.C_String() );
-    if ( NULL != dirInfo )
-    {
-        do
-        {
-            // Check if the dir entry is a file and not a dir
-            if ( 0 != DI_Is_It_A_File( dirInfo ) )
-            {
-                // build the path string to the file
-                AppendToPath( pluginPath         ,
-                              DI_Name( dirInfo ) );
-                
-                // now we try to load the file as a generic plugin
-                Load( pluginPath ); 
-                
-                // reset path for next loop iteration
-                pluginPath = pluginDir; 
-            }
-            
-        } while ( 0 != DI_Next_Dir_Entry( dirInfo ) );
-        
-        DI_Cleanup( dirInfo );
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void
-CGenericPluginManager::UnloadAll( void )
-{GUCEF_TRACE;
-    
-    TPluginList::iterator i = m_pluginList.begin();
-    while ( i != m_pluginList.end() )
-    {
-        // notify observers that we are about to unload the module
-        NotifyObservers( PluginUnloadedEvent );
-        
-        // Perform the actual unload
-        (*i)->Unload();
-        delete (*i);
-        (*i) = NULL;
-        
-        ++i;
-    }
-    
-    m_pluginList.clear();
-}
-
-/*-------------------------------------------------------------------------*/
-    
-bool
-CGenericPluginManager::IsLoaded( const CString& pluginPath )
-{GUCEF_TRACE;
-
-    TPluginList::iterator i = m_pluginList.begin();
-    while ( i != m_pluginList.end() )
-    {
-        if ( pluginPath == (*i)->GetModulePath() )
-        {
-            return true;
-        }
-        
-        ++i;
-    }
-    
-    return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CGenericPluginManager::Load( const CString& pluginPath )
+CString
+CGenericPluginManager::GetPluginType( void ) const
 {GUCEF_TRACE;
 
-    CValueList params;
-    return Load( pluginPath, params );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CGenericPluginManager::Load( const CString& pluginPath ,
-                             const CValueList& params  )
-{GUCEF_TRACE;
-    
-    if ( !IsLoaded( pluginPath ) )
-    {
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Attempting to load generic plugin: " + pluginPath );
-        
-        CGenericPlugin* plugin = new CGenericPlugin();
-        if ( plugin->Load( pluginPath, params ) )
-        {
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Generic plugin loaded: " + pluginPath );
-            
-            // The file has been successfully loaded as a generic plugin module
-            m_pluginList.push_back( plugin );
-            
-            // Notify the observers of this event
-            NotifyObservers( PluginLoadedEvent );            
-            return true;
-        }
-        else
-        {
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Failed to load module as a generic plugin: " + pluginPath );
-            
-            // Failed to load the file as a generic plugin
-            delete plugin;
-            return false;
-        }
-        
-    }
-    
-    // Already loaded
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-bool
-CGenericPluginManager::Unload( const CString& pluginPath )
-{GUCEF_TRACE;
-
-    TPluginList::iterator i = m_pluginList.begin();
-    while ( i != m_pluginList.end() )
-    {
-        if ( pluginPath == (*i)->GetModulePath() )
-        {
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Attempting to unload generic plugin: " + pluginPath );
-
-            // Perform the actual unload
-            if ( (*i)->Unload() )
-            {
-                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Generic plugin unloaded: " + pluginPath );
-                
-                // notify observers that we unloaded the module
-                NotifyObservers( PluginUnloadedEvent );
-                            
-                m_pluginList.erase( i );
-            }
-            return true;
-        }
-        
-        ++i;
-    }
-    
-    // Cannot find module
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CGenericPluginManager::LoadConfig( const CDataNode& treeroot )
-{GUCEF_TRACE;
-
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CGenericPluginManager: Loading config" );
-    
-    const CDataNode* m = treeroot.Search( "GUCEF%CORE%CGenericPluginManager" ,
-                                          '%'                                ,
-                                          false                              );
-
-    if ( NULL != m )
-    {
-        CDataNode::TConstDataNodeSet plugins = m->FindChildrenOfType( "Plugin" );
-        CDataNode::TConstDataNodeSet::const_iterator i = plugins.begin();
-        while ( i != plugins.end() )
-        {
-            const CDataNode* pluginNode = (*i);
-            CString pluginPath = pluginNode->GetAttributeValue( "pluginPath" );
-            if ( pluginPath.Length() > 0 )
-            {
-                // Check if this plugin has any params
-                CValueList params;
-                CDataNode::TConstDataNodeSet paramNodes = pluginNode->FindChildrenOfType( "Param" );
-                CDataNode::TConstDataNodeSet::const_iterator i = paramNodes.begin();
-                while ( i != paramNodes.end() )
-                {
-                    CString key = (*i)->GetAttributeValue( "Key" );
-                    CString value = (*i)->GetAttributeValue( "Value" );                    
-                    params.Set( key, value );
-                    ++i;
-                }
-                
-                // Now load the plugin right away
-                Load( pluginPath, params );            
-            }
-            ++i;
-        }
-    }
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CGenericPluginManager::SaveConfig( CDataNode& tree )
-{GUCEF_TRACE;
-
-    return true;
+    return "GucefGenericPlugin";
 }
 
 /*-------------------------------------------------------------------------//

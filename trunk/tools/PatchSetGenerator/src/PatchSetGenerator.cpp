@@ -214,32 +214,11 @@ ParseParams( const int argc                        ,
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MSWIN_BUILD
-
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
-{
-
-    int argc = 0;
-    char** argv = &lpcmdline;
-    if ( lpcmdline != NULL )
-    {
-        if ( *lpcmdline != '\0' )
-        {
-            argc = 1;
-        }
-    }
-    
-#else
-
-int
-main( int argc , char* argv[] )
+/*
+ *      Application entry point
+ */
+GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
-
-#endif
     
     GUCEF::CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
     GUCEF::CORE::AppendToPath( logFilename, "PatchSetGenerator_Log.txt" );
@@ -331,8 +310,7 @@ main( int argc , char* argv[] )
             // Load all plugins, this allows us to support multiple codec's
             // with our minimal console interface
             GUCEF::CORE::CPluginControl* pluginControl = GUCEF::CORE::CPluginControl::Instance();
-            pluginControl->SetPluginDir( pluginDir );
-            pluginControl->LoadAll();
+            pluginControl->AddAllPluginsFromDir( pluginDir, GUCEF::CORE::CString(), true );
         }
         if ( plugins.Length() != 0 )
         {
@@ -342,7 +320,7 @@ main( int argc , char* argv[] )
             TStringVector::iterator i = pluginList.begin();
             while ( i != pluginList.end() )
             {
-                pluginControl->Load( (*i) );
+                pluginControl->AddPluginFromDir( (*i), GUCEF::CORE::CString(), true );
                 ++i;
             }
         }
@@ -390,5 +368,6 @@ main( int argc , char* argv[] )
 	
 	return 0;
 }
+GUCEF_OSMAIN_END
 
 /*---------------------------------------------------------------------------*/

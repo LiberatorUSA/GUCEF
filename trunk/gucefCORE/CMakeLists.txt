@@ -147,15 +147,21 @@ set( HEADER_FILES
   include/gucefCORE_CIniParser.h
   include/gucefCORE_cinterface.h
   include/gucefCORE_CIObserver.h
+  include/gucefCORE_CIPluginLoadLogic.h
+  include/gucefCORE_CIPluginMetaData.h
   include/gucefCORE_CIPulseGeneratorDriver.h
   include/gucefCORE_CITaskConsumer.h
   include/gucefCORE_CLinkedTransferBuffer.h
+  include/gucefCORE_CLoaderDelegatedPluginLoadLogic.h
   include/gucefCORE_CLoggingTask.h
   include/gucefCORE_CObserverSwitch.h
   include/gucefCORE_config.h
   include/gucefCORE_CPlatformNativeConsoleLogger.h
+  include/gucefCORE_CPluginGroup.h
+  include/gucefCORE_CPluginMetaData.h
   include/gucefCORE_CPulseData.h
   include/gucefCORE_CPulseGenerator.h
+  include/gucefCORE_CSimplisticPluginLoadLogic.h
   include/gucefCORE_CSingleTaskDelegator.h
   include/gucefCORE_CSubFileAccess.h
   include/gucefCORE_CTaskDelegator.h
@@ -304,14 +310,20 @@ set( SOURCE_FILES
   src/gucefCORE_CIniParser.cpp
   src/gucefCORE_cinterface.cpp
   src/gucefCORE_CIObserver.cpp
+  src/gucefCORE_CIPluginLoadLogic.cpp
+  src/gucefCORE_CIPluginMetaData.cpp
   src/gucefCORE_CIPulseGeneratorDriver.cpp
   src/gucefCORE_CITaskConsumer.cpp
   src/gucefCORE_CLinkedTransferBuffer.cpp
+  src/gucefCORE_CLoaderDelegatedPluginLoadLogic.cpp
   src/gucefCORE_CLoggingTask.cpp
   src/gucefCORE_CObserverSwitch.cpp
   src/gucefCORE_CPlatformNativeConsoleLogger.cpp
+  src/gucefCORE_CPluginGroup.cpp
+  src/gucefCORE_CPluginMetaData.cpp
   src/gucefCORE_CPulseData.cpp
   src/gucefCORE_CPulseGenerator.cpp
+  src/gucefCORE_CSimplisticPluginLoadLogic.cpp
   src/gucefCORE_CSingleTaskDelegator.cpp
   src/gucefCORE_CSubFileAccess.cpp
   src/gucefCORE_CTaskDelegator.cpp
