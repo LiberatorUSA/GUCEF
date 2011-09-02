@@ -17,33 +17,23 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := native-activity
+LOCAL_MODULE := gucefLOADER_TestApp
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  main.c
+  src/gucefLOADER_TestApp.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/../../../common/include \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include/ \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../../gucefLOADER/include \
-  $(MY_MODULE_PATH)/../../../gucefMT/include
+  $(MY_MODULE_PATH)/../common/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include \
+  $(MY_MODULE_PATH)/../gucefCORE/include/ \
+  $(MY_MODULE_PATH)/../gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../gucefLOADER/include \
+  $(MY_MODULE_PATH)/../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \
   gucefLOADER
 
-
-LOCAL_STATIC_LIBRARIES := \
-  android_native_app_glue
-
-
-LOCAL_LDLIBS := \
-  -lEGL \
-  -lGLESv1_CM \
-  -landroid
-
-include $(BUILD_SHARED_LIBRARY)
+include $(BUILD_EXECUTABLE)
 

@@ -142,14 +142,20 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CIniParser.cpp \
   src/gucefCORE_cinterface.cpp \
   src/gucefCORE_CIObserver.cpp \
+  src/gucefCORE_CIPluginLoadLogic.cpp \
+  src/gucefCORE_CIPluginMetaData.cpp \
   src/gucefCORE_CIPulseGeneratorDriver.cpp \
   src/gucefCORE_CITaskConsumer.cpp \
   src/gucefCORE_CLinkedTransferBuffer.cpp \
+  src/gucefCORE_CLoaderDelegatedPluginLoadLogic.cpp \
   src/gucefCORE_CLoggingTask.cpp \
   src/gucefCORE_CObserverSwitch.cpp \
   src/gucefCORE_CPlatformNativeConsoleLogger.cpp \
+  src/gucefCORE_CPluginGroup.cpp \
+  src/gucefCORE_CPluginMetaData.cpp \
   src/gucefCORE_CPulseData.cpp \
   src/gucefCORE_CPulseGenerator.cpp \
+  src/gucefCORE_CSimplisticPluginLoadLogic.cpp \
   src/gucefCORE_CSingleTaskDelegator.cpp \
   src/gucefCORE_CSubFileAccess.cpp \
   src/gucefCORE_CTaskDelegator.cpp \

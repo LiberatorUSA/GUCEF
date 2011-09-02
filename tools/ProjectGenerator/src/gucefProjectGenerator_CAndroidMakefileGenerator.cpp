@@ -236,7 +236,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
                 // This is really nasty but the best option for now...
                 // It is possible to link to exported symbols from an executable
                 // under linux and as such we will leverage this here
-                linkedStaticLibraries.insert( linkedLibName );
+                linkedSharedLibraries.insert( linkedLibName );
                 break;
             }
             case MODULETYPE_SHARED_LIBRARY:
@@ -283,7 +283,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
                             // This is really nasty but the best option for now...
                             // It is possible to link to exported symbols from an executable
                             // under linux and as such we will leverage this here
-                            linkedStaticLibraries.insert( linkedLibName );
+                            linkedSharedLibraries.insert( linkedLibName );
                             break;
                         }
                         case MODULETYPE_HEADER_INCLUDE_LOCATION:
