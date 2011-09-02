@@ -48,6 +48,16 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
+#ifndef GUCEF_CORE_CDSTORECODECPLUGIN_H
+#include "CDStoreCodecPlugin.h"
+#define GUCEF_CORE_CDSTORECODECPLUGIN_H
+#endif /* GUCEF_CORE_CDSTORECODECPLUGIN_H ? */
+
 #include "CDStoreCodecPluginManager.h"  /* definition of the class implemented here */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -249,7 +259,18 @@ CDStoreCodecPluginManager::RegisterPlugin( void* modulePtr                   ,
                                            TPluginMetaDataPtr pluginMetaData )
 {GUCEF_TRACE;
 
-    return NULL;
+    CDStoreCodecPlugin* plugin = new CDStoreCodecPlugin();
+    if ( plugin->Link( modulePtr      ,
+                       pluginMetaData ) )
+    {
+        TDStoreCodecPluginPtr pointerToPlugin = plugin;
+        CDStoreCodecRegistry::Instance()->Register( plugin->GetTypeName(), pointerToPlugin );
+        
+        return pointerToPlugin;
+    }
+    
+    delete plugin;
+    return NULL; 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -258,6 +279,12 @@ void
 CDStoreCodecPluginManager::UnregisterPlugin( TPluginPtr plugin )
 {GUCEF_TRACE;
 
+    // First unregister from the registry
+    TDStoreCodecPluginPtr pointerToPlugin = plugin.StaticCast< CDStoreCodecPlugin >();
+    CDStoreCodecRegistry::Instance()->Unregister( pointerToPlugin->GetTypeName() );
+
+    // Now unlink the plugin
+    pointerToPlugin->Unlink();
 }
 
 /*-------------------------------------------------------------------------//

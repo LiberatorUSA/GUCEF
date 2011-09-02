@@ -57,8 +57,8 @@ namespace CORE {
 
 void*
 CSimplisticPluginLoadLogic::LoadPlugin( const CString& rootDir        ,
-                                        const CString& groupName      ,
                                         const CString& moduleName     ,
+                                        const CString& groupName      ,
                                         const TVersion* pluginVersion )
 {GUCEF_TRACE;
 

@@ -1,7 +1,7 @@
 @echo off
 
 SET GUCEF_THEBATCHDIR=%CD%
-GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC9_PROJECTGENERATOR
+GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC10_PROJECTGENERATOR
 
 
 REM -----------------------------------------------------
@@ -28,6 +28,28 @@ GOTO RUN_PROJECTGENERATOR
 
 REM -----------------------------------------------------
 
+:FIND_GUCEF_CMAKE_SLN_DEBUG_MVC10_PROJECTGENERATOR
+
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC10\bin\Debug
+SET GENERATOREXE=ProjectGenerator.exe
+SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
+
+ECHO Test path = "%EXETEST%"
+IF EXIST "%EXETEST%" (
+  ECHO Warning: Using CMake debug development version of the ProjectGenerator
+  GOTO RUN_PROJECTGENERATOR
+)
+
+IF NOT EXIST "%EXETEST%" (
+  ECHO Cannot locate VC10 CMake debug development version of the ProjectGenerator, trying VC9
+  GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC9_PROJECTGENERATOR
+)
+
+cd "%GUCEF_THEBATCHDIR%"
+GOTO RUN_PROJECTGENERATOR
+
+REM -----------------------------------------------------
+
 :FIND_GUCEF_CMAKE_SLN_DEBUG_MVC9_PROJECTGENERATOR
 
 SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC9\bin\Debug
@@ -41,7 +63,7 @@ IF EXIST "%EXETEST%" (
 )
 
 IF NOT EXIST "%EXETEST%" (
-  ECHO Cannot locate CMake debug development version of the ProjectGenerator
+  ECHO Cannot locate CMake debug development version of the ProjectGenerator, trying release
   GOTO FIND_GUCEF_RELEASE_PROJECTGENERATOR
 )
 

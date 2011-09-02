@@ -75,13 +75,6 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodec : public CICloneable
     virtual ~CDStoreCodec();
 
     /**
-     *      Whether or not the codec is currently valid
-     *
-     *      @return validity of the codec
-     */
-    virtual bool IsValid( void ) const = 0;
-
-    /**
      *      Attempts to store the given tree in the file
      *      given according to the method of the codec meta data
      *

@@ -832,13 +832,15 @@ CPluginControl::AddPluginFromDir( const CString& pluginPath ,
                                   bool loadImmediatly       )
 {GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Defining file " + pluginPath + " as a plugin" );
+    CString pathToPlugin = RelativePath( pluginPath );
+    
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Defining file " + pathToPlugin + " as a plugin" );
 
     // All we can define using this method is the directory and the filename
     // The module will have to be matched to a plugin manager via trial and error
-    CString filename = ExtractFilename( pluginPath );
+    CString filename = ExtractFilename( pathToPlugin );
     CPluginMetaData pluginMetaData;
-    pluginMetaData.SetFullModulePath( pluginPath.CutChars( filename.Length(), false ) );
+    pluginMetaData.SetFullModulePath( pathToPlugin.CutChars( filename.Length(), false ) );
     pluginMetaData.SetModuleFilename( filename );
                  
     return AddPluginMetaData( pluginMetaData , 
