@@ -33,12 +33,6 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifdef GUCEF_MSWIN_BUILD
-#include <windows.h>                    /* Micro$oft Windows API */
-#undef min
-#undef max
-#endif /* GUCEF_MSWIN_BUILD ? */
-
 #ifndef GUCEF_CORE_CTSGNOTIFIER_H
 #include "CTSGNotifier.h"
 #define GUCEF_CORE_CTSGNOTIFIER_H
@@ -105,8 +99,8 @@ class CIGUCEFApplicationDriver;
  *              GUCEF level. All higher level code should shutdown as well
  */
 class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
-                                               public CIConfigurable        ,
-                                               public CISysConsoleCmdHandler
+                                                public CIConfigurable        ,
+                                                public CISysConsoleCmdHandler
 {
     public:
 
@@ -147,10 +141,6 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
     void Update( void );
 
     void Stop( void );
-
-    void SetPluginDir( const CString& plugindir );
-
-    CString GetPluginDir( void ) const;
 
     CString GetApplicationDir( void ) const;
 

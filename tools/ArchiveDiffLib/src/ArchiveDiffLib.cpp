@@ -135,19 +135,60 @@ GetXmlDStoreCodec( void )
         if ( !registry->TryLookup( "XML", codecPtr, false ) )
         {
             // No codec is registered to handle XML, try and load a plugin for it
+            #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-            CORE::CPluginManager::TPluginPtr codecPlugin =
+              #ifdef GUCEF_CORE_DEBUG_MODE
+              const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML_d";
+              #else
+              const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML";
+              #endif
+
+            if ( !CORE::CPluginControl::Instance()->AddPluginFromDir( pathToPlugin    ,
+                                                                      CORE::CString() ,
+                                                                      true            ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to load plugin from " + CORE::CString( pathToPlugin ) );
+                return NULL;
+            }
+
+            #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
+              #ifdef GUCEF_CORE_DEBUG_MODE
+              const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML_d";
+              #else
+              const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML";
+              #endif
+
+            if ( !CORE::CPluginControl::Instance()->AddPluginFromDir( pathToPlugin    ,
+                                                                      CORE::CString() ,
+                                                                      true            ) )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Unable to load plugin from " + CORE::CString( pathToPlugin ) + " attempting alternate location" );
 
                 #ifdef GUCEF_CORE_DEBUG_MODE
-                CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML_d" );
+                const char* pathToPlugin = "$MODULEDIR$/../lib/dstorepluginPARSIFALXML_d";
                 #else
-                CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( "$MODULEDIR$/dstorepluginPARSIFALXML" );
+                const char* pathToPlugin = "$MODULEDIR$/../lib/dstorepluginPARSIFALXML";
                 #endif
 
-            if ( NULL != codecPlugin )
+                if ( !CORE::CPluginControl::Instance()->AddPluginFromDir( pathToPlugin    ,
+                                                                          CORE::CString() ,
+                                                                          true            ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to load plugin from " + CORE::CString( pathToPlugin ) );
+                }
+            }
+
+            #else
+            
+            // Plugin loading not supported
+            GUCEF_ERROR_LOG( CORE::LOGVEL_NORMAL, "Plugin loading is not supported for this platform via the ProjectGenerator" );  
+
+            #endif
+
+            // Now try and get the codec again
+            if ( registry->TryLookup( "XML", codecPtr, false ) )
             {
-                // Now try and get the codec again
-                registry->TryLookup( "XML", codecPtr, false );
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Request for data storage codec for xml file, succesfully loaded plugin to handle request" );
             }
             else
@@ -160,7 +201,6 @@ GetXmlDStoreCodec( void )
     }
     return codecPtr;
 }
-
 
 /*---------------------------------------------------------------------------*/
 

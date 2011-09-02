@@ -1,6 +1,6 @@
 /*
  *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,22 +14,21 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
-
-#ifndef GUCEF_CORE_CPLUGINMANAGER_H
-#define GUCEF_CORE_CPLUGINMANAGER_H
-
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/
+//-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CIPLUGIN_H
-#include "CIPlugin.h"
-#define GUCEF_CORE_CIPLUGIN_H
-#endif /* GUCEF_CORE_CIPLUGIN_H ? */
+#include "gucefCORE_CPluginGroup.h"  /* definition of the class implemented here */
+
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,43 +41,66 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+    
+CPluginGroup::CPluginGroup( void )
+    : m_plugins()        ,
+      m_pluginMetaData()
+{GUCEF_TRACE;
 
-/*
- *      Forward declarations of framework classes used here
- */
-class CPluginControl;
+}
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Generic base class for plugin managers
- */
-class GUCEF_CORE_PUBLIC_CPP CPluginManager
-{
-    public:
+CPluginGroup::CPluginGroup( const CPluginGroup& src )
+    : m_plugins( src.m_plugins )                ,
+      m_pluginMetaData( src.m_pluginMetaData )
+{GUCEF_TRACE;
 
-    CPluginManager( void );
+}
 
-    virtual ~CPluginManager();
+/*-------------------------------------------------------------------------*/
 
-    virtual CString GetPluginType( void ) const = 0;
+CPluginGroup::~CPluginGroup()
+{GUCEF_TRACE;
 
-    protected:
-    friend class CPluginControl;
+    m_plugins.clear();
+    m_pluginMetaData.clear();
+}
 
-    virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
-                                       TPluginMetaDataPtr pluginMetaData ) = 0;
+/*-------------------------------------------------------------------------*/
 
-    virtual void UnregisterPlugin( TPluginPtr plugin ) = 0;
+CPluginGroup&
+CPluginGroup::operator=( const CPluginGroup& src )
+{GUCEF_TRACE;
 
-    private:
+    if ( &src != this )
+    {
+        m_plugins = src.m_plugins;
+        m_pluginMetaData = src.m_pluginMetaData;
+    }
+    return *this;
+}
 
-    CPluginManager( const CPluginManager& src );             /**< not implemented */
-    CPluginManager& operator=( const CPluginManager& src );  /**< not implemented */
-};
+/*-------------------------------------------------------------------------*/
+
+CPluginGroup::TPluginSet&
+CPluginGroup::GetPlugins( void )
+{GUCEF_TRACE;
+
+    return m_plugins;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPluginGroup::TPluginMetaDataSet&
+CPluginGroup::GetPluginMetaData( void )
+{GUCEF_TRACE;
+
+    return m_pluginMetaData;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -90,18 +112,3 @@ class GUCEF_CORE_PUBLIC_CPP CPluginManager
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 30-09-2006 :
-        - Dinand: Recoded the notification after crash wiped out the new code
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
----------------------------------------------------------------------------*/

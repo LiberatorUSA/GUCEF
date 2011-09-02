@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CICODECPLUGIN_H
 #endif /* GUCEF_CORE_CICODECPLUGIN_H ? */
 
+#ifndef GUCEF_CORE_CPLUGINMETADATA_H
+#include "gucefCORE_CPluginMetaData.h"
+#define GUCEF_CORE_CPLUGINMETADATA_H
+#endif /* GUCEF_CORE_CPLUGINMETADATA_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -76,36 +81,42 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPlugin : public CICodecPlugin
                          const CString& familyName ,
                          const CString& typeName   );
 
-    virtual CString GetDescription( void ) const;
+    virtual TPluginMetaDataPtr GetMetaData( void );
 
-    virtual CString GetCopyright( void ) const;
+    virtual void* GetModulePointer( void );
 
-    virtual TVersion GetVersion( void ) const;
+    virtual bool Link( void* modulePtr                   ,
+                       TPluginMetaDataPtr pluginMetaData );
 
-    virtual CString GetModulePath( void ) const;
-
-    virtual bool IsLoaded( void ) const;
-
-    virtual bool Load( const CString& pluginPath );
-
-    virtual bool Unload( void );
+    virtual bool Unlink( void );
 
     private:
 
     CStdCodecPlugin( const CStdCodecPlugin& src );            /**< not implemented */
     CStdCodecPlugin& operator=( const CStdCodecPlugin& src ); /**< not implemented */
 
+    CString GetDescription( void ) const;
+
+    CString GetCopyright( void ) const;
+
+    TVersion GetVersion( void ) const;
+
+    bool IsLoaded( void ) const;
+
     void LinkCodecSet( void );
+
     void UnlinkCodecSet( void );
+
+    bool Unlink( bool forceEvenIfInUse );
 
     private:
 
     CCodecSet m_codecSet;
     CCodecList m_codecList;
-    CString m_modulePath;
     TDefaultFuncPtr m_fpTable[ 10 ];  /**< function pointer table */
     void* m_soHandle;                 /**< access to the so module */
     void* m_pluginData;
+    TPluginMetaDataStoragePtr m_metaData;
 };
 
 /*-------------------------------------------------------------------------//

@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CGENERICPLUGINMANAGER_H
-#define GUCEF_CORE_CGENERICPLUGINMANAGER_H
+#ifndef GUCEF_CORE_CSIMPLISTICPLUGINLOADLOGIC_H
+#define GUCEF_CORE_CSIMPLISTICPLUGINLOADLOGIC_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,22 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
-
-#ifndef GUCEF_CORE_CPLUGINMANAGER_H
-#include "CPluginManager.h"
-#define GUCEF_CORE_CPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
+#ifndef GUCEF_CORE_CIPLUGINLOADLOGIC_H
+#include "gucefCORE_CIPluginLoadLogic.h"
+#define GUCEF_CORE_CIPLUGINLOADLOGIC_H
+#endif /* GUCEF_CORE_CIPLUGINLOADLOGIC_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,46 +47,33 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Plugin manager for generic plugins
- *
- *  About Generic plugins:
- *  These are typicly C++ modules that link back to the GUCEF modules and
- *  uppon load integrate themselves in the framework. This allows a generic plugin
- *  to be/do just about anything but with the drawback that it has to link to the GUCEF
- *  modules and as such has a more limited lifespan as a C-interface plugin.
+ *  Plugin loader logic implementation which performs a very simplistic load.
+ *  it does not care about grouName or pluginVersion's it simply loads the module
+ *  from the path provided. If you don't need to perform any versioning (side-by-side)
+ *  or grouping of your plugins then this simplistic approach can work well.
  */
-class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
+class GUCEF_CORE_PRIVATE_CPP CSimplisticPluginLoadLogic : public CIPluginLoadLogic
 {
     public:
 
-    static CGenericPluginManager* Instance( void );
+    virtual void* LoadPlugin( const CString& rootDir            ,
+                              const CString& moduleName         ,
+                              const CString& groupName          ,
+                              const TVersion* pluginVersion = 0 );
 
-    virtual CString GetPluginType( void ) const;
+    virtual void UnloadPlugin( void* modulePtr );
 
-    protected:
+    virtual CString GetLoaderLogicTypeName( void ) const;
+    
+    CSimplisticPluginLoadLogic( void );
 
-    virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
-                                       TPluginMetaDataPtr pluginMetaData );
-
-    virtual void UnregisterPlugin( TPluginPtr plugin );
-
-    private:
-    friend class CGUCEFCOREModule;
-
-    static void Deinstance( void );
-
-    private:
-    CGenericPluginManager( void );
-    CGenericPluginManager( const CGenericPluginManager& src );
-    CGenericPluginManager& operator=( const CGenericPluginManager& src );
-
-    virtual ~CGenericPluginManager();
+    virtual ~CSimplisticPluginLoadLogic();
 
     private:
 
-    static CGenericPluginManager* m_instance;
+    CSimplisticPluginLoadLogic( const CSimplisticPluginLoadLogic& src );
+    CSimplisticPluginLoadLogic& operator=( const CSimplisticPluginLoadLogic& src );
 };
-
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -111,7 +86,7 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
+#endif /* GUCEF_CORE_CSIMPLISTICPLUGINLOADLOGIC_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -122,4 +97,4 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
 - 27-11-2004 :
         - Dinand: Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

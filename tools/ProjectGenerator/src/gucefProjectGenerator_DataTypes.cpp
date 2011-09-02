@@ -33,6 +33,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_CORE_CPLUGINCONTROL_H
+#include "CPluginControl.h"
+#define GUCEF_CORE_CPLUGINCONTROL_H
+#endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
+
 #include "gucefProjectGenerator_DataTypes.h"
 
 /*-------------------------------------------------------------------------//
@@ -235,8 +240,13 @@ GetXmlDStoreCodec( void )
               const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML";
               #endif
 
-              CORE::CPluginManager::TPluginPtr codecPlugin =
-                  CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( pathToPlugin );
+            if ( !CORE::CPluginControl::Instance()->AddPluginFromDir( pathToPlugin    ,
+                                                                      CORE::CString() ,
+                                                                      true            ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to load plugin from " + CORE::CString( pathToPlugin ) );
+                return NULL;
+            }
 
             #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
 
@@ -246,31 +256,36 @@ GetXmlDStoreCodec( void )
               const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML";
               #endif
 
-              CORE::CPluginManager::TPluginPtr codecPlugin =
-                  CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( pathToPlugin );
+            if ( !CORE::CPluginControl::Instance()->AddPluginFromDir( pathToPlugin    ,
+                                                                      CORE::CString() ,
+                                                                      true            ) )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Unable to load plugin from " + CORE::CString( pathToPlugin ) + " attempting alternate location" );
 
-              if ( NULL == codecPlugin )
-              {
-                  #ifdef GUCEF_CORE_DEBUG_MODE
-                  const char* pathToPlugin = "$MODULEDIR$/../lib/dstorepluginPARSIFALXML_d";
-                  #else
-                  const char* pathToPlugin = "$MODULEDIR$/../lib/dstorepluginPARSIFALXML";
-                  #endif
+                #ifdef GUCEF_CORE_DEBUG_MODE
+                const char* pathToPlugin = "$MODULEDIR$/../lib/dstorepluginPARSIFALXML_d";
+                #else
+                const char* pathToPlugin = "$MODULEDIR$/../lib/dstorepluginPARSIFALXML";
+                #endif
 
-                  codecPlugin = CORE::CDStoreCodecPluginManager::Instance()->LoadPlugin( pathToPlugin );
-              }
-            
+                if ( !CORE::CPluginControl::Instance()->AddPluginFromDir( pathToPlugin    ,
+                                                                          CORE::CString() ,
+                                                                          true            ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to load plugin from " + CORE::CString( pathToPlugin ) );
+                }
+            }
+
             #else
             
             // Plugin loading not supported
-            CORE::CPluginManager::TPluginPtr codecPlugin;  
+            GUCEF_ERROR_LOG( CORE::LOGVEL_NORMAL, "Plugin loading is not supported for this platform via the ProjectGenerator" );  
 
             #endif
 
-            if ( NULL != codecPlugin )
+            // Now try and get the codec again
+            if ( registry->TryLookup( "XML", codecPtr, false ) )
             {
-                // Now try and get the codec again
-                registry->TryLookup( "XML", codecPtr, false );
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Request for data storage codec for xml file, succesfully loaded plugin to handle request" );
             }
             else
@@ -283,7 +298,6 @@ GetXmlDStoreCodec( void )
     }
     return codecPtr;
 }
-
 
 /*-------------------------------------------------------------------------*/
 

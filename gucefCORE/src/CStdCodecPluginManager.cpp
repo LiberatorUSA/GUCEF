@@ -59,8 +59,7 @@ CStdCodecPluginManager* CStdCodecPluginManager::m_instance = NULL;
 //-------------------------------------------------------------------------*/
 
 CStdCodecPluginManager::CStdCodecPluginManager( void )
-    : CPluginManager() ,
-      m_plugins()
+    : CPluginManager()
 {GUCEF_TRACE;
     
 }
@@ -70,7 +69,6 @@ CStdCodecPluginManager::CStdCodecPluginManager( void )
 CStdCodecPluginManager::~CStdCodecPluginManager()
 {GUCEF_TRACE;
 
-    UnloadAll();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -101,33 +99,37 @@ CStdCodecPluginManager::Deinstance( void )
 
 /*-------------------------------------------------------------------------*/
 
-CStdCodecPluginManager::TPluginPtr
-CStdCodecPluginManager::LoadPlugin( const CString& pluginPath )
+CString
+CStdCodecPluginManager::GetPluginType( void ) const
+{GUCEF_TRACE;
+
+    return "GucefStandardCodecPlugin";
+}
+
+/*-------------------------------------------------------------------------*/
+
+TPluginPtr
+CStdCodecPluginManager::RegisterPlugin( void* modulePtr                   ,
+                                        TPluginMetaDataPtr pluginMetaData )
 {GUCEF_TRACE;
 
     CStdCodecPlugin* plugin = new CStdCodecPlugin();
-    if ( plugin->Load( pluginPath ) )
+    if ( plugin->Link( modulePtr      ,
+                       pluginMetaData ) )
     {
-        TPluginPtr pluginPtr( plugin );
-        m_plugins.push_back( pluginPtr );
-        return pluginPtr;
+        return plugin;
     }
-
+    
     delete plugin;
-    return TPluginPtr(); // return NULL pointer
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CStdCodecPluginManager::UnloadAll( void )
+CStdCodecPluginManager::UnregisterPlugin( TPluginPtr plugin )
 {GUCEF_TRACE;
 
-    while ( !m_plugins.empty() )
-    {
-        ( m_plugins.back() )->Unload();
-        m_plugins.pop_back();
-    }
 }
 
 /*-------------------------------------------------------------------------//

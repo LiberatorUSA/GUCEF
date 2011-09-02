@@ -120,6 +120,30 @@ LoadModuleDynamicly( const char* filename )
 
 /*--------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_C void*
+GetModulePointer( const char* moduleName )
+{
+    // If no module name is passed we get the pointer to the main process module
+   
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+    // On linux the reference could is always incremented so we must decrement again right away to get
+    // the same behaviour as the windows version
+    void* modulePtr = (void*) dlopen( moduleName, RTLD_NOW );
+    dlclose( modulePtr );
+    return modulePtr;
+    
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    return (void*) GetModuleHandleA( moduleName );
+    
+    #else
+    #error Unsupported target platform
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
 void
 UnloadModuleDynamicly( void *sohandle )
 {

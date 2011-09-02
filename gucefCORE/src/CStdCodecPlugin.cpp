@@ -103,7 +103,6 @@ typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_GetCodecSetNextIte
 CStdCodecPlugin::CStdCodecPlugin( void )
     : CICodecPlugin()    ,
       m_soHandle( NULL ) ,
-      m_modulePath()     ,
       m_pluginData()     ,
       m_codecSet()       ,
       m_codecList()
@@ -117,7 +116,25 @@ CStdCodecPlugin::CStdCodecPlugin( void )
 CStdCodecPlugin::~CStdCodecPlugin()
 {GUCEF_TRACE;
 
-    Unload();
+    Unlink( true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+TPluginMetaDataPtr
+CStdCodecPlugin::GetMetaData( void )
+{GUCEF_TRACE;
+
+    return m_metaData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void*
+CStdCodecPlugin::GetModulePointer( void )
+{GUCEF_TRACE;
+    
+    return m_soHandle;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -128,8 +145,6 @@ CStdCodecPlugin::LinkCodecSet( void )
 
     if ( IsLoaded() )
     {
-        UnlinkCodecSet();
-
         CCodecRegistry* codecRegistry = CCodecRegistry::Instance();
         void* iterator = NULL;
         if ( ( (TCODECPLUGFPTR_GetCodecSetBegin) m_fpTable[ STDCODEC_CODECSETBEGIN ] )( m_pluginData, &iterator ) != 0 )
@@ -148,14 +163,17 @@ CStdCodecPlugin::LinkCodecSet( void )
 
                     // Now we register the codecs from this plugin in the GUCEF codec registry
                     // First we check if we have to add a new registry for this family
-                    if ( !codecRegistry->IsRegistered( codecLink->codecFamily ) )
+                    CCodecRegistry::TCodecFamilyRegistryPtr familyRegistry;
+                    if ( !codecRegistry->TryLookup( codecLink->codecFamily ,
+                                                    familyRegistry         ,
+                                                    true                   ) )
                     {
-                        codecRegistry->Register( codecLink->codecFamily, new CCodecRegistry::TCodecFamilyRegistry() );
+                        familyRegistry = new CCodecRegistry::TCodecFamilyRegistry();
+                        codecRegistry->Register( codecLink->codecFamily, familyRegistry );
                     }
 
                     // we now have access to a registry for this codec family
                     // We will add this codec if there no codec already registered with such a name
-                    CCodecRegistry::TCodecFamilyRegistryPtr familyRegistry = codecRegistry->Lookup( codecLink->codecFamily );
                     if ( !familyRegistry->IsRegistered( codecLink->codecType ) )
                     {
                         familyRegistry->Register( codecLink->codecType, codecItem );
@@ -166,10 +184,7 @@ CStdCodecPlugin::LinkCodecSet( void )
 
             ( (TCODECPLUGFPTR_FreeCodecIterator) m_fpTable[ STDCODEC_FREECODECITERATOR ] )( m_pluginData, iterator );
         }
-        return;
     }
-
-    GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::CORE::CStdCodecPlugin::LinkCodecSet(): No module is loaded" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -214,10 +229,7 @@ CStdCodecPlugin::UnlinkCodecSet( void )
 
         m_codecSet.clear();
         m_codecList.clear();
-        return;
     }
-
-    GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::CORE::CStdCodecPlugin::LinkCodecSet(): No module is loaded" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -265,7 +277,7 @@ CStdCodecPlugin::Encode( CIOAccess& source         ,
         return false;
     }
 
-    GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::CORE::CStdCodecPlugin::Encode(): No module is loaded" );
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -293,7 +305,7 @@ CStdCodecPlugin::Decode( CIOAccess& source         ,
         return false;
     }
 
-    GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::CORE::CStdCodecPlugin::Decode(): No module is loaded" );
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -307,7 +319,7 @@ CStdCodecPlugin::GetDescription( void ) const
         return ( (TCODECPLUGFPTR_Description) m_fpTable[ STDCODEC_DESCRIPTION ] )( m_pluginData );
     }
 
-    GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::CORE::CStdCodecPlugin::GetDescription(): No module is loaded" );
+    return CString();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -321,7 +333,7 @@ CStdCodecPlugin::GetCopyright( void ) const
         return ( (TCODECPLUGFPTR_Copyright) m_fpTable[ STDCODEC_COPYRIGHT ] )( m_pluginData );
     }
 
-    GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::CORE::CStdCodecPlugin::GetCopyright(): No module is loaded" );
+    return CString();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -335,21 +347,8 @@ CStdCodecPlugin::GetVersion( void ) const
         return ( (TCODECPLUGFPTR_Version) m_fpTable[ STDCODEC_VERSION ] )( m_pluginData );
     }
 
-    GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::CORE::CStdCodecPlugin::GetVersion(): No module is loaded" );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CString
-CStdCodecPlugin::GetModulePath( void ) const
-{GUCEF_TRACE;
-
-    if ( IsLoaded() )
-    {
-        return m_modulePath;
-    }
-
-    GUCEF_EMSGTHROW( ENotLoaded, "GUCEF::CORE::CStdCodecPlugin::GetModulePath(): No module is loaded" );
+    TVersion defaultVersion = { -1, -1, -1, -1 }; 
+    return defaultVersion;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -364,25 +363,13 @@ CStdCodecPlugin::IsLoaded( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CStdCodecPlugin::Load( const CString& pluginPath )
+CStdCodecPlugin::Link( void* modulePtr                   ,
+                       TPluginMetaDataPtr pluginMetaData )
 {GUCEF_TRACE;
 
     // make sure no module is already loaded
     if ( m_soHandle != NULL ) return false;
 
-    // First we try to load the module itself
-    try
-    {
-        m_soHandle = LoadModuleDynamicly( pluginPath.C_String() );
-        if ( m_soHandle == NULL ) return false;
-    }
-    catch ( ... )
-    {
-        m_soHandle = NULL;
-        return false;
-    }
-
-    // If we get here then the module is a loadable program extension, so now
     // let's see if it is a codec plugin
     m_fpTable[ STDCODEC_DESCRIPTION ] = GetFunctionAddress( m_soHandle                ,
                                                             "CODECPLUGIN_Description" ,
@@ -425,9 +412,8 @@ CStdCodecPlugin::Load( const CString& pluginPath )
          ( !m_fpTable[ STDCODEC_CODECLINK ] )         ||
          ( !m_fpTable[ STDCODEC_FREECODECLINK ] )     ||
          ( !m_fpTable[ STDCODEC_FREECODECITERATOR ] ) ||
-         ( !m_fpTable[ STDCODEC_CODECSETNEXT ] )    )
+         ( !m_fpTable[ STDCODEC_CODECSETNEXT ] )       )
     {
-            UnloadModuleDynamicly( m_soHandle );
             m_soHandle = NULL;
             memset( m_fpTable, 0, STDCODEC_FUNCTIONTABLESIZE );
             return false;
@@ -436,13 +422,19 @@ CStdCodecPlugin::Load( const CString& pluginPath )
     // We will now try to initialize the module
     if ( ( (TCODECPLUGFPTR_Init) m_fpTable[ STDCODEC_INIT ] )( &m_pluginData, NULL ) == 0 )
     {
-        UnloadModuleDynamicly( m_soHandle );
         m_soHandle = NULL;
         memset( m_fpTable, 0, STDCODEC_FUNCTIONTABLESIZE );
         return false;
     }
 
-    m_modulePath = pluginPath;
+    // We have loaded & linked our plugin module
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "StdCodecPlugin: Successfully loaded module and invoked Init() using module: " + PointerToString( modulePtr ) );
+
+    // Copy the given metadata and update it with info from the actual module
+    m_metaData = new CPluginMetaData( *pluginMetaData );                 
+    m_metaData->SetDescription( GetDescription() );
+    m_metaData->SetCopyright( GetCopyright() );
+    m_metaData->SetVersion( GetVersion() );
 
     // The module and been successfully loaded and linked
     // we will now generate a list of codec's
@@ -454,28 +446,41 @@ CStdCodecPlugin::Load( const CString& pluginPath )
 /*-------------------------------------------------------------------------*/
 
 bool
-CStdCodecPlugin::Unload( void )
+CStdCodecPlugin::Unlink( void )
+{GUCEF_TRACE;
+
+    return Unlink( false );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStdCodecPlugin::Unlink( bool forceEvenIfInUse )
 {GUCEF_TRACE;
 
     // Check if we have something to unload
     if ( m_soHandle == NULL ) return true;
-
-    // Check for outstanding references to our codec's
-    CCodecSet::iterator i = m_codecSet.begin();
-    while ( i != m_codecSet.end() )
+    
+    if ( !forceEvenIfInUse )
     {
-        CCodecFamilySet& codecFamily = (*i).second;
-        CCodecFamilySet::iterator n = codecFamily.begin();
-        while ( n != codecFamily.end() )
+        // Check for outstanding references to our codec's
+        CCodecSet::iterator i = m_codecSet.begin();
+        while ( i != m_codecSet.end() )
         {
-            if ( (*n).second.GetReferenceCount() > 1 )
+            CCodecFamilySet& codecFamily = (*i).second;
+            CCodecFamilySet::iterator n = codecFamily.begin();
+            while ( n != codecFamily.end() )
             {
-                // Cannot unload the module if someone is still using one of it's codec's
-                return false;
+                if ( (*n).second.GetReferenceCount() > 1 )
+                {
+                    // Cannot unload the module if someone is still using one of it's codec's
+                    GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "StdCodecPlugin: Unable to unlink codec module since there are outstanding references to the codecs from module: " + PointerToString( m_soHandle ) );
+                    return false;
+                }
+                ++n;
             }
-            ++n;
+            ++i;
         }
-        ++i;
     }
 
     // Free all codec links
@@ -488,10 +493,8 @@ CStdCodecPlugin::Unload( void )
     }
 
     // Module shutdown complete + no outstanding references,.. unload module
-    UnloadModuleDynamicly( m_soHandle );
     memset( m_fpTable, 0, STDCODEC_FUNCTIONTABLESIZE );
     m_soHandle = NULL;
-    m_modulePath = NULL;
     return true;
 }
 

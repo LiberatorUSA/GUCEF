@@ -17,31 +17,28 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CGENERICPLUGINMANAGER_H
-#define GUCEF_CORE_CGENERICPLUGINMANAGER_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_CORE_CPLUGINMANAGER_H
-#include "CPluginManager.h"
-#define GUCEF_CORE_CPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
+#include "gucefCORE_CSimplisticPluginLoadLogic.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,54 +48,57 @@
 
 namespace GUCEF {
 namespace CORE {
-
+                      
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Plugin manager for generic plugins
- *
- *  About Generic plugins:
- *  These are typicly C++ modules that link back to the GUCEF modules and
- *  uppon load integrate themselves in the framework. This allows a generic plugin
- *  to be/do just about anything but with the drawback that it has to link to the GUCEF
- *  modules and as such has a more limited lifespan as a C-interface plugin.
- */
-class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
-{
-    public:
+void*
+CSimplisticPluginLoadLogic::LoadPlugin( const CString& rootDir        ,
+                                        const CString& groupName      ,
+                                        const CString& moduleName     ,
+                                        const TVersion* pluginVersion )
+{GUCEF_TRACE;
 
-    static CGenericPluginManager* Instance( void );
+    CString fullPluginPath = rootDir;
+    AppendToPath( fullPluginPath, moduleName );
+    
+    return LoadModuleDynamicly( fullPluginPath.C_String() );
+}
 
-    virtual CString GetPluginType( void ) const;
+/*-------------------------------------------------------------------------*/
 
-    protected:
+void
+CSimplisticPluginLoadLogic::UnloadPlugin( void* modulePtr )
+{GUCEF_TRACE;
+    
+    UnloadModuleDynamicly( modulePtr );
+}
 
-    virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
-                                       TPluginMetaDataPtr pluginMetaData );
+/*-------------------------------------------------------------------------*/
 
-    virtual void UnregisterPlugin( TPluginPtr plugin );
+CSimplisticPluginLoadLogic::CSimplisticPluginLoadLogic( void )
+{GUCEF_TRACE;
+    
+}
 
-    private:
-    friend class CGUCEFCOREModule;
+/*-------------------------------------------------------------------------*/
 
-    static void Deinstance( void );
+CSimplisticPluginLoadLogic::~CSimplisticPluginLoadLogic()
+{GUCEF_TRACE;
+    
+}
 
-    private:
-    CGenericPluginManager( void );
-    CGenericPluginManager( const CGenericPluginManager& src );
-    CGenericPluginManager& operator=( const CGenericPluginManager& src );
+/*-------------------------------------------------------------------------*/
 
-    virtual ~CGenericPluginManager();
+CString
+CSimplisticPluginLoadLogic::GetLoaderLogicTypeName( void ) const
+{GUCEF_TRACE;
 
-    private:
-
-    static CGenericPluginManager* m_instance;
-};
-
+    return "Simplistic";
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -110,16 +110,3 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

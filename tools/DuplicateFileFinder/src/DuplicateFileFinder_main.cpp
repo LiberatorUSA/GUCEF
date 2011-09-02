@@ -416,8 +416,7 @@ GUCEF_OSMAIN_BEGIN
             // Load all plugins, this allows us to support multiple codec's
             // with our minimal console interface
             GUCEF::CORE::CPluginControl* pluginControl = GUCEF::CORE::CPluginControl::Instance();
-            pluginControl->SetPluginDir( pluginDir );
-            pluginControl->LoadAll();
+            pluginControl->AddAllPluginsFromDir( pluginDir, GUCEF::CORE::CString(), true );
 
             //// Now we ask the VFS to build the list for us.
             //// This operation can take a while
