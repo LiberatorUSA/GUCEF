@@ -1124,19 +1124,6 @@ FindModuleInfoForPlatform( const TModuleInfoEntry& moduleInfoEntry ,
 /*-------------------------------------------------------------------------*/
 
 bool
-IsIndependentModuleDefinition( const TModuleInfo* moduleInfo )
-{GUCEF_TRACE;
-    
-    if ( NULL != moduleInfo )
-    {
-        return -1 < moduleInfo->buildOrder;
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
 MergeModuleInfo( const TModuleInfoEntry& moduleInfoEntry ,
                  const CORE::CString& targetPlatform     ,
                  TModuleInfo& mergedModuleInfo           )
@@ -1149,25 +1136,37 @@ MergeModuleInfo( const TModuleInfoEntry& moduleInfoEntry ,
     if ( ( NULL != allPlatformsInfo ) || ( NULL != targetPlatformInfo ) )
     {
         // Check if we have both
-        if ( IsIndependentModuleDefinition( allPlatformsInfo ) && IsIndependentModuleDefinition( targetPlatformInfo ) )
+        if ( NULL != allPlatformsInfo && NULL != targetPlatformInfo )
         {
-            // Use the 'all' plaform as a base to work from
-            mergedModuleInfo = *allPlatformsInfo;
+            // Check if at least one of them has a build order set
+            if ( allPlatformsInfo->buildOrder > -1 || targetPlatformInfo->buildOrder > -1 )
+            {
+                // Check if at least one of them has a module type set
+                if ( allPlatformsInfo->moduleType != MODULETYPE_UNDEFINED || targetPlatformInfo->moduleType != MODULETYPE_UNDEFINED )
+                {
+                    // Use the 'all' plaform as a base to work from
+                    mergedModuleInfo = *allPlatformsInfo;
             
-            // Now merge in the platform specific info
-            MergeModuleInfo( mergedModuleInfo, *targetPlatformInfo );
-            
-            return true;
+                    // Now merge in the platform specific info
+                    MergeModuleInfo( mergedModuleInfo, *targetPlatformInfo );
+
+                    return true;
+                }
+            }
+
+            // Even though some info is specified for both platforms neither counts as independent
+            // definition for which a build order must be set
+            return false;
         }
         else
-        if ( IsIndependentModuleDefinition( allPlatformsInfo ) )
+        if ( NULL != allPlatformsInfo && allPlatformsInfo->buildOrder > -1 )
         {
             // We only have the 'all' platform which is fine, we will just use that
             mergedModuleInfo = *allPlatformsInfo;
             return true;
         }
         else
-        if ( IsIndependentModuleDefinition( targetPlatformInfo ) )
+        if ( NULL != targetPlatformInfo && targetPlatformInfo->buildOrder > -1 )
         {
             // We only have the target platform which is fine, we will just use that
             // this module aparently is not available for all platforms even in altered form

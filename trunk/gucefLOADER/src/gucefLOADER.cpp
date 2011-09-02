@@ -481,13 +481,13 @@ LoadASingleModule( const CORE::CString& rootDir ,
     CORE::CString filePath = rootDir;
             
     // adjust path for desired version
-    // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>
+    // This gives us: <LoadRoot>/LIBS/<GroupName>/<MajorVersion>.<MinorVersion>
     char versionDir[ 41 ];
     sprintf( versionDir, "%d.%d", moduleInfo.version.major, moduleInfo.version.minor );
     CORE::AppendToPath( filePath, versionDir );
 
     // Add the module name to our root path
-    // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>
+    // This gives us: <LoadRoot>/LIBS/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>
     CORE::AppendToPath( filePath, moduleInfo.name );
 
     if ( moduleInfo.version.patch < 0 || moduleInfo.version.release < 0 )
@@ -504,7 +504,7 @@ LoadASingleModule( const CORE::CString& rootDir ,
 
     // Simply append with the specific version requested or if no specific version was
     // requested then the highest version located.
-    // This gives us: <LoadRoot>/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
+    // This gives us: <LoadRoot>/LIBS/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
     sprintf( versionDir, "%d.%d", moduleInfo.version.patch, moduleInfo.version.release );
     CORE::AppendToPath( filePath, versionDir );
                 
@@ -532,8 +532,9 @@ LoadModules( const char* rootDir       ,
     try
     {
         // get the root path to where we should load modules from
-        // This gives us: <LoadRoot>/<GroupName>
+        // This gives us: <LoadRoot>/LIBS/<GroupName>
         CORE::CString groupRoot = rootDir;
+        CORE::AppendToPath( groupRoot, "LIBS" );
         CORE::AppendToPath( groupRoot, moduleGroup.name );
 
         // check if all desired modules are present
@@ -1025,7 +1026,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
 {
     // Apps load from: <LoadRoot>/APPS/<AppName>/<MajorVersion>.<MinorVersion>/<PatchVersion>.<ReleaseVersion>
     // For the app we will check the config file and based on that we will load correct platform.
-    // Platform loads from: <LoadRoot>/<Groupname>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
+    // Platform loads from: <LoadRoot>/LIBS/<Groupname>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
 
     // First get the path to the app dir because we need the loader config for this app
     CORE::TVersion appVersion;
