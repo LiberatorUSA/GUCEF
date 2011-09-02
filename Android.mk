@@ -96,6 +96,9 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefLOADER
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefLOADER_TestApp
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefANDROIDGLUE/Gingerbread/jni
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -148,5 +151,8 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/tools/GucefLogServiceApp
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/tools/GucefLogServiceClientPlugin
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefPRODMAN
 include $(MY_MODULE_PATH)/Android.mk
 

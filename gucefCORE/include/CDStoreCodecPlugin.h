@@ -41,6 +41,11 @@
 #define GUCEF_CORE_CDSTORECODEC_H
 #endif /* GUCEF_CORE_CDSTORECODEC_H ? */
 
+#ifndef GUCEF_CORE_CPLUGINMETADATA_H
+#include "gucefCORE_CPluginMetaData.h"
+#define GUCEF_CORE_CPLUGINMETADATA_H
+#endif /* GUCEF_CORE_CPLUGINMETADATA_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -75,16 +80,16 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CDStoreCodec ,
 
     CDStoreCodecPlugin( void );
     
-    CDStoreCodecPlugin( const CString& pluginfile );
-    
     virtual ~CDStoreCodecPlugin();
 
-    /**
-     *      Wheter or not the codec is currently valid
-     *
-     *      @return validity of the codec
-     */
-    virtual bool IsValid( void ) const;
+    bool Link( void* modulePtr                   ,
+               TPluginMetaDataPtr pluginMetaData );
+
+    bool Unlink( void );
+
+    virtual TPluginMetaDataPtr GetMetaData( void );
+
+    virtual void* GetModulePointer( void );
 
     /**
      *      Attempts to store the given tree in the file
@@ -167,18 +172,7 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CDStoreCodec ,
      */
     virtual TVersion GetVersion( void ) const;
 
-    /**
-     *      Returns path to the module
-     *
-     *      @return the path to the codec file
-     */
-    virtual CString GetModulePath( void ) const;
-
     virtual bool IsLoaded( void ) const;
-
-    virtual bool Load( const CString& pluginPath );
-
-    virtual bool Unload( void );
     
     virtual CICloneable* Clone( void ) const;
 
@@ -190,14 +184,17 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CDStoreCodec ,
     void StoreNode( const CDataNode* n ,
                     void** filedata    ); /**< recursive node storage algorithm */
 
-    CString _pluginfile;            /**< location of the codec plugin */
     UInt32 _id;                     /**< codec id, typicly used by manager classes */
     TDefaultFuncPtr _fptable[ 17 ]; /**< function pointer table */
     void* _sohandle;                /**< access to the so module */
     void* _plugdata;                /**< storage pointer to be used by the plugin as needed */
-
+    TPluginMetaDataStoragePtr m_metaData;
 
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CTSharedPtr< CDStoreCodecPlugin > TDStoreCodecPluginPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

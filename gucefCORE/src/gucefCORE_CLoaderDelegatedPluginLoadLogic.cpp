@@ -81,8 +81,8 @@ typedef struct SGucefLoaderCInterface TGucefLoaderCInterface;
 
 void*
 CLoaderDelegatedPluginLoadLogic::LoadPlugin( const CString& rootDir        ,
-                                             const CString& groupName      ,
                                              const CString& moduleName     ,
+                                             const CString& groupName      ,
                                              const TVersion* pluginVersion )
 {GUCEF_TRACE;
 
