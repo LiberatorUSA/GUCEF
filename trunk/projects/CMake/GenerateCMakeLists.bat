@@ -1,20 +1,20 @@
 @echo off
 
 SET GUCEF_THEBATCHDIR=%CD%
-GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC9_CMAKELISTGENERATOR
+GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC10_CMAKELISTGENERATOR
 
 
 REM -----------------------------------------------------
 
 :FIND_GUCEF_RELEASE_CMAKELISTGENERATOR
 
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\ProjectGenerator\bin\ReleasedBins\Win32\5April2011\
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\ProjectGenerator\bin\ReleasedBins\Win32\6September2011\
 SET GENERATOREXE=ProjectGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
-  ECHO Using released version of ProjectGenerator dated 5'th April 2011
+  ECHO Using released version of ProjectGenerator dated 6'th September 2011
   GOTO RUN_CMAKELISTGENERATOR
 )
 
@@ -28,20 +28,20 @@ GOTO RUN_CMAKELISTGENERATOR
 
 REM -----------------------------------------------------
 
-:FIND_GUCEF_CMAKE_SLN_DEBUG_MVC9_CMAKELISTGENERATOR
+:FIND_GUCEF_CMAKE_SLN_DEBUG_MVC10_CMAKELISTGENERATOR
 
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC9\bin\Debug
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC10\bin\Debug
 SET GENERATOREXE=ProjectGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
-  ECHO Warning: Using CMake debug development version of the ProjectGenerator
+  ECHO Warning: Using VC10 CMake debug development version of the ProjectGenerator
   GOTO RUN_CMAKELISTGENERATOR
 )
 
 IF NOT EXIST "%EXETEST%" (
-  ECHO Cannot locate CMake debug development version of the ProjectGenerator
+  ECHO Cannot locate VC10 CMake debug development version of the ProjectGenerator
   GOTO FIND_GUCEF_RELEASE_CMAKELISTGENERATOR
 )
 
