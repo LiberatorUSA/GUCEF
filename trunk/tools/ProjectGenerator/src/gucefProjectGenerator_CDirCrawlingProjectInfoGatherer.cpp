@@ -2630,7 +2630,7 @@ MergeCodeIncludeLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
             CORE::AppendToPath( fullPathToIncludeLocation, (*n).first );
 
             // Use the merge function just in case this location is already added by other means
-            TStringVector targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
+            TStringVector& targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
             MergeStringVector( targetVector, (*n).second, true );
                               
             ++n;
@@ -2644,7 +2644,7 @@ MergeCodeIncludeLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
             CORE::AppendToPath( fullPathToSourceLocation, (*n).first );
 
             // Use the merge function just in case this location is already added by other means
-            TStringVector targetVector = moduleInfo.includeDirs[ fullPathToSourceLocation ];
+            TStringVector& targetVector = moduleInfo.includeDirs[ fullPathToSourceLocation ];
             MergeStringVector( targetVector, (*n).second, true );
                               
             ++n;

@@ -752,7 +752,7 @@ GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
 
         CORE::CString sectionContent = "add_dependencies( ${MODULE_NAME}";
         
-        bool dependenciesAdded = false;
+        TStringSet dependencies;
         TStringVector::const_iterator i = moduleInfo.dependencies.begin();
         while ( i != moduleInfo.dependencies.end() )
         {
@@ -761,21 +761,29 @@ GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
             const TModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, (*i), AllPlatforms );
             if ( NULL != dependencyModule )
             {
-                if ( MODULETYPE_HEADER_INCLUDE_LOCATION != GetModuleType( *dependencyModule, AllPlatforms ) )
+                TModuleType moduleType = GetModuleType( *dependencyModule, AllPlatforms );
+                if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType ) &&
+                     ( MODULETYPE_CODE_INCLUDE_LOCATION != moduleType )    )
                 {
-                    sectionContent += ' ' + (*i);
-                    dependenciesAdded = true;
+                    dependencies.insert( (*i) );
                 }
             }
             else
             {
-                sectionContent += ' ' + (*i);
-                dependenciesAdded = true;
+                dependencies.insert( (*i) );
             }
             ++i;
         }
-        
-        if ( dependenciesAdded )
+
+        // The reason we first put the dependency strings in a set is to sort them alphabetically.
+        // this way the output remains the same regardless of what order the modules were processed in.
+        TStringSet::iterator n = dependencies.begin();
+        while ( n != dependencies.end() )
+        {
+            sectionContent += ' ' + (*n);
+            ++n;
+        }        
+        if ( !dependencies.empty() )
         {
             sectionContent += " )\n";
             return sectionContent;
