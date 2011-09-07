@@ -1159,7 +1159,8 @@ WriteCMakeListsFilesToDisk( const TProjectInfo& projectInfo  ,
     {
         const TModuleInfoEntry& moduleInfoEntry = (*i);
         TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, AllPlatforms );
-        if ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType )
+        if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType ) &&
+             ( MODULETYPE_CODE_INCLUDE_LOCATION != allPlatformsType )    )
         {
             CORE::CString fileContent = GenerateCMakeListsFileContent( projectInfo, moduleInfoEntry, addCompileDate );
             if ( logFilename.Length() > 0 )

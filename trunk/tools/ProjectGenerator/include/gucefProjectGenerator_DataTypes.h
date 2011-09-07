@@ -77,6 +77,7 @@ enum EModuleType
     MODULETYPE_SHARED_LIBRARY           ,    // <- shared library (.dll on win32, .so on linux/android)
     MODULETYPE_STATIC_LIBRARY           ,    // <- static library (.lib on win32, .a on linux/android)
     MODULETYPE_HEADER_INCLUDE_LOCATION  ,    // <- location where headers can be placed for reference by other modules
+    MODULETYPE_CODE_INCLUDE_LOCATION    ,    // <- location where shared code can be placed for inclusion in other modules
     
     MODULETYPE_UNKNOWN             // <- to be used when initialized BUT we cannot determine the module type
 };
@@ -159,7 +160,9 @@ typedef struct SModuleInfoEntry TModuleInfoEntry;
 
 typedef std::vector< TModuleInfoEntry > TModuleInfoEntryVector;
 typedef std::pair< const TModuleInfoEntry*, const TModuleInfo* > TModuleInfoEntryPair;
+typedef std::pair< TModuleInfoEntry*, TModuleInfo* > TMutableModuleInfoEntryPair;
 typedef std::vector< TModuleInfoEntryPair > TModuleInfoEntryPairVector;
+typedef std::vector< TMutableModuleInfoEntryPair > TMutableModuleInfoEntryPairVector;
 typedef std::vector< TModuleInfoEntry* > TModuleInfoEntryPtrVector;
 typedef std::map< int, TModuleInfoEntry* > TModuleInfoEntryPrioMap;
 

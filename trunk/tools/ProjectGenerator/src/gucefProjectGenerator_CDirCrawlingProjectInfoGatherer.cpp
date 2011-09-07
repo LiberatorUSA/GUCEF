@@ -2567,6 +2567,145 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo )
 
 /*-------------------------------------------------------------------------*/
 
+TMutableModuleInfoEntryPairVector
+FindModulesWhichDependOnModule( TProjectInfo& projectInfo           ,
+                                const CORE::CString& targetPlatform ,
+                                const CORE::CString& dependencyName )
+{GUCEF_TRACE;
+
+    // Loop trough all modules and check if they depend on the given module
+    TMutableModuleInfoEntryPairVector resultList;
+    TModuleInfoEntryVector::iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        TModuleInfoEntry& moduleInfoEntry = (*i);
+        TModuleInfoMap::iterator n = moduleInfoEntry.modulesPerPlatform.find( targetPlatform );
+        if ( n != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            // This module has info for for this module, check its type
+            TModuleInfo& moduleInfo = (*n).second;
+            if ( IsStringInList( moduleInfo.dependencies, false, dependencyName ) )
+            {
+                TMutableModuleInfoEntryPair infoPair( &moduleInfoEntry, &moduleInfo );
+                resultList.push_back( infoPair );
+            }
+        }
+        
+        ++i;
+    }
+
+    return resultList;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+MergeCodeIncludeLocationsIntoModuleForPlatform( TProjectInfo& projectInfo              ,
+                                                const CORE::CString& targetPlatform    ,
+                                                const TModuleInfo& moduleInfoToMergeIn ,
+                                                const CORE::CString& codeIncludeRoot   )
+{GUCEF_TRACE;
+
+    // First find all the modules which depend on this code include location
+    TMutableModuleInfoEntryPairVector targetModules = FindModulesWhichDependOnModule( projectInfo              ,
+                                                                                      targetPlatform           ,
+                                                                                      moduleInfoToMergeIn.name );
+
+    // Now for each of these modules merge in the files
+    TMutableModuleInfoEntryPairVector::iterator i = targetModules.begin();
+    while ( i != targetModules.end() )
+    {
+        TModuleInfoEntry& moduleInfoEntry = *(*i).first;
+        TModuleInfo& moduleInfo = *(*i).second;
+        
+        // Determine the relative path to this other module
+        CORE::CString pathToCodeLocation = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir ,
+                                                                                 codeIncludeRoot         );
+        
+        TStringVectorMap::const_iterator n = moduleInfoToMergeIn.includeDirs.begin();
+        while ( n != moduleInfoToMergeIn.includeDirs.end() )
+        {
+            // Create the full path to the files
+            CORE::CString fullPathToIncludeLocation = pathToCodeLocation;
+            CORE::AppendToPath( fullPathToIncludeLocation, (*n).first );
+
+            // Use the merge function just in case this location is already added by other means
+            TStringVector targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
+            MergeStringVector( targetVector, (*n).second, true );
+                              
+            ++n;
+        }
+
+        n = moduleInfoToMergeIn.sourceDirs.begin();
+        while ( n != moduleInfoToMergeIn.sourceDirs.end() )
+        {
+            // Create the full path to the files
+            CORE::CString fullPathToSourceLocation = pathToCodeLocation;
+            CORE::AppendToPath( fullPathToSourceLocation, (*n).first );
+
+            // Use the merge function just in case this location is already added by other means
+            TStringVector targetVector = moduleInfo.includeDirs[ fullPathToSourceLocation ];
+            MergeStringVector( targetVector, (*n).second, true );
+                              
+            ++n;
+        }
+
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+MergeCodeIncludeLocationsIntoModuleForPlatform( TProjectInfo& projectInfo           ,
+                                                const CORE::CString& targetPlatform )
+{GUCEF_TRACE;
+
+    // Loop trough all modules and process each code include as we go
+    TModuleInfoEntryVector::iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        TModuleInfoEntry& moduleInfoEntry = (*i);
+        TModuleInfoMap::iterator n = moduleInfoEntry.modulesPerPlatform.find( targetPlatform );
+        if ( n != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            // This module has info for for this module, check its type
+            TModuleInfo& moduleInfo = (*n).second;
+            if ( MODULETYPE_CODE_INCLUDE_LOCATION == moduleInfo.moduleType )
+            {
+                // We found a code include location, now process it for all modules which proclaim to have a dependency on it
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing code include location labeled as \"" + moduleInfo.name + "\" for platform " + targetPlatform );
+                MergeCodeIncludeLocationsIntoModuleForPlatform( projectInfo             ,
+                                                                targetPlatform          ,
+                                                                moduleInfo              ,
+                                                                moduleInfoEntry.rootDir );
+            }
+        }
+        
+        ++i;
+    }
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+MergeCodeIncludeLocationsIntoModule( TProjectInfo& projectInfo )
+{GUCEF_TRACE;
+
+    MergeCodeIncludeLocationsIntoModuleForPlatform( projectInfo, AllPlatforms );
+    
+    const TStringSet& supportedPlatforms = GetSupportedPlatforms();
+    TStringSet::const_iterator i = supportedPlatforms.begin();
+    while ( i != supportedPlatforms.end() )
+    {
+        MergeCodeIncludeLocationsIntoModuleForPlatform( projectInfo, (*i).Lowercase() );        
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDirCrawlingProjectInfoGatherer::CDirCrawlingProjectInfoGatherer( void )
 {GUCEF_TRACE;
 
@@ -2603,6 +2742,9 @@ CDirCrawlingProjectInfoGatherer::GatherInfo( const TStringVector& rootDirs ,
         LocateAndProcessProjectDirsRecusively( projectInfo, (*i) );
         ++i;
     }
+
+    // Merge code include locations into modules
+    MergeCodeIncludeLocationsIntoModule( projectInfo );
 
     // Based on all the information we have gathered we can now determine the correct build order
     // for all platforms
