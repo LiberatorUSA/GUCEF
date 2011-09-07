@@ -164,6 +164,7 @@ typedef std::pair< TModuleInfoEntry*, TModuleInfo* > TMutableModuleInfoEntryPair
 typedef std::vector< TModuleInfoEntryPair > TModuleInfoEntryPairVector;
 typedef std::vector< TMutableModuleInfoEntryPair > TMutableModuleInfoEntryPairVector;
 typedef std::vector< TModuleInfoEntry* > TModuleInfoEntryPtrVector;
+typedef std::set< TModuleInfoEntry* > TModuleInfoEntryPtrSet;
 typedef std::map< int, TModuleInfoEntry* > TModuleInfoEntryPrioMap;
 
 /*---------------------------------------------------------------------------*/
