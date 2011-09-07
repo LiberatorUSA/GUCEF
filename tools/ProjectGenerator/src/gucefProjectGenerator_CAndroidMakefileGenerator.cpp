@@ -249,6 +249,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
                 linkedStaticLibraries.insert( linkedLibName );
                 break;
             }
+            case MODULETYPE_CODE_INCLUDE_LOCATION:
             case MODULETYPE_HEADER_INCLUDE_LOCATION:
             {
                 // Skip this, no linking required
@@ -284,6 +285,12 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
                             // It is possible to link to exported symbols from an executable
                             // under linux and as such we will leverage this here
                             linkedSharedLibraries.insert( linkedLibName );
+                            break;
+                        }
+                        case MODULETYPE_CODE_INCLUDE_LOCATION:
+                        {
+                            // Dont do anything.
+                            // The files for this 'module' have already been merged into the dependent module
                             break;
                         }
                         case MODULETYPE_HEADER_INCLUDE_LOCATION:
@@ -626,7 +633,8 @@ GenerateContentForAndroidProjectMakefile( const CORE::CString& projectName      
     const TModuleInfo* currentModule = FindFirstModuleAccordingToBuildOrder( mergeLinks );
     while ( NULL != currentModule )
     {
-        if ( MODULETYPE_HEADER_INCLUDE_LOCATION != currentModule->moduleType )
+        if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != currentModule->moduleType ) &&
+             ( MODULETYPE_CODE_INCLUDE_LOCATION != currentModule->moduleType )    )
         {
             // Get relative path from the outputDir to the other module
             const TModuleInfoEntry* fullModuleInfo = FindModuleInfoEntryForMergedInfo( mergeLinks, *currentModule );
