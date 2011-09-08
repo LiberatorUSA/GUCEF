@@ -537,6 +537,8 @@ History:
      - Added support for module type "CodeIncludeLocation". This had to be implemented to support 
        thirdparty code which was using the same code in multiple modules by simply including the code from multiple
        locations. I would not recommend organizing your code this way, but if you need it its now supported.
+     - Fixed a bug in the Android makefile generator which could cause some files to be left out of a module by mistake
+       when merging a All platforms definition with an Android one.
 - 5'th April 2011:
      - First version of the ProjectGenerator which supports everything the CMakeListGenerator used to support
        plus a lot more. This version support the legacy system and the old system and is meant to bridge between
