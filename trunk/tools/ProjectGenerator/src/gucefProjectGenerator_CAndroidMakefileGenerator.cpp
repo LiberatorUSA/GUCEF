@@ -469,7 +469,8 @@ CreateAndroidMakefileOnDiskForModule( const TModuleInfoEntryPairVector& mergeLin
                                       bool addGeneratorCompileTimeToOutput         )
 {GUCEF_TRACE;
     
-    if ( MODULETYPE_HEADER_INCLUDE_LOCATION == moduleInfo.moduleType )
+    if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION == moduleInfo.moduleType ) ||
+         ( MODULETYPE_CODE_INCLUDE_LOCATION == moduleInfo.moduleType )    )
     {
         // this module type does not require processing here
         return true;
