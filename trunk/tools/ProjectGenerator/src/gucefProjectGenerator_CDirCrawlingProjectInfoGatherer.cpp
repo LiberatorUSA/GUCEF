@@ -2854,6 +2854,57 @@ MergeCodeIncludeLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
 /*-------------------------------------------------------------------------*/
 
 void
+RemoveDependencyToModule( TProjectInfo& projectInfo       ,
+                          const CORE::CString& moduleName )
+{GUCEF_TRACE;
+
+    // Loop trough all modules and process each as we go
+    TModuleInfoEntryVector::iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        TModuleInfoEntry& moduleInfoEntry = (*i);
+        TModuleInfoMap::iterator n = moduleInfoEntry.modulesPerPlatform.begin();
+        while ( n != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            RemoveString( (*n).second.dependencies, moduleName );
+            ++n;
+        }        
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+RemoveDependenciesOnCodeIncludeLocations( TProjectInfo& projectInfo )
+{GUCEF_TRACE;
+
+    // Loop trough all modules and process each code include as we go
+    TModuleInfoEntryVector::iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        TModuleInfoEntry& moduleInfoEntry = (*i);
+        TModuleInfoMap::iterator n = moduleInfoEntry.modulesPerPlatform.begin();
+        while ( n != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            TModuleInfo& moduleInfo = (*n).second;
+            if ( MODULETYPE_CODE_INCLUDE_LOCATION == moduleInfo.moduleType )
+            {
+                // We found a code include location, now process it for all modules which proclaim to have a dependency on it
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Removing dependency labeled as \"" + moduleInfo.name + "\" for platform " + (*n).first + " because it is a code include location and it has been processed" );
+                RemoveDependencyToModule( projectInfo     ,
+                                          moduleInfo.name );
+            }
+            ++n;
+        }
+        
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 MergeCodeIncludeLocationsIntoModule( TProjectInfo& projectInfo )
 {GUCEF_TRACE;
 
@@ -2866,6 +2917,8 @@ MergeCodeIncludeLocationsIntoModule( TProjectInfo& projectInfo )
         MergeCodeIncludeLocationsIntoModuleForPlatform( projectInfo, (*i).Lowercase() );        
         ++i;
     }
+
+    RemoveDependenciesOnCodeIncludeLocations( projectInfo );
 }
 
 /*-------------------------------------------------------------------------*/
