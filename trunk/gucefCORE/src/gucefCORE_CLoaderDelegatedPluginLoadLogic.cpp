@@ -23,6 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <string.h>
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -72,7 +74,7 @@ struct SGucefLoaderCInterface
 };
 typedef struct SGucefLoaderCInterface TGucefLoaderCInterface;
 
-                      
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -87,18 +89,18 @@ CLoaderDelegatedPluginLoadLogic::LoadPlugin( const CString& rootDir        ,
 {GUCEF_TRACE;
 
     Initialize();
-    
+
     TGucefLoaderCInterface* cInterface = (TGucefLoaderCInterface*) m_cInterface;
     if ( NULL == cInterface ) return NULL;
-    
+
     TVersion moduleVersion;
     memset( &moduleVersion, -1, sizeof(moduleVersion) );
     if ( 0 != pluginVersion )
     {
-        moduleVersion = *pluginVersion; 
+        moduleVersion = *pluginVersion;
     }
-    
-    return cInterface->loadModule( moduleName.C_String() , 
+
+    return cInterface->loadModule( moduleName.C_String() ,
                                    rootDir.C_String()    ,
                                    groupName.C_String()  ,
                                    moduleVersion.major   ,
@@ -112,9 +114,9 @@ CLoaderDelegatedPluginLoadLogic::LoadPlugin( const CString& rootDir        ,
 void
 CLoaderDelegatedPluginLoadLogic::UnloadPlugin( void* modulePtr )
 {GUCEF_TRACE;
-    
+
     Initialize();
-    
+
     TGucefLoaderCInterface* cInterface = (TGucefLoaderCInterface*) m_cInterface;
     if ( NULL == cInterface ) return;
 
@@ -154,7 +156,7 @@ CLoaderDelegatedPluginLoadLogic::Initialize( void )
 CLoaderDelegatedPluginLoadLogic::CLoaderDelegatedPluginLoadLogic( void )
     : m_cInterface( NULL )
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
