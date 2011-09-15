@@ -55,6 +55,6 @@ echo " "
 cd $GUCEFANDROIDGLUEBUILD_SCRIPTSTARTDIR
 $ANDROIDNDK/ndk-build
 
-#echo "Press enter to continue..."
-#line=""
-#read line
+echo "Press enter to continue..."
+line=""
+read line
