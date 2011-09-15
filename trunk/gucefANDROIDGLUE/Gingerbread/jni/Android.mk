@@ -18,7 +18,7 @@ include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
 LOCAL_MODULE := native-activity
-LOCAL_MODULE_FILENAME := libnative-activity
+LOCAL_MODULE_FILENAME := native-activity
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
@@ -46,7 +46,6 @@ LOCAL_LDLIBS := \
   -lGLESv1_CM \
   -landroid
 
-$(call import-module,android/native_app_glue)
-
 include $(BUILD_SHARED_LIBRARY)
 
+$(call import-module, android/native_app_glue )

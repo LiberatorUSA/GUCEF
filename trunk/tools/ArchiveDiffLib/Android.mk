@@ -18,7 +18,7 @@ include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
 LOCAL_MODULE := ArchiveDiffLib
-LOCAL_MODULE_FILENAME := libArchiveDiffLib
+LOCAL_MODULE_FILENAME := ArchiveDiffLib
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \

@@ -18,7 +18,7 @@ include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
 LOCAL_MODULE := libparsifal
-LOCAL_MODULE_FILENAME := liblibparsifal
+LOCAL_MODULE_FILENAME := libparsifal
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \

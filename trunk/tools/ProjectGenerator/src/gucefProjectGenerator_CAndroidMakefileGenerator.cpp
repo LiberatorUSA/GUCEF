@@ -91,7 +91,8 @@ CORE::CString
 GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks ,
                                    const TModuleInfo& moduleInfo                ,
                                    const CORE::CString& moduleRoot              ,
-                                   bool addGeneratorCompileTimeToOutput         )
+                                   bool addGeneratorCompileTimeToOutput         ,
+                                   TStringSet& ndkModulesUsed                   )
 {GUCEF_TRACE;
 
     CORE::CString contentPrefix = makefileHeader;
@@ -113,9 +114,10 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
       "@echo Module path: $(MY_MODULE_PATH)\n"
       "LOCAL_MODULE := " + moduleInfo.name + "\n";
 
-    if ( MODULETYPE_SHARED_LIBRARY == moduleInfo.moduleType )
+    if ( ( MODULETYPE_SHARED_LIBRARY == moduleInfo.moduleType ) ||
+         ( MODULETYPE_STATIC_LIBRARY == moduleInfo.moduleType )  )
     {
-        contentPrefix += "LOCAL_MODULE_FILENAME := lib" + moduleInfo.name + "\n";
+        contentPrefix += "LOCAL_MODULE_FILENAME := " + moduleInfo.name + "\n";
     }
     contentPrefix += "@echo Module name: $(LOCAL_MODULE)\n\n";
 
@@ -442,6 +444,23 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
         }
     }
 
+    // Check for NDK static libraries to import
+    if ( !linkedStaticLibraries.empty() )
+    {
+        TStringSet::iterator a = linkedStaticLibraries.find( "android_native_app_glue" );
+        if ( a != linkedStaticLibraries.end() )
+        {
+            ndkModulesUsed.insert( "android_native_app_glue" );
+            contentSuffix += "$(call import-module, android/native_app_glue )\n";
+        }
+        a = linkedStaticLibraries.find( "cpufeatures" );
+        if ( a != linkedStaticLibraries.end() )
+        {
+            ndkModulesUsed.insert( "cpufeatures" );
+            contentSuffix += "$(call import-module, android/cpufeatures )\n";
+        }
+    }
+
     return contentPrefix + srcFilesSection + includeFilesSection + preprocessorSection + linkingSection + manualContent + contentSuffix;
 }
 
@@ -471,7 +490,8 @@ bool
 CreateAndroidMakefileOnDiskForModule( const TModuleInfoEntryPairVector& mergeLinks ,
                                       const TModuleInfo& moduleInfo                ,
                                       const CORE::CString& moduleRoot              ,
-                                      bool addGeneratorCompileTimeToOutput         )
+                                      bool addGeneratorCompileTimeToOutput         ,
+                                      TStringSet& ndkModulesUsed                   )
 {GUCEF_TRACE;
 
     if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION == moduleInfo.moduleType ) ||
@@ -487,7 +507,8 @@ CreateAndroidMakefileOnDiskForModule( const TModuleInfoEntryPairVector& mergeLin
     CORE::CString makefileContent = GenerateContentForAndroidMakefile( mergeLinks                      ,
                                                                        moduleInfo                      ,
                                                                        moduleRoot                      ,
-                                                                       addGeneratorCompileTimeToOutput );
+                                                                       addGeneratorCompileTimeToOutput ,
+                                                                       ndkModulesUsed                  );
 
     // Now we write the makefile to the root location of the module since everything is relative to that
     CORE::CString makefilePath = moduleRoot;
@@ -522,7 +543,8 @@ CreateAndroidMakefileOnDiskForModule( const TModuleInfoEntryPairVector& mergeLin
 
 bool
 CreateAndroidMakefileOnDiskForEachModule( const TModuleInfoEntryPairVector& mergeLinks ,
-                                          bool addGeneratorCompileTimeToOutput         )
+                                          bool addGeneratorCompileTimeToOutput         ,
+                                          TStringSet& ndkModulesUsed                   )
 {GUCEF_TRACE;
 
     TModuleInfoEntryPairVector::const_iterator i = mergeLinks.begin();
@@ -534,7 +556,8 @@ CreateAndroidMakefileOnDiskForEachModule( const TModuleInfoEntryPairVector& merg
         if ( !CreateAndroidMakefileOnDiskForModule( mergeLinks                      ,
                                                     moduleInfo                      ,
                                                     moduleInfoEntry.rootDir         ,
-                                                    addGeneratorCompileTimeToOutput ) )
+                                                    addGeneratorCompileTimeToOutput ,
+                                                    ndkModulesUsed                  ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to create an Android makefile for all modules because of the following module " + moduleInfo.name );
             return false;
@@ -605,7 +628,8 @@ CORE::CString
 GenerateContentForAndroidProjectMakefile( const CORE::CString& projectName             ,
                                           const TModuleInfoEntryPairVector& mergeLinks ,
                                           const CORE::CString& outputDir               ,
-                                          bool addGeneratorCompileTimeToOutput         )
+                                          bool addGeneratorCompileTimeToOutput         ,
+                                          const TStringSet& ndkModulesUsed             )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating Android makefile content for overall project file regarding project \"" + projectName + "\"" );
@@ -634,8 +658,25 @@ GenerateContentForAndroidProjectMakefile( const CORE::CString& projectName      
       "endif\n\n"
       "include $(CLEAR_VARS)\n\n";
 
-    // Include each module's makefile in the order listed as their build order
+    // Include makefiles for NDK modules used
     CORE::CString moduleListSection;
+    if ( !ndkModulesUsed.empty() )
+    {
+        TStringSet::iterator i = ndkModulesUsed.find( "android_native_app_glue" );
+        if ( i != ndkModulesUsed.end() ) 
+        {
+            moduleListSection += "MY_MODULE_PATH := $(ANDROIDNDK)/sources/android/native_app_glue\n";
+            moduleListSection += "include $(MY_MODULE_PATH)/Android.mk\n\n";
+        }
+        i = ndkModulesUsed.find( "cpufeatures" );
+        if ( i != ndkModulesUsed.end() ) 
+        {
+            moduleListSection += "MY_MODULE_PATH := $(ANDROIDNDK)/sources/android/cpufeatures\n";
+            moduleListSection += "include $(MY_MODULE_PATH)/Android.mk\n\n";
+        }
+    }
+
+    // Include each module's makefile in the order listed as their build order
     const TModuleInfo* currentModule = FindFirstModuleAccordingToBuildOrder( mergeLinks );
     while ( NULL != currentModule )
     {
@@ -665,7 +706,8 @@ bool
 CreateAndroidProjectMakefileOnDisk( const CORE::CString& projectName             ,
                                     const TModuleInfoEntryPairVector& mergeLinks ,
                                     const CORE::CString& outputDir               ,
-                                    bool addGeneratorCompileTimeToOutput         )
+                                    bool addGeneratorCompileTimeToOutput         ,
+                                    const TStringSet& ndkModulesUsed             )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating Android makefile content for overall project file regarding project \"" + projectName + "\"" );
@@ -674,7 +716,8 @@ CreateAndroidProjectMakefileOnDisk( const CORE::CString& projectName            
     CORE::CString makefileContent = GenerateContentForAndroidProjectMakefile( projectName                     ,
                                                                               mergeLinks                      ,
                                                                               outputDir                       ,
-                                                                              addGeneratorCompileTimeToOutput );
+                                                                              addGeneratorCompileTimeToOutput ,
+                                                                              ndkModulesUsed                  );
 
     // Now we write the makefile to the root location of the project since everything is relative to that
     CORE::CString makefilePath = outputDir;
@@ -735,15 +778,18 @@ CAndroidMakefileGenerator::GenerateProject( TProjectInfo& projectInfo           
     MergeAllModuleInfoForPlatform( projectInfo.modules, "android", mergedInfo, mergeLinks );
 
     // First we create a makefile per module on disk
+    TStringSet ndkModulesUsed;
     if ( CreateAndroidMakefileOnDiskForEachModule( mergeLinks                      ,
-                                                   addGeneratorCompileTimeToOutput ) )
+                                                   addGeneratorCompileTimeToOutput ,
+                                                   ndkModulesUsed                  ) )
     {
         // Now we can create the overall project file which refers to each of the make files
         // we just created per module.
         return CreateAndroidProjectMakefileOnDisk( projectInfo.projectName         ,
                                                    mergeLinks                      ,
                                                    outputDir                       ,
-                                                   addGeneratorCompileTimeToOutput );
+                                                   addGeneratorCompileTimeToOutput ,
+                                                   ndkModulesUsed                  );
     }
     return false;
 }

@@ -18,7 +18,7 @@ include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
 LOCAL_MODULE := miniupnpc
-LOCAL_MODULE_FILENAME := libminiupnpc
+LOCAL_MODULE_FILENAME := miniupnpc
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \

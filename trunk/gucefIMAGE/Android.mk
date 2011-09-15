@@ -18,7 +18,7 @@ include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
 LOCAL_MODULE := gucefIMAGE
-LOCAL_MODULE_FILENAME := libgucefIMAGE
+LOCAL_MODULE_FILENAME := gucefIMAGE
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
