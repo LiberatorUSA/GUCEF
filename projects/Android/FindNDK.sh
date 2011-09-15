@@ -248,4 +248,7 @@ SetGucefHome
 # Locate the NDK
 FindAndroidNdk
 
+# Export the variable for child processes
+export ANDROIDNDK 
+
 
