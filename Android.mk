@@ -15,14 +15,14 @@
 # PROJECT: "GUCEF"
 #
 
-ifndef $(PROJECT_ROOT_PATH)
+ifndef PROJECT_ROOT_PATH
   PROJECT_ROOT_PATH := $(call my-dir)
 endif
 
 include $(CLEAR_VARS)
 
-MY_MODULE_PATH := $(ANDROIDNDK)/sources/android/native_app_glue
-include $(MY_MODULE_PATH)/Android.mk
+#MY_MODULE_PATH := $(ANDROIDNDK)/sources/android/native_app_glue
+#include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/dependencies/miniupnpc
 include $(MY_MODULE_PATH)/Android.mk

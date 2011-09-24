@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------
 
 
-ifndef $(MY_MODULE_PATH)
+ifndef MY_MODULE_PATH
   MY_MODULE_PATH := $(call my-dir)
 endif
 LOCAL_PATH := $(MY_MODULE_PATH)

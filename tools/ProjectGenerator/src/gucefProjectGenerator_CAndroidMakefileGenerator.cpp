@@ -106,7 +106,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
     }
 
     contentPrefix +=
-      "ifndef $(MY_MODULE_PATH)\n"
+      "ifndef MY_MODULE_PATH\n"
       "  MY_MODULE_PATH := $(call my-dir)\n"
       "endif\n"
       "LOCAL_PATH := $(MY_MODULE_PATH)\n\n"
@@ -451,13 +451,13 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
         if ( a != linkedStaticLibraries.end() )
         {
             ndkModulesUsed.insert( "android_native_app_glue" );
-            contentSuffix += "$(call import-module, android/native_app_glue )\n";
+            contentSuffix += "$(call import-module,android/native_app_glue)\n";
         }
         a = linkedStaticLibraries.find( "cpufeatures" );
         if ( a != linkedStaticLibraries.end() )
         {
             ndkModulesUsed.insert( "cpufeatures" );
-            contentSuffix += "$(call import-module, android/cpufeatures )\n";
+            contentSuffix += "$(call import-module,android/cpufeatures)\n";
         }
     }
 
@@ -653,7 +653,7 @@ GenerateContentForAndroidProjectMakefile( const CORE::CString& projectName      
     }
 
     contentPrefix +=
-      "ifndef $(PROJECT_ROOT_PATH)\n"
+      "ifndef PROJECT_ROOT_PATH\n"
       "  PROJECT_ROOT_PATH := $(call my-dir)\n"
       "endif\n\n"
       "include $(CLEAR_VARS)\n\n";
