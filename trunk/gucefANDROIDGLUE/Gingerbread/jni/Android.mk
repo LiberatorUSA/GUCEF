@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------
 
 
-ifndef $(MY_MODULE_PATH)
+ifndef MY_MODULE_PATH
   MY_MODULE_PATH := $(call my-dir)
 endif
 LOCAL_PATH := $(MY_MODULE_PATH)
@@ -48,4 +48,4 @@ LOCAL_LDLIBS := \
 
 include $(BUILD_SHARED_LIBRARY)
 
-$(call import-module, android/native_app_glue )
+$(call import-module,android/native_app_glue)
