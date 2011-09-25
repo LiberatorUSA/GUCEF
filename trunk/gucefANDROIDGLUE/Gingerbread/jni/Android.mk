@@ -42,8 +42,6 @@ LOCAL_STATIC_LIBRARIES := \
 
 
 LOCAL_LDLIBS := \
-  -lEGL \
-  -lGLESv1_CM \
   -landroid
 
 include $(BUILD_SHARED_LIBRARY)
