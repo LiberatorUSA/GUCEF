@@ -6,8 +6,6 @@
         </Dependencies>
         <Linker>
             <Dependency Name="android" />
-            <Dependency Name="EGL" />
-            <Dependency Name="GLESv1_CM" />
             <Dependency Name="gucefLOADER" />
             <Dependency Name="android_native_app_glue" Type="StaticLibrary" />
         </Linker>
