@@ -1,18 +1,20 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ *  gucefANDROIDGLUE: GUCEF module providing glue code for Android
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 //BEGIN_INCLUDE(all)
@@ -21,51 +23,102 @@
 #include <unistd.h>             /* POSIX utilities */
 #include <limits.h>             /* Linux OS limits */
 #include <string.h>
+#include <dlfcn.h>              /* dynamic linking utilities */
 
 #include <android/log.h>
+#include <android/native_activity.h>
 #include <android_native_app_glue.h>
 
 #include "gucefLOADER.h"
 
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "native-activity", __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "native-activity", __VA_ARGS__))
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGF(...) ((void)__android_log_print(ANDROID_LOG_FATAL, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "GalaxyUnlimitedPlatform", __VA_ARGS__))
 
+typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_LoadAndRunGucefPlatformApp ) ( const char* appName, const char* rootDir, int platformArgc, char** platformArgv, int appArgc, char** appArgv );
 
-#define NULLPTR ((void*)0)
+#define NULLPTR ((void*)(0))
 
 /*-------------------------------------------------------------------------*/
-    
-int
-GetModulePath( char* buffer, int bufferSize )
+
+char*
+GetLibPath( const char* packageDir ,
+            const char* moduleName )
 {
-    pid_t pid = getpid();
+    int pathLength = strlen( packageDir );
+    int moduleNameLength = strlen( moduleName );
+    char* modulePath = malloc( pathLength+moduleNameLength+6 );
+    memcpy( modulePath, packageDir, pathLength );
+    memcpy( modulePath+pathLength, "/lib/", 5 );
+    memcpy( modulePath+pathLength+5, moduleName, moduleNameLength+1 );
+    return modulePath;
+}
 
-    char linkStr[ 24 ];
-    sprintf( linkStr, "%s%d%s", "/proc/", pid, "/exe\0" );
+/*-------------------------------------------------------------------------*/
 
-    int ch = readlink( linkStr, buffer, bufferSize );
-    if ( -1 != ch )
+int
+InvokeLoadAndRunGucefPlatformApp( const char* appName ,
+                                  const char* rootDir ,
+                                  int platformArgc    ,
+                                  char** platformArgv ,
+                                  int appArgc         ,
+                                  char** appArgv      )
+{
+    char* modulePath = GetLibPath( rootDir, "libgucefLOADER.so" );
+    void* modulePtr = (void*) dlopen( modulePath, RTLD_NOW );
+    if ( NULL == modulePtr )
     {
-        buffer[ ch ] = 0;
+        free( modulePath );
+        LOGF( "Unable to link gucefLOADER module" );
         return 0;
     }
-    return 1;
+    LOGI( "Loading loader module from:" );
+    LOGI( modulePath );
+    free( modulePath );
+
+    TGUCEFCORECINTERFACE_LoadAndRunGucefPlatformApp loadAndRunGucefPlatformApp =
+        (TGUCEFCORECINTERFACE_LoadAndRunGucefPlatformApp) dlsym( modulePtr, "LoadAndRunGucefPlatformApp" );
+
+    if ( NULL == loadAndRunGucefPlatformApp )
+    {
+        LOGF( "Unable to link gucefLOADER function: LoadAndRunGucefPlatformApp" );
+        dlclose( modulePtr );
+        return 0;
+    }
+
+    int returnValue = loadAndRunGucefPlatformApp( appName      ,
+                                                  rootDir      ,
+                                                  platformArgc ,
+                                                  platformArgv ,
+                                                  appArgc      ,
+                                                  appArgv      );
+
+    dlclose( modulePtr );
+    return returnValue;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-StripFilename( char* buffer, int bufferSize )
+GetPackageDir( struct android_app* state ,
+               char* pathBuffer          ,
+               int bufferSize            )
 {
-}
+    ANativeActivity* activity = state->activity;
+    int pathLength = strlen( activity->internalDataPath );
+    memcpy( pathBuffer, activity->internalDataPath, pathLength+1 );
 
-/*-------------------------------------------------------------------------*/
-
-void
-GetModuleDir( char* buffer, int bufferSize )
-{
-    GetModulePath( buffer, bufferSize );
-    StripFilename( buffer, bufferSize );
+    int i=pathLength;
+    while ( i > 0 )
+    {
+        if ( pathBuffer[ i ] == '/' )
+        {
+            pathBuffer[ i ] = '\0';
+            break;
+        }
+        --i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -75,16 +128,16 @@ GetModuleDir( char* buffer, int bufferSize )
  * android_native_app_glue.  It runs in its own thread, with its own
  * event loop for receiving input events and doing other things.
  */
-void 
-android_main( struct android_app* state ) 
+void
+android_main( struct android_app* state )
 {
     // Make sure glue isn't stripped.
     app_dummy();
-    
-    char appDirBuffer[ PATH_MAX ];    
-    GetModuleDir( appDirBuffer, PATH_MAX );
-    
-    int appStatus = LoadAndRunGucefPlatformApp( "gucefPRODMAN", appDirBuffer, 0, NULLPTR, 0, NULLPTR ); 
+
+    char appDir[ 512 ];
+    GetPackageDir( state, appDir, 512 );
+
+    int appStatus = InvokeLoadAndRunGucefPlatformApp( "gucefPRODMAN", appDir, 0, NULLPTR, 0, NULLPTR );
 }
 
 /*-------------------------------------------------------------------------*/
