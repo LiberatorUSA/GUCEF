@@ -18,7 +18,7 @@ include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
 LOCAL_MODULE := native-activity
-LOCAL_MODULE_FILENAME := native-activity
+LOCAL_MODULE_FILENAME := libnative-activity
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \

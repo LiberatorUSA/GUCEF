@@ -18,7 +18,7 @@ include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
 LOCAL_MODULE := vfspluginZIP
-LOCAL_MODULE_FILENAME := vfspluginZIP
+LOCAL_MODULE_FILENAME := libvfspluginZIP
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \

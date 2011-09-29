@@ -18,7 +18,7 @@ include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
 LOCAL_MODULE := zziplib
-LOCAL_MODULE_FILENAME := zziplib
+LOCAL_MODULE_FILENAME := libzziplib
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
