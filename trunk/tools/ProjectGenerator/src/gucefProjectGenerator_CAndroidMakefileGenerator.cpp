@@ -117,7 +117,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
     if ( ( MODULETYPE_SHARED_LIBRARY == moduleInfo.moduleType ) ||
          ( MODULETYPE_STATIC_LIBRARY == moduleInfo.moduleType )  )
     {
-        contentPrefix += "LOCAL_MODULE_FILENAME := " + moduleInfo.name + "\n";
+        contentPrefix += "LOCAL_MODULE_FILENAME := lib" + moduleInfo.name + "\n";
     }
     contentPrefix += "@echo Module name: $(LOCAL_MODULE)\n\n";
 
@@ -660,6 +660,8 @@ GenerateContentForAndroidProjectMakefile( const CORE::CString& projectName      
 
     // Include makefiles for NDK modules used
     CORE::CString moduleListSection;
+
+/* ->  Not needed
     if ( !ndkModulesUsed.empty() )
     {
         TStringSet::iterator i = ndkModulesUsed.find( "android_native_app_glue" );
@@ -675,7 +677,7 @@ GenerateContentForAndroidProjectMakefile( const CORE::CString& projectName      
             moduleListSection += "include $(MY_MODULE_PATH)/Android.mk\n\n";
         }
     }
-
+*/
     // Include each module's makefile in the order listed as their build order
     const TModuleInfo* currentModule = FindFirstModuleAccordingToBuildOrder( mergeLinks );
     while ( NULL != currentModule )
