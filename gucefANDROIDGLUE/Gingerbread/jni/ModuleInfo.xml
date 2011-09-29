@@ -1,12 +1,11 @@
 <ModuleInfoEntry>
-    <Module Name="native-activity" Type="SharedLibrary" Platform="Android">
+    <Module Name="main" Type="SharedLibrary" Platform="Android">
         <Dependencies>
             <Dependency Name="gucefHeaders" />
             <Dependency Name="gucefLOADER" />
         </Dependencies>
         <Linker>
             <Dependency Name="android" />
-            <Dependency Name="gucefLOADER" />
             <Dependency Name="android_native_app_glue" Type="StaticLibrary" />
         </Linker>
     </Module>

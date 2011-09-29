@@ -17,8 +17,8 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := native-activity
-LOCAL_MODULE_FILENAME := libnative-activity
+LOCAL_MODULE := main
+LOCAL_MODULE_FILENAME := libmain
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
@@ -31,10 +31,6 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
   $(MY_MODULE_PATH)/../../../gucefLOADER/include \
   $(MY_MODULE_PATH)/../../../gucefMT/include
-
-
-LOCAL_SHARED_LIBRARIES := \
-  gucefLOADER
 
 
 LOCAL_STATIC_LIBRARIES := \
