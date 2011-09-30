@@ -960,7 +960,7 @@ LoadMultipleModuleGroups( const char* rootDir              ,
 
         if ( !LoadModules( rootDir, moduleGroup ) )
         {
-            // Failure duing the load of one of the prereq module groups
+            // Failure during the load of one of the prereq module groups
             return false;
         }
         ++i;
@@ -995,7 +995,7 @@ LoadApplicationModule( TLoaderAppData& loaderAppData    ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+GUCEF_LOADER_PRIVATE_CPP void
 InitLoaderAppData( TLoaderAppData& data )
 {
     data.appModule.handle = NULL;
@@ -1012,21 +1012,95 @@ InitLoaderAppData( TLoaderAppData& data )
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_LOADER_PRIVATE_CPP bool
+ProcessFirstTimeInitialization( const CString& resRootDir ,
+                                const CString& libRootDir )
+{
+    CORE::CString firstRunFilePath = resRootDir + "firstrun.txt";
+    if ( CORE::FileExists( firstRunFilePath ) )
+    {
+        CORE::CString firstRunFile;
+        if ( CORE::LoadTextFileAsString( firstRunFilePath, firstRunFile, true, "\n" ) )
+        {
+            // Seperate the different lines for easy processing
+            TStringVector lines = firstRunFile.ParseElements( '\n', false );
+            firstRunFile.Clear();
+            
+        TStringVector::iterator i = lines.begin();
+        while ( i != lines.end() )
+        {
+            const CORE::CString& lineText = (*i);
+            CORE::CString instructionTag = lineText.SubstrToChar( ' ', true );
+
+            if ( instructionTag == "APPMODULE" )
+            {
+                appConfig.appModule.version.major = -1;
+                appConfig.appModule.version.minor = -1;
+                appConfig.appModule.version.patch = -1;
+                appConfig.appModule.version.release = -1;
+                appConfig.appModule.handle = NULL;
+                appConfig.appModule.name = lineText.CutChars( 10, true );
+            }
+            else
+            if ( instructionTag == "LOADMODULES" )
+            {
+                ParseModulesToLoad( lineText.CutChars( 12, true ) ,
+                                    appConfig                     );
+            }
+            else
+            if ( instructionTag == "APPCONFIG" )
+            {
+                ParseAppConfigCommand( lineText.CutChars( 10, true ) ,
+                                       appConfig                     );
+            }
+            else
+            if ( instructionTag == "GUCEFMAIN" )
+            {
+                ParseGucefMainCommand( lineText.CutChars( 10, true ) ,
+                                       appConfig                     );
+            }
+            ++i;
+        }
+        return true;
+                     
+        }
+
+        // Failed to load the first run file even though it exists
+        return false;
+    }
+    
+    // Nothing to do, success
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 int
-LoadAndRunGucefPlatformAppEx( const char* appName ,
-                              const char* rootDir ,
-                              int platformArgc    ,
-                              char** platformArgv ,
-                              int appArgc         ,
-                              char** appArgv      ,
-                              long majorVersion   ,
-                              long minorVersion   ,
-                              long patchVersion   ,
-                              long releaseVersion )
+LoadAndRunGucefPlatformAppEx( const char* appName    ,
+                              const char* resRootDir ,
+                              const char* libRootDir ,
+                              int platformArgc       ,
+                              char** platformArgv    ,
+                              int appArgc            ,
+                              char** appArgv         ,
+                              long majorVersion      ,
+                              long minorVersion      ,
+                              long patchVersion      ,
+                              long releaseVersion    )
 {
     // Apps load from: <LoadRoot>/APPS/<AppName>/<MajorVersion>.<MinorVersion>/<PatchVersion>.<ReleaseVersion>
     // For the app we will check the config file and based on that we will load correct platform.
     // Platform loads from: <LoadRoot>/LIBS/<Groupname>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
+
+    // If the library root dir is NULL then we will use the resource root dir as the root for libraries as well
+    if ( NULL == libRootDir )
+    {
+        libRootDir = resRootDir;
+    }
+
+    // Process first time initialization (if needed)
+    ProcessFirstTimeInitialization( resRootDir ,
+                                    libRootDir );
 
     // First get the path to the app dir because we need the loader config for this app
     CORE::TVersion appVersion;
@@ -1035,7 +1109,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
     appVersion.patch = (CORE::Int16) patchVersion;
     appVersion.release = (CORE::Int16) releaseVersion;
     CORE::CString appDir = GetPathToAppDir( appName    ,
-                                            rootDir    ,
+                                            libRootDir ,
                                             appVersion );
     // Sanity check on the path
     if ( appDir.IsNULLOrEmpty() )
@@ -1056,7 +1130,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
 
     // First try to load the platform version required for this application
     // Modules are loaded in the order they are written in the config
-    if ( !LoadMultipleModuleGroups( rootDir, loaderAppData, NULL ) )
+    if ( !LoadMultipleModuleGroups( libRootDir, loaderAppData, NULL ) )
     {
         // Failed to load prereq modules for this app
         return 0;
@@ -1148,15 +1222,17 @@ LoadAndRunGucefPlatformAppEx( const char* appName ,
 /*-------------------------------------------------------------------------*/
 
 int
-LoadAndRunGucefPlatformApp( const char* appName ,
-                            const char* rootDir ,
-                            int platformArgc    ,
-                            char** platformArgv ,
-                            int appArgc         ,
-                            char** appArgv      )
+LoadAndRunGucefPlatformApp( const char* appName    ,
+                            const char* resRootDir ,
+                            const char* libRootDir ,
+                            int platformArgc       ,
+                            char** platformArgv    ,
+                            int appArgc            ,
+                            char** appArgv         )
 {
     return LoadAndRunGucefPlatformAppEx( appName      ,
-                                         rootDir      ,
+                                         rscRootDir   ,
+                                         libRootDir   ,
                                          platformArgc ,
                                          platformArgv ,
                                          appArgc      ,
