@@ -225,6 +225,8 @@ android_main( struct android_app* state )
     // Make the resource dirs if they do not exist yet
     0 != MakeResourceDirs( packageDir ) ? return;
 
+    ExtractResources( state, packageDir );
+
     int appStatus = InvokeLoadAndRunGucefPlatformApp( "gucefPRODMAN", packageDir, 0, NULLPTR, 0, NULLPTR );
 }
 
