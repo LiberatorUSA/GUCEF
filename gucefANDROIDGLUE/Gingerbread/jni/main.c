@@ -57,6 +57,36 @@ GetRawResourcePath( const char* packageDir ,
 
 /*-------------------------------------------------------------------------*/
 
+int
+MakeResourceDirs( const char* packageDir )
+{
+    char* rawDir = GetRawResourcePath( packageDir, "" );
+    int retValue = mkdir( rawDir );
+    free( rawDir );
+
+    if ( retValue == 0 )
+    {
+        LOGI( "created raw resource dir /res/raw/" );
+    }
+    else
+    {
+        if ( EEXIST == errno )
+        {
+            LOGI( "Found existing raw resource dir /res/raw/" );
+        }
+        else
+        {
+            LOGE( "Error creating raw resource dir /res/raw/" );
+            return errno;
+        }
+    }
+
+    // No problem
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 char*
 GetLibPath( const char* packageDir ,
             const char* moduleName )
@@ -147,6 +177,35 @@ GetPackageDir( struct android_app* state ,
     }
 }
 
+
+
+/*-------------------------------------------------------------------------*/
+
+void
+ExtractResources( struct android_app* state ,
+                  const char* packageDir    )
+{
+    AAssetManager* assetManager = state->assetManager;
+    AAssetDir* resRawDir = AAssetManager_openDir( assetManager, "res/raw" );
+    AAsset* extractionIndex = AAssetManager_open( assetManager, "filestoextract.txt" );
+
+    void* fileBuffer = AAsset_getBuffer( extractionIndex );
+    off_t bufferSize = AAsset_getLength( extractionIndex );
+    
+    char* destPath = GetRawResourcePath( packageDir, "filestoextract.txt" );        
+    FILE* destFile = fopen( destPath, "wb" );
+    free( destPath ); 
+
+    if ( 1 != fwrite( fileBuffer, bufferSize, 1 destFile ) )
+    {
+        LOGE( "Error writing extracted file to new destination" );
+    }
+    fclose( destFile );
+           
+    AAsset_close( extractionIndex );
+    AAssetDir_close( resRawDir );
+}
+
 /*-------------------------------------------------------------------------*/
 
 /**
@@ -160,10 +219,13 @@ android_main( struct android_app* state )
     // Make sure glue isn't stripped.
     app_dummy();
 
-    char appDir[ 512 ];
-    GetPackageDir( state, appDir, 512 );
+    char packageDir[ 512 ];
+    GetPackageDir( state, packageDir, 512 );
 
-    int appStatus = InvokeLoadAndRunGucefPlatformApp( "gucefPRODMAN", appDir, 0, NULLPTR, 0, NULLPTR );
+    // Make the resource dirs if they do not exist yet
+    0 != MakeResourceDirs( packageDir ) ? return;
+
+    int appStatus = InvokeLoadAndRunGucefPlatformApp( "gucefPRODMAN", packageDir, 0, NULLPTR, 0, NULLPTR );
 }
 
 /*-------------------------------------------------------------------------*/
