@@ -36,9 +36,24 @@
 #define LOGF(...) ((void)__android_log_print(ANDROID_LOG_FATAL, "GalaxyUnlimitedPlatform", __VA_ARGS__))
 #define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "GalaxyUnlimitedPlatform", __VA_ARGS__))
 
-typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_LoadAndRunGucefPlatformApp ) ( const char* appName, const char* rootDir, int platformArgc, char** platformArgv, int appArgc, char** appArgv );
+typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_LoadAndRunGucefPlatformApp ) ( const char* appName, const char* resRootDir, const char* libRootDir, int platformArgc, char** platformArgv, int appArgc, char** appArgv );
 
 #define NULLPTR ((void*)(0))
+
+/*-------------------------------------------------------------------------*/
+
+char*
+GetRawResourcePath( const char* packageDir ,
+                    const char* fileName   )
+{
+    int pathLength = strlen( packageDir );
+    int fileNameLength = strlen( fileName );
+    char* filePath = malloc( pathLength+fileNameLength+10 );
+    memcpy( filePath, packageDir, pathLength );
+    memcpy( filePath+pathLength, "/res/raw/", 9 );
+    memcpy( filePath+pathLength+9, fileName, fileNameLength+1 );
+    return filePath;
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -76,6 +91,7 @@ InvokeLoadAndRunGucefPlatformApp( const char* appName ,
     LOGI( "Loading loader module from:" );
     LOGI( modulePath );
     free( modulePath );
+    modulePath = NULL;
 
     TGUCEFCORECINTERFACE_LoadAndRunGucefPlatformApp loadAndRunGucefPlatformApp =
         (TGUCEFCORECINTERFACE_LoadAndRunGucefPlatformApp) dlsym( modulePtr, "LoadAndRunGucefPlatformApp" );
@@ -87,14 +103,24 @@ InvokeLoadAndRunGucefPlatformApp( const char* appName ,
         return 0;
     }
 
+    const char* libRootDir = GetLibPath( rootDir, "" );
+    const char* resRootDir = GetRawResourcePath( rootDir, "" );
+
     int returnValue = loadAndRunGucefPlatformApp( appName      ,
-                                                  rootDir      ,
+                                                  resRootDir   ,
+                                                  libRootDir   ,
                                                   platformArgc ,
                                                   platformArgv ,
                                                   appArgc      ,
                                                   appArgv      );
 
+    free( libRootDir );
+    libRootDir = NULL;
+    free( resRootDir );
+    resRootDir = NULL;
     dlclose( modulePtr );
+    modulePtr = NULL;
+
     return returnValue;
 }
 
