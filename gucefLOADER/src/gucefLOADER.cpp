@@ -1013,8 +1013,8 @@ InitLoaderAppData( TLoaderAppData& data )
 /*-------------------------------------------------------------------------*/
 
 GUCEF_LOADER_PRIVATE_CPP bool
-ProcessFirstTimeInitialization( const CString& resRootDir ,
-                                const CString& libRootDir )
+ProcessFirstTimeInitialization( const CORE::CString& resRootDir ,
+                                const CORE::CString& rootDir    )
 {
     CORE::CString firstRunFilePath = resRootDir + "firstrun.txt";
     if ( CORE::FileExists( firstRunFilePath ) )
@@ -1025,50 +1025,60 @@ ProcessFirstTimeInitialization( const CString& resRootDir ,
             // Seperate the different lines for easy processing
             TStringVector lines = firstRunFile.ParseElements( '\n', false );
             firstRunFile.Clear();
-            
-        TStringVector::iterator i = lines.begin();
-        while ( i != lines.end() )
-        {
-            const CORE::CString& lineText = (*i);
-            CORE::CString instructionTag = lineText.SubstrToChar( ' ', true );
 
-            if ( instructionTag == "APPMODULE" )
+            TStringVector::iterator i = lines.begin();
+            while ( i != lines.end() )
             {
-                appConfig.appModule.version.major = -1;
-                appConfig.appModule.version.minor = -1;
-                appConfig.appModule.version.patch = -1;
-                appConfig.appModule.version.release = -1;
-                appConfig.appModule.handle = NULL;
-                appConfig.appModule.name = lineText.CutChars( 10, true );
+                const CORE::CString& lineText = (*i);
+                CORE::CString instructionTag = lineText.SubstrToChar( ' ', true );
+
+                if ( instructionTag == "MOVEFILE" )
+                {
+                    CORE::CString remainder = lineText.CutChars( 9, true );
+                    CORE::CString srcPath = rootDir;
+                    CORE::AppendToPath( srcPath, remainder.SubstrToChar( ' ', true ) );
+                    CORE::CString destPath = rootDir;
+                    CORE::AppendToPath( destPath, remainder.CutChars( srcPath.Length()+1, true ) );
+
+                    if ( 0 == CORE::Move_File( destPath.C_String(), srcPath.C_String() ) )
+                    {
+                        // Failed to execute command
+                        return false;
+                    }
+                }
+                else
+                if ( instructionTag == "COPYFILE" )
+                {
+                    CORE::CString remainder = lineText.CutChars( 9, true );
+                    CORE::CString srcPath = rootDir;
+                    CORE::AppendToPath( srcPath, remainder.SubstrToChar( ' ', true ) );
+                    CORE::CString destPath = rootDir;
+                    CORE::AppendToPath( destPath, remainder.CutChars( srcPath.Length()+1, true ) );
+
+                    if ( 0 == CORE::Copy_File( destPath.C_String(), srcPath.C_String() ) )
+                    {
+                        // Failed to execute command
+                        return false;
+                    }
+                }
+                ++i;
             }
-            else
-            if ( instructionTag == "LOADMODULES" )
+
+            // Now that we have successfully carried out all the actions we can rename the file
+            // This keeps the file for later review but it wont trigger another initialization
+            CORE::CString afterFirstRunFilePath = resRootDir + "firstrun.completed.txt";
+            if ( 0 == CORE::Move_File( afterFirstRunFilePath.C_String(), firstRunFilePath.C_String() ) )
             {
-                ParseModulesToLoad( lineText.CutChars( 12, true ) ,
-                                    appConfig                     );
+                return false;
             }
-            else
-            if ( instructionTag == "APPCONFIG" )
-            {
-                ParseAppConfigCommand( lineText.CutChars( 10, true ) ,
-                                       appConfig                     );
-            }
-            else
-            if ( instructionTag == "GUCEFMAIN" )
-            {
-                ParseGucefMainCommand( lineText.CutChars( 10, true ) ,
-                                       appConfig                     );
-            }
-            ++i;
-        }
-        return true;
-                     
+            return true;
+
         }
 
         // Failed to load the first run file even though it exists
         return false;
     }
-    
+
     // Nothing to do, success
     return true;
 }
@@ -1077,6 +1087,7 @@ ProcessFirstTimeInitialization( const CString& resRootDir ,
 
 int
 LoadAndRunGucefPlatformAppEx( const char* appName    ,
+                              const char* rootDir    ,
                               const char* resRootDir ,
                               const char* libRootDir ,
                               int platformArgc       ,
@@ -1092,6 +1103,12 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
     // For the app we will check the config file and based on that we will load correct platform.
     // Platform loads from: <LoadRoot>/LIBS/<Groupname>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
 
+    // If the resources root dir is NULL then we will use the generic root dir as the root for resources as well
+    if ( NULL == resRootDir )
+    {
+        resRootDir = rootDir;
+    }
+
     // If the library root dir is NULL then we will use the resource root dir as the root for libraries as well
     if ( NULL == libRootDir )
     {
@@ -1099,8 +1116,12 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
     }
 
     // Process first time initialization (if needed)
-    ProcessFirstTimeInitialization( resRootDir ,
-                                    libRootDir );
+    if ( !ProcessFirstTimeInitialization( resRootDir ,
+                                          rootDir    ) )
+    {
+        // Abort: failed to run first time init
+        return -1;
+    }
 
     // First get the path to the app dir because we need the loader config for this app
     CORE::TVersion appVersion;
@@ -1184,8 +1205,11 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
     // Now invoke the Application class main if so desired
     if ( loaderAppData.gucefMainConfig.invokeAppMain )
     {
-        // Add the app bin dir as a param to main
-        loaderAppData.gucefMainConfig.params.push_back( "APPBINDIR=" + appDir );
+        // Add the paths as params to main
+        loaderAppData.gucefMainConfig.params.push_back( "LOADERAPPDIR=" + appDir );
+        loaderAppData.gucefMainConfig.params.push_back( "LOADERLIBDIR=" + CORE::CString( libRootDir ) );
+        loaderAppData.gucefMainConfig.params.push_back( "LOADERRESDIR=" + CORE::CString( resRootDir ) );
+        loaderAppData.gucefMainConfig.params.push_back( "LOADERROOTDIR=" + CORE::CString( resRootDir ) );
 
         // Make a C style param list
         // We combine the param list given to this function with the params
@@ -1223,6 +1247,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
 
 int
 LoadAndRunGucefPlatformApp( const char* appName    ,
+                            const char* rootDir    ,
                             const char* resRootDir ,
                             const char* libRootDir ,
                             int platformArgc       ,
@@ -1231,7 +1256,8 @@ LoadAndRunGucefPlatformApp( const char* appName    ,
                             char** appArgv         )
 {
     return LoadAndRunGucefPlatformAppEx( appName      ,
-                                         rscRootDir   ,
+                                         rootDir      ,
+                                         resRootDir   ,
                                          libRootDir   ,
                                          platformArgc ,
                                          platformArgv ,

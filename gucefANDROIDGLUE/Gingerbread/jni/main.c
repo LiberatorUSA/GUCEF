@@ -20,69 +20,85 @@
 //BEGIN_INCLUDE(all)
 #include <jni.h>
 #include <errno.h>
+#include <sys/stat.h>
 #include <unistd.h>             /* POSIX utilities */
 #include <limits.h>             /* Linux OS limits */
 #include <string.h>
 #include <dlfcn.h>              /* dynamic linking utilities */
+#include <stdio.h>
 
 #include <android/log.h>
+#include <android/asset_manager.h>
 #include <android/native_activity.h>
 #include <android_native_app_glue.h>
 
 #include "gucefLOADER.h"
 
+void
+android_syslog(int level, const char *format, ...)
+{
+    va_list arglist;
+    va_start( arglist, format );
+    __android_log_vprint( level, "GalaxyUnlimitedPlatform", format, arglist );
+    va_end( arglist );
+    return;
+}
+
+
+#define FLOGI( format, ... ) ( (void) android_syslog( ANDROID_LOG_INFO, format, __VA_ARGS__) )
+#define FLOGW( format, ... ) ( (void) android_syslog( ANDROID_LOG_WARN, format, __VA_ARGS__) )
+#define FLOGF( format, ... ) ( (void) android_syslog( ANDROID_LOG_FATAL, format, __VA_ARGS__) )
+#define FLOGE( format, ... ) ( (void) android_syslog( ANDROID_LOG_ERROR, format, __VA_ARGS__) )
+#define FLOGD( format, ... ) ( (void) android_syslog( ANDROID_LOG_DEBUG, format, __VA_ARGS__) )
+
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "GalaxyUnlimitedPlatform", __VA_ARGS__))
 #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "GalaxyUnlimitedPlatform", __VA_ARGS__))
 #define LOGF(...) ((void)__android_log_print(ANDROID_LOG_FATAL, "GalaxyUnlimitedPlatform", __VA_ARGS__))
 #define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "GalaxyUnlimitedPlatform", __VA_ARGS__))
 
-typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_LoadAndRunGucefPlatformApp ) ( const char* appName, const char* resRootDir, const char* libRootDir, int platformArgc, char** platformArgv, int appArgc, char** appArgv );
+typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_LoadAndRunGucefPlatformApp ) ( const char* appName, const char* rootDir, const char* resRootDir, const char* libRootDir, int platformArgc, char** platformArgv, int appArgc, char** appArgv );
 
 #define NULLPTR ((void*)(0))
 
 /*-------------------------------------------------------------------------*/
 
 char*
-GetRawResourcePath( const char* packageDir ,
-                    const char* fileName   )
+Combine2Strings( const char* str1 ,
+                 const char* str2 )
 {
-    int pathLength = strlen( packageDir );
-    int fileNameLength = strlen( fileName );
-    char* filePath = malloc( pathLength+fileNameLength+10 );
-    memcpy( filePath, packageDir, pathLength );
-    memcpy( filePath+pathLength, "/res/raw/", 9 );
-    memcpy( filePath+pathLength+9, fileName, fileNameLength+1 );
-    return filePath;
+    int str1len = strlen( str1 );
+    int str2len = strlen( str2 );
+    char* strBuffer = (char*) malloc( str1len + str2len + 1 );
+    memcpy( strBuffer, str1, str1len );
+    memcpy( strBuffer+str1len, str2, str2len+1 );
+    return strBuffer;
 }
 
 /*-------------------------------------------------------------------------*/
 
-int
-MakeResourceDirs( const char* packageDir )
+char*
+Combine3Strings( const char* str1 ,
+                 const char* str2 ,
+                 const char* str3 )
 {
-    char* rawDir = GetRawResourcePath( packageDir, "" );
-    int retValue = mkdir( rawDir );
-    free( rawDir );
+    int str1len = strlen( str1 );
+    int str2len = strlen( str2 );
+    int str3len = strlen( str3 );
+    char* strBuffer = (char*) malloc( str1len + str2len + str3len + 1 );
+    memcpy( strBuffer, str1, str1len );
+    memcpy( strBuffer+str1len, str2, str2len );
+    memcpy( strBuffer+str1len+str2len, str3, str3len+1 );
+    return strBuffer;
+}
 
-    if ( retValue == 0 )
-    {
-        LOGI( "created raw resource dir /res/raw/" );
-    }
-    else
-    {
-        if ( EEXIST == errno )
-        {
-            LOGI( "Found existing raw resource dir /res/raw/" );
-        }
-        else
-        {
-            LOGE( "Error creating raw resource dir /res/raw/" );
-            return errno;
-        }
-    }
+/*-------------------------------------------------------------------------*/
 
-    // No problem
-    return 0;
+char*
+GetAssetPath( const char* packageDir ,
+              const char* fileName   )
+{
+    return Combine3Strings( packageDir, "/assets/", fileName );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -91,13 +107,7 @@ char*
 GetLibPath( const char* packageDir ,
             const char* moduleName )
 {
-    int pathLength = strlen( packageDir );
-    int moduleNameLength = strlen( moduleName );
-    char* modulePath = malloc( pathLength+moduleNameLength+6 );
-    memcpy( modulePath, packageDir, pathLength );
-    memcpy( modulePath+pathLength, "/lib/", 5 );
-    memcpy( modulePath+pathLength+5, moduleName, moduleNameLength+1 );
-    return modulePath;
+    return Combine3Strings( packageDir, "/lib/", moduleName );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -133,11 +143,12 @@ InvokeLoadAndRunGucefPlatformApp( const char* appName ,
         return 0;
     }
 
-    const char* libRootDir = GetLibPath( rootDir, "" );
-    const char* resRootDir = GetRawResourcePath( rootDir, "" );
+    char* libRootDir = GetLibPath( rootDir, "" );
+    char* assetRootDir = GetAssetPath( rootDir, "" );
 
     int returnValue = loadAndRunGucefPlatformApp( appName      ,
-                                                  resRootDir   ,
+                                                  rootDir      ,
+                                                  assetRootDir ,
                                                   libRootDir   ,
                                                   platformArgc ,
                                                   platformArgv ,
@@ -146,8 +157,8 @@ InvokeLoadAndRunGucefPlatformApp( const char* appName ,
 
     free( libRootDir );
     libRootDir = NULL;
-    free( resRootDir );
-    resRootDir = NULL;
+    free( assetRootDir );
+    assetRootDir = NULL;
     dlclose( modulePtr );
     modulePtr = NULL;
 
@@ -177,7 +188,43 @@ GetPackageDir( struct android_app* state ,
     }
 }
 
+/*-------------------------------------------------------------------------*/
 
+int
+FileExists( const char* filename )
+{
+    struct stat buf;
+    return stat( filename, &buf ) == 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+MakeResourceDirs( const char* packageDir )
+{
+    char* assetsDir = Combine2Strings( packageDir, "/assets" );
+    int retValue = mkdir( assetsDir, 00777 );
+
+    if ( retValue == 0 )
+    {
+        FLOGI( "created dir: %s", assetsDir );
+    }
+    else
+    {
+        if ( EEXIST == errno )
+        {
+            FLOGI( "found existing dir: %s", assetsDir );
+        }
+        else
+        {
+            FLOGI( "error %i creating dir: %s", errno, assetsDir );
+        }
+    }
+    free( assetsDir );
+
+    // No problem
+    return retValue;
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -185,25 +232,60 @@ void
 ExtractResources( struct android_app* state ,
                   const char* packageDir    )
 {
-    AAssetManager* assetManager = state->assetManager;
-    AAssetDir* resRawDir = AAssetManager_openDir( assetManager, "res/raw" );
-    AAsset* extractionIndex = AAssetManager_open( assetManager, "filestoextract.txt" );
+    AAssetManager* assetManager = state->activity->assetManager;
 
-    void* fileBuffer = AAsset_getBuffer( extractionIndex );
+/*    AAssetDir* resRawDir = AAssetManager_openDir( assetManager, "" );
+    if ( NULL == resRawDir )
+    {
+        LOGI( "Unable to open res/raw asset dir" );
+        return;
+    }
+
+    LOGI( "Files in dir:" );
+    const char* filename = AAssetDir_getNextFileName( resRawDir );
+    while ( NULL != filename )
+    {
+            LOGI( filename );
+            filename = AAssetDir_getNextFileName( resRawDir );
+    }
+*/
+
+    AAsset* extractionIndex = AAssetManager_open( assetManager, "filestoextract.txt", AASSET_MODE_BUFFER );
+    if ( NULL == extractionIndex )
+    {
+        //AAssetDir_close( resRawDir );
+        LOGI( "Unable to open filestoextract.txt" );
+        return;
+    }
+
+    const void* fileBuffer = AAsset_getBuffer( extractionIndex );
     off_t bufferSize = AAsset_getLength( extractionIndex );
-    
-    char* destPath = GetRawResourcePath( packageDir, "filestoextract.txt" );        
-    FILE* destFile = fopen( destPath, "wb" );
-    free( destPath ); 
 
-    if ( 1 != fwrite( fileBuffer, bufferSize, 1 destFile ) )
+    char* destPath = GetAssetPath( packageDir, "filestoextract.txt" );
+    FILE* destFile = fopen( destPath, "wb" );
+    free( destPath );
+
+    if ( 1 != fwrite( fileBuffer, bufferSize, 1, destFile ) )
     {
         LOGE( "Error writing extracted file to new destination" );
     }
     fclose( destFile );
-           
+
     AAsset_close( extractionIndex );
-    AAssetDir_close( resRawDir );
+    //AAssetDir_close( resRawDir );
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+IsFirstRun( const char* packageDir )
+{
+    // We know the gucefLOADER relies on a text file named firstrun.complete.txt
+    // we will use the same convention here to keep things consistent
+    char* firstrunFile = GetAssetPath( packageDir, "firstrun.completed.txt" );
+    int existsBool = FileExists( firstrunFile );
+    free( firstrunFile );
+    return existsBool;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -222,10 +304,19 @@ android_main( struct android_app* state )
     char packageDir[ 512 ];
     GetPackageDir( state, packageDir, 512 );
 
-    // Make the resource dirs if they do not exist yet
-    0 != MakeResourceDirs( packageDir ) ? return;
+    // Check if we need to perform first time initialization
+    if ( 0 == IsFirstRun( packageDir ) )
+    {
+        LOGI( "Performing first run initialization" );
 
-    ExtractResources( state, packageDir );
+        // Make the resource dirs if they do not exist yet
+        if ( 0 != MakeResourceDirs( packageDir ) )
+        {
+            return;
+        }
+
+        ExtractResources( state, packageDir );
+    }
 
     int appStatus = InvokeLoadAndRunGucefPlatformApp( "gucefPRODMAN", packageDir, 0, NULLPTR, 0, NULLPTR );
 }

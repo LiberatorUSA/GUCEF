@@ -85,21 +85,21 @@ namespace CORE {
 struct SDI_Data
 {
  	#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-	
+
 	Int32 find_handle;        /* Unique handle identifying the file or set of files that resulted from a findfirst with the filter provided */
 	struct _finddata_t  find; /* struct that stores entry data */
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     DIR *dir;                 /* Directory stream */
     struct dirent *entry;     /* Pointer needed for functions to iterating directory entries. Stores entry name which is used to get stat */
     struct stat statinfo;     /* Struct needed for determining info about an entry with stat(). */
-    
+
     #else
-    
+
     /* -> empty struct because we don't support other OS's atm */
     #error Unsupported OS
-    
+
     #endif
 };
 
@@ -122,14 +122,14 @@ DI_First_Dir_Entry( const char *path )
      *	In case of error NULL is returned.
      */
     struct SDI_Data *data;
-    
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ) 
-    
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
     char *tmp_path;
-    
+
     #endif /* GUCEF_PLATFORM_MSWIN ? */
 
-    if ( !path ) return NULL;
+    if ( NULL == path ) return NULL;
 
     /*
      *	Allocate data storage.
@@ -180,12 +180,12 @@ DI_First_Dir_Entry( const char *path )
     /*
      *	Attempt to open the directory
      */
-    if ( ( data->dir = opendir( path ) ) == NULL )
+    data->dir = opendir( path );
+    if ( NULL == data->dir )
     {
     	/*
          *	Could not open directory
          */
-        closedir( data->dir );
         free( data );
 	    return NULL;
     }
@@ -226,7 +226,10 @@ DI_First_Dir_Entry( const char *path )
      *	there was an error reading the entry data or no entry was found
      *	on the path specified that was a regular file or directory.
      */
-    closedir( data->dir );
+    if ( NULL != data->dir )
+    {
+        closedir( data->dir );
+    }
     free( data );
     return NULL;
 
@@ -257,7 +260,7 @@ DI_Next_Dir_Entry( struct SDI_Data *data )
      *	otherwise 1 is returned.
      */
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return !_findnext( data->find_handle, &data->find );
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -318,20 +321,20 @@ DI_Timestamp( struct SDI_Data *data )
      *	a directory name or a filename. Use DI_Is_It_A_File() to determine which
      */
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return (UInt32)data->find.time_write;
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     return data->statinfo.st_mtime;
-    
+
     #else
 
     /*
      *	Unsupported O/S build
      */
     return 0;
-    
+
     #endif
 }
 
@@ -350,13 +353,13 @@ DI_Size( struct SDI_Data *data )
      *	filesize.
      */
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return data->find.size;
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     return data->statinfo.st_size;
-    
+
     #else
 
     /*
@@ -382,20 +385,20 @@ DI_Is_It_A_File( struct SDI_Data *data )
      *	a file.
      */
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return !( data->find.attrib & _A_SUBDIR );
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     return S_ISREG( data->statinfo.st_mode );
-    
+
     #else
 
     /*
      *	Unsupported O/S build
      */
     return 0;
-    
+
     #endif
 }
 
@@ -414,20 +417,20 @@ DI_Name( struct SDI_Data *data )
      *	a directory name or a filename. Use DI_Is_It_A_File() to determine which
      */
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return data->find.name;
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     return data->entry->d_name;
-    
+
     #else
 
     /*
      *	Unsupported O/S build
      */
     return NULL;
-        
+
     #endif
 }
 
@@ -446,15 +449,18 @@ DI_Cleanup( struct SDI_Data *data )
      *	a call to DI_First_Dir_Entry().
      */
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     _findclose( data->find_handle );
     free( data );
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
-    closedir( data->dir );
+
+    if ( NULL != data->dir )
+    {
+        closedir( data->dir );
+    }
     free( data );
-    
+
     #else
 
     /*
@@ -475,9 +481,9 @@ Get_Current_Dir( char* dest_buffer, UInt32 buf_length )
     if ( !dest_buffer ) return NULL;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return _getcwd( dest_buffer, buf_length );
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     /*
@@ -485,13 +491,13 @@ Get_Current_Dir( char* dest_buffer, UInt32 buf_length )
      *	in removing the current directory of a process
      */
     return getcwd( dest_buffer, buf_length );
-    
+
     #else
 
     /*
      *	Unsupported O/S build
      */
-    return NULL; 
+    return NULL;
 
     #endif
 }
@@ -506,19 +512,19 @@ UInt32
 Max_Dir_Length( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return MAX_PATH;
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     return PATH_MAX;
-    
+
     #else
 
     /*
      *	Unsupported O/S build
      */
-    return 0; 
+    return 0;
 
     #endif
 }
@@ -529,19 +535,19 @@ UInt32
 Max_Filename_Length( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return _MAX_FNAME;
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     return NAME_MAX+1;
-        
+
     #else
 
     /*
      *	Unsupported O/S build
      */
-    return 0; 
+    return 0;
 
     #endif
 }
@@ -623,22 +629,22 @@ UInt32
 Create_Directory( const char *new_dir )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return create_directory( new_dir, 0 );
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     /*
      *	Use posix function. returns -1 on failure and 0 on sucess
      */
     return mkdir( new_dir, 0777 )+1;
-    
+
     #else
 
     /*
      *	Unsupported O/S build
      */
-    return 0; 
+    return 0;
 
     #endif
 }
@@ -707,26 +713,26 @@ Remove_Directory( const char *dir  ,
     }
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     /*
      *      Attempt to remove the directory itself. We can call the WIN32
      *      function directly here because it won't delete any files in the
      *      dir.
      */
-    
+
     return RemoveDirectory( dir );
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     return 0 == rmdir( dir ) ? 1 : 0;
-    
+
     #else
-    
+
     /*
      *      Not implemented for your O/S
      */
     return 0;
-    
+
     #endif
 }
 
@@ -801,11 +807,11 @@ Module_Path( char *dest, UInt32 dest_size )
     return 1;
 
     #else
-    
-    /* 
+
+    /*
      *  Not supported
      */
-    return 0; 
+    return 0;
 
     #endif
 
@@ -817,20 +823,20 @@ UInt32
 Delete_File( const char *filename )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return DeleteFile( filename );
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     return 0 == remove( filename ) ? 1 : 0;
-    
+
     #else
-    
+
     /*
      *  Not supported
      */
     return 0;
-    
+
     #endif
 }
 
@@ -840,11 +846,11 @@ UInt32
 Copy_File( const char *dst, const char *src )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return 0 != CopyFile( src, dst, TRUE ) ? 1 : 0;
-    
+
     #else
-    
+
     char buffer[ 1024*512 ];
     UInt32 rbytes = 1;
     FILE *dst_fptr, *src_fptr = fopen( src, "rb" );
@@ -870,7 +876,7 @@ Copy_File( const char *dst, const char *src )
             }
     }
     return 1;
-    
+
     #endif
 }
 
@@ -884,21 +890,21 @@ UInt32
 Move_File( const char *dst, const char *src )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return MoveFile( src, dst );
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     return 0 == rename( src, dst ) ? 1 : 0;
-        
+
     #else
-    
+
     if ( 0 != Copy_File( dst, src ) )
     {
     	return Delete_File( src );
     }
     return 0;
-    
+
     #endif
 }
 
@@ -958,7 +964,7 @@ Execute_Program( const char *filename ,
     if ( NULL != filename )
     {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-        
+
         HANDLE phdl = ExecuteProgramEx( filename, cmdline );
         if ( phdl )
         {
@@ -966,9 +972,9 @@ Execute_Program( const char *filename ,
             return 1;
         }
         return 0;
-        
+
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-        
+
 
         #endif
     }
@@ -983,7 +989,7 @@ Filesize( const char *filename )
     if ( NULL != filename )
     {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-        
+
         UInt32 lfilesize;
         WIN32_FIND_DATA FileInfo;
         HANDLE hFind;
@@ -998,25 +1004,25 @@ Filesize( const char *filename )
         }
         FindClose( hFind );
         return lfilesize;
-        
+
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-        
+
         struct stat buf;
         UInt32 filesize;
         int result;
         result = stat( filename, &buf );
         if ( result == 0 ) return buf.st_size;
         return 0;
-        
+
         #else
-        
+
         UInt32 filesize = 0;
         FILE *fptr = fopen( filename, "rb" );
         fseek( fptr, 0, SEEK_END );
         filesize = ftell( fptr );
         fclose( fptr );
         return filesize;
-        
+
         #endif
     }
     return 0;
@@ -1046,15 +1052,14 @@ File_Exists( const char *filename )
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
         struct stat buf;
-        if ( stat( filename, &buf ) == -1 )
-        return errno == ENOENT;
+        return stat( filename, &buf ) == 0;
 
         #else
-        
+
         FILE *fptr = fopen( filename, "rb" );
         fclose( fptr );
         return fptr > 0;
-        
+
         #endif
     }
     return 0;
@@ -1185,20 +1190,20 @@ UInt32
 Is_Path_Valid( const char* path )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return GetFileAttributes( path ) != INVALID_FILE_ATTRIBUTES;
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     // @TODO
-    
+
     #else
-    
+
     /*
      *  Unsupported platform
      */
-    return 0; 
-    
+    return 0;
+
     #endif
 }
 
@@ -1246,12 +1251,12 @@ Get_Modification_Time( const char* path )
     return -1;
 
     #else
-    
+
     /*
      *  Unsupported platform
      */
-    return (time_t) 0; 
-    
+    return (time_t) 0;
+
     #endif
 }
 
