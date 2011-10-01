@@ -1,0 +1,13 @@
+MOVEFILE lib/libgucefMT.so lib/LIB/GUCEF/0.0/gucefMT/0.0/libgucefMT.so
+MOVEFILE lib/libgucefCORE.so lib/LIB/GUCEF/0.0/gucefCORE/0.0/libgucefCORE.so
+COPYFILE lib/libgucefLOADER.so lib/LIB/GUCEF/0.0/gucefLOADER/0.0/libgucefLOADER.so
+MOVEFILE lib/libgucefCOMCORE.so lib/LIB/GUCEF/0.0/gucefCOMCORE/0.0/libgucefCOMCORE.so
+MOVEFILE lib/libgucefCOM.so lib/LIB/GUCEF/0.0/gucefCOM/0.0/libgucefCOM.so
+MOVEFILE lib/libgucefDRN.so lib/LIB/GUCEF/0.0/gucefDRN/0.0/libgucefDRN.so
+MOVEFILE lib/libgucefSMDRN.so lib/LIB/GUCEF/0.0/gucefSMDRN/0.0/libgucefSMDRN.so
+MOVEFILE lib/libgucefVFS.so lib/LIB/GUCEF/0.0/gucefVFS/0.0/libgucefVFS.so
+MOVEFILE lib/libgucefGUI.so lib/LIB/GUCEF/0.0/gucefGUI/0.0/libgucefGUI.so
+MOVEFILE lib/libgucefIMAGE.so lib/LIB/GUCEF/0.0/gucefIMAGE/0.0/libgucefIMAGE.so
+MOVEFILE lib/libgucefINPUT.so lib/LIB/GUCEF/0.0/gucefINPUT/0.0/libgucefINPUT.so
+MOVEFILE lib/libgucefPATCHER.so lib/LIB/GUCEF/0.0/gucefPATCHER/0.0/libgucefPATCHER.so
+MOVEFILE lib/libgucefPRODMAN.so lib/LIB/GUCEF/0.0/gucefPRODMAN/0.0/libgucefPRODMAN.so
