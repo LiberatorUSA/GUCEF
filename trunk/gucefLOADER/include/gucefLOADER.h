@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_LOADER_H
@@ -55,6 +55,7 @@ extern "C" {
  */
 GUCEF_LOADER_PUBLIC_C int
 LoadAndRunGucefPlatformAppEx( const char* appName    ,
+                              const char* rootDir    ,
                               const char* resRootDir ,
                               const char* libRootDir ,
                               int platformArgc       ,
@@ -74,6 +75,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
  */
 GUCEF_LOADER_PUBLIC_C int
 LoadAndRunGucefPlatformApp( const char* appName    ,
+                            const char* rootDir    ,
                             const char* resRootDir ,
                             const char* libRootDir ,
                             int platformArgc       ,
@@ -107,7 +109,7 @@ LoadSpecificModule( const char* moduleFilename  ,
 /**
  *  Should be used to unload modules which were loaded using "LoadSpecificModule"
  */
-GUCEF_LOADER_PUBLIC_C void 
+GUCEF_LOADER_PUBLIC_C void
 UnloadSpecificModule( void* modulePtr );
 
 /*-------------------------------------------------------------------------*/
@@ -115,9 +117,9 @@ UnloadSpecificModule( void* modulePtr );
 #ifdef __cplusplus
 }; /* extern "C" */
 #endif /* __cplusplus ? */
-                   
+
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_LOADER_H ? */
 
 /*-------------------------------------------------------------------------//

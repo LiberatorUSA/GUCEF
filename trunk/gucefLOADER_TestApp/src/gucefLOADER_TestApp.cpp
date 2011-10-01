@@ -38,25 +38,25 @@
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-          
+
 /*
  *      Application entry point
  */
 GUCEF_OSMAIN_BEGIN
 {
-    try 
-    {                               
+    try
+    {
         if ( argc >= 1 )
         {
-            return LoadAndRunGucefPlatformApp( "testapp", argv[ 0 ], argc, argv, 0, NULL );
+            return LoadAndRunGucefPlatformApp( "testapp", argv[ 0 ], NULL, NULL, argc, argv, 0, NULL );
         }
         return 0;
     }
     catch ( ... )
     {
-                                                        
+
     }
-    return 1;                                                                                                                              
+    return 1;
 }
 GUCEF_OSMAIN_END
 
