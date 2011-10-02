@@ -96,11 +96,20 @@ Is_Path_Valid( const char* path );
  *      Function that attempts to create a directory using the system default
  *      security attributes. Returns true (1) if successful and false (0) in
  *      case of an error. Unlike the normal create dir functions for windows
- *      this one will create all dir's in the string given
- *      (Like the Linux functions).
+ *      this one will create all dir's in the string given.
  */
 GUCEF_CORE_PUBLIC_C UInt32
 Create_Directory( const char *new_dir );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Function which is similar to Create_Directory except it takes a path
+ *  which contains a filename. The directories up to the filename will
+ *  be created. The last path segment is assumed to be the filename
+ */
+GUCEF_CORE_PUBLIC_C UInt32
+Create_Path_Directories( const char* path );
 
 /*-------------------------------------------------------------------------*/
 

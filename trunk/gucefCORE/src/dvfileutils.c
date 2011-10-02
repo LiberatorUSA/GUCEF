@@ -554,6 +554,40 @@ Max_Filename_Length( void )
 
 /*-------------------------------------------------------------------------*/
 
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+static int
+recursive_mkdir( const char* dir, int accessPerms )
+{
+    char tmp[ PATH_MAX ];
+    char *p = NULL;
+    size_t len;
+    int retValue=0;
+
+    snprintf( tmp, sizeof(tmp), "%s", dir );
+    len = strlen( tmp );
+    if( tmp[ len-1 ] == '/' )
+    {
+        tmp[ len-1 ] = 0;
+    }
+    for( p=tmp+1; *p; ++p )
+    {
+        if( *p == '/' )
+        {
+            *p = 0;
+            retValue = mkdir( tmp, accessPerms );
+            if ( 0 != retValue ) return retValue;
+            *p = '/';
+        }
+    }
+    retValue = mkdir( tmp, accessPerms );
+    return retValue;
+}
+
+#endif
+
+/*-------------------------------------------------------------------------*/
+
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 /**
@@ -637,7 +671,7 @@ Create_Directory( const char *new_dir )
     /*
      *	Use posix function. returns -1 on failure and 0 on sucess
      */
-    return mkdir( new_dir, 0777 )+1;
+    return recursive_mkdir( new_dir, 0777 )+1;
 
     #else
 
@@ -647,6 +681,35 @@ Create_Directory( const char *new_dir )
     return 0;
 
     #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+Create_Path_Directories( const char* path )
+{
+    if ( NULL != path )
+    {
+        int pathLength = strlen( path );
+        char* pathBuffer = (char*) malloc( pathLength+1 );
+        memcpy( pathBuffer, path, pathLength+1 );
+
+        int i=pathLength;
+        while ( i > 0 )
+        {
+            if ( pathBuffer[ i ] == '/' || pathBuffer[ i ] == '\\' )
+            {
+                pathBuffer[ i ] = '\0';
+                break;
+            }
+            --i;
+        }
+
+        UInt32 returnValue = Create_Directory( pathBuffer );
+        free( pathBuffer );
+        return returnValue;
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -845,9 +908,41 @@ Delete_File( const char *filename )
 UInt32
 Copy_File( const char *dst, const char *src )
 {
+    if ( 0 == Create_Path_Directories( dst ) ) return 0;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     return 0 != CopyFile( src, dst, TRUE ) ? 1 : 0;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    {
+
+    int read_fd;
+    int write_fd;
+    struct stat stat_buf;
+    off_t offset = 0;
+
+    /* Open the input file. */
+    read_fd = open( src, O_RDONLY );
+
+    /* Stat the input file to obtain its size. */
+    fstat( read_fd, &stat_buf );
+
+    /*
+     *  Open the output file for writing, with the same permissions as the
+     *  source file.
+     */
+    write_fd = open( dst, O_WRONLY | O_CREAT, stat_buf.st_mode );
+
+    /* Blast the bytes from one file to the other. */
+    sendfile( write_fd, read_fd, &offset, stat_buf.st_size );
+
+    /* Close up. */
+    close( read_fd );
+    close( write_fd );
+
+    }
 
     #else
 
@@ -889,6 +984,8 @@ Copy_File( const char *dst, const char *src )
 UInt32
 Move_File( const char *dst, const char *src )
 {
+    if ( 0 == Create_Path_Directories( dst ) ) return 0;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     return MoveFile( src, dst );
