@@ -128,8 +128,7 @@ InvokeLoadAndRunGucefPlatformApp( const char* appName ,
         LOGF( "Unable to link gucefLOADER module" );
         return 0;
     }
-    LOGI( "Loading loader module from:" );
-    LOGI( modulePath );
+    FLOGI( "Loading loader module from: %s", modulePath );
     free( modulePath );
     modulePath = NULL;
 
@@ -162,6 +161,7 @@ InvokeLoadAndRunGucefPlatformApp( const char* appName ,
     dlclose( modulePtr );
     modulePtr = NULL;
 
+    FLOGI( "LoadAndRunGucefPlatformApp returned with code %i", returnValue );
     return returnValue;
 }
 
@@ -199,80 +199,183 @@ FileExists( const char* filename )
 
 /*-------------------------------------------------------------------------*/
 
-int
-MakeResourceDirs( const char* packageDir )
+static int
+recursive_mkdir( const char* dir, int accessPerms )
 {
-    char* assetsDir = Combine2Strings( packageDir, "/assets" );
-    int retValue = mkdir( assetsDir, 00777 );
+    char tmp[ PATH_MAX ];
+    char *p = NULL;
+    size_t len;
+    int retValue=0;
 
-    if ( retValue == 0 )
+    snprintf( tmp, sizeof(tmp), "%s", dir );
+    len = strlen( tmp );
+    if( tmp[ len-1 ] == '/' )
     {
-        FLOGI( "created dir: %s", assetsDir );
+        tmp[ len-1 ] = 0;
     }
-    else
+    for( p=tmp+1; *p; ++p )
     {
-        if ( EEXIST == errno )
+        if( *p == '/' )
         {
-            FLOGI( "found existing dir: %s", assetsDir );
-        }
-        else
-        {
-            FLOGI( "error %i creating dir: %s", errno, assetsDir );
+            *p = 0;
+            retValue = mkdir( tmp, accessPerms );
+            if ( 0 != retValue ) return retValue;
+            *p = '/';
         }
     }
-    free( assetsDir );
-
-    // No problem
+    retValue = mkdir( tmp, accessPerms );
     return retValue;
 }
 
 /*-------------------------------------------------------------------------*/
 
+int
+MakeDir( const char* path, int permissions )
+{
+    int retValue = recursive_mkdir( path, permissions );
+
+    if ( retValue == 0 )
+    {
+        FLOGI( "created dir: %s", path );
+    }
+    else
+    {
+        if ( EEXIST == errno )
+        {
+            FLOGI( "found existing dir: %s", path );
+        }
+        else
+        {
+            FLOGI( "error %i creating dir: %s", errno, path );
+        }
+    }
+    return retValue == 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+MakeResourceDirs( const char* packageDir )
+{
+    // add more dirs if needed
+    char* assetsDir = Combine2Strings( packageDir, "/assets" );
+    int retValue = MakeDir( assetsDir, 00777 );
+    free( assetsDir );
+    return retValue;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+ExtractAsset( AAssetManager* assetManager ,
+              const char* assetPath       ,
+              const char* destPath        )
+{
+    AAsset* asset = AAssetManager_open( assetManager, assetPath, AASSET_MODE_BUFFER );
+    if ( NULL == asset )
+    {
+        FLOGI( "Unable to open asset for extraction: %s", assetPath );
+        return 0;
+    }
+
+    const void* fileBuffer = AAsset_getBuffer( asset );
+    if ( NULL == fileBuffer )
+    {
+        AAsset_close( asset );
+        FLOGE( "Unable to get buffer to asset for extraction: %s", assetPath );
+        return 0;
+    }
+    off_t bufferSize = AAsset_getLength( asset );
+
+    FILE* destFile = fopen( destPath, "wb" );
+    if ( 1 != fwrite( fileBuffer, bufferSize, 1, destFile ) )
+    {
+        FLOGE( "Error extracting asset from %s to %s", assetPath, destPath );
+        fclose( destFile );
+        AAsset_close( asset );
+        return 0;
+    }
+    fclose( destFile );
+    AAsset_close( asset );
+    FLOGI( "Extracted asset from %s to %s", assetPath, destPath );
+    return 1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+char*
+ReadString( FILE* fptr, char* buffer, int bufferSize )
+{
+    char* strRead = fgets( buffer, bufferSize, fptr );
+    if ( NULL != strRead )
+    {
+        // fgets() includes \n and \r, we dont want that
+        // get rid of them...
+        int i = strlen( strRead )-1;
+        while ( i>0 )
+        {
+            if ( buffer[ i ] == '\n' || buffer[ i ] == '\r' )
+            {
+                buffer[ i ] = '\0';
+            }
+            else break;
+            --i;
+        }
+    }
+    return strRead;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
-ExtractResources( struct android_app* state ,
-                  const char* packageDir    )
+ExtractAssets( struct android_app* state ,
+               const char* packageDir    )
 {
     AAssetManager* assetManager = state->activity->assetManager;
 
-/*    AAssetDir* resRawDir = AAssetManager_openDir( assetManager, "" );
-    if ( NULL == resRawDir )
+    // First extract the index file which tells us which other files to extract
+    char* extractionIndexfilePath = GetAssetPath( packageDir, "filestoextract.txt" );
+    int retValue = ExtractAsset( assetManager, "filestoextract.txt", extractionIndexfilePath );
+
+    if ( 0 != retValue )
     {
-        LOGI( "Unable to open res/raw asset dir" );
-        return;
+        // Now go trough the list extraction all files listed.
+        // each line in the index file is a file to extract
+        char entryBuffer[ PATH_MAX ];
+        FILE* listFptr = fopen( extractionIndexfilePath, "r" );
+        char* bufferPtr = 0;
+        if ( NULL == listFptr )
+        {
+            // Abort, unable to open the file
+            FLOGE( "Error %i when opening file %s", errno, extractionIndexfilePath );
+        }
+        do
+        {
+            // Read the entry
+            bufferPtr = ReadString( listFptr, entryBuffer, PATH_MAX );
+            if ( NULL != bufferPtr )
+            {
+                // Create destination path and extract the asset
+                char* destPath = GetAssetPath( packageDir, bufferPtr );
+                retValue = ExtractAsset( assetManager, entryBuffer, destPath );
+                free( destPath );
+
+                if ( 0 == retValue )
+                {
+                    // Failed to extract the current entry, abort
+                    break;
+                }
+            }
+        }
+        while ( NULL != bufferPtr );
+        fclose( listFptr );
+    }
+    else
+    {
+        LOGI( "No extraction index is available, no assets will be extracted" );
     }
 
-    LOGI( "Files in dir:" );
-    const char* filename = AAssetDir_getNextFileName( resRawDir );
-    while ( NULL != filename )
-    {
-            LOGI( filename );
-            filename = AAssetDir_getNextFileName( resRawDir );
-    }
-*/
-
-    AAsset* extractionIndex = AAssetManager_open( assetManager, "filestoextract.txt", AASSET_MODE_BUFFER );
-    if ( NULL == extractionIndex )
-    {
-        //AAssetDir_close( resRawDir );
-        LOGI( "Unable to open filestoextract.txt" );
-        return;
-    }
-
-    const void* fileBuffer = AAsset_getBuffer( extractionIndex );
-    off_t bufferSize = AAsset_getLength( extractionIndex );
-
-    char* destPath = GetAssetPath( packageDir, "filestoextract.txt" );
-    FILE* destFile = fopen( destPath, "wb" );
-    free( destPath );
-
-    if ( 1 != fwrite( fileBuffer, bufferSize, 1, destFile ) )
-    {
-        LOGE( "Error writing extracted file to new destination" );
-    }
-    fclose( destFile );
-
-    AAsset_close( extractionIndex );
-    //AAssetDir_close( resRawDir );
+    free( extractionIndexfilePath );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -280,12 +383,29 @@ ExtractResources( struct android_app* state ,
 int
 IsFirstRun( const char* packageDir )
 {
-    // We know the gucefLOADER relies on a text file named firstrun.complete.txt
+    // We know the gucefLOADER relies on a text file named firstrun.completed.txt
     // we will use the same convention here to keep things consistent
     char* firstrunFile = GetAssetPath( packageDir, "firstrun.completed.txt" );
     int existsBool = FileExists( firstrunFile );
     free( firstrunFile );
     return existsBool;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+SetFirstRunCompleted( const char* packageDir )
+{
+    // We know the gucefLOADER relies on a text file named firstrun.completed.txt
+    // we will use the same convention here to keep things consistent
+    char* firstrunFile = GetAssetPath( packageDir, "firstrun.completed.txt" );
+    int existsBool = FileExists( firstrunFile );
+    if ( 0 == existsBool )
+    {
+        FILE* fptr = fopen( firstrunFile, "wb" );
+        fclose( fptr );
+    }
+    free( firstrunFile );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -315,10 +435,27 @@ android_main( struct android_app* state )
             return;
         }
 
-        ExtractResources( state, packageDir );
+        // Extract to our private storage as desired
+        ExtractAssets( state, packageDir );
+
+        LOGI( "Completed first run initialization" );
+    }
+    else
+    {
+        LOGI( "Detected previous run, skipping first run initialization" );
     }
 
+    // Start the process of invoking the launch of the platform using the loader
     int appStatus = InvokeLoadAndRunGucefPlatformApp( "gucefPRODMAN", packageDir, 0, NULLPTR, 0, NULLPTR );
+
+    // Check if we had a successfull run
+    if ( 0 == appStatus )
+    {
+        LOGI( "Successfull completed first, setting first run flag to false" );
+
+        // Set the flag that we completed the first run
+        SetFirstRunCompleted( packageDir );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
