@@ -451,7 +451,7 @@ android_main( struct android_app* state )
     // Check if we had a successfull run
     if ( 0 == appStatus )
     {
-        LOGI( "Successfull completed first, setting first run flag to false" );
+        LOGI( "Successfull completed first run, setting first run flag to false" );
 
         // Set the flag that we completed the first run
         SetFirstRunCompleted( packageDir );
