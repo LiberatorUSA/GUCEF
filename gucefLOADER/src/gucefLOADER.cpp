@@ -1067,6 +1067,7 @@ ProcessFirstTimeInitialization( const CORE::CString& resRootDir ,
             // Now that we have successfully carried out all the actions we can rename the file
             // This keeps the file for later review but it wont trigger another initialization
             CORE::CString afterFirstRunFilePath = resRootDir + "firstrun.completed.txt";
+            CORE::Delete_File( afterFirstRunFilePath.C_String() );
             if ( 0 == CORE::Move_File( afterFirstRunFilePath.C_String(), firstRunFilePath.C_String() ) )
             {
                 return false;
