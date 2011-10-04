@@ -690,11 +690,12 @@ Create_Path_Directories( const char* path )
 {
     if ( NULL != path )
     {
-        int pathLength = strlen( path );
+        int i, pathLength = strlen( path );
         char* pathBuffer = (char*) malloc( pathLength+1 );
+        UInt32 returnValue = 0;
         memcpy( pathBuffer, path, pathLength+1 );
 
-        int i=pathLength;
+        i=pathLength;
         while ( i > 0 )
         {
             if ( pathBuffer[ i ] == '/' || pathBuffer[ i ] == '\\' )
@@ -705,7 +706,7 @@ Create_Path_Directories( const char* path )
             --i;
         }
 
-        UInt32 returnValue = Create_Directory( pathBuffer );
+        returnValue = Create_Directory( pathBuffer );
         free( pathBuffer );
         return returnValue;
     }
