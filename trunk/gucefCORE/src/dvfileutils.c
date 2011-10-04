@@ -23,7 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <malloc.h>		/* memory management */
+#include <malloc.h>             /* memory management */
 #include <stdio.h>              /* standard I/O utils */
 #include <string.h>             /* standard string utils */
 #include <assert.h>
@@ -51,6 +51,7 @@
   #include <limits.h>             /* Linux OS limits */
   #include <sys/stat.h>           /* needed for stat function */
   #include <errno.h>
+  #include <fcntl.h>
   #define MAX_DIR_LENGTH PATH_MAX
 #else
   #error Unsupported OS

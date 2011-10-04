@@ -57,18 +57,10 @@ LOCAL_SRC_FILES := \
   WidgetTextInputSingleLinePassword.cpp \
   XMLNodeHandlerDataGrid.cpp \
   XMLNodeHandlerTabSet.cpp \
-  XMLNodeHandlerTextArea.cpp \
-  Python/DataFormatterWrapper.cpp \
-  Python/DataGridRowProxy.cpp \
-  Python/DataSourceWrapper.cpp \
-  Python/ElementInterface.cpp \
-  Python/Module.cpp \
-  Python/precompiled.cpp \
-  Python/SelectOptionProxy.cpp
+  XMLNodeHandlerTextArea.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH) \
-  $(MY_MODULE_PATH)/Python \
   $(MY_MODULE_PATH)/../../../freetype/include \
   $(MY_MODULE_PATH)/../../../freetype/include/freetype \
   $(MY_MODULE_PATH)/../../../freetype/include/freetype/config \
@@ -81,8 +73,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../Include/Rocket/Core \
   $(MY_MODULE_PATH)/../../Include/Rocket/Core/Python \
   $(MY_MODULE_PATH)/../../Include/Rocket/Debugger \
-  $(MY_MODULE_PATH)/../Core \
-  $(MY_MODULE_PATH)/../Core/Python
+  $(MY_MODULE_PATH)/../Core
 
 
 LOCAL_SHARED_LIBRARIES := \

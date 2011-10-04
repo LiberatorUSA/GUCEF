@@ -44,8 +44,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../Include/Rocket/Core \
   $(MY_MODULE_PATH)/../../Include/Rocket/Core/Python \
   $(MY_MODULE_PATH)/../../Include/Rocket/Debugger \
-  $(MY_MODULE_PATH)/../Core \
-  $(MY_MODULE_PATH)/../Core/Python
+  $(MY_MODULE_PATH)/../Core
 
 
 LOCAL_SHARED_LIBRARIES := \
