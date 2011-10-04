@@ -11,7 +11,7 @@
 
 # Configuration for module: zziplib
 
-set( HEADER_FILES
+set( HEADER_FILES 
   dummy.h
   zzip/autoconf.h
   zzip/conf.h
@@ -37,7 +37,7 @@ set( HEADER_FILES
   zzip/__mmap.h
 )
 
-set( SOURCE_FILES
+set( SOURCE_FILES 
   zzip/dir.c
   zzip/err.c
   zzip/fetch.c
@@ -63,7 +63,7 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "zziplib" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "ZZIP_DLL;ZZIP_HAVE_STDINT_H" )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "ZZIP_DLL" )
 
 if ( ANDROID )
   target_link_libraries( ${MODULE_NAME} z )
@@ -110,8 +110,6 @@ endif( WIN64 )
 if (ANDROID)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (LINUX)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )
