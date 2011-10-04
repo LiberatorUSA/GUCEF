@@ -92,7 +92,6 @@ LOCAL_SRC_FILES := \
   LayoutInlineBoxText.cpp \
   LayoutLineBox.cpp \
   Log.cpp \
-  Math.cpp \
   Plugin.cpp \
   PluginRegistry.cpp \
   precompiled.cpp \
@@ -106,10 +105,11 @@ LOCAL_SRC_FILES := \
   PropertySpecification.cpp \
   ReferenceCountable.cpp \
   RenderInterface.cpp \
+  RocketMath.cpp \
+  RocketString.cpp \
   Stream.cpp \
   StreamFile.cpp \
   StreamMemory.cpp \
-  String.cpp \
   StringCache.cpp \
   StringStorage.cpp \
   StringUtilities.cpp \
@@ -153,31 +153,10 @@ LOCAL_SRC_FILES := \
   XMLNodeHandlerHead.cpp \
   XMLNodeHandlerTemplate.cpp \
   XMLParser.cpp \
-  XMLParseTools.cpp \
-  Python/ContextDocumentProxy.cpp \
-  Python/ContextInstancer.cpp \
-  Python/ContextInterface.cpp \
-  Python/ContextProxy.cpp \
-  Python/Converters.cpp \
-  Python/DataSourceWrapper.cpp \
-  Python/ElementAttributeProxy.cpp \
-  Python/ElementChildrenProxy.cpp \
-  Python/ElementDocumentWrapper.cpp \
-  Python/ElementInterface.cpp \
-  Python/ElementStyleProxy.cpp \
-  Python/EventInstancer.cpp \
-  Python/EventInterface.cpp \
-  Python/EventListener.cpp \
-  Python/EventListenerInstancer.cpp \
-  Python/EventWrapper.cpp \
-  Python/Interfaces.cpp \
-  Python/Module.cpp \
-  Python/precompiled.cpp \
-  Python/Utilities.cpp
+  XMLParseTools.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH) \
-  $(MY_MODULE_PATH)/Python \
   $(MY_MODULE_PATH)/../../../freetype/include \
   $(MY_MODULE_PATH)/../../../freetype/include/freetype \
   $(MY_MODULE_PATH)/../../../freetype/include/freetype/config \
@@ -190,6 +169,8 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../Include/Rocket/Core \
   $(MY_MODULE_PATH)/../../Include/Rocket/Core/Python \
   $(MY_MODULE_PATH)/../../Include/Rocket/Debugger
+
+LOCAL_CFLAGS := -DRocketCore_EXPORTS
 
 
 LOCAL_SHARED_LIBRARIES := \
