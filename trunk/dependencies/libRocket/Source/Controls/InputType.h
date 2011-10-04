@@ -28,7 +28,7 @@
 #ifndef ROCKETCONTROLSINPUTTYPE_H
 #define ROCKETCONTROLSINPUTTYPE_H
 
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 #include <Rocket/Core/Event.h>
 #include <Rocket/Core/Types.h>
 

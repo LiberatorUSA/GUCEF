@@ -31,7 +31,7 @@
 #include <Rocket/Core/FontGlyph.h>
 #include <Rocket/Core/Geometry.h>
 #include <Rocket/Core/GeometryUtilities.h>
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 #include <Rocket/Core/Texture.h>
 #include "TextureLayout.h"
 

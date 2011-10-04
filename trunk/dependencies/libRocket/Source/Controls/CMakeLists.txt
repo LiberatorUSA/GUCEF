@@ -30,13 +30,6 @@ set( HEADER_FILES
   XMLNodeHandlerDataGrid.h
   XMLNodeHandlerTabSet.h
   XMLNodeHandlerTextArea.h
-  Python/DataFormatterWrapper.h
-  Python/DataGridRowProxy.h
-  Python/DataSourceWrapper.h
-  Python/ElementInterface.h
-  Python/Module.h
-  Python/precompiled.h
-  Python/SelectOptionProxy.h
 )
 
 set( SOURCE_FILES 
@@ -76,13 +69,6 @@ set( SOURCE_FILES
   XMLNodeHandlerDataGrid.cpp
   XMLNodeHandlerTabSet.cpp
   XMLNodeHandlerTextArea.cpp
-  Python/DataFormatterWrapper.cpp
-  Python/DataGridRowProxy.cpp
-  Python/DataSourceWrapper.cpp
-  Python/ElementInterface.cpp
-  Python/Module.cpp
-  Python/precompiled.cpp
-  Python/SelectOptionProxy.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -99,7 +85,7 @@ add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} RocketCore freetype )
 target_link_libraries( ${MODULE_NAME} RocketCore freetype )
 
-include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Include ../../Include/Rocket ../../Include/Rocket/Controls ../../Include/Rocket/Core ../../Include/Rocket/Core/Python ../../Include/Rocket/Debugger ../Core ../Core/Python ../Controls Python )
+include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Include ../../Include/Rocket ../../Include/Rocket/Controls ../../Include/Rocket/Core ../../Include/Rocket/Core/Python ../../Include/Rocket/Debugger ../Core )
 
 
 

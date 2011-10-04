@@ -28,7 +28,7 @@
 #ifndef SHELLFILEINTERFACE_H
 #define SHELLFILEINTERFACE_H
 
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 #include <Rocket/Core/FileInterface.h>
 
 /**

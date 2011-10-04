@@ -29,7 +29,7 @@
 #define ROCKETCORECORE_H
 
 #include <Rocket/Core/Types.h>
-#include <Rocket/Core/Math.h>
+#include <Rocket/Core/RocketMath.h>
 #include <Rocket/Core/Header.h>
 #include <Rocket/Core/Box.h>
 #include <Rocket/Core/Context.h>
@@ -65,7 +65,7 @@
 #include <Rocket/Core/PropertyParser.h>
 #include <Rocket/Core/PropertySpecification.h>
 #include <Rocket/Core/RenderInterface.h>
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 #include <Rocket/Core/StyleSheet.h>
 #include <Rocket/Core/StyleSheetKeywords.h>
 #include <Rocket/Core/StyleSheetSpecification.h>

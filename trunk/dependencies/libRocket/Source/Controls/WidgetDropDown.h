@@ -28,7 +28,7 @@
 #ifndef ROCKETCONTROLSWIDGETDROPDOWN_H
 #define ROCKETCONTROLSWIDGETDROPDOWN_H
 
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 #include <Rocket/Core/EventListener.h>
 #include <Rocket/Controls/SelectOption.h>
 #include <vector>

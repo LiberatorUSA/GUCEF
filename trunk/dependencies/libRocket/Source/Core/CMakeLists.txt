@@ -98,24 +98,6 @@ set( HEADER_FILES
   XMLNodeHandlerHead.h
   XMLNodeHandlerTemplate.h
   XMLParseTools.h
-  Python/ContextDocumentProxy.h
-  Python/ContextInstancer.h
-  Python/ContextInterface.h
-  Python/ContextProxy.h
-  Python/Converters.h
-  Python/DataSourceWrapper.h
-  Python/ElementAttributeProxy.h
-  Python/ElementChildrenProxy.h
-  Python/ElementDocumentWrapper.h
-  Python/ElementInterface.h
-  Python/ElementStyleProxy.h
-  Python/EventInstancer.h
-  Python/EventInterface.h
-  Python/EventListener.h
-  Python/EventListenerInstancer.h
-  Python/EventWrapper.h
-  Python/Module.h
-  Python/precompiled.h
 )
 
 set( SOURCE_FILES 
@@ -189,7 +171,6 @@ set( SOURCE_FILES
   LayoutInlineBoxText.cpp
   LayoutLineBox.cpp
   Log.cpp
-  Math.cpp
   Plugin.cpp
   PluginRegistry.cpp
   precompiled.cpp
@@ -203,10 +184,11 @@ set( SOURCE_FILES
   PropertySpecification.cpp
   ReferenceCountable.cpp
   RenderInterface.cpp
+  RocketMath.cpp
+  RocketString.cpp
   Stream.cpp
   StreamFile.cpp
   StreamMemory.cpp
-  String.cpp
   StringCache.cpp
   StringStorage.cpp
   StringUtilities.cpp
@@ -251,26 +233,6 @@ set( SOURCE_FILES
   XMLNodeHandlerTemplate.cpp
   XMLParser.cpp
   XMLParseTools.cpp
-  Python/ContextDocumentProxy.cpp
-  Python/ContextInstancer.cpp
-  Python/ContextInterface.cpp
-  Python/ContextProxy.cpp
-  Python/Converters.cpp
-  Python/DataSourceWrapper.cpp
-  Python/ElementAttributeProxy.cpp
-  Python/ElementChildrenProxy.cpp
-  Python/ElementDocumentWrapper.cpp
-  Python/ElementInterface.cpp
-  Python/ElementStyleProxy.cpp
-  Python/EventInstancer.cpp
-  Python/EventInterface.cpp
-  Python/EventListener.cpp
-  Python/EventListenerInstancer.cpp
-  Python/EventWrapper.cpp
-  Python/Interfaces.cpp
-  Python/Module.cpp
-  Python/precompiled.cpp
-  Python/Utilities.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -286,8 +248,9 @@ set( MODULE_NAME "RocketCore" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} freetype )
 target_link_libraries( ${MODULE_NAME} freetype )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "RocketCore_EXPORTS" )
 
-include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Include ../../Include/Rocket ../../Include/Rocket/Controls ../../Include/Rocket/Core ../../Include/Rocket/Core/Python ../../Include/Rocket/Debugger ../Core Python )
+include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Include ../../Include/Rocket ../../Include/Rocket/Controls ../../Include/Rocket/Core ../../Include/Rocket/Core/Python ../../Include/Rocket/Debugger )
 
 
 

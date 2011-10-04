@@ -28,7 +28,7 @@
 #ifndef ROCKETAPPLICATION_H
 #define ROCKETAPPLICATION_H
 
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 #include <Ogre/ExampleApplication.h>
 #include <Ogre/Ogre.h>
 

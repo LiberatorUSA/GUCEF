@@ -28,7 +28,7 @@
 #ifndef ROCKETCOREEVENTDISPATCHER_H
 #define ROCKETCOREEVENTDISPATCHER_H
 
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 #include <Rocket/Core/Event.h>
 #include <map>
 

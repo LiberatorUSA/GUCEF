@@ -40,7 +40,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\Include;..\..\support\freetype\include"
+				AdditionalIncludeDirectories="..\Include;..\..\freetype\include"
 				UsePrecompiledHeader="2"
 			/>
 			<Tool
@@ -54,7 +54,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="freetype243MT_D.lib"
+				AdditionalDependencies="freetype_d.lib"
 				OutputFile="..\bin\$(ProjectName)_d.dll"
 				AdditionalLibraryDirectories="..\..\support\lib"
 				RandomizedBaseAddress="1"
@@ -106,7 +106,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\Include;..\..\support\freetype\include"
+				AdditionalIncludeDirectories="..\Include;..\..\freetype\include"
 				UsePrecompiledHeader="2"
 			/>
 			<Tool
@@ -120,7 +120,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="freetype243MT.lib"
+				AdditionalDependencies="freetype.lib"
 				OutputFile="..\bin\$(ProjectName).dll"
 				AdditionalLibraryDirectories="..\..\support\lib"
 				RandomizedBaseAddress="1"

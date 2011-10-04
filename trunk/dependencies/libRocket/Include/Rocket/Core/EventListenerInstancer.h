@@ -29,7 +29,7 @@
 #define ROCKETCOREEVENTLISTENERINSTANCER_H
 
 #include <Rocket/Core/ReferenceCountable.h>
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 #include <Rocket/Core/Header.h>
 
 namespace Rocket {
