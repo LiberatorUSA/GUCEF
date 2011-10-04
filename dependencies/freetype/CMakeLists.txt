@@ -550,7 +550,7 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "freetype" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "FT_DVEDIT_DLL_API;FT_CONFIG_OPTION_SYSTEM_ZLIB;FT2_BUILD_LIBRARY;FT_DVEDIT_BUILD_DLL" )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "FT_DVEDIT_BUILD_DLL;FT_DVEDIT_DLL_API;FT2_BUILD_LIBRARY;FT_CONFIG_OPTION_SYSTEM_ZLIB" )
 
 if ( ANDROID )
   target_link_libraries( ${MODULE_NAME} z )
@@ -574,15 +574,15 @@ endif( WIN64 )
 include_directories( include include/freetype include/freetype/config include/freetype/internal include/freetype/internal/services src/winfonts )
 
 if ( LINUX )
-  include_directories( ../../../../GUCEF/trunk/gucefVFS/plugins/vfspluginZIP/dependencies/zlib )
+  include_directories( ../zlib )
 endif( LINUX )
 
 if ( WIN32 )
-  include_directories( ../../../../GUCEF/trunk/gucefVFS/plugins/vfspluginZIP/dependencies/zlib )
+  include_directories( ../zlib )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../../GUCEF/trunk/gucefVFS/plugins/vfspluginZIP/dependencies/zlib )
+  include_directories( ../zlib )
 endif( WIN64 )
 
 

@@ -9,35 +9,31 @@
 #-------------------------------------------------------------------
 #
 
-# Configuration for module: miniupnpc
+# Configuration for module: RocketDebugger
 
 set( HEADER_FILES 
-  bsdqueue.h
-  codelength.h
-  declspec.h
-  igd_desc_parse.h
-  minisoap.h
-  minissdpc.h
-  miniupnpc.h
-  miniupnpcstrings.h
-  miniwget.h
-  minixml.h
-  upnpcommands.h
-  upnperrors.h
-  upnpreplyparse.h
+  BeaconSource.h
+  CommonSource.h
+  ElementContextHook.h
+  ElementInfo.h
+  ElementLog.h
+  FontSource.h
+  Geometry.h
+  InfoSource.h
+  LogSource.h
+  MenuSource.h
+  Plugin.h
+  SystemInterface.h
 )
 
 set( SOURCE_FILES 
-  igd_desc_parse.c
-  minisoap.c
-  minissdpc.c
-  miniupnpc.c
-  miniwget.c
-  minixml.c
-  upnpc.c
-  upnpcommands.c
-  upnperrors.c
-  upnpreplyparse.c
+  Debugger.cpp
+  ElementContextHook.cpp
+  ElementInfo.cpp
+  ElementLog.cpp
+  Geometry.cpp
+  Plugin.cpp
+  SystemInterface.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -49,22 +45,12 @@ set( SOURCE_FILES
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "miniupnpc" )
+set( MODULE_NAME "RocketDebugger" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "MINIUPNP_EXPORTS" )
+add_dependencies( ${MODULE_NAME} RocketCore freetype )
+target_link_libraries( ${MODULE_NAME} RocketCore freetype )
 
-if ( ANDROID )
-  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "__sun" )
-endif( ANDROID )
-
-if ( WIN32 )
-  target_link_libraries( ${MODULE_NAME} WS2_32.lib )
-endif( WIN32 )
-
-if ( WIN64 )
-  target_link_libraries( ${MODULE_NAME} WS2_32.lib )
-endif( WIN64 )
-
+include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Include ../../Include/Rocket ../../Include/Rocket/Controls ../../Include/Rocket/Core ../../Include/Rocket/Core/Python ../../Include/Rocket/Debugger ../Core ../Core/Python )
 
 
 
@@ -73,9 +59,9 @@ endif( WIN64 )
 
 
 
-if (ANDROID)
+if (LINUX)
 GUCEF_config_lib( ${MODULE_NAME} )
-elseif (LINUX)
+elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )
