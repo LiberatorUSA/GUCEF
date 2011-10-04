@@ -28,7 +28,7 @@
 #ifndef INVENTORY_H
 #define INVENTORY_H
 
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 #include <Rocket/Core/Context.h>
 #include <Rocket/Core/ElementDocument.h>
 

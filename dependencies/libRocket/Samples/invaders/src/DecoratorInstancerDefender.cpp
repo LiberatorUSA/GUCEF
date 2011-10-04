@@ -27,7 +27,7 @@
 
 #include "DecoratorInstancerDefender.h"
 #include <Rocket/Core/Math.h>
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 #include "DecoratorDefender.h"
 
 DecoratorInstancerDefender::DecoratorInstancerDefender()

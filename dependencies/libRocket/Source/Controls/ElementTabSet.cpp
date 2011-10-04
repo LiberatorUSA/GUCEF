@@ -26,7 +26,7 @@
  */
 
 #include <Rocket/Controls/ElementTabSet.h>
-#include <Rocket/Core/Math.h>
+#include <Rocket/Core/RocketMath.h>
 #include <Rocket/Core/Factory.h>
 
 namespace Rocket {

@@ -28,7 +28,7 @@
 #ifndef ROCKETCORETEXTUREDATABASE_H
 #define ROCKETCORETEXTUREDATABASE_H
 
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 #include <map>
 
 namespace Rocket {

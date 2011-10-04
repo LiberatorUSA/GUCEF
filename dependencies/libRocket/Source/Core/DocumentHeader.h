@@ -28,7 +28,7 @@
 #ifndef ROCKETCOREDOCUMENTHEADER_H
 #define ROCKETCOREDOCUMENTHEADER_H
 
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 
 namespace Rocket {
 namespace Core {

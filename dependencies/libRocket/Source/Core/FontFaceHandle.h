@@ -34,7 +34,7 @@
 #include <Rocket/Core/FontEffect.h>
 #include <Rocket/Core/FontGlyph.h>
 #include <Rocket/Core/Geometry.h>
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 #include <Rocket/Core/Texture.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H

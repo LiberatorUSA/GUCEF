@@ -29,7 +29,7 @@
 #define ROCKETCOREVECTOR2_H
 
 #include <Rocket/Core/Debug.h>
-#include <Rocket/Core/Math.h>
+#include <Rocket/Core/RocketMath.h>
 
 namespace Rocket {
 namespace Core {

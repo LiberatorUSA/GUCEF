@@ -60,7 +60,7 @@ typedef unsigned __int64 uint64_t;
 
 #include <Rocket/Core/Colour.h>
 #include <Rocket/Core/Vector2.h>
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 
 namespace Rocket {
 namespace Core {

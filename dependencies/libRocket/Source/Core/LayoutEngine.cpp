@@ -27,7 +27,7 @@
 
 #include "precompiled.h"
 #include "LayoutEngine.h"
-#include <Rocket/Core/Math.h>
+#include <Rocket/Core/RocketMath.h>
 #include "Pool.h"
 #include "LayoutBlockBoxSpace.h"
 #include "LayoutInlineBoxText.h"

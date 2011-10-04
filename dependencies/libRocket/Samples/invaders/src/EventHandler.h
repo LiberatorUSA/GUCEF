@@ -28,7 +28,7 @@
 #ifndef ROCKETINVADERSEVENTHANDLER_H
 #define ROCKETINVADERSEVENTHANDLER_H
 
-#include <Rocket/Core/String.h>
+#include <Rocket/Core/RocketString.h>
 
 namespace Rocket {
 namespace Core {
