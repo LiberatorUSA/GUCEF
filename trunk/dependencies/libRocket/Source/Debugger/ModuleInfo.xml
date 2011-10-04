@@ -3,11 +3,11 @@
         <Dependencies>
             <Dependency Name="RocketIncludes" />
             <Dependency Name="RocketCore" />
-            <Dependency Name="FreeType" />
+            <Dependency Name="freetype" />
         </Dependencies>
         <Linker>
             <Dependency Name="RocketCore" />
-            <Dependency Name="FreeType" />
+            <Dependency Name="freetype" />
         </Linker>
     </Module>
 </ModuleInfoEntry>
