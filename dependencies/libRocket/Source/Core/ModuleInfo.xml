@@ -2,10 +2,10 @@
     <Module Name="RocketCore" Type="SharedLibrary" Platform="All">
         <Dependencies>
             <Dependency Name="RocketIncludes" />
-            <Dependency Name="FreeType" />
+            <Dependency Name="freetype" />
         </Dependencies>
         <Linker>
-            <Dependency Name="FreeType" />
+            <Dependency Name="freetype" />
         </Linker>
     </Module>
 </ModuleInfoEntry>
