@@ -1,0 +1,11 @@
+<ModuleInfoEntry>
+    <Module Name="RocketCore" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="RocketIncludes" />
+            <Dependency Name="FreeType" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="FreeType" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>
