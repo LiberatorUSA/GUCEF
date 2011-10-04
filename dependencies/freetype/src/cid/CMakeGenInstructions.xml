@@ -1,0 +1,12 @@
+<CMAKELISTGENERATOR>
+  <EXCLUDES PLATFORM="ALL">
+    <ITEM NAME="*" />
+  </EXCLUDES>
+  <INCLUDES PLATFORM="ALL">
+    <ITEM NAME="cidriver.c" />
+    <ITEM NAME="cidobjs.c" />
+    <ITEM NAME="cidgload.c" />
+    <ITEM NAME="cidload.c" />
+    <ITEM NAME="cidparse.c" />
+  </INCLUDES>
+</CMAKELISTGENERATOR>

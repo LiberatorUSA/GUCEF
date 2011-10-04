@@ -1,0 +1,12 @@
+<CMAKELISTGENERATOR>
+  <EXCLUDES PLATFORM="ALL">
+    <ITEM NAME="*" />
+  </EXCLUDES>
+  <INCLUDES PLATFORM="ALL">
+    <ITEM NAME="ftbase.c" />
+    <ITEM NAME="ftsystem.c" />
+    <ITEM NAME="ftglyph.c" />
+    <ITEM NAME="ftbitmap.c" />
+    <ITEM NAME="ftinit.c" />
+  </INCLUDES>
+</CMAKELISTGENERATOR>

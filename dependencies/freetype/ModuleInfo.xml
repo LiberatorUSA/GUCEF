@@ -1,0 +1,23 @@
+<ModuleInfoEntry>
+    <Module Name="freetype" Type="SharedLibrary" Platform="All">
+        <Preprocessor>
+            <Define String="FT2_BUILD_LIBRARY" />
+            <Define String="FT_CONFIG_OPTION_SYSTEM_ZLIB" />
+            <Define String="FT_DVEDIT_DLL_API" />
+            <Define String="FT_DVEDIT_BUILD_DLL" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="linux;mswin">
+        <Dependencies>
+            <Dependency Name="zlib" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="zlib" />
+        </Linker>
+    </Module>
+    <Module Platform="android">
+        <Linker>
+            <Dependency Name="z" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>
