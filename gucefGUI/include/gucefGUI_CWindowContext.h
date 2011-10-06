@@ -1,6 +1,6 @@
 /*
  *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,28 +17,34 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
+#ifndef GUCEF_GUI_CWINDOWCONTEXT_H
+#define GUCEF_GUI_CWINDOWCONTEXT_H 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
+#ifndef GUCEF_CORE_CNOTIFIER_H
+#include "CNotifier.h"
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
 
-#ifndef GUCEF_GUI_H
-#include "gucefGUI.h"
-#define GUCEF_GUI_H
-#endif /* GUCEF_GUI_H ? */
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
-#include "gucefGUI_CModule.h"
+#ifndef GUCEF_GUI_CIGUICONTEXT_H
+#include "gucefGUI_CIGUIContext.h"
+#define GUCEF_GUI_CIGUICONTEXT_H
+#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,51 +57,46 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool
-CModule::Load( void )
-{GUCEF_TRACE;
+class GUCEF_GUI_PUBLIC_CPP CWindowContext : public CORE::CNotifier
+{        
+    public:
+    
+    static const GUCEF::CORE::CEvent WindowContextSizeEvent;
+    static const GUCEF::CORE::CEvent WindowContextActivateEvent;
 
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefGUI Module loaded" );
+    typedef GUCEF::CORE::TCloneableBool WindowContextActivateEventData;
     
-    CWidget::RegisterEvents();
-    CForm::RegisterEvents();
-    CButton::RegisterEvents();
-    CCheckbox::RegisterEvents();
-    CCombobox::RegisterEvents();
-    CEditbox::RegisterEvents();
-    CFileSystemDialog::RegisterEvents();
-    CGridView::RegisterEvents();
-    CLabel::RegisterEvents();
-    CListbox::RegisterEvents();
-    CPushButton::RegisterEvents();
-    CSpinner::RegisterEvents();
-    CTabControl::RegisterEvents();
-    CTextbox::RegisterEvents();
-    CGUIManager::RegisterEvents();
+    static void RegisterEvents( void );
     
-    CWindowManager::Instance();
-    CGUIManager::Instance();
-        
-    return true;
-}
+    public:
+    
+    CWindowContext( void );
+    
+    virtual ~CWindowContext();
+    
+    virtual void SetGuiContext( TGuiContextPtr& context ) = 0;
+    
+    virtual TGuiContextPtr GetGuiContext( void ) = 0;
+    
+    virtual UInt32 GetID( void ) const = 0;
+    
+    virtual bool IsActive( void ) const = 0;
+    
+    virtual CString GetName( void ) const = 0;
+    
+    private:
+    
+    CWindowContext( const CWindowContext& src );            /**< private because: must be unique */ 
+    CWindowContext& operator=( const CWindowContext& src ); /**< private because: must be unique */
+};
 
 /*-------------------------------------------------------------------------*/
-    
-bool
-CModule::Unload( void )
-{GUCEF_TRACE;
-    
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefGUI Module unloading" );
-    
-    CGUIManager::Deinstance();
-    CWindowManager::Deinstance();
-    
-    return true;
-}
+
+typedef CORE::CTSharedPtr< CWindowContext > TWindowContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -103,7 +104,20 @@ CModule::Unload( void )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUI */
-}; /* namespace GUCEF */
+} /* namespace GUI */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 08-10-2005 :
+        - Initial version
+
+---------------------------------------------------------------------------*/

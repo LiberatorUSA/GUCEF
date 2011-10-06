@@ -1,6 +1,6 @@
 /*
  *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -23,22 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-#ifndef GUCEF_GUI_H
-#include "gucefGUI.h"
-#define GUCEF_GUI_H
-#endif /* GUCEF_GUI_H ? */
-
-#include "gucefGUI_CModule.h"
+#include "gucefGUI_CWindowContext.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,50 +36,40 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CEvent CWindowContext::WindowContextSizeEvent = "GUCEF::GUI::CWindowContext::WindowContextSizeEvent";
+const CORE::CEvent CWindowContext::WindowContextActivateEvent = "GUCEF::GUI::CWindowContext::WindowContextActivateEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool
-CModule::Load( void )
+CWindowContext::CWindowContext( void )
+{GUCEF_TRACE;
+                       
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/                                
+
+CWindowContext::~CWindowContext()
 {GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefGUI Module loaded" );
-    
-    CWidget::RegisterEvents();
-    CForm::RegisterEvents();
-    CButton::RegisterEvents();
-    CCheckbox::RegisterEvents();
-    CCombobox::RegisterEvents();
-    CEditbox::RegisterEvents();
-    CFileSystemDialog::RegisterEvents();
-    CGridView::RegisterEvents();
-    CLabel::RegisterEvents();
-    CListbox::RegisterEvents();
-    CPushButton::RegisterEvents();
-    CSpinner::RegisterEvents();
-    CTabControl::RegisterEvents();
-    CTextbox::RegisterEvents();
-    CGUIManager::RegisterEvents();
-    
-    CWindowManager::Instance();
-    CGUIManager::Instance();
-        
-    return true;
 }
 
 /*-------------------------------------------------------------------------*/
-    
-bool
-CModule::Unload( void )
+
+void
+CWindowContext::RegisterEvents( void )
 {GUCEF_TRACE;
-    
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefGUI Module unloading" );
-    
-    CGUIManager::Deinstance();
-    CWindowManager::Deinstance();
-    
-    return true;
+
+    WindowContextSizeEvent.Initialize();
+    WindowContextActivateEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------//
@@ -103,7 +78,7 @@ CModule::Unload( void )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUI */
-}; /* namespace GUCEF */
+} /* namespace GUI */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

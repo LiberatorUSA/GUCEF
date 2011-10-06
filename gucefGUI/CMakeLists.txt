@@ -44,9 +44,14 @@ set( HEADER_FILES
   include/gucefGUI_CTreeview.h
   include/gucefGUI_CUDim.h
   include/gucefGUI_CUVector.h
+  include/gucefGUI_CVideoOptions.h
+  include/gucefGUI_CVideoSettings.h
   include/gucefGUI_CWidget.h
   include/gucefGUI_CWidgetFactory.h
   include/gucefGUI_CWindow.h
+  include/gucefGUI_CWindowContext.h
+  include/gucefGUI_CWindowManager.h
+  include/gucefGUI_CWindowManagerBackend.h
   include/gucefGUI_ETypes.h
   include/gucefGUI_macros.h
 )
@@ -83,9 +88,14 @@ set( SOURCE_FILES
   src/gucefGUI_CTreeview.cpp
   src/gucefGUI_CUDim.cpp
   src/gucefGUI_CUVector.cpp
+  src/gucefGUI_CVideoOptions.cpp
+  src/gucefGUI_CVideoSettings.cpp
   src/gucefGUI_CWidget.cpp
   src/gucefGUI_CWidgetFactory.cpp
   src/gucefGUI_CWindow.cpp
+  src/gucefGUI_CWindowContext.cpp
+  src/gucefGUI_CWindowManager.cpp
+  src/gucefGUI_CWindowManagerBackend.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

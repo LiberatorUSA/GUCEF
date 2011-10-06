@@ -1,6 +1,6 @@
 /*
  *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,9 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
+ 
+#ifndef GUCEF_GUI_CWINDOWMANAGER_H
+#define GUCEF_GUI_CWINDOWMANAGER_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -23,22 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-#ifndef GUCEF_GUI_H
-#include "gucefGUI.h"
-#define GUCEF_GUI_H
-#endif /* GUCEF_GUI_H ? */
-
-#include "gucefGUI_CModule.h"
+#ifndef GUCEF_GUI_CWINDOWMANAGERBACKEND_H
+#include "gucefGUI_CWindowManagerBackend.h"
+#define GUCEF_GUI_CWINDOWMANAGERBACKEND_H
+#endif /* GUCEF_GUI_CWINDOWMANAGERBACKEND_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,54 +44,49 @@
 
 namespace GUCEF {
 namespace GUI {
-
+         
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool
-CModule::Load( void )
-{GUCEF_TRACE;
+/**
+ *  Central location were window manager backends can be obtained.
+ */
+class GUCEF_GUI_PUBLIC_CPP CWindowManager : public CORE::CObservingNotifier
+{    
+    public:
 
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefGUI Module loaded" );
-    
-    CWidget::RegisterEvents();
-    CForm::RegisterEvents();
-    CButton::RegisterEvents();
-    CCheckbox::RegisterEvents();
-    CCombobox::RegisterEvents();
-    CEditbox::RegisterEvents();
-    CFileSystemDialog::RegisterEvents();
-    CGridView::RegisterEvents();
-    CLabel::RegisterEvents();
-    CListbox::RegisterEvents();
-    CPushButton::RegisterEvents();
-    CSpinner::RegisterEvents();
-    CTabControl::RegisterEvents();
-    CTextbox::RegisterEvents();
-    CGUIManager::RegisterEvents();
-    
-    CWindowManager::Instance();
-    CGUIManager::Instance();
-        
-    return true;
-}
+    typedef std::map< CORE::CString, TWindowManagerBackendPtr > TWindowManagerBackendMap;
 
-/*-------------------------------------------------------------------------*/
-    
-bool
-CModule::Unload( void )
-{GUCEF_TRACE;
-    
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefGUI Module unloading" );
-    
-    CGUIManager::Deinstance();
-    CWindowManager::Deinstance();
-    
-    return true;
-}
+    TWindowManagerBackendPtr GetBackend( const CORE::CString& typeName );
+
+    void RegisterBackend( const CORE::CString& typeName    ,
+                          TWindowManagerBackendPtr backend );
+
+    void UnregisterBackend( const CORE::CString& typeName );
+
+    void GetListOfAvailableBackends( TWindowManagerBackendMap& map );
+                              
+    static CWindowManager* Instance( void );
+
+    private:
+    friend class CModule;
+
+    static void Deinstance( void );
+
+    CWindowManager( void );
+    ~CWindowManager();
+    CWindowManager( const CWindowManager& src );            /**< not implemented: singleton */
+    CWindowManager& operator=( const CWindowManager& src ); /**< not implemented: singleton */
+
+    private:
+
+    TWindowManagerBackendMap m_backends;
+    static MT::CMutex g_lock;
+    static CWindowManager* g_instance;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -103,7 +94,20 @@ CModule::Unload( void )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUI */
-}; /* namespace GUCEF */
+} /* namespace GUI */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_GUI_CWINDOWMANAGER_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 02-04-2005 :
+       - Initial version of this file.
+
+---------------------------------------------------------------------------*/

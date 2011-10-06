@@ -174,6 +174,31 @@
 #define GUCEF_GUI_CRENDERCONTEXT_H
 #endif /* GUCEF_GUI_CRENDERCONTEXT_H ? */
 
+#ifndef GUCEF_GUI_CWINDOWCONTEXT_H
+#include "gucefGUI_CWindowContext.h"
+#define GUCEF_GUI_CWINDOWCONTEXT_H
+#endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
+
+#ifndef GUCEF_GUI_CWINDOWMANAGER_H
+#include "gucefGUI_CWindowManager.h"
+#define GUCEF_GUI_CWINDOWMANAGER_H
+#endif /* GUCEF_GUI_CWINDOWMANAGER_H ? */
+
+#ifndef GUCEF_GUI_CWINDOWMANAGERBACKEND_H
+#include "gucefGUI_CWindowManagerBackend.h"
+#define GUCEF_GUI_CWINDOWMANAGERBACKEND_H
+#endif /* GUCEF_GUI_CWINDOWMANAGERBACKEND_H ? */
+
+#ifndef GUCEF_GUI_CVIDEOSETTINGS_H
+#include "gucefGUI_CVideoSettings.h"
+#define GUCEF_GUI_CVIDEOSETTINGS_H
+#endif /* GUCEF_GUI_CVIDEOSETTINGS_H ? */
+
+#ifndef GUCEF_GUI_CVIDEOOPTIONS_H
+#include "gucefGUI_CVideoOptions.h"
+#define GUCEF_GUI_CVIDEOOPTIONS_H
+#endif /* GUCEF_GUI_CVIDEOOPTIONS_H ? */
+
 #endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//

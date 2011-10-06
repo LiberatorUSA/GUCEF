@@ -16,25 +16,25 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
-
-#ifndef GUCEF_GUI_CTABCONTROL_H
-#define GUCEF_GUI_CTABCONTROL_H
+ 
+#ifndef GUCEF_GUI_CVIDEOSETTINGS_H
+#define GUCEF_GUI_CVIDEOSETTINGS_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/
+//-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CLONEABLES_H
-#include "cloneables.h"
-#define GUCEF_CORE_CLONEABLES_H
-#endif /* GUCEF_CORE_CLONEABLES_H ? */
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
-#ifndef GUCEF_GUI_CTABCONTENTPANE_H
-#include "gucefGUI_CTabContentPane.h"
-#define GUCEF_GUI_CTABCONTENTPANE_H
-#endif /* GUCEF_GUI_CTABCONTENTPANE_H ? */
+#ifndef GUCEF_GUI_CVIDEOOPTIONS_H
+#include "gucefGUI_CVideoOptions.h"
+#define GUCEF_GUI_CVIDEOOPTIONS_H
+#endif /* GUCEF_GUI_CVIDEOOPTIONS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,41 +44,79 @@
 
 namespace GUCEF {
 namespace GUI {
-
+         
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_PUBLIC_CPP CTabControl : public CWidget
+class GUCEF_GUI_PUBLIC_CPP CVideoSettings : public CORE::CIConfigurable
 {
     public:
+    
+    typedef CVideoOptions::TDisplayMode TDisplayMode;
+    
+    CVideoSettings( void );
+    
+    CVideoSettings( const CVideoSettings& src );
+    
+    virtual ~CVideoSettings();
+    
+    CVideoSettings& operator=( const CVideoSettings& src );
+    
+    void SetDisplayMode( const TDisplayMode& displayMode );
+    
+    void GetDisplayMode( TDisplayMode& displayMode ) const;
+    
+    void SetFullscreenState( const bool isFullscreen );
+    
+    bool GetFullscreenState( void ) const;
 
-    static const CORE::CEvent ActiveTabChangedEvent;
+    void SetVSyncState( const bool hasVSync );
     
-    typedef CORE::TCloneableUInt32 TActiveTabChangedEventData;
+    bool GetVSyncState( void ) const;
     
-    static void RegisterEvents( void );
+    void SetResolutionWidthInPixels( const UInt32 widthInPixels );
     
-    public:
+    UInt32 GetResolutionWidthInPixels( void ) const;
     
-    CTabControl( void );
+    void SetResolutionHeightInPixels( const UInt32 heightInPixels );
     
-    virtual ~CTabControl();
+    UInt32 GetResolutionHeightInPixels( void ) const;
     
-    virtual bool SetActiveTab( const UInt32 tabIndex );
+    void SetResolutionDepthInBits( const UInt32 depthInBits );
     
-    virtual Int32 GetActiveTab( void ) const;
+    UInt32 GetResolutionDepthInBits( void ) const;
     
-    virtual CTabContentPane* GetTabContentPane( const UInt32 tabIndex );
+    void SetResolution( const UInt32 widthInPixels  ,
+                        const UInt32 heightInPixels ,
+                        const UInt32 depthInBits    );
+
+    void GetResolution( UInt32& widthInPixels  ,
+                        UInt32& heightInPixels ,
+                        UInt32& depthInBits    );
+                        
+    void SetAntiAliasingFactor( const UInt32 newFactor );
     
-    virtual const CString& GetClassTypeName( void ) const;
+    UInt32 GetAntiAliasingFactor( void ) const;
     
+    void SetFrequency( const UInt32 frequency );
+    
+    UInt32 GetFrequency( void ) const;
+
+    virtual bool SaveConfig( GUCEF::CORE::CDataNode& tree );
+                                                                   
+    virtual bool LoadConfig( const GUCEF::CORE::CDataNode& treeroot );
+    
+    static bool RetrieveSettingsFromOS( CVideoSettings& settings );
+        
     private:
     
-    CTabControl( const CTabControl& src );
-    CTabControl& operator=( const CTabControl& src );
+    bool m_isFullscreen;
+    bool m_hasVSync;
+    UInt32 m_antiAliasingFactor;
+    TDisplayMode m_displayMode;
 };
 
 /*-------------------------------------------------------------------------//
@@ -91,8 +129,8 @@ class GUCEF_GUI_PUBLIC_CPP CTabControl : public CWidget
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_GUI_CTABCONTROL_H ? */
+
+#endif /* GUCEF_GUI_CVIDEOSETTINGS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -100,7 +138,7 @@ class GUCEF_GUI_PUBLIC_CPP CTabControl : public CWidget
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 18-08-2007 :
-        - Dinand: Initial implementation
+- 02-04-2005 :
+       - Initial version of this file.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

@@ -17,24 +17,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_CTABCONTROL_H
-#define GUCEF_GUI_CTABCONTROL_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CLONEABLES_H
-#include "cloneables.h"
-#define GUCEF_CORE_CLONEABLES_H
-#endif /* GUCEF_CORE_CLONEABLES_H ? */
-
-#ifndef GUCEF_GUI_CTABCONTENTPANE_H
-#include "gucefGUI_CTabContentPane.h"
-#define GUCEF_GUI_CTABCONTENTPANE_H
-#endif /* GUCEF_GUI_CTABCONTENTPANE_H ? */
+#include "gucefGUI_CWindowManager.h"    /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,39 +36,112 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_PUBLIC_CPP CTabControl : public CWidget
-{
-    public:
+MT::CMutex CWindowManager::g_lock;
+CWindowManager* CWindowManager::g_instance = NULL;
+         
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
 
-    static const CORE::CEvent ActiveTabChangedEvent;
-    
-    typedef CORE::TCloneableUInt32 TActiveTabChangedEventData;
-    
-    static void RegisterEvents( void );
-    
-    public:
-    
-    CTabControl( void );
-    
-    virtual ~CTabControl();
-    
-    virtual bool SetActiveTab( const UInt32 tabIndex );
-    
-    virtual Int32 GetActiveTab( void ) const;
-    
-    virtual CTabContentPane* GetTabContentPane( const UInt32 tabIndex );
-    
-    virtual const CString& GetClassTypeName( void ) const;
-    
-    private:
-    
-    CTabControl( const CTabControl& src );
-    CTabControl& operator=( const CTabControl& src );
-};
+CWindowManager::CWindowManager( void )
+    : m_backends()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CWindowManager::~CWindowManager()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CWindowManager* 
+CWindowManager::Instance( void )
+{GUCEF_TRACE;
+
+    if ( NULL == g_instance )
+    {
+        g_lock.Lock();
+        if ( NULL == g_instance )
+        {
+            g_instance = new CWindowManager();
+        }
+        g_lock.Unlock();
+    }
+    return g_instance;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWindowManager::Deinstance( void )
+{GUCEF_TRACE;
+
+    g_lock.Lock();
+    delete g_instance;
+    g_instance = NULL;
+    g_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+TWindowManagerBackendPtr 
+CWindowManager::GetBackend( const CORE::CString& typeName )
+{GUCEF_TRACE;
+
+    g_lock.Lock();
+    TWindowManagerBackendMap::iterator i = m_backends.find( typeName );
+    if ( i != m_backends.end() )
+    {
+        g_lock.Unlock();
+        return (*i).second;
+    }
+    g_lock.Unlock();
+    return TWindowManagerBackendPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWindowManager::RegisterBackend( const CORE::CString& typeName    ,
+                                 TWindowManagerBackendPtr backend )
+{GUCEF_TRACE;
+
+    g_lock.Lock();
+    m_backends[ typeName ] = backend;
+    g_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWindowManager::UnregisterBackend( const CORE::CString& typeName )
+{GUCEF_TRACE;
+
+    g_lock.Lock();
+    m_backends.erase( typeName );
+    g_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWindowManager::GetListOfAvailableBackends( TWindowManagerBackendMap& map )
+{GUCEF_TRACE;
+
+    g_lock.Lock();
+    map = m_backends;
+    g_lock.Unlock();
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -87,20 +149,7 @@ class GUCEF_GUI_PUBLIC_CPP CTabControl : public CWidget
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUI */
-}; /* namespace GUCEF */
+} /* namespace GUI */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_GUI_CTABCONTROL_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/
