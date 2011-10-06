@@ -63,7 +63,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="RocketCore_d.lib RocketDebugger_d.lib sfml-system-s-d.lib sfml-window-s-d.lib sfml-graphics-s-d.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\sfml\lib;..\..\..\bin"
+				AdditionalLibraryDirectories="..\..\..\..\sfml\lib;..\..\..\bin;..\..\..\..\..\common\bin\MVC10\lib\Debug"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"

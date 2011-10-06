@@ -26,7 +26,7 @@
  */
 
 #include "DecoratorStarfield.h"
-#include <Rocket/Core/Math.h>
+#include <Rocket/Core/RocketMath.h>
 #include "DecoratorInstancerStarfield.h"
 
 DecoratorInstancerStarfield::DecoratorInstancerStarfield()

@@ -57,7 +57,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="RocketCore_d.lib RocketControls_d.lib RocketDebugger_d.lib opengl32.lib"
 				OutputFile="..\..\..\bin\$(ProjectName)_d.exe"
-				AdditionalLibraryDirectories="..\..\..\bin"
+				AdditionalLibraryDirectories="..\..\..\bin;..\..\..\..\..\common\bin\MVC10\lib\Debug"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				RandomizedBaseAddress="1"

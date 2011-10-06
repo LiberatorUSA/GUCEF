@@ -28,7 +28,7 @@
 #include "DecoratorDefender.h"
 #include <Rocket/Core/Element.h>
 #include <Rocket/Core/Texture.h>
-#include <Rocket/Core/Math.h>
+#include <Rocket/Core/RocketMath.h>
 #include <ShellOpenGL.h>
 
 DecoratorDefender::~DecoratorDefender()

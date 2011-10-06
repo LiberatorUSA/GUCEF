@@ -26,7 +26,7 @@
  */
 
 #include "Invader.h"
-#include <Rocket/Core/Math.h>
+#include <Rocket/Core/RocketMath.h>
 #include <Shell.h>
 #include <ShellOpenGL.h>
 #include "Defender.h"

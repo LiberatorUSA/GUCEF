@@ -26,7 +26,7 @@
  */
 
 #include "Shield.h"
-#include <Rocket/Core/Math.h>
+#include <Rocket/Core/RocketMath.h>
 #include <ShellOpenGL.h>
 #include "Game.h"
 #include "GameDetails.h"
