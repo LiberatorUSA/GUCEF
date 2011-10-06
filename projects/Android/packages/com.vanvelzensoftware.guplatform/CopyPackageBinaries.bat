@@ -1,8 +1,9 @@
 @echo off
 
 SET COPYPACKAGEBINARIES_THEBATCHDIR=%~dp0
-GOTO COPY_PACKAGE_BINARIES 
-
+CALL :COPY_PACKAGE_BINARIES 
+CALL :COPY_PACKAGE_BINARIES_AS_ASSETS
+GOTO :END
 
 REM -----------------------------------------------------
 
@@ -22,7 +23,7 @@ ECHO.
 xcopy %SRCDIR%\libmain.so %DSTDIR% /Y /I /F
 xcopy %SRCDIR%\libgucefLOADER.so %DSTDIR% /Y /I /F
 
-GOTO COPY_PACKAGE_BINARIES_AS_ASSETS
+GOTO :eof
 
 REM -----------------------------------------------------
 
@@ -81,8 +82,7 @@ xcopy %SRCDIR%\libRocketControls.so %DSTDIR% /Y /I /F
 xcopy %SRCDIR%\libRocketCore.so %DSTDIR% /Y /I /F
 xcopy %SRCDIR%\libRocketDebugger.so %DSTDIR% /Y /I /F
 
-
-GOTO END
+GOTO :eof
 
 REM -----------------------------------------------------
 
