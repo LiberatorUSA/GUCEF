@@ -1,6 +1,6 @@
 /*
  *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -16,29 +16,22 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
+ 
+#ifndef GUCEF_GUI_CVIDEOOPTIONS_H
+#define GUCEF_GUI_CVIDEOOPTIONS_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/
+//-------------------------------------------------------------------------*/ 
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
+#include <vector>
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-#ifndef GUCEF_GUI_H
-#include "gucefGUI.h"
-#define GUCEF_GUI_H
-#endif /* GUCEF_GUI_H ? */
-
-#include "gucefGUI_CModule.h"
+#ifndef GUCEF_GUI_MACROS_H
+#include "gucefGUI_macros.h"
+#define GUCEF_GUI_MACROS_H
+#endif /* GUCEF_GUI_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,54 +41,59 @@
 
 namespace GUCEF {
 namespace GUI {
-
+         
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool
-CModule::Load( void )
-{GUCEF_TRACE;
-
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefGUI Module loaded" );
-    
-    CWidget::RegisterEvents();
-    CForm::RegisterEvents();
-    CButton::RegisterEvents();
-    CCheckbox::RegisterEvents();
-    CCombobox::RegisterEvents();
-    CEditbox::RegisterEvents();
-    CFileSystemDialog::RegisterEvents();
-    CGridView::RegisterEvents();
-    CLabel::RegisterEvents();
-    CListbox::RegisterEvents();
-    CPushButton::RegisterEvents();
-    CSpinner::RegisterEvents();
-    CTabControl::RegisterEvents();
-    CTextbox::RegisterEvents();
-    CGUIManager::RegisterEvents();
-    
-    CWindowManager::Instance();
-    CGUIManager::Instance();
-        
-    return true;
-}
+class CVideoSettings;
 
 /*-------------------------------------------------------------------------*/
+
+class GUCEF_GUI_PUBLIC_CPP CVideoOptions
+{
+    public:
     
-bool
-CModule::Unload( void )
-{GUCEF_TRACE;
+    struct SDisplayMode
+    {
+        UInt32 widthInPixels;
+        UInt32 heightInPixels;
+        UInt32 depthInBits;
+        UInt32 frequency;
+    };
+    typedef struct SDisplayMode TDisplayMode;
+    typedef std::vector< TDisplayMode > TDisplayModeVector;
     
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefGUI Module unloading" );
+    CVideoOptions( void );
     
-    CGUIManager::Deinstance();
-    CWindowManager::Deinstance();
+    CVideoOptions( const CVideoOptions& src );
     
-    return true;
-}
+    virtual ~CVideoOptions();
+    
+    CVideoOptions& operator=( const CVideoOptions& src );
+    
+    /**
+     *  Checks the given settings against the options to see if
+     *  it is a possible option.
+     */
+    bool AreSettingsPossible( const CVideoSettings& settings ) const;
+    
+    const TDisplayModeVector& GetDisplayModes( void ) const;
+    
+    void GetDisplayModesForResolution( const UInt32 widthInPixels  , 
+                                       const UInt32 heightInPixels ,
+                                       TDisplayModeVector& modes   ) const;
+    
+    void Clear( void );
+    
+    static bool RetrieveOptionsFromOS( CVideoOptions& options );
+        
+    private:
+
+    TDisplayModeVector m_displayModes;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -107,3 +105,16 @@ CModule::Unload( void )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_GUI_CVIDEOOPTIONS_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 02-04-2005 :
+       - Initial version of this file.
+
+---------------------------------------------------------------------------*/
