@@ -13,7 +13,7 @@ function SetGucefHome {
   GUCEF_HOME=${GUCEF_HOME:=undefined}
   if [ "$GUCEF_HOME" = "undefined" ]; then
     echo "GUCEF_HOME environment variable not found, setting it"
-    GUCEF_HOME="$CREATEPROJECT_SCRIPTSTARTDIR/../.."
+    GUCEF_HOME="$CREATEPROJECT_SCRIPTSTARTDIR/../../../.."
   fi
   echo "GUCEF_HOME = $GUCEF_HOME"
 
@@ -47,7 +47,7 @@ echo " "
 echo " "
 echo "Changing current directory to Android project dir relative to GUCEF_HOME"
 
-cd $GUCEF_HOME/projects/Android
+cd $GUCEF_HOME/projects/Android/packages/com.vanvelzensoftware.guplatform
 
 echo "Project dir = $PWD"
 echo " "
