@@ -20,10 +20,17 @@ echo " "
 echo "*** Invoking build script ***"
 echo " "
 
-. $CALLGUCEFANDROIDGLUEBUILD_SCRIPTSTARTDIR/../../BuildUsingNDK.sh
+cd $CALLGUCEFANDROIDGLUEBUILD_SCRIPTSTARTDIR/../.. 
+bash BuildUsingNDK.sh
 
 echo " "
 echo "*** Invoking binary copy script ***"
 echo " "
 
-. $CALLGUCEFANDROIDGLUEBUILD_SCRIPTSTARTDIR/CopyPackageBinaries.sh
+cd $CALLGUCEFANDROIDGLUEBUILD_SCRIPTSTARTDIR 
+bash CopyPackageBinaries.sh
+
+echo "Press enter to continue..."
+line=""
+read line
+
