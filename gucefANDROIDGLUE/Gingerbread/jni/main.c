@@ -104,6 +104,14 @@ GetAssetPath( const char* packageDir ,
 /*-------------------------------------------------------------------------*/
 
 char*
+GetAssetLibRoot( const char* packageDir )
+{
+    return Combine2Strings( packageDir, "/assets/libs/armeabi/" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+char*
 GetLibPath( const char* packageDir ,
             const char* moduleName )
 {
@@ -142,7 +150,7 @@ InvokeLoadAndRunGucefPlatformApp( const char* appName ,
         return 0;
     }
 
-    char* libRootDir = GetLibPath( rootDir, "" );
+    char* libRootDir = GetAssetLibRoot( rootDir );
     char* assetRootDir = GetAssetPath( rootDir, "" );
 
     int returnValue = loadAndRunGucefPlatformApp( appName      ,
@@ -236,16 +244,7 @@ recursive_mkdir( const char* dir, int accessPerms )
             *p = '/';
         }
     }
-    retValue = mkdir( tmp, accessPerms );
-    if ( 0 != retValue )
-    {
-        if ( EEXIST != errno )
-        {
-            return retValue;
-        }
-        else return 0;
-    }
-    return retValue;
+    return mkdir( tmp, accessPerms );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -264,6 +263,7 @@ MakeDir( const char* path, int permissions )
         if ( EEXIST == errno )
         {
             FLOGI( "found existing dir: %s", path );
+            return 1;
         }
         else
         {
@@ -473,6 +473,20 @@ SetFirstRunCompleted( const char* packageDir )
 
 /*-------------------------------------------------------------------------*/
 
+void
+UnSetFirstRunCompleted( const char* packageDir )
+{
+    // We know the gucefLOADER relies on a text file named firstrun.completed.txt
+    // we will use the same convention here to keep things consistent
+    char* firstrunFile = GetAssetPath( packageDir, "firstrun.completed.txt" );
+    remove( firstrunFile );
+    free( firstrunFile );
+
+    LOGI( "Unset first run flag" );
+}
+
+/*-------------------------------------------------------------------------*/
+
 /**
  * This is the main entry point of a native application that is using
  * android_native_app_glue.  It runs in its own thread, with its own
@@ -488,7 +502,8 @@ android_main( struct android_app* state )
     GetPackageDir( state, packageDir, 512 );
 
     // Check if we need to perform first time initialization
-    if ( 0 == IsFirstRun( packageDir ) )
+    int firstRun = IsFirstRun( packageDir );
+    if ( 0 == firstRun )
     {
         LOGI( "Performing first run initialization" );
 
@@ -509,13 +524,23 @@ android_main( struct android_app* state )
     int appStatus = InvokeLoadAndRunGucefPlatformApp( "gucefPRODMAN", packageDir, 0, NULLPTR, 0, NULLPTR );
 
     // Check if we had a successfull run
-    if ( 0 == appStatus )
+    if ( 0 != firstRun )
     {
-        LOGI( "Successfull completed first run, setting first run flag to false" );
+        if ( 0 == appStatus )
+        {
+            LOGI( "Successfull completed first run, setting first run flag to false" );
 
-        // Set the flag that we completed the first run
-        SetFirstRunCompleted( packageDir );
+            // Set the flag that we completed the first run
+            SetFirstRunCompleted( packageDir );
+        }
+        else
+        {
+            // If the flag is already set, unset it
+            UnSetFirstRunCompleted( packageDir );
+        }
     }
+    FLOGI( "exit status code: %i", appStatus );
+
 }
 
 /*-------------------------------------------------------------------------*/
