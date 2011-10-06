@@ -51,39 +51,39 @@ namespace MT {
  */
 class GUCEF_MT_PUBLIC_CPP CMutex
 {
-        public:
+    public:
 
-        /**
-         *      Lock the mutex. If the mutex is already locked the calling
-         *      process will have to wait for the mutex to allow a lock.
-         *      The return value indicates whether the lock failed or succeeded.
-         */
-        bool Lock( void ) const;
+    /**
+     *      Lock the mutex. If the mutex is already locked the calling
+     *      process will have to wait for the mutex to allow a lock.
+     *      The return value indicates whether the lock failed or succeeded.
+     */
+    bool Lock( void ) const;
 
-        /**
-         *      Unlocks the mutex after a call to Lock_Mutex(). Other processes
-         *      will have the ability to get a mutex lock after this call.
-         *      The return value indicates whether the unlock failed or succeeded.
-         */
-        bool Unlock( void ) const;
+    /**
+     *      Unlocks the mutex after a call to Lock_Mutex(). Other processes
+     *      will have the ability to get a mutex lock after this call.
+     *      The return value indicates whether the unlock failed or succeeded.
+     */
+    bool Unlock( void ) const;
 
-        /**
-         *      Default constructor, allocates storage for a mutex.
-         */
-        CMutex( void );
+    /**
+     *      Default constructor, allocates storage for a mutex.
+     */
+    CMutex( void );
 
-        /**
-         *      Destructor, de-allocates storage for a mutex.
-         */
-        ~CMutex();
+    /**
+     *      Destructor, de-allocates storage for a mutex.
+     */
+    ~CMutex();
 
-        private:
-        friend class CCondition;
+    private:
+    friend class CCondition;
 
-        void* _mutexdata;
+    void* _mutexdata;
 
-        CMutex( const CMutex& src );      /* Copying doesnt make sense */
-        CMutex& operator=( const CMutex& src );   /* Copying doesnt make sense */
+    CMutex( const CMutex& src );      /* Copying doesnt make sense */
+    CMutex& operator=( const CMutex& src );   /* Copying doesnt make sense */
 };
 
 /*-------------------------------------------------------------------------//
