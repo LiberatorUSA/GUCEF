@@ -1,3 +1,4 @@
+firstrun.txt
 libs/armeabi/libArchiveDiffLib.so
 libs/armeabi/libdstorepluginPARSIFALXML.so
 libs/armeabi/libDVPACKSYS.so
