@@ -56,6 +56,7 @@ cp -f $SRCDIR/libgucefIMAGE.so $DSTDIR
 cp -f $SRCDIR/libgucefPRODMAN.so $DSTDIR
 cp -f $SRCDIR/libgucefPATCHER.so $DSTDIR
 cp -f $SRCDIR/libgucefINPUT.so $DSTDIR
+cp -f $SRCDIR/libgucefLOADER.so $DSTDIR
 
 echo "* Copy plugins"
 
