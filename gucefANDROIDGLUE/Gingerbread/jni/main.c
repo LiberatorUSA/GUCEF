@@ -168,6 +168,23 @@ InvokeLoadAndRunGucefPlatformApp( const char* appName ,
 /*-------------------------------------------------------------------------*/
 
 void
+StripLastPathComponent( char* path, int pathLength )
+{
+    int i=pathLength;
+    while ( i > 0 )
+    {
+        if ( path[ i ] == '/' )
+        {
+            path[ i ] = '\0';
+            break;
+        }
+        --i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 GetPackageDir( struct android_app* state ,
                char* pathBuffer          ,
                int bufferSize            )
@@ -175,17 +192,7 @@ GetPackageDir( struct android_app* state ,
     ANativeActivity* activity = state->activity;
     int pathLength = strlen( activity->internalDataPath );
     memcpy( pathBuffer, activity->internalDataPath, pathLength+1 );
-
-    int i=pathLength;
-    while ( i > 0 )
-    {
-        if ( pathBuffer[ i ] == '/' )
-        {
-            pathBuffer[ i ] = '\0';
-            break;
-        }
-        --i;
-    }
+    StripLastPathComponent( pathBuffer, pathLength );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -219,11 +226,25 @@ recursive_mkdir( const char* dir, int accessPerms )
         {
             *p = 0;
             retValue = mkdir( tmp, accessPerms );
-            if ( 0 != retValue ) return retValue;
+            if ( 0 != retValue )
+            {
+                if ( EEXIST != errno )
+                {
+                    return retValue;
+                }
+            }
             *p = '/';
         }
     }
     retValue = mkdir( tmp, accessPerms );
+    if ( 0 != retValue )
+    {
+        if ( EEXIST != errno )
+        {
+            return retValue;
+        }
+        else return 0;
+    }
     return retValue;
 }
 
@@ -249,18 +270,24 @@ MakeDir( const char* path, int permissions )
             FLOGI( "error %i creating dir: %s", errno, path );
         }
     }
-    return retValue == 0;
+    return retValue == 0 ? 1 : 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
 int
-MakeResourceDirs( const char* packageDir )
+MakeFileDir( const char* path, int permissions )
 {
-    // add more dirs if needed
-    char* assetsDir = Combine2Strings( packageDir, "/assets" );
-    int retValue = MakeDir( assetsDir, 00777 );
-    free( assetsDir );
+    // First get just the directories without the file
+    int retValue, pathLength = strlen( path );
+    char* dirs = (char*) malloc( pathLength+1 );
+    memcpy( dirs, path, pathLength+1 );
+    StripLastPathComponent( dirs, pathLength );
+
+    // Now we make sure the directories exist
+    retValue = MakeDir( dirs, permissions );
+
+    free( dirs );
     return retValue;
 }
 
@@ -274,9 +301,10 @@ ExtractAsset( AAssetManager* assetManager ,
     AAsset* asset = AAssetManager_open( assetManager, assetPath, AASSET_MODE_BUFFER );
     if ( NULL == asset )
     {
-        FLOGI( "Unable to open asset for extraction: %s", assetPath );
+        FLOGE( "Unable to open asset for extraction: %s", assetPath );
         return 0;
     }
+    FLOGI( "Extracting asset: %s", assetPath );
 
     const void* fileBuffer = AAsset_getBuffer( asset );
     if ( NULL == fileBuffer )
@@ -287,7 +315,22 @@ ExtractAsset( AAssetManager* assetManager ,
     }
     off_t bufferSize = AAsset_getLength( asset );
 
+    // Make sure the directories exist to put the file in
+    if ( 0 == MakeFileDir( destPath, 00777 ) )
+    {
+        AAsset_close( asset );
+        FLOGE( "Unable to make directories for asset extraction: %s", destPath );
+        return 0;
+    }
+
     FILE* destFile = fopen( destPath, "wb" );
+    if ( NULL == destFile )
+    {
+        AAsset_close( asset );
+        FLOGE( "Unable to open destination file for asset: %s", destPath );
+        return 0;
+    }
+
     if ( 1 != fwrite( fileBuffer, bufferSize, 1, destFile ) )
     {
         FLOGE( "Error extracting asset from %s to %s", assetPath, destPath );
@@ -327,11 +370,12 @@ ReadString( FILE* fptr, char* buffer, int bufferSize )
 
 /*-------------------------------------------------------------------------*/
 
-void
+int
 ExtractAssets( struct android_app* state ,
                const char* packageDir    )
 {
     AAssetManager* assetManager = state->activity->assetManager;
+    LOGI( "Checking for assets to extract" );
 
     // First extract the index file which tells us which other files to extract
     char* extractionIndexfilePath = GetAssetPath( packageDir, "filestoextract.txt" );
@@ -339,6 +383,8 @@ ExtractAssets( struct android_app* state ,
 
     if ( 0 != retValue )
     {
+        LOGI( "Found index of assets to extract" );
+
         // Now go trough the list extraction all files listed.
         // each line in the index file is a file to extract
         char entryBuffer[ PATH_MAX ];
@@ -348,6 +394,8 @@ ExtractAssets( struct android_app* state ,
         {
             // Abort, unable to open the file
             FLOGE( "Error %i when opening file %s", errno, extractionIndexfilePath );
+            free( extractionIndexfilePath );
+            return 0;
         }
         do
         {
@@ -358,13 +406,17 @@ ExtractAssets( struct android_app* state ,
                 // Create destination path and extract the asset
                 char* destPath = GetAssetPath( packageDir, bufferPtr );
                 retValue = ExtractAsset( assetManager, entryBuffer, destPath );
-                free( destPath );
 
                 if ( 0 == retValue )
                 {
                     // Failed to extract the current entry, abort
-                    break;
+                    FLOGE( "Failed to extract asset to %s", destPath );
+                    free( destPath );
+                    fclose( listFptr );
+                    free( extractionIndexfilePath );
+                    return 0;
                 }
+                free( destPath );
             }
         }
         while ( NULL != bufferPtr );
@@ -376,6 +428,7 @@ ExtractAssets( struct android_app* state ,
     }
 
     free( extractionIndexfilePath );
+    return 1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -402,8 +455,18 @@ SetFirstRunCompleted( const char* packageDir )
     int existsBool = FileExists( firstrunFile );
     if ( 0 == existsBool )
     {
-        FILE* fptr = fopen( firstrunFile, "wb" );
-        fclose( fptr );
+        if ( 0 != MakeFileDir( firstrunFile, 00777 ) )
+        {
+            FILE* fptr = fopen( firstrunFile, "wb" );
+            if ( NULL != fptr )
+            {
+                FLOGI( "Wrote flag to %s", firstrunFile );
+                fclose( fptr );
+                free( firstrunFile );
+                return;
+            }
+        }
+        FLOGE( "Unable to create flag at %s", firstrunFile );
     }
     free( firstrunFile );
 }
@@ -429,14 +492,11 @@ android_main( struct android_app* state )
     {
         LOGI( "Performing first run initialization" );
 
-        // Make the resource dirs if they do not exist yet
-        if ( 0 != MakeResourceDirs( packageDir ) )
+        // Extract to our private storage as desired
+        if ( 0 == ExtractAssets( state, packageDir ) )
         {
             return;
         }
-
-        // Extract to our private storage as desired
-        ExtractAssets( state, packageDir );
 
         LOGI( "Completed first run initialization" );
     }
