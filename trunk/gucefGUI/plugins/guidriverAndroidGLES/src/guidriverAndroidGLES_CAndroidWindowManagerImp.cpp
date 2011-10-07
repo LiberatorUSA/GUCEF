@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -38,7 +38,7 @@
 
 namespace GUCEF {
 namespace GUIDRIVERANDROIDGLES {
-         
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -51,14 +51,14 @@ CAndroidWindowManagerImp::CAndroidWindowManagerImp( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CAndroidWindowManagerImp::~CAndroidWindowManagerImp()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 TWindowContextPtr
 CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title ,
                                                const GUI::UInt32 width   ,
@@ -87,7 +87,7 @@ CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title        
     if ( windowContext->Initialize( settings ) )
     {
     }
-    
+
     delete windowContext;
     return TWindowContextPtr();
 }
@@ -112,20 +112,26 @@ CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title      ,
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CAndroidWindowManagerImp::DestroyWindowContext( TWindowContextPtr& windowContext )
 {GUCEF_TRACE;
 
+    CAndroidGLESWindowContext* glContext = static_cast<CAndroidGLESWindowContext*>( windowContext.GetPointerAlways() );
+    if ( NULL != glContext )
+    {
+        glContext->Shutdown();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CAndroidWindowManagerImp::ApplyVideoSettings( TWindowContextPtr& windowContext ,
                                               const CVideoSettings& settings   )
 {GUCEF_TRACE;
 
+    return false;
 }
 
 /*-------------------------------------------------------------------------//
