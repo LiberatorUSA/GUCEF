@@ -1,0 +1,19 @@
+<ModuleInfoEntry>
+    <Module Name="guidriverAndroidGLES" Type="SharedLibrary" Platform="Android">
+        <Dependencies>
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="EGL" />
+            <Dependency Name="GLESv1_CM" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUIDRIVERANDROIDGLES_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

@@ -53,9 +53,14 @@ LOCAL_SRC_FILES := \
   src/gucefGUI_CTreeview.cpp \
   src/gucefGUI_CUDim.cpp \
   src/gucefGUI_CUVector.cpp \
+  src/gucefGUI_CVideoOptions.cpp \
+  src/gucefGUI_CVideoSettings.cpp \
   src/gucefGUI_CWidget.cpp \
   src/gucefGUI_CWidgetFactory.cpp \
-  src/gucefGUI_CWindow.cpp
+  src/gucefGUI_CWindow.cpp \
+  src/gucefGUI_CWindowContext.cpp \
+  src/gucefGUI_CWindowManager.cpp \
+  src/gucefGUI_CWindowManagerBackend.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
