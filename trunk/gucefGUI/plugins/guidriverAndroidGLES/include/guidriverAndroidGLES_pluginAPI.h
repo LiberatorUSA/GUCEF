@@ -16,9 +16,9 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
- 
-#ifndef GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H
-#define GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H 
+
+#ifndef GUIDRIVERANDROIDGLES_PLUGINAPI_H
+#define GUIDRIVERANDROIDGLES_PLUGINAPI_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+#ifndef GUCEF_CORE_ESTRUCTS_H
+#include "EStructs.h"
+#define GUCEF_CORE_ESTRUCTS_H
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef GUCEF_GUI_CWINDOWMANAGERBACKEND_H
-#include "gucefGUI_CWindowManagerBackend.h"
-#define GUCEF_GUI_CWINDOWMANAGERBACKEND_H
-#endif /* GUCEF_GUI_CWINDOWMANAGERBACKEND_H ? */
+#ifndef GUIDRIVERANDROIDGLES_MACROS_H
+#include "guidriverAndroidGLES_macros.h"
+#define GUIDRIVERANDROIDGLES_MACROS_H
+#endif /* GUIDRIVERANDROIDGLES_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,52 +42,54 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
 namespace GUCEF {
 namespace GUIDRIVERANDROIDGLES {
-         
+#endif
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_PUBLIC_CPP CAndroidWindowManagerImp : public GUI::CWindowManagerBackend
-{
-    public:
-    
-    CAndroidWindowManagerImp( void );
-    
-    virtual ~CAndroidWindowManagerImp();
-    
-    virtual TWindowContextPtr CreateWindowContext( const GUI::CString& title ,
-                                                   const GUI::UInt32 width   ,
-                                                   const GUI::UInt32 height  ,
-                                                   const bool fullscreen     );
-
-    virtual TWindowContextPtr CreateWindowContext( const GUI::CString& title             ,
-                                                   const GUI::CVideoSettings& settings   ,
-                                                   const CORE::CValueList* params = NULL );
-
-    virtual TWindowContextPtr CreateWindowContext( const GUI::CString& title      ,
-                                                   const GUI::UInt32 width        ,
-                                                   const GUI::UInt32 height       ,
-                                                   const bool fullscreen          ,
-                                                   const CORE::CValueList& params );
-    
-    virtual void DestroyWindowContext( TWindowContextPtr& windowContext );
-    
-    virtual bool ApplyVideoSettings( TWindowContextPtr& windowContext ,
-                                     const CVideoSettings& settings   );
-
-    private:
-
-    CAndroidWindowManagerImp( const CAndroidWindowManagerImp& src );
-    CAndroidWindowManagerImp& operator=( const CAndroidWindowManagerImp& src );        
-};
+/*
+ *      Prevent C++ name mangling
+ */
+#ifdef __cplusplus
+extern "C" {
+#endif  /* __cplusplus */
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CAndroidWindowManagerImp > TAndroidWindowManagerImpPtr;
+GUIDRIVERANDROIDGLES_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*-------------------------------------------------------------------------*/
+
+GUIDRIVERANDROIDGLES_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*-------------------------------------------------------------------------*/
+
+GUIDRIVERANDROIDGLES_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*-------------------------------------------------------------------------*/
+
+GUIDRIVERANDROIDGLES_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*-------------------------------------------------------------------------*/
+
+GUIDRIVERANDROIDGLES_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*-------------------------------------------------------------------------*/                 
+
+#ifdef __cplusplus
+   };
+#endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -95,12 +97,14 @@ typedef CORE::CTSharedPtr< CAndroidWindowManagerImp > TAndroidWindowManagerImpPt
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUIDRIVERANDROIDGLES */
-} /* namespace GUCEF */
+#ifdef __cplusplus
+}; /* namespace GUIDRIVERANDROIDGLES */
+}; /* namespace GUCEF */
+#endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H ? */
+#endif /* GUIDRIVERANDROIDGLES_PLUGINAPI_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -108,7 +112,7 @@ typedef CORE::CTSharedPtr< CAndroidWindowManagerImp > TAndroidWindowManagerImpPt
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 02-04-2005 :
-       - Initial version of this file.
+- 04-05-2005 :
+        - Dinand: Initial version.
 
 ---------------------------------------------------------------------------*/
