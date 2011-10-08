@@ -1,0 +1,21 @@
+<ModuleInfoEntry>
+    <Module Name="guidriverRocket" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="RocketCore" />
+            <Dependency Name="RocketControls" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="RocketCore" />
+            <Dependency Name="RocketControls" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUIDRIVERROCKET_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

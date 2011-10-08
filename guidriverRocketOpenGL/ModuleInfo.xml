@@ -1,0 +1,23 @@
+<ModuleInfoEntry>
+    <Module Name="guidriverRocketOpenGL" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="guidriverRocket" />
+            <Dependency Name="RocketCore" />
+            <Dependency Name="RocketControls" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="guidriverRocket" />
+            <Dependency Name="RocketCore" />
+            <Dependency Name="RocketControls" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUIDRIVERROCKETOPENGL_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
