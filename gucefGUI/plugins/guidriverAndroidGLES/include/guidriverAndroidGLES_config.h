@@ -1,6 +1,6 @@
 /*
- *  gucefDRN: GUCEF module providing RAD networking trough data replication
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  guidriverAndroidGLES: module implementing GLES based window management for Android
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -9,7 +9,7 @@
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  *  Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUI_MACROS_H
-#define GUCEF_GUI_MACROS_H
+#ifndef GUIDRIVERANDROIDGLES_CONFIG_H
+#define GUIDRIVERANDROIDGLES_CONFIG_H
 
 /*
  *      Build configuration specific macros.
@@ -31,70 +31,24 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MACROS_H
-#include "gucef_macros.h"                 /* generic often used macros */
-#define GUCEF_MACROS_H
-#endif /* GUCEF_MACROS_H ? */
-
-#ifndef GUCEF_CORE_BASICMACROS_H
-#include "macros.h"                 /* generic often used macros */
-#define GUCEF_CORE_BASICMACROS_H
-#endif /* GUCEF_CORE_BASICMACROS_H ? */
-
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"       /* core macros */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
-
-#ifndef GUCEF_GUI_ETYPES_H
-#include "gucefGUI_ETypes.h"        /* simple types */
-#define GUCEF_GUI_ETYPES_H
-#endif /* GUCEF_GUI_ETYPES_H ? */
-
-#ifndef GUCEF_GUI_CONFIG_H
-#include "gucefGUI_config.h"        /* Module build configuration */
-#define GUCEF_GUI_CONFIG_H
-#endif /* GUCEF_GUI_CONFIG_H ? */
+#ifndef GUCEF_GUI_MACROS_H
+#include "gucefGUI_macros.h"
+#define GUCEF_GUI_MACROS_H
+#endif /* GUCEF_GUI_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GENERAL MACROS                                                     //
+//      BUILD DEFINES                                                      //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Macros for dynamic linking or static linking. Use the switches in the
- *      config file to control the export type.
- */
-
-#undef GUCEF_GUI_EXPORTSPEC
-#ifdef GUCEF_GUI_BUILD_MODULE
-  #define GUCEF_GUI_EXPORTSPEC GUCEF_EXPORT
-#else
-  #define GUCEF_GUI_EXPORTSPEC GUCEF_IMPORT
-#endif /* GUCEF_GUI_BUILD_MODULE ? */
-
-#undef GUCEF_GUI_PUBLIC_CPP
-#ifdef GUCEF_GUI_PUBLIC_CPP_CODE
-  #define GUCEF_GUI_PUBLIC_CPP GUCEF_GUI_EXPORTSPEC
-#else
-  #define GUCEF_GUI_PUBLIC_CPP GUCEF_HIDDEN
-#endif /* GUCEF_GUI_EXPORT_CPP_CODE */
-
-#define GUCEF_GUI_PRIVATE_CPP GUCEF_HIDDEN
-
-#undef GUCEF_GUI_PUBLIC_C
-#ifdef GUCEF_GUI_PUBLIC_C_CODE
-  #define GUCEF_GUI_PUBLIC_C GUCEF_GUI_EXPORTSPEC
-#else
-  #define GUCEF_GUI_PUBLIC_C GUCEF_HIDDEN
-#endif /* GUCEF_GUI_PUBLIC_C_CODE */
-
-#define GUCEF_GUI_PRIVATE_C GUCEF_HIDDEN
+/* Switches for the export of C++ and/or C code */
+#define GUIDRIVERANDROIDGLES_PUBLIC_CPP_CODE
+#define GUIDRIVERANDROIDGLES_PUBLIC_C_CODE
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_GUI_MACROS_H ? */
+#endif /* GUIDRIVERANDROIDGLES_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

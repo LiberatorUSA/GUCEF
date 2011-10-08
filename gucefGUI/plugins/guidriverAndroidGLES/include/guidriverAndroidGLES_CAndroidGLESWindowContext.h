@@ -1,5 +1,5 @@
 /*
- *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
+ *  guidriverAndroidGLES: module implementing GLES based window management for Android
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -28,6 +28,11 @@
 
 #include <EGL/egl.h>
 #include <GLES/gl.h>
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
 #ifndef GUCEF_GUI_CWINDOWCONTEXT_H
 #include "gucefGUI_CWindowContext.h"
@@ -88,6 +93,10 @@ class GUCEF_GUI_PUBLIC_CPP CAndroidGLESWindowContext : public CWindowContext
     EGLSurface surface;
     EGLContext context;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CAndroidGLESWindowContext >  TAndroidGLESWindowContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

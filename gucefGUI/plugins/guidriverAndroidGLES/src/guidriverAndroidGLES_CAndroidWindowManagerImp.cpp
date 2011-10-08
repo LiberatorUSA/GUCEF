@@ -83,12 +83,11 @@ CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title        
                                                const CORE::CValueList* params      )
 {GUCEF_TRACE;
 
-    CAndroidGLESWindowContext* windowContext = new CAndroidGLESWindowContext();
+    TAndroidGLESWindowContextPtr windowContext = new CAndroidGLESWindowContext();
     if ( windowContext->Initialize( settings ) )
     {
+        return windowContext;
     }
-
-    delete windowContext;
     return TWindowContextPtr();
 }
 
