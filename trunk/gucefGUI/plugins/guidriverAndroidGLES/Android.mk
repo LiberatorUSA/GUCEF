@@ -23,7 +23,8 @@ LOCAL_MODULE_FILENAME := libguidriverAndroidGLES
 
 LOCAL_SRC_FILES := \
   src/guidriverAndroidGLES_CAndroidGLESWindowContext.cpp \
-  src/guidriverAndroidGLES_CAndroidWindowManagerImp.cpp
+  src/guidriverAndroidGLES_CAndroidWindowManagerImp.cpp \
+  src/guidriverAndroidGLES_pluginAPI.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
