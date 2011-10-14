@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_GUI_CWINDOWMANAGER_H
+#include "gucefGUI_CWindowManager.h"
+#define GUCEF_GUI_CWINDOWMANAGER_H
+#endif /* GUCEF_GUI_CWINDOWMANAGER_H ? */
+
 #ifndef GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H
 #include "guidriverAndroidGLES_CAndroidWindowManagerImp.h"
 #define GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H

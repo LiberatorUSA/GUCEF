@@ -11,6 +11,8 @@
             <Dependency Name="gucefMT" />
             <Dependency Name="EGL" />
             <Dependency Name="GLESv1_CM" />
+            <Dependency Name="android" />
+            <Dependency Name="android_native_app_glue" Type="StaticLibrary" />
         </Linker>
         <Preprocessor>
             <Define String="GUIDRIVERANDROIDGLES_BUILD_MODULE" />

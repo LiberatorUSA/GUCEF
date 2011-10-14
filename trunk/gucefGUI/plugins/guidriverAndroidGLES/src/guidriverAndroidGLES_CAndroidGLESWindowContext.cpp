@@ -23,6 +23,9 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <GLES/gl.h>
+#include <android_native_app_glue.h>
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -70,7 +73,7 @@ CAndroidGLESWindowContext::~CAndroidGLESWindowContext()
 /*-------------------------------------------------------------------------*/
 
 void
-CAndroidGLESWindowContext::SetGuiContext( TGuiContextPtr& context )
+CAndroidGLESWindowContext::SetGuiContext( GUI::TGuiContextPtr& context )
 {GUCEF_TRACE;
 
     m_guiContext = context;
@@ -78,7 +81,7 @@ CAndroidGLESWindowContext::SetGuiContext( TGuiContextPtr& context )
 
 /*-------------------------------------------------------------------------*/
 
-TGuiContextPtr
+GUI::TGuiContextPtr
 CAndroidGLESWindowContext::GetGuiContext( void )
 {GUCEF_TRACE;
 
@@ -114,7 +117,7 @@ CAndroidGLESWindowContext::GetName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+void
 CAndroidGLESWindowContext::Shutdown( void )
 {GUCEF_TRACE;
 
@@ -142,7 +145,11 @@ bool
 CAndroidGLESWindowContext::Initialize( const GUI::CVideoSettings& videoSettings )
 {GUCEF_TRACE;
 
-    struct android_app* app;
+    // Do not initialize twice
+    Shutdown();
+
+    // @TODO: get the app from somewhere    
+    struct android_app* app = NULL;
     EGLint bitDepth = (EGLint) videoSettings.GetResolutionDepthInBits() / 3;
 
     /*
@@ -161,6 +168,7 @@ CAndroidGLESWindowContext::Initialize( const GUI::CVideoSettings& videoSettings 
     };
     EGLint w, h, format;
     EGLint numConfigs;
+    EGLConfig config;
 
     m_display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
 
@@ -169,18 +177,18 @@ CAndroidGLESWindowContext::Initialize( const GUI::CVideoSettings& videoSettings 
     /* Here, the application chooses the configuration it desires. In this
      * sample, we have a very simplified selection process, where we pick
      * the first EGLConfig that matches our criteria */
-    eglChooseConfig( m_display, attribs, &m_config, 1, &numConfigs );
+    eglChooseConfig( m_display, attribs, &config, 1, &numConfigs );
 
     /* EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
      * guaranteed to be accepted by ANativeWindow_setBuffersGeometry().
      * As soon as we picked a EGLConfig, we can safely reconfigure the
      * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
-    eglGetConfigAttrib( m_display, m_config, EGL_NATIVE_VISUAL_ID, &format );
+    eglGetConfigAttrib( m_display, config, EGL_NATIVE_VISUAL_ID, &format );
 
     ANativeWindow_setBuffersGeometry( app->window, 0, 0, format );
 
-    m_surface = eglCreateWindowSurface( m_display, m_config, app->window, NULL );
-    m_context = eglCreateContext( m_display, m_config, NULL, NULL );
+    m_surface = eglCreateWindowSurface( m_display, config, app->window, NULL );
+    m_context = eglCreateContext( m_display, config, NULL, NULL );
 
     if ( eglMakeCurrent( m_display, m_surface, m_surface, m_context ) == EGL_FALSE )
     {
@@ -191,8 +199,8 @@ CAndroidGLESWindowContext::Initialize( const GUI::CVideoSettings& videoSettings 
     eglQuerySurface( m_display, m_surface, EGL_WIDTH, &w );
     eglQuerySurface( m_display, m_surface, EGL_HEIGHT, &h );
 
-    engine->width = w;
-    engine->height = h;
+    //engine->width = w;
+    //engine->height = h;
 
     // Initialize GL state.
     glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST );
