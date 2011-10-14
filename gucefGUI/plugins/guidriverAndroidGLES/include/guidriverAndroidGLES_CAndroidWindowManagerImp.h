@@ -36,6 +36,11 @@
 #define GUCEF_GUI_CWINDOWMANAGERBACKEND_H
 #endif /* GUCEF_GUI_CWINDOWMANAGERBACKEND_H ? */
 
+#ifndef GUIDRIVERANDROIDGLES_MACROS_H
+#include "guidriverAndroidGLES_macros.h"
+#define GUIDRIVERANDROIDGLES_MACROS_H
+#endif /* GUIDRIVERANDROIDGLES_MACROS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -51,7 +56,7 @@ namespace GUIDRIVERANDROIDGLES {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_PUBLIC_CPP CAndroidWindowManagerImp : public GUI::CWindowManagerBackend
+class GUIDRIVERANDROIDGLES_PUBLIC_CPP CAndroidWindowManagerImp : public GUI::CWindowManagerBackend
 {
     public:
     
@@ -59,25 +64,25 @@ class GUCEF_GUI_PUBLIC_CPP CAndroidWindowManagerImp : public GUI::CWindowManager
     
     virtual ~CAndroidWindowManagerImp();
     
-    virtual TWindowContextPtr CreateWindowContext( const GUI::CString& title ,
-                                                   const GUI::UInt32 width   ,
-                                                   const GUI::UInt32 height  ,
-                                                   const bool fullscreen     );
+    virtual GUI::TWindowContextPtr CreateWindowContext( const GUI::CString& title ,
+                                                        const GUI::UInt32 width   ,
+                                                        const GUI::UInt32 height  ,
+                                                        const bool fullscreen     );
 
-    virtual TWindowContextPtr CreateWindowContext( const GUI::CString& title             ,
-                                                   const GUI::CVideoSettings& settings   ,
-                                                   const CORE::CValueList* params = NULL );
+    virtual GUI::TWindowContextPtr CreateWindowContext( const GUI::CString& title             ,
+                                                        const GUI::CVideoSettings& settings   ,
+                                                        const CORE::CValueList* params = NULL );
 
-    virtual TWindowContextPtr CreateWindowContext( const GUI::CString& title      ,
-                                                   const GUI::UInt32 width        ,
-                                                   const GUI::UInt32 height       ,
-                                                   const bool fullscreen          ,
-                                                   const CORE::CValueList& params );
+    virtual GUI::TWindowContextPtr CreateWindowContext( const GUI::CString& title      ,
+                                                        const GUI::UInt32 width        ,
+                                                        const GUI::UInt32 height       ,
+                                                        const bool fullscreen          ,
+                                                        const CORE::CValueList& params );
     
-    virtual void DestroyWindowContext( TWindowContextPtr& windowContext );
+    virtual void DestroyWindowContext( GUI::TWindowContextPtr& windowContext );
     
-    virtual bool ApplyVideoSettings( TWindowContextPtr& windowContext ,
-                                     const CVideoSettings& settings   );
+    virtual bool ApplyVideoSettings( GUI::TWindowContextPtr& windowContext ,
+                                     const GUI::CVideoSettings& settings   );
 
     private:
 

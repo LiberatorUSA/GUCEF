@@ -59,14 +59,14 @@ CAndroidWindowManagerImp::~CAndroidWindowManagerImp()
 
 /*-------------------------------------------------------------------------*/
 
-TWindowContextPtr
+GUI::TWindowContextPtr
 CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title ,
                                                const GUI::UInt32 width   ,
                                                const GUI::UInt32 height  ,
                                                const bool fullscreen     )
 {GUCEF_TRACE;
 
-    CVideoSettings videoSettings;
+    GUI::CVideoSettings videoSettings;
     videoSettings.SetFullscreenState( fullscreen );
     videoSettings.SetResolution( width, height, 24 );
 
@@ -77,7 +77,7 @@ CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title ,
 
 /*-------------------------------------------------------------------------*/
 
-TWindowContextPtr
+GUI::TWindowContextPtr
 CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title           ,
                                                const GUI::CVideoSettings& settings ,
                                                const CORE::CValueList* params      )
@@ -88,12 +88,12 @@ CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title        
     {
         return windowContext;
     }
-    return TWindowContextPtr();
+    return GUI::TWindowContextPtr();
 }
 
 /*-------------------------------------------------------------------------*/
 
-TWindowContextPtr
+GUI::TWindowContextPtr
 CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title      ,
                                                const GUI::UInt32 width        ,
                                                const GUI::UInt32 height       ,
@@ -101,7 +101,7 @@ CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title      ,
                                                const CORE::CValueList& params )
 {GUCEF_TRACE;
 
-    CVideoSettings videoSettings;
+    GUI::CVideoSettings videoSettings;
     videoSettings.SetFullscreenState( fullscreen );
     videoSettings.SetResolution( width, height, 24 );
 
@@ -113,7 +113,7 @@ CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title      ,
 /*-------------------------------------------------------------------------*/
 
 void
-CAndroidWindowManagerImp::DestroyWindowContext( TWindowContextPtr& windowContext )
+CAndroidWindowManagerImp::DestroyWindowContext( GUI::TWindowContextPtr& windowContext )
 {GUCEF_TRACE;
 
     CAndroidGLESWindowContext* glContext = static_cast<CAndroidGLESWindowContext*>( windowContext.GetPointerAlways() );
@@ -126,8 +126,8 @@ CAndroidWindowManagerImp::DestroyWindowContext( TWindowContextPtr& windowContext
 /*-------------------------------------------------------------------------*/
 
 bool
-CAndroidWindowManagerImp::ApplyVideoSettings( TWindowContextPtr& windowContext ,
-                                              const CVideoSettings& settings   )
+CAndroidWindowManagerImp::ApplyVideoSettings( GUI::TWindowContextPtr& windowContext ,
+                                              const GUI::CVideoSettings& settings   )
 {GUCEF_TRACE;
 
     return false;

@@ -27,7 +27,6 @@
 //-------------------------------------------------------------------------*/
 
 #include <EGL/egl.h>
-#include <GLES/gl.h>
 
 #ifndef GUCEF_CORE_CTSHAREDPTR_H
 #include "CTSharedPtr.h"
@@ -44,6 +43,11 @@
 #define GUCEF_GUI_CVIDEOSETTINGS_H
 #endif /* GUCEF_GUI_CVIDEOSETTINGS_H ? */
 
+#ifndef GUIDRIVERANDROIDGLES_MACROS_H
+#include "guidriverAndroidGLES_macros.h"
+#define GUIDRIVERANDROIDGLES_MACROS_H
+#endif /* GUIDRIVERANDROIDGLES_MACROS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -59,7 +63,7 @@ namespace GUIDRIVERANDROIDGLES {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_PUBLIC_CPP CAndroidGLESWindowContext : public CWindowContext
+class GUIDRIVERANDROIDGLES_PUBLIC_CPP CAndroidGLESWindowContext : public GUI::CWindowContext
 {        
     public:
     
@@ -67,9 +71,9 @@ class GUCEF_GUI_PUBLIC_CPP CAndroidGLESWindowContext : public CWindowContext
     
     virtual ~CAndroidGLESWindowContext();
     
-    virtual void SetGuiContext( TGuiContextPtr& context );
+    virtual void SetGuiContext( GUI::TGuiContextPtr& context );
     
-    virtual TGuiContextPtr GetGuiContext( void );
+    virtual GUI::TGuiContextPtr GetGuiContext( void );
     
     virtual GUI::UInt32 GetID( void ) const;
     
@@ -78,6 +82,8 @@ class GUCEF_GUI_PUBLIC_CPP CAndroidGLESWindowContext : public CWindowContext
     virtual GUI::CString GetName( void ) const;
 
     bool Initialize( const GUI::CVideoSettings& videoSettings );
+
+    void Shutdown( void );
     
     private:
     
@@ -86,12 +92,12 @@ class GUCEF_GUI_PUBLIC_CPP CAndroidGLESWindowContext : public CWindowContext
 
     private:
 
-    TGuiContextPtr m_guiContext;
+    GUI::TGuiContextPtr m_guiContext;
     GUI::UInt32 m_id;
     GUI::CString m_name;
-    EGLDisplay display;
-    EGLSurface surface;
-    EGLContext context;
+    EGLDisplay m_display;
+    EGLSurface m_surface;
+    EGLContext m_context;
 };
 
 /*-------------------------------------------------------------------------*/
