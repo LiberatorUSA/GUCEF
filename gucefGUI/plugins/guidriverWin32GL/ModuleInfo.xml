@@ -1,0 +1,17 @@
+<ModuleInfoEntry>
+    <Module Name="guidriverWin32GL" Type="SharedLibrary" Platform="mswin">
+        <Dependencies>
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUIDRIVERWIN32GL_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

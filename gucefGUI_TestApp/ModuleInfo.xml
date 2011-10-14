@@ -1,0 +1,17 @@
+<ModuleInfoEntry>
+    <Module Name="gucefGUI_TestApp" Type="Executable" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefGUI" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefGUI" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_GUI_TESTAPP_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

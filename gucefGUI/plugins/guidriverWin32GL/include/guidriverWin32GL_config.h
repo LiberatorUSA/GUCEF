@@ -1,5 +1,5 @@
 /*
- *  gucefLOADER_TestApp: Test code for the gucefLOADER module
+ *  guidriverAndroidGLES: module implementing GLES based window management for Android
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,7 +14,15 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ */
+
+#ifndef GUIDRIVERANDROIDGLES_CONFIG_H
+#define GUIDRIVERANDROIDGLES_CONFIG_H
+
+/*
+ *      Build configuration specific macros.
+ *      Also includes the generic macros which are build config independant.
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,42 +31,24 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_OSMAIN_H
-#include "gucef_osmain.h"
-#define GUCEF_OSMAIN_H
-#endif /* GUCEF_OSMAIN_H ? */
-
-#ifndef GUCEF_INPUT_H
-#include "gucefLOADER.h"
-#define GUCEF_INPUT_H
-#endif /* GUCEF_INPUT_H ? */
+#ifndef GUCEF_GUI_MACROS_H
+#include "gucefGUI_macros.h"
+#define GUCEF_GUI_MACROS_H
+#endif /* GUCEF_GUI_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      BUILD DEFINES                                                      //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Application entry point
- */
-GUCEF_OSMAIN_BEGIN
-{
-    try
-    {
-        if ( argc >= 1 )
-        {
-            return LoadAndRunGucefPlatformApp( "testapp", argv[ 0 ], NULL, NULL, argc, argv, 0, NULL );
-        }
-        return 0;
-    }
-    catch ( ... )
-    {
+/* Switches for the export of C++ and/or C code */
+#define GUIDRIVERANDROIDGLES_PUBLIC_CPP_CODE
+#define GUIDRIVERANDROIDGLES_PUBLIC_C_CODE
 
-    }
-    return 1;
-}
-GUCEF_OSMAIN_END
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUIDRIVERANDROIDGLES_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,7 +56,7 @@ GUCEF_OSMAIN_END
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 10-12-2006
-        - Dinand: Added this comment section
+- 02-03-2007 :
+        - Dinand: re-added this header
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/
