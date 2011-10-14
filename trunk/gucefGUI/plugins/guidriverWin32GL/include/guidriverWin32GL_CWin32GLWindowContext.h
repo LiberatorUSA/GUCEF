@@ -1,6 +1,6 @@
 /*
- *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  guidriverAndroidGLES: module implementing GLES based window management for Android
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUIDRIVERROCKETGL_CROCKETGUIDRIVER_H
-#define GUCEF_GUIDRIVERROCKETGL_CROCKETGUIDRIVER_H
+#ifndef GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H
+#define GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,20 +26,27 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#include <EGL/egl.h>
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
-#ifndef GUCEF_GUI_CIGUICONTEXT_H
-#include "gucefGUI_CIGUIContext.h"
-#define GUCEF_GUI_CIGUICONTEXT_H
-#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
+#ifndef GUCEF_GUI_CWINDOWCONTEXT_H
+#include "gucefGUI_CWindowContext.h"
+#define GUCEF_GUI_CWINDOWCONTEXT_H
+#endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
+
+#ifndef GUCEF_GUI_CVIDEOSETTINGS_H
+#include "gucefGUI_CVideoSettings.h"
+#define GUCEF_GUI_CVIDEOSETTINGS_H
+#endif /* GUCEF_GUI_CVIDEOSETTINGS_H ? */
+
+#ifndef GUIDRIVERANDROIDGLES_MACROS_H
+#include "guidriverAndroidGLES_macros.h"
+#define GUIDRIVERANDROIDGLES_MACROS_H
+#endif /* GUIDRIVERANDROIDGLES_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,7 +55,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERROCKETGL {
+namespace GUIDRIVERANDROIDGLES {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,37 +63,46 @@ namespace GUIDRIVERROCKETGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
-{    
+class GUIDRIVERANDROIDGLES_PUBLIC_CPP CAndroidGLESWindowContext : public GUI::CWindowContext
+{        
     public:
+    
+    CAndroidGLESWindowContext( void );
+    
+    virtual ~CAndroidGLESWindowContext();
+    
+    virtual void SetGuiContext( GUI::TGuiContextPtr& context );
+    
+    virtual GUI::TGuiContextPtr GetGuiContext( void );
+    
+    virtual GUI::UInt32 GetID( void ) const;
+    
+    virtual bool IsActive( void ) const;
+    
+    virtual GUI::CString GetName( void ) const;
 
-    CRocketGuiDriver( void );
+    bool Initialize( const GUI::CVideoSettings& videoSettings );
 
-    virtual ~CRocketGuiDriver();
-    
-    virtual TGuiContextPtr CreateGUIContext();
-    
-    virtual TGUIContextSet GetContextList( void );
-    
-    virtual UInt32 GetContextCount( void );
-    
-    virtual CString GetDriverName( void );
-    
-    virtual TStringSet GetAvailableFormTypes( void );
-    
-    virtual TStringSet GetAvailableWidgetTypes( void );
-    
-    virtual const CString& GetClassTypeName( void ) const;
-    
-    virtual CString GetDriverProperty( const CString& propertyName ) const;
+    void Shutdown( void );
     
     private:
     
-    CRocketGuiDriver( const CRocketGuiDriver& src );
+    CAndroidGLESWindowContext( const CAndroidGLESWindowContext& src );            /**< private because: must be unique */ 
+    CAndroidGLESWindowContext& operator=( const CAndroidGLESWindowContext& src ); /**< private because: must be unique */
 
     private:
-    
+
+    GUI::TGuiContextPtr m_guiContext;
+    GUI::UInt32 m_id;
+    GUI::CString m_name;
+    EGLDisplay m_display;
+    EGLSurface m_surface;
+    EGLContext m_context;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CAndroidGLESWindowContext >  TAndroidGLESWindowContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -94,12 +110,12 @@ class GUCEF_GUI_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUIDRIVERROCKETGL */
-}; /* namespace GUCEF */
+} /* namespace GUIDRIVERANDROIDGLES */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_GUIDRIVERROCKETGL_CROCKETGUIDRIVER_H ? */
+
+#endif /* GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -107,7 +123,7 @@ class GUCEF_GUI_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 18-08-2010 :
-        - Dinand: Initial implementation
+- 08-10-2005 :
+        - Initial version
 
 ---------------------------------------------------------------------------*/

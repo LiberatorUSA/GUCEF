@@ -13,12 +13,13 @@
 
 set( HEADER_FILES 
   include/guidriverRocketOpenGL_CRocketGuiDriver.h
+  include/guidriverRocketOpenGL_CRocketRenderInterfaceOpenGL.h
   include/ShellOpenGL.h
-  include/ShellRenderInterfaceOpenGL.h
 )
 
 set( SOURCE_FILES 
   src/guidriverRocketOpenGL_CRocketGuiDriver.cpp
+  src/guidriverRocketOpenGL_CRocketRenderInterfaceOpenGL.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -36,22 +37,22 @@ add_dependencies( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gu
 target_link_libraries( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefMT guidriverRocket )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERROCKETOPENGL_BUILD_MODULE" )
 
-include_directories( ../common/include ../dependencies/freetype/include ../dependencies/freetype/include/freetype ../dependencies/freetype/include/freetype/config ../dependencies/freetype/include/freetype/internal ../dependencies/freetype/include/freetype/internal/services ../dependencies/freetype/src/winfonts ../dependencies/libRocket/Include ../dependencies/libRocket/Include/Rocket ../dependencies/libRocket/Include/Rocket/Controls ../dependencies/libRocket/Include/Rocket/Core ../dependencies/libRocket/Include/Rocket/Core/Python ../dependencies/libRocket/Include/Rocket/Debugger ../dependencies/libRocket/Source/Controls ../dependencies/libRocket/Source/Core ../gucefCORE/include ../gucefGUI/include ../gucefIMAGE/include ../gucefMT/include ../gucefVFS/include ../guidriverRocket/include include )
+include_directories( ../../../common/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../dependencies/libRocket/Include ../../../dependencies/libRocket/Include/Rocket ../../../dependencies/libRocket/Include/Rocket/Controls ../../../dependencies/libRocket/Include/Rocket/Core ../../../dependencies/libRocket/Include/Rocket/Core/Python ../../../dependencies/libRocket/Include/Rocket/Debugger ../../../dependencies/libRocket/Source/Controls ../../../dependencies/libRocket/Source/Core ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefMT/include ../../../gucefVFS/include ../guidriverRocket/include include )
 
 if ( ANDROID )
-  include_directories( ../gucefCORE/include/android )
+  include_directories( ../../../gucefCORE/include/android )
 endif( ANDROID )
 
 if ( LINUX )
-  include_directories( ../gucefCORE/include/linux )
+  include_directories( ../../../gucefCORE/include/linux )
 endif( LINUX )
 
 if ( WIN32 )
-  include_directories( ../gucefCORE/include/mswin )
+  include_directories( ../../../gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../gucefCORE/include/mswin )
+  include_directories( ../../../gucefCORE/include/mswin )
 endif( WIN64 )
 
 

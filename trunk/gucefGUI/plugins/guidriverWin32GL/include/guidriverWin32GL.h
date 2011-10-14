@@ -1,5 +1,5 @@
 /*
- *  gucefLOADER_TestApp: Test code for the gucefLOADER module
+ *  guidriverAndroidGLES: module implementing GLES based window management for Android
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,48 +17,33 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#ifndef GUIDRIVERANDROIDGLES_H
+#define GUIDRIVERANDROIDGLES_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_OSMAIN_H
-#include "gucef_osmain.h"
-#define GUCEF_OSMAIN_H
-#endif /* GUCEF_OSMAIN_H ? */
+#ifndef GUIDRIVERANDROIDGLES_MACROS_H
+#include "guidriverAndroidGLES_macros.h"
+#define GUIDRIVERANDROIDGLES_MACROS_H
+#endif /* GUIDRIVERANDROIDGLES_MACROS_H ? */
 
-#ifndef GUCEF_INPUT_H
-#include "gucefLOADER.h"
-#define GUCEF_INPUT_H
-#endif /* GUCEF_INPUT_H ? */
+#ifndef GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H
+#include "guidriverAndroidGLES_CAndroidWindowManagerImp.h"
+#define GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H
+#endif /* GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      UTILITIES                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
+#ifndef GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H
+#include "guidriverAndroidGLES_CAndroidGLESWindowContext.h"
+#define GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H
+#endif /* GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H ? */
 
-/*
- *      Application entry point
- */
-GUCEF_OSMAIN_BEGIN
-{
-    try
-    {
-        if ( argc >= 1 )
-        {
-            return LoadAndRunGucefPlatformApp( "testapp", argv[ 0 ], NULL, NULL, argc, argv, 0, NULL );
-        }
-        return 0;
-    }
-    catch ( ... )
-    {
+/*-------------------------------------------------------------------------*/
 
-    }
-    return 1;
-}
-GUCEF_OSMAIN_END
+#endif /* GUIDRIVERANDROIDGLES_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,7 +51,7 @@ GUCEF_OSMAIN_END
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 10-12-2006
-        - Dinand: Added this comment section
+- 08-10-2011 :
+        - Initial version
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/
