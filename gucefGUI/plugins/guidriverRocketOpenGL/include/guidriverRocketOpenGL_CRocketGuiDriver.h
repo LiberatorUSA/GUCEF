@@ -1,5 +1,5 @@
 /*
- *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
+ *  guidriverRocketOpenGL: module providing a GUI backend using Rocket and OpenGL
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -36,10 +36,20 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
-#ifndef GUCEF_GUI_CIGUICONTEXT_H
-#include "gucefGUI_CIGUIContext.h"
-#define GUCEF_GUI_CIGUICONTEXT_H
-#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
+#ifndef GUCEF_GUI_CGUIDRIVER_H
+#include "gucefGUI_CGUIDriver.h"
+#define GUCEF_GUI_CGUIDRIVER_H
+#endif /* GUCEF_GUI_CGUIDRIVER_H ? */
+
+#ifndef GUCEF_GUIDRIVERROCKETGL_CROCKETRENDERINTERFACEOPENGL_H
+#include "guidriverRocketOpenGL_CRocketRenderInterfaceOpenGL.h"
+#define GUCEF_GUIDRIVERROCKETGL_CROCKETRENDERINTERFACEOPENGL_H
+#endif /* GUCEF_GUIDRIVERROCKETGL_CROCKETRENDERINTERFACEOPENGL_H ? */
+
+#ifndef GUCEF_GUIDRIVERROCKETGL_MACROS_H
+#include "guidriverRocketOpenGL_macros.h"
+#define GUCEF_GUIDRIVERROCKETGL_MACROS_H
+#endif /* GUCEF_GUIDRIVERROCKETGL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,7 +66,7 @@ namespace GUIDRIVERROCKETGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
+class GUIDRIVERROCKETGL_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
 {    
     public:
 
@@ -64,27 +74,29 @@ class GUCEF_GUI_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
 
     virtual ~CRocketGuiDriver();
     
-    virtual TGuiContextPtr CreateGUIContext();
+    virtual GUI::TGuiContextPtr CreateGUIContext();
     
     virtual TGUIContextSet GetContextList( void );
     
-    virtual UInt32 GetContextCount( void );
+    virtual GUI::UInt32 GetContextCount( void );
     
-    virtual CString GetDriverName( void );
+    virtual GUI::CString GetDriverName( void );
     
     virtual TStringSet GetAvailableFormTypes( void );
     
     virtual TStringSet GetAvailableWidgetTypes( void );
     
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const GUI::CString& GetClassTypeName( void ) const;
     
-    virtual CString GetDriverProperty( const CString& propertyName ) const;
+    virtual GUI::CString GetDriverProperty( const GUI::CString& propertyName ) const;
     
     private:
     
     CRocketGuiDriver( const CRocketGuiDriver& src );
 
     private:
+
+    CRocketRenderInterfaceOpenGL m_rocketRenderer;
     
 };
 

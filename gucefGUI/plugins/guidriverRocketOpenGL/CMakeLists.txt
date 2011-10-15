@@ -12,9 +12,11 @@
 # Configuration for module: guidriverRocketOpenGL
 
 set( HEADER_FILES 
+  include/guidriverRocketOpenGL.h
+  include/guidriverRocketOpenGL_config.h
   include/guidriverRocketOpenGL_CRocketGuiDriver.h
   include/guidriverRocketOpenGL_CRocketRenderInterfaceOpenGL.h
-  include/ShellOpenGL.h
+  include/guidriverRocketOpenGL_macros.h
 )
 
 set( SOURCE_FILES 
@@ -35,7 +37,7 @@ set( MODULE_NAME "guidriverRocketOpenGL" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefMT guidriverRocket )
 target_link_libraries( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefMT guidriverRocket )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERROCKETOPENGL_BUILD_MODULE" )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERROCKETGL_BUILD_MODULE" )
 
 include_directories( ../../../common/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../dependencies/libRocket/Include ../../../dependencies/libRocket/Include/Rocket ../../../dependencies/libRocket/Include/Rocket/Controls ../../../dependencies/libRocket/Include/Rocket/Core ../../../dependencies/libRocket/Include/Rocket/Core/Python ../../../dependencies/libRocket/Include/Rocket/Debugger ../../../dependencies/libRocket/Source/Controls ../../../dependencies/libRocket/Source/Core ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefMT/include ../../../gucefVFS/include ../guidriverRocket/include include )
 
