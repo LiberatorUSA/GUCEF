@@ -1,5 +1,5 @@
 /*
- *  guidriverAndroidGLES: module implementing GLES based window management for Android
+ *  guidriverWin32GL: module implementing GL based window management for Win32
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVERANDROIDGLES_H
-#define GUIDRIVERANDROIDGLES_H
+#ifndef GUIDRIVERWIN32GL_H
+#define GUIDRIVERWIN32GL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,24 +26,29 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUIDRIVERANDROIDGLES_MACROS_H
-#include "guidriverAndroidGLES_macros.h"
-#define GUIDRIVERANDROIDGLES_MACROS_H
-#endif /* GUIDRIVERANDROIDGLES_MACROS_H ? */
+#ifndef GUIDRIVERWIN32GL_CONFIG_H
+#include "guidriverWin32GL_config.h"
+#define GUIDRIVERWIN32GL_CONFIG_H
+#endif /* GUIDRIVERWIN32GL_CONFIG_H ? */
 
-#ifndef GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H
-#include "guidriverAndroidGLES_CAndroidWindowManagerImp.h"
-#define GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H
-#endif /* GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H ? */
+#ifndef GUIDRIVERWIN32GL_MACROS_H
+#include "guidriverWin32GL_macros.h"
+#define GUIDRIVERWIN32GL_MACROS_H
+#endif /* GUIDRIVERWIN32GL_MACROS_H ? */
 
-#ifndef GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H
-#include "guidriverAndroidGLES_CAndroidGLESWindowContext.h"
-#define GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H
-#endif /* GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H ? */
+#ifndef GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H
+#include "guidriverWin32GL_CWin32GLWindowManagerImp.h"
+#define GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H
+#endif /* GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H ? */
+
+#ifndef GUIDRIVERWIN32GL_CWIN32GLGLESWINDOWCONTEXT_H
+#include "guidriverWin32GL_CWin32GLWindowContext.h"
+#define GUIDRIVERWIN32GL_CWIN32GLGLESWINDOWCONTEXT_H
+#endif /* GUIDRIVERWIN32GL_CWIN32GLGLESWINDOWCONTEXT_H ? */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVERANDROIDGLES_H ? */
+#endif /* GUIDRIVERWIN32GL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

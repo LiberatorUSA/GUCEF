@@ -1,5 +1,5 @@
 /*
- *  guidriverAndroidGLES: module implementing GLES based window management for Android
+ *  guidriverWin32GL: module implementing GL based window management for Win32
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -23,12 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H
-#include "guidriverAndroidGLES_CAndroidGLESWindowContext.h"
-#define GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H
-#endif /* GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H ? */
+#ifndef GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H
+#include "guidriverWin32GL_CWin32GLWindowContext.h"
+#define GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H
+#endif /* GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H ? */
 
-#include "guidriverAndroidGLES_CAndroidWindowManagerImp.h"
+#include "guidriverWin32GL_CWin32GLWindowManagerImp.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,7 +37,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERANDROIDGLES {
+namespace GUIDRIVERWIN32GL {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,14 +45,14 @@ namespace GUIDRIVERANDROIDGLES {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CAndroidWindowManagerImp::CAndroidWindowManagerImp( void )
+CWin32GLWindowManagerImp::CWin32GLWindowManagerImp( void )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAndroidWindowManagerImp::~CAndroidWindowManagerImp()
+CWin32GLWindowManagerImp::~CWin32GLWindowManagerImp()
 {GUCEF_TRACE;
 
 }
@@ -60,7 +60,7 @@ CAndroidWindowManagerImp::~CAndroidWindowManagerImp()
 /*-------------------------------------------------------------------------*/
 
 GUI::TWindowContextPtr
-CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title ,
+CWin32GLWindowManagerImp::CreateWindowContext( const GUI::CString& title ,
                                                const GUI::UInt32 width   ,
                                                const GUI::UInt32 height  ,
                                                const bool fullscreen     )
@@ -78,12 +78,12 @@ CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title ,
 /*-------------------------------------------------------------------------*/
 
 GUI::TWindowContextPtr
-CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title           ,
+CWin32GLWindowManagerImp::CreateWindowContext( const GUI::CString& title           ,
                                                const GUI::CVideoSettings& settings ,
                                                const CORE::CValueList* params      )
 {GUCEF_TRACE;
 
-    TAndroidGLESWindowContextPtr windowContext = new CAndroidGLESWindowContext();
+    TWin32GLWindowContextPtr windowContext = new CWin32GLWindowContext();
     if ( windowContext->Initialize( settings ) )
     {
         return windowContext;
@@ -94,7 +94,7 @@ CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title        
 /*-------------------------------------------------------------------------*/
 
 GUI::TWindowContextPtr
-CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title      ,
+CWin32GLWindowManagerImp::CreateWindowContext( const GUI::CString& title      ,
                                                const GUI::UInt32 width        ,
                                                const GUI::UInt32 height       ,
                                                const bool fullscreen          ,
@@ -113,10 +113,10 @@ CAndroidWindowManagerImp::CreateWindowContext( const GUI::CString& title      ,
 /*-------------------------------------------------------------------------*/
 
 void
-CAndroidWindowManagerImp::DestroyWindowContext( GUI::TWindowContextPtr& windowContext )
+CWin32GLWindowManagerImp::DestroyWindowContext( GUI::TWindowContextPtr& windowContext )
 {GUCEF_TRACE;
 
-    CAndroidGLESWindowContext* glContext = static_cast<CAndroidGLESWindowContext*>( windowContext.GetPointerAlways() );
+    CWin32GLWindowContext* glContext = static_cast<CWin32GLWindowContext*>( windowContext.GetPointerAlways() );
     if ( NULL != glContext )
     {
         glContext->Shutdown();
@@ -126,7 +126,7 @@ CAndroidWindowManagerImp::DestroyWindowContext( GUI::TWindowContextPtr& windowCo
 /*-------------------------------------------------------------------------*/
 
 bool
-CAndroidWindowManagerImp::ApplyVideoSettings( GUI::TWindowContextPtr& windowContext ,
+CWin32GLWindowManagerImp::ApplyVideoSettings( GUI::TWindowContextPtr& windowContext ,
                                               const GUI::CVideoSettings& settings   )
 {GUCEF_TRACE;
 
@@ -139,7 +139,7 @@ CAndroidWindowManagerImp::ApplyVideoSettings( GUI::TWindowContextPtr& windowCont
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUIDRIVERANDROIDGLES */
+} /* namespace GUIDRIVERWIN32GL */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

@@ -1,5 +1,5 @@
 /*
- *  guidriverAndroidGLES: module implementing GLES based window management for Android
+ *  guidriverWin32GL: module implementing GL based window management for Win32
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVERANDROIDGLES_MACROS_H
-#define GUIDRIVERANDROIDGLES_MACROS_H
+#ifndef GUIDRIVERWIN32GL_MACROS_H
+#define GUIDRIVERWIN32GL_MACROS_H
 
 /*
  *      Build configuration specific macros.
@@ -36,10 +36,10 @@
 #define GUCEF_GUI_MACROS_H
 #endif /* GUCEF_GUI_MACROS_H ? */
 
-#ifndef GUIDRIVERANDROIDGLES_CONFIG_H
-#include "guidriverAndroidGLES_config.h"
-#define GUIDRIVERANDROIDGLES_CONFIG_H
-#endif /* GUIDRIVERANDROIDGLES_CONFIG_H ? */
+#ifndef GUIDRIVERWIN32GL_CONFIG_H
+#include "guidriverWin32GL_config.h"
+#define GUIDRIVERWIN32GL_CONFIG_H
+#endif /* GUIDRIVERWIN32GL_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,34 +52,34 @@
  *      config file to control the export type.
  */
 
-#undef GUIDRIVERANDROIDGLES_EXPORTSPEC
-#ifdef GUIDRIVERANDROIDGLES_BUILD_MODULE
-  #define GUIDRIVERANDROIDGLES_EXPORTSPEC GUCEF_EXPORT
+#undef GUIDRIVERWIN32GL_EXPORTSPEC
+#ifdef GUIDRIVERWIN32GL_BUILD_MODULE
+  #define GUIDRIVERWIN32GL_EXPORTSPEC GUCEF_EXPORT
 #else
-  #define GUIDRIVERANDROIDGLES_EXPORTSPEC GUCEF_IMPORT
-#endif /* GUCEF_GUI_BUILD_MODULE ? */
+  #define GUIDRIVERWIN32GL_EXPORTSPEC GUCEF_IMPORT
+#endif /* GUIDRIVERWIN32GL_BUILD_MODULE ? */
 
-#undef GUIDRIVERANDROIDGLES_PUBLIC_CPP
-#ifdef GUIDRIVERANDROIDGLES_PUBLIC_CPP_CODE
-  #define GUIDRIVERANDROIDGLES_PUBLIC_CPP GUIDRIVERANDROIDGLES_EXPORTSPEC
+#undef GUIDRIVERWIN32GL_PUBLIC_CPP
+#ifdef GUIDRIVERWIN32GL_PUBLIC_CPP_CODE
+  #define GUIDRIVERWIN32GL_PUBLIC_CPP GUIDRIVERWIN32GL_EXPORTSPEC
 #else
-  #define GUIDRIVERANDROIDGLES_PUBLIC_CPP GUCEF_HIDDEN
-#endif /* GUIDRIVERANDROIDGLES_EXPORT_CPP_CODE */
+  #define GUIDRIVERWIN32GL_PUBLIC_CPP GUCEF_HIDDEN
+#endif /* GUIDRIVERWIN32GL_EXPORT_CPP_CODE */
 
-#define GUIDRIVERANDROIDGLES_PRIVATE_CPP GUCEF_HIDDEN
+#define GUIDRIVERWIN32GL_PRIVATE_CPP GUCEF_HIDDEN
 
-#undef GUIDRIVERANDROIDGLES_PUBLIC_C
-#ifdef GUIDRIVERANDROIDGLES_PUBLIC_C_CODE
-  #define GUIDRIVERANDROIDGLES_PUBLIC_C GUIDRIVERANDROIDGLES_EXPORTSPEC
+#undef GUIDRIVERWIN32GL_PUBLIC_C
+#ifdef GUIDRIVERWIN32GL_PUBLIC_C_CODE
+  #define GUIDRIVERWIN32GL_PUBLIC_C GUIDRIVERWIN32GL_EXPORTSPEC
 #else
-  #define GUIDRIVERANDROIDGLES_PUBLIC_C GUCEF_HIDDEN
-#endif /* GUIDRIVERANDROIDGLES_PUBLIC_C_CODE */
+  #define GUIDRIVERWIN32GL_PUBLIC_C GUCEF_HIDDEN
+#endif /* GUIDRIVERWIN32GL_PUBLIC_C_CODE */
 
-#define GUIDRIVERANDROIDGLES_PRIVATE_C GUCEF_HIDDEN
+#define GUIDRIVERWIN32GL_PRIVATE_C GUCEF_HIDDEN
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVERANDROIDGLES_MACROS_H ? */
+#endif /* GUIDRIVERWIN32GL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

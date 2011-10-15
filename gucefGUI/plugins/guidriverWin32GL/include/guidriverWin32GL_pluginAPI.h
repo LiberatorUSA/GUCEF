@@ -1,5 +1,5 @@
 /*
- *  guidriverAndroidGLES: module implementing GLES based window management for Android
+ *  guidriverWin32GL: module implementing GL based window management for Win32
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUIDRIVERANDROIDGLES_PLUGINAPI_H
@@ -31,10 +31,10 @@
 #define GUCEF_CORE_ESTRUCTS_H
 #endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef GUIDRIVERANDROIDGLES_MACROS_H
-#include "guidriverAndroidGLES_macros.h"
-#define GUIDRIVERANDROIDGLES_MACROS_H
-#endif /* GUIDRIVERANDROIDGLES_MACROS_H ? */
+#ifndef GUIDRIVERWIN32GL_MACROS_H
+#include "guidriverWin32GL_macros.h"
+#define GUIDRIVERWIN32GL_MACROS_H
+#endif /* GUIDRIVERWIN32GL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,7 +44,7 @@
 
 #ifdef __cplusplus
 namespace GUCEF {
-namespace GUIDRIVERANDROIDGLES {
+namespace GUIDRIVERWIN32GL {
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -62,27 +62,27 @@ extern "C" {
 
 /*-------------------------------------------------------------------------*/
 
-GUIDRIVERANDROIDGLES_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUIDRIVERWIN32GL_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-GUIDRIVERANDROIDGLES_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUIDRIVERWIN32GL_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-GUIDRIVERANDROIDGLES_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUIDRIVERWIN32GL_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-GUIDRIVERANDROIDGLES_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUIDRIVERWIN32GL_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-GUIDRIVERANDROIDGLES_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUIDRIVERWIN32GL_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/                 
@@ -98,7 +98,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 //-------------------------------------------------------------------------*/
 
 #ifdef __cplusplus
-}; /* namespace GUIDRIVERANDROIDGLES */
+}; /* namespace GUIDRIVERWIN32GL */
 }; /* namespace GUCEF */
 #endif /* __cplusplus */
 

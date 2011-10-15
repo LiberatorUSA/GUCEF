@@ -1,5 +1,5 @@
 /*
- *  guidriverAndroidGLES: module implementing GLES based window management for Android
+ *  guidriverWin32GL: module implementing GL based window management for Win32
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -28,12 +28,12 @@
 #define GUCEF_GUI_CWINDOWMANAGER_H
 #endif /* GUCEF_GUI_CWINDOWMANAGER_H ? */
 
-#ifndef GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H
-#include "guidriverAndroidGLES_CAndroidWindowManagerImp.h"
-#define GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H
-#endif /* GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H ? */
+#ifndef GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H
+#include "guidriverWin32GL_CWin32GLWindowManagerImp.h"
+#define GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H
+#endif /* GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H ? */
 
-#include "guidriverAndroidGLES_pluginAPI.h"
+#include "guidriverWin32GL_pluginAPI.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,7 +42,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERANDROIDGLES {
+namespace GUIDRIVERWIN32GL {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,7 +50,7 @@ namespace GUIDRIVERANDROIDGLES {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-static TAndroidWindowManagerImpPtr androidGlesWindowManager = new CAndroidWindowManagerImp();
+static TWin32GLWindowManagerImpPtr win32GlWindowManager = new CWin32GLWindowManagerImp();
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,7 +62,7 @@ CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUI::CWindowManager::Instance()->RegisterBackend( "AndroidGLES", androidGlesWindowManager );
+    GUI::CWindowManager::Instance()->RegisterBackend( "Win32GL", win32GlWindowManager );
     return 1;
 }
 
@@ -72,7 +72,7 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUI::CWindowManager::Instance()->UnregisterBackend( "AndroidGLES" );
+    GUI::CWindowManager::Instance()->UnregisterBackend( "Win32GL" );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -102,7 +102,7 @@ const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    return "Window management backend for Android using GLES";
+    return "Window management backend for Win32 using OpenGL";
 }
 
 /*-------------------------------------------------------------------------//
@@ -111,7 +111,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUIDRIVERANDROIDGLES */
+}; /* namespace GUIDRIVERWIN32GL */
 }; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/

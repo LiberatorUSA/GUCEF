@@ -1,5 +1,5 @@
 /*
- *  gucefINPUT: GUCEF module providing input device interaction
+ *  gucefGUI_TestApp: Application for testing gucefGUI
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -23,10 +23,30 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_CFILEACCESS_H
 #include "CFileAccess.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
+
+#ifndef GUCEF_CORE_DVOSWRAP_H
 #include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H ? */
+
+#ifndef GUCEF_GUI_CWINDOWMANAGER_H
+#include "gucefGUI_CWindowManager.h"
+#define GUCEF_GUI_CWINDOWMANAGER_H
+#endif /* GUCEF_GUI_CWINDOWMANAGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,7 +86,7 @@ GUCEF_OSMAIN_BEGIN
     {
         #ifdef GUCEF_GUI_DEBUG_MODE
         GUCEF::CORE::GUCEF_PrintCallstack();
-        GUCEF::CORE::GUCEF_DumpCallstack( "gucefINPUT_TestApp_callstack.txt" );
+        GUCEF::CORE::GUCEF_DumpCallstack( "gucefGUI_TestApp_callstack.txt" );
         #endif /* GUCEF_GUI_DEBUG_MODE ? */
         
         GUCEF::CORE::ShowErrorMessage( "Unknown exception"                                                                 ,

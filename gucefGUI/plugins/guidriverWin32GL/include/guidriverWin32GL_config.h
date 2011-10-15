@@ -1,5 +1,5 @@
 /*
- *  guidriverAndroidGLES: module implementing GLES based window management for Android
+ *  guidriverWin32GL: module implementing GL based window management for Win32
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVERANDROIDGLES_CONFIG_H
-#define GUIDRIVERANDROIDGLES_CONFIG_H
+#ifndef GUIDRIVERWIN32GL_CONFIG_H
+#define GUIDRIVERWIN32GL_CONFIG_H
 
 /*
  *      Build configuration specific macros.
@@ -43,12 +43,12 @@
 //-------------------------------------------------------------------------*/
 
 /* Switches for the export of C++ and/or C code */
-#define GUIDRIVERANDROIDGLES_PUBLIC_CPP_CODE
-#define GUIDRIVERANDROIDGLES_PUBLIC_C_CODE
+#define GUIDRIVERWIN32GL_PUBLIC_CPP_CODE
+#define GUIDRIVERWIN32GL_PUBLIC_C_CODE
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVERANDROIDGLES_CONFIG_H ? */
+#endif /* GUIDRIVERWIN32GL_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
