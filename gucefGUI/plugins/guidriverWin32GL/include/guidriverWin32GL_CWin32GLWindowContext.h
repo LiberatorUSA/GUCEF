@@ -90,6 +90,8 @@ class GUIDRIVERWIN32GL_PUBLIC_CPP CWin32GLWindowContext : public GUI::CWindowCon
                      const GUI::CVideoSettings& videoSettings );
 
     void Shutdown( void );
+
+    virtual const CORE::CString& GetClassTypeName( void ) const;
     
     private:
     
