@@ -610,7 +610,7 @@ CSysConsole::Execute( CSysConsoleClient* client             ,
             else
             {
                 resultdata.push_back( "ERROR> Expected " + UInt32ToString( (UInt32) func->argdefs.size() ) + " values" );
-                resultdata.push_back( UInt32ToString( (UInt32) arglist.size() ) + " values where entered" );
+                resultdata.push_back( UInt32ToString( (UInt32) arglist.size() ) + " values were entered" );
                 
                 if ( func->argdefs.size() > 0 )
                 {

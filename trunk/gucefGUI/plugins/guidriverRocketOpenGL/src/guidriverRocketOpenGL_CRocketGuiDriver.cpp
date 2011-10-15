@@ -1,5 +1,5 @@
 /*
- *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
+ *  guidriverRocketOpenGL: module providing a GUI backend using Rocket and OpenGL
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,14 +17,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUIDRIVERROCKETGL_CROCKETGUIDRIVER_H
-#define GUCEF_GUIDRIVERROCKETGL_CROCKETGUIDRIVER_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#include <Rocket/Core.h>
 
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
@@ -40,6 +39,8 @@
 #include "gucefGUI_CIGUIContext.h"
 #define GUCEF_GUI_CIGUICONTEXT_H
 #endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
+
+#include "guidriverRocketOpenGL_CRocketGuiDriver.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,14 +58,23 @@ namespace GUIDRIVERROCKETGL {
 //-------------------------------------------------------------------------*/
 
 CRocketGuiDriver::CRocketGuiDriver( void )
+    : GUI::CGUIDriver()  ,
+      m_rocketRenderer()
 {GUCEF_TRACE;
 
+	Rocket::Core::SetRenderInterface( &m_rocketRenderer );
+    //Rocket::Core::SetSystemInterface( &systemInterface );
+    Rocket::Core::Initialise();
 }
 
 /*-------------------------------------------------------------------------*/
 
 CRocketGuiDriver::~CRocketGuiDriver()
 {GUCEF_TRACE;
+
+    Rocket::Core::SetRenderInterface( NULL );
+    Rocket::Core::SetSystemInterface( NULL );
+    Rocket::Core::Shutdown();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -72,13 +82,17 @@ CRocketGuiDriver::~CRocketGuiDriver()
 GUI::TGuiContextPtr
 CRocketGuiDriver::CreateGUIContext()
 {GUCEF_TRACE;
+
+    return GUI::TGuiContextPtr();
 }
 
 /*-------------------------------------------------------------------------*/
     
-GUI::TGUIContextSet
+GUI::CGUIDriver::TGUIContextSet
 CRocketGuiDriver::GetContextList( void )
 {GUCEF_TRACE;
+
+    return GUI::CGUIDriver::TGUIContextSet();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -86,6 +100,8 @@ CRocketGuiDriver::GetContextList( void )
 GUI::UInt32
 CRocketGuiDriver::GetContextCount( void )
 {GUCEF_TRACE;
+
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -93,6 +109,8 @@ CRocketGuiDriver::GetContextCount( void )
 GUI::CString
 CRocketGuiDriver::GetDriverName( void )
 {GUCEF_TRACE;
+    
+    return "RocketOpenGL";
 }
 
 /*-------------------------------------------------------------------------*/
@@ -100,6 +118,8 @@ CRocketGuiDriver::GetDriverName( void )
 GUI::CGUIDriver::TStringSet
 CRocketGuiDriver::GetAvailableFormTypes( void )
 {GUCEF_TRACE;
+
+    return GUI::CGUIDriver::TStringSet();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -107,6 +127,8 @@ CRocketGuiDriver::GetAvailableFormTypes( void )
 GUI::CGUIDriver::TStringSet
 CRocketGuiDriver::GetAvailableWidgetTypes( void )
 {GUCEF_TRACE;
+
+    return GUI::CGUIDriver::TStringSet();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -122,7 +144,7 @@ CRocketGuiDriver::GetClassTypeName( void ) const
 /*-------------------------------------------------------------------------*/
     
 GUI::CString
-CRocketGuiDriver::GetDriverProperty( const CString& propertyName ) const
+CRocketGuiDriver::GetDriverProperty( const GUI::CString& propertyName ) const
 {GUCEF_TRACE;
 
     return GUI::CString();

@@ -168,6 +168,9 @@ CGUCEFApplication::CGUCEFApplication( void )
                              "GetApplicationDir"              ,
                              args                             ,
                              this                             );
+    sysconsole->RegisterAlias( "exit"                           ,
+                               "GUCEF\\CORE\\CGUCEFApplication" ,
+                               "Stop"                           );
 
     // Set the busy wait pulse driver as the default driver for the
     // pulse generator

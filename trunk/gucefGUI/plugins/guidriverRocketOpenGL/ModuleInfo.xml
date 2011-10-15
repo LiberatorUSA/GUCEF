@@ -17,7 +17,7 @@
             <Dependency Name="gucefMT" />
         </Linker>
         <Preprocessor>
-            <Define String="GUIDRIVERROCKETOPENGL_BUILD_MODULE" />
+            <Define String="GUIDRIVERROCKETGL_BUILD_MODULE" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

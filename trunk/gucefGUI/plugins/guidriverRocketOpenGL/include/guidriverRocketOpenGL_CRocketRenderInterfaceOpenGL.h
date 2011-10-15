@@ -1,5 +1,5 @@
 /*
- *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
+ *  guidriverRocketOpenGL: module providing a GUI backend using Rocket and OpenGL
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -57,7 +57,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef ROCKETCORERENDERINTERFACE_H
 #include "Rocket/Core/RenderInterface.h"
+#define ROCKETCORERENDERINTERFACE_H
+#endif /* ROCKETCORERENDERINTERFACE_H ? */
+
+#ifndef GUCEF_GUIDRIVERROCKETGL_MACROS_H
+#include "guidriverRocketOpenGL_macros.h"
+#define GUCEF_GUIDRIVERROCKETGL_MACROS_H
+#endif /* GUCEF_GUIDRIVERROCKETGL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -75,7 +83,7 @@ namespace GUIDRIVERROCKETGL {
 //-------------------------------------------------------------------------*/
 
 
-class CRocketRenderInterfaceOpenGL : public Rocket::Core::RenderInterface
+class GUIDRIVERROCKETGL_PUBLIC_CPP CRocketRenderInterfaceOpenGL : public Rocket::Core::RenderInterface
 {
     public:
 
