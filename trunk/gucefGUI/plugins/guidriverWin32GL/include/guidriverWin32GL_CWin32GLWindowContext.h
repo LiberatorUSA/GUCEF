@@ -1,5 +1,5 @@
 /*
- *  guidriverAndroidGLES: module implementing GLES based window management for Android
+ *  guidriverWin32GL: module implementing GL based window management for Win32
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,19 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H
-#define GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H 
+#ifndef GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H
+#define GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-#include <EGL/egl.h>
 
 #ifndef GUCEF_CORE_CTSHAREDPTR_H
 #include "CTSharedPtr.h"
@@ -43,10 +41,10 @@
 #define GUCEF_GUI_CVIDEOSETTINGS_H
 #endif /* GUCEF_GUI_CVIDEOSETTINGS_H ? */
 
-#ifndef GUIDRIVERANDROIDGLES_MACROS_H
-#include "guidriverAndroidGLES_macros.h"
-#define GUIDRIVERANDROIDGLES_MACROS_H
-#endif /* GUIDRIVERANDROIDGLES_MACROS_H ? */
+#ifndef GUIDRIVERWIN32GL_MACROS_H
+#include "guidriverWin32GL_macros.h"
+#define GUIDRIVERWIN32GL_MACROS_H
+#endif /* GUIDRIVERWIN32GL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,7 +53,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERANDROIDGLES {
+namespace GUIDRIVERWIN32GL {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,13 +61,13 @@ namespace GUIDRIVERANDROIDGLES {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUIDRIVERANDROIDGLES_PUBLIC_CPP CAndroidGLESWindowContext : public GUI::CWindowContext
+class GUIDRIVERWIN32GL_PUBLIC_CPP CWin32GLWindowContext : public GUI::CWindowContext
 {        
     public:
     
-    CAndroidGLESWindowContext( void );
+    CWin32GLWindowContext( void );
     
-    virtual ~CAndroidGLESWindowContext();
+    virtual ~CWin32GLWindowContext();
     
     virtual void SetGuiContext( GUI::TGuiContextPtr& context );
     
@@ -87,22 +85,20 @@ class GUIDRIVERANDROIDGLES_PUBLIC_CPP CAndroidGLESWindowContext : public GUI::CW
     
     private:
     
-    CAndroidGLESWindowContext( const CAndroidGLESWindowContext& src );            /**< private because: must be unique */ 
-    CAndroidGLESWindowContext& operator=( const CAndroidGLESWindowContext& src ); /**< private because: must be unique */
+    CWin32GLWindowContext( const CWin32GLWindowContext& src );            /**< private because: must be unique */ 
+    CWin32GLWindowContext& operator=( const CWin32GLWindowContext& src ); /**< private because: must be unique */
 
     private:
 
     GUI::TGuiContextPtr m_guiContext;
     GUI::UInt32 m_id;
     GUI::CString m_name;
-    EGLDisplay m_display;
-    EGLSurface m_surface;
-    EGLContext m_context;
+
 };
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CAndroidGLESWindowContext >  TAndroidGLESWindowContextPtr;
+typedef CORE::CTSharedPtr< CWin32GLWindowContext >  TWin32GLWindowContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -110,12 +106,12 @@ typedef CORE::CTSharedPtr< CAndroidGLESWindowContext >  TAndroidGLESWindowContex
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUIDRIVERANDROIDGLES */
+} /* namespace GUIDRIVERWIN32GL */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVERANDROIDGLES_CANDROIDGLESWINDOWCONTEXT_H ? */
+#endif /* GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

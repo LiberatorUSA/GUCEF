@@ -1,5 +1,5 @@
 /*
- *  guidriverAndroidGLES: module implementing GLES based window management for Android
+ *  guidriverWin32GL: module implementing GL based window management for Win32
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
  
-#ifndef GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H
-#define GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H 
+#ifndef GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H
+#define GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -36,10 +36,10 @@
 #define GUCEF_GUI_CWINDOWMANAGERBACKEND_H
 #endif /* GUCEF_GUI_CWINDOWMANAGERBACKEND_H ? */
 
-#ifndef GUIDRIVERANDROIDGLES_MACROS_H
-#include "guidriverAndroidGLES_macros.h"
-#define GUIDRIVERANDROIDGLES_MACROS_H
-#endif /* GUIDRIVERANDROIDGLES_MACROS_H ? */
+#ifndef GUIDRIVERWIN32GL_MACROS_H
+#include "guidriverWin32GL_macros.h"
+#define GUIDRIVERWIN32GL_MACROS_H
+#endif /* GUIDRIVERWIN32GL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,7 +48,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERANDROIDGLES {
+namespace GUIDRIVERWIN32GL {
          
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,13 +56,13 @@ namespace GUIDRIVERANDROIDGLES {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUIDRIVERANDROIDGLES_PUBLIC_CPP CAndroidWindowManagerImp : public GUI::CWindowManagerBackend
+class GUIDRIVERWIN32GL_PUBLIC_CPP CWin32GLWindowManagerImp : public GUI::CWindowManagerBackend
 {
     public:
     
-    CAndroidWindowManagerImp( void );
+    CWin32GLWindowManagerImp( void );
     
-    virtual ~CAndroidWindowManagerImp();
+    virtual ~CWin32GLWindowManagerImp();
     
     virtual GUI::TWindowContextPtr CreateWindowContext( const GUI::CString& title ,
                                                         const GUI::UInt32 width   ,
@@ -86,13 +86,13 @@ class GUIDRIVERANDROIDGLES_PUBLIC_CPP CAndroidWindowManagerImp : public GUI::CWi
 
     private:
 
-    CAndroidWindowManagerImp( const CAndroidWindowManagerImp& src );
-    CAndroidWindowManagerImp& operator=( const CAndroidWindowManagerImp& src );        
+    CWin32GLWindowManagerImp( const CWin32GLWindowManagerImp& src );
+    CWin32GLWindowManagerImp& operator=( const CWin32GLWindowManagerImp& src );        
 };
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CAndroidWindowManagerImp > TAndroidWindowManagerImpPtr;
+typedef CORE::CTSharedPtr< CWin32GLWindowManagerImp > TWin32GLWindowManagerImpPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -100,12 +100,12 @@ typedef CORE::CTSharedPtr< CAndroidWindowManagerImp > TAndroidWindowManagerImpPt
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUIDRIVERANDROIDGLES */
+} /* namespace GUIDRIVERWIN32GL */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVERANDROIDGLES_CANDROIDWINDOWMANAGERIMP_H ? */
+#endif /* GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
