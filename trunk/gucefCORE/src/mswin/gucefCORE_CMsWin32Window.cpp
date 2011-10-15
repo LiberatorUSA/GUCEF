@@ -670,6 +670,14 @@ CMsWin32Window::RegisterWindowClass( const CString& windowClassName )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CMsWin32Window::UnregisterWindowClass( const CString& windowClassName )
+{
+    UnregisterClassA( windowClassName.C_String(), GetCurrentModuleHandle() );
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CString&
 CMsWin32Window::GetClassTypeName( void ) const
 {GUCEF_TRACE;

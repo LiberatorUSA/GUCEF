@@ -172,13 +172,17 @@ CSysConsole*
 CSysConsole::Instance( void )
 {GUCEF_TRACE;
 
+    if ( NULL == _instance )
+    {
         _datalock.Lock();
-        if ( !_instance )
+        if ( NULL == _instance )
         {
-                _instance = new CSysConsole();
+            _instance = new CSysConsole();
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CSysConsole Singleton created" );
         }                
         _datalock.Unlock();
-        return _instance;
+    }
+    return _instance;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -187,10 +191,11 @@ void
 CSysConsole::Deinstance( void )
 {GUCEF_TRACE;
        
-        _datalock.Lock();
-        delete _instance;
-        _instance = NULL;
-        _datalock.Unlock();
+    _datalock.Lock();
+    delete _instance;
+    _instance = NULL;
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CSysConsole Singleton destroyed" );
+    _datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

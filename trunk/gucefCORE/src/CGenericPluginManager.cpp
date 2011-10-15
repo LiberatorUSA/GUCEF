@@ -102,7 +102,7 @@ CGenericPluginManager*
 CGenericPluginManager::Instance( void )
 {GUCEF_TRACE;
 
-    if ( NULL != m_instance )
+    if ( NULL == m_instance )
     {
         m_instance = new CGenericPluginManager();
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CGenericPluginManager Singleton created" );

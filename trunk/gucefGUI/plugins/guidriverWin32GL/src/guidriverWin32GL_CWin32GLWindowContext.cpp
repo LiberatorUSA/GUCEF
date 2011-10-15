@@ -51,7 +51,13 @@ namespace GUIDRIVERWIN32GL {
 //-------------------------------------------------------------------------*/
 
 CWin32GLWindowContext::CWin32GLWindowContext( void )
-    : CWindowContext() 
+    : CWindowContext()         ,
+      m_guiContext()           ,
+      m_id()                   ,
+      m_name()                 ,
+      m_window()               ,
+      m_renderContext( NULL )  ,
+      m_deviceContext( NULL )
 {GUCEF_TRACE;
 
 }
@@ -115,19 +121,107 @@ void
 CWin32GLWindowContext::Shutdown( void )
 {GUCEF_TRACE;
 
+	if ( NULL != m_renderContext )
+	{
+		wglMakeCurrent( NULL, NULL ); 
+		wglDeleteContext( m_renderContext );
+		m_renderContext = NULL;
+	}
 
+	if ( NULL != m_deviceContext )
+	{
+		ReleaseDC( m_window.GetHwnd(), m_deviceContext );
+		m_deviceContext = NULL;
+	}
+
+    if ( NULL != m_window.GetHwnd() )
+    {
+        CORE::CMsWin32Window::UnregisterWindowClass( m_window.GetText() );
+        m_window.WindowDestroy();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CWin32GLWindowContext::Initialize( const GUI::CVideoSettings& videoSettings )
+CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
+                                   const GUI::CVideoSettings& videoSettings )
 {GUCEF_TRACE;
 
     // Do not initialize twice
     Shutdown();
 
+    if ( !CORE::CMsWin32Window::RegisterWindowClass( title ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not register window class" );
+        return false;
+    }
 
+    // First create a regular Win32 window
+    if ( m_window.WindowCreate( title                                       ,
+                                title                                       ,
+                                0                                           ,
+                                0                                           ,
+                                videoSettings.GetResolutionWidthInPixels()  ,
+                                videoSettings.GetResolutionHeightInPixels() ) )
+    {
+	    // Now proceed with setting up the OpenGL specifics
+        m_deviceContext = GetDC( m_window.GetHwnd() );
+	    if ( NULL == m_deviceContext )
+	    {
+		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not obtain window device context" );
+            Shutdown();
+		    return false;
+	    }
+
+	    PIXELFORMATDESCRIPTOR pixelFormatDescriptor;
+	    memset( &pixelFormatDescriptor, 0, sizeof(pixelFormatDescriptor) );
+	    pixelFormatDescriptor.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+	    pixelFormatDescriptor.nVersion = 1;
+	    pixelFormatDescriptor.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+	    pixelFormatDescriptor.iPixelType = PFD_TYPE_RGBA;
+	    pixelFormatDescriptor.cColorBits = 32;
+	    pixelFormatDescriptor.cRedBits = 8;
+	    pixelFormatDescriptor.cGreenBits = 8;
+	    pixelFormatDescriptor.cBlueBits = 8;
+	    pixelFormatDescriptor.cAlphaBits = 8;
+	    pixelFormatDescriptor.cDepthBits = 24;
+	    pixelFormatDescriptor.cStencilBits = 8;
+
+	    int pixelFormat = ChoosePixelFormat( m_deviceContext, &pixelFormatDescriptor );
+	    if ( 0 == pixelFormat )
+	    {
+		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Failed to get the desired pixel format" );
+		    Shutdown();
+            return false;
+	    }
+
+	    if ( FALSE == SetPixelFormat( m_deviceContext, pixelFormat, &pixelFormatDescriptor ) )
+	    {
+		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not set pixel format" );
+		    Shutdown();
+            return false;
+	    }
+
+	    m_renderContext = wglCreateContext( m_deviceContext );
+	    if ( NULL == m_renderContext )
+	    { 
+		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not create OpenGL rendering context" );
+		    Shutdown();
+            return false;
+	    }
+
+	    if ( wglMakeCurrent( m_deviceContext, m_renderContext ) == FALSE )
+	    {
+		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not make OpenGL rendering context current" );
+		    Shutdown();
+            return false;
+	    }
+
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Succesfully created OpenGL rendering context" );
+        m_window.Show();
+        return true;
+    }
     return false;
 }
 

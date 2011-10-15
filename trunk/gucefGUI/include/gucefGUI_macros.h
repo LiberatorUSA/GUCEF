@@ -63,6 +63,19 @@
 //-------------------------------------------------------------------------*/
 
 /*
+ *      Auto detection of debug mode
+ */
+#ifndef GUCEF_MANUAL_DEBUG_MODE_DEFINE
+  #if defined( _DEBUG )
+    #define GUCEF_GUI_DEBUG_MODE
+  #else
+    #undef GUCEF_GUI_DEBUG_MODE
+  #endif /* compiler DEBUG switches */
+#endif /* GUCEF_MANUAL_DEBUG_MODE_DEFINE ? */
+
+/*-------------------------------------------------------------------------*/
+
+/*
  *      Macros for dynamic linking or static linking. Use the switches in the
  *      config file to control the export type.
  */

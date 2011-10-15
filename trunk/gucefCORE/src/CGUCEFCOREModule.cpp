@@ -230,18 +230,16 @@ CGUCEFCOREModule::Load( void )
     /*
      *  Instantiate the rest of the singletons
      */
+    CConfigStore::Instance();
+    CTaskManager::Instance();
     CPluginControl::Instance();         
     CDStoreCodecRegistry::Instance();
     CDStoreCodecPluginManager::Instance();
-    CConfigStore::Instance();
-    CTaskManager::Instance();
-    CURLHandlerRegistry::Instance();
-    CGUCEFApplication::Instance();
-    CSysConsole::Instance();
     CGenericPluginManager::Instance();
     CStdCodecPluginManager::Instance();
-    
-
+    CURLHandlerRegistry::Instance();
+    CSysConsole::Instance();
+    CGUCEFApplication::Instance();
 
     #ifdef GUCEF_MSWIN_BUILD
     CWndMsgHookNotifier::RegisterEvents();
