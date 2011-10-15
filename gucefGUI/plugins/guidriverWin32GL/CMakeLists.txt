@@ -76,13 +76,13 @@ endif()
 
 if ( WIN32 )
   add_dependencies( ${MODULE_NAME} gucefCORE gucefGUI gucefMT )
-  target_link_libraries( ${MODULE_NAME} gucefCORE gucefGUI gucefMT )
+  target_link_libraries( ${MODULE_NAME} Opengl32 gucefCORE gucefGUI gucefMT )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERWIN32GL_BUILD_MODULE" )
 endif( WIN32 )
 
 if ( WIN64 )
   add_dependencies( ${MODULE_NAME} gucefCORE gucefGUI gucefMT )
-  target_link_libraries( ${MODULE_NAME} gucefCORE gucefGUI gucefMT )
+  target_link_libraries( ${MODULE_NAME} Opengl32 gucefCORE gucefGUI gucefMT )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERWIN32GL_BUILD_MODULE" )
 endif( WIN64 )
 

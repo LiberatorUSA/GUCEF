@@ -1,6 +1,6 @@
 /*
- *  guidriverWin32GL: module implementing GL based window management for Win32
- *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
+ *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -9,7 +9,7 @@
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H
-#define GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H 
+#ifndef GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
+#define GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,32 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <Windows.h>
-
-#ifndef GUCEF_CORE_CMSWIN32WINDOW_H
-#include "gucefCORE_CMsWin32Window.h"
-#define GUCEF_CORE_CMSWIN32WINDOW_H
-#endif /* GUCEF_CORE_CMSWIN32WINDOW_H ? */
-
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
-
-#ifndef GUCEF_GUI_CWINDOWCONTEXT_H
-#include "gucefGUI_CWindowContext.h"
-#define GUCEF_GUI_CWINDOWCONTEXT_H
-#endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
-
-#ifndef GUCEF_GUI_CVIDEOSETTINGS_H
-#include "gucefGUI_CVideoSettings.h"
-#define GUCEF_GUI_CVIDEOSETTINGS_H
-#endif /* GUCEF_GUI_CVIDEOSETTINGS_H ? */
-
-#ifndef GUIDRIVERWIN32GL_MACROS_H
-#include "guidriverWin32GL_macros.h"
-#define GUIDRIVERWIN32GL_MACROS_H
-#endif /* GUIDRIVERWIN32GL_MACROS_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"           /* often used gucef macros */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,7 +38,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERWIN32GL {
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -68,47 +46,29 @@ namespace GUIDRIVERWIN32GL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUIDRIVERWIN32GL_PUBLIC_CPP CWin32GLWindowContext : public GUI::CWindowContext
-{        
+/**
+ *  Class which uses the strategy pattern to allocate a platform
+ *  native console window
+ */
+class GUCEF_CORE_PUBLIC_CPP CPlatformNativeConsoleWindow
+{
     public:
     
-    CWin32GLWindowContext( void );
-    
-    virtual ~CWin32GLWindowContext();
-    
-    virtual void SetGuiContext( GUI::TGuiContextPtr& context );
-    
-    virtual GUI::TGuiContextPtr GetGuiContext( void );
-    
-    virtual GUI::UInt32 GetID( void ) const;
-    
-    virtual bool IsActive( void ) const;
-    
-    virtual GUI::CString GetName( void ) const;
+    CPlatformNativeConsoleWindow( void );
 
-    bool Initialize( const GUI::CString& title                ,
-                     const GUI::CVideoSettings& videoSettings );
+    ~CPlatformNativeConsoleWindow();
 
-    void Shutdown( void );
-    
-    private:
-    
-    CWin32GLWindowContext( const CWin32GLWindowContext& src );            /**< private because: must be unique */ 
-    CWin32GLWindowContext& operator=( const CWin32GLWindowContext& src ); /**< private because: must be unique */
+    bool CreateConsole( void );
 
     private:
 
-    GUI::TGuiContextPtr m_guiContext;
-    GUI::UInt32 m_id;
-    GUI::CString m_name;
-    CORE::CMsWin32Window m_window;
-    HGLRC m_renderContext;
-    HDC m_deviceContext;
+    CPlatformNativeConsoleWindow& operator=( const CPlatformNativeConsoleWindow& src );
+    CPlatformNativeConsoleWindow( const CPlatformNativeConsoleWindow& src );
+
+    private:
+
+    void* m_nativeConsoleWindow;
 };
-
-/*-------------------------------------------------------------------------*/
-
-typedef CORE::CTSharedPtr< CWin32GLWindowContext >  TWin32GLWindowContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -116,12 +76,12 @@ typedef CORE::CTSharedPtr< CWin32GLWindowContext >  TWin32GLWindowContextPtr;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUIDRIVERWIN32GL */
-} /* namespace GUCEF */
+}; /* namespace CORE */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H ? */
+#endif /* GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -129,7 +89,7 @@ typedef CORE::CTSharedPtr< CWin32GLWindowContext >  TWin32GLWindowContextPtr;
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 08-10-2005 :
-        - Initial version
+- 19-05-2007 :
+        - Dinand: Added this class
 
 ---------------------------------------------------------------------------*/

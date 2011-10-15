@@ -84,7 +84,8 @@ CWin32GLWindowManagerImp::CreateWindowContext( const GUI::CString& title        
 {GUCEF_TRACE;
 
     TWin32GLWindowContextPtr windowContext = new CWin32GLWindowContext();
-    if ( windowContext->Initialize( settings ) )
+    if ( windowContext->Initialize( title    ,
+                                    settings ) )
     {
         return windowContext;
     }

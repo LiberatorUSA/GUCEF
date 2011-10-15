@@ -92,31 +92,35 @@ CURLHandlerRegistry::operator=( const CURLHandlerRegistry& src )
 
 CURLHandlerRegistry*
 CURLHandlerRegistry::Instance( void )
-{
-        GUCEF_BEGIN;
+{GUCEF_TRACE;
+
+    if ( NULL == _instance )
+    {
         _datalock.Lock();
-        if ( !_instance )        
+        if ( NULL == _instance )        
         {
-                _instance = new CURLHandlerRegistry();
-                CHECKMEM( _instance, sizeof(CURLHandlerRegistry) ); 
+            _instance = new CURLHandlerRegistry();
+            CHECKMEM( _instance, sizeof(CURLHandlerRegistry) ); 
+
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CURLHandlerRegistry Singleton created" );
         }
         _datalock.Unlock();
-        GUCEF_END;
-        return _instance;
+    }
+    return _instance;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void 
 CURLHandlerRegistry::Deinstance( void )
-{
-        GUCEF_BEGIN;
-        _datalock.Lock();
-        CHECKMEM( _instance, sizeof(CURLHandlerRegistry) );
-        delete _instance;
-        _instance = NULL;
-        _datalock.Unlock();
-        GUCEF_END;
+{GUCEF_TRACE;
+
+    _datalock.Lock();
+    CHECKMEM( _instance, sizeof(CURLHandlerRegistry) );
+    delete _instance;
+    _instance = NULL;
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CURLHandlerRegistry Singleton destroyed" );
+    _datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

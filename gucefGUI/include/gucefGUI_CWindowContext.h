@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CNOTIFIER_H
-#include "CNotifier.h"
-#define GUCEF_CORE_CNOTIFIER_H
-#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CLONEABLES_H
 #include "cloneables.h"
@@ -61,7 +61,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_PUBLIC_CPP CWindowContext : public CORE::CNotifier
+class GUCEF_GUI_PUBLIC_CPP CWindowContext : public CORE::CObservingNotifier
 {        
     public:
     

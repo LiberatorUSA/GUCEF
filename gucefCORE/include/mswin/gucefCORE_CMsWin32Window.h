@@ -102,6 +102,8 @@ class GUCEF_CORE_PUBLIC_CPP CMsWin32Window : public CObservingNotifier
 
     static bool RegisterWindowClass( const CString& windowClassName );
 
+    static void UnregisterWindowClass( const CString& windowClassName );
+
     bool Show( void );
     
     bool Hide( void );
