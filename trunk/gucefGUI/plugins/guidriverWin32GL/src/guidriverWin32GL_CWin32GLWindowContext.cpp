@@ -151,14 +151,14 @@ CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
     // Do not initialize twice
     Shutdown();
 
-    if ( !CORE::CMsWin32Window::RegisterWindowClass( title ) )
+    if ( !CORE::CMsWin32Window::RegisterWindowClass( GetClassTypeName() ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not register window class" );
         return false;
     }
 
     // First create a regular Win32 window
-    if ( m_window.WindowCreate( title                                       ,
+    if ( m_window.WindowCreate( GetClassTypeName()                          ,
                                 title                                       ,
                                 0                                           ,
                                 0                                           ,
@@ -219,10 +219,19 @@ CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
 	    }
 
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Succesfully created OpenGL rendering context" );
-        m_window.Show();
         return true;
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+CWin32GLWindowContext::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::GUIDRIVERWIN32GL::CWin32GLWindowContext";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//
