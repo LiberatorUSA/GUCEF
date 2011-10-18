@@ -539,6 +539,7 @@ History:
        locations. I would not recommend organizing your code this way, but if you need it its now supported.
      - Fixed a bug in the Android makefile generator which could cause some files to be left out of a module by mistake
        when merging a All platforms definition with an Android one.
+     - Fixed the Android makefiles doing an if check on the variable value instead of variable existance.
 - 5'th April 2011:
      - First version of the ProjectGenerator which supports everything the CMakeListGenerator used to support
        plus a lot more. This version support the legacy system and the old system and is meant to bridge between
