@@ -53,7 +53,8 @@ Version:
 ----------------------------------------------
 
 This is a release build created on 6'th of September 2011.
-It is a 32-bit MS Windows application for the x86 platform.
+It is a 32-bit Linux application for the x86 platform. 
+It was compiled on Ubuntu 10 LTS
 if you encounter any problems let me know.
 
 ----------------------------------------------
@@ -96,7 +97,7 @@ The support generators are:
        make files.
   - "xml"
        Generates a "Project.xml" file which is simply a dump of all the gathered
-       information. If you wich to integrate the ProjectGenerator with toolchains
+       information. If you wish to integrate the ProjectGenerator with toolchains
        not supported by a generator it is expected that you achieve such integration
        via this output option.
 
@@ -539,6 +540,7 @@ History:
        locations. I would not recommend organizing your code this way, but if you need it its now supported.
      - Fixed a bug in the Android makefile generator which could cause some files to be left out of a module by mistake
        when merging a All platforms definition with an Android one.
+     - Fixed the Android makefiles doing an if check on the variable value instead of variable existance.
 - 5'th April 2011:
      - First version of the ProjectGenerator which supports everything the CMakeListGenerator used to support
        plus a lot more. This version support the legacy system and the old system and is meant to bridge between

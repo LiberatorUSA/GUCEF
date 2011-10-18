@@ -52,13 +52,9 @@ include paths will be correct again as soon as you re-run the generator.
 Version:
 ----------------------------------------------
 
-This is a release build created on 5'th of April 2011.
+This is a release build created on 6'th of September 2011.
 It is a 32-bit MS Windows application for the x86 platform.
 if you encounter any problems let me know.
-
-This is the first release under the name of "ProjectGenerator"
-The previous release was under the name of "CMakeListGenerator"
-
 
 ----------------------------------------------
 Features:
@@ -100,7 +96,7 @@ The support generators are:
        make files.
   - "xml"
        Generates a "Project.xml" file which is simply a dump of all the gathered
-       information. If you wich to integrate the ProjectGenerator with toolchains
+       information. If you wish to integrate the ProjectGenerator with toolchains
        not supported by a generator it is expected that you achieve such integration
        via this output option.
 
@@ -284,11 +280,17 @@ The type of the module is specified as in <moduleTypeString> which must be one o
  - "SharedLibrary"
  - "StaticLibrary"
  - "HeaderIncludeLocation"
+ - "CodeIncludeLocation"
 
 The "HeaderIncludeLocation" is a special module type which is only used for determination of include paths
 It will not be translated into an actual module. The advantage is that you can refer to such a location without
 using the path. Instead you can use the name of the HeaderIncludeLocation to refer to paths that should be added
 to your includes.
+
+The "CodeIncludeLocation" is also a special module type which is used to merge code into a module as if it were part
+of a module's file structure. The main use-case for this is code which uses shared code that gets compiled into multiple
+modules instead of the usual exporting/importing from a shared module. Headers and source files belonging to a module of
+this type will get merged into modules which reference it as a dependency.
 
 
 ----------------------------------------------
@@ -531,6 +533,13 @@ up the generator's processing time. As such processing instructions can also be 
 History:
 ----------------------------------------------
 
+- 6'th September 2011:
+     - Added support for module type "CodeIncludeLocation". This had to be implemented to support 
+       thirdparty code which was using the same code in multiple modules by simply including the code from multiple
+       locations. I would not recommend organizing your code this way, but if you need it its now supported.
+     - Fixed a bug in the Android makefile generator which could cause some files to be left out of a module by mistake
+       when merging a All platforms definition with an Android one.
+     - Fixed the Android makefiles doing an if check on the variable value instead of variable existance.
 - 5'th April 2011:
      - First version of the ProjectGenerator which supports everything the CMakeListGenerator used to support
        plus a lot more. This version support the legacy system and the old system and is meant to bridge between
