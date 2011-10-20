@@ -58,13 +58,14 @@ namespace GUIDRIVERROCKETGL {
 //-------------------------------------------------------------------------*/
 
 CRocketGuiDriver::CRocketGuiDriver( void )
-    : GUI::CGUIDriver()  ,
-      m_rocketRenderer()
+    : GUI::CGUIDriver()              ,
+      m_rocketRenderer()             ,
+      m_systemInterface()            ,
+      m_isRocketInitialized( false )
 {GUCEF_TRACE;
 
 	Rocket::Core::SetRenderInterface( &m_rocketRenderer );
-    //Rocket::Core::SetSystemInterface( &systemInterface );
-    Rocket::Core::Initialise();
+    Rocket::Core::SetSystemInterface( &m_systemInterface );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -83,6 +84,21 @@ GUI::TGuiContextPtr
 CRocketGuiDriver::CreateGUIContext()
 {GUCEF_TRACE;
 
+    // Lazy initialize Rocket as needed
+    if ( !m_isRocketInitialized )
+    {
+        m_isRocketInitialized = Rocket::Core::Initialise();
+        if ( !m_isRocketInitialized )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to initialize Rocket" );
+            return GUI::TGuiContextPtr(); 
+        }
+        else
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initialized Rocket" );
+        }
+    }
+    
     return GUI::TGuiContextPtr();
 }
 
@@ -148,6 +164,24 @@ CRocketGuiDriver::GetDriverProperty( const GUI::CString& propertyName ) const
 {GUCEF_TRACE;
 
     return GUI::CString();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRocketGuiDriver::SaveConfig( CORE::CDataNode& tree )
+{GUCEF_TRACE;
+    
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRocketGuiDriver::LoadConfig( const CORE::CDataNode& treeroot )
+{GUCEF_TRACE;
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

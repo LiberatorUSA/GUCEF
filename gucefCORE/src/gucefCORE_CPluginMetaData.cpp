@@ -288,6 +288,25 @@ CPluginMetaData::LoadConfig( const CDataNode& treeroot )
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CPluginMetaData::Clear( void )
+{GUCEF_TRACE;
+
+    m_description.Clear();
+    m_copyright.Clear();
+    m_loaderLogicTypeName.Clear();
+    m_pluginType.Clear();
+    m_moduleFilename.Clear();
+    m_modulePath.Clear();
+    m_params.Clear();
+    m_version.major = 0;
+    m_version.minor = 0;
+    m_version.patch = 0;
+    m_version.release = 0;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

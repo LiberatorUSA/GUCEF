@@ -515,7 +515,8 @@ CValueList::GetValueVector( const UInt32 index ) const
 
 CValueList::TValueMap::const_iterator
 CValueList::GetDataBeginIterator( void ) const
-{
+{GUCEF_TRACE;
+
     return m_list.begin();
 }
 
@@ -523,8 +524,20 @@ CValueList::GetDataBeginIterator( void ) const
     
 CValueList::TValueMap::const_iterator
 CValueList::GetDataEndIterator( void ) const
-{
+{GUCEF_TRACE;
+
     return m_list.end();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CValueList::Clear( void )
+{GUCEF_TRACE;
+
+    m_list.clear();
+    m_allowDuplicates = false;
+    m_allowMultipleValues = true;
 }
 
 /*-------------------------------------------------------------------------//

@@ -1,6 +1,6 @@
 /*
- *  guidriverRocket: GUI backend using Rocket
- *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
+ *  guidriverRocketOpenGL: module providing a GUI backend using Rocket and OpenGL
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,24 +17,23 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUIDRIVERROCKET_PLUGINAPI_H
-#define GUCEF_GUIDRIVERROCKET_PLUGINAPI_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+#ifndef GUCEF_GUI_CGUIMANAGER_H
+#include "gucefGUI_CGUIManager.h"
+#define GUCEF_GUI_CGUIMANAGER_H
+#endif /* GUCEF_GUI_CGUIMANAGER_H ? */
 
-#ifndef GUCE_MYGUIOGRE_MACROS_H
-#include "guidriverRocket_macros.h"
-#define GUCE_MYGUIOGRE_MACROS_H
-#endif /* GUCE_MYGUIOGRE_MACROS_H ? */
+#ifndef GUCEF_GUIDRIVERROCKETGL_CROCKETGUIDRIVER_H
+#include "guidriverRocketOpenGL_CRocketGuiDriver.h"
+#define GUCEF_GUIDRIVERROCKETGL_CROCKETGUIDRIVER_H
+#endif /* GUCEF_GUIDRIVERROCKETGL_CROCKETGUIDRIVER_H ? */
+
+#include "guidriverRocketOpenGL_pluginAPI.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,7 +42,15 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERROCKET {
+namespace GUIDRIVERROCKETGL {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+static CRocketGuiDriver* g_guiDriver = NULL;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,43 +58,55 @@ namespace GUIDRIVERROCKET {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Prevent C++ name mangling
- */
-#ifdef __cplusplus
-extern "C" {
-#endif
+CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{GUCEF_TRACE;
 
-/*---------------------------------------------------------------------------*/
-
-GUCEF_GUIDRIVERROCKET_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    g_guiDriver = new CRocketGuiDriver();
+    GUI::CGUIManager::Instance()->RegisterGUIDriver( "RocketOpenGL", g_guiDriver );
+    return 1;
+}
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_GUIDRIVERROCKET_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{GUCEF_TRACE;
+
+    GUI::CGUIManager::Instance()->UnregisterGUIDriverByName( "RocketOpenGL" );
+    delete g_guiDriver;
+    g_guiDriver = NULL;
+}
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_GUIDRIVERROCKET_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetVersion( GUCEF::CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{GUCEF_TRACE;
+
+    versionInfo->major = 0; 
+    versionInfo->minor = 1;
+    versionInfo->patch = 0;
+    versionInfo->release = 0;
+}
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_GUIDRIVERROCKET_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{GUCEF_TRACE;
+    
+    return "Copyright (C) Dinand Vanvelzen, released under LGPLv3";
+}
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_GUIDRIVERROCKET_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{GUCEF_TRACE;
 
-/*---------------------------------------------------------------------------*/                 
-
-#ifdef __cplusplus
-   }
-#endif /* __cplusplus */
+    return "GUI backend based on Rocket using OpenGL";
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -95,20 +114,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUIDRIVERROCKET */
+}; /* namespace GUIDRIVERROCKETGL */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_GUIDRIVERROCKET_PLUGINAPI_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 04-05-2005 :
-        - Dinand: Initial version.
-
----------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/

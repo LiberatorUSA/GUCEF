@@ -114,7 +114,7 @@ GUCEF_OSMAIN_BEGIN
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to load Ms Win drivers" );
         
-        // Define our backend plugin
+        // Define our windowing backend plugin
         CORE::CPluginMetaData pluginMetaData;
         pluginMetaData.SetPluginType( "GucefGenericPlugin" );
         #ifdef GUCEF_GUI_DEBUG_MODE
@@ -130,6 +130,52 @@ GUCEF_OSMAIN_BEGIN
                                                                   true           ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverWin32GL" );
+
+            // Define our GUI backend plugin
+            pluginMetaData.Clear();
+            pluginMetaData.SetPluginType( "GucefGenericPlugin" );
+            #ifdef GUCEF_GUI_DEBUG_MODE
+            pluginMetaData.SetModuleFilename( "guidriverRocket_d" );
+            #else
+            pluginMetaData.SetModuleFilename( "guidriverRocket" );
+            #endif
+            pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
+
+            // Add plugin metadata and load the plugin
+            if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
+                                                                      "GUI"          ,
+                                                                      true           ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverRocketOpenGL" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load guidriverRocketOpenGL" );
+                return -1;
+            }
+
+            // Define our GUI backend OpenGL plugin
+            pluginMetaData.Clear();
+            pluginMetaData.SetPluginType( "GucefGenericPlugin" );
+            #ifdef GUCEF_GUI_DEBUG_MODE
+            pluginMetaData.SetModuleFilename( "guidriverRocketOpenGL_d" );
+            #else
+            pluginMetaData.SetModuleFilename( "guidriverRocketOpenGL" );
+            #endif
+            pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
+
+            // Add plugin metadata and load the plugin
+            if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
+                                                                      "GUI"          ,
+                                                                      true           ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverRocketOpenGL" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load guidriverRocketOpenGL" );
+                return -1;
+            }
 
             GUI::TWindowManagerBackendPtr windowMngrBackend = GUI::CWindowManager::Instance()->GetBackend( "Win32GL" );
             if ( NULL != windowMngrBackend )

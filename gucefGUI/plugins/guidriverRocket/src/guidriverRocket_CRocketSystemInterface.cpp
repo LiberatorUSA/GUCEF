@@ -1,6 +1,6 @@
 /*
- *  guceMyGUIOgre: glue module for the MyGUI+Ogre GUI backend
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  guidriverRocket: GUI backend using Rocket
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -23,22 +23,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_GUI_CGUIMANAGER_H
-#include "gucefGUI_CGUIManager.h"
-#define GUCEF_GUI_CGUIMANAGER_H
-#endif /* GUCEF_GUI_CGUIMANAGER_H ? */
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
-#ifndef GUCE_GUI_CGUIMANAGER_H
-#include "CGUIManager.h"
-#define GUCE_GUI_CGUIMANAGER_H
-#endif /* GUCE_GUI_CGUIMANAGER_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCE_MYGUIOGRE_H
-#include "guceMyGUIOgre.h"
-#define GUCE_MYGUIOGRE_H
-#endif /* GUCE_MYGUIOGRE_H ? */
-
-#include "guceMyGUIOgre_CModule.h"
+#include "guidriverRocket_CRocketSystemInterface.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,8 +41,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCE {
-namespace MYGUIOGRE {
+namespace GUCEF {
+namespace GUIDRIVERROCKET {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,27 +50,74 @@ namespace MYGUIOGRE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool
-CModule::Load( void )
-{GUCE_TRACE;
+CRocketSystemInterface::CRocketSystemInterface( void )
+    : Rocket::Core::SystemInterface()
+{GUCEF_TRACE;
 
-    // Register the GUI Driver at the GUCEF level
-    GUCEF::GUI::CGUIManager& guiManager = *GUCEF::GUI::CGUIManager::Instance();
-    guiManager.RegisterGUIDriver( "MyGUIOgre", CGUIDriver::Instance() );    
-    return true;
 }
 
-/*-------------------------------------------------------------------------*/
-    
+/*---------------------------------------------------------------------------*/
+
+CRocketSystemInterface::~CRocketSystemInterface()
+{GUCEF_TRACE;
+
+}
+
+/*---------------------------------------------------------------------------*/
+
+float
+CRocketSystemInterface::GetElapsedTime()
+{GUCEF_TRACE;
+
+    return CORE::GUCEFGetTickCount() / 1000.0f;
+}
+
+/*---------------------------------------------------------------------------*/
+
 bool
-CModule::Unload( void )
-{GUCE_TRACE;
+CRocketSystemInterface::LogMessage( Rocket::Core::Log::Type type        , 
+                                    const Rocket::Core::String& message )
+{GUCEF_TRACE;
+
+    static CORE::CString logPrefix = "Rocket: ";
     
-    // Unregister the GUI Driver at the GUCEF level
-    GUCEF::GUI::CGUIManager& guiManager = *GUCEF::GUI::CGUIManager::Instance();
-    guiManager.UnregisterGUIDriverByName( "MyGUIOgre" );    
-    CGUIDriver::Deinstance();        
-    return true;
+    switch ( type )
+    {
+        case Rocket::Core::Log::LT_ALWAYS :
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, logPrefix + message.CString() );
+            return true;
+        }
+        case Rocket::Core::Log::LT_ERROR :
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, logPrefix + message.CString() );
+            return true;
+        }
+        case Rocket::Core::Log::LT_ASSERT :
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, logPrefix + message.CString() );
+            return true;
+        }
+        case Rocket::Core::Log::LT_WARNING :
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, logPrefix + message.CString() );
+            return true;
+        }
+        case Rocket::Core::Log::LT_INFO :
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, logPrefix + message.CString() );
+            return true;
+        }
+        case Rocket::Core::Log::LT_DEBUG :
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, logPrefix + message.CString() );
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------//
@@ -84,7 +126,7 @@ CModule::Unload( void )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUIOGRE */
-}; /* namespace GUCE */
+}; /* namespace GUIDRIVERROCKET */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

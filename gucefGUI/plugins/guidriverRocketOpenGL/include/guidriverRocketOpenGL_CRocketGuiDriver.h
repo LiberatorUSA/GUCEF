@@ -41,6 +41,11 @@
 #define GUCEF_GUI_CGUIDRIVER_H
 #endif /* GUCEF_GUI_CGUIDRIVER_H ? */
 
+#ifndef GUCEF_GUIDRIVERROCKET_CROCKETSYSTEMINTERFACE_H
+#include "guidriverRocket_CRocketSystemInterface.h"
+#define GUCEF_GUIDRIVERROCKET_CROCKETSYSTEMINTERFACE_H
+#endif /* GUCEF_GUIDRIVERROCKET_CROCKETSYSTEMINTERFACE_H ? */
+
 #ifndef GUCEF_GUIDRIVERROCKETGL_CROCKETRENDERINTERFACEOPENGL_H
 #include "guidriverRocketOpenGL_CRocketRenderInterfaceOpenGL.h"
 #define GUCEF_GUIDRIVERROCKETGL_CROCKETRENDERINTERFACEOPENGL_H
@@ -89,7 +94,25 @@ class GUIDRIVERROCKETGL_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
     virtual const GUI::CString& GetClassTypeName( void ) const;
     
     virtual GUI::CString GetDriverProperty( const GUI::CString& propertyName ) const;
-    
+
+    /**
+     *      Attempts to store the given tree in the file
+     *      given according to the method of the codec metadata
+     *
+     *      @param tree the data tree you wish to store
+     *      @return wheter storing the tree was successfull
+     */
+    virtual bool SaveConfig( CORE::CDataNode& tree );
+
+    /**
+     *      Attempts to load data from the given file to the
+     *      root node given. The root data will be replaced
+     *      and any children the node may already have will be deleted.
+     *
+     *      @param treeroot pointer to the node that is to act as root of the data tree
+     *      @return whether building the tree from the given file was successfull.
+     */
+    virtual bool LoadConfig( const CORE::CDataNode& treeroot );    
     private:
     
     CRocketGuiDriver( const CRocketGuiDriver& src );
@@ -97,7 +120,8 @@ class GUIDRIVERROCKETGL_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
     private:
 
     CRocketRenderInterfaceOpenGL m_rocketRenderer;
-    
+    GUIDRIVERROCKET::CRocketSystemInterface m_systemInterface;
+    bool m_isRocketInitialized;
 };
 
 /*-------------------------------------------------------------------------//

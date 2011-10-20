@@ -154,6 +154,11 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
      */
     virtual bool LoadConfig( const CDataNode& treeroot );
 
+    /**
+     *  Resets all data to default creation state
+     */
+    virtual void Clear( void );
+
     private:
 
     CString m_description;

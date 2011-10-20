@@ -71,6 +71,7 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     enum ELogMsgType
     {
         LOG_ERROR,     /**< I strongly suggest you use this for logging serious errors only */
+        LOG_WARNING,   /**< used for something that could be a problem but not necessarily so */
         LOG_STANDARD,  /**< can be anything */
         LOG_USER,      /**< typically info that relates to user actions */
         LOG_SYSTEM,    /**< typically info that relates to the state of of the system */
@@ -246,6 +247,11 @@ LogLevelToString( const Int32 logLevel );
 
 #undef GUCEF_CONSOLE_LOG
 #define GUCEF_CONSOLE_LOG( logLevel, logMessage ) GUCEF::CORE::CLogManager::Instance()->Log( GUCEF::CORE::CLogManager::LOG_CONSOLE, logLevel, logMessage );
+
+/*-------------------------------------------------------------------------*/
+
+#undef GUCEF_WARNING_LOG
+#define GUCEF_WARNING_LOG( logLevel, logMessage ) GUCEF::CORE::CLogManager::Instance()->Log( GUCEF::CORE::CLogManager::LOG_WARNING, logLevel, logMessage );
 
 /*-------------------------------------------------------------------------*/
 
