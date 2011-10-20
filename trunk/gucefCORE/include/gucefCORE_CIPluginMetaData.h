@@ -119,6 +119,11 @@ class GUCEF_CORE_PUBLIC_CPP CIPluginMetaData
      *  of the plugin and plugin manager. This is merely a placeholder.
      */
     virtual void GetParams( CValueList& params ) const = 0;
+
+    /**
+     *  Resets all data to default creation state
+     */
+    virtual void Clear( void ) = 0;
 };
 
 /*-------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 /*
- *  guceMyGUIOgre: glue module for the MyGUI+Ogre GUI backend
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  guidriverRocket: GUI backend using Rocket
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -23,17 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
           
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCE_MYGUIOGRE_CMODULE_H
-#include "guceMyGUIOgre_CModule.h"
-#define GUCE_MYGUIOGRE_CMODULE_H
-#endif /* GUCE_MYGUIOGRE_CMODULE_H ? */
-
-#include "guceMyGUIOgre_pluginAPI.h"
+#include "guidriverRocket_pluginAPI.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,8 +36,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCE {
-namespace MYGUIOGRE {
+namespace GUCEF {
+namespace GUIDRIVERROCKET {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,29 +47,28 @@ namespace MYGUIOGRE {
 
 CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_Load( UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCE_TRACE;
+{GUCEF_TRACE;
     
-    GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Load called on plugin guceMyGUIOgre" );    
+    GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Load called on plugin guidriverRocket" );    
     
-    return CModule::Load() ? 1 : 0;
+    return 1;
 }
 
 /*--------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCE_TRACE;
+{GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Unload called on plugin guceMyGUIOgre" );
+    GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Unload called on plugin guidriverRocket" );
     
-    CModule::Unload();
 }
 
 /*--------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetVersion( GUCEF::CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCE_TRACE;
+{GUCEF_TRACE;
 
     versionInfo->major = 1; 
     versionInfo->minor = 0;
@@ -86,18 +80,18 @@ GUCEFPlugin_GetVersion( GUCEF::CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSP
 
 const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCE_TRACE;
+{GUCEF_TRACE;
     
-    return "Copyright (C) Dinand Vanvelzen, LGPL license";
+    return "Copyright (C) Dinand Vanvelzen, LGPLv3 license";
 }
 
 /*--------------------------------------------------------------------------*/
 
 const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCE_TRACE;
+{GUCEF_TRACE;
 
-    return "Generic GUCEF plugin which provides a GUI driver using MyGUI as the backend";
+    return "Generic GUCEF plugin which provides a GUI backend using Rocket";
 }
 
 /*-------------------------------------------------------------------------//
@@ -106,7 +100,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUIOGRE */
-}; /* namespace GUCE */
+}; /* namespace GUIDRIVERROCKET */
+}; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/

@@ -20,4 +20,20 @@
             <Define String="GUIDRIVERROCKETGL_BUILD_MODULE" />
         </Preprocessor>
     </Module>
+    <Module Platform="mswin">
+        <Linker>
+            <Dependency Name="OpenGL32.lib" />
+        </Linker>
+    </Module>
+    <Module Platform="linux">
+        <Linker>
+            <Dependency Name="GL" />
+        </Linker>
+    </Module>
+    <Module Platform="android">
+        <Linker>
+            <Dependency Name="EGL" />
+            <Dependency Name="GLESv1_CM" />
+        </Linker>
+    </Module>
 </ModuleInfoEntry>

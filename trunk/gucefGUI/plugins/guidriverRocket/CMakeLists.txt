@@ -23,21 +23,19 @@ set( HEADER_FILES
   include/guidriverRocket_CFileSystemDialogImp.h
   include/guidriverRocket_CFormBackendImp.h
   include/guidriverRocket_CGridViewImp.h
-  include/guidriverRocket_CGUIContext.h
-  include/guidriverRocket_CGUIDriver.h
   include/guidriverRocket_CImageFrameImp.h
   include/guidriverRocket_CIOAccessToMyGuiDataStreamAdapter.h
   include/guidriverRocket_CLabelImp.h
   include/guidriverRocket_CListBoxImp.h
   include/guidriverRocket_CMemoboxImp.h
   include/guidriverRocket_CMenuBarImp.h
-  include/guidriverRocket_CModule.h
   include/guidriverRocket_CMyGUIInputAdapter.h
   include/guidriverRocket_config.h
   include/guidriverRocket_CPopupMenuImp.h
   include/guidriverRocket_CProgressBarImp.h
   include/guidriverRocket_CPushButtonImp.h
   include/guidriverRocket_CRenderContextImp.h
+  include/guidriverRocket_CRocketSystemInterface.h
   include/guidriverRocket_CSpinnerImp.h
   include/guidriverRocket_CTabContentPaneImp.h
   include/guidriverRocket_CTabControlImp.h
@@ -63,20 +61,18 @@ set( SOURCE_FILES
   src/guidriverRocket_CFileSystemDialogImp.cpp
   src/guidriverRocket_CFormBackendImp.cpp
   src/guidriverRocket_CGridViewImp.cpp
-  src/guidriverRocket_CGUIContext.cpp
-  src/guidriverRocket_CGUIDriver.cpp
   src/guidriverRocket_CImageFrameImp.cpp
   src/guidriverRocket_CIOAccessToRocketStreamAdapter.cpp
   src/guidriverRocket_CLabelImp.cpp
   src/guidriverRocket_CListboxImp.cpp
   src/guidriverRocket_CMemoboxImp.cpp
   src/guidriverRocket_CMenuBarImp.cpp
-  src/guidriverRocket_CModule.cpp
   src/guidriverRocket_CPopupMenuImp.cpp
   src/guidriverRocket_CProgressBarImp.cpp
   src/guidriverRocket_CPushButtonImp.cpp
   src/guidriverRocket_CRenderContextImp.cpp
   src/guidriverRocket_CRocketInputAdapter.cpp
+  src/guidriverRocket_CRocketSystemInterface.cpp
   src/guidriverRocket_CSpinnerImp.cpp
   src/guidriverRocket_CTabContentPaneImp.cpp
   src/guidriverRocket_CTabControlImp.cpp
@@ -101,7 +97,7 @@ set( MODULE_NAME "guidriverRocket" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefMT )
 target_link_libraries( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefMT )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERROCKET_BUILD_MODULE" )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_GUIDRIVERROCKET_BUILD_MODULE" )
 
 include_directories( ../../../common/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../dependencies/libRocket/Include ../../../dependencies/libRocket/Include/Rocket ../../../dependencies/libRocket/Include/Rocket/Controls ../../../dependencies/libRocket/Include/Rocket/Core ../../../dependencies/libRocket/Include/Rocket/Core/Python ../../../dependencies/libRocket/Include/Rocket/Debugger ../../../dependencies/libRocket/Source/Controls ../../../dependencies/libRocket/Source/Core ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefMT/include ../../../gucefVFS/include include )
 

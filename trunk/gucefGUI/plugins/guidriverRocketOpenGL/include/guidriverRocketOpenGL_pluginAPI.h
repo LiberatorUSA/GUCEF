@@ -1,6 +1,6 @@
 /*
- *  guceMyGUIOgre: glue module for the MyGUI+Ogre GUI backend
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  guidriverRocketOpenGL: module providing a GUI backend using Rocket and OpenGL
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCE_MYGUIOGRE_CMODULE_H
-#define GUCE_MYGUIOGRE_CMODULE_H
+#ifndef GUCEF_GUIDRIVERROCKETGL_PLUGINAPI_H
+#define GUCEF_GUIDRIVERROCKETGL_PLUGINAPI_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCE_MYGUIOGRE_MACROS_H
-#include "guceMyGUIOgre_macros.h"      /* often used macros */
-#define GUCE_MYGUIOGRE_MACROS_H
-#endif /* GUCE_MYGUIOGRE_MACROS_H ? */
+#ifndef GUCEF_CORE_ESTRUCTS_H
+#include "EStructs.h"
+#define GUCEF_CORE_ESTRUCTS_H
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+
+#ifndef GUCEF_GUIDRIVERROCKETGL_MACROS_H
+#include "guidriverRocketOpenGL_macros.h"
+#define GUCEF_GUIDRIVERROCKETGL_MACROS_H
+#endif /* GUCEF_GUIDRIVERROCKETGL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,42 +42,69 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCE {
-namespace MYGUIOGRE {
+#ifdef __cplusplus
+namespace GUCEF {
+namespace GUIDRIVERROCKETGL {
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCE_MYGUIOGRE_EXPORT_CPP CModule
-{
-    public:
-    
-    static bool Load( void );
-    
-    static bool Unload( void );
-    
-    private:
-    CModule( void );
-    CModule( const CModule& src );
-    ~CModule();
-    CModule& operator=( const CModule& src );
-};
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-}; /* namespace MYGUIOGRE */
-}; /* namespace GUCE */
+/*
+ *      Prevent C++ name mangling
+ */
+#ifdef __cplusplus
+extern "C" {
+#endif  /* __cplusplus */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCE_MYGUIOGRE_CMODULE_H ? */
+
+GUIDRIVERROCKETGL_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*-------------------------------------------------------------------------*/
+
+GUIDRIVERROCKETGL_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*-------------------------------------------------------------------------*/
+
+GUIDRIVERROCKETGL_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*-------------------------------------------------------------------------*/
+
+GUIDRIVERROCKETGL_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*-------------------------------------------------------------------------*/
+
+GUIDRIVERROCKETGL_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*-------------------------------------------------------------------------*/                 
+
+#ifdef __cplusplus
+   };
+#endif /* __cplusplus */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+}; /* namespace GUIDRIVERROCKETGL */
+}; /* namespace GUCEF */
+#endif /* __cplusplus */
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_GUIDRIVERROCKETGL_PLUGINAPI_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -80,7 +112,7 @@ class GUCE_MYGUIOGRE_EXPORT_CPP CModule
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 18-08-2007 :
-        - Initial implementation
+- 04-05-2005 :
+        - Dinand: Initial version.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

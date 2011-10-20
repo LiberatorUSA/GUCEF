@@ -1,6 +1,6 @@
 /*
- *  guceMyGUIOgre: glue module for the MyGUI+Ogre GUI backend
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  guidriverRocket: GUI backend using Rocket
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCE_MYGUIOGRE_CONFIG_H
-#define GUCE_MYGUIOGRE_CONFIG_H
+#ifndef GUCEF_GUIDRIVERROCKET_CONFIG_H
+#define GUCEF_GUIDRIVERROCKET_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCE_CORE_MACROS_H
-#include "guceCORE_macros.h"
-#define GUCE_CORE_MACROS_H
-#endif /* GUCE_CORE_MACROS_H ? */
+#ifndef GUCEF_GUI_MACROS_H
+#include "gucefGUI_macros.h"
+#define GUCEF_GUI_MACROS_H
+#endif /* GUCEF_GUI_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,12 +38,12 @@
 //-------------------------------------------------------------------------*/
 
 /* Switches for the export of C++ and/or C code */
-#define GUCE_MYGUIOGRE_EXPORT_CPP_CODE
-#define GUCE_MYGUIOGRE_EXPORT_C_CODE
+#define GUCEF_GUIDRIVERROCKET_PUBLIC_CPP_CODE
+#define GUCEF_GUIDRIVERROCKET_PUBLIC_C_CODE
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCE_MYGUIOGRE_CONFIG_H */
+#endif /* GUCEF_GUIDRIVERROCKET_CONFIG_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -54,5 +54,5 @@
 - 18-08-2007 :
        - Initial version of this file.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/
  

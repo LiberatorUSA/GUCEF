@@ -100,6 +100,7 @@ CLogManager::CLogManager( void )
 {GUCEF_TRACE;
 
     m_msgTypeEnablers[ LOG_ERROR ] = true;
+    m_msgTypeEnablers[ LOG_WARNING ] = true;
     m_msgTypeEnablers[ LOG_STANDARD ] = true;
     m_msgTypeEnablers[ LOG_USER ] = true;
     m_msgTypeEnablers[ LOG_SYSTEM ] = true;
@@ -355,6 +356,11 @@ CLogManager::GetLogMsgTypeString( const TLogMsgType logMsgType )
         case CLogManager::LOG_ERROR :
         {
             static CString typeStr = "ERROR";
+            return typeStr;
+        }
+        case CLogManager::LOG_WARNING :
+        {
+            static CString typeStr = "WARNING";
             return typeStr;
         }
         case CLogManager::LOG_STANDARD :

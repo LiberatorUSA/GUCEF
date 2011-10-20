@@ -86,6 +86,12 @@ CRocketRenderInterfaceOpenGL::CRocketRenderInterfaceOpenGL()
 
 /*-------------------------------------------------------------------------*/
 
+CRocketRenderInterfaceOpenGL::~CRocketRenderInterfaceOpenGL()
+{
+}
+
+/*-------------------------------------------------------------------------*/
+
 // Called by Rocket when it wants to render geometry that it does not wish to optimise.
 void
 CRocketRenderInterfaceOpenGL::RenderGeometry(Rocket::Core::Vertex* vertices, int ROCKET_UNUSED(num_vertices), int* indices, int num_indices, const Rocket::Core::TextureHandle texture, const Rocket::Core::Vector2f& translation)

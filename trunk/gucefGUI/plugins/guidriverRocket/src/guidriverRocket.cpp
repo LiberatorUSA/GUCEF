@@ -1,6 +1,6 @@
 /*
- *  guceMyGUIOgre: glue module for the MyGUI+Ogre GUI backend
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  guidriverRocket: GUI backend using Rocket
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -23,27 +23,13 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_DLLINIT_H
-#include "gucef_DLLInit.h"
-#define GUCEF_DLLINIT_H
-#endif /* GUCEF_DLLINIT_H ? */
-
-#ifndef GUCE_MYGUIOGRE_CMODULE_H
-#include "guceMyGUIOgre_CModule.h"
-#define GUCE_MYGUIOGRE_CMODULE_H
-#endif /* GUCE_MYGUIOGRE_CMODULE_H ? */
-
-#include "guceMyGUIOgre.h"
+#include "guidriverRocket.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-//GUCEF_DLL_INIT_FUNC_BEG_END( GUCE::MYGUIOGRE::CModule );
-
-/*-------------------------------------------------------------------------*/
 
 const char*
 GUCE_MYGUIOGRE_ModuleCompileTimeStamp( void )

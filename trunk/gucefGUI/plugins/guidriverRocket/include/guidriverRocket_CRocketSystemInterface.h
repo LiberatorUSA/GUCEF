@@ -1,6 +1,6 @@
 /*
- *  guceMyGUIOgre: glue module for the MyGUI+Ogre GUI backend
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  guidriverRocket: GUI backend using Rocket
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCE_MYGUIOGRE_CGUICONTEXT_H
-#define GUCE_MYGUIOGRE_CGUICONTEXT_H 
+#ifndef GUCEF_GUIDRIVERROCKET_CROCKETSYSTEMINTERFACE_H
+#define GUCEF_GUIDRIVERROCKET_CROCKETSYSTEMINTERFACE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,13 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_GUI_CIGUICONTEXT_H
-#include "gucefGUI_CIGUIContext.h"
-#define GUCEF_GUI_CIGUICONTEXT_H
-#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
+#include <Rocket/Core/SystemInterface.h>
 
 #ifndef GUCE_MYGUIOGRE_MACROS_H
-#include "guceMyGUIOgre_macros.h"     /* often used guceMYGUIOGRE macros */
+#include "guidriverRocket_macros.h"
 #define GUCE_MYGUIOGRE_MACROS_H
 #endif /* GUCE_MYGUIOGRE_MACROS_H ? */
 
@@ -42,8 +39,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCE {
-namespace MYGUIOGRE {
+namespace GUCEF {
+namespace GUIDRIVERROCKET {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,53 +48,24 @@ namespace MYGUIOGRE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUIDriver;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *  Implementation of the GUI context for the MyGUI&Ogre combo
- */
-class GUCE_MYGUIOGRE_EXPORT_CPP CGUIContext : public GUCEF::GUI::CIGUIContext
+class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CRocketSystemInterface : public Rocket::Core::SystemInterface
 {
-    public:    
+	public:
     
-    CGUIContext( CGUIDriver& myGuiDriver );
-    
-    virtual ~CGUIContext();
-    
-    virtual GUCEF::GUI::CWidget* CreateWidget( const CString& widgetName );
-    
-    virtual void DestroyWidget( GUCEF::GUI::CWidget* widget );
-    
-    virtual GUCEF::GUI::CForm* CreateForm( const CString& formName );
-    
-    virtual void DestroyForm( GUCEF::GUI::CForm* form );   
+    CRocketSystemInterface( void );
 
-    virtual TStringSet GetAvailableFormTypes( void );
-    
-    virtual TStringSet GetAvailableWidgetTypes( void );
-    
-    virtual GUCEF::GUI::CFormBackend* CreateFormBackend( void );
-    
-    virtual void DestroyFormBackend( GUCEF::GUI::CFormBackend* formBackend );
-    
-    virtual GUCEF::GUI::CGUIDriver* GetDriver( void );
-    
-    virtual TWidgetSet GetOwnedWidgets( void );
-    
-    virtual TFormSet GetOwnedForms( void );
-    
-    private:
-    
-    CGUIContext( const CGUIContext& src );            
-    CGUIContext& operator=( const CGUIContext& src );
-    
-    private:
+	virtual ~CRocketSystemInterface();
 
-    CGUIDriver* m_driver;
-    TWidgetSet m_widgetSet;
-    TFormSet m_formSet;
+	/// Get the number of seconds elapsed since the start of the application.
+	/// @return Elapsed time, in seconds.
+	virtual float GetElapsedTime();
+
+	/// Log the specified message.
+	/// @param[in] type Type of log message, ERROR, WARNING, etc.
+	/// @param[in] message Message to log.
+	/// @return True to continue execution, false to break into the debugger.
+	virtual bool LogMessage( Rocket::Core::Log::Type type        , 
+                             const Rocket::Core::String& message );
 };
 
 /*-------------------------------------------------------------------------//
@@ -106,12 +74,12 @@ class GUCE_MYGUIOGRE_EXPORT_CPP CGUIContext : public GUCEF::GUI::CIGUIContext
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace MYGUIOGRE */
-} /* namespace GUCE */
+}; /* namespace GUIDRIVERROCKET */
+}; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-#endif /* GUCE_MYGUIOGRE_CGUICONTEXT_H ? */
+#endif /* GUCEF_GUIDRIVERROCKET_CROCKETSYSTEMINTERFACE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -119,7 +87,7 @@ class GUCE_MYGUIOGRE_EXPORT_CPP CGUIContext : public GUCEF::GUI::CIGUIContext
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 08-04-2007 :
-        - Initial implementation
+- 04-05-2005 :
+        - Dinand: Initial version.
 
 ---------------------------------------------------------------------------*/

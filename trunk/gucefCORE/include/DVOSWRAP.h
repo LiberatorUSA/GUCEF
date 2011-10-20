@@ -196,7 +196,7 @@ GUCEFGetEnv( const char* key );
 /*--------------------------------------------------------------------------*/
 
 /**
- *      Returns the application tickcount
+ *      Returns the application tickcount in milliseconds
  */
 GUCEF_CORE_PUBLIC_C UInt32
 GUCEFGetTickCount( void );

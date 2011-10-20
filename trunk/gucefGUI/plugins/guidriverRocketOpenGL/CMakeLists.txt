@@ -17,11 +17,13 @@ set( HEADER_FILES
   include/guidriverRocketOpenGL_CRocketGuiDriver.h
   include/guidriverRocketOpenGL_CRocketRenderInterfaceOpenGL.h
   include/guidriverRocketOpenGL_macros.h
+  include/guidriverRocketOpenGL_pluginAPI.h
 )
 
 set( SOURCE_FILES 
   src/guidriverRocketOpenGL_CRocketGuiDriver.cpp
   src/guidriverRocketOpenGL_CRocketRenderInterfaceOpenGL.cpp
+  src/guidriverRocketOpenGL_pluginAPI.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -38,6 +40,22 @@ add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefMT guidriverRocket )
 target_link_libraries( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefMT guidriverRocket )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERROCKETGL_BUILD_MODULE" )
+
+if ( ANDROID )
+  target_link_libraries( ${MODULE_NAME} EGL GLESv1_CM )
+endif( ANDROID )
+
+if ( LINUX )
+  target_link_libraries( ${MODULE_NAME} GL )
+endif( LINUX )
+
+if ( WIN32 )
+  target_link_libraries( ${MODULE_NAME} OpenGL32.lib )
+endif( WIN32 )
+
+if ( WIN64 )
+  target_link_libraries( ${MODULE_NAME} OpenGL32.lib )
+endif( WIN64 )
 
 include_directories( ../../../common/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../dependencies/libRocket/Include ../../../dependencies/libRocket/Include/Rocket ../../../dependencies/libRocket/Include/Rocket/Controls ../../../dependencies/libRocket/Include/Rocket/Core ../../../dependencies/libRocket/Include/Rocket/Core/Python ../../../dependencies/libRocket/Include/Rocket/Debugger ../../../dependencies/libRocket/Source/Controls ../../../dependencies/libRocket/Source/Core ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefMT/include ../../../gucefVFS/include ../guidriverRocket/include include )
 

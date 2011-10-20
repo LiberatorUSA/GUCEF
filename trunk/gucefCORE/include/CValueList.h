@@ -195,6 +195,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueList
     void SetAllowMultipleValues( const bool allowMultipleValues );
 
     bool GetAllowMultipleValues( void ) const;
+
+    void Clear( void );
     
     TValueMap::const_iterator GetDataBeginIterator( void ) const;
     

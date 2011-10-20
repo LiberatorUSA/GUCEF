@@ -1,6 +1,6 @@
 /*
- *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  guidriverRocket: GUI backend using Rocket
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCE_MYGUIOGRE_ETYPES_H
-#define GUCE_MYGUIOGRE_ETYPES_H
+#ifndef GUCEF_GUIDRIVERROCKET_ETYPES_H
+#define GUCEF_GUIDRIVERROCKET_ETYPES_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -31,37 +31,10 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
-#ifndef GUCE_CORE_ETYPES_H
-#include "guceCORE_ETypes.h"
-#define GUCE_CORE_ETYPES_H
-#endif /* GUCE_CORE_ETYPES_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      CONSTANTS                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-/*
- *      Maximum and minimal values for the simple types which we are about to
- *      define.
- */
-#define GUCEFGUI_INT8MAX     GUCEFCORE_INT8MAX
-#define GUCEFGUI_INT8MIN     GUCEFCORE_INT8MIN
-#define GUCEFGUI_UINT8MAX    GUCEFCORE_UINT8MAX
-#define GUCEFGUI_UINT8MIN    GUCEFCORE_UINT8MIN
-#define GUCEFGUI_INT16MAX    GUCEFCORE_INT16MAX
-#define GUCEFGUI_INT16MIN    GUCEFCORE_INT16MIN
-#define GUCEFGUI_UINT16MAX   GUCEFCORE_UINT16MAX
-#define GUCEFGUI_UINT16MIN   GUCEFCORE_UINT16MIN
-#define GUCEFGUI_INT32MAX    GUCEFCORE_INT32MAX
-#define GUCEFGUI_INT32MIN    GUCEFCORE_INT32MIN
-#define GUCEFGUI_UINT32MAX   GUCEFCORE_UINT32MAX
-#define GUCEFGUI_UINT32MIN   GUCEFCORE_UINT32MIN
-#define GUCEFGUI_FLOAT32MAX  GUCEFCORE_FLOAT32MAX
-#define GUCEFGUI_FLOAT32MIN  GUCEFCORE_FLOAT32MIN
-
-/*--------------------------------------------------------------------------*/
+#ifndef GUCEF_CORE_ETYPES_H
+#include "gucefCORE_ETypes.h"
+#define GUCEF_CORE_ETYPES_H
+#endif /* GUCEF_CORE_ETYPES_H ? */
 
 /*
  *  When using C++ we should use namespacing
@@ -73,8 +46,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCE {
-namespace MYGUIOGRE {
+namespace GUCEF {
+namespace GUIDRIVERROCKET {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -107,11 +80,11 @@ typedef CORE::CString   CString; /* import the core string type */
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUIOGRE */
-}; /* namespace GUCE */
+}; /* namespace GUIDRIVERROCKET */
+}; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/
 
 #endif /* __cplusplus ? */
 
-#endif /* GUCE_MYGUIOGRE_ETYPES_H ? */
+#endif /* GUCEF_GUIDRIVERROCKET_ETYPES_H ? */
