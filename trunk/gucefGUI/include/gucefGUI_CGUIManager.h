@@ -91,7 +91,8 @@ class GUCEF_GUI_PUBLIC_CPP CGUIManager : public CORE::CObservingNotifier
     
     static CGUIManager* Instance( void );
     
-    TGuiContextPtr CreateGUIContext( const CString& guiDriverName );
+    TGuiContextPtr CreateGUIContext( const CString& guiDriverName    ,
+                                     TWindowContextPtr windowContext );
     
     void DestroyGUIContext( CIGUIContext* context );
     

@@ -41,6 +41,11 @@
 #define GUCEF_GUI_CIGUICONTEXT_H
 #endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
 
+#ifndef GUCEF_GUI_CWINDOWCONTEXT_H
+#include "gucefGUI_CWindowContext.h"
+#define GUCEF_GUI_CWINDOWCONTEXT_H
+#endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -55,6 +60,7 @@ namespace GUI {
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
 
 class GUCEF_GUI_PUBLIC_CPP CGUIDriver : public CORE::CObservingNotifier ,
                                         public CORE::CIConfigurable
@@ -73,7 +79,7 @@ class GUCEF_GUI_PUBLIC_CPP CGUIDriver : public CORE::CObservingNotifier ,
 
     virtual ~CGUIDriver();
     
-    virtual TGuiContextPtr CreateGUIContext() = 0;
+    virtual TGuiContextPtr CreateGUIContext( TWindowContextPtr windowContext ) = 0;
     
     virtual TGUIContextSet GetContextList( void ) = 0;
     

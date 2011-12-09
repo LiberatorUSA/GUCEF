@@ -63,6 +63,11 @@
 #define GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
 #endif /* GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H ? */
 
+#ifndef GUCEF_GUI_CGUIMANAGER_H
+#include "gucefGUI_CGUIManager.h"
+#define GUCEF_GUI_CGUIMANAGER_H
+#endif /* GUCEF_GUI_CGUIMANAGER_H ? */
+
 #ifndef GUCEF_GUI_CWINDOWMANAGER_H
 #include "gucefGUI_CWindowManager.h"
 #define GUCEF_GUI_CWINDOWMANAGER_H
@@ -191,8 +196,12 @@ GUCEF_OSMAIN_BEGIN
                 {
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created window context using backend Win32GL" );
 
+                    // Create console window for easy test interaction
                     CORE::CPlatformNativeConsoleWindow consoleWindow;
                     consoleWindow.CreateConsole();
+
+                    // create GUI context for our window
+                    GUI::TGuiContextPtr guiContext = GUI::CGUIManager::Instance()->CreateGUIContext( "RocketOpenGL", windowContext );
                     
                     CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
                 }

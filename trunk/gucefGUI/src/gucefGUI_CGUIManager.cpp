@@ -112,14 +112,15 @@ CGUIManager::~CGUIManager()
 /*-------------------------------------------------------------------------*/
 
 TGuiContextPtr
-CGUIManager::CreateGUIContext( const CString& guiDriverName )
+CGUIManager::CreateGUIContext( const CString& guiDriverName    ,
+                               TWindowContextPtr windowContext )
 {GUCEF_TRACE;
 
     TGUIDriverMap::iterator i = m_guiDrivers.find( guiDriverName );
     if ( i != m_guiDrivers.end() )
     {
         CGUIDriver* guiDriver = (*i).second;
-        return guiDriver->CreateGUIContext();
+        return guiDriver->CreateGUIContext( windowContext );
     }
     return NULL;
 }
