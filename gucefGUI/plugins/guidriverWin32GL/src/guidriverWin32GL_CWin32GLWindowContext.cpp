@@ -143,6 +143,36 @@ CWin32GLWindowContext::Shutdown( void )
 
 /*-------------------------------------------------------------------------*/
 
+GUI::UInt32
+CWin32GLWindowContext::GetWidth( void ) const
+{GUCEF_TRACE;
+
+    int dummy;
+    int width;
+    if ( m_window.GetClientArea( dummy, dummy, width, dummy ) )
+    {
+        return (GUI::UInt32) width;
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUI::UInt32
+CWin32GLWindowContext::GetHeight( void ) const
+{GUCEF_TRACE;
+    
+    int dummy;
+    int height;
+    if ( m_window.GetClientArea( dummy, dummy, dummy, height ) )
+    {
+        return (GUI::UInt32) height;
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
                                    const GUI::CVideoSettings& videoSettings )

@@ -75,18 +75,22 @@ class GUCEF_GUI_PUBLIC_CPP CWindowContext : public CORE::CObservingNotifier
     public:
     
     CWindowContext( void );
-    
+
     virtual ~CWindowContext();
-    
-    virtual void SetGuiContext( TGuiContextPtr& context ) = 0;
-    
-    virtual TGuiContextPtr GetGuiContext( void ) = 0;
+
+    virtual UInt32 GetWidth( void ) const = 0;
+
+    virtual UInt32 GetHeight( void ) const = 0;
     
     virtual UInt32 GetID( void ) const = 0;
     
     virtual bool IsActive( void ) const = 0;
     
     virtual CString GetName( void ) const = 0;
+
+    virtual void SetGuiContext( TGuiContextPtr& context ) = 0;
+    
+    virtual TGuiContextPtr GetGuiContext( void ) = 0;
     
     private:
     

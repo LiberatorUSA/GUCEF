@@ -79,6 +79,10 @@ class GUIDRIVERWIN32GL_PUBLIC_CPP CWin32GLWindowContext : public GUI::CWindowCon
     virtual void SetGuiContext( GUI::TGuiContextPtr& context );
     
     virtual GUI::TGuiContextPtr GetGuiContext( void );
+
+    virtual GUI::UInt32 GetWidth( void ) const;
+
+    virtual GUI::UInt32 GetHeight( void ) const;
     
     virtual GUI::UInt32 GetID( void ) const;
     

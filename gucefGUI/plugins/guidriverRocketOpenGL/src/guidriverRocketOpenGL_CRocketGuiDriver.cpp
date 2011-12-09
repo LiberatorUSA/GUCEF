@@ -35,10 +35,10 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
-#ifndef GUCEF_GUI_CIGUICONTEXT_H
-#include "gucefGUI_CIGUIContext.h"
-#define GUCEF_GUI_CIGUICONTEXT_H
-#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
+#ifndef GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H
+#include "guidriverRocket_CGUIContext.h"
+#define GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H
+#endif /* GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H ? */
 
 #include "guidriverRocketOpenGL_CRocketGuiDriver.h"
 
@@ -81,7 +81,7 @@ CRocketGuiDriver::~CRocketGuiDriver()
 /*-------------------------------------------------------------------------*/
     
 GUI::TGuiContextPtr
-CRocketGuiDriver::CreateGUIContext()
+CRocketGuiDriver::CreateGUIContext( GUI::TWindowContextPtr windowContext )
 {GUCEF_TRACE;
 
     // Lazy initialize Rocket as needed
@@ -98,8 +98,31 @@ CRocketGuiDriver::CreateGUIContext()
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initialized Rocket" );
         }
     }
+
+    Rocket::Core::Context* context = NULL;
+    if ( NULL != windowContext )
+    {
+        // Create the main Rocket context using the parameters of the windowContext
+        context = Rocket::Core::CreateContext( CORE::PointerToString( windowContext.GetPointer() ).C_String()                  ,
+                                               Rocket::Core::Vector2i( windowContext->GetWidth(), windowContext->GetHeight() ) );
+    }
+    else
+    {
+        // Create the main Rocket context using defaults, it is expected to be altered later
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initialized Rocket context with defaults since no window context was provided" );
+        context = Rocket::Core::CreateContext( "default"                      ,
+                                               Rocket::Core::Vector2i( 2, 2 ) );
+    }
+
+    if ( NULL == context )
+    {
+        // Unable to create a Rocket context
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to create Rocket GUI context" );
+        Rocket::Core::Shutdown();
+        return GUI::TGuiContextPtr();
+    }
     
-    return GUI::TGuiContextPtr();
+    return new GUIDRIVERROCKET::CGUIContext( this );
 }
 
 /*-------------------------------------------------------------------------*/
