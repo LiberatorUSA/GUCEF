@@ -207,6 +207,7 @@ add_subdirectory( dependencies/freetype )
 add_subdirectory( dependencies/libRocket/Source/Core )
 add_subdirectory( dependencies/libRocket/Source/Controls )
 add_subdirectory( dependencies/libRocket/Source/Debugger )
+add_subdirectory( dependencies/ccache )
 
 # Setup GUCEF Plugin modules
 add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML )
