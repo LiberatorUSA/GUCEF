@@ -23,6 +23,7 @@ set( HEADER_FILES
   include/guidriverRocket_CFileSystemDialogImp.h
   include/guidriverRocket_CFormBackendImp.h
   include/guidriverRocket_CGridViewImp.h
+  include/guidriverRocket_CGUIContext.h
   include/guidriverRocket_CImageFrameImp.h
   include/guidriverRocket_CIOAccessToMyGuiDataStreamAdapter.h
   include/guidriverRocket_CLabelImp.h
@@ -61,6 +62,7 @@ set( SOURCE_FILES
   src/guidriverRocket_CFileSystemDialogImp.cpp
   src/guidriverRocket_CFormBackendImp.cpp
   src/guidriverRocket_CGridViewImp.cpp
+  src/guidriverRocket_CGUIContext.cpp
   src/guidriverRocket_CImageFrameImp.cpp
   src/guidriverRocket_CIOAccessToRocketStreamAdapter.cpp
   src/guidriverRocket_CLabelImp.cpp

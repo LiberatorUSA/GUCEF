@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_GUIDRIVERROCKET_CFORMBACKENDIMP_H
+#include "guidriverRocket_CFormBackendImp.h"
+#define GUCEF_GUIDRIVERROCKET_CFORMBACKENDIMP_H
+#endif /* GUCEF_GUIDRIVERROCKET_CFORMBACKENDIMP_H ? */
+
 #include "guidriverRocket_CGUIContext.h"
 
 /*-------------------------------------------------------------------------//
@@ -111,7 +116,7 @@ GUI::CFormBackend*
 CGUIContext::CreateFormBackend( void )
 {GUCEF_TRACE;
 
-    return NULL;
+    return new CFormBackendImp();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -120,6 +125,7 @@ void
 CGUIContext::DestroyFormBackend( GUI::CFormBackend* formBackend )
 {GUCEF_TRACE;
 
+    delete static_cast< CFormBackendImp* >( formBackend );
 }
 
 /*-------------------------------------------------------------------------*/

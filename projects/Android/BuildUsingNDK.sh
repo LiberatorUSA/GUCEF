@@ -45,6 +45,14 @@ echo " "
 . $GUCEF_HOME/projects/Android/FindNDK.sh
 
 echo " "
+echo "*** Locating CCache ***"
+echo " "
+echo " CCache is only used by NDK R7 and above to speed up compilation and is optional
+echo " "
+
+. $GUCEF_HOME/projects/Android/FindCCache.sh
+
+echo " "
 echo "Changing current directory to Android project dir relative to GUCEF_HOME"
 
 cd $GUCEF_HOME/projects/Android/jni

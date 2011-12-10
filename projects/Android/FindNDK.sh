@@ -177,12 +177,45 @@ function FindAndroidNdkR6b {
 
 #------------------------------------------------------------------------------
 
+function FindAndroidNdkR7 {
+
+  # Check for ANDROIDNDK variable, if undefined set it to a copy in depencencies, we will just have to guess
+  ANDROIDNDK=${ANDROIDNDK:=undefined}
+  if [ "$ANDROIDNDK" = "undefined" ]; then
+    echo "ANDROIDNDK environment variable not found, setting it to our default location"
+    ANDROIDNDK="$GUCEF_HOME/dependencies/android-ndk-r7"
+
+    # For NDK r7 we also check for the build script
+    TEST_PATH="$ANDROIDNDK/ndk-build"
+    echo "Testing for ndk-build existance @ $TEST_PATH"
+    if [ -x "$TEST_PATH" ];
+    then
+      echo "Found NDK build script"
+      ANDROIDNDKBUILD=$TEST_PATH
+    else
+      echo "Unable to locate NDK build script, invalid NDK location"
+      ANDROIDNDK="undefined"   
+    fi
+
+  fi
+  
+}
+
+#------------------------------------------------------------------------------
+
 function FindAndroidNdk {
 
   ANDROIDNDK=${ANDROIDNDK:=undefined}
   ANDROIDNDKBUILD=${ANDROIDNDKBUILD:=undefined}
 
   if [ "$ANDROIDNDK" = "undefined" ]; then
+
+  # Check for NDK release 7
+  FindAndroidNdkR7
+  
+  if [ "$ANDROIDNDK" = "undefined" ]; then
+
+  echo "Unable to locate NDK release 7, will try release 6b"
 
   # Check for NDK release 6b
   FindAndroidNdkR6b
@@ -223,6 +256,7 @@ function FindAndroidNdk {
   FindAndroidNdkR4
         
   fi  
+  fi
   fi
   fi
   fi

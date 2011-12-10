@@ -31,10 +31,10 @@
 #define GUCEF_CORE_ESTRUCTS_H
 #endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef GUCE_MYGUIOGRE_MACROS_H
+#ifndef GUCEF_GUIDRIVERROCKET_MACROS_H
 #include "guidriverRocket_macros.h"
-#define GUCE_MYGUIOGRE_MACROS_H
-#endif /* GUCE_MYGUIOGRE_MACROS_H ? */
+#define GUCEF_GUIDRIVERROCKET_MACROS_H
+#endif /* GUCEF_GUIDRIVERROCKET_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
