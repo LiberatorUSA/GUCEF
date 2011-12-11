@@ -47,7 +47,7 @@ echo " "
 echo " "
 echo "*** Locating CCache ***"
 echo " "
-echo " CCache is only used by NDK R7 and above to speed up compilation and is optional
+echo " CCache is only used by NDK R7 and above to speed up compilation and is optional"
 echo " "
 
 . $GUCEF_HOME/projects/Android/FindCCache.sh
