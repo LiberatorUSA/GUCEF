@@ -26,7 +26,7 @@ function FindCygwinCCache {
   if [ "$CCACHEPATH" = "undefined" ]; then
   
     echo "CCACHEPATH environment variable not found, checking our default Cygwin location"
-    TEST_PATH=="/cygdrive/c/cygwin/bin/ccache.exe"
+    TEST_PATH="/cygdrive/c/cygwin/bin/ccache.exe"
     echo "Testing for ccache existance @ $TEST_PATH"
 
     if [ -x "$TEST_PATH" ];
@@ -71,7 +71,7 @@ function FindCCache {
   CCACHEPATH=${CCACHEPATH:=undefined}
 
   # Check if we are running under Cygwin
-  if [ "$OSTYPE" = "Cygwin" ]; then    
+  if [ "$OSTYPE" = "cygwin" ]; then    
     FindCygwinCCache  
   else
     FindLinuxCCache
